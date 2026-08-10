@@ -1,0 +1,17 @@
+{
+  "protocol": "humanoid_lifelong_improvement_v1",
+  "status": "preregistered",
+  "base_protocol": "protocols/humanoid_walking_v1.json",
+  "lifetimes": 4,
+  "locomotion_actions_per_lifetime": 180,
+  "arms": [
+    "accumulating",
+    "fresh_control"
+  ],
+  "primary_discriminator": {
+    "final_progress_must_exceed_matched_fresh": true,
+    "late_mean_progress_must_exceed_early_mean": true,
+    "no_new_fall": true,
+    "final_absolute_lateral_drift_must_not_increase": true
+  }
+}

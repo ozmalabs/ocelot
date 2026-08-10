@@ -1,0 +1,118 @@
+{
+  "id": "sync_primitives_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "futex",
+  "in_microtheory": "operating_systems",
+  "description": "Synchronisation primitives decomposed. Futex's user-space fast path + kernel slow path. RCU (Read-Copy-Update) for lock-free reads. Sequence locks (seqlock) for write-rare data. Linux's wait queues. The mechanisms that make modern Linux mutex/semaphore/condvar fast.",
+  "sub_mechanisms": [
+    {
+      "name": "futex_uncontended_path",
+      "definition": "Atomic CAS on a user-space integer. On success (acquire) or release, no kernel involvement.",
+      "why": "~10 ns per op vs ~µs for syscall. 99%+ of lock operations in well-designed code are uncontended. The 'fast path' is essentially free.",
+      "category": "futex_mechanism"
+    },
+    {
+      "name": "FUTEX_WAIT",
+      "definition": "syscall: 'sleep until value at addr changes'. Kernel adds caller to per-address wait queue, sleeps.",
+      "why": "Contended case. Thread can't make progress; blocks in kernel. Cheaper than active spinning (CPU not wasted). The expensive but correct path when contention happens.",
+      "category": "futex_mechanism"
+    },
+    {
+      "name": "FUTEX_WAKE",
+      "definition": "syscall: 'wake N waiters on this address'. Kernel removes them from wait queue, marks runnable.",
+      "why": "Lock release wakes waiting threads. N=1: wake one (avoids thundering herd). N=∞: broadcast (condition variable's signal-all).",
+      "category": "futex_mechanism"
+    },
+    {
+      "name": "pthread_mutex_via_futex",
+      "definition": "User-space mutex_t holds a 32-bit state. Fast path: atomic CAS. Slow path: FUTEX_WAIT/WAKE on the state.",
+      "why": "Implementations the same shape: glibc, musl, every modern Linux mutex. Uncontended ~10ns; contended ~few µs. PI-mutex variant supports priority inheritance via FUTEX_LOCK_PI.",
+      "category": "futex_mechanism"
+    },
+    {
+      "name": "RCU_read_copy_update",
+      "definition": "Lock-free read pattern: readers proceed without locking. Writers create new copy, swap pointer atomically, free old after grace period.",
+      "why": "Read-heavy data structures (RCU lists, rcu_dereference). Readers pay near-zero cost. Writers more expensive but rare. Linux kernel uses extensively (route tables, FS dentries, kernel data structures).",
+      "category": "rcu_mechanism"
+    },
+    {
+      "name": "RCU_grace_period",
+      "definition": "Time after which all currently-running readers have finished. Writers wait for grace period before freeing old data.",
+      "why": "Readers may still hold pointers to old version. Free before grace period ends = use-after-free. Linux's tree RCU + preemptible RCU detect grace periods efficiently.",
+      "category": "rcu_mechanism"
+    },
+    {
+      "name": "seqlock",
+      "definition": "Sequence lock: writer increments counter to odd (lock), modifies, increments to even (unlock). Reader: read counter; read data; read counter again; if same + even, valid.",
+      "why": "Optimised for write-rare data. Readers don't block writers; writers don't block readers. Cost: readers retry on race. Used in Linux for timekeeping (gettimeofday is seqlock-protected).",
+      "category": "advanced_sync_mechanism"
+    },
+    {
+      "name": "wait_queue",
+      "definition": "Kernel data structure: list of threads waiting for an event. Threads add themselves + sleep; event-source wakes one or all.",
+      "why": "Generic blocking mechanism. Used by: futex, condition variables, completion, mutex contention. Each thread has wait_queue_entry; lists are doubly-linked for O(1) add/remove.",
+      "category": "kernel_sync_mechanism"
+    },
+    {
+      "name": "completion",
+      "definition": "Kernel primitive: one thread waits for another to signal completion. complete() wakes; wait_for_completion() blocks.",
+      "why": "Single-event signalling. Like a one-shot condition variable. Used for I/O completion, thread synchronisation. complete_all() wakes everyone.",
+      "category": "kernel_sync_mechanism"
+    },
+    {
+      "name": "memory_barrier_in_locks",
+      "definition": "Lock acquire = acquire barrier (no later read/write reorders before). Lock release = release barrier (no earlier read/write reorders after).",
+      "why": "Without barriers, compiler or CPU might reorder operations across the lock. Critical section's writes wouldn't be visible to next acquirer. Barriers in lock primitives enforce ordering.",
+      "category": "sync_correctness_mechanism"
+    },
+    {
+      "name": "elision_lock_elision",
+      "definition": "Hardware feature (Intel TSX) speculatively skipping lock acquisition. If no conflict observed, commit without locking.",
+      "why": "Optimistic concurrency: most critical sections don't actually conflict. Hardware tracks accesses; aborts on conflict, retries with lock. Effective on read-heavy contended workloads. Has had security issues (Intel disabled TSX in some CPUs).",
+      "category": "advanced_sync_mechanism"
+    },
+    {
+      "name": "MCS_lock",
+      "definition": "Scalable spinlock: each waiter spins on its own local node, not on a shared variable. Waiters form a queue.",
+      "why": "Avoids cache-line bouncing under contention. Each waiter waits on its own cache line (local spin). FIFO order — no starvation. Used in Linux's qspinlock + Java's biased locks.",
+      "category": "advanced_sync_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "futex_amortises_kernel_cost_to_contention",
+      "if": ["a lock is acquired/released without contention"],
+      "then": ["operation cost is user-space atomic only"],
+      "why": "No syscall in uncontended path. The cost is 1 atomic operation (~10 ns). Kernel involved only when contention forces waiting. Pre-futex linux locks always entered kernel — ~100x slowdown.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "RCU_zero_cost_readers",
+      "if": ["readers operate via rcu_dereference + memory barrier"],
+      "then": ["they have no synchronisation cost"],
+      "why": "Read path: load pointer + barrier. No locks, no atomics, no kernel. Writers carry the cost via copy + grace period wait. Read-heavy data structures (1000:1 read:write) make RCU essentially free for reads.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "seqlock_no_writer_block_at_reader_retry_cost",
+      "if": ["seqlock has occasional writes"],
+      "then": ["readers proceed lock-free at small retry cost"],
+      "why": "Readers don't block writers; writers don't block readers. Reader cost: read + read + compare (~30 ns). Retry probability is low for write-rare data. Linux's gettimeofday optimised this way.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "MCS_eliminates_lock_cacheline_bouncing",
+      "if": ["many waiters spin on a single lock variable"],
+      "then": ["the cache line bounces under contention"],
+      "why": "Every waiter's spin loads the lock variable. Acquirer's release invalidates everyone's cached copy. MCS gives each waiter its own variable to spin on. Linux's qspinlock incorporates MCS — fixes scalability beyond ~16 cores.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "acquire_release_barriers_required_for_lock_correctness",
+      "if": ["a lock implementation lacks acquire/release barriers"],
+      "then": ["operations in critical section may leak out"],
+      "why": "Without acquire barrier, reads inside section may be reordered to before the acquire (seeing stale data). Without release, writes inside may be reordered to after release (next acquirer sees stale). Standard C++ atomic ordering models formalize.",
+      "soundness_category": "referential_transparency"
+    }
+  ]
+}

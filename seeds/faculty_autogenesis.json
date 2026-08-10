@@ -1,0 +1,494 @@
+{
+ "id": "faculty_autogenesis",
+ "version": "1.0.0",
+ "depends_on": [
+  "program_synthesis",
+  "program_self_modification"
+ ],
+ "area": "general_cognition",
+ "latency_class": "soft_realtime",
+ "description": "General graph-native need -> synthesize -> verify -> install faculty loop. A failure recursively targets the authoring meta-faculty and retries only after proof-carrying consolidation.",
+ "nodes": [],
+ "edges": [],
+ "productions": [
+  {
+   "provenance": "faculty_autogenesis:agent_need",
+   "src": {
+    "type": "Agent",
+    "var": "src"
+   },
+   "edge_type": "has_faculty_need",
+   "tgt": {
+    "type": "FacultyNeed",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "faculty_autogenesis:need_example",
+   "src": {
+    "type": "FacultyNeed",
+    "var": "src"
+   },
+   "edge_type": "has_faculty_example",
+   "tgt": {
+    "type": "FacultyExample",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "faculty_autogenesis:need_message",
+   "src": {
+    "type": "FacultyNeed",
+    "var": "src"
+   },
+   "edge_type": "has_faculty_synthesis_message",
+   "tgt": {
+    "type": "Message",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "faculty_autogenesis:need_program",
+   "src": {
+    "type": "FacultyNeed",
+    "var": "src"
+   },
+   "edge_type": "installed_faculty",
+   "tgt": {
+    "type": "Program",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "faculty_autogenesis:held_faculty",
+   "src": {
+    "type": "Agent",
+    "var": "src"
+   },
+   "edge_type": "holds_faculty",
+   "tgt": {
+    "type": "Program",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "faculty_autogenesis:need_meta_gap",
+   "src": {
+    "type": "FacultyNeed",
+    "var": "src"
+   },
+   "edge_type": "has_meta_faculty_gap",
+   "tgt": {
+    "type": "MetaFacultyGap",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "faculty_autogenesis:need_concern",
+   "src": {
+    "type": "FacultyNeed",
+    "var": "src"
+   },
+   "edge_type": "has_authoring_self_concern",
+   "tgt": {
+    "type": "SelfConcern",
+    "var": "tgt"
+   }
+  }
+ ],
+ "rules": [
+  {
+   "name": "fa_install_self_authored_faculty",
+   "area": "faculty_autogenesis",
+   "latency_class": "soft_realtime",
+   "batch": false,
+   "comment": "An accepted synthesis result becomes a held faculty. The host neither selects nor installs an implementation.",
+   "match": [
+    [
+     "agent",
+     "has_faculty_need",
+     "need"
+    ],
+    [
+     "need",
+     "has_faculty_synthesis_message",
+     "message"
+    ],
+    [
+     "goal",
+     "about_message",
+     "message"
+    ],
+    [
+     "goal",
+     "accepted_program",
+     "program"
+    ],
+    [
+     "program",
+     "ir_subgraph",
+     "root"
+    ]
+   ],
+   "where": {
+    "type": "Eq",
+    "a": {
+     "type": "Attr",
+     "node": {
+      "type": "Var",
+      "name": "need"
+     },
+     "key": "status"
+    },
+    "b": {
+     "type": "Lit",
+     "value": "synthesizing"
+    }
+   },
+   "effects": [
+    [
+     "add_edge",
+     "agent",
+     "holds_faculty",
+     "program"
+    ],
+    [
+     "add_edge",
+     "need",
+     "installed_faculty",
+     "program"
+    ],
+    [
+     "set_attr",
+     "program",
+     "faculty_kind",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "need"
+       },
+       "key": "kind"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "program",
+     "self_authored",
+     1
+    ],
+    [
+     "set_attr",
+     "program",
+     "integer_native",
+     1
+    ],
+    [
+     "set_attr",
+     "need",
+     "status",
+     "installed"
+    ]
+   ]
+  },
+  {
+   "name": "fa_escalate_unbuildable_faculty_to_meta_faculty_repair",
+   "area": "faculty_autogenesis",
+   "latency_class": "soft_realtime",
+   "batch": false,
+   "comment": "Failure to add a task faculty is evidence against the faculty-authoring faculty, never permission for a host shortcut.",
+   "match": [
+    [
+     "agent",
+     "has_faculty_need",
+     "need"
+    ],
+    [
+     "need",
+     "has_faculty_synthesis_message",
+     "message"
+    ],
+    [
+     "goal",
+     "about_message",
+     "message"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "need"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "synthesizing"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "goal"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "gapped"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "need"
+        },
+        "edge_type": "has_meta_faculty_gap"
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "gap",
+     "MetaFacultyGap",
+     {
+      "status": "open",
+      "kind": "faculty_authoring_failure",
+      "failed_faculty_kind": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "need"
+        },
+        "key": "kind"
+       }
+      },
+      "order_n": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "need"
+          },
+          "key": "order_n"
+         },
+         {
+          "type": "Lit",
+          "value": 1
+         }
+        ]
+       }
+      },
+      "output_authority": 0,
+      "integer_native": 1
+     }
+    ],
+    [
+     "add_node",
+     "concern",
+     "SelfConcern",
+     {
+      "status": "noted",
+      "source": "implicit",
+      "kind": "code_write",
+      "content": "extend faculty autogenesis to express an unbuildable held faculty",
+      "output_authority": 0,
+      "integer_native": 1
+     }
+    ],
+    [
+     "add_node",
+     "escalation",
+     "SystemTwoEscalation",
+     {
+      "status": "requested",
+      "reason": "faculty_authoring_failure",
+      "output_authority": 0,
+      "integer_native": 1
+     }
+    ],
+    [
+     "add_node",
+     "task",
+     "SystemTwoTaskSet",
+     {
+      "area": "program_self_modification",
+      "enabled": 1,
+      "integer_native": 1
+     }
+    ],
+    [
+     "add_edge",
+     "need",
+     "has_meta_faculty_gap",
+     "gap"
+    ],
+    [
+     "add_edge",
+     "gap",
+     "about_failed_faculty_need",
+     "need"
+    ],
+    [
+     "add_edge",
+     "gap",
+     "raises_meta_faculty_concern",
+     "concern"
+    ],
+    [
+     "add_edge",
+     "need",
+     "has_authoring_self_concern",
+     "concern"
+    ],
+    [
+     "add_edge",
+     "agent",
+     "has_self_concern",
+     "concern"
+    ],
+    [
+     "add_edge",
+     "escalation",
+     "about_context",
+     "gap"
+    ],
+    [
+     "add_edge",
+     "escalation",
+     "recruits_task_set",
+     "task"
+    ],
+    [
+     "set_attr",
+     "need",
+     "status",
+     "repairing_meta_faculty"
+    ]
+   ]
+  },
+  {
+   "name": "fa_retry_faculty_after_meta_faculty_consolidation",
+   "area": "faculty_autogenesis",
+   "latency_class": "soft_realtime",
+   "batch": false,
+   "match": [
+    [
+     "agent",
+     "has_faculty_need",
+     "need"
+    ],
+    [
+     "need",
+     "has_authoring_self_concern",
+     "concern"
+    ],
+    [
+     "need",
+     "has_faculty_synthesis_message",
+     "message"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "need"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "repairing_meta_faculty"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "concern"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "resolved"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "message",
+     "faculty_synthesis_retired",
+     1
+    ],
+    [
+     "set_attr",
+     "need",
+     "order_n",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "need"
+         },
+         "key": "order_n"
+        },
+        {
+         "type": "Lit",
+         "value": 1
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "need",
+     "status",
+     "requested"
+    ]
+   ]
+  }
+ ]
+}

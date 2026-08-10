@@ -1,0 +1,108 @@
+{
+  "id": "colour_meaning",
+  "version": "1.0.0",
+  "depends_on": [
+    "vision_color"
+  ],
+  "description": "What colours typically MEAN + the artist's colour theory (warm/cool, primary/secondary, complementarity, salience-by-colour) \u2014 the symbolic + relational grounding on top of vision_color's perceptual science (cones/opponency/hue/colour spaces). Lets the agent interpret what it SEES: a rare warm hue against a cool/dull ground = a salient target; grey/black = structure/background. Knowledge concepts.",
+  "nodes": [],
+  "edges": [],
+  "productions": [],
+  "concepts": [
+    {
+      "name": "red",
+      "domain": "colour",
+      "definition": "Warm primary hue (long wavelength ~620-700nm; RGB high-R). Most salient / attention-grabbing colour. TYPICALLY MEANS: danger, stop, error, importance, urgency, energy, heat, blood, passion. In a game often: hazard, enemy, a key target, or 'do not'."
+    },
+    {
+      "name": "orange",
+      "domain": "colour",
+      "definition": "Warm hue between red and yellow. High visibility. TYPICALLY MEANS: warning, caution, energy, warmth, autumn, attention. Often: a hazard or an interactive highlight."
+    },
+    {
+      "name": "yellow",
+      "domain": "colour",
+      "definition": "Bright warm hue (~570-590nm); highest luminance hue, very visible. TYPICALLY MEANS: caution, attention, warning, happiness, light, gold. Often: a marker, a collectible, or 'look here'."
+    },
+    {
+      "name": "green",
+      "domain": "colour",
+      "definition": "Mid-spectrum hue (~520-570nm); restful, low-arousal. TYPICALLY MEANS: safe, go, permission, nature, life, growth, health, money. In a game often: the floor/safe ground, a goal, or success."
+    },
+    {
+      "name": "cyan",
+      "domain": "colour",
+      "definition": "Blue-green hue. Cool, fresh. TYPICALLY MEANS: water, ice, clean, cool, technological. Often: liquid or a cold/special region."
+    },
+    {
+      "name": "blue",
+      "domain": "colour",
+      "definition": "Cool primary hue (short wavelength ~450-490nm). TYPICALLY MEANS: calm, trust, cold, water, sky, stability, depth; also sadness. Often: water, a wall, the player, or a calm/neutral element."
+    },
+    {
+      "name": "violet",
+      "domain": "colour",
+      "definition": "Short-wavelength hue (purple). Rare in nature. TYPICALLY MEANS: rare, special, royal, mysterious, magical. Often: a special/rare object or a reward."
+    },
+    {
+      "name": "magenta",
+      "domain": "colour",
+      "definition": "Non-spectral red-blue (pink). Vivid, artificial. TYPICALLY MEANS: special, artificial, attention, feminine-coded. Often: a marker or a distinct interactive thing."
+    },
+    {
+      "name": "brown",
+      "domain": "colour",
+      "definition": "Low-saturation warm hue (dark orange). TYPICALLY MEANS: earth, wood, ground, dirt, natural, dull. Often: terrain or a wall."
+    },
+    {
+      "name": "grey",
+      "domain": "colour",
+      "definition": "Achromatic neutral (zero saturation, mid lightness). Recedes, low salience. TYPICALLY MEANS: neutral, inactive, background, undefined, dull, stone, metal. Often: a wall, the frame, or inert structure."
+    },
+    {
+      "name": "black",
+      "domain": "colour",
+      "definition": "Minimal luminance (absence of light / RGB 0,0,0). TYPICALLY MEANS: void, empty, nothing, unknown, boundary, hidden. In a grid often: the EMPTY background \u2014 not a thing."
+    },
+    {
+      "name": "white",
+      "domain": "colour",
+      "definition": "Maximal luminance (all wavelengths). TYPICALLY MEANS: empty, clean, blank, space, light, snow. Often: empty space or a blank region."
+    },
+    {
+      "name": "warm_colour",
+      "domain": "colour",
+      "definition": "Red, orange, yellow (and their tints). ADVANCE toward the viewer, feel active/energetic/close, draw attention. Used to mark salient / important / hazardous things."
+    },
+    {
+      "name": "cool_colour",
+      "domain": "colour",
+      "definition": "Green, blue, violet (and their tints). RECEDE from the viewer, feel calm/passive/distant. Used for backgrounds, safe ground, restful regions."
+    },
+    {
+      "name": "primary_colour",
+      "domain": "colour",
+      "definition": "Red, green, blue in additive light (RGB) \u2014 the irreducible hues a display mixes; red, yellow, blue in pigment (RYB). All other hues are mixtures."
+    },
+    {
+      "name": "secondary_colour",
+      "domain": "colour",
+      "definition": "A hue mixed from two primaries: orange (red+yellow), green (yellow+blue) or cyan (in light), violet (red+blue) or magenta."
+    },
+    {
+      "name": "complementary_colours",
+      "domain": "colour",
+      "definition": "Hues opposite on the wheel (red-green, blue-orange, yellow-violet). Maximal contrast; side by side they POP. A figure in its complement against the ground is the most distinguishable \u2014 the agent reads complementary contrast as 'this is meant to stand out'."
+    },
+    {
+      "name": "colour_salience",
+      "domain": "colour",
+      "definition": "Salience by colour = saturation x luminance-contrast-with-surround x rarity. A saturated/warm/rare colour against a dull/cool/common ground POPS OUT \u2014 bottom-up attention. The rarest, most-contrasting colour in a scene is usually the meaningful target."
+    },
+    {
+      "name": "achromatic",
+      "domain": "colour",
+      "definition": "Black, white, grey \u2014 zero saturation. Carry lightness but no hue; typically structure / background / boundary, not the focal MEANING-bearing element (the hued things carry the meaning)."
+    }
+  ]
+}

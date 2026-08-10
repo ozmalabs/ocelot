@@ -1,0 +1,57 @@
+{
+  "microtheory": {
+    "name": "genetics_molecular",
+    "definition": "Genetic information storage, transmission, expression. DNA, RNA, proteins, central dogma, gene regulation, mutation types, epigenetics. The molecular substrate of heredity. Substrate analogue: substrate's persistent graph state as 'genetic' substrate; expression dynamics as transcription/translation analogue.",
+    "category": "biology_domain",
+    "parent": "biology_foundation"
+  },
+  "concepts": [
+    {"name": "central_dogma", "definition": "Crick 1958. Information flows DNA → RNA → protein. Generally not backwards (though reverse transcriptase exists). Substrate analogue: substrate's seed → runtime → output flow.", "category": "central_dogma"},
+    {"name": "transcription", "definition": "DNA → RNA. RNA polymerase reads template strand. Substrate analogue: substrate's reading seed Mts into active state.", "category": "central_dogma"},
+    {"name": "translation_genetics", "definition": "mRNA → protein at ribosome. Codon table maps triplets to amino acids. Substrate analogue: substrate's Term-tree → action.", "category": "central_dogma"},
+    {"name": "codon", "definition": "Three nucleotides specifying one amino acid (or stop). 64 codons, 20 amino acids. Substrate analogue: substrate's lexical-to-Concept mapping primitive.", "category": "central_dogma"},
+    {"name": "genetic_code", "definition": "Mapping codons → amino acids. Nearly universal across life. Substrate analogue: substrate's universal symbol-to-meaning mapping.", "category": "central_dogma"},
+    {"name": "ribosome", "definition": "Molecular machine performing translation. RNA + protein complex. Substrate analogue: substrate's Term-evaluator.", "category": "central_dogma"},
+
+    {"name": "nucleotide", "definition": "DNA/RNA monomer. Phosphate + sugar + base (A,T,C,G in DNA; A,U,C,G in RNA). Substrate analogue: substrate's primitive symbol.", "category": "structure"},
+    {"name": "base_pairing", "definition": "A-T (or A-U) + C-G complementarity. Foundation of replication + transcription. Substrate analogue: substrate's complementarity in matching.", "category": "structure"},
+    {"name": "double_helix", "definition": "DNA structure. Two antiparallel strands. Watson + Crick + Franklin 1953. Substrate analogue: substrate's paired structural representation.", "category": "structure"},
+    {"name": "chromosome", "definition": "Packaged DNA. Humans have 46 (23 pairs). Substrate analogue: substrate's organizational Mt cluster.", "category": "structure"},
+    {"name": "chromatin", "definition": "DNA + protein packaging. Euchromatin (active) vs heterochromatin (silent). Substrate analogue: substrate's accessible vs locked Mts.", "category": "structure"},
+
+    {"name": "gene_expression", "definition": "Process by which gene produces functional product (typically protein). Regulated. Substrate analogue: substrate's Mt activation.", "category": "expression"},
+    {"name": "transcription_factor", "definition": "Protein binding DNA + regulating transcription. Activates or represses. Substrate analogue: substrate's policy_filter agent.", "category": "expression"},
+    {"name": "promoter", "definition": "DNA region where transcription begins. RNA polymerase binds. Substrate analogue: substrate's reflex trigger pattern.", "category": "expression"},
+    {"name": "enhancer", "definition": "DNA region binding transcription factors + boosting transcription. Distal to gene. Substrate analogue: substrate's modulating context.", "category": "expression"},
+    {"name": "operon", "definition": "Bacterial gene-cluster regulated together. Jacob + Monod's lac operon. Substrate analogue: substrate's co-regulated Mt cluster.", "category": "expression"},
+    {"name": "feedback_loop_gene", "definition": "Gene product affecting its own expression. Negative (limit) or positive (commit). Substrate analogue: substrate's correction self-modification.", "category": "expression"},
+
+    {"name": "mutation_types", "definition": "Point (single base), insertion, deletion, duplication, inversion, translocation. Different consequences. Substrate analogue: substrate's Mt modification types.", "category": "mutation"},
+    {"name": "point_mutation", "definition": "Single base change. Synonymous (silent), missense (different amino acid), nonsense (premature stop). Substrate analogue: substrate's single-attribute change.", "category": "mutation"},
+    {"name": "frameshift_mutation", "definition": "Insertion/deletion not divisible by 3 shifts reading frame. Usually devastating. Substrate analogue: substrate's structural disruption.", "category": "mutation"},
+    {"name": "loss_of_function", "definition": "Mutation eliminating gene function. Often recessive. Substrate analogue: substrate's Mt deactivation.", "category": "mutation"},
+    {"name": "gain_of_function", "definition": "Mutation conferring new function. Often dominant. Substrate analogue: substrate's Mt extension.", "category": "mutation"},
+
+    {"name": "mendelian_genetics", "definition": "Mendel 1866. Inheritance via discrete factors. Dominance, segregation, independent assortment. Substrate analogue: substrate's discrete trait inheritance.", "category": "mendelian"},
+    {"name": "dominant_recessive", "definition": "Dominant: expressed in heterozygote. Recessive: only homozygote. Substrate analogue: substrate's expression-priority.", "category": "mendelian"},
+    {"name": "allele", "definition": "Alternative form of a gene at given locus. Substrate analogue: substrate's variant of Concept.", "category": "mendelian"},
+    {"name": "polygenic_trait", "definition": "Trait determined by many genes. Continuous variation. Substrate analogue: substrate's multi-Concept emergent property.", "category": "mendelian"},
+
+    {"name": "epigenetic_modification", "definition": "Heritable changes not in DNA sequence. DNA methylation, histone modification, non-coding RNAs. Substrate analogue: substrate's Mt-level state above graph.", "category": "epigenetic"},
+    {"name": "dna_methylation", "definition": "Addition of methyl group to cytosine. Silences genes. Inherited through cell divisions. Substrate analogue: substrate's policy_filter persistence.", "category": "epigenetic"},
+    {"name": "histone_modification", "definition": "Chemical changes to histone proteins. Acetylation activates; methylation can do either. Substrate analogue: substrate's accessibility modification.", "category": "epigenetic"},
+
+    {"name": "horizontal_gene_transfer", "definition": "Transfer between unrelated organisms. Common in bacteria. Antibiotic resistance spread. Substrate analogue: substrate-substrate Mt borrowing.", "category": "transfer"},
+    {"name": "crispr_cas9", "definition": "Bacterial adaptive immunity adapted as gene editing tool. Doudna + Charpentier. Substrate analogue: substrate's targeted Mt modification.", "category": "transfer"},
+
+    {"name": "gene_regulatory_network", "definition": "Genes regulating each other. Boolean network models. Substrate analogue: substrate's Mt-Mt regulation graph.", "category": "network"},
+    {"name": "robustness_canalization", "definition": "Waddington. Developmental + genetic systems buffered against perturbation. Substrate analogue: substrate's drift-resistance.", "category": "network"}
+  ],
+  "rules": [
+    {"name": "central_dogma_constrains_info_flow", "head": "the substrate processes genetic information", "body": "the standard direction is genotype → expression → phenotype. Reverse flow rare. Substrate's seed → runtime → output."},
+    {"name": "regulation_determines_when_genes_express", "head": "the substrate has the same genetic content", "body": "transcription factors + epigenetic state determine which genes express when. Substrate's contextual Mt activation."},
+    {"name": "mutation_provides_variation_for_selection", "head": "the substrate undergoes natural selection", "body": "mutation provides the heritable variation. Without variation, no selection. Substrate's stochastic Mt modification source."},
+    {"name": "epigenetic_changes_can_be_inherited", "head": "the substrate has acquired Mt-level changes during life", "body": "some can transmit to descendants without DNA change. Substrate's accumulated state surviving structural transfer."},
+    {"name": "horizontal_transfer_spreads_traits_outside_inheritance", "head": "two substrates encounter each other", "body": "Mts can transfer between them outside normal inheritance. Substrate's cross-substrate borrowing."}
+  ]
+}

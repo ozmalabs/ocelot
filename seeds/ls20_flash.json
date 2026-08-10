@@ -1,0 +1,166 @@
+{
+ "id": "ls20_flash",
+ "version": "1.0.0",
+ "depends_on": [
+  "ls20_percell"
+ ],
+ "area": "retina",
+ "description": "ls20 FLASH-ONSET-GUIDED attention (block 223000): tests the owner's claim that the avatar<->shape flash is a salience indicator of the rules. Flash detection = the EXISTING onset stream (photon_transduce_onset + retinal_onset_2d), NOT a bespoke detector. This seed adds only fg_pick_flash: Argmax(magnitude_db) over the FlashOnset cues -> the attended flash location. The flash is a POINTER (where/when), distinct from the persistent TRANSFORM (what) still discovered by the identical 222000 sd-loop; the flash appearance is identical for all actions. Guarded on flash_on==1 (default-OFF, byte-identical otherwise), the arm, and the attend_flash phase (distinct from every pc_* phase). No Rust; reuses Argmax + the whole ls20_percell machinery.",
+ "microtheory": {
+  "name": "ls20_flash",
+  "description": "Route curiosity/attention to the brightest onset (the flash) so the sd-loop is pointed at the rule region first -- sample-efficiency, not can-converge."
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [],
+ "rules": [
+  {
+   "name": "fg_pick_flash",
+   "comment": "FLASH ATTENTION: Argmax(magnitude_db) over the FlashOnset cues -> the attended flash location (game.flash_row/col/mag). The brightest transient marks where the rule fired. The DECISION is the rule; the transform is still discovered by the sd-loop.",
+   "match": [
+    [
+     "g",
+     "has_flash_onset",
+     "o"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "flash_on"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "arm"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "percell"
+        }
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "phase"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "attend_flash"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Var",
+       "name": "o"
+      },
+      "b": {
+       "type": "Argmax",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "g"
+        },
+        "edge_type": "has_flash_onset",
+        "any_type": false
+       },
+       "var_name": "C",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "C"
+        },
+        "key": "magnitude_db"
+       },
+       "default": null
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "g",
+     "flash_row",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "o"
+       },
+       "key": "row_index"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "g",
+     "flash_col",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "o"
+       },
+       "key": "column_index"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "g",
+     "flash_mag",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "o"
+       },
+       "key": "magnitude_db"
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "g",
+     "flash_attended",
+     "o"
+    ]
+   ]
+  }
+ ]
+}

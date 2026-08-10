@@ -1,0 +1,59 @@
+{
+  "id": "conversation_topic_route",
+  "version": "1.2.0",
+  "depends_on": ["intent"],
+  "_shadow_span_note": "v1.2.0 (blind-spot closure R7): the route now DEFERS when the turn's shadow read found a RICHER multi-word topic key (world_adapter._shadow_read_turn's shadow_doc_topic -- a newly-minted SmEntity this turn whose name matches an EXISTING HeldAnswer topic, e.g. 'wright_brothers' for 'the Wright brothers', where this rule's own comp_topic would only carry the head-truncated 'wright'). seeds/conversation_topic_span.json::route_shadow_topic_to_answer mints the SAME Goal{kind:answer_topic} shape keyed on the richer name instead. shadow_doc_topic is a pre-tick Message attribute (the adapter writes it before either rule ever runs), so this guard is a static precondition, not an install-order race.",
+  "_self_possessive_note": "v1.1.0: the route now DEFERS when the graph UNDERSTANDS the topic is the agent's OWN ('how does YOUR collapse function work' -> was grounding 'your collapse' externally). The understanding is graph-native, not a Python string check: a mention that refers_to a SECOND-PERSON Concept (your/yours) AND immediately determines a following noun (has a next_mention) is a possessive self-reference -- the possessed nominal is ABOUT THE AGENT. When such a possessive is present the route does not fire, so the turn falls to the reflexive self/meta path (comprehend_text's honest_self/self_process dispatch) that already handles it. 'what do you know about the moon' has no such possessive ('you' is the subject, 'moon' is preceded by 'the'), so the moon route is unaffected. The discriminator (possessive self vs subject self + external object) lives in referent resolution + mention adjacency the rule reads -- the graph deciding, from what it resolved.",
+  "description": "Graph-native question ROUTING that fixes the 'moon bug' (\"what do you know about the moon\" -> \"I am Jabberwock\"). comprehend_text (Python front end) routes any question carrying a second-person self-cue ('you'/'your') to a self/meta faculty, discarding a genuine EXTERNAL topic. The adapter now writes the parse's external object/oblique nominal onto the Message as comp_topic + a topic_pending=1.0 marker (substrate/world_adapter.py::_external_topic_nominal -- NEVER the self-word subject), and THIS rule DECIDES the turn is about that external topic and mints Goal{kind:answer_topic, concept:<comp_topic>}. The adapter then mechanically renders the answer from that goal via answer_about(concept), grounding the topic through the agent's OWN self-teacher chain (ground_unknowns -> dictionary/wiki) on a miss and re-answering -- the agent FIXING its own knowledge gap. The routing decision is graph-native (this rule), not the Python self-cue heuristic; a genuinely self-referential question ('what are you') writes no comp_topic (topic_pending absent -> None in the DSL), so this rule never fires and the self/meta path is byte-unchanged. Single-anchor match on agent -received-> m (the sd 'agent observed obs' pattern, never ['agent','is_a','Agent'] which over-fires); comprehended=1.0 is the mint-once fixpoint guard.",
+  "nodes": [],
+  "edges": [],
+  "productions": [],
+  "rules": [
+    {
+      "name": "route_question_to_topic",
+      "match": [
+        ["agent", "received", "m"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "comp_kind"}, "b": {"type": "Lit", "value": "question"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "topic_pending"}, "b": {"type": "Lit", "value": 1.0}},
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "comprehended"}, "b": {"type": "Lit", "value": 1.0}}},
+          {"type": "Not", "arg": {"type": "And", "items": [
+            {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "comp_relation_focus"}, "b": {"type": "Lit", "value": "polar"}},
+            {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "comp_hypothetical"}, "b": {"type": "Lit", "value": null}}}
+          ]}},
+          {"type": "Not", "arg": {"type": "And", "items": [
+            {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "comp_relation_focus"}, "b": {"type": "Lit", "value": "polar"}},
+            {"type": "In", "member": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "comp_verb"}, "container": {"type": "Lit", "value": ["navigate", "move", "walk", "run", "swim", "fly", "traverse", "explore", "see", "hear", "touch", "grasp", "lift", "carry", "throw", "catch", "climb", "jump", "reach", "operate", "drive", "steer", "pilot", "dance", "infer", "deduce", "reason", "reconstruct", "interpret", "derive"]}},
+            {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "comp_object_np"}, "b": {"type": "Lit", "value": null}}}
+          ]}},
+          {"type": "Not", "arg": {"type": "Exists", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "m"}, "edge_type": "has_mention"}, "var_name": "pm",
+            "predicate": {"type": "And", "items": [
+              {"type": "Exists", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "pm"}, "edge_type": "refers_to"}, "var_name": "pc",
+                "predicate": {"type": "And", "items": [
+                  {"type": "Eq", "a": {"type": "TypeOf", "node": {"type": "Var", "name": "pc"}}, "b": {"type": "Lit", "value": "Concept"}},
+                  {"type": "In", "member": {"type": "Attr", "node": {"type": "Var", "name": "pc"}, "key": "name"}, "container": {"type": "Lit", "value": ["your", "yours"]}}
+                ]}},
+              {"type": "Exists", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "pm"}, "edge_type": "next_mention"}, "var_name": "nx",
+                "predicate": {"type": "Eq", "a": {"type": "Lit", "value": 1}, "b": {"type": "Lit", "value": 1}}}
+            ]}}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "shadow_doc_topic"}, "b": {"type": "Lit", "value": null}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "m", "comprehended", 1.0],
+        ["add_node", "g", "Goal", {
+          "kind": "answer_topic",
+          "status": "active",
+          "source": "conversation",
+          "concept": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "comp_topic"}}
+        }],
+        ["add_edge", "agent", "has_goal", "g"],
+        ["add_edge", "g", "comprehends", "m"],
+        ["add_edge", "m", "comprehended_by", "g"]
+      ]
+    }
+  ]
+}

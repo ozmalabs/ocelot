@@ -1,0 +1,124 @@
+{
+  "id": "pattern_texture_signature",
+  "version": "1.0.0",
+  "self_load_only": true,
+  "depends_on": [],
+  "area": "vision",
+  "description": "Block 214000 — GENUINE texture recognition. The 209000 texture channel is a single ENERGY scalar that misses texture-FAINT doors and is colour-blind. This holds a richer INTEGER texture signature per prototype (tex_sig = vertical-gradient energy, colour_sig = chroma contrast from the ambient wall, pattern_sig = horizontal-gradient share (vertical contours) = the arrangement) in a self-contained TextureLibrary, and recognises a region against the held door concept by ARRANGEMENT (the dimension that recovers faint doors the energy scalar throws away) and, independently, by COLOUR (a region whose material differs from its wall, invisible to the luma-only channel). Generic mechanism; door is library DATA. OFF by default (gated on a TextureParams node). Does NOT touch the 209000 seed / 211000 geometry / 210000 operate path.",
+  "microtheory": "perception",
+  "nodes": [
+    {"local_id": 1, "type": "TextureLibrary", "attrs": {"name": "texture_library"}},
+    {"local_id": 2, "type": "TexturePrototype", "attrs": {
+      "name": "background", "label": "background", "tier": "background",
+      "tex_sig": 0, "colour_sig": 0, "pattern_sig": 3}},
+    {"local_id": 3, "type": "TexturePrototype", "attrs": {
+      "name": "door", "label": "door", "tier": "fine",
+      "tex_sig": 6, "colour_sig": 0, "pattern_sig": 7,
+      "arr_thresh": 1, "colour_min": 4,
+      "affordance": "gates_passage", "operate_action": "use", "effect_locality": "local"}}
+  ],
+  "edges": [
+    {"src": {"local": 1}, "tgt": {"local": 2}, "type": "has_texture_prototype", "attrs": {}},
+    {"src": {"local": 1}, "tgt": {"local": 3}, "type": "has_texture_prototype", "attrs": {}}
+  ],
+  "productions": [
+    {"provenance": "seed:tex:params", "src": {"type": "WorldInstance", "var": "game"},
+     "edge_type": "has_texture_params", "tgt": {"type": "TextureParams", "var": "p"}},
+    {"provenance": "seed:tex:region", "src": {"type": "WorldInstance", "var": "game"},
+     "edge_type": "has_perceived_region", "tgt": {"type": "PerceivedRegion", "var": "R"}},
+    {"provenance": "seed:tex:lib", "src": {"type": "WorldInstance", "var": "game"},
+     "edge_type": "has_texture_library", "tgt": {"type": "TextureLibrary", "var": "lib"}},
+    {"provenance": "seed:tex:has_proto", "src": {"type": "TextureLibrary", "var": "lib"},
+     "edge_type": "has_texture_prototype", "tgt": {"type": "TexturePrototype", "var": "C"}},
+    {"provenance": "seed:tex:recognised", "src": {"type": "PerceivedRegion", "var": "R"},
+     "edge_type": "recognised_texture", "tgt": {"type": "TexturePrototype", "var": "C"}}
+  ],
+  "rules": [
+    {
+      "name": "texture_salience",
+      "area": "vision", "order": 3, "latency_class": "deferred",
+      "match": [
+        ["game", "has_texture_params", "p"],
+        ["game", "has_texture_library", "lib"],
+        ["lib", "has_texture_prototype", "BG"],
+        ["game", "has_perceived_region", "R"]
+      ],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "p"}, "key": "enabled"}, "b": {"type": "Lit", "value": 1.0}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "BG"}, "key": "tier"}, "b": {"type": "Lit", "value": "background"}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "R"}, "key": "tex_sal_done"}, "b": {"type": "Lit", "value": 1.0}}}
+      ]},
+      "effects": [
+        ["set_attr", "R", "tex_salience", {"__term__": {"type": "Plus", "items": [
+          {"type": "Abs", "arg": {"type": "Minus", "a": {"type": "Attr", "node": {"type": "Var", "name": "R"}, "key": "tex_level"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "BG"}, "key": "tex_sig"}}},
+          {"type": "Abs", "arg": {"type": "Minus", "a": {"type": "Attr", "node": {"type": "Var", "name": "R"}, "key": "colour_level"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "BG"}, "key": "colour_sig"}}},
+          {"type": "Abs", "arg": {"type": "Minus", "a": {"type": "Attr", "node": {"type": "Var", "name": "R"}, "key": "pattern_level"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "BG"}, "key": "pattern_sig"}}}
+        ]}}],
+        ["set_attr", "R", "tex_salient", {"__term__": {"type": "IfThenElse",
+          "cond": {"type": "Gte",
+            "a": {"type": "Plus", "items": [
+              {"type": "Abs", "arg": {"type": "Minus", "a": {"type": "Attr", "node": {"type": "Var", "name": "R"}, "key": "tex_level"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "BG"}, "key": "tex_sig"}}},
+              {"type": "Abs", "arg": {"type": "Minus", "a": {"type": "Attr", "node": {"type": "Var", "name": "R"}, "key": "colour_level"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "BG"}, "key": "colour_sig"}}},
+              {"type": "Abs", "arg": {"type": "Minus", "a": {"type": "Attr", "node": {"type": "Var", "name": "R"}, "key": "pattern_level"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "BG"}, "key": "pattern_sig"}}}
+            ]},
+            "b": {"type": "Attr", "node": {"type": "Var", "name": "p"}, "key": "salience_floor"}},
+          "then": {"type": "Lit", "value": 1.0}, "other": {"type": "Lit", "value": 0.0}}}],
+        ["set_attr", "R", "tex_sal_done", {"__term__": {"type": "Lit", "value": 1.0}}]
+      ]
+    },
+    {
+      "name": "texture_recognise_arrangement",
+      "area": "vision", "order": 5, "latency_class": "deferred",
+      "match": [
+        ["game", "has_texture_params", "p"],
+        ["game", "has_texture_library", "lib"],
+        ["lib", "has_texture_prototype", "C"],
+        ["game", "has_perceived_region", "R"]
+      ],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "p"}, "key": "enabled"}, "b": {"type": "Lit", "value": 1.0}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "C"}, "key": "tier"}, "b": {"type": "Lit", "value": "fine"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "R"}, "key": "tex_salient"}, "b": {"type": "Lit", "value": 1.0}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "R"}, "key": "tex_recognised"}, "b": {"type": "Lit", "value": 1.0}}},
+        {"type": "Lte",
+          "a": {"type": "Abs", "arg": {"type": "Minus",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "R"}, "key": "pattern_level"},
+            "b": {"type": "Attr", "node": {"type": "Var", "name": "C"}, "key": "pattern_sig"}}},
+          "b": {"type": "Attr", "node": {"type": "Var", "name": "C"}, "key": "arr_thresh"}}
+      ]},
+      "effects": [
+        ["add_edge", "R", "recognised_texture", "C"],
+        ["set_attr", "R", "recognised_as", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "C"}, "key": "name"}}],
+        ["set_attr", "R", "tex_recognised", {"__term__": {"type": "Lit", "value": 1.0}}],
+        ["set_attr", "R", "recog_via", {"__term__": {"type": "Lit", "value": "arrangement"}}],
+        ["set_attr", "R", "recog_affordance", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "C"}, "key": "affordance"}}]
+      ]
+    },
+    {
+      "name": "texture_recognise_colour",
+      "area": "vision", "order": 5, "latency_class": "deferred",
+      "match": [
+        ["game", "has_texture_params", "p"],
+        ["game", "has_texture_library", "lib"],
+        ["lib", "has_texture_prototype", "C"],
+        ["game", "has_perceived_region", "R"]
+      ],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "p"}, "key": "enabled"}, "b": {"type": "Lit", "value": 1.0}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "C"}, "key": "tier"}, "b": {"type": "Lit", "value": "fine"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "R"}, "key": "tex_salient"}, "b": {"type": "Lit", "value": 1.0}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "R"}, "key": "tex_recognised"}, "b": {"type": "Lit", "value": 1.0}}},
+        {"type": "Gte",
+          "a": {"type": "Attr", "node": {"type": "Var", "name": "R"}, "key": "colour_level"},
+          "b": {"type": "Attr", "node": {"type": "Var", "name": "C"}, "key": "colour_min"}}
+      ]},
+      "effects": [
+        ["add_edge", "R", "recognised_texture", "C"],
+        ["set_attr", "R", "recognised_as", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "C"}, "key": "name"}}],
+        ["set_attr", "R", "tex_recognised", {"__term__": {"type": "Lit", "value": 1.0}}],
+        ["set_attr", "R", "recog_via", {"__term__": {"type": "Lit", "value": "colour"}}],
+        ["set_attr", "R", "recog_affordance", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "C"}, "key": "affordance"}}]
+      ]
+    }
+  ]
+}

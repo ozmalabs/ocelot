@@ -1,0 +1,44 @@
+{
+  "id": "precision_driving_v1",
+  "purpose": "Verify graph-native manoeuvre sequencing, previewed trajectory synthesis, clipping-zone commitment, independent-wheel attitude control, dynamic attitude/path trade-offs, and symmetric precision driving.",
+  "plant": {
+    "backend": "deterministic_precision_driving_plant",
+    "physics_hz": 500.0,
+    "control_hz": 100.0,
+    "combined_slip": "smooth brush-tyre approximation",
+    "body_plan": "rear-biased high-output stunt car"
+  },
+  "conditions": [
+    "drift_left",
+    "drift_right",
+    "donut_left",
+    "donut_right"
+  ],
+  "architectures": [
+    "radial_only",
+    "preview_clip"
+  ],
+  "duration_s": 35.0,
+  "gates": {
+    "all_manoeuvres_complete": true,
+    "drift_mean_abs_angle_error_rad_max": 0.06,
+    "drift_angle_hold_fraction_min": 0.9,
+    "drift_mean_abs_radial_error_m_max": 1.0,
+    "drift_path_hold_fraction_min": 0.9,
+    "drift_clip_hit_fraction_min": 0.7,
+    "donut_mean_abs_angle_error_rad_max": 0.025,
+    "donut_angle_hold_fraction_min": 0.98,
+    "donut_mean_abs_radial_error_m_max": 2.0,
+    "donut_clip_hit_fraction_min": 0.3,
+    "preview_reduces_radial_error": true,
+    "left_right_metric_delta_max": 1e-09,
+    "graph_tick_p99_us_max": 1000.0
+  },
+  "guardrails": [
+    "Python selects only the experimental manoeuvre and transduces exact receipts.",
+    "The graph selects phases, target attitude, yaw, speed, path pressure, wheel drive, and wheel braking.",
+    "The plant exposes preview geometry but the graph selects clipping zones and converts preview into action.",
+    "Slip and path error are objective costs, not fault labels.",
+    "All policy constants are named graph attributes or named plant parameters."
+  ]
+}

@@ -1,0 +1,128 @@
+{
+  "id": "rule_compilation",
+  "version": "0.1.0",
+  "description": "Breaks the chicken-and-egg: the harvester's catalog has no donor shapes about rule-compilation, so synthesize_gaps can't derive consequences about rule-compilation. This Mt adds the minimum set of compilation rules to seed the catalog. Once installed, the harvester lifts them into implication shapes; subsequent synthesize_gaps runs on rule-compilation postulates have material to transfer.\n\nAnalogous to the 5 text-source Term-tree bootstrap concepts (commit cdb0062) but for the rule-compilation domain: minimum to bootstrap; the agent extends.",
+  "depends_on": ["parsing_concepts"],
+  "concepts": [
+    {
+      "name": "prose_rule",
+      "definition": "A Rule node whose if_clauses and then_clauses are NATURAL LANGUAGE prose — descriptive, not directly executable by the substrate's rule engine. The substrate has ~1150 such rules in seed-authored Mts. Distinguished from executable_rewrite_rule by the absence of machine-parseable match_edges + where_ + effects.",
+      "category": "rule_form"
+    },
+    {
+      "name": "executable_rewrite_rule",
+      "definition": "A Rule node with attrs match_edges, where_, effects in the substrate's rewrite::RewriteRule shape. Fires when invoked by substrate.tick() or substrate.run_rules(). The substrate's autonomous loop progresses only on these.",
+      "category": "rule_form"
+    },
+    {
+      "name": "rule_compilation",
+      "definition": "The process of transforming a prose_rule into an executable_rewrite_rule. Uses the agent's attribute_grammar + semantic_action vocabulary: each prose clause is parsed into a match pattern or effect specification; the result is a RewriteRule the substrate's engine can fire.",
+      "category": "process"
+    },
+    {
+      "name": "compilation_target_match_edge",
+      "definition": "When a prose if_clause names a graph pattern (a subject node type, an edge type connecting to an object node type), the compilation target is a match_edge in the resulting RewriteRule. Pattern: 'a [SubjectType] [edge_type] a [ObjectType]' compiles to MatchEdge(SubjectType, edge_type, ObjectType).",
+      "category": "compilation_target"
+    },
+    {
+      "name": "compilation_target_where_clause",
+      "definition": "When a prose if_clause names an attribute test on a bound variable (e.g., 'attribute X of subject is Y'), the compilation target is the where_ Term-tree of the resulting RewriteRule. Pattern: 'AttrX(subj) == ValueY' compiles to Eq(Attr(subj, X), Lit(ValueY)).",
+      "category": "compilation_target"
+    },
+    {
+      "name": "compilation_target_effect",
+      "definition": "When a prose then_clause names a graph mutation (add node, add edge, set attribute), the compilation target is an Effect in the resulting RewriteRule's effects list. Pattern: 'add a [Type] node' compiles to Effect::AddNode; 'mark subject as [Tag]' compiles to Effect::SetAttr.",
+      "category": "compilation_target"
+    },
+    {
+      "name": "compilation_residue",
+      "definition": "Parts of a prose rule that DON'T compile to an executable target — purely descriptive language, justification text, citation pointers. The compilation pipeline preserves these as attrs on the resulting RewriteRule (origin_prose, why, cites_prior_work) so the executable rule retains its lineage from the prose specification.",
+      "category": "compilation_target"
+    }
+  ],
+  "rules": [
+    {
+      "name": "a_prose_if_clause_naming_a_graph_pattern_compiles_to_a_match_edge",
+      "if": [
+        "a prose_rule's if_clause names a Subject-edge-Object graph pattern"
+      ],
+      "then": [
+        "the executable_rewrite_rule's match_edges list includes a MatchEdge for that pattern",
+        "the subject and object become bound variables for downstream clauses"
+      ],
+      "why": "The substrate's RewriteRule engine matches against graph edges. Compiling a prose if-clause that names a graph pattern into a match_edge is the canonical first step of rule compilation.",
+      "cites_prior_work": "Knuth attribute grammar (1968); semantic_action vocabulary in parsing_concepts Mt"
+    },
+    {
+      "name": "a_prose_if_clause_naming_an_attribute_test_compiles_to_a_where_clause",
+      "if": [
+        "a prose_rule's if_clause names an attribute test on a bound variable",
+        "the variable was bound by a match_edge"
+      ],
+      "then": [
+        "the executable_rewrite_rule's where_ Term-tree includes the test as a sub-predicate",
+        "Eq / Lt / Gt comparators map directly from prose comparison vocabulary"
+      ],
+      "why": "Attribute predicates that constrain matched bindings are the canonical content of where_ clauses. The Eq/Lt/Gt vocabulary is standard."
+    },
+    {
+      "name": "a_prose_then_clause_naming_a_graph_mutation_compiles_to_an_effect",
+      "if": [
+        "a prose_rule's then_clause names a graph mutation (add/delete/set)"
+      ],
+      "then": [
+        "the executable_rewrite_rule's effects list includes the corresponding Effect variant",
+        "AddNode, AddEdge, DelEdge, DelNode, SetAttr cover the substrate's mutation surface"
+      ],
+      "why": "The substrate's Effect enum (rewrite.rs) is closed; every graph mutation maps to one of its variants. Compilation is mechanical for these cases."
+    },
+    {
+      "name": "a_prose_clause_with_named_concepts_compiles_to_a_concept_lookup",
+      "if": [
+        "a prose_rule's clause names a concept by name (e.g., 'is a definitional_sentence')"
+      ],
+      "then": [
+        "the compiled where_ includes Holds(concept_name, bound_var) which dispatches to the concept's Term-tree",
+        "the concept must be installed in the substrate's concept resolver"
+      ],
+      "why": "Named concepts in clauses are the substrate's idiom for referencing higher-level abstractions. Holds is the dispatch mechanism."
+    },
+    {
+      "name": "compilation_preserves_lineage",
+      "if": [
+        "a prose_rule has been compiled to an executable_rewrite_rule"
+      ],
+      "then": [
+        "the executable rule's attrs include origin_prose (the original prose text)",
+        "the executable rule's attrs include why (the prose rule's justification)",
+        "the executable rule's attrs include cites_prior_work if the prose rule cited",
+        "the lineage is retrievable; the prose rule and its compilation form are linked"
+      ],
+      "why": "Compilation residue (non-executable parts) carries the prose rule's authoritative reading. The substrate must not lose this when promoting prose to executable."
+    },
+    {
+      "name": "uncompilable_clauses_are_flagged_not_silently_dropped",
+      "if": [
+        "a prose_rule has clauses that do not match any compilation pattern"
+      ],
+      "then": [
+        "the unmatched clauses are recorded as compilation_residue on the resulting rule",
+        "the compilation pipeline emits a warning naming the unmatched clause",
+        "the executable_rewrite_rule fires correctly for the compiled parts; the unmatched parts are unenforced but not lost"
+      ],
+      "why": "Silent drops corrupt the substrate's understanding of what its rules do. Explicit residue lets the agent's cortex see what's not yet enacted."
+    },
+    {
+      "name": "the_compilation_pipeline_itself_is_subject_to_rule_compilation",
+      "if": [
+        "the rules in this Mt (rule_compilation) are themselves prose_rules"
+      ],
+      "then": [
+        "compiling them by the procedure they describe produces RewriteRules that fire compilation",
+        "the substrate's tick() loop on the compiled rule_compilation rules WILL compile other prose_rules autonomously",
+        "self-application closes the loop"
+      ],
+      "why": "Self-application is the substrate's path to autonomous rule-compilation. The seed rules describe how to compile prose; compiling them by that procedure yields an executable compilation pipeline."
+    }
+  ]
+}

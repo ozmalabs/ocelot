@@ -1,0 +1,118 @@
+{
+  "id": "systems_engineering_methodology_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "systems_engineering_V_model",
+  "in_microtheory": "engineering",
+  "description": "Systems engineering methodology decomposed. Requirements analysis (functional, performance, interface, constraints), architecture (logical + physical), trade studies, V&V planning, technical reviews (SRR, PDR, CDR), risk management, configuration management, INCOSE practices.",
+  "sub_mechanisms": [
+    {
+      "name": "functional_requirements",
+      "definition": "What the system must do. Behaviour, not implementation.",
+      "why": "Distinct from how. 'System shall navigate to destination' vs 'using GPS'. Implementation chosen during design.",
+      "category": "syseng_mechanism"
+    },
+    {
+      "name": "performance_requirements",
+      "definition": "How well. Latency, throughput, accuracy, availability. Quantified.",
+      "why": "Measurable. Drives architecture decisions. SHALL + numeric value + units + condition.",
+      "category": "syseng_mechanism"
+    },
+    {
+      "name": "interface_requirements",
+      "definition": "Boundaries between components. Inputs, outputs, protocols, voltages.",
+      "why": "Decouple. Each component developed against its interfaces. ICDs (Interface Control Documents) formalise.",
+      "category": "syseng_mechanism"
+    },
+    {
+      "name": "constraint_requirements",
+      "definition": "Imposed limits: cost, weight, regulations, materials, environment.",
+      "why": "Bound solution space. Often externally imposed. Mass < X kg. Compliance with regulation Y.",
+      "category": "syseng_mechanism"
+    },
+    {
+      "name": "logical_vs_physical_architecture",
+      "definition": "Logical: functions + flows. Physical: components allocated to functions.",
+      "why": "Separation enables design exploration. Many physical mappings possible from one logical. Trade studies pick.",
+      "category": "syseng_mechanism"
+    },
+    {
+      "name": "trade_study_weighted_decision",
+      "definition": "Criteria + weights + alternatives + scores. Weighted sum identifies winner.",
+      "why": "Document rationale. Subjective but structured. Pugh matrix common. Pareto when multiple objectives.",
+      "category": "syseng_mechanism"
+    },
+    {
+      "name": "verification_vs_validation",
+      "definition": "Verification: built right (meets spec). Validation: right thing (meets needs).",
+      "why": "Different questions. V: tests against requirements. V: tests against stakeholder needs. Both required.",
+      "category": "syseng_mechanism"
+    },
+    {
+      "name": "technical_reviews_SRR_PDR_CDR",
+      "definition": "Systems Requirements Review → Preliminary Design Review → Critical Design Review. Gates.",
+      "why": "Stop bad designs early. Each: complete artifact, panel review. Standard NASA + DoD process.",
+      "category": "syseng_mechanism"
+    },
+    {
+      "name": "risk_register_matrix",
+      "definition": "List risks; assess likelihood × impact. Color-coded matrix.",
+      "why": "Ongoing risk management. Reviewed at reviews. Mitigations tracked. Standard PM + SE practice.",
+      "category": "syseng_mechanism"
+    },
+    {
+      "name": "configuration_management",
+      "definition": "Track + control changes to baseline. Configuration Control Board approves.",
+      "why": "Many engineers, many components. Versions matter. CM tools (git, doors, PLM). Standard SE.",
+      "category": "syseng_mechanism"
+    },
+    {
+      "name": "MBSE_model_based",
+      "definition": "Model-Based Systems Engineering. SysML diagrams replace text documents.",
+      "why": "Modern direction. Single source of truth model. Tools: MagicDraw, Cameo, SystemWeaver. Industry-wide adoption growing.",
+      "category": "syseng_mechanism"
+    },
+    {
+      "name": "INCOSE_handbook",
+      "definition": "International Council on Systems Engineering. Body of knowledge + best practices.",
+      "why": "Standard reference. CSEP certification. Standard methodology basis.",
+      "category": "syseng_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "requirements_drive_architecture",
+      "if": ["clear requirements exist"],
+      "then": ["architecture trades can be evaluated"],
+      "why": "Without requirements: no basis for comparison. With: trade study scores each architecture. Foundation of SE process.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "V_validates_against_needs_not_spec",
+      "if": ["product meets specification but not user need"],
+      "then": ["validation fails"],
+      "why": "Spec might be wrong. Validation tests against need. Verification against spec. Both needed. Common failure: V&V conflated.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "trade_studies_document_rationale",
+      "if": ["architecture decision is made"],
+      "then": ["trade study captures why"],
+      "why": "Without: future engineers don't know why. With: decisions auditable + revisitable. Standard at major decision points.",
+      "soundness_category": "referential_transparency"
+    },
+    {
+      "name": "design_reviews_catch_issues_early",
+      "if": ["formal review reveals design issue"],
+      "then": ["fix costs orders of magnitude less than later"],
+      "why": "Rule of 10: each phase is 10× more expensive to fix than previous. Design review catches at design (cheapest). Standard NASA/DoD.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "MBSE_eliminates_documentation_drift",
+      "if": ["system modeled in SysML with tooling"],
+      "then": ["traceability + consistency automatic"],
+      "why": "Text docs drift. Model: single source. Changes propagate. Cost: tooling complexity, learning curve. Industry direction.",
+      "soundness_category": "extensional_equivalence"
+    }
+  ]
+}

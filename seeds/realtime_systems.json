@@ -1,0 +1,289 @@
+{
+  "microtheory": {
+    "name": "realtime_systems",
+    "definition": "Real-time systems + scheduling. Hard vs soft real-time, deadline-monotonic scheduling (RMS, EDF), worst-case execution time (WCET), priority inversion, real-time operating systems (RTOS), bounded-latency communication. Where correctness requires meeting deadlines, not just producing correct values. Grounds Jabberwock's runner/brain in the discipline of bounded-latency behavior — biological brains operate under deadlines too (motor coordination, predator avoidance, social timing).",
+    "category": "foundation"
+  },
+  "concepts": [
+    {
+      "name": "hard_realtime",
+      "definition": "Missing a deadline is a failure. Used in safety-critical systems: avionics, automotive ECUs, medical devices. Substrate analogue: substrate's commit-deadline tasks.",
+      "category": "categories"
+    },
+    {
+      "name": "soft_realtime",
+      "definition": "Missing deadlines degrades quality but doesn't fail. Multimedia, telephony, gaming. Substrate analogue: substrate's quality-degrading deadline-misses.",
+      "category": "categories"
+    },
+    {
+      "name": "firm_realtime",
+      "definition": "Late results have zero value but no catastrophic consequence. Real-time databases. Substrate analogue: substrate's discarded-stale outputs.",
+      "category": "categories"
+    },
+    {
+      "name": "best_effort",
+      "definition": "No deadline guarantee. Standard OS scheduling. Substrate analogue: substrate's general processing.",
+      "category": "categories"
+    },
+    {
+      "name": "deadline_realtime",
+      "definition": "Time by which task must complete. Absolute (wall-clock) or relative (after release). Substrate analogue: substrate's correction-completion bound.",
+      "category": "primitives"
+    },
+    {
+      "name": "release_time",
+      "definition": "Earliest time task can start. Substrate analogue: substrate's event-triggered handler initiation.",
+      "category": "primitives"
+    },
+    {
+      "name": "execution_time",
+      "definition": "Actual time task takes to run. Variable in practice. Substrate analogue: substrate's per-tick processing cost.",
+      "category": "primitives"
+    },
+    {
+      "name": "worst_case_execution_time",
+      "definition": "WCET. Maximum possible execution time over all paths + inputs. Critical for hard-RT verification. Hard to compute precisely. Substrate analogue: substrate's worst-case correction time bound.",
+      "category": "primitives"
+    },
+    {
+      "name": "period",
+      "definition": "T — fixed interval between releases of periodic task. Substrate analogue: substrate's reflex tick rate.",
+      "category": "primitives"
+    },
+    {
+      "name": "jitter",
+      "definition": "Variability in release or completion time. Hard-RT systems bound jitter. Substrate analogue: substrate's tick-rate stability.",
+      "category": "primitives"
+    },
+    {
+      "name": "utilization",
+      "definition": "U = Σ C_i / T_i. Fraction of CPU used. Schedulability requires U ≤ U_bound depending on algorithm. Substrate analogue: substrate's correction-handler load.",
+      "term": {
+        "type": "Eq",
+        "a": {
+          "type": "Holds",
+          "concept": "energy_potential",
+          "node": {
+            "type": "Var",
+            "name": "x"
+          },
+          "node2": null
+        },
+        "b": {
+          "type": "Div",
+          "a": {
+            "type": "Times",
+            "items": [
+              {
+                "type": "Lit",
+                "value": "Σ"
+              },
+              {
+                "type": "Holds",
+                "concept": "channel_capacity",
+                "node": {
+                  "type": "Var",
+                  "name": "x"
+                },
+                "node2": null
+              }
+            ]
+          },
+          "b": {
+            "type": "Holds",
+            "concept": "temperature_statistical",
+            "node": {
+              "type": "Var",
+              "name": "x"
+            },
+            "node2": null
+          }
+        }
+      },
+      "category": "primitives"
+    },
+    {
+      "name": "rate_monotonic_scheduling",
+      "definition": "RMS. Liu + Layland 1973. Static priority by period (shorter → higher priority). Optimal among static priority for periodic tasks. U_bound = n(2^{1/n}-1) ≈ 0.69 for many tasks. Substrate analogue: substrate's static-priority reflex order.",
+      "category": "scheduling"
+    },
+    {
+      "name": "earliest_deadline_first",
+      "definition": "EDF. Dynamic priority by absolute deadline (sooner → higher). Optimal scheduling for preemptive uniprocessor. U_bound = 1.0. More flexible than RMS but harder to analyze. Substrate analogue: substrate's deadline-driven dispatch.",
+      "category": "scheduling"
+    },
+    {
+      "name": "deadline_monotonic",
+      "definition": "Static priority by relative deadline. Generalizes RMS for tasks where deadline ≠ period. Substrate analogue: substrate's relative-urgency priority.",
+      "category": "scheduling"
+    },
+    {
+      "name": "fixed_priority_scheduling",
+      "definition": "Priorities assigned at design + don't change at runtime. Easier to analyze + implement. Substrate analogue: substrate's compile-time-priority reflexes.",
+      "category": "scheduling"
+    },
+    {
+      "name": "preemption_realtime",
+      "definition": "Higher-priority task interrupts lower. Required for many RT analyses. Adds overhead. Substrate analogue: substrate's priority-driven correction interruption.",
+      "category": "scheduling"
+    },
+    {
+      "name": "non_preemptive_scheduling",
+      "definition": "Tasks run to completion. Simpler. Worse responsiveness for short urgent tasks. Substrate analogue: substrate's atomic correction runs.",
+      "category": "scheduling"
+    },
+    {
+      "name": "schedulability_analysis",
+      "definition": "Prove task set meets all deadlines. Sufficient conditions per algorithm. Necessary + sufficient: response-time analysis. Substrate analogue: substrate's correction-completion guarantee proof.",
+      "category": "scheduling"
+    },
+    {
+      "name": "response_time_analysis",
+      "definition": "Compute worst-case response time per task accounting for interference from higher priorities. Iterative fixed-point. Necessary + sufficient for fixed-priority. Substrate analogue: substrate's per-handler worst-case bound.",
+      "category": "scheduling"
+    },
+    {
+      "name": "priority_inversion",
+      "definition": "Low-priority task holding resource blocks high-priority task. Mars Pathfinder bug. Substrate analogue: substrate's correction-blocking-correction failure.",
+      "category": "synchronization"
+    },
+    {
+      "name": "priority_inheritance",
+      "definition": "Low-priority resource holder inherits priority of waiting high-priority task. Bounds priority inversion. Substrate analogue: substrate's priority-elevation mechanism.",
+      "category": "synchronization"
+    },
+    {
+      "name": "priority_ceiling_protocol",
+      "definition": "Each resource has ceiling = max priority of any task using it. Holder runs at ceiling. Prevents deadlock + bounds inversion. Substrate analogue: substrate's resource-priority elevation.",
+      "term": {
+        "type": "Eq",
+        "a": {
+          "type": "Lit",
+          "value": "Mutex has ceiling"
+        },
+        "b": {
+          "type": "Lit",
+          "value": "max priority of any task using it"
+        }
+      },
+      "category": "synchronization"
+    },
+    {
+      "name": "blocking_time",
+      "definition": "Time a task is blocked by lower-priority resource holders. Must be bounded for RT analysis. Substrate analogue: substrate's correction-waiting bound.",
+      "category": "synchronization"
+    },
+    {
+      "name": "mutex_realtime",
+      "definition": "Mutual exclusion primitive with priority inheritance or ceiling protocols. Differs from non-RT mutex. Substrate analogue: substrate's bounded-block mutex.",
+      "category": "synchronization"
+    },
+    {
+      "name": "rtos",
+      "definition": "Real-time Operating System. Deterministic scheduler, bounded interrupt latency, priority inheritance. Examples: FreeRTOS, VxWorks, QNX, RT-Linux (PREEMPT_RT). Substrate analogue: substrate's RT-discipline runtime.",
+      "category": "rtos"
+    },
+    {
+      "name": "kernel_preemption",
+      "definition": "Kernel itself preemptible. Required for hard-RT. PREEMPT_RT patches Linux for this. Substrate analogue: substrate's preemptible runtime layer.",
+      "category": "rtos"
+    },
+    {
+      "name": "interrupt_latency",
+      "definition": "Time from hardware interrupt to handler running. Must be bounded for hard-RT. Tens of µs typical for RTOS, lower with custom. Substrate analogue: substrate's external-event response time.",
+      "category": "rtos"
+    },
+    {
+      "name": "context_switch_realtime",
+      "definition": "RTOS context switch deterministic + fast. Single-digit µs typical. Substrate analogue: substrate's Mt-state switch.",
+      "category": "rtos"
+    },
+    {
+      "name": "tickless_kernel",
+      "definition": "No periodic timer interrupt; sleep until next event. Saves power + reduces jitter. Substrate analogue: substrate's event-driven tick.",
+      "category": "rtos"
+    },
+    {
+      "name": "cyclic_executive",
+      "definition": "Static schedule of major cycle with minor cycles. Predictable, simple. Used in safety-critical aerospace. Substrate analogue: substrate's pre-scheduled reflex sequence.",
+      "category": "patterns"
+    },
+    {
+      "name": "time_triggered_architecture",
+      "definition": "Tasks released at predetermined times. Predictable, fault-tolerant. TTA in automotive (Kopetz). Substrate analogue: substrate's time-table-driven dispatch.",
+      "category": "patterns"
+    },
+    {
+      "name": "event_triggered_architecture",
+      "definition": "Tasks released by events. Flexible but harder to analyze. Substrate analogue: substrate's event-driven reflexes.",
+      "category": "patterns"
+    },
+    {
+      "name": "wcet_analysis",
+      "definition": "Static analysis of program for worst-case execution time. Hard problem (path explosion, cache effects). Tools: aiT, OTAWA. Substrate analogue: substrate's correction-cost analysis.",
+      "category": "verification"
+    },
+    {
+      "name": "schedulability_test",
+      "definition": "Algorithmic check that task set is schedulable. Sufficient + necessary tests exist for major algorithms. Substrate analogue: substrate's load-feasibility check.",
+      "category": "verification"
+    },
+    {
+      "name": "timing_diagram",
+      "definition": "Visual trace of task releases, executions, completions on timeline. Substrate analogue: substrate's reflex-timeline visualization.",
+      "category": "verification"
+    },
+    {
+      "name": "real_time_garbage_collection",
+      "definition": "GC with bounded pause times. Metronome, Henriksson's, region-based. Conventional GC violates RT constraints. Substrate analogue: substrate's bounded-pause memory management.",
+      "category": "modern"
+    },
+    {
+      "name": "deadline_inheritance",
+      "definition": "Like priority inheritance but for EDF. Substrate analogue: substrate's deadline-propagation mechanism.",
+      "category": "modern"
+    },
+    {
+      "name": "mixed_criticality_systems",
+      "definition": "Multiple criticality levels share processor. High-crit guaranteed even when low-crit overruns. Substrate analogue: substrate's prioritized-by-importance reflexes.",
+      "category": "modern"
+    },
+    {
+      "name": "anytime_algorithms",
+      "definition": "Algorithms producing valid answer at any interruption with quality increasing in time. Useful when deadlines uncertain. Substrate analogue: substrate's quality-with-time correction.",
+      "category": "modern"
+    }
+  ],
+  "rules": [
+    {
+      "name": "hard_realtime_requires_wcet_bounded_loops",
+      "head": "Jabberwock builds a hard-realtime subsystem",
+      "body": "every loop must have a static bound. Recursion must be bounded depth. Dynamic allocation must use real-time-safe allocators. Otherwise WCET is uncomputable + scheduling guarantees fail."
+    },
+    {
+      "name": "rms_optimal_for_static_priority_periodic",
+      "head": "Jabberwock's tasks are periodic with fixed priorities",
+      "body": "rate-monotonic scheduling (shortest period = highest priority) is optimal. Liu+Layland 1973. Substrate's reflex prioritization."
+    },
+    {
+      "name": "edf_optimal_among_dynamic_priority",
+      "head": "Jabberwock's tasks have varying deadlines + can change priority",
+      "body": "earliest-deadline-first is optimal preemptive uniprocessor scheduling. Schedulable iff utilization ≤ 1. Substrate's dynamic dispatch."
+    },
+    {
+      "name": "priority_inversion_must_be_bounded",
+      "head": "Jabberwock has shared resources between priority levels",
+      "body": "priority inheritance or ceiling protocols must bound inversion. Otherwise high-priority tasks can be blocked indefinitely. Mars Pathfinder bug."
+    },
+    {
+      "name": "interrupt_latency_bounds_event_response",
+      "head": "Jabberwock responds to external events",
+      "body": "interrupt latency sets the minimum response time. For hard-RT this must be bounded by design — preemptible kernel, deterministic scheduling, no unbounded sections."
+    },
+    {
+      "name": "wcet_bounds_schedulability_proof",
+      "head": "Jabberwock proves a task set is schedulable",
+      "body": "worst-case execution time is the input to schedulability analysis. Without bounded WCET no schedulability proof. Substrate's correction-cost bound prerequisite."
+    }
+  ]
+}

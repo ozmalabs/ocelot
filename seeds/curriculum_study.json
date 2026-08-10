@@ -1,0 +1,135 @@
+{
+ "id": "curriculum_study",
+ "version": "1.2.0",
+ "depends_on": ["gap_awareness", "code_write_gap"],
+ "description": "WHOLE-CURRICULUM WAVE 1, PART B/C: the standing study loop's graph-native decisions. A Curriculum -has_lesson-> StudyLesson chain (minted mechanically by domains.curriculum_study.install_curriculum from a bundled book's chapter/lesson files) carries every lifecycle DECISION as a rule, never a Python if/elif: (1) study_lesson_blocked_on_gap / study_lesson_done_clean decide whether a lesson that finished extraction (status:'extracted', a FACT the study-tick driver writes after routing the lesson's text through the EXISTING domains.code_curriculum.learn_from_lesson path -- unchanged from the code-curriculum wave -- OR, for a lesson whose `kind` attr is morphology/vocabulary/construction, through domains.voice_curriculum.learn_voice_from_lesson, the VOICE-EXPANSION wave's world-adapter grounder for domains.language_production.LanguageProduction's reach; either path writes the SAME exercises_attempted/exercises_answered facts, so this rule pair is kind-agnostic) settled clean or is blocked on an unresolved code_write capability gap it filed (StudyLesson -filed_gap-> SelfConcern, an edge the driver writes mechanically for every gap correlated to this lesson's own exercise attempts) or an ungrounded voice item (a morphology row/vocabulary word/construction sentence the reference chain -- WordNet / UniMorph -- could not resolve); (2) study_lesson_reopen_on_growth is the codebook_epoch/sd_redecode precedent, now pointed at THREE codebooks (WHOLE-CURRICULUM WAVE 2, v1.1.0 added the READ codebook; VOICE-EXPANSION, v1.2.0 adds the VOICE codebook): the WRITE side (domains.code_write_growth._teach_shape bumps Agent.write_codebook_epoch whenever teach()'s own 'saved' datum says a genuinely NEW code_write_construction ShapeSignature landed), the READ side (domains.code_reading._install_code_construction bumps Agent.codebook_epoch whenever a NEW code_construction ShapeSignature is minted OR reconciled onto a resumed graph -- e.g. WAVE 2's 'branching_return' emitter widening, seeded rather than runtime-minted, landing on an EXISTING checkpoint via domains.curriculum_study.reconcile_code_construction_seed), OR the VOICE side (domains.voice_curriculum._bump_voice_epoch bumps Agent.voice_codebook_epoch by the count of genuinely NEW LexEntry/InflectionEntry/Production/Grammar nodes a morphology/vocabulary/construction lesson grounded -- the SAME 'Python builder bumps an epoch on measured novelty' idiom as the other two, never a decision about which lesson cares). A blocked lesson whose own decoded_epoch/read_decoded_epoch/voice_decoded_epoch (stamped at extraction time) is BEHIND the agent's current write_codebook_epoch/codebook_epoch/voice_codebook_epoch (any one of the three) is re-armed to 'queued' -- the SAME re-decode-on-growth idiom sd_redecode uses for Observations, aimed at a lesson instead; the study-tick driver's re-attempt on the next pick re-runs the SAME kind-appropriate learn call, so a genuinely-answering new (or newly emittable/groundable) shape/word/inflection recognises the exercise cleanly and the lesson settles to 'done', while an unrelated growth event harmlessly re-attempts and re-blocks (no content-overlap filter -- broad re-arm, let the real decode re-decide, exactly like sd_redecode itself does for shape observations); (3) study_flow_retirable decides a settled lesson's READING FLOW (the SentenceParse/ClauseParse/AnalysisStage/Goal/Sm*/CoherencePair/CausalLink/EnablingChain/Source working scaffolding domains.reading_drive's Wave-1A flow/unit stamp marks as belonging to ONE deep-read pass) is retirable once its extraction PRODUCTS are on the graph (record_written==1, a fact the driver writes only after learn_from_lesson/learn_voice_from_lesson has fully returned) and the lesson has reached a terminal status (done/blocked) -- stamping flow_retired=1, which domains.flow_retire.sweep_retired_flows (mechanical Python GC, never a decision) reads to delete the flow-scoped working nodes while every product (HeldAnswers, taught ShapeSignatures, SelfConcern gaps, grounded LexEntry/InflectionEntry/Production nodes, the StudyLesson/Curriculum nodes themselves) persists untouched, by node-type allowlist AND by construction (no product-minting faculty ever stamps a flow/unit attr; a voice lesson mints no flow at all, so its sweep is a harmless no-op). A REOPENED lesson's re-attempt mints a FRESH flow (a new Source, per domains.register_source.route_reading's own per-call flow identity) -- the driver resets flow_retired/flow_swept/record_written to 0 at re-attempt time so this rule and the sweep run again, cleanly, for the new flow.",
+ "microtheory": {
+  "name": "curriculum_study",
+  "description": "the standing study-loop lifecycle: lesson extraction outcome -> blocked/done, write-codebook-growth reopen, and flow-retirement decisions"
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [
+  {
+   "src": {"type": "Agent", "var": "src"},
+   "edge_type": "has_curriculum",
+   "tgt": {"type": "Curriculum", "var": "tgt"},
+   "provenance": "meta:Agent-has_curriculum-Curriculum"
+  },
+  {
+   "src": {"type": "Curriculum", "var": "src"},
+   "edge_type": "has_lesson",
+   "tgt": {"type": "StudyLesson", "var": "tgt"},
+   "provenance": "meta:Curriculum-has_lesson-StudyLesson"
+  },
+  {
+   "src": {"type": "StudyLesson", "var": "src"},
+   "edge_type": "filed_gap",
+   "tgt": {"type": "SelfConcern", "var": "tgt"},
+   "provenance": "meta:StudyLesson-filed_gap-SelfConcern"
+  }
+ ],
+ "rules": [
+  {
+   "name": "study_lesson_blocked_on_unanswered_exercise",
+   "match": [["cur", "has_lesson", "lesson"]],
+   "where": {
+    "type": "And",
+    "items": [
+     {"type": "Eq",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "lesson"}, "key": "status"},
+      "b": {"type": "Lit", "value": "extracted"}},
+     {"type": "Lt",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "lesson"}, "key": "exercises_answered"},
+      "b": {"type": "Attr", "node": {"type": "Var", "name": "lesson"}, "key": "exercises_attempted"}}
+    ]
+   },
+   "effects": [
+    ["set_attr", "lesson", "status", "blocked"]
+   ]
+  },
+  {
+   "name": "study_lesson_done_clean",
+   "match": [["cur", "has_lesson", "lesson"]],
+   "where": {
+    "type": "And",
+    "items": [
+     {"type": "Eq",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "lesson"}, "key": "status"},
+      "b": {"type": "Lit", "value": "extracted"}},
+     {"type": "Gte",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "lesson"}, "key": "exercises_answered"},
+      "b": {"type": "Attr", "node": {"type": "Var", "name": "lesson"}, "key": "exercises_attempted"}}
+    ]
+   },
+   "effects": [
+    ["set_attr", "lesson", "status", "done"]
+   ]
+  },
+  {
+   "name": "study_flow_retirable",
+   "match": [["cur", "has_lesson", "lesson"]],
+   "where": {
+    "type": "And",
+    "items": [
+     {"type": "In",
+      "member": {"type": "Attr", "node": {"type": "Var", "name": "lesson"}, "key": "status"},
+      "container": {"type": "Lit", "value": ["done", "blocked"]}},
+     {"type": "Eq",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "lesson"}, "key": "record_written"},
+      "b": {"type": "Lit", "value": 1.0}},
+     {"type": "Not",
+      "arg": {"type": "Eq",
+       "a": {"type": "Attr", "node": {"type": "Var", "name": "lesson"}, "key": "flow_retired"},
+       "b": {"type": "Lit", "value": 1.0}}}
+    ]
+   },
+   "effects": [
+    ["set_attr", "lesson", "flow_retired", 1.0]
+   ]
+  },
+  {
+   "name": "study_lesson_reopen_on_growth",
+   "match": [["ag", "has_curriculum", "cur"], ["cur", "has_lesson", "lesson"]],
+   "where": {
+    "type": "And",
+    "items": [
+     {"type": "Eq",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "lesson"}, "key": "status"},
+      "b": {"type": "Lit", "value": "blocked"}},
+     {"type": "Or",
+      "items": [
+       {"type": "Lt",
+        "a": {"type": "Attr", "node": {"type": "Var", "name": "lesson"}, "key": "decoded_epoch"},
+        "b": {"type": "Attr", "node": {"type": "Var", "name": "ag"}, "key": "write_codebook_epoch"}},
+       {"type": "Lt",
+        "a": {"type": "Attr", "node": {"type": "Var", "name": "lesson"}, "key": "read_decoded_epoch"},
+        "b": {"type": "Attr", "node": {"type": "Var", "name": "ag"}, "key": "codebook_epoch"}},
+       {"type": "Lt",
+        "a": {"type": "Attr", "node": {"type": "Var", "name": "lesson"}, "key": "voice_decoded_epoch"},
+        "b": {"type": "Attr", "node": {"type": "Var", "name": "ag"}, "key": "voice_codebook_epoch"}},
+       {"type": "Lt",
+        "a": {"type": "Attr", "node": {"type": "Var", "name": "lesson"}, "key": "vision_decoded_epoch"},
+        "b": {"type": "Attr", "node": {"type": "Var", "name": "ag"}, "key": "vision_codebook_epoch"}}
+      ]
+     }
+    ]
+   },
+   "effects": [
+    ["set_attr", "lesson", "status", "queued"],
+    ["set_attr", "lesson", "decoded_epoch",
+     {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "ag"},
+                   "key": "write_codebook_epoch"}}],
+    ["set_attr", "lesson", "read_decoded_epoch",
+     {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "ag"},
+                   "key": "codebook_epoch"}}],
+    ["set_attr", "lesson", "voice_decoded_epoch",
+     {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "ag"},
+                   "key": "voice_codebook_epoch"}}],
+    ["set_attr", "lesson", "vision_decoded_epoch",
+     {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "ag"},
+                   "key": "vision_codebook_epoch"}}]
+   ]
+  }
+ ]
+}

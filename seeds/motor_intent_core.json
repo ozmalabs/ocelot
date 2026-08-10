@@ -1,0 +1,263 @@
+{
+  "id": "motor_intent_core",
+  "version": "1.3.0",
+  "depends_on": ["embodied_motor"],
+  "description": "Generic motor-intent layer: separate WHAT the actor was TRYING to do (MotorIntent / MotorPlan) from the noisy ExecutionTrace outcome. Noise realized via held TransformDecode + lift deltas BEFORE inverse-model plan extraction. PRIMARY verdict: AbS render-compare on extracted intents (topology + plan-frame arrangement) and per-stroke program inference on plan-frame strokes. SC+TPS whole-figure warp is DIAGNOSTIC ONLY (false-confidence blob matching). Handwriting symbol-replication is ONE goal_kind (replicate_template). domains/motor_intent.py fused_motor_verdict is MECHANICAL I/O; decisions are Rules or held Term evaluate.",
+  "microtheory": {
+    "name": "motor_intent",
+    "description": "realize execution noise first; inverse-model motor plan; classify intent via teachable goal_kind codebook; verdict in extracted intent space not outcome space"
+  },
+  "nodes": [
+    {
+      "local_id": 1,
+      "type": "IntentGoal",
+      "attrs": {
+        "goal_kind": "replicate_template",
+        "description": "Actor intends to reproduce a held template (symbol, gesture, utterance form) — Omniglot MTurk, copy-the-letter tasks."
+      }
+    },
+    {
+      "local_id": 2,
+      "type": "IntentGoal",
+      "attrs": {
+        "goal_kind": "reach_point",
+        "description": "Actor intends to move effector to a target location — reaching, pointing."
+      }
+    },
+    {
+      "local_id": 3,
+      "type": "IntentGoal",
+      "attrs": {
+        "goal_kind": "produce_utterance",
+        "description": "Actor intends to articulate a speech motor plan — phonetic/syllabic target, not acoustic outcome."
+      }
+    },
+    {
+      "local_id": 4,
+      "type": "Concept",
+      "attrs": {
+        "name": "motor_intent",
+        "description": "What an actor was trying to do — plan + goal, distinct from execution outcome"
+      }
+    },
+    {
+      "local_id": 5,
+      "type": "Concept",
+      "attrs": {
+        "name": "execution_outcome",
+        "description": "Noisy realized motor trace in world coordinates — equipment, lifts, slant"
+      }
+    },
+    {
+      "local_id": 6,
+      "type": "Concept",
+      "attrs": {
+        "name": "inverse_model_motor",
+        "description": "Infers motor plan from observed execution trace AFTER noise is realized"
+      }
+    },
+    {
+      "local_id": 7,
+      "type": "Concept",
+      "attrs": {
+        "name": "motor_noise",
+        "description": "Realized systemic jitter separating execution outcome from motor intent"
+      }
+    }
+  ],
+  "edges": [
+    {"src": {"role": "agent_root"}, "tgt": {"local": 1}, "type": "has_intent_goal"},
+    {"src": {"role": "agent_root"}, "tgt": {"local": 2}, "type": "has_intent_goal"},
+    {"src": {"role": "agent_root"}, "tgt": {"local": 3}, "type": "has_intent_goal"}
+  ],
+  "productions": [
+    {"provenance": "seed:motor_intent_core:has_execution_trace", "src": {"type": "Agent", "var": "s"}, "edge_type": "has_execution_trace", "tgt": {"type": "ExecutionTrace", "var": "t"}},
+    {"provenance": "seed:motor_intent_core:has_trace_stroke", "src": {"type": "ExecutionTrace", "var": "s"}, "edge_type": "has_trace_stroke", "tgt": {"type": "TraceStroke", "var": "t"}},
+    {"provenance": "seed:motor_intent_core:has_motor_plan", "src": {"type": "Agent", "var": "s"}, "edge_type": "has_motor_plan", "tgt": {"type": "MotorPlan", "var": "t"}},
+    {"provenance": "seed:motor_intent_core:has_motor_intent", "src": {"type": "Agent", "var": "s"}, "edge_type": "has_motor_intent", "tgt": {"type": "MotorIntent", "var": "t"}},
+    {"provenance": "seed:motor_intent_core:has_intent_goal", "src": {"type": "Agent", "var": "s"}, "edge_type": "has_intent_goal", "tgt": {"type": "IntentGoal", "var": "t"}},
+    {"provenance": "seed:motor_intent_core:has_motor_noise", "src": {"type": "Agent", "var": "s"}, "edge_type": "has_motor_noise", "tgt": {"type": "MotorNoise", "var": "t"}},
+    {"provenance": "seed:motor_intent_core:trace_has_noise", "src": {"type": "ExecutionTrace", "var": "s"}, "edge_type": "has_motor_noise", "tgt": {"type": "MotorNoise", "var": "t"}},
+    {"provenance": "seed:motor_intent_core:realized_as", "src": {"type": "ExecutionTrace", "var": "s"}, "edge_type": "realized_as", "tgt": {"type": "MotorPlan", "var": "t"}}
+  ],
+  "concepts": [
+    {"name": "motor_intent", "definition": "What an actor was trying to do: a MotorPlan plus a goal_kind, distinct from the noisy ExecutionTrace outcome. Extracted only after noise realization.", "category": "motor"},
+    {"name": "execution_outcome", "definition": "The realized motor trace in world coordinates — lifts, jitter, poor digitizer — not the plan itself.", "category": "motor"},
+    {"name": "motor_noise", "definition": "Realized systemic jitter (pose equipment error, inter-stroke lift displacement) that must be accounted for before intent extraction.", "category": "motor"},
+    {"name": "replicate_template", "definition": "Motor goal_kind: reproduce a held template (symbol, gesture form). Omniglot is one instance.", "category": "motor"}
+  ],
+  "rules": [
+    {
+      "name": "note_inter_stroke_lift_noise",
+      "batch": false,
+      "match": [
+        ["tr", "has_trace_stroke", "ts"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "tr"}, "key": "noise_realized"},
+            "b": {"type": "Lit", "value": 1.0}
+          },
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "ts"}, "key": "lift_realized"},
+            "b": {"type": "Lit", "value": 1.0}
+          },
+          {
+            "type": "Gt",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "ts"}, "key": "index"},
+            "b": {"type": "Lit", "value": 0}
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {"type": "Neighbours", "node": {"type": "Var", "name": "ts"}, "edge_type": "has_motor_noise", "any_type": false},
+              "var_name": "mn0",
+              "predicate": {
+                "type": "Eq",
+                "a": {"type": "Attr", "node": {"type": "Var", "name": "mn0"}, "key": "kind"},
+                "b": {"type": "Lit", "value": "inter_stroke_lift"}
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        ["add_node", "mn", "MotorNoise", {
+          "kind": "inter_stroke_lift",
+          "dx": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "ts"}, "key": "lift_dx"}},
+          "dy": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "ts"}, "key": "lift_dy"}},
+          "source": "lift_realized"
+        }],
+        ["add_edge", "agent", "has_motor_noise", "mn"],
+        ["add_edge", "tr", "has_motor_noise", "mn"],
+        ["add_edge", "ts", "has_motor_noise", "mn"]
+      ]
+    },
+    {
+      "name": "mint_motor_plan_from_trace",
+      "batch": false,
+      "match": [
+        ["agent", "has_execution_trace", "tr"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {"type": "Attr", "node": {"type": "Var", "name": "tr"}, "key": "plan_inferred"},
+              "b": {"type": "Lit", "value": 1.0}
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "tr"}, "key": "noise_realized"},
+            "b": {"type": "Lit", "value": 1.0}
+          },
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "tr"}, "key": "plan_extracted"},
+            "b": {"type": "Lit", "value": 1.0}
+          },
+          {
+            "type": "Gt",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "tr"}, "key": "stroke_count"},
+            "b": {"type": "Lit", "value": 0}
+          }
+        ]
+      },
+      "effects": [
+        ["add_node", "mp", "MotorPlan", {
+          "stroke_count": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "tr"}, "key": "stroke_count"}},
+          "goal_kind_hint": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "tr"}, "key": "goal_kind_hint"}},
+          "plan_segments": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "tr"}, "key": "plan_segments"}},
+          "source": "inverse_model"
+        }],
+        ["add_edge", "tr", "realized_as", "mp"],
+        ["add_edge", "agent", "has_motor_plan", "mp"],
+        ["set_attr", "tr", "plan_inferred", 1.0]
+      ]
+    },
+    {
+      "name": "classify_motor_intent",
+      "batch": false,
+      "match": [
+        ["agent", "has_motor_plan", "mp"],
+        ["agent", "has_intent_goal", "ig"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "mp"}, "key": "goal_kind_hint"},
+            "b": {"type": "Attr", "node": {"type": "Var", "name": "ig"}, "key": "goal_kind"}
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {"type": "NodesOfType", "node_type": "MotorIntent"},
+              "var_name": "mi2",
+              "predicate": {
+                "type": "Eq",
+                "a": {"type": "Attr", "node": {"type": "Var", "name": "mi2"}, "key": "goal_kind"},
+                "b": {"type": "Attr", "node": {"type": "Var", "name": "ig"}, "key": "goal_kind"}
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        ["add_node", "mi", "MotorIntent", {
+          "goal_kind": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "ig"}, "key": "goal_kind"}},
+          "plan_stroke_count": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "mp"}, "key": "stroke_count"}},
+          "status": "inferred"
+        }],
+        ["add_edge", "agent", "has_motor_intent", "mi"],
+        ["add_edge", "mp", "expresses", "mi"]
+      ]
+    },
+    {
+      "name": "note_outcome_intent_recognition_gap",
+      "batch": false,
+      "match": [
+        ["agent", "has_execution_trace", "tr"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "tr"}, "key": "outcome_match_failed"},
+            "b": {"type": "Lit", "value": 1.0}
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {"type": "Attr", "node": {"type": "Var", "name": "tr"}, "key": "gap_noted"},
+              "b": {"type": "Lit", "value": 1.0}
+            }
+          }
+        ]
+      },
+      "effects": [
+        ["add_node", "sc", "SelfConcern", {
+          "status": "noted",
+          "source": "implicit",
+          "kind": "capability",
+          "content": "recognition matches execution outcome instead of motor intent — lift noise misclassified as shape difference"
+        }],
+        ["add_edge", "agent", "has_self_concern", "sc"],
+        ["set_attr", "tr", "gap_noted", 1.0]
+      ]
+    }
+  ]
+}

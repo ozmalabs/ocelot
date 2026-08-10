@@ -1,0 +1,4368 @@
+{
+ "id": "vision_colour_identity",
+ "version": "1.3.0",
+ "depends_on": [],
+ "description": "COLOUR IDENTITY -- categorical colour as a MINTED, MDL-GATED SIGN over the opponent-colour VALUE. Builds DIRECTLY on colour-salience: salience answered WHERE to look (surround-relative opponent CONTRAST); this rung answers WHAT COLOUR IT IS (a categorical SIGN for the colour VALUE, downstream of salience). It instantiates the sd loop's DYNAMIC-QUANTIZATION pattern (decode -> recognize -> mint -> re-decode on codebook_epoch growth) for the 2-D integer opponent-colour subspace, with NO new Rust: ci_opponent computes the integer opponent coordinate (crg=cL-cM, cby=cS-(cL+cM)); ci_mint_category MINTS a ColourCategory quantum where a colour value CLUSTERS and MDL COMPRESSES (Count(same exact colour) >= 3 = m_min, which FALLS OUT of d=2: a category pays iff m*d > d+m <=> m > d/(d-1) = 2, so m>=3 -- no magic number); ci_assign writes each region's SIGN = its NEAREST minted quantum (Argmin by opponent Sqrt-distance) and re-decodes on codebook growth. So a scene with a few colour clusters mints ~that-many category quanta (k << N, MDL down), a seen colour is RECOGNIZED not re-minted (the has-guard), and a smooth gradient / iid noise mints ZERO (a category is minted ONLY if it compresses). Categories emerge from the colour distribution via MDL -- they are NOT hand-set (Witzel & Gegenfurtner). In-frame colour coordinate is INTEGER; the continuous lives ONLY in the cross-frame assignment distance (the frame/continuum invariant). NOT object colour re-ID / constancy / the 'what' layer -- that needs a bound object (the objecthood wall), the named frontier, out of scope. Reuses Count/Filter/NodesOfType/Argmin/Exists/Sqrt/Minus/Times/Plus/Gte + run_rules. Flag-gated on ColourIdentityParams.identity, OFF by default (\u00a79). See VISION_COLOUR_IDENTITY_PREREG.md. v1.1.0 adds the ACHROMATOPSIA LESION flag (ColourIdentityParams.achromatopsia, OFF by default = INTACT): when armed it suppresses ONLY ci_mint_category + ci_assign (the categorical colour SIGN / naming), leaving ci_opponent (the chromatic SIGNAL) and the whole vision_colour salience seed (chromatic contrast / border / shape-from-colour) intact -- the colour-STRUCTURE / colour-SIGN dissociation of cerebral achromatopsia (Heywood & Cowey 1997). Default 0 => byte-identical to v1.0.0. See VISION_ACHROMATOPSIA_PREREG.md. v1.2.0 adds the REFUSAL BOUND (ColourIdentityParams.bound, OFF by default): L1b's uniqueness audit (VISION_UNIQUENESS_RESULTS.md) found ci_assign to be the worst case in its table -- an Argmin with ZERO Lte, no admission bound at all, so a probe at opponent distance 269.52 is confidently assigned and the equidistant probe is decided by a margin of exactly 0.0000; it cannot refuse, ever. When armed, ci_assign admits only INSIDE the minted codebook's PACKING RADIUS (r_i = 1/2 min_{j!=i} ||c_i-c_j||, the largest radius at which the codebook's own quanta do not overlap: 2r <= D), and the new ci_refuse rule fires on the exact complement, writing ci_refused instead of a sign. The bound FALLS OUT of the codebook (\u00a713) -- a function of the minted prototypes, not a literal (7.8102 on a 3-category codebook, 10.0 on a 2-category one, neither chosen), reusing the distance ci_assign already computes; rival derivations (exact cluster extent = 0, the lattice step 1.0, an MDL radius from m_min/d) were audited and rejected ON MEASUREMENT. Absence-tolerant at k=1 by construction (Not(Exists) over an empty codebook-complement is true), where the packing radius is undefined and the bound is honestly VACUOUS. Default 0 => byte-identical to v1.1.0. See VISION_COLOUR_BOUND_PREREG.md. v1.3.0 FLIPS THAT DEFAULT: bound now ships ARMED (1.0). The k=1 rung (VISION_COLOUR_BOUND_K1_PREREG.md) asked whether a k=1 bound FALLS OUT and measured that NONE DOES -- and, more strongly, that none CAN: the packing radius is NON-INCREASING under codebook growth (a min over a superset cannot increase), so the k=1 radius upper-bounds every radius reachable by growth, and that supremum is UNBOUNDED. r(k=1) = +inf (admit everything) is this derivation's own limit, NOT a missing piece. Five rivals were audited and rejected, three ON MEASUREMENT: the mint's cluster extent (identically 0 -- exact-value minting gives a quantum ZERO intrinsic extent, so every length scale in this seed lives BETWEEN prototypes and at k=1 there is no between); the sqrt(2)/2 observational-resolution floor (indistinguishable from 0 on an integer lattice -- 100/100 observed coordinates integral); the lattice step 1.0 (regresses, injected and measured by the previous rung); the scene's measured dynamic range (0.0 in BOTH landed k=1 scenes, and NON-LOCAL -- the same observation against the same codebook flips verdict when an UNRELATED patch is added elsewhere); and observed-separation, the ONLY rival CONSISTENT with the landed bound (0 disagreements at k>=2) and UNDEFINED at k=1. The crux: the rivals DEFINED at k=1 are INCONSISTENT with the landed bound; the one that is CONSISTENT is UNDEFINED. CAVEAT, EXPLICIT AND NOT IMPLIED AWAY: arming the bound guarantees refusal for k>=2 ONLY. A single-quantum codebook still admits any colour at any distance (correct VQ semantics: a lone quantum owns all of space). The flip is a STRICT improvement -- measured DELTA-ON EMPTY across all five landed scenes and the k=1 regime byte-identical ON vs OFF -- never a total guarantee. Closing the k=1 regime needs a mint with INTRINSIC EXTENT, i.e. colour identity's own NAMED FRONTIER (perceptual NEARNESS in minting). See VISION_COLOUR_BOUND_K1_PREREG.md.",
+ "microtheory": {
+  "id": "vision_colour_identity_mt",
+  "label": "colour identity: categorical colour as an MDL-gated quantum minted from the opponent-colour value subspace"
+ },
+ "nodes": [
+  {
+   "local_id": 0,
+   "type": "ColourIdentityParams",
+   "attrs": {
+    "identity": 0.0,
+    "achromatopsia": 0.0,
+    "bound": 1.0
+   }
+  }
+ ],
+ "edges": [],
+ "productions": [],
+ "rules": [
+  {
+   "name": "ci_opponent",
+   "comment": "Compute the in-frame INTEGER opponent coordinate of a cell from its raw cone attrs: crg = cL-cM (red-green), cby = cS-(cL+cM) (blue-yellow), the two chromatic opponent axes orthogonal to luminance -- the SAME axes the colour-salience rung used, but here the VALUE (identity), not the surround-relative contrast (salience). Reads ONLY self raw cones so firing order is irrelevant. The coordinate is INTEGER (the frame/continuum invariant: in-frame is the integer lattice; the continuous appears only in the cross-frame distance ci_assign uses). Flag-gated on ColourIdentityParams.identity>0.5, OFF by default (\u00a79). Once (op_done).",
+   "match": [
+    [
+     "scene",
+     "has_region",
+     "R"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "ColourIdentityParams"
+        }
+       },
+       "key": "identity"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "R"
+       },
+       "key": "op_done"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "R",
+     "crg",
+     {
+      "__term__": {
+       "type": "Minus",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "R"
+        },
+        "key": "cL"
+       },
+       "b": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "R"
+        },
+        "key": "cM"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "R",
+     "cby",
+     {
+      "__term__": {
+       "type": "Minus",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "R"
+        },
+        "key": "cS"
+       },
+       "b": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "R"
+          },
+          "key": "cL"
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "R"
+          },
+          "key": "cM"
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "R",
+     "op_done",
+     {
+      "__term__": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "ci_mint_category",
+   "comment": "DYNAMIC QUANTIZATION (the sd loop's sd_mint_quantum pattern for the colour subspace): MINT a ColourCategory quantum at an exact opponent colour value where the value CLUSTERS and MDL COMPRESSES. Gates: (1) identity>0.5; (2) the opponent field is complete (Not Exists Region with op_done<0.5) so the member count is exact, never a transient undercount; (3) THE MDL GATE -- Count(Filter(Region, same exact crg&cby)) >= 3: this colour recurs >= m_min times. m_min=3 FALLS OUT of the coordinate dimensionality d=2 (\u00a713, NOT tuned): a category costs a d-integer prototype and saves 1 label per member vs a d-integer raw coord, so it pays iff m*d > d+m, i.e. m > d/(d-1); for d=2 that is m>2 <=> m>=3 (at m=2: raw 4 vs categorized 2+2=4, equal, refuse); (4) the CANONICAL-REPRESENTATIVE guard -- only the top-left (lexicographic (rrow,rcol)) region of a colour may mint, so under s.tick()'s batch application (all bindings snapshotted before any effect) exactly ONE region per DISTINCT colour passes and mints exactly ONE category per colour (picking a canonical member, the ground rung's 'single unified rule' lesson -- NOT a magic threshold); (5) Not(Exists ColourCategory at this colour) -- recognize-not-re-mint across passes / re-presentations (a seen colour is never re-minted). Effects: add the ColourCategory{crg,cby,members,minted:1}, link it has_category from the scene, and bump Scene.epoch (the codebook_epoch re-arm so ci_assign re-decodes on growth). Flag-gated on identity>0.5, OFF by default (\u00a79).",
+   "match": [
+    [
+     "scene",
+     "has_region",
+     "R"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "ColourIdentityParams"
+        }
+       },
+       "key": "identity"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "ColourIdentityParams"
+        }
+       },
+       "key": "achromatopsia"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "Region"
+       },
+       "var_name": "z",
+       "predicate": {
+        "type": "Lt",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "z"
+         },
+         "key": "op_done"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       }
+      }
+     },
+     {
+      "type": "Gte",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "Region"
+        },
+        "var_name": "q",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "q"
+            },
+            "key": "crg"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "R"
+            },
+            "key": "crg"
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "q"
+            },
+            "key": "cby"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "R"
+            },
+            "key": "cby"
+           }
+          }
+         ]
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 3
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "Region"
+       },
+       "var_name": "p",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "p"
+           },
+           "key": "crg"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "R"
+           },
+           "key": "crg"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "p"
+           },
+           "key": "cby"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "R"
+           },
+           "key": "cby"
+          }
+         },
+         {
+          "type": "Or",
+          "items": [
+           {
+            "type": "Lt",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "p"
+             },
+             "key": "rrow"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "rrow"
+            }
+           },
+           {
+            "type": "And",
+            "items": [
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "p"
+               },
+               "key": "rrow"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "rrow"
+              }
+             },
+             {
+              "type": "Lt",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "p"
+               },
+               "key": "rcol"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "rcol"
+              }
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "ColourCategory"
+       },
+       "var_name": "cat",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "cat"
+           },
+           "key": "crg"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "R"
+           },
+           "key": "crg"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "cat"
+           },
+           "key": "cby"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "R"
+           },
+           "key": "cby"
+          }
+         }
+        ]
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "cat",
+     "ColourCategory",
+     {
+      "crg": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "R"
+        },
+        "key": "crg"
+       }
+      },
+      "cby": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "R"
+        },
+        "key": "cby"
+       }
+      },
+      "members": {
+       "__term__": {
+        "type": "Count",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "Region"
+         },
+         "var_name": "q",
+         "predicate": {
+          "type": "And",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "q"
+             },
+             "key": "crg"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "crg"
+            }
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "q"
+             },
+             "key": "cby"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "cby"
+            }
+           }
+          ]
+         }
+        }
+       }
+      },
+      "minted": {
+       "__term__": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "scene",
+     "has_category",
+     "cat"
+    ],
+    [
+     "set_attr",
+     "scene",
+     "epoch",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "scene"
+         },
+         "key": "epoch"
+        },
+        {
+         "type": "Lit",
+         "value": 1.0
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "ci_assign",
+   "comment": "DEQUANTIZATION (the sd loop's decode/recognize pattern): a region's categorical colour SIGN is its NEAREST minted ColourCategory quantum -- Argmin over ColourCategory by the cross-frame opponent distance dist(R,c)=Sqrt((R.crg-c.crg)^2+(R.cby-c.cby)^2) (the ONLY continuous quantity, living in the cross-frame comparison, never in a frame's coordinate -- the frame/continuum invariant). Writes sign_rg/sign_by (the assigned quantum's coordinate) and sign_dist (the residual to it). A cell whose colour EXACTLY equals a prototype gets sign_dist=0 and that category's sign (recognize); an off-prototype cell gets its nearest quantum. Re-decodes on codebook growth: gated on assigned_epoch != Scene.epoch (the sd_redecode re-arm), so every sign reflects the FINAL codebook once minting settles. Gated on Count(ColourCategory)>0 so it never fires before any quantum exists. Flag-gated on identity>0.5, OFF by default (\u00a79).",
+   "match": [
+    [
+     "scene",
+     "has_region",
+     "R"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "ColourIdentityParams"
+        }
+       },
+       "key": "identity"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "ColourIdentityParams"
+        }
+       },
+       "key": "achromatopsia"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "Region"
+       },
+       "var_name": "z",
+       "predicate": {
+        "type": "Lt",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "z"
+         },
+         "key": "op_done"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       }
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "ColourCategory"
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "R"
+        },
+        "key": "assigned_epoch"
+       },
+       "b": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "scene"
+        },
+        "key": "epoch"
+       }
+      }
+     },
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Lt",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "PickUnique",
+          "source": {
+           "type": "NodesOfType",
+           "node_type": "ColourIdentityParams"
+          }
+         },
+         "key": "bound"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       },
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Exists",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "ColourCategory"
+         },
+         "var_name": "o",
+         "predicate": {
+          "type": "And",
+          "items": [
+           {
+            "type": "Not",
+            "arg": {
+             "type": "Eq",
+             "a": {
+              "type": "Var",
+              "name": "o"
+             },
+             "b": {
+              "type": "Argmin",
+              "source": {
+               "type": "NodesOfType",
+               "node_type": "ColourCategory"
+              },
+              "var_name": "c",
+              "value": {
+               "type": "Sqrt",
+               "arg": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Times",
+                  "items": [
+                   {
+                    "type": "Minus",
+                    "a": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "R"
+                     },
+                     "key": "crg"
+                    },
+                    "b": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "c"
+                     },
+                     "key": "crg"
+                    }
+                   },
+                   {
+                    "type": "Minus",
+                    "a": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "R"
+                     },
+                     "key": "crg"
+                    },
+                    "b": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "c"
+                     },
+                     "key": "crg"
+                    }
+                   }
+                  ]
+                 },
+                 {
+                  "type": "Times",
+                  "items": [
+                   {
+                    "type": "Minus",
+                    "a": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "R"
+                     },
+                     "key": "cby"
+                    },
+                    "b": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "c"
+                     },
+                     "key": "cby"
+                    }
+                   },
+                   {
+                    "type": "Minus",
+                    "a": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "R"
+                     },
+                     "key": "cby"
+                    },
+                    "b": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "c"
+                     },
+                     "key": "cby"
+                    }
+                   }
+                  ]
+                 }
+                ]
+               }
+              },
+              "default": null
+             }
+            }
+           },
+           {
+            "type": "Lt",
+            "a": {
+             "type": "Sqrt",
+             "arg": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Times",
+                "items": [
+                 {
+                  "type": "Minus",
+                  "a": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Argmin",
+                    "source": {
+                     "type": "NodesOfType",
+                     "node_type": "ColourCategory"
+                    },
+                    "var_name": "c",
+                    "value": {
+                     "type": "Sqrt",
+                     "arg": {
+                      "type": "Plus",
+                      "items": [
+                       {
+                        "type": "Times",
+                        "items": [
+                         {
+                          "type": "Minus",
+                          "a": {
+                           "type": "Attr",
+                           "node": {
+                            "type": "Var",
+                            "name": "R"
+                           },
+                           "key": "crg"
+                          },
+                          "b": {
+                           "type": "Attr",
+                           "node": {
+                            "type": "Var",
+                            "name": "c"
+                           },
+                           "key": "crg"
+                          }
+                         },
+                         {
+                          "type": "Minus",
+                          "a": {
+                           "type": "Attr",
+                           "node": {
+                            "type": "Var",
+                            "name": "R"
+                           },
+                           "key": "crg"
+                          },
+                          "b": {
+                           "type": "Attr",
+                           "node": {
+                            "type": "Var",
+                            "name": "c"
+                           },
+                           "key": "crg"
+                          }
+                         }
+                        ]
+                       },
+                       {
+                        "type": "Times",
+                        "items": [
+                         {
+                          "type": "Minus",
+                          "a": {
+                           "type": "Attr",
+                           "node": {
+                            "type": "Var",
+                            "name": "R"
+                           },
+                           "key": "cby"
+                          },
+                          "b": {
+                           "type": "Attr",
+                           "node": {
+                            "type": "Var",
+                            "name": "c"
+                           },
+                           "key": "cby"
+                          }
+                         },
+                         {
+                          "type": "Minus",
+                          "a": {
+                           "type": "Attr",
+                           "node": {
+                            "type": "Var",
+                            "name": "R"
+                           },
+                           "key": "cby"
+                          },
+                          "b": {
+                           "type": "Attr",
+                           "node": {
+                            "type": "Var",
+                            "name": "c"
+                           },
+                           "key": "cby"
+                          }
+                         }
+                        ]
+                       }
+                      ]
+                     }
+                    },
+                    "default": null
+                   },
+                   "key": "crg"
+                  },
+                  "b": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "o"
+                   },
+                   "key": "crg"
+                  }
+                 },
+                 {
+                  "type": "Minus",
+                  "a": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Argmin",
+                    "source": {
+                     "type": "NodesOfType",
+                     "node_type": "ColourCategory"
+                    },
+                    "var_name": "c",
+                    "value": {
+                     "type": "Sqrt",
+                     "arg": {
+                      "type": "Plus",
+                      "items": [
+                       {
+                        "type": "Times",
+                        "items": [
+                         {
+                          "type": "Minus",
+                          "a": {
+                           "type": "Attr",
+                           "node": {
+                            "type": "Var",
+                            "name": "R"
+                           },
+                           "key": "crg"
+                          },
+                          "b": {
+                           "type": "Attr",
+                           "node": {
+                            "type": "Var",
+                            "name": "c"
+                           },
+                           "key": "crg"
+                          }
+                         },
+                         {
+                          "type": "Minus",
+                          "a": {
+                           "type": "Attr",
+                           "node": {
+                            "type": "Var",
+                            "name": "R"
+                           },
+                           "key": "crg"
+                          },
+                          "b": {
+                           "type": "Attr",
+                           "node": {
+                            "type": "Var",
+                            "name": "c"
+                           },
+                           "key": "crg"
+                          }
+                         }
+                        ]
+                       },
+                       {
+                        "type": "Times",
+                        "items": [
+                         {
+                          "type": "Minus",
+                          "a": {
+                           "type": "Attr",
+                           "node": {
+                            "type": "Var",
+                            "name": "R"
+                           },
+                           "key": "cby"
+                          },
+                          "b": {
+                           "type": "Attr",
+                           "node": {
+                            "type": "Var",
+                            "name": "c"
+                           },
+                           "key": "cby"
+                          }
+                         },
+                         {
+                          "type": "Minus",
+                          "a": {
+                           "type": "Attr",
+                           "node": {
+                            "type": "Var",
+                            "name": "R"
+                           },
+                           "key": "cby"
+                          },
+                          "b": {
+                           "type": "Attr",
+                           "node": {
+                            "type": "Var",
+                            "name": "c"
+                           },
+                           "key": "cby"
+                          }
+                         }
+                        ]
+                       }
+                      ]
+                     }
+                    },
+                    "default": null
+                   },
+                   "key": "crg"
+                  },
+                  "b": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "o"
+                   },
+                   "key": "crg"
+                  }
+                 }
+                ]
+               },
+               {
+                "type": "Times",
+                "items": [
+                 {
+                  "type": "Minus",
+                  "a": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Argmin",
+                    "source": {
+                     "type": "NodesOfType",
+                     "node_type": "ColourCategory"
+                    },
+                    "var_name": "c",
+                    "value": {
+                     "type": "Sqrt",
+                     "arg": {
+                      "type": "Plus",
+                      "items": [
+                       {
+                        "type": "Times",
+                        "items": [
+                         {
+                          "type": "Minus",
+                          "a": {
+                           "type": "Attr",
+                           "node": {
+                            "type": "Var",
+                            "name": "R"
+                           },
+                           "key": "crg"
+                          },
+                          "b": {
+                           "type": "Attr",
+                           "node": {
+                            "type": "Var",
+                            "name": "c"
+                           },
+                           "key": "crg"
+                          }
+                         },
+                         {
+                          "type": "Minus",
+                          "a": {
+                           "type": "Attr",
+                           "node": {
+                            "type": "Var",
+                            "name": "R"
+                           },
+                           "key": "crg"
+                          },
+                          "b": {
+                           "type": "Attr",
+                           "node": {
+                            "type": "Var",
+                            "name": "c"
+                           },
+                           "key": "crg"
+                          }
+                         }
+                        ]
+                       },
+                       {
+                        "type": "Times",
+                        "items": [
+                         {
+                          "type": "Minus",
+                          "a": {
+                           "type": "Attr",
+                           "node": {
+                            "type": "Var",
+                            "name": "R"
+                           },
+                           "key": "cby"
+                          },
+                          "b": {
+                           "type": "Attr",
+                           "node": {
+                            "type": "Var",
+                            "name": "c"
+                           },
+                           "key": "cby"
+                          }
+                         },
+                         {
+                          "type": "Minus",
+                          "a": {
+                           "type": "Attr",
+                           "node": {
+                            "type": "Var",
+                            "name": "R"
+                           },
+                           "key": "cby"
+                          },
+                          "b": {
+                           "type": "Attr",
+                           "node": {
+                            "type": "Var",
+                            "name": "c"
+                           },
+                           "key": "cby"
+                          }
+                         }
+                        ]
+                       }
+                      ]
+                     }
+                    },
+                    "default": null
+                   },
+                   "key": "cby"
+                  },
+                  "b": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "o"
+                   },
+                   "key": "cby"
+                  }
+                 },
+                 {
+                  "type": "Minus",
+                  "a": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Argmin",
+                    "source": {
+                     "type": "NodesOfType",
+                     "node_type": "ColourCategory"
+                    },
+                    "var_name": "c",
+                    "value": {
+                     "type": "Sqrt",
+                     "arg": {
+                      "type": "Plus",
+                      "items": [
+                       {
+                        "type": "Times",
+                        "items": [
+                         {
+                          "type": "Minus",
+                          "a": {
+                           "type": "Attr",
+                           "node": {
+                            "type": "Var",
+                            "name": "R"
+                           },
+                           "key": "crg"
+                          },
+                          "b": {
+                           "type": "Attr",
+                           "node": {
+                            "type": "Var",
+                            "name": "c"
+                           },
+                           "key": "crg"
+                          }
+                         },
+                         {
+                          "type": "Minus",
+                          "a": {
+                           "type": "Attr",
+                           "node": {
+                            "type": "Var",
+                            "name": "R"
+                           },
+                           "key": "crg"
+                          },
+                          "b": {
+                           "type": "Attr",
+                           "node": {
+                            "type": "Var",
+                            "name": "c"
+                           },
+                           "key": "crg"
+                          }
+                         }
+                        ]
+                       },
+                       {
+                        "type": "Times",
+                        "items": [
+                         {
+                          "type": "Minus",
+                          "a": {
+                           "type": "Attr",
+                           "node": {
+                            "type": "Var",
+                            "name": "R"
+                           },
+                           "key": "cby"
+                          },
+                          "b": {
+                           "type": "Attr",
+                           "node": {
+                            "type": "Var",
+                            "name": "c"
+                           },
+                           "key": "cby"
+                          }
+                         },
+                         {
+                          "type": "Minus",
+                          "a": {
+                           "type": "Attr",
+                           "node": {
+                            "type": "Var",
+                            "name": "R"
+                           },
+                           "key": "cby"
+                          },
+                          "b": {
+                           "type": "Attr",
+                           "node": {
+                            "type": "Var",
+                            "name": "c"
+                           },
+                           "key": "cby"
+                          }
+                         }
+                        ]
+                       }
+                      ]
+                     }
+                    },
+                    "default": null
+                   },
+                   "key": "cby"
+                  },
+                  "b": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "o"
+                   },
+                   "key": "cby"
+                  }
+                 }
+                ]
+               }
+              ]
+             }
+            },
+            "b": {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 2.0
+              },
+              {
+               "type": "Sqrt",
+               "arg": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Times",
+                  "items": [
+                   {
+                    "type": "Minus",
+                    "a": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "R"
+                     },
+                     "key": "crg"
+                    },
+                    "b": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Argmin",
+                      "source": {
+                       "type": "NodesOfType",
+                       "node_type": "ColourCategory"
+                      },
+                      "var_name": "c",
+                      "value": {
+                       "type": "Sqrt",
+                       "arg": {
+                        "type": "Plus",
+                        "items": [
+                         {
+                          "type": "Times",
+                          "items": [
+                           {
+                            "type": "Minus",
+                            "a": {
+                             "type": "Attr",
+                             "node": {
+                              "type": "Var",
+                              "name": "R"
+                             },
+                             "key": "crg"
+                            },
+                            "b": {
+                             "type": "Attr",
+                             "node": {
+                              "type": "Var",
+                              "name": "c"
+                             },
+                             "key": "crg"
+                            }
+                           },
+                           {
+                            "type": "Minus",
+                            "a": {
+                             "type": "Attr",
+                             "node": {
+                              "type": "Var",
+                              "name": "R"
+                             },
+                             "key": "crg"
+                            },
+                            "b": {
+                             "type": "Attr",
+                             "node": {
+                              "type": "Var",
+                              "name": "c"
+                             },
+                             "key": "crg"
+                            }
+                           }
+                          ]
+                         },
+                         {
+                          "type": "Times",
+                          "items": [
+                           {
+                            "type": "Minus",
+                            "a": {
+                             "type": "Attr",
+                             "node": {
+                              "type": "Var",
+                              "name": "R"
+                             },
+                             "key": "cby"
+                            },
+                            "b": {
+                             "type": "Attr",
+                             "node": {
+                              "type": "Var",
+                              "name": "c"
+                             },
+                             "key": "cby"
+                            }
+                           },
+                           {
+                            "type": "Minus",
+                            "a": {
+                             "type": "Attr",
+                             "node": {
+                              "type": "Var",
+                              "name": "R"
+                             },
+                             "key": "cby"
+                            },
+                            "b": {
+                             "type": "Attr",
+                             "node": {
+                              "type": "Var",
+                              "name": "c"
+                             },
+                             "key": "cby"
+                            }
+                           }
+                          ]
+                         }
+                        ]
+                       }
+                      },
+                      "default": null
+                     },
+                     "key": "crg"
+                    }
+                   },
+                   {
+                    "type": "Minus",
+                    "a": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "R"
+                     },
+                     "key": "crg"
+                    },
+                    "b": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Argmin",
+                      "source": {
+                       "type": "NodesOfType",
+                       "node_type": "ColourCategory"
+                      },
+                      "var_name": "c",
+                      "value": {
+                       "type": "Sqrt",
+                       "arg": {
+                        "type": "Plus",
+                        "items": [
+                         {
+                          "type": "Times",
+                          "items": [
+                           {
+                            "type": "Minus",
+                            "a": {
+                             "type": "Attr",
+                             "node": {
+                              "type": "Var",
+                              "name": "R"
+                             },
+                             "key": "crg"
+                            },
+                            "b": {
+                             "type": "Attr",
+                             "node": {
+                              "type": "Var",
+                              "name": "c"
+                             },
+                             "key": "crg"
+                            }
+                           },
+                           {
+                            "type": "Minus",
+                            "a": {
+                             "type": "Attr",
+                             "node": {
+                              "type": "Var",
+                              "name": "R"
+                             },
+                             "key": "crg"
+                            },
+                            "b": {
+                             "type": "Attr",
+                             "node": {
+                              "type": "Var",
+                              "name": "c"
+                             },
+                             "key": "crg"
+                            }
+                           }
+                          ]
+                         },
+                         {
+                          "type": "Times",
+                          "items": [
+                           {
+                            "type": "Minus",
+                            "a": {
+                             "type": "Attr",
+                             "node": {
+                              "type": "Var",
+                              "name": "R"
+                             },
+                             "key": "cby"
+                            },
+                            "b": {
+                             "type": "Attr",
+                             "node": {
+                              "type": "Var",
+                              "name": "c"
+                             },
+                             "key": "cby"
+                            }
+                           },
+                           {
+                            "type": "Minus",
+                            "a": {
+                             "type": "Attr",
+                             "node": {
+                              "type": "Var",
+                              "name": "R"
+                             },
+                             "key": "cby"
+                            },
+                            "b": {
+                             "type": "Attr",
+                             "node": {
+                              "type": "Var",
+                              "name": "c"
+                             },
+                             "key": "cby"
+                            }
+                           }
+                          ]
+                         }
+                        ]
+                       }
+                      },
+                      "default": null
+                     },
+                     "key": "crg"
+                    }
+                   }
+                  ]
+                 },
+                 {
+                  "type": "Times",
+                  "items": [
+                   {
+                    "type": "Minus",
+                    "a": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "R"
+                     },
+                     "key": "cby"
+                    },
+                    "b": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Argmin",
+                      "source": {
+                       "type": "NodesOfType",
+                       "node_type": "ColourCategory"
+                      },
+                      "var_name": "c",
+                      "value": {
+                       "type": "Sqrt",
+                       "arg": {
+                        "type": "Plus",
+                        "items": [
+                         {
+                          "type": "Times",
+                          "items": [
+                           {
+                            "type": "Minus",
+                            "a": {
+                             "type": "Attr",
+                             "node": {
+                              "type": "Var",
+                              "name": "R"
+                             },
+                             "key": "crg"
+                            },
+                            "b": {
+                             "type": "Attr",
+                             "node": {
+                              "type": "Var",
+                              "name": "c"
+                             },
+                             "key": "crg"
+                            }
+                           },
+                           {
+                            "type": "Minus",
+                            "a": {
+                             "type": "Attr",
+                             "node": {
+                              "type": "Var",
+                              "name": "R"
+                             },
+                             "key": "crg"
+                            },
+                            "b": {
+                             "type": "Attr",
+                             "node": {
+                              "type": "Var",
+                              "name": "c"
+                             },
+                             "key": "crg"
+                            }
+                           }
+                          ]
+                         },
+                         {
+                          "type": "Times",
+                          "items": [
+                           {
+                            "type": "Minus",
+                            "a": {
+                             "type": "Attr",
+                             "node": {
+                              "type": "Var",
+                              "name": "R"
+                             },
+                             "key": "cby"
+                            },
+                            "b": {
+                             "type": "Attr",
+                             "node": {
+                              "type": "Var",
+                              "name": "c"
+                             },
+                             "key": "cby"
+                            }
+                           },
+                           {
+                            "type": "Minus",
+                            "a": {
+                             "type": "Attr",
+                             "node": {
+                              "type": "Var",
+                              "name": "R"
+                             },
+                             "key": "cby"
+                            },
+                            "b": {
+                             "type": "Attr",
+                             "node": {
+                              "type": "Var",
+                              "name": "c"
+                             },
+                             "key": "cby"
+                            }
+                           }
+                          ]
+                         }
+                        ]
+                       }
+                      },
+                      "default": null
+                     },
+                     "key": "cby"
+                    }
+                   },
+                   {
+                    "type": "Minus",
+                    "a": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "R"
+                     },
+                     "key": "cby"
+                    },
+                    "b": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Argmin",
+                      "source": {
+                       "type": "NodesOfType",
+                       "node_type": "ColourCategory"
+                      },
+                      "var_name": "c",
+                      "value": {
+                       "type": "Sqrt",
+                       "arg": {
+                        "type": "Plus",
+                        "items": [
+                         {
+                          "type": "Times",
+                          "items": [
+                           {
+                            "type": "Minus",
+                            "a": {
+                             "type": "Attr",
+                             "node": {
+                              "type": "Var",
+                              "name": "R"
+                             },
+                             "key": "crg"
+                            },
+                            "b": {
+                             "type": "Attr",
+                             "node": {
+                              "type": "Var",
+                              "name": "c"
+                             },
+                             "key": "crg"
+                            }
+                           },
+                           {
+                            "type": "Minus",
+                            "a": {
+                             "type": "Attr",
+                             "node": {
+                              "type": "Var",
+                              "name": "R"
+                             },
+                             "key": "crg"
+                            },
+                            "b": {
+                             "type": "Attr",
+                             "node": {
+                              "type": "Var",
+                              "name": "c"
+                             },
+                             "key": "crg"
+                            }
+                           }
+                          ]
+                         },
+                         {
+                          "type": "Times",
+                          "items": [
+                           {
+                            "type": "Minus",
+                            "a": {
+                             "type": "Attr",
+                             "node": {
+                              "type": "Var",
+                              "name": "R"
+                             },
+                             "key": "cby"
+                            },
+                            "b": {
+                             "type": "Attr",
+                             "node": {
+                              "type": "Var",
+                              "name": "c"
+                             },
+                             "key": "cby"
+                            }
+                           },
+                           {
+                            "type": "Minus",
+                            "a": {
+                             "type": "Attr",
+                             "node": {
+                              "type": "Var",
+                              "name": "R"
+                             },
+                             "key": "cby"
+                            },
+                            "b": {
+                             "type": "Attr",
+                             "node": {
+                              "type": "Var",
+                              "name": "c"
+                             },
+                             "key": "cby"
+                            }
+                           }
+                          ]
+                         }
+                        ]
+                       }
+                      },
+                      "default": null
+                     },
+                     "key": "cby"
+                    }
+                   }
+                  ]
+                 }
+                ]
+               }
+              }
+             ]
+            }
+           }
+          ]
+         }
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "R",
+     "sign_rg",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Argmin",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "ColourCategory"
+        },
+        "var_name": "c",
+        "value": {
+         "type": "Sqrt",
+         "arg": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Minus",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "crg"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "c"
+               },
+               "key": "crg"
+              }
+             },
+             {
+              "type": "Minus",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "crg"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "c"
+               },
+               "key": "crg"
+              }
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Minus",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "cby"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "c"
+               },
+               "key": "cby"
+              }
+             },
+             {
+              "type": "Minus",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "cby"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "c"
+               },
+               "key": "cby"
+              }
+             }
+            ]
+           }
+          ]
+         }
+        },
+        "default": null
+       },
+       "key": "crg"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "R",
+     "sign_by",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Argmin",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "ColourCategory"
+        },
+        "var_name": "c",
+        "value": {
+         "type": "Sqrt",
+         "arg": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Minus",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "crg"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "c"
+               },
+               "key": "crg"
+              }
+             },
+             {
+              "type": "Minus",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "crg"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "c"
+               },
+               "key": "crg"
+              }
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Minus",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "cby"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "c"
+               },
+               "key": "cby"
+              }
+             },
+             {
+              "type": "Minus",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "cby"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "c"
+               },
+               "key": "cby"
+              }
+             }
+            ]
+           }
+          ]
+         }
+        },
+        "default": null
+       },
+       "key": "cby"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "R",
+     "sign_dist",
+     {
+      "__term__": {
+       "type": "Sqrt",
+       "arg": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Times",
+          "items": [
+           {
+            "type": "Minus",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "crg"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Argmin",
+              "source": {
+               "type": "NodesOfType",
+               "node_type": "ColourCategory"
+              },
+              "var_name": "c",
+              "value": {
+               "type": "Sqrt",
+               "arg": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Times",
+                  "items": [
+                   {
+                    "type": "Minus",
+                    "a": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "R"
+                     },
+                     "key": "crg"
+                    },
+                    "b": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "c"
+                     },
+                     "key": "crg"
+                    }
+                   },
+                   {
+                    "type": "Minus",
+                    "a": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "R"
+                     },
+                     "key": "crg"
+                    },
+                    "b": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "c"
+                     },
+                     "key": "crg"
+                    }
+                   }
+                  ]
+                 },
+                 {
+                  "type": "Times",
+                  "items": [
+                   {
+                    "type": "Minus",
+                    "a": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "R"
+                     },
+                     "key": "cby"
+                    },
+                    "b": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "c"
+                     },
+                     "key": "cby"
+                    }
+                   },
+                   {
+                    "type": "Minus",
+                    "a": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "R"
+                     },
+                     "key": "cby"
+                    },
+                    "b": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "c"
+                     },
+                     "key": "cby"
+                    }
+                   }
+                  ]
+                 }
+                ]
+               }
+              },
+              "default": null
+             },
+             "key": "crg"
+            }
+           },
+           {
+            "type": "Minus",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "crg"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Argmin",
+              "source": {
+               "type": "NodesOfType",
+               "node_type": "ColourCategory"
+              },
+              "var_name": "c",
+              "value": {
+               "type": "Sqrt",
+               "arg": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Times",
+                  "items": [
+                   {
+                    "type": "Minus",
+                    "a": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "R"
+                     },
+                     "key": "crg"
+                    },
+                    "b": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "c"
+                     },
+                     "key": "crg"
+                    }
+                   },
+                   {
+                    "type": "Minus",
+                    "a": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "R"
+                     },
+                     "key": "crg"
+                    },
+                    "b": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "c"
+                     },
+                     "key": "crg"
+                    }
+                   }
+                  ]
+                 },
+                 {
+                  "type": "Times",
+                  "items": [
+                   {
+                    "type": "Minus",
+                    "a": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "R"
+                     },
+                     "key": "cby"
+                    },
+                    "b": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "c"
+                     },
+                     "key": "cby"
+                    }
+                   },
+                   {
+                    "type": "Minus",
+                    "a": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "R"
+                     },
+                     "key": "cby"
+                    },
+                    "b": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "c"
+                     },
+                     "key": "cby"
+                    }
+                   }
+                  ]
+                 }
+                ]
+               }
+              },
+              "default": null
+             },
+             "key": "crg"
+            }
+           }
+          ]
+         },
+         {
+          "type": "Times",
+          "items": [
+           {
+            "type": "Minus",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "cby"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Argmin",
+              "source": {
+               "type": "NodesOfType",
+               "node_type": "ColourCategory"
+              },
+              "var_name": "c",
+              "value": {
+               "type": "Sqrt",
+               "arg": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Times",
+                  "items": [
+                   {
+                    "type": "Minus",
+                    "a": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "R"
+                     },
+                     "key": "crg"
+                    },
+                    "b": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "c"
+                     },
+                     "key": "crg"
+                    }
+                   },
+                   {
+                    "type": "Minus",
+                    "a": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "R"
+                     },
+                     "key": "crg"
+                    },
+                    "b": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "c"
+                     },
+                     "key": "crg"
+                    }
+                   }
+                  ]
+                 },
+                 {
+                  "type": "Times",
+                  "items": [
+                   {
+                    "type": "Minus",
+                    "a": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "R"
+                     },
+                     "key": "cby"
+                    },
+                    "b": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "c"
+                     },
+                     "key": "cby"
+                    }
+                   },
+                   {
+                    "type": "Minus",
+                    "a": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "R"
+                     },
+                     "key": "cby"
+                    },
+                    "b": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "c"
+                     },
+                     "key": "cby"
+                    }
+                   }
+                  ]
+                 }
+                ]
+               }
+              },
+              "default": null
+             },
+             "key": "cby"
+            }
+           },
+           {
+            "type": "Minus",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "cby"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Argmin",
+              "source": {
+               "type": "NodesOfType",
+               "node_type": "ColourCategory"
+              },
+              "var_name": "c",
+              "value": {
+               "type": "Sqrt",
+               "arg": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Times",
+                  "items": [
+                   {
+                    "type": "Minus",
+                    "a": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "R"
+                     },
+                     "key": "crg"
+                    },
+                    "b": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "c"
+                     },
+                     "key": "crg"
+                    }
+                   },
+                   {
+                    "type": "Minus",
+                    "a": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "R"
+                     },
+                     "key": "crg"
+                    },
+                    "b": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "c"
+                     },
+                     "key": "crg"
+                    }
+                   }
+                  ]
+                 },
+                 {
+                  "type": "Times",
+                  "items": [
+                   {
+                    "type": "Minus",
+                    "a": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "R"
+                     },
+                     "key": "cby"
+                    },
+                    "b": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "c"
+                     },
+                     "key": "cby"
+                    }
+                   },
+                   {
+                    "type": "Minus",
+                    "a": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "R"
+                     },
+                     "key": "cby"
+                    },
+                    "b": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "c"
+                     },
+                     "key": "cby"
+                    }
+                   }
+                  ]
+                 }
+                ]
+               }
+              },
+              "default": null
+             },
+             "key": "cby"
+            }
+           }
+          ]
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "R",
+     "assigned_epoch",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "scene"
+       },
+       "key": "epoch"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "ci_refuse",
+   "comment": "THE REFUSAL (VISION_COLOUR_BOUND_PREREG.md): a region whose nearest minted quantum lies OUTSIDE that quantum's PACKING RADIUS gets NO categorical sign. The packing radius r_i = 1/2 min_{j!=i} ||c_i-c_j|| is the largest radius at which the codebook's own quanta do not overlap; two balls of radius r around prototypes separated by D are disjoint iff 2r <= D, so admission is 2*dist(R,winner) <= min_{c!=winner} dist(winner,c) and this rule fires on its exact complement. The bound FALLS OUT of the codebook (\u00a713): it is a function of the minted prototypes, not a literal -- 7.8102 on a 3-category codebook, 10.0 on a 2-category one, neither chosen -- and it reuses the very distance ci_assign already computes, applied prototype-to-prototype. Expressed as Not(Exists other prototype closer than 2*residual), so the k=1 case (no other prototype; packing radius undefined) is absence-tolerant BY CONSTRUCTION and admits -- the honest residual: the bound is vacuous at k=1. Writes ONLY new attrs (ci_refused, ci_refused_dist) and never clears sign_*, so a refused region keeps sign_dist=-1.0 (the refused readout) and every effect value is constant once set (run_rules terminates on exact value equality). Sets assigned_epoch so it fires once per epoch and re-arms with ci_assign on codebook growth. Flag-gated on ColourIdentityParams.bound>0.5, OFF by default (\u00a79) -- at the default this rule can never fire.",
+   "match": [
+    [
+     "scene",
+     "has_region",
+     "R"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "ColourIdentityParams"
+        }
+       },
+       "key": "identity"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "ColourIdentityParams"
+        }
+       },
+       "key": "achromatopsia"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "Region"
+       },
+       "var_name": "z",
+       "predicate": {
+        "type": "Lt",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "z"
+         },
+         "key": "op_done"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       }
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "ColourCategory"
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "R"
+        },
+        "key": "assigned_epoch"
+       },
+       "b": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "scene"
+        },
+        "key": "epoch"
+       }
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "ColourIdentityParams"
+        }
+       },
+       "key": "bound"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Not",
+       "arg": {
+        "type": "Exists",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "ColourCategory"
+        },
+        "var_name": "o",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Not",
+           "arg": {
+            "type": "Eq",
+            "a": {
+             "type": "Var",
+             "name": "o"
+            },
+            "b": {
+             "type": "Argmin",
+             "source": {
+              "type": "NodesOfType",
+              "node_type": "ColourCategory"
+             },
+             "var_name": "c",
+             "value": {
+              "type": "Sqrt",
+              "arg": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Times",
+                 "items": [
+                  {
+                   "type": "Minus",
+                   "a": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "R"
+                    },
+                    "key": "crg"
+                   },
+                   "b": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "c"
+                    },
+                    "key": "crg"
+                   }
+                  },
+                  {
+                   "type": "Minus",
+                   "a": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "R"
+                    },
+                    "key": "crg"
+                   },
+                   "b": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "c"
+                    },
+                    "key": "crg"
+                   }
+                  }
+                 ]
+                },
+                {
+                 "type": "Times",
+                 "items": [
+                  {
+                   "type": "Minus",
+                   "a": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "R"
+                    },
+                    "key": "cby"
+                   },
+                   "b": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "c"
+                    },
+                    "key": "cby"
+                   }
+                  },
+                  {
+                   "type": "Minus",
+                   "a": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "R"
+                    },
+                    "key": "cby"
+                   },
+                   "b": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "c"
+                    },
+                    "key": "cby"
+                   }
+                  }
+                 ]
+                }
+               ]
+              }
+             },
+             "default": null
+            }
+           }
+          },
+          {
+           "type": "Lt",
+           "a": {
+            "type": "Sqrt",
+            "arg": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Times",
+               "items": [
+                {
+                 "type": "Minus",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Argmin",
+                   "source": {
+                    "type": "NodesOfType",
+                    "node_type": "ColourCategory"
+                   },
+                   "var_name": "c",
+                   "value": {
+                    "type": "Sqrt",
+                    "arg": {
+                     "type": "Plus",
+                     "items": [
+                      {
+                       "type": "Times",
+                       "items": [
+                        {
+                         "type": "Minus",
+                         "a": {
+                          "type": "Attr",
+                          "node": {
+                           "type": "Var",
+                           "name": "R"
+                          },
+                          "key": "crg"
+                         },
+                         "b": {
+                          "type": "Attr",
+                          "node": {
+                           "type": "Var",
+                           "name": "c"
+                          },
+                          "key": "crg"
+                         }
+                        },
+                        {
+                         "type": "Minus",
+                         "a": {
+                          "type": "Attr",
+                          "node": {
+                           "type": "Var",
+                           "name": "R"
+                          },
+                          "key": "crg"
+                         },
+                         "b": {
+                          "type": "Attr",
+                          "node": {
+                           "type": "Var",
+                           "name": "c"
+                          },
+                          "key": "crg"
+                         }
+                        }
+                       ]
+                      },
+                      {
+                       "type": "Times",
+                       "items": [
+                        {
+                         "type": "Minus",
+                         "a": {
+                          "type": "Attr",
+                          "node": {
+                           "type": "Var",
+                           "name": "R"
+                          },
+                          "key": "cby"
+                         },
+                         "b": {
+                          "type": "Attr",
+                          "node": {
+                           "type": "Var",
+                           "name": "c"
+                          },
+                          "key": "cby"
+                         }
+                        },
+                        {
+                         "type": "Minus",
+                         "a": {
+                          "type": "Attr",
+                          "node": {
+                           "type": "Var",
+                           "name": "R"
+                          },
+                          "key": "cby"
+                         },
+                         "b": {
+                          "type": "Attr",
+                          "node": {
+                           "type": "Var",
+                           "name": "c"
+                          },
+                          "key": "cby"
+                         }
+                        }
+                       ]
+                      }
+                     ]
+                    }
+                   },
+                   "default": null
+                  },
+                  "key": "crg"
+                 },
+                 "b": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "o"
+                  },
+                  "key": "crg"
+                 }
+                },
+                {
+                 "type": "Minus",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Argmin",
+                   "source": {
+                    "type": "NodesOfType",
+                    "node_type": "ColourCategory"
+                   },
+                   "var_name": "c",
+                   "value": {
+                    "type": "Sqrt",
+                    "arg": {
+                     "type": "Plus",
+                     "items": [
+                      {
+                       "type": "Times",
+                       "items": [
+                        {
+                         "type": "Minus",
+                         "a": {
+                          "type": "Attr",
+                          "node": {
+                           "type": "Var",
+                           "name": "R"
+                          },
+                          "key": "crg"
+                         },
+                         "b": {
+                          "type": "Attr",
+                          "node": {
+                           "type": "Var",
+                           "name": "c"
+                          },
+                          "key": "crg"
+                         }
+                        },
+                        {
+                         "type": "Minus",
+                         "a": {
+                          "type": "Attr",
+                          "node": {
+                           "type": "Var",
+                           "name": "R"
+                          },
+                          "key": "crg"
+                         },
+                         "b": {
+                          "type": "Attr",
+                          "node": {
+                           "type": "Var",
+                           "name": "c"
+                          },
+                          "key": "crg"
+                         }
+                        }
+                       ]
+                      },
+                      {
+                       "type": "Times",
+                       "items": [
+                        {
+                         "type": "Minus",
+                         "a": {
+                          "type": "Attr",
+                          "node": {
+                           "type": "Var",
+                           "name": "R"
+                          },
+                          "key": "cby"
+                         },
+                         "b": {
+                          "type": "Attr",
+                          "node": {
+                           "type": "Var",
+                           "name": "c"
+                          },
+                          "key": "cby"
+                         }
+                        },
+                        {
+                         "type": "Minus",
+                         "a": {
+                          "type": "Attr",
+                          "node": {
+                           "type": "Var",
+                           "name": "R"
+                          },
+                          "key": "cby"
+                         },
+                         "b": {
+                          "type": "Attr",
+                          "node": {
+                           "type": "Var",
+                           "name": "c"
+                          },
+                          "key": "cby"
+                         }
+                        }
+                       ]
+                      }
+                     ]
+                    }
+                   },
+                   "default": null
+                  },
+                  "key": "crg"
+                 },
+                 "b": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "o"
+                  },
+                  "key": "crg"
+                 }
+                }
+               ]
+              },
+              {
+               "type": "Times",
+               "items": [
+                {
+                 "type": "Minus",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Argmin",
+                   "source": {
+                    "type": "NodesOfType",
+                    "node_type": "ColourCategory"
+                   },
+                   "var_name": "c",
+                   "value": {
+                    "type": "Sqrt",
+                    "arg": {
+                     "type": "Plus",
+                     "items": [
+                      {
+                       "type": "Times",
+                       "items": [
+                        {
+                         "type": "Minus",
+                         "a": {
+                          "type": "Attr",
+                          "node": {
+                           "type": "Var",
+                           "name": "R"
+                          },
+                          "key": "crg"
+                         },
+                         "b": {
+                          "type": "Attr",
+                          "node": {
+                           "type": "Var",
+                           "name": "c"
+                          },
+                          "key": "crg"
+                         }
+                        },
+                        {
+                         "type": "Minus",
+                         "a": {
+                          "type": "Attr",
+                          "node": {
+                           "type": "Var",
+                           "name": "R"
+                          },
+                          "key": "crg"
+                         },
+                         "b": {
+                          "type": "Attr",
+                          "node": {
+                           "type": "Var",
+                           "name": "c"
+                          },
+                          "key": "crg"
+                         }
+                        }
+                       ]
+                      },
+                      {
+                       "type": "Times",
+                       "items": [
+                        {
+                         "type": "Minus",
+                         "a": {
+                          "type": "Attr",
+                          "node": {
+                           "type": "Var",
+                           "name": "R"
+                          },
+                          "key": "cby"
+                         },
+                         "b": {
+                          "type": "Attr",
+                          "node": {
+                           "type": "Var",
+                           "name": "c"
+                          },
+                          "key": "cby"
+                         }
+                        },
+                        {
+                         "type": "Minus",
+                         "a": {
+                          "type": "Attr",
+                          "node": {
+                           "type": "Var",
+                           "name": "R"
+                          },
+                          "key": "cby"
+                         },
+                         "b": {
+                          "type": "Attr",
+                          "node": {
+                           "type": "Var",
+                           "name": "c"
+                          },
+                          "key": "cby"
+                         }
+                        }
+                       ]
+                      }
+                     ]
+                    }
+                   },
+                   "default": null
+                  },
+                  "key": "cby"
+                 },
+                 "b": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "o"
+                  },
+                  "key": "cby"
+                 }
+                },
+                {
+                 "type": "Minus",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Argmin",
+                   "source": {
+                    "type": "NodesOfType",
+                    "node_type": "ColourCategory"
+                   },
+                   "var_name": "c",
+                   "value": {
+                    "type": "Sqrt",
+                    "arg": {
+                     "type": "Plus",
+                     "items": [
+                      {
+                       "type": "Times",
+                       "items": [
+                        {
+                         "type": "Minus",
+                         "a": {
+                          "type": "Attr",
+                          "node": {
+                           "type": "Var",
+                           "name": "R"
+                          },
+                          "key": "crg"
+                         },
+                         "b": {
+                          "type": "Attr",
+                          "node": {
+                           "type": "Var",
+                           "name": "c"
+                          },
+                          "key": "crg"
+                         }
+                        },
+                        {
+                         "type": "Minus",
+                         "a": {
+                          "type": "Attr",
+                          "node": {
+                           "type": "Var",
+                           "name": "R"
+                          },
+                          "key": "crg"
+                         },
+                         "b": {
+                          "type": "Attr",
+                          "node": {
+                           "type": "Var",
+                           "name": "c"
+                          },
+                          "key": "crg"
+                         }
+                        }
+                       ]
+                      },
+                      {
+                       "type": "Times",
+                       "items": [
+                        {
+                         "type": "Minus",
+                         "a": {
+                          "type": "Attr",
+                          "node": {
+                           "type": "Var",
+                           "name": "R"
+                          },
+                          "key": "cby"
+                         },
+                         "b": {
+                          "type": "Attr",
+                          "node": {
+                           "type": "Var",
+                           "name": "c"
+                          },
+                          "key": "cby"
+                         }
+                        },
+                        {
+                         "type": "Minus",
+                         "a": {
+                          "type": "Attr",
+                          "node": {
+                           "type": "Var",
+                           "name": "R"
+                          },
+                          "key": "cby"
+                         },
+                         "b": {
+                          "type": "Attr",
+                          "node": {
+                           "type": "Var",
+                           "name": "c"
+                          },
+                          "key": "cby"
+                         }
+                        }
+                       ]
+                      }
+                     ]
+                    }
+                   },
+                   "default": null
+                  },
+                  "key": "cby"
+                 },
+                 "b": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "o"
+                  },
+                  "key": "cby"
+                 }
+                }
+               ]
+              }
+             ]
+            }
+           },
+           "b": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 2.0
+             },
+             {
+              "type": "Sqrt",
+              "arg": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Times",
+                 "items": [
+                  {
+                   "type": "Minus",
+                   "a": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "R"
+                    },
+                    "key": "crg"
+                   },
+                   "b": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Argmin",
+                     "source": {
+                      "type": "NodesOfType",
+                      "node_type": "ColourCategory"
+                     },
+                     "var_name": "c",
+                     "value": {
+                      "type": "Sqrt",
+                      "arg": {
+                       "type": "Plus",
+                       "items": [
+                        {
+                         "type": "Times",
+                         "items": [
+                          {
+                           "type": "Minus",
+                           "a": {
+                            "type": "Attr",
+                            "node": {
+                             "type": "Var",
+                             "name": "R"
+                            },
+                            "key": "crg"
+                           },
+                           "b": {
+                            "type": "Attr",
+                            "node": {
+                             "type": "Var",
+                             "name": "c"
+                            },
+                            "key": "crg"
+                           }
+                          },
+                          {
+                           "type": "Minus",
+                           "a": {
+                            "type": "Attr",
+                            "node": {
+                             "type": "Var",
+                             "name": "R"
+                            },
+                            "key": "crg"
+                           },
+                           "b": {
+                            "type": "Attr",
+                            "node": {
+                             "type": "Var",
+                             "name": "c"
+                            },
+                            "key": "crg"
+                           }
+                          }
+                         ]
+                        },
+                        {
+                         "type": "Times",
+                         "items": [
+                          {
+                           "type": "Minus",
+                           "a": {
+                            "type": "Attr",
+                            "node": {
+                             "type": "Var",
+                             "name": "R"
+                            },
+                            "key": "cby"
+                           },
+                           "b": {
+                            "type": "Attr",
+                            "node": {
+                             "type": "Var",
+                             "name": "c"
+                            },
+                            "key": "cby"
+                           }
+                          },
+                          {
+                           "type": "Minus",
+                           "a": {
+                            "type": "Attr",
+                            "node": {
+                             "type": "Var",
+                             "name": "R"
+                            },
+                            "key": "cby"
+                           },
+                           "b": {
+                            "type": "Attr",
+                            "node": {
+                             "type": "Var",
+                             "name": "c"
+                            },
+                            "key": "cby"
+                           }
+                          }
+                         ]
+                        }
+                       ]
+                      }
+                     },
+                     "default": null
+                    },
+                    "key": "crg"
+                   }
+                  },
+                  {
+                   "type": "Minus",
+                   "a": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "R"
+                    },
+                    "key": "crg"
+                   },
+                   "b": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Argmin",
+                     "source": {
+                      "type": "NodesOfType",
+                      "node_type": "ColourCategory"
+                     },
+                     "var_name": "c",
+                     "value": {
+                      "type": "Sqrt",
+                      "arg": {
+                       "type": "Plus",
+                       "items": [
+                        {
+                         "type": "Times",
+                         "items": [
+                          {
+                           "type": "Minus",
+                           "a": {
+                            "type": "Attr",
+                            "node": {
+                             "type": "Var",
+                             "name": "R"
+                            },
+                            "key": "crg"
+                           },
+                           "b": {
+                            "type": "Attr",
+                            "node": {
+                             "type": "Var",
+                             "name": "c"
+                            },
+                            "key": "crg"
+                           }
+                          },
+                          {
+                           "type": "Minus",
+                           "a": {
+                            "type": "Attr",
+                            "node": {
+                             "type": "Var",
+                             "name": "R"
+                            },
+                            "key": "crg"
+                           },
+                           "b": {
+                            "type": "Attr",
+                            "node": {
+                             "type": "Var",
+                             "name": "c"
+                            },
+                            "key": "crg"
+                           }
+                          }
+                         ]
+                        },
+                        {
+                         "type": "Times",
+                         "items": [
+                          {
+                           "type": "Minus",
+                           "a": {
+                            "type": "Attr",
+                            "node": {
+                             "type": "Var",
+                             "name": "R"
+                            },
+                            "key": "cby"
+                           },
+                           "b": {
+                            "type": "Attr",
+                            "node": {
+                             "type": "Var",
+                             "name": "c"
+                            },
+                            "key": "cby"
+                           }
+                          },
+                          {
+                           "type": "Minus",
+                           "a": {
+                            "type": "Attr",
+                            "node": {
+                             "type": "Var",
+                             "name": "R"
+                            },
+                            "key": "cby"
+                           },
+                           "b": {
+                            "type": "Attr",
+                            "node": {
+                             "type": "Var",
+                             "name": "c"
+                            },
+                            "key": "cby"
+                           }
+                          }
+                         ]
+                        }
+                       ]
+                      }
+                     },
+                     "default": null
+                    },
+                    "key": "crg"
+                   }
+                  }
+                 ]
+                },
+                {
+                 "type": "Times",
+                 "items": [
+                  {
+                   "type": "Minus",
+                   "a": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "R"
+                    },
+                    "key": "cby"
+                   },
+                   "b": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Argmin",
+                     "source": {
+                      "type": "NodesOfType",
+                      "node_type": "ColourCategory"
+                     },
+                     "var_name": "c",
+                     "value": {
+                      "type": "Sqrt",
+                      "arg": {
+                       "type": "Plus",
+                       "items": [
+                        {
+                         "type": "Times",
+                         "items": [
+                          {
+                           "type": "Minus",
+                           "a": {
+                            "type": "Attr",
+                            "node": {
+                             "type": "Var",
+                             "name": "R"
+                            },
+                            "key": "crg"
+                           },
+                           "b": {
+                            "type": "Attr",
+                            "node": {
+                             "type": "Var",
+                             "name": "c"
+                            },
+                            "key": "crg"
+                           }
+                          },
+                          {
+                           "type": "Minus",
+                           "a": {
+                            "type": "Attr",
+                            "node": {
+                             "type": "Var",
+                             "name": "R"
+                            },
+                            "key": "crg"
+                           },
+                           "b": {
+                            "type": "Attr",
+                            "node": {
+                             "type": "Var",
+                             "name": "c"
+                            },
+                            "key": "crg"
+                           }
+                          }
+                         ]
+                        },
+                        {
+                         "type": "Times",
+                         "items": [
+                          {
+                           "type": "Minus",
+                           "a": {
+                            "type": "Attr",
+                            "node": {
+                             "type": "Var",
+                             "name": "R"
+                            },
+                            "key": "cby"
+                           },
+                           "b": {
+                            "type": "Attr",
+                            "node": {
+                             "type": "Var",
+                             "name": "c"
+                            },
+                            "key": "cby"
+                           }
+                          },
+                          {
+                           "type": "Minus",
+                           "a": {
+                            "type": "Attr",
+                            "node": {
+                             "type": "Var",
+                             "name": "R"
+                            },
+                            "key": "cby"
+                           },
+                           "b": {
+                            "type": "Attr",
+                            "node": {
+                             "type": "Var",
+                             "name": "c"
+                            },
+                            "key": "cby"
+                           }
+                          }
+                         ]
+                        }
+                       ]
+                      }
+                     },
+                     "default": null
+                    },
+                    "key": "cby"
+                   }
+                  },
+                  {
+                   "type": "Minus",
+                   "a": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "R"
+                    },
+                    "key": "cby"
+                   },
+                   "b": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Argmin",
+                     "source": {
+                      "type": "NodesOfType",
+                      "node_type": "ColourCategory"
+                     },
+                     "var_name": "c",
+                     "value": {
+                      "type": "Sqrt",
+                      "arg": {
+                       "type": "Plus",
+                       "items": [
+                        {
+                         "type": "Times",
+                         "items": [
+                          {
+                           "type": "Minus",
+                           "a": {
+                            "type": "Attr",
+                            "node": {
+                             "type": "Var",
+                             "name": "R"
+                            },
+                            "key": "crg"
+                           },
+                           "b": {
+                            "type": "Attr",
+                            "node": {
+                             "type": "Var",
+                             "name": "c"
+                            },
+                            "key": "crg"
+                           }
+                          },
+                          {
+                           "type": "Minus",
+                           "a": {
+                            "type": "Attr",
+                            "node": {
+                             "type": "Var",
+                             "name": "R"
+                            },
+                            "key": "crg"
+                           },
+                           "b": {
+                            "type": "Attr",
+                            "node": {
+                             "type": "Var",
+                             "name": "c"
+                            },
+                            "key": "crg"
+                           }
+                          }
+                         ]
+                        },
+                        {
+                         "type": "Times",
+                         "items": [
+                          {
+                           "type": "Minus",
+                           "a": {
+                            "type": "Attr",
+                            "node": {
+                             "type": "Var",
+                             "name": "R"
+                            },
+                            "key": "cby"
+                           },
+                           "b": {
+                            "type": "Attr",
+                            "node": {
+                             "type": "Var",
+                             "name": "c"
+                            },
+                            "key": "cby"
+                           }
+                          },
+                          {
+                           "type": "Minus",
+                           "a": {
+                            "type": "Attr",
+                            "node": {
+                             "type": "Var",
+                             "name": "R"
+                            },
+                            "key": "cby"
+                           },
+                           "b": {
+                            "type": "Attr",
+                            "node": {
+                             "type": "Var",
+                             "name": "c"
+                            },
+                            "key": "cby"
+                           }
+                          }
+                         ]
+                        }
+                       ]
+                      }
+                     },
+                     "default": null
+                    },
+                    "key": "cby"
+                   }
+                  }
+                 ]
+                }
+               ]
+              }
+             }
+            ]
+           }
+          }
+         ]
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "R",
+     "ci_refused",
+     {
+      "__term__": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "R",
+     "ci_refused_dist",
+     {
+      "__term__": {
+       "type": "Sqrt",
+       "arg": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Times",
+          "items": [
+           {
+            "type": "Minus",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "crg"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Argmin",
+              "source": {
+               "type": "NodesOfType",
+               "node_type": "ColourCategory"
+              },
+              "var_name": "c",
+              "value": {
+               "type": "Sqrt",
+               "arg": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Times",
+                  "items": [
+                   {
+                    "type": "Minus",
+                    "a": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "R"
+                     },
+                     "key": "crg"
+                    },
+                    "b": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "c"
+                     },
+                     "key": "crg"
+                    }
+                   },
+                   {
+                    "type": "Minus",
+                    "a": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "R"
+                     },
+                     "key": "crg"
+                    },
+                    "b": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "c"
+                     },
+                     "key": "crg"
+                    }
+                   }
+                  ]
+                 },
+                 {
+                  "type": "Times",
+                  "items": [
+                   {
+                    "type": "Minus",
+                    "a": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "R"
+                     },
+                     "key": "cby"
+                    },
+                    "b": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "c"
+                     },
+                     "key": "cby"
+                    }
+                   },
+                   {
+                    "type": "Minus",
+                    "a": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "R"
+                     },
+                     "key": "cby"
+                    },
+                    "b": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "c"
+                     },
+                     "key": "cby"
+                    }
+                   }
+                  ]
+                 }
+                ]
+               }
+              },
+              "default": null
+             },
+             "key": "crg"
+            }
+           },
+           {
+            "type": "Minus",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "crg"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Argmin",
+              "source": {
+               "type": "NodesOfType",
+               "node_type": "ColourCategory"
+              },
+              "var_name": "c",
+              "value": {
+               "type": "Sqrt",
+               "arg": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Times",
+                  "items": [
+                   {
+                    "type": "Minus",
+                    "a": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "R"
+                     },
+                     "key": "crg"
+                    },
+                    "b": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "c"
+                     },
+                     "key": "crg"
+                    }
+                   },
+                   {
+                    "type": "Minus",
+                    "a": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "R"
+                     },
+                     "key": "crg"
+                    },
+                    "b": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "c"
+                     },
+                     "key": "crg"
+                    }
+                   }
+                  ]
+                 },
+                 {
+                  "type": "Times",
+                  "items": [
+                   {
+                    "type": "Minus",
+                    "a": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "R"
+                     },
+                     "key": "cby"
+                    },
+                    "b": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "c"
+                     },
+                     "key": "cby"
+                    }
+                   },
+                   {
+                    "type": "Minus",
+                    "a": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "R"
+                     },
+                     "key": "cby"
+                    },
+                    "b": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "c"
+                     },
+                     "key": "cby"
+                    }
+                   }
+                  ]
+                 }
+                ]
+               }
+              },
+              "default": null
+             },
+             "key": "crg"
+            }
+           }
+          ]
+         },
+         {
+          "type": "Times",
+          "items": [
+           {
+            "type": "Minus",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "cby"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Argmin",
+              "source": {
+               "type": "NodesOfType",
+               "node_type": "ColourCategory"
+              },
+              "var_name": "c",
+              "value": {
+               "type": "Sqrt",
+               "arg": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Times",
+                  "items": [
+                   {
+                    "type": "Minus",
+                    "a": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "R"
+                     },
+                     "key": "crg"
+                    },
+                    "b": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "c"
+                     },
+                     "key": "crg"
+                    }
+                   },
+                   {
+                    "type": "Minus",
+                    "a": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "R"
+                     },
+                     "key": "crg"
+                    },
+                    "b": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "c"
+                     },
+                     "key": "crg"
+                    }
+                   }
+                  ]
+                 },
+                 {
+                  "type": "Times",
+                  "items": [
+                   {
+                    "type": "Minus",
+                    "a": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "R"
+                     },
+                     "key": "cby"
+                    },
+                    "b": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "c"
+                     },
+                     "key": "cby"
+                    }
+                   },
+                   {
+                    "type": "Minus",
+                    "a": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "R"
+                     },
+                     "key": "cby"
+                    },
+                    "b": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "c"
+                     },
+                     "key": "cby"
+                    }
+                   }
+                  ]
+                 }
+                ]
+               }
+              },
+              "default": null
+             },
+             "key": "cby"
+            }
+           },
+           {
+            "type": "Minus",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "cby"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Argmin",
+              "source": {
+               "type": "NodesOfType",
+               "node_type": "ColourCategory"
+              },
+              "var_name": "c",
+              "value": {
+               "type": "Sqrt",
+               "arg": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Times",
+                  "items": [
+                   {
+                    "type": "Minus",
+                    "a": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "R"
+                     },
+                     "key": "crg"
+                    },
+                    "b": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "c"
+                     },
+                     "key": "crg"
+                    }
+                   },
+                   {
+                    "type": "Minus",
+                    "a": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "R"
+                     },
+                     "key": "crg"
+                    },
+                    "b": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "c"
+                     },
+                     "key": "crg"
+                    }
+                   }
+                  ]
+                 },
+                 {
+                  "type": "Times",
+                  "items": [
+                   {
+                    "type": "Minus",
+                    "a": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "R"
+                     },
+                     "key": "cby"
+                    },
+                    "b": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "c"
+                     },
+                     "key": "cby"
+                    }
+                   },
+                   {
+                    "type": "Minus",
+                    "a": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "R"
+                     },
+                     "key": "cby"
+                    },
+                    "b": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "c"
+                     },
+                     "key": "cby"
+                    }
+                   }
+                  ]
+                 }
+                ]
+               }
+              },
+              "default": null
+             },
+             "key": "cby"
+            }
+           }
+          ]
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "R",
+     "assigned_epoch",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "scene"
+       },
+       "key": "epoch"
+      }
+     }
+    ]
+   ]
+  }
+ ]
+}

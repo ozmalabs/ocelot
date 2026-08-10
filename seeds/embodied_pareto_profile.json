@@ -1,0 +1,610 @@
+{
+ "id": "embodied_pareto_profile",
+ "version": "2.0.0",
+ "depends_on": [
+  "cognitive_pareto"
+ ],
+ "area": "compatibility",
+ "latency_class": "soft_realtime",
+ "description": "Compatibility mapping from legacy embodied Pareto vocabulary to the general cognitive Pareto and goal-audit faculty.",
+ "nodes": [],
+ "edges": [],
+ "productions": [
+  {
+   "provenance": "embodied_pareto_profile:candidate",
+   "src": {
+    "type": "EmbodiedParetoProfile",
+    "var": "src"
+   },
+   "edge_type": "has_embodied_pareto_candidate",
+   "tgt": {
+    "type": "EmbodiedParetoCandidate",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "embodied_pareto_profile:value",
+   "src": {
+    "type": "EmbodiedParetoCandidate",
+    "var": "src"
+   },
+   "edge_type": "has_embodied_pareto_value",
+   "tgt": {
+    "type": "EmbodiedParetoValue",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "embodied_pareto_profile:dominance",
+   "src": {
+    "type": "EmbodiedParetoCandidate",
+    "var": "src"
+   },
+   "edge_type": "dominates_embodied_pareto_candidate",
+   "tgt": {
+    "type": "EmbodiedParetoCandidate",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "embodied_pareto_profile:dominated_by",
+   "src": {
+    "type": "EmbodiedParetoCandidate",
+    "var": "src"
+   },
+   "edge_type": "is_dominated_by_embodied_candidate",
+   "tgt": {
+    "type": "EmbodiedParetoCandidate",
+    "var": "tgt"
+   }
+  }
+ ],
+ "rules": [
+  {
+   "name": "epp_route_legacy_relations_through_cognitive_pareto",
+   "area": "cognitive_pareto",
+   "latency_class": "soft_realtime",
+   "comment": "Find a concrete counterexample to a candidate without collapsing incomparable objectives into a scalar.",
+   "match": [
+    [
+     "profile",
+     "has_embodied_pareto_candidate",
+     "candidate"
+    ],
+    [
+     "profile",
+     "has_embodied_pareto_candidate",
+     "alternative"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Var",
+        "name": "candidate"
+       },
+       "b": {
+        "type": "Var",
+        "name": "alternative"
+       }
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "candidate"
+         },
+         "edge_type": "has_embodied_pareto_value"
+        },
+        "var_name": "candidate_value",
+        "predicate": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "candidate_value"
+          },
+          "key": "verified"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1
+         }
+        }
+       }
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "profile"
+       },
+       "key": "dimension_count"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "alternative"
+         },
+         "edge_type": "has_embodied_pareto_value"
+        },
+        "var_name": "alternative_value",
+        "predicate": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "alternative_value"
+          },
+          "key": "verified"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1
+         }
+        }
+       }
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "profile"
+       },
+       "key": "dimension_count"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "candidate"
+          },
+          "edge_type": "has_embodied_pareto_value"
+         },
+         "var_name": "candidate_value",
+         "predicate": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "candidate_value"
+           },
+           "key": "verified"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 1
+          }
+         }
+        },
+        "var_name": "candidate_value",
+        "predicate": {
+         "type": "Exists",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "alternative"
+           },
+           "edge_type": "has_embodied_pareto_value"
+          },
+          "var_name": "alternative_value",
+          "predicate": {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "alternative_value"
+            },
+            "key": "verified"
+           },
+           "b": {
+            "type": "Lit",
+            "value": 1
+           }
+          }
+         },
+         "var_name": "alternative_value",
+         "predicate": {
+          "type": "And",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "alternative_value"
+             },
+             "key": "dimension_ordinal"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "candidate_value"
+             },
+             "key": "dimension_ordinal"
+            }
+           },
+           {
+            "type": "Not",
+            "arg": {
+             "type": "Lt",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "alternative_value"
+              },
+              "key": "signed_value"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "candidate_value"
+              },
+              "key": "signed_value"
+             }
+            }
+           }
+          ]
+         }
+        }
+       }
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "profile"
+       },
+       "key": "dimension_count"
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "candidate"
+          },
+          "edge_type": "has_embodied_pareto_value"
+         },
+         "var_name": "candidate_value",
+         "predicate": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "candidate_value"
+           },
+           "key": "verified"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 1
+          }
+         }
+        },
+        "var_name": "candidate_value",
+        "predicate": {
+         "type": "Exists",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "alternative"
+           },
+           "edge_type": "has_embodied_pareto_value"
+          },
+          "var_name": "alternative_value",
+          "predicate": {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "alternative_value"
+            },
+            "key": "verified"
+           },
+           "b": {
+            "type": "Lit",
+            "value": 1
+           }
+          }
+         },
+         "var_name": "alternative_value",
+         "predicate": {
+          "type": "And",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "alternative_value"
+             },
+             "key": "dimension_ordinal"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "candidate_value"
+             },
+             "key": "dimension_ordinal"
+            }
+           },
+           {
+            "type": "Gt",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "alternative_value"
+             },
+             "key": "signed_value"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "candidate_value"
+             },
+             "key": "signed_value"
+            }
+           }
+          ]
+         }
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "candidate"
+        },
+        "edge_type": "is_dominated_by_embodied_candidate"
+       },
+       "var_name": "known_alternative",
+       "predicate": {
+        "type": "Eq",
+        "a": {
+         "type": "Var",
+         "name": "known_alternative"
+        },
+        "b": {
+         "type": "Var",
+         "name": "alternative"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_edge",
+     "alternative",
+     "dominates_embodied_pareto_candidate",
+     "candidate"
+    ],
+    [
+     "add_edge",
+     "candidate",
+     "is_dominated_by_embodied_candidate",
+     "alternative"
+    ],
+    [
+     "set_attr",
+     "candidate",
+     "dominated",
+     1
+    ]
+   ]
+  },
+  {
+   "name": "epp_bridge_candidate_to_cognitive_pareto",
+   "area": "cognitive_pareto",
+   "latency_class": "soft_realtime",
+   "match": [
+    [
+     "profile",
+     "has_embodied_pareto_candidate",
+     "candidate"
+    ]
+   ],
+   "where": {
+    "type": "Not",
+    "arg": {
+     "type": "Exists",
+     "source": {
+      "type": "Neighbours",
+      "node": {
+       "type": "Var",
+       "name": "profile"
+      },
+      "edge_type": "has_pareto_candidate"
+     },
+     "var_name": "known",
+     "predicate": {
+      "type": "Eq",
+      "a": {
+       "type": "Var",
+       "name": "known"
+      },
+      "b": {
+       "type": "Var",
+       "name": "candidate"
+      }
+     }
+    }
+   },
+   "effects": [
+    [
+     "add_edge",
+     "profile",
+     "has_pareto_candidate",
+     "candidate"
+    ]
+   ]
+  },
+  {
+   "name": "epp_bridge_value_to_cognitive_pareto",
+   "area": "cognitive_pareto",
+   "latency_class": "soft_realtime",
+   "match": [
+    [
+     "candidate",
+     "has_embodied_pareto_value",
+     "value"
+    ]
+   ],
+   "where": {
+    "type": "Not",
+    "arg": {
+     "type": "Exists",
+     "source": {
+      "type": "Neighbours",
+      "node": {
+       "type": "Var",
+       "name": "candidate"
+      },
+      "edge_type": "has_pareto_value"
+     },
+     "var_name": "known",
+     "predicate": {
+      "type": "Eq",
+      "a": {
+       "type": "Var",
+       "name": "known"
+      },
+      "b": {
+       "type": "Var",
+       "name": "value"
+      }
+     }
+    }
+   },
+   "effects": [
+    [
+     "add_edge",
+     "candidate",
+     "has_pareto_value",
+     "value"
+    ]
+   ]
+  },
+  {
+   "name": "epp_project_general_dominance_to_legacy_interface",
+   "area": "cognitive_pareto",
+   "latency_class": "soft_realtime",
+   "match": [
+    [
+     "candidate",
+     "is_dominated_by_pareto_candidate",
+     "alternative"
+    ]
+   ],
+   "where": {
+    "type": "Not",
+    "arg": {
+     "type": "Exists",
+     "source": {
+      "type": "Neighbours",
+      "node": {
+       "type": "Var",
+       "name": "candidate"
+      },
+      "edge_type": "is_dominated_by_embodied_candidate"
+     },
+     "var_name": "known",
+     "predicate": {
+      "type": "Eq",
+      "a": {
+       "type": "Var",
+       "name": "known"
+      },
+      "b": {
+       "type": "Var",
+       "name": "alternative"
+      }
+     }
+    }
+   },
+   "effects": [
+    [
+     "add_edge",
+     "alternative",
+     "dominates_embodied_pareto_candidate",
+     "candidate"
+    ],
+    [
+     "add_edge",
+     "candidate",
+     "is_dominated_by_embodied_candidate",
+     "alternative"
+    ]
+   ]
+  }
+ ]
+}

@@ -1,0 +1,38 @@
+  10/100  258s
+  20/100  518s
+  30/100  773s
+  40/100  1023s
+  50/100  1271s
+  60/100  1529s
+  70/100  1785s
+  80/100  2041s
+  90/100  2273s
+  100/100  2496s
+
+==============================================================================
+RUNG 3 CONFIRMATORY — direction selectivity (n=100 seeds 4000-4099)
+eta=2e-03  P1=1600  P2=1600   Bonferroni alpha=0.0167   SESOI=0.049
+==============================================================================
+H1a d_normal  (normal - dark)      -0.0035  95% CI [-0.0077, +0.0005]  p=0.0922   (predicted > 0)
+H1b d_dark    (dark - untrained)   +0.0096  95% CI [+0.0048, +0.0144]  p=0.0001   (predicted ~ 0)
+H1c d_strobe  (normal - strobe)    +0.0114  95% CI [+0.0073, +0.0156]  p=0.0001   (predicted > 0)
+
+  H1a (experience produces direction) : FAIL
+  H1b (waves do NOT, equiv +-0.049)    : PASS
+  H1c (motion, not spatial structure) : PASS
+
+DECISION: NOT BUILT — reported exactly as observed
+
+--- descriptive (NOT tests) ---
+  arm means: untrained 0.1028 | dark 0.1125 | normal 0.1089 | strobe 0.0975
+  floor (untrained) 0.1028 ; ideal (calibration) 0.600 ; range 0.497
+  H1a = -0.0035 = -0.7% of the dynamic range
+  H1b = +0.0096 = +2.0% of the dynamic range
+  H1c = +0.0114 = +2.3% of the dynamic range
+  strobe - untrained = -0.0054  (negative => strobe DISSOLVES the innate bias)
+  per-seed SD: d_normal 0.0209  d_dark 0.0245  d_strobe 0.0216
+
+  event rates, seed 4000:
+    dark      onset 0.0700   burst duty 0.1400
+    normal    onset 0.0496   burst duty 0.5000
+    strobe    onset 0.2534   burst duty 0.5000

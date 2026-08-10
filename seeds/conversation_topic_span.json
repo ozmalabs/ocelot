@@ -1,0 +1,37 @@
+{
+ "id": "conversation_topic_span",
+ "version": "1.0.0",
+ "depends_on": ["intent"],
+ "description": "BLIND-SPOT CLOSURE R7 -- multi-word topic keys miss the HeldAnswer bridge. world_adapter._topic_facts (the frame-based NP extraction the general topic route reads) and shadow_focus (read_clause's own head-only reduction) both reduce a multi-word proper-noun topic to its HEAD noun -- e.g. 'wright'/'brothers' for 'the Wright brothers' -- which never matches the HeldAnswer bridge's key, the deep reader's OWN multi-word entity name ('wright_brothers', minted at document ingest by _mint_document_held_answers off the SAME coref_entities naming convention). world_adapter._shadow_read_turn now records that richer signal mechanically as shadow_doc_topic on the Message, BEFORE any tick() runs this turn: does one of THIS turn's newly-minted SmEntities carry a name that equals an EXISTING HeldAnswer topic -- a graph fact (two independent reads of the SAME deterministic entity-naming function landing on the same string), never a new NP-span heuristic. THIS seed is the DECISION: when shadow_doc_topic is present, it names the true topic, and wins over whatever (possibly head-truncated) guess route_question_to_topic's own comp_topic carries -- so route_shadow_topic_to_answer mints the SAME Goal{kind:answer_topic} shape route_question_to_topic mints, keyed on the richer name. Because shadow_doc_topic is a pre-tick Message attribute (written by the adapter before either rule's engine pass), route_question_to_topic's own NEW deferral guard (mirroring its existing 'your/yours possessive' deferral precedent: 'Not shadow_doc_topic present') is a static precondition check, not an install-order race -- the two rules never double-mint for the same message regardless of seed load order.",
+ "nodes": [],
+ "edges": [],
+ "productions": [],
+ "rules": [
+  {
+   "name": "route_shadow_topic_to_answer",
+   "match": [
+    ["agent", "received", "m"]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "comp_kind"}, "b": {"type": "Lit", "value": "question"}},
+     {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "comprehended"}, "b": {"type": "Lit", "value": 1.0}}},
+     {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "shadow_doc_topic"}, "b": {"type": "Lit", "value": null}}}
+    ]
+   },
+   "effects": [
+    ["set_attr", "m", "comprehended", 1.0],
+    ["add_node", "g", "Goal", {
+      "kind": "answer_topic",
+      "status": "active",
+      "source": "conversation_shadow_span",
+      "concept": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "shadow_doc_topic"}}
+    }],
+    ["add_edge", "agent", "has_goal", "g"],
+    ["add_edge", "g", "comprehends", "m"],
+    ["add_edge", "m", "comprehended_by", "g"]
+   ]
+  }
+ ]
+}

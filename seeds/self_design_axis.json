@@ -1,0 +1,136 @@
+{
+ "id": "self_design_axis",
+ "version": "1.0.0",
+ "depends_on": [],
+ "description": "Adds the self_design CapabilityAxis (frontier-pick eligible) GATED on an open DesignGap, so the agent chooses to design its own faculties via its own selector ONLY when it has a recognised gap \u2014 no domination of autonomy, no external trigger, no LLM.",
+ "microtheory": {
+  "name": "self_design",
+  "description": "designing my own faculties is a capability I choose when I have a gap; the meta-capability over all the others"
+ },
+ "nodes": [
+  {
+   "local_id": 0,
+   "type": "CapabilityAxis",
+   "attrs": {
+    "name": "self_design",
+    "is_axis": 1.0,
+    "saturation": 1.0,
+    "authoring_exhausted": 0.0,
+    "mf_stall": 0.0,
+    "min_order": 0.0,
+    "investigated_count": 0.0,
+    "description": "design my own faculty for a recognised gap by composing any part of my machinery. Chosen only when an open DesignGap exists (gated), so it does not dominate autonomy."
+   }
+  },
+  {
+   "local_id": 1,
+   "type": "InvestigationOperator",
+   "attrs": {
+    "name": "self_design_loop",
+    "about": "drives the self_design capability"
+   }
+  }
+ ],
+ "edges": [
+  {
+   "src": {
+    "local": 0
+   },
+   "type": "investigated_by",
+   "tgt": {
+    "local": 1
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "type": "has_self_design_axis",
+   "tgt": {
+    "local": 0
+   },
+   "attrs": {}
+  }
+ ],
+ "productions": [],
+ "rules": [
+  {
+   "name": "gate_self_design_on_gap",
+   "comment": "tie self_design's frontier value to whether the agent has a recognised gap: open DesignGap -> saturation 0 (elect to design); none -> saturation 1 (pursue other capabilities). No domination.",
+   "match": [
+    [
+     "ag",
+     "has_self_design_axis",
+     "sd"
+    ]
+   ],
+   "where": {
+    "type": "Lit",
+    "value": true
+   },
+   "effects": [
+    [
+     "set_attr",
+     "sd",
+     "saturation",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gte",
+        "a": {
+         "type": "Count",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "NodesOfType",
+           "node_type": "DesignGap"
+          },
+          "var_name": "g",
+          "predicate": {
+           "type": "Gt",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "g"
+              },
+              "key": "open"
+             },
+             {
+              "type": "Lit",
+              "value": 0.0
+             }
+            ]
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0.5
+           }
+          }
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": 0.0
+       },
+       "other": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      }
+     }
+    ]
+   ]
+  }
+ ]
+}

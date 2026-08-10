@@ -1,0 +1,118 @@
+{
+  "id": "hypervisor_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "KVM_kernel_virtual_machine",
+  "in_microtheory": "operating_systems",
+  "description": "Hypervisors + virtualisation decomposed. Hardware virt (VT-x, AMD-V). KVM + QEMU integration. vCPU scheduling. EPT/NPT (nested page tables). VirtIO paravirtualised devices. SR-IOV for pass-through. microVMs (Firecracker, Cloud Hypervisor). Container vs VM isolation trade-offs.",
+  "sub_mechanisms": [
+    {
+      "name": "VT_x_AMD_V_hardware_virt",
+      "definition": "x86 CPU extensions: VMX (Intel) / SVM (AMD). Add 'root mode' (hypervisor) + 'non-root mode' (guest). Privileged operations in guest trap to hypervisor.",
+      "why": "Pre-VT-x, virtualisation required full software trapping (slow) or binary translation (VMware's original approach). Hardware virt makes guest execution near-native; only privileged ops trap. Foundation of modern x86 virtualisation.",
+      "category": "hypervisor_mechanism"
+    },
+    {
+      "name": "VMX_root_non_root",
+      "definition": "VMX root: hypervisor's mode, has all the usual privilege levels (rings 0-3). VMX non-root: guest's mode, similar rings but VMX-controlled.",
+      "why": "Doubles the privilege levels. Guest's ring 0 (kernel) is still subject to VMX checks. VMEXITs transfer to root mode on privileged ops, page faults, interrupts.",
+      "category": "hypervisor_mechanism"
+    },
+    {
+      "name": "VMEXIT_VMENTRY",
+      "definition": "VMEXIT: guest stops, hypervisor takes over (with reason + state). VMENTRY: hypervisor resumes guest.",
+      "why": "Cost ~1000 cycles per transition. Reducing VMEXITs is hypervisor performance work. Common reasons: I/O port access, MSR access, page fault, interrupt. KVM's stat tracks these per guest.",
+      "category": "hypervisor_mechanism"
+    },
+    {
+      "name": "EPT_NPT_nested_page_tables",
+      "definition": "Extended Page Tables (Intel) / Nested Page Tables (AMD): hardware maintains 2 levels of address translation — guest's virtual→guest's physical, guest's physical→host's physical.",
+      "why": "Pre-EPT/NPT: each guest page fault required hypervisor intervention to update shadow page tables. EPT/NPT lets hardware handle both levels — no exit on most page faults. 2-3x speedup on memory-heavy workloads.",
+      "category": "hypervisor_mechanism"
+    },
+    {
+      "name": "KVM_kernel_module",
+      "definition": "Linux kernel module exposing /dev/kvm. User space (QEMU, Firecracker) creates VMs + vCPUs via ioctl on this fd.",
+      "why": "Cleanly separates hypervisor logic (KVM in kernel) from device emulation (QEMU in user space). Lets any user-space program be a VMM. Single source of truth for x86 virtualisation on Linux.",
+      "category": "hypervisor_mechanism"
+    },
+    {
+      "name": "QEMU_device_emulation",
+      "definition": "User-space process emulating hardware devices (NIC, disk, USB, GPU). Translates guest I/O accesses to host operations.",
+      "why": "Most flexible: can emulate any device, even ones not in host. Cost: each I/O access is VMEXIT + handoff to QEMU + emulation + VMENTRY. Slow vs VirtIO. Used for older guest OSes lacking VirtIO drivers.",
+      "category": "hypervisor_mechanism"
+    },
+    {
+      "name": "VirtIO_paravirtualisation",
+      "definition": "Guest-aware device interface: ring buffer of descriptors in shared memory, notification via doorbell. Guest knows it's in a VM.",
+      "why": "Avoid device emulation overhead. Guest writes to ring, host reads, processes batch. Single VMEXIT for many operations. VirtIO drivers in modern Linux/Windows give near-native I/O performance.",
+      "category": "hypervisor_mechanism"
+    },
+    {
+      "name": "vCPU_thread",
+      "definition": "Each guest vCPU is a host OS thread. Scheduler runs vCPU thread; thread enters guest mode (VMENTRY); guest runs until VMEXIT.",
+      "why": "Standard hypervisor architecture. Lets host kernel's scheduler manage vCPUs (mix VMs + native processes). KVM threads visible in ps, top, perf — useful for debugging + tuning.",
+      "category": "hypervisor_mechanism"
+    },
+    {
+      "name": "SR_IOV_pass_through",
+      "definition": "Hardware feature: PCIe device exposes multiple 'virtual functions'. Hypervisor assigns one VF directly to guest.",
+      "why": "Bypass hypervisor for I/O entirely. Guest's driver talks directly to its VF — line-rate networking + storage without VMEXIT cost. Used for 25/100 Gbps NIC pass-through, NVMe direct access.",
+      "category": "hypervisor_mechanism"
+    },
+    {
+      "name": "microVM_minimal_device_set",
+      "definition": "Firecracker / Cloud Hypervisor expose only minimal devices: VirtIO net, block, balloon. No legacy PC emulation.",
+      "why": "Fast boot (no BIOS / UEFI; jump straight to kernel). Small attack surface. ~125 ms VM start vs ~seconds for full QEMU. Powers Lambda + Fargate.",
+      "category": "hypervisor_mechanism"
+    },
+    {
+      "name": "VM_kernel_hosting",
+      "definition": "Each VM has its own kernel. Different from containers (shared kernel). Boot loader + kernel + init.",
+      "why": "Stronger isolation: kernel exploit in guest doesn't reach host. Cost: kernel memory per VM (~tens of MB), boot time, can't share kernel cache. Trade-off vs container's lightweight shared-kernel model.",
+      "category": "hypervisor_mechanism"
+    },
+    {
+      "name": "PSI_pressure_stall_information",
+      "definition": "Linux PSI: kernel exposes 'how much time was stalled waiting for resource' per cgroup. Available for CPU, memory, I/O.",
+      "why": "Better than utilisation metrics for capacity planning. 100% CPU might be fine (work getting done); 100% with PSI showing stalls = contention. Modern OOM responses (oomd) use PSI.",
+      "category": "hypervisor_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "VT_x_AMD_V_make_virtualisation_near_native",
+      "if": ["CPU supports hardware virtualisation"],
+      "then": ["guest execution is near-native speed"],
+      "why": "Most instructions run directly on hardware. Only privileged operations trap. VMEXIT cost (~1000 cycles) is small fraction of total execution if VMEXITs are rare. Compared to binary translation (VMware's pre-VT-x approach): ~10x faster.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "VirtIO_amortises_IO_overhead_via_batching",
+      "if": ["device uses VirtIO ring buffer"],
+      "then": ["multiple I/O operations share one VMEXIT"],
+      "why": "Guest queues descriptors in ring; one doorbell notification. Host processes batch. Without VirtIO, each I/O access is one VMEXIT. Throughput improvement: 10x+ on network/disk I/O.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "SR_IOV_eliminates_hypervisor_from_IO_path",
+      "if": ["guest has SR-IOV VF assigned"],
+      "then": ["I/O bypasses hypervisor entirely"],
+      "why": "Guest driver writes directly to VF. No VMEXIT, no host processing. Line-rate networking achievable. Cost: per-VF hardware resource; less flexibility (VF assigned at boot).",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "microVM_isolation_stronger_than_container",
+      "if": ["a workload runs in a microVM with its own kernel"],
+      "then": ["a kernel exploit in the workload doesn't compromise the host"],
+      "why": "Workload's kernel is the boundary. Container shares kernel with host — kernel exploit affects host. microVM's isolation is the reason AWS uses Firecracker for Lambda despite container-like UX.",
+      "soundness_category": "referential_transparency"
+    },
+    {
+      "name": "PSI_better_metric_than_utilisation_for_pressure",
+      "if": ["CPU utilisation is 100%"],
+      "then": ["it could be saturated or just busy"],
+      "why": "Utilisation doesn't distinguish 'CPU busy doing useful work' from 'tasks waiting for CPU'. PSI's stall percentage directly measures contention. Used by modern Linux capacity planning + OOM decisions.",
+      "soundness_category": "denotational_equivalence"
+    }
+  ]
+}

@@ -1,0 +1,118 @@
+{
+  "id": "logic_paradoxes_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "Russell_paradox",
+  "in_microtheory": "philosophy",
+  "description": "Logic + paradoxes decomposed. Tarski hierarchy of truth, paraconsistent logic, dialetheism, surprise exam paradox, Newcomb's problem, Sleeping Beauty problem, two-envelope paradox, intuitionism.",
+  "sub_mechanisms": [
+    {
+      "name": "Tarski_truth_hierarchy",
+      "definition": "Tarski 1933: truth defined at higher meta-language level. Avoids liar.",
+      "why": "Foundation of formal theory of truth. Object language + meta-language. Cost: artificial; natural language permits truth talk freely.",
+      "category": "logic_paradox_mechanism"
+    },
+    {
+      "name": "paraconsistent_logic",
+      "definition": "Logic where contradictions don't entail everything. Reject ex falso quodlibet.",
+      "why": "Priest: dialetheism — some contradictions true. Handles liar + similar. Applied: AI knowledge bases, conflicting databases.",
+      "category": "logic_paradox_mechanism"
+    },
+    {
+      "name": "dialetheism",
+      "definition": "Some contradictions true. Priest. Liar = true and false.",
+      "why": "Radical response to paradoxes. Cost: revision of logic. Strong philosophical defense + opposition.",
+      "category": "logic_paradox_mechanism"
+    },
+    {
+      "name": "surprise_exam_paradox",
+      "definition": "Teacher: surprise exam this week. Reasoning eliminates each day. So no surprise possible. Yet exam happens.",
+      "why": "Self-defeating prediction. Variants in epistemic logic. Modern analyses: KK principle failure.",
+      "category": "logic_paradox_mechanism"
+    },
+    {
+      "name": "Newcomb_problem",
+      "definition": "Take one box ($1M if predictor predicted you take one) or both ($1000 + the $1M box)? Two-boxer vs one-boxer.",
+      "why": "Decision theory. EDT vs CDT. Foundational puzzle. AI alignment: how should we reason about predictors?",
+      "category": "logic_paradox_mechanism"
+    },
+    {
+      "name": "sleeping_beauty",
+      "definition": "Coin flip: heads = wake once; tails = wake twice. On waking: what credence in heads?",
+      "why": "Probabilistic puzzle. Halfers (1/2) vs thirders (1/3). Foundation of anthropic reasoning. AI: self-locating beliefs.",
+      "category": "logic_paradox_mechanism"
+    },
+    {
+      "name": "two_envelope_paradox",
+      "definition": "One envelope has 2x money of other. Reason: switch expected value 1.25x. Should always switch?",
+      "why": "Paradox: symmetric reasoning. Resolution: improper prior or computational error. Foundation expected value reasoning.",
+      "category": "logic_paradox_mechanism"
+    },
+    {
+      "name": "intuitionistic_logic",
+      "definition": "Reject law of excluded middle for undecidable. Brouwer + Heyting.",
+      "why": "Constructive math. Foundation of dependent type theory, Curry-Howard. Standard in CS theory + AI proof assistants.",
+      "category": "logic_paradox_mechanism"
+    },
+    {
+      "name": "Bayesian_updating",
+      "definition": "P(H|E) = P(E|H)P(H)/P(E). Foundation probabilistic reasoning.",
+      "why": "Rationality standard. Subjective Bayesianism (de Finetti, Savage). Foundation modern epistemology. Statistical practice.",
+      "category": "logic_paradox_mechanism"
+    },
+    {
+      "name": "Curry_paradox",
+      "definition": "'If this sentence is true, then 0 = 1.' Yields contradiction via conditional reasoning.",
+      "why": "Variant of liar. Avoids self-reference but yields contradiction. Foundation: even conditional + truth predicate problematic.",
+      "category": "logic_paradox_mechanism"
+    },
+    {
+      "name": "monty_hall_problem",
+      "definition": "3 doors, 1 prize. Pick one. Host opens an empty one. Switch?",
+      "why": "Counter-intuitive: switching wins 2/3. Foundation probabilistic reasoning. Information from host's action.",
+      "category": "logic_paradox_mechanism"
+    },
+    {
+      "name": "Wittgenstein_rule_following",
+      "definition": "Kripke's Wittgenstein: no fact determines that I follow plus rather than 'quus'.",
+      "why": "Foundation of meaning skepticism. Implications for AI: how do machines mean anything? Substrate's response: meaning is structural.",
+      "category": "logic_paradox_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "Tarski_hierarchy_avoids_liar_at_cost",
+      "if": ["truth is defined hierarchically"],
+      "then": ["liar paradox blocked"],
+      "why": "Object language can't speak own truth. Cost: artificial; natural language permits. Foundation of formal semantics. Standard response.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "paraconsistency_lives_with_contradiction",
+      "if": ["theory accepts paraconsistent logic"],
+      "then": ["contradictions don't trivialise"],
+      "why": "Classical: contradiction entails everything. Paraconsistent: bounded. Modern AI database integration uses. Practical.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "Newcomb_one_boxer_evidential",
+      "if": ["evidential decision theory"],
+      "then": ["one-box (your action evidence for predictor's prior choice)"],
+      "why": "EDT vs CDT divide. Many philosophers two-box (causally choose more); EDT one-boxers win $1M. Foundation decision theory.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "sleeping_beauty_thirder_more_accepted",
+      "if": ["asked credence on awaking"],
+      "then": ["1/3 better supported (thirder view)"],
+      "why": "Self-locating uncertainty. Thirders dominate (Elga, Bostrom). Halfers (Lewis). Anthropic reasoning extension.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "intuitionistic_logic_constructive",
+      "if": ["proof in intuitionistic logic"],
+      "then": ["actual construction provided (no excluded middle)"],
+      "why": "Strong notion: prove X by constructing. Foundation: dependent types, Coq, Lean. Constructive mathematics. Modern programming.",
+      "soundness_category": "denotational_equivalence"
+    }
+  ]
+}

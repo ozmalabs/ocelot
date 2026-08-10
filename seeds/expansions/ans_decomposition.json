@@ -1,0 +1,106 @@
+{
+  "id": "ans_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "asymmetric_numeral_systems",
+  "in_microtheory": "video_coding_theory",
+  "description": "ANS (Asymmetric Numeral Systems, Duda 2014) decomposed into its sub-mechanisms. Where arithmetic coding tracks an interval, ANS tracks a single integer state x that encodes the entire message. Encoding pushes symbols into x by a state transition; decoding reverses the transition to extract the next symbol. The key insight: by reading the state's low bits modulo the symbol count, ANS recovers symbols in REVERSE order at decode — making the encoder process the message backward and the decoder process it forward.",
+  "sub_mechanisms": [
+    {
+      "name": "state_integer_x",
+      "definition": "ANS's single state variable — an integer in a 'normalisation range' [L, bL), where L is the lowest legal state and b is the radix (typically 2 for binary streams, 256 for byte streams).",
+      "why": "Replaces arithmetic coding's interval (low, range) pair with a single number. Information theory says the state carries -log_2(x) - log_2(L) bits of information about the message; this IS the compression. State space [L, bL) constrains it for renormalisation.",
+      "category": "ans_mechanism"
+    },
+    {
+      "name": "encoding_transition",
+      "definition": "Encoding symbol s with probability p(s) ≈ f(s)/m advances state x → C(x, s) = m * (x / f(s)) + b(s) + (x mod f(s)), where f(s) is the symbol frequency, b(s) is the cumulative frequency below s, and m is the total frequency (typically 2^k for some k).",
+      "why": "The formula is constructed to make the state's bits implicitly encode p(s) when decoded. Inverting it (decoding) is a single division + lookup — symmetric in cost.",
+      "category": "ans_mechanism"
+    },
+    {
+      "name": "decoding_transition",
+      "definition": "Decoding extracts symbol s from x → D(x), where the next x is x' = f(s) * (x / m) + (x mod m) - b(s). The symbol s itself is found by reading x mod m and looking up which symbol's [b(s), b(s)+f(s)) interval contains it.",
+      "why": "Symmetric inverse of encoding. The mod-m residue identifies the symbol; the division extracts the residual state for the next decode step. Decoding processes the stream BACKWARD relative to encoding.",
+      "category": "ans_mechanism"
+    },
+    {
+      "name": "rANS_streaming_renormalisation",
+      "definition": "rANS (range ANS) variant: when the state x grows above bL, emit the low log_2(b) bits and shift right. Reverses on decode: when state x falls below L, read bits and shift left.",
+      "why": "Without renormalisation, x grows unboundedly. Renormalisation maintains [L, bL) bounds while emitting bits at the rate of the source's entropy. The bit-emission rate equals the average information content per symbol — Shannon-optimal.",
+      "category": "ans_mechanism"
+    },
+    {
+      "name": "tANS_table_based",
+      "definition": "tANS (table ANS) variant: precomputes a lookup table from (state, symbol) → next state, eliminating the divisions in the encoding/decoding transitions. Trades memory for compute.",
+      "why": "Divisions are slow on most CPUs. tANS replaces them with a table lookup — typically 1-4 KB for a 256-symbol alphabet. Used by Zstandard, FSE (Finite State Entropy). Same compression as rANS, much faster.",
+      "category": "ans_mechanism"
+    },
+    {
+      "name": "frequency_table",
+      "definition": "Per-context table of symbol frequencies f(s) summing to m (typically 2^k for some small k). The table IS the probability model.",
+      "why": "Same role as CABAC's context state or MS-AC's CDF. Sums to a power of two so that the m mod m operation is a cheap bit mask. Quantising probabilities to integer frequencies gives ANS its arithmetic precision.",
+      "category": "ans_mechanism"
+    },
+    {
+      "name": "frequency_alias_table",
+      "definition": "An auxiliary table that maps each value v ∈ [0, m) back to the symbol s such that b(s) ≤ v < b(s) + f(s). Used during decoding to find the symbol from x mod m in O(1).",
+      "why": "Without this, decoding would need a binary search over cumulative frequencies — O(log N) per symbol. With it, decoding is O(1). The table is ~m bytes; trivially small for natural symbol counts.",
+      "category": "ans_mechanism"
+    },
+    {
+      "name": "reverse_order_encoding",
+      "definition": "ANS encodes the message from LAST symbol to FIRST. The decoder, reading the resulting bitstream, recovers symbols from FIRST to LAST. This asymmetry is the 'asymmetric' in ANS.",
+      "why": "The state x at the end of encoding (= start of decoding) carries information about EVERY symbol pushed into it. The reverse order makes the decoder's first symbol available immediately — no warmup required. Adapts cleanly to streams that need random access.",
+      "category": "ans_mechanism"
+    },
+    {
+      "name": "parallel_decoding_streams",
+      "definition": "ANS streams can be interleaved: multiple independent state variables encode different symbol streams, sharing one output buffer. Decoding processes them in parallel on SIMD hardware.",
+      "why": "JPEG XL exploits this for ~4x decoder throughput on modern CPUs. Each state can decode independently because their renormalisation reads from independent bit positions in the buffer. ANS is the entropy coder of choice when decode throughput dominates.",
+      "category": "ans_mechanism"
+    },
+    {
+      "name": "initial_state_seed",
+      "definition": "Encoding starts with state x = L (the lowest legal state). The decoder reverses: it starts with x = the final encoder state, which must be transmitted (typically 16 bits prepended to the stream).",
+      "why": "The seed is the cost of getting decoder + encoder in sync. Small overhead amortised over the message. For very short messages, the seed cost dominates — ANS isn't a good choice; for long messages, it's negligible.",
+      "category": "ans_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "ans_state_carries_information_about_message",
+      "if": ["state x has been advanced by symbols s_1, s_2, ..., s_n"],
+      "then": ["log_2(x) - log_2(L) bits identify those n symbols"],
+      "why": "Each push of symbol s expands the state by ~1/p(s) (multiplicatively). The accumulated state size is -sum log p(s_i) = the message's information content. ANS literally encodes Shannon entropy into the state's bits.",
+      "soundness_category": "algebraic_law"
+    },
+    {
+      "name": "tans_table_eliminates_division",
+      "if": ["state transitions are precomputed into a lookup table"],
+      "then": ["per-symbol decode cost drops to one table lookup"],
+      "why": "Divisions are 20-30 cycles on most CPUs; table lookups are 1-3 cycles after warmup. For long messages, the per-symbol speedup dominates the small memory cost. Zstandard demonstrates ~50% speedup over rANS at the same compression.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "ans_approaches_entropy_with_finite_precision",
+      "if": ["frequencies sum to m = 2^k bits of precision"],
+      "then": ["coding overhead is bounded by ~1/(2^k) bits per symbol"],
+      "why": "The quantisation of probabilities to integers introduces a small overhead vs the ideal arithmetic coder. With m = 2^14 (typical), overhead is ~0.0001 bits per symbol — undetectable. ANS is asymptotically Shannon-optimal.",
+      "soundness_category": "algebraic_law"
+    },
+    {
+      "name": "interleaved_streams_parallelise_decode",
+      "if": ["independent ANS streams share one output buffer with disjoint bit positions"],
+      "then": ["decoding parallelises trivially on SIMD"],
+      "why": "Each state's renormalisation reads from its own bit position. SIMD-wide reads + parallel state updates extract N symbols per cycle for N parallel streams. Used by JPEG XL, Recoil (research GPU decoder).",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "ans_decoding_is_symbol_to_symbol_immediate",
+      "if": ["the decoder starts from the final encoder state"],
+      "then": ["the first decoded symbol is the message's first symbol — no warmup"],
+      "why": "Reverse-order encoding means the decoder's start position carries the first symbol's information. Compare to arithmetic coding, where the decoder must read enough bits to localise the interval before any symbol can be extracted.",
+      "soundness_category": "extensional_equivalence"
+    }
+  ]
+}

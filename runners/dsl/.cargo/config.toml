@@ -1,0 +1,22 @@
+# Memory-safe build defaults for this crate.
+#
+# This box runs persistently swap-heavy (30GB RAM, zram swap often
+# >15GB used). The release profile uses fat LTO + codegen-units=1
+# (see Cargo.toml [profile.release]) for benchmark fidelity, which
+# means each codegen unit holds 1-2GB. With the default ~12 parallel
+# jobs that peaks well past available memory and the OOM killer takes
+# the build down mid-compile (exit 137).
+#
+# Capping jobs to 4 cuts peak compile memory ~3x while keeping builds
+# reasonably fast. Debug builds (which were never the problem) are
+# unaffected in practice. The release profile is untouched, so
+# benchmark numbers stay valid.
+#
+# If a heavy `--release` build still OOMs, drop further for that run:
+#   CARGO_BUILD_JOBS=2 cargo build --release
+#
+# And note: tests do NOT need --release. `cargo test` (debug) is the
+# memory-safe default for the suite; only reach for --release when a
+# specific perf/codec test is too slow in debug.
+[build]
+jobs = 4

@@ -1,0 +1,33 @@
+{
+ "id": "syntactic_construction_cue",
+ "version": "1.0.0",
+ "depends_on": ["relation_vocabulary"],
+ "description": "SYNTACTIC-CONSTRUCTION RelationCue (graph data) extending the relation-vocabulary lexicon so the self-build composer can GROUND a SYNTACTIC concern (a function word FRAMES / PRECEDES a content word = the 'the X' construction) to a structural relation whose label routes ground_concern to _compose_construction_rule. Added as its OWN seed (not by editing relation_vocabulary.json) because _load_relation_cues reads ALL RelationCue nodes; a new cue = new data. The agent, given a framed concern that leads each clause with one of these keywords, grounds it via THIS cue (held RelationCue perception, donkey=0) and AUTHORS the graph-native construction rule.",
+ "nodes": [
+  {
+   "local_id": 1,
+   "type": "RelationCue",
+   "attrs": {
+    "name": "function_frames_content",
+    "keywords": [
+     "frame",
+     "frames",
+     "framing",
+     "precede",
+     "precedes",
+     "preceding",
+     "function word",
+     "function-word",
+     "closed-class",
+     "determiner",
+     "the x",
+     "construct",
+     "construction",
+     "word order"
+    ],
+    "relation": "[\"construct\",\"FORM\",\"frames\",\"MEANING\"]"
+   }
+  }
+ ],
+ "edges": []
+}

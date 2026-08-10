@@ -1,0 +1,982 @@
+{
+ "id": "world_understanding",
+ "version": "1.0.0",
+ "depends_on": [],
+ "description": "The world-understanding interface (the creator's reframe: not a game-player, a world-understander pointed at a world). Hardcodes only the six universal ROLES; game is data. BIND mints a WorldBinding + six WorldRole slots on any recognised world; held faculties fill them; worlds nest (rollup_value/terminal_escalate/contain/reconcile); a backgrounded terminal is deduce-extrapolated (terminal_watch) and preempts a worker back (preempt_for_terminal). Frames (Game/Conversation) are priors over how a world-KIND fills the roles. Consumers (navigate_alive) + the parallel allocator are adapter methods over the held WorkerPool. Built+verified: world_roles/nesting/interrupt/conversation.",
+ "microtheory": {
+  "name": "world_understanding",
+  "description": "six universal world-roles + frame library; bind any world, nest worlds, attend per-binding up to system backpressure"
+ },
+ "nodes": [
+  {
+   "local_id": 0,
+   "type": "WorldFrame",
+   "attrs": {
+    "kind": "Game",
+    "shape": "prediction_minus_observation",
+    "fills_controllable_locus": "respond_votes",
+    "fills_value_signal": "score",
+    "fills_terminal": "death",
+    "fills_goal": "positive_kind",
+    "fills_affordance_effect": "action_delta",
+    "fills_dynamics": "region_postulates"
+   }
+  },
+  {
+   "local_id": 1,
+   "type": "WorldFrame",
+   "attrs": {
+    "kind": "Conversation",
+    "shape": "dialogic_exchange",
+    "fills_controllable_locus": "write_head",
+    "fills_value_signal": "uptake_minus_repair",
+    "fills_terminal": "breakdown",
+    "fills_goal": "intent_satisfied",
+    "fills_affordance_effect": "speech_acts",
+    "fills_dynamics": "turn_taking_laws"
+   }
+  }
+ ],
+ "edges": [],
+ "productions": [],
+ "rules": [
+  {
+   "name": "bind_world",
+   "comment": "recognise a world -> mint a WorldBinding + the six universal role slots (controllable_locus/affordance_effect/value_signal/dynamics/terminal/goal). Game is data; this names no game-noun. Single-fire via world.has_binding.",
+   "match": [
+    [
+     "body",
+     "inhabits",
+     "w"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "w"
+        },
+        "key": "world_type"
+       },
+       "b": {
+        "type": "Lit",
+        "value": ""
+       }
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "w"
+         },
+         "key": "has_binding"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "bnd",
+     "WorldBinding",
+     {
+      "kind": "unknown",
+      "activation": "active"
+     }
+    ],
+    [
+     "add_edge",
+     "bnd",
+     "binds",
+     "w"
+    ],
+    [
+     "set_attr",
+     "w",
+     "has_binding",
+     1.0
+    ],
+    [
+     "add_node",
+     "s0",
+     "WorldRole",
+     {
+      "role": "controllable_locus",
+      "status": "unbound",
+      "confidence": 0.0
+     }
+    ],
+    [
+     "add_edge",
+     "bnd",
+     "role",
+     "s0"
+    ],
+    [
+     "add_node",
+     "s1",
+     "WorldRole",
+     {
+      "role": "affordance_effect",
+      "status": "unbound",
+      "confidence": 0.0
+     }
+    ],
+    [
+     "add_edge",
+     "bnd",
+     "role",
+     "s1"
+    ],
+    [
+     "add_node",
+     "s2",
+     "WorldRole",
+     {
+      "role": "value_signal",
+      "status": "unbound",
+      "confidence": 0.0
+     }
+    ],
+    [
+     "add_edge",
+     "bnd",
+     "role",
+     "s2"
+    ],
+    [
+     "add_node",
+     "s3",
+     "WorldRole",
+     {
+      "role": "dynamics",
+      "status": "unbound",
+      "confidence": 0.0
+     }
+    ],
+    [
+     "add_edge",
+     "bnd",
+     "role",
+     "s3"
+    ],
+    [
+     "add_node",
+     "s4",
+     "WorldRole",
+     {
+      "role": "terminal",
+      "status": "unbound",
+      "confidence": 0.0
+     }
+    ],
+    [
+     "add_edge",
+     "bnd",
+     "role",
+     "s4"
+    ],
+    [
+     "add_node",
+     "s5",
+     "WorldRole",
+     {
+      "role": "goal",
+      "status": "unbound",
+      "confidence": 0.0
+     }
+    ],
+    [
+     "add_edge",
+     "bnd",
+     "role",
+     "s5"
+    ]
+   ]
+  },
+  {
+   "name": "rollup_value",
+   "comment": "child value contributes to parent value via rollup_factor (winning a sub-world is value in the parent). Applied where the child value role rolls_up_to the parent value role.",
+   "match": [
+    [
+     "cv",
+     "rolls_up_to",
+     "pv"
+    ]
+   ],
+   "where": {
+    "type": "Lit",
+    "value": true
+   },
+   "effects": [
+    [
+     "set_attr",
+     "pv",
+     "value",
+     {
+      "__term__": {
+       "type": "Times",
+       "items": [
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "cv"
+           },
+           "key": "value"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        },
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "cv"
+           },
+           "key": "rollup_factor"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "terminal_escalate",
+   "comment": "a child terminal marked escalates fires the parent terminal (dying in the environment ends everything).",
+   "match": [
+    [
+     "cb",
+     "parent_binding",
+     "pb"
+    ],
+    [
+     "cb",
+     "role",
+     "ct"
+    ],
+    [
+     "pb",
+     "role",
+     "tp"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ct"
+       },
+       "key": "role"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "terminal"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "tp"
+       },
+       "key": "role"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "terminal"
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "ct"
+         },
+         "key": "fired"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ct"
+       },
+       "key": "escalation"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "escalates"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "tp",
+     "fired",
+     1.0
+    ]
+   ]
+  },
+  {
+   "name": "terminal_contain",
+   "comment": "a child terminal marked contained deactivates only the child subtree (losing a minigame drops back to the overworld).",
+   "match": [
+    [
+     "cb",
+     "role",
+     "ct"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ct"
+       },
+       "key": "role"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "terminal"
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "ct"
+         },
+         "key": "fired"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ct"
+       },
+       "key": "escalation"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "contained"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "cb",
+     "activation",
+     "dormant"
+    ]
+   ]
+  },
+  {
+   "name": "reconcile_escalation",
+   "comment": "OBSERVED, not declared: a contained child whose parent actually halted was mis-seeded -> flip to escalates (evidence overwrites the bit).",
+   "match": [
+    [
+     "cb",
+     "parent_binding",
+     "pb"
+    ],
+    [
+     "cb",
+     "role",
+     "ct"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ct"
+       },
+       "key": "role"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "terminal"
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "ct"
+         },
+         "key": "fired"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ct"
+       },
+       "key": "escalation"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "contained"
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "pb"
+         },
+         "key": "dynamics_halted"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "ct",
+     "escalation",
+     "escalates"
+    ]
+   ]
+  },
+  {
+   "name": "terminal_watch",
+   "comment": "O(1) DEDUCE on a SUSPENDED (backgrounded) binding: roll its stored terminal forward by its own postulate (hazard_dist -= hazard_vel) each clock tick, no worker, no perception. Frame-guarded on the binding clock.",
+   "match": [
+    [
+     "b",
+     "role",
+     "tr"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "b"
+       },
+       "key": "activation"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "suspended"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "tr"
+       },
+       "key": "role"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "terminal"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "tr"
+          },
+          "key": "last_watch"
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       },
+       "b": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "b"
+          },
+          "key": "clk"
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "tr",
+     "last_watch",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "b"
+         },
+         "key": "clk"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "tr",
+     "hazard_dist",
+     {
+      "__term__": {
+       "type": "Minus",
+       "a": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "tr"
+          },
+          "key": "hazard_dist"
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       },
+       "b": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "tr"
+          },
+          "key": "hazard_vel"
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       }
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "preempt_for_terminal",
+   "comment": "extrapolated imminence crossed threshold -> reactivate the backgrounded binding (pull a worker back) BEFORE the terminal fires.",
+   "match": [
+    [
+     "b",
+     "role",
+     "tr"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "b"
+       },
+       "key": "activation"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "suspended"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "tr"
+       },
+       "key": "role"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "terminal"
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "tr"
+         },
+         "key": "hazard_dist"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "tr"
+           },
+           "key": "preempt_threshold"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        },
+        {
+         "type": "Lit",
+         "value": 0.001
+        }
+       ]
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "b",
+     "activation",
+     "active"
+    ],
+    [
+     "set_attr",
+     "b",
+     "urgency",
+     1.0
+    ],
+    [
+     "set_attr",
+     "b",
+     "preempted",
+     1.0
+    ]
+   ]
+  },
+  {
+   "name": "contact_consequence",
+   "comment": "learn a kind's consequence from the visible reward",
+   "match": [
+    [
+     "g",
+     "tracks_consequence",
+     "cm"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "cm"
+       },
+       "key": "rvalue"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "contact_rvalue"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "g"
+        },
+        "key": "contact_rvalue"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "cm",
+     "clocked",
+     1.0
+    ],
+    [
+     "set_attr",
+     "cm",
+     "tasted",
+     1.0
+    ],
+    [
+     "set_attr",
+     "cm",
+     "next_value",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "cm"
+           },
+           "key": "value"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        },
+        {
+         "type": "Times",
+         "items": [
+          {
+           "type": "Lit",
+           "value": 0.5
+          },
+          {
+           "type": "Minus",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "g"
+              },
+              "key": "reward"
+             },
+             {
+              "type": "Lit",
+              "value": 0.0
+             }
+            ]
+           },
+           "b": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "cm"
+              },
+              "key": "value"
+             },
+             {
+              "type": "Lit",
+              "value": 0.0
+             }
+            ]
+           }
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  }
+ ]
+}

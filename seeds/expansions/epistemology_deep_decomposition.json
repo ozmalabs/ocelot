@@ -1,0 +1,118 @@
+{
+  "id": "epistemology_deep_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "JTB_knowledge",
+  "in_microtheory": "philosophy",
+  "description": "Epistemology decomposed. Post-Gettier responses (no-false-lemmas, sensitivity, safety, virtue), evidentialism, contextualism, social epistemology, testimony, peer disagreement, naturalised epistemology, skeptical hypotheses.",
+  "sub_mechanisms": [
+    {
+      "name": "no_false_lemmas_response",
+      "definition": "Add: belief not based on any false intermediate. Closes some Gettier cases.",
+      "why": "Earliest Gettier fix. Standard textbook response. Cost: not all Gettier cases involve false lemmas.",
+      "category": "epist_deep_mechanism"
+    },
+    {
+      "name": "sensitivity_condition",
+      "definition": "Nozick: belief sensitive iff would not believe were it not true. Closure-violating.",
+      "why": "Counterfactual analysis. Handles Gettier but creates new problems (closure failure). Influential.",
+      "category": "epist_deep_mechanism"
+    },
+    {
+      "name": "safety_condition",
+      "definition": "Sosa: belief safe iff couldn't easily have been wrong. Preserves closure.",
+      "why": "Modern replacement for sensitivity. Standard in contemporary epistemology. Robust + intuitive.",
+      "category": "epist_deep_mechanism"
+    },
+    {
+      "name": "virtue_epistemology",
+      "definition": "Knowledge = belief produced by intellectual virtues (Sosa, Zagzebski).",
+      "why": "Modern framework. Cognitive character central. Influence on ethics of belief, education.",
+      "category": "epist_deep_mechanism"
+    },
+    {
+      "name": "evidentialism",
+      "definition": "Beliefs justified iff fit total evidence. Feldman + Conee.",
+      "why": "Internalist mainstream. Foundation of contemporary epistemology of evidence. Cost: nature of 'evidence' contested.",
+      "category": "epist_deep_mechanism"
+    },
+    {
+      "name": "contextualism_knowledge",
+      "definition": "Knowledge attributions context-sensitive. 'Knows' changes meaning with stakes.",
+      "why": "DeRose, Cohen. Handles skeptical pressure. 'I know I have hands' (normal context); 'I don't know I'm not a BIV' (skeptical context).",
+      "category": "epist_deep_mechanism"
+    },
+    {
+      "name": "social_epistemology",
+      "definition": "Epistemology of testimony, expertise, scientific communities, online discourse.",
+      "why": "Modern subdiscipline. Bulk of beliefs from testimony. Goldman, Coady. Critical for AI: testimony from machines.",
+      "category": "epist_deep_mechanism"
+    },
+    {
+      "name": "testimony_problem",
+      "definition": "When justified in believing what another tells me? Reductionism (need independent reasons) vs anti-reductionism.",
+      "why": "Foundation social epistemology. Coady defends anti-reductionism: testimony basic source. Importance for science + AI.",
+      "category": "epist_deep_mechanism"
+    },
+    {
+      "name": "peer_disagreement",
+      "definition": "Epistemic peers disagree: should one revise? Conciliationism vs steadfast view.",
+      "why": "Contemporary debate. Conciliation: lower confidence; steadfast: maintain. Implications: science, politics, expertise.",
+      "category": "epist_deep_mechanism"
+    },
+    {
+      "name": "naturalised_epistemology",
+      "definition": "Quine: epistemology should be empirical study of how brains form beliefs. Replace philosophy with psychology.",
+      "why": "Radical proposal. Influence: empirical turn in epistemology. Cognitive science of belief. Cost: normative loss.",
+      "category": "epist_deep_mechanism"
+    },
+    {
+      "name": "BIV_brain_in_vat",
+      "definition": "You might be a brain in vat being fed simulated experience. Modern Cartesian doubt.",
+      "why": "Standard skeptical scenario. Putnam: BIV hypothesis self-defeating (semantic externalism). Foundation of modern skepticism debate.",
+      "category": "epist_deep_mechanism"
+    },
+    {
+      "name": "simulation_hypothesis",
+      "definition": "Bostrom: probably we're in a simulation. Either civilisations don't reach simulation stage, or don't run sims, or we're sims.",
+      "why": "Modern variant of Cartesian doubt. Engages physicalist intuitions. Practical impact: limited; philosophical: real.",
+      "category": "epist_deep_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "safety_modern_standard_post_Gettier",
+      "if": ["post-Gettier knowledge analysis"],
+      "then": ["safety condition is widely accepted"],
+      "why": "Better than sensitivity (preserves closure). Handles Gettier. Standard in contemporary analytic epistemology.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "contextualism_handles_skeptic",
+      "if": ["context shifts between ordinary + skeptical"],
+      "then": ["truth value of 'knows' shifts accordingly"],
+      "why": "Saves ordinary knowledge claims while respecting skeptical force. Cost: semantic surprising. Standard contemporary response.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "testimony_basic_or_inferential_open",
+      "if": ["someone tells you P"],
+      "then": ["epistemological status depends on reductionism vs anti-reductionism"],
+      "why": "Reductionists need independent reason; anti-reductionists treat testimony as basic. Contemporary social epistemology core question.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "peer_disagreement_conciliation_evidence",
+      "if": ["epistemic peer disagrees with you"],
+      "then": ["under conciliationism, you should lower confidence"],
+      "why": "Peer disagreement = evidence that you might be wrong. Steadfasters disagree. Contemporary debate; affects expertise + science.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "naturalised_epistemology_replaces_normative",
+      "if": ["epistemology is naturalised (Quine)"],
+      "then": ["only descriptive questions remain"],
+      "why": "Quine: 'epistemology becomes psychology'. Critics: loses normative force. Modern: both descriptive + normative coexist.",
+      "soundness_category": "extensional_equivalence"
+    }
+  ]
+}

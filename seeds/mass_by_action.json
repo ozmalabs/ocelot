@@ -1,0 +1,49 @@
+{
+ "id": "mass_by_action",
+ "version": "1.0.0",
+ "depends_on": ["time_axis"],
+ "description": "INERTIAL MASS BY ACTION. The operational definition of inertial mass, F=ma inverted: push an object with a known impulse J, observe its acceleration a, and m = J/a = impulse/Δv (resistance to the push IS the mass). When a SEEN object is pushed repeatedly (a sustained force), it accelerates uniformly; the eye tracks it as ONE Region and the dimension-generic order-N loop (time_axis / TimeInfer) mints an ORDER-2 latent:time dimension whose coeffs[1] leading vector IS the perceived per-tick Δv (the constant acceleration = J/m). This rule reads the impulse J recorded on the motion Observation (the action parameter) and that minted acceleration and mints a MassScalar = IDiv(J, |a|), linked to the PERCEIVED Region (grouping is by the eye's persistent Region identity, never a world id). No mass is ever published by the world; the scalar is DISCOVERED from the push. A single push (one impulse then coast) is constant velocity -> order-1 -> no acceleration -> this rule never fires (insufficient evidence). Idempotent per Observation via the yielded_mass marker, so repeated pushes with DIFFERENT impulses each mint a MassScalar and J/a is INVARIANT across them (= the mass).",
+ "microtheory": {"name": "mass_by_action", "description": "impulse / observed-acceleration -> minted per-object inertial-mass scalar, grouped by perceived Region; the operational (F=ma-inverted) definition of inertial mass, discovered by pushing seen objects"},
+ "nodes": [],
+ "edges": [],
+ "productions": [
+  {"provenance": "seed:mass_by_action:of_region-0", "src": {"type": "Observation", "var": "s"}, "edge_type": "of_region", "tgt": {"type": "Region", "var": "t"}},
+  {"provenance": "seed:mass_by_action:has_mass-1", "src": {"type": "Region", "var": "s"}, "edge_type": "has_mass", "tgt": {"type": "MassScalar", "var": "t"}},
+  {"provenance": "seed:mass_by_action:yielded_mass-2", "src": {"type": "Observation", "var": "s"}, "edge_type": "yielded_mass", "tgt": {"type": "MassScalar", "var": "t"}}
+ ],
+ "rules": [
+  {
+   "name": "mass_from_push",
+   "comment": "A time-inferred motion Observation of a pushed Region, carrying the impulse J (action parameter) and an ORDER-2 latent:time dimension (uniform acceleration = J/m), mints a MassScalar = IDiv(J, |acceleration|) on that Region. |acceleration| = |coeffs[1][0]| + |coeffs[1][1]| (the order-2 leading finite difference; exactly one axis is nonzero for an axis-aligned push, so the sum is its magnitude, direction-agnostic). Guards: status time_inferred; order exactly 2 (a single push is order-1 -> no mass); nonzero acceleration; idempotent per Observation (no yielded_mass yet), so different-impulse pushes on one Region each mint a scalar and J/a is invariant.",
+   "match_type": "Observation",
+   "match": [["obs", "has_latent_dimension", "ld"], ["obs", "of_region", "r"]],
+   "where": {"type": "And", "items": [
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "status"}, "b": {"type": "Lit", "value": "time_inferred"}},
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "ld"}, "key": "order"}, "b": {"type": "Lit", "value": 2}},
+     {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Plus", "items": [
+        {"type": "Abs", "arg": {"type": "IndexAt", "seq": {"type": "IndexAt", "seq": {"type": "Attr", "node": {"type": "Var", "name": "ld"}, "key": "coeffs"}, "index": {"type": "Lit", "value": 1}}, "index": {"type": "Lit", "value": 0}}},
+        {"type": "Abs", "arg": {"type": "IndexAt", "seq": {"type": "IndexAt", "seq": {"type": "Attr", "node": {"type": "Var", "name": "ld"}, "key": "coeffs"}, "index": {"type": "Lit", "value": 1}}, "index": {"type": "Lit", "value": 1}}}
+       ]}, "b": {"type": "Lit", "value": 0}}},
+     {"type": "Lt", "a": {"type": "Count", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "obs"}, "edge_type": "yielded_mass", "any_type": false}}, "b": {"type": "Lit", "value": 0.5}}
+   ]},
+   "effects": [
+    ["add_node", "ms", "MassScalar", {
+      "mass": {"__term__": {"type": "IDiv",
+        "a": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "impulse"},
+        "b": {"type": "Plus", "items": [
+          {"type": "Abs", "arg": {"type": "IndexAt", "seq": {"type": "IndexAt", "seq": {"type": "Attr", "node": {"type": "Var", "name": "ld"}, "key": "coeffs"}, "index": {"type": "Lit", "value": 1}}, "index": {"type": "Lit", "value": 0}}},
+          {"type": "Abs", "arg": {"type": "IndexAt", "seq": {"type": "IndexAt", "seq": {"type": "Attr", "node": {"type": "Var", "name": "ld"}, "key": "coeffs"}, "index": {"type": "Lit", "value": 1}}, "index": {"type": "Lit", "value": 1}}}
+        ]}}},
+      "accel": {"__term__": {"type": "Plus", "items": [
+        {"type": "Abs", "arg": {"type": "IndexAt", "seq": {"type": "IndexAt", "seq": {"type": "Attr", "node": {"type": "Var", "name": "ld"}, "key": "coeffs"}, "index": {"type": "Lit", "value": 1}}, "index": {"type": "Lit", "value": 0}}},
+        {"type": "Abs", "arg": {"type": "IndexAt", "seq": {"type": "IndexAt", "seq": {"type": "Attr", "node": {"type": "Var", "name": "ld"}, "key": "coeffs"}, "index": {"type": "Lit", "value": 1}}, "index": {"type": "Lit", "value": 1}}}
+      ]}},
+      "impulse": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "impulse"}},
+      "source": {"__term__": {"type": "Lit", "value": "mass_by_action"}}
+    }],
+    ["add_edge", "r", "has_mass", "ms"],
+    ["add_edge", "obs", "yielded_mass", "ms"]
+   ]
+  }
+ ]
+}

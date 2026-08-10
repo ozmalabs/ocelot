@@ -1,0 +1,173 @@
+{
+  "id": "acoustic_cue_vocab",
+  "version": "1.0.0",
+  "depends_on": [
+    "investigation_teacher"
+  ],
+  "description": "A held ACOUSTIC-CUE VOCABULARY for grounding teacher advice. When the speech-autonomy loop stalls and the LLM teacher (a help-button) returns free-text method-advice (e.g. 'use FORMANT TRANSITIONS / the F2 trajectory' or 'attend to VOICE-ONSET-TIME (VOT)'), the OLD cue extractor minted SEMANTICALLY-EMPTY tokens ('faculty_stalls', 'scoring_static') from the first two content words, losing the real acoustic cue. This seed holds the canonical cue terms + their surface-forms as graph data (AcousticCue nodes), and a graph-native cue-extraction Term (acoustic_cue_match) that MATCHES the advice text against the held surface-forms via substrate.evaluate (StringIndexOf over each form, Pick the first matching cue) and returns the matched canonical cue. The grounding DECISION is the Term (donkey=0), not Python and not an LLM call. Advice with no known cue matches nothing -> no garbage axis is minted (honest no-grounding). Canonical cues are grounded in the agent's EXISTING speech cue machinery (domains.hint_grounding.CUE_MENU operators: onset_tilt / vowel_height / movement / onset_level / ending_level / f1_formant / f2_formant / f2_minus_f1) via each cue's `operator` attr where one exists.",
+  "microtheory": {
+    "name": "acoustic_cue_vocab",
+    "description": "canonical acoustic cue terms + surface-forms (held graph data) + a graph-native vocabulary-match Term that grounds teacher advice to the real cue it names."
+  },
+  "nodes": [
+    {
+      "type": "AcousticCue",
+      "var": "cue_vot",
+      "attrs": {
+        "canonical": "voice_onset_time",
+        "surface_forms": ["voice onset time", "voice-onset-time", "voice onset", "voicing onset", "vot", "onset of voicing"],
+        "operator": "",
+        "origin": "acoustic_cue_vocab"
+      }
+    },
+    {
+      "type": "AcousticCue",
+      "var": "cue_f2",
+      "comment": "f2_trajectory precedes the generic formant_transition so advice naming F2 SPECIFICALLY grounds to the specific cue (Filter returns graph order, Pick takes the first match); plain formant-movement advice with no F2 falls through to formant_transition.",
+      "attrs": {
+        "canonical": "f2_trajectory",
+        "surface_forms": ["f2 trajectory", "f2 transition", "second formant", "f2 ", " f2", "second-formant"],
+        "operator": "f2_formant",
+        "origin": "acoustic_cue_vocab"
+      }
+    },
+    {
+      "type": "AcousticCue",
+      "var": "cue_formant",
+      "attrs": {
+        "canonical": "formant_transition",
+        "surface_forms": ["formant transition", "formant movement", "formant shift", "transition of the formant", "moving formant"],
+        "operator": "movement",
+        "origin": "acoustic_cue_vocab"
+      }
+    },
+    {
+      "type": "AcousticCue",
+      "var": "cue_f1",
+      "attrs": {
+        "canonical": "f1_formant",
+        "surface_forms": ["first formant", "f1 ", " f1", "f1 formant"],
+        "operator": "f1_formant",
+        "origin": "acoustic_cue_vocab"
+      }
+    },
+    {
+      "type": "AcousticCue",
+      "var": "cue_vowelspace",
+      "attrs": {
+        "canonical": "vowel_space",
+        "surface_forms": ["vowel space", "f2 minus f1", "f2-f1", "formant difference"],
+        "operator": "f2_minus_f1",
+        "origin": "acoustic_cue_vocab"
+      }
+    },
+    {
+      "type": "AcousticCue",
+      "var": "cue_burst",
+      "attrs": {
+        "canonical": "burst",
+        "surface_forms": ["release burst", "burst", "plosive burst", "stop burst", "burst spectrum"],
+        "operator": "onset_level",
+        "origin": "acoustic_cue_vocab"
+      }
+    },
+    {
+      "type": "AcousticCue",
+      "var": "cue_spectral_tilt",
+      "attrs": {
+        "canonical": "spectral_tilt",
+        "surface_forms": ["spectral tilt", "spectral slope", "spectral balance", "high vs low band"],
+        "operator": "onset_tilt",
+        "origin": "acoustic_cue_vocab"
+      }
+    },
+    {
+      "type": "AcousticCue",
+      "var": "cue_vowel_height",
+      "attrs": {
+        "canonical": "vowel_height",
+        "surface_forms": ["vowel height", "vowel quality", "high vs low vowel"],
+        "operator": "vowel_height",
+        "origin": "acoustic_cue_vocab"
+      }
+    },
+    {
+      "type": "AcousticCue",
+      "var": "cue_nasal",
+      "attrs": {
+        "canonical": "nasality",
+        "surface_forms": ["nasal", "nasality", "nasal murmur", "ending nasal"],
+        "operator": "ending_nasal",
+        "origin": "acoustic_cue_vocab"
+      }
+    },
+    {
+      "type": "AcousticCue",
+      "var": "cue_f0",
+      "attrs": {
+        "canonical": "f0_contour",
+        "surface_forms": ["f0 contour", "pitch contour", "intonation", "fundamental frequency", "pitch ", " f0", "f0 "],
+        "operator": "",
+        "origin": "acoustic_cue_vocab"
+      }
+    },
+    {
+      "type": "AcousticCue",
+      "var": "cue_duration",
+      "attrs": {
+        "canonical": "duration",
+        "surface_forms": ["duration", "segment length", "vowel length", "temporal length"],
+        "operator": "",
+        "origin": "acoustic_cue_vocab"
+      }
+    }
+  ],
+  "edges": [],
+  "concepts": [
+    {
+      "name": "acoustic_cue_match",
+      "comment": "GRAPH-NATIVE cue extraction (donkey=0): given the teacher's advice text bound on env var `adv` (lowercased by the host I/O boundary), Pick the FIRST held AcousticCue whose any surface-form occurs in the advice. `Filter` walks the held AcousticCue nodes in graph order; the per-cue predicate is `Exists(surface_forms, f, StringIndexOf(adv, f) >= 0)` = 'some held surface-form of this cue appears in the advice'. `Pick` returns the first matching cue node (or None if none match -> honest no-grounding). The MATCH DECISION is this Term, evaluated via substrate.evaluate; no LLM, no Python if/else. The canonical cue is then read off the picked node's `canonical` attr (and its `operator` for investigated_by wiring). REPLACES the old `_advice_cue_node` first-2-content-words heuristic as the source of the grown axis's identity.",
+      "definition": {
+        "type": "Pick",
+        "source": {
+          "type": "Filter",
+          "source": {
+            "type": "NodesOfType",
+            "node_type": "AcousticCue"
+          },
+          "var_name": "c",
+          "predicate": {
+            "type": "Exists",
+            "source": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c"
+              },
+              "key": "surface_forms"
+            },
+            "var_name": "f",
+            "predicate": {
+              "type": "Gte",
+              "a": {
+                "type": "StringIndexOf",
+                "haystack": {
+                  "type": "Var",
+                  "name": "adv"
+                },
+                "needle": {
+                  "type": "Var",
+                  "name": "f"
+                }
+              },
+              "b": {
+                "type": "Lit",
+                "value": 0
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

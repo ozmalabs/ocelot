@@ -1,0 +1,2959 @@
+{
+ "id": "embodied_learning_session",
+ "version": "1.2.0",
+ "depends_on": [
+  "embodied_development",
+  "embodied_motor_priors",
+  "embodied_motor_program",
+  "counterfactual_experiment"
+ ],
+ "area": "embodied_learning_session",
+ "latency_class": "soft_realtime",
+ "description": "Persistent graph-native coordination of body/world sessions, active order-N goals, developmental plans/frontiers, existing motor hints/programs, counterfactual rehearsal, affordance-gated external trials, causal developmental receipts, integer learned consequences, receipt-grounded check-ins/reset rearming, and non-scalar Pareto evidence. All in-frame cognition is integer-native.",
+ "nodes": [],
+ "edges": [],
+ "productions": [
+  {
+   "provenance": "embodied_learning_session:episode_body",
+   "src": {
+    "type": "EmbodiedDevelopmentEpisode",
+    "var": "episode"
+   },
+   "edge_type": "has_embodied_body_schema",
+   "tgt": {
+    "type": "EmbodiedBodySchema",
+    "var": "body"
+   }
+  },
+  {
+   "provenance": "embodied_learning_session:episode_world",
+   "src": {
+    "type": "EmbodiedDevelopmentEpisode",
+    "var": "episode"
+   },
+   "edge_type": "has_embodied_learning_world",
+   "tgt": {
+    "type": "EmbodiedLearningWorld",
+    "var": "world"
+   }
+  },
+  {
+   "provenance": "embodied_learning_session:world_pose",
+   "src": {
+    "type": "EmbodiedLearningWorld",
+    "var": "world"
+   },
+   "edge_type": "has_embodied_pose_affordance",
+   "tgt": {
+    "type": "EmbodiedPoseAffordance",
+    "var": "pose"
+   }
+  },
+  {
+   "provenance": "embodied_learning_session:episode_session",
+   "src": {
+    "type": "EmbodiedDevelopmentEpisode",
+    "var": "episode"
+   },
+   "edge_type": "has_embodied_learning_session",
+   "tgt": {
+    "type": "EmbodiedLearningSession",
+    "var": "session"
+   }
+  },
+  {
+   "provenance": "embodied_learning_session:body",
+   "src": {
+    "type": "EmbodiedLearningSession",
+    "var": "session"
+   },
+   "edge_type": "has_embodied_body_schema",
+   "tgt": {
+    "type": "EmbodiedBodySchema",
+    "var": "body"
+   }
+  },
+  {
+   "provenance": "embodied_learning_session:world",
+   "src": {
+    "type": "EmbodiedLearningSession",
+    "var": "session"
+   },
+   "edge_type": "observes_embodied_learning_world",
+   "tgt": {
+    "type": "EmbodiedLearningWorld",
+    "var": "world"
+   }
+  },
+  {
+   "provenance": "embodied_learning_session:plan",
+   "src": {
+    "type": "EmbodiedLearningSession",
+    "var": "session"
+   },
+   "edge_type": "has_learning_plan",
+   "tgt": {
+    "type": "LearningPlan",
+    "var": "plan"
+   }
+  },
+  {
+   "provenance": "embodied_learning_session:goal",
+   "src": {
+    "type": "EmbodiedLearningSession",
+    "var": "session"
+   },
+   "edge_type": "has_active_embodied_goal",
+   "tgt": {
+    "type": "Goal",
+    "var": "goal"
+   }
+  },
+  {
+   "provenance": "embodied_learning_session:frontier",
+   "src": {
+    "type": "EmbodiedLearningSession",
+    "var": "session"
+   },
+   "edge_type": "has_developmental_frontier",
+   "tgt": {
+    "type": "EmbodiedSituatedDevelopmentalCapability",
+    "var": "frontier"
+   }
+  },
+  {
+   "provenance": "embodied_learning_session:hint",
+   "src": {
+    "type": "EmbodiedLearningSession",
+    "var": "session"
+   },
+   "edge_type": "uses_embodied_motor_hint",
+   "tgt": {
+    "type": "EmbodiedMotorPrior",
+    "var": "hint"
+   }
+  },
+  {
+   "provenance": "embodied_learning_session:program",
+   "src": {
+    "type": "EmbodiedLearningSession",
+    "var": "session"
+   },
+   "edge_type": "has_selected_embodied_motor_program",
+   "tgt": {
+    "type": "EmbodiedMotorProgram",
+    "var": "program"
+   }
+  },
+  {
+   "provenance": "embodied_learning_session:counterfactual",
+   "src": {
+    "type": "EmbodiedLearningSession",
+    "var": "session"
+   },
+   "edge_type": "has_counterfactual_embodied_trial",
+   "tgt": {
+    "type": "Experiment",
+    "var": "trial"
+   }
+  },
+  {
+   "provenance": "embodied_learning_session:counterfactual_request",
+   "src": {
+    "type": "Experiment",
+    "var": "trial"
+   },
+   "edge_type": "has_counterfactual_request",
+   "tgt": {
+    "type": "ImagineRequest",
+    "var": "request"
+   }
+  },
+  {
+   "provenance": "embodied_learning_session:counterfactual_evidence",
+   "src": {
+    "type": "Experiment",
+    "var": "trial"
+   },
+   "edge_type": "has_counterfactual_evidence",
+   "tgt": {
+    "type": "Imagination",
+    "var": "imagination"
+   }
+  },
+  {
+   "provenance": "embodied_learning_session:request_imagination",
+   "src": {
+    "type": "ImagineRequest",
+    "var": "request"
+   },
+   "edge_type": "produced_imagination",
+   "tgt": {
+    "type": "Imagination",
+    "var": "imagination"
+   }
+  },
+  {
+   "provenance": "embodied_learning_session:trial_imagination",
+   "src": {
+    "type": "Experiment",
+    "var": "trial"
+   },
+   "edge_type": "received_counterfactual_imagination",
+   "tgt": {
+    "type": "Imagination",
+    "var": "imagination"
+   }
+  },
+  {
+   "provenance": "embodied_learning_session:request_focus",
+   "src": {
+    "type": "ImagineRequest",
+    "var": "request"
+   },
+   "edge_type": "focuses_on_node",
+   "tgt": {
+    "type": "EmbodiedMotorProgram",
+    "var": "program"
+   }
+  },
+  {
+   "provenance": "embodied_learning_session:counterfactual_projection",
+   "src": {
+    "type": "EmbodiedCounterfactualSelection",
+    "var": "selection"
+   },
+   "edge_type": "has_counterfactual_motor_projection",
+   "tgt": {
+    "type": "EmbodiedCounterfactualMotorProjection",
+    "var": "projection"
+   }
+  },
+  {
+   "provenance": "embodied_learning_session:external_request",
+   "src": {
+    "type": "EmbodiedLearningSession",
+    "var": "session"
+   },
+   "edge_type": "has_grounded_external_trial_request",
+   "tgt": {
+    "type": "EmbodiedExternalTrialRequest",
+    "var": "request"
+   }
+  },
+  {
+   "provenance": "embodied_learning_session:external_evidence",
+   "src": {
+    "type": "EmbodiedExternalTrialRequest",
+    "var": "request"
+   },
+   "edge_type": "has_grounded_external_trial_evidence",
+   "tgt": {
+    "type": "EmbodiedExternalTrialEvidence",
+    "var": "evidence"
+   }
+  },
+  {
+   "provenance": "embodied_learning_session:evidence_goal_vector_projection",
+   "src": {
+    "type": "EmbodiedExternalTrialEvidence",
+    "var": "evidence"
+   },
+   "edge_type": "has_embodied_goal_vector_projection",
+   "tgt": {
+    "type": "EmbodiedGoalVectorProjection",
+    "var": "projection"
+   }
+  },
+  {
+   "provenance": "embodied_learning_session:trial_receipt",
+   "src": {
+    "type": "EmbodiedExternalTrialRequest",
+    "var": "request"
+   },
+   "edge_type": "has_embodied_learning_trial_receipt",
+   "tgt": {
+    "type": "EmbodiedLearningTrialReceipt",
+    "var": "receipt"
+   }
+  },
+  {
+   "provenance": "embodied_learning_session:session_receipt",
+   "src": {
+    "type": "EmbodiedLearningSession",
+    "var": "session"
+   },
+   "edge_type": "has_causal_embodied_learning_receipt",
+   "tgt": {
+    "type": "EmbodiedLearningTrialReceipt",
+    "var": "receipt"
+   }
+  },
+  {
+   "provenance": "embodied_learning_session:receipt_evidence",
+   "src": {
+    "type": "EmbodiedLearningTrialReceipt",
+    "var": "receipt"
+   },
+   "edge_type": "grounded_in_external_trial_evidence",
+   "tgt": {
+    "type": "EmbodiedExternalTrialEvidence",
+    "var": "evidence"
+   }
+  },
+  {
+   "provenance": "embodied_learning_session:program_consequence",
+   "src": {
+    "type": "EmbodiedMotorProgram",
+    "var": "program"
+   },
+   "edge_type": "has_grounded_learned_consequence",
+   "tgt": {
+    "type": "EmbodiedLearnedConsequence",
+    "var": "consequence"
+   }
+  },
+  {
+   "provenance": "embodied_learning_session:consequence_receipt",
+   "src": {
+    "type": "EmbodiedLearnedConsequence",
+    "var": "consequence"
+   },
+   "edge_type": "grounded_in_causal_receipt",
+   "tgt": {
+    "type": "EmbodiedLearningTrialReceipt",
+    "var": "receipt"
+   }
+  },
+  {
+   "provenance": "embodied_learning_session:receipt_developmental_evidence",
+   "src": {
+    "type": "EmbodiedLearningTrialReceipt",
+    "var": "receipt"
+   },
+   "edge_type": "published_as_embodied_developmental_evidence",
+   "tgt": {
+    "type": "EmbodiedDevelopmentalEvidence",
+    "var": "evidence"
+   }
+  },
+  {
+   "provenance": "embodied_learning_session:capability_developmental_evidence",
+   "src": {
+    "type": "EmbodiedSituatedDevelopmentalCapability",
+    "var": "capability"
+   },
+   "edge_type": "has_embodied_developmental_evidence",
+   "tgt": {
+    "type": "EmbodiedDevelopmentalEvidence",
+    "var": "evidence"
+   }
+  },
+  {
+   "provenance": "embodied_learning_session:session_checkin",
+   "src": {
+    "type": "EmbodiedLearningSession",
+    "var": "session"
+   },
+   "edge_type": "has_embodied_learning_checkin",
+   "tgt": {
+    "type": "EmbodiedLearningCheckin",
+    "var": "checkin"
+   }
+  },
+  {
+   "provenance": "embodied_learning_session:receipt_checkin",
+   "src": {
+    "type": "EmbodiedLearningTrialReceipt",
+    "var": "receipt"
+   },
+   "edge_type": "reviewed_by_embodied_learning_checkin",
+   "tgt": {
+    "type": "EmbodiedLearningCheckin",
+    "var": "checkin"
+   }
+  },
+  {
+   "provenance": "embodied_learning_session:request_pose",
+   "src": {
+    "type": "EmbodiedExternalTrialRequest",
+    "var": "request"
+   },
+   "edge_type": "uses_embodied_pose_affordance",
+   "tgt": {
+    "type": "EmbodiedPoseAffordance",
+    "var": "pose"
+   }
+  },
+  {
+   "provenance": "embodied_learning_session:request_scenario",
+   "src": {
+    "type": "EmbodiedExternalTrialRequest",
+    "var": "request"
+   },
+   "edge_type": "uses_embodied_reset_scenario",
+   "tgt": {
+    "type": "EmbodiedResetScenario",
+    "var": "scenario"
+   }
+  },
+  {
+   "provenance": "embodied_learning_session:evidence_candidate",
+   "src": {
+    "type": "EmbodiedExternalTrialEvidence",
+    "var": "evidence"
+   },
+   "edge_type": "published_as_pareto_candidate",
+   "tgt": {
+    "type": "ParetoCandidate",
+    "var": "candidate"
+   }
+  }
+ ],
+ "rules": [
+  {
+   "name": "els_carry_observed_support_topology_to_causal_receipt",
+   "area": "general_cognition",
+   "latency_class": "hard_realtime",
+   "comment": "The world measures WHICH links touch the ground; this rule decides what that means for the curriculum. Guarded on the evidence's own observation flag so an unread topology leaves the fields ABSENT instead of asserting an unchanged one.",
+   "match": [
+    [
+     "receipt",
+     "grounded_in_external_trial_evidence",
+     "evidence"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "evidence"
+        },
+        "key": "support_contact_observed"
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "evidence"
+        },
+        "key": "support_contact_links_before"
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "evidence"
+        },
+        "key": "support_contact_links_after"
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "evidence"
+        },
+        "key": "support_contact_count_after"
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "evidence"
+        },
+        "key": "support_contact_count_before"
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Not",
+       "arg": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "receipt"
+         },
+         "key": "development_support_observed"
+        },
+        "b": {
+         "type": "Lit",
+         "value": null
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "receipt",
+     "development_support_observed",
+     1
+    ],
+    [
+     "set_attr",
+     "receipt",
+     "development_post_support_count",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "evidence"
+       },
+       "key": "support_contact_count_after"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "receipt",
+     "development_support_topology_changed",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Not",
+        "arg": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "evidence"
+          },
+          "key": "support_contact_links_before"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "evidence"
+          },
+          "key": "support_contact_links_after"
+         }
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": 1
+       },
+       "other": {
+        "type": "Lit",
+        "value": 0
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "receipt",
+     "development_support_gain",
+     {
+      "__term__": {
+       "type": "Minus",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "evidence"
+        },
+        "key": "support_contact_count_after"
+       },
+       "b": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "evidence"
+        },
+        "key": "support_contact_count_before"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "receipt",
+     "development_support_extent_gain",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gt",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "evidence"
+         },
+         "key": "support_contact_count_after"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "evidence"
+         },
+         "key": "support_contact_count_before"
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": 1
+       },
+       "other": {
+        "type": "Lit",
+        "value": 0
+       }
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "els_open_persistent_embodied_learning_session",
+   "area": "general_cognition",
+   "latency_class": "hard_realtime",
+   "comment": "The world boundary publishes body-schema and world tokens; a rule, not the adapter, decides that they constitute one durable learning session.",
+   "match": [
+    [
+     "agent",
+     "has_embodied_development_episode",
+     "episode"
+    ],
+    [
+     "episode",
+     "has_embodied_body_schema",
+     "body"
+    ],
+    [
+     "episode",
+     "has_embodied_learning_world",
+     "world"
+    ]
+   ],
+   "where": {
+    "type": "Not",
+    "arg": {
+     "type": "Exists",
+     "source": {
+      "type": "Neighbours",
+      "node": {
+       "type": "Var",
+       "name": "episode"
+      },
+      "edge_type": "has_embodied_learning_session"
+     },
+     "var_name": "prior",
+     "predicate": {
+      "type": "Lit",
+      "value": true
+     }
+    }
+   },
+   "effects": [
+    [
+     "add_node",
+     "session",
+     "EmbodiedLearningSession",
+     {
+      "status": "active",
+      "trial_seq": 0,
+      "evidence_seq": 0,
+      "integer_native": 1,
+      "output_authority": 0
+     }
+    ],
+    [
+     "add_edge",
+     "episode",
+     "has_embodied_learning_session",
+     "session"
+    ],
+    [
+     "add_edge",
+     "session",
+     "has_embodied_body_schema",
+     "body"
+    ],
+    [
+     "add_edge",
+     "session",
+     "observes_embodied_learning_world",
+     "world"
+    ]
+   ]
+  },
+  {
+   "name": "els_bind_active_order_n_goal_plan_and_frontier",
+   "area": "general_cognition",
+   "latency_class": "hard_realtime",
+   "comment": "The session follows the developmental seed's selected step and capability frontier; order-N goal structure remains owned by the generic Goal graph.",
+   "match": [
+    [
+     "episode",
+     "has_embodied_learning_session",
+     "session"
+    ],
+    [
+     "episode",
+     "has_self_directed_learning_plan",
+     "plan"
+    ],
+    [
+     "plan",
+     "has_selected_learning_plan_step",
+     "step"
+    ],
+    [
+     "step",
+     "pursues_goal",
+     "goal"
+    ],
+    [
+     "episode",
+     "has_active_embodied_developmental_capability",
+     "frontier"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "goal"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "active"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "session"
+        },
+        "edge_type": "has_active_embodied_goal"
+       },
+       "var_name": "prior",
+       "predicate": {
+        "type": "Lit",
+        "value": true
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_edge",
+     "session",
+     "has_learning_plan",
+     "plan"
+    ],
+    [
+     "add_edge",
+     "session",
+     "has_active_embodied_goal",
+     "goal"
+    ],
+    [
+     "add_edge",
+     "session",
+     "has_developmental_frontier",
+     "frontier"
+    ],
+    [
+     "add_edge",
+     "session",
+     "has_selected_learning_plan_step",
+     "step"
+    ],
+    [
+     "set_attr",
+     "goal",
+     "order_n",
+     {
+      "__term__": {
+       "type": "Max",
+       "items": [
+        {
+         "type": "Lit",
+         "value": 1
+        },
+        {
+         "type": "Count",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "goal"
+          },
+          "edge_type": "has_subgoal"
+         }
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "els_bind_existing_motor_hint_and_program",
+   "area": "general_cognition",
+   "latency_class": "hard_realtime",
+   "comment": "Motor priors and programs are produced by their own embodied seeds. The session records the selected pair without interpreting opaque actuator contents.",
+   "match": [
+    [
+     "episode",
+     "has_embodied_learning_session",
+     "session"
+    ],
+    [
+     "episode",
+     "has_embodied_motor_episode",
+     "motor_episode"
+    ],
+    [
+     "motor_episode",
+     "uses_embodied_motor_prior",
+     "hint"
+    ],
+    [
+     "motor_episode",
+     "has_embodied_motor_program",
+     "program"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "program"
+       },
+       "key": "integer_native"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "session"
+        },
+        "edge_type": "has_selected_embodied_motor_program"
+       },
+       "var_name": "prior",
+       "predicate": {
+        "type": "Lit",
+        "value": true
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_edge",
+     "session",
+     "uses_embodied_motor_hint",
+     "hint"
+    ],
+    [
+     "add_edge",
+     "session",
+     "has_selected_embodied_motor_program",
+     "program"
+    ]
+   ]
+  },
+  {
+   "name": "els_request_counterfactual_trial_before_external_trial",
+   "area": "general_cognition",
+   "latency_class": "hard_realtime",
+   "comment": "The selected program is injected into detached cognition. Existing learned consequence attributes produce a projection there; the result is explicitly non-oracular and requires external validation.",
+   "match": [
+    [
+     "session",
+     "has_active_embodied_goal",
+     "goal"
+    ],
+    [
+     "session",
+     "has_selected_embodied_motor_program",
+     "program"
+    ]
+   ],
+   "where": {
+    "type": "Not",
+    "arg": {
+     "type": "Exists",
+     "source": {
+      "type": "Neighbours",
+      "node": {
+       "type": "Var",
+       "name": "session"
+      },
+      "edge_type": "has_counterfactual_embodied_trial"
+     },
+     "var_name": "prior_trial",
+     "predicate": {
+      "type": "In",
+      "member": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "prior_trial"
+       },
+       "key": "status"
+      },
+      "container": {
+       "type": "Lit",
+       "value": [
+        "counterfactual_running",
+        "counterfactual_done"
+       ]
+      }
+     }
+    }
+   },
+   "effects": [
+    [
+     "add_node",
+     "trial",
+     "Experiment",
+     {
+      "status": "counterfactual_running",
+      "epistemic_scope": "graph_counterfactual",
+      "hypothesis": "selected_motor_program_advances_active_goal",
+      "integer_native": 1,
+      "output_authority": 0
+     }
+    ],
+    [
+     "add_node",
+     "request",
+     "ImagineRequest",
+     {
+      "status": "requested",
+      "kind": "embodied_motor_rehearsal",
+      "hypothesis_template": "{\"nodes\":[{\"key\":\"selection\",\"type\":\"EmbodiedCounterfactualSelection\",\"attrs\":{\"selected\":1,\"integer_native\":1,\"output_authority\":0}}],\"edges\":[{\"src\":\"selection\",\"type\":\"counterfactually_selects_program\",\"tgt\":\"__FOCUS__\"}]}",
+      "why": "project_selected_motor_program_consequences",
+      "integer_native": 1,
+      "output_authority": 0
+     }
+    ],
+    [
+     "add_edge",
+     "session",
+     "has_counterfactual_embodied_trial",
+     "trial"
+    ],
+    [
+     "add_edge",
+     "trial",
+     "pursues_goal",
+     "goal"
+    ],
+    [
+     "add_edge",
+     "trial",
+     "tests_embodied_motor_program",
+     "program"
+    ],
+    [
+     "add_edge",
+     "request",
+     "focuses_on_node",
+     "program"
+    ],
+    [
+     "add_edge",
+     "request",
+     "rehearses_experiment",
+     "trial"
+    ],
+    [
+     "add_edge",
+     "trial",
+     "has_counterfactual_request",
+     "request"
+    ]
+   ]
+  },
+  {
+   "name": "els_project_learned_motor_consequences_in_detached_cognition",
+   "area": "default_mode",
+   "latency_class": "best_effort",
+   "comment": "This fires only in the detached graph because the live graph has no EmbodiedCounterfactualSelection. It reads the selected program's learned integer consequence model; it does not fabricate grounded success.",
+   "match": [
+    [
+     "selection",
+     "counterfactually_selects_program",
+     "program"
+    ]
+   ],
+   "where": {
+    "type": "Not",
+    "arg": {
+     "type": "Exists",
+     "source": {
+      "type": "Neighbours",
+      "node": {
+       "type": "Var",
+       "name": "selection"
+      },
+      "edge_type": "has_counterfactual_motor_projection"
+     },
+     "var_name": "prior",
+     "predicate": {
+      "type": "Lit",
+      "value": true
+     }
+    }
+   },
+   "effects": [
+    [
+     "add_node",
+     "projection",
+     "EmbodiedCounterfactualMotorProjection",
+     {
+      "predicted_forward_units": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "program"
+        },
+        "key": "predicted_forward_units"
+       }
+      },
+      "predicted_vertical_units": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "program"
+        },
+        "key": "predicted_vertical_units"
+       }
+      },
+      "predicted_energy_units": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "program"
+        },
+        "key": "predicted_energy_units"
+       }
+      },
+      "predicted_peak_load_units": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "program"
+        },
+        "key": "predicted_peak_load_units"
+       }
+      },
+      "model_experience_units": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "program"
+        },
+        "key": "experience_units"
+       }
+      },
+      "grounded": 0,
+      "integer_native": 1,
+      "output_authority": 0
+     }
+    ],
+    [
+     "add_edge",
+     "selection",
+     "has_counterfactual_motor_projection",
+     "projection"
+    ],
+    [
+     "add_edge",
+     "projection",
+     "projects_selected_program",
+     "program"
+    ]
+   ]
+  },
+  {
+   "name": "els_retain_detached_motor_projection_as_non_oracular_evidence",
+   "area": "general_cognition",
+   "latency_class": "hard_realtime",
+   "comment": "The imagination dispatcher only publishes provenance. This graph rule closes the rehearsal while explicitly requiring a grounded external trial.",
+   "match": [
+    [
+     "trial",
+     "received_counterfactual_imagination",
+     "imagination"
+    ]
+   ],
+   "where": {
+    "type": "Eq",
+    "a": {
+     "type": "Attr",
+     "node": {
+      "type": "Var",
+      "name": "trial"
+     },
+     "key": "status"
+    },
+    "b": {
+     "type": "Lit",
+     "value": "counterfactual_running"
+    }
+   },
+   "effects": [
+    [
+     "add_edge",
+     "trial",
+     "has_counterfactual_evidence",
+     "imagination"
+    ],
+    [
+     "set_attr",
+     "trial",
+     "status",
+     "counterfactual_done"
+    ],
+    [
+     "set_attr",
+     "trial",
+     "evidence_kind",
+     "imagined"
+    ],
+    [
+     "set_attr",
+     "trial",
+     "requires_external_validation",
+     1
+    ]
+   ]
+  },
+  {
+   "name": "els_request_grounded_external_trial_from_declared_affordances",
+   "area": "general_cognition",
+   "latency_class": "hard_realtime",
+   "comment": "Only an explicitly published pose affordance and the developmental seed's already-selected reset scenario can authorize a world trial. The adapter merely reads this request.",
+   "match": [
+    [
+     "episode",
+     "has_embodied_learning_session",
+     "session"
+    ],
+    [
+     "session",
+     "observes_embodied_learning_world",
+     "world"
+    ],
+    [
+     "session",
+     "has_active_embodied_goal",
+     "goal"
+    ],
+    [
+     "session",
+     "has_selected_embodied_motor_program",
+     "program"
+    ],
+    [
+     "session",
+     "has_counterfactual_embodied_trial",
+     "counterfactual"
+    ],
+    [
+     "world",
+     "has_embodied_pose_affordance",
+     "pose"
+    ],
+    [
+     "episode",
+     "has_active_embodied_reset_request",
+     "reset"
+    ],
+    [
+     "reset",
+     "selects_embodied_reset_scenario",
+     "scenario"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "pose"
+       },
+       "key": "enabled"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "reset"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "requested"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "counterfactual"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "counterfactual_done"
+      }
+     },
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Exists",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "episode"
+          },
+          "edge_type": "grounded_in_embodied_simulator_connection"
+         },
+         "var_name": "prior",
+         "predicate": {
+          "type": "Lit",
+          "value": true
+         }
+        }
+       },
+       {
+        "type": "Exists",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "episode"
+         },
+         "edge_type": "grounded_in_embodied_simulator_connection"
+        },
+        "var_name": "connection",
+        "predicate": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "connection"
+          },
+          "key": "current_attachment"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1
+         }
+        }
+       }
+      ]
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "session"
+        },
+        "edge_type": "has_grounded_external_trial_request"
+       },
+       "var_name": "prior_request",
+       "predicate": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "prior_request"
+         },
+         "key": "status"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "requested"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "request",
+     "EmbodiedExternalTrialRequest",
+     {
+      "status": "requested",
+      "attempt_ordinal": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "session"
+          },
+          "key": "trial_seq"
+         },
+         {
+          "type": "Lit",
+          "value": 1
+         }
+        ]
+       }
+      },
+      "grounded": 1,
+      "integer_native": 1,
+      "output_authority": 0,
+      "supervision_priority": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "session"
+          },
+          "key": "trial_seq"
+         },
+         {
+          "type": "Lit",
+          "value": 1
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "session",
+     "has_grounded_external_trial_request",
+     "request"
+    ],
+    [
+     "add_edge",
+     "request",
+     "pursues_goal",
+     "goal"
+    ],
+    [
+     "add_edge",
+     "request",
+     "enacts_embodied_motor_program",
+     "program"
+    ],
+    [
+     "add_edge",
+     "request",
+     "uses_embodied_pose_affordance",
+     "pose"
+    ],
+    [
+     "add_edge",
+     "request",
+     "uses_embodied_reset_scenario",
+     "scenario"
+    ],
+    [
+     "set_attr",
+     "session",
+     "trial_seq",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "session"
+         },
+         "key": "trial_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 1
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "els_project_full_grounded_displacement_vector_for_active_goal",
+   "area": "general_cognition",
+   "latency_class": "hard_realtime",
+   "comment": "The world adapter reports an entire measured displacement vector once. The graph, rather than the adapter or a six-way program clone, projects the integer vector into the current exploratory goal's movement evidence.",
+   "match": [
+    [
+     "request",
+     "has_grounded_external_trial_evidence",
+     "evidence"
+    ],
+    [
+     "request",
+     "pursues_goal",
+     "goal"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "evidence"
+       },
+       "key": "proprioceptive_configuration_observed"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "evidence"
+        },
+        "edge_type": "has_embodied_goal_vector_projection"
+       },
+       "var_name": "prior",
+       "predicate": {
+        "type": "Lit",
+        "value": true
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "projection",
+     "EmbodiedGoalVectorProjection",
+     {
+      "kind": "cartesian_l1_exploration_progress",
+      "x_units": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "evidence"
+        },
+        "key": "base_displacement_x_units"
+       }
+      },
+      "y_units": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "evidence"
+        },
+        "key": "base_displacement_y_units"
+       }
+      },
+      "z_units": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "evidence"
+        },
+        "key": "base_displacement_z_units"
+       }
+      },
+      "goal_progress_units": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Abs",
+          "arg": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "evidence"
+           },
+           "key": "base_displacement_x_units"
+          }
+         },
+         {
+          "type": "Abs",
+          "arg": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "evidence"
+           },
+           "key": "base_displacement_y_units"
+          }
+         },
+         {
+          "type": "Abs",
+          "arg": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "evidence"
+           },
+           "key": "base_displacement_z_units"
+          }
+         }
+        ]
+       }
+      },
+      "proprioceptive_configuration_l1_units": {
+       "__term__": {
+        "type": "Sum",
+        "source": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "evidence"
+         },
+         "key": "proprioceptive_configuration_delta_units"
+        },
+        "var_name": "delta",
+        "value": {
+         "type": "Abs",
+         "arg": {
+          "type": "Var",
+          "name": "delta"
+         }
+        }
+       }
+      },
+      "grounded": 1,
+      "integer_native": 1,
+      "output_authority": 0
+     }
+    ],
+    [
+     "add_edge",
+     "evidence",
+     "has_embodied_goal_vector_projection",
+     "projection"
+    ],
+    [
+     "add_edge",
+     "projection",
+     "projects_grounded_evidence",
+     "evidence"
+    ],
+    [
+     "add_edge",
+     "projection",
+     "projects_for_embodied_goal",
+     "goal"
+    ],
+    [
+     "set_attr",
+     "evidence",
+     "goal_progress_units",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Abs",
+         "arg": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "evidence"
+          },
+          "key": "base_displacement_x_units"
+         }
+        },
+        {
+         "type": "Abs",
+         "arg": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "evidence"
+          },
+          "key": "base_displacement_y_units"
+         }
+        },
+        {
+         "type": "Abs",
+         "arg": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "evidence"
+          },
+          "key": "base_displacement_z_units"
+         }
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "evidence",
+     "proprioceptive_configuration_l1_units",
+     {
+      "__term__": {
+       "type": "Sum",
+       "source": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "evidence"
+        },
+        "key": "proprioceptive_configuration_delta_units"
+       },
+       "var_name": "delta",
+       "value": {
+        "type": "Abs",
+        "arg": {
+         "type": "Var",
+         "name": "delta"
+        }
+       }
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "els_retain_grounded_external_evidence_and_close_request",
+   "area": "general_cognition",
+   "latency_class": "hard_realtime",
+   "comment": "World evidence is first-class and is never inferred from a counterfactual result. Receipt publication is mechanical I/O; closure is a graph decision.",
+   "match": [
+    [
+     "session",
+     "has_grounded_external_trial_request",
+     "request"
+    ],
+    [
+     "request",
+     "has_grounded_external_trial_evidence",
+     "evidence"
+    ],
+    [
+     "evidence",
+     "has_embodied_goal_vector_projection",
+     "projection"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "request"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "requested"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "evidence"
+       },
+       "key": "grounded"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_edge",
+     "session",
+     "has_grounded_external_trial_evidence",
+     "evidence"
+    ],
+    [
+     "set_attr",
+     "request",
+     "status",
+     "evidenced"
+    ],
+    [
+     "set_attr",
+     "session",
+     "evidence_seq",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "session"
+         },
+         "key": "evidence_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 1
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "els_publish_grounded_external_evidence_to_pareto_profile",
+   "area": "general_cognition",
+   "latency_class": "hard_realtime",
+   "comment": "Three measured integer coordinates remain distinct: goal progress, energy cost, and peak load. General cognitive_pareto decides dominance; no scalar reward is introduced.",
+   "match": [
+    [
+     "session",
+     "has_learning_plan",
+     "plan"
+    ],
+    [
+     "plan",
+     "has_learning_decision_profile",
+     "profile"
+    ],
+    [
+     "session",
+     "has_grounded_external_trial_evidence",
+     "evidence"
+    ],
+    [
+     "evidence",
+     "has_embodied_goal_vector_projection",
+     "projection"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "profile"
+       },
+       "key": "dimension_count"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 3
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "evidence"
+        },
+        "edge_type": "published_as_pareto_candidate"
+       },
+       "var_name": "prior",
+       "predicate": {
+        "type": "Lit",
+        "value": true
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "candidate",
+     "ParetoCandidate",
+     {
+      "kind": "grounded_embodied_external_trial",
+      "verified": 1,
+      "dominated": 0,
+      "integer_native": 1,
+      "output_authority": 0
+     }
+    ],
+    [
+     "add_edge",
+     "profile",
+     "has_pareto_candidate",
+     "candidate"
+    ],
+    [
+     "add_edge",
+     "evidence",
+     "published_as_pareto_candidate",
+     "candidate"
+    ],
+    [
+     "add_edge",
+     "candidate",
+     "grounded_in_external_trial_evidence",
+     "evidence"
+    ],
+    [
+     "add_node",
+     "value_0",
+     "ParetoValue",
+     {
+      "dimension_ordinal": 0,
+      "raw_value": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "evidence"
+        },
+        "key": "goal_progress_units"
+       }
+      },
+      "signed_value": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "evidence"
+        },
+        "key": "goal_progress_units"
+       }
+      },
+      "verified": 1,
+      "integer_native": 1
+     }
+    ],
+    [
+     "add_edge",
+     "candidate",
+     "has_pareto_value",
+     "value_0"
+    ],
+    [
+     "add_node",
+     "value_1",
+     "ParetoValue",
+     {
+      "dimension_ordinal": 1,
+      "raw_value": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "evidence"
+        },
+        "key": "energy_cost_units"
+       }
+      },
+      "signed_value": {
+       "__term__": {
+        "type": "Neg",
+        "arg": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "evidence"
+         },
+         "key": "energy_cost_units"
+        }
+       }
+      },
+      "verified": 1,
+      "integer_native": 1
+     }
+    ],
+    [
+     "add_edge",
+     "candidate",
+     "has_pareto_value",
+     "value_1"
+    ],
+    [
+     "add_node",
+     "value_2",
+     "ParetoValue",
+     {
+      "dimension_ordinal": 2,
+      "raw_value": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "evidence"
+        },
+        "key": "peak_load_units"
+       }
+      },
+      "signed_value": {
+       "__term__": {
+        "type": "Neg",
+        "arg": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "evidence"
+         },
+         "key": "peak_load_units"
+        }
+       }
+      },
+      "verified": 1,
+      "integer_native": 1
+     }
+    ],
+    [
+     "add_edge",
+     "candidate",
+     "has_pareto_value",
+     "value_2"
+    ]
+   ]
+  },
+  {
+   "name": "els_close_exact_external_trial_as_causal_development_receipt",
+   "area": "general_cognition",
+   "latency_class": "hard_realtime",
+   "comment": "Only exact externally grounded evidence with its request, program, pose, reset scenario, and goal provenance closes a developmental receipt. The same receipt updates integer consequence coordinates and experience; it is not a scalar reward.",
+   "match": [
+    [
+     "episode",
+     "has_embodied_learning_session",
+     "session"
+    ],
+    [
+     "session",
+     "has_grounded_external_trial_request",
+     "request"
+    ],
+    [
+     "request",
+     "has_grounded_external_trial_evidence",
+     "evidence"
+    ],
+    [
+     "request",
+     "enacts_embodied_motor_program",
+     "program"
+    ],
+    [
+     "request",
+     "uses_embodied_pose_affordance",
+     "pose"
+    ],
+    [
+     "request",
+     "uses_embodied_reset_scenario",
+     "scenario"
+    ],
+    [
+     "request",
+     "pursues_goal",
+     "goal"
+    ],
+    [
+     "evidence",
+     "evidence_for_embodied_trial_request",
+     "request"
+    ],
+    [
+     "evidence",
+     "measures_embodied_motor_program",
+     "program"
+    ],
+    [
+     "evidence",
+     "under_embodied_pose_affordance",
+     "pose"
+    ],
+    [
+     "evidence",
+     "from_embodied_reset_scenario",
+     "scenario"
+    ],
+    [
+     "evidence",
+     "measures_goal",
+     "goal"
+    ],
+    [
+     "evidence",
+     "has_embodied_goal_vector_projection",
+     "projection"
+    ],
+    [
+     "session",
+     "has_counterfactual_embodied_trial",
+     "counterfactual"
+    ],
+    [
+     "counterfactual",
+     "tests_embodied_motor_program",
+     "program"
+    ],
+    [
+     "episode",
+     "has_active_embodied_reset_request",
+     "reset"
+    ],
+    [
+     "reset",
+     "selects_embodied_reset_scenario",
+     "scenario"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "request"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "evidenced"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "evidence"
+       },
+       "key": "grounded"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "counterfactual"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "counterfactual_done"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "reset"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "requested"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "request"
+        },
+        "edge_type": "has_embodied_learning_trial_receipt"
+       },
+       "var_name": "prior",
+       "predicate": {
+        "type": "Lit",
+        "value": true
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "receipt",
+     "EmbodiedLearningTrialReceipt",
+     {
+      "status": "closed",
+      "development_receipt_closed": 1,
+      "development_receipt_seq": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "session"
+        },
+        "key": "evidence_seq"
+       }
+      },
+      "goal_progress_units": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "evidence"
+        },
+        "key": "goal_progress_units"
+       }
+      },
+      "energy_cost_units": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "evidence"
+        },
+        "key": "energy_cost_units"
+       }
+      },
+      "peak_load_units": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "evidence"
+        },
+        "key": "peak_load_units"
+       }
+      },
+      "success_delta_units": {
+       "__term__": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Gt",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "evidence"
+          },
+          "key": "goal_progress_units"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0
+         }
+        },
+        "then": {
+         "type": "Lit",
+         "value": 1
+        },
+        "other": {
+         "type": "Lit",
+         "value": 0
+        }
+       }
+      },
+      "development_configuration_changed": {
+       "__term__": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Gt",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "evidence"
+            },
+            "key": "proprioceptive_configuration_l1_units"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0
+         }
+        },
+        "then": {
+         "type": "Lit",
+         "value": 1
+        },
+        "other": {
+         "type": "Lit",
+         "value": 0
+        }
+       }
+      },
+      "development_external_event": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "evidence"
+          },
+          "key": "development_external_event"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "causal_closed": 1,
+      "grounded": 1,
+      "integer_native": 1,
+      "output_authority": 0
+     }
+    ],
+    [
+     "add_node",
+     "consequence",
+     "EmbodiedLearnedConsequence",
+     {
+      "forward_units": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "evidence"
+        },
+        "key": "goal_progress_units"
+       }
+      },
+      "energy_units": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "evidence"
+        },
+        "key": "energy_cost_units"
+       }
+      },
+      "peak_load_units": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "evidence"
+        },
+        "key": "peak_load_units"
+       }
+      },
+      "experience_ordinal": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "program"
+          },
+          "key": "experience_units"
+         },
+         {
+          "type": "Lit",
+          "value": 1
+         }
+        ]
+       }
+      },
+      "grounded": 1,
+      "integer_native": 1,
+      "output_authority": 0
+     }
+    ],
+    [
+     "add_edge",
+     "request",
+     "has_embodied_learning_trial_receipt",
+     "receipt"
+    ],
+    [
+     "add_edge",
+     "session",
+     "has_causal_embodied_learning_receipt",
+     "receipt"
+    ],
+    [
+     "add_edge",
+     "episode",
+     "has_embodied_development_receipt",
+     "receipt"
+    ],
+    [
+     "add_edge",
+     "receipt",
+     "grounded_in_external_trial_evidence",
+     "evidence"
+    ],
+    [
+     "add_edge",
+     "receipt",
+     "caused_by_embodied_trial_request",
+     "request"
+    ],
+    [
+     "add_edge",
+     "receipt",
+     "caused_by_embodied_motor_program",
+     "program"
+    ],
+    [
+     "add_edge",
+     "receipt",
+     "caused_under_embodied_pose_affordance",
+     "pose"
+    ],
+    [
+     "add_edge",
+     "receipt",
+     "caused_from_embodied_reset_scenario",
+     "scenario"
+    ],
+    [
+     "add_edge",
+     "receipt",
+     "caused_for_embodied_goal",
+     "goal"
+    ],
+    [
+     "add_edge",
+     "program",
+     "has_grounded_learned_consequence",
+     "consequence"
+    ],
+    [
+     "add_edge",
+     "consequence",
+     "grounded_in_causal_receipt",
+     "receipt"
+    ],
+    [
+     "set_attr",
+     "episode",
+     "latest_development_receipt_seq",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "receipt"
+       },
+       "key": "development_receipt_seq"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "program",
+     "predicted_forward_units",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "evidence"
+       },
+       "key": "goal_progress_units"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "program",
+     "predicted_energy_units",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "evidence"
+       },
+       "key": "energy_cost_units"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "program",
+     "predicted_peak_load_units",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "evidence"
+       },
+       "key": "peak_load_units"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "program",
+     "experience_units",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "program"
+         },
+         "key": "experience_units"
+        },
+        {
+         "type": "Lit",
+         "value": 1
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "counterfactual",
+     "status",
+     "validated"
+    ],
+    [
+     "set_attr",
+     "reset",
+     "status",
+     "checkin_complete"
+    ]
+   ]
+  },
+  {
+   "name": "els_publish_receipt_grounded_developmental_evidence",
+   "area": "general_cognition",
+   "latency_class": "hard_realtime",
+   "comment": "The developmental DAG receives a receipt-grounded evidence object. A positive measured displacement contributes one integer capability success unit; non-progress remains retained evidence without laundering itself into success.",
+   "match": [
+    [
+     "episode",
+     "has_embodied_learning_session",
+     "session"
+    ],
+    [
+     "session",
+     "has_developmental_frontier",
+     "capability"
+    ],
+    [
+     "session",
+     "has_causal_embodied_learning_receipt",
+     "receipt"
+    ]
+   ],
+   "where": {
+    "type": "Not",
+    "arg": {
+     "type": "Exists",
+     "source": {
+      "type": "Neighbours",
+      "node": {
+       "type": "Var",
+       "name": "receipt"
+      },
+      "edge_type": "published_as_embodied_developmental_evidence"
+     },
+     "var_name": "prior",
+     "predicate": {
+      "type": "Lit",
+      "value": true
+     }
+    }
+   },
+   "effects": [
+    [
+     "add_node",
+     "evidence",
+     "EmbodiedDevelopmentalEvidence",
+     {
+      "kind": "grounded_external_trial",
+      "success_units": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "receipt"
+        },
+        "key": "success_delta_units"
+       }
+      },
+      "progress_units": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "receipt"
+        },
+        "key": "goal_progress_units"
+       }
+      },
+      "receipt_seq": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "receipt"
+        },
+        "key": "development_receipt_seq"
+       }
+      },
+      "grounded": 1,
+      "integer_native": 1,
+      "output_authority": 0
+     }
+    ],
+    [
+     "add_edge",
+     "receipt",
+     "published_as_embodied_developmental_evidence",
+     "evidence"
+    ],
+    [
+     "add_edge",
+     "capability",
+     "has_embodied_developmental_evidence",
+     "evidence"
+    ],
+    [
+     "add_edge",
+     "evidence",
+     "grounded_in_causal_receipt",
+     "receipt"
+    ]
+   ]
+  },
+  {
+   "name": "els_count_positive_receipt_as_capability_success",
+   "area": "general_cognition",
+   "latency_class": "hard_realtime",
+   "comment": "MEASURED PROGRESS IS NOT A MET CRITERION. This counts the world's own positive goal progress (evidence.success_units == 1) into `positive_progress_count`, which mission confirmation reads. It must NOT touch `success_count`: that attribute means 'this capability's developmental criterion was satisfied' and is what mastery and retention are judged on. Once per published developmental evidence node.",
+   "match": [
+    [
+     "capability",
+     "has_embodied_developmental_evidence",
+     "evidence"
+    ],
+    [
+     "evidence",
+     "grounded_in_causal_receipt",
+     "receipt"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "evidence"
+       },
+       "key": "success_units"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "evidence"
+        },
+        "edge_type": "counted_as_capability_success"
+       },
+       "var_name": "prior",
+       "predicate": {
+        "type": "Lit",
+        "value": true
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "capability",
+     "positive_progress_count",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "capability"
+         },
+         "key": "positive_progress_count"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        },
+        {
+         "type": "Lit",
+         "value": 1
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "evidence",
+     "counted_as_capability_success",
+     "capability"
+    ]
+   ]
+  },
+  {
+   "name": "els_open_receipt_grounded_learning_checkin_and_reset_rearm",
+   "area": "general_cognition",
+   "latency_class": "hard_realtime",
+   "comment": "A closed receipt creates a graph-visible check-in and re-arms reset through the developmental scenario already used by the observed trial. The next program is still selected by the plan/Pareto machinery; no host cadence is introduced.",
+   "match": [
+    [
+     "episode",
+     "has_embodied_learning_session",
+     "session"
+    ],
+    [
+     "session",
+     "has_causal_embodied_learning_receipt",
+     "receipt"
+    ],
+    [
+     "receipt",
+     "caused_from_embodied_reset_scenario",
+     "scenario"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "receipt"
+        },
+        "edge_type": "reviewed_by_embodied_learning_checkin"
+       },
+       "var_name": "prior",
+       "predicate": {
+        "type": "Lit",
+        "value": true
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "episode"
+        },
+        "edge_type": "has_active_embodied_reset_request"
+       },
+       "var_name": "active_reset",
+       "predicate": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "active_reset"
+         },
+         "key": "status"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "requested"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "checkin",
+     "EmbodiedLearningCheckin",
+     {
+      "status": "reset_requested",
+      "receipt_seq": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "receipt"
+        },
+        "key": "development_receipt_seq"
+       }
+      },
+      "grounded": 1,
+      "integer_native": 1,
+      "output_authority": 0
+     }
+    ],
+    [
+     "add_node",
+     "reset",
+     "EmbodiedResetRequest",
+     {
+      "status": "requested",
+      "reason": "receipt_grounded_learning_checkin",
+      "integer_native": 1,
+      "output_authority": 0
+     }
+    ],
+    [
+     "add_edge",
+     "session",
+     "has_embodied_learning_checkin",
+     "checkin"
+    ],
+    [
+     "add_edge",
+     "checkin",
+     "reviews_causal_embodied_receipt",
+     "receipt"
+    ],
+    [
+     "add_edge",
+     "receipt",
+     "reviewed_by_embodied_learning_checkin",
+     "checkin"
+    ],
+    [
+     "add_edge",
+     "episode",
+     "has_embodied_reset_request",
+     "reset"
+    ],
+    [
+     "add_edge",
+     "episode",
+     "has_active_embodied_reset_request",
+     "reset"
+    ],
+    [
+     "add_edge",
+     "reset",
+     "selects_embodied_reset_scenario",
+     "scenario"
+    ],
+    [
+     "add_edge",
+     "reset",
+     "caused_by_embodied_receipt",
+     "receipt"
+    ],
+    [
+     "add_edge",
+     "checkin",
+     "requests_embodied_reset",
+     "reset"
+    ]
+   ]
+  }
+ ]
+}

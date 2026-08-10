@@ -1,0 +1,56 @@
+{
+  "microtheory": {
+    "name": "propositional_predicate_logic",
+    "definition": "Classical logic. Propositional calculus (truth-functional) + first-order predicate logic. Natural deduction, sequent calculus, semantic tableaux, truth tables, models. Substrate analogue: substrate's most fundamental reasoning system.",
+    "category": "logic_domain",
+    "parent": "logic_foundation"
+  },
+  "concepts": [
+    {"name": "propositional_calculus", "definition": "Logic of compound propositions built from atomic ones via connectives. Substrate analogue: substrate's compositional truth-system.", "category": "propositional"},
+    {"name": "atomic_proposition", "definition": "Indivisible at propositional level. P, Q, R. Substrate analogue: substrate's primitive Concept.", "category": "propositional"},
+    {"name": "well_formed_formula", "definition": "WFF. String built by grammar rules. Substrate analogue: substrate's syntactically-valid Term.", "category": "propositional"},
+    {"name": "truth_table", "definition": "Exhaustive enumeration of truth values for all variable assignments. Substrate analogue: substrate's complete behavior table.", "category": "propositional"},
+    {"name": "boolean_algebra", "definition": "Algebraic structure with AND, OR, NOT operating on {0,1}. Boole 1854. Substrate analogue: substrate's binary algebra.", "category": "propositional"},
+
+    {"name": "natural_deduction", "definition": "Gentzen 1934. Proof system with introduction + elimination rules per connective. Mirrors natural reasoning. Substrate analogue: substrate's structured proof.", "category": "proof_systems"},
+    {"name": "sequent_calculus", "definition": "Gentzen. Sequents Γ ⊢ Δ. Left + right rules for each connective. Cut elimination. Substrate analogue: substrate's structured inference.", "category": "proof_systems"},
+    {"name": "semantic_tableaux", "definition": "Beth 1955, Smullyan. Proof by attempting to construct counter-model. Tree branches close on contradictions. Substrate analogue: substrate's exhaustive verification.", "category": "proof_systems"},
+    {"name": "resolution_logic", "definition": "Robinson 1965. Single rule. Used in automated theorem proving. Substrate analogue: substrate's automated inference.", "category": "proof_systems"},
+    {"name": "hilbert_system", "definition": "Few rules + many axioms. Less natural but theoretically tractable. Substrate analogue: substrate's axiomatic minimum.", "category": "proof_systems"},
+
+    {"name": "predicate", "definition": "Function from objects to truth values. P(x), R(x,y). Substrate analogue: substrate's relational Concept.", "category": "predicate"},
+    {"name": "constant_logical", "definition": "Specific named object. a, b, c. Substrate analogue: substrate's named instance.", "category": "predicate"},
+    {"name": "variable_logical", "definition": "Stand-in. x, y, z. Bound by quantifiers. Substrate analogue: substrate's parameterized slot.", "category": "predicate"},
+    {"name": "function_symbol_logical", "definition": "Maps objects to objects. f(x), g(x,y). Substrate analogue: substrate's compositional concept.", "category": "predicate"},
+    {"name": "domain_of_quantification", "definition": "Set of objects variables range over. Substrate analogue: substrate's Mt-scope.", "category": "predicate"},
+
+    {"name": "free_variable", "definition": "Variable not bound by quantifier. Substrate analogue: substrate's open parameter.", "category": "binding"},
+    {"name": "bound_variable", "definition": "Variable in scope of binding quantifier. Substrate analogue: substrate's quantifier-scoped parameter.", "category": "binding"},
+    {"name": "alpha_conversion", "definition": "Renaming bound variable. Substrate analogue: substrate's substitution.", "category": "binding"},
+    {"name": "substitution_logic", "definition": "Replacing free variable with term. Substrate analogue: substrate's parameter binding.", "category": "binding"},
+
+    {"name": "first_order_logic", "definition": "FOL. Quantification over objects, not over predicates. Substrate analogue: substrate's standard inference scope.", "category": "orders"},
+    {"name": "second_order_logic", "definition": "Quantification over predicates + relations. More expressive but harder. Substrate analogue: substrate's meta-Mt inference.", "category": "orders"},
+    {"name": "higher_order_logic", "definition": "Quantification over functions of functions. Type theory. Substrate analogue: substrate's high-rank inference.", "category": "orders"},
+
+    {"name": "interpretation_logic", "definition": "Assignment of meaning to symbols. Domain + meaning for constants + predicates + functions. Substrate analogue: substrate's Concept grounding.", "category": "semantics"},
+    {"name": "model_logical", "definition": "Interpretation under which formula is true. Substrate analogue: substrate's satisfying graph state.", "category": "semantics"},
+    {"name": "satisfaction", "definition": "Formula F satisfied by model M iff M makes F true. M ⊨ F. Substrate analogue: substrate's truth in basin.", "category": "semantics"},
+    {"name": "logical_validity", "definition": "True in all interpretations. Tautology in propositional, valid in predicate. Substrate analogue: substrate's universal Mt-truth.", "category": "semantics"},
+
+    {"name": "soundness_theorem", "definition": "Provable implies valid. ⊢F → ⊨F. System doesn't prove falsehoods. Substrate analogue: substrate's safe inference.", "category": "metalogic"},
+    {"name": "completeness_theorem", "definition": "Gödel 1929. FOL: valid implies provable. ⊨F → ⊢F. Substrate analogue: substrate's complete inference capability.", "category": "metalogic"},
+    {"name": "godel_incompleteness", "definition": "Gödel 1931. Sufficiently strong consistent system contains true unprovable sentences. Substrate analogue: substrate's inferential horizon.", "category": "metalogic"},
+    {"name": "decidability_problem", "definition": "Whether a system has algorithm deciding every formula's truth. Propositional yes; FOL no (Church + Turing). Substrate analogue: substrate's verification limit.", "category": "metalogic"},
+
+    {"name": "automated_theorem_proving", "definition": "Computer programs proving theorems. Resolution, tableau methods. SAT solvers. Substrate analogue: substrate's automated derivation_mechanism.", "category": "computation"},
+    {"name": "sat_problem", "definition": "Boolean satisfiability. Given CNF formula, is there satisfying assignment? NP-complete. Substrate analogue: substrate's basin-search problem.", "category": "computation"}
+  ],
+  "rules": [
+    {"name": "and_introduction_combines", "head": "the substrate has P and Q separately", "body": "it can conclude P ∧ Q. Substrate's conjunction inference."},
+    {"name": "and_elimination_decomposes", "head": "the substrate has P ∧ Q", "body": "it can conclude P alone or Q alone. Substrate's conjunction decomposition."},
+    {"name": "universal_instantiation_specializes", "head": "the substrate has ∀x P(x)", "body": "it can conclude P(a) for any specific object a. Substrate's generalization-to-instance."},
+    {"name": "existential_generalization_abstracts", "head": "the substrate has P(a) for some object a", "body": "it can conclude ∃x P(x). Substrate's instance-to-existence."},
+    {"name": "godel_limits_formal_systems", "head": "the substrate uses a consistent formal system at FOL or above", "body": "there exist true sentences it cannot prove. Gödel 1931. Substrate's inferential horizon."}
+  ]
+}

@@ -1,0 +1,118 @@
+{
+  "id": "saga_event_sourcing_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "saga_pattern",
+  "in_microtheory": "distributed_systems",
+  "description": "Saga + event sourcing + CQRS decomposed. Compensating transactions, saga state machines, event store, snapshot, projections, eventual consistency. The mechanisms by which distributed business processes maintain consistency without 2PC blocking.",
+  "sub_mechanisms": [
+    {
+      "name": "saga_compensation",
+      "definition": "Each forward step has compensating action that undoes it. Failure triggers compensation chain.",
+      "why": "Replaces distributed rollback. Compensation may differ from inverse (refund vs un-charge — refund creates new transaction). Designed at business level.",
+      "category": "saga_es_mechanism"
+    },
+    {
+      "name": "saga_state_machine",
+      "definition": "Orchestrator tracks saga state. Transitions on events. Failure transitions to compensation chain.",
+      "why": "Explicit state model. Step failure → start compensation from current state backwards. Tools: Temporal, AWS Step Functions, Camunda.",
+      "category": "saga_es_mechanism"
+    },
+    {
+      "name": "compensation_idempotency",
+      "definition": "Compensations must be idempotent. May be invoked multiple times during retry.",
+      "why": "Network failures + retries inevitable. Compensation must handle 'already compensated' case. Common pattern: check state before acting.",
+      "category": "saga_es_mechanism"
+    },
+    {
+      "name": "non_compensable_actions",
+      "definition": "Some actions can't be undone (email sent, money paid out). Sagas must account for these.",
+      "why": "Pure compensation impossible. Alternatives: defer until commit, send 'oops' email, accept business loss. Saga design considers these explicitly.",
+      "category": "saga_es_mechanism"
+    },
+    {
+      "name": "event_store",
+      "definition": "Append-only log of events. Source of truth for application state.",
+      "why": "Foundation of event sourcing. EventStore DB, Kafka as event store, custom on DBs. Events immutable; new events express change.",
+      "category": "saga_es_mechanism"
+    },
+    {
+      "name": "event_replay",
+      "definition": "Reconstruct state by replaying events from beginning (or from snapshot).",
+      "why": "State at any time = events up to time. Time travel built in. Cost: long event chains expensive without snapshots.",
+      "category": "saga_es_mechanism"
+    },
+    {
+      "name": "snapshot_optimization",
+      "definition": "Periodically save aggregate state. Replay from latest snapshot, not from beginning.",
+      "why": "Without: replay cost grows with history. With: bounded replay. Trade: storage + occasional rebuild on schema change.",
+      "category": "saga_es_mechanism"
+    },
+    {
+      "name": "CQRS_command_side",
+      "definition": "Write model: receives commands; produces events; events written to event store.",
+      "why": "Optimised for write consistency. Pure event production. No read concerns. Often combined with event sourcing.",
+      "category": "saga_es_mechanism"
+    },
+    {
+      "name": "CQRS_query_side",
+      "definition": "Read models: projections built from events. Multiple read models for different query patterns.",
+      "why": "Each read model optimised for its queries. Denormalised, materialised. Updated asynchronously from events. Eventually consistent with writes.",
+      "category": "saga_es_mechanism"
+    },
+    {
+      "name": "projection_rebuilding",
+      "definition": "On schema change or bug fix: discard projection, rebuild from events.",
+      "why": "Event store = ground truth. Read models can be regenerated. Powerful for evolution: change projection logic + rebuild from history.",
+      "category": "saga_es_mechanism"
+    },
+    {
+      "name": "outbox_pattern",
+      "definition": "DB transaction includes business write + event in outbox table. Separate process publishes from outbox.",
+      "why": "Atomicity: DB transaction commits both or neither. Decouples DB commit from message broker availability. Standard pattern for event-driven systems with relational DBs.",
+      "category": "saga_es_mechanism"
+    },
+    {
+      "name": "saga_choreography_vs_orchestration",
+      "definition": "Choreography: events emitted; services react autonomously. Orchestration: central coordinator drives steps.",
+      "why": "Choreography: decoupled but flow scattered across services. Orchestration: centralised flow but coordinator critical. Choose per saga complexity.",
+      "category": "saga_es_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "saga_compensations_must_be_idempotent",
+      "if": ["a compensation runs during retry"],
+      "then": ["it must not cause double-undo"],
+      "why": "Network retries → compensation may run multiple times. Refund $100 twice = wrong. Idempotency via state check or idempotency key. Foundation of safe sagas.",
+      "soundness_category": "referential_transparency"
+    },
+    {
+      "name": "event_sourcing_gives_audit_log_for_free",
+      "if": ["state is derived from events"],
+      "then": ["every state change is automatically auditable"],
+      "why": "Events are the audit trail. 'How did this account get to $0?' = replay events. Financial systems + regulated industries depend on this. Difficult to retrofit; design choice.",
+      "soundness_category": "referential_transparency"
+    },
+    {
+      "name": "CQRS_read_models_eventually_consistent",
+      "if": ["read models update asynchronously from events"],
+      "then": ["reads after write may see stale data"],
+      "why": "Write commits; event published; projection processes event; read model updated. Some delay always. App must handle (display 'processing' or read-your-writes from cache).",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "outbox_pattern_ensures_event_durability",
+      "if": ["DB write + event publication in same transaction via outbox"],
+      "then": ["events are not lost on broker outage"],
+      "why": "Outbox in DB transaction. Separate publisher reads outbox + publishes. Broker down: outbox accumulates; resume when up. Standard for transactional event publishing.",
+      "soundness_category": "referential_transparency"
+    },
+    {
+      "name": "orchestration_easier_to_debug_choreography_more_decoupled",
+      "if": ["the saga involves > 5 services"],
+      "then": ["orchestration outperforms choreography for understandability"],
+      "why": "Choreography: flow is scattered events. Debugging requires reading all services. Orchestration: flow in one place (state machine). Trade-off per saga complexity.",
+      "soundness_category": "extensional_equivalence"
+    }
+  ]
+}

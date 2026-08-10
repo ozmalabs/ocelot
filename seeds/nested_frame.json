@@ -1,0 +1,127 @@
+{
+ "id": "nested_frame",
+ "version": "1.0.0",
+ "depends_on": [],
+ "description": "STEP 4: recognise a nested sub-frame by a BASIS CHANGE (locus motion collinear with no parent axis) and mint a child WorldBinding (filled_by). Child-frame discovery reuses the authored principal_axes; value rolls up via world_understanding rollup_value. Held Terms only; no new primitive.",
+ "microtheory": {
+  "name": "nested_frame",
+  "description": "frames nest: a locus whose motion opens a new basis is a child world; recognised by basis-change, discovered by principal_axes, value rolled up"
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [],
+ "rules": [
+  {
+   "name": "detect_nested_frame",
+   "comment": "basis-change detector: a locus whose sub-context discovers MORE axes than the parent frame (a direction outside the parent's span) is a nested sub-frame -> mint a child WorldBinding (filled_by). Both N's come from the authored principal_axes; this is a scalar comparison. Single-fire via has_child.",
+   "match": [
+    [
+     "l",
+     "has_subframe",
+     "sub"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "l"
+         },
+         "key": "has_child"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "sub"
+         },
+         "key": "ndim"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "l"
+         },
+         "key": "parent_ndim"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "cb",
+     "WorldBinding",
+     {
+      "kind": "nested",
+      "activation": "active"
+     }
+    ],
+    [
+     "add_edge",
+     "l",
+     "filled_by",
+     "cb"
+    ],
+    [
+     "add_edge",
+     "cb",
+     "explores",
+     "sub"
+    ],
+    [
+     "set_attr",
+     "l",
+     "has_child",
+     1.0
+    ],
+    [
+     "set_attr",
+     "cb",
+     "needs_frame",
+     1.0
+    ]
+   ]
+  }
+ ]
+}

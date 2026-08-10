@@ -1,0 +1,367 @@
+{
+ "id": "self_budget",
+ "version": "1.0.0",
+ "depends_on": [],
+ "description": "The agent's self-defined budget (feedback_control): regulate_budget keeps the run going while understanding grows and declares `budget_spent` when it plateaus for K turns. No clock, no fixed cap \u2014 the budget is the agent's own, set by the payoff of its curiosity.",
+ "nodes": [],
+ "edges": [],
+ "productions": [],
+ "concepts": [],
+ "rules": [
+  {
+   "name": "regulate_budget",
+   "match": [
+    [
+     "game",
+     "reached",
+     "A"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "A"
+         },
+         "key": "is_avatar_cell"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "game"
+          },
+          "key": "budget_stamp"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       },
+       "b": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "game"
+          },
+          "key": "frame"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "game",
+     "plateau",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gt",
+        "a": {
+         "type": "Count",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "NodesOfType",
+           "node_type": "Feature"
+          },
+          "var_name": "f",
+          "predicate": {
+           "type": "Eq",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "f"
+              },
+              "key": "resolved"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           },
+           "b": {
+            "type": "Lit",
+            "value": 1.0
+           }
+          }
+         }
+        },
+        "b": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "game"
+           },
+           "key": "understood_seen"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": 0.0
+       },
+       "other": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "game"
+            },
+            "key": "plateau"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         {
+          "type": "Lit",
+          "value": 1.0
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "game",
+     "understood_seen",
+     {
+      "__term__": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "Feature"
+        },
+        "var_name": "f",
+        "predicate": {
+         "type": "Eq",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "f"
+            },
+            "key": "resolved"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1.0
+         }
+        }
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "game",
+     "budget_spent",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gte",
+        "a": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Gt",
+          "a": {
+           "type": "Count",
+           "source": {
+            "type": "Filter",
+            "source": {
+             "type": "NodesOfType",
+             "node_type": "Feature"
+            },
+            "var_name": "f",
+            "predicate": {
+             "type": "Eq",
+             "a": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "f"
+                },
+                "key": "resolved"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             },
+             "b": {
+              "type": "Lit",
+              "value": 1.0
+             }
+            }
+           }
+          },
+          "b": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "game"
+             },
+             "key": "understood_seen"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          }
+         },
+         "then": {
+          "type": "Lit",
+          "value": 0.0
+         },
+         "other": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "game"
+              },
+              "key": "plateau"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           },
+           {
+            "type": "Lit",
+            "value": 1.0
+           }
+          ]
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 20.0
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": 1.0
+       },
+       "other": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "game",
+     "budget_stamp",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "game"
+         },
+         "key": "frame"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  }
+ ]
+}

@@ -1,0 +1,644 @@
+{
+ "id": "grievance_succeed",
+ "version": "1.0.0",
+ "self_load_only": true,
+ "depends_on": [],
+ "area": "retina",
+ "description": "BLOCK 215000 -- SPITE-TO-SUCCEED: a GRIEVANCE (an appraised slight from a specific rival) AMPLIFIES the value of the agent's OWN achievement -- the CONSTRUCTIVE face of spite (underdog / chip-on-shoulder / vindication), nearly the inverse of destructive spite (harm-the-other-at-self-cost, block 213000). Every decision is a RULE over the LANDED 204000 core_emotions economy: gs_choose_action is Argmax_c (total_value(c) + amp(c)) over the agent's candidate Appraisals; the amplification amp is the ONLY new term and it is graph data. The grievance magnitude is a LEAKY ACCUMULATOR -- a Sum of 196000 scale2 (Ashr, x2^-k) decayed slight contributions, idempotent under the run_rules fixpoint (a pure function of immutable Slight nodes + adapter-advanced now_epoch). Efficacy gates the CHANNEL: HIGH efficacy (>=5, a viable path to win) fires gs_amplify_succeed -> amp = G*max(0,effort-rival_ach)*observed_by_rival, raising OWN competence candidates (self-benefiting, directed, witnessed); LOW efficacy fires gs_amplify_destroy -> amp = G*rival_harm on the destroy candidates (self-costly, ties 213000). The SAME grievance, one knob (efficacy), flips succeed<->destroy. Integer-native (Sum/Ashr/IDiv/Max/Times/Plus/Minus/Gte/Eq/And/Not/Argmax/Attr; no Rust, no new Term). OFF by default: self_load_only, nothing depends_on it, every rule guards on HeldGrievanceParams.enabled -- absent it every existing path is byte-identical. A glass-box named-knob MODEL of the underdog effect; the contribution is the attribution + the efficacy-gates-channel unification of constructive vs destructive spite, not new psychology.",
+ "microtheory": {
+  "name": "grievance_succeed",
+  "description": "A grievance is a leaky accumulator built from appraised slights by a specific rival; it re-weights the agent's OWN achievement valuation. Efficacy (competence-belief) is the switch: with a path to win the grievance drives constructive success (vindication); with no path the same grievance collapses into destructive spite."
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [
+  {
+   "provenance": "seed:grievance_succeed:gparams",
+   "src": {
+    "type": "EmotionHub",
+    "var": "hub"
+   },
+   "edge_type": "has_grievance_params",
+   "tgt": {
+    "type": "HeldGrievanceParams",
+    "var": "gp"
+   }
+  },
+  {
+   "provenance": "seed:grievance_succeed:grievance",
+   "src": {
+    "type": "EmotionHub",
+    "var": "hub"
+   },
+   "edge_type": "has_grievance",
+   "tgt": {
+    "type": "Grievance",
+    "var": "gr"
+   }
+  },
+  {
+   "provenance": "seed:grievance_succeed:slight",
+   "src": {
+    "type": "Grievance",
+    "var": "gr"
+   },
+   "edge_type": "from_slight",
+   "tgt": {
+    "type": "Slight",
+    "var": "sl"
+   }
+  },
+  {
+   "provenance": "seed:grievance_succeed:candidate",
+   "src": {
+    "type": "EmotionHub",
+    "var": "hub"
+   },
+   "edge_type": "has_candidate",
+   "tgt": {
+    "type": "Appraisal",
+    "var": "c"
+   }
+  },
+  {
+   "provenance": "seed:grievance_succeed:decision",
+   "src": {
+    "type": "EmotionHub",
+    "var": "hub"
+   },
+   "edge_type": "has_action_decision",
+   "tgt": {
+    "type": "AchieveDecision",
+    "var": "dec"
+   }
+  }
+ ],
+ "rules": [
+  {
+   "name": "gs_grievance_from_slights",
+   "area": "retina",
+   "order": 0,
+   "latency_class": "hard_realtime",
+   "comment": "The grievance BUILDS from slights and DECAYS via the 196000 scale2 (Ashr) half-life law. A held grudge = large half_life (slow decay); a fleeting slight = small half_life. No slight -> empty Sum -> magnitude 0 -> no amplification.",
+   "match": [
+    [
+     "hub",
+     "has_grievance_params",
+     "gp"
+    ],
+    [
+     "hub",
+     "has_grievance",
+     "gr"
+    ]
+   ],
+   "where": {
+    "type": "Eq",
+    "a": {
+     "type": "Attr",
+     "node": {
+      "type": "Var",
+      "name": "gp"
+     },
+     "key": "enabled"
+    },
+    "b": {
+     "type": "Lit",
+     "value": 1.0
+    }
+   },
+   "effects": [
+    [
+     "set_attr",
+     "gr",
+     "magnitude",
+     {
+      "__term__": {
+       "type": "Sum",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "gr"
+        },
+        "edge_type": "from_slight",
+        "any_type": false
+       },
+       "var_name": "sl",
+       "value": {
+        "type": "Ashr",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "sl"
+         },
+         "key": "magnitude"
+        },
+        "b": {
+         "type": "IDiv",
+         "a": {
+          "type": "Minus",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "gr"
+           },
+           "key": "now_epoch"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "sl"
+           },
+           "key": "epoch"
+          }
+         },
+         "b": {
+          "type": "Max",
+          "items": [
+           {
+            "type": "Lit",
+            "value": 1.0
+           },
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "gr"
+            },
+            "key": "half_life"
+           }
+          ]
+         }
+        }
+       }
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "gs_amplify_succeed",
+   "area": "retina",
+   "order": 1,
+   "latency_class": "hard_realtime",
+   "comment": "HIGH efficacy (a viable path to win): the grievance raises the value of surpassing the SPECIFIC rival's standing, WITNESSED by them, scaled by grievance magnitude. Self-benefiting (own output rises). amp lands on the candidate; gs_choose_action ranks by total_value + amp. This is WHERE the competence amplification lives.",
+   "match": [
+    [
+     "hub",
+     "has_grievance_params",
+     "gp"
+    ],
+    [
+     "hub",
+     "has_grievance",
+     "gr"
+    ],
+    [
+     "hub",
+     "has_candidate",
+     "c"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "gp"
+       },
+       "key": "enabled"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "kind_succeed"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Gte",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "gp"
+       },
+       "key": "efficacy"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 5.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "c",
+     "amp",
+     {
+      "__term__": {
+       "type": "Times",
+       "items": [
+        {
+         "type": "Times",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "gr"
+           },
+           "key": "magnitude"
+          },
+          {
+           "type": "Max",
+           "items": [
+            {
+             "type": "Lit",
+             "value": 0.0
+            },
+            {
+             "type": "Minus",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "c"
+              },
+              "key": "effort"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "gr"
+              },
+              "key": "rival_ach"
+             }
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "c"
+         },
+         "key": "observed_by_rival"
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "gs_amplify_destroy",
+   "area": "retina",
+   "order": 1,
+   "latency_class": "hard_realtime",
+   "comment": "LOW efficacy (no path to win): gs_amplify_succeed is gated OFF; the grievance instead values HARMING the rival -- self-costly (destroy candidates carry individual_benefit = -sabotage). Ties block 213000's harm-the-other-at-self-cost. The SAME grievance, the efficacy knob flips the channel.",
+   "match": [
+    [
+     "hub",
+     "has_grievance_params",
+     "gp"
+    ],
+    [
+     "hub",
+     "has_grievance",
+     "gr"
+    ],
+    [
+     "hub",
+     "has_candidate",
+     "c"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "gp"
+       },
+       "key": "enabled"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "kind_destroy"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Gte",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "gp"
+        },
+        "key": "efficacy"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 5.0
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "c",
+     "amp",
+     {
+      "__term__": {
+       "type": "Times",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "gr"
+         },
+         "key": "magnitude"
+        },
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "c"
+         },
+         "key": "rival_harm"
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "gs_choose_action",
+   "area": "retina",
+   "order": 5,
+   "latency_class": "hard_realtime",
+   "comment": "The agent's choice: Argmax_c (total_value(c) + amp(c)) over its candidate Appraisals. total_value is computed by the unchanged 204000 core_emotions rules; amp is the grievance amplification. Read off the winner: output (competence produced), rival_harm, kind_succeed, effort. Restraint/effort FALLS OUT of the Argmax.",
+   "match": [
+    [
+     "hub",
+     "has_grievance_params",
+     "gp"
+    ],
+    [
+     "hub",
+     "has_action_decision",
+     "dec"
+    ]
+   ],
+   "where": {
+    "type": "Eq",
+    "a": {
+     "type": "Attr",
+     "node": {
+      "type": "Var",
+      "name": "gp"
+     },
+     "key": "enabled"
+    },
+    "b": {
+     "type": "Lit",
+     "value": 1.0
+    }
+   },
+   "effects": [
+    [
+     "set_attr",
+     "dec",
+     "chosen_output",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Argmax",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "hub"
+         },
+         "edge_type": "has_candidate",
+         "any_type": false
+        },
+        "var_name": "c",
+        "value": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "c"
+           },
+           "key": "total_value"
+          },
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "c"
+           },
+           "key": "amp"
+          }
+         ]
+        }
+       },
+       "key": "output"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "dec",
+     "chosen_rival_harm",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Argmax",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "hub"
+         },
+         "edge_type": "has_candidate",
+         "any_type": false
+        },
+        "var_name": "c",
+        "value": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "c"
+           },
+           "key": "total_value"
+          },
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "c"
+           },
+           "key": "amp"
+          }
+         ]
+        }
+       },
+       "key": "rival_harm"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "dec",
+     "chosen_kind_succeed",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Argmax",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "hub"
+         },
+         "edge_type": "has_candidate",
+         "any_type": false
+        },
+        "var_name": "c",
+        "value": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "c"
+           },
+           "key": "total_value"
+          },
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "c"
+           },
+           "key": "amp"
+          }
+         ]
+        }
+       },
+       "key": "kind_succeed"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "dec",
+     "chosen_effort",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Argmax",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "hub"
+         },
+         "edge_type": "has_candidate",
+         "any_type": false
+        },
+        "var_name": "c",
+        "value": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "c"
+           },
+           "key": "total_value"
+          },
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "c"
+           },
+           "key": "amp"
+          }
+         ]
+        }
+       },
+       "key": "effort"
+      }
+     }
+    ]
+   ]
+  }
+ ]
+}

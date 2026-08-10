@@ -1,0 +1,118 @@
+{
+  "id": "dynamic_programming_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "dynamic_programming",
+  "in_microtheory": "data_structures_algorithms",
+  "description": "Dynamic programming decomposed. The methodology: recognise overlapping subproblems + optimal substructure, define a recurrence, evaluate it efficiently. Memoisation (top-down recursion + cache) vs tabulation (bottom-up loop). Space optimisation via rolling arrays. Classic problems: LCS, edit distance, knapsack, matrix chain, coin change.",
+  "sub_mechanisms": [
+    {
+      "name": "optimal_substructure",
+      "definition": "Property: the optimal solution to a problem contains optimal solutions to subproblems. Shortest path has it (subpath is shortest); longest simple path doesn't (can't reuse vertices).",
+      "why": "Necessary for DP to work. Without it, combining subproblem solutions doesn't give the optimal whole. Recognising this property is the first DP design step.",
+      "category": "dp_mechanism"
+    },
+    {
+      "name": "overlapping_subproblems",
+      "definition": "Property: naive recursion computes the same subproblem many times. Fibonacci recursion computes Fib(k) exponentially many times.",
+      "why": "If subproblems didn't overlap, divide-and-conquer would suffice. Overlap is what makes memoisation a huge speedup. The exponential-to-polynomial transformation comes from caching repeated work.",
+      "category": "dp_mechanism"
+    },
+    {
+      "name": "memoisation_top_down",
+      "definition": "Recursive function with cache. On each call: if argument seen before, return cached. Otherwise compute, cache, return.",
+      "why": "Easy to add to existing recursive code. Python's @functools.cache decorator. Only computes subproblems actually needed. Recursion overhead + cache lookup per call.",
+      "category": "dp_mechanism"
+    },
+    {
+      "name": "tabulation_bottom_up",
+      "definition": "Iterative filling of DP table from base cases up to the target. Loop structure encodes evaluation order.",
+      "why": "Better cache locality (sequential array access). No recursion overhead. Compiler-friendly. Often 2-3x faster than memoised version with the same algorithm.",
+      "category": "dp_mechanism"
+    },
+    {
+      "name": "DP_state_definition",
+      "definition": "What does dp[i][j] mean? Defining the state precisely is the hard part of DP. Common patterns: dp[i] = best answer using first i items; dp[i][j] = best answer for ranges, intervals, configurations.",
+      "why": "Wrong state → can't write a correct recurrence. Right state makes the recurrence obvious. The state's dimensionality affects time + space complexity. Hardest part of DP design.",
+      "category": "dp_mechanism"
+    },
+    {
+      "name": "DP_recurrence",
+      "definition": "Equation defining dp[state] in terms of dp[smaller states]. E.g., LCS: dp[i][j] = dp[i-1][j-1] + 1 if a[i] == b[j], else max(dp[i-1][j], dp[i][j-1]).",
+      "why": "The algorithm IS the recurrence. Correctness reduces to verifying the recurrence. Once correct, implementation is mechanical (memoise or tabulate).",
+      "category": "dp_mechanism"
+    },
+    {
+      "name": "DP_base_cases",
+      "definition": "Trivial cases handled directly: dp[0] = 0 (Fibonacci); dp[i][0] = i (edit distance from i chars to empty).",
+      "why": "Recurrence needs a ground to stand on. Wrong base case → wrong answer despite correct recurrence. Often subtle for off-by-one or boundary semantics.",
+      "category": "dp_mechanism"
+    },
+    {
+      "name": "rolling_array_space_optimisation",
+      "definition": "When DP only depends on previous row: store just two rows (current + previous). Or one row updated carefully.",
+      "why": "Reduces space from O(n²) to O(n) when applicable. LCS, edit distance, knapsack all admit this optimisation. Critical for problems too large to fit a 2D table in memory.",
+      "category": "dp_mechanism"
+    },
+    {
+      "name": "reconstruction_from_DP_table",
+      "definition": "After filling table, trace back from the answer to recover the actual solution (not just the optimal value).",
+      "why": "DP value gives 'minimum cost'; reconstruction gives 'which operations'. Often O(n + m) backward walk through the table. Used in diff, sequence alignment, optimal path recovery.",
+      "category": "dp_mechanism"
+    },
+    {
+      "name": "knapsack_01_DP",
+      "definition": "dp[i][w] = max value using first i items with capacity w. Recurrence: max(dp[i-1][w], dp[i-1][w - weight[i]] + value[i]).",
+      "why": "Classical 0/1 knapsack. O(n·W) where W is capacity. Pseudo-polynomial: linear in W but W can be exponential in input size (bits). This is the difference between weakly and strongly NP-hard.",
+      "category": "dp_mechanism"
+    },
+    {
+      "name": "interval_DP",
+      "definition": "State = interval [i, j]. Recurrence considers all split points k between i and j. Matrix chain multiplication, optimal BST, palindrome partitioning.",
+      "why": "Common DP pattern when problem structure decomposes naturally into intervals. O(n³) typical: n² states × n split points.",
+      "category": "dp_mechanism"
+    },
+    {
+      "name": "bitmask_DP",
+      "definition": "State includes a bitmask representing a subset. dp[mask] = best for that subset. Used for TSP and other NP-hard problems with small N.",
+      "why": "Exponential state space (2^n masks) but polynomial per-state work. Tractable for n ≤ ~20. TSP: O(2^n · n²). Better than O(n!) brute force but still exponential.",
+      "category": "dp_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "DP_correct_iff_optimal_substructure",
+      "if": ["the problem has optimal substructure"],
+      "then": ["DP gives an optimal solution"],
+      "why": "DP combines optimal subproblem solutions. If the problem doesn't have optimal substructure (longest simple path), the combined result isn't optimal — DP gives wrong answer. Recognising substructure is the gating decision.",
+      "soundness_category": "algebraic_law"
+    },
+    {
+      "name": "memoisation_exponential_to_polynomial",
+      "if": ["recursive subproblems overlap"],
+      "then": ["memoisation reduces complexity to polynomial"],
+      "why": "Each distinct subproblem solved once instead of exponentially many times. Naive Fibonacci: O(2^n). Memoised: O(n). The speedup factor equals the redundancy of the original recursion.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "tabulation_better_cache_than_memoisation",
+      "if": ["DP table is filled bottom-up in sequential order"],
+      "then": ["cache behaviour is optimal"],
+      "why": "Sequential array fill prefetches well. Memoised recursion has unpredictable access pattern + function-call overhead. Same algorithm, 2-3x speedup from tabulation alone. Always tabulate when feasible.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "rolling_array_when_only_last_row_matters",
+      "if": ["DP recurrence only references the previous row"],
+      "then": ["O(n) space instead of O(n²) is achievable"],
+      "why": "Just keep two rows (or one with careful update order). LCS, edit distance, knapsack all admit this. Critical for memory-constrained execution. The recurrence structure determines which space optimisations are possible.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "pseudo_polynomial_distinguishes_weak_strong_NP",
+      "if": ["DP runtime is polynomial in numeric values but exponential in input size in bits"],
+      "then": ["the problem is weakly (not strongly) NP-hard"],
+      "why": "Knapsack: O(n·W). W can have arbitrary bit-length, so runtime can be exponential in input. Strongly NP-hard problems remain hard even when numeric values are bounded. The distinction informs which pseudo-polynomial algorithms are practical.",
+      "soundness_category": "algebraic_law"
+    }
+  ]
+}

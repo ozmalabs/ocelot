@@ -1,0 +1,448 @@
+{
+  "id": "situation_model",
+  "version": "1.0.0",
+  "depends_on": [
+    "perspective"
+  ],
+  "description": "The literal-comprehension base: entities carry state, events apply state-deltas, built incrementally clause-by-clause and indexed by who/where/when/why/what-for. Inference productions assert the implicit post-state (drop->floor, shatter->broken, give->recipient has it); query is a traversal of the current state slice. Makes understanding testable: answer what is true now though no sentence said it.",
+  "microtheory": {
+    "name": "situation_model",
+    "description": "the described world a text denotes"
+  },
+  "nodes": [
+    {
+      "local_id": 1,
+      "type": "Concept",
+      "attrs": {
+        "name": "situation_model",
+        "description": "The REFERENT-side of the sign, directly under the base of the displacement ladder: the model of the world a text DESCRIBES (not its words). Perspective fixes the deictic origin (who/where/when speaks); the situation model is what those coordinates index INTO \u2014 the world L denotes, the structure the viewpoint looks onto (projection reused: hold the world once). Every figure F-L is a displacement that must LAND in a state of this model."
+      }
+    },
+    {
+      "local_id": 2,
+      "type": "Concept",
+      "attrs": {
+        "name": "sm_entity",
+        "description": "A Locus-like node carrying STATE as attributes/edges (location, holder/possession, intactness, mental-state) \u2014 a participant in the described world."
+      }
+    },
+    {
+      "local_id": 3,
+      "type": "Concept",
+      "attrs": {
+        "name": "sm_event",
+        "description": "A node holding a TRANSITION (pre-state -> post-state) that applies a DELTA to the entities it touches, hung on five index axes: protagonist (who), space (where), time (when), causation (why), intention (what-for). Built incrementally clause-by-clause: each event supersedes an entity old state-edge, stamped at the current time = a frame-stamped now-frame."
+      }
+    },
+    {
+      "local_id": 4,
+      "type": "Principle",
+      "attrs": {
+        "name": "sm_inference",
+        "head": "situation model",
+        "body": "make explicit what the text leaves implicit: forward productions keyed on the event predicate assert the post-state (drop->on the floor, shatter->broken, give->recipient has it & giver no longer), fired to fixpoint so the now-frame is complete before any query"
+      }
+    },
+    {
+      "local_id": 5,
+      "type": "Principle",
+      "attrs": {
+        "name": "sm_query",
+        "head": "situation model",
+        "body": "a pure traversal over the current state slice: where is X follows X latest location, who has Y walks possession to the current holder, is Z intact reads the broken/intact attribute \u2014 the test of comprehension is answering what is true NOW even though no sentence said it outright"
+      }
+    },
+    {
+      "local_id": 6,
+      "type": "Principle",
+      "attrs": {
+        "name": "sm_indices",
+        "head": "situation model",
+        "body": "the five event-indexing dimensions (protagonist/space/time/causation/intention) organise AND segment: a new event sharing protagonist/place/time continues the situation; a break marks a scene"
+      }
+    }
+  ],
+  "edges": [],
+  "rules": [
+    {
+      "name": "sm_take",
+      "match": [
+        [
+          "e",
+          "agent",
+          "ag"
+        ],
+        [
+          "e",
+          "theme",
+          "th"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "e"
+              },
+              "key": "active"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "e"
+              },
+              "key": "verb"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "take"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "th",
+          "holder",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ag"
+              },
+              "key": "name"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "sm_move",
+      "match": [
+        [
+          "e",
+          "agent",
+          "ag"
+        ],
+        [
+          "e",
+          "goal",
+          "loc"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "e"
+              },
+              "key": "active"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "e"
+              },
+              "key": "verb"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "move"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "ag",
+          "location",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "loc"
+              },
+              "key": "name"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "sm_give",
+      "match": [
+        [
+          "e",
+          "theme",
+          "th"
+        ],
+        [
+          "e",
+          "recipient",
+          "r"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "e"
+              },
+              "key": "active"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "e"
+              },
+              "key": "verb"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "give"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "th",
+          "holder",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "r"
+              },
+              "key": "name"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "sm_put",
+      "match": [
+        [
+          "e",
+          "theme",
+          "th"
+        ],
+        [
+          "e",
+          "goal",
+          "loc"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "e"
+              },
+              "key": "active"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "e"
+              },
+              "key": "verb"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "put"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "th",
+          "location",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "loc"
+              },
+              "key": "name"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "sm_drop",
+      "match": [
+        [
+          "e",
+          "theme",
+          "th"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "e"
+              },
+              "key": "active"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "e"
+              },
+              "key": "verb"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "drop"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "th",
+          "location",
+          "the floor"
+        ],
+        [
+          "set_attr",
+          "th",
+          "holder",
+          "(nobody)"
+        ]
+      ]
+    },
+    {
+      "name": "sm_shatter",
+      "match": [
+        [
+          "e",
+          "theme",
+          "th"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "e"
+              },
+              "key": "active"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "e"
+              },
+              "key": "verb"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "shatter"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "th",
+          "intact",
+          0
+        ]
+      ]
+    }
+  ]
+}

@@ -1,0 +1,679 @@
+{
+ "id": "demotion_hierarchy",
+ "version": "1.0.0",
+ "self_load_only": true,
+ "depends_on": [
+  "staleness_decay"
+ ],
+ "area": "retina",
+ "description": "DEMOTION HIERARCHY (block 198000) on top of 196000's staleness_decay atom. A held trace carries integer freshness = Ashr(C0, IDiv(dEpoch, half_life)); freshness-thresholded TIERS (FRESH>=t_fresh / GIST>=t_gist / LATENT) drive a DEMOTE atom (dh_tier + dh_demote) that COARSENS the stored representation as freshness decays WITHOUT refresh: FRESH keeps full detail, GIST sheds it to Ashr(detail,k_gist) (an integer bit-plane LOD summary), LATENT keeps only a presence marker (stored=0, present=1). THE DEMOTE ATOM ONLY EVER DEMOTES -- freshness->0 leaves a LATENT trace, NEVER an empty cell; it contains no del_node. dh_promote resets the innovation clock on a new observation so the trace climbs back to FRESH and RECOVERS full detail from the incoming data (reversible recall / DRAM-refresh). Deletion is a SEPARATE, high-order (9), bottom-tier-gated faculty (dh_delete_latent) behind its own delete_enabled flag -- the ONLY rule that deletes, never wired into decay. Integer-native (Ashr / Shl / IDiv / IfThenElse / Gte / Eq); only the cross-frame recon uses a shift. OFF by default: rules need a HeldTierParams node the adapter creates only on opt-in; absent it every existing path is byte-identical. NO Rust, NO new Term.",
+ "microtheory": {
+  "name": "demotion_hierarchy",
+  "description": "Decay DEMOTES, it does not DELETE. Freshness-thresholded tiers coarsen a trace's representation (registers->L1->disk / episodic->semantic gist / cache eviction); re-observation promotes it back; deletion is a separate bottom-tier faculty."
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [
+  {
+   "provenance": "seed:demotion_hierarchy:retina-tier-params",
+   "src": {
+    "type": "Retina",
+    "var": "retina"
+   },
+   "edge_type": "has_hier_tier_params",
+   "tgt": {
+    "type": "HeldTierParams",
+    "var": "tp"
+   }
+  },
+  {
+   "provenance": "seed:demotion_hierarchy:retina-hier-trace",
+   "src": {
+    "type": "Retina",
+    "var": "retina"
+   },
+   "edge_type": "has_hier_trace",
+   "tgt": {
+    "type": "HierTrace",
+    "var": "tr"
+   }
+  }
+ ],
+ "rules": [
+  {
+   "name": "dh_freshness",
+   "area": "retina",
+   "order": 2,
+   "latency_class": "hard_realtime",
+   "match": [
+    [
+     "retina",
+     "has_hier_tier_params",
+     "tp"
+    ],
+    [
+     "retina",
+     "has_hier_trace",
+     "tr"
+    ]
+   ],
+   "where": {
+    "type": "Eq",
+    "a": {
+     "type": "Attr",
+     "node": {
+      "type": "Var",
+      "name": "tp"
+     },
+     "key": "enabled"
+    },
+    "b": {
+     "type": "Lit",
+     "value": 1.0
+    }
+   },
+   "effects": [
+    [
+     "set_attr",
+     "tr",
+     "freshness",
+     {
+      "__term__": {
+       "type": "Ashr",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "tp"
+        },
+        "key": "c0"
+       },
+       "b": {
+        "type": "IDiv",
+        "a": {
+         "type": "Minus",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "tr"
+          },
+          "key": "now_epoch"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "tr"
+          },
+          "key": "last_refresh_epoch"
+         }
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "tr"
+         },
+         "key": "half_life"
+        }
+       }
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "dh_tier",
+   "area": "retina",
+   "order": 3,
+   "latency_class": "hard_realtime",
+   "match": [
+    [
+     "retina",
+     "has_hier_tier_params",
+     "tp"
+    ],
+    [
+     "retina",
+     "has_hier_trace",
+     "tr"
+    ]
+   ],
+   "where": {
+    "type": "Eq",
+    "a": {
+     "type": "Attr",
+     "node": {
+      "type": "Var",
+      "name": "tp"
+     },
+     "key": "enabled"
+    },
+    "b": {
+     "type": "Lit",
+     "value": 1.0
+    }
+   },
+   "effects": [
+    [
+     "set_attr",
+     "tr",
+     "tier",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gte",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "tr"
+         },
+         "key": "freshness"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "tp"
+         },
+         "key": "t_fresh"
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": 2.0
+       },
+       "other": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Gte",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "tr"
+          },
+          "key": "freshness"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "tp"
+          },
+          "key": "t_gist"
+         }
+        },
+        "then": {
+         "type": "Lit",
+         "value": 1.0
+        },
+        "other": {
+         "type": "Lit",
+         "value": 0.0
+        }
+       }
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "dh_demote",
+   "area": "retina",
+   "order": 4,
+   "latency_class": "hard_realtime",
+   "match": [
+    [
+     "retina",
+     "has_hier_tier_params",
+     "tp"
+    ],
+    [
+     "retina",
+     "has_hier_trace",
+     "tr"
+    ]
+   ],
+   "where": {
+    "type": "Eq",
+    "a": {
+     "type": "Attr",
+     "node": {
+      "type": "Var",
+      "name": "tp"
+     },
+     "key": "enabled"
+    },
+    "b": {
+     "type": "Lit",
+     "value": 1.0
+    }
+   },
+   "effects": [
+    [
+     "set_attr",
+     "tr",
+     "stored",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "tr"
+         },
+         "key": "tier"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 2.0
+        }
+       },
+       "then": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "tr"
+        },
+        "key": "detail"
+       },
+       "other": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "tr"
+          },
+          "key": "tier"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1.0
+         }
+        },
+        "then": {
+         "type": "Ashr",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "tr"
+          },
+          "key": "detail"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "tp"
+          },
+          "key": "k_gist"
+         }
+        },
+        "other": {
+         "type": "Lit",
+         "value": 0.0
+        }
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "tr",
+     "bits",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "tr"
+         },
+         "key": "tier"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 2.0
+        }
+       },
+       "then": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "tp"
+        },
+        "key": "bits_full"
+       },
+       "other": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "tr"
+          },
+          "key": "tier"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1.0
+         }
+        },
+        "then": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "tp"
+         },
+         "key": "bits_gist"
+        },
+        "other": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "tp"
+         },
+         "key": "bits_latent"
+        }
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "tr",
+     "recon",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "tr"
+         },
+         "key": "tier"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 2.0
+        }
+       },
+       "then": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "tr"
+        },
+        "key": "stored"
+       },
+       "other": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "tr"
+          },
+          "key": "tier"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1.0
+         }
+        },
+        "then": {
+         "type": "Shl",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "tr"
+          },
+          "key": "stored"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "tp"
+          },
+          "key": "k_gist"
+         }
+        },
+        "other": {
+         "type": "Lit",
+         "value": 0.0
+        }
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "tr",
+     "present",
+     {
+      "__term__": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "dh_promote",
+   "area": "retina",
+   "order": 1,
+   "latency_class": "hard_realtime",
+   "match": [
+    [
+     "retina",
+     "has_hier_tier_params",
+     "tp"
+    ],
+    [
+     "retina",
+     "has_hier_trace",
+     "tr"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "tp"
+       },
+       "key": "enabled"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "tr"
+       },
+       "key": "obs_epoch"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "tr"
+       },
+       "key": "last_refresh_epoch"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "tr",
+     "last_refresh_epoch",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "tr"
+       },
+       "key": "obs_epoch"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "tr",
+     "detail",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "tr"
+       },
+       "key": "obs_detail"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "dh_delete_latent",
+   "area": "retina",
+   "order": 9,
+   "latency_class": "background",
+   "match": [
+    [
+     "retina",
+     "has_hier_tier_params",
+     "tp"
+    ],
+    [
+     "retina",
+     "has_hier_trace",
+     "tr"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "tp"
+       },
+       "key": "enabled"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "tp"
+       },
+       "key": "delete_enabled"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "tr"
+       },
+       "key": "tier"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Minus",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "tr"
+        },
+        "key": "now_epoch"
+       },
+       "b": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "tr"
+        },
+        "key": "last_refresh_epoch"
+       }
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "tp"
+       },
+       "key": "evict_age"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "del_node",
+     "tr"
+    ]
+   ]
+  }
+ ]
+}

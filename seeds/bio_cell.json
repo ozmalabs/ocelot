@@ -1,0 +1,54 @@
+{
+  "microtheory": {
+    "name": "cell_biology",
+    "definition": "The cell as fundamental unit of life. Organelles, membrane, cytoskeleton, signaling, division, communication. Cell theory (Schleiden + Schwann + Virchow). Substrate analogue: substrate's Concept as basic unit + Mt as functional cell-analogue.",
+    "category": "biology_domain",
+    "parent": "biology_foundation"
+  },
+  "concepts": [
+    {"name": "cell_theory", "definition": "Schleiden + Schwann 1839, Virchow 1855. All life made of cells; cells are basic units; cells come from cells. Substrate analogue: substrate's compositional principle.", "category": "foundation"},
+    {"name": "prokaryote", "definition": "No nucleus. Bacteria + archaea. Small, no membrane organelles. Substrate analogue: substrate's atomic Mt without internal hierarchy.", "category": "types"},
+    {"name": "eukaryote", "definition": "Nucleus + membrane organelles. All multicellular life + many single-celled. Substrate analogue: substrate's hierarchical Mt.", "category": "types"},
+
+    {"name": "cell_membrane", "definition": "Phospholipid bilayer. Selectively permeable. Boundary between inside + outside. Substrate analogue: substrate's Mt boundary.", "category": "membrane"},
+    {"name": "selective_permeability", "definition": "Membrane lets some things through, blocks others. Channels, transporters. Substrate analogue: substrate's edge-type filtering.", "category": "membrane"},
+    {"name": "ion_channel", "definition": "Membrane protein selectively passing ions. Voltage-gated, ligand-gated. Foundation of neural signaling. Substrate analogue: substrate's gated communication.", "category": "membrane"},
+    {"name": "membrane_potential_cell", "definition": "Voltage across membrane. ~-70mV in neurons. Action potential = brief flip. Substrate analogue: substrate's σ state.", "category": "membrane"},
+
+    {"name": "nucleus", "definition": "Eukaryotic organelle housing DNA. Nuclear envelope. Nucleolus inside. Substrate analogue: substrate's foundational Mt store.", "category": "organelles"},
+    {"name": "mitochondrion", "definition": "Energy-producing organelle. ATP synthesis via oxidative phosphorylation. Endosymbiont origin. Substrate analogue: substrate's energy-providing subsystem.", "category": "organelles"},
+    {"name": "endoplasmic_reticulum", "definition": "Rough (with ribosomes, protein synthesis) + smooth (lipid synthesis, detox). Substrate analogue: substrate's processing pipeline.", "category": "organelles"},
+    {"name": "golgi_apparatus", "definition": "Processes + packages proteins for export. Substrate analogue: substrate's output preparation.", "category": "organelles"},
+    {"name": "lysosome", "definition": "Acidic compartment digesting waste + recycled components. Substrate analogue: substrate's pruning mechanism.", "category": "organelles"},
+    {"name": "cytoskeleton", "definition": "Internal scaffold. Microtubules, actin filaments, intermediate filaments. Shape + transport + division. Substrate analogue: substrate's structural skeleton.", "category": "organelles"},
+    {"name": "chloroplast", "definition": "Plant organelle performing photosynthesis. Endosymbiont origin like mitochondria. Substrate analogue: substrate's energy-capture from environment.", "category": "organelles"},
+
+    {"name": "cell_signaling", "definition": "How cells communicate. Endocrine, paracrine, juxtacrine, autocrine. Substrate analogue: substrate's Mt-Mt signaling.", "category": "signaling"},
+    {"name": "receptor", "definition": "Protein binding signal + transducing it. GPCRs, RTKs, ion channels. Substrate analogue: substrate's input concept.", "category": "signaling"},
+    {"name": "ligand", "definition": "Molecule binding receptor. Hormones, neurotransmitters, growth factors. Substrate analogue: substrate's signal value.", "category": "signaling"},
+    {"name": "signaling_cascade", "definition": "Chain of intracellular events from receptor to response. Amplification + integration. Substrate analogue: substrate's chained activation.", "category": "signaling"},
+    {"name": "second_messenger", "definition": "Intracellular signal molecule. cAMP, IP3, Ca2+. Substrate analogue: substrate's relay signal.", "category": "signaling"},
+
+    {"name": "cell_cycle", "definition": "G1 → S → G2 → M. Checkpoints prevent damage propagation. Substrate analogue: substrate's update cycle with checkpoints.", "category": "division"},
+    {"name": "mitosis", "definition": "Cell division producing two identical diploid cells. Substrate analogue: substrate's state-copy.", "category": "division"},
+    {"name": "meiosis", "definition": "Reduction division for gametes. Crossing over creates variation. Substrate analogue: substrate's variation-producing reproduction.", "category": "division"},
+    {"name": "apoptosis", "definition": "Programmed cell death. Controlled, anti-inflammatory. Essential for development + homeostasis. Substrate analogue: substrate's controlled Mt removal.", "category": "division"},
+    {"name": "cancer", "definition": "Uncontrolled cell proliferation from accumulated mutations. Substrate analogue: substrate's unchecked runaway expansion.", "category": "division"},
+
+    {"name": "stem_cell", "definition": "Self-renewing + differentiation-capable cell. Embryonic + adult. Substrate analogue: substrate's generative Concept node.", "category": "differentiation"},
+    {"name": "cell_differentiation", "definition": "Cell becoming specialized type via gene expression program. Substrate analogue: substrate's Mt specialization.", "category": "differentiation"},
+    {"name": "potency", "definition": "Range of cell types a stem cell can become. Toti-, pluri-, multi-, unipotent. Substrate analogue: substrate's generative range.", "category": "differentiation"},
+
+    {"name": "endosymbiosis", "definition": "Margulis 1967. Eukaryotic organelles (mito, chloro) from engulfed bacteria. Major evolutionary transition. Substrate analogue: substrate's integration of external modules.", "category": "evolution_cellular"},
+    {"name": "multicellularity", "definition": "Major transition. Cells differentiate + cooperate. Substrate analogue: substrate's multi-Mt cooperation.", "category": "evolution_cellular"},
+
+    {"name": "homeostasis_cellular", "definition": "Cell's internal regulation. pH, osmotic balance, energy state. Substrate analogue: substrate's Mt-level stability.", "category": "regulation"}
+  ],
+  "rules": [
+    {"name": "membrane_boundary_defines_self_nonself", "head": "the substrate maintains a boundary between internal + external", "body": "selective permeability lets it choose what enters + exits. Substrate's Mt boundary as self/non-self distinction."},
+    {"name": "signaling_cascade_amplifies_and_integrates", "head": "the substrate receives multiple signals", "body": "intracellular cascades amplify + integrate them before output. Substrate's chained Mt activation."},
+    {"name": "checkpoints_prevent_error_propagation", "head": "the substrate divides or duplicates", "body": "checkpoints verify integrity before proceeding. Damage detection halts cycle. Substrate's verification gates."},
+    {"name": "apoptosis_eliminates_compromised_cells", "head": "the substrate has a damaged or unwanted component", "body": "programmed removal eliminates it cleanly. Substrate's controlled Mt removal."},
+    {"name": "endosymbiosis_drives_complexity_jumps", "head": "the substrate integrates an externally-developed module", "body": "the integration creates new capability levels. Endosymbiosis → eukaryotes. Substrate's modular-integration major transitions."}
+  ]
+}

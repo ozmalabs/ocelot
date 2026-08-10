@@ -1,0 +1,98 @@
+{
+ "id": "held_surface",
+ "version": "1.0.0",
+ "self_load_only": true,
+ "depends_on": [],
+ "area": "retina",
+ "description": "Persistent HELD SURFACE reconstruction (seed block 180000). The surface-level twin of the per-receptor adapting floor: a first-class HeldSurfaceCell per retina cell whose `value` EMA-accumulates the eye's per-tick observed surface luminance (the cell's rod `caught_quanta`, which carries photon shot noise). The blend `value' = value + lr*(observed - value)` is a graph RULE over standard DSL Terms firing under run_rules(); it BUILDS a fixed scene (converges toward the true surface, temporally denoising the noisy single-tick observation) and it FORGETS (the same EMA decays stale content toward changed content -> object-permanence-WITH-forgetting). OFF by default: `held_surface_accumulate` cannot fire unless a HeldSurfaceParams node exists AND is enabled (created by the measure adapter only when the world opts in); absent it every existing path is byte-identical. The observed drive is read live off the rod (`rod_receptor`), fresh-guarded so the blend only fires after this epoch's transduction has updated caught_quanta. Unlike the adapting floor (a fast internal gain reference the transduction owns), this is a persistent held BELIEF about the scene surface, rendered as the surface reconstruction with honest holes.",
+ "microtheory": {
+  "name": "held_surface",
+  "description": "EMA accumulation of the observed surface luminance into a persistent held-surface belief (build + forget)"
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [
+  {
+   "provenance": "seed:held_surface:retina-params",
+   "src": {"type": "Retina", "var": "retina"},
+   "edge_type": "has_held_surface_params",
+   "tgt": {"type": "HeldSurfaceParams", "var": "params"}
+  },
+  {
+   "provenance": "seed:held_surface:column-cell",
+   "src": {"type": "RetinalColumn", "var": "column"},
+   "edge_type": "has_held_surface_cell",
+   "tgt": {"type": "HeldSurfaceCell", "var": "hs"}
+  }
+ ],
+ "rules": [
+  {
+   "name": "held_surface_accumulate",
+   "area": "retina",
+   "order": 5,
+   "latency_class": "hard_realtime",
+   "match": [
+    ["retina", "has_held_surface_params", "params"],
+    ["retina", "has_column", "column"],
+    ["column", "rod_receptor", "rod"],
+    ["column", "has_held_surface_cell", "hs"]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "params"}, "key": "enabled"},
+      "b": {"type": "Lit", "value": 1.0}
+     },
+     {
+      "type": "Gt",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "column"}, "key": "input_epoch"},
+      "b": {"type": "Attr", "node": {"type": "Var", "name": "hs"}, "key": "epoch"}
+     },
+     {
+      "type": "Eq",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "rod"}, "key": "input_epoch"},
+      "b": {"type": "Attr", "node": {"type": "Var", "name": "column"}, "key": "input_epoch"}
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr", "hs", "value",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {"type": "Attr", "node": {"type": "Var", "name": "hs"}, "key": "value"},
+        {
+         "type": "Times",
+         "items": [
+          {"type": "Attr", "node": {"type": "Var", "name": "params"}, "key": "lr"},
+          {
+           "type": "Minus",
+           "a": {"type": "Attr", "node": {"type": "Var", "name": "rod"}, "key": "caught_quanta"},
+           "b": {"type": "Attr", "node": {"type": "Var", "name": "hs"}, "key": "value"}
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr", "hs", "obs",
+     {
+      "__term__": {"type": "Attr", "node": {"type": "Var", "name": "rod"}, "key": "caught_quanta"}
+     }
+    ],
+    [
+     "set_attr", "hs", "epoch",
+     {
+      "__term__": {"type": "Attr", "node": {"type": "Var", "name": "column"}, "key": "input_epoch"}
+     }
+    ]
+   ]
+  }
+ ]
+}

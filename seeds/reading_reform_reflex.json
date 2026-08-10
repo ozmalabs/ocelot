@@ -1,0 +1,36 @@
+{
+  "id": "reading_reform_reflex",
+  "version": "1.0.0",
+  "depends_on": ["reading_cortices"],
+  "description": "THE REFORM EXECUTOR REFLEX (Wave: dynamic-thresholds/reopen/reform, 2026-07-11). `reform_overcomplex_clause` (seeds/reading_aperture.json) is an ordinary Rule fired via cognitive_tick's run_rules fixpoint -- it marks a SentenceParse `reform_pending=1` when its own residual/swallowed measurements cross this flow's held ApertureBudget threshold. Empirically (verified live, tick-by-tick on a real enumeration sentence), the 'monitoring' AnalysisStage's ONE-SHOT material-triggered dispatch (Count(SmEntity)>0) reaches 'done' in the SAME or an EARLIER tick than reform_pending first becomes visible (the rule and the material-triggered dispatch are not guaranteed to land in the same run_rules fixpoint pass), so without a dedicated executor, reform_pending is set but never acted on -- domains/reading_drive._shim_monitoring (the mechanical executor that also runs opportunistically inside the monitoring stage's own pass) never gets invoked again once that stage settles. This seed's ONE Reflex closes that gap the same way the pre-cortex-split `analysis_advance` reflex already patches a structurally identical hole for AnalysisStage dispatch (Wave 1A's own precedent, reading_drive.py): a stimulus that trips whenever ANY SentenceParse anywhere is reform_pending and not yet reform_done, firing EVERY tick (refractory_ticks=0) until the executor mechanically clears it. The stimulus is a pure existence check over held graph data (no decision -- the decision was already made by reform_overcomplex_clause); the registered Python response (`reading_drive._execute_pending_reforms`, registered in `_register_cortices`) is the SAME mechanical read-clause_order_n executor `_shim_monitoring` already runs inline, extracted for reuse so BOTH paths call one function (never two copies of a decision).",
+  "microtheory": {
+    "name": "reading_reform_reflex",
+    "description": "a standing reflex that mechanically executes any REFORM a graph rule has already decided on, regardless of the monitoring AnalysisStage's own one-shot dispatch lifecycle."
+  },
+  "nodes": [],
+  "edges": [],
+  "productions": [],
+  "rules": [],
+  "reflexes": [
+    {
+      "name": "reform_reflex",
+      "stimulus": {
+        "type": "Exists",
+        "source": {"type": "NodesOfType", "node_type": "SentenceParse"},
+        "var_name": "sp",
+        "predicate": {
+          "type": "And",
+          "items": [
+            {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "sp"}, "key": "reform_pending"},
+             "b": {"type": "Lit", "value": 1.0}},
+            {"type": "Not", "arg": {"type": "Eq",
+              "a": {"type": "Attr", "node": {"type": "Var", "name": "sp"}, "key": "reform_done"},
+              "b": {"type": "Lit", "value": 1.0}}}
+          ]
+        }
+      },
+      "response": "reform_advance",
+      "refractory_ticks": 0
+    }
+  ]
+}

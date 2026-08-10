@@ -1,0 +1,180 @@
+{
+ "covered": {
+  "observation": [
+   [
+    "move",
+    "Y",
+    "by",
+    "Z"
+   ],
+   [
+    "stop",
+    "Y"
+   ]
+  ],
+  "result": {
+   "covered_by": "part_move",
+   "minted": false,
+   "note": "held term-shape 'part_move' covers the observation UNDER A TRANSFORM (identity + a per-dimension quantum delta) \u2014 no new concern, recognition-under-transformation rather than the exact match `recognized` reports",
+   "observation": [
+    [
+     "move",
+     "Y",
+     "by",
+     "Z"
+    ],
+    [
+     "stop",
+     "Y"
+    ]
+   ],
+   "transform": {
+    "base": "part_move",
+    "deltas": [
+     [
+      [
+       "X",
+       "Y"
+      ]
+     ],
+     [
+      [
+       "D",
+       "Z"
+      ]
+     ]
+    ],
+    "dims": [
+     1,
+     3
+    ],
+    "transforms": [
+     {
+      "delta": [
+       [
+        "X",
+        "Y"
+       ]
+      ],
+      "dim": 1,
+      "kind": "subst"
+     },
+     {
+      "delta": [
+       [
+        "D",
+        "Z"
+       ]
+      ],
+      "dim": 3,
+      "kind": "subst"
+     }
+    ]
+   }
+  }
+ },
+ "parts": {
+  "part_build": [
+   [
+    "build",
+    "NEW",
+    "from",
+    "PRIOR"
+   ],
+   [
+    "bound",
+    "SELF",
+    "by",
+    "UNIT"
+   ]
+  ],
+  "part_detect": [
+   [
+    "detect",
+    "CONTACT",
+    "between",
+    "PARTS"
+   ],
+   [
+    "type",
+    "CONTACT",
+    "is",
+    "INVARIANT"
+   ]
+  ],
+  "part_move": [
+   [
+    "move",
+    "X",
+    "by",
+    "D"
+   ],
+   [
+    "stop",
+    "X"
+   ]
+  ]
+ },
+ "uncovered": {
+  "minted_capability_axis_attrs": {
+   "capability_keys": [
+    "induced_probe_uncovered"
+   ],
+   "closest_held_shape": "part_move",
+   "description": "a concern induced from an observation no held term-shape covers: zwoop florb quix",
+   "from_observation": 1.0,
+   "induced": 1.0,
+   "is_axis": 1.0,
+   "residual_predicates": [
+    "zwoop",
+    "florb",
+    "quix"
+   ],
+   "source": "concern_induction"
+  },
+  "observation": [
+   [
+    "zwoop",
+    "A",
+    "q",
+    "B"
+   ],
+   [
+    "florb",
+    "A"
+   ],
+   [
+    "quix",
+    "C"
+   ]
+  ],
+  "result": {
+   "axis_id": "#729",
+   "capability_key": "induced_probe_uncovered",
+   "closest_held_shape": "part_move",
+   "minted": true,
+   "note": "no held term-shape covers the observation; minted an induced CapabilityAxis from the residual structure (competes in gap_prioritiser, never overrides Argmax)",
+   "observation": [
+    [
+     "zwoop",
+     "A",
+     "q",
+     "B"
+    ],
+    [
+     "florb",
+     "A"
+    ],
+    [
+     "quix",
+     "C"
+    ]
+   ],
+   "residual_predicates": [
+    "zwoop",
+    "florb",
+    "quix"
+   ]
+  }
+ }
+}

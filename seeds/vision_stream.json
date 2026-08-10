@@ -1,0 +1,225 @@
+{
+ "id": "vision_stream",
+ "version": "1.0.0",
+ "depends_on": [],
+ "description": "THE STREAM -- perception spends a BOUNDED budget, ordered by SALIENCE x SCALE. Vision is not delivered all-at-once and uniform: it is STREAMED -- coarse-to-fine by scale (large low-frequency structure resolves first; detail refines on the residual, order-N), allocated by salience (the bounded refinement budget is spent on the largest-residual region first), and PREEMPTIBLE (a maximally-salient 'spear' captures the budget and the rest degrades to the top-down render -- tunnel vision). ONE water-filling rule (stream_resolve_salient) over a residual-mass region field: the salience order is a pure Argmax, the budget is a Scene attr counted up as graph data, and coarse-first / budget-allocation / preemption all fall OUT with ZERO magic numbers (no preemption threshold -- \u00a713). NO new Rust: reuses the Argmax/Plus/Neighbours/Filter DSL and the run_rules fixpoint. Composes the just-landed bidirectional loop: salience = the render-vs-input residual mass. In-frame/integer only (the frame/continuum invariant). Flag-gated on StreamParams.stream, OFF by default (\u00a79). See VISION_STREAM_PREREG.md.",
+ "microtheory": {
+  "id": "vision_stream_mt",
+  "label": "the visual stream: a salience-ordered bounded budget"
+ },
+ "nodes": [
+  {
+   "local_id": 0,
+   "type": "StreamParams",
+   "attrs": {
+    "stream": 0.0
+   }
+  }
+ ],
+ "edges": [],
+ "productions": [],
+ "rules": [
+  {
+   "name": "stream_resolve_salient",
+   "comment": "THE STREAM (the one contribution rule). Per run_rules pass, resolve the single highest-residual (Argmax) unresolved region of the scene while the budget is not spent, record its stream position (order = spent), and count the budget up (spent += 1). Exactly one region -- the unique Argmax winner (deterministic first-encountered tiebreak, the qf_frontier_goal idiom) -- passes the where per pass, so the budget advances by one and the regions stream in DESCENDING residual order until spent==budget or no unresolved positive-residual region remains. Coarse-first (a large/coarse structure carries more residual MASS -> wins first), budget-allocation (water-filling to the salient region), and preemption/tunnel (a majority-mass 'spear' drains the budget -> periphery left at render grain) are ALL consequences of this one rule -- there is NO preemption threshold (\u00a713: preemption falls OUT of the argmax). Flag-gated on StreamParams.stream>0.5, OFF by default (\u00a79): inert without it.",
+   "match": [
+    [
+     "scene",
+     "has_region",
+     "R"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "StreamParams"
+        }
+       },
+       "key": "stream"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "scene"
+       },
+       "key": "spent"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "scene"
+       },
+       "key": "budget"
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "R"
+       },
+       "key": "resolved"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "R"
+       },
+       "key": "residual"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Var",
+       "name": "R"
+      },
+      "b": {
+       "type": "Argmax",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "scene"
+         },
+         "edge_type": "has_region",
+         "any_type": false
+        },
+        "var_name": "cand",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Lt",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "cand"
+            },
+            "key": "resolved"
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0.5
+           }
+          },
+          {
+           "type": "Gt",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "cand"
+            },
+            "key": "residual"
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0.0
+           }
+          }
+         ]
+        }
+       },
+       "var_name": "cand",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "cand"
+        },
+        "key": "residual"
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "R",
+     "resolved",
+     {
+      "__term__": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "R",
+     "order",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "scene"
+       },
+       "key": "spent"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "scene",
+     "spent",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "scene"
+         },
+         "key": "spent"
+        },
+        {
+         "type": "Lit",
+         "value": 1.0
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  }
+ ]
+}

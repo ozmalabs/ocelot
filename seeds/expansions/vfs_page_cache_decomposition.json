@@ -1,0 +1,118 @@
+{
+  "id": "vfs_page_cache_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "VFS_virtual_filesystem",
+  "in_microtheory": "operating_systems",
+  "description": "VFS + page cache decomposed. How Linux maps file operations through VFS to specific filesystems, with the page cache as the unifying memory layer. dentries, inode operations, file operations, page cache reads + writes, writeback, direct I/O bypass, fadvise + madvise hints.",
+  "sub_mechanisms": [
+    {
+      "name": "VFS_operations_struct",
+      "definition": "Function-pointer tables: super_operations, inode_operations, file_operations, dentry_operations. Each filesystem fills these in.",
+      "why": "Polymorphism in C. ext4_file_operations.read = ext4_read; nfs_file_operations.read = nfs_read. Generic VFS code calls through these pointers. The OO pattern of UNIX.",
+      "category": "vfs_mechanism"
+    },
+    {
+      "name": "dcache_dentry_cache",
+      "definition": "Kernel cache of dentries (path component → inode mappings). LRU-ish; populated on first lookup, evicted under pressure.",
+      "why": "Path resolution is hot path. Cached lookups are O(1); cold lookups walk filesystem. After warmup, virtually all paths hit dcache. Critical for FS performance.",
+      "category": "vfs_mechanism"
+    },
+    {
+      "name": "inode_cache",
+      "definition": "Cache of in-memory inode structures. Held while open files reference them or until LRU-evicted.",
+      "why": "Avoid re-reading inode from disk on every open. Combined with dcache, hot files are pure-memory operations after initial load.",
+      "category": "vfs_mechanism"
+    },
+    {
+      "name": "page_cache_per_inode",
+      "definition": "Each inode has a per-inode page cache (radix tree of pages). File data lives here when read.",
+      "why": "File-as-pages model. Read populates pages; write dirties them. Multiple processes mmap'ing same file share the same pages. Foundation of mmap + ordinary read/write.",
+      "category": "page_cache_mechanism"
+    },
+    {
+      "name": "read_path_through_cache",
+      "definition": "read() looks up offset in page cache. Hit: copy to user. Miss: kernel reads from disk into cache, then copies to user.",
+      "why": "First read pays disk latency; subsequent reads of same data are at memory speed. Why repeated grep through same files is fast.",
+      "category": "page_cache_mechanism"
+    },
+    {
+      "name": "write_path_dirty_pages",
+      "definition": "write() copies user data into page cache pages; marks them dirty. Returns immediately. Kernel flushes later.",
+      "why": "Writes are async by default — fast return. fsync forces flush. Dirty pages count + ratio influences kernel's writeback timing (vm.dirty_ratio).",
+      "category": "page_cache_mechanism"
+    },
+    {
+      "name": "writeback_kernel_threads",
+      "definition": "Per-block-device flusher threads write dirty pages to disk. Triggered by dirty page age or ratio.",
+      "why": "Background batch writes amortise disk I/O cost. Writeback latency tunable (dirty_writeback_centisecs). If too lazy: data loss on crash; too aggressive: small writes dominate.",
+      "category": "page_cache_mechanism"
+    },
+    {
+      "name": "fsync_durability",
+      "definition": "fsync(fd) blocks until file's dirty data + metadata are on stable storage. fdatasync skips non-essential metadata.",
+      "why": "Durability requirement for databases (after fsync, data survives crash). Cost: actual disk write latency. Misuse (sprinkling fsync) destroys throughput; databases group writes to batch fsyncs.",
+      "category": "page_cache_mechanism"
+    },
+    {
+      "name": "O_DIRECT_bypass",
+      "definition": "open(O_DIRECT) skips page cache: reads/writes go directly between user buffer and disk.",
+      "why": "Databases that manage their own cache (Oracle, Postgres with direct_io option). Avoids double-buffering. Cost: app must align buffers + sizes to block size; no readahead benefit.",
+      "category": "page_cache_mechanism"
+    },
+    {
+      "name": "fadvise_hints",
+      "definition": "posix_fadvise tells kernel access pattern: SEQUENTIAL (aggressive readahead), RANDOM (no readahead), DONTNEED (drop from cache).",
+      "why": "Apps know their access pattern; kernel doesn't. Hints improve cache behaviour. Rsync uses DONTNEED to avoid cache pollution; database scans use SEQUENTIAL.",
+      "category": "page_cache_mechanism"
+    },
+    {
+      "name": "madvise_hints",
+      "definition": "madvise on mmap'd memory: similar to fadvise but for memory mappings. HUGEPAGE, NOHUGEPAGE, DONTNEED, MADV_FREE.",
+      "why": "Per-region tuning. THP can hurt or help; madvise lets per-mmap control. MADV_FREE marks pages as 'OS can reclaim without writing back' — useful for caches.",
+      "category": "page_cache_mechanism"
+    },
+    {
+      "name": "sendfile_zero_copy",
+      "definition": "sendfile(out_fd, in_fd, ...) copies file data directly from kernel's page cache to socket without user-space copy.",
+      "why": "Web server static file serving: no need to copy file to user buffer then write to socket. Two copies eliminated. nginx, Apache use this. splice() generalises to arbitrary fd-to-fd.",
+      "category": "page_cache_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "VFS_decouples_application_from_filesystem_choice",
+      "if": ["application uses standard open/read/write"],
+      "then": ["it works on any mounted filesystem"],
+      "why": "VFS dispatches through function pointers. ext4, NFS, procfs, tmpfs all expose the same API. Application code is filesystem-agnostic. Standard Unix design — same API across local + remote + virtual filesystems.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "page_cache_makes_warm_io_memory_speed",
+      "if": ["file data is in page cache"],
+      "then": ["reads are at memory speed (~ns latency)"],
+      "why": "Cache hit: memcpy from page cache to user buffer. Miss: disk read (~ms). Hit rate dominates I/O performance. 'free' RAM is mostly page cache — visible difference for repeated workloads.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "O_DIRECT_avoids_double_buffering_for_self_caching_apps",
+      "if": ["application manages its own cache (database)"],
+      "then": ["O_DIRECT avoids redundant kernel cache"],
+      "why": "Database has its own buffer pool. Kernel page cache duplicates the data. O_DIRECT skips it: data goes directly to app buffer. Trade-off: lose readahead + must align — but for databases that already manage caching, win is significant.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "sendfile_eliminates_user_space_copy",
+      "if": ["data goes from file to socket (server use case)"],
+      "then": ["sendfile avoids the user-space buffer"],
+      "why": "Without sendfile: read(file, buf) + write(socket, buf) — 2 copies + 2 syscalls. With sendfile: 1 syscall, kernel transfers internally. CPU savings substantial; nginx + Apache rely on this for static file performance.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "fsync_required_for_crash_durability",
+      "if": ["data must survive system crash"],
+      "then": ["fsync after write is required"],
+      "why": "write() returns when data hits page cache, not disk. Crash before flush = data loss. fsync blocks until on disk. Databases group commits to amortise fsync cost across many transactions.",
+      "soundness_category": "referential_transparency"
+    }
+  ]
+}

@@ -1,0 +1,801 @@
+{
+ "id": "philosophy",
+ "version": "0.1.0",
+ "depends_on": [
+  "compiler_theory"
+ ],
+ "description": "Philosophy as graph-resident theory. The substrate is itself a philosophical artifact — a graph-resident reasoning system with explicit position on epistemology, philosophy of mind, philosophy of AI. This Mt covers: epistemology (knowledge, justification, skepticism, Gettier), philosophy of mind (mind-body, qualia, functionalism, hard problem, Chinese Room, philosophical zombies), philosophy of science (Popper, Kuhn, Lakatos, Bayesianism, demarcation, realism), philosophy of language (Frege, Wittgenstein, Grice, semantics vs pragmatics), metaphysics (ontology, properties, modality, time, causation, free will, emergence, supervenience), ethics (consequentialism, deontology, virtue ethics, contractualism, metaethics), logic (propositional + predicate + modal, paradoxes), continental (phenomenology, existentialism, hermeneutics), Eastern (Buddhism, Taoism), philosophy of AI (Turing test, intentionality, machine consciousness, alignment). The substrate's own design positions: graph-resident reasoning, authored-not-trained, microtheory-relativism (Axiom 0), entity-not-program.",
+ "category_inheritance": "genlMt → compiler_theory. Philosophical arguments map to compiler_theory equivalence vocabulary: identity/qualia debates are about denotational vs extensional equivalence; functionalism is extensional equivalence of mind to function; ethics often turns on referential transparency (acts evaluated regardless of consequences) vs cost equivalence (utilitarianism).",
+ "concepts": [
+  {
+   "name": "epistemology_definition",
+   "definition": "Study of knowledge: what it is, how acquired, its limits + justification.",
+   "why": "Foundation of philosophy. Distinguishes knowledge from mere belief or opinion. Foundation of science, expertise, AI claims.",
+   "category": "epistemology"
+  },
+  {
+   "name": "JTB_knowledge",
+   "definition": "Classical analysis: Justified True Belief. Plato + standard until Gettier.",
+   "why": "Tripartite: belief + truth + justification. Each necessary; together sufficient — until Gettier counterexamples.",
+   "category": "epistemology"
+  },
+  {
+   "name": "Gettier_problem",
+   "definition": "Cases where JTB holds but intuition denies knowledge. Coincidentally true justified belief.",
+   "why": "Gettier 1963. Showed JTB insufficient. Generated decades of refinement attempts. No consensus solution.",
+   "category": "epistemology"
+  },
+  {
+   "name": "foundationalism",
+   "definition": "Some beliefs are basic (self-justifying); others justified by inference from basic.",
+   "why": "Avoids infinite regress. Foundations: sense data, self-evident truths. Cost: what counts as basic?",
+   "category": "epistemology"
+  },
+  {
+   "name": "coherentism",
+   "definition": "Beliefs justified by coherence with system of other beliefs. No basic beliefs.",
+   "why": "Avoids foundationalism's basic-belief problem. Cost: 'coherent fiction' counterexamples. Network theory of justification.",
+   "category": "epistemology"
+  },
+  {
+   "name": "reliabilism",
+   "definition": "Beliefs justified iff produced by reliable processes. Externalist.",
+   "why": "Goldman. Reliability needn't be known by subject. Cost: 'generality problem' — which process?",
+   "category": "epistemology"
+  },
+  {
+   "name": "internalism_externalism",
+   "definition": "Internalism: justifiers accessible from inside subject. Externalism: external facts (reliability) justify.",
+   "why": "Major epistemological divide. Internalism: BonJour, Chisholm. Externalism: Goldman, Plantinga. Affects AI: can reliability be known?",
+   "category": "epistemology"
+  },
+  {
+   "name": "skepticism_global",
+   "definition": "We don't or can't know what we think we know. Cartesian doubt, brain-in-vat.",
+   "why": "Pyrrhonian skepticism ancient. Modern: dream argument, simulation hypothesis. Foundation of epistemology — what would defeat?",
+   "category": "epistemology"
+  },
+  {
+   "name": "a_priori_a_posteriori",
+   "definition": "A priori: knowable independent of experience (math, definitions). A posteriori: requires experience.",
+   "why": "Kantian distinction. Math, logic a priori. Empirical science a posteriori. Kripke complicates: necessary a posteriori (water = H2O).",
+   "category": "epistemology"
+  },
+  {
+   "name": "analytic_synthetic_distinction",
+   "definition": "Analytic: true by meaning (bachelors are unmarried). Synthetic: true by facts (snow is white).",
+   "why": "Kant introduced. Quine 'Two Dogmas' attacked. If no sharp distinction, no purely a priori truths.",
+   "category": "epistemology"
+  },
+  {
+   "name": "mind_body_problem",
+   "definition": "How does mind (mental) relate to body (physical)? Descartes' starting point of modern philosophy of mind.",
+   "why": "Foundation of philosophy of mind. Dualism, physicalism, idealism all responses. The hard problem of consciousness extends.",
+   "category": "philosophy_of_mind"
+  },
+  {
+   "name": "substance_dualism",
+   "definition": "Mind + body distinct substances. Descartes: res cogitans + res extensa.",
+   "why": "Naive view; intuitive. Problem: interaction (Princess Elisabeth). Now minority view but not dead.",
+   "category": "philosophy_of_mind"
+  },
+  {
+   "name": "property_dualism",
+   "definition": "One substance (physical) but mental properties not reducible to physical.",
+   "why": "Chalmers, Jackson. Avoids substance dualism's interaction problem. Cost: epiphenomenalism risk.",
+   "category": "philosophy_of_mind"
+  },
+  {
+   "name": "physicalism_identity_theory",
+   "definition": "Mental states are physical (brain) states. Smart, Place.",
+   "why": "Reductive. Pain IS C-fibers firing. Cost: multiple realisability (octopus pain different physically).",
+   "category": "philosophy_of_mind"
+  },
+  {
+   "name": "functionalism",
+   "definition": "Mental states are functional states: defined by their role in cognition + behavior.",
+   "why": "Putnam, Fodor. Multiple realisability OK: anything implementing the function counts. Foundation of AI claims.",
+   "category": "philosophy_of_mind"
+  },
+  {
+   "name": "computational_theory_of_mind",
+   "definition": "Mind = computation. Brain implements symbol manipulation; mental states = computational states.",
+   "term": {
+    "type": "Eq",
+    "a": {
+     "type": "Lit",
+     "value": "Mind"
+    },
+    "b": {
+     "type": "Lit",
+     "value": "computation"
+    }
+   },
+   "why": "Strong functionalism. Foundation of cognitive science. AI follows naturally. Critics: Searle Chinese Room.",
+   "category": "philosophy_of_mind"
+  },
+  {
+   "name": "qualia_problem",
+   "definition": "Qualia: subjective qualitative character of experience (redness of red).",
+   "why": "What seems hardest to reduce. Functionalism allegedly cannot capture. Foundation of hard problem.",
+   "category": "philosophy_of_mind"
+  },
+  {
+   "name": "hard_problem_consciousness",
+   "definition": "Chalmers 1995: even if we explain functions of consciousness, why is there subjective experience at all?",
+   "why": "Distinguishes easy (functional) from hard (phenomenal) consciousness. Major contemporary issue. No consensus.",
+   "category": "philosophy_of_mind"
+  },
+  {
+   "name": "Chinese_room",
+   "definition": "Searle 1980: person follows Chinese conversation rules without understanding. Refutes strong AI?",
+   "why": "Classic argument: syntax ≠ semantics. AI imitates without understanding. Replies: systems reply, robot reply, brain simulator.",
+   "category": "philosophy_of_mind"
+  },
+  {
+   "name": "Marys_room",
+   "definition": "Jackson 1982: Mary knows everything physical about color from B&W room; on seeing red, learns something new.",
+   "why": "Argument against physicalism. Knowledge of qualia ≠ physical knowledge. Replies: ability hypothesis, phenomenal concepts.",
+   "category": "philosophy_of_mind"
+  },
+  {
+   "name": "philosophical_zombie",
+   "definition": "Being functionally + physically identical to human but lacking phenomenal consciousness. Chalmers.",
+   "why": "Conceivability → metaphysical possibility argument. If zombies conceivable, consciousness extra to physical. Highly contested.",
+   "category": "philosophy_of_mind"
+  },
+  {
+   "name": "intentionality",
+   "definition": "Aboutness. Mental states about something (thought of cat about cat).",
+   "why": "Brentano: mark of the mental. Naturalising intentionality: hard problem for materialists. Foundation of semantics.",
+   "category": "philosophy_of_mind"
+  },
+  {
+   "name": "extended_mind_thesis",
+   "definition": "Mind extends beyond skull into tools + environment (Clark + Chalmers).",
+   "why": "Notebook as memory. Calculator as computation. Substrate's externalised reasoning fits. Active research area.",
+   "category": "philosophy_of_mind"
+  },
+  {
+   "name": "Hume_problem_of_induction",
+   "definition": "Why expect future to resemble past? Inductive inferences can't be justified non-circularly.",
+   "why": "Hume's classic skeptical argument. Foundation of philosophy of science. All scientific generalisation depends on induction.",
+   "category": "philosophy_of_science"
+  },
+  {
+   "name": "falsificationism_Popper",
+   "definition": "Theories scientific iff falsifiable. Confirmation impossible; only falsification matters.",
+   "why": "Popper 1934. Demarcation: distinguish science from non-science. Critics: confirmation does play role, theories aren't tested in isolation.",
+   "category": "philosophy_of_science"
+  },
+  {
+   "name": "paradigm_Kuhn",
+   "definition": "Normal science within paradigm; revolutions shift paradigms. Incommensurability.",
+   "why": "Kuhn 1962 'Structure of Scientific Revolutions'. Influential beyond philosophy. Paradigm shifts: Newton → Einstein.",
+   "category": "philosophy_of_science"
+  },
+  {
+   "name": "research_programmes_Lakatos",
+   "definition": "Hard core + protective belt + heuristics. Progressive vs degenerating programmes.",
+   "why": "Lakatos synthesis of Popper + Kuhn. Theories not abandoned at single falsification; whole programmes compete.",
+   "category": "philosophy_of_science"
+  },
+  {
+   "name": "Feyerabend_anything_goes",
+   "definition": "No single scientific method. Pluralism. 'Anything goes'.",
+   "why": "Anarchist epistemology. Argues forcing method retards science. Provocative; influential.",
+   "category": "philosophy_of_science"
+  },
+  {
+   "name": "Bayesian_confirmation",
+   "definition": "Beliefs as probabilities; update via Bayes' rule on evidence.",
+   "why": "Modern framework. Confirmation = increasing P(theory|evidence). Foundation of much modern epistemology + statistics.",
+   "category": "philosophy_of_science"
+  },
+  {
+   "name": "demarcation_problem",
+   "definition": "What distinguishes science from non-science (astrology, creationism)?",
+   "why": "Popper's falsifiability. Many critics. No consensus. Practically: peer review + replication + community judgement.",
+   "category": "philosophy_of_science"
+  },
+  {
+   "name": "scientific_realism_antirealism",
+   "definition": "Realism: science aims at + achieves truth about unobservable. Antirealism: useful instruments only.",
+   "why": "Electrons + atoms real? No-miracles argument for realism; pessimistic meta-induction against. Ongoing.",
+   "category": "philosophy_of_science"
+  },
+  {
+   "name": "explanation_DN_model",
+   "definition": "Hempel: explanation = deductive argument from laws + initial conditions to explanandum.",
+   "why": "Foundation. Problems: explanation by reverse argument; statistical explanation; explanatory asymmetries.",
+   "category": "philosophy_of_science"
+  },
+  {
+   "name": "causation_counterfactual",
+   "definition": "C caused E iff: had C not occurred, E would not have. Lewis.",
+   "why": "Modern approach. Problems: preemption, overdetermination. Active area. Alternative: interventionist (Woodward).",
+   "category": "philosophy_of_science"
+  },
+  {
+   "name": "Frege_sense_reference",
+   "definition": "Sinn (sense) vs Bedeutung (reference). 'Morning star' = 'evening star' same reference, different sense.",
+   "why": "Foundation of philosophy of language. Resolves Frege's puzzle about informative identity statements.",
+   "category": "philosophy_of_language"
+  },
+  {
+   "name": "Russell_descriptions",
+   "definition": "Definite descriptions: 'the F' analysed as 'there is exactly one F + ...'. Not referring expressions.",
+   "why": "'The present king of France is bald' true or false? Russell: false. Strawson disagrees. Foundational.",
+   "category": "philosophy_of_language"
+  },
+  {
+   "name": "Wittgenstein_language_game",
+   "definition": "Meaning is use. Language consists of various 'games' with own rules.",
+   "why": "Late Wittgenstein. Anti-representationalism. Influence on ordinary language philosophy. 'Don't look for meaning, look for use'.",
+   "category": "philosophy_of_language"
+  },
+  {
+   "name": "Grice_implicature",
+   "definition": "What's communicated beyond literal meaning. Maxims: quantity, quality, relation, manner.",
+   "why": "Foundation of pragmatics. 'Some Fs are G' implicates 'not all'. Foundation of conversational reasoning.",
+   "category": "philosophy_of_language"
+  },
+  {
+   "name": "speech_act_theory",
+   "definition": "Austin + Searle. Utterances are acts: locutionary, illocutionary (asserting, promising), perlocutionary (effects).",
+   "why": "Language as action. Foundation of pragmatics. Used in AI dialogue systems.",
+   "category": "philosophy_of_language"
+  },
+  {
+   "name": "language_of_thought",
+   "definition": "Fodor: thoughts have compositional structure like language. Mentalese.",
+   "why": "Computational theory of mind extension. Systematicity + productivity arguments. Foundation of cognitive science.",
+   "category": "philosophy_of_language"
+  },
+  {
+   "name": "ontology",
+   "definition": "What exists? Categories of being. Particulars, universals, properties, relations, events.",
+   "why": "Foundation of metaphysics. Quine: 'to be is to be the value of a variable'. Pragmatist + Platonist responses.",
+   "category": "metaphysics"
+  },
+  {
+   "name": "universals_particulars",
+   "definition": "Universals: properties shared by many particulars. Particulars: individual instances. Plato's forms vs Aristotle's hylomorphism.",
+   "why": "Classical problem. Realism (universals exist), nominalism (only particulars), conceptualism (only concepts).",
+   "category": "metaphysics"
+  },
+  {
+   "name": "personal_identity",
+   "definition": "What makes someone the same person over time? Memory, body, psychological continuity.",
+   "why": "Locke memory; Parfit psychological continuity; modern reductionist views. Stakes: moral responsibility, survival.",
+   "category": "metaphysics"
+  },
+  {
+   "name": "possible_worlds",
+   "definition": "Modal logic semantics: necessary = true in all worlds; possible = true in some.",
+   "why": "Lewis modal realism (worlds equally real) vs Kripke (worlds as abstract). Foundation of modal metaphysics.",
+   "category": "metaphysics"
+  },
+  {
+   "name": "necessary_a_posteriori",
+   "definition": "Kripke: 'water = H2O' is necessary but known empirically. Rigid designators.",
+   "why": "Naming + Necessity 1980. Revolutionary. Distinct from analytic-synthetic. Reframed metaphysics.",
+   "category": "metaphysics"
+  },
+  {
+   "name": "time_A_B_theory",
+   "definition": "A-theory: tensed properties (past/present/future). B-theory: only temporal relations (earlier/later).",
+   "why": "McTaggart's puzzle. Presentism, eternalism, growing block. Modern physics suggests B-theory.",
+   "category": "metaphysics"
+  },
+  {
+   "name": "free_will_compatibilism",
+   "definition": "Free will compatible with determinism. Hume, Dennett. Free = acting on one's own desires.",
+   "why": "Dominant academic view. Reconciles moral responsibility with causation. Critics: not 'real' freedom.",
+   "category": "metaphysics"
+  },
+  {
+   "name": "free_will_libertarianism",
+   "definition": "Free will requires indeterminism. Agent causation. Robert Kane.",
+   "why": "Incompatibilist + free-willist. Modern quantum interpretations suggest indeterminism but does that give freedom?",
+   "category": "metaphysics"
+  },
+  {
+   "name": "emergence_supervenience",
+   "definition": "Higher-level phenomena emerge from lower; mental supervenes on physical without reducing.",
+   "why": "Non-reductive physicalism. Davidson, Kim. Modern foundation for explaining consciousness without dualism.",
+   "category": "metaphysics"
+  },
+  {
+   "name": "grounding_metaphysics",
+   "definition": "Asymmetric explanation: 'snow is white because of physical facts about ice crystals'.",
+   "why": "Modern revival of metaphysical structure. Different from causation. Schaffer, Fine. Foundation of priority.",
+   "category": "metaphysics"
+  },
+  {
+   "name": "consequentialism",
+   "definition": "Acts right iff produce best consequences. Utilitarianism: maximise happiness.",
+   "why": "Bentham + Mill. Cost: demanding, ends-justify-means, measurement problems. Major ethical framework.",
+   "category": "ethics"
+  },
+  {
+   "name": "deontology_Kant",
+   "definition": "Acts right by conformity to moral rules. Categorical imperative: universalisability.",
+   "why": "Duty-based. Kant's ethics. Cost: rule-following can lead to bad outcomes. Major framework.",
+   "category": "ethics"
+  },
+  {
+   "name": "virtue_ethics",
+   "definition": "Focus on character + virtues, not acts or consequences. Aristotle's eudaimonia.",
+   "why": "Revival via Anscombe, MacIntyre. Character + flourishing central. Influence on modern moral psychology.",
+   "category": "ethics"
+  },
+  {
+   "name": "contractualism",
+   "definition": "Acts right iff no one could reasonably reject the principles they instantiate. Scanlon.",
+   "why": "Modern Kantian. Foundation of liberal political philosophy. Cost: 'reasonably reject' threshold.",
+   "category": "ethics"
+  },
+  {
+   "name": "metaethics_moral_realism",
+   "definition": "Moral facts exist independently of beliefs. Cognitivism + realism.",
+   "why": "Cost: queer metaphysics (Mackie). Naturalism vs non-naturalism. Foundation: status of moral claims.",
+   "category": "ethics"
+  },
+  {
+   "name": "moral_anti_realism",
+   "definition": "Moral claims don't describe mind-independent facts. Expressivism, error theory, relativism.",
+   "why": "Mackie error theory: all moral claims false (no moral facts). Expressivism: not truth-apt at all. Major position.",
+   "category": "ethics"
+  },
+  {
+   "name": "trolley_problem",
+   "definition": "Divert trolley to kill 1 instead of 5? Foot, Thomson.",
+   "why": "Classical thought experiment. Distinguishes doing vs allowing, intended vs side effects. Drives ethical theory + AI ethics.",
+   "category": "ethics"
+  },
+  {
+   "name": "propositional_logic",
+   "definition": "Atomic propositions + connectives (¬, ∧, ∨, →, ↔). Truth-functional.",
+   "why": "Foundation of logic. Truth tables, validity, satisfiability. Sound + complete deduction.",
+   "category": "logic"
+  },
+  {
+   "name": "predicate_logic_FOL",
+   "definition": "First-Order Logic. Variables, quantifiers, predicates. ∀x P(x), ∃x P(x).",
+   "why": "Foundation of modern logic. Frege, Russell. Standard for mathematics + formal philosophy. Gödel incompleteness.",
+   "category": "logic"
+  },
+  {
+   "name": "modal_logic",
+   "definition": "Necessity □, possibility ◇. Various systems (T, S4, S5) by characteristic axioms.",
+   "why": "Possible worlds semantics (Kripke). Foundation of modal metaphysics. Modern: deontic, temporal, doxastic, epistemic logics.",
+   "category": "logic"
+  },
+  {
+   "name": "Russell_paradox",
+   "definition": "Set of all sets that don't contain themselves: does it contain itself?",
+   "why": "Russell 1901. Showed naive set theory inconsistent. Motivated ZF, type theory. Foundation of foundations.",
+   "category": "logic"
+  },
+  {
+   "name": "liar_paradox",
+   "definition": "'This sentence is false'. True → false. False → true.",
+   "why": "Ancient (Epimenides). Modern: Tarski's hierarchy of languages avoids. Foundation of theory of truth.",
+   "category": "logic"
+  },
+  {
+   "name": "sorites_paradox",
+   "definition": "Heap of sand: remove grains one at a time. When does it stop being a heap?",
+   "why": "Vagueness. No precise boundary. Modern: fuzzy logic, supervaluationism, epistemicism. Foundation of vagueness theory.",
+   "category": "logic"
+  },
+  {
+   "name": "Godel_incompleteness",
+   "definition": "Any consistent system rich enough for arithmetic is incomplete + can't prove its own consistency.",
+   "why": "Gödel 1931. Revolutionary. Limits of formal systems. Implications for AI, philosophy of math.",
+   "category": "logic"
+  },
+  {
+   "name": "phenomenology",
+   "definition": "Husserl: study of structures of experience. Intentionality central. Bracket ontology.",
+   "why": "20th c. tradition. Heidegger, Merleau-Ponty, Sartre. Foundation of continental philosophy + cognitive science (4E cognition).",
+   "category": "continental"
+  },
+  {
+   "name": "existentialism",
+   "definition": "Existence precedes essence. Sartre. Radical freedom + responsibility.",
+   "why": "Mid-20th c. movement. Kierkegaard, Heidegger, Camus, Sartre. Influence beyond philosophy: literature, theology.",
+   "category": "continental"
+  },
+  {
+   "name": "hermeneutics",
+   "definition": "Theory of interpretation. Gadamer: tradition + horizon-fusion. Heidegger as predecessor.",
+   "why": "Method + ontology. Influence on humanities + qualitative social science. AI interpretation analogues.",
+   "category": "continental"
+  },
+  {
+   "name": "structuralism_post",
+   "definition": "Structuralism: meaning from structure (Saussure). Post-structuralism: structures unstable (Derrida).",
+   "why": "20th c. French theory. Linguistics → anthropology → literary criticism. Foundation of much humanities theory.",
+   "category": "continental"
+  },
+  {
+   "name": "Buddhism_no_self",
+   "definition": "Anatta: no permanent self. Aggregates (skandhas) compose person.",
+   "why": "Eastern philosophy. Parallels Hume + Parfit on bundle theory. Foundation of Buddhist epistemology + ethics.",
+   "category": "eastern"
+  },
+  {
+   "name": "Buddhism_dependent_origination",
+   "definition": "Pratityasamutpada. Everything arises from causes + conditions; no independent essence.",
+   "why": "Foundation Madhyamaka philosophy. Empties of self-existence. Influences philosophy of causation.",
+   "category": "eastern"
+  },
+  {
+   "name": "Taoism_Tao",
+   "definition": "Tao: ineffable underlying reality. Wu-wei: effortless action. Laozi, Zhuangzi.",
+   "why": "Chinese philosophy. Pragmatic + naturalist. Influence on ecology, modern aesthetics, complementary medicine.",
+   "category": "eastern"
+  },
+  {
+   "name": "Confucianism_ren",
+   "definition": "Ren: humaneness. Li: ritual propriety. Cultivation of virtuous self in relationships.",
+   "why": "Foundation of East Asian ethical + political tradition. Modern relevance: communitarianism, civic virtue.",
+   "category": "eastern"
+  },
+  {
+   "name": "Turing_test",
+   "definition": "Imitation game. Machine intelligent if indistinguishable from human in conversation.",
+   "why": "Turing 1950. Behavioural criterion for AI. Pragmatic; sidesteps consciousness. LLMs make this acute.",
+   "category": "philosophy_of_AI"
+  },
+  {
+   "name": "Strong_weak_AI",
+   "definition": "Strong AI: machines can have minds. Weak AI: useful simulations only. Searle's distinction.",
+   "why": "Foundational debate. LLMs reignite. Chinese Room targets strong AI. Substrate's position: structural reasoning, not strong AI claim.",
+   "category": "philosophy_of_AI"
+  },
+  {
+   "name": "value_alignment_AI",
+   "definition": "How to ensure AI systems pursue intended human values.",
+   "why": "Contemporary AI safety. Russell, Bostrom. Foundation of alignment research. Substrate's authored-not-trained approach as alternative.",
+   "category": "philosophy_of_AI"
+  },
+  {
+   "name": "intentional_stance",
+   "definition": "Dennett: predicting behavior by attributing beliefs + desires. Pragmatic.",
+   "why": "AI evaluation tool. We naturally adopt toward LLMs. Status of attributed mental states contested.",
+   "category": "philosophy_of_AI"
+  },
+  {
+   "name": "philosophical_zombie_AI",
+   "definition": "AI passing all behavioural tests yet possibly lacking consciousness — philosophical zombie possibility.",
+   "why": "Hard problem applied to AI. Practical: cannot test from outside. Foundation of AI consciousness debate.",
+   "category": "philosophy_of_AI"
+  },
+  {
+   "name": "extended_cognition_AI",
+   "definition": "Tools (including AI) extend human cognition (Clark + Chalmers).",
+   "why": "Cognitive amplification framing. AI not as separate intelligence but as cognitive prosthetic. Influences AI ethics.",
+   "category": "philosophy_of_AI"
+  },
+  {
+   "name": "axiom_zero_substrate",
+   "definition": "Substrate's position: no objective truth, only frame-relative. Knowledge requires (G, Γ, W) — grammar + admissibility + world.",
+   "why": "Microtheory-relativism. Pre-empts the 'but it's not absolute truth' critique. Relativity, not relativism (truth is structural).",
+   "category": "philosophy_of_AI"
+  },
+  {
+   "name": "authored_not_trained",
+   "definition": "Substrate's position: networks compiled from declarative spec (Tracr-style), not trained via SGD.",
+   "why": "Different paradigm than ML. Provable correctness, interpretable by construction. Already in machine_learning Mt; philosophical position here.",
+   "category": "philosophy_of_AI"
+  },
+  {
+   "name": "entity_not_program",
+   "definition": "Substrate is an entity, not a program. Control is a category error. Goals emerge from drives, not specification.",
+   "why": "Foundational design principle. Distinct from typical AI engineering. Affects ethics: how to think about an autopoietic system.",
+   "category": "philosophy_of_AI"
+  },
+  {
+   "name": "naturalistic_fallacy",
+   "definition": "Moore: deriving ought from is is fallacious. Open question argument.",
+   "why": "Foundation of metaethics. Many ethical theories accused. Hume's is-ought gap is precursor. Still contested.",
+   "category": "ethics"
+  },
+  {
+   "name": "ship_of_Theseus",
+   "definition": "Ship has all parts replaced; is it the same ship? Add reconstruction from removed parts.",
+   "why": "Ancient identity puzzle. Foundation of philosophy of identity, persistence. Parallels personal identity questions.",
+   "category": "metaphysics"
+  },
+  {
+   "name": "Cartesian_doubt",
+   "definition": "Descartes: doubt everything that can be doubted. Cogito ergo sum survives.",
+   "why": "Foundation of modern epistemology. Methodological skepticism. Cogito as foundational certainty.",
+   "category": "epistemology"
+  },
+  {
+   "name": "tabula_rasa",
+   "definition": "Mind as blank slate at birth. Locke. Knowledge from experience.",
+   "why": "Empiricist foundation. Opposed to innate knowledge (Plato, Descartes, Chomsky). Foundation of empiricist epistemology.",
+   "category": "epistemology"
+  },
+  {
+   "name": "Cartesian_substance_dualism",
+   "definition": "Descartes: res cogitans (thinking) + res extensa (extended). Two distinct substances.",
+   "why": "Already in substance dualism; here explicit naming. Foundational target for modern philosophy of mind responses.",
+   "category": "philosophy_of_mind"
+  },
+  {
+   "name": "Nagel_bat",
+   "definition": "What is it like to be a bat? Subjective character of experience cannot be captured by physical description.",
+   "why": "Nagel 1974. Foundation of consciousness debate. Set stage for hard problem. Mary's Room related argument.",
+   "category": "philosophy_of_mind"
+  }
+ ],
+ "rules": [
+  {
+   "name": "Gettier_invalidates_naive_JTB",
+   "if": [
+    "justified true belief is coincidentally true"
+   ],
+   "then": [
+    "JTB is not knowledge"
+   ],
+   "why": "Gettier cases: belief derived from false premise that happens to be true. Knowledge requires more than JTB. Decades of refinement attempts.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "Popper_demarcation_falsifiability",
+   "if": [
+    "theory makes no falsifiable prediction"
+   ],
+   "then": [
+    "it is not scientific (Popper)"
+   ],
+   "why": "Foundation of demarcation. Marxism, psychoanalysis criticised. Limitations: theories tested in clusters (Duhem-Quine). Still influential.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "Kuhn_paradigm_shifts_revolutionary",
+   "if": [
+    "scientific revolution occurs"
+   ],
+   "then": [
+    "previous paradigm not refuted but replaced"
+   ],
+   "why": "Incommensurability: paradigms have different concepts. Choice not purely rational. Sociology of science. Influential beyond philosophy.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "Bayesian_confirmation_quantitative",
+   "if": [
+    "evidence E + theory T"
+   ],
+   "then": [
+    "confirmation = P(T|E) - P(T)"
+   ],
+   "why": "Quantifies confirmation. Foundation of statistical science. Replaces qualitative confirmation theories. Modern epistemology default.",
+   "soundness_category": "algebraic_law"
+  },
+  {
+   "name": "functionalism_multiple_realisability",
+   "if": [
+    "mental states are functional"
+   ],
+   "then": [
+    "different physical substrates can realise same mental state"
+   ],
+   "why": "Putnam. Octopus pain need not be C-fiber firing. Foundation of AI claim: mind not tied to neurons. Substrate's premise.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "Chinese_room_syntax_semantics",
+   "if": [
+    "system manipulates symbols by rules only"
+   ],
+   "then": [
+    "syntax alone insufficient for semantics (Searle)"
+   ],
+   "why": "Foundation argument against strong AI from computation. Replies: systems reply (the room understands), causal grounding. Substrate's authored-from-meaning sidesteps.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "hard_problem_extra_to_easy",
+   "if": [
+    "all functional questions about consciousness explained"
+   ],
+   "then": [
+    "subjective experience still unexplained (Chalmers)"
+   ],
+   "why": "Foundation of hard problem. Functions answer 'what + how'; not 'why does it feel like anything'. Modern consciousness debate.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "Kripke_necessary_aposteriori_exists",
+   "if": [
+    "'water = H2O' is identity statement"
+   ],
+   "then": [
+    "it's necessary but knowable only empirically"
+   ],
+   "why": "Kripke 1970. Revolutionary. Distinct from analytic-synthetic. Rigid designators. Foundation of modern modal metaphysics.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "consequentialism_judges_by_outcome",
+   "if": [
+    "consequentialism is ethics"
+   ],
+   "then": [
+    "acts evaluated by consequences alone"
+   ],
+   "why": "Maximise good. Cost: demanding, intentions irrelevant. Trolley problem highlights. Major framework with serious critics.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "deontology_judges_by_rule",
+   "if": [
+    "deontology is ethics"
+   ],
+   "then": [
+    "acts evaluated by conformity to moral rules"
+   ],
+   "why": "Categorical imperative. Cost: rule-following can produce bad outcomes (lying to murderer about hidden victim). Major framework.",
+   "soundness_category": "referential_transparency"
+  },
+  {
+   "name": "virtue_ethics_judges_character",
+   "if": [
+    "virtue ethics applied"
+   ],
+   "then": [
+    "actions reflect character; question is what virtuous person would do"
+   ],
+   "why": "Aristotelian + revival. Beyond act-focus of consequentialism + deontology. Character formation central. Foundation of moral psychology.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "axiom_zero_truth_frame_relative",
+   "if": [
+    "asked whether claim is 'really' true"
+   ],
+   "then": [
+    "the substrate's answer: relative to (G, Γ, W) frame"
+   ],
+   "why": "Substrate's metaphysical position. No view from nowhere. Knowledge always within microtheory. Pre-empts dismissal as 'not real truth' — that dismissal IS the axiom restated.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "naturalistic_fallacy_blocks_naive_ethics",
+   "if": [
+    "argument moves from 'is X' to 'ought X'"
+   ],
+   "then": [
+    "fallacious unless additional normative premise supplied"
+   ],
+   "why": "Moore + Hume. Cannot derive ought from is alone. Foundation of metaethics. Standard critique of evolutionary ethics, etc.",
+   "soundness_category": "algebraic_law"
+  },
+  {
+   "name": "incompleteness_limits_formal_systems",
+   "if": [
+    "formal system rich enough for arithmetic"
+   ],
+   "then": [
+    "incomplete + can't prove own consistency"
+   ],
+   "why": "Gödel 1931. Foundation of foundations. Implications for AI (Lucas, Penrose claims), philosophy of math. Not refutation of AI but cautionary.",
+   "soundness_category": "algebraic_law"
+  },
+  {
+   "name": "induction_unjustified_classically",
+   "if": [
+    "inductive inference attempted from past to future"
+   ],
+   "then": [
+    "no non-circular justification"
+   ],
+   "why": "Hume's problem. All science depends on. Resolutions: pragmatism, reliability, Bayes (begs question). Foundation problem.",
+   "soundness_category": "algebraic_law"
+  },
+  {
+   "name": "free_will_compatibilism_dominant_academic",
+   "if": [
+    "philosophy of free will surveyed"
+   ],
+   "then": [
+    "compatibilism is majority view"
+   ],
+   "why": "Most analytic philosophers compatibilist. Hume, Dennett, Frankfurt. Reconciles agency + determinism. Popular contrary view: libertarian incompatibilism (Kane).",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "ship_of_Theseus_no_unique_answer",
+   "if": [
+    "identity puzzle like Theseus's ship posed"
+   ],
+   "then": [
+    "choice of identity criterion determines answer"
+   ],
+   "why": "No fact of the matter independent of identity convention. Reveals: identity is partly stipulative. Generalises to personal identity.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "Wittgenstein_meaning_is_use",
+   "if": [
+    "understanding meaning of expression"
+   ],
+   "then": [
+    "examine how it's used in language games"
+   ],
+   "why": "Late Wittgenstein. Anti-representationalism. Influence on ordinary language + pragmatism. Substrate's microtheories embody this.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "Grice_implicature_pragmatic_inference",
+   "if": [
+    "speaker says X but means more"
+   ],
+   "then": [
+    "implicature derived via cooperative principles"
+   ],
+   "why": "Maxims of conversation. Foundation pragmatics. AI dialogue systems must handle. 'Some' implies 'not all'.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "extended_mind_externalises_cognition",
+   "if": [
+    "tool plays role mental state would"
+   ],
+   "then": [
+    "it can be part of cognitive system (Clark + Chalmers)"
+   ],
+   "why": "Notebook for memory; substrate for reasoning. Counters skull-bound mind. Foundation of 4E cognition. Aligned with substrate's design.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "Turing_test_behavioural_pragmatic",
+   "if": [
+    "AI passes Turing test"
+   ],
+   "then": [
+    "pragmatically intelligent; ontologically open"
+   ],
+   "why": "Turing avoided 'do machines think?'. Sidesteps consciousness. LLMs pass conversationally; hard-problem questions remain. Foundation.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "value_alignment_active_problem",
+   "if": [
+    "AI system optimises reward"
+   ],
+   "then": [
+    "may not pursue intended values (Goodhart)"
+   ],
+   "why": "Foundation of alignment. Reward hacking, instrumental convergence. Substrate's authored-not-trained sidesteps optimisation pathologies.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "entity_not_program_substrate_position",
+   "if": [
+    "substrate is treated as entity"
+   ],
+   "then": [
+    "control is category error"
+   ],
+   "why": "Substrate's design philosophy. Behaviour from drives + environment, not specification. Affects ethics: how to think about an entity, not a tool.",
+   "soundness_category": "denotational_equivalence"
+  }
+ ],
+ "exclusions": [],
+ "relations": [
+  {
+   "src": "philosophy",
+   "edge": "genlMt",
+   "tgt": "compiler_theory"
+  }
+ ]
+}

@@ -1,0 +1,36 @@
+{
+  "id": "attitude_trajectory_geometry_v1",
+  "purpose": "Test whether body-attitude/trajectory separation and preview commitments transfer from precision circles to a thrust-vectoring jet and changing-curvature gymkhana.",
+  "claim_boundary": "Deterministic research mechanics, not flight or automotive certification.",
+  "jet": {
+    "plant": "deterministic_vectoring_jet_plant",
+    "initial_forward_speed_m_s": 80.0,
+    "body_yaw_excursion_deg": 360.0,
+    "control_hz": 100.0,
+    "physics_hz": 500.0,
+    "duration_s": 7.0,
+    "success": {
+      "completed_body_turns_min": 0.98,
+      "minimum_forward_velocity_m_s_min": 70.0,
+      "maximum_velocity_heading_error_deg_max": 3.0,
+      "final_yaw_error_deg_max": 2.0
+    }
+  },
+  "gymkhana": {
+    "plant": "deterministic_gymkhana_driving_plant",
+    "geometry": "Gerono figure eight plus fifth-harmonic slalom",
+    "matched_architectures": [
+      "reactive_tangent",
+      "preview_clip"
+    ],
+    "control_hz": 100.0,
+    "physics_hz": 500.0,
+    "duration_s": 55.0,
+    "success": {
+      "preview_completed_laps_min": 1,
+      "preview_mean_absolute_path_error_m_max": 4.0,
+      "preview_offtrack_time_s_max": 6.0,
+      "preview_better_than_reactive_mean_path_error": true
+    }
+  }
+}

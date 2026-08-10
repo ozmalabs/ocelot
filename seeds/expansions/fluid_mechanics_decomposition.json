@@ -1,0 +1,118 @@
+{
+  "id": "fluid_mechanics_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "Navier_Stokes_equations",
+  "in_microtheory": "engineering",
+  "description": "Fluid mechanics decomposed. Boundary layer theory, drag types, turbulence models (RANS, LES, DNS), pipe flow + Moody chart, pump systems + NPSH, compressible flow (shock waves), open channel hydraulics.",
+  "sub_mechanisms": [
+    {
+      "name": "boundary_layer_concept",
+      "definition": "Thin layer near surface where viscous effects dominate. Outside: inviscid.",
+      "why": "Prandtl 1904. Foundation of modern fluid mechanics. Drag, heat transfer, separation all originate here.",
+      "category": "fluid_mech_mechanism"
+    },
+    {
+      "name": "boundary_layer_separation",
+      "definition": "Adverse pressure gradient causes BL to detach from surface. Wake forms.",
+      "why": "Form drag, stall (airfoil), bluff body wake. Streamlining reduces. Critical for efficiency.",
+      "category": "fluid_mech_mechanism"
+    },
+    {
+      "name": "form_drag_friction_drag",
+      "definition": "Form: pressure × frontal area (bluff bodies). Friction: shear on surface.",
+      "why": "Total drag decomposition. Streamlining converts form to friction (lower total). Aerodynamic design philosophy.",
+      "category": "fluid_mech_mechanism"
+    },
+    {
+      "name": "lift_circulation_Kutta",
+      "definition": "Kutta-Joukowski: L' = ρv·Γ. Circulation around airfoil generates lift.",
+      "why": "Foundation of aerodynamics. Tangential velocity difference top vs bottom = pressure difference = lift. Standard derivation.",
+      "category": "fluid_mech_mechanism"
+    },
+    {
+      "name": "Moody_chart",
+      "definition": "Friction factor vs Reynolds + relative roughness. Three regions: laminar, transition, turbulent.",
+      "why": "Standard pipe flow design. Pump head from friction loss. Roughness depends on pipe material + condition.",
+      "category": "fluid_mech_mechanism"
+    },
+    {
+      "name": "NPSH_pump_cavitation",
+      "definition": "Net Positive Suction Head. NPSHA (available) > NPSHR (required) to avoid cavitation.",
+      "why": "Pump installation critical. NPSHA from system: suction pressure - vapor pressure. NPSHR from pump curve. Standard pump sizing.",
+      "category": "fluid_mech_mechanism"
+    },
+    {
+      "name": "RANS_turbulence_modeling",
+      "definition": "Reynolds-Averaged Navier-Stokes. Average quantities; model Reynolds stresses. k-ε, k-ω.",
+      "why": "Workhorse industrial CFD. Time-averaged. Various closure models. Good for design; missed transient phenomena.",
+      "category": "fluid_mech_mechanism"
+    },
+    {
+      "name": "LES_large_eddy_simulation",
+      "definition": "Resolve large eddies; model small. Trade-off between accuracy + cost.",
+      "why": "Aeroacoustics, combustion, unsteady aero. ~100× cost of RANS. Increasing as compute available. Modern.",
+      "category": "fluid_mech_mechanism"
+    },
+    {
+      "name": "DNS_direct_numerical_simulation",
+      "definition": "Resolve all scales. Reference solution.",
+      "why": "Research only at low-moderate Re. Computational cost ~Re³. Validates RANS + LES models.",
+      "category": "fluid_mech_mechanism"
+    },
+    {
+      "name": "shock_waves_compressible",
+      "definition": "Sudden discontinuity at M > 1. Normal vs oblique. Properties change across.",
+      "why": "Supersonic flow. Drag rise, pressure ratio, temperature rise. Bow shock on supersonic aircraft. Rocket nozzles.",
+      "category": "fluid_mech_mechanism"
+    },
+    {
+      "name": "Mach_number_regimes",
+      "definition": "Subsonic (M<0.3 incompressible), transonic (~1), supersonic (1-5), hypersonic (>5).",
+      "why": "Different physics each regime. Transonic: shock formation challenging. Hypersonic: chemistry + radiation matter.",
+      "category": "fluid_mech_mechanism"
+    },
+    {
+      "name": "open_channel_flow",
+      "definition": "Free surface. Froude number Fr = v/√(gL). Subcritical (Fr<1) vs supercritical.",
+      "why": "Rivers, drainage, spillways. Hydraulic jump where supercritical to subcritical. Different from pipe flow (pressure-driven).",
+      "category": "fluid_mech_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "boundary_layer_theory_simplifies_NS",
+      "if": ["high Reynolds flow over surface"],
+      "then": ["boundary layer + outer inviscid analysis simpler than full NS"],
+      "why": "Prandtl's insight. Decouple thin viscous region from inviscid outer. Foundation of practical fluid mechanics. Aerodynamic design relies on this.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "streamlining_reduces_drag_via_BL_management",
+      "if": ["body is streamlined to delay BL separation"],
+      "then": ["form drag drops dramatically"],
+      "why": "Sphere vs teardrop at same area: 10× drag difference. Streamlining keeps BL attached → no wake. Standard aerodynamic philosophy.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "NPSH_violation_causes_cavitation",
+      "if": ["pump suction has insufficient NPSH"],
+      "then": ["cavitation occurs"],
+      "why": "Local pressure < vapor pressure → vapor bubbles → collapse on impeller → damage. NPSHA > NPSHR with margin. Standard.",
+      "soundness_category": "referential_transparency"
+    },
+    {
+      "name": "RANS_default_LES_critical_only",
+      "if": ["industrial CFD analysis"],
+      "then": ["RANS is default; LES where critical"],
+      "why": "Cost: RANS hours, LES days. RANS sufficient for most design. LES for unsteady, acoustics, finely-resolved phenomena. Standard practice.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "compressibility_M_above_0_3",
+      "if": ["flow Mach > 0.3"],
+      "then": ["compressibility effects matter"],
+      "why": "Below: incompressible approximation. Above: density variations significant. Aircraft cruise: compressible required. Standard threshold.",
+      "soundness_category": "denotational_equivalence"
+    }
+  ]
+}

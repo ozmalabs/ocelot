@@ -1,0 +1,664 @@
+{
+ "id": "remote_operate",
+ "version": "1.0.0",
+ "depends_on": [],
+ "area": "retina",
+ "description": "PERFORM THE ACTION ON THE CROSS (block 230000): exhaust the ACTION space on the reached object and DISCOVER the actuating action. Extends the 226/228 exhaustion principle from the OBJECT space to the ACTION space: at the reached object, try EVERY available action ON it \u2014 the movement actions AND the interact/use action (210 op_use) \u2014 because 'tried everything' is not complete until it has tried ACTING on the thing, not just moving into it. ro_try_action (policy exhaust_actions) picks the min-ordinal untried GameAction (exactly one per pass) and issues it; ro_try_movement (policy movement_only, the CONTROL) tries only movements; ro_discover_operate mints Operates{action,object,effect} from an ActionOutcome that OBSERVED a remote change \u2014 the actuating action DISCOVERED from the observed outcome, never hardcoded. Composes with 229 UNCHANGED: the Observation the adapter writes when the actuating action fires is consumed by rcg_ground -> causes(object,effect). Domain-agnostic (no cross/rotation/action-id constant; the id + effect carried from the OBSERVED outcome). Guarded on game.operate_on==1 (default-OFF, byte-identical) + game.op_policy. Integer-native; no Rust; reuses 210 operate + 228 reach + 229 ground + 220 nav.",
+ "microtheory": {
+  "name": "remote_operate",
+  "description": "'Tried everything' includes ACTING ON the thing, not just moving into it. At the reached object the agent exhausts the ACTION space \u2014 every available action, the interact/use action too \u2014 and DISCOVERS which one actuates it by OBSERVING which produces a remote change. The actuator is discovered from observation, never hardcoded; the elicited change is what 229 grounds. Every decision is a rule; the adapter only issues the chosen action and perceives the result."
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [],
+ "rules": [
+  {
+   "name": "ro_try_action",
+   "comment": "EXHAUST THE ACTION SPACE (exhaust_actions): pick the min-ordinal UNTRIED GameAction and issue it AT the object \u2014 the interact/use action too, not just movement. Exactly one fires per pass (no smaller untried exists).",
+   "match": [
+    [
+     "g",
+     "has_action",
+     "a"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "operate_on"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "op_policy"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "exhaust_actions"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "at_object"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "discovered"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.0
+        }
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "a"
+       },
+       "key": "tried"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "g"
+        },
+        "edge_type": "has_action",
+        "any_type": false
+       },
+       "var_name": "a2",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "a2"
+           },
+           "key": "tried"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0.0
+          }
+         },
+         {
+          "type": "Lt",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "a2"
+           },
+           "key": "ordinal"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "a"
+           },
+           "key": "ordinal"
+          }
+         }
+        ]
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "g",
+     "try_action",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "a"
+       },
+       "key": "action_id"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "g",
+     "try_is_movement",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "a"
+       },
+       "key": "is_movement"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "g",
+     "try_ordinal",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "a"
+       },
+       "key": "ordinal"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "ro_try_movement",
+   "comment": "MOVEMENT-ONLY CONTROL (movement_only): pick the min-ordinal untried MOVEMENT action only (is_movement==1). NEVER issues the interact/use action -> never actuates the switch.",
+   "match": [
+    [
+     "g",
+     "has_action",
+     "a"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "operate_on"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "op_policy"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "movement_only"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "at_object"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "discovered"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.0
+        }
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "a"
+       },
+       "key": "tried"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "a"
+       },
+       "key": "is_movement"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "g"
+        },
+        "edge_type": "has_action",
+        "any_type": false
+       },
+       "var_name": "a2",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "a2"
+           },
+           "key": "tried"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0.0
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "a2"
+           },
+           "key": "is_movement"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 1.0
+          }
+         },
+         {
+          "type": "Lt",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "a2"
+           },
+           "key": "ordinal"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "a"
+           },
+           "key": "ordinal"
+          }
+         }
+        ]
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "g",
+     "try_action",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "a"
+       },
+       "key": "action_id"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "g",
+     "try_is_movement",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "a"
+       },
+       "key": "is_movement"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "g",
+     "try_ordinal",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "a"
+       },
+       "key": "ordinal"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "ro_discover_operate",
+   "comment": "DISCOVER (headline): an ActionOutcome with an OBSERVED remote change -> the action that produced it is the OPERATE action. Mint Operates{action,object,effect} from the observed outcome (DISCOVERED, not hardcoded); mint-once.",
+   "match": [
+    [
+     "g",
+     "has_outcome",
+     "oc"
+    ],
+    [
+     "g",
+     "has_action",
+     "a"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "operate_on"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "op_policy"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "exhaust_actions"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "op_policy"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "movement_only"
+        }
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "oc"
+       },
+       "key": "remote_changed"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "oc"
+       },
+       "key": "action_id"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "a"
+       },
+       "key": "action_id"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "discovered"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "op",
+     "Operates",
+     {
+      "action": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "oc"
+        },
+        "key": "action_id"
+       }
+      },
+      "object": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "g"
+        },
+        "key": "object_id"
+       }
+      },
+      "effect": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "oc"
+        },
+        "key": "effect_kind"
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "g",
+     "has_operates",
+     "op"
+    ],
+    [
+     "add_edge",
+     "a",
+     "operates",
+     "op"
+    ],
+    [
+     "set_attr",
+     "g",
+     "operate_action",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "oc"
+       },
+       "key": "action_id"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "g",
+     "discovered",
+     1.0
+    ],
+    [
+     "set_attr",
+     "g",
+     "discovered_is_movement",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "a"
+       },
+       "key": "is_movement"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "g",
+     "discovered_effect",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "oc"
+       },
+       "key": "effect_kind"
+      }
+     }
+    ]
+   ]
+  }
+ ]
+}

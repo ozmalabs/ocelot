@@ -1,0 +1,1104 @@
+{
+  "_doc": "MATH-PROSE -> FUNCTION constructions (graph data, the agent's grammar). Each maps a math-prose CLAUSE (a phrase found WITHIN a real definition, e.g. an OEIS sequence_name) to the FORMAL function form in the index variable `n` that compute_grounding.comprehend_computational_definition grounds. The agent's construction grammar EXTRACTS the function from prose by clause-matching these + the embedded-formula path ('a(n) = <expr>'); the source's ground-truth values then VERIFY (and SELECT) the correct extraction. General patterns (count-of / sum-of / arithmetic), NOT per-sequence rules. Coverage grows by adding clauses — graph data, not code. The honest frontier = prose whose function no clause/formula extracts (recursive, idiomatic, multi-clause).",
+  "index_var": "n",
+  "clauses": [
+    {
+      "name": "number_of_divisors",
+      "clause": "number of divisors of n",
+      "formula": "count{k in 1..n : k|n}"
+    },
+    {
+      "name": "sum_of_the_divisors",
+      "clause": "sum of the divisors of n",
+      "formula": "divisor_sum(n)"
+    },
+    {
+      "name": "sum_of_divisors",
+      "clause": "sum of divisors of n",
+      "formula": "divisor_sum(n)"
+    },
+    {
+      "name": "totient_prime_to",
+      "clause": "prime to n",
+      "formula": "count{k in 1..n : gcd(k,n)=1}"
+    },
+    {
+      "name": "the_squares",
+      "clause": "the squares",
+      "formula": "n*n"
+    },
+    {
+      "name": "even_numbers",
+      "clause": "even numbers",
+      "formula": "2*n"
+    },
+    {
+      "name": "positive_integers",
+      "clause": "the positive integers",
+      "formula": "n"
+    },
+    {
+      "name": "natural_numbers",
+      "clause": "the natural numbers",
+      "formula": "n"
+    },
+    {
+      "name": "factorial_numbers",
+      "clause": "factorial numbers",
+      "formula": "factorial(n)"
+    },
+    {
+      "name": "factorial_of_n",
+      "clause": "factorial of n",
+      "formula": "factorial(n)"
+    }
+  ],
+  "_doc_recursive": "ORDER-N (recursive) constructions. The FLAT clauses above match a WHOLE string -> NONE on anything compositional. These constructions COMPOSE: a construction's SLOT content is itself comprehended by (sub-)constructions, recursively, bottoming out at a comprehension-BEDROCK (an atomic term / held set-member primitive). This is the agent's order-N operator (order_n_composition.iterate_to_n) applied to the construction grammar: the COMBINATION rule = 'fill a slot by comprehending its content', the BEDROCK = a member-form leaf. Each leaf/recursive construction comprehends to a MEMBER-FORM: a partial structure {value, predicate} over the binder k in 1..n (value = what to accumulate for member k; predicate = a multiplicative 0/1 mask selecting which k are members). An AGGREGATOR (sum/number) wraps a member-form into a runnable sum{k in 1..n : value*predicate} formula. Composition: 'the sum of [the squares of [the divisors of n]] that are [less than n]' = aggregator(sum) over a value-map(square) over a member-set(divisors) under a filter(less than n).",
+  "member_forms": [
+    {
+      "name": "divisors_of_n",
+      "pattern": [
+        "divisors",
+        "of",
+        "n"
+      ],
+      "value": "k",
+      "predicate": "(k|n)",
+      "_doc": "BEDROCK member-form: k is a member iff k divides n; the member's own value is k."
+    },
+    {
+      "name": "the_divisors_of_n",
+      "pattern": [
+        "the",
+        "divisors",
+        "of",
+        "n"
+      ],
+      "value": "k",
+      "predicate": "(k|n)"
+    },
+    {
+      "name": "integers",
+      "pattern": [
+        "integers"
+      ],
+      "value": "k",
+      "predicate": "1",
+      "_doc": "BEDROCK: every k in the range is a member; value k."
+    },
+    {
+      "name": "the_integers",
+      "pattern": [
+        "the",
+        "integers"
+      ],
+      "value": "k",
+      "predicate": "1"
+    },
+    {
+      "name": "numbers",
+      "pattern": [
+        "numbers"
+      ],
+      "value": "k",
+      "predicate": "1"
+    }
+  ],
+  "value_maps": [
+    {
+      "name": "squares_of",
+      "pattern": [
+        "squares",
+        "of",
+        "{inner}"
+      ],
+      "inner": "inner",
+      "value": "({inner.value})*({inner.value})",
+      "predicate": "{inner.predicate}",
+      "_doc": "RECURSIVE: 'squares of [X]' comprehends X (a member-form) then maps each member's value v -> v*v; the membership predicate is inherited from X."
+    },
+    {
+      "name": "the_squares_of",
+      "pattern": [
+        "the",
+        "squares",
+        "of",
+        "{inner}"
+      ],
+      "inner": "inner",
+      "value": "({inner.value})*({inner.value})",
+      "predicate": "{inner.predicate}"
+    }
+  ],
+  "_doc_no_cubes": "NOTE: 'cubes of' is deliberately NOT seeded here. It is ACQUIRED BY READING its meta-definition ('the cubes of a set means each member multiplied by itself three times') via construction_grammar.acquire_construction — the 'read about how to read' proof: BEFORE the read, 'sum of cubes of divisors of n' (A001158) comprehends to NONE; AFTER, it parses + reproduces the OEIS values.",
+  "filters": [
+    {
+      "name": "less_than_n",
+      "pattern": [
+        "that",
+        "are",
+        "less",
+        "than",
+        "n"
+      ],
+      "mask": "(k<n)",
+      "_doc": "RECURSIVE filter: narrows the membership predicate of the inner member-form by ANDing a 0/1 mask (k<n)."
+    },
+    {
+      "name": "smaller_than_n",
+      "pattern": [
+        "smaller",
+        "than",
+        "n"
+      ],
+      "mask": "(k<n)"
+    },
+    {
+      "name": "odd",
+      "pattern": [
+        "odd"
+      ],
+      "mask": "(k%2)",
+      "position": "pre",
+      "_doc": "PRE-modifier filter ('odd divisors of n'): mask k%2 (==1 for odd)."
+    },
+    {
+      "name": "even",
+      "pattern": [
+        "even"
+      ],
+      "mask": "(1-k%2)",
+      "position": "pre"
+    }
+  ],
+  "aggregators": [
+    {
+      "name": "sum_of",
+      "pattern": [
+        "sum",
+        "of",
+        "{set}"
+      ],
+      "set": "set",
+      "formula": "sum{k in 1..n : ({set.value})*({set.predicate})}",
+      "_doc": "AGGREGATOR: 'sum of [SET]' wraps the comprehended member-form SET into a runnable sum over k in 1..n, accumulating value*predicate (predicate masks non-members to 0)."
+    },
+    {
+      "name": "the_sum_of",
+      "pattern": [
+        "the",
+        "sum",
+        "of",
+        "{set}"
+      ],
+      "set": "set",
+      "formula": "sum{k in 1..n : ({set.value})*({set.predicate})}"
+    },
+    {
+      "name": "number_of",
+      "pattern": [
+        "number",
+        "of",
+        "{set}"
+      ],
+      "set": "set",
+      "formula": "sum{k in 1..n : ({set.predicate})}",
+      "_doc": "AGGREGATOR: 'number of [SET]' COUNTS members (sum of the membership predicate over k)."
+    },
+    {
+      "name": "the_number_of",
+      "pattern": [
+        "the",
+        "number",
+        "of",
+        "{set}"
+      ],
+      "set": "set",
+      "formula": "sum{k in 1..n : ({set.predicate})}"
+    }
+  ],
+  "_doc_operator_tree": "GENERIC OPERATOR-TREE constructions for the RESEARCH FRONTIER. Where the member-form grammar above produces a runnable number-theory formula, these produce a STRUCTURE TREE — op(args) nested — for compositional research prose whose OPERATIONS are not yet held as runnable primitives. comprehend_structure composes them RECURSIVELY (a slot is filled by comprehending its content), bottoming out at an ATOMIC TERM (a held concept / named object). This is how 'the kernel of the boundary operator modulo its image' comprehends: [A] modulo [B] over kernel of [X] over the boundary operator + image of [X] -> modulo(kernel(boundary_operator), image(boundary_operator)). The agent COMPOSES the homology STRUCTURE; the kernel/image OPERATIONS being un-held is the NAMED residual (acquirable the same way by reading). Each construction names whether its head OP is held_runnable (the agent can compute it) — kernel/image/modulo over operators are NOT, the precise stall.",
+  "_doc_new_families": "THE READER-FRONTIER FAMILIES (homology / betti / dimension / fundamental_group / genus) live in the SAME `operators` table below. Each is the SAME prefix operator-of-object construction euler_characteristic already is — a DATA ROW, read by the uniform prefix loop in _comprehend_structure, NOT a per-operator Python branch. An operator whose `indexed` is true carries an `{index}` slot in its pattern that the SAME uniform _match_indexed_operator/_read_index mechanism reads (an ordinal 'second', a symbolic 'n th'/'k th', or a bare number) into the typed tree's `index` slot via the seeded `index_words`/`index_symbols` tables. Adding a sixth/seventh operator = another row here, no code change (the generality proof). The OPERATION (computing homology/betti/...) is un-held here (`held_runnable`: false) — typing is the reader rung; it then STALLS DOWNSTREAM at generate/compute (no _presupposed_needs branch, no compute faculty) until those rungs follow.",
+  "operators": [
+    {
+      "name": "modulo",
+      "pattern": [
+        "{a}",
+        "modulo",
+        "{b}"
+      ],
+      "op": "modulo",
+      "args": [
+        "a",
+        "b"
+      ],
+      "held_runnable": false,
+      "_doc": "QUOTIENT '[A] modulo [B]' (here A/B as a quotient group, not integer mod) -> modulo(A, B). The infix splits on 'modulo'; both slots comprehended recursively. 'its image' resolves the possessive to the same operand the sibling kernel reads."
+    },
+    {
+      "name": "kernel_of",
+      "pattern": [
+        "kernel",
+        "of",
+        "{x}"
+      ],
+      "op": "kernel",
+      "args": [
+        "x"
+      ],
+      "held_runnable": false,
+      "_doc": "'kernel of [X]' -> kernel(X): the set of inputs the map X sends to zero. The OPERATION is un-held (acquirable by reading its meta-def)."
+    },
+    {
+      "name": "the_kernel_of",
+      "pattern": [
+        "the",
+        "kernel",
+        "of",
+        "{x}"
+      ],
+      "op": "kernel",
+      "args": [
+        "x"
+      ],
+      "held_runnable": false
+    },
+    {
+      "name": "image_of",
+      "pattern": [
+        "image",
+        "of",
+        "{x}"
+      ],
+      "op": "image",
+      "args": [
+        "x"
+      ],
+      "held_runnable": false,
+      "_doc": "'image of [X]' -> image(X): the set of outputs of the map X. Un-held."
+    },
+    {
+      "name": "the_image_of",
+      "pattern": [
+        "the",
+        "image",
+        "of",
+        "{x}"
+      ],
+      "op": "image",
+      "args": [
+        "x"
+      ],
+      "held_runnable": false
+    },
+    {
+      "name": "rank_of",
+      "pattern": [
+        "rank",
+        "of",
+        "{x}"
+      ],
+      "op": "rank",
+      "args": [
+        "x"
+      ],
+      "held_runnable": false,
+      "_doc": "'rank of [X]' -> rank(X): the invariant 'rank' of the object X (for a free group, the number of free generators; for an abelian group, the free rank). The OPERATION is un-held as a runnable compute here — but the asked-invariant TYPE is what the comprehension needs (the rank invariant OF a sub-object).",
+      "asked_head": true
+    },
+    {
+      "name": "the_rank_of",
+      "pattern": [
+        "the",
+        "rank",
+        "of",
+        "{x}"
+      ],
+      "op": "rank",
+      "args": [
+        "x"
+      ],
+      "held_runnable": false,
+      "asked_head": true
+    },
+    {
+      "name": "number_of_free_generators_of",
+      "pattern": [
+        "the",
+        "number",
+        "of",
+        "free",
+        "generators",
+        "of",
+        "{x}"
+      ],
+      "op": "free_rank",
+      "args": [
+        "x"
+      ],
+      "held_runnable": false,
+      "_doc": "'the number of free generators of [X]' -> free_rank(X): the free-group rank invariant under a different SURFACE (the paraphrase the generality demo rides on). The general reader types it to the SAME free-rank-of-kernel invariant; a regex keyed to 'free group' would MISS this phrasing.",
+      "asked_head": true
+    },
+    {
+      "name": "number_of_free_generators_of_bare",
+      "pattern": [
+        "number",
+        "of",
+        "free",
+        "generators",
+        "of",
+        "{x}"
+      ],
+      "op": "free_rank",
+      "args": [
+        "x"
+      ],
+      "held_runnable": false,
+      "asked_head": true
+    },
+    {
+      "name": "euler_characteristic_of",
+      "pattern": [
+        "the",
+        "euler",
+        "characteristic",
+        "of",
+        "{x}"
+      ],
+      "op": "euler_characteristic",
+      "args": [
+        "x"
+      ],
+      "held_runnable": false,
+      "_doc": "SECOND INVARIANT (cmsg120, the breadth-of-two): 'the euler characteristic of [X]' -> euler_characteristic(X). A prefix operator the SAME order-N reader composes (its slot comprehended recursively, bottoming at the object atom). The well-definedness PRESUPPOSITION (chi well-defined => a FINITE complex => total Betti finite) is DERIVED from this typed term + READ facts (the alternating-sum + finiteness theorems), NOT a per-invariant regex. The OPERATION (computing chi) is un-held here; the asked-invariant TYPE is what the comprehension needs (the chi invariant OF an object).",
+      "asked_head": true
+    },
+    {
+      "name": "euler_characteristic_of_bare",
+      "pattern": [
+        "euler",
+        "characteristic",
+        "of",
+        "{x}"
+      ],
+      "op": "euler_characteristic",
+      "args": [
+        "x"
+      ],
+      "held_runnable": false,
+      "asked_head": true
+    },
+    {
+      "name": "homology_indexed_of",
+      "pattern": [
+        "the",
+        "{index}",
+        "homology",
+        "of",
+        "{x}"
+      ],
+      "op": "homology",
+      "args": [
+        "x"
+      ],
+      "indexed": true,
+      "held_runnable": false,
+      "_doc": "INDEXED 'the n-th homology of [X]' -> homology(X, index=n): the n-th homology GROUP/module. The {index} slot reads the dimension index (ordinal 'second' -> 2, symbolic 'n th'/'k th' -> n/k, subscript 'h 1' surface handled by the index reader). The SAME prefix mechanism, one index slot wider.",
+      "asked_head": true
+    },
+    {
+      "name": "homology_indexed_group_of",
+      "pattern": [
+        "the",
+        "{index}",
+        "homology",
+        "group",
+        "of",
+        "{x}"
+      ],
+      "op": "homology",
+      "args": [
+        "x"
+      ],
+      "indexed": true,
+      "held_runnable": false,
+      "asked_head": true
+    },
+    {
+      "name": "homology_of",
+      "pattern": [
+        "the",
+        "homology",
+        "of",
+        "{x}"
+      ],
+      "op": "homology",
+      "args": [
+        "x"
+      ],
+      "held_runnable": false,
+      "_doc": "UN-INDEXED 'the homology of [X]' -> homology(X): the (graded/total) homology, no dimension index given. Plain prefix operator-of-object.",
+      "asked_head": true
+    },
+    {
+      "name": "homology_of_bare",
+      "pattern": [
+        "homology",
+        "of",
+        "{x}"
+      ],
+      "op": "homology",
+      "args": [
+        "x"
+      ],
+      "held_runnable": false,
+      "asked_head": true
+    },
+    {
+      "name": "betti_indexed_number_of",
+      "pattern": [
+        "the",
+        "{index}",
+        "betti",
+        "number",
+        "of",
+        "{x}"
+      ],
+      "op": "betti",
+      "args": [
+        "x"
+      ],
+      "indexed": true,
+      "held_runnable": false,
+      "_doc": "INDEXED 'the second betti number of [X]' -> betti(X, index=2): the rank of the n-th homology. The {index} reads the same ordinal/symbolic forms as homology ('second'->2, 'n th'->n, 'b 2' subscript). Indexed handled GENERALLY (the index reader is shared), not a betti special-case.",
+      "asked_head": true
+    },
+    {
+      "name": "betti_indexed_of",
+      "pattern": [
+        "the",
+        "{index}",
+        "betti",
+        "of",
+        "{x}"
+      ],
+      "op": "betti",
+      "args": [
+        "x"
+      ],
+      "indexed": true,
+      "held_runnable": false,
+      "asked_head": true
+    },
+    {
+      "name": "betti_number_of",
+      "pattern": [
+        "the",
+        "betti",
+        "number",
+        "of",
+        "{x}"
+      ],
+      "op": "betti",
+      "args": [
+        "x"
+      ],
+      "held_runnable": false,
+      "_doc": "UN-INDEXED 'the betti number of [X]' -> betti(X): the Betti number with no dimension specified.",
+      "asked_head": true
+    },
+    {
+      "name": "betti_number_of_bare",
+      "pattern": [
+        "betti",
+        "number",
+        "of",
+        "{x}"
+      ],
+      "op": "betti",
+      "args": [
+        "x"
+      ],
+      "held_runnable": false,
+      "asked_head": true
+    },
+    {
+      "name": "homology_subscript_of",
+      "pattern": [
+        "h",
+        "{index}",
+        "of",
+        "{x}"
+      ],
+      "op": "homology",
+      "args": [
+        "x"
+      ],
+      "indexed": true,
+      "held_runnable": false,
+      "_doc": "SUBSCRIPT surface 'H_1 of [X]' -> homology(X, index=1). The LaTeX/subscript surface 'H_1' tokenises (lowercased [a-z0-9]+) to ['h','1']; the operator-name token 'h' is the pattern literal, the bare number '1' is read by the SAME uniform _read_index into the index slot. Subscript handled GENERALLY (one DATA row + the shared index reader), not a per-operator regex.",
+      "asked_head": true
+    },
+    {
+      "name": "betti_subscript_of",
+      "pattern": [
+        "b",
+        "{index}",
+        "of",
+        "{x}"
+      ],
+      "op": "betti",
+      "args": [
+        "x"
+      ],
+      "indexed": true,
+      "held_runnable": false,
+      "_doc": "SUBSCRIPT surface 'b_2 of [X]' -> betti(X, index=2). 'b_2' tokenises to ['b','2']; the same index reader fills the slot.",
+      "asked_head": true
+    },
+    {
+      "name": "dimension_of",
+      "pattern": [
+        "the",
+        "dimension",
+        "of",
+        "{x}"
+      ],
+      "op": "dimension",
+      "args": [
+        "x"
+      ],
+      "held_runnable": false,
+      "_doc": "'the dimension of [X]' -> dimension(X): the (topological/Krull/vector-space) dimension invariant. Plain prefix operator-of-object — a DATA ROW, not a branch.",
+      "asked_head": true
+    },
+    {
+      "name": "dimension_of_bare",
+      "pattern": [
+        "dimension",
+        "of",
+        "{x}"
+      ],
+      "op": "dimension",
+      "args": [
+        "x"
+      ],
+      "held_runnable": false,
+      "asked_head": true
+    },
+    {
+      "name": "fundamental_group_of",
+      "pattern": [
+        "the",
+        "fundamental",
+        "group",
+        "of",
+        "{x}"
+      ],
+      "op": "fundamental_group",
+      "args": [
+        "x"
+      ],
+      "held_runnable": false,
+      "_doc": "'the fundamental group of [X]' -> fundamental_group(X): pi_1 of the space X. A multi-token prefix ('fundamental group of') read by the same prefix loop. NOTE: the BARE atom 'the fundamental group' (no 'of X') still types as the seeded fundamental_group ATOM for the rank-of-pi_1 control; this operator only fires when an object follows ('... of X').",
+      "asked_head": true
+    },
+    {
+      "name": "fundamental_group_of_bare",
+      "pattern": [
+        "fundamental",
+        "group",
+        "of",
+        "{x}"
+      ],
+      "op": "fundamental_group",
+      "args": [
+        "x"
+      ],
+      "held_runnable": false,
+      "asked_head": true
+    },
+    {
+      "name": "genus_of",
+      "pattern": [
+        "the",
+        "genus",
+        "of",
+        "{x}"
+      ],
+      "op": "genus",
+      "args": [
+        "x"
+      ],
+      "held_runnable": false,
+      "_doc": "'the genus of [X]' -> genus(X): the genus invariant of a surface/curve. Plain prefix operator-of-object — a DATA ROW.",
+      "asked_head": true
+    },
+    {
+      "name": "genus_of_bare",
+      "pattern": [
+        "genus",
+        "of",
+        "{x}"
+      ],
+      "op": "genus",
+      "args": [
+        "x"
+      ],
+      "held_runnable": false,
+      "asked_head": true
+    }
+  ],
+  "_doc_index_words": "INDEX VOCABULARY for INDEXED operators (betti_i, homology_i). The uniform index-reader in _comprehend_structure reads an operator's {index} slot against these DATA rows: an ORDINAL surface ('zeroth'..'tenth', 'first'..) maps to its integer; a SYMBOLIC surface ('n'/'k'/'i'/'j'/'m' optionally with a trailing 'th'/'st'/'nd'/'rd' the tokeniser split off, e.g. 'n-th' -> ['n','th']) maps to the symbol; a BARE NUMBER token maps to itself. Subscript surfaces ('H_1','b_2') tokenise to ['h','1']/['b','2'] — the operator-name token is consumed by the operator pattern, the bare number by this table. Teaching a new ordinal = a row, not code; the index handling is GENERAL across every indexed operator, not per-operator.",
+  "index_words": [
+    {
+      "surface": "zeroth",
+      "value": 0
+    },
+    {
+      "surface": "first",
+      "value": 1
+    },
+    {
+      "surface": "second",
+      "value": 2
+    },
+    {
+      "surface": "third",
+      "value": 3
+    },
+    {
+      "surface": "fourth",
+      "value": 4
+    },
+    {
+      "surface": "fifth",
+      "value": 5
+    },
+    {
+      "surface": "sixth",
+      "value": 6
+    },
+    {
+      "surface": "seventh",
+      "value": 7
+    },
+    {
+      "surface": "eighth",
+      "value": 8
+    },
+    {
+      "surface": "ninth",
+      "value": 9
+    },
+    {
+      "surface": "tenth",
+      "value": 10
+    }
+  ],
+  "index_symbols": [
+    "n",
+    "k",
+    "i",
+    "j",
+    "m",
+    "p",
+    "q",
+    "r"
+  ],
+  "index_ordinal_suffixes": [
+    "th",
+    "st",
+    "nd",
+    "rd"
+  ],
+  "_doc_qualifiers": "POSTFIX TYPING QUALIFIERS for the RESEARCH FRONTIER. A trailing qualifier RE-TYPES the invariant it modifies: 'the rank of X AS A FREE GROUP' is not the generic `rank` but the FREE-GROUP rank `free_rank` (the number of free generators). The discrimination is the GRAMMAR'S, by the qualifier — an UNQUALIFIED 'the rank of X' stays the generic `rank` op (so a control 'the rank of the fundamental group' types to `rank`, NOT free_rank, and the finite-free-rank presupposition does NOT fire). comprehend_structure tries a qualifier construction LAST (after the bare structure comprehends): the qualifier pattern is a TRAILING literal sequence; the head it modifies is the inner structure comprehended recursively; `retype` says which op the (single-arg) head is re-typed to (rank -> free_rank). This is the SAME order-N composition the prefix/infix operators use, one register wider (a postfix modifier). A regex keyed to 'free group' would put free_rank there by string-match; here the reader reads the qualifier as part of the STRUCTURE.",
+  "qualifiers": [
+    {
+      "name": "as_a_free_group",
+      "pattern": [
+        "as",
+        "a",
+        "free",
+        "group"
+      ],
+      "retype": {
+        "rank": "free_rank"
+      },
+      "_doc": "'[the rank of X] as a free group' -> free_rank(X): a rank TAKEN in the category of free groups = the number of free generators. Re-types a `rank` head to `free_rank`; leaves any other head unchanged (the qualifier only re-types a rank)."
+    },
+    {
+      "name": "as_a_free_abelian_group",
+      "pattern": [
+        "as",
+        "a",
+        "free",
+        "abelian",
+        "group"
+      ],
+      "retype": {
+        "rank": "free_rank"
+      },
+      "_doc": "'[the rank of X] as a free abelian group' -> free_rank(X): the free-abelian rank = the number of free generators of the free part. Same free-rank typing."
+    }
+  ],
+  "_doc_definition_binding": "DEFINITION-BINDING constructions (the cmsg-gap-1 fix). A question STEM INTRODUCES its objects ('Let X be a <type>', 'Let X denote the <type>', 'We denote by X the <type>'). The reader reads these binding clauses into a LOCAL TYPED ENVIRONMENT (symbol -> a typed object) so the invariant's `{object}` slot RESOLVES against the stem's introductions, NOT a fixed global atom list. This is GENERAL (any introduced object binds + types) and graph-resident: a binding clause is a surface PATTERN ({sym} <copula/denote> a/the {type}); the {type} is normalised to a structural object-TYPE via `binding_types` below. A bound symbol then behaves as an atom whose `term` is the type. The patterns are DATA — teaching a new binding surface = adding a clause, not code. The euler/genus/rank operators compose over the bound object exactly as over a seeded atom.",
+  "binding_clauses": [
+    {
+      "name": "we_denote_by_the",
+      "pattern": [
+        "we",
+        "denote",
+        "by",
+        "{sym}",
+        "the",
+        "{type}"
+      ],
+      "sym": "sym",
+      "type": "type",
+      "_doc": "'We denote by X the <type>' -> bind X to an object of <type> (e.g. 'We denote by K_k the complete graph on k vertices')."
+    },
+    {
+      "name": "we_denote_by_a",
+      "pattern": [
+        "we",
+        "denote",
+        "by",
+        "{sym}",
+        "a",
+        "{type}"
+      ],
+      "sym": "sym",
+      "type": "type"
+    },
+    {
+      "name": "let_denote_the",
+      "pattern": [
+        "let",
+        "{sym}",
+        "denote",
+        "the",
+        "{type}"
+      ],
+      "sym": "sym",
+      "type": "type",
+      "_doc": "'Let X denote the <type>' -> bind X (e.g. 'Let Delta_k denote the abstract simplicial complex defined as follows')."
+    },
+    {
+      "name": "let_denote_a",
+      "pattern": [
+        "let",
+        "{sym}",
+        "denote",
+        "a",
+        "{type}"
+      ],
+      "sym": "sym",
+      "type": "type"
+    },
+    {
+      "name": "let_be_the",
+      "pattern": [
+        "let",
+        "{sym}",
+        "be",
+        "the",
+        "{type}"
+      ],
+      "sym": "sym",
+      "type": "type",
+      "_doc": "'Let X be the <type>' -> bind X."
+    },
+    {
+      "name": "let_be_a",
+      "pattern": [
+        "let",
+        "{sym}",
+        "be",
+        "a",
+        "{type}"
+      ],
+      "sym": "sym",
+      "type": "type",
+      "_doc": "'Let X be a <type>' (also 'Let G be a group ...') -> bind X. The generality demo rides on this: ANY introduced object binds + types, not a Delta_k special-case."
+    }
+  ],
+  "_doc_binding_types": "TYPE NORMALISATION for definition-binding. A bound clause's <type> surface (a noun phrase, possibly with a trailing 'on k vertices' / 'defined as follows' qualifier) is normalised to a STRUCTURAL object-type by matching a HEAD type-noun here (longest first). This is a canonical math-object-type vocabulary (graph DATA), NOT a per-question atom: it lists the TYPES (simplicial complex, graph, group, ...), so a stem introducing ANY object of these types binds + types. The reduced-Euler / rank / genus operators only need the slot to RESOLVE to a typed object; the specific type drives which compute faculty the object's definition is handed to (a simplicial_complex with a read face-predicate -> the chi compute).",
+  "binding_types": [
+    {
+      "head": [
+        "abstract",
+        "simplicial",
+        "complex"
+      ],
+      "type": "simplicial_complex"
+    },
+    {
+      "head": [
+        "simplicial",
+        "complex"
+      ],
+      "type": "simplicial_complex"
+    },
+    {
+      "head": [
+        "complex"
+      ],
+      "type": "simplicial_complex"
+    },
+    {
+      "head": [
+        "complete",
+        "graph"
+      ],
+      "type": "complete_graph"
+    },
+    {
+      "head": [
+        "graph"
+      ],
+      "type": "graph"
+    },
+    {
+      "head": [
+        "group"
+      ],
+      "type": "group"
+    },
+    {
+      "head": [
+        "ring"
+      ],
+      "type": "ring"
+    },
+    {
+      "head": [
+        "module"
+      ],
+      "type": "module"
+    },
+    {
+      "head": [
+        "space"
+      ],
+      "type": "space"
+    },
+    {
+      "head": [
+        "manifold"
+      ],
+      "type": "manifold"
+    },
+    {
+      "head": [
+        "field"
+      ],
+      "type": "field"
+    },
+    {
+      "head": [
+        "set"
+      ],
+      "type": "set"
+    },
+    {
+      "head": [
+        "map"
+      ],
+      "type": "map"
+    },
+    {
+      "head": [
+        "homomorphism"
+      ],
+      "type": "map"
+    }
+  ],
+  "_doc_object_atoms": "GENERIC OBJECT-ATOM bedrock for the OBJECT SLOT (the bucket-B comprehension frontier). An invariant operator ('rank of', 'dimension of', 'genus of', 'Euler characteristic of', 'homology of') types fine, but its `{x}` object slot bottomed out at a tiny hand-atom list ('x'/'the space'/'the complex'), so 'rank of E' / 'Euler characteristic of the quotient stack [U/G]' / 'rank of the Neron-Severi group of X' returned None -> bucket B. This block widens what the object slot TYPES TO, GENERALLY (data, not a regex-per-question): a token run is a generic OBJECT when it (a) carries a recognised OBJECT-TYPE-NOUN head ('group'/'space'/'stack'/'manifold'/'curve'/'variety'/'sheaf'/'scheme'/'module'/'ring'/'subgroup'/'subspace'/'hypergraph'/...) -> typed as that object-type, OR (b) is a pure NOTATION/SYMBOL run (single-letter atoms, digits, Greek names, connectives like 'times'/'oplus', applied-notation like pi_3(X)/H^2(G,M)/[U/G]/E(Q)) -> typed as a notation object. The recogniser (comprehend_object_atom) is PRECISE: arbitrary prose with no type-noun and non-symbol words does NOT type (stays a miss, zero false-positive). The object types -> the clause types -> it flows to the held stack (formalize/construct/compute); where the stack has no compute for that object it is an HONEST type-but-stall, now correctly TYPED. object_type_nouns / notation_symbols / object_connectives are the vocabulary (graph DATA); a new object-type = a row, not code.",
+  "object_type_nouns": [
+    {"head": ["homotopy", "group"], "type": "homotopy_group"},
+    {"head": ["cohomology", "group"], "type": "cohomology_group"},
+    {"head": ["homology", "group"], "type": "homology_group"},
+    {"head": ["fundamental", "group"], "type": "fundamental_group"},
+    {"head": ["neron", "severi", "group"], "type": "neron_severi_group"},
+    {"head": ["mordell", "weil", "group"], "type": "mordell_weil_group"},
+    {"head": ["picard", "group"], "type": "picard_group"},
+    {"head": ["galois", "group"], "type": "galois_group"},
+    {"head": ["lie", "group"], "type": "lie_group"},
+    {"head": ["torsion", "subgroup"], "type": "torsion_subgroup"},
+    {"head": ["abelian", "group"], "type": "abelian_group"},
+    {"head": ["quotient", "stack"], "type": "quotient_stack"},
+    {"head": ["quotient", "group"], "type": "quotient_group"},
+    {"head": ["subgroup"], "type": "subgroup"},
+    {"head": ["subspace"], "type": "subspace"},
+    {"head": ["submodule"], "type": "submodule"},
+    {"head": ["cohomology", "ring"], "type": "cohomology_ring"},
+    {"head": ["group"], "type": "group"},
+    {"head": ["stack"], "type": "stack"},
+    {"head": ["scheme"], "type": "scheme"},
+    {"head": ["sheaf"], "type": "sheaf"},
+    {"head": ["bundle"], "type": "bundle"},
+    {"head": ["variety"], "type": "variety"},
+    {"head": ["manifold"], "type": "manifold"},
+    {"head": ["curve"], "type": "curve"},
+    {"head": ["surface"], "type": "surface"},
+    {"head": ["torus"], "type": "torus"},
+    {"head": ["sphere"], "type": "sphere"},
+    {"head": ["lattice"], "type": "lattice"},
+    {"head": ["module"], "type": "module"},
+    {"head": ["ring"], "type": "ring"},
+    {"head": ["field"], "type": "field"},
+    {"head": ["algebra"], "type": "algebra"},
+    {"head": ["graph"], "type": "graph"},
+    {"head": ["hypergraph"], "type": "hypergraph"},
+    {"head": ["complex"], "type": "complex"},
+    {"head": ["space"], "type": "space"},
+    {"head": ["set"], "type": "set"},
+    {"head": ["dessin"], "type": "dessin"},
+    {"head": ["blowup"], "type": "blowup"},
+    {"head": ["sections"], "type": "sections_space"},
+    {"head": ["boundary"], "type": "boundary"}
+  ],
+  "notation_symbols": [
+    "pi", "h", "e", "j", "x", "y", "z", "g", "m", "c", "v", "u", "p", "q",
+    "r", "n", "k", "l", "s", "t", "f", "a", "b", "d", "i", "w", "o",
+    "omega", "delta", "gamma", "sigma", "lambda", "theta", "phi", "psi",
+    "alpha", "beta", "mu", "nu", "rho", "tau", "chi", "kh", "ab"
+  ],
+  "object_connectives": [
+    "times", "oplus", "otimes", "wedge", "cap", "cup", "fixed", "by",
+    "tensor", "and", "of", "in"
+  ],
+  "atoms": [
+    {
+      "name": "boundary_operator",
+      "pattern": [
+        "the",
+        "boundary",
+        "operator"
+      ],
+      "term": "boundary_operator",
+      "held": true,
+      "_doc": "ATOM (comprehension-bedrock): the boundary operator ∂ — a HELD operation (acquired in acquire_boundary_operator). The recursion bottoms out here."
+    },
+    {
+      "name": "boundary_operator_bare",
+      "pattern": [
+        "boundary",
+        "operator"
+      ],
+      "term": "boundary_operator",
+      "held": true
+    },
+    {
+      "name": "hurewicz_map",
+      "pattern": [
+        "the",
+        "hurewicz",
+        "map"
+      ],
+      "term": "hurewicz_map",
+      "held": false,
+      "_doc": "ATOM: the Hurewicz homomorphism h_*: pi_1 -> H_1 (the abelianization map in dimension 1). A NAMED math object the agent reads; the recursion bottoms out here. NOT held-runnable as a computed object — its facts (kernel = commutator subgroup, index = |H_1|) are acquired by READING as Claims, not hard-coded."
+    },
+    {
+      "name": "hurewicz_homomorphism",
+      "pattern": [
+        "the",
+        "hurewicz",
+        "homomorphism"
+      ],
+      "term": "hurewicz_map",
+      "held": false
+    },
+    {
+      "name": "abelianization_map",
+      "pattern": [
+        "the",
+        "abelianization",
+        "map"
+      ],
+      "term": "hurewicz_map",
+      "held": false,
+      "_doc": "ATOM: the abelianization map pi_1 -> pi_1/[pi_1,pi_1] = H_1 — the SAME object as the Hurewicz map in dimension 1 (a paraphrase the general reader types identically). The generality demo rides on this: a paraphrase typed to the same term."
+    },
+    {
+      "name": "abelianization",
+      "pattern": [
+        "the",
+        "abelianization"
+      ],
+      "term": "hurewicz_map",
+      "held": false
+    },
+    {
+      "name": "fundamental_group",
+      "pattern": [
+        "the",
+        "fundamental",
+        "group"
+      ],
+      "term": "fundamental_group",
+      "held": false,
+      "_doc": "ATOM: the fundamental group pi_1. Lets the CONTROL 'the rank of the fundamental group' type to rank(fundamental_group) — the GENERIC rank, NOT free_rank (no 'as a free group' qualifier), so the finite-free-rank presupposition does NOT fire. The discrimination is the grammar's, by the absent qualifier."
+    },
+    {
+      "name": "space_x",
+      "pattern": [
+        "x"
+      ],
+      "term": "space",
+      "held": false,
+      "_doc": "ATOM (comprehension-bedrock): the object/space X the invariant is asked OF. A NAMED placeholder object the reader bottoms out at, so 'the euler characteristic of X' / 'the genus of X' comprehend to euler_characteristic(space) / genus(space). The object's forward-model properties (b0/b1/b2/torsion) are what the derived presupposition collapses against in the gate; the atom itself is not held-runnable (no specific space)."
+    },
+    {
+      "name": "space_the",
+      "pattern": [
+        "the",
+        "space"
+      ],
+      "term": "space",
+      "held": false
+    },
+    {
+      "name": "space_complex",
+      "pattern": [
+        "the",
+        "complex"
+      ],
+      "term": "space",
+      "held": false
+    },
+    {
+      "name": "space_cw_complex",
+      "pattern": [
+        "the",
+        "cw",
+        "complex"
+      ],
+      "term": "space",
+      "held": false
+    },
+    {
+      "name": "space_simplicial_complex",
+      "pattern": [
+        "the",
+        "simplicial",
+        "complex"
+      ],
+      "term": "space",
+      "held": false,
+      "_doc": "ATOM: a simplicial complex, read as the universal object/space the invariant is asked OF — the SAME `space` term the reader bottoms out at for 'the complex' / 'the cw complex'. Added as graph DATA (not Python) by the agent's own decision (jabberwock_decides_order1_lever): the binary-admissibility selector ranked the READER's Level-2 atom coverage the top lever because the lone token 'simplicial' was blocking euler/reduced-euler/betti invariant families from typing at all (typed=None) — upstream of the order-1 generator, which never even ran. Widening this atom lets those families TYPE, so the whole READ->GENERATE->ROUTE->DERIVE pipeline can run on them."
+    },
+    {
+      "name": "space_simplicial_complex_bare",
+      "pattern": [
+        "simplicial",
+        "complex"
+      ],
+      "term": "space",
+      "held": false
+    }
+  ]
+}

@@ -1,0 +1,118 @@
+{
+  "id": "structural_analysis_design_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "truss_analysis",
+  "in_microtheory": "engineering",
+  "description": "Structural analysis + design decomposed. Determinate vs indeterminate, methods of joints/sections, deflection methods (virtual work, conjugate beam), influence lines, FEM workflow, dynamic analysis, seismic design philosophy.",
+  "sub_mechanisms": [
+    {
+      "name": "method_of_joints",
+      "definition": "FBD of each truss joint. ΣFx = 0, ΣFy = 0 at each joint. Solve sequentially.",
+      "why": "Find all member forces. Sequential: start at known. Standard truss method.",
+      "category": "struct_analysis_mechanism"
+    },
+    {
+      "name": "method_of_sections",
+      "definition": "Cut truss; FBD of one half. Get 3 unknowns directly.",
+      "why": "When only certain members needed. Faster than joints for specific members. Standard truss method.",
+      "category": "struct_analysis_mechanism"
+    },
+    {
+      "name": "beam_deflection_double_integration",
+      "definition": "EI·y'' = M(x). Integrate twice; apply boundary conditions for constants.",
+      "why": "Foundation of beam deflection. Direct method. Standard tables for common cases.",
+      "category": "struct_analysis_mechanism"
+    },
+    {
+      "name": "virtual_work_deflection",
+      "definition": "δ = ∫(Mm/EI) dx. Real M + virtual m for unit load at desired point.",
+      "why": "Powerful for complex loadings. Standard structural method. Works for trusses, beams, frames.",
+      "category": "struct_analysis_mechanism"
+    },
+    {
+      "name": "stiffness_matrix_method",
+      "definition": "[K]{δ} = {F}. Assemble global stiffness from elements; solve.",
+      "why": "Foundation of FEM. Handles indeterminate structures. Computer-implementable. Modern structural analysis.",
+      "category": "struct_analysis_mechanism"
+    },
+    {
+      "name": "influence_line",
+      "definition": "Plot of response at point due to unit load at varying position.",
+      "why": "Bridge design: where to place truck loads for max stress. Standard for moving loads.",
+      "category": "struct_analysis_mechanism"
+    },
+    {
+      "name": "plastic_analysis",
+      "definition": "Limit state: structure fails when enough plastic hinges form to create mechanism.",
+      "why": "Steel structures. Higher capacity than elastic analysis. Modern codes use. Ductility required.",
+      "category": "struct_analysis_mechanism"
+    },
+    {
+      "name": "P_delta_effects",
+      "definition": "Axial load × lateral displacement → additional moment. Significant for slender columns.",
+      "why": "Second-order analysis. Standard for tall buildings under wind/seismic. Direct analysis method in AISC 360.",
+      "category": "struct_analysis_mechanism"
+    },
+    {
+      "name": "response_spectrum_analysis",
+      "definition": "Plot peak response (SDOF) vs natural period for earthquake ground motion.",
+      "why": "Standard seismic analysis. Building modes excited per spectrum. Design codes specify spectra per site + occupancy.",
+      "category": "struct_analysis_mechanism"
+    },
+    {
+      "name": "capacity_design_seismic",
+      "definition": "Force ductile elements to fail first; protect brittle. Beams yield before columns; foundation last.",
+      "why": "Modern seismic philosophy. Predictable failure path. Ductility absorbs energy. Standard since 1970s research.",
+      "category": "struct_analysis_mechanism"
+    },
+    {
+      "name": "LRFD_load_combinations",
+      "definition": "Load + Resistance Factor Design. φ × R_n ≥ Σ γ_i × Q_i. Probabilistic safety.",
+      "why": "Modern code basis (since 1980s). Different factors for dead, live, wind, seismic. Replaces ASD allowable stress.",
+      "category": "struct_analysis_mechanism"
+    },
+    {
+      "name": "performance_based_design",
+      "definition": "Design for specific performance objectives at specific hazard levels.",
+      "why": "Beyond code-minimum. 'Operational at 50-year quake; collapse prevention at 2475-year'. Modern engineering for critical facilities.",
+      "category": "struct_analysis_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "indeterminate_structures_need_compatibility",
+      "if": ["unknowns > equilibrium equations"],
+      "then": ["deflection compatibility required"],
+      "why": "Equilibrium insufficient. Indeterminate: redundant forces from compatibility (deflection at supports = 0). Standard methods: force, displacement.",
+      "soundness_category": "algebraic_law"
+    },
+    {
+      "name": "P_delta_critical_for_tall_buildings",
+      "if": ["building has significant lateral displacement under load"],
+      "then": ["P-delta amplification must be considered"],
+      "why": "Axial × lateral disp = additional moment → more disp → more moment. Converges if stable. Critical for tall steel buildings. Standard in AISC.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "capacity_design_predictable_failure",
+      "if": ["seismic design uses capacity philosophy"],
+      "then": ["failure happens in ductile elements first"],
+      "why": "Beams yield in flexure (ductile); columns kept elastic; foundation strongest. Hierarchy. Energy dissipates in beams. Standard modern seismic.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "LRFD_probabilistic_safety",
+      "if": ["design uses LRFD"],
+      "then": ["safety factors reflect probabilistic load + resistance"],
+      "why": "φ < 1 for resistance uncertainty. γ > 1 for load uncertainty. Modern reliability-based design. Probabilistic foundation.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "performance_based_design_beyond_code_minimum",
+      "if": ["facility is critical (hospital, data center)"],
+      "then": ["performance-based design beats code-minimum"],
+      "why": "Code-minimum: collapse prevention at design earthquake. PBD: operational at higher hazards. Standard for critical facilities. Cost: explicit modelling.",
+      "soundness_category": "extensional_equivalence"
+    }
+  ]
+}

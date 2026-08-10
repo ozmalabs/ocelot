@@ -1,0 +1,1933 @@
+{
+  "id": "literary_analysis_driving",
+  "version": "1.2.0",
+  "depends_on": [],
+  "description": "The comprehension->analysis process as a GOAL-DRIVEN GRAPH FIXPOINT. read_and_comprehend's ~10 hand-sequenced Python faculty calls + produce_analysis's section marshalling are DELETED; each faculty is a STAGE fired by its OWN graph precondition (this seed's la_dispatch_* rules), and the run_rules fixpoint sequences them by data-dependency. The analysis_advance Reflex (a dispatched AnalysisStage exists) runs the stage's thin non-branching Python executor (domains/reading_drive.py's _advance_dispatched_stage), exactly the _question_pursue_advance precedent. Stages, the report Goal + the Source are minted per-drive by the thin adapter (reading_drive.run_reading_flow); the rules/reflex are the static graph-resident sequencer. || ASYNC ORDER-N (v1.1.0, 2026-07-07): the FIRST-PASS stages (spine + the situation-model build: infer_goal/discourse/infer_causal/enabling/centrality/tom) keep their ordered, one-shot dispatch (each fires once when its data-precondition holds, in order). The ORDER-N collapses (narrative arc, trope/theme, executive monitoring) are made ASYNC + REVISABLE: their dispatch rules are MATERIAL-triggered (no prior-stage-`done` latch) and new la_rearm_* rules re-arm them (done -> pending) when their input-node set GROWS or a coherence break flags a GlobalIncoherence -- the exact sd_redecode/codebook_epoch re-arm-on-growth mechanism, mirrored for the reading. The reading now streams the first pass in order while the higher-order recognitions hover async, re-collapsing on their own material triggers over ticks. || FLOW-SCOPED REARM (v1.2.0, Wave 1A, 2026-07-10): on a PERSISTENT substrate (many successive `run_reading_flow` calls, different texts), the la_rearm_* rules' epoch Count()s were GLOBAL (Count(SmEvent)/Count(NarrativeRole)/Count(GlobalIncoherence)/Count(SmEntity) over the WHOLE substrate), so a LATER flow's own growth could re-arm and SUPERSEDE an EARLIER, already-returned flow's narrative/trope/monitoring stage (deleting its Trope/NarrativeRole/Claim nodes). Each Count is now `Count(Filter(NodesOfType(T), fx, Eq(Attr(fx,'unit'), Attr(stage,'flow'))))` -- scoped to the REARMING STAGE's own flow (the `flow` attr `reading_drive._mint_stages` stamps on every AnalysisStage, matched against `unit`, the SAME per-flow identity `ce.read_into_situation_model`/`dc.read_discourse`/`ns.recognize_narrative_structure`/`tt.recognize_tropes_and_theme` now stamp when called with `unit=ad.flow`). A single-flow substrate is byte-identical (every node shares one flow/unit value, so the Filter is a no-op).",
+  "microtheory": {
+    "name": "literary_analysis_driving",
+    "description": "Source + report-Goal -> comprehension/production stages fire on their data-dependencies -> analysis emerges as graph state (Claim nodes), tick/rule-driven."
+  },
+  "nodes": [],
+  "edges": [],
+  "productions": [
+    {
+      "provenance": "seed:literary_analysis_driving:has_analysis_stage-0",
+      "src": {
+        "type": "Agent",
+        "var": "s"
+      },
+      "edge_type": "has_analysis_stage",
+      "tgt": {
+        "type": "AnalysisStage",
+        "var": "t"
+      }
+    },
+    {
+      "provenance": "seed:literary_analysis_driving:has_claim-1",
+      "src": {
+        "type": "Agent",
+        "var": "s"
+      },
+      "edge_type": "has_claim",
+      "tgt": {
+        "type": "Claim",
+        "var": "t"
+      }
+    },
+    {
+      "provenance": "seed:literary_analysis_driving:reads_source-2",
+      "src": {
+        "type": "Goal",
+        "var": "s"
+      },
+      "edge_type": "reads_source",
+      "tgt": {
+        "type": "Source",
+        "var": "t"
+      }
+    }
+  ],
+  "rules": [
+    {
+      "name": "la_dispatch_spine",
+      "comment": "Fire the 'spine' faculty stage when its graph precondition holds (see build_reading_seed.py). The DECISION-to-fire + the ORDER are this where-clause, evaluated by run_rules \u2014 never a Python faculty sequence.",
+      "match_type": "AnalysisStage",
+      "match": [
+        [
+          "ag",
+          "has_analysis_stage",
+          "stage"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "stage"
+              },
+              "key": "name"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "spine"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "stage"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "pending"
+            }
+          },
+          {
+            "type": "Exists",
+            "source": {
+              "type": "NodesOfType",
+              "node_type": "Goal"
+            },
+            "var_name": "grd",
+            "predicate": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "grd"
+                },
+                "key": "reading_report"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 1.0
+              }
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "NodesOfType",
+                "node_type": "Source"
+              }
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "stage",
+          "status",
+          "dispatched"
+        ]
+      ]
+    },
+    {
+      "name": "la_dispatch_infer_goal",
+      "comment": "Fire the 'infer_goal' faculty stage when its graph precondition holds (see build_reading_seed.py). The DECISION-to-fire + the ORDER are this where-clause, evaluated by run_rules \u2014 never a Python faculty sequence.",
+      "match_type": "AnalysisStage",
+      "match": [
+        [
+          "ag",
+          "has_analysis_stage",
+          "stage"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "stage"
+              },
+              "key": "name"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "infer_goal"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "stage"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "pending"
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "NodesOfType",
+                "node_type": "SmEntity"
+              }
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "stage",
+          "status",
+          "dispatched"
+        ]
+      ]
+    },
+    {
+      "name": "la_dispatch_discourse",
+      "comment": "Fire the 'discourse' faculty stage when its graph precondition holds (see build_reading_seed.py). The DECISION-to-fire + the ORDER are this where-clause, evaluated by run_rules \u2014 never a Python faculty sequence.",
+      "match_type": "AnalysisStage",
+      "match": [
+        [
+          "ag",
+          "has_analysis_stage",
+          "stage"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "stage"
+              },
+              "key": "name"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "discourse"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "stage"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "pending"
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "NodesOfType",
+                "node_type": "SmEntity"
+              }
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "stage",
+          "status",
+          "dispatched"
+        ]
+      ]
+    },
+    {
+      "name": "la_dispatch_infer_causal",
+      "comment": "Fire the 'infer_causal' faculty stage when its graph precondition holds (see build_reading_seed.py). The DECISION-to-fire + the ORDER are this where-clause, evaluated by run_rules \u2014 never a Python faculty sequence.",
+      "match_type": "AnalysisStage",
+      "match": [
+        [
+          "ag",
+          "has_analysis_stage",
+          "stage"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "stage"
+              },
+              "key": "name"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "infer_causal"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "stage"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "pending"
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "NodesOfType",
+                "node_type": "DiscourseEvent"
+              }
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "stage",
+          "status",
+          "dispatched"
+        ]
+      ]
+    },
+    {
+      "name": "la_dispatch_enabling",
+      "comment": "Fire the 'enabling' faculty stage when its graph precondition holds (see build_reading_seed.py). The DECISION-to-fire + the ORDER are this where-clause, evaluated by run_rules \u2014 never a Python faculty sequence.",
+      "match_type": "AnalysisStage",
+      "match": [
+        [
+          "ag",
+          "has_analysis_stage",
+          "stage"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "stage"
+              },
+              "key": "name"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "enabling"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "stage"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "pending"
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "NodesOfType",
+                "node_type": "DiscourseEvent"
+              }
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0
+            }
+          },
+          {
+            "type": "Exists",
+            "source": {
+              "type": "NodesOfType",
+              "node_type": "AnalysisStage"
+            },
+            "var_name": "sd1",
+            "predicate": {
+              "type": "And",
+              "items": [
+                {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "sd1"
+                    },
+                    "key": "name"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": "infer_goal"
+                  }
+                },
+                {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "sd1"
+                    },
+                    "key": "status"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": "done"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "type": "Exists",
+            "source": {
+              "type": "NodesOfType",
+              "node_type": "AnalysisStage"
+            },
+            "var_name": "sd2",
+            "predicate": {
+              "type": "And",
+              "items": [
+                {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "sd2"
+                    },
+                    "key": "name"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": "infer_causal"
+                  }
+                },
+                {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "sd2"
+                    },
+                    "key": "status"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": "done"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "stage",
+          "status",
+          "dispatched"
+        ]
+      ]
+    },
+    {
+      "name": "la_dispatch_centrality",
+      "comment": "Fire the 'centrality' faculty stage when its graph precondition holds (see build_reading_seed.py). The DECISION-to-fire + the ORDER are this where-clause, evaluated by run_rules \u2014 never a Python faculty sequence.",
+      "match_type": "AnalysisStage",
+      "match": [
+        [
+          "ag",
+          "has_analysis_stage",
+          "stage"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "stage"
+              },
+              "key": "name"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "centrality"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "stage"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "pending"
+            }
+          },
+          {
+            "type": "Exists",
+            "source": {
+              "type": "NodesOfType",
+              "node_type": "AnalysisStage"
+            },
+            "var_name": "sd3",
+            "predicate": {
+              "type": "And",
+              "items": [
+                {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "sd3"
+                    },
+                    "key": "name"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": "enabling"
+                  }
+                },
+                {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "sd3"
+                    },
+                    "key": "status"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": "done"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "stage",
+          "status",
+          "dispatched"
+        ]
+      ]
+    },
+    {
+      "name": "la_dispatch_monitoring",
+      "comment": "Fire the 'monitoring' faculty stage when its graph precondition holds (see build_reading_seed.py). The DECISION-to-fire + the ORDER are this where-clause, evaluated by run_rules \u2014 never a Python faculty sequence.",
+      "match_type": "AnalysisStage",
+      "match": [
+        [
+          "ag",
+          "has_analysis_stage",
+          "stage"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "stage"
+              },
+              "key": "name"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "monitoring"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "stage"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "pending"
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "NodesOfType",
+                "node_type": "SmEntity"
+              }
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "stage",
+          "status",
+          "dispatched"
+        ]
+      ]
+    },
+    {
+      "name": "la_dispatch_tom",
+      "comment": "Fire the 'tom' faculty stage when its graph precondition holds (see build_reading_seed.py). The DECISION-to-fire + the ORDER are this where-clause, evaluated by run_rules \u2014 never a Python faculty sequence.",
+      "match_type": "AnalysisStage",
+      "match": [
+        [
+          "ag",
+          "has_analysis_stage",
+          "stage"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "stage"
+              },
+              "key": "name"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "tom"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "stage"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "pending"
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "NodesOfType",
+                "node_type": "Source"
+              }
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0
+            }
+          },
+          {
+            "type": "Exists",
+            "source": {
+              "type": "NodesOfType",
+              "node_type": "AnalysisStage"
+            },
+            "var_name": "sd4",
+            "predicate": {
+              "type": "And",
+              "items": [
+                {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "sd4"
+                    },
+                    "key": "name"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": "spine"
+                  }
+                },
+                {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "sd4"
+                    },
+                    "key": "status"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": "done"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "stage",
+          "status",
+          "dispatched"
+        ]
+      ]
+    },
+    {
+      "name": "la_dispatch_narrative",
+      "comment": "ASYNC ORDER-N (2026-07-07): the narrative arc collapse is MATERIAL-TRIGGERED, not gated behind a fixed prior-stage-`done` latch. It fires the moment its READ material EXISTS -- SmEvents (events -> arc) AND an EnablingChain backbone (which transitively guarantees infer_goal/infer_causal/discourse already ran, since enabling depends on those, so the arc sees complete inputs). The old 4 stage-done Exists gates (enabling/centrality/discourse/infer_goal done) are REPLACED by this single EnablingChain material gate. Revisability comes from la_rearm_narrative (mirrors sd_redecode): re-arm when the SmEvent set GROWS since the last collapse or a coherence break flags a GlobalIncoherence -- so the arc re-collapses over accumulating material rather than being computed once at the end.",
+      "match_type": "AnalysisStage",
+      "match": [
+        [
+          "ag",
+          "has_analysis_stage",
+          "stage"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "stage"
+              },
+              "key": "name"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "narrative"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "stage"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "pending"
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "NodesOfType",
+                "node_type": "SmEvent"
+              }
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "NodesOfType",
+                "node_type": "EnablingChain"
+              }
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "stage",
+          "status",
+          "dispatched"
+        ]
+      ]
+    },
+    {
+      "name": "la_dispatch_trope",
+      "comment": "ASYNC ORDER-N (2026-07-07): trope/theme recognition is MATERIAL-TRIGGERED off the arc it reads -- it fires the moment a NarrativeRole exists (arc -> trope), NOT gated behind a fixed 'narrative done' latch. Revised by la_rearm_trope (mirrors sd_redecode): re-arm when the NarrativeRole set GROWS or a coherence break flags a GlobalIncoherence, so the trope/theme re-collapse as the arc accumulates.",
+      "match_type": "AnalysisStage",
+      "match": [
+        [
+          "ag",
+          "has_analysis_stage",
+          "stage"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "stage"
+              },
+              "key": "name"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "trope"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "stage"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "pending"
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "NodesOfType",
+                "node_type": "NarrativeRole"
+              }
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "stage",
+          "status",
+          "dispatched"
+        ]
+      ]
+    },
+    {
+      "name": "la_dispatch_produce_frames",
+      "comment": "Fire the 'produce_frames' faculty stage when its graph precondition holds (see build_reading_seed.py). The DECISION-to-fire + the ORDER are this where-clause, evaluated by run_rules \u2014 never a Python faculty sequence.",
+      "match_type": "AnalysisStage",
+      "match": [
+        [
+          "ag",
+          "has_analysis_stage",
+          "stage"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "stage"
+              },
+              "key": "name"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "produce_frames"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "stage"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "pending"
+            }
+          },
+          {
+            "type": "Exists",
+            "source": {
+              "type": "NodesOfType",
+              "node_type": "Goal"
+            },
+            "var_name": "gpd",
+            "predicate": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "gpd"
+                },
+                "key": "produce_report"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 1.0
+              }
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "NodesOfType",
+                "node_type": "Trope"
+              }
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "stage",
+          "status",
+          "dispatched"
+        ]
+      ]
+    },
+    {
+      "name": "la_dispatch_produce_summary",
+      "comment": "Fire the 'produce_summary' faculty stage when its graph precondition holds (see build_reading_seed.py). The DECISION-to-fire + the ORDER are this where-clause, evaluated by run_rules \u2014 never a Python faculty sequence.",
+      "match_type": "AnalysisStage",
+      "match": [
+        [
+          "ag",
+          "has_analysis_stage",
+          "stage"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "stage"
+              },
+              "key": "name"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "produce_summary"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "stage"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "pending"
+            }
+          },
+          {
+            "type": "Exists",
+            "source": {
+              "type": "NodesOfType",
+              "node_type": "Goal"
+            },
+            "var_name": "gpd",
+            "predicate": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "gpd"
+                },
+                "key": "produce_report"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 1.0
+              }
+            }
+          },
+          {
+            "type": "Exists",
+            "source": {
+              "type": "NodesOfType",
+              "node_type": "AnalysisStage"
+            },
+            "var_name": "sd10",
+            "predicate": {
+              "type": "And",
+              "items": [
+                {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "sd10"
+                    },
+                    "key": "name"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": "produce_frames"
+                  }
+                },
+                {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "sd10"
+                    },
+                    "key": "status"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": "done"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "stage",
+          "status",
+          "dispatched"
+        ]
+      ]
+    },
+    {
+      "name": "la_dispatch_produce_structure",
+      "comment": "Fire the 'produce_structure' faculty stage when its graph precondition holds (see build_reading_seed.py). The DECISION-to-fire + the ORDER are this where-clause, evaluated by run_rules \u2014 never a Python faculty sequence.",
+      "match_type": "AnalysisStage",
+      "match": [
+        [
+          "ag",
+          "has_analysis_stage",
+          "stage"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "stage"
+              },
+              "key": "name"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "produce_structure"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "stage"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "pending"
+            }
+          },
+          {
+            "type": "Exists",
+            "source": {
+              "type": "NodesOfType",
+              "node_type": "Goal"
+            },
+            "var_name": "gpd",
+            "predicate": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "gpd"
+                },
+                "key": "produce_report"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 1.0
+              }
+            }
+          },
+          {
+            "type": "Exists",
+            "source": {
+              "type": "NodesOfType",
+              "node_type": "AnalysisStage"
+            },
+            "var_name": "sd11",
+            "predicate": {
+              "type": "And",
+              "items": [
+                {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "sd11"
+                    },
+                    "key": "name"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": "produce_frames"
+                  }
+                },
+                {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "sd11"
+                    },
+                    "key": "status"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": "done"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "stage",
+          "status",
+          "dispatched"
+        ]
+      ]
+    },
+    {
+      "name": "la_dispatch_produce_technique",
+      "comment": "Fire the 'produce_technique' faculty stage when its graph precondition holds (see build_reading_seed.py). The DECISION-to-fire + the ORDER are this where-clause, evaluated by run_rules \u2014 never a Python faculty sequence.",
+      "match_type": "AnalysisStage",
+      "match": [
+        [
+          "ag",
+          "has_analysis_stage",
+          "stage"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "stage"
+              },
+              "key": "name"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "produce_technique"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "stage"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "pending"
+            }
+          },
+          {
+            "type": "Exists",
+            "source": {
+              "type": "NodesOfType",
+              "node_type": "Goal"
+            },
+            "var_name": "gpd",
+            "predicate": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "gpd"
+                },
+                "key": "produce_report"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 1.0
+              }
+            }
+          },
+          {
+            "type": "Exists",
+            "source": {
+              "type": "NodesOfType",
+              "node_type": "AnalysisStage"
+            },
+            "var_name": "sd12",
+            "predicate": {
+              "type": "And",
+              "items": [
+                {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "sd12"
+                    },
+                    "key": "name"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": "produce_frames"
+                  }
+                },
+                {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "sd12"
+                    },
+                    "key": "status"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": "done"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "stage",
+          "status",
+          "dispatched"
+        ]
+      ]
+    },
+    {
+      "name": "la_dispatch_produce_theme",
+      "comment": "Fire the 'produce_theme' faculty stage when its graph precondition holds (see build_reading_seed.py). The DECISION-to-fire + the ORDER are this where-clause, evaluated by run_rules \u2014 never a Python faculty sequence.",
+      "match_type": "AnalysisStage",
+      "match": [
+        [
+          "ag",
+          "has_analysis_stage",
+          "stage"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "stage"
+              },
+              "key": "name"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "produce_theme"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "stage"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "pending"
+            }
+          },
+          {
+            "type": "Exists",
+            "source": {
+              "type": "NodesOfType",
+              "node_type": "Goal"
+            },
+            "var_name": "gpd",
+            "predicate": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "gpd"
+                },
+                "key": "produce_report"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 1.0
+              }
+            }
+          },
+          {
+            "type": "Exists",
+            "source": {
+              "type": "NodesOfType",
+              "node_type": "AnalysisStage"
+            },
+            "var_name": "sd13",
+            "predicate": {
+              "type": "And",
+              "items": [
+                {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "sd13"
+                    },
+                    "key": "name"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": "produce_frames"
+                  }
+                },
+                {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "sd13"
+                    },
+                    "key": "status"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": "done"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "stage",
+          "status",
+          "dispatched"
+        ]
+      ]
+    },
+    {
+      "name": "la_rearm_narrative",
+      "comment": "RE-ARM (2026-07-07, mirrors seeds/shape_decode_loop.json's sd_redecode / codebook_epoch): the order-N 'narrative' collapse loses its one-shot `done` latch. sd_redecode re-arms a decoded Observation to 'pending' when the CODEBOOK grew (decoded_epoch < codebook_epoch); this mirrors it for the reading: a DONE 'narrative' stage re-arms to 'pending' (so la_dispatch_narrative re-dispatches and the cortex reflex re-collapses) when its INPUT-node set has GROWN since its last collapse (input_epoch < Count(SmEvent)) OR a coherence break flagged a new GlobalIncoherence since the last collapse (coh_epoch < Count(GlobalIncoherence)) -- the hold-open / re-read insight: an order-N collapse re-collapses on a non-sequitur. input_epoch/coh_epoch are stamped mechanically by the cortex advance shim at collapse time (the grow_part_library epoch-bump precedent -- Python builder, mechanical); the DECISION to re-collapse is THIS graph rule, fired by cognitive_tick's run_rules -- never a Python re-collapse loop. Terminates at steady state exactly as sd_redecode does (input_epoch == Count once material stops growing).",
+      "match_type": "AnalysisStage",
+      "match": [
+        [
+          "ag",
+          "has_analysis_stage",
+          "stage"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "stage"
+              },
+              "key": "name"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "narrative"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "stage"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "done"
+            }
+          },
+          {
+            "type": "Or",
+            "items": [
+              {
+                "type": "Lt",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "stage"
+                  },
+                  "key": "input_epoch"
+                },
+                "b": {
+                  "type": "Count",
+                  "source": {
+                    "type": "Filter",
+                    "source": {
+                      "type": "NodesOfType",
+                      "node_type": "SmEvent"
+                    },
+                    "var_name": "fx",
+                    "predicate": {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "fx"
+                        },
+                        "key": "unit"
+                      },
+                      "b": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "stage"
+                        },
+                        "key": "flow"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "type": "Lt",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "stage"
+                  },
+                  "key": "coh_epoch"
+                },
+                "b": {
+                  "type": "Count",
+                  "source": {
+                    "type": "Filter",
+                    "source": {
+                      "type": "NodesOfType",
+                      "node_type": "GlobalIncoherence"
+                    },
+                    "var_name": "fx",
+                    "predicate": {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "fx"
+                        },
+                        "key": "unit"
+                      },
+                      "b": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "stage"
+                        },
+                        "key": "flow"
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "stage",
+          "status",
+          "pending"
+        ]
+      ]
+    },
+    {
+      "name": "la_rearm_trope",
+      "comment": "RE-ARM (2026-07-07, mirrors seeds/shape_decode_loop.json's sd_redecode / codebook_epoch): the order-N 'trope' collapse loses its one-shot `done` latch. sd_redecode re-arms a decoded Observation to 'pending' when the CODEBOOK grew (decoded_epoch < codebook_epoch); this mirrors it for the reading: a DONE 'trope' stage re-arms to 'pending' (so la_dispatch_trope re-dispatches and the cortex reflex re-collapses) when its INPUT-node set has GROWN since its last collapse (input_epoch < Count(NarrativeRole)) OR a coherence break flagged a new GlobalIncoherence since the last collapse (coh_epoch < Count(GlobalIncoherence)) -- the hold-open / re-read insight: an order-N collapse re-collapses on a non-sequitur. input_epoch/coh_epoch are stamped mechanically by the cortex advance shim at collapse time (the grow_part_library epoch-bump precedent -- Python builder, mechanical); the DECISION to re-collapse is THIS graph rule, fired by cognitive_tick's run_rules -- never a Python re-collapse loop. Terminates at steady state exactly as sd_redecode does (input_epoch == Count once material stops growing).",
+      "match_type": "AnalysisStage",
+      "match": [
+        [
+          "ag",
+          "has_analysis_stage",
+          "stage"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "stage"
+              },
+              "key": "name"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "trope"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "stage"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "done"
+            }
+          },
+          {
+            "type": "Or",
+            "items": [
+              {
+                "type": "Lt",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "stage"
+                  },
+                  "key": "input_epoch"
+                },
+                "b": {
+                  "type": "Count",
+                  "source": {
+                    "type": "Filter",
+                    "source": {
+                      "type": "NodesOfType",
+                      "node_type": "NarrativeRole"
+                    },
+                    "var_name": "fx",
+                    "predicate": {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "fx"
+                        },
+                        "key": "unit"
+                      },
+                      "b": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "stage"
+                        },
+                        "key": "flow"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "type": "Lt",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "stage"
+                  },
+                  "key": "coh_epoch"
+                },
+                "b": {
+                  "type": "Count",
+                  "source": {
+                    "type": "Filter",
+                    "source": {
+                      "type": "NodesOfType",
+                      "node_type": "GlobalIncoherence"
+                    },
+                    "var_name": "fx",
+                    "predicate": {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "fx"
+                        },
+                        "key": "unit"
+                      },
+                      "b": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "stage"
+                        },
+                        "key": "flow"
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "stage",
+          "status",
+          "pending"
+        ]
+      ]
+    },
+    {
+      "name": "la_rearm_monitoring",
+      "comment": "RE-ARM (2026-07-07, mirrors seeds/shape_decode_loop.json's sd_redecode / codebook_epoch): the order-N 'monitoring' collapse loses its one-shot `done` latch. sd_redecode re-arms a decoded Observation to 'pending' when the CODEBOOK grew (decoded_epoch < codebook_epoch); this mirrors it for the reading: a DONE 'monitoring' stage re-arms to 'pending' (so la_dispatch_monitoring re-dispatches and the cortex reflex re-collapses) when its INPUT-node set has GROWN since its last collapse (input_epoch < Count(SmEntity)) . input_epoch/coh_epoch are stamped mechanically by the cortex advance shim at collapse time (the grow_part_library epoch-bump precedent -- Python builder, mechanical); the DECISION to re-collapse is THIS graph rule, fired by cognitive_tick's run_rules -- never a Python re-collapse loop. Terminates at steady state exactly as sd_redecode does (input_epoch == Count once material stops growing).",
+      "match_type": "AnalysisStage",
+      "match": [
+        [
+          "ag",
+          "has_analysis_stage",
+          "stage"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "stage"
+              },
+              "key": "name"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "monitoring"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "stage"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "done"
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "stage"
+              },
+              "key": "input_epoch"
+            },
+            "b": {
+              "type": "Count",
+              "source": {
+                "type": "Filter",
+                "source": {
+                  "type": "NodesOfType",
+                  "node_type": "SmEntity"
+                },
+                "var_name": "fx",
+                "predicate": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "fx"
+                    },
+                    "key": "unit"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "stage"
+                    },
+                    "key": "flow"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "stage",
+          "status",
+          "pending"
+        ]
+      ]
+    }
+  ],
+  "reflexes": [
+    {
+      "name": "analysis_advance",
+      "stimulus": {
+        "type": "Gte",
+        "a": {
+          "type": "Count",
+          "source": {
+            "type": "Filter",
+            "source": {
+              "type": "NodesOfType",
+              "node_type": "AnalysisStage"
+            },
+            "var_name": "x",
+            "predicate": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "x"
+                },
+                "key": "status"
+              },
+              "b": {
+                "type": "Lit",
+                "value": "dispatched"
+              }
+            }
+          }
+        },
+        "b": {
+          "type": "Lit",
+          "value": 1
+        }
+      },
+      "response": "analysis_advance",
+      "refractory_ticks": 0
+    }
+  ]
+}

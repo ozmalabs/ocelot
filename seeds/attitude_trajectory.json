@@ -1,0 +1,1794 @@
+{
+ "id": "attitude_trajectory",
+ "version": "1.0.0",
+ "depends_on": [],
+ "area": "attitude_trajectory_cortex",
+ "latency_class": "hard_realtime",
+ "nodes": [
+  {
+   "local_id": 1,
+   "type": "AttitudeTrajectoryPolicy",
+   "attrs": {
+    "full_turn_rad": 6.283185307179586,
+    "spin_start_time_s": 1.0,
+    "spin_duration_s": 3.0,
+    "target_vx_m_s": 80.0,
+    "target_vy_m_s": 0.0,
+    "velocity_gain_per_s": 0.65,
+    "axial_drag_trim_m_s2": 3.8,
+    "axial_acceleration_to_command": 0.041666666666666664,
+    "lateral_acceleration_to_command": 0.03,
+    "yaw_angle_gain": 1.25,
+    "yaw_rate_gain": 0.32
+   }
+  }
+ ],
+ "edges": [
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "type": "has_attitude_trajectory_policy",
+   "tgt": {
+    "local": 1
+   },
+   "attrs": {}
+  }
+ ],
+ "productions": [],
+ "rules": [
+  {
+   "name": "attitude_trajectory_system1_vectoring_control",
+   "area": "attitude_trajectory_cortex",
+   "latency_class": "hard_realtime",
+   "batch": false,
+   "match": [
+    [
+     "agent",
+     "has_attitude_trajectory_policy",
+     "policy"
+    ],
+    [
+     "agent",
+     "has_attitude_trajectory_episode",
+     "episode"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "episode"
+         },
+         "key": "request_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "episode"
+         },
+         "key": "decision_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "episode"
+         },
+         "key": "action_ready"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "episode",
+     "manoeuvre_phase",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Lt",
+        "a": {
+         "type": "Min",
+         "items": [
+          {
+           "type": "Max",
+           "items": [
+            {
+             "type": "Div",
+             "a": {
+              "type": "Minus",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "episode"
+                 },
+                 "key": "state_time_s"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0.0
+                }
+               ]
+              },
+              "b": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "policy"
+                 },
+                 "key": "spin_start_time_s"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0.0
+                }
+               ]
+              }
+             },
+             "b": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "policy"
+                },
+                "key": "spin_duration_s"
+               },
+               {
+                "type": "Lit",
+                "value": 0.0
+               }
+              ]
+             }
+            },
+            {
+             "type": "Lit",
+             "value": 0.0
+            }
+           ]
+          },
+          {
+           "type": "Lit",
+           "value": 1.0
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       "then": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Gt",
+         "a": {
+          "type": "Min",
+          "items": [
+           {
+            "type": "Max",
+            "items": [
+             {
+              "type": "Div",
+              "a": {
+               "type": "Minus",
+               "a": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "episode"
+                  },
+                  "key": "state_time_s"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0.0
+                 }
+                ]
+               },
+               "b": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "policy"
+                  },
+                  "key": "spin_start_time_s"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0.0
+                 }
+                ]
+               }
+              },
+              "b": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "policy"
+                 },
+                 "key": "spin_duration_s"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0.0
+                }
+               ]
+              }
+             },
+             {
+              "type": "Lit",
+              "value": 0.0
+             }
+            ]
+           },
+           {
+            "type": "Lit",
+            "value": 1.0
+           }
+          ]
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        },
+        "then": {
+         "type": "Lit",
+         "value": 1.0
+        },
+        "other": {
+         "type": "Lit",
+         "value": 0.0
+        }
+       },
+       "other": {
+        "type": "Lit",
+        "value": 2.0
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "episode",
+     "target_unwrapped_yaw_rad",
+     {
+      "__term__": {
+       "type": "Times",
+       "items": [
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "policy"
+           },
+           "key": "full_turn_rad"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        },
+        {
+         "type": "Min",
+         "items": [
+          {
+           "type": "Max",
+           "items": [
+            {
+             "type": "Div",
+             "a": {
+              "type": "Minus",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "episode"
+                 },
+                 "key": "state_time_s"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0.0
+                }
+               ]
+              },
+              "b": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "policy"
+                 },
+                 "key": "spin_start_time_s"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0.0
+                }
+               ]
+              }
+             },
+             "b": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "policy"
+                },
+                "key": "spin_duration_s"
+               },
+               {
+                "type": "Lit",
+                "value": 0.0
+               }
+              ]
+             }
+            },
+            {
+             "type": "Lit",
+             "value": 0.0
+            }
+           ]
+          },
+          {
+           "type": "Lit",
+           "value": 1.0
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "episode",
+     "target_yaw_rate_rad_s",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Gt",
+          "a": {
+           "type": "Min",
+           "items": [
+            {
+             "type": "Max",
+             "items": [
+              {
+               "type": "Div",
+               "a": {
+                "type": "Minus",
+                "a": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "episode"
+                   },
+                   "key": "state_time_s"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0.0
+                  }
+                 ]
+                },
+                "b": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "policy"
+                   },
+                   "key": "spin_start_time_s"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0.0
+                  }
+                 ]
+                }
+               },
+               "b": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "policy"
+                  },
+                  "key": "spin_duration_s"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0.0
+                 }
+                ]
+               }
+              },
+              {
+               "type": "Lit",
+               "value": 0.0
+              }
+             ]
+            },
+            {
+             "type": "Lit",
+             "value": 1.0
+            }
+           ]
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0.0
+          }
+         },
+         {
+          "type": "Lt",
+          "a": {
+           "type": "Min",
+           "items": [
+            {
+             "type": "Max",
+             "items": [
+              {
+               "type": "Div",
+               "a": {
+                "type": "Minus",
+                "a": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "episode"
+                   },
+                   "key": "state_time_s"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0.0
+                  }
+                 ]
+                },
+                "b": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "policy"
+                   },
+                   "key": "spin_start_time_s"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0.0
+                  }
+                 ]
+                }
+               },
+               "b": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "policy"
+                  },
+                  "key": "spin_duration_s"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0.0
+                 }
+                ]
+               }
+              },
+              {
+               "type": "Lit",
+               "value": 0.0
+              }
+             ]
+            },
+            {
+             "type": "Lit",
+             "value": 1.0
+            }
+           ]
+          },
+          "b": {
+           "type": "Lit",
+           "value": 1.0
+          }
+         }
+        ]
+       },
+       "then": {
+        "type": "Div",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "policy"
+           },
+           "key": "full_turn_rad"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        },
+        "b": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "policy"
+           },
+           "key": "spin_duration_s"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        }
+       },
+       "other": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "episode",
+     "trajectory_error_vx_m_s",
+     {
+      "__term__": {
+       "type": "Minus",
+       "a": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "policy"
+          },
+          "key": "target_vx_m_s"
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       },
+       "b": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "episode"
+          },
+          "key": "state_vx_m_s"
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "episode",
+     "trajectory_error_vy_m_s",
+     {
+      "__term__": {
+       "type": "Minus",
+       "a": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "policy"
+          },
+          "key": "target_vy_m_s"
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       },
+       "b": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "episode"
+          },
+          "key": "state_vy_m_s"
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "episode",
+     "attitude_error_rad",
+     {
+      "__term__": {
+       "type": "Minus",
+       "a": {
+        "type": "Times",
+        "items": [
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "policy"
+            },
+            "key": "full_turn_rad"
+           },
+           {
+            "type": "Lit",
+            "value": 0.0
+           }
+          ]
+         },
+         {
+          "type": "Min",
+          "items": [
+           {
+            "type": "Max",
+            "items": [
+             {
+              "type": "Div",
+              "a": {
+               "type": "Minus",
+               "a": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "episode"
+                  },
+                  "key": "state_time_s"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0.0
+                 }
+                ]
+               },
+               "b": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "policy"
+                  },
+                  "key": "spin_start_time_s"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0.0
+                 }
+                ]
+               }
+              },
+              "b": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "policy"
+                 },
+                 "key": "spin_duration_s"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0.0
+                }
+               ]
+              }
+             },
+             {
+              "type": "Lit",
+              "value": 0.0
+             }
+            ]
+           },
+           {
+            "type": "Lit",
+            "value": 1.0
+           }
+          ]
+         }
+        ]
+       },
+       "b": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "episode"
+          },
+          "key": "state_unwrapped_yaw_rad"
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "episode",
+     "command_throttle",
+     {
+      "__term__": {
+       "type": "Min",
+       "items": [
+        {
+         "type": "Max",
+         "items": [
+          {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "policy"
+               },
+               "key": "axial_acceleration_to_command"
+              },
+              {
+               "type": "Lit",
+               "value": 0.0
+              }
+             ]
+            },
+            {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Times",
+               "items": [
+                {
+                 "type": "Cos",
+                 "arg": {
+                  "type": "Plus",
+                  "items": [
+                   {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "episode"
+                    },
+                    "key": "state_unwrapped_yaw_rad"
+                   },
+                   {
+                    "type": "Lit",
+                    "value": 0.0
+                   }
+                  ]
+                 }
+                },
+                {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Plus",
+                   "items": [
+                    {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "policy"
+                     },
+                     "key": "axial_drag_trim_m_s2"
+                    },
+                    {
+                     "type": "Lit",
+                     "value": 0.0
+                    }
+                   ]
+                  },
+                  {
+                   "type": "Times",
+                   "items": [
+                    {
+                     "type": "Plus",
+                     "items": [
+                      {
+                       "type": "Attr",
+                       "node": {
+                        "type": "Var",
+                        "name": "policy"
+                       },
+                       "key": "velocity_gain_per_s"
+                      },
+                      {
+                       "type": "Lit",
+                       "value": 0.0
+                      }
+                     ]
+                    },
+                    {
+                     "type": "Minus",
+                     "a": {
+                      "type": "Plus",
+                      "items": [
+                       {
+                        "type": "Attr",
+                        "node": {
+                         "type": "Var",
+                         "name": "policy"
+                        },
+                        "key": "target_vx_m_s"
+                       },
+                       {
+                        "type": "Lit",
+                        "value": 0.0
+                       }
+                      ]
+                     },
+                     "b": {
+                      "type": "Plus",
+                      "items": [
+                       {
+                        "type": "Attr",
+                        "node": {
+                         "type": "Var",
+                         "name": "episode"
+                        },
+                        "key": "state_vx_m_s"
+                       },
+                       {
+                        "type": "Lit",
+                        "value": 0.0
+                       }
+                      ]
+                     }
+                    }
+                   ]
+                  }
+                 ]
+                }
+               ]
+              },
+              {
+               "type": "Times",
+               "items": [
+                {
+                 "type": "Sin",
+                 "arg": {
+                  "type": "Plus",
+                  "items": [
+                   {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "episode"
+                    },
+                    "key": "state_unwrapped_yaw_rad"
+                   },
+                   {
+                    "type": "Lit",
+                    "value": 0.0
+                   }
+                  ]
+                 }
+                },
+                {
+                 "type": "Times",
+                 "items": [
+                  {
+                   "type": "Plus",
+                   "items": [
+                    {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "policy"
+                     },
+                     "key": "velocity_gain_per_s"
+                    },
+                    {
+                     "type": "Lit",
+                     "value": 0.0
+                    }
+                   ]
+                  },
+                  {
+                   "type": "Minus",
+                   "a": {
+                    "type": "Plus",
+                    "items": [
+                     {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "policy"
+                      },
+                      "key": "target_vy_m_s"
+                     },
+                     {
+                      "type": "Lit",
+                      "value": 0.0
+                     }
+                    ]
+                   },
+                   "b": {
+                    "type": "Plus",
+                    "items": [
+                     {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "episode"
+                      },
+                      "key": "state_vy_m_s"
+                     },
+                     {
+                      "type": "Lit",
+                      "value": 0.0
+                     }
+                    ]
+                   }
+                  }
+                 ]
+                }
+               ]
+              }
+             ]
+            }
+           ]
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        },
+        {
+         "type": "Lit",
+         "value": 1.0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "episode",
+     "command_lateral_vector",
+     {
+      "__term__": {
+       "type": "Min",
+       "items": [
+        {
+         "type": "Max",
+         "items": [
+          {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "policy"
+               },
+               "key": "lateral_acceleration_to_command"
+              },
+              {
+               "type": "Lit",
+               "value": 0.0
+              }
+             ]
+            },
+            {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Times",
+               "items": [
+                {
+                 "type": "Lit",
+                 "value": -1.0
+                },
+                {
+                 "type": "Sin",
+                 "arg": {
+                  "type": "Plus",
+                  "items": [
+                   {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "episode"
+                    },
+                    "key": "state_unwrapped_yaw_rad"
+                   },
+                   {
+                    "type": "Lit",
+                    "value": 0.0
+                   }
+                  ]
+                 }
+                },
+                {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Plus",
+                   "items": [
+                    {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "policy"
+                     },
+                     "key": "axial_drag_trim_m_s2"
+                    },
+                    {
+                     "type": "Lit",
+                     "value": 0.0
+                    }
+                   ]
+                  },
+                  {
+                   "type": "Times",
+                   "items": [
+                    {
+                     "type": "Plus",
+                     "items": [
+                      {
+                       "type": "Attr",
+                       "node": {
+                        "type": "Var",
+                        "name": "policy"
+                       },
+                       "key": "velocity_gain_per_s"
+                      },
+                      {
+                       "type": "Lit",
+                       "value": 0.0
+                      }
+                     ]
+                    },
+                    {
+                     "type": "Minus",
+                     "a": {
+                      "type": "Plus",
+                      "items": [
+                       {
+                        "type": "Attr",
+                        "node": {
+                         "type": "Var",
+                         "name": "policy"
+                        },
+                        "key": "target_vx_m_s"
+                       },
+                       {
+                        "type": "Lit",
+                        "value": 0.0
+                       }
+                      ]
+                     },
+                     "b": {
+                      "type": "Plus",
+                      "items": [
+                       {
+                        "type": "Attr",
+                        "node": {
+                         "type": "Var",
+                         "name": "episode"
+                        },
+                        "key": "state_vx_m_s"
+                       },
+                       {
+                        "type": "Lit",
+                        "value": 0.0
+                       }
+                      ]
+                     }
+                    }
+                   ]
+                  }
+                 ]
+                }
+               ]
+              },
+              {
+               "type": "Times",
+               "items": [
+                {
+                 "type": "Cos",
+                 "arg": {
+                  "type": "Plus",
+                  "items": [
+                   {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "episode"
+                    },
+                    "key": "state_unwrapped_yaw_rad"
+                   },
+                   {
+                    "type": "Lit",
+                    "value": 0.0
+                   }
+                  ]
+                 }
+                },
+                {
+                 "type": "Times",
+                 "items": [
+                  {
+                   "type": "Plus",
+                   "items": [
+                    {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "policy"
+                     },
+                     "key": "velocity_gain_per_s"
+                    },
+                    {
+                     "type": "Lit",
+                     "value": 0.0
+                    }
+                   ]
+                  },
+                  {
+                   "type": "Minus",
+                   "a": {
+                    "type": "Plus",
+                    "items": [
+                     {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "policy"
+                      },
+                      "key": "target_vy_m_s"
+                     },
+                     {
+                      "type": "Lit",
+                      "value": 0.0
+                     }
+                    ]
+                   },
+                   "b": {
+                    "type": "Plus",
+                    "items": [
+                     {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "episode"
+                      },
+                      "key": "state_vy_m_s"
+                     },
+                     {
+                      "type": "Lit",
+                      "value": 0.0
+                     }
+                    ]
+                   }
+                  }
+                 ]
+                }
+               ]
+              }
+             ]
+            }
+           ]
+          },
+          {
+           "type": "Lit",
+           "value": -1.0
+          }
+         ]
+        },
+        {
+         "type": "Lit",
+         "value": 1.0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "episode",
+     "command_yaw_vector",
+     {
+      "__term__": {
+       "type": "Min",
+       "items": [
+        {
+         "type": "Max",
+         "items": [
+          {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "policy"
+                 },
+                 "key": "yaw_angle_gain"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0.0
+                }
+               ]
+              },
+              {
+               "type": "Minus",
+               "a": {
+                "type": "Times",
+                "items": [
+                 {
+                  "type": "Plus",
+                  "items": [
+                   {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "policy"
+                    },
+                    "key": "full_turn_rad"
+                   },
+                   {
+                    "type": "Lit",
+                    "value": 0.0
+                   }
+                  ]
+                 },
+                 {
+                  "type": "Min",
+                  "items": [
+                   {
+                    "type": "Max",
+                    "items": [
+                     {
+                      "type": "Div",
+                      "a": {
+                       "type": "Minus",
+                       "a": {
+                        "type": "Plus",
+                        "items": [
+                         {
+                          "type": "Attr",
+                          "node": {
+                           "type": "Var",
+                           "name": "episode"
+                          },
+                          "key": "state_time_s"
+                         },
+                         {
+                          "type": "Lit",
+                          "value": 0.0
+                         }
+                        ]
+                       },
+                       "b": {
+                        "type": "Plus",
+                        "items": [
+                         {
+                          "type": "Attr",
+                          "node": {
+                           "type": "Var",
+                           "name": "policy"
+                          },
+                          "key": "spin_start_time_s"
+                         },
+                         {
+                          "type": "Lit",
+                          "value": 0.0
+                         }
+                        ]
+                       }
+                      },
+                      "b": {
+                       "type": "Plus",
+                       "items": [
+                        {
+                         "type": "Attr",
+                         "node": {
+                          "type": "Var",
+                          "name": "policy"
+                         },
+                         "key": "spin_duration_s"
+                        },
+                        {
+                         "type": "Lit",
+                         "value": 0.0
+                        }
+                       ]
+                      }
+                     },
+                     {
+                      "type": "Lit",
+                      "value": 0.0
+                     }
+                    ]
+                   },
+                   {
+                    "type": "Lit",
+                    "value": 1.0
+                   }
+                  ]
+                 }
+                ]
+               },
+               "b": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "episode"
+                  },
+                  "key": "state_unwrapped_yaw_rad"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0.0
+                 }
+                ]
+               }
+              }
+             ]
+            },
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "policy"
+                 },
+                 "key": "yaw_rate_gain"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0.0
+                }
+               ]
+              },
+              {
+               "type": "Minus",
+               "a": {
+                "type": "IfThenElse",
+                "cond": {
+                 "type": "And",
+                 "items": [
+                  {
+                   "type": "Gt",
+                   "a": {
+                    "type": "Min",
+                    "items": [
+                     {
+                      "type": "Max",
+                      "items": [
+                       {
+                        "type": "Div",
+                        "a": {
+                         "type": "Minus",
+                         "a": {
+                          "type": "Plus",
+                          "items": [
+                           {
+                            "type": "Attr",
+                            "node": {
+                             "type": "Var",
+                             "name": "episode"
+                            },
+                            "key": "state_time_s"
+                           },
+                           {
+                            "type": "Lit",
+                            "value": 0.0
+                           }
+                          ]
+                         },
+                         "b": {
+                          "type": "Plus",
+                          "items": [
+                           {
+                            "type": "Attr",
+                            "node": {
+                             "type": "Var",
+                             "name": "policy"
+                            },
+                            "key": "spin_start_time_s"
+                           },
+                           {
+                            "type": "Lit",
+                            "value": 0.0
+                           }
+                          ]
+                         }
+                        },
+                        "b": {
+                         "type": "Plus",
+                         "items": [
+                          {
+                           "type": "Attr",
+                           "node": {
+                            "type": "Var",
+                            "name": "policy"
+                           },
+                           "key": "spin_duration_s"
+                          },
+                          {
+                           "type": "Lit",
+                           "value": 0.0
+                          }
+                         ]
+                        }
+                       },
+                       {
+                        "type": "Lit",
+                        "value": 0.0
+                       }
+                      ]
+                     },
+                     {
+                      "type": "Lit",
+                      "value": 1.0
+                     }
+                    ]
+                   },
+                   "b": {
+                    "type": "Lit",
+                    "value": 0.0
+                   }
+                  },
+                  {
+                   "type": "Lt",
+                   "a": {
+                    "type": "Min",
+                    "items": [
+                     {
+                      "type": "Max",
+                      "items": [
+                       {
+                        "type": "Div",
+                        "a": {
+                         "type": "Minus",
+                         "a": {
+                          "type": "Plus",
+                          "items": [
+                           {
+                            "type": "Attr",
+                            "node": {
+                             "type": "Var",
+                             "name": "episode"
+                            },
+                            "key": "state_time_s"
+                           },
+                           {
+                            "type": "Lit",
+                            "value": 0.0
+                           }
+                          ]
+                         },
+                         "b": {
+                          "type": "Plus",
+                          "items": [
+                           {
+                            "type": "Attr",
+                            "node": {
+                             "type": "Var",
+                             "name": "policy"
+                            },
+                            "key": "spin_start_time_s"
+                           },
+                           {
+                            "type": "Lit",
+                            "value": 0.0
+                           }
+                          ]
+                         }
+                        },
+                        "b": {
+                         "type": "Plus",
+                         "items": [
+                          {
+                           "type": "Attr",
+                           "node": {
+                            "type": "Var",
+                            "name": "policy"
+                           },
+                           "key": "spin_duration_s"
+                          },
+                          {
+                           "type": "Lit",
+                           "value": 0.0
+                          }
+                         ]
+                        }
+                       },
+                       {
+                        "type": "Lit",
+                        "value": 0.0
+                       }
+                      ]
+                     },
+                     {
+                      "type": "Lit",
+                      "value": 1.0
+                     }
+                    ]
+                   },
+                   "b": {
+                    "type": "Lit",
+                    "value": 1.0
+                   }
+                  }
+                 ]
+                },
+                "then": {
+                 "type": "Div",
+                 "a": {
+                  "type": "Plus",
+                  "items": [
+                   {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "policy"
+                    },
+                    "key": "full_turn_rad"
+                   },
+                   {
+                    "type": "Lit",
+                    "value": 0.0
+                   }
+                  ]
+                 },
+                 "b": {
+                  "type": "Plus",
+                  "items": [
+                   {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "policy"
+                    },
+                    "key": "spin_duration_s"
+                   },
+                   {
+                    "type": "Lit",
+                    "value": 0.0
+                   }
+                  ]
+                 }
+                },
+                "other": {
+                 "type": "Lit",
+                 "value": 0.0
+                }
+               },
+               "b": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "episode"
+                  },
+                  "key": "state_yaw_rate_rad_s"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0.0
+                 }
+                ]
+               }
+              }
+             ]
+            }
+           ]
+          },
+          {
+           "type": "Lit",
+           "value": -1.0
+          }
+         ]
+        },
+        {
+         "type": "Lit",
+         "value": 1.0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "episode",
+     "decision_seq",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "episode"
+         },
+         "key": "request_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "episode",
+     "action_ready",
+     1.0
+    ]
+   ]
+  }
+ ]
+}

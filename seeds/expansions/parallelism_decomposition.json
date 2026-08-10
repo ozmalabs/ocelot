@@ -1,0 +1,106 @@
+{
+  "id": "parallelism_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "slice",
+  "in_microtheory": "video_coding_theory",
+  "description": "Codec parallelism mechanisms decomposed. Slices (H.264/H.265), tiles (H.265/AV1/VVC), wavefront parallel processing, and subpictures (VVC) provide independent decoding units that can run on parallel cores. Each mechanism trades compression efficiency for parallelism — independent units can't share prediction state. The right choice depends on whether the parallelism is for decode-side scaling or error-resilience.",
+  "sub_mechanisms": [
+    {
+      "name": "slice_independence",
+      "definition": "Each slice's syntax decoding (CABAC contexts, prediction state) is independent of other slices in the same frame. Inter prediction across slices is allowed.",
+      "why": "Lets multiple cores decode different slices in parallel. The independence is at the syntax level only; reconstruction can still reference cross-slice samples for inter prediction. Compression cost: each slice carries its own header + initialised CABAC.",
+      "category": "parallelism_mechanism"
+    },
+    {
+      "name": "slice_error_resilience",
+      "definition": "If one slice's data is corrupted in transmission, only that slice fails to decode; other slices in the same frame decode normally.",
+      "why": "Slices have a packet-loss-recovery role independent of parallelism. Streaming systems use slices to localise damage; a 10% packet loss might lose 10% of the frame instead of the whole frame. Used heavily in error-prone environments (mobile, satellite).",
+      "category": "parallelism_mechanism"
+    },
+    {
+      "name": "tile_partition",
+      "definition": "Rectangular sub-regions of a frame (column-wise, row-wise, or both). Tile boundaries can break ALL prediction (no inter-tile referencing) for full independence, or be 'loose' allowing in-loop filter spanning.",
+      "why": "Tiles target decode parallelism more directly than slices: tile boundaries align on CTU grid making per-tile decoding cleanly parallelisable. AV1, VVC, and H.265 all support tiles for this reason.",
+      "category": "parallelism_mechanism"
+    },
+    {
+      "name": "wavefront_parallel_processing",
+      "definition": "Within a tile (or whole frame), CTU rows are processed in a staggered pattern: row N's CTU starts after row N-1's same-position CTU has finished + 1 CTU lag. Per-row CABAC state is propagated by the encoder.",
+      "why": "Captures decode parallelism with much less syntax cost than slices/tiles: ~2x parallelism gain on multi-core decoders without the per-slice header overhead. The 1-CTU lag accounts for inter-row top-right reference dependency in intra prediction.",
+      "category": "parallelism_mechanism"
+    },
+    {
+      "name": "tile_groups",
+      "definition": "VVC and AV1 group tiles into 'tile groups' that share NAL units. A tile group is the bitstream-level unit; individual tiles within share the same NAL but may be independently decodable.",
+      "why": "Reduces NAL unit overhead (one start code + header for the group instead of per tile). Particularly important for high-tile-count configurations where per-tile NAL would dominate.",
+      "category": "parallelism_mechanism"
+    },
+    {
+      "name": "subpicture_independence",
+      "definition": "VVC's subpicture: a rectangular region with its own NAL unit, decodable completely independently of other subpictures.",
+      "why": "Enables 360° viewport-dependent streaming (only the viewed region is decoded), region-of-interest editing without re-encoding, and multi-stream merging (e.g., combining multiple camera feeds into one stream).",
+      "category": "parallelism_mechanism"
+    },
+    {
+      "name": "deblocking_across_boundaries",
+      "definition": "In-loop deblocking can be configured to span or stop at slice/tile/subpicture boundaries. Spanning improves quality; stopping is required for full independence.",
+      "why": "Trade between independence and quality. Spanning gives slightly better visual quality near boundaries (no visible seams); stopping is required when the regions must be independently decodable. Encoder signals the choice.",
+      "category": "parallelism_mechanism"
+    },
+    {
+      "name": "compression_cost_of_independence",
+      "definition": "Each independent unit (slice/tile/subpicture) typically costs 0.5-2% extra bitrate vs the same content without the partition (due to reset CABAC contexts, isolated prediction state).",
+      "why": "Independence requires re-initialising context-adaptive coders and breaking inter-region prediction. Both lose efficiency at boundaries; the cost is roughly proportional to boundary length / total frame area.",
+      "category": "parallelism_mechanism"
+    },
+    {
+      "name": "frame_parallel_decode",
+      "definition": "Across-frame parallelism: while one decoder thread reconstructs frame N, another decodes frame N+1's bitstream (independent from reconstruction). Limited by inter-frame dependencies.",
+      "why": "Different from in-frame parallelism. Useful when decode-side throughput needs to exceed real-time; multiple frames in flight at once amortises per-frame overhead. Decoder vendors implement this in hardware.",
+      "category": "parallelism_mechanism"
+    },
+    {
+      "name": "B_frame_temporal_parallelism",
+      "definition": "B-frames depend on past + future references but NOT on other B-frames. Multiple B-frames can be encoded/decoded in parallel because they don't depend on each other.",
+      "why": "Hierarchical B structures (where B-frames reference each other) reduce this; flat B structures preserve full B-frame parallelism. The structure choice trades compression efficiency for parallelism.",
+      "category": "parallelism_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "independence_required_for_parallel_decode",
+      "if": ["units must be decoded on parallel cores"],
+      "then": ["they must be syntax-independent (no shared CABAC state, no cross-unit prediction)"],
+      "why": "Parallel cores can't synchronise on per-symbol CABAC updates without serialising the work. Independence is the structural requirement for parallel decode; everything else (compression cost, boundary artifacts) is a downstream trade.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "compression_cost_proportional_to_boundary_density",
+      "if": ["a frame is split into N independent units"],
+      "then": ["bitrate cost is roughly proportional to N"],
+      "why": "Each boundary breaks prediction. More boundaries = more breaks = more bits. The cost scales linearly with boundary count, not area. This is why fewer-larger tiles outperform more-smaller tiles at the same parallelism factor.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "wavefronts_capture_parallelism_at_lower_cost",
+      "if": ["the goal is decode parallelism without error resilience"],
+      "then": ["wavefronts beat slices/tiles on compression efficiency"],
+      "why": "Wavefronts have no per-row header overhead and don't reset CABAC at row boundaries (state is propagated by the encoder). Cost is the 1-CTU lag (small) vs slices/tiles' full independence cost (larger).",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "subpictures_enable_partial_decode",
+      "if": ["viewing application only needs a subset of the frame"],
+      "then": ["subpicture-independent encoding allows decoding only that subset"],
+      "why": "360° VR streaming, region-of-interest playback, and stream merging all benefit. Subpictures let the system decode only the visible region, saving compute and bandwidth. Compression cost is ~1-2% vs non-partitioned encoding.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "B_frame_independence_enables_temporal_parallelism",
+      "if": ["B-frames don't reference other B-frames"],
+      "then": ["B-frames at the same level can decode in parallel"],
+      "why": "Flat B structures expose maximum B-frame parallelism; hierarchical B structures (B referenced by other B) reduce it. Decode hardware exploits flat B structures for ~2-3x parallelism gain over the I-P chain alone.",
+      "soundness_category": "extensional_equivalence"
+    }
+  ]
+}

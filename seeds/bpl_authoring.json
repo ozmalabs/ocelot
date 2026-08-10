@@ -1,0 +1,31 @@
+{
+ "id": "bpl_authoring",
+ "version": "1.0.0",
+ "depends_on": [],
+ "description": "The agent AUTHORS its Bayesian-Program-Learning recogniser from its OWN measured evidence — no teacher. A BplComponent per generative piece it built across this arc (whole-figure smooth deformation, canonical parts, shape contexts, marginalising parse inference, the learned/relational attempts), each carrying the marginal_gain the agent MEASURED for it (its expertise) and whether it PRESERVES structure. author_include is the agent's combine-all decision: include a component in the program iff its measured marginal_gain > 0 (it lifted the fused score). author_residual reads the agent's own excluded set — every excluded piece DISCARDS structure — and authors the spec for the missing BPL piece: a STRUCTURE-PRESERVING learned per-primitive generative model with joint inference (the dual of why its learned attempts failed). The DECISIONS are the Rules over the agent's measured evidence; the host assembles the included components and measures.",
+ "microtheory": {"name": "bpl_authoring", "description": "compose the generative program from measured evidence; author the residual piece"},
+ "nodes": [], "edges": [], "productions": [],
+ "rules": [
+  {
+   "name": "author_include",
+   "match": [["bpl", "has_component", "c"]],
+   "where": {"type": "Gt", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "marginal_gain"}, "b": {"type": "Lit", "value": 0.0}},
+   "effects": [["set_attr", "c", "included", 1.0]]
+  },
+  {
+   "name": "author_residual",
+   "match": [["bpl", "has_component", "c"]],
+   "where": {"type": "And", "items": [
+     {"type": "Eq", "a": {"type": "Count", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "bpl"}, "edge_type": "residual_spec", "any_type": false}}, "b": {"type": "Lit", "value": 0}},
+     {"type": "Eq", "a": {"type": "Count", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "bpl"}, "edge_type": "has_structure_preserving_learned", "any_type": false}}, "b": {"type": "Lit", "value": 0}}
+   ]},
+   "effects": [
+     ["add_node_if_absent", "spec", "BplComponent",
+       {"name": "learned_per_primitive_structure_preserving", "to_build": 1.0, "structure_preserving": 1.0,
+        "learned": 1.0, "marginal_gain": 0.0,
+        "rationale": "every excluded piece DISCARDS structure; BPL's residual is a learned per-primitive generative model that PRESERVES the part layout, with joint inference"}],
+     ["add_edge", "bpl", "residual_spec", "spec"]
+   ]
+  }
+ ]
+}

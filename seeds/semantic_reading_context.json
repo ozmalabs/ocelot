@@ -1,0 +1,23 @@
+{
+ "id": "semantic_reading_context",
+ "version": "1.0.0",
+ "depends_on": ["semantic_denotation"],
+ "description": "The SEMANTICS faculty's COMPREHENSION-IN-READING-CONTEXT piece (graph-native): top-down disambiguation, the word-superiority / Interactive-Activation effect. A recognised symbol ACTIVATES its concept; activation SPREADS along the lexicon (can_follow edges) to PRIME the symbols that may come next; the context-aware reading Term (predict_context_term) then adds lam * the candidate's context_primed to its visual score, so a primed-but-visually-second symbol can win — context corrects an ambiguous read. Two Rules; the priming IS the Rules, the host only stages the sequence and reads back. The lexicon (can_follow edges) is graph data.",
+ "microtheory": {"name": "semantic_reading_context", "description": "context primes the next symbol; reading is top-down + bottom-up"},
+ "nodes": [], "edges": [], "productions": [],
+ "rules": [
+  {
+   "name": "activate_recognised",
+   "match": [["m", "recognised_as", "w"]],
+   "effects": [["set_attr", "w", "active", 1.0]]
+  },
+  {
+   "name": "prime_successors",
+   "match": [["w", "can_follow", "x"]],
+   "where": {"type": "Eq",
+     "a": {"type": "Attr", "node": {"type": "Var", "name": "w"}, "key": "active"},
+     "b": {"type": "Lit", "value": 1.0}},
+   "effects": [["set_attr", "x", "context_primed", 1.0]]
+  }
+ ]
+}

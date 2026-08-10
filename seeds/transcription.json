@@ -1,0 +1,36 @@
+{
+  "id": "transcription",
+  "version": "1.0.0",
+  "depends_on": [
+    "speech"
+  ],
+  "description": "Substrate-native STT: AcousticSign --labelled_as--> Transcription + Utterance --has_transcription--> Transcription productions. Pairs with TranscriptionPipeline (teach + transcribe + helpers).",
+  "nodes": [],
+  "edges": [],
+  "productions": [
+    {
+      "src": {
+        "type": "AcousticSign",
+        "var": "src"
+      },
+      "edge_type": "labelled_as",
+      "tgt": {
+        "type": "Transcription",
+        "var": "tgt"
+      },
+      "provenance": "transcription:sign_label"
+    },
+    {
+      "src": {
+        "type": "Utterance",
+        "var": "src"
+      },
+      "edge_type": "has_transcription",
+      "tgt": {
+        "type": "Transcription",
+        "var": "tgt"
+      },
+      "provenance": "transcription:utt_transcript"
+    }
+  ]
+}

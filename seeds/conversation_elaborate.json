@@ -1,0 +1,536 @@
+{
+ "id": "conversation_elaborate",
+ "version": "1.1.0",
+ "depends_on": [
+  "conversation_topic_tracking"
+ ],
+ "description": "Graph-native progressive DISCLOSURE ('tell me more'). After the agent answers about a topic X (a 1-3 sentence summary) and X is recorded as the conversation's current topic (agent -current_topic-> CurrentTopic{name:X}), a continuation follow-up ('tell me more', 'elaborate', 'go on') serves the NEXT unseen chunk of detail each time -- the DECISION and the progression live HERE, in graph rules, not Python. No arithmetic: a served-marker chain (mirrors the Not/Exists precedents of gap_awareness / topic_route). THREE rules + held cue Concepts:\n\n  (1) request_detail_for_current_topic -- the DECISION 'prefetch the detail for the topic we are discussing': when agent -current_topic-> ct exists and no DetailRequest for that topic exists yet, mint DetailRequest{topic:<ct.name>, status:'requested'}. A mechanical dispatch (domains.fetch_dispatch.scan_and_ingest_detail, mirroring scan_and_search) fulfils each requested DetailRequest -- calling domains.topic_grounding.topic_detail(agent, topic) and ingesting the returned ordered chunk list as a graph CHAIN (Topic{name} -detail_head-> c0; Topic -has_detail-> each c; c -next_detail-> c_next). Guard: mint once per topic.\n\n  (2) serve_next_detail_chunk -- the SERVE decision. Match agent -received-> m JOINed to agent -current_topic-> ct JOINed to a Topic t -has_detail-> c. Where: NOT comprehended(m); a has_mention of m resolves (intent seed's Mention -refers_to-> Concept name match) to a continuation-cue Concept (more/elaborate/continue/further/else/expand); t.name == ct.name; c.served != 1.0; and c is the HEAD OF THE UNSERVED RUN -- either c has no predecessor (InNeighbours(c,next_detail) empty) OR its predecessor is served (an InNeighbour p over next_detail with p.served==1.0). Effects: mint reply Message{from:agent, text:<Attr c text>} + responds_to m + agent -sent-> reply; set c.served=1.0; set m.comprehended=1.0. Serves exactly ONE next chunk per 'more', in order, no arithmetic.\n\n  (3) elaboration_exhausted -- honest floor. When a continuation cue + current_topic and detail chunks EXIST for the topic but NONE are unserved, mint an honest reply ('That is the main of what I hold about it.') + comprehended, so 'more' is never silent. (When NO detail chunks exist for the topic at all, this rule does NOT fire and the summary re-answer path in conversation_topic_tracking handles the turn unchanged -- the anaphor-exclusion guard there defers to this seed ONLY when detail chunks are present.)\n\nSingle-anchor matches on agent -received-> m (the sd 'agent observed obs' pattern, never ['agent','is_a','Agent'] which over-fires); comprehended=1.0 is the mint-once fixpoint guard. The adapter renders the minted reply via _graph_reply_for (mechanical read-back) -- no decision in Python.",
+ "nodes": [
+  {
+   "local_id": 1,
+   "type": "Concept",
+   "attrs": {
+    "name": "more",
+    "description": "continuation cue: serve more detail on the current topic"
+   }
+  },
+  {
+   "local_id": 2,
+   "type": "Concept",
+   "attrs": {
+    "name": "elaborate",
+    "description": "continuation cue: elaborate further on the current topic"
+   }
+  },
+  {
+   "local_id": 3,
+   "type": "Concept",
+   "attrs": {
+    "name": "continue",
+    "description": "continuation cue: continue disclosing detail on the current topic"
+   }
+  },
+  {
+   "local_id": 4,
+   "type": "Concept",
+   "attrs": {
+    "name": "further",
+    "description": "continuation cue: go further into the current topic"
+   }
+  },
+  {
+   "local_id": 5,
+   "type": "Concept",
+   "attrs": {
+    "name": "else",
+    "description": "continuation cue: what else is there about the current topic"
+   }
+  },
+  {
+   "local_id": 6,
+   "type": "Concept",
+   "attrs": {
+    "name": "expand",
+    "description": "continuation cue: expand on the current topic"
+   }
+  }
+ ],
+ "edges": [],
+ "productions": [],
+ "rules": [
+  {
+   "name": "request_detail_for_current_topic",
+   "match": [
+    [
+     "agent",
+     "current_topic",
+     "ct"
+    ]
+   ],
+   "where": {
+    "type": "Not",
+    "arg": {
+     "type": "Exists",
+     "source": {
+      "type": "NodesOfType",
+      "node_type": "DetailRequest"
+     },
+     "var_name": "dr",
+     "predicate": {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "dr"
+       },
+       "key": "topic"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ct"
+       },
+       "key": "name"
+      }
+     }
+    }
+   },
+   "effects": [
+    [
+     "add_node",
+     "req",
+     "DetailRequest",
+     {
+      "status": "requested",
+      "topic": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "ct"
+        },
+        "key": "name"
+       }
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "serve_next_detail_chunk",
+   "match": [
+    [
+     "agent",
+     "received",
+     "m"
+    ],
+    [
+     "agent",
+     "current_topic",
+     "ct"
+    ],
+    [
+     "t",
+     "has_detail",
+     "c"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "TypeOf",
+       "node": {
+        "type": "Var",
+        "name": "t"
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": "Topic"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "t"
+       },
+       "key": "name"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ct"
+       },
+       "key": "name"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "m"
+        },
+        "key": "comprehended"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "c"
+        },
+        "key": "served"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      }
+     },
+     {
+      "type": "Exists",
+      "source": {
+       "type": "Neighbours",
+       "node": {
+        "type": "Var",
+        "name": "m"
+       },
+       "edge_type": "has_mention"
+      },
+      "var_name": "mn",
+      "predicate": {
+       "type": "In",
+       "member": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "mn"
+        },
+        "key": "text"
+       },
+       "container": {
+        "type": "Lit",
+        "value": [
+         "more",
+         "elaborate",
+         "continue",
+         "further",
+         "else",
+         "expand"
+        ]
+       }
+      }
+     },
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Exists",
+         "source": {
+          "type": "InNeighbours",
+          "node": {
+           "type": "Var",
+           "name": "c"
+          },
+          "edge_type": "next_detail"
+         },
+         "var_name": "p0",
+         "predicate": {
+          "type": "Lit",
+          "value": true
+         }
+        }
+       },
+       {
+        "type": "Exists",
+        "source": {
+         "type": "InNeighbours",
+         "node": {
+          "type": "Var",
+          "name": "c"
+         },
+         "edge_type": "next_detail"
+        },
+        "var_name": "p",
+        "predicate": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "p"
+          },
+          "key": "served"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1.0
+         }
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "c",
+     "served",
+     1.0
+    ],
+    [
+     "set_attr",
+     "m",
+     "comprehended",
+     1.0
+    ],
+    [
+     "add_node",
+     "reply",
+     "Message",
+     {
+      "from": "agent",
+      "text": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "c"
+        },
+        "key": "text"
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "reply",
+     "responds_to",
+     "m"
+    ],
+    [
+     "add_edge",
+     "agent",
+     "sent",
+     "reply"
+    ]
+   ]
+  },
+  {
+   "name": "elaboration_exhausted",
+   "match": [
+    [
+     "agent",
+     "received",
+     "m"
+    ],
+    [
+     "agent",
+     "current_topic",
+     "ct"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "m"
+        },
+        "key": "comprehended"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      }
+     },
+     {
+      "type": "Exists",
+      "source": {
+       "type": "Neighbours",
+       "node": {
+        "type": "Var",
+        "name": "m"
+       },
+       "edge_type": "has_mention"
+      },
+      "var_name": "mn",
+      "predicate": {
+       "type": "In",
+       "member": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "mn"
+        },
+        "key": "text"
+       },
+       "container": {
+        "type": "Lit",
+        "value": [
+         "more",
+         "elaborate",
+         "continue",
+         "further",
+         "else",
+         "expand"
+        ]
+       }
+      }
+     },
+     {
+      "type": "Exists",
+      "source": {
+       "type": "NodesOfType",
+       "node_type": "DetailChunk"
+      },
+      "var_name": "dc",
+      "predicate": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "dc"
+        },
+        "key": "topic"
+       },
+       "b": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "ct"
+        },
+        "key": "name"
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "DetailChunk"
+       },
+       "var_name": "dc2",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "dc2"
+           },
+           "key": "topic"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "ct"
+           },
+           "key": "name"
+          }
+         },
+         {
+          "type": "Not",
+          "arg": {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "dc2"
+            },
+            "key": "served"
+           },
+           "b": {
+            "type": "Lit",
+            "value": 1.0
+           }
+          }
+         }
+        ]
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "m",
+     "comprehended",
+     1.0
+    ],
+    [
+     "add_node",
+     "reply",
+     "Message",
+     {
+      "from": "agent",
+      "text": {
+       "__term__": {
+        "type": "StringConcat",
+        "parts": [
+         {
+          "type": "Lit",
+          "value": "That's the main of what I hold about it."
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "reply",
+     "responds_to",
+     "m"
+    ],
+    [
+     "add_edge",
+     "agent",
+     "sent",
+     "reply"
+    ]
+   ]
+  }
+ ]
+}

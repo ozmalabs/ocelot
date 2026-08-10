@@ -1,0 +1,574 @@
+{
+ "id": "recount_fluency",
+ "version": "1.0.1",
+ "depends_on": [],
+ "description": "GRAPH-NATIVE FLUENCY decisions for the recount faculty, filed after the Jabberwock was TOLD (over its own NL interface, converse()) that its recount 'lists events flatly and cannot connect them, repeats the subject, and renders is_a wrongly' and FILED that as a SelfConcern (seeds/gap_awareness.json's note_reported_gap). This seed is the fix for the first two of those three named deficiencies (the third, mis-rendered is_a, is fixed in seeds/recount_realization.json v1.1.0's recount_say_event_copular). Every DECISION here is a held codebook row or a rule the agent owns and can extend/ablate -- never a Python literal deciding.\n\n(1) RELATIONAL CONNECTIVES. `ConnectiveMap{relation, connective}` is a small held codebook (currently one row: temporal_conflict -> 'then', the SAME 'support-then-undermine' relation seeds/goal_layers_default.json's TemporalConflictReading already names). `recount_temporal_connective` joins two ADJACENT (by `order`) recount Concepts against a held TemporalConflictReading -- correlating c1/c2's OWN recount_pred_lemma pair (StringConcat'd with '|', the SAME composite key actor_goals.annotate_action_pairs already builds) against the reading's own pair_key, and c1's own recount_agent_slug against the reading's own actor -- and, ONLY on a match, looks up the codebook row by relation and writes ITS connective onto c2 (recount_connective). Ablate this rule, or remove the ConnectiveMap row it joins against, and the connective reverts to the smoother's plain default 'and' -- nothing is ever fabricated for a pair with no held relation (see recount_faculty.recount_report's honest default).\n\n(2) REPEATED-SUBJECT ELISION + OBJECT PRONOMINALISATION. `recount_mark_repeated_agent` flags a recount Concept whose agent is the SAME as the immediately preceding (by `order`) recount Concept's agent (recount_elide_agent=1.0) -- a repeated-subject signal a mechanical glue step (domains.conversation_action.smooth_scene_prose) reads to drop the repeated subject NP from the ALREADY-PRODUCED clause (the clause was still generated in full by LanguageProduction.produce and passed its own self-monitor round-trip; eliding a REPEATED mention is surface glue over produced text, not new content -- the exact same category of mechanical surgery smooth_scene_prose already performs, e.g. _lower_article/_declause). `recount_mark_repeated_patient` similarly flags a repeated OBJECT (recount_pronoun_patient) by joining against `PronounMap{role, pronoun}` (one held row: patient -> 'it') -- so the pronoun WORD itself is held codebook data (grounded to the production lexicon like any other recount vocabulary, see project_read_scene's RecountVocabulary bridging), never a Python literal choosing 'it'. Ablate either marking rule, or remove the PronounMap row, and that clause reverts to its full, unelided, produced form.\n\nBoth marking rules use the SAME order-adjacency self-join shape recount_realization.json's rules already prove reachable at this grain (two independent p-is_a->con matches, correlated by an Eq(order2, order1+1) where-clause -- a genuine two-instance join, not a linear chain), guarded by the SAME recount_pred_lemma!=null discriminator every recount_realization.json rule uses, so they fire ONLY on recount surface Concepts, never on the analysis-layer reading nodes (which carry no recount_pred_lemma) or any other agent's graph.",
+ "nodes": [
+  {
+   "local_id": 1,
+   "type": "ConnectiveMap",
+   "attrs": {
+    "relation": "temporal_conflict",
+    "connective": "then"
+   }
+  },
+  {
+   "local_id": 2,
+   "type": "PronounMap",
+   "attrs": {
+    "role": "patient",
+    "pronoun": "it"
+   }
+  },
+  {
+   "local_id": 3,
+   "type": "RecountVocabulary",
+   "attrs": {
+    "surface": "then"
+   }
+  },
+  {
+   "local_id": 4,
+   "type": "RecountVocabulary",
+   "attrs": {
+    "surface": "it"
+   }
+  },
+  {
+   "local_id": 5,
+   "type": "RecountVocabulary",
+   "attrs": {
+    "surface": "called"
+   }
+  }
+ ],
+ "edges": [],
+ "productions": [],
+ "concepts": [],
+ "rules": [
+  {
+   "name": "recount_temporal_connective",
+   "match": [
+    [
+     "p1",
+     "is_a",
+     "c1"
+    ],
+    [
+     "p2",
+     "is_a",
+     "c2"
+    ],
+    [
+     "agent",
+     "has_temporal_conflict_reading",
+     "tcr"
+    ],
+    [
+     "agent",
+     "has_connective_map",
+     "cm"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "c1"
+        },
+        "key": "recount_pred_lemma"
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "c2"
+        },
+        "key": "recount_pred_lemma"
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       }
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c2"
+       },
+       "key": "order"
+      },
+      "b": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "c1"
+         },
+         "key": "order"
+        },
+        {
+         "type": "Lit",
+         "value": 1
+        }
+       ]
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "cm"
+       },
+       "key": "relation"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "temporal_conflict"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "StringConcat",
+       "parts": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "c1"
+         },
+         "key": "recount_pred_lemma"
+        },
+        {
+         "type": "Lit",
+         "value": "|"
+        },
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "c2"
+         },
+         "key": "recount_pred_lemma"
+        }
+       ]
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "tcr"
+       },
+       "key": "pair_key"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c1"
+       },
+       "key": "recount_agent_slug"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "tcr"
+       },
+       "key": "actor"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c2"
+       },
+       "key": "recount_connective"
+      },
+      "b": {
+       "type": "Lit",
+       "value": null
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "c2",
+     "recount_connective",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "cm"
+       },
+       "key": "connective"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "recount_mark_repeated_agent",
+   "match": [
+    [
+     "p1",
+     "is_a",
+     "c1"
+    ],
+    [
+     "p2",
+     "is_a",
+     "c2"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "c1"
+        },
+        "key": "recount_pred_lemma"
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "c2"
+        },
+        "key": "recount_pred_lemma"
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       }
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c2"
+       },
+       "key": "order"
+      },
+      "b": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "c1"
+         },
+         "key": "order"
+        },
+        {
+         "type": "Lit",
+         "value": 1
+        }
+       ]
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "c1"
+        },
+        "key": "recount_agent_slug"
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       }
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c1"
+       },
+       "key": "recount_agent_slug"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c2"
+       },
+       "key": "recount_agent_slug"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c2"
+       },
+       "key": "recount_elide_agent"
+      },
+      "b": {
+       "type": "Lit",
+       "value": null
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "c2",
+     "recount_elide_agent",
+     {
+      "__term__": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "c2",
+     "elides_subject_of",
+     "c1"
+    ]
+   ]
+  },
+  {
+   "name": "recount_mark_repeated_patient",
+   "match": [
+    [
+     "p1",
+     "is_a",
+     "c1"
+    ],
+    [
+     "p2",
+     "is_a",
+     "c2"
+    ],
+    [
+     "agent",
+     "has_pronoun_map",
+     "pm"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "c1"
+        },
+        "key": "recount_pred_lemma"
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "c2"
+        },
+        "key": "recount_pred_lemma"
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       }
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c2"
+       },
+       "key": "order"
+      },
+      "b": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "c1"
+         },
+         "key": "order"
+        },
+        {
+         "type": "Lit",
+         "value": 1
+        }
+       ]
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "c1"
+        },
+        "key": "recount_patient_slug"
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       }
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c1"
+       },
+       "key": "recount_patient_slug"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c2"
+       },
+       "key": "recount_patient_slug"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "pm"
+       },
+       "key": "role"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "patient"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c2"
+       },
+       "key": "recount_pronoun_patient"
+      },
+      "b": {
+       "type": "Lit",
+       "value": null
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "c2",
+     "recount_pronoun_patient",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "pm"
+       },
+       "key": "pronoun"
+      }
+     }
+    ]
+   ]
+  }
+ ]
+}

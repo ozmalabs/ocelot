@@ -1,0 +1,33 @@
+{
+ "id": "distributional_function_cue",
+ "version": "1.0.0",
+ "depends_on": ["relation_vocabulary"],
+ "description": "DISTRIBUTIONAL-FUNCTION RelationCue (graph data) so the self-build composer can GROUND a concern about what makes a word a FUNCTION word — a DISTRIBUTIONAL UNIVERSAL: high-FREQUENCY, context-INDEPENDENT (appears in many contexts = high context-entropy), low referential specificity — NOT hand-labelled. Its relation label 'distribute' routes ground_concern to _compose_distributional_rule, which authors a graph-native rule that marks a WordForm is_function=1 where its distributional attrs (freq_norm, ctx_entropy_norm) exceed the split. Added as its own seed (not by editing relation_vocabulary.json); _load_relation_cues reads all cues. The AGENT authors the split from the token-stream statistics; the syntactic construction (syntactic_construction_cue) then FRAMES content by the function words this rule marks.",
+ "nodes": [
+  {
+   "local_id": 1,
+   "type": "RelationCue",
+   "attrs": {
+    "name": "distributional_function",
+    "keywords": [
+     "distribute",
+     "distributional",
+     "high-frequency",
+     "high frequency",
+     "frequent",
+     "context-independent",
+     "context independent",
+     "context-diverse",
+     "many contexts",
+     "ubiquitous",
+     "closed-class",
+     "function word",
+     "low referential",
+     "referentially diffuse"
+    ],
+    "relation": "[\"distribute\",\"FORM\",\"independent\",\"CONTEXT\"]"
+   }
+  }
+ ],
+ "edges": []
+}

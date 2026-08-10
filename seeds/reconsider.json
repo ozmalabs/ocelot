@@ -1,0 +1,793 @@
+{
+  "id": "reconsider",
+  "version": "1.0.0",
+  "depends_on": [],
+  "description": "Substrate-level budget loop. SubstrateRoot carries per-tick wall-cost; Capability declares a tick_budget_ms + a current mode. Domain Rules opt into mode-gating by linking to a Capability via regulated_by. Reconsider Rules flip mode between active and passive based on observed cost vs budget \u2014 the agent's structural response to its own compute pressure.",
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "Rule",
+      "attrs": {
+        "effect": {
+          "__tuple__": [
+            {
+              "__tuple__": [
+                "set_attr",
+                "cap",
+                "mode",
+                "passive"
+              ]
+            },
+            {
+              "__tuple__": [
+                "set_attr",
+                "cap",
+                "throttled_at_tick_ms",
+                {
+                  "__term__": {
+                    "key": "last_tick_ms",
+                    "node": {
+                      "name": "root",
+                      "type": "Var"
+                    },
+                    "type": "Attr"
+                  }
+                }
+              ]
+            },
+            {
+              "__tuple__": [
+                "set_attr",
+                "cap",
+                "signs_at_throttle",
+                {
+                  "__term__": {
+                    "key": "n_signs",
+                    "node": {
+                      "name": "lex",
+                      "type": "Var"
+                    },
+                    "type": "Attr"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "id": "reconsider_throttle",
+        "match": {
+          "__tuple__": [
+            {
+              "__tuple__": [
+                "root",
+                "has_capability",
+                "cap"
+              ]
+            },
+            {
+              "__tuple__": [
+                "lex",
+                "regulated_by",
+                "cap"
+              ]
+            }
+          ]
+        },
+        "where": {
+          "items": {
+            "__tuple__": [
+              {
+                "a": {
+                  "key": "mode",
+                  "node": {
+                    "name": "cap",
+                    "type": "Var"
+                  },
+                  "type": "Attr"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "active"
+                },
+                "type": "Eq"
+              },
+              {
+                "a": {
+                  "key": "last_tick_ms",
+                  "node": {
+                    "name": "root",
+                    "type": "Var"
+                  },
+                  "type": "Attr"
+                },
+                "b": {
+                  "key": "tick_budget_ms",
+                  "node": {
+                    "name": "cap",
+                    "type": "Var"
+                  },
+                  "type": "Attr"
+                },
+                "type": "Gt"
+              }
+            ]
+          },
+          "type": "And"
+        }
+      }
+    },
+    {
+      "local_id": 1,
+      "type": "Rule",
+      "attrs": {
+        "effect": {
+          "__tuple__": [
+            {
+              "__tuple__": [
+                "set_attr",
+                "cap",
+                "mode",
+                "active"
+              ]
+            },
+            {
+              "__tuple__": [
+                "set_attr",
+                "cap",
+                "released_at_tick_ms",
+                {
+                  "__term__": {
+                    "key": "last_tick_ms",
+                    "node": {
+                      "name": "root",
+                      "type": "Var"
+                    },
+                    "type": "Attr"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "id": "reconsider_release",
+        "match": {
+          "__tuple__": [
+            {
+              "__tuple__": [
+                "root",
+                "has_capability",
+                "cap"
+              ]
+            },
+            {
+              "__tuple__": [
+                "lex",
+                "regulated_by",
+                "cap"
+              ]
+            }
+          ]
+        },
+        "where": {
+          "items": {
+            "__tuple__": [
+              {
+                "a": {
+                  "key": "mode",
+                  "node": {
+                    "name": "cap",
+                    "type": "Var"
+                  },
+                  "type": "Attr"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "passive"
+                },
+                "type": "Eq"
+              },
+              {
+                "a": {
+                  "key": "last_tick_ms",
+                  "node": {
+                    "name": "root",
+                    "type": "Var"
+                  },
+                  "type": "Attr"
+                },
+                "b": {
+                  "a": {
+                    "key": "tick_budget_ms",
+                    "node": {
+                      "name": "cap",
+                      "type": "Var"
+                    },
+                    "type": "Attr"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": 4
+                  },
+                  "type": "Div"
+                },
+                "type": "Lt"
+              },
+              {
+                "a": {
+                  "key": "n_signs",
+                  "node": {
+                    "name": "lex",
+                    "type": "Var"
+                  },
+                  "type": "Attr"
+                },
+                "b": {
+                  "key": "signs_at_throttle",
+                  "node": {
+                    "name": "cap",
+                    "type": "Var"
+                  },
+                  "type": "Attr"
+                },
+                "type": "Gt"
+              }
+            ]
+          },
+          "type": "And"
+        }
+      }
+    },
+    {
+      "local_id": 2,
+      "type": "Rule",
+      "attrs": {
+        "effect": {
+          "__tuple__": [
+            {
+              "__tuple__": [
+                "add_node",
+                "a",
+                "Assessment",
+                {
+                  "cause": "follows_pile_unbounded",
+                  "kind": "compute_pressure",
+                  "recommended_action": "escalate_to_off",
+                  "signs_at_diagnosis": {
+                    "__term__": {
+                      "key": "n_signs",
+                      "node": {
+                        "name": "lex",
+                        "type": "Var"
+                      },
+                      "type": "Attr"
+                    }
+                  },
+                  "tick_ms_at_diagnosis": {
+                    "__term__": {
+                      "key": "last_tick_ms",
+                      "node": {
+                        "name": "root",
+                        "type": "Var"
+                      },
+                      "type": "Attr"
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "__tuple__": [
+                "add_edge",
+                "cap",
+                "has_assessment",
+                "a"
+              ]
+            }
+          ]
+        },
+        "id": "assess_compose_pressure",
+        "match": {
+          "__tuple__": [
+            {
+              "__tuple__": [
+                "root",
+                "has_capability",
+                "cap"
+              ]
+            },
+            {
+              "__tuple__": [
+                "lex",
+                "regulated_by",
+                "cap"
+              ]
+            }
+          ]
+        },
+        "where": {
+          "items": {
+            "__tuple__": [
+              {
+                "a": {
+                  "key": "mode",
+                  "node": {
+                    "name": "cap",
+                    "type": "Var"
+                  },
+                  "type": "Attr"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "passive"
+                },
+                "type": "Eq"
+              },
+              {
+                "a": {
+                  "key": "last_tick_ms",
+                  "node": {
+                    "name": "root",
+                    "type": "Var"
+                  },
+                  "type": "Attr"
+                },
+                "b": {
+                  "key": "tick_budget_ms",
+                  "node": {
+                    "name": "cap",
+                    "type": "Var"
+                  },
+                  "type": "Attr"
+                },
+                "type": "Gt"
+              },
+              {
+                "a": {
+                  "source": {
+                    "edge_type": "tracks_bigram",
+                    "node": {
+                      "name": "lex",
+                      "type": "Var"
+                    },
+                    "type": "Neighbours"
+                  },
+                  "type": "Count"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 30
+                },
+                "type": "Gte"
+              },
+              {
+                "arg": {
+                  "predicate": {
+                    "a": {
+                      "key": "kind",
+                      "node": {
+                        "name": "a",
+                        "type": "Var"
+                      },
+                      "type": "Attr"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "compute_pressure"
+                    },
+                    "type": "Eq"
+                  },
+                  "source": {
+                    "edge_type": "has_assessment",
+                    "node": {
+                      "name": "cap",
+                      "type": "Var"
+                    },
+                    "type": "Neighbours"
+                  },
+                  "type": "Exists",
+                  "var_name": "a"
+                },
+                "type": "Not"
+              }
+            ]
+          },
+          "type": "And"
+        }
+      }
+    },
+    {
+      "local_id": 3,
+      "type": "Rule",
+      "attrs": {
+        "effect": {
+          "__tuple__": [
+            {
+              "__tuple__": [
+                "set_attr",
+                "cap",
+                "mode",
+                "off"
+              ]
+            },
+            {
+              "__tuple__": [
+                "set_attr",
+                "a",
+                "acted_on",
+                true
+              ]
+            }
+          ]
+        },
+        "id": "act_on_assessment_escalate",
+        "match": {
+          "__tuple__": [
+            {
+              "__tuple__": [
+                "cap",
+                "has_assessment",
+                "a"
+              ]
+            }
+          ]
+        },
+        "where": {
+          "items": {
+            "__tuple__": [
+              {
+                "a": {
+                  "key": "recommended_action",
+                  "node": {
+                    "name": "a",
+                    "type": "Var"
+                  },
+                  "type": "Attr"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "escalate_to_off"
+                },
+                "type": "Eq"
+              },
+              {
+                "arg": {
+                  "a": {
+                    "key": "acted_on",
+                    "node": {
+                      "name": "a",
+                      "type": "Var"
+                    },
+                    "type": "Attr"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": true
+                  },
+                  "type": "Eq"
+                },
+                "type": "Not"
+              }
+            ]
+          },
+          "type": "And"
+        }
+      }
+    },
+    {
+      "local_id": 4,
+      "type": "Rule",
+      "attrs": {
+        "effect": {
+          "__tuple__": [
+            {
+              "__tuple__": [
+                "add_node",
+                "a",
+                "Assessment",
+                {
+                  "cause": "utterance_pile_unbounded",
+                  "kind": "compute_pressure",
+                  "recommended_action": "gc_utterances",
+                  "signs_at_diagnosis": {
+                    "__term__": {
+                      "key": "n_signs",
+                      "node": {
+                        "name": "lex",
+                        "type": "Var"
+                      },
+                      "type": "Attr"
+                    }
+                  },
+                  "tick_ms_at_diagnosis": {
+                    "__term__": {
+                      "key": "last_tick_ms",
+                      "node": {
+                        "name": "root",
+                        "type": "Var"
+                      },
+                      "type": "Attr"
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "__tuple__": [
+                "add_edge",
+                "cap",
+                "has_assessment",
+                "a"
+              ]
+            }
+          ]
+        },
+        "id": "escalate_to_utterance_pile",
+        "match": {
+          "__tuple__": [
+            {
+              "__tuple__": [
+                "root",
+                "has_capability",
+                "cap"
+              ]
+            },
+            {
+              "__tuple__": [
+                "lex",
+                "regulated_by",
+                "cap"
+              ]
+            }
+          ]
+        },
+        "where": {
+          "items": {
+            "__tuple__": [
+              {
+                "a": {
+                  "key": "last_tick_ms",
+                  "node": {
+                    "name": "root",
+                    "type": "Var"
+                  },
+                  "type": "Attr"
+                },
+                "b": {
+                  "key": "tick_budget_ms",
+                  "node": {
+                    "name": "cap",
+                    "type": "Var"
+                  },
+                  "type": "Attr"
+                },
+                "type": "Gt"
+              },
+              {
+                "predicate": {
+                  "items": {
+                    "__tuple__": [
+                      {
+                        "a": {
+                          "key": "cause",
+                          "node": {
+                            "name": "a1",
+                            "type": "Var"
+                          },
+                          "type": "Attr"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": "follows_pile_unbounded"
+                        },
+                        "type": "Eq"
+                      },
+                      {
+                        "a": {
+                          "key": "acted_on",
+                          "node": {
+                            "name": "a1",
+                            "type": "Var"
+                          },
+                          "type": "Attr"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": true
+                        },
+                        "type": "Eq"
+                      }
+                    ]
+                  },
+                  "type": "And"
+                },
+                "source": {
+                  "edge_type": "has_assessment",
+                  "node": {
+                    "name": "cap",
+                    "type": "Var"
+                  },
+                  "type": "Neighbours"
+                },
+                "type": "Exists",
+                "var_name": "a1"
+              },
+              {
+                "arg": {
+                  "predicate": {
+                    "a": {
+                      "key": "cause",
+                      "node": {
+                        "name": "a2",
+                        "type": "Var"
+                      },
+                      "type": "Attr"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "utterance_pile_unbounded"
+                    },
+                    "type": "Eq"
+                  },
+                  "source": {
+                    "edge_type": "has_assessment",
+                    "node": {
+                      "name": "cap",
+                      "type": "Var"
+                    },
+                    "type": "Neighbours"
+                  },
+                  "type": "Exists",
+                  "var_name": "a2"
+                },
+                "type": "Not"
+              }
+            ]
+          },
+          "type": "And"
+        }
+      }
+    },
+    {
+      "local_id": 5,
+      "type": "Rule",
+      "attrs": {
+        "effect": {
+          "__tuple__": [
+            {
+              "__tuple__": [
+                "set_attr",
+                "cap",
+                "mode",
+                "active"
+              ]
+            },
+            {
+              "__tuple__": [
+                "del_node",
+                "a"
+              ]
+            }
+          ]
+        },
+        "id": "recover_from_assessment",
+        "match": {
+          "__tuple__": [
+            {
+              "__tuple__": [
+                "cap",
+                "has_assessment",
+                "a"
+              ]
+            },
+            {
+              "__tuple__": [
+                "lex",
+                "regulated_by",
+                "cap"
+              ]
+            }
+          ]
+        },
+        "where": {
+          "items": {
+            "__tuple__": [
+              {
+                "a": {
+                  "key": "kind",
+                  "node": {
+                    "name": "a",
+                    "type": "Var"
+                  },
+                  "type": "Attr"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "compute_pressure"
+                },
+                "type": "Eq"
+              },
+              {
+                "a": {
+                  "a": {
+                    "key": "n_signs",
+                    "node": {
+                      "name": "lex",
+                      "type": "Var"
+                    },
+                    "type": "Attr"
+                  },
+                  "b": {
+                    "key": "signs_at_diagnosis",
+                    "node": {
+                      "name": "a",
+                      "type": "Var"
+                    },
+                    "type": "Attr"
+                  },
+                  "type": "Minus"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 15
+                },
+                "type": "Gte"
+              }
+            ]
+          },
+          "type": "And"
+        }
+      }
+    }
+  ],
+  "edges": [],
+  "productions": [
+    {
+      "src": {
+        "type": "AcousticLexicon",
+        "var": "src"
+      },
+      "edge_type": "regulated_by",
+      "tgt": {
+        "type": "Capability",
+        "var": "tgt"
+      },
+      "provenance": "reconsider:lex_regulated_by_capability"
+    },
+    {
+      "src": {
+        "type": "Capability",
+        "var": "src"
+      },
+      "edge_type": "has_assessment",
+      "tgt": {
+        "type": "Assessment",
+        "var": "tgt"
+      },
+      "provenance": "reconsider:cap_has_assessment"
+    },
+    {
+      "src": {
+        "type": "Operation",
+        "var": "src"
+      },
+      "edge_type": "regulated_by",
+      "tgt": {
+        "type": "Capability",
+        "var": "tgt"
+      },
+      "provenance": "reconsider:op_regulated_by_capability"
+    },
+    {
+      "src": {
+        "type": "SubstrateRoot",
+        "var": "src"
+      },
+      "edge_type": "has_capability",
+      "tgt": {
+        "type": "Capability",
+        "var": "tgt"
+      },
+      "provenance": "reconsider:root_has_capability"
+    }
+  ]
+}

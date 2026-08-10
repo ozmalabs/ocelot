@@ -1,0 +1,636 @@
+{
+ "id": "procedural_grammar",
+ "version": "1.0.1",
+ "depends_on": [],
+ "description": "HELD VOCABULARY for procedural comprehension: the connectives, effect-verbs, role-prepositions, state/staleness markers and structural-object words a procedural passage is built from, each carried as a Concept node with a proc_role attr (and effect/slot/relation metadata). The procedural reader (domains/procedural_reader.py) recognises a token's grammatical CLASS by looking it up in THIS held table (graph-native, data-driven), not a Python literal set - the same way situation_model_reader reads its verb-frame class off seed rules and the relation-cue lexicon reads its keyword classes off seed nodes. Add a synonym by dropping a Concept here; no code changes. Every Concept is knows_concept-wired at load so seeds/intent.json's Mention -refers_to-> Concept referent rule resolves procedural mentions to these classes too.",
+ "microtheory": {
+  "name": "procedural_grammar",
+  "description": "the small connective/effect grammar a read procedure is parsed against"
+ },
+ "nodes": [
+  {
+   "local_id": 1,
+   "type": "Concept",
+   "attrs": {
+    "name": "when",
+    "proc_role": "trigger_connective"
+   }
+  },
+  {
+   "local_id": 2,
+   "type": "Concept",
+   "attrs": {
+    "name": "whenever",
+    "proc_role": "trigger_connective"
+   }
+  },
+  {
+   "local_id": 3,
+   "type": "Concept",
+   "attrs": {
+    "name": "if",
+    "proc_role": "trigger_connective"
+   }
+  },
+  {
+   "local_id": 4,
+   "type": "Concept",
+   "attrs": {
+    "name": "after",
+    "proc_role": "trigger_connective"
+   }
+  },
+  {
+   "local_id": 5,
+   "type": "Concept",
+   "attrs": {
+    "name": "once",
+    "proc_role": "trigger_connective"
+   }
+  },
+  {
+   "local_id": 10,
+   "type": "Concept",
+   "attrs": {
+    "name": "add",
+    "proc_role": "effect_verb",
+    "proc_effect": "add_edge"
+   }
+  },
+  {
+   "local_id": 11,
+   "type": "Concept",
+   "attrs": {
+    "name": "create",
+    "proc_role": "effect_verb",
+    "proc_effect": "add_edge"
+   }
+  },
+  {
+   "local_id": 12,
+   "type": "Concept",
+   "attrs": {
+    "name": "insert",
+    "proc_role": "effect_verb",
+    "proc_effect": "add_edge"
+   }
+  },
+  {
+   "local_id": 13,
+   "type": "Concept",
+   "attrs": {
+    "name": "remove",
+    "proc_role": "effect_verb",
+    "proc_effect": "del_edge"
+   }
+  },
+  {
+   "local_id": 14,
+   "type": "Concept",
+   "attrs": {
+    "name": "delete",
+    "proc_role": "effect_verb",
+    "proc_effect": "del_edge"
+   }
+  },
+  {
+   "local_id": 15,
+   "type": "Concept",
+   "attrs": {
+    "name": "drop",
+    "proc_role": "effect_verb",
+    "proc_effect": "del_edge"
+   }
+  },
+  {
+   "local_id": 16,
+   "type": "Concept",
+   "attrs": {
+    "name": "recompute",
+    "proc_role": "effect_verb",
+    "proc_effect": "recompute"
+   }
+  },
+  {
+   "local_id": 17,
+   "type": "Concept",
+   "attrs": {
+    "name": "refresh",
+    "proc_role": "effect_verb",
+    "proc_effect": "recompute"
+   }
+  },
+  {
+   "local_id": 18,
+   "type": "Concept",
+   "attrs": {
+    "name": "recalculate",
+    "proc_role": "effect_verb",
+    "proc_effect": "recompute"
+   }
+  },
+  {
+   "local_id": 19,
+   "type": "Concept",
+   "attrs": {
+    "name": "rebuild",
+    "proc_role": "effect_verb",
+    "proc_effect": "recompute"
+   }
+  },
+  {
+   "local_id": 20,
+   "type": "Concept",
+   "attrs": {
+    "name": "mark",
+    "proc_role": "effect_verb",
+    "proc_effect": "set_attr"
+   }
+  },
+  {
+   "local_id": 21,
+   "type": "Concept",
+   "attrs": {
+    "name": "set",
+    "proc_role": "effect_verb",
+    "proc_effect": "set_attr"
+   }
+  },
+  {
+   "local_id": 22,
+   "type": "Concept",
+   "attrs": {
+    "name": "make",
+    "proc_role": "effect_verb",
+    "proc_effect": "set_attr"
+   }
+  },
+  {
+   "local_id": 23,
+   "type": "Concept",
+   "attrs": {
+    "name": "index",
+    "proc_role": "effect_verb",
+    "proc_effect": "set_attr"
+   }
+  },
+  {
+   "local_id": 24,
+   "type": "Concept",
+   "attrs": {
+    "name": "flag",
+    "proc_role": "effect_verb",
+    "proc_effect": "set_attr"
+   }
+  },
+  {
+   "local_id": 30,
+   "type": "Concept",
+   "attrs": {
+    "name": "becomes",
+    "proc_role": "state_marker"
+   }
+  },
+  {
+   "local_id": 31,
+   "type": "Concept",
+   "attrs": {
+    "name": "become",
+    "proc_role": "state_marker"
+   }
+  },
+  {
+   "local_id": 32,
+   "type": "Concept",
+   "attrs": {
+    "name": "is",
+    "proc_role": "state_marker"
+   }
+  },
+  {
+   "local_id": 33,
+   "type": "Concept",
+   "attrs": {
+    "name": "are",
+    "proc_role": "state_marker"
+   }
+  },
+  {
+   "local_id": 34,
+   "type": "Concept",
+   "attrs": {
+    "name": "marked",
+    "proc_role": "state_marker"
+   }
+  },
+  {
+   "local_id": 35,
+   "type": "Concept",
+   "attrs": {
+    "name": "gets",
+    "proc_role": "state_marker"
+   }
+  },
+  {
+   "local_id": 36,
+   "type": "Concept",
+   "attrs": {
+    "name": "turns",
+    "proc_role": "state_marker"
+   }
+  },
+  {
+   "local_id": 40,
+   "type": "Concept",
+   "attrs": {
+    "name": "depends",
+    "proc_role": "dep_verb",
+    "proc_relation": "depends_on"
+   }
+  },
+  {
+   "local_id": 41,
+   "type": "Concept",
+   "attrs": {
+    "name": "relies",
+    "proc_role": "dep_verb",
+    "proc_relation": "depends_on"
+   }
+  },
+  {
+   "local_id": 42,
+   "type": "Concept",
+   "attrs": {
+    "name": "derives",
+    "proc_role": "dep_verb",
+    "proc_relation": "depends_on"
+   }
+  },
+  {
+   "local_id": 50,
+   "type": "Concept",
+   "attrs": {
+    "name": "changes",
+    "proc_role": "change_verb"
+   }
+  },
+  {
+   "local_id": 51,
+   "type": "Concept",
+   "attrs": {
+    "name": "change",
+    "proc_role": "change_verb"
+   }
+  },
+  {
+   "local_id": 52,
+   "type": "Concept",
+   "attrs": {
+    "name": "updates",
+    "proc_role": "change_verb"
+   }
+  },
+  {
+   "local_id": 53,
+   "type": "Concept",
+   "attrs": {
+    "name": "update",
+    "proc_role": "change_verb"
+   }
+  },
+  {
+   "local_id": 54,
+   "type": "Concept",
+   "attrs": {
+    "name": "modified",
+    "proc_role": "change_verb"
+   }
+  },
+  {
+   "local_id": 60,
+   "type": "Concept",
+   "attrs": {
+    "name": "stale",
+    "proc_role": "stale_marker"
+   }
+  },
+  {
+   "local_id": 61,
+   "type": "Concept",
+   "attrs": {
+    "name": "dirty",
+    "proc_role": "stale_marker"
+   }
+  },
+  {
+   "local_id": 62,
+   "type": "Concept",
+   "attrs": {
+    "name": "outdated",
+    "proc_role": "stale_marker"
+   }
+  },
+  {
+   "local_id": 63,
+   "type": "Concept",
+   "attrs": {
+    "name": "invalid",
+    "proc_role": "stale_marker"
+   }
+  },
+  {
+   "local_id": 64,
+   "type": "Concept",
+   "attrs": {
+    "name": "obsolete",
+    "proc_role": "stale_marker"
+   }
+  },
+  {
+   "local_id": 70,
+   "type": "Concept",
+   "attrs": {
+    "name": "from",
+    "proc_role": "role_prep",
+    "proc_slot": "source"
+   }
+  },
+  {
+   "local_id": 71,
+   "type": "Concept",
+   "attrs": {
+    "name": "to",
+    "proc_role": "role_prep",
+    "proc_slot": "target"
+   }
+  },
+  {
+   "local_id": 72,
+   "type": "Concept",
+   "attrs": {
+    "name": "of",
+    "proc_role": "role_prep",
+    "proc_slot": "target"
+   }
+  },
+  {
+   "local_id": 73,
+   "type": "Concept",
+   "attrs": {
+    "name": "into",
+    "proc_role": "role_prep",
+    "proc_slot": "target"
+   }
+  },
+  {
+   "local_id": 80,
+   "type": "Concept",
+   "attrs": {
+    "name": "edge",
+    "proc_role": "object_marker",
+    "proc_object": "edge"
+   }
+  },
+  {
+   "local_id": 81,
+   "type": "Concept",
+   "attrs": {
+    "name": "link",
+    "proc_role": "object_marker",
+    "proc_object": "edge"
+   }
+  },
+  {
+   "local_id": 82,
+   "type": "Concept",
+   "attrs": {
+    "name": "node",
+    "proc_role": "object_marker",
+    "proc_object": "node"
+   }
+  },
+  {
+   "local_id": 90,
+   "type": "Concept",
+   "attrs": {
+    "name": "a",
+    "proc_role": "determiner"
+   }
+  },
+  {
+   "local_id": 91,
+   "type": "Concept",
+   "attrs": {
+    "name": "an",
+    "proc_role": "determiner"
+   }
+  },
+  {
+   "local_id": 92,
+   "type": "Concept",
+   "attrs": {
+    "name": "the",
+    "proc_role": "determiner"
+   }
+  },
+  {
+   "local_id": 100,
+   "type": "Concept",
+   "attrs": {
+    "name": "its",
+    "proc_role": "possessive"
+   }
+  },
+  {
+   "local_id": 101,
+   "type": "Concept",
+   "attrs": {
+    "name": "their",
+    "proc_role": "possessive"
+   }
+  },
+  {
+   "local_id": 102,
+   "type": "Concept",
+   "attrs": {
+    "name": "his",
+    "proc_role": "possessive"
+   }
+  },
+  {
+   "local_id": 103,
+   "type": "Concept",
+   "attrs": {
+    "name": "her",
+    "proc_role": "possessive"
+   }
+  },
+  {
+   "local_id": 110,
+   "type": "Concept",
+   "attrs": {
+    "name": "on",
+    "proc_role": "particle"
+   }
+  },
+  {
+   "local_id": 111,
+   "type": "Concept",
+   "attrs": {
+    "name": "upon",
+    "proc_role": "particle"
+   }
+  },
+  {
+   "local_id": 120,
+   "type": "Concept",
+   "attrs": {
+    "name": "holds",
+    "proc_role": "def_verb"
+   }
+  },
+  {
+   "local_id": 121,
+   "type": "Concept",
+   "attrs": {
+    "name": "hold",
+    "proc_role": "def_verb"
+   }
+  },
+  {
+   "local_id": 122,
+   "type": "Concept",
+   "attrs": {
+    "name": "contains",
+    "proc_role": "def_verb"
+   }
+  },
+  {
+   "local_id": 123,
+   "type": "Concept",
+   "attrs": {
+    "name": "stores",
+    "proc_role": "def_verb"
+   }
+  },
+  {
+   "local_id": 124,
+   "type": "Concept",
+   "attrs": {
+    "name": "equals",
+    "proc_role": "def_verb"
+   }
+  },
+  {
+   "local_id": 130,
+   "type": "Concept",
+   "attrs": {
+    "name": "count",
+    "proc_role": "agg_word",
+    "proc_agg": "Count"
+   }
+  },
+  {
+   "local_id": 131,
+   "type": "Concept",
+   "attrs": {
+    "name": "number",
+    "proc_role": "agg_word",
+    "proc_agg": "Count"
+   }
+  },
+  {
+   "local_id": 132,
+   "type": "Concept",
+   "attrs": {
+    "name": "sum",
+    "proc_role": "agg_word",
+    "proc_agg": "Sum"
+   }
+  },
+  {
+   "local_id": 133,
+   "type": "Concept",
+   "attrs": {
+    "name": "total",
+    "proc_role": "agg_word",
+    "proc_agg": "Sum"
+   }
+  },
+  {
+   "local_id": 134,
+   "type": "Concept",
+   "attrs": {
+    "name": "average",
+    "proc_role": "agg_word",
+    "proc_agg": "Mean"
+   }
+  },
+  {
+   "local_id": 135,
+   "type": "Concept",
+   "attrs": {
+    "name": "mean",
+    "proc_role": "agg_word",
+    "proc_agg": "Mean"
+   }
+  },
+  {
+   "local_id": 136,
+   "type": "Concept",
+   "attrs": {
+    "name": "maximum",
+    "proc_role": "agg_word",
+    "proc_agg": "Max"
+   }
+  },
+  {
+   "local_id": 137,
+   "type": "Concept",
+   "attrs": {
+    "name": "minimum",
+    "proc_role": "agg_word",
+    "proc_agg": "Min"
+   }
+  }
+ ],
+ "edges": [],
+ "rules": [
+  {
+   "name": "retire_proc_probe_scratch",
+   "comment": "The referent cross-check (procedural_reader._referent_crosscheck) ingests the method TEXT as a Message{proc_probe:1} + a has_mention Mention chain purely to DEMONSTRATE the graph's own recognition, then reads the count back and marks the Message proc_done:1. This rule then DECIDES that consumed scratch is disposable and DELETES the Mentions, so the (conversation-typed) demonstration leaves NO Mention node behind -- required when read_method runs inside the reading pipeline, whose invariant is that it mints only SmMention, never conversation Mention (test_reading_mints_no_conversation_mention_nodes). Gated on proc_done so it never fires during the cross-check's own resolve tick (proc_done unset there), only after the count is read back. The RETIRE is this rule's decision, not Python.",
+   "match": [
+    [
+     "m",
+     "has_mention",
+     "n"
+    ]
+   ],
+   "where": {
+    "type": "Eq",
+    "a": {
+     "type": "Attr",
+     "node": {
+      "type": "Var",
+      "name": "m"
+     },
+     "key": "proc_done"
+    },
+    "b": {
+     "type": "Lit",
+     "value": 1.0
+    }
+   },
+   "effects": [
+    [
+     "del_node",
+     "n"
+    ],
+    [
+     "del_node",
+     "m"
+    ]
+   ]
+  }
+ ]
+}

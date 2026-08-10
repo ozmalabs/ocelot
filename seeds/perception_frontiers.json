@@ -1,0 +1,51 @@
+{
+  "id": "perception_frontiers",
+  "version": "0.1.0",
+  "depends_on": ["autonomy", "investigation_loop"],
+  "microtheory": {
+    "name": "text_world",
+    "definition": "The world of a raw text the agent is reading. The missing connective tissue between PERCEPTION and the understand-loop: each unexplained element it perceives (an unresolved Mention — a word it read but cannot yet refer) becomes a FRONTIER the never-satisfied understand drive can pick, so the agent brings its faculties to bear on what it does not know WITHOUT anyone sequencing the steps. This is the cognitive machinery for understanding text independently: detect the unknown -> it becomes a frontier -> the loop selects a faculty (the graph JOIN) -> runs it -> banks -> shifts to the next unknown.",
+    "category": "perception_domain",
+    "parent": "namesake_poem"
+  },
+  "nodes": [
+    {"local_id": 1, "type": "Microtheory", "attrs": {"name": "text_world"}},
+    {"local_id": 2, "type": "Operator", "attrs": {"name": "examine_word", "subroutine": "examine_word", "runner": "subroutine", "metric": "word_affect", "target": 0.0, "comment": "a held word-faculty: run by the investigation loop on whatever word is the current frontier"}}
+  ],
+  "edges": [
+    {"src": {"role": "agent_root"}, "type": "operates_in", "tgt": {"local": 1}, "attrs": {}},
+    {"src": {"role": "agent_root"}, "type": "holds_word_faculty", "tgt": {"local": 2}, "attrs": {}}
+  ],
+  "rules": [
+    {
+      "name": "mint_frontier_from_unresolved_mention",
+      "comment": "PERCEPTION -> FRONTIER: a Mention with no refers_to after comprehension, that is not a known function word and not already fronted, becomes its OWN CapabilityAxis (shortfall 1.0 so the understand-drive's frontier_pick ranks it to the top) with an about_mention edge back to the word. Each unknown word the agent read is now a hill it can choose to climb. NOVELTY GUARD (2026-07-03, creator directive 'salience for axes' -- same fix class as seeds/shape_decode_loop.json's sd_mint_quantum guard, diagnosed live: a per-frame self-report loop (e.g. arc_run's describe faculty) creates a FRESH Message+Mention per frame/turn, so the SAME still-unresolved word (e.g. 'you'/'doing'/'why') got a BRAND NEW CapabilityAxis every time it was re-mentioned -- guarded only per-Mention-node (InNeighbours(m,'about_mention')==0), never across Mentions of the SAME word. Confirmed empirically: one live tick minted 113 new understand_word axes, including two separate axes both carrying word='you'. Final And-item added: Not(Exists(NodesOfType('CapabilityAxis'), kind=='understand_word' AND word==m.text)) -- mint a frontier for a given unresolved WORD at most once; a later Mention of the SAME still-unknown word is recognised as already-fronted (the SAME identity notion the existing about_mention guard already uses, just keyed on the word's own text instead of one specific Mention instance). wire_word_faculty only needs ONE about_mention edge to bind the investigation faculty, so this does not starve investigation -- it just stops the duplicate hills.",
+      "match": [["msg", "has_mention", "m"]],
+      "where": {"type": "And", "items": [
+        {"type": "Not", "arg": {"type": "Exists", "var_name": "_r", "predicate": {"type": "Lit", "value": true}, "source": {"type": "Neighbours", "node": {"type": "Var", "name": "m"}, "edge_type": "refers_to"}}},
+        {"type": "Not", "arg": {"type": "Exists", "var_name": "_a", "predicate": {"type": "Lit", "value": true}, "source": {"type": "InNeighbours", "node": {"type": "Var", "name": "m"}, "edge_type": "about_mention"}}},
+        {"type": "Not", "arg": {"type": "Exists", "var_name": "f", "predicate": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "f"}, "key": "form"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "text"}}, "source": {"type": "NodesOfType", "node_type": "FunctionWord"}}},
+        {"type": "Not", "arg": {"type": "Exists", "var_name": "ex_ax", "predicate": {"type": "And", "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "ex_ax"}, "key": "kind"}, "b": {"type": "Lit", "value": "understand_word"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "ex_ax"}, "key": "word"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "text"}}
+        ]}, "source": {"type": "NodesOfType", "node_type": "CapabilityAxis"}}}
+      ]},
+      "effects": [
+        ["add_node", "ax", "CapabilityAxis", {"is_axis": 1.0, "shortfall": 1.0, "saturation": 0.0, "kind": "understand_word", "word": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "text"}}}],
+        ["add_edge", "ax", "about_mention", "m"]
+      ]
+    },
+    {
+      "name": "wire_word_faculty",
+      "comment": "THE JOIN's missing edge for word-frontiers: bind every understand_word axis to the held word-faculty operator (and the operator applies_in the agent's world). After this, bind_investigation_faculty's four-edge JOIN fires and _run_investigation_reflex runs the faculty on the current frontier word.",
+      "match": [["ax", "about_mention", "m"], ["ag", "holds_word_faculty", "op"], ["ag", "operates_in", "w"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Count", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "ax"}, "edge_type": "investigated_by"}}, "b": {"type": "Lit", "value": 0}}
+      ]},
+      "effects": [
+        ["add_edge", "ax", "investigated_by", "op"],
+        ["add_edge", "op", "applies_in", "w"]
+      ]
+    }
+  ]
+}

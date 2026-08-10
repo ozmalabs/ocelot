@@ -1,0 +1,1046 @@
+{
+ "id": "time_axis",
+ "version": "1.2.0",
+ "depends_on": [
+  "shape_decode_loop"
+ ],
+ "description": "TIME AS AN INFERRED DIMENSION, ORDER-N. A sequence of frames presented in tick order is an ORBIT iff ONE transition generator G carries frame(t)->frame(t+1) for EVERY consecutive pair; that generator's exponent k IS the time axis, minted as a latent:time LatentDimension. The decision is the Rust TimeInfer Term (the temporal sibling of GenInfer, one level up): G is inferred from the first pair (affine translate preferred -- the retinal drifting-pattern case -- else integer 2x2 linear, the SAME enumerate-and-test as GenInfer) and VERIFIED by exact equality across every remaining pair (ORDER-1: constant velocity). When that exact-equality path GIVES UP -- the per-pair translate offset is itself CHANGING -- TimeInfer recurses with the DIMENSION-GENERIC finite-difference order-N mechanism (shape_decode.rs::diff_pyramid/pyramid_order): if the offset stream's finite differences reach a witnessed constant, it mints an ORDER-N generator (order 2 = acceleration, 3 = jerk, ...) carrying `order` + `coeffs` (the Newton forward coefficients). Only a stream that is NOT regular at any finite order (random) grounds unexplained -- the honest MDL floor, now placed at incompressibility rather than at order 1. The recursion is written over an ordered integer-vector stream with NO notion of which dimension indexes it, so the SAME code fits order-N along time, a spatial scan, or a minted latent axis. Time lives in Hom(frame,frame), never in a frame's coordinates (the frame/continuum invariant). Flag-gated on agent.time_infer_enabled==1, absent by default (OFF, PROTOCOL section 9); the whole seed is inert without it AND matches only status=='motion_seq' observations, which the normal decode ladder never produces.  v1.2.0 adds the FORWARD-PROJECTION reading of the same fit, on every path including the floor: `order_fit` (the order the stream's own generator was measured at) and `crossing` (how many steps that generator takes to carry the stream to its frame origin, capped at the caller's declared horizon -- a bound, never an order cap). `crossing` forced to order 1 is exactly margin/rate, the commonest quantity in any control loop wearing no clock; at the measured order it is a different number and the difference is the curvature the linear reading throws away. Materialised as TemporalProjection so consuming seeds can match on it. Domain-neutral by construction.",
+ "microtheory": {
+  "name": "time_axis",
+  "description": "ordered motion orbit -> transition generator + latent:time dimension (+ downstream prediction of an unseen frame); a CHANGING-but-regular offset stream -> ORDER-N generator (velocity/acceleration/jerk...) via the dimension-generic finite-difference recursion; only an incompressible stream -> enumeration. Same operation as spatial generator discovery, applied to a temporal orbit and recursed to any order."
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [
+  {
+   "provenance": "seed:time_axis:observed-0",
+   "src": {
+    "type": "Agent",
+    "var": "s"
+   },
+   "edge_type": "observed",
+   "tgt": {
+    "type": "Observation",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:time_axis:has_latent_dimension-1",
+   "src": {
+    "type": "Observation",
+    "var": "s"
+   },
+   "edge_type": "has_latent_dimension",
+   "tgt": {
+    "type": "LatentDimension",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:time_axis:has_temporal_projection-2",
+   "src": {
+    "type": "Observation",
+    "var": "s"
+   },
+   "edge_type": "has_temporal_projection",
+   "tgt": {
+    "type": "TemporalProjection",
+    "var": "t"
+   }
+  }
+ ],
+ "rules": [
+  {
+   "name": "time_infer_mint",
+   "comment": "ORDERED motion orbit -> mint a latent:time dimension. Flag ON (agent.time_infer_enabled==1). On a motion-sequence Observation (status=='motion_seq') whose ordered `frames` form an orbit under a transition generator at SOME finite order (TimeInfer(frames).explained==1), mint LatentDimension{name:'latent:time', ...} carrying the generator descriptor (kind + offset/matrix + coord_dims), the inferred `order` (1=velocity, 2=acceleration, 3=jerk, ...) and `coeffs` (the Newton forward finite-difference coefficients for order>1), and the inferred window K, record the DOWNSTREAM prediction obs.predicted = G^K(f0) (the UNSEEN frame the axis must MOVE -- PROTOCOL section 1 clause 5; for order>1 the axis extrapolates one more offset via the finite-difference recursion), and mark status='time_inferred'. Idempotence guard: only if not already time-inferred.",
+   "match_type": "Observation",
+   "match": [
+    [
+     "ag",
+     "observed",
+     "obs"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "motion_seq"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ag"
+       },
+       "key": "time_infer_enabled"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "TimeInfer",
+       "sequence": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "frames"
+       },
+       "codebook_type": "ShapeSignature",
+       "max_b": 8,
+       "field": "explained"
+      },
+      "b": {
+       "type": "Lit",
+       "value": true
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "ld",
+     "LatentDimension",
+     {
+      "name": {
+       "__term__": {
+        "type": "Lit",
+        "value": "latent:time"
+       }
+      },
+      "generator_kind": {
+       "__term__": {
+        "type": "TimeInfer",
+        "sequence": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "frames"
+        },
+        "codebook_type": "ShapeSignature",
+        "max_b": 8,
+        "field": "kind"
+       }
+      },
+      "offset": {
+       "__term__": {
+        "type": "TimeInfer",
+        "sequence": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "frames"
+        },
+        "codebook_type": "ShapeSignature",
+        "max_b": 8,
+        "field": "offset"
+       }
+      },
+      "matrix": {
+       "__term__": {
+        "type": "TimeInfer",
+        "sequence": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "frames"
+        },
+        "codebook_type": "ShapeSignature",
+        "max_b": 8,
+        "field": "matrix"
+       }
+      },
+      "coord_dims": {
+       "__term__": {
+        "type": "TimeInfer",
+        "sequence": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "frames"
+        },
+        "codebook_type": "ShapeSignature",
+        "max_b": 8,
+        "field": "coord_dims"
+       }
+      },
+      "window": {
+       "__term__": {
+        "type": "TimeInfer",
+        "sequence": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "frames"
+        },
+        "codebook_type": "ShapeSignature",
+        "max_b": 8,
+        "field": "window"
+       }
+      },
+      "order": {
+       "__term__": {
+        "type": "TimeInfer",
+        "sequence": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "frames"
+        },
+        "codebook_type": "ShapeSignature",
+        "max_b": 8,
+        "field": "order"
+       }
+      },
+      "coeffs": {
+       "__term__": {
+        "type": "TimeInfer",
+        "sequence": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "frames"
+        },
+        "codebook_type": "ShapeSignature",
+        "max_b": 8,
+        "field": "coeffs"
+       }
+      },
+      "source": {
+       "__term__": {
+        "type": "Lit",
+        "value": "time_infer"
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "obs",
+     "has_latent_dimension",
+     "ld"
+    ],
+    [
+     "set_attr",
+     "obs",
+     "time_kind",
+     {
+      "__term__": {
+       "type": "TimeInfer",
+       "sequence": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "frames"
+       },
+       "codebook_type": "ShapeSignature",
+       "max_b": 8,
+       "field": "kind"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "predicted",
+     {
+      "__term__": {
+       "type": "TimeInfer",
+       "sequence": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "frames"
+       },
+       "codebook_type": "ShapeSignature",
+       "max_b": 8,
+       "field": "predicted"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "status",
+     "time_inferred"
+    ],
+    [
+     "set_attr",
+     "obs",
+     "time_order_fit",
+     {
+      "__term__": {
+       "type": "TimeInfer",
+       "sequence": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "frames"
+       },
+       "codebook_type": "ShapeSignature",
+       "max_b": 8,
+       "field": "order_fit"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "time_crossing",
+     {
+      "__term__": {
+       "type": "TimeInfer",
+       "sequence": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "frames"
+       },
+       "codebook_type": "ShapeSignature",
+       "max_b": 8,
+       "field": "crossing"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "time_infer_floor",
+   "comment": "SHUFFLED / VARYING-velocity sequence -> grounds at enumeration. Flag ON. On a motion-sequence Observation whose ordered frames are NOT an orbit under any single transition generator (TimeInfer(frames).explained!=1), mint NO dimension and NO generator -- mark status='time_none'. This is the honest MDL floor ('no transition generator shorter than enumeration found', provisional), and it must hold at the LONGEST window (a forced minter would eventually mint a spurious generator -- the section 1.1 dead-arm disease in the time domain).",
+   "match_type": "Observation",
+   "match": [
+    [
+     "ag",
+     "observed",
+     "obs"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "motion_seq"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ag"
+       },
+       "key": "time_infer_enabled"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "TimeInfer",
+        "sequence": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "frames"
+        },
+        "codebook_type": "ShapeSignature",
+        "max_b": 8,
+        "field": "explained"
+       },
+       "b": {
+        "type": "Lit",
+        "value": true
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "obs",
+     "status",
+     "time_none"
+    ],
+    [
+     "set_attr",
+     "obs",
+     "time_order_fit",
+     {
+      "__term__": {
+       "type": "TimeInfer",
+       "sequence": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "frames"
+       },
+       "codebook_type": "ShapeSignature",
+       "max_b": 8,
+       "field": "order_fit"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "time_crossing",
+     {
+      "__term__": {
+       "type": "TimeInfer",
+       "sequence": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "frames"
+       },
+       "codebook_type": "ShapeSignature",
+       "max_b": 8,
+       "field": "crossing"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "time_infer_mint_robust",
+   "comment": "ROBUST/MDL WITNESS variant (opt-in). ORDERED motion orbit -> mint a latent:time dimension. Flag ON (agent.time_infer_enabled==1). On a motion-sequence Observation (status=='motion_seq_robust') whose ordered `frames` form an orbit under a transition generator at SOME finite order (TimeInfer(frames).explained==1), mint LatentDimension{name:'latent:time', ...} carrying the generator descriptor (kind + offset/matrix + coord_dims), the inferred `order` (1=velocity, 2=acceleration, 3=jerk, ...) and `coeffs` (the Newton forward finite-difference coefficients for order>1), and the inferred window K, record the DOWNSTREAM prediction obs.predicted = G^K(f0) (the UNSEEN frame the axis must MOVE -- PROTOCOL section 1 clause 5; for order>1 the axis extrapolates one more offset via the finite-difference recursion), and mark status='time_inferred'. Idempotence guard: only if not already time-inferred.",
+   "match_type": "Observation",
+   "match": [
+    [
+     "ag",
+     "observed",
+     "obs"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "motion_seq_robust"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ag"
+       },
+       "key": "time_infer_enabled"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "TimeInfer",
+       "sequence": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "frames"
+       },
+       "codebook_type": "ShapeSignature",
+       "max_b": 8,
+       "field": "explained",
+       "robust": true
+      },
+      "b": {
+       "type": "Lit",
+       "value": true
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "ld",
+     "LatentDimension",
+     {
+      "name": {
+       "__term__": {
+        "type": "Lit",
+        "value": "latent:time"
+       }
+      },
+      "generator_kind": {
+       "__term__": {
+        "type": "TimeInfer",
+        "sequence": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "frames"
+        },
+        "codebook_type": "ShapeSignature",
+        "max_b": 8,
+        "field": "kind",
+        "robust": true
+       }
+      },
+      "offset": {
+       "__term__": {
+        "type": "TimeInfer",
+        "sequence": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "frames"
+        },
+        "codebook_type": "ShapeSignature",
+        "max_b": 8,
+        "field": "offset",
+        "robust": true
+       }
+      },
+      "matrix": {
+       "__term__": {
+        "type": "TimeInfer",
+        "sequence": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "frames"
+        },
+        "codebook_type": "ShapeSignature",
+        "max_b": 8,
+        "field": "matrix",
+        "robust": true
+       }
+      },
+      "coord_dims": {
+       "__term__": {
+        "type": "TimeInfer",
+        "sequence": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "frames"
+        },
+        "codebook_type": "ShapeSignature",
+        "max_b": 8,
+        "field": "coord_dims",
+        "robust": true
+       }
+      },
+      "window": {
+       "__term__": {
+        "type": "TimeInfer",
+        "sequence": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "frames"
+        },
+        "codebook_type": "ShapeSignature",
+        "max_b": 8,
+        "field": "window",
+        "robust": true
+       }
+      },
+      "order": {
+       "__term__": {
+        "type": "TimeInfer",
+        "sequence": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "frames"
+        },
+        "codebook_type": "ShapeSignature",
+        "max_b": 8,
+        "field": "order",
+        "robust": true
+       }
+      },
+      "coeffs": {
+       "__term__": {
+        "type": "TimeInfer",
+        "sequence": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "frames"
+        },
+        "codebook_type": "ShapeSignature",
+        "max_b": 8,
+        "field": "coeffs",
+        "robust": true
+       }
+      },
+      "source": {
+       "__term__": {
+        "type": "Lit",
+        "value": "time_infer"
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "obs",
+     "has_latent_dimension",
+     "ld"
+    ],
+    [
+     "set_attr",
+     "obs",
+     "time_kind",
+     {
+      "__term__": {
+       "type": "TimeInfer",
+       "sequence": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "frames"
+       },
+       "codebook_type": "ShapeSignature",
+       "max_b": 8,
+       "field": "kind",
+       "robust": true
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "predicted",
+     {
+      "__term__": {
+       "type": "TimeInfer",
+       "sequence": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "frames"
+       },
+       "codebook_type": "ShapeSignature",
+       "max_b": 8,
+       "field": "predicted",
+       "robust": true
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "status",
+     "time_inferred"
+    ],
+    [
+     "set_attr",
+     "obs",
+     "time_order_fit",
+     {
+      "__term__": {
+       "type": "TimeInfer",
+       "sequence": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "frames"
+       },
+       "codebook_type": "ShapeSignature",
+       "max_b": 8,
+       "field": "order_fit",
+       "robust": true
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "time_crossing",
+     {
+      "__term__": {
+       "type": "TimeInfer",
+       "sequence": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "frames"
+       },
+       "codebook_type": "ShapeSignature",
+       "max_b": 8,
+       "field": "crossing",
+       "robust": true
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "time_infer_floor_robust",
+   "comment": "ROBUST/MDL WITNESS variant (opt-in). SHUFFLED / VARYING-velocity sequence -> grounds at enumeration. Flag ON. On a motion-sequence Observation whose ordered frames are NOT an orbit under any single transition generator (TimeInfer(frames).explained!=1), mint NO dimension and NO generator -- mark status='time_none'. This is the honest MDL floor ('no transition generator shorter than enumeration found', provisional), and it must hold at the LONGEST window (a forced minter would eventually mint a spurious generator -- the section 1.1 dead-arm disease in the time domain).",
+   "match_type": "Observation",
+   "match": [
+    [
+     "ag",
+     "observed",
+     "obs"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "motion_seq_robust"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ag"
+       },
+       "key": "time_infer_enabled"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "TimeInfer",
+        "sequence": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "frames"
+        },
+        "codebook_type": "ShapeSignature",
+        "max_b": 8,
+        "field": "explained",
+        "robust": true
+       },
+       "b": {
+        "type": "Lit",
+        "value": true
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "obs",
+     "status",
+     "time_none"
+    ],
+    [
+     "set_attr",
+     "obs",
+     "time_order_fit",
+     {
+      "__term__": {
+       "type": "TimeInfer",
+       "sequence": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "frames"
+       },
+       "codebook_type": "ShapeSignature",
+       "max_b": 8,
+       "field": "order_fit",
+       "robust": true
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "time_crossing",
+     {
+      "__term__": {
+       "type": "TimeInfer",
+       "sequence": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "frames"
+       },
+       "codebook_type": "ShapeSignature",
+       "max_b": 8,
+       "field": "crossing",
+       "robust": true
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "time_projection_materialize",
+   "comment": "The forward-projection reading of the time fit, materialised so OTHER seeds can match on it. Fires on either settled outcome -- an inferred orbit or the honest floor -- because the projection is defined on both: a stream with no measured structure has no measured deadline, and that is a reading, not an absence. `crossing` is the order-N generalisation of margin/rate; `order_fit` is the order it was read at. Domain-neutral: nothing here knows what the stream measures.",
+   "match": [
+    [
+     "ag",
+     "observed",
+     "obs"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ag"
+       },
+       "key": "time_infer_enabled"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "status"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "time_inferred"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "status"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "time_none"
+        }
+       }
+      ]
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "edge_type": "has_temporal_projection"
+       },
+       "var_name": "prior",
+       "predicate": {
+        "type": "Lit",
+        "value": true
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "proj",
+     "TemporalProjection",
+     {
+      "order_fit": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "obs"
+          },
+          "key": "time_order_fit"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "crossing": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "obs"
+          },
+          "key": "time_crossing"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "integer_native": 1,
+      "output_authority": 0,
+      "source": "time_infer"
+     }
+    ],
+    [
+     "add_edge",
+     "obs",
+     "has_temporal_projection",
+     "proj"
+    ]
+   ]
+  }
+ ]
+}

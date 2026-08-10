@@ -1,0 +1,118 @@
+{
+  "id": "web_attacks_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "XSS_cross_site_scripting",
+  "in_microtheory": "security_and_cryptography",
+  "description": "Web attacks decomposed (OWASP top 10). SQL injection, XSS variants (stored, reflected, DOM-based), CSRF, SSRF, prototype pollution, deserialization, IDOR, security misconfiguration. The specific mechanisms by which web apps fail + the defenses.",
+  "sub_mechanisms": [
+    {
+      "name": "stored_XSS",
+      "definition": "Attacker payload stored in DB (comment, profile field); served to other users; executes in their browser.",
+      "why": "Worst XSS variant: persistent, affects all viewers. Mitigation: output encoding everywhere, CSP. Framework defaults (React JSX) escape automatically.",
+      "category": "web_attack_mechanism"
+    },
+    {
+      "name": "reflected_XSS",
+      "definition": "Payload in URL or form input; server echoes back; executes in victim browser. Requires victim to click crafted URL.",
+      "why": "Phishing combined: malicious URL → page reflects script. Mitigation: encode URL params on output. CSP further limits damage.",
+      "category": "web_attack_mechanism"
+    },
+    {
+      "name": "DOM_based_XSS",
+      "definition": "JavaScript code processes user input (URL fragment, location) and inserts into DOM unsafely.",
+      "why": "Server never sees payload; pure client-side. Mitigation: use safe DOM APIs (textContent, not innerHTML; setAttribute). Linters detect anti-patterns.",
+      "category": "web_attack_mechanism"
+    },
+    {
+      "name": "SQL_injection_blind",
+      "definition": "Server doesn't echo results but behaviour differs based on injection. Time-based or boolean-based extraction.",
+      "why": "Slower than classic SQLi but recoverable. Tools (sqlmap) automate. Mitigation same as classic: parameterised queries always.",
+      "category": "web_attack_mechanism"
+    },
+    {
+      "name": "SQL_injection_second_order",
+      "definition": "Input stored safely, but later used unsafely in different query. Triggers on second use.",
+      "why": "Tricky to find: input went through validation; output didn't. Mitigation: parameterise ALL queries, not just user-facing. Code review + SAST tools.",
+      "category": "web_attack_mechanism"
+    },
+    {
+      "name": "CSRF_token",
+      "definition": "Random per-session value embedded in forms. Server verifies on submission.",
+      "why": "Classic CSRF mitigation. Modern alternative: SameSite cookies. Token approach still required when SameSite insufficient (cross-site flows).",
+      "category": "web_attack_mechanism"
+    },
+    {
+      "name": "SameSite_cookie",
+      "definition": "Cookie attribute. SameSite=Lax: only sent on same-site navigation (default modern). Strict: same-site only. None: cross-site.",
+      "why": "Modern CSRF defense. Lax default in Chrome 80+, blocks most CSRF without token. Cost: must mark legitimate cross-site cookies (OAuth) as None+Secure.",
+      "category": "web_attack_mechanism"
+    },
+    {
+      "name": "SSRF_cloud_metadata_attack",
+      "definition": "SSRF to fetch cloud instance metadata (169.254.169.254 on AWS). Reveals credentials, instance role.",
+      "why": "Capital One breach 2019: SSRF + cloud metadata = full data exfiltration. Mitigation: IMDSv2 (token-based metadata), block 169.254.* outbound from web services.",
+      "category": "web_attack_mechanism"
+    },
+    {
+      "name": "IDOR",
+      "definition": "Insecure Direct Object Reference. /api/order/1234 — change 1234 to access other users' orders.",
+      "why": "Missing authorization check on object access. Common bug class. Mitigation: explicit authz check per object access, randomised IDs (UUIDs make guessing harder).",
+      "category": "web_attack_mechanism"
+    },
+    {
+      "name": "prototype_pollution",
+      "definition": "JavaScript-specific. Modifying Object.prototype affects all objects. Often via deep-merge of attacker-controlled JSON.",
+      "why": "Used to escalate to RCE in some scenarios. Mitigation: use Map instead of plain objects, validate keys (no '__proto__', 'constructor', 'prototype'), use Object.create(null).",
+      "category": "web_attack_mechanism"
+    },
+    {
+      "name": "insecure_deserialization",
+      "definition": "Untrusted serialised data deserialised; may construct arbitrary objects with arbitrary state.",
+      "why": "Java + Python pickle famous for this. Mitigation: don't deserialise untrusted data; use safe formats (JSON for data only); add integrity check on serialised data.",
+      "category": "web_attack_mechanism"
+    },
+    {
+      "name": "XSS_via_SVG",
+      "definition": "SVG files can contain JavaScript. Upload + serve as image → script execution.",
+      "why": "Image upload functionality often misses SVG. Mitigation: explicit SVG allowlist with strict sanitization, or block SVG, or serve as application/octet-stream.",
+      "category": "web_attack_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "CSP_strict_nonce_blocks_most_XSS",
+      "if": ["site uses strict CSP with nonces"],
+      "then": ["inline scripts without matching nonce blocked"],
+      "why": "Even injected scripts can't execute without server-generated nonce. Stops most XSS in practice. Cost: must refactor inline scripts. Best modern XSS defense.",
+      "soundness_category": "referential_transparency"
+    },
+    {
+      "name": "parameterised_queries_complete_SQLi_fix",
+      "if": ["every SQL query uses bound parameters"],
+      "then": ["SQL injection is impossible"],
+      "why": "Parameters never interpreted as SQL syntax. Pure mechanical fix. ORMs help but raw SQL with concatenation defeats. Code review + linting catch.",
+      "soundness_category": "referential_transparency"
+    },
+    {
+      "name": "SameSite_Lax_blocks_most_CSRF",
+      "if": ["cookies have SameSite=Lax (browser default)"],
+      "then": ["most CSRF attacks are blocked"],
+      "why": "Cross-site POST won't include cookies. Same-site navigation (link click) does. Covers ~95% of CSRF patterns. Edge cases require traditional tokens.",
+      "soundness_category": "referential_transparency"
+    },
+    {
+      "name": "IMDSv2_blocks_SSRF_metadata_theft",
+      "if": ["cloud uses IMDSv2 with mandatory tokens"],
+      "then": ["SSRF can't fetch credentials via metadata"],
+      "why": "v1: GET request fetches metadata. v2: requires PUT to get token first. SSRF typically only allows GET. AWS migrated, others followed. Direct mitigation for Capital-One-class attacks.",
+      "soundness_category": "referential_transparency"
+    },
+    {
+      "name": "framework_defaults_critical",
+      "if": ["framework auto-escapes by default (React, Vue, Django)"],
+      "then": ["XSS is the exception, not the rule"],
+      "why": "Pre-framework: every developer must remember to escape. Framework: must explicitly opt out (dangerouslySetInnerHTML). Statistical shift in vulnerability rates.",
+      "soundness_category": "extensional_equivalence"
+    }
+  ]
+}

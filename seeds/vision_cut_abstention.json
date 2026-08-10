@@ -1,0 +1,172 @@
+{
+ "id": "vision_cut_abstention",
+ "version": "1.0.0",
+ "depends_on": ["vision_verdict_comparator"],
+ "description": "GRAPH-RESIDENT ABSTENTION ON A DISCONTINUED PRIOR (VISION_CUT_ABSTENTION_PREREG.md, seeds 73000-73999). THE DEFECT: VISION_VERDICT_RESULTS.md section 5.1 measured that across a scene cut the comparator is confidently wrong on 99.4% of trials and abstains on none of them, while VISION_SALIENCE_RESCORE_RESULTS.md section 4 measured that at short delta misidentification is not a REGION property but a FRAME event -- every one of 16 regions failing at once, per-frame error count tracking per-frame motion at r = +0.987. That is a CLIFF, and abstention is what converts a cliff into a degradation. THE DECISION IS A RULE, NOT A PYTHON CONDITIONAL. The adapter ingests frames and steps and draws a `spans` edge from each probe to the steps of its own interval -- mechanical translation of an interval the runner constructed. Everything after that is the graph's: it computes the motion of each step (ca_step_mag / ca_step_res), derives its OWN threshold from the sequence's own distribution (ca_otsu), marks the steps that exceed it (ca_mark_cut), and refuses any probe spanning a marked step (ca_abstain). THE THRESHOLD FALLS OUT (protocol section 13). NO NUMERIC THRESHOLD IS WRITTEN ANYWHERE IN THIS FILE, and a gate asserts that: `ca_otsu` takes the Argmax over the held steps of Otsu's between-class variance, rescaled by N^2 to the single-division form (s0*n1 - s1*n0)^2 / (n0*n1), and the threshold IS the `mag` of the step the graph picked -- a value the data supplied, not a number chosen to make an output look right. Verified before the seed was written: this reproduces the numpy Otsu's PARTITION exactly on both corpora (C1 high steps [34, 47, 79], C2 [23, 85, 143]) while the threshold VALUE differs, because the seed picks the lower endpoint and numpy picks the midpoint between consecutive distinct values -- the classification is unchanged by that. TWO STATISTICS, BOTH DECLARED IN ADVANCE. `mag` is the mean absolute per-pixel difference, computed by the graph via the existing TemporalDiff Term; it is by construction the same statistic the verdict rung computed in numpy, so the graph's value is checkable against it. `xcorr` is 1 - the peak axis-shifted correlation via the existing XCorrPeak Term (a lag sweep over the row index; applied to the transpose it sweeps columns), i.e. the change NOT explained by a rigid shift. The second exists because the first cannot distinguish a discontinuity from a fast pan -- a distinction the pre-registration predicts the primary statistic will FAIL, and which is the arm that decides whether this mechanism has learned `broken prior` or merely `large change`. THE ABSTENTION IS RECORDED. VISION_REDUNDANCY_RESULTS.md ARM 4 found observability 0/2 with the marker inventory EMPTY in all 26 probe runs INCLUDING BASELINE -- there is no vocabulary in this system for recording that a fallback occurred, so a silent degradation is indistinguishable from a healthy run. `ca_abstain` therefore mints a Refusal node (add_node_if_absent, so exactly one per group and the fixpoint terminates) and draws a `refused_by` edge, and sets `abstain_reason` on the group. The node type, the edge type and the answer value are all matched by the UNCHANGED marker regex of scripts/redundancy_observability.py, which is the existing reader this rung reports the inventory count from -- a marker no existing reader consumes would be a different kind of nothing. SHIPS OFF (CutParams.armed is the empty string, matching no arm) and is NOT in the default boot set -- the runner loads this manifest explicitly and arms it, so the inert configuration is byte-identical to the verdict rung's V3 and every committed result reproduces (protocol section 9).",
+ "nodes": [
+  {"local_id": 0, "type": "CutParams",
+   "attrs": {"armed": "", "status": "ca_thr_pending", "cut_threshold": 0.0}}
+ ],
+ "edges": [],
+ "productions": [
+  {"provenance": "seed:vision_cut_abstention:has_step-0",
+   "src": {"type": "Agent", "var": "s"},
+   "edge_type": "has_step",
+   "tgt": {"type": "FrameStep", "var": "t"}},
+  {"provenance": "seed:vision_cut_abstention:from_frame-1",
+   "src": {"type": "FrameStep", "var": "s"},
+   "edge_type": "from_frame",
+   "tgt": {"type": "VidFrame", "var": "t"}},
+  {"provenance": "seed:vision_cut_abstention:to_frame-2",
+   "src": {"type": "FrameStep", "var": "s"},
+   "edge_type": "to_frame",
+   "tgt": {"type": "VidFrame", "var": "t"}},
+  {"provenance": "seed:vision_cut_abstention:has_cut_params-3",
+   "src": {"type": "Agent", "var": "s"},
+   "edge_type": "has_cut_params",
+   "tgt": {"type": "CutParams", "var": "t"}},
+  {"provenance": "seed:vision_cut_abstention:spans-4",
+   "src": {"type": "ObsGroup", "var": "s"},
+   "edge_type": "spans",
+   "tgt": {"type": "FrameStep", "var": "t"}},
+  {"provenance": "seed:vision_cut_abstention:refused_by-5",
+   "src": {"type": "ObsGroup", "var": "s"},
+   "edge_type": "refused_by",
+   "tgt": {"type": "Refusal", "var": "t"}}
+ ],
+ "rules": [
+  {
+   "name": "ca_step_mag",
+   "comment": "THE PRIMARY STATISTIC, COMPUTED BY THE GRAPH. mean |b - a| per pixel over the step's two frames, via the existing TemporalDiff Term -- the temporal face of change-detect, already in the engine and used unchanged. The adapter writes the frames' pixel values and NOTHING derived from them; the motion is the graph's own quantity. Deliberately the SAME statistic the verdict rung computed as np.mean(np.abs(frames[t+1]-frames[t])), so it can be checked against a reference rather than trusted. Guarded on CutParams.armed so the seed is inert until a measurement arms it (protocol section 9).",
+   "match_type": "FrameStep",
+   "match": [["ag", "has_step", "st"]],
+   "where": {"type": "And", "items": [
+    {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "st"}, "key": "status"}, "b": {"type": "Lit", "value": "ca_step_pending"}},
+    {"type": "Eq", "a": {"type": "Attr", "node": {"type": "PickUnique", "source": {"type": "NodesOfType", "node_type": "CutParams"}}, "key": "armed"}, "b": {"type": "Lit", "value": "mag"}}
+   ]},
+   "effects": [
+    ["set_attr", "st", "mag", {"__term__": {
+      "type": "Div",
+      "a": {"type": "Sum",
+            "source": {"type": "TemporalDiff",
+                       "a_vals": {"type": "Attr", "key": "vals", "node": {"type": "PickUnique", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "st"}, "edge_type": "from_frame", "any_type": false}}},
+                       "b_vals": {"type": "Attr", "key": "vals", "node": {"type": "PickUnique", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "st"}, "edge_type": "to_frame", "any_type": false}}}},
+            "var_name": "d",
+            "value": {"type": "Abs", "arg": {"type": "Var", "name": "d"}}},
+      "b": {"type": "Count",
+            "source": {"type": "TemporalDiff",
+                       "a_vals": {"type": "Attr", "key": "vals", "node": {"type": "PickUnique", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "st"}, "edge_type": "from_frame", "any_type": false}}},
+                       "b_vals": {"type": "Attr", "key": "vals", "node": {"type": "PickUnique", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "st"}, "edge_type": "to_frame", "any_type": false}}}}}}}],
+    ["set_attr", "st", "status", "ca_step_measured"]
+   ]
+  },
+  {
+   "name": "ca_step_res",
+   "comment": "THE SECONDARY STATISTIC (S1), DECLARED IN THE PRE-REGISTRATION UNCONDITIONALLY AND REPORTED EITHER WAY -- it is not a rescue held in reserve for a failed primary. 1 - max(XCorrPeak(rows), XCorrPeak(cols)): the change NOT explained by a rigid axis-aligned shift. The distinction it is aimed at is the one the primary CANNOT make: a fast pan IS a shift, so its residual is small however large its raw motion; a cut is not a shift of anything, so its residual is large. XCorrPeak is the existing matched-filter Term (a peak-NCC sweep over integer lags of the row index); handing it the transpose sweeps columns instead, so the pair covers both axes with no new Rust. THE DECLARED WEAKNESS, stated before measuring: xcorr_peak does NOT mean-centre its inputs, so it is cosine similarity on all-positive luminance and may saturate near 1 for any pair of natural frames, leaving no usable dynamic range. Whether it does is a measured property of an existing Term and is reported as one.",
+   "match_type": "FrameStep",
+   "match": [["ag", "has_step", "st"]],
+   "where": {"type": "And", "items": [
+    {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "st"}, "key": "status"}, "b": {"type": "Lit", "value": "ca_step_pending"}},
+    {"type": "Eq", "a": {"type": "Attr", "node": {"type": "PickUnique", "source": {"type": "NodesOfType", "node_type": "CutParams"}}, "key": "armed"}, "b": {"type": "Lit", "value": "xcorr"}}
+   ]},
+   "effects": [
+    ["set_attr", "st", "mag", {"__term__": {
+      "type": "Minus",
+      "a": {"type": "Lit", "value": 1.0},
+      "b": {"type": "Max", "items": [
+        {"type": "XCorrPeak",
+         "a": {"type": "Attr", "key": "rows", "node": {"type": "PickUnique", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "st"}, "edge_type": "from_frame", "any_type": false}}},
+         "b": {"type": "Attr", "key": "rows", "node": {"type": "PickUnique", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "st"}, "edge_type": "to_frame", "any_type": false}}}},
+        {"type": "XCorrPeak",
+         "a": {"type": "Attr", "key": "cols", "node": {"type": "PickUnique", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "st"}, "edge_type": "from_frame", "any_type": false}}},
+         "b": {"type": "Attr", "key": "cols", "node": {"type": "PickUnique", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "st"}, "edge_type": "to_frame", "any_type": false}}}}]}}}],
+    ["set_attr", "st", "status", "ca_step_measured"]
+   ]
+  },
+  {
+   "name": "ca_otsu",
+   "comment": "THE THRESHOLD, AND IT FALLS OUT OF THE DATA (protocol section 13). Otsu's criterion maximises between-class variance w0*w1*(m0-m1)^2 over candidate splits; multiplying through by N^2 and clearing denominators gives (s0*n1 - s1*n0)^2 / (n0*n1), the SAME argmax in one division, where n0/s0 count and sum the steps at or below the candidate and n1/s1 those above. The candidates are THE OBSERVED MAGNITUDES THEMSELVES -- Argmax ranges over the held FrameStep nodes -- so the threshold is not a number in this file, it is the `mag` of a step the graph picked. There is NO free parameter and no percentile: a percentile would be a number I chose, and Otsu's split is determined by the distribution's own bimodality. The n1 > 0 guard is arithmetic (the topmost candidate has an empty upper class), not a tuned exclusion. Fires only once every step has been measured (the zero-pending guard), so the fixpoint orders the layers with no adapter sequencing. THE HONEST LIMIT, pre-registered as an expected FAILURE rather than discovered afterwards: Otsu has no free parameter but it also has no NULL HYPOTHESIS -- it returns a split on any distribution, including a sequence with no cut in it at all, and the cut-free control arm exists to measure exactly that.",
+   "match_type": "CutParams",
+   "match": [["ag", "has_cut_params", "cp"]],
+   "where": {"type": "And", "items": [
+    {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "cp"}, "key": "status"}, "b": {"type": "Lit", "value": "ca_thr_pending"}},
+    {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "cp"}, "key": "armed"}, "b": {"type": "Lit", "value": ""}}},
+    {"type": "Gt", "a": {"type": "Count", "source": {"type": "NodesOfType", "node_type": "FrameStep"}}, "b": {"type": "Lit", "value": 0}},
+    {"type": "Eq",
+     "a": {"type": "Count", "source": {"type": "Filter",
+           "source": {"type": "NodesOfType", "node_type": "FrameStep"},
+           "var_name": "p",
+           "predicate": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "p"}, "key": "status"}, "b": {"type": "Lit", "value": "ca_step_pending"}}}},
+     "b": {"type": "Lit", "value": 0}}
+   ]},
+   "effects": [
+    ["set_attr", "cp", "cut_threshold", {"__term__": {
+      "type": "Attr", "key": "mag",
+      "node": {"type": "Argmax",
+        "source": {"type": "NodesOfType", "node_type": "FrameStep"},
+        "var_name": "c",
+        "value": {"type": "IfThenElse",
+          "cond": {"type": "Gt",
+                   "a": {"type": "Count", "source": {"type": "Filter", "source": {"type": "NodesOfType", "node_type": "FrameStep"}, "var_name": "s", "predicate": {"type": "Gt", "a": {"type": "Attr", "node": {"type": "Var", "name": "s"}, "key": "mag"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "mag"}}}},
+                   "b": {"type": "Lit", "value": 0}},
+          "then": {"type": "Div",
+            "a": {"type": "Pow", "b": {"type": "Lit", "value": 2.0},
+              "a": {"type": "Minus",
+                "a": {"type": "Times", "items": [
+                  {"type": "Sum", "source": {"type": "Filter", "source": {"type": "NodesOfType", "node_type": "FrameStep"}, "var_name": "s", "predicate": {"type": "Lte", "a": {"type": "Attr", "node": {"type": "Var", "name": "s"}, "key": "mag"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "mag"}}}, "var_name": "s", "value": {"type": "Attr", "node": {"type": "Var", "name": "s"}, "key": "mag"}},
+                  {"type": "Count", "source": {"type": "Filter", "source": {"type": "NodesOfType", "node_type": "FrameStep"}, "var_name": "s", "predicate": {"type": "Gt", "a": {"type": "Attr", "node": {"type": "Var", "name": "s"}, "key": "mag"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "mag"}}}}]},
+                "b": {"type": "Times", "items": [
+                  {"type": "Sum", "source": {"type": "Filter", "source": {"type": "NodesOfType", "node_type": "FrameStep"}, "var_name": "s", "predicate": {"type": "Gt", "a": {"type": "Attr", "node": {"type": "Var", "name": "s"}, "key": "mag"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "mag"}}}, "var_name": "s", "value": {"type": "Attr", "node": {"type": "Var", "name": "s"}, "key": "mag"}},
+                  {"type": "Count", "source": {"type": "Filter", "source": {"type": "NodesOfType", "node_type": "FrameStep"}, "var_name": "s", "predicate": {"type": "Lte", "a": {"type": "Attr", "node": {"type": "Var", "name": "s"}, "key": "mag"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "mag"}}}}]}}},
+            "b": {"type": "Times", "items": [
+              {"type": "Count", "source": {"type": "Filter", "source": {"type": "NodesOfType", "node_type": "FrameStep"}, "var_name": "s", "predicate": {"type": "Lte", "a": {"type": "Attr", "node": {"type": "Var", "name": "s"}, "key": "mag"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "mag"}}}},
+              {"type": "Count", "source": {"type": "Filter", "source": {"type": "NodesOfType", "node_type": "FrameStep"}, "var_name": "s", "predicate": {"type": "Gt", "a": {"type": "Attr", "node": {"type": "Var", "name": "s"}, "key": "mag"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "mag"}}}}]}},
+          "other": {"type": "Lit", "value": -1.0}},
+        "default": null}}}],
+    ["set_attr", "cp", "status", "ca_thr_done"]
+   ]
+  },
+  {
+   "name": "ca_mark_cut",
+   "comment": "A step whose motion strictly exceeds the graph's own derived threshold is marked. The comparison is against CutParams.cut_threshold, which ca_otsu wrote from the data -- nothing here is compared against a literal.",
+   "match_type": "FrameStep",
+   "match": [["ag", "has_step", "st"]],
+   "where": {"type": "And", "items": [
+    {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "st"}, "key": "status"}, "b": {"type": "Lit", "value": "ca_step_measured"}},
+    {"type": "Eq", "a": {"type": "Attr", "node": {"type": "PickUnique", "source": {"type": "NodesOfType", "node_type": "CutParams"}}, "key": "status"}, "b": {"type": "Lit", "value": "ca_thr_done"}},
+    {"type": "Gt",
+     "a": {"type": "Attr", "node": {"type": "Var", "name": "st"}, "key": "mag"},
+     "b": {"type": "Attr", "node": {"type": "PickUnique", "source": {"type": "NodesOfType", "node_type": "CutParams"}}, "key": "cut_threshold"}}
+   ]},
+   "effects": [
+    ["set_attr", "st", "is_cut", 1],
+    ["set_attr", "st", "status", "ca_step_cut"]
+   ]
+  },
+  {
+   "name": "ca_abstain",
+   "comment": "THE ABSTENTION -- THE DECISION TO DECLINE, AND IT IS THE GRAPH'S. A probe group that has reached vd_final (so the verdict seed's own measured-noise-floor refusal has already had its say) and that SPANS a step the graph marked as a discontinuity has had its frame-to-frame prior invalidated, so its identity claim is void and the answer becomes 'refused'. The rule reads only graph state: the group's status, the group's own spans edges, and the is_cut mark another rule wrote. NOTHING here is a Python conditional on motion magnitude -- the adapter drew the spans edges for an interval it had constructed and then stopped. AND THE ABSTENTION LEAVES A TRACE, which is the point: a Refusal node is minted (add_node_if_absent dedups on the author's attrs, so exactly one per group and the fixpoint terminates), a refused_by edge is drawn, and abstain_reason is set. VISION_REDUNDANCY_RESULTS.md found the marker inventory EMPTY in all 26 probe runs including baseline -- an abstention that leaves no trace in graph state is exactly the silent-degradation problem this is meant to fix. The ca_status guard makes the rule fire exactly once per group; identified_as is deliberately LEFT INTACT, so the graph still holds what it WOULD have said and the cost of the abstention stays measurable.",
+   "match_type": "ObsGroup",
+   "match": [["ag", "has_group", "grp"]],
+   "where": {"type": "And", "items": [
+    {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "grp"}, "key": "status"}, "b": {"type": "Lit", "value": "vd_final"}},
+    {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "grp"}, "key": "ca_status"}, "b": {"type": "Lit", "value": "ca_pending"}},
+    {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "PickUnique", "source": {"type": "NodesOfType", "node_type": "CutParams"}}, "key": "armed"}, "b": {"type": "Lit", "value": ""}}},
+    {"type": "Exists",
+     "source": {"type": "Neighbours", "node": {"type": "Var", "name": "grp"}, "edge_type": "spans", "any_type": false},
+     "var_name": "sp",
+     "predicate": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "sp"}, "key": "is_cut"}, "b": {"type": "Lit", "value": 1}}}
+   ]},
+   "effects": [
+    ["add_node_if_absent", "ref", "Refusal", {
+      "reason": "prior_invalidated",
+      "statistic": {"__term__": {"type": "Attr", "node": {"type": "PickUnique", "source": {"type": "NodesOfType", "node_type": "CutParams"}}, "key": "armed"}},
+      "group": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "grp"}, "key": "key"}}}],
+    ["add_edge", "grp", "refused_by", "ref"],
+    ["set_attr", "grp", "vd_answer", "refused"],
+    ["set_attr", "grp", "abstain_reason", "prior_invalidated"],
+    ["set_attr", "grp", "ca_status", "ca_abstained"]
+   ]
+  }
+ ]
+}

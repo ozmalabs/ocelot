@@ -1,0 +1,84 @@
+{
+ "id": "galileo",
+ "version": "1.0.0",
+ "depends_on": ["time_axis"],
+ "description": "GENERAL CROSS-OBJECT GENERATOR CODEBOOK (recognize-or-mint). The generic order-N loop (time_axis / TimeInfer) mints a SEPARATE latent:time generator per motion Observation with NO cross-object recognition (two identical-acceleration falls mint two identical LatentDimension nodes -- measured). This seed adds the missing piece: a codebook recognize-or-mint over ANY order-N motion generator, keyed on the generator SIGNATURE (coeffs). It is the exact structural analog of gap_awareness's blessed general dedup retire_duplicate_gap (which dedups SelfConcern by content via Argmin-survivor + identity-Eq): here the content is the whole finite-difference coefficient vector (coeffs) and the partition is an OPAQUE channel tag (motion_kind) the world stamps on each observation it wants indexed (gen_track=1). The rules NEVER mention acceleration/gravity/mass/fall -- they dedup any order-N generator by its signature within its channel. Consequence for the equivalence-principle experiment (GALILEO_EQUIVALENCE_PREREG.md): in the real world every object falls at the SAME acceleration -> identical coeffs -> exactly ONE MotionGenerator{kind=fall} minted and recognized across all N objects; in the Aristotle control (heavier falls faster) the accelerations DIFFER -> N distinct MotionGenerators. 'One generator across objects of measured-different MassScalar' IS acc-perp-mass, read from the graph -- no seeded acc==acc law, no published mass, grouping by perceived Region.",
+ "microtheory": {"name": "motion_generator_codebook", "description": "recognize-or-mint over order-N motion generators keyed on the coeffs signature within an opaque channel; the survivor mints one MotionGenerator, every same-signature peer is recognized against it"},
+ "nodes": [],
+ "edges": [],
+ "productions": [
+  {"provenance": "seed:galileo:has_motion_generator-0", "src": {"type": "Observation", "var": "s"}, "edge_type": "has_motion_generator", "tgt": {"type": "MotionGenerator", "var": "t"}},
+  {"provenance": "seed:galileo:fall_of_region-1", "src": {"type": "Observation", "var": "s"}, "edge_type": "fall_of_region", "tgt": {"type": "Region", "var": "t"}}
+ ],
+ "rules": [
+  {
+   "name": "stamp_motion_gen",
+   "comment": "Mechanical projection: copy the minted latent:time generator's coeffs/order onto its Observation (gen_sig/gen_order) so the codebook rules can group by signature without re-traversing the has_latent_dimension edge inside an Argmin/Filter. Fires once per indexed observation (gen_track==1, status time_inferred, latent:time dimension, not yet stamped).",
+   "match_type": "Observation",
+   "match": [["obs", "has_latent_dimension", "ld"]],
+   "where": {"type": "And", "items": [
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "gen_track"}, "b": {"type": "Lit", "value": 1}},
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "status"}, "b": {"type": "Lit", "value": "time_inferred"}},
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "ld"}, "key": "name"}, "b": {"type": "Lit", "value": "latent:time"}},
+     {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "gen_stamped"}, "b": {"type": "Lit", "value": 1}}}
+   ]},
+   "effects": [
+    ["set_attr", "obs", "gen_sig", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "ld"}, "key": "coeffs"}}],
+    ["set_attr", "obs", "gen_order", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "ld"}, "key": "order"}}],
+    ["set_attr", "obs", "gen_stamped", 1]
+   ]
+  },
+  {
+   "name": "motion_gen_mint",
+   "comment": "The Argmin SURVIVOR of the set of same-channel (motion_kind), same-signature (gen_sig) indexed observations mints exactly ONE MotionGenerator{sig, kind, order}. Argmin (lowest node id, value=self, the retire_duplicate_gap idiom) makes the survivor UNIQUE, so the mint is race-free even though all peers match in one fixpoint pass. Guarded by Not Exists a MotionGenerator with this sig+kind (fixpoint safety: once minted, never re-mints). Marks the survivor generator_status=minted.",
+   "match_type": "Observation",
+   "match": [["ag", "observed", "obs"]],
+   "where": {"type": "And", "items": [
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "gen_track"}, "b": {"type": "Lit", "value": 1}},
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "gen_stamped"}, "b": {"type": "Lit", "value": 1}},
+     {"type": "Eq",
+      "a": {"type": "Var", "name": "obs"},
+      "b": {"type": "Argmin", "source": {"type": "Filter", "source": {"type": "NodesOfType", "node_type": "Observation"}, "var_name": "y", "predicate": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "y"}, "key": "gen_track"}, "b": {"type": "Lit", "value": 1}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "y"}, "key": "motion_kind"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "motion_kind"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "y"}, "key": "gen_sig"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "gen_sig"}}
+      ]}}, "var_name": "z", "value": {"type": "Var", "name": "z"}}},
+     {"type": "Not", "arg": {"type": "Exists", "source": {"type": "NodesOfType", "node_type": "MotionGenerator"}, "var_name": "g", "predicate": {"type": "And", "items": [
+       {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "sig"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "gen_sig"}},
+       {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "kind"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "motion_kind"}}
+     ]}}}
+   ]},
+   "effects": [
+    ["add_node", "mg", "MotionGenerator", {
+      "sig": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "gen_sig"}},
+      "kind": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "motion_kind"}},
+      "order": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "gen_order"}},
+      "source": {"__term__": {"type": "Lit", "value": "motion_generator_codebook"}}
+    }],
+    ["add_edge", "obs", "has_motion_generator", "mg"],
+    ["set_attr", "obs", "generator_status", "minted"]
+   ]
+  },
+  {
+   "name": "motion_gen_recognize",
+   "comment": "Every NON-survivor indexed observation (not the Argmin survivor of its same-channel same-signature set) is RECOGNIZED against the shared generator its survivor minted -- marked generator_status=recognized, no new node. This is the 'recognize it for every subsequent object' half: N objects of one generator => 1 minted + (N-1) recognized. The Filter/Argmin is identical to motion_gen_mint's, so survivor and recognitions are consistent and the fixpoint terminates (generator_status is not in the filter, so Argmin is stable across passes).",
+   "match_type": "Observation",
+   "match": [["ag", "observed", "obs"]],
+   "where": {"type": "And", "items": [
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "gen_track"}, "b": {"type": "Lit", "value": 1}},
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "gen_stamped"}, "b": {"type": "Lit", "value": 1}},
+     {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "generator_status"}, "b": {"type": "Lit", "value": "recognized"}}},
+     {"type": "Not", "arg": {"type": "Eq",
+      "a": {"type": "Var", "name": "obs"},
+      "b": {"type": "Argmin", "source": {"type": "Filter", "source": {"type": "NodesOfType", "node_type": "Observation"}, "var_name": "y", "predicate": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "y"}, "key": "gen_track"}, "b": {"type": "Lit", "value": 1}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "y"}, "key": "motion_kind"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "motion_kind"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "y"}, "key": "gen_sig"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "gen_sig"}}
+      ]}}, "var_name": "z", "value": {"type": "Var", "name": "z"}}}}
+   ]},
+   "effects": [
+    ["set_attr", "obs", "generator_status", "recognized"]
+   ]
+  }
+ ]
+}

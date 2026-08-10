@@ -1,0 +1,118 @@
+{
+  "id": "container_internals_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "OCI_image_format",
+  "in_microtheory": "cloud_infrastructure",
+  "description": "Container internals decomposed. OCI image layers + manifest, content-addressable storage, registry V2 API, BuildKit, image squashing, namespaces/cgroups (from OS) applied, runc's container start sequence.",
+  "sub_mechanisms": [
+    {
+      "name": "image_manifest_v2",
+      "definition": "JSON: config (image metadata, env, cmd) + layers (digest, size). OCI image-spec.",
+      "why": "Manifest is image identity. Pull manifest first; decide which layers to fetch. Foundation of image distribution.",
+      "category": "container_internals_mechanism"
+    },
+    {
+      "name": "content_addressable_layers",
+      "definition": "Each layer identified by SHA256 of contents. Same layer in many images: stored once.",
+      "why": "Deduplication. Base image layers shared. Pull only missing layers. Standard OCI storage.",
+      "category": "container_internals_mechanism"
+    },
+    {
+      "name": "registry_v2_API",
+      "definition": "REST API for image push/pull. Blob upload + manifest upload. Docker Hub, ECR, GCR all implement.",
+      "why": "Standard interface. Tooling vendor-neutral. Federated registries possible. OCI distribution-spec.",
+      "category": "container_internals_mechanism"
+    },
+    {
+      "name": "BuildKit_modern_builder",
+      "definition": "Modern Docker build engine. Parallel + cache-aware + multiple frontends.",
+      "why": "Replaces classic dockerfile parser. Cache mounts (mount cache during build), secrets in build (BuildKit secrets), multi-platform builds. Default since Docker 23.",
+      "category": "container_internals_mechanism"
+    },
+    {
+      "name": "buildah_rootless_builds",
+      "definition": "Build OCI images without daemon. Rootless. Used by podman.",
+      "why": "Daemon-less. Rootless build = better security. CI-friendly: no docker daemon needed.",
+      "category": "container_internals_mechanism"
+    },
+    {
+      "name": "image_squash",
+      "definition": "Combine multiple layers into one. Reduces size at cost of layer reuse.",
+      "why": "Trade: smaller image, but less caching benefit. Use for distroless-final stages where final image is the deployable.",
+      "category": "container_internals_mechanism"
+    },
+    {
+      "name": "container_start_namespaces",
+      "definition": "runc creates: mount, pid, network, ipc, uts, user namespaces. Sets up cgroups. Execs application.",
+      "why": "Container = namespaces + cgroups + chroot-like rootfs. runc orchestrates the Linux primitives. Standard OCI runtime behaviour.",
+      "category": "container_internals_mechanism"
+    },
+    {
+      "name": "OCI_runtime_bundle",
+      "definition": "Filesystem directory: config.json (runtime spec) + rootfs/. runc starts container from bundle.",
+      "why": "Decouples image (distribution format) from runtime input. CRI converts image → bundle. Universal across runtimes.",
+      "category": "container_internals_mechanism"
+    },
+    {
+      "name": "CRI_container_runtime_interface",
+      "definition": "K8s ↔ runtime gRPC API. kubelet → CRI → containerd/CRI-O → OCI runtime → namespaces.",
+      "why": "Decouples K8s from specific runtime. Multiple runtimes possible. Standard since K8s 1.5.",
+      "category": "container_internals_mechanism"
+    },
+    {
+      "name": "overlayfs_storage_driver",
+      "definition": "Linux union FS. Lower layers (read-only image) + upper (writable container).",
+      "why": "Standard container storage. Copy-on-write: read from lower, write to upper. Fast container creation (just create upper layer).",
+      "category": "container_internals_mechanism"
+    },
+    {
+      "name": "image_signing_cosign",
+      "definition": "Sigstore cosign signs images; verifier checks at pull. Public log (Rekor).",
+      "why": "Image provenance. Verify image is from expected publisher. K8s admission policies enforce. Modern supply chain practice.",
+      "category": "container_internals_mechanism"
+    },
+    {
+      "name": "image_attestations",
+      "definition": "SBOM, SLSA provenance, scan results attached to image as referenced artifacts.",
+      "why": "Verifiable supply chain. Sigstore + OCI v1.1 references. Modern container security baseline.",
+      "category": "container_internals_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "content_addressing_enables_dedup",
+      "if": ["images reference layers by content hash"],
+      "then": ["same layer stored once across many images"],
+      "why": "Ubuntu base in 100 images = stored once. Pull = fetch only missing layers. Massive bandwidth + storage savings. Standard OCI design.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "BuildKit_cache_mounts_speed_builds",
+      "if": ["build uses cache mounts for package managers"],
+      "then": ["builds 10x+ faster on rebuilds"],
+      "why": "npm/pip/cargo caches persist across builds. Without cache mount: redownload every build. With: incremental. BuildKit secret + cache mounts the modern standard.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "multi_stage_for_minimal_runtime",
+      "if": ["Dockerfile separates build from runtime stage"],
+      "then": ["final image excludes build tools"],
+      "why": "Build stage: gcc, headers, npm. Runtime stage: just binary. Final image 10-100x smaller. Smaller attack surface. Standard pattern.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "CRI_decouples_K8s_from_runtime",
+      "if": ["K8s uses CRI"],
+      "then": ["runtime is swappable (containerd, CRI-O, gVisor)"],
+      "why": "kubelet doesn't know which runtime. Standard interface. Sandbox runtimes (gVisor, Kata) plug in. Modular K8s.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "image_signing_required_for_supply_chain_security",
+      "if": ["production deployment policy"],
+      "then": ["image signatures verified at admission"],
+      "why": "Without: malicious image could be deployed (image tags mutable). With: cosign verifies signature; admission rejects unsigned. Modern security baseline.",
+      "soundness_category": "referential_transparency"
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "id": "relation_role_frame",
+  "version": "1.0.0",
+  "depends_on": [],
+  "description": "ROLE-CANONICAL RELATION FRAME (graph data). For each relation predicate, declares the CANONICAL POSITIONAL ROLE ORDER: the role each argument slot plays, listed in a CONSISTENT order across domains (source/central role first). A domain's relations are ingested as positional tuples whose slots follow this declared order, so corresponding roles land in the same positional slot across domains. The held AntiUnify Term then aligns them under object renaming (WILDs the objects, keeps the role-positioned predicate system). The CONVENTION lives here as graph data, NOT in Python. HONEST SCOPE: the particular order is a CONSISTENCY convention — what matters is that corresponding roles land in the same slot ACROSS domains; this Frame enforces that consistency. Determining the order is a declared per-predicate fact here; it requires no reasoning. Extensible: add a RelationSchema node to teach a new predicate's role order.",
+  "nodes": [
+    {"local_id": 1, "type": "RelationFrame", "attrs": {"name": "role_canonical_relations", "convention": "source/central role first, consistently across domains"}},
+
+    {"local_id": 10, "type": "RelationSchema", "attrs": {"predicate": "attracts",  "role_order": ["central", "orbiter"]}},
+    {"local_id": 11, "type": "RelationSchema", "attrs": {"predicate": "revolves",   "role_order": ["orbiter", "central"]}},
+    {"local_id": 12, "type": "RelationSchema", "attrs": {"predicate": "greater",    "role_order": ["more", "less"]}},
+    {"local_id": 13, "type": "RelationSchema", "attrs": {"predicate": "flow",       "role_order": ["source", "sink"]}},
+    {"local_id": 14, "type": "RelationSchema", "attrs": {"predicate": "collide",    "role_order": ["first", "second"]}},
+    {"local_id": 15, "type": "RelationSchema", "attrs": {"predicate": "transfer",   "role_order": ["donor", "recipient"]}},
+    {"local_id": 16, "type": "RelationSchema", "attrs": {"predicate": "borders",    "role_order": ["thing", "neighbour"]}},
+    {"local_id": 17, "type": "RelationSchema", "attrs": {"predicate": "holds",      "role_order": ["container", "content"]}},
+    {"local_id": 18, "type": "RelationSchema", "attrs": {"predicate": "stores",     "role_order": ["container", "content"]}},
+    {"local_id": 19, "type": "RelationSchema", "attrs": {"predicate": "lends",      "role_order": ["agent", "object"]}},
+
+    {"local_id": 30, "type": "RelationSchema", "attrs": {"predicate": "CAUSE",      "role_order": ["antecedent", "consequent"], "higher_order": 1.0}}
+  ],
+  "edges": [
+    {"src": {"local": 1}, "type": "has_schema", "tgt": {"local": 10}, "attrs": {}},
+    {"src": {"local": 1}, "type": "has_schema", "tgt": {"local": 11}, "attrs": {}},
+    {"src": {"local": 1}, "type": "has_schema", "tgt": {"local": 12}, "attrs": {}},
+    {"src": {"local": 1}, "type": "has_schema", "tgt": {"local": 13}, "attrs": {}},
+    {"src": {"local": 1}, "type": "has_schema", "tgt": {"local": 14}, "attrs": {}},
+    {"src": {"local": 1}, "type": "has_schema", "tgt": {"local": 15}, "attrs": {}},
+    {"src": {"local": 1}, "type": "has_schema", "tgt": {"local": 16}, "attrs": {}},
+    {"src": {"local": 1}, "type": "has_schema", "tgt": {"local": 17}, "attrs": {}},
+    {"src": {"local": 1}, "type": "has_schema", "tgt": {"local": 18}, "attrs": {}},
+    {"src": {"local": 1}, "type": "has_schema", "tgt": {"local": 19}, "attrs": {}},
+    {"src": {"local": 1}, "type": "has_schema", "tgt": {"local": 30}, "attrs": {}}
+  ]
+}

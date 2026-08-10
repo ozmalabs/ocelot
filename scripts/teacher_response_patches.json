@@ -1,0 +1,62 @@
+[
+  {
+    "target_path": "src/term.rs",
+    "anchor": "    Tokenize { text: TermIdx },",
+    "position": "after",
+    "content": "\n    /// Tokenize2 — same as Tokenize. Agent-built via babble loop.\n    Tokenize2 { text: TermIdx },"
+  },
+  {
+    "target_path": "src/term.rs",
+    "anchor": "        TermNode::Tokenize { text } => TermNode::Tokenize { text: copy_subtree(src, dst, text) },",
+    "position": "after",
+    "content": "\n        TermNode::Tokenize2 { text } => TermNode::Tokenize2 { text: copy_subtree(src, dst, text) },"
+  },
+  {
+    "target_path": "src/term.rs",
+    "anchor": "        TermNode::Tokenize { text } => {\n            let tv = evaluate(arena, *text, env, ctx);\n            let Value::Str(sym) = tv else {\n                return Value::Tuple(std::sync::Arc::new(smallvec::smallvec![]));\n            };\n            let s = ctx.interner.resolve(sym);\n            let mut positions: smallvec::SmallVec<[Value; 4]> = smallvec::smallvec![];\n            let base = s.as_ptr() as usize;\n            for tok in s.split_whitespace() {\n                let start = (tok.as_ptr() as usize) - base;\n                let len = tok.len();\n                positions.push(Value::Tuple(std::sync::Arc::new(\n                    smallvec::smallvec![Value::Int(start as i64), Value::Int(len as i64)]\n                )));\n            }\n            Value::Tuple(std::sync::Arc::new(positions))\n        }",
+    "position": "after",
+    "content": "\n\n        TermNode::Tokenize2 { text } => {\n            let tv = evaluate(arena, *text, env, ctx);\n            let Value::Str(sym) = tv else {\n                return Value::Tuple(std::sync::Arc::new(smallvec::smallvec![]));\n            };\n            let s = ctx.interner.resolve(sym);\n            let mut positions: smallvec::SmallVec<[Value; 4]> = smallvec::smallvec![];\n            let base = s.as_ptr() as usize;\n            for tok in s.split_whitespace() {\n                let start = (tok.as_ptr() as usize) - base;\n                let len = tok.len();\n                positions.push(Value::Tuple(std::sync::Arc::new(\n                    smallvec::smallvec![Value::Int(start as i64), Value::Int(len as i64)]\n                )));\n            }\n            Value::Tuple(std::sync::Arc::new(positions))\n        }"
+  },
+  {
+    "target_path": "src/term.rs",
+    "anchor": "        TermNode::Tokenize { text } => out.push(*text),",
+    "position": "after",
+    "content": "\n        TermNode::Tokenize2 { text } => out.push(*text),"
+  },
+  {
+    "target_path": "src/jsonio.rs",
+    "anchor": "        TermNode::Tokenize { .. } => \"Tokenize\",",
+    "position": "after",
+    "content": "\n        TermNode::Tokenize2 { .. } => \"Tokenize2\","
+  },
+  {
+    "target_path": "src/jsonio.rs",
+    "anchor": "        TermNode::Tokenize { text } => {\n            m.insert(\"text\".into(), child(*text, arena, interner));\n        }",
+    "position": "after",
+    "content": "\n        TermNode::Tokenize2 { text } => {\n            m.insert(\"text\".into(), child(*text, arena, interner));\n        }"
+  },
+  {
+    "target_path": "src/jsonio.rs",
+    "anchor": "        \"Tokenize\" => TermNode::Tokenize {\n            text: child_of(\"text\", obj, arena, interner, variant)?,\n        },",
+    "position": "after",
+    "content": "\n        \"Tokenize2\" => TermNode::Tokenize2 {\n            text: child_of(\"text\", obj, arena, interner, variant)?,\n        },"
+  },
+  {
+    "target_path": "src/reflect.rs",
+    "anchor": "        TermNode::Tokenize { text } => (\"Tokenize\", vec![Child { name: \"text\", child: *text }]),",
+    "position": "after",
+    "content": "\n        TermNode::Tokenize2 { text } => (\"Tokenize2\", vec![Child { name: \"text\", child: *text }]),"
+  },
+  {
+    "target_path": "src/reflect.rs",
+    "anchor": "        \"Tokenize\" => TermNode::Tokenize { text: take_child!(\"text\") },",
+    "position": "after",
+    "content": "\n        \"Tokenize2\" => TermNode::Tokenize2 { text: take_child!(\"text\") },"
+  },
+  {
+    "target_path": "python/substrate_rs/__init__.py",
+    "anchor": "def Tokenize(text: Term) -> Term:\n    \"\"\"Whitespace-tokenize a string; returns tuple of (start, byte_len)\n    position pairs. Agent-built via babble loop.\"\"\"\n    return Term(\"Tokenize\", text=text)",
+    "position": "after",
+    "content": "\n\n\ndef Tokenize2(text: Term) -> Term:\n    \"\"\"Whitespace-tokenize a string; returns tuple of (start, byte_len)\n    position pairs. Agent-built via babble loop.\"\"\"\n    return Term(\"Tokenize2\", text=text)"
+  }
+]

@@ -1,0 +1,558 @@
+{
+  "id": "vision_floor",
+  "version": "1.1.0",
+  "depends_on": ["sensory_convolution", "shape_decode_loop", "motor_core", "reflex_core"],
+  "description": "VISION FLOOR (S1.1-S1.4) — the tabula-rasa developmental vision floor. Biology EMERGES, never seeded as behavior. (1) KERNEL-CODEBOOK GROWTH is REUSED, not duplicated: a vision Sense is ARMED with the sensory_convolution ConvFaculty's candidate kernel pool (vf_arm_candidate_pool mints the considers edge), then keep_discriminative_kernel (from sensory_convolution, via depends_on) KEEPS the kernels whose response spread across labelled fields exceeds 0.1x the most-varying kernel's spread — so center-surround (DoG) and oriented bars EMERGE from image statistics, measured not assumed. (2) FOVEATED sampling: a SamplingGeometry node (agent-revisable graph data: fovea_radius_frac, periphery_stride, figure_threshold, contradiction_threshold, suppression_threshold, grouping_proximity) feeds the Rust Foveate Term (vf_foveate_observation) — cortical magnification as data, the active-gaze hook. (3) DORSAL/VENTRAL dual codebook_scope split: motion = cross-frame TemporalDiff on the time dim (vf_temporal_diff, the dorsal 'where' stream); identity = the ventral ShapeSignature codebook (shape_decode_loop). Two scopes over one ShapeDecode via codebook_scope (the reflex_net reflex_ground_residual precedent); the DorsalScope/VentralScope nodes carry the basin_parts data. (4) FIGURE-GROUND-AS-SURPRISE + REGION-AS-BELIEF (v1.1.0, creator steer #2 'fill as belief, not painting'): a Region node is a PERSISTENT OBSERVATION BELIEF (the quanta_navigation precedent: unknown=absence, first-class; the map is a belief, not per-cell storage). A Field whose prediction residual (the stage0-2 surprise currency, upstream-populated) exceeds figure_threshold is a FIGURE; vf_figure_ground MINTS a Region carrying its boundary (cy/cx/drow/dcol, copied from the Field's mechanical geometry — the same attrs segment_and_track produces), interior_inherited=1.0 (the load-bearing attr: the interior is INHERITED from boundary+label, NOT per-point grounded), confidence=residual, status='belief'. vf_surface_labelling binds the grounding_label (the ventral codebook entry it's recognized as = hypothesis H, via Argmax over kept kernels — NO per-point nodes minted; the Region IS the interior's label). vf_predictive_suppression: a recognized region whose within-region prediction error is below suppression_threshold produces NO residual (sd_recognize's explained-away at region grain). vf_contradiction_split: a residual WITHIN a held Region contradicting H (exceeds contradiction_threshold) mints a CapabilityAxis (the sub-region quantum = split, sd_mint_quantum precedent) and revises the interior belief (interior_inherited->0.0) — dynamic quantization of space: a region is a spatial quantum whose interior is a belief; a residual that breaks it mints a sub-quantum. vf_border_ownership (mechanism 1, V2), vf_perceptual_grouping (mechanism 2, Gestalt merge of same-label regions within grouping_proximity), vf_object_based_attention (mechanism 4, motor_core attention routed to the Region not interior patches), vf_summary_stat (mechanism 5, a Region carries a summary-stat CapabilityAxis). Every threshold is graph data (SamplingGeometry attrs), never a Python literal. The world adapter (domains/vision_world.py) only ingests bytes->Image/Sense/Field/Patch nodes, ticks, and reads the kept codebook back out — zero decisions.",
+  "microtheory": {
+    "name": "vision_floor",
+    "description": "spatiotemporal change-detect floor: kernels emerge via keep_discriminative_kernel; foveation is data; dorsal=motion/ventral=identity via codebook_scope; figure=surprise; region=belief (interior inherited, contradiction splits)."
+  },
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "SamplingGeometry",
+      "attrs": {
+        "name": "default",
+        "fovea_radius_frac": 0.2,
+        "periphery_stride": 2.0,
+        "figure_threshold": 0.5,
+        "contradiction_threshold": 0.8,
+        "suppression_threshold": 0.1,
+        "grouping_proximity": 2.0,
+        "comment": "Agent-revisable foveation + figure-ground + region-as-belief thresholds as graph data. Feeds the Foveate Term (vf_foveate_observation), the figure-ground gate (vf_figure_ground), the predictive-suppression gate (vf_predictive_suppression), the contradiction-split gate (vf_contradiction_split), and the perceptual-grouping proximity (vf_perceptual_grouping). Widening/coarsening/lowering any threshold is a graph edit, never a code change."
+      }
+    },
+    {
+      "local_id": 1,
+      "type": "VentralScope",
+      "attrs": {
+        "name": "ventral_identity",
+        "pathway": "ventral",
+        "codebook_type": "ShapeSignature",
+        "comment": "The ventral 'what' scope: identity/shape. Realized when a net's basin_parts points here (codebook_scope, the reflex_ground_residual precedent). The identity codebook is the ShapeDecode ShapeSignature codebook (shape_decode_loop); this node is the data handle for per-pathway basin gating."
+      }
+    },
+    {
+      "local_id": 2,
+      "type": "DorsalScope",
+      "attrs": {
+        "name": "dorsal_motion",
+        "pathway": "dorsal",
+        "codebook_type": "ShapeSignature",
+        "time_dim": "TemporalDiff",
+        "comment": "The dorsal 'where' scope: motion/path. Motion is BETWEEN frames (cross-frame) — a rung-1 transform on the time dim read by TransformDecode; the temporal face of ChangeDetect (TemporalDiff Term) is its event/motion stream. Realized via codebook_scope like VentralScope; two scopes over one ShapeDecode."
+      }
+    }
+  ],
+  "edges": [],
+  "productions": [
+    {
+      "provenance": "seed:vision_floor:has_sampling_geometry",
+      "src": {"type": "Agent", "var": "a"},
+      "edge_type": "has_sampling_geometry",
+      "tgt": {"type": "SamplingGeometry", "var": "b"}
+    },
+    {
+      "provenance": "seed:vision_floor:has_vision_sense",
+      "src": {"type": "Agent", "var": "a"},
+      "edge_type": "has_vision_sense",
+      "tgt": {"type": "Sense", "var": "b"}
+    },
+    {
+      "provenance": "seed:vision_floor:has_conv_faculty",
+      "src": {"type": "Agent", "var": "a"},
+      "edge_type": "has_conv_faculty",
+      "tgt": {"type": "ConvFaculty", "var": "b"}
+    },
+    {
+      "provenance": "seed:vision_floor:observed_image",
+      "src": {"type": "Agent", "var": "a"},
+      "edge_type": "observed",
+      "tgt": {"type": "Image", "var": "b"}
+    },
+    {
+      "provenance": "seed:vision_floor:prev_frame",
+      "src": {"type": "Image", "var": "a"},
+      "edge_type": "prev_frame",
+      "tgt": {"type": "Image", "var": "b"}
+    },
+    {
+      "provenance": "seed:vision_floor:next_frame",
+      "src": {"type": "Image", "var": "a"},
+      "edge_type": "next_frame",
+      "tgt": {"type": "Image", "var": "b"}
+    },
+    {
+      "provenance": "seed:vision_floor:has_region",
+      "src": {"type": "Sense", "var": "a"},
+      "edge_type": "has_region",
+      "tgt": {"type": "Region", "var": "b"}
+    },
+    {
+      "provenance": "seed:vision_floor:from_field",
+      "src": {"type": "Region", "var": "a"},
+      "edge_type": "from_field",
+      "tgt": {"type": "Field", "var": "b"}
+    },
+    {
+      "provenance": "seed:vision_floor:has_subregion",
+      "src": {"type": "Region", "var": "a"},
+      "edge_type": "has_subregion",
+      "tgt": {"type": "CapabilityAxis", "var": "b"}
+    },
+    {
+      "provenance": "seed:vision_floor:merged_into",
+      "src": {"type": "Region", "var": "a"},
+      "edge_type": "merged_into",
+      "tgt": {"type": "Region", "var": "b"}
+    },
+    {
+      "provenance": "seed:vision_floor:attends_region",
+      "src": {"type": "Agent", "var": "a"},
+      "edge_type": "attends_region",
+      "tgt": {"type": "Region", "var": "b"}
+    },
+    {
+      "provenance": "seed:vision_floor:has_summary_stat",
+      "src": {"type": "Region", "var": "a"},
+      "edge_type": "has_summary_stat",
+      "tgt": {"type": "CapabilityAxis", "var": "b"}
+    }
+  ],
+  "rules": [
+    {
+      "name": "vf_arm_candidate_pool",
+      "comment": "KERNEL-CODEBOOK GROWTH (S1.1) — REUSES sensory_convolution's keep_discriminative_kernel, does NOT duplicate it. A vision Sense (wired to the agent via has_vision_sense) is ARMED with the sensory_convolution ConvFaculty's candidate kernel pool: this rule mints the sense -considers-> ConvFaculty edge. Once armed, keep_discriminative_kernel (from sensory_convolution, loaded via depends_on) KEEPS the kernels whose response spread across the sense's labelled Fields exceeds 0.1x the most-varying kernel's spread — so center-surround (DoG) and oriented bars EMERGE from image statistics. The candidate pool itself is the sensory_convolution seed's Kernel nodes (onset/offset/edge/centre_surround/diagonal/smoother); this rule is the graph-native arming step (the agent's own active gaze selecting its sense's faculty). The AddEdge effect is idempotent: once considers exists it is a no-op (not progressed), so the rule terminates. No Python decides which kernel is kept.",
+      "match_type": "Image",
+      "match": [
+        ["ag", "observed", "img"],
+        ["ag", "has_vision_sense", "sense"],
+        ["ag", "has_conv_faculty", "fac"]
+      ],
+      "where": {
+        "type": "Eq",
+        "a": {"type": "Attr", "node": {"type": "Var", "name": "img"}, "key": "status"},
+        "b": {"type": "Lit", "value": "raw"}
+      },
+      "effects": [
+        ["add_edge", "sense", "considers", "fac"]
+      ]
+    },
+    {
+      "name": "vf_foveate_observation",
+      "comment": "ACTIVE-GAZE FOVEATION (S1.0/S1.2) — cortical magnification as DATA. On a raw Image observed by the agent, the Rust Foveate Term samples it by the SamplingGeometry node's fovea_radius_frac / periphery_stride (agent-revisable graph data, never a Python literal): fovea full-rate, periphery strided. The foveated sample (vals + out_h + out_w) is recorded on the Image; status raw->foveated (so it fires once). The geometry is a graph node the agent can widen/coarsen — gaze control = active selection of the learning signal (the curiosity-driven-dwell frame). The convolution/change-detect RESPONSE is a continuous cross-frame map -> Rust Term, correct per the frame/continuum invariant (never in-frame integer coords).",
+      "match_type": "Image",
+      "match": [
+        ["ag", "observed", "img"],
+        ["ag", "has_sampling_geometry", "geom"]
+      ],
+      "where": {
+        "type": "Eq",
+        "a": {"type": "Attr", "node": {"type": "Var", "name": "img"}, "key": "status"},
+        "b": {"type": "Lit", "value": "raw"}
+      },
+      "effects": [
+        [
+          "set_attr", "img", "foveated",
+          {
+            "__term__": {
+              "type": "Foveate",
+              "image_vals": {"type": "Attr", "node": {"type": "Var", "name": "img"}, "key": "vals"},
+              "dims": {
+                "type": "Vec",
+                "items": [
+                  {"type": "Attr", "node": {"type": "Var", "name": "img"}, "key": "h"},
+                  {"type": "Attr", "node": {"type": "Var", "name": "img"}, "key": "w"}
+                ]
+              },
+              "geometry": {
+                "type": "Vec",
+                "items": [
+                  {"type": "Attr", "node": {"type": "Var", "name": "geom"}, "key": "fovea_radius_frac"},
+                  {"type": "Attr", "node": {"type": "Var", "name": "geom"}, "key": "periphery_stride"}
+                ]
+              }
+            }
+          }
+        ],
+        ["set_attr", "img", "status", "foveated"]
+      ]
+    },
+    {
+      "name": "vf_temporal_diff",
+      "comment": "DORSAL MOTION STREAM (S1.3) — motion is BETWEEN frames (cross-frame), never in-frame coords (the frame/continuum invariant). On a foveated Image that has a prev_frame, the Rust TemporalDiff Term computes the elementwise event/motion stream (b-a) — the temporal face of ChangeDetect, matching retinal ganglion-cell biology ('process deltas before pixels'). The motion stream is recorded on the Image; the dorsal pathway decodes it via TransformDecode on the time dim (a rung-1 transform, the ink precedent) under the DorsalScope codebook_scope. Two scopes (dorsal/ventral) over one ShapeDecode via codebook_scope (the reflex_ground_residual precedent). This rule fires only when a frame-pair exists (the temporal chain), so it is dormant in a single-frame boot and live under video.",
+      "match_type": "Image",
+      "match": [
+        ["ag", "observed", "img"],
+        ["img", "prev_frame", "prev"]
+      ],
+      "where": {
+        "type": "Eq",
+        "a": {"type": "Attr", "node": {"type": "Var", "name": "img"}, "key": "status"},
+        "b": {"type": "Lit", "value": "foveated"}
+      },
+      "effects": [
+        [
+          "set_attr", "img", "motion",
+          {
+            "__term__": {
+              "type": "TemporalDiff",
+              "a_vals": {"type": "Attr", "node": {"type": "Var", "name": "prev"}, "key": "vals"},
+              "b_vals": {"type": "Attr", "node": {"type": "Var", "name": "img"}, "key": "vals"}
+            }
+          }
+        ],
+        ["set_attr", "img", "has_motion", 1.0]
+      ]
+    },
+    {
+      "name": "vf_figure_ground",
+      "comment": "FIGURE-GROUND-AS-SURPRISE + REGION-AS-BELIEF (S1.4, v1.1.0 creator steer #2 'fill as belief, not painting'). A Field whose prediction residual (the stage0-2 surprise currency, upstream-populated like sd_decode reads obs.signature) exceeds the SamplingGeometry's figure_threshold (graph data) is a FIGURE. EVOLVED from the simple figure=1.0 mark into the REGION-AS-BELIEF semantics (the quanta_navigation precedent: unknown=absence, first-class; the map is a persistent observation BELIEF, not per-cell storage): MINTS a Region node carrying its boundary (cy/cx/drow/dcol — copied from the Field's mechanical geometry, the same attrs segment_and_track produces), interior_inherited=1.0 (the load-bearing attr: the interior is INHERITED from boundary+label, NOT per-point grounded — downstream rules read the Region, not interior patches), confidence=residual, figure=1.0, status='belief'. Wires sense -has_region-> region + region -from_field-> field. The figure_status guard makes it fire once per figure field (the mint is the agent's own decision, not a Python constructor). Dormant when no residual is populated (a fresh boot); live once prediction error flows.",
+      "match": [
+        ["ag", "has_vision_sense", "sense"],
+        ["ag", "has_sampling_geometry", "geom"],
+        ["sense", "has_field", "f"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Gt",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "f"}, "key": "residual"},
+            "b": {"type": "Attr", "node": {"type": "Var", "name": "geom"}, "key": "figure_threshold"}
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {"type": "Attr", "node": {"type": "Var", "name": "f"}, "key": "figure_status"},
+              "b": {"type": "Lit", "value": "figure"}
+            }
+          }
+        ]
+      },
+      "effects": [
+        ["set_attr", "f", "figure_status", "figure"],
+        ["set_attr", "f", "figure", 1.0],
+        [
+          "add_node", "r", "Region",
+          {
+            "cy": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "f"}, "key": "cy"}},
+            "cx": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "f"}, "key": "cx"}},
+            "drow": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "f"}, "key": "drow"}},
+            "dcol": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "f"}, "key": "dcol"}},
+            "interior_inherited": {"__term__": {"type": "Lit", "value": 1.0}},
+            "confidence": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "f"}, "key": "residual"}},
+            "figure": {"__term__": {"type": "Lit", "value": 1.0}},
+            "status": {"__term__": {"type": "Lit", "value": "belief"}}
+          }
+        ],
+        ["add_edge", "sense", "has_region", "r"],
+        ["add_edge", "r", "from_field", "f"]
+      ]
+    },
+    {
+      "name": "vf_surface_labelling",
+      "comment": "SURFACE FILLING-IN / REGION LABELLING (mechanism 3) — NOT literal painting. A Region belief (status='belief') whose Sense has kept kernels gets its grounding_label (the ventral codebook entry it's recognized as = hypothesis H): the best-matching kept kernel by response (Argmax over sense's kept_kernel of MaxOver the region's field's patches of Dot(kernel.weights, patch.vals) — mirror of sd_recognize's covered_by fit metric). The interior INHERITS H — the Region node IS the label for its interior (downstream rules read the Region, NOT interior patches). NO per-point nodes are minted (the efficiency win: represent boundary + label + exceptions, not every interior sample). status belief->labelled (fires once). The label is the agent's own recognition decision (graph-native, not a Python classifier).",
+      "match": [
+        ["ag", "has_vision_sense", "sense"],
+        ["sense", "has_region", "r"],
+        ["r", "from_field", "f"]
+      ],
+      "where": {
+        "type": "Eq",
+        "a": {"type": "Attr", "node": {"type": "Var", "name": "r"}, "key": "status"},
+        "b": {"type": "Lit", "value": "belief"}
+      },
+      "effects": [
+        [
+          "set_attr", "r", "grounding_label",
+          {
+            "__term__": {
+              "type": "Attr",
+              "key": "name",
+              "node": {
+                "type": "Argmax",
+                "source": {"type": "Neighbours", "node": {"type": "Var", "name": "sense"}, "edge_type": "kept_kernel", "any_type": false},
+                "var_name": "k2",
+                "value": {
+                  "type": "MaxOver",
+                  "source": {"type": "Neighbours", "node": {"type": "Var", "name": "f"}, "edge_type": "has_patch", "any_type": false},
+                  "var_name": "p2",
+                  "value": {
+                    "type": "Dot",
+                    "a": {"type": "Attr", "node": {"type": "Var", "name": "k2"}, "key": "weights"},
+                    "b": {"type": "Attr", "node": {"type": "Var", "name": "p2"}, "key": "vals"}
+                  },
+                  "default": {"type": "Lit", "value": 0.0}
+                },
+                "default": null
+              }
+            }
+          }
+        ],
+        ["set_attr", "r", "status", "labelled"]
+      ]
+    },
+    {
+      "name": "vf_predictive_suppression",
+      "comment": "PREDICTIVE SUPPRESSION / EXPLAINING-AWAY (mechanism 6, the stage0-2 currency). A labelled Region (grounding_label bound = recognized as H) whose within-region prediction error (contradiction_residual) does NOT exceed the SamplingGeometry's contradiction_threshold (graph data) is SUPPRESSED: its predictable interior produces NO residual (set suppressed=1.0; only boundaries/anomalies/changes remain salient). This IS sd_recognize's explained-away (no growth) realized at region grain — a recognized region's interior is predicted, so it generates no prediction error; the residual currency flows only to the UNPREDICTED (boundaries, anomalies, the contradiction that splits). The guard is Not(Gt(contradiction_residual, contradiction_threshold)) so an UNSET contradiction_residual (no within-region error) is treated as suppressed (the normal recognized case). status labelled->suppressed (fires once).",
+      "match": [
+        ["ag", "has_vision_sense", "sense"],
+        ["ag", "has_sampling_geometry", "geom"],
+        ["sense", "has_region", "r"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "r"}, "key": "status"},
+            "b": {"type": "Lit", "value": "labelled"}
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Gt",
+              "a": {"type": "Attr", "node": {"type": "Var", "name": "r"}, "key": "contradiction_residual"},
+              "b": {"type": "Attr", "node": {"type": "Var", "name": "geom"}, "key": "contradiction_threshold"}
+            }
+          }
+        ]
+      },
+      "effects": [
+        ["set_attr", "r", "suppressed", 1.0],
+        ["set_attr", "r", "status", "suppressed"]
+      ]
+    },
+    {
+      "name": "vf_contradiction_split",
+      "comment": "CONTRADICTION SPLIT (mechanism: contradiction -> split = sd_mint_quantum on the residual). A Region past belief (status != 'belief', so labelled or suppressed — a contradiction can arise AFTER suppression, not only at labelling) whose within-region prediction error (contradiction_residual) EXCEEDS the SamplingGeometry's contradiction_threshold (graph data) is CONTRADICTED: the residual contradicts H, so the region's collapse REOPENS — mint a new CapabilityAxis (the sub-region quantum = the split, mirror of sd_mint_quantum's add_node+add_edge shape) carrying the grounding_label as capability_keys, and REVISE the original Region's interior belief (interior_inherited -> 0.0: the interior is no longer uniformly H; the split sub-region carries the exception). Wires region -has_subregion-> axis. status ->split (fires once; the split attr is the idempotency guard). This IS dynamic quantization applied to regions: a region is a spatial quantum whose interior is a belief; a residual that breaks the belief mints a sub-quantum (split) + re-decode on codebook_epoch (the sd_redecode precedent).",
+      "match": [
+        ["ag", "has_vision_sense", "sense"],
+        ["ag", "has_sampling_geometry", "geom"],
+        ["sense", "has_region", "r"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {"type": "Attr", "node": {"type": "Var", "name": "r"}, "key": "status"},
+              "b": {"type": "Lit", "value": "belief"}
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {"type": "Attr", "node": {"type": "Var", "name": "r"}, "key": "status"},
+              "b": {"type": "Lit", "value": "split"}
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "r"}, "key": "contradiction_residual"},
+            "b": {"type": "Attr", "node": {"type": "Var", "name": "geom"}, "key": "contradiction_threshold"}
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node", "axis", "CapabilityAxis",
+          {
+            "induced": {"__term__": {"type": "Lit", "value": 1.0}},
+            "from_observation": {"__term__": {"type": "Lit", "value": 1.0}},
+            "capability_keys": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "r"}, "key": "grounding_label"}},
+            "source": "region_split"
+          }
+        ],
+        ["add_edge", "r", "has_subregion", "axis"],
+        ["set_attr", "r", "split", 1.0],
+        ["set_attr", "r", "interior_inherited", 0.0],
+        ["set_attr", "r", "status", "split"]
+      ]
+    },
+    {
+      "name": "vf_border_ownership",
+      "comment": "BORDER OWNERSHIP (mechanism 1, V2). A Region past belief (recognized, grounding_label bound) OWNS its border: the figure side owns the boundary (the interior inherits H), the exterior is ground. Set owns_border=1.0 + border_owner='figure'. The decision is a RULE over Region figure status, NOT a seeded concept. The border_status flag makes it fire once per region (augmenting — does NOT transition the core belief/labelled/suppressed/split lifecycle, so it does not race with suppression/split).",
+      "match": [
+        ["ag", "has_vision_sense", "sense"],
+        ["sense", "has_region", "r"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {"type": "Attr", "node": {"type": "Var", "name": "r"}, "key": "status"},
+              "b": {"type": "Lit", "value": "belief"}
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {"type": "Attr", "node": {"type": "Var", "name": "r"}, "key": "border_status"},
+              "b": {"type": "Lit", "value": "owned"}
+            }
+          }
+        ]
+      },
+      "effects": [
+        ["set_attr", "r", "owns_border", 1.0],
+        ["set_attr", "r", "border_owner", "figure"],
+        ["set_attr", "r", "border_status", "owned"]
+      ]
+    },
+    {
+      "name": "vf_perceptual_grouping",
+      "comment": "PERCEPTUAL GROUPING (mechanism 2, Gestalt: proximity/similarity). Two Regions past belief with the SAME grounding_label (similarity) whose centers are within the SamplingGeometry's grouping_proximity (proximity, graph data) are MERGED: r2.merged_into -> r1 (the figure absorbs the compatible neighbour). The merge is a RULE over Region geometry + shared label, NOT a Python classifier. Guards: r1 != r2; both past belief (grounding_label bound); r2 not yet merged (merged_status != 'yes'); r2.cy > r1.cy AND (r2.cy - r1.cy) < grouping_proximity (one-directional adjacency to avoid double-merging; the grouping_proximity threshold is agent-revisable graph data). The same-grounding_label check is the Gestalt similarity principle; the proximity check is the Gestalt proximity principle.",
+      "match": [
+        ["ag", "has_vision_sense", "sense"],
+        ["ag", "has_sampling_geometry", "geom"],
+        ["sense", "has_region", "r1"],
+        ["sense", "has_region", "r2"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {"type": "Var", "name": "r1"},
+              "b": {"type": "Var", "name": "r2"}
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {"type": "Attr", "node": {"type": "Var", "name": "r1"}, "key": "status"},
+              "b": {"type": "Lit", "value": "belief"}
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {"type": "Attr", "node": {"type": "Var", "name": "r2"}, "key": "status"},
+              "b": {"type": "Lit", "value": "belief"}
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "r1"}, "key": "grounding_label"},
+            "b": {"type": "Attr", "node": {"type": "Var", "name": "r2"}, "key": "grounding_label"}
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {"type": "Attr", "node": {"type": "Var", "name": "r2"}, "key": "merged_status"},
+              "b": {"type": "Lit", "value": "yes"}
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "r2"}, "key": "cy"},
+            "b": {"type": "Attr", "node": {"type": "Var", "name": "r1"}, "key": "cy"}
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Minus",
+              "a": {"type": "Attr", "node": {"type": "Var", "name": "r2"}, "key": "cy"},
+              "b": {"type": "Attr", "node": {"type": "Var", "name": "r1"}, "key": "cy"}
+            },
+            "b": {"type": "Attr", "node": {"type": "Var", "name": "geom"}, "key": "grouping_proximity"}
+          }
+        ]
+      },
+      "effects": [
+        ["add_edge", "r2", "merged_into", "r1"],
+        ["set_attr", "r2", "merged_status", "yes"]
+      ]
+    },
+    {
+      "name": "vf_object_based_attention",
+      "comment": "OBJECT-BASED ATTENTION (mechanism 4). A Region past belief (recognized figure) routes the motor_core attention to the REGION (not interior patches): wire agent -attends_region-> region. The interior does NOT compete as independent features — attention spreads through the selected region (the Region IS the attention unit, not per-patch). The attention_status flag makes it fire once (augmenting — does NOT transition the core lifecycle, so it does not race with suppression/split). This is the figure-ground -> attention binding the motor_core attention_value reads downstream.",
+      "match": [
+        ["ag", "has_vision_sense", "sense"],
+        ["sense", "has_region", "r"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {"type": "Attr", "node": {"type": "Var", "name": "r"}, "key": "status"},
+              "b": {"type": "Lit", "value": "belief"}
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {"type": "Attr", "node": {"type": "Var", "name": "r"}, "key": "attention_status"},
+              "b": {"type": "Lit", "value": "attended"}
+            }
+          }
+        ]
+      },
+      "effects": [
+        ["add_edge", "ag", "attends_region", "r"],
+        ["set_attr", "r", "attention_status", "attended"]
+      ]
+    },
+    {
+      "name": "vf_summary_stat",
+      "comment": "ENSEMBLE / SUMMARY-STATISTIC CODING (mechanism 5). A Region past belief (recognized) can carry a summary-stat CapabilityAxis (a texture/stat quantum, not per-pixel): mint a CapabilityAxis carrying the region's grounding_label as capability_keys (the texture/stat identity = the region's recognized identity) and wire region -has_summary_stat-> axis. This realizes 'grass texture' / average-crowd coding: a Region's interior is a summary stat, not per-pixel samples. The summary_status flag makes it fire once (augmenting — does NOT transition the core lifecycle).",
+      "match": [
+        ["ag", "has_vision_sense", "sense"],
+        ["sense", "has_region", "r"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {"type": "Attr", "node": {"type": "Var", "name": "r"}, "key": "status"},
+              "b": {"type": "Lit", "value": "belief"}
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {"type": "Attr", "node": {"type": "Var", "name": "r"}, "key": "summary_status"},
+              "b": {"type": "Lit", "value": "bound"}
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node", "axis", "CapabilityAxis",
+          {
+            "induced": {"__term__": {"type": "Lit", "value": 1.0}},
+            "from_observation": {"__term__": {"type": "Lit", "value": 1.0}},
+            "capability_keys": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "r"}, "key": "grounding_label"}},
+            "source": "region_summary_stat"
+          }
+        ],
+        ["add_edge", "r", "has_summary_stat", "axis"],
+        ["set_attr", "r", "summary_status", "bound"]
+      ]
+    }
+  ]
+}

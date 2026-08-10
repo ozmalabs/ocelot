@@ -1,0 +1,48 @@
+{
+  "microtheory": {
+    "name": "discourse_analysis",
+    "definition": "Language above the sentence level — cohesion, coherence, narrative structure, dialogue, text types. How utterances combine into meaningful larger units. Halliday + Hasan's cohesion; Rhetorical Structure Theory (Mann + Thompson); narrative structure (Labov, Propp). Substrate analogue: how substrate's individual Messages combine into ongoing dialogue or narrative.",
+    "category": "linguistics_domain",
+    "parent": "linguistics_foundation"
+  },
+  "concepts": [
+    {"name": "cohesion", "definition": "Halliday + Hasan 1976. Surface ties between sentences — pronouns, conjunctions, lexical repetition. Substrate analogue: substrate's inter-Message reference links.", "category": "structure"},
+    {"name": "coherence", "definition": "Underlying meaning relations between parts of discourse. Some discourses cohere without surface cohesion + vice versa. Substrate analogue: substrate's semantic-coherence of Message sequence.", "category": "structure"},
+    {"name": "referential_chain", "definition": "Same entity referred to repeatedly with varying expressions ('John... he... the boy... that idiot'). Substrate analogue: substrate's persistent-entity tracking.", "category": "structure"},
+    {"name": "lexical_cohesion", "definition": "Repetition + synonymy + collocation across sentences holding text together. Substrate analogue: substrate's repeated-Concept activation.", "category": "structure"},
+    {"name": "conjunction", "definition": "Words signaling relationships between sentences. Additive (and), adversative (but), causal (because), temporal (then). Substrate analogue: substrate's inter-Message relation markers.", "category": "structure"},
+
+    {"name": "rhetorical_structure_theory", "definition": "Mann + Thompson 1988. Text as hierarchy of nucleus-satellite relations: elaboration, contrast, cause, evidence, etc. Substrate analogue: substrate's hierarchical discourse Term-tree.", "category": "frameworks"},
+    {"name": "centering_theory", "definition": "Grosz + Joshi + Weinstein 1995. Local coherence through entity-tracking; transitions classified by preserved vs shifted center. Substrate analogue: substrate's per-step entity-focus.", "category": "frameworks"},
+    {"name": "topic_structure", "definition": "What the discourse is about + how it shifts. Topic chains, topic decay. Substrate analogue: substrate's current-Mt evolution through dialogue.", "category": "frameworks"},
+
+    {"name": "narrative_structure", "definition": "Labov + Waletzky 1967. Abstract → orientation → complicating action → evaluation → resolution → coda. Substrate analogue: substrate's event-sequence-as-narrative.", "category": "narrative"},
+    {"name": "propp_narrative_functions", "definition": "Propp 1928. Russian folktales analyzed into 31 functions in fixed sequence. Substrate analogue: substrate's narrative-grammar template.", "category": "narrative"},
+    {"name": "story_grammar", "definition": "Mandler + Johnson 1977. Setting + episodes + resolution. Hierarchical structure aids comprehension + memory. Substrate analogue: substrate's hierarchical event encoding.", "category": "narrative"},
+
+    {"name": "dialogue_structure", "definition": "Multi-party language organized around turn-taking, adjacency pairs, sequences, repair. Substrate analogue: substrate's multi-Message dialogue with role exchange.", "category": "dialogue"},
+    {"name": "sequence_organization", "definition": "Schegloff. How talk gets organized into recognizable sequences with first-pair-parts + second-pair-parts. Substrate analogue: substrate's question-answer + greeting-greeting + offer-acceptance structures.", "category": "dialogue"},
+    {"name": "preference_organization", "definition": "Some second-pair-parts (acceptances of offers, agreements) are preferred + come quickly; others (refusals, disagreements) are dispreferred + delayed. Substrate analogue: substrate's response-latency conditioning.", "category": "dialogue"},
+
+    {"name": "genre", "definition": "Recognizable text type. Narrative, exposition, argument, instruction, news report. Each with conventions. Substrate analogue: substrate's discourse-mode Mt.", "category": "genre"},
+    {"name": "register", "definition": "Variation in language by situation. Formal/informal, technical/casual. Substrate analogue: substrate's contextual lexical+grammatical adjustment.", "category": "genre"},
+    {"name": "style", "definition": "Recurrent linguistic choices distinguishing individuals or groups. Substrate analogue: substrate's per-instance characteristic patterns.", "category": "genre"},
+
+    {"name": "discourse_marker", "definition": "Words signaling discourse function: 'well', 'so', 'you know', 'I mean'. Substrate analogue: substrate's discourse-state signaling.", "category": "markers"},
+    {"name": "information_structure", "definition": "Topic vs comment, given vs new, focus + presupposition. Affects intonation + syntax. Substrate analogue: substrate's known-vs-novel partitioning of Message content.", "category": "information"},
+    {"name": "focus", "definition": "Most informative part of utterance. Often prosodically prominent + syntactically marked. Substrate analogue: substrate's high-attention Concept within Message.", "category": "information"},
+    {"name": "given_information", "definition": "What's already in common ground. Often pronominalized + de-stressed. Substrate analogue: substrate's already-known Concept marker.", "category": "information"},
+    {"name": "topic_continuity", "definition": "Givon. How long an entity stays topical. Measured by gap-to-next-mention. Substrate analogue: substrate's entity-attention persistence.", "category": "information"},
+
+    {"name": "implicational_scale", "definition": "Coherence relations ordered: identity > paraphrase > elaboration > exemplification. Substrate analogue: substrate's hierarchy of inter-Message relations.", "category": "coherence"},
+    {"name": "common_ground_update", "definition": "Stalnaker. Each successful utterance adds to common ground. Substrate analogue: substrate's shared-context monotonic accumulation."},
+    {"name": "narrative_perspective", "definition": "First-person vs third-person, internal vs external. Affects what's accessible to narrator. Substrate analogue: substrate's perspective-conditioned narration."}
+  ],
+  "rules": [
+    {"name": "coherence_requires_inferable_relations", "head": "the substrate processes sequential utterances", "body": "they must be related by some inferable relation (elaboration, contrast, cause, etc.) for the discourse to cohere. Substrate's inter-Message coherence."},
+    {"name": "referential_chains_track_entities", "head": "the substrate processes a multi-utterance discourse", "body": "it tracks each entity across multiple references via various expressions. Pronouns, definite descriptions. Substrate's persistent-entity model."},
+    {"name": "narrative_follows_schema", "head": "the substrate processes narrative discourse", "body": "the structure follows the genre template (abstract → orientation → complication → resolution). Substrate's narrative-mode parsing."},
+    {"name": "topic_shifts_signal_segment_boundaries", "head": "the substrate detects a topic shift", "body": "the shift signals a discourse-segment boundary. Substrate's segmentation cue."},
+    {"name": "common_ground_grows_monotonically", "head": "the substrate has a successful dialogue exchange", "body": "the common ground expands monotonically; entities + propositions accumulate. Substrate's shared-context update."}
+  ]
+}

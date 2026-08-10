@@ -1,0 +1,209 @@
+{
+  "microtheory": {
+    "name": "robotics",
+    "definition": "Robotics — design, construction, control of robots. Kinematics, dynamics, sensing, planning, manipulation, locomotion, SLAM, human-robot interaction. Foundational figures: Engelberger, Brooks, Khatib, Thrun, Pratt. Industrial + service + humanoid + soft + swarm robotics. Substrate analogue: embodied substrate operating in physical world — the most direct realisation of substrate-as-agent.",
+    "category": "foundation"
+  },
+  "concepts": [
+    {
+      "name": "robot",
+      "definition": "Physical machine sensing + acting autonomously in environment. Karel Čapek's R.U.R. 1920 coined the term.",
+      "category": "foundation"
+    },
+    {
+      "name": "manipulator",
+      "definition": "Robot arm. Links connected by joints. End effector at tip. DOF = degrees of freedom.",
+      "category": "foundation"
+    },
+    {
+      "name": "mobile_robot",
+      "definition": "Locomoting platform. Wheeled, tracked, legged, flying, swimming.",
+      "category": "foundation"
+    },
+    {
+      "name": "humanoid_robot",
+      "definition": "Human-form. ASIMO, Atlas, Optimus. Difficult balance + manipulation. Uncanny valley.",
+      "category": "foundation"
+    },
+    {
+      "name": "soft_robotics",
+      "definition": "Compliant materials. Octopus-inspired. Safer for HRI. Pneumatic actuators.",
+      "category": "foundation"
+    },
+    {
+      "name": "swarm_robotics",
+      "definition": "Many simple robots coordinating. Inspired by ants, bees. Emergent behavior from local rules.",
+      "category": "foundation"
+    },
+    {
+      "name": "forward_kinematics",
+      "definition": "Joint angles → end-effector pose. Forward computation. Denavit-Hartenberg parameters standard.",
+      "category": "kinematics"
+    },
+    {
+      "name": "inverse_kinematics",
+      "definition": "Desired end-effector pose → required joint angles. Generally non-unique + non-existent. Critical for motion planning.",
+      "category": "kinematics"
+    },
+    {
+      "name": "jacobian_robotics",
+      "definition": "Matrix mapping joint velocities to end-effector velocities. Singularities where rank drops.",
+      "category": "kinematics"
+    },
+    {
+      "name": "denavit_hartenberg",
+      "definition": "DH parameters. Standard convention for assigning frames to manipulator links. 4 parameters per link.",
+      "category": "kinematics"
+    },
+    {
+      "name": "workspace",
+      "definition": "Set of poses end-effector can reach. Reachable vs dexterous (all orientations).",
+      "category": "kinematics"
+    },
+    {
+      "name": "robot_dynamics",
+      "definition": "Forces + torques + motion. Lagrangian or Newton-Euler formulations. M(q)q̈ + C(q,q̇)q̇ + G(q) = τ.",
+      "category": "dynamics"
+    },
+    {
+      "name": "impedance_control",
+      "definition": "Hogan. Regulate dynamic relationship between force + motion. Critical for contact tasks. Substrate analogue: substrate's compliant-interaction control.",
+      "category": "dynamics"
+    },
+    {
+      "name": "force_control",
+      "definition": "Command force rather than position. Required for assembly, polishing, surgery.",
+      "category": "dynamics"
+    },
+    {
+      "name": "perception_robotics",
+      "definition": "Sensing world from sensors. Vision, LIDAR, IMU, force/torque, tactile.",
+      "category": "sensing"
+    },
+    {
+      "name": "computer_vision_robotics",
+      "definition": "Object recognition, pose estimation, depth, segmentation. CNNs revolutionised since 2012.",
+      "category": "sensing"
+    },
+    {
+      "name": "lidar",
+      "definition": "Laser ranging. 3D point clouds. Velodyne. Critical for autonomous driving.",
+      "category": "sensing"
+    },
+    {
+      "name": "imu",
+      "definition": "Inertial Measurement Unit. Accelerometer + gyroscope + (often) magnetometer. State estimation.",
+      "category": "sensing"
+    },
+    {
+      "name": "tactile_sensing",
+      "definition": "Pressure + texture + slip. Critical for manipulation. BioTac, GelSight.",
+      "category": "sensing"
+    },
+    {
+      "name": "slam",
+      "definition": "Simultaneous Localization And Mapping. Robot builds map + tracks own position in it simultaneously. Visual SLAM, LIDAR SLAM. EKF, particle, graph variants.",
+      "category": "navigation"
+    },
+    {
+      "name": "path_planning",
+      "definition": "Find feasible trajectory from start to goal avoiding obstacles. A*, RRT, PRM, optimisation-based.",
+      "category": "navigation"
+    },
+    {
+      "name": "rrt",
+      "definition": "Rapidly-exploring Random Tree. LaValle 1998. Sample-based planning in high-dim spaces. Quickly explores configuration space.",
+      "category": "navigation"
+    },
+    {
+      "name": "motion_planning",
+      "definition": "Beyond path: dynamically-feasible smooth trajectory respecting constraints. Trajectory optimisation.",
+      "category": "navigation"
+    },
+    {
+      "name": "grasping",
+      "definition": "Picking + holding objects. Form closure vs force closure. Generalisation hard — dish-grasping diverse objects.",
+      "category": "manipulation"
+    },
+    {
+      "name": "manipulation_planning",
+      "definition": "Sequence of motions + grasps to achieve task. Task and motion planning (TAMP).",
+      "category": "manipulation"
+    },
+    {
+      "name": "deformable_object_manipulation",
+      "definition": "Cloth, rope, deformable. Much harder than rigid. Active research.",
+      "category": "manipulation"
+    },
+    {
+      "name": "behavior_based_robotics",
+      "definition": "Brooks 1986 subsumption architecture. Layered competences without central planner. Reactive. Substrate analogue: substrate's reflex-driven runtime.",
+      "category": "control_arch"
+    },
+    {
+      "name": "subsumption_architecture",
+      "definition": "Brooks. Layers of behavior — higher subsumes lower. No symbolic representation. Insects as inspiration.",
+      "category": "control_arch"
+    },
+    {
+      "name": "hybrid_deliberative_reactive",
+      "definition": "Combine deliberate planning (slow, symbolic) with reactive behaviors (fast). Standard modern architecture.",
+      "category": "control_arch"
+    },
+    {
+      "name": "reinforcement_learning_robotics",
+      "definition": "Learning control policies through interaction. Sim-to-real challenges. Sample inefficiency.",
+      "category": "learning"
+    },
+    {
+      "name": "imitation_learning",
+      "definition": "Learn from demonstrations. Behavioral cloning, inverse RL, DAgger.",
+      "category": "learning"
+    },
+    {
+      "name": "sim_to_real",
+      "definition": "Train in simulation, deploy in real world. Domain randomisation helps. Reality gap perennial challenge.",
+      "category": "learning"
+    },
+    {
+      "name": "human_robot_interaction",
+      "definition": "HRI. Social robots. Trust, intent recognition, shared autonomy. Substrate analogue: substrate's collaborative-agent interaction."
+    },
+    {
+      "name": "uncanny_valley",
+      "definition": "Mori. Near-human-but-not-quite robots evoke unease. Acceptance dips before rising again."
+    },
+    {
+      "name": "asimovs_three_laws",
+      "definition": "1. Don't harm humans. 2. Obey unless violates 1. 3. Self-preserve unless violates 1 or 2. Fictional but influential."
+    }
+  ],
+  "rules": [
+    {
+      "name": "inverse_kinematics_is_generally_hard",
+      "head": "Jabberwock plans a manipulation task",
+      "body": "inverse kinematics has multiple or no solutions in general. Singularities make Jacobian rank-deficient. Numerical or analytical methods per geometry."
+    },
+    {
+      "name": "slam_must_solve_chicken_and_egg",
+      "head": "Jabberwock navigates an unknown environment",
+      "body": "localization needs map; mapping needs location. SLAM solves jointly via probabilistic inference. Substrate's joint-state estimation."
+    },
+    {
+      "name": "subsumption_avoids_central_planner_bottleneck",
+      "head": "Jabberwock designs robot control architecture",
+      "body": "layered behaviors with higher subsuming lower work without symbolic planner. Brooks 1986. Substrate's reflex-driven design."
+    },
+    {
+      "name": "sim_to_real_gap_demands_domain_randomization",
+      "head": "Jabberwock trains policies in simulation",
+      "body": "real-world deployment fails without randomising sim parameters during training. Reality gap principle."
+    },
+    {
+      "name": "contact_tasks_require_impedance_control",
+      "head": "Jabberwock interacts with environment via contact",
+      "body": "pure position control fails — small position errors → large forces. Impedance control regulates force-motion relationship. Hogan."
+    }
+  ],
+  "parent_mt": "control_systems_foundation"
+}

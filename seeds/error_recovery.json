@@ -1,0 +1,60 @@
+{
+  "id": "error_recovery",
+  "version": "1.0.0",
+  "depends_on": [
+    "situation_model"
+  ],
+  "description": "Noisy-channel orthographic recovery of error-full human text: a TYPED edit model (typo kinds cheaper than flat edits) for P(observed|intended) times the grown lexicon + context for P(intended); recovered = Argmax(error_likelihood x context_fit), context breaking the shape-ties (form vs from). The same recogniser loop as the ear, at the letter level.",
+  "microtheory": {
+    "name": "error_recovery",
+    "description": "recover intended text from noisy human input"
+  },
+  "nodes": [
+    {
+      "local_id": 1,
+      "type": "Concept",
+      "attrs": {
+        "name": "error_recovery",
+        "description": "Recover intended text from error-full human input by the NOISY CHANNEL, the SAME loop as acoustic key-recovery but at the ORTHOGRAPHIC level: observed = intended + noise, recover argmax_intended P(intended|observed) proportional to P(observed|intended) x P(intended). A typed word is an intended word pushed through a leaky keyboard, as a heard word is one pushed through a leaky room; reuse ranked() over the GraphLexicon, cochleagram swapped for letter-string. Downstream rules read the recovered token, never the noise."
+      }
+    },
+    {
+      "local_id": 2,
+      "type": "Principle",
+      "attrs": {
+        "name": "recovery_error_model",
+        "head": "error recovery",
+        "body": "P(observed|intended) is a TYPED edit cost over the shape matchers (Levenshtein/DtwTo/BlendCover): a transposition (hiw->how) is one cheap swap not two subs, a doubling/drop (errrs->errors) a cheap run-length edit, a keyboard-adjacent substitution cheap, a phonetic swap (fone->phone) cheap only under the sound-shape matcher; BlendCover segments a run-on back into lexicon words"
+      }
+    },
+    {
+      "local_id": 3,
+      "type": "Principle",
+      "attrs": {
+        "name": "recovery_prior",
+        "head": "error recovery",
+        "body": "P(intended) is the GROWN lexicon (a word never met cannot be the answer) times CONTEXT (the surrounding recovered words, the function-word klass, the situation model); candidates are only lexicon words within a small edit radius (1-2), so the whole lexicon is never searched"
+      }
+    },
+    {
+      "local_id": 4,
+      "type": "Principle",
+      "attrs": {
+        "name": "recovery_decision",
+        "head": "error recovery",
+        "body": "recovered = Argmax over candidates of (error_likelihood x context_fit); context breaks the ties the error model cannot \u2014 form and from are each one transposition apart and equally cheap on shape, so the prior decides by which neighbour the function-word/situation context expects"
+      }
+    },
+    {
+      "local_id": 5,
+      "type": "Principle",
+      "attrs": {
+        "name": "recovery_test",
+        "head": "error recovery",
+        "body": "seed a corrupted corpus with known intent and score recovery error-model-only vs error x context; pass = typos recover near-perfectly on SHAPE alone AND the form/from tie-pairs flip CORRECTLY only when context is switched on \u2014 that contrast proves the prior does real work, not mere spell-match"
+      }
+    }
+  ],
+  "edges": [],
+  "rules": []
+}

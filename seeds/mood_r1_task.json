@@ -1,0 +1,127 @@
+{
+ "id": "mood_r1_task",
+ "version": "1.0.0",
+ "self_load_only": true,
+ "depends_on": [],
+ "area": "retina",
+ "description": "MOOD R1 (block 236000) -- the fast appraisal + choice CORE the momentum layer (seeds/mood_r1.json) sits above. A MoodTask node (hung off an EmotionHub by has_mood_task) carries a fast delta-rule value estimate v (a lagging EMA of reward) and a one-offer-per-trial accept/decline choice. Every DECISION is a graph RULE; the world adapter (domains/mood_r1_world.py) only delivers a scalar reward r_t, bumps input_epoch, ticks (run_rules), and reads decision/cum_reward. run_rules is a FIXPOINT loop (a SetAttr stops contributing only when it no longer changes the value), so every accumulating rule SELF-CLOSES on its OWN per-rule epoch marker (input_epoch > e_x guard + set e_x = input_epoch) -- the same idempotent idiom mod_competence/sd_blend use -- firing EXACTLY once per trial regardless of pass semantics. `bias` is a MoodTask attr defaulting to 0; absent the momentum layer mt_learn is a plain delta rule and the whole path is byte-identical to a no-mood world. Loaded for BOTH the WITH-mood and WITHOUT-mood arms. NO Rust, NO new Term (Plus/Minus/Times/Div/IfThenElse/Gt/Attr exist).",
+ "microtheory": {
+  "name": "mood_r1_task",
+  "description": "Fast delta-rule value estimate + accept/decline choice as graph rules; the appraisal core mood momentum biases. Reward is a cross-frame observation stream (float); the value EMA is a cross-frame map."
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [
+  {
+   "provenance": "seed:mood_r1_task:hub-moodtask",
+   "src": {"type": "EmotionHub", "var": "hub"},
+   "edge_type": "has_mood_task",
+   "tgt": {"type": "MoodTask", "var": "mt"}
+  }
+ ],
+ "rules": [
+  {
+   "name": "mt_decide",
+   "area": "retina",
+   "order": 0,
+   "latency_class": "hard_realtime",
+   "match": [["hub", "has_mood_task", "mt"]],
+   "where": {
+    "type": "Gt",
+    "a": {"type": "Attr", "node": {"type": "Var", "name": "mt"}, "key": "input_epoch"},
+    "b": {"type": "Attr", "node": {"type": "Var", "name": "mt"}, "key": "e_dec"}
+   },
+   "effects": [
+    ["set_attr", "mt", "decision", {"__term__": {
+     "type": "IfThenElse",
+     "cond": {"type": "Gt",
+              "a": {"type": "Attr", "node": {"type": "Var", "name": "mt"}, "key": "v"},
+              "b": {"type": "Attr", "node": {"type": "Var", "name": "mt"}, "key": "accept_thresh"}},
+     "then": {"type": "Lit", "value": 1.0},
+     "other": {"type": "Lit", "value": 0.0}
+    }}],
+    ["set_attr", "mt", "e_dec", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "mt"}, "key": "input_epoch"}}]
+   ]
+  },
+  {
+   "name": "mt_accrue",
+   "area": "retina",
+   "order": 1,
+   "latency_class": "hard_realtime",
+   "match": [["hub", "has_mood_task", "mt"]],
+   "where": {
+    "type": "Gt",
+    "a": {"type": "Attr", "node": {"type": "Var", "name": "mt"}, "key": "input_epoch"},
+    "b": {"type": "Attr", "node": {"type": "Var", "name": "mt"}, "key": "e_acc"}
+   },
+   "effects": [
+    ["set_attr", "mt", "reward_got", {"__term__": {
+     "type": "Times",
+     "items": [
+      {"type": "Attr", "node": {"type": "Var", "name": "mt"}, "key": "decision"},
+      {"type": "Attr", "node": {"type": "Var", "name": "mt"}, "key": "r"}
+     ]
+    }}],
+    ["set_attr", "mt", "cum_reward", {"__term__": {
+     "type": "Plus",
+     "items": [
+      {"type": "Attr", "node": {"type": "Var", "name": "mt"}, "key": "cum_reward"},
+      {"type": "Times", "items": [
+       {"type": "Attr", "node": {"type": "Var", "name": "mt"}, "key": "decision"},
+       {"type": "Attr", "node": {"type": "Var", "name": "mt"}, "key": "r"}
+      ]}
+     ]
+    }}],
+    ["set_attr", "mt", "e_acc", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "mt"}, "key": "input_epoch"}}]
+   ]
+  },
+  {
+   "name": "mt_rpe",
+   "area": "retina",
+   "order": 2,
+   "latency_class": "hard_realtime",
+   "match": [["hub", "has_mood_task", "mt"]],
+   "where": {
+    "type": "Gt",
+    "a": {"type": "Attr", "node": {"type": "Var", "name": "mt"}, "key": "input_epoch"},
+    "b": {"type": "Attr", "node": {"type": "Var", "name": "mt"}, "key": "e_rpe"}
+   },
+   "effects": [
+    ["set_attr", "mt", "raw_rpe", {"__term__": {
+     "type": "Minus",
+     "a": {"type": "Attr", "node": {"type": "Var", "name": "mt"}, "key": "r"},
+     "b": {"type": "Attr", "node": {"type": "Var", "name": "mt"}, "key": "v"}
+    }}],
+    ["set_attr", "mt", "e_rpe", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "mt"}, "key": "input_epoch"}}]
+   ]
+  },
+  {
+   "name": "mt_learn",
+   "area": "retina",
+   "order": 4,
+   "latency_class": "hard_realtime",
+   "match": [["hub", "has_mood_task", "mt"]],
+   "where": {
+    "type": "Gt",
+    "a": {"type": "Attr", "node": {"type": "Var", "name": "mt"}, "key": "input_epoch"},
+    "b": {"type": "Attr", "node": {"type": "Var", "name": "mt"}, "key": "e_learn"}
+   },
+   "effects": [
+    ["set_attr", "mt", "v", {"__term__": {
+     "type": "Plus",
+     "items": [
+      {"type": "Attr", "node": {"type": "Var", "name": "mt"}, "key": "v"},
+      {"type": "Times", "items": [
+       {"type": "Attr", "node": {"type": "Var", "name": "mt"}, "key": "lr"},
+       {"type": "Plus", "items": [
+        {"type": "Attr", "node": {"type": "Var", "name": "mt"}, "key": "raw_rpe"},
+        {"type": "Attr", "node": {"type": "Var", "name": "mt"}, "key": "bias"}
+       ]}
+      ]}
+     ]
+    }}],
+    ["set_attr", "mt", "e_learn", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "mt"}, "key": "input_epoch"}}]
+   ]
+  }
+ ]
+}

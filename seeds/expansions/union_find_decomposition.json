@@ -1,0 +1,106 @@
+{
+  "id": "union_find_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "disjoint_set",
+  "in_microtheory": "data_structures_algorithms",
+  "description": "Union-find (disjoint set) decomposed. Two operations: find (which group is x in?) and union (merge two groups). With path compression + union by rank, amortised O(α(n)) per operation — essentially constant. Used in Kruskal's MST, dynamic connectivity, image processing, equivalence relations.",
+  "sub_mechanisms": [
+    {
+      "name": "parent_array_representation",
+      "definition": "Each element has a parent pointer. parent[x] = x means x is its own root (group representative).",
+      "why": "Trees encode group membership. Each tree represents one group. Root identifies the group. Forest of disjoint trees = the disjoint sets.",
+      "category": "uf_mechanism"
+    },
+    {
+      "name": "find_operation",
+      "definition": "find(x): follow parent pointers from x until reaching a root (parent[r] == r). Return r.",
+      "why": "Root identifies the group. Two elements are in the same group iff they have the same root. Naive find is O(depth); with optimisations, ~O(1) amortised.",
+      "category": "uf_mechanism"
+    },
+    {
+      "name": "union_operation",
+      "definition": "union(x, y): find roots rx + ry. If different, set one as parent of the other.",
+      "why": "Merging groups = pointing one root at the other. Now both trees share a root → same group. Choice of which root becomes parent matters for balance (see union by rank).",
+      "category": "uf_mechanism"
+    },
+    {
+      "name": "path_compression",
+      "definition": "During find, set every traversed node's parent directly to the root. Future finds from those nodes are O(1).",
+      "why": "Trees get flatter with use. Amortised O(α(n)) per operation when combined with union by rank. Implementation: 1-line addition to find (set parent[x] = root after finding it).",
+      "category": "uf_mechanism"
+    },
+    {
+      "name": "union_by_rank",
+      "definition": "Each root has a rank (upper bound on its tree's height). Union: make the lower-rank root point to the higher-rank one. Equal ranks: pick one, increment its rank.",
+      "why": "Prevents trees from becoming linear. Combined with path compression, gives amortised O(α(n)). Rank is upper bound, not exact (path compression makes trees shorter than rank suggests).",
+      "category": "uf_mechanism"
+    },
+    {
+      "name": "union_by_size",
+      "definition": "Track tree size. Union: smaller tree's root points to larger's. Functionally equivalent to union by rank.",
+      "why": "Simpler conceptually + provides additional info (size of each component). Same asymptotic behaviour as union by rank. Common in implementations that need component sizes anyway.",
+      "category": "uf_mechanism"
+    },
+    {
+      "name": "amortised_inverse_ackermann",
+      "definition": "With path compression + union by rank/size, m operations on n elements take O(m · α(n)) time. α is the inverse Ackermann function.",
+      "why": "Tarjan's classical analysis. α(n) ≤ 4 for n ≤ 2^65536 (essentially all possible inputs). Effectively constant per operation, though not strictly O(1). One of the most beautiful results in algorithm analysis.",
+      "category": "uf_mechanism"
+    },
+    {
+      "name": "Kruskal_use_case",
+      "definition": "Kruskal's MST: sort edges by weight; for each edge, if endpoints in different components (find), add to MST + union.",
+      "why": "Union-find is what makes Kruskal's O(E log E). Cycle detection becomes O(α(n)) per edge instead of O(V) graph search. The clean separation between sort + connectivity-tracking is what makes Kruskal's elegant.",
+      "category": "uf_mechanism"
+    },
+    {
+      "name": "incremental_connectivity",
+      "definition": "Dynamic connectivity in graphs being built: each edge addition is a union; queries are find-then-compare.",
+      "why": "Online problem (edges arrive over time). Union-find handles each edge in O(α(n)). For fully dynamic (edges added + removed), more complex structures (Euler-tour tree) needed.",
+      "category": "uf_mechanism"
+    },
+    {
+      "name": "weighted_union_find",
+      "definition": "Variant: each edge has a weight; track weight differences between elements + their roots. find returns root + weight diff.",
+      "why": "Equivalence classes with relative weights. Used in solving systems of equations where variables are related by additive constants (a - b = c). Same O(α(n)) per operation.",
+      "category": "uf_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "path_compression_and_union_by_rank_give_inverse_ackermann",
+      "if": ["both optimisations are applied"],
+      "then": ["amortised cost is O(α(n)) per operation"],
+      "why": "Tarjan's proof (1975). Without either, operations degrade: O(log n) with one, O(n) with neither. The combination is what gives the near-constant bound. Implementing both is essentially free (a few lines).",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "find_idempotent_after_compression",
+      "if": ["path compression has run on x's lineage"],
+      "then": ["subsequent find(x) is O(1)"],
+      "why": "Compression sets parent[x] = root. Next find(x) returns immediately. Compression's benefit accumulates: warm-up phase has cost; subsequent finds are essentially free.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "Kruskal_O_E_log_E_via_union_find",
+      "if": ["Kruskal uses union-find for cycle detection"],
+      "then": ["total runtime is O(E log E)"],
+      "why": "Sort: O(E log E). For each edge: find × 2 + union = O(α(n)). Total: O(E log E + E · α(n)) = O(E log E). Without union-find, cycle detection per edge would be O(V) (DFS/BFS), giving O(E · V) — much slower.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "union_by_size_or_rank_keeps_tree_shallow",
+      "if": ["smaller tree is attached to larger"],
+      "then": ["tree depth stays O(log n)"],
+      "why": "Each time a tree's depth grows, it merges with one of at least equal size — doubling its size. After k depth increases, tree has at least 2^k elements. So depth ≤ log n. Path compression makes this even better.",
+      "soundness_category": "algebraic_law"
+    },
+    {
+      "name": "α_n_essentially_constant_for_practical_n",
+      "if": ["n ≤ 2^65536"],
+      "then": ["α(n) ≤ 4"],
+      "why": "Ackermann's function grows astronomically fast; its inverse grows astronomically slow. For any input we could ever process, α(n) is bounded by a small constant. Practically equivalent to O(1) per operation.",
+      "soundness_category": "algebraic_law"
+    }
+  ]
+}

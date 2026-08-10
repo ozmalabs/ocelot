@@ -1,0 +1,128 @@
+{
+  "protocol_id": "embodied_damage_navigation_v4",
+  "status": "frozen_before_held_out_execution",
+  "claim": "Checkpointed graph plasticity with prequential rollback improves post-damage navigation over an identically calibrated frozen model under unseen randomized dynamics.",
+  "simulator": "pybullet_direct",
+  "morphologies": ["r2d2", "husky", "racecar"],
+  "arms": [
+    "adaptive_damage_navigation",
+    "frozen_damage_navigation",
+    "healthy_reference"
+  ],
+  "initial_goal": [0.0, 0.0, 0.0],
+  "calibration_actions": 45,
+  "total_actions": 240,
+  "babble_samples": 3,
+  "primary_metric": "normalized_progress_including_recalibration_cost",
+  "success_gates": {
+    "all_runs_complete": true,
+    "prechange_trajectories_exactly_matched": true,
+    "adaptive_postchange_models_update": true,
+    "frozen_postchange_models_do_not_update": true,
+    "context_models_nonvacuous": true,
+    "candidate_hypotheses_exercised": true,
+    "candidate_promotion_receipts_valid": true,
+    "adaptive_wins_required_of_18": 10,
+    "pooled_median_paired_advantage_minimum": 0.05,
+    "adaptive_median_progress_positive_in_every_morphology": true,
+    "median_paired_advantage_positive_in_every_morphology": true
+  },
+  "cases": [
+    {
+      "case_id": "rnd_301",
+      "seed": 84301,
+      "goal_offset": [-1.65, -0.9, 0.0],
+      "dynamics": {
+        "base_mass_scale": 0.64,
+        "lateral_friction": 0.39,
+        "rolling_friction": 0.027,
+        "motor_force_scale": 1.12
+      },
+      "condition": {
+        "abrupt_retention": [1.0, 0.2],
+        "wear_per_use": [0.0, 0.0],
+        "minimum_retention": 0.2
+      }
+    },
+    {
+      "case_id": "rnd_302",
+      "seed": 84302,
+      "goal_offset": [0.2, 2.15, 0.0],
+      "dynamics": {
+        "base_mass_scale": 1.36,
+        "lateral_friction": 1.29,
+        "rolling_friction": 0.005,
+        "motor_force_scale": 0.68
+      },
+      "condition": {
+        "abrupt_retention": [0.12, 1.0],
+        "wear_per_use": [0.0, 0.0],
+        "minimum_retention": 0.12
+      }
+    },
+    {
+      "case_id": "rnd_303",
+      "seed": 84303,
+      "goal_offset": [1.9, 0.45, 0.0],
+      "dynamics": {
+        "base_mass_scale": 0.86,
+        "lateral_friction": 0.74,
+        "rolling_friction": 0.018,
+        "motor_force_scale": 1.25
+      },
+      "condition": {
+        "abrupt_retention": [1.0, 1.0],
+        "wear_per_use": [0.0, 0.026],
+        "minimum_retention": 0.2
+      }
+    },
+    {
+      "case_id": "rnd_304",
+      "seed": 84304,
+      "goal_offset": [-0.75, 1.9, 0.0],
+      "dynamics": {
+        "base_mass_scale": 1.16,
+        "lateral_friction": 0.44,
+        "rolling_friction": 0.023,
+        "motor_force_scale": 0.81
+      },
+      "condition": {
+        "abrupt_retention": [0.5, 1.0],
+        "wear_per_use": [0.02, 0.0],
+        "minimum_retention": 0.18
+      }
+    },
+    {
+      "case_id": "rnd_305",
+      "seed": 84305,
+      "goal_offset": [1.05, -1.8, 0.0],
+      "dynamics": {
+        "base_mass_scale": 0.73,
+        "lateral_friction": 1.34,
+        "rolling_friction": 0.001,
+        "motor_force_scale": 0.79
+      },
+      "condition": {
+        "abrupt_retention": [1.0, 0.08],
+        "wear_per_use": [0.0, 0.0],
+        "minimum_retention": 0.08
+      }
+    },
+    {
+      "case_id": "rnd_306",
+      "seed": 84306,
+      "goal_offset": [-1.45, -1.4, 0.0],
+      "dynamics": {
+        "base_mass_scale": 1.31,
+        "lateral_friction": 0.62,
+        "rolling_friction": 0.015,
+        "motor_force_scale": 1.16
+      },
+      "condition": {
+        "abrupt_retention": [0.3, 1.0],
+        "wear_per_use": [0.012, 0.0],
+        "minimum_retention": 0.18
+      }
+    }
+  ]
+}

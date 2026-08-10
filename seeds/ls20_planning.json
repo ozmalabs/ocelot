@@ -1,0 +1,647 @@
+{
+ "id": "ls20_planning",
+ "version": "1.0.0",
+ "depends_on": [
+  "shape_decode_loop"
+ ],
+ "area": "retina",
+ "description": "ls20 PLANNING/EXECUTION (block 218000): the salience->investigate->act loop as graph rules. SALIENCE = the symbol<->goal mismatch (surprise->ORIENT); INVESTIGATE = recognise the required transform (217000 sd-loop) and seek the matching station; ACT = deliver when the carried symbol matches. Goal-blind (plan_blind) and blind-detour (plan_detour_*) are the controls it must beat. Guarded on game.plan_on==1 (default-OFF, byte-identical otherwise) and on game.arm. Integer-native; no Rust; reuses the existing shape_decode_loop.",
+ "microtheory": {
+  "name": "ls20_planning",
+  "description": "Salience surfaces the mismatch; investigation recognises the required transform and the means to perform it; the act follows. The goal is an attractor, never a blinder \u2014 every where-to-go decision is a rule."
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [],
+ "rules": [
+  {
+   "name": "plan_orient",
+   "comment": "SALIENCE: symbol!=goal -> ORIENT (surprise). Reuses 208000 surprise->ORIENT.",
+   "match": [
+    [
+     "g",
+     "has_ping",
+     "p"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "plan_on"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "arm"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "curious"
+        }
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "symbol_matches_goal"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "g",
+     "salient_mismatch",
+     1.0
+    ],
+    [
+     "set_attr",
+     "g",
+     "affect",
+     "surprise_orient"
+    ]
+   ]
+  },
+  {
+   "name": "plan_seek_station",
+   "comment": "INVESTIGATE: route to the station matching the recognised required transform.",
+   "match": [
+    [
+     "g",
+     "has_station",
+     "s"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "plan_on"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "arm"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "curious"
+        }
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "symbol_matches_goal"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "s"
+       },
+       "key": "key"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "req_key"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "s"
+       },
+       "key": "used"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "g",
+     "waypoint",
+     "station"
+    ],
+    [
+     "set_attr",
+     "g",
+     "wp_r",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "s"
+       },
+       "key": "r"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "g",
+     "wp_c",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "s"
+       },
+       "key": "c"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "plan_deliver",
+   "comment": "ACT: carried matches goal -> route to the goal cell and deliver.",
+   "match": [
+    [
+     "g",
+     "has_ping",
+     "p"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "plan_on"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "arm"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "curious"
+        }
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "symbol_matches_goal"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "g",
+     "waypoint",
+     "goal"
+    ],
+    [
+     "set_attr",
+     "g",
+     "wp_r",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "goal_r"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "g",
+     "wp_c",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "goal_c"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "plan_blind",
+   "comment": "CONTROL: goal-blind -> route straight to the goal, ignoring the mismatch.",
+   "match": [
+    [
+     "g",
+     "has_ping",
+     "p"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "plan_on"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "arm"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "blind"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "g",
+     "waypoint",
+     "goal"
+    ],
+    [
+     "set_attr",
+     "g",
+     "wp_r",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "goal_r"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "g",
+     "wp_c",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "goal_c"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "plan_detour_seek",
+   "comment": "CONTROL: detour to the lowest-order station without investigating which transform.",
+   "match": [
+    [
+     "g",
+     "has_station",
+     "s"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "plan_on"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "arm"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "detour"
+        }
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "any_station_used"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "s"
+       },
+       "key": "order"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "g",
+     "waypoint",
+     "station"
+    ],
+    [
+     "set_attr",
+     "g",
+     "wp_r",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "s"
+       },
+       "key": "r"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "g",
+     "wp_c",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "s"
+       },
+       "key": "c"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "plan_detour_deliver",
+   "comment": "CONTROL: after using a station, deliver (whatever the symbol now is).",
+   "match": [
+    [
+     "g",
+     "has_ping",
+     "p"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "plan_on"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "arm"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "detour"
+        }
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "any_station_used"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "g",
+     "waypoint",
+     "goal"
+    ],
+    [
+     "set_attr",
+     "g",
+     "wp_r",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "goal_r"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "g",
+     "wp_c",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "goal_c"
+      }
+     }
+    ]
+   ]
+  }
+ ]
+}

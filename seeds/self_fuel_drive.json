@@ -1,0 +1,101 @@
+{
+ "id": "self_fuel_drive",
+ "version": "1.0.0",
+ "depends_on": [],
+ "description": "The agent's self-fix: CURIOSITY fuels the drive. mint_curiosity_goal turns every perceived-but-unresolved Feature into an active understand-goal about it \u2014 the drive is the unexplained, never score (score is emergent). Fires natively in master_tick.",
+ "nodes": [],
+ "edges": [],
+ "productions": [],
+ "concepts": [],
+ "rules": [
+  {
+   "name": "mint_curiosity_goal",
+   "match": [
+    [
+     "game",
+     "has_feature",
+     "F"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "F"
+          },
+          "key": "resolved"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "F"
+        },
+        "edge_type": "has_understand_goal",
+        "any_type": false
+       },
+       "var_name": "_g",
+       "predicate": {
+        "type": "Lit",
+        "value": true
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "ug",
+     "Goal",
+     {
+      "kind": "understand",
+      "status": "active",
+      "shortfall": 1.0,
+      "min_order": 1.0,
+      "order": 1.0,
+      "why": "I perceive this but have not explained it \u2014 curiosity, not reward."
+     }
+    ],
+    [
+     "add_edge",
+     "F",
+     "has_understand_goal",
+     "ug"
+    ],
+    [
+     "add_edge",
+     "ug",
+     "about_feature",
+     "F"
+    ]
+   ]
+  }
+ ]
+}

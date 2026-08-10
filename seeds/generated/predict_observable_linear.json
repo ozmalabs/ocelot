@@ -1,0 +1,131 @@
+{
+  "id": "predict_observable_linear",
+  "version": "1.0.0",
+  "rules": [
+    {
+      "id": "predict_observable",
+      "name": "predict_observable",
+      "match": [
+        [
+          "h",
+          "predicts",
+          "o"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "o"
+              },
+              "key": "mframe"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "o"
+              },
+              "key": "frame"
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "o"
+              },
+              "key": "frame"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "o"
+              },
+              "key": "pframe"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "o",
+          "pred",
+          {
+            "__term__": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "o"
+                  },
+                  "key": "value"
+                },
+                {
+                  "type": "Minus",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "o"
+                    },
+                    "key": "value"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "o"
+                    },
+                    "key": "prev"
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "o",
+          "prev",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "o"
+              },
+              "key": "value"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "o",
+          "pframe",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "o"
+              },
+              "key": "frame"
+            }
+          }
+        ]
+      ]
+    }
+  ]
+}

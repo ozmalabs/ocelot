@@ -1,0 +1,55 @@
+{
+  "id": "expression_register",
+  "version": "1.0.0",
+  "depends_on": ["investigation_loop"],
+  "description": "GENUS ONLY. A goal for the agent to develop a faculty for expressing itself in different REGISTERS and PERSONAS, learned by example and by reading TVTropes/Wikipedia. No runner is supplied: the agent's drive loop picks this frontier, finds no faculty that moves it, consults the teacher on HOW, and AUTHORS the faculty itself (order-4 self-extend). This seed gives it the goal + the genus concepts + a placeholder to escalate from.",
+  "microtheory": {
+    "name": "expression_world",
+    "description": "the agent expressing the same content in different registers/personas (formal, casual, pirate, surfer, ...), learned from exemplars it reads"
+  },
+  "nodes": [
+    {"local_id": 0, "type": "Microtheory",
+     "attrs": {"name": "expression_world",
+               "description": "express content in a learned register/persona"}},
+    {"local_id": 1, "type": "Concept",
+     "attrs": {"name": "register", "genus": "communication",
+               "definition": "the level/style of language chosen to suit the situation and audience (formal, casual, intimate, ...)"}},
+    {"local_id": 2, "type": "Concept",
+     "attrs": {"name": "persona", "genus": "register",
+               "definition": "a characteristic voice/style of expression a speaker adopts (e.g. pirate, surfer, butler); a register with identifying markers"}},
+    {"local_id": 3, "type": "Concept",
+     "attrs": {"name": "express_in_persona", "genus": "express",
+               "definition": "render the same meaning/speech-act in the surface forms and markers characteristic of a chosen persona/register"}},
+    {"local_id": 4, "type": "Operator",
+     "attrs": {"name": "express_persona_placeholder", "runner": "express_persona",
+               "metric": "persona_match", "target": 0.6,
+               "comment": "PLACEHOLDER with no executor — it does not work; it exists so the frontier engages, stalls, and the agent AUTHORS the real faculty via order-4 self-extend."}},
+    {"local_id": 5, "type": "CapabilityAxis",
+     "attrs": {"is_axis": 1.0,
+               "capability_keys": ["express", "register", "persona"],
+               "saturation": 0.0, "shortfall": 0.6, "min_order": 1.0,
+               "investigated_count": 0, "mf_stall": 0,
+               "gap_text": "I have no way to express myself in different registers/personas; I should learn it from exemplars (TVTropes self-demonstrating definitions, Wikipedia) and by example."}}
+  ],
+  "edges": [
+    {"src": {"local": 3}, "type": "built_from", "tgt": {"local": 2}, "attrs": {}},
+    {"src": {"local": 2}, "type": "built_from", "tgt": {"local": 1}, "attrs": {}},
+    {"src": {"local": 5}, "type": "investigated_by", "tgt": {"local": 4}, "attrs": {}},
+    {"src": {"local": 4}, "type": "applies_in", "tgt": {"local": 0}, "attrs": {}}
+  ],
+  "productions": [
+    {"provenance": "seed:expression_register:investigated_by",
+     "src": {"type": "CapabilityAxis", "var": "s"}, "edge_type": "investigated_by",
+     "tgt": {"type": "Operator", "var": "t"}, "where": null,
+     "weight": {"type": "Lit", "value": 1.0}},
+    {"provenance": "seed:expression_register:applies_in",
+     "src": {"type": "Operator", "var": "s"}, "edge_type": "applies_in",
+     "tgt": {"type": "Microtheory", "var": "t"}, "where": null,
+     "weight": {"type": "Lit", "value": 1.0}},
+    {"provenance": "seed:expression_register:built_from",
+     "src": {"type": "Concept", "var": "s"}, "edge_type": "built_from",
+     "tgt": {"type": "Concept", "var": "t"}, "where": null,
+     "weight": {"type": "Lit", "value": 1.0}}
+  ],
+  "rules": []
+}

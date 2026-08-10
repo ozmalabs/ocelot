@@ -1,0 +1,215 @@
+{
+  "id": "epistemic_default",
+  "version": "1.0.0",
+  "depends_on": [],
+  "self_load_only": true,
+  "description": "DEFAULT DATA (no rule) for the epistemic-gap goal layer (deception vs introspection-gap humility architecture), so the epistemic EVIDENCE auto-produces on an article read. Ships ONLY graph DATA: the MethodSpec the agent AUTHORS the evidence classify-by-join from, plus the EpistemicSignal codebook (structural/documentary/behavioural signals with lean+weight; stylistic cues weighted ~0 -- 'it was never about how they said it'), the ForcedChoiceExpectation socioeconomic model (actor_type -> structural_interest/stakes/actor_can_introspect: oil_company KNOWS renewables threaten it -> deception route; factory_worker can't introspect its forced choice -> introspection-gap route), and the ClassBaseline institutional priors (advertiser/politician/pr/corporation -- the 'money and power' prior, a class-level discount never a per-act conclusion). The RULE is NOT shipped (agent-authored, _no_shipped_epistemic_evidence_rule). The VERDICT is the context-dependent assess_epistemic_lean COMBINE (moral-asymmetry thresholds, proxy cap at weak_deception, a revisable confidence INTERVAL, residual_other_mass>0 always -- never certainty); the actor's CLASS/TYPE is world-supplied context (annotate_actor_class), the advantage the user names: a better model of the actor's environment than the actor's self-model.",
+  "nodes": [
+    {
+      "local_id": 1,
+      "type": "MethodSpec",
+      "attrs": {
+        "name": "epistemic_evidence",
+        "text": "When an evidence candidate's signal_name matches an epistemic signal's name, classify an epistemic evidence."
+      }
+    },
+    {
+      "local_id": 2,
+      "type": "EpistemicSignal",
+      "attrs": {
+        "name": "internal_knowledge_trace",
+        "lean": "deception",
+        "weight": 0.8,
+        "evidence_kind": "documentary",
+        "note": "a documentary trace that the actor PRIVATELY acknowledged the true goal (an ingested statement / explicit marker) -- the only near-decisive cue; never inferred from stylistic text."
+      }
+    },
+    {
+      "local_id": 3,
+      "type": "EpistemicSignal",
+      "attrs": {
+        "name": "consistent_directional_asymmetry",
+        "lean": "deception",
+        "weight": 0.35,
+        "evidence_kind": "structural",
+        "note": "the actor's acts lean the same divergent direction across N independent observations -- a pattern, not one act."
+      }
+    },
+    {
+      "local_id": 4,
+      "type": "EpistemicSignal",
+      "attrs": {
+        "name": "scrutiny_contingent_competence",
+        "lean": "deception",
+        "weight": 0.35,
+        "evidence_kind": "structural",
+        "note": "the stated goal is pursued competently only when observed/scrutinised -- an awareness-implying structural signal."
+      }
+    },
+    {
+      "local_id": 5,
+      "type": "EpistemicSignal",
+      "attrs": {
+        "name": "coordination_requires_dual_goal",
+        "lean": "deception",
+        "weight": 0.4,
+        "evidence_kind": "structural",
+        "note": "the trajectory needs a joint stated+hidden goal to cohere. PROXY-CAPPED: the honest inverse-planning model is UNBUILT, so this rests on the TemporalConflictReading proxy and can NEVER reach strong_deception."
+      }
+    },
+    {
+      "local_id": 6,
+      "type": "EpistemicSignal",
+      "attrs": {
+        "name": "clear_served_interest",
+        "lean": "deception",
+        "weight": 0.15,
+        "evidence_kind": "behavioural",
+        "note": "a divergent interest is visibly served by the act -- weak, behavioural."
+      }
+    },
+    {
+      "local_id": 7,
+      "type": "EpistemicSignal",
+      "attrs": {
+        "name": "isolated_incoherent_act",
+        "lean": "opacity",
+        "weight": 0.35,
+        "evidence_kind": "structural",
+        "note": "one act that does not cohere with the stated goal, no pattern -- leans confusion/self-opacity, not deliberate deception."
+      }
+    },
+    {
+      "local_id": 8,
+      "type": "EpistemicSignal",
+      "attrs": {
+        "name": "no_served_interest_visible",
+        "lean": "opacity",
+        "weight": 0.25,
+        "evidence_kind": "behavioural",
+        "note": "no divergent interest is visibly served -- leans introspection-gap."
+      }
+    },
+    {
+      "local_id": 9,
+      "type": "EpistemicSignal",
+      "attrs": {
+        "name": "fluent_sincere_rationalisation",
+        "lean": "opacity",
+        "weight": 0.15,
+        "evidence_kind": "stylistic",
+        "note": "a fluent, sincere-sounding account -- STYLISTIC: recorded, must never move the verdict off UNDETERMINED on its own."
+      }
+    },
+    {
+      "local_id": 10,
+      "type": "EpistemicSignal",
+      "attrs": {
+        "name": "hedging_distancing",
+        "lean": "opacity",
+        "weight": 0.0,
+        "evidence_kind": "stylistic",
+        "note": "hedges / distancing language -- a DEBUNKED cue: recorded, weight 0.0, NEVER weighted."
+      }
+    },
+    {
+      "local_id": 11,
+      "type": "ForcedChoiceExpectation",
+      "attrs": {
+        "actor_type": "oil_company",
+        "structural_interest": "protect_fossil_fuels",
+        "forced_against": "renewable_energy",
+        "actor_can_introspect": 1.0,
+        "stakes": 1.0,
+        "note": "sector instantiation of the company money/power prior: an oil company's profit/market position is threatened by renewables adoption; it KNOWS this. HIGH stakes -- its core business is at risk."
+      }
+    },
+    {
+      "local_id": 12,
+      "type": "ForcedChoiceExpectation",
+      "attrs": {
+        "actor_type": "pharma_company",
+        "structural_interest": "profit_and_market_power",
+        "forced_against": "generic_medicine",
+        "actor_can_introspect": 1.0,
+        "stakes": 1.0,
+        "note": "the SAME money/power prior in a DIFFERENT sector -- generalises beyond oil: a pharma company's profit is threatened by cheap generics; it KNOWS this. HIGH stakes."
+      }
+    },
+    {
+      "local_id": 13,
+      "type": "ForcedChoiceExpectation",
+      "attrs": {
+        "actor_type": "political_actor",
+        "structural_interest": "power_retention",
+        "forced_against": "donor_reform",
+        "actor_can_introspect": 1.0,
+        "stakes": 0.9,
+        "note": "the political money/power prior: a stated principled reason that cuts against re-election/funder relations is strategic; the actor KNOWS its power incentive."
+      }
+    },
+    {
+      "local_id": 14,
+      "type": "ForcedChoiceExpectation",
+      "attrs": {
+        "actor_type": "factory_worker",
+        "structural_interest": "job_security",
+        "forced_against": "automation_support",
+        "actor_can_introspect": 0.0,
+        "stakes": 0.8,
+        "note": "the INDIVIDUAL case: a person can genuinely rationalise a structurally-forced choice as free principle -- can_introspect 0.0 routes to INTROSPECTION-GAP, not deception (no bad faith). Real but personal stakes (their job)."
+      }
+    },
+    {
+      "local_id": 15,
+      "type": "ForcedChoiceExpectation",
+      "attrs": {
+        "actor_type": "pr_agency",
+        "structural_interest": "profit_and_market_power",
+        "forced_against": "logo_colour",
+        "actor_can_introspect": 1.0,
+        "stakes": 0.2,
+        "note": "a TRIVIAL-stakes divergence: little money/power rides on the choice, so the structural prior is weak -- stays UNDETERMINED. Shows UNDETERMINED is the low-stakes case, not over-caution."
+      }
+    },
+    {
+      "local_id": 16,
+      "type": "ClassBaseline",
+      "attrs": {
+        "actor_class": "advertiser",
+        "baseline_prior": 0.2,
+        "note": "advertising is a persuasion register everyone already discounts -- a small class-level prior toward deception, never a per-act conclusion."
+      }
+    },
+    {
+      "local_id": 17,
+      "type": "ClassBaseline",
+      "attrs": {
+        "actor_class": "politician",
+        "baseline_prior": 0.2,
+        "note": "campaign speech is read with a standing discount; a class-level prior only."
+      }
+    },
+    {
+      "local_id": 18,
+      "type": "ClassBaseline",
+      "attrs": {
+        "actor_class": "pr",
+        "baseline_prior": 0.25,
+        "note": "public-relations output is liability/interest-shaped by trade -- a slightly higher class prior, still never per-act evidence."
+      }
+    },
+    {
+      "local_id": 19,
+      "type": "ClassBaseline",
+      "attrs": {
+        "actor_class": "corporation",
+        "baseline_prior": 0.15,
+        "note": "a corporate voice serves a fiduciary interest; a modest class-level prior."
+      }
+    }
+  ],
+  "edges": [],
+  "productions": [],
+  "rules": []
+}

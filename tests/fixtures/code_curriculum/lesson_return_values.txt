@@ -1,0 +1,38 @@
+The functions we have written so far are void: they have an effect,
+like printing a value, but they don't have a return value. In this
+chapter we are going to write fruitful functions instead, which hand
+a computed value back to whatever code called them in the first
+place, so that value can be used or displayed as the caller wishes.
+
+The first example is area, which returns the area of a circle with
+the given radius, computed from the radius using the constant pi
+carried by the standard math library that ships with Python itself:
+
+def area(radius):
+    a = math.pi * radius**2
+    return a
+
+We have seen the return statement before, but in a fruitful function
+the return statement includes an expression, meaning that execution
+returns immediately from the function using that expression as the
+value handed back to the caller. The expression can be arbitrarily
+complicated, so the function above could have been written more
+concisely as a single line without the temporary variable at all:
+
+def area(radius):
+    return math.pi * radius**2
+
+Sometimes it is useful to have multiple return statements, one in
+each branch of a conditional, since only one of the alternatives
+actually runs during any given call to the function in question:
+
+def absolute_value(x):
+    if x < 0:
+        return -x
+    else:
+        return x
+
+Since these return statements sit inside alternative branches of one
+conditional, only one of them ever executes for a given argument,
+and the function terminates as soon as either return statement runs,
+without going on to execute any of the remaining statements below it.

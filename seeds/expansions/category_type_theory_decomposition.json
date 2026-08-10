@@ -1,0 +1,118 @@
+{
+  "id": "category_type_theory_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "category_definition",
+  "in_microtheory": "mathematics",
+  "description": "Category theory + type theory decomposed. Limits + colimits, products + coproducts, exponential objects, monoidal categories, topos theory, sheaves, type theory variants (System F, dependent types, HoTT), proof assistants (Coq, Lean, Agda).",
+  "sub_mechanisms": [
+    {
+      "name": "products_coproducts",
+      "definition": "Product A × B: pairs. Coproduct A + B: disjoint union. Universal properties.",
+      "why": "Foundation of categorical constructions. Programming: tuples + sum types.",
+      "category": "cat_type_mechanism"
+    },
+    {
+      "name": "limits_colimits",
+      "definition": "Limits: universal cones to diagram (intersections, products, equalizers). Colimits dual.",
+      "why": "Foundation. Subsume many constructions. Pullbacks, pushouts, inverse + direct limits.",
+      "category": "cat_type_mechanism"
+    },
+    {
+      "name": "exponential_objects",
+      "definition": "B^A: morphisms A → B as object. Currying: Hom(A×B, C) ≅ Hom(A, C^B).",
+      "why": "Foundation. Function types in category. Cartesian closed categories.",
+      "category": "cat_type_mechanism"
+    },
+    {
+      "name": "monoidal_category",
+      "definition": "Category with tensor product ⊗ + unit + coherence axioms.",
+      "why": "Foundation. Vector spaces (⊗), sets (×), Hilbert spaces. Quantum computing, knot theory.",
+      "category": "cat_type_mechanism"
+    },
+    {
+      "name": "topos_theory",
+      "definition": "Cartesian closed + subobject classifier. Generalises Set.",
+      "why": "Foundation alternative foundations. Set-like categories. Sheaves over topological spaces.",
+      "category": "cat_type_mechanism"
+    },
+    {
+      "name": "sheaves",
+      "definition": "Presheaves satisfying gluing axiom. Local data uniquely determines global.",
+      "why": "Foundation modern math. Algebraic geometry, manifolds, logic. Grothendieck.",
+      "category": "cat_type_mechanism"
+    },
+    {
+      "name": "System_F_polymorphism",
+      "definition": "Second-order λ-calculus. ∀α.τ universally quantified types. Generics.",
+      "why": "Foundation polymorphic programming. Reynolds + Girard. Standard ML type system. Modern Java generics descendant.",
+      "category": "cat_type_mechanism"
+    },
+    {
+      "name": "Pi_Sigma_types",
+      "definition": "Dependent products Π(x:A).B(x): functions whose output type depends on input. Sigma dual.",
+      "why": "Foundation dependent type theory. Coq, Lean, Agda. Universal quantifier + existential.",
+      "category": "cat_type_mechanism"
+    },
+    {
+      "name": "Coq_Lean_Agda",
+      "definition": "Proof assistants based on dependent type theory. Verify proofs mechanically.",
+      "why": "Foundation modern verified math. Four-color theorem, Feit-Thompson, Kepler conjecture. Lean for new work.",
+      "category": "cat_type_mechanism"
+    },
+    {
+      "name": "univalence_axiom",
+      "definition": "HoTT: equivalent types are equal. (A ≃ B) ≃ (A = B).",
+      "why": "Foundation HoTT. Allows treating isomorphic structures as equal. Voevodsky.",
+      "category": "cat_type_mechanism"
+    },
+    {
+      "name": "higher_inductive_types",
+      "definition": "Inductive types with both points + paths. Define spheres, quotients directly.",
+      "why": "Foundation HoTT. Synthetic homotopy theory. Modern.",
+      "category": "cat_type_mechanism"
+    },
+    {
+      "name": "Curry_Howard_Lambek",
+      "definition": "Logic ↔ types ↔ categories. Cartesian closed = STLC = intuitionistic logic.",
+      "why": "Foundation of unification. Programs = proofs = morphisms. Modern theoretical CS.",
+      "category": "cat_type_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "limits_universal_construction",
+      "if": ["categorical construction needed"],
+      "then": ["limit/colimit gives universal solution"],
+      "why": "Universal property defines uniquely up to iso. Foundation of categorical reasoning. Avoids ad hoc constructions.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "currying_isomorphism_universal",
+      "if": ["function takes pair as argument"],
+      "then": ["equivalent to function returning function"],
+      "why": "Hom(A×B, C) ≅ Hom(A, C^B). Universal. Foundation of functional programming. Haskell ubiquitous.",
+      "soundness_category": "algebraic_law"
+    },
+    {
+      "name": "proof_assistants_verify_mathematics",
+      "if": ["formal proof in Coq/Lean/Agda checks"],
+      "then": ["proof is mathematically correct"],
+      "why": "Mechanical verification. Foundation of modern verified math. Lean mathlib growing library.",
+      "soundness_category": "referential_transparency"
+    },
+    {
+      "name": "univalence_collapses_iso_equality",
+      "if": ["HoTT framework"],
+      "then": ["isomorphic structures treated as equal"],
+      "why": "Univalence axiom. Foundation HoTT. Modern foundation candidate. Voevodsky's univalent foundations.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "Curry_Howard_Lambek_universal_correspondence",
+      "if": ["computation, proof, or categorical morphism"],
+      "then": ["each translates to others"],
+      "why": "Foundation theoretical CS. Programs = proofs = morphisms. Universal triangle.",
+      "soundness_category": "denotational_equivalence"
+    }
+  ]
+}

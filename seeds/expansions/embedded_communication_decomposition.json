@@ -1,0 +1,118 @@
+{
+  "id": "embedded_communication_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "CAN_bus",
+  "in_microtheory": "embedded_iot_realtime",
+  "description": "Embedded communication decomposed. CAN frame structure + arbitration, CAN FD enhancements, EtherCAT distributed clock + on-the-fly processing, TSN time-aware shaper, OPC UA pub-sub, automotive Ethernet (100BASE-T1).",
+  "sub_mechanisms": [
+    {
+      "name": "CAN_frame_arbitration",
+      "definition": "Standard frame: 11-bit ID + 8 bytes data. Lower ID = higher priority. Non-destructive arbitration.",
+      "why": "Multi-master, no central controller. Priority ID wins arbitration. Standard automotive (1986 Bosch).",
+      "category": "embcomm_mechanism"
+    },
+    {
+      "name": "CAN_FD_flexible_data",
+      "definition": "Extended frame: 64 bytes data, faster phase (5 Mbps). Backward compatible.",
+      "why": "Classic CAN 8 bytes limiting. CAN FD increases throughput for modern automotive. Adopted by VW, BMW, etc.",
+      "category": "embcomm_mechanism"
+    },
+    {
+      "name": "CAN_bit_stuffing",
+      "definition": "Insert opposite bit after 5 same bits. Avoids unintended dominant runs.",
+      "why": "Synchronisation: edges required for clock recovery. Cost: variable frame length. Standard CAN encoding.",
+      "category": "embcomm_mechanism"
+    },
+    {
+      "name": "EtherCAT_summation_frame",
+      "definition": "Master sends frame around bus loop. Each slave reads + writes its data on-the-fly.",
+      "why": "Microsecond cycle times. No store-and-forward delays. Foundation of EtherCAT's speed. Beckhoff's invention.",
+      "category": "embcomm_mechanism"
+    },
+    {
+      "name": "EtherCAT_distributed_clock",
+      "definition": "Hardware-synchronised clocks across slaves. ns-level precision.",
+      "why": "Coordinated motion control. Multiple servo drives synchronised. Foundation of multi-axis machines.",
+      "category": "embcomm_mechanism"
+    },
+    {
+      "name": "TSN_time_aware_shaper",
+      "definition": "IEEE 802.1Qbv. Gate control list opens/closes traffic queues at scheduled times.",
+      "why": "Deterministic Ethernet. RT traffic in scheduled window; best-effort otherwise. Standard for industrial TSN.",
+      "category": "embcomm_mechanism"
+    },
+    {
+      "name": "TSN_frame_preemption",
+      "definition": "802.1Qbu. Express frame preempts ongoing best-effort frame transmission.",
+      "why": "Bound latency for high-priority. Without: large frame transmits = blocks small high-priority frame. With: preempted, resumed.",
+      "category": "embcomm_mechanism"
+    },
+    {
+      "name": "TSN_PTP_synchronization",
+      "definition": "Precision Time Protocol. Hardware timestamping. ns-level clock sync over Ethernet.",
+      "why": "All TSN depends on shared time. PTP grandmaster + boundary clocks distribute. Foundation of TSN determinism.",
+      "category": "embcomm_mechanism"
+    },
+    {
+      "name": "OPC_UA_information_model",
+      "definition": "Hierarchical object model. Variables, methods, events. Companion specs for domains.",
+      "why": "Self-describing. Client browses server, learns semantics. Foundation of industrial interoperability.",
+      "category": "embcomm_mechanism"
+    },
+    {
+      "name": "OPC_UA_pub_sub",
+      "definition": "Publisher → message broker → subscribers. Alternative to OPC UA client-server.",
+      "why": "Scales better. Multicast UDP. Combined with TSN for RT. Standard for Industry 4.0 data pipelines.",
+      "category": "embcomm_mechanism"
+    },
+    {
+      "name": "automotive_ethernet_100BASE_T1",
+      "definition": "IEEE 802.3bw. 100 Mbps over single twisted pair. Lower weight + cost than 100BASE-TX.",
+      "why": "Modern car Ethernet. Replaces specialised buses for high-bandwidth (cameras, radar). Foundation of vehicle networking.",
+      "category": "embcomm_mechanism"
+    },
+    {
+      "name": "SOME_IP",
+      "definition": "Scalable service-Oriented MiddlewarE over IP. AUTOSAR service-oriented for adaptive.",
+      "why": "Service-oriented architecture for vehicles. Standardised RPC + pub-sub. Used in adaptive AUTOSAR.",
+      "category": "embcomm_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "CAN_priority_arbitration_deterministic",
+      "if": ["multiple CAN nodes transmit simultaneously"],
+      "then": ["lowest-ID frame wins; others wait"],
+      "why": "Bit-wise non-destructive arbitration. Lower ID = more dominant bits early = wins arbitration. Critical message ID = low. Predictable latency.",
+      "soundness_category": "algebraic_law"
+    },
+    {
+      "name": "EtherCAT_microsecond_cycle_via_on_the_fly_processing",
+      "if": ["fieldbus needs μs-level cycle"],
+      "then": ["EtherCAT outperforms store-and-forward protocols"],
+      "why": "Classic: each switch buffers full frame. EtherCAT: each slave reads/writes its slot as frame passes. Massive latency reduction. Foundation of industrial motion control.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "TSN_frame_preemption_bounds_RT_latency",
+      "if": ["high-priority frame arrives during long best-effort transmission"],
+      "then": ["preemption bounds wait time"],
+      "why": "Without: wait for full max-size frame (~120μs at 100 Mbps). With: preempt + resume. RT frames meet deadline.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "PTP_required_for_TSN_determinism",
+      "if": ["TSN provides scheduled transmission"],
+      "then": ["all nodes need synchronised clocks via PTP"],
+      "why": "Scheduled = at specific time. Time must be shared. Hardware timestamping + boundary clocks → ns sync. Foundation of all TSN.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "automotive_Ethernet_replaces_specialised_buses",
+      "if": ["vehicle has high-bandwidth sensors (cameras, radar)"],
+      "then": ["Ethernet outperforms CAN, FlexRay"],
+      "why": "CAN: 1-5 Mbps. Ethernet: 100M-10G. Camera needs 100s of Mbps. Single 100BASE-T1 pair handles. Industry direction.",
+      "soundness_category": "cost_equivalence"
+    }
+  ]
+}

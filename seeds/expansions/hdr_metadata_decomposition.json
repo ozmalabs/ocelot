@@ -1,0 +1,106 @@
+{
+  "id": "hdr_metadata_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "HDR10_plus",
+  "in_microtheory": "video_coding_theory",
+  "description": "HDR metadata (HDR10, HDR10+, Dolby Vision) decomposed. HDR delivery requires the decoder/display to know the content's mastering luminance range and how to map it to the display's capabilities. Static metadata (HDR10) provides one mapping for the whole stream; dynamic metadata (HDR10+, Dolby Vision) provides per-scene guidance. Each format encodes the metadata as SEI messages in the bitstream — extensible without changing the codec.",
+  "sub_mechanisms": [
+    {
+      "name": "mastering_display_metadata",
+      "definition": "MDCV / SMPTE ST 2086: specifies the mastering display's primaries, white point, and luminance range. Sent once per stream as SEI.",
+      "why": "Tells the player what display the content was authored on. Lets the renderer adapt the tone mapping for displays that differ from the mastering display. Standard for all HDR formats.",
+      "category": "hdr_metadata_mechanism"
+    },
+    {
+      "name": "content_light_level_info",
+      "definition": "CLLI / SMPTE ST 2086 supplement: MaxCLL (peak luminance found in the stream) and MaxFALL (average luminance across all frames). Sent once per stream.",
+      "why": "Gives the display a quick complexity estimate: a stream with MaxCLL=4000 nits needs aggressive tone mapping on a 1000-nit display; MaxCLL=300 fits any HDR display unchanged. Avoids needing to peek at the actual frame data.",
+      "category": "hdr_metadata_mechanism"
+    },
+    {
+      "name": "HDR10_static_curve",
+      "definition": "PQ + BT.2020 + 10-bit + MDCV + CLLI. Static metadata — one mapping per stream. The simplest HDR format.",
+      "why": "Backward-compatible with the broadest HDR ecosystem. No per-scene metadata = simpler authoring + lower bitrate overhead. But less adaptive — bright scenes and dark scenes share one tone curve, suboptimal for both.",
+      "category": "hdr_metadata_mechanism"
+    },
+    {
+      "name": "HDR10plus_dynamic_metadata",
+      "definition": "SMPTE ST 2094-40: per-scene dynamic metadata describing how to map source luminance to display luminance. Encoded as SEI with per-frame curve parameters.",
+      "why": "Different shots have different luminance distributions. Static metadata averages; dynamic adapts. A dark indoor shot can use the display's full range without needing to crush highlights for the bright outdoor shot it'll cut to. Royalty-free (Samsung-led).",
+      "category": "hdr_metadata_mechanism"
+    },
+    {
+      "name": "Dolby_Vision_dynamic_metadata",
+      "definition": "Proprietary dynamic metadata format from Dolby. 12-bit color, more detailed tone mapping parameters than HDR10+. Carried as proprietary SEI or as a dual-layer enhancement.",
+      "why": "Tighter end-to-end control; higher bit depth (12 vs 10); proprietary licensing covers display side too. Trades adoption breadth (HDR10+ is open) for higher per-display fidelity. Used heavily in iOS/Apple TV/some smart TVs.",
+      "category": "hdr_metadata_mechanism"
+    },
+    {
+      "name": "scene_change_anchors",
+      "definition": "HDR10+ and Dolby Vision metadata is anchored to shot boundaries: each new shot gets its own curve. Mid-shot adjustments are smooth interpolations.",
+      "why": "Discrete shot changes are perceptually unambiguous boundaries. Aligning metadata with shot changes avoids visible tone-curve jumps mid-scene. Mid-shot smooth interpolation handles slow lighting changes.",
+      "category": "hdr_metadata_mechanism"
+    },
+    {
+      "name": "tone_mapping_curve_parameters",
+      "definition": "Per-scene parameters: target peak luminance, midpoint anchor, knee point (where tone curve compresses highlights), shoulder roll-off shape.",
+      "why": "Compact representation of a tone-mapping curve as 4-8 numbers. Lets the player reconstruct the curve at runtime. Encoded as a small bitstream chunk (~100 bytes per shot).",
+      "category": "hdr_metadata_mechanism"
+    },
+    {
+      "name": "scene_max_average_luminance",
+      "definition": "Per-scene MaxCLL and MaxFALL, refining the stream-level values to per-shot accuracy.",
+      "why": "Stream-level CLLI is conservative (designed for worst case). Per-shot values let the display dispute that worst case for dimmer shots, avoiding over-compression of highlights in scenes that don't have any.",
+      "category": "hdr_metadata_mechanism"
+    },
+    {
+      "name": "fall_back_to_static",
+      "definition": "Dynamic-metadata HDR formats also include the static (HDR10) metadata. Players that don't understand HDR10+/DV fall back to HDR10 mode.",
+      "why": "Backward compatibility: a non-HDR10+ player still gets a valid HDR experience via the static metadata. Dynamic features degrade gracefully. Required for ecosystem deployment because not all displays support dynamic.",
+      "category": "hdr_metadata_mechanism"
+    },
+    {
+      "name": "sei_message_carriage",
+      "definition": "Both HDR10+ and Dolby Vision carry their metadata in user-defined SEI messages (NAL unit type 6, payloadType 4 + custom identifier). The codec itself doesn't process the metadata.",
+      "why": "Codec-agnostic delivery: same SEI works in H.264/H.265/H.266/AV1. The decoder passes the SEI through to the rendering pipeline; the rendering layer processes it. Lets HDR metadata be added/changed without codec versioning.",
+      "category": "hdr_metadata_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "dynamic_metadata_outperforms_static_on_varied_content",
+      "if": ["content has wide shot-to-shot luminance variation"],
+      "then": ["dynamic metadata produces better tone mapping than static"],
+      "why": "Static metadata's one-curve-fits-all averages across shots. Per-shot dynamic curves can optimise each. The advantage scales with content variety; cinematic content benefits more than news/documentary.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "sei_carriage_enables_codec_agnostic_metadata",
+      "if": ["HDR metadata is carried in SEI"],
+      "then": ["it works across H.264/H.265/H.266/AV1 unchanged"],
+      "why": "SEI is the codec's standard extension mechanism. Carriage of HDR metadata via SEI lets streaming pipelines mix codecs (AV1 + Dolby Vision metadata, for instance) without redefining the metadata format.",
+      "soundness_category": "referential_transparency"
+    },
+    {
+      "name": "fallback_static_preserves_compatibility",
+      "if": ["dynamic-metadata HDR format includes static metadata"],
+      "then": ["older HDR10-only players still display the stream correctly"],
+      "why": "Backward compatibility is the deployment constraint. Including both metadata layers costs ~100 bytes per shot but covers the entire installed base of HDR10 displays. Trade-off heavily favours inclusion.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "scene_boundary_anchoring_prevents_visible_curves",
+      "if": ["metadata changes are anchored to shot boundaries"],
+      "then": ["tone curve transitions are not perceptible"],
+      "why": "Mid-scene curve changes would shift brightness/colors visibly. Shot boundaries are already perceptual discontinuities; metadata changes there are masked by the cut. Mid-shot smooth interpolation handles slow lighting changes without abrupt transitions.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "proprietary_format_trades_breadth_for_fidelity",
+      "if": ["a format is proprietary with controlled licensing"],
+      "then": ["it can offer higher fidelity at the cost of ecosystem breadth"],
+      "why": "Dolby Vision controls encoder + display + processing; can optimise the whole pipeline. HDR10+ is open and works on more displays but can't dictate display-side processing. Same fundamental trade as Dolby Atmos vs DTS:X.",
+      "soundness_category": "cost_equivalence"
+    }
+  ]
+}

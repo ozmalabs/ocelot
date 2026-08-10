@@ -1,0 +1,169 @@
+{
+ "id": "retinal_salience",
+ "version": "1.0.0",
+ "self_load_only": true,
+ "depends_on": [
+  "retinal_onset"
+ ],
+ "area": "retina",
+ "description": "Per-area RESIDUAL salience on the onset-event stream (Rung 4 of the photon-eye migration). Salience is computed EVENT-NATIVELY as the RESIDUAL of the async onset-event stream (RetinalOnsetEvent, Rung 1) AFTER the coherent structure is explained: the salient column is the SURPRISING one, whose onset motion is NOT accounted for by the DOMINANT common-fate motion. compute-∝-surprise made into an attention signal -- salience = the residual (the under-compressed). This re-expresses the RGB residual-salience result (block 157000: the RESIDUAL after egomotion cancellation ranks the independent mover ABOVE the egomotion-swung background, where RAW salience fails) onto the EVENT STREAM: egomotion <-> the dominant common-fate velocity v_dom; a column's egomotion-cancelled residual <-> |v_run - v_dom|. This is the event-native replacement for raster salience (native shape_salience / order_n_shape_salience on the coarse retinal_field) -- no raster, no frame diff, the SAME input Rung 2/3 read. The `retinal_residual_salience` Rust task kind reduces events to one mean epoch per firing column, segments the sorted columns into maximal common-fate runs (the same segmentation the carve uses), picks the DOMINANT run (most columns; the coherent background) to define v_dom, and emits a fixed per-column stride-3 layout [fired, raw_salience=|v_run|, residual_salience=|v_run - v_dom|]. This rule matches every RetinalColumn against the done salience task and mints ONE RetinalSalience node per FIRING column (output[index*3+0]==1.0) carrying both scores, once per column-epoch via a salience_epoch guard. The RetinalSalience node (edged retina -has_salience-> sal) is the graph data the fovea (160000 FoveaCandidate / fovea_resolve ArgminUnique over Log(salience)) reads. No threshold on the salience value -- the fovea's log-weighted admissibility grammar decides. HONEST SCOPE: 1-D (an azimuth strip); a true 2-D salience map needs the retina extended to elevation columns -- a named follow-on. OFF by default: the rule cannot fire unless a RetinaSalienceParams node exists (created by the adapter only when context['visual_salience'] is set), and the adapter creates the salience task only then.",
+ "microtheory": {
+  "name": "retinal_salience",
+  "description": "residual of the onset-event stream after the dominant common-fate motion -> per-column RetinalSalience"
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [
+  {
+   "provenance": "seed:retinal_salience:retina-salience-params",
+   "src": {
+    "type": "Retina",
+    "var": "retina"
+   },
+   "edge_type": "has_salience_params",
+   "tgt": {
+    "type": "RetinaSalienceParams",
+    "var": "sparams"
+   }
+  },
+  {
+   "provenance": "seed:retinal_salience:retina-salience-task",
+   "src": {
+    "type": "Retina",
+    "var": "retina"
+   },
+   "edge_type": "has_salience_task",
+   "tgt": {
+    "type": "CognitiveTask",
+    "var": "task"
+   }
+  },
+  {
+   "provenance": "seed:retinal_salience:retina-retinal-salience",
+   "src": {
+    "type": "Retina",
+    "var": "retina"
+   },
+   "edge_type": "has_salience",
+   "tgt": {
+    "type": "RetinalSalience",
+    "var": "sal"
+   }
+  }
+ ],
+ "rules": [
+  {
+   "name": "retinal_mint_salience",
+   "area": "retina",
+   "order": 4,
+   "latency_class": "hard_realtime",
+   "match": [
+    [
+     "retina",
+     "has_salience_params",
+     "sparams"
+    ],
+    [
+     "retina",
+     "has_column",
+     "column"
+    ],
+    [
+     "retina",
+     "has_salience_task",
+     "task"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "task"}, "key": "kind"},
+      "b": {"type": "Lit", "value": "retinal_residual_salience"}
+     },
+     {
+      "type": "Eq",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "task"}, "key": "status"},
+      "b": {"type": "Lit", "value": "done"}
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {"type": "Attr", "node": {"type": "Var", "name": "column"}, "key": "salience_epoch"},
+       "b": {"type": "Attr", "node": {"type": "Var", "name": "task"}, "key": "input_epoch"}
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "IndexAt",
+       "seq": {"type": "Attr", "node": {"type": "Var", "name": "task"}, "key": "output"},
+       "index": {
+        "type": "Plus",
+        "items": [
+         {"type": "Times", "items": [
+          {"type": "Attr", "node": {"type": "Var", "name": "column"}, "key": "index"},
+          {"type": "Lit", "value": 3}
+         ]},
+         {"type": "Lit", "value": 0}
+        ]
+       }
+      },
+      "b": {"type": "Lit", "value": 1.0}
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "sal",
+     "RetinalSalience",
+     {
+      "column_index": {"__term__": {
+       "type": "Attr", "node": {"type": "Var", "name": "column"}, "key": "index"
+      }},
+      "raw_salience": {"__term__": {
+       "type": "IndexAt",
+       "seq": {"type": "Attr", "node": {"type": "Var", "name": "task"}, "key": "output"},
+       "index": {"type": "Plus", "items": [
+        {"type": "Times", "items": [
+         {"type": "Attr", "node": {"type": "Var", "name": "column"}, "key": "index"},
+         {"type": "Lit", "value": 3}
+        ]},
+        {"type": "Lit", "value": 1}
+       ]}
+      }},
+      "residual_salience": {"__term__": {
+       "type": "IndexAt",
+       "seq": {"type": "Attr", "node": {"type": "Var", "name": "task"}, "key": "output"},
+       "index": {"type": "Plus", "items": [
+        {"type": "Times", "items": [
+         {"type": "Attr", "node": {"type": "Var", "name": "column"}, "key": "index"},
+         {"type": "Lit", "value": 3}
+        ]},
+        {"type": "Lit", "value": 2}
+       ]}
+      }},
+      "epoch": {"__term__": {
+       "type": "Attr", "node": {"type": "Var", "name": "task"}, "key": "input_epoch"
+      }}
+     }
+    ],
+    [
+     "add_edge",
+     "retina",
+     "has_salience",
+     "sal"
+    ],
+    [
+     "set_attr",
+     "column",
+     "salience_epoch",
+     {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "task"}, "key": "input_epoch"}}
+    ]
+   ]
+  }
+ ]
+}

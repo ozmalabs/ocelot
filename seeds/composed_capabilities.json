@@ -1,0 +1,235 @@
+{
+  "_meta": {
+    "composed_by": "generator_order_n_collapse",
+    "var": "n",
+    "arg_role": "of",
+    "heldout_ns": [
+      10,
+      20,
+      50,
+      100
+    ]
+  },
+  "capabilities": {
+    "sum_first_n": {
+      "concept": "sum_first_n",
+      "tree": {
+        "type": "Div",
+        "a": {
+          "type": "Plus",
+          "items": [
+            {
+              "type": "Var",
+              "name": "n"
+            },
+            {
+              "type": "Times",
+              "items": [
+                {
+                  "type": "Var",
+                  "name": "n"
+                },
+                {
+                  "type": "Var",
+                  "name": "n"
+                }
+              ]
+            }
+          ]
+        },
+        "b": {
+          "type": "Lit",
+          "value": 2
+        }
+      },
+      "term_str": "((n + (n * n)) / 2)",
+      "size": 7
+    },
+    "sum_first_n_squares": {
+      "concept": "sum_first_n_squares",
+      "tree": {
+        "type": "Div",
+        "a": {
+          "type": "Plus",
+          "items": [
+            {
+              "type": "Div",
+              "a": {
+                "type": "Plus",
+                "items": [
+                  {
+                    "type": "Var",
+                    "name": "n"
+                  },
+                  {
+                    "type": "Times",
+                    "items": [
+                      {
+                        "type": "Var",
+                        "name": "n"
+                      },
+                      {
+                        "type": "Var",
+                        "name": "n"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "b": {
+                "type": "Lit",
+                "value": 2
+              }
+            },
+            {
+              "type": "Times",
+              "items": [
+                {
+                  "type": "Var",
+                  "name": "n"
+                },
+                {
+                  "type": "Plus",
+                  "items": [
+                    {
+                      "type": "Div",
+                      "a": {
+                        "type": "Plus",
+                        "items": [
+                          {
+                            "type": "Var",
+                            "name": "n"
+                          },
+                          {
+                            "type": "Times",
+                            "items": [
+                              {
+                                "type": "Var",
+                                "name": "n"
+                              },
+                              {
+                                "type": "Var",
+                                "name": "n"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 2
+                      }
+                    },
+                    {
+                      "type": "Div",
+                      "a": {
+                        "type": "Plus",
+                        "items": [
+                          {
+                            "type": "Var",
+                            "name": "n"
+                          },
+                          {
+                            "type": "Times",
+                            "items": [
+                              {
+                                "type": "Var",
+                                "name": "n"
+                              },
+                              {
+                                "type": "Var",
+                                "name": "n"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 2
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "b": {
+          "type": "Lit",
+          "value": 3
+        }
+      },
+      "term_str": "((t + (n * (t + t))) / 3)",
+      "size": 9
+    },
+    "sum_first_n_cubes": {
+      "concept": "sum_first_n_cubes",
+      "tree": {
+        "type": "Times",
+        "items": [
+          {
+            "type": "Div",
+            "a": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Var",
+                  "name": "n"
+                },
+                {
+                  "type": "Times",
+                  "items": [
+                    {
+                      "type": "Var",
+                      "name": "n"
+                    },
+                    {
+                      "type": "Var",
+                      "name": "n"
+                    }
+                  ]
+                }
+              ]
+            },
+            "b": {
+              "type": "Lit",
+              "value": 2
+            }
+          },
+          {
+            "type": "Div",
+            "a": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Var",
+                  "name": "n"
+                },
+                {
+                  "type": "Times",
+                  "items": [
+                    {
+                      "type": "Var",
+                      "name": "n"
+                    },
+                    {
+                      "type": "Var",
+                      "name": "n"
+                    }
+                  ]
+                }
+              ]
+            },
+            "b": {
+              "type": "Lit",
+              "value": 2
+            }
+          }
+        ]
+      },
+      "term_str": "(t * t)",
+      "size": 3
+    }
+  }
+}

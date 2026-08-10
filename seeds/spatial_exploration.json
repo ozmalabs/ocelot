@@ -1,0 +1,114 @@
+{
+ "id": "spatial_exploration",
+ "version": "1.0.0",
+ "depends_on": [],
+ "description": "Things the jabberwock was taught, filed under 'spatial_exploration'. Written by the teach() facility (one node per taught item).",
+ "microtheory": {
+  "name": "spatial_exploration",
+  "description": "taught knowledge: spatial_exploration"
+ },
+ "nodes": [
+  {
+   "local_id": 0,
+   "type": "TaughtHint",
+   "attrs": {
+    "topic": "freespace_assumption_optimism",
+    "answer": "Treat UNKNOWN space as FREE: plan the shortest path through it as if traversable, mark a cell blocked ONLY when an observation refutes it, then replan. Named the 'freespace assumption' (Koenig & Smirnov 1997) / 'optimistic policy under uncertainty' (Canadian Traveller Problem). On a grid this is the established, near-optimal standard: the planned path is a lower bound on true cost and you never abandon a route until physically disproven. The PESSIMISTIC opposite \u2014 only trust cells you have actually traversed (confirm-before-trust) \u2014 FAILS: when every route to a goal crosses unknown cells (the normal start condition) it sees no connected path, only nibbles the frontier, and produces far worse coverage.",
+    "domain": "spatial_exploration",
+    "source": "human + optimal-robotics pathfinding research (2026-06-21)"
+   }
+  },
+  {
+   "local_id": 1,
+   "type": "TaughtHint",
+   "attrs": {
+    "topic": "frontier_based_exploration",
+    "answer": "A FRONTIER is a known-FREE cell adjacent to at least one UNKNOWN cell \u2014 the boundary between mapped and uncharted space (Yamauchi 1997). Always drive to the NEAREST REACHABLE frontier, distance measured as true grid PATH length not Euclidean. This is provably COMPLETE: eliminating every reachable frontier <=> covering all reachable space, because any path to unknown space must cross a frontier. Cluster adjacent frontier cells into regions, drop sub-agent-size clusters, target the region centroid.",
+    "domain": "spatial_exploration",
+    "source": "human + optimal-robotics pathfinding research (2026-06-21)"
+   }
+  },
+  {
+   "local_id": 2,
+   "type": "TaughtHint",
+   "attrs": {
+    "topic": "rank_frontiers_by_true_path_cost",
+    "answer": "Rank frontiers by ACTUAL shortest-path travel cost from the agent, NOT straight-line distance (Euclidean scoring lures the agent into wall-blocked dead-ends). One goal-rooted wavefront/Dijkstra flood from the agent's pose yields the cost-to-every-frontier field in a single pass \u2014 reuse it as BOTH the selection utility AND the navigation gradient (steepest descent).",
+    "domain": "spatial_exploration",
+    "source": "human + optimal-robotics pathfinding research (2026-06-21)"
+   }
+  },
+  {
+   "local_id": 3,
+   "type": "TaughtHint",
+   "attrs": {
+    "topic": "commit_with_hysteresis_kills_thrashing",
+    "answer": "OSCILLATION/thrashing between two near-equidistant frontiers happens when you re-pick the target every tick by argmax: a tiny map update flips the winner and the agent reverses without advancing either. FIX: COMMIT with hysteresis \u2014 lock onto the chosen frontier until it is REACHED, INVALIDATED, or a fixed fraction (e.g. half) of the path is traversed; only THEN re-evaluate. Never reselect on a per-tick argmax over near-tied scores. This is the direct cure for the avatar bouncing between two cells.",
+    "domain": "spatial_exploration",
+    "source": "human + optimal-robotics pathfinding research (2026-06-21)"
+   }
+  },
+  {
+   "local_id": 4,
+   "type": "TaughtHint",
+   "attrs": {
+    "topic": "global_frontier_list_for_completeness",
+    "answer": "Keep a PERSISTENT GLOBAL frontier list, not just locally-visible frontiers. Greedy local-only tracking FORGETS isolated unexplored pockets and forces long backtracks (this is the 'corridor boxing' trap). A global list guarantees completeness (no pocket forgotten); utility ordering handles efficiency. When the nearest frontier is unreachable/abandoned, the agent should route to the next-best GLOBAL frontier, possibly backtracking through known space to reach it from a different side.",
+    "domain": "spatial_exploration",
+    "source": "human + optimal-robotics pathfinding research (2026-06-21)"
+   }
+  },
+  {
+   "local_id": 5,
+   "type": "TaughtHint",
+   "attrs": {
+    "topic": "incremental_replanning_d_star",
+    "answer": "On each obstacle discovery only ~15% of cells' goal-distances change. REPAIR only the locally-inconsistent region (LPA* / D* Lite, Koenig & Likhachev) instead of replanning from scratch \u2014 1-2 orders of magnitude faster. Root cost-to-go values at the GOAL (search goal->start) so they survive agent motion; a node is locally inconsistent iff g != rhs (one-step lookahead); the priority queue holds exactly those nodes.",
+    "domain": "spatial_exploration",
+    "source": "human + optimal-robotics pathfinding research (2026-06-21)"
+   }
+  },
+  {
+   "local_id": 6,
+   "type": "TaughtHint",
+   "attrs": {
+    "topic": "wall_following_bug2_completeness_fallback",
+    "answer": "When the optimistic planner STALLS or oscillates, fall back to a local-sensing WALL-FOLLOWING traversal that is provably COMPLETE and path-bounded. Bug2 (Lumelsky & Stepanov 1987): follow the straight start->goal m-line; on hitting an obstacle, wall-follow it; leave only when re-crossing the m-line CLOSER to the goal than where you hit it. The bare right-hand rule alone is complete ONLY on loop-free spaces; Tremaux's algorithm (mark passages, prefer unmarked, never re-enter a twice-marked passage) handles looped mazes. The m-line / progress condition is what stops the agent circling forever.",
+    "domain": "spatial_exploration",
+    "source": "human + optimal-robotics pathfinding research (2026-06-21)"
+   }
+  },
+  {
+   "local_id": 7,
+   "type": "TaughtHint",
+   "attrs": {
+    "topic": "information_gain_next_best_view",
+    "answer": "To upgrade nearest-frontier, pick argmax U(v) = I(v) * exp(-lambda * cost(agent,v)), where I(v) is the EXPECTED INFORMATION GAIN (entropy reduction) of going there \u2014 estimated cheaply by ray-casting how many unknown cells would be revealed. Per-cell occupancy entropy is maximal at p=0.5 (unknown), zero when known. Nearest-frontier is the special case I=const. Reward expected LEARNING PROGRESS, not raw novelty (pure novelty stalls on high-entropy-but-unlearnable regions \u2014 the 'noisy-TV problem').",
+    "domain": "spatial_exploration",
+    "source": "human + optimal-robotics pathfinding research (2026-06-21)"
+   }
+  },
+  {
+   "local_id": 8,
+   "type": "TaughtHint",
+   "attrs": {
+    "topic": "human_bootstrap_wallfollow_then_frontier",
+    "answer": "Humans bootstrap a new space in layers: WALL-FOLLOWING (thigmotaxis) as a cheap ORIENTATION prior before any model exists, biasing toward openings/doorways, THEN hand off to frontier/info-gain seeking. Spatial knowledge develops landmark -> route -> survey (Siegel & White): anchor salient landmarks, chain them into routes as you traverse, fold overlapping routes into an allocentric SURVEY map that supports novel shortcuts. Map, don't log: store configurational/allocentric structure, not a list of steps.",
+    "domain": "spatial_exploration",
+    "source": "human + optimal-robotics pathfinding research (2026-06-21)"
+   }
+  },
+  {
+   "local_id": 9,
+   "type": "TaughtHint",
+   "attrs": {
+    "topic": "hierarchical_regions_and_area_restricted_search",
+    "answer": "Humans CHUNK space into nested regions (rooms/districts) and plan COARSE-THEN-FINE: pick the region sequence first, then the within-region route \u2014 cheaper than flat search and resists getting lost. Local vs global search uses the cheap AREA-RESTRICTED-SEARCH control law (Charnov's Marginal Value Theorem): on a find, turn more / step less (search locally); on a miss-streak, straighten / step more (travel); LEAVE a region when its local discovery rate falls to the running global average. Boundaries, a metric grid, and a heading/compass are first-class map primitives (place/grid/border/head-direction cells).",
+    "domain": "spatial_exploration",
+    "source": "human + optimal-robotics pathfinding research (2026-06-21)"
+   }
+  }
+ ],
+ "edges": [],
+ "productions": []
+}

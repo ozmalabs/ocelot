@@ -1,0 +1,811 @@
+{
+  "id": "vision_change",
+  "version": "1.1.0",
+  "depends_on": [
+    "vision_waves"
+  ],
+  "description": "THE RETINA FIRES ON CHANGE \u2014 and the threshold FALLS OUT (PROTOCOL \u00a713). `wave_world.drive()` thresholded each frame at its OWN MEDIAN, so `driven%` was EXACTLY 50.00 at every size and in every regime \u2014 the adapter asserting a statistic instead of the world supplying one. This seed moves the drive DECISION out of Python and into rules, and replaces the median with the cell's OWN photon shot-noise floor: a cell fires iff |I_t - I_{t-1}| > sqrt(I_t / nmax), where nmax = 255^2 is fixed by the INPUT'S OWN 8-BIT DYNAMIC RANGE (a well-matched sensor's quantization step is its noise at full scale). Nothing is tuned against sparsity \u2014 \u00a713 names 'its noise floor, its dynamic range' as legitimate sources, and this is the `mu_endo` move (per-cell, from the cell's own situation) applied to the drive. NOT A PURE DIFFERENTIATOR (PROTOCOL \u00a713.1, TRAP 2): a pure change detector makes Troxler fading TRUE BY CONSTRUCTION \u2014 stabilised => no change => no firing => fades, and the model could not NOT fade, which is architecture forcing the signature. The biology is two populations: parasol/M transient, midget/P sustained. So this seed ships BOTH \u2014 `ch_transient_on`/`ch_transient_off` fire on change, and `ch_sustained` fires on contrast against the cell's own slowly-adapting reference, so a stabilised image KEEPS driving the sustained channel until the reference catches up. Whether it fades is a RACE between the adaptation timescale (falling out of a cumulative mean's 1/n, not a chosen beta) and the drift's own timescale \u2014 neither chosen with the other in mind. The model CAN produce no fading; Troxler stays falsifiable. ON/OFF ARE NOT COMPLEMENTS here (both are silent when nothing changes), which also repairs rung 6's `x_OFF = 1 - x_ON` \u2014 a construction \u00a713's own table lists as degenerate BY CONSTRUCTION. `change=0` is the master default-off (PROTOCOL \u00a79): the median split is preserved EXACTLY as `ch_drive_median`, carrying the complementary `change<0.5` guard (the `mu_mode` precedent), so every committed result reproduces byte-identically. Every config read is `PickUnique`, never `Pick` (\u00a712.3): `Pick` silently returns one of N and a second params node would be ignored without a word. v1.1.0 -- BATCH APPLICATION (VISION_BATCH_APPLY_PREREG.md). Every rule here now sets `batch`, so the engine applies the WHOLE binding set in one pass instead of re-deriving it per binding. The scale split measured 99.81% of ALL candidate enumeration on this path as that re-derivation. The flag is a CORRECTNESS claim, not a speed knob -- see the per-rule comments for the confluence argument, and note that batching is EXACT: it removes work rather than approximating it, so no verdict may move.",
+  "nodes": [
+    {
+      "type": "ChangeParams",
+      "attrs": {
+        "name": "default",
+        "change": 0.0,
+        "nmax": 65025.0,
+        "sustain": 1.0,
+        "comment": "change=0 is the master default-off; the median split remains the default path. nmax=255^2 FALLS OUT of the input's 8-bit dynamic range (1 LSB = 1 sigma at full scale) \u2014 it is NOT tuned against sparsity, and the sparsity-vs-threshold surface is reported so the dependence is visible rather than asserted. sustain=1 enables the sustained channel, which is what keeps Troxler falsifiable (see \u00a713.1 / TRAP 2 in the description). Every knob here is graph DATA, never a Python code path (PROTOCOL \u00a70)."
+      }
+    }
+  ],
+  "edges": [],
+  "productions": [],
+  "rules": [
+    {
+      "name": "ch_drive_median",
+      "comment": "THE DEFECT, PRESERVED AS THE DEFAULT (PROTOCOL \u00a79). This is `drive()`'s old median split, moved verbatim into a rule so the adapter stops deciding: a cell is driven iff its raw pixel exceeds the frame's own median, which the adapter writes as the FACT `Retina.frame_median` (np.median of the frame \u2014 a datum, not a decision). Comparison is on the RAW value `lum_raw`, exactly as before, so the floats are identical to the last digit: thresholding log-luminance at a log-median would NOT be byte-identical, because numpy's median averages the two middle values on an even count and log(mean) != mean(log). Carries the complementary `change < 0.5` guard, TRUE at the default, so every committed result reproduces byte-identically. This rule is the thing the rung is measured AGAINST \u2014 it is `driven% = 50.00` by construction, in every regime, at every size. PHASE-GUARDED by its OWN `dstep_med < Retina.step` so it fires ONCE per cell per step and TERMINATES: `apply_rule_once` is driven to a fixed point by the adapter, and a rule whose effect does not change its own match would re-fire forever (measured: it hung the bench). Same device as `oo_bipolar_burst`'s `bstep`. Each drive rule carries a SEPARATE phase key: a shared one would let whichever rule fired first block the others for that cell, so ON would silence OFF and sustained. `driven` is their OR, and the channels stay independently measurable. BATCH-SAFE (VISION_BATCH_APPLY_PREREG.md \u00a73). This rule is NOT monotone -- it mutates attributes -- but it IS CONFLUENT, so the fixpoint it reaches does not depend on the order its bindings are applied in, which is the property batching actually needs. Four facts carry it: (i) every effect here is `set_attr`, so nothing is retracted and the binding set is FIXED; (ii) the phase guard means an effect can only falsify its OWN match -- no effect ever ENABLES another binding; (iii) there is one Retina hub and one `has_cell` edge per cell, so bindings biject with cells and the write-sets are pairwise disjoint; (iv) the only cross-binding read in the seed (`ch_sustained`'s neighbour sum) is of `lum_raw`, which the ADAPTER writes before the phase and no rule writes during it. Gated by a bitwise per-cell state comparison across six grids, not by argument alone.",
+      "match_type": "RetinaCell",
+      "match": [
+        [
+          "r",
+          "has_cell",
+          "c"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "PickUnique",
+                "source": {
+                  "type": "NodesOfType",
+                  "node_type": "ChangeParams"
+                }
+              },
+              "key": "change"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0.5
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c"
+              },
+              "key": "lum_seen"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0.5
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c"
+              },
+              "key": "lum_raw"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "r"
+              },
+              "key": "frame_median"
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c"
+              },
+              "key": "dstep_med"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "r"
+              },
+              "key": "step"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "c",
+          "driven",
+          1.0
+        ],
+        [
+          "set_attr",
+          "c",
+          "dstep_med",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "r"
+              },
+              "key": "step"
+            }
+          }
+        ]
+      ],
+      "batch": true
+    },
+    {
+      "name": "ch_transient_on",
+      "comment": "PARASOL/M, ON. Fires iff the luminance INCREASED by more than the cell's OWN photon shot-noise floor: (I_t - I_prev) > sqrt(I_t / nmax). The floor is per-cell and falls out of the input's own 8-bit dynamic range \u2014 nothing is chosen. `Max(lum_raw, 0)` guards Sqrt against a negative argument on a black pixel (the frame is non-negative by construction, so this is defensive, not a fudge). NOT the complement of ch_transient_off: both are silent when nothing changes, which is exactly why this does not reproduce rung 6's `x_OFF = 1 - x_ON` degeneracy. `lum_seen` gates the first step, where `lum_prev` has no meaning yet \u2014 without it every cell would read a change against an uninitialised reference and fire once, spuriously. PHASE-GUARDED by its OWN `dstep_on < Retina.step` so it fires ONCE per cell per step and TERMINATES: `apply_rule_once` is driven to a fixed point by the adapter, and a rule whose effect does not change its own match would re-fire forever (measured: it hung the bench). Same device as `oo_bipolar_burst`'s `bstep`. Each drive rule carries a SEPARATE phase key: a shared one would let whichever rule fired first block the others for that cell, so ON would silence OFF and sustained. `driven` is their OR, and the channels stay independently measurable. BATCH-SAFE (VISION_BATCH_APPLY_PREREG.md \u00a73). This rule is NOT monotone -- it mutates attributes -- but it IS CONFLUENT, so the fixpoint it reaches does not depend on the order its bindings are applied in, which is the property batching actually needs. Four facts carry it: (i) every effect here is `set_attr`, so nothing is retracted and the binding set is FIXED; (ii) the phase guard means an effect can only falsify its OWN match -- no effect ever ENABLES another binding; (iii) there is one Retina hub and one `has_cell` edge per cell, so bindings biject with cells and the write-sets are pairwise disjoint; (iv) the only cross-binding read in the seed (`ch_sustained`'s neighbour sum) is of `lum_raw`, which the ADAPTER writes before the phase and no rule writes during it. Gated by a bitwise per-cell state comparison across six grids, not by argument alone.",
+      "match_type": "RetinaCell",
+      "match": [
+        [
+          "r",
+          "has_cell",
+          "c"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "PickUnique",
+                "source": {
+                  "type": "NodesOfType",
+                  "node_type": "ChangeParams"
+                }
+              },
+              "key": "change"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0.5
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c"
+              },
+              "key": "lum_seen"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.5
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Minus",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "c"
+                },
+                "key": "lum_raw"
+              },
+              "b": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "c"
+                },
+                "key": "lum_prev"
+              }
+            },
+            "b": {
+              "type": "Sqrt",
+              "arg": {
+                "type": "Div",
+                "a": {
+                  "type": "Max",
+                  "items": [
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "c"
+                      },
+                      "key": "lum_raw"
+                    },
+                    {
+                      "type": "Lit",
+                      "value": 0.0
+                    }
+                  ]
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "PickUnique",
+                    "source": {
+                      "type": "NodesOfType",
+                      "node_type": "ChangeParams"
+                    }
+                  },
+                  "key": "nmax"
+                }
+              }
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c"
+              },
+              "key": "dstep_on"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "r"
+              },
+              "key": "step"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "c",
+          "driven",
+          1.0
+        ],
+        [
+          "set_attr",
+          "c",
+          "dstep_on",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "r"
+              },
+              "key": "step"
+            }
+          }
+        ]
+      ],
+      "batch": true
+    },
+    {
+      "name": "ch_transient_off",
+      "comment": "PARASOL/M, OFF. Fires iff the luminance DECREASED by more than the cell's own shot-noise floor: (I_prev - I_t) > sqrt(I_t / nmax). The mirror of ch_transient_on, and deliberately NOT its complement \u2014 when nothing changes BOTH are silent, so the ON/OFF split here carries real information instead of `1 - x`. This is the half of the rung that fixes rung 6's degeneracy. PHASE-GUARDED by its OWN `dstep_off < Retina.step` so it fires ONCE per cell per step and TERMINATES: `apply_rule_once` is driven to a fixed point by the adapter, and a rule whose effect does not change its own match would re-fire forever (measured: it hung the bench). Same device as `oo_bipolar_burst`'s `bstep`. Each drive rule carries a SEPARATE phase key: a shared one would let whichever rule fired first block the others for that cell, so ON would silence OFF and sustained. `driven` is their OR, and the channels stay independently measurable. BATCH-SAFE (VISION_BATCH_APPLY_PREREG.md \u00a73). This rule is NOT monotone -- it mutates attributes -- but it IS CONFLUENT, so the fixpoint it reaches does not depend on the order its bindings are applied in, which is the property batching actually needs. Four facts carry it: (i) every effect here is `set_attr`, so nothing is retracted and the binding set is FIXED; (ii) the phase guard means an effect can only falsify its OWN match -- no effect ever ENABLES another binding; (iii) there is one Retina hub and one `has_cell` edge per cell, so bindings biject with cells and the write-sets are pairwise disjoint; (iv) the only cross-binding read in the seed (`ch_sustained`'s neighbour sum) is of `lum_raw`, which the ADAPTER writes before the phase and no rule writes during it. Gated by a bitwise per-cell state comparison across six grids, not by argument alone.",
+      "match_type": "RetinaCell",
+      "match": [
+        [
+          "r",
+          "has_cell",
+          "c"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "PickUnique",
+                "source": {
+                  "type": "NodesOfType",
+                  "node_type": "ChangeParams"
+                }
+              },
+              "key": "change"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0.5
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c"
+              },
+              "key": "lum_seen"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.5
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Minus",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "c"
+                },
+                "key": "lum_prev"
+              },
+              "b": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "c"
+                },
+                "key": "lum_raw"
+              }
+            },
+            "b": {
+              "type": "Sqrt",
+              "arg": {
+                "type": "Div",
+                "a": {
+                  "type": "Max",
+                  "items": [
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "c"
+                      },
+                      "key": "lum_raw"
+                    },
+                    {
+                      "type": "Lit",
+                      "value": 0.0
+                    }
+                  ]
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "PickUnique",
+                    "source": {
+                      "type": "NodesOfType",
+                      "node_type": "ChangeParams"
+                    }
+                  },
+                  "key": "nmax"
+                }
+              }
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c"
+              },
+              "key": "dstep_off"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "r"
+              },
+              "key": "step"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "c",
+          "driven",
+          1.0
+        ],
+        [
+          "set_attr",
+          "c",
+          "dstep_off",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "r"
+              },
+              "key": "step"
+            }
+          }
+        ]
+      ],
+      "batch": true
+    },
+    {
+      "name": "ch_sustained",
+      "comment": "MIDGET/P, SUSTAINED \u2014 AND THIS RULE IS WHAT KEEPS TROXLER FALSIFIABLE (PROTOCOL \u00a713.1, TRAP 2). Fires iff the cell's luminance differs from its SPATIAL SURROUND (the mean `lum_raw` over its `neighbour` edges) by more than its own shot-noise floor. SPATIAL, NOT TEMPORAL, and that is the whole point: the first cut tested deviation from a cumulative-mean TEMPORAL reference and was INERT \u2014 a cumulative mean's first sample sets ref = value EXACTLY, so on a stabilised image the deviation is 0 forever and the channel never fired (measured: 0.00% under stabilisation). That is \u00a713.2's disease exactly: a channel that WORKS in principle and IS WIRED TO NOTHING, and it would have made the model a pure differentiator wearing a sustained channel's clothes \u2014 i.e. TRAP 2 unavoided while appearing avoided. The biology says why the fix is spatial: sustained RGCs encode CENTRE-SURROUND CONTRAST, which on a stabilised image is non-zero FOREVER (it has no time argument to adapt away), and McLelland/Ahmed/Bair 2009 measured P cells tau~17s / M ~22s with the response NOT returning to baseline even after 64s \u2014 'these major feedforward inputs to cortex adapt too slowly to account for visual fading'. So THIS MODEL PREDICTS A STABILISED IMAGE KEEPS DRIVING THE RETINA INDEFINITELY \u2014 i.e. it predicts NO retinal fading, which CONTRADICTS a retinal account of Troxler and is exactly the falsifiable content TRAP 2 demands. It can be wrong, and the experiment can say so. Report which rule is solely responsible for which half (\u00a713.1): the transient channels ALONE would FORCE fading; this rule is what makes the outcome contingent. Gated separately on `sustain` so the transient-only architecture (the tautology) is available AS A CONTROL rather than as the default. PHASE-GUARDED by its OWN `dstep_sus < Retina.step`, so it fires once per cell per step and the adapter's fixed-point loop terminates; a SHARED phase key would let ON silence it. BATCH-SAFE (VISION_BATCH_APPLY_PREREG.md \u00a73). This rule is NOT monotone -- it mutates attributes -- but it IS CONFLUENT, so the fixpoint it reaches does not depend on the order its bindings are applied in, which is the property batching actually needs. Four facts carry it: (i) every effect here is `set_attr`, so nothing is retracted and the binding set is FIXED; (ii) the phase guard means an effect can only falsify its OWN match -- no effect ever ENABLES another binding; (iii) there is one Retina hub and one `has_cell` edge per cell, so bindings biject with cells and the write-sets are pairwise disjoint; (iv) the only cross-binding read in the seed (`ch_sustained`'s neighbour sum) is of `lum_raw`, which the ADAPTER writes before the phase and no rule writes during it. Gated by a bitwise per-cell state comparison across six grids, not by argument alone.",
+      "match_type": "RetinaCell",
+      "match": [
+        [
+          "r",
+          "has_cell",
+          "c"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "PickUnique",
+                "source": {
+                  "type": "NodesOfType",
+                  "node_type": "ChangeParams"
+                }
+              },
+              "key": "change"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0.5
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "PickUnique",
+                "source": {
+                  "type": "NodesOfType",
+                  "node_type": "ChangeParams"
+                }
+              },
+              "key": "sustain"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0.5
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c"
+              },
+              "key": "lum_seen"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.5
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c"
+              },
+              "key": "dstep_sus"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "r"
+              },
+              "key": "step"
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Abs",
+              "arg": {
+                "type": "Minus",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "c"
+                  },
+                  "key": "lum_raw"
+                },
+                "b": {
+                  "type": "Div",
+                  "a": {
+                    "type": "Sum",
+                    "source": {
+                      "type": "Neighbours",
+                      "node": {
+                        "type": "Var",
+                        "name": "c"
+                      },
+                      "edge_type": "neighbour",
+                      "any_type": false
+                    },
+                    "var_name": "q",
+                    "value": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "q"
+                      },
+                      "key": "lum_raw"
+                    }
+                  },
+                  "b": {
+                    "type": "Max",
+                    "items": [
+                      {
+                        "type": "Count",
+                        "source": {
+                          "type": "Neighbours",
+                          "node": {
+                            "type": "Var",
+                            "name": "c"
+                          },
+                          "edge_type": "neighbour",
+                          "any_type": false
+                        }
+                      },
+                      {
+                        "type": "Lit",
+                        "value": 1.0
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "b": {
+              "type": "Sqrt",
+              "arg": {
+                "type": "Div",
+                "a": {
+                  "type": "Max",
+                  "items": [
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "c"
+                      },
+                      "key": "lum_raw"
+                    },
+                    {
+                      "type": "Lit",
+                      "value": 0.0
+                    }
+                  ]
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "PickUnique",
+                    "source": {
+                      "type": "NodesOfType",
+                      "node_type": "ChangeParams"
+                    }
+                  },
+                  "key": "nmax"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "c",
+          "driven",
+          1.0
+        ],
+        [
+          "set_attr",
+          "c",
+          "dstep_sus",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "r"
+              },
+              "key": "step"
+            }
+          }
+        ]
+      ],
+      "batch": true
+    },
+    {
+      "name": "ch_adapt_ref",
+      "comment": "THE ADAPTATION TIMESCALE FALLS OUT \u2014 the `mu_endo` precedent, exactly (PROTOCOL \u00a72/\u00a713). `lum_ref` is a CUMULATIVE MEAN of every luminance the cell has ever seen: ref_n = ref_{n-1} + (lum - ref_{n-1})/n. NOT an EMA: an EMA is a TRACKING FILTER, not an estimator \u2014 its variance does not decay, so it has NO STABLE FIXED POINT, which \u00a72 says cannot model development. A cumulative mean's variance falls as 1/n, so it CONVERGES. It also removes the last imported constant from this path: an EMA would need a beta (GCAL's 0.991), and this rule touches none. So the sustained channel's adaptation timescale is fixed ONLY by the cell's own luminance history and the number of steps it has lived \u2014 no constant of anyone's. Consequence, stated honestly: because 1/n SLOWS without bound, a long-lived cell adapts ever more slowly, so the model's Troxler prediction is genuinely contingent on run length rather than wired to fade. BATCH-SAFE (VISION_BATCH_APPLY_PREREG.md \u00a73). This rule is NOT monotone -- it mutates attributes -- but it IS CONFLUENT, so the fixpoint it reaches does not depend on the order its bindings are applied in, which is the property batching actually needs. Four facts carry it: (i) every effect here is `set_attr`, so nothing is retracted and the binding set is FIXED; (ii) the phase guard means an effect can only falsify its OWN match -- no effect ever ENABLES another binding; (iii) there is one Retina hub and one `has_cell` edge per cell, so bindings biject with cells and the write-sets are pairwise disjoint; (iv) the only cross-binding read in the seed (`ch_sustained`'s neighbour sum) is of `lum_raw`, which the ADAPTER writes before the phase and no rule writes during it. Gated by a bitwise per-cell state comparison across six grids, not by argument alone.",
+      "match_type": "RetinaCell",
+      "match": [
+        [
+          "r",
+          "has_cell",
+          "c"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "PickUnique",
+                "source": {
+                  "type": "NodesOfType",
+                  "node_type": "ChangeParams"
+                }
+              },
+              "key": "change"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0.5
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c"
+              },
+              "key": "lum_seen"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0.5
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c"
+              },
+              "key": "ref_step"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "r"
+              },
+              "key": "step"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "c",
+          "lum_ref",
+          {
+            "__term__": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "c"
+                  },
+                  "key": "lum_ref"
+                },
+                {
+                  "type": "Div",
+                  "a": {
+                    "type": "Minus",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "c"
+                      },
+                      "key": "lum_raw"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "c"
+                      },
+                      "key": "lum_ref"
+                    }
+                  },
+                  "b": {
+                    "type": "Max",
+                    "items": [
+                      {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "c"
+                        },
+                        "key": "ref_n"
+                      },
+                      {
+                        "type": "Lit",
+                        "value": 1.0
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "c",
+          "ref_n",
+          {
+            "__term__": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "c"
+                  },
+                  "key": "ref_n"
+                },
+                {
+                  "type": "Lit",
+                  "value": 1.0
+                }
+              ]
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "c",
+          "ref_step",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "r"
+              },
+              "key": "step"
+            }
+          }
+        ]
+      ],
+      "batch": true
+    }
+  ]
+}

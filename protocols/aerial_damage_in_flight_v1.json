@@ -1,0 +1,30 @@
+{
+  "protocol": "aerial_damage_in_flight_v1",
+  "status": "development_demonstration",
+  "simulator": "gym-pybullet-drones",
+  "vehicle": "Crazyflie 2.x",
+  "seed": 21,
+  "steps": 120,
+  "goal": [
+    0.75,
+    0.75,
+    1.0
+  ],
+  "babble_samples_per_actuator": 2,
+  "action_duration_seconds": 0.25,
+  "damage": {
+    "kind": "motor_rpm_loss",
+    "onset": "immediately_after_complete_motor_babble",
+    "motor_rpm_retention": [
+      1.0,
+      0.92,
+      1.0,
+      1.0
+    ]
+  },
+  "conditions": [
+    "adaptive_flight",
+    "frozen_flight"
+  ],
+  "comparison": "same initial graph, simulator seed, goal, action alphabet, and hidden physical damage"
+}

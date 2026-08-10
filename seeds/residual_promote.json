@@ -1,0 +1,389 @@
+{
+  "id": "residual_promote",
+  "version": "1.0.0",
+  "depends_on": [
+    "core"
+  ],
+  "description": "PROMOTE + make-actionable: the missing successor named by refusal_representable.json. A Residual node -- minted by a HEARD refusal (refusal_query_mints_residual, the refusal-selector tie) OR by a perception HOLE (an eye-view field the sensor left un-carved) -- is routed through the EXISTING human-gated self-improvement spine. promote_residual_to_self_concern mints a SelfConcern{source:'residual'} (the SAME node shape gap_awareness.json / conversation_self_concern.json mint, so jabberwock_daemon.py::promote_self_concern -> StandingConcern and reflective_faculty._run_self_gaps both find it), DISTINCT from every ordinary concern (source='residual', kind='residual', the about_residual edge). The DECISION is the graph's (a rule with a content-dedup + mint-once guard, exactly like every gap rule); the human gate stays -- the SelfConcern is filed 'noted', NEVER 'pending'. perception_hole_mints_residual makes the eye-view rung's un-carved HOLE (uncarved_count>0) ACTIONABLE: it fires on REAL hole structure (NOT a rare tie) and NOT on the FLAT space-constancy case (uncarved_count=0 is correct 'nothing here', not a residual). DEFAULT-OFF: inert on any graph without the attends/has_residual edges (no committed seed makes them) -- byte-identity holds.",
+  "microtheory": "refusal_capacity",
+  "nodes": [],
+  "edges": [],
+  "productions": [],
+  "rules": [
+    {
+      "name": "perception_hole_mints_residual",
+      "comment": "The eye-view rung ALREADY renders the un-carved HOLE (its 9 right-edge cells) as gaps; this makes it ACTIONABLE. A VisionField the agent attends whose carve left un-carved cells (uncarved_count>0) mints ONE Residual{kind:uncarved_hole}. Mint-once via hole_residual_minted. Does NOT fire on FLAT space-constancy (uncarved_count=0: every cell is the one reference group; correct 'nothing here' is not a residual).",
+      "match_type": null,
+      "match": [
+        [
+          "agent",
+          "attends",
+          "field"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "field"
+              },
+              "key": "uncarved_count"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0.0
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "field"
+                },
+                "key": "hole_residual_minted"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 1.0
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "field",
+          "hole_residual_minted",
+          1.0
+        ],
+        [
+          "add_node",
+          "res",
+          "Residual",
+          {
+            "kind": {
+              "__term__": {
+                "type": "Lit",
+                "value": "uncarved_hole"
+              }
+            },
+            "source_count": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "field"
+                },
+                "key": "uncarved_count"
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "field",
+          "has_residual",
+          "res",
+          {}
+        ]
+      ]
+    },
+    {
+      "name": "promote_residual_to_self_concern",
+      "comment": "THE LOOP CLOSURE. The agent attends a source h that holds a Residual res (the h -has_residual-> res edge refusal_query_mints_residual and perception_hole_mints_residual both mint). File it as a SelfConcern{source:'residual'} the human-gated promote spine can carry -- DISTINCT from every ordinary concern (source/kind/about_residual). Guards: mint-once (res.promoted) + content-dedup (no SelfConcern with equal content) -- the SAME shape every gap_awareness rule carries, so the loop never floods. Filed 'noted', NEVER 'pending': the promote to StandingConcern is the human step (promote_self_concern).",
+      "match_type": null,
+      "match": [
+        [
+          "agent",
+          "attends",
+          "h"
+        ],
+        [
+          "h",
+          "has_residual",
+          "res"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "res"
+                },
+                "key": "promoted"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 1.0
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "NodesOfType",
+                "node_type": "SelfConcern"
+              },
+              "var_name": "sc2",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "sc2"
+                  },
+                  "key": "content"
+                },
+                "b": {
+                  "type": "StringConcat",
+                  "parts": [
+                    {
+                      "type": "Lit",
+                      "value": "unresolved residual: "
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "res"
+                      },
+                      "key": "kind"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "res",
+          "promoted",
+          1.0
+        ],
+        [
+          "add_node",
+          "sc",
+          "SelfConcern",
+          {
+            "status": "noted",
+            "source": "residual",
+            "kind": "residual",
+            "content": {
+              "__term__": {
+                "type": "StringConcat",
+                "parts": [
+                  {
+                    "type": "Lit",
+                    "value": "unresolved residual: "
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "res"
+                    },
+                    "key": "kind"
+                  }
+                ]
+              }
+            },
+            "residual_kind": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "res"
+                },
+                "key": "kind"
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "agent",
+          "has_self_concern",
+          "sc"
+        ],
+        [
+          "add_edge",
+          "sc",
+          "about_residual",
+          "res",
+          {}
+        ]
+      ]
+    },
+    {
+      "name": "retire_duplicate_residual_concern",
+      "batch": false,
+      "comment": "NO FLOOD, part 2 (the gap_awareness retire_duplicate_gap precedent). The mint-rule content-dedup guard only blocks a NEW same-content SelfConcern across passes; two DISTINCT residuals of the same kind minted in ONE pass both file before either sees the other. This retires the duplicates: BATCH-SAFE with no node-id -- the survivor is Argmin over the same-content active residual SelfConcerns (Argmin returns exactly one element from a fixed snapshot within a pass), and a residual SelfConcern is retired (status='retired' + del_edge has_self_concern) iff it is NOT identity-equal to that survivor. A unique concern is its own Argmin survivor, so it is never retired. Scoped to source='residual' so the human-gated conversation concerns are never auto-retired. Runs in the agent's own run_rules fixpoint.",
+      "match_type": null,
+      "match": [
+        [
+          "agent",
+          "has_self_concern",
+          "sc"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "sc"
+                },
+                "key": "status"
+              },
+              "b": {
+                "type": "Lit",
+                "value": "retired"
+              }
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "sc"
+              },
+              "key": "source"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "residual"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Var",
+                "name": "sc"
+              },
+              "b": {
+                "type": "Argmin",
+                "source": {
+                  "type": "Filter",
+                  "source": {
+                    "type": "NodesOfType",
+                    "node_type": "SelfConcern"
+                  },
+                  "var_name": "y",
+                  "predicate": {
+                    "type": "And",
+                    "items": [
+                      {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "y"
+                          },
+                          "key": "content"
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "sc"
+                          },
+                          "key": "content"
+                        }
+                      },
+                      {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "y"
+                          },
+                          "key": "source"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": "residual"
+                        }
+                      },
+                      {
+                        "type": "Not",
+                        "arg": {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "y"
+                            },
+                            "key": "status"
+                          },
+                          "b": {
+                            "type": "Lit",
+                            "value": "retired"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                },
+                "var_name": "z",
+                "value": {
+                  "type": "Var",
+                  "name": "z"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "sc",
+          "status",
+          "retired"
+        ],
+        [
+          "del_edge",
+          "agent",
+          "has_self_concern",
+          "sc"
+        ]
+      ]
+    }
+  ]
+}

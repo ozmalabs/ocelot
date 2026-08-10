@@ -1,0 +1,118 @@
+{
+  "id": "transformer_architecture_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "Transformer_architecture",
+  "in_microtheory": "machine_learning",
+  "description": "Transformer architecture decomposed. Encoder-decoder (T5, BART) vs decoder-only (GPT, LLaMA). Block structure: attention + MLP + residual + layer norm. Modern variants: pre-norm vs post-norm, RMSNorm, SwiGLU, GQA (grouped-query attention), MoE (mixture of experts). The architecture that dominated NLP since 2017.",
+  "sub_mechanisms": [
+    {
+      "name": "transformer_block",
+      "definition": "Sub-layer 1: attention + residual + norm. Sub-layer 2: MLP + residual + norm. Stack N blocks.",
+      "why": "Compositional. Each block refines representations. Residual makes deep stacking trainable. Pre-norm variant (norm before sublayer) is more stable for very deep models.",
+      "category": "transformer_mechanism"
+    },
+    {
+      "name": "encoder_only_BERT",
+      "definition": "Stack of bidirectional attention layers. Trained with masked language modeling.",
+      "why": "Each position attends to all positions (no causal mask). Used for understanding tasks (classification, NER). BERT, RoBERTa, DeBERTa. Largely supplanted by encoder-decoder + decoder-only for generative tasks.",
+      "category": "transformer_mechanism"
+    },
+    {
+      "name": "decoder_only_GPT",
+      "definition": "Causal attention: position i attends only to positions ≤ i. Trained on next-token prediction.",
+      "why": "GPT, LLaMA, Mistral, Claude all decoder-only. Simpler than encoder-decoder. Foundation of modern LLMs. The architectural pattern of the 2020s.",
+      "category": "transformer_mechanism"
+    },
+    {
+      "name": "encoder_decoder",
+      "definition": "Encoder produces context; decoder generates conditioned on it. Original Transformer (Vaswani 2017), T5, BART.",
+      "why": "Natural for sequence-to-sequence (translation, summarisation). Cross-attention from decoder to encoder representations. Decoder-only with prompting now dominant; encoder-decoder hangs on for specific applications.",
+      "category": "transformer_mechanism"
+    },
+    {
+      "name": "causal_attention_mask",
+      "definition": "Triangular mask preventing future positions from contributing. Used in decoder-only models.",
+      "why": "Autoregressive training: each position predicts next. Mask enforces 'no peeking at future'. KV cache exploits the mask: only new token needs new K, V; past stays fixed.",
+      "category": "transformer_mechanism"
+    },
+    {
+      "name": "pre_norm_vs_post_norm",
+      "definition": "Pre-norm: norm before sublayer (residual passes through). Post-norm: norm after sublayer + residual (original).",
+      "why": "Pre-norm is more stable for deep networks (gradients flow through residual without norm). Most modern LLMs (LLaMA, Mistral) use pre-norm. Original post-norm needed warmup to train.",
+      "category": "transformer_mechanism"
+    },
+    {
+      "name": "RMSNorm",
+      "definition": "Root Mean Square Norm: normalize by RMS (no mean subtraction). Simpler than LayerNorm.",
+      "why": "~7% faster than LayerNorm + comparable quality. LLaMA family uses RMSNorm. The micro-optimization that propagated through the LLM ecosystem.",
+      "category": "transformer_mechanism"
+    },
+    {
+      "name": "SwiGLU_activation",
+      "definition": "Swish-Gated Linear Unit. MLP: silu(W1·x) ⊙ (W2·x) → W3·result. Replaces ReLU/GeLU in modern LLMs.",
+      "why": "Empirically better quality than GeLU. Slightly more compute (3 matrices instead of 2). Used in LLaMA, PaLM, Mistral. The MLP nonlinearity standard since ~2022.",
+      "category": "transformer_mechanism"
+    },
+    {
+      "name": "rotary_position_embedding",
+      "definition": "RoPE: rotate Q, K by position-dependent angle. Encodes position via rotation in pair-dimensions.",
+      "why": "Extrapolates beyond training length. Used in LLaMA, PaLM, ChatGLM. Replaces absolute + sinusoidal embeddings. The position encoding choice for modern LLMs.",
+      "category": "transformer_mechanism"
+    },
+    {
+      "name": "grouped_query_attention",
+      "definition": "GQA: multiple query heads share K, V heads. K, V are smaller; attention math unchanged.",
+      "why": "Multi-Query Attention (MQA) shares K, V across all query heads — fast but quality loss. GQA is the compromise: ~4 K, V heads for ~32 query heads. Used in LLaMA-2, Mistral. KV cache is correspondingly smaller.",
+      "category": "transformer_mechanism"
+    },
+    {
+      "name": "mixture_of_experts",
+      "definition": "MoE: replace dense MLP with K experts; gating selects top-k experts per token.",
+      "why": "Sparse activation: model has many parameters but uses few per token. Mixtral 8x7B, GPT-4 (rumored), DeepSeek-MoE. Trade-off: training complexity, communication, load balancing.",
+      "category": "transformer_mechanism"
+    },
+    {
+      "name": "sliding_window_attention",
+      "definition": "Attend only within window of size W. Mistral uses 4096 window with longer context via chained windows.",
+      "why": "Linear instead of quadratic compute. Cost: information must flow through window chain to span long context. Hybrid approaches: some heads sliding, some full.",
+      "category": "transformer_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "residual_enables_deep_stacking",
+      "if": ["each block has residual connection"],
+      "then": ["gradients flow through identity path to early layers"],
+      "why": "Without residual: deep stack has vanishing gradients. With residual: gradient has identity shortcut to every layer. ResNet's insight, standard in Transformer. Why 100-layer transformers train.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "pre_norm_stabilises_deep_transformers",
+      "if": ["transformer has more than ~50 layers"],
+      "then": ["pre-norm avoids the training instability that post-norm has"],
+      "why": "Post-norm: residual passes through norm → gradient depends on norm. Pre-norm: residual passes around norm → cleaner gradient flow. Modern LLMs use pre-norm.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "decoder_only_for_generation",
+      "if": ["task is text generation"],
+      "then": ["decoder-only architecture is preferred"],
+      "why": "Simpler. Pretraining on next-token prediction at scale gives strong generative capability. Encoder-decoder needs careful task formulation. Architectural simplicity won.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "GQA_reduces_KV_cache_size",
+      "if": ["model uses grouped-query attention with G groups instead of full multi-head"],
+      "then": ["KV cache size is reduced by G/H (H = total heads)"],
+      "why": "KV cache stores K, V per head per layer per position. GQA: only G K, V heads (4-8 vs 32). KV cache 4-8x smaller. Critical for long-context serving memory.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "MoE_scales_parameters_without_scaling_compute",
+      "if": ["model uses mixture of experts"],
+      "then": ["total parameters grow without proportional compute increase"],
+      "why": "Mixtral 8x7B: 47B total params, ~13B active per token. Memory is high but compute is constant. The scaling trick when compute is the binding constraint.",
+      "soundness_category": "cost_equivalence"
+    }
+  ]
+}

@@ -1,0 +1,73 @@
+{
+ "id": "ink_refinement",
+ "version": "1.0.0",
+ "depends_on": [],
+ "description": "REFINEMENT RUNG (scratchpad/HANDWRITING_DESIGN.md's 'REFINEMENT RUNG' section, the Omniglot residual, commit 26f74039): the Omniglot gate found recognition was exact quantized-signature match at ONE grain (turn_bins=16), so +-1-bin non-uniform jitter -> 81% held-out OOV despite LEARN saturation PASS. domains/ink_decode.py's decode_ink now recognizes a span at a COARSE grain when the FINE grain fails ('tolerance = COARSENESS, not fuzzy matching -- coarse-grain exact match IS the principled near-miss band'); when that happens, THIS seed decides whether the fine mismatch is confined to ONE dimension (turn or len) and, if so, WHICH -- a per-dimension CHILD quantum refines the coarse family (refines_quantum edge), mirroring seeds/shape_decode_loop.json's sd_mint_quantum pattern exactly: the RULE decides, domains/ink_decode.py (_refine_or_note) only INSTALLS what it decided (stroke_codebook.grow_stroke_refinement_quantum). domains/ink_decode.py computes the two mechanical FACTS these rules read (turn_all_match / len_all_match -- a fixed structural comparison of two ALREADY-QUANTIZED relation-lists whose IDENTITY a held Term already decided upstream, never a Python ranking) and writes them onto a fresh, single-use RefinementObservation node wired agent -refines-> obs (the SAME 'ag'-hub convention shape_decode_loop.json's Observation nodes use, agent -observed-> obs) before calling run_rules(). Exactly one of the three ir_* rules below can ever match a given RefinementObservation (their guards partition {turn_all_match, len_all_match} x {true,false} minus the (true,true) case, which domains/ink_decode.py never even creates an Observation for -- nothing to refine when both already match). No new Rust Terms; Term-free rules (plain set_attr effects) in the SAME style as seeds/shape_decode_loop.json's sd_dim_check_mark.",
+ "microtheory": {
+  "name": "ink_refinement",
+  "description": "per-dimension refinement-child minting for a coarse-recognized stroke span whose fine grain does not exact-match its family"
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [
+  {
+   "provenance": "seed:ink_refinement:refines-0",
+   "src": {"type": "Agent", "var": "ag"},
+   "edge_type": "refines",
+   "tgt": {"type": "RefinementObservation", "var": "obs"}
+  }
+ ],
+ "rules": [
+  {
+   "name": "ir_mint_turn_child",
+   "comment": "The fine mismatch is confined to TURN quanta ONLY (len_q matched everywhere) -- design: 'a fine mismatch confined to turn quanta mints a turn-only child'. Guard: status pending, turn_all_match==false, len_all_match==true. Effect is a PLAIN set_attr (Term-free, mirrors sd_dim_check_mark's style) -- the actual quantum INSTALL is domains/ink_decode.py's job (grow_stroke_refinement_quantum), reading this status back exactly like sd_mint_quantum's 'minted' edge is read by stroke_codebook.grow_stroke_quantum's OOV-path caller.",
+   "match_type": "RefinementObservation",
+   "match": [["ag", "refines", "obs"]],
+   "where": {
+    "type": "And",
+    "items": [
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "status"}, "b": {"type": "Lit", "value": "pending"}},
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "turn_all_match"}, "b": {"type": "Lit", "value": false}},
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "len_all_match"}, "b": {"type": "Lit", "value": true}}
+    ]
+   },
+   "effects": [
+    ["set_attr", "obs", "status", "refine_turn"]
+   ]
+  },
+  {
+   "name": "ir_mint_len_child",
+   "comment": "The fine mismatch is confined to LEN quanta ONLY (turn_q matched everywhere) -- design: '... len likewise'. Guard: status pending, turn_all_match==true, len_all_match==false.",
+   "match_type": "RefinementObservation",
+   "match": [["ag", "refines", "obs"]],
+   "where": {
+    "type": "And",
+    "items": [
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "status"}, "b": {"type": "Lit", "value": "pending"}},
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "turn_all_match"}, "b": {"type": "Lit", "value": true}},
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "len_all_match"}, "b": {"type": "Lit", "value": false}}
+    ]
+   },
+   "effects": [
+    ["set_attr", "obs", "status", "refine_len"]
+   ]
+  },
+  {
+   "name": "ir_mint_both_child",
+   "comment": "BOTH turn and len mismatch (the coarse family was right but neither fine dimension held) -- the codebook still becomes a refinement tree (design: 'the codebook becomes a refinement TREE'), tagged refined_dim='both' rather than falling all the way back to a wholly independent top-level OOV quantum (the coarse recognition already established the family). Guard: status pending, turn_all_match==false, len_all_match==false. (The (true,true) combination -- both already match -- never reaches this seed at all: domains/ink_decode.py's _refine_or_note returns early ('exact_at_fine') without ever creating a RefinementObservation for it, so no fourth rule is needed.)",
+   "match_type": "RefinementObservation",
+   "match": [["ag", "refines", "obs"]],
+   "where": {
+    "type": "And",
+    "items": [
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "status"}, "b": {"type": "Lit", "value": "pending"}},
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "turn_all_match"}, "b": {"type": "Lit", "value": false}},
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "len_all_match"}, "b": {"type": "Lit", "value": false}}
+    ]
+   },
+   "effects": [
+    ["set_attr", "obs", "status", "refine_both"]
+   ]
+  }
+ ]
+}

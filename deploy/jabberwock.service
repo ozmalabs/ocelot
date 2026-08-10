@@ -1,0 +1,44 @@
+# jabberwock — always-on substrate daemon (Phase 1 supervision)
+#
+# Install (user service, recommended):
+#   mkdir -p ~/.config/systemd/user
+#   cp deploy/jabberwock.service ~/.config/systemd/user/jabberwock.service
+#   # WorkingDirectory/PYTHONPATH below assume the checkout lives at
+#   # %h/ozma/internal/research/experiments/gamma-substrate — adjust both (and
+#   # the python interpreter) if your checkout or environment differs, then:
+#   systemctl --user daemon-reload
+#   systemctl --user enable --now jabberwock
+#   journalctl --user -u jabberwock -f      # watch it live
+#   loginctl enable-linger $USER            # keep it running when you're logged out
+#
+# This gives: start-on-boot, auto-restart on crash (which resumes from the newest
+# valid checkpoint), and a cgroup MemoryMax hard-ceiling — the "guardrail that isn't a
+# cage": the agent perceives compute-pressure *inside*; this is the floor outside, so a
+# runaway tick can't take the box down. Raise it as the resident graph grows.
+#
+# --no-llm pins the zero-hosted-LLM guarantee per invocation (OZMA_NO_LLM=1:
+# any hosted call raises — see docs/llm_touchpoint_audit.md's graduation
+# section). --world-every 500 gives the agent its standing offline-ARC world
+# (perception + the 'send' grounding the self-experiment mint rule reads).
+
+[Unit]
+Description=jabberwock always-on substrate daemon
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/ozma/internal/research/experiments/gamma-substrate
+Environment=PYTHONPATH=%h/ozma/internal/research/experiments/gamma-substrate/runners/dsl/python:%h/ozma/internal/research/experiments/gamma-substrate
+ExecStart=/usr/bin/env python3 scripts/jabberwock_daemon.py --ckpt-dir %h/.jabberwock/checkpoints --interval 60 --tick-hz 20 --keep 10 --seeds full --http-port 8787 --runs-dir %h/.jabberwock/runs --no-llm --world-every 500
+# graceful: SIGTERM triggers a final checkpoint (handled in-daemon)
+KillSignal=SIGTERM
+TimeoutStopSec=30
+Restart=always
+RestartSec=5
+# guardrail floor (not a cage) — tune to your box + graph size:
+MemoryMax=4G
+# optional: keep it polite on a shared machine
+# CPUWeight=50
+
+[Install]
+WantedBy=default.target

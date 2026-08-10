@@ -1,0 +1,1462 @@
+{
+  "id": "held_prediction_attention",
+  "version": "1.0.0",
+  "depends_on": [
+    "retinal_attention_graph"
+  ],
+  "description": "Generic attention route for held-surface prediction error. Every mechanically projected HeldPredictionResidual enters a dedicated FoveaResolver in its native photon-count/luminance-quanta unit. The existing fovea_salience_bridge selects the unique greatest positive current-epoch residual and refuses exact ties. Only after selection is its magnitude normalized by the current held-residual sheet mean into a dimensionless contrast compatible with motor attention. The physical residual remains separately published as attention_prediction_residual_quanta and is never compared to retinal motion salience in cells/epoch. The held route supplies the shared attention attrs only when the motion-residual route explicitly refused, preserving graph-native motion precedence without a Python winner or a cross-unit comparison. No task- or world-specific vocabulary.",
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "FoveaResolver",
+      "attrs": {
+        "purpose": "held_prediction_attention",
+        "evidence_unit": "photon_count_quanta",
+        "goal_logweight_default": 0.0
+      }
+    }
+  ],
+  "edges": [
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_held_prediction_attention_resolver",
+      "tgt": {
+        "local": 0
+      },
+      "attrs": {}
+    }
+  ],
+  "productions": [
+    {
+      "provenance": "seed:held_prediction_attention:agent-resolver",
+      "src": {
+        "type": "Agent",
+        "var": "agent"
+      },
+      "edge_type": "has_held_prediction_attention_resolver",
+      "tgt": {
+        "type": "FoveaResolver",
+        "var": "resolver"
+      }
+    },
+    {
+      "provenance": "seed:held_prediction_attention:agent-residual",
+      "src": {
+        "type": "Agent",
+        "var": "agent"
+      },
+      "edge_type": "perceives_prediction_residual",
+      "tgt": {
+        "type": "HeldPredictionResidual",
+        "var": "residual"
+      }
+    },
+    {
+      "provenance": "seed:held_prediction_attention:candidate-evidence",
+      "src": {
+        "type": "FoveaCandidate",
+        "var": "candidate"
+      },
+      "edge_type": "based_on_prediction_residual",
+      "tgt": {
+        "type": "HeldPredictionResidual",
+        "var": "residual"
+      }
+    }
+  ],
+  "rules": [
+    {
+      "name": "held_attention_reset_pool",
+      "area": "attention",
+      "order": 20,
+      "latency_class": "hard_realtime",
+      "comment": "A new settled epoch or changed candidate count opens the held route in explicit refusal. This prevents a prior prediction error from surviving a zero field or exact tie.",
+      "match": [
+        [
+          "agent",
+          "has_held_prediction_attention_resolver",
+          "resolver"
+        ]
+      ],
+      "where": {
+        "type": "Or",
+        "items": [
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "agent"
+                },
+                "key": "held_attention_sensor_epoch"
+              },
+              "b": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "agent"
+                },
+                "key": "vision_settled_epoch"
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "agent"
+                },
+                "key": "held_attention_candidate_count"
+              },
+              "b": {
+                "type": "Count",
+                "source": {
+                  "type": "Filter",
+                  "source": {
+                    "type": "Neighbours",
+                    "node": {
+                      "type": "Var",
+                      "name": "resolver"
+                    },
+                    "edge_type": "has_candidate"
+                  },
+                  "var_name": "k",
+                  "predicate": {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "k"
+                      },
+                      "key": "candidate_epoch"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "agent"
+                      },
+                      "key": "vision_settled_epoch"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "agent",
+          "held_attention_sensor_epoch",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "agent"
+              },
+              "key": "vision_settled_epoch"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "agent",
+          "held_attention_salience",
+          0.0
+        ],
+        [
+          "set_attr",
+          "agent",
+          "held_attention_prediction_residual_quanta",
+          0
+        ],
+        [
+          "set_attr",
+          "agent",
+          "held_attention_x",
+          0.0
+        ],
+        [
+          "set_attr",
+          "agent",
+          "held_attention_y",
+          0.0
+        ],
+        [
+          "set_attr",
+          "agent",
+          "held_attention_az",
+          0.0
+        ],
+        [
+          "set_attr",
+          "agent",
+          "held_attention_el",
+          0.0
+        ],
+        [
+          "set_attr",
+          "agent",
+          "held_attention_column_index",
+          -1
+        ],
+        [
+          "set_attr",
+          "agent",
+          "held_attention_row_index",
+          -1
+        ],
+        [
+          "set_attr",
+          "agent",
+          "held_attention_refused",
+          1.0
+        ],
+        [
+          "set_attr",
+          "agent",
+          "held_attention_candidate_count",
+          {
+            "__term__": {
+              "type": "Count",
+              "source": {
+                "type": "Filter",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {
+                    "type": "Var",
+                    "name": "resolver"
+                  },
+                  "edge_type": "has_candidate"
+                },
+                "var_name": "k",
+                "predicate": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "k"
+                    },
+                    "key": "candidate_epoch"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "agent"
+                    },
+                    "key": "vision_settled_epoch"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "held_attention_admit_projection",
+      "area": "attention",
+      "order": 21,
+      "latency_class": "hard_realtime",
+      "comment": "Consume every projected held cell exactly once per sensor epoch. Positive residual, a predictor update in this sensor epoch, and equality with the settled main-graph epoch are structural admissibility constraints. Zero and stale cells are still represented but excluded from the weighted fold.",
+      "match": [
+        [
+          "agent",
+          "has_held_prediction_attention_resolver",
+          "resolver"
+        ],
+        [
+          "agent",
+          "perceives_prediction_residual",
+          "residual"
+        ]
+      ],
+      "where": {
+        "type": "Not",
+        "arg": {
+          "type": "Eq",
+          "a": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "residual"
+            },
+            "key": "attention_candidate_epoch"
+          },
+          "b": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "residual"
+            },
+            "key": "sensor_epoch"
+          }
+        }
+      },
+      "effects": [
+        [
+          "add_node",
+          "candidate",
+          "FoveaCandidate",
+          {
+            "purpose": "held_prediction_attention",
+            "evidence_kind": "held_prediction_residual",
+            "evidence_unit": "photon_count_quanta",
+            "candidate_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "residual"
+                },
+                "key": "sensor_epoch"
+              }
+            },
+            "prediction_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "residual"
+                },
+                "key": "prediction_epoch"
+              }
+            },
+            "column_index": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "residual"
+                },
+                "key": "column_index"
+              }
+            },
+            "row_index": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "residual"
+                },
+                "key": "row_index"
+              }
+            },
+            "gaze_az": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "residual"
+                },
+                "key": "gaze_az"
+              }
+            },
+            "gaze_el": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "residual"
+                },
+                "key": "gaze_el"
+              }
+            },
+            "prediction_residual_quanta": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "residual"
+                },
+                "key": "prediction_residual_quanta"
+              }
+            },
+            "salience": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "residual"
+                },
+                "key": "prediction_residual_quanta"
+              }
+            },
+            "goal_logweight": 0.0,
+            "on_valid": {
+              "__term__": {
+                "type": "IfThenElse",
+                "cond": {
+                  "type": "And",
+                  "items": [
+                    {
+                      "type": "Gt",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "residual"
+                        },
+                        "key": "prediction_residual_quanta"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 0
+                      }
+                    },
+                    {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "residual"
+                        },
+                        "key": "prediction_epoch"
+                      },
+                      "b": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "residual"
+                        },
+                        "key": "sensor_epoch"
+                      }
+                    },
+                    {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "residual"
+                        },
+                        "key": "sensor_epoch"
+                      },
+                      "b": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "agent"
+                        },
+                        "key": "vision_settled_epoch"
+                      }
+                    }
+                  ]
+                },
+                "then": {
+                  "type": "Lit",
+                  "value": 1.0
+                },
+                "other": {
+                  "type": "Lit",
+                  "value": 0.0
+                }
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "resolver",
+          "has_candidate",
+          "candidate",
+          {}
+        ],
+        [
+          "add_edge",
+          "candidate",
+          "based_on_prediction_residual",
+          "residual",
+          {}
+        ],
+        [
+          "set_attr",
+          "residual",
+          "attention_candidate_epoch",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "residual"
+              },
+              "key": "sensor_epoch"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "resolver",
+          "attention_selection_dirty",
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "held_attention_resolve",
+      "area": "attention",
+      "order": 22,
+      "latency_class": "hard_realtime",
+      "comment": "The held modality's dedicated instance of fovea_salience_bridge's weighted-admissibility composition. A separate resolver is required to keep photon-quanta residuals out of the motion cells/epoch fold. The decision is the same Filter(on_valid) then ArgminUnique(Neg(Log(salience)+goal_logweight)); an exact tie returns null and marks nothing.",
+      "match": [
+        [
+          "agent",
+          "has_held_prediction_attention_resolver",
+          "resolver"
+        ],
+        [
+          "resolver",
+          "has_candidate",
+          "candidate"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "on_valid"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Var",
+              "name": "candidate"
+            },
+            "b": {
+              "type": "ArgminUnique",
+              "source": {
+                "type": "Filter",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {
+                    "type": "Var",
+                    "name": "resolver"
+                  },
+                  "edge_type": "has_candidate"
+                },
+                "var_name": "k",
+                "predicate": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "k"
+                    },
+                    "key": "on_valid"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": 1.0
+                  }
+                }
+              },
+              "var_name": "k",
+              "value": {
+                "type": "Neg",
+                "arg": {
+                  "type": "Plus",
+                  "items": [
+                    {
+                      "type": "Log",
+                      "arg": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "k"
+                        },
+                        "key": "salience"
+                      }
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "k"
+                      },
+                      "key": "goal_logweight"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "candidate",
+          "is_fovea",
+          1.0
+        ],
+        [
+          "set_attr",
+          "candidate",
+          "resolved_pool_count",
+          {
+            "__term__": {
+              "type": "Count",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "resolver"
+                },
+                "edge_type": "has_candidate"
+              }
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "held_attention_retire_stale_candidate",
+      "area": "attention",
+      "order": 23,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "agent",
+          "has_held_prediction_attention_resolver",
+          "resolver"
+        ],
+        [
+          "resolver",
+          "has_candidate",
+          "candidate"
+        ]
+      ],
+      "where": {
+        "type": "Lt",
+        "a": {
+          "type": "Attr",
+          "node": {
+            "type": "Var",
+            "name": "candidate"
+          },
+          "key": "candidate_epoch"
+        },
+        "b": {
+          "type": "Attr",
+          "node": {
+            "type": "Var",
+            "name": "agent"
+          },
+          "key": "vision_settled_epoch"
+        }
+      },
+      "effects": [
+        [
+          "del_node",
+          "candidate"
+        ]
+      ]
+    },
+    {
+      "name": "held_attention_clear_revised_pool",
+      "area": "attention",
+      "order": 24,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "agent",
+          "has_held_prediction_attention_resolver",
+          "resolver"
+        ],
+        [
+          "resolver",
+          "has_candidate",
+          "candidate"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "candidate"
+                },
+                "key": "resolved_pool_count"
+              },
+              "b": {
+                "type": "Count",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {
+                    "type": "Var",
+                    "name": "resolver"
+                  },
+                  "edge_type": "has_candidate"
+                }
+              }
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "is_fovea"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "candidate",
+          "is_fovea",
+          0.0
+        ]
+      ]
+    },
+    {
+      "name": "held_attention_finalize_revised_pool",
+      "area": "attention",
+      "order": 25,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "agent",
+          "has_held_prediction_attention_resolver",
+          "resolver"
+        ]
+      ],
+      "where": {
+        "type": "Eq",
+        "a": {
+          "type": "Attr",
+          "node": {
+            "type": "Var",
+            "name": "resolver"
+          },
+          "key": "attention_selection_dirty"
+        },
+        "b": {
+          "type": "Lit",
+          "value": 1.0
+        }
+      },
+      "effects": [
+        [
+          "set_attr",
+          "resolver",
+          "attention_selection_dirty",
+          0.0
+        ]
+      ]
+    },
+    {
+      "name": "held_attention_publish_unique",
+      "area": "attention",
+      "order": 26,
+      "latency_class": "hard_realtime",
+      "comment": "Publish a held-route result only from the unchanged fovea bridge's unique verdict. The physical residual remains integer quanta; held_attention_salience alone is unitless residual divided by the full current sheet mean.",
+      "match": [
+        [
+          "agent",
+          "has_held_prediction_attention_resolver",
+          "resolver"
+        ],
+        [
+          "resolver",
+          "has_candidate",
+          "candidate"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "is_fovea"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "on_valid"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "candidate_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "agent"
+              },
+              "key": "vision_settled_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "agent"
+              },
+              "key": "held_attention_candidate_count"
+            },
+            "b": {
+              "type": "Count",
+              "source": {
+                "type": "Filter",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {
+                    "type": "Var",
+                    "name": "resolver"
+                  },
+                  "edge_type": "has_candidate"
+                },
+                "var_name": "k",
+                "predicate": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "k"
+                    },
+                    "key": "candidate_epoch"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "agent"
+                    },
+                    "key": "vision_settled_epoch"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "agent",
+          "held_attention_x",
+          {
+            "__term__": {
+              "type": "Cos",
+              "arg": {
+                "type": "Plus",
+                "items": [
+                  {
+                    "type": "Times",
+                    "items": [
+                      {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "agent"
+                        },
+                        "key": "my_angle"
+                      },
+                      {
+                        "type": "Lit",
+                        "value": 0.017453292519943295
+                      }
+                    ]
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "candidate"
+                    },
+                    "key": "gaze_az"
+                  }
+                ]
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "agent",
+          "held_attention_y",
+          {
+            "__term__": {
+              "type": "Sin",
+              "arg": {
+                "type": "Plus",
+                "items": [
+                  {
+                    "type": "Times",
+                    "items": [
+                      {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "agent"
+                        },
+                        "key": "my_angle"
+                      },
+                      {
+                        "type": "Lit",
+                        "value": 0.017453292519943295
+                      }
+                    ]
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "candidate"
+                    },
+                    "key": "gaze_az"
+                  }
+                ]
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "agent",
+          "held_attention_az",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "gaze_az"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "agent",
+          "held_attention_el",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "gaze_el"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "agent",
+          "held_attention_salience",
+          {
+            "__term__": {
+              "type": "Div",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "candidate"
+                },
+                "key": "prediction_residual_quanta"
+              },
+              "b": {
+                "type": "Max",
+                "items": [
+                  {
+                    "type": "Lit",
+                    "value": 1e-06
+                  },
+                  {
+                    "type": "Div",
+                    "a": {
+                      "type": "Sum",
+                      "source": {
+                        "type": "Filter",
+                        "source": {
+                          "type": "Neighbours",
+                          "node": {
+                            "type": "Var",
+                            "name": "resolver"
+                          },
+                          "edge_type": "has_candidate"
+                        },
+                        "var_name": "k",
+                        "predicate": {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "k"
+                            },
+                            "key": "candidate_epoch"
+                          },
+                          "b": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "agent"
+                            },
+                            "key": "vision_settled_epoch"
+                          }
+                        }
+                      },
+                      "var_name": "k",
+                      "value": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "k"
+                        },
+                        "key": "prediction_residual_quanta"
+                      }
+                    },
+                    "b": {
+                      "type": "Count",
+                      "source": {
+                        "type": "Filter",
+                        "source": {
+                          "type": "Neighbours",
+                          "node": {
+                            "type": "Var",
+                            "name": "resolver"
+                          },
+                          "edge_type": "has_candidate"
+                        },
+                        "var_name": "k",
+                        "predicate": {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "k"
+                            },
+                            "key": "candidate_epoch"
+                          },
+                          "b": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "agent"
+                            },
+                            "key": "vision_settled_epoch"
+                          }
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "agent",
+          "held_attention_prediction_residual_quanta",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "prediction_residual_quanta"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "agent",
+          "held_attention_column_index",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "column_index"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "agent",
+          "held_attention_row_index",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "row_index"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "agent",
+          "held_attention_sensor_epoch",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "candidate_epoch"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "agent",
+          "held_attention_refused",
+          0.0
+        ]
+      ]
+    },
+    {
+      "name": "held_attention_fallback_to_motor",
+      "area": "attention",
+      "order": 27,
+      "latency_class": "hard_realtime",
+      "comment": "Graph-native modality arbitration without cross-unit comparison: the held-prediction route supplies motor attention only when the motion-residual route explicitly refused in the same settled epoch. Any unique motion winner therefore retains precedence. No control threshold is changed.",
+      "match": [
+        [
+          "agent",
+          "has_held_prediction_attention_resolver",
+          "resolver"
+        ],
+        [
+          "agent",
+          "has_retinal_attention_resolver",
+          "motion_resolver"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "agent"
+              },
+              "key": "attention_refused"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "agent"
+              },
+              "key": "held_attention_refused"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "agent"
+              },
+              "key": "held_attention_sensor_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "agent"
+              },
+              "key": "vision_settled_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "agent"
+              },
+              "key": "attention_candidate_count"
+            },
+            "b": {
+              "type": "Count",
+              "source": {
+                "type": "Filter",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {
+                    "type": "Var",
+                    "name": "motion_resolver"
+                  },
+                  "edge_type": "has_candidate"
+                },
+                "var_name": "k",
+                "predicate": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "k"
+                    },
+                    "key": "candidate_epoch"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "agent"
+                    },
+                    "key": "vision_settled_epoch"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "agent",
+          "attention_x",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "agent"
+              },
+              "key": "held_attention_x"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "agent",
+          "attention_y",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "agent"
+              },
+              "key": "held_attention_y"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "agent",
+          "attention_az",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "agent"
+              },
+              "key": "held_attention_az"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "agent",
+          "attention_el",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "agent"
+              },
+              "key": "held_attention_el"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "agent",
+          "attention_salience",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "agent"
+              },
+              "key": "held_attention_salience"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "agent",
+          "attention_prediction_residual_quanta",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "agent"
+              },
+              "key": "held_attention_prediction_residual_quanta"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "agent",
+          "attention_column_index",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "agent"
+              },
+              "key": "held_attention_column_index"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "agent",
+          "attention_row_index",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "agent"
+              },
+              "key": "held_attention_row_index"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "agent",
+          "attention_sensor_epoch",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "agent"
+              },
+              "key": "held_attention_sensor_epoch"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "agent",
+          "attention_evidence_kind",
+          "held_prediction_residual"
+        ],
+        [
+          "set_attr",
+          "agent",
+          "attention_refused",
+          0.0
+        ]
+      ]
+    }
+  ]
+}

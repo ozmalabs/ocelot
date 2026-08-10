@@ -1,0 +1,203 @@
+{
+ "id": "code_write_gap",
+ "version": "1.1.0",
+ "depends_on": [
+  "gap_awareness"
+ ],
+ "capability_keys": [
+  "code_write_gap_detection"
+ ],
+ "description": "CODE-4 (the agent grows its OWN code-write faculty): the note_unhandled_instruction_gap precedent, pointed at code_writing.py's NL write-request classifier. world_adapter.converse's _write_function_reply MECHANICALLY records code_write_outcome='handled'|'unhandled' + code_write_request=<the request text> onto the inbound Message after calling domains.code_writing.write_function_from_request -- a factual datum, never a decision. THIS rule (note_code_write_gap) DECIDES an unhandled request is a capability gap: it files SelfConcern{status:'noted', source:'implicit', kind:'code_write', content:<the request text>} -- the SAME node shape gap_awareness.json's own gap rules mint, so the surfacing reader (reflective_faculty._run_self_gaps) and the human-gated promote spine (jabberwock_daemon.promote_self_concern) both already find it with zero new plumbing. Content-deduped (a request already filed is never filed twice) + mint-once via code_write_gap_noted on the Message, exactly like every other gap rule here. Closing the gap is domains/code_write_growth.py's teach-by-example path (a human pastes a real example function in chat; the agent READS it via code_reading.read_function and TEACHES the read Term as a new code_write_construction ShapeSignature -- adoption = teach(), the cue-adoption precedent) or the narrower compose-from-predication path (domains.code_write_growth.compose_write_shape_from_predication) -- both close by widening seeds/code_write_constructions.json, never by a Python if/elif over request text.\n\nCODE-CURRICULUM (v1.1.0) -- THE NAMED SEAM: `resolve_code_write_gap`'s status guard widened from a bare Eq('noted') to Or(Eq('noted'), Eq('promoted')) -- a code_write SelfConcern promoted through jabberwock_daemon.promote_self_concern (the 'Work on the X gap' -> _steer_tick -> promote_self_concern spine EVERY other concern kind already runs through) has its OWN status flipped to 'promoted' at promotion time, so the resolve rule must still recognise it there (it previously only matched 'noted', which meant a DAEMON-promoted code_write gap could never resolve even after a matching taught shape existed -- CODE-4's honest shortfall named in the CODE-CURRICULUM wave). `note_code_write_composition_exhausted` is the note_experiments_exhausted precedent pointed at the SYNCHRONOUS compose path (domains.code_write_growth.compose_write_shape_from_predication / work_on_code_write_gap runs and returns immediately -- there is no async Experiment to poll): scripts/jabberwock_daemon.py's `_concern_tick` routes a promoted code_write StandingConcern DIRECTLY into `work_on_code_write_gap` (never the generic induce_concern/ground_concern capability-axis machinery, which has nothing to do with composing a write shape) and records the mechanical outcome datum `code_write_compose_ok`/`code_write_compose_reason` onto the StandingConcern; THIS rule reads that datum and, on failure, marks `experiments_exhausted`/`exhausted_note` -- the SAME two attrs `reflective_faculty._run_self_improvement_status` already surfaces for every OTHER concern's exhausted trail, so a human sees 'work on the reverses gap' honestly report that composition exhausted and teach-by-example is the remaining close, through the SAME self-improvement-status readout as every other concern.",
+ "microtheory": {
+  "name": "code_write_gap",
+  "description": "an out-of-vocabulary code-write request is a capability gap the agent files on itself, teachable by example"
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [
+  {
+   "src": {"type": "Agent", "var": "src"},
+   "edge_type": "mint_pending_naming",
+   "tgt": {"type": "ShapeSignature", "var": "tgt"},
+   "provenance": "meta:Agent-mint_pending_naming-ShapeSignature"
+  },
+  {
+   "src": {"type": "SelfConcern", "var": "src"},
+   "edge_type": "about_shape",
+   "tgt": {"type": "ShapeSignature", "var": "tgt"},
+   "provenance": "meta:SelfConcern-about_shape-ShapeSignature"
+  }
+ ],
+ "rules": [
+  {
+   "name": "note_code_write_gap",
+   "match": [
+    ["agent", "received", "m"]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "code_write_outcome"},
+      "b": {"type": "Lit", "value": "unhandled"}
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "code_write_gap_noted"},
+       "b": {"type": "Lit", "value": 1.0}
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {"type": "NodesOfType", "node_type": "SelfConcern"},
+       "var_name": "sc2",
+       "predicate": {
+        "type": "Eq",
+        "a": {"type": "Attr", "node": {"type": "Var", "name": "sc2"}, "key": "content"},
+        "b": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "code_write_request"}
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    ["set_attr", "m", "code_write_gap_noted", 1.0],
+    ["add_node", "sc", "SelfConcern", {
+     "status": "noted",
+     "source": "implicit",
+     "kind": "code_write",
+     "content": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "code_write_request"}}
+    }],
+    ["add_edge", "agent", "has_self_concern", "sc"],
+    ["add_edge", "sc", "about_message", "m"]
+   ]
+  },
+  {
+   "name": "note_code_read_naming_gap",
+   "match": [
+    ["agent", "mint_pending_naming", "ss"]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {"type": "Attr", "node": {"type": "Var", "name": "ss"}, "key": "naming_gap_noted"},
+       "b": {"type": "Lit", "value": 1.0}
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {"type": "NodesOfType", "node_type": "SelfConcern"},
+       "var_name": "sc2",
+       "predicate": {
+        "type": "Eq",
+        "a": {"type": "Attr", "node": {"type": "Var", "name": "sc2"}, "key": "content"},
+        "b": {"type": "Attr", "node": {"type": "Var", "name": "ss"}, "key": "name"}
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    ["set_attr", "ss", "naming_gap_noted", 1.0],
+    ["add_node", "sc", "SelfConcern", {
+     "status": "noted",
+     "source": "implicit",
+     "kind": "code_read_naming",
+     "content": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "ss"}, "key": "name"}}
+    }],
+    ["add_edge", "agent", "has_self_concern", "sc"],
+    ["add_edge", "sc", "about_shape", "ss"]
+   ]
+  },
+  {
+   "name": "resolve_code_write_gap",
+   "match": [
+    ["agent", "has_self_concern", "sc"]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "sc"}, "key": "kind"},
+      "b": {"type": "Lit", "value": "code_write"}
+     },
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {"type": "Attr", "node": {"type": "Var", "name": "sc"}, "key": "status"},
+        "b": {"type": "Lit", "value": "noted"}
+       },
+       {
+        "type": "Eq",
+        "a": {"type": "Attr", "node": {"type": "Var", "name": "sc"}, "key": "status"},
+        "b": {"type": "Lit", "value": "promoted"}
+       }
+      ]
+     },
+     {
+      "type": "Exists",
+      "source": {"type": "NodesOfType", "node_type": "ShapeSignature"},
+      "var_name": "ss",
+      "predicate": {
+       "type": "Eq",
+       "a": {"type": "Attr", "node": {"type": "Var", "name": "ss"}, "key": "taught_for"},
+       "b": {"type": "Attr", "node": {"type": "Var", "name": "sc"}, "key": "content"}
+      }
+     }
+    ]
+   },
+   "effects": [
+    ["set_attr", "sc", "status", "resolved"]
+   ]
+  },
+  {
+   "name": "note_code_write_composition_exhausted",
+   "match": [
+    ["agent", "has_self_concern", "sc"],
+    ["sc", "promoted_to", "standing"]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "standing"}, "key": "kind"},
+      "b": {"type": "Lit", "value": "code_write"}
+     },
+     {
+      "type": "Eq",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "standing"}, "key": "code_write_compose_ok"},
+      "b": {"type": "Lit", "value": 0.0}
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {"type": "Attr", "node": {"type": "Var", "name": "standing"}, "key": "experiments_exhausted"},
+       "b": {"type": "Lit", "value": true}
+      }
+     }
+    ]
+   },
+   "effects": [
+    ["set_attr", "standing", "experiments_exhausted", true],
+    ["set_attr", "standing", "exhausted_note", {"__term__":
+     {"type": "Attr", "node": {"type": "Var", "name": "standing"}, "key": "code_write_compose_reason"}}]
+   ]
+  }
+ ]
+}

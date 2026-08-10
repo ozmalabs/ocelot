@@ -1,0 +1,67 @@
+{
+  "id": "helicopter_autorotation_3d_v1",
+  "version": "1.0.0",
+  "question": "Can the same graph-native energy and viability controller autorotate a six-degree-of-freedom traditional helicopter after hidden engine torque loss?",
+  "plant": {
+    "kind": "pybullet_single_main_rotor_helicopter",
+    "degrees_of_freedom": 6,
+    "physics_rate_hz": 240,
+    "state": [
+      "position_xyz",
+      "velocity_xyz",
+      "quaternion_attitude",
+      "angular_velocity_xyz",
+      "main_rotor_kinetic_energy",
+      "ground_contact"
+    ],
+    "required_mechanisms": [
+      "finite_main_rotor_inertia",
+      "freewheel_clutch",
+      "airflow_to_rotor_power_transfer",
+      "collective_lift_and_rotor_drag",
+      "longitudinal_and_lateral_cyclic",
+      "pedal_yaw_authority",
+      "wind_relative_fuselage_drag",
+      "rigid_body_ground_contact"
+    ]
+  },
+  "failure": {
+    "kind": "complete_engine_torque_loss",
+    "onset_seconds": 1.0,
+    "observable_to_agent": false
+  },
+  "controls": {
+    "kind": "opaque_combined_pilot_control_alphabet",
+    "action_count": 81,
+    "semantics_observable_to_agent": false
+  },
+  "generic_priors": [
+    "preserve_viable_internal_energy",
+    "reduce_contact_relative_kinetic_energy",
+    "preserve_flight_attitude",
+    "project_angular_rate_over_a_control_horizon",
+    "prefer_verified_local_consequences"
+  ],
+  "success": {
+    "maximum_vertical_speed_m_s": 2.5,
+    "maximum_longitudinal_speed_m_s": 8.0,
+    "maximum_lateral_speed_m_s": 8.0,
+    "maximum_abs_roll_radians": 0.3141592653589793,
+    "maximum_abs_pitch_radians": 0.3141592653589793,
+    "minimum_rotor_speed_fraction": 0.78,
+    "world_and_graph_assessments_must_agree": true
+  },
+  "transfer_axes": [
+    "initial_altitude",
+    "initial_forward_speed",
+    "crosswind",
+    "lateral_force_impulse",
+    "angular_impulse",
+    "gross_mass",
+    "rotor_inertia"
+  ],
+  "exclusions": {
+    "height_velocity_exclusion": "Unrecoverable initial energy states are reported separately.",
+    "certification": "This is an auditable research plant, not a flight-qualified aerodynamic model."
+  }
+}

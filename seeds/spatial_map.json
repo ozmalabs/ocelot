@@ -1,0 +1,65 @@
+{
+ "id": "spatial_map",
+ "version": "1.0.0",
+ "depends_on": [],
+ "description": "The navigable MAP schema: admit SpatialLocation WorldInstances + 4-neighbour adjacency + boundaries, so the agent turns a perceived grid into a routable graph and the spatial-routing faculty (passable_distances_to / plan_passable_step) routes over it. The map-BUILDING (floor cells -> SpatialLocations + adjacent_location) is the materializer; this admits its edges.",
+ "microtheory": {
+  "name": "spatial_map",
+  "description": "a grid becomes a map: floor cells are SpatialLocations, orthogonally-adjacent floors are adjacent_location, walls are absent (routed around). The avatar's cell is the locus; a salient cell is the goal."
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [
+  {
+   "provenance": "seed:spatial_map:adjacent_location-0",
+   "src": {
+    "type": "WorldInstance",
+    "var": "s"
+   },
+   "edge_type": "adjacent_location",
+   "tgt": {
+    "type": "WorldInstance",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:spatial_map:bounded_by-1",
+   "src": {
+    "type": "WorldInstance",
+    "var": "s"
+   },
+   "edge_type": "bounded_by",
+   "tgt": {
+    "type": "Boundary",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:spatial_map:blocks-2",
+   "src": {
+    "type": "Boundary",
+    "var": "s"
+   },
+   "edge_type": "blocks",
+   "tgt": {
+    "type": "WorldInstance",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:spatial_map:within-3",
+   "src": {
+    "type": "CellC4",
+    "var": "s"
+   },
+   "edge_type": "within",
+   "tgt": {
+    "type": "WorldInstance",
+    "var": "t"
+   }
+  }
+ ],
+ "concepts": [],
+ "rules": [],
+ "goals": []
+}

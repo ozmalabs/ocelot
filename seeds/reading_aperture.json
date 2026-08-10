@@ -1,0 +1,2384 @@
+{
+  "id": "reading_aperture",
+  "version": "1.1.0",
+  "depends_on": [
+    "literary_analysis_driving"
+  ],
+  "description": "FOVEATION IS A HINT, NEVER FIXED (2026-07-11). The reading aperture (seeds/register_source.json's `stages`/`max_sentences`/`window` on a winning ShapeSignatureRegister) sets the INITIAL plan only. This seed is the RESIDUAL-DRIVEN ESCALATION layer over it: three rules read signals the read's OWN output already produced -- a truncation datum (sentences_read < sentences_total, stamped mechanically by reading_drive._shim_spine on the flow's Source), a heavy fallback-parse ratio among the flow's own SentenceParse nodes, or a narrative-shaped spine under a light hint -- and, within a held, per-register ApertureBudget belief (never a Python literal), mint ADDITIONAL AnalysisStage nodes for the SAME flow. Minting a new pending AnalysisStage for a flow IS the escalation: the existing la_dispatch_* rules (seeds/literary_analysis_driving.json, unchanged) dispatch it and the SAME run_rules/cognitive_tick fixpoint (reading_drive._tick_reading) carries it to completion -- no new dispatch machinery, no Python decision. A clean, short read (sentences_read == sentences_total, no fallback parses, no narrative shape) escalates ZERO times: every guard above is false, so no rule ever fires and a normal chat turn pays only its spine cost. || DYNAMIC-THRESHOLDS + REOPEN + REFORM (v1.1.0, 2026-07-11): every ApertureBudget row now ALSO holds the reading-layer thresholds (trace_capacity_base/min/max, max_revisits, max_order_base/max, widen_step, widen_salience_threshold, reform_eviction/residual/swallowed_threshold, reform_pressure_factor) -- the ring buffer capacity, backtrack bound, and order-N descent depth are held per-register beliefs, never Python literals. Two held Program (Term-tree) derivations make the EFFECTIVE values DYNAMIC over the flow's own complexity/overflow signals: reading_derive_trace_capacity = Min(Max(base + (widened ? widen_step : 0), min_cap), max_cap) and reading_derive_max_order = Min(base + (reform_count>=1 ? 1 : 0), max_cap) -- domains/reading_norms.py evaluates them via native.evaluate (the review_license/global_contradiction idiom); EDITING EITHER THE BUDGET ROW OR THE PROGRAM NODE CHANGES BEHAVIOUR WITH ZERO CODE (gated in tests/test_dynamic_thresholds_migrated.py). Two new rules complete the overflow-response LADDER: reading_widen_capacity_once (rung 1 -- a flow whose live ring evicted a trace at/above widen_salience_threshold sets capacity_widened=1 on its own Source, once) and reform_overcomplex_clause (rung 2 -- a SentenceParse whose own measurements, residual_marker_count / swallowed_ratio, cross the held reform thresholds -- TIGHTENED by reform_pressure_factor once the widen is already spent -- is marked reform_pending; the mechanical executor reading_drive._execute_pending_reforms, invoked by the always-on reform_reflex in seeds/reading_reform_reflex.json, runs read_clause_order_n and records the part_of/marker component predications: 'if a concept is too complex, take it and reform your own understanding into component shapes'). A simple clause (0 residual markers, 0.0 swallowed) never crosses either threshold.",
+  "microtheory": {
+    "name": "reading_aperture",
+    "description": "The aperture is a hint the read may widen from its OWN output: truncation, a heavy parse-fallback ratio, or an unexpected narrative shape each mint additional AnalysisStage nodes for the same flow, bounded by a held per-register ApertureBudget."
+  },
+  "nodes": [
+    {
+      "local_id": 1,
+      "type": "ApertureBudget",
+      "attrs": {
+        "register": "conversational",
+        "max_escalations": 1.0,
+        "max_stage_count": 15.0,
+        "fallback_ratio_threshold": 0.34,
+        "note": "chat-turn aperture: at most ONE escalation event per turn (any of the three rules), but the STAGE ceiling stays generous (15, headroom above the 1 initial spine stage + up to 9 more for a full narrative-shape escalation) so a genuine narrative pasted into chat can still escalate to full depth in that one event -- the shadow-read latency battery only ever pays for a clean turn's SPINE cost plus, rarely, one escalation.",
+        "trace_capacity_base": 4.0,
+        "trace_capacity_min": 2.0,
+        "trace_capacity_max": 6.0,
+        "max_revisits": 4.0,
+        "max_order_base": 2.0,
+        "max_order_max": 3.0,
+        "widen_step": 2.0,
+        "widen_salience_threshold": 0.5,
+        "reform_eviction_threshold": 2.0,
+        "reform_residual_threshold": 1.0,
+        "reform_swallowed_threshold": 0.5,
+        "reform_pressure_factor": 0.5
+      }
+    },
+    {
+      "local_id": 2,
+      "type": "ApertureBudget",
+      "attrs": {
+        "register": "wikipedia",
+        "max_escalations": 3.0,
+        "max_stage_count": 20.0,
+        "fallback_ratio_threshold": 0.4,
+        "note": "document register: `stages=None` already mints all 10 stages up front (byte-identical pre-wave), so the ceiling must clear 10 PLUS escalation overhead (e.g. a re-minted 'spine' on truncation) -- generous headroom, non-binding this wave; max_escalations is the operative lever.",
+        "trace_capacity_base": 8.0,
+        "trace_capacity_min": 4.0,
+        "trace_capacity_max": 16.0,
+        "max_revisits": 8.0,
+        "max_order_base": 2.0,
+        "max_order_max": 4.0,
+        "widen_step": 4.0,
+        "widen_salience_threshold": 0.5,
+        "reform_eviction_threshold": 3.0,
+        "reform_residual_threshold": 1.0,
+        "reform_swallowed_threshold": 0.5,
+        "reform_pressure_factor": 0.5
+      }
+    },
+    {
+      "local_id": 3,
+      "type": "ApertureBudget",
+      "attrs": {
+        "register": "encyclopedic",
+        "max_escalations": 3.0,
+        "max_stage_count": 20.0,
+        "fallback_ratio_threshold": 0.4,
+        "note": "document register: see wikipedia's note.",
+        "trace_capacity_base": 8.0,
+        "trace_capacity_min": 4.0,
+        "trace_capacity_max": 16.0,
+        "max_revisits": 8.0,
+        "max_order_base": 2.0,
+        "max_order_max": 4.0,
+        "widen_step": 4.0,
+        "widen_salience_threshold": 0.5,
+        "reform_eviction_threshold": 3.0,
+        "reform_residual_threshold": 1.0,
+        "reform_swallowed_threshold": 0.5,
+        "reform_pressure_factor": 0.5
+      }
+    },
+    {
+      "local_id": 4,
+      "type": "ApertureBudget",
+      "attrs": {
+        "register": "narrative",
+        "max_escalations": 3.0,
+        "max_stage_count": 20.0,
+        "fallback_ratio_threshold": 0.4,
+        "note": "document register: see wikipedia's note.",
+        "trace_capacity_base": 8.0,
+        "trace_capacity_min": 4.0,
+        "trace_capacity_max": 16.0,
+        "max_revisits": 8.0,
+        "max_order_base": 2.0,
+        "max_order_max": 4.0,
+        "widen_step": 4.0,
+        "widen_salience_threshold": 0.5,
+        "reform_eviction_threshold": 3.0,
+        "reform_residual_threshold": 1.0,
+        "reform_swallowed_threshold": 0.5,
+        "reform_pressure_factor": 0.5
+      }
+    },
+    {
+      "local_id": 5,
+      "type": "ApertureBudget",
+      "attrs": {
+        "register": "casual",
+        "max_escalations": 2.0,
+        "max_stage_count": 20.0,
+        "fallback_ratio_threshold": 0.4,
+        "note": "a pasted casual text: more than a live chat turn, less than a full document.",
+        "trace_capacity_base": 4.0,
+        "trace_capacity_min": 2.0,
+        "trace_capacity_max": 6.0,
+        "max_revisits": 4.0,
+        "max_order_base": 2.0,
+        "max_order_max": 3.0,
+        "widen_step": 2.0,
+        "widen_salience_threshold": 0.5,
+        "reform_eviction_threshold": 2.0,
+        "reform_residual_threshold": 1.0,
+        "reform_swallowed_threshold": 0.5,
+        "reform_pressure_factor": 0.5
+      }
+    },
+    {
+      "local_id": 6,
+      "type": "ApertureBudget",
+      "attrs": {
+        "register": "code",
+        "max_escalations": 1.0,
+        "max_stage_count": 20.0,
+        "fallback_ratio_threshold": 0.4,
+        "note": "code has no narrative subject; escalation is rarely useful but not forbidden.",
+        "trace_capacity_base": 8.0,
+        "trace_capacity_min": 4.0,
+        "trace_capacity_max": 16.0,
+        "max_revisits": 8.0,
+        "max_order_base": 2.0,
+        "max_order_max": 4.0,
+        "widen_step": 4.0,
+        "widen_salience_threshold": 0.5,
+        "reform_eviction_threshold": 3.0,
+        "reform_residual_threshold": 1.0,
+        "reform_swallowed_threshold": 0.5,
+        "reform_pressure_factor": 0.5
+      }
+    },
+    {
+      "local_id": 7,
+      "type": "ApertureBudget",
+      "attrs": {
+        "register": "default",
+        "max_escalations": 3.0,
+        "max_stage_count": 20.0,
+        "fallback_ratio_threshold": 0.4,
+        "note": "every pre-wave caller that never threaded a register (run_reading_flow's own default) -- byte-identical generous document-style headroom; see wikipedia's note on why the ceiling clears 10.",
+        "trace_capacity_base": 8.0,
+        "trace_capacity_min": 4.0,
+        "trace_capacity_max": 16.0,
+        "max_revisits": 8.0,
+        "max_order_base": 2.0,
+        "max_order_max": 4.0,
+        "widen_step": 4.0,
+        "widen_salience_threshold": 0.5,
+        "reform_eviction_threshold": 3.0,
+        "reform_residual_threshold": 1.0,
+        "reform_swallowed_threshold": 0.5,
+        "reform_pressure_factor": 0.5
+      }
+    },
+    {
+      "local_id": 8,
+      "type": "Program",
+      "attrs": {
+        "name": "reading_derive_trace_capacity",
+        "form": "term_tree",
+        "program": "{\"type\": \"Min\", \"items\": [{\"type\": \"Max\", \"items\": [{\"type\": \"Plus\", \"items\": [{\"type\": \"Var\", \"name\": \"base\"}, {\"type\": \"IfThenElse\", \"cond\": {\"type\": \"Eq\", \"a\": {\"type\": \"Var\", \"name\": \"widened\"}, \"b\": {\"type\": \"Lit\", \"value\": 1.0}}, \"then\": {\"type\": \"Var\", \"name\": \"widen_step\"}, \"other\": {\"type\": \"Lit\", \"value\": 0.0}}]}, {\"type\": \"Var\", \"name\": \"min_cap\"}]}, {\"type\": \"Var\", \"name\": \"max_cap\"}]}"
+      }
+    },
+    {
+      "local_id": 9,
+      "type": "Program",
+      "attrs": {
+        "name": "reading_derive_max_order",
+        "form": "term_tree",
+        "program": "{\"type\": \"Min\", \"items\": [{\"type\": \"Plus\", \"items\": [{\"type\": \"Var\", \"name\": \"base\"}, {\"type\": \"IfThenElse\", \"cond\": {\"type\": \"Gte\", \"a\": {\"type\": \"Var\", \"name\": \"reform_count\"}, \"b\": {\"type\": \"Lit\", \"value\": 1.0}}, \"then\": {\"type\": \"Lit\", \"value\": 1.0}, \"other\": {\"type\": \"Lit\", \"value\": 0.0}}]}, {\"type\": \"Var\", \"name\": \"max_cap\"}]}"
+      }
+    }
+  ],
+  "edges": [],
+  "productions": [],
+  "rules": [
+    {
+      "name": "escalate_truncated_read",
+      "comment": "FOVEATION-AS-HINT (task 2a): the flow's own Source shows sentences_read < sentences_total (task 1's truncation datum) -- the aperture hint cut the text short. Widen: set max_sentences_override to the FULL sentence count and re-mint a 'spine' AnalysisStage (escalated=1, escalation_reason='truncated_read') for the SAME flow -- the existing la_dispatch_spine rule (unchanged) dispatches it, and _shim_spine (domains/reading_drive.py) detects the override + prior sentences_read, supersedes this flow's own spine output, and re-collapses over the wider text. Mint-once per flow (the escalated-spine existence guard) + budget-gated (ApertureBudget, held per register, revisable).",
+      "match": [
+        [
+          "goal",
+          "reads_source",
+          "src"
+        ],
+        [
+          "ag",
+          "has_analysis_stage",
+          "spine_stage"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "goal"
+              },
+              "key": "reading_report"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "spine_stage"
+              },
+              "key": "name"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "spine"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "spine_stage"
+              },
+              "key": "flow"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "src"
+              },
+              "key": "flow"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "spine_stage"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "done"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "sentences_total"
+              },
+              "b": {
+                "type": "Lit",
+                "value": null
+              }
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "src"
+              },
+              "key": "sentences_read"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "src"
+              },
+              "key": "sentences_total"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "NodesOfType",
+                "node_type": "AnalysisStage"
+              },
+              "var_name": "esp",
+              "predicate": {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "esp"
+                      },
+                      "key": "flow"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "src"
+                      },
+                      "key": "flow"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "esp"
+                      },
+                      "key": "name"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "spine"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "esp"
+                      },
+                      "key": "escalated"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": 1.0
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "type": "Let",
+            "name": "budget",
+            "value": {
+              "type": "Argmax",
+              "source": {
+                "type": "Filter",
+                "source": {
+                  "type": "NodesOfType",
+                  "node_type": "ApertureBudget"
+                },
+                "var_name": "b",
+                "predicate": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "b"
+                    },
+                    "key": "register"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "goal"
+                    },
+                    "key": "register"
+                  }
+                }
+              },
+              "var_name": "x",
+              "value": {
+                "type": "Lit",
+                "value": 0
+              },
+              "default": null
+            },
+            "body": {
+              "type": "And",
+              "items": [
+                {
+                  "type": "Not",
+                  "arg": {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Var",
+                      "name": "budget"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": null
+                    }
+                  }
+                },
+                {
+                  "type": "Lt",
+                  "a": {
+                    "type": "Count",
+                    "source": {
+                      "type": "Filter",
+                      "source": {
+                        "type": "NodesOfType",
+                        "node_type": "AnalysisStage"
+                      },
+                      "var_name": "est",
+                      "predicate": {
+                        "type": "And",
+                        "items": [
+                          {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "est"
+                              },
+                              "key": "flow"
+                            },
+                            "b": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "src"
+                              },
+                              "key": "flow"
+                            }
+                          },
+                          {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "est"
+                              },
+                              "key": "escalated"
+                            },
+                            "b": {
+                              "type": "Lit",
+                              "value": 1.0
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "budget"
+                    },
+                    "key": "max_escalations"
+                  }
+                },
+                {
+                  "type": "Lte",
+                  "a": {
+                    "type": "Plus",
+                    "items": [
+                      {
+                        "type": "Count",
+                        "source": {
+                          "type": "Filter",
+                          "source": {
+                            "type": "NodesOfType",
+                            "node_type": "AnalysisStage"
+                          },
+                          "var_name": "ast",
+                          "predicate": {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "ast"
+                              },
+                              "key": "flow"
+                            },
+                            "b": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "src"
+                              },
+                              "key": "flow"
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "type": "Lit",
+                        "value": 1
+                      }
+                    ]
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "budget"
+                    },
+                    "key": "max_stage_count"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "src",
+          "max_sentences_override",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "src"
+              },
+              "key": "sentences_total"
+            }
+          }
+        ],
+        [
+          "add_node",
+          "newspine",
+          "AnalysisStage",
+          {
+            "name": "spine",
+            "status": "pending",
+            "cortex": "language",
+            "escalated": 1.0,
+            "escalation_reason": "truncated_read",
+            "flow": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "flow"
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "ag",
+          "has_analysis_stage",
+          "newspine"
+        ]
+      ]
+    },
+    {
+      "name": "escalate_unparsed_clauses",
+      "comment": "FOVEATION-AS-HINT (task 2b): a HEAVY fallback-parse ratio (>= this flow's own ApertureBudget.fallback_ratio_threshold -- held, revisable, never a Python literal) among THIS flow's own SentenceParse nodes -- read_scope/argstruct both abstained and the weakest read_clause fallback ran, or the sentence yielded NO resolved predications at all -- means the light aperture's parse is unreliable. Widen the SITUATION-MODEL depth: mint 'discourse' (re-derives coherence relations across a WINDOW, which can recover a mis-segmented clause's relation to its neighbours) + 'monitoring' (the EXECUTIVE stage that can flag a GlobalIncoherence outright) -- both already dispatch off `la_dispatch_discourse`/`la_dispatch_monitoring` (unchanged; both need only Count(SmEntity)>0, already true once spine is done). Mint-once per flow (the name-existence guards) + budget-gated.",
+      "match": [
+        [
+          "goal",
+          "reads_source",
+          "src"
+        ],
+        [
+          "ag",
+          "has_analysis_stage",
+          "spine_stage"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "goal"
+              },
+              "key": "reading_report"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "spine_stage"
+              },
+              "key": "name"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "spine"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "spine_stage"
+              },
+              "key": "flow"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "src"
+              },
+              "key": "flow"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "spine_stage"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "done"
+            }
+          },
+          {
+            "type": "Gte",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Filter",
+                "source": {
+                  "type": "NodesOfType",
+                  "node_type": "SentenceParse"
+                },
+                "var_name": "sp1",
+                "predicate": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "sp1"
+                    },
+                    "key": "flow"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "src"
+                    },
+                    "key": "flow"
+                  }
+                }
+              }
+            },
+            "b": {
+              "type": "Lit",
+              "value": 3.0
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "NodesOfType",
+                "node_type": "AnalysisStage"
+              },
+              "var_name": "ed",
+              "predicate": {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "ed"
+                      },
+                      "key": "flow"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "src"
+                      },
+                      "key": "flow"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "ed"
+                      },
+                      "key": "name"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "discourse"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "NodesOfType",
+                "node_type": "AnalysisStage"
+              },
+              "var_name": "em",
+              "predicate": {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "em"
+                      },
+                      "key": "flow"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "src"
+                      },
+                      "key": "flow"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "em"
+                      },
+                      "key": "name"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "monitoring"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "type": "Let",
+            "name": "budget",
+            "value": {
+              "type": "Argmax",
+              "source": {
+                "type": "Filter",
+                "source": {
+                  "type": "NodesOfType",
+                  "node_type": "ApertureBudget"
+                },
+                "var_name": "b",
+                "predicate": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "b"
+                    },
+                    "key": "register"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "goal"
+                    },
+                    "key": "register"
+                  }
+                }
+              },
+              "var_name": "x",
+              "value": {
+                "type": "Lit",
+                "value": 0
+              },
+              "default": null
+            },
+            "body": {
+              "type": "And",
+              "items": [
+                {
+                  "type": "Not",
+                  "arg": {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Var",
+                      "name": "budget"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": null
+                    }
+                  }
+                },
+                {
+                  "type": "Lt",
+                  "a": {
+                    "type": "Count",
+                    "source": {
+                      "type": "Filter",
+                      "source": {
+                        "type": "NodesOfType",
+                        "node_type": "AnalysisStage"
+                      },
+                      "var_name": "est",
+                      "predicate": {
+                        "type": "And",
+                        "items": [
+                          {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "est"
+                              },
+                              "key": "flow"
+                            },
+                            "b": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "src"
+                              },
+                              "key": "flow"
+                            }
+                          },
+                          {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "est"
+                              },
+                              "key": "escalated"
+                            },
+                            "b": {
+                              "type": "Lit",
+                              "value": 1.0
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "budget"
+                    },
+                    "key": "max_escalations"
+                  }
+                },
+                {
+                  "type": "Lte",
+                  "a": {
+                    "type": "Plus",
+                    "items": [
+                      {
+                        "type": "Count",
+                        "source": {
+                          "type": "Filter",
+                          "source": {
+                            "type": "NodesOfType",
+                            "node_type": "AnalysisStage"
+                          },
+                          "var_name": "ast",
+                          "predicate": {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "ast"
+                              },
+                              "key": "flow"
+                            },
+                            "b": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "src"
+                              },
+                              "key": "flow"
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "type": "Lit",
+                        "value": 2
+                      }
+                    ]
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "budget"
+                    },
+                    "key": "max_stage_count"
+                  }
+                },
+                {
+                  "type": "Gte",
+                  "a": {
+                    "type": "Div",
+                    "a": {
+                      "type": "Count",
+                      "source": {
+                        "type": "Filter",
+                        "source": {
+                          "type": "NodesOfType",
+                          "node_type": "SentenceParse"
+                        },
+                        "var_name": "sp2",
+                        "predicate": {
+                          "type": "And",
+                          "items": [
+                            {
+                              "type": "Eq",
+                              "a": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "sp2"
+                                },
+                                "key": "flow"
+                              },
+                              "b": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "src"
+                                },
+                                "key": "flow"
+                              }
+                            },
+                            {
+                              "type": "Eq",
+                              "a": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "sp2"
+                                },
+                                "key": "resolved_predications"
+                              },
+                              "b": {
+                                "type": "Lit",
+                                "value": "[]"
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    "b": {
+                      "type": "Count",
+                      "source": {
+                        "type": "Filter",
+                        "source": {
+                          "type": "NodesOfType",
+                          "node_type": "SentenceParse"
+                        },
+                        "var_name": "sp1",
+                        "predicate": {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "sp1"
+                            },
+                            "key": "flow"
+                          },
+                          "b": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "src"
+                            },
+                            "key": "flow"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "budget"
+                    },
+                    "key": "fallback_ratio_threshold"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "st_disc",
+          "AnalysisStage",
+          {
+            "name": "discourse",
+            "status": "pending",
+            "cortex": "situation",
+            "escalated": 1.0,
+            "escalation_reason": "unparsed_clauses",
+            "flow": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "flow"
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "ag",
+          "has_analysis_stage",
+          "st_disc"
+        ],
+        [
+          "add_node",
+          "st_mon",
+          "AnalysisStage",
+          {
+            "name": "monitoring",
+            "status": "pending",
+            "cortex": "executive",
+            "escalated": 1.0,
+            "escalation_reason": "unparsed_clauses",
+            "flow": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "flow"
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "ag",
+          "has_analysis_stage",
+          "st_mon"
+        ]
+      ]
+    },
+    {
+      "name": "escalate_narrative_shape",
+      "comment": "FOVEATION-AS-HINT (task 2c): the flow was hinted LIGHT (spine-only, e.g. the conversational aperture) but its OWN spine output already shows narrative shape -- >=3 sentences actually read, >=2 animate SmEntities (coref_category person/animal), and an explicit want/goal SmEvent (verb='want') -- using ONLY signals the spine already minted (no infer_goal/discourse run yet under a light hint). The casual-looking text is actually a story: mint the FULL remaining comprehension depth (every _COMPREHENSION_STAGES name besides 'spine') for this SAME flow. Narrative structurally depends on the whole situation-model chain (infer_goal -> discourse -> infer_causal -> enabling before EnablingChain>0, which la_dispatch_narrative requires) so cherry-picking just 'narrative'+'tom' would deadlock; minting the whole depth lets the EXISTING la_dispatch_* chain (unchanged) cascade it for free over subsequent ticks. Guarded to fire only when NONE of the 9 stages exist yet for this flow (so it never duplicates a partial escalate_unparsed_clauses mint) + budget-gated.",
+      "match": [
+        [
+          "goal",
+          "reads_source",
+          "src"
+        ],
+        [
+          "ag",
+          "has_analysis_stage",
+          "spine_stage"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "goal"
+              },
+              "key": "reading_report"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "spine_stage"
+              },
+              "key": "name"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "spine"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "spine_stage"
+              },
+              "key": "flow"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "src"
+              },
+              "key": "flow"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "spine_stage"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "done"
+            }
+          },
+          {
+            "type": "Gte",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "src"
+              },
+              "key": "sentences_read"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 3.0
+            }
+          },
+          {
+            "type": "Gte",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Filter",
+                "source": {
+                  "type": "NodesOfType",
+                  "node_type": "SmEntity"
+                },
+                "var_name": "e",
+                "predicate": {
+                  "type": "And",
+                  "items": [
+                    {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "e"
+                        },
+                        "key": "unit"
+                      },
+                      "b": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "src"
+                        },
+                        "key": "flow"
+                      }
+                    },
+                    {
+                      "type": "Or",
+                      "items": [
+                        {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "e"
+                            },
+                            "key": "coref_category"
+                          },
+                          "b": {
+                            "type": "Lit",
+                            "value": "person"
+                          }
+                        },
+                        {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "e"
+                            },
+                            "key": "coref_category"
+                          },
+                          "b": {
+                            "type": "Lit",
+                            "value": "animal"
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            },
+            "b": {
+              "type": "Lit",
+              "value": 2.0
+            }
+          },
+          {
+            "type": "Gte",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Filter",
+                "source": {
+                  "type": "NodesOfType",
+                  "node_type": "SmEvent"
+                },
+                "var_name": "ev",
+                "predicate": {
+                  "type": "And",
+                  "items": [
+                    {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "ev"
+                        },
+                        "key": "unit"
+                      },
+                      "b": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "src"
+                        },
+                        "key": "flow"
+                      }
+                    },
+                    {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "ev"
+                        },
+                        "key": "verb"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": "want"
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Filter",
+                "source": {
+                  "type": "NodesOfType",
+                  "node_type": "AnalysisStage"
+                },
+                "var_name": "fx",
+                "predicate": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "fx"
+                    },
+                    "key": "flow"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "src"
+                    },
+                    "key": "flow"
+                  }
+                }
+              },
+              "var_name": "anyst",
+              "predicate": {
+                "type": "Or",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "anyst"
+                      },
+                      "key": "name"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "infer_goal"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "anyst"
+                      },
+                      "key": "name"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "discourse"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "anyst"
+                      },
+                      "key": "name"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "infer_causal"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "anyst"
+                      },
+                      "key": "name"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "enabling"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "anyst"
+                      },
+                      "key": "name"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "centrality"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "anyst"
+                      },
+                      "key": "name"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "monitoring"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "anyst"
+                      },
+                      "key": "name"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "tom"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "anyst"
+                      },
+                      "key": "name"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "narrative"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "anyst"
+                      },
+                      "key": "name"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "trope"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "type": "Let",
+            "name": "budget",
+            "value": {
+              "type": "Argmax",
+              "source": {
+                "type": "Filter",
+                "source": {
+                  "type": "NodesOfType",
+                  "node_type": "ApertureBudget"
+                },
+                "var_name": "b",
+                "predicate": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "b"
+                    },
+                    "key": "register"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "goal"
+                    },
+                    "key": "register"
+                  }
+                }
+              },
+              "var_name": "x",
+              "value": {
+                "type": "Lit",
+                "value": 0
+              },
+              "default": null
+            },
+            "body": {
+              "type": "And",
+              "items": [
+                {
+                  "type": "Not",
+                  "arg": {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Var",
+                      "name": "budget"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": null
+                    }
+                  }
+                },
+                {
+                  "type": "Lt",
+                  "a": {
+                    "type": "Count",
+                    "source": {
+                      "type": "Filter",
+                      "source": {
+                        "type": "NodesOfType",
+                        "node_type": "AnalysisStage"
+                      },
+                      "var_name": "est",
+                      "predicate": {
+                        "type": "And",
+                        "items": [
+                          {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "est"
+                              },
+                              "key": "flow"
+                            },
+                            "b": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "src"
+                              },
+                              "key": "flow"
+                            }
+                          },
+                          {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "est"
+                              },
+                              "key": "escalated"
+                            },
+                            "b": {
+                              "type": "Lit",
+                              "value": 1.0
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "budget"
+                    },
+                    "key": "max_escalations"
+                  }
+                },
+                {
+                  "type": "Lte",
+                  "a": {
+                    "type": "Plus",
+                    "items": [
+                      {
+                        "type": "Count",
+                        "source": {
+                          "type": "Filter",
+                          "source": {
+                            "type": "NodesOfType",
+                            "node_type": "AnalysisStage"
+                          },
+                          "var_name": "ast",
+                          "predicate": {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "ast"
+                              },
+                              "key": "flow"
+                            },
+                            "b": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "src"
+                              },
+                              "key": "flow"
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "type": "Lit",
+                        "value": 9
+                      }
+                    ]
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "budget"
+                    },
+                    "key": "max_stage_count"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "st_ns_0",
+          "AnalysisStage",
+          {
+            "name": "infer_goal",
+            "status": "pending",
+            "cortex": "situation",
+            "escalated": 1.0,
+            "escalation_reason": "narrative_shape",
+            "flow": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "flow"
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "ag",
+          "has_analysis_stage",
+          "st_ns_0"
+        ],
+        [
+          "add_node",
+          "st_ns_1",
+          "AnalysisStage",
+          {
+            "name": "discourse",
+            "status": "pending",
+            "cortex": "situation",
+            "escalated": 1.0,
+            "escalation_reason": "narrative_shape",
+            "flow": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "flow"
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "ag",
+          "has_analysis_stage",
+          "st_ns_1"
+        ],
+        [
+          "add_node",
+          "st_ns_2",
+          "AnalysisStage",
+          {
+            "name": "infer_causal",
+            "status": "pending",
+            "cortex": "situation",
+            "escalated": 1.0,
+            "escalation_reason": "narrative_shape",
+            "flow": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "flow"
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "ag",
+          "has_analysis_stage",
+          "st_ns_2"
+        ],
+        [
+          "add_node",
+          "st_ns_3",
+          "AnalysisStage",
+          {
+            "name": "enabling",
+            "status": "pending",
+            "cortex": "situation",
+            "escalated": 1.0,
+            "escalation_reason": "narrative_shape",
+            "flow": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "flow"
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "ag",
+          "has_analysis_stage",
+          "st_ns_3"
+        ],
+        [
+          "add_node",
+          "st_ns_4",
+          "AnalysisStage",
+          {
+            "name": "centrality",
+            "status": "pending",
+            "cortex": "situation",
+            "escalated": 1.0,
+            "escalation_reason": "narrative_shape",
+            "flow": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "flow"
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "ag",
+          "has_analysis_stage",
+          "st_ns_4"
+        ],
+        [
+          "add_node",
+          "st_ns_5",
+          "AnalysisStage",
+          {
+            "name": "monitoring",
+            "status": "pending",
+            "cortex": "executive",
+            "escalated": 1.0,
+            "escalation_reason": "narrative_shape",
+            "flow": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "flow"
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "ag",
+          "has_analysis_stage",
+          "st_ns_5"
+        ],
+        [
+          "add_node",
+          "st_ns_6",
+          "AnalysisStage",
+          {
+            "name": "tom",
+            "status": "pending",
+            "cortex": "social",
+            "escalated": 1.0,
+            "escalation_reason": "narrative_shape",
+            "flow": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "flow"
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "ag",
+          "has_analysis_stage",
+          "st_ns_6"
+        ],
+        [
+          "add_node",
+          "st_ns_7",
+          "AnalysisStage",
+          {
+            "name": "narrative",
+            "status": "pending",
+            "cortex": "narrative",
+            "escalated": 1.0,
+            "escalation_reason": "narrative_shape",
+            "flow": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "flow"
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "ag",
+          "has_analysis_stage",
+          "st_ns_7"
+        ],
+        [
+          "add_node",
+          "st_ns_8",
+          "AnalysisStage",
+          {
+            "name": "trope",
+            "status": "pending",
+            "cortex": "narrative",
+            "escalated": 1.0,
+            "escalation_reason": "narrative_shape",
+            "flow": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "flow"
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "ag",
+          "has_analysis_stage",
+          "st_ns_8"
+        ]
+      ]
+    },
+    {
+      "name": "reading_widen_capacity_once",
+      "comment": "DYNAMIC-THRESHOLDS ladder rung 1 (2026-07-11): a flow whose ring buffer (reading_scope.enforce_trace_buffer, called per-commit from coref_entities.read_into_situation_model) just evicted a trace whose salience reached this flow's own ApertureBudget.widen_salience_threshold (held, per-register, revisable) widens its effective trace capacity ONCE (capacity_widened=1 on the flow's Source \u2014 read by domains/reading_norms.effective_trace_capacity's held Program). Mint-once (the capacity_widened existence guard) \u2014 this is the WHOLE ladder's rung 1; rung 2 (reform_overcomplex_clause below) TIGHTENS instead of widening again once this has fired, per the directive's 'widen once -> reform' ladder.",
+      "match": [
+        [
+          "goal",
+          "reads_source",
+          "src"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "capacity_widened"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 1.0
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "max_evicted_salience"
+              },
+              "b": {
+                "type": "Lit",
+                "value": null
+              }
+            }
+          },
+          {
+            "type": "Let",
+            "name": "budget",
+            "value": {
+              "type": "Argmax",
+              "source": {
+                "type": "Filter",
+                "source": {
+                  "type": "NodesOfType",
+                  "node_type": "ApertureBudget"
+                },
+                "var_name": "b",
+                "predicate": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "b"
+                    },
+                    "key": "register"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "goal"
+                    },
+                    "key": "register"
+                  }
+                }
+              },
+              "var_name": "x",
+              "value": {
+                "type": "Lit",
+                "value": 0
+              },
+              "default": null
+            },
+            "body": {
+              "type": "And",
+              "items": [
+                {
+                  "type": "Not",
+                  "arg": {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Var",
+                      "name": "budget"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": null
+                    }
+                  }
+                },
+                {
+                  "type": "Gte",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "src"
+                    },
+                    "key": "max_evicted_salience"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "budget"
+                    },
+                    "key": "widen_salience_threshold"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "src",
+          "capacity_widened",
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "reform_overcomplex_clause",
+      "comment": "DYNAMIC-THRESHOLDS ladder rung 2 / REFORM (2026-07-11): 'if a concept is too complex, the human approach is to take it and reform your own understanding into component shapes' \u2014 a SentenceParse whose own MEASUREMENTS (residual_marker_count \u2014 unconsumed order-1 structural markers; swallowed_ratio \u2014 reading_scope.swallowed_ratio, the fraction of argument roles that swallow a predication; both stamped mechanically at spine-mint time, domains/reading_drive._mint_sentence_parses) cross this flow's own ApertureBudget.reform_*_threshold (held, per-register) is marked reform_pending \u2014 the mechanical shim (reading_drive._shim_monitoring) then executes reading_collapse.read_clause_order_n and records the decomposed part_of/marker component predications back onto this SentenceParse, marking reform_done. A SIMPLE clause (both measurements 0, the common case) never crosses either threshold and never fires. Once the flow has ALREADY spent its rung-1 widen (src.capacity_widened=1), the effective threshold is TIGHTENED by the held reform_pressure_factor (e.g. 0.5 \u2014 half the bar) rather than widening the ring further: 'widen once -> reform' \u2014 sustained overflow pressure makes the SAME flow more willing to decompose, it never forces a genuinely simple (0/0) clause into reform.",
+      "match": [
+        [
+          "sp",
+          "is_sentence_parse",
+          "sp"
+        ],
+        [
+          "goal",
+          "reads_source",
+          "src"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "sp"
+              },
+              "key": "flow"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "src"
+              },
+              "key": "flow"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "sp"
+                },
+                "key": "reform_pending"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 1.0
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "sp"
+                },
+                "key": "reform_done"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 1.0
+              }
+            }
+          },
+          {
+            "type": "Let",
+            "name": "budget",
+            "value": {
+              "type": "Argmax",
+              "source": {
+                "type": "Filter",
+                "source": {
+                  "type": "NodesOfType",
+                  "node_type": "ApertureBudget"
+                },
+                "var_name": "b",
+                "predicate": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "b"
+                    },
+                    "key": "register"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "goal"
+                    },
+                    "key": "register"
+                  }
+                }
+              },
+              "var_name": "x",
+              "value": {
+                "type": "Lit",
+                "value": 0
+              },
+              "default": null
+            },
+            "body": {
+              "type": "And",
+              "items": [
+                {
+                  "type": "Not",
+                  "arg": {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Var",
+                      "name": "budget"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": null
+                    }
+                  }
+                },
+                {
+                  "type": "Let",
+                  "name": "factor",
+                  "value": {
+                    "type": "IfThenElse",
+                    "cond": {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "src"
+                        },
+                        "key": "capacity_widened"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 1.0
+                      }
+                    },
+                    "then": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "budget"
+                      },
+                      "key": "reform_pressure_factor"
+                    },
+                    "other": {
+                      "type": "Lit",
+                      "value": 1.0
+                    }
+                  },
+                  "body": {
+                    "type": "Or",
+                    "items": [
+                      {
+                        "type": "Gte",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "sp"
+                          },
+                          "key": "residual_marker_count"
+                        },
+                        "b": {
+                          "type": "Times",
+                          "items": [
+                            {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "budget"
+                              },
+                              "key": "reform_residual_threshold"
+                            },
+                            {
+                              "type": "Var",
+                              "name": "factor"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "type": "Gte",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "sp"
+                          },
+                          "key": "swallowed_ratio"
+                        },
+                        "b": {
+                          "type": "Times",
+                          "items": [
+                            {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "budget"
+                              },
+                              "key": "reform_swallowed_threshold"
+                            },
+                            {
+                              "type": "Var",
+                              "name": "factor"
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "sp",
+          "reform_pending",
+          1.0
+        ],
+        [
+          "set_attr",
+          "sp",
+          "reform_reason",
+          {
+            "__term__": {
+              "type": "IfThenElse",
+              "cond": {
+                "type": "Gt",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "sp"
+                  },
+                  "key": "residual_marker_count"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 0.0
+                }
+              },
+              "then": {
+                "type": "Lit",
+                "value": "residual_markers"
+              },
+              "other": {
+                "type": "Lit",
+                "value": "swallowed_predication"
+              }
+            }
+          }
+        ]
+      ]
+    }
+  ]
+}

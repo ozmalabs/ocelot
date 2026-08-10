@@ -1,0 +1,48 @@
+{
+  "id": "browser_affordance_reach",
+  "version": "1.0.0",
+  "depends_on": [],
+  "description": "Graph-native `session -has_affordance-> affordance` mirror for worlds/browser.py's BrowserWorld, driven by the agent-authored `ReachableFrom(node, edge_type)` DSL Term (transitive closure over one edge type) instead of Python-side flattening. The DOM `contains` tree nests affordances at arbitrary depth (a <nav> wraps links, a <form> wraps inputs) and `element -affords-> affordance` only ever fires on the affording element itself; before `ReachableFrom` existed there was no Term that could walk the unbounded-depth `contains` chain from a rule, so worlds/browser.py maintained a flat `sess -has_affordance-> aff` mirror by hand in Python. `ReachableFrom` closes that gap: these two rules mint the mirror edge for exactly the reachable+present affording elements' affordances, and drop it once an element is no longer present -- so the flattening is graph data, not a host loop.",
+  "microtheory": {
+    "name": "browser_affordance_reach",
+    "description": "Rules that keep `session -has_affordance-> affordance` in sync with the DOM `contains*` tree via ReachableFrom, for any BrowserWorld session."
+  },
+  "nodes": [],
+  "edges": [],
+  "productions": [],
+  "rules": [
+    {
+      "name": "browser_mirror_has_affordance_reachable",
+      "match": [["sess", "contains", "el0"], ["el", "affords", "aff"]],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "In",
+            "member": {"type": "Var", "name": "el"},
+            "container": {"type": "ReachableFrom", "node": {"type": "Var", "name": "sess"}, "edge_type": "contains"}
+          },
+          {
+            "type": "Gt",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "el"}, "key": "present"},
+            "b": {"type": "Lit", "value": 0.0}
+          }
+        ]
+      },
+      "effects": [["add_edge", "sess", "has_affordance", "aff"]]
+    },
+    {
+      "name": "browser_drop_has_affordance_stale",
+      "match": [["sess", "has_affordance", "aff"], ["el", "affords", "aff"]],
+      "where": {
+        "type": "Not",
+        "arg": {
+          "type": "Gt",
+          "a": {"type": "Attr", "node": {"type": "Var", "name": "el"}, "key": "present"},
+          "b": {"type": "Lit", "value": 0.0}
+        }
+      },
+      "effects": [["del_edge", "sess", "has_affordance", "aff"]]
+    }
+  ]
+}

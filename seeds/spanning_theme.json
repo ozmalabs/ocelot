@@ -1,0 +1,27 @@
+{
+  "id": "spanning_theme",
+  "version": "1.0.0",
+  "depends_on": [],
+  "description": "SPANNING THEME = COLLAPSE OVER A CROSS-UNIT CODEBOOK, one level up from trope_theme's per-arc theme collapse. Where trope_theme decodes the theme of ONE character's arc WITHIN a StoryUnit, this codebook decodes a theme that spans SIBLING StoryUnits -- a relation between two child episodes that is invisible in either episode alone. The composer (domains/nested_reading.compose_spanning_theme) turns the cross-unit structure into a SINGLE-TOKEN skeleton by a mechanical graph read over the children's own minted UnitAction nodes (does an earlier child carry an action agent=A patient=B while a later child carries the REVERSED action agent=B patient=A? -- the actor/recipient role-reversal that IS reciprocity, 'a kindness is repaid'), and that ONE token is decoded against this codebook exactly the way story_tree.decode_seam decodes a seam token against ShapeSignatureStoryBoundary and narrative_structure.decode_slot decodes a slot token against ShapeSignatureNarrative. The THEME VERDICT is always the winning ShapeSignatureSpanningTheme's own `theme` attr, never a Python if/else naming the theme. A cross-unit token no schema covers (SPAN_NONE) mints NOTHING -- the discriminative null (a flat union of two unrelated child themes is NOT a spanning theme).",
+  "microtheory": {
+    "name": "spanning_theme",
+    "description": "A theme that spans sibling StoryUnits (the reciprocity of 'The Lion and the Mouse': episode 2's rescue reciprocates episode 1's mercy) recognised by ShapeDecode over a dedicated ShapeSignatureSpanningTheme codebook of cross-unit relation tokens -- one level up from trope_theme's per-arc theme, itself one level up from narrative role and coherence collapse."
+  },
+  "nodes": [
+    {
+      "local_id": 1,
+      "type": "ShapeSignatureSpanningTheme",
+      "attrs": {
+        "name": "reciprocity",
+        "kind": "spanning_theme",
+        "theme": "reciprocity",
+        "signature": "[[\"RETURN_ACTION\"]]",
+        "line": "A kindness is repaid -- the one acted upon returns the deed to the actor. Invisible in either episode alone; it emerges only from the two episodes together: episode 2's rescue reciprocates episode 1's mercy.",
+        "note": "The cross-unit token RETURN_ACTION: an earlier sibling StoryUnit carries an action (agent=A, patient=B) and a later sibling carries the REVERSED action (agent=B, patient=A) over the same two entities -- the actor/recipient role-reversal across episodes that IS reciprocity. Read off the children's own minted UnitAction nodes (a mechanical existence check building the token; the THEME is this schema's verdict, not a Python assignment). A flat union of two child arcs never resembles this token to the codebook -- SPAN_NONE."
+      }
+    }
+  ],
+  "edges": [],
+  "productions": [],
+  "rules": []
+}

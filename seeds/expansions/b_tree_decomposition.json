@@ -1,0 +1,112 @@
+{
+  "id": "b_tree_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "B_tree",
+  "in_microtheory": "data_structures_algorithms",
+  "description": "B-trees and B+ trees decomposed. The dominant index structure for databases and filesystems. Wide branching factor (M = 100-1000) gives shallow trees: 4 levels covers a billion records. Designed for disk/SSD: each node fits in a page, so each level is one I/O. Insert/delete via split/merge preserve balance.",
+  "sub_mechanisms": [
+    {
+      "name": "node_with_M_minus_1_keys",
+      "definition": "B-tree node holds k keys where M/2 - 1 ≤ k ≤ M - 1 (M is branching factor). M typically 100-1000 to match disk page size.",
+      "why": "Wide nodes minimise tree depth. With M = 200 and n = 1 billion: height = log_200(10⁹) ≈ 4. Each level is one disk I/O; the wide branching is what makes B-tree practical for disk-based storage.",
+      "category": "btree_mechanism"
+    },
+    {
+      "name": "internal_vs_leaf_nodes",
+      "definition": "Internal nodes hold keys + child pointers. Leaf nodes hold keys + values (B-tree) or just keys with values in linked list (B+ tree).",
+      "why": "Internal nodes act as routing structure. Leaves hold the actual data. Separating roles lets internal nodes pack more keys per page.",
+      "category": "btree_mechanism"
+    },
+    {
+      "name": "search_logarithmic_in_M",
+      "definition": "Search: at each node, find the key range containing target (binary search within node), descend to that child. O(log_M n) levels × O(log M) per node.",
+      "why": "Logarithmic in n with log base M. Wide branching makes depth tiny. The within-node binary search is in-cache once the page is loaded — fast.",
+      "category": "btree_mechanism"
+    },
+    {
+      "name": "split_on_overflow",
+      "definition": "Insert: descend to leaf, insert. If leaf overflows (M keys), split into two leaves + push median key to parent. Parent may overflow, recurse.",
+      "why": "Splits propagate up. Root split increases tree depth by 1. Tree remains balanced because all leaves stay at the same depth. The fundamental insert mechanism.",
+      "category": "btree_mechanism"
+    },
+    {
+      "name": "merge_on_underflow",
+      "definition": "Delete: if node falls below M/2 - 1 keys, merge with sibling (or redistribute keys). Recurses up.",
+      "why": "Maintains the minimum-keys invariant. Without merging, repeated deletes would create sparse trees. Merging keeps tree compact.",
+      "category": "btree_mechanism"
+    },
+    {
+      "name": "B_plus_leaf_linked_list",
+      "definition": "B+ tree's leaves are linked left-to-right. Range scan: descend to start, traverse leaf links until end.",
+      "why": "Range queries (SELECT * WHERE x BETWEEN ...) walk linked leaves sequentially — no need to repeatedly descend the tree. Fundamental for SQL range queries.",
+      "category": "btree_mechanism"
+    },
+    {
+      "name": "B_plus_internal_only_keys",
+      "definition": "B+ tree internal nodes hold only keys (no values). Values live in leaves.",
+      "why": "Internal nodes pack more keys per page (since no values). Tree is shallower than B-tree for the same data. Standard for databases.",
+      "category": "btree_mechanism"
+    },
+    {
+      "name": "page_caching",
+      "definition": "Internal pages (especially upper levels) cached in memory. Lower-level pages loaded on demand from disk.",
+      "why": "Top levels are tiny (root + first few levels fit in MB). Caching them eliminates I/O for the early descent. Most queries hit cached upper levels + 1-2 disk reads.",
+      "category": "btree_mechanism"
+    },
+    {
+      "name": "write_amplification",
+      "definition": "Page-sized I/O: any update to a key requires rewriting the whole page (typically 4-16 KB). Updating 8 bytes touches 4096 bytes.",
+      "why": "Bad for SSDs (each write wears the cell). LSM-trees avoid this by appending; B-trees pay it on every write. Trade-off: B-tree's in-place updates give fast reads; LSM's append gives fast writes.",
+      "category": "btree_mechanism"
+    },
+    {
+      "name": "fill_factor",
+      "definition": "Average node occupancy. Random inserts give ~70% fill (after splits); bulk-loaded indexes can be near 100%.",
+      "why": "Lower fill = wasted space + more I/Os per scan. Higher fill = more splits on subsequent inserts. Database tuning often involves rebuilding indexes to maximise fill factor.",
+      "category": "btree_mechanism"
+    },
+    {
+      "name": "concurrent_B_tree_locking",
+      "definition": "Multi-threaded access requires locks. Naive root-lock approach: serial bottleneck. Lock crabbing / coupling: hold lock on current node, acquire child's lock, release current.",
+      "why": "Page-level locking lets multiple threads operate on different parts. Crabbing prevents deadlock by releasing locks in descent order. Modern databases (InnoDB, PostgreSQL) heavily optimise this.",
+      "category": "btree_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "branching_factor_minimises_depth",
+      "if": ["branching factor M is large"],
+      "then": ["tree depth log_M n is small"],
+      "why": "For n = 10⁹ and M = 200: depth ≈ 4. Each level is one page read. Database indexes traverse 3-5 levels for any record, even at billion-scale.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "B_plus_internal_packing_beats_B_tree",
+      "if": ["values are stored only in leaves"],
+      "then": ["internal nodes pack more keys per page → tree is shallower"],
+      "why": "Internal nodes with no values can hold ~2x more keys. Tree depth reduces by log_2 of that ratio. Standard for database indexes; B-tree (with values in internal) is rarer.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "leaf_linked_list_enables_range_scan",
+      "if": ["B+ tree leaves are linked left-to-right"],
+      "then": ["range queries scan linked leaves without re-descending the tree"],
+      "why": "Range query: descend to start leaf, then follow links to end leaf. O(log n + range_size) instead of O(range_size × log n). The reason B+ trees dominate for SQL workloads.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "page_caching_eliminates_top_level_IO",
+      "if": ["top levels of the B-tree are cached"],
+      "then": ["typical query has 1-2 disk I/Os instead of full depth"],
+      "why": "Root + first level fit in tens of KB; even a billion-record index has 10s of MB of internal pages — easily cached. Leaf pages are loaded on demand. Cache hit ratio on internal pages approaches 100%.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "write_amplification_motivates_LSM",
+      "if": ["a workload has frequent small updates"],
+      "then": ["LSM-trees can outperform B-trees due to write amplification"],
+      "why": "B-tree: every update rewrites a 4-16 KB page. LSM-tree: appends + later compaction. For write-heavy workloads (logging, metrics, social feeds), LSM wins. RocksDB, LevelDB, Cassandra use LSM; PostgreSQL, MySQL use B-tree.",
+      "soundness_category": "cost_equivalence"
+    }
+  ]
+}

@@ -1,0 +1,118 @@
+{
+  "id": "color_spaces_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "HDR10",
+  "in_microtheory": "video_coding_theory",
+  "description": "Color spaces and gamut/transfer functions decomposed. Video codecs operate on YCbCr (or YUV) but the chroma representation, bit depth, gamut primaries, and transfer function all vary by content type. SDR uses BT.709 primaries + BT.1886/sRGB gamma; HDR uses BT.2020 primaries + PQ (Perceptual Quantizer) or HLG (Hybrid Log-Gamma) transfer functions. The mapping between RGB and YCbCr is itself a linear transform — but the gamut and gamma choices affect compression efficiency and visual fidelity dramatically.",
+  "sub_mechanisms": [
+    {
+      "name": "rgb_to_ycbcr_transform",
+      "definition": "Linear matrix: Y = a*R + b*G + c*B; Cb = (B - Y) / d; Cr = (R - Y) / e. Coefficients (a,b,c,d,e) differ by standard: BT.601 (SDTV), BT.709 (HDTV), BT.2020 (UHDTV).",
+      "why": "Decorrelates luma (Y, ~luminance) from chroma (Cb, Cr, ~color difference). After this transform, the chroma channels are smaller in dynamic range and can be subsampled (4:2:0) without much perceptual loss. Compression efficiency improves substantially vs RGB.",
+      "category": "color_space_mechanism"
+    },
+    {
+      "name": "chroma_subsampling_4_2_0",
+      "definition": "4:2:0: full luma resolution, chroma at 1/2 horizontal and 1/2 vertical (1/4 the samples). Each chroma sample represents a 2x2 luma block.",
+      "why": "HVS spatial resolution is ~3-4x higher for luma than chroma. Subsampling chroma saves 50% of total samples with imperceptible quality loss at typical viewing distance. Standard for VOD streaming, broadcast, and consumer video.",
+      "category": "color_space_mechanism"
+    },
+    {
+      "name": "chroma_subsampling_4_2_2",
+      "definition": "4:2:2: full luma resolution, chroma at 1/2 horizontal but full vertical (1/2 the samples).",
+      "why": "Better than 4:2:0 for content with vertical color detail (chroma keying for video production). Used in broadcast contribution feeds + professional video.",
+      "category": "color_space_mechanism"
+    },
+    {
+      "name": "chroma_subsampling_4_4_4",
+      "definition": "4:4:4: no chroma subsampling. Each pixel has full luma + chroma.",
+      "why": "Required for screen content (text/graphics with sharp chroma edges) and high-end production. Same compression efficiency hit as RGB but preserves all chroma detail.",
+      "category": "color_space_mechanism"
+    },
+    {
+      "name": "BT_709_primaries",
+      "definition": "HDTV color gamut: defined by primary chromaticities (Rxy, Gxy, Bxy) on the CIE 1931 chromaticity diagram. Smaller than BT.2020.",
+      "why": "Match the phosphor primaries of CRT-era television. Backward-compatible with most consumer displays. Still the default for SDR streaming. The narrower gamut requires less bit precision than BT.2020 to avoid banding.",
+      "category": "color_space_mechanism"
+    },
+    {
+      "name": "BT_2020_primaries",
+      "definition": "UHDTV color gamut: significantly wider primaries than BT.709 (closer to spectrum locus). Covers ~75% of CIE chromaticity vs BT.709's ~36%.",
+      "why": "Future-proofs for modern displays (laser projection, quantum-dot OLED) that can reproduce wider colors. Used by HDR content. Requires 10+ bits per channel to avoid banding in the larger gamut.",
+      "category": "color_space_mechanism"
+    },
+    {
+      "name": "BT_1886_transfer_function",
+      "definition": "SDR gamma: V_out = (V_in)^2.4. Maps linear light to display drive voltage.",
+      "why": "Matches CRT phosphor response. Allocates more bit precision to dark regions (where HVS sensitivity is higher) than bright regions. Standard for SDR delivery.",
+      "category": "color_space_mechanism"
+    },
+    {
+      "name": "PQ_perceptual_quantizer",
+      "definition": "HDR10's transfer function: maps absolute luminance (up to 10,000 nits) to 10-bit code values via a perceptual quantisation curve based on the HVS contrast sensitivity function.",
+      "why": "Allocates bit precision proportional to HVS sensitivity. Display-referred (absolute luminance, not relative). PQ's bit precision is consistent across the dynamic range, unlike BT.1886 which under-allocates highlights.",
+      "category": "color_space_mechanism"
+    },
+    {
+      "name": "HLG_hybrid_log_gamma",
+      "definition": "Alternative HDR transfer function: linear in dark regions (like SDR gamma), logarithmic in bright regions. Scene-referred (relative luminance).",
+      "why": "Backward-compatible with SDR displays: an HLG signal looks acceptable on SDR. Good for broadcast where both SDR and HDR receivers exist. Less precise than PQ at peak brightness; better SDR compatibility.",
+      "category": "color_space_mechanism"
+    },
+    {
+      "name": "bit_depth_8_10_12",
+      "definition": "Per-channel bit depth: 8-bit (256 levels, SDR), 10-bit (1024 levels, HDR/UHD), 12-bit (4096 levels, high-end HDR/Dolby Vision).",
+      "why": "Higher bit depth avoids banding (visible quantisation steps) especially in smooth gradients. PQ's wider luminance range requires 10+ bits to maintain BT.1886's perceptual precision. Compression efficiency drops slightly at higher bit depths.",
+      "category": "color_space_mechanism"
+    },
+    {
+      "name": "wide_color_gamut",
+      "definition": "Display capability to reproduce colors beyond BT.709. Different gamuts: DCI-P3 (cinema), Display-P3 (Apple devices), Rec.2020 (UHDTV target).",
+      "why": "Each gamut defines a different addressable color volume. Content authored for one gamut requires conversion (potentially clipping) when shown on a different one. Per-display tone-mapping is the renderer's job.",
+      "category": "color_space_mechanism"
+    },
+    {
+      "name": "tone_mapping",
+      "definition": "Per-frame or per-shot mapping from source HDR luminance to display capabilities. HDR10 uses static metadata (one curve for the whole stream); HDR10+/Dolby Vision use dynamic metadata (per-scene curves).",
+      "why": "Displays vary in peak brightness (200 nits for entry SDR, 1000+ for HDR TVs, 4000+ for reference monitors). Tone mapping squeezes the source's dynamic range into the display's capability. Done well, preserves apparent brightness; done poorly, loses highlights or crushes shadows.",
+      "category": "color_space_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "ycbcr_decorrelation_enables_chroma_subsampling",
+      "if": ["luma and chroma are linearly separated into independent channels"],
+      "then": ["chroma can be subsampled with minimal perceptual loss"],
+      "why": "Decorrelation moves the bulk of image information into luma; chroma carries residual color details. HVS spatial sensitivity is lower for chroma, so chroma can be subsampled. RGB doesn't have this property — all three channels carry equal information.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "bit_depth_must_scale_with_gamut",
+      "if": ["the color gamut widens"],
+      "then": ["bit depth must increase to avoid banding"],
+      "why": "Banding visibility depends on the perceptual step size between code values. Wider gamut means each code value represents a larger color step (same code precision spread over more color). 10-bit is the minimum for BT.2020 to maintain ~JND-level precision.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "pq_allocates_bits_to_hvs_sensitivity",
+      "if": ["bit precision is allocated by HVS sensitivity"],
+      "then": ["banding is hidden across the full dynamic range"],
+      "why": "PQ's curve is derived from the HVS contrast sensitivity function. Equal-spaced PQ code values represent equal-spaced perceptual brightness levels — exactly where banding would otherwise be visible. BT.1886's gamma curve mismatches HVS sensitivity at high luminances.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "hlg_compatibility_trades_precision_for_backward_play",
+      "if": ["a stream must look acceptable on SDR displays"],
+      "then": ["HLG's hybrid curve provides backward compatibility at the cost of HDR precision"],
+      "why": "HLG's linear-in-darks segment matches BT.1886; SDR displays see acceptable mid-tones. PQ is purely HDR (looks wrong on SDR). Trade-off depends on deployment context — streaming can choose, broadcast often needs HLG.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "dynamic_tone_mapping_preserves_perceptual_intent",
+      "if": ["content has shot-by-shot luminance variation"],
+      "then": ["dynamic tone-mapping metadata (HDR10+, Dolby Vision) preserves intent better than static"],
+      "why": "Static metadata (HDR10) applies one tone curve across the stream — wrong for any single shot. Dynamic metadata gives the renderer per-shot guidance. Cost: extra metadata bits (~kbps); benefit: dramatically better SDR-display rendering of HDR content.",
+      "soundness_category": "extensional_equivalence"
+    }
+  ]
+}

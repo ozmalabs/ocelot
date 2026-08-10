@@ -1,0 +1,540 @@
+{
+  "id": "sensory_convolution",
+  "version": "1.0.0",
+  "depends_on": [],
+  "description": "CONVOLUTION as a GRAPH-NATIVE, sense-agnostic perceptual primitive \u2014 no Python. A kernel is graph data (a Kernel node's `weights`), a sensory FIELD is graph data (a Field with Patch nodes, each a flattened window), and a convolution RESPONSE is the DSL Term MaxOver(field's patches, Dot(kernel.weights, patch.vals)) evaluated in Rust. The same primitive applies to ANY sense: a cochleagram window (hearing), an image patch (vision), any projected field. The kernel FAMILY (onset/offset/edge/centre-surround/diagonal/smoother) is seed data the agent designs; a sense KEEPS the kernels that discriminate (effect-gate). The convolution lives in the graph + Rust DSL; Python only lays the field patches (I/O ingest) and reads responses.",
+  "microtheory": {
+    "name": "sensory_convolution",
+    "description": "convolution = MaxOver(patches, Dot(kernel, patch)); kernels are graph data; sense-agnostic."
+  },
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "ConvFaculty",
+      "attrs": {
+        "name": "sensory_convolution",
+        "response_term": "{\"type\":\"MaxOver\",\"source\":{\"type\":\"Neighbours\",\"node\":{\"type\":\"Var\",\"name\":\"field\"},\"edge_type\":\"has_patch\",\"any_type\":false},\"var_name\":\"p\",\"value\":{\"type\":\"Dot\",\"a\":{\"type\":\"Attr\",\"node\":{\"type\":\"Var\",\"name\":\"k\"},\"key\":\"weights\"},\"b\":{\"type\":\"Attr\",\"node\":{\"type\":\"Var\",\"name\":\"p\"},\"key\":\"vals\"}},\"default\":{\"type\":\"Lit\",\"value\":0.0}}",
+        "comment": "the convolution RESPONSE Term, evaluated with env {field, k}: MaxOver the field's patches of Dot(kernel.weights, patch.vals). Graph-native; Rust evaluates it.",
+        "discrimination_term": "{\"type\": \"Div\", \"a\": {\"type\": \"Minus\", \"a\": {\"type\": \"Div\", \"a\": {\"type\": \"Sum\", \"source\": {\"type\": \"Neighbours\", \"node\": {\"type\": \"Var\", \"name\": \"sense\"}, \"edge_type\": \"has_field\", \"any_type\": false}, \"var_name\": \"f1\", \"value\": {\"type\": \"Sum\", \"source\": {\"type\": \"Filter\", \"source\": {\"type\": \"Neighbours\", \"node\": {\"type\": \"Var\", \"name\": \"sense\"}, \"edge_type\": \"has_field\", \"any_type\": false}, \"var_name\": \"f2\", \"predicate\": {\"type\": \"Not\", \"arg\": {\"type\": \"Eq\", \"a\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"f1\"}, \"key\": \"label\"}, \"b\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"f2\"}, \"key\": \"label\"}}}}, \"var_name\": \"f2\", \"value\": {\"type\": \"Sum\", \"source\": {\"type\": \"Neighbours\", \"node\": {\"type\": \"Var\", \"name\": \"sense\"}, \"edge_type\": \"kept_kernel\", \"any_type\": false}, \"var_name\": \"k\", \"value\": {\"type\": \"Times\", \"items\": [{\"type\": \"Minus\", \"a\": {\"type\": \"MaxOver\", \"source\": {\"type\": \"Neighbours\", \"node\": {\"type\": \"Var\", \"name\": \"f1\"}, \"edge_type\": \"has_patch\", \"any_type\": false}, \"var_name\": \"pa\", \"value\": {\"type\": \"Dot\", \"a\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"k\"}, \"key\": \"weights\"}, \"b\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"pa\"}, \"key\": \"vals\"}}, \"default\": {\"type\": \"Lit\", \"value\": 0.0}}, \"b\": {\"type\": \"MaxOver\", \"source\": {\"type\": \"Neighbours\", \"node\": {\"type\": \"Var\", \"name\": \"f2\"}, \"edge_type\": \"has_patch\", \"any_type\": false}, \"var_name\": \"pb\", \"value\": {\"type\": \"Dot\", \"a\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"k\"}, \"key\": \"weights\"}, \"b\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"pb\"}, \"key\": \"vals\"}}, \"default\": {\"type\": \"Lit\", \"value\": 0.0}}}, {\"type\": \"Minus\", \"a\": {\"type\": \"MaxOver\", \"source\": {\"type\": \"Neighbours\", \"node\": {\"type\": \"Var\", \"name\": \"f1\"}, \"edge_type\": \"has_patch\", \"any_type\": false}, \"var_name\": \"pa\", \"value\": {\"type\": \"Dot\", \"a\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"k\"}, \"key\": \"weights\"}, \"b\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"pa\"}, \"key\": \"vals\"}}, \"default\": {\"type\": \"Lit\", \"value\": 0.0}}, \"b\": {\"type\": \"MaxOver\", \"source\": {\"type\": \"Neighbours\", \"node\": {\"type\": \"Var\", \"name\": \"f2\"}, \"edge_type\": \"has_patch\", \"any_type\": false}, \"var_name\": \"pb\", \"value\": {\"type\": \"Dot\", \"a\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"k\"}, \"key\": \"weights\"}, \"b\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"pb\"}, \"key\": \"vals\"}}, \"default\": {\"type\": \"Lit\", \"value\": 0.0}}}]}}}}, \"b\": {\"type\": \"Sum\", \"source\": {\"type\": \"Neighbours\", \"node\": {\"type\": \"Var\", \"name\": \"sense\"}, \"edge_type\": \"has_field\", \"any_type\": false}, \"var_name\": \"f1\", \"value\": {\"type\": \"Count\", \"source\": {\"type\": \"Filter\", \"source\": {\"type\": \"Neighbours\", \"node\": {\"type\": \"Var\", \"name\": \"sense\"}, \"edge_type\": \"has_field\", \"any_type\": false}, \"var_name\": \"f2\", \"predicate\": {\"type\": \"Not\", \"arg\": {\"type\": \"Eq\", \"a\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"f1\"}, \"key\": \"label\"}, \"b\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"f2\"}, \"key\": \"label\"}}}}}}}, \"b\": {\"type\": \"Div\", \"a\": {\"type\": \"Sum\", \"source\": {\"type\": \"Neighbours\", \"node\": {\"type\": \"Var\", \"name\": \"sense\"}, \"edge_type\": \"has_field\", \"any_type\": false}, \"var_name\": \"f1\", \"value\": {\"type\": \"Sum\", \"source\": {\"type\": \"Filter\", \"source\": {\"type\": \"Neighbours\", \"node\": {\"type\": \"Var\", \"name\": \"sense\"}, \"edge_type\": \"has_field\", \"any_type\": false}, \"var_name\": \"f2\", \"predicate\": {\"type\": \"And\", \"items\": [{\"type\": \"Eq\", \"a\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"f1\"}, \"key\": \"label\"}, \"b\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"f2\"}, \"key\": \"label\"}}, {\"type\": \"Not\", \"arg\": {\"type\": \"Eq\", \"a\": {\"type\": \"Var\", \"name\": \"f1\"}, \"b\": {\"type\": \"Var\", \"name\": \"f2\"}}}]}}, \"var_name\": \"f2\", \"value\": {\"type\": \"Sum\", \"source\": {\"type\": \"Neighbours\", \"node\": {\"type\": \"Var\", \"name\": \"sense\"}, \"edge_type\": \"kept_kernel\", \"any_type\": false}, \"var_name\": \"k\", \"value\": {\"type\": \"Times\", \"items\": [{\"type\": \"Minus\", \"a\": {\"type\": \"MaxOver\", \"source\": {\"type\": \"Neighbours\", \"node\": {\"type\": \"Var\", \"name\": \"f1\"}, \"edge_type\": \"has_patch\", \"any_type\": false}, \"var_name\": \"pa\", \"value\": {\"type\": \"Dot\", \"a\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"k\"}, \"key\": \"weights\"}, \"b\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"pa\"}, \"key\": \"vals\"}}, \"default\": {\"type\": \"Lit\", \"value\": 0.0}}, \"b\": {\"type\": \"MaxOver\", \"source\": {\"type\": \"Neighbours\", \"node\": {\"type\": \"Var\", \"name\": \"f2\"}, \"edge_type\": \"has_patch\", \"any_type\": false}, \"var_name\": \"pb\", \"value\": {\"type\": \"Dot\", \"a\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"k\"}, \"key\": \"weights\"}, \"b\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"pb\"}, \"key\": \"vals\"}}, \"default\": {\"type\": \"Lit\", \"value\": 0.0}}}, {\"type\": \"Minus\", \"a\": {\"type\": \"MaxOver\", \"source\": {\"type\": \"Neighbours\", \"node\": {\"type\": \"Var\", \"name\": \"f1\"}, \"edge_type\": \"has_patch\", \"any_type\": false}, \"var_name\": \"pa\", \"value\": {\"type\": \"Dot\", \"a\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"k\"}, \"key\": \"weights\"}, \"b\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"pa\"}, \"key\": \"vals\"}}, \"default\": {\"type\": \"Lit\", \"value\": 0.0}}, \"b\": {\"type\": \"MaxOver\", \"source\": {\"type\": \"Neighbours\", \"node\": {\"type\": \"Var\", \"name\": \"f2\"}, \"edge_type\": \"has_patch\", \"any_type\": false}, \"var_name\": \"pb\", \"value\": {\"type\": \"Dot\", \"a\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"k\"}, \"key\": \"weights\"}, \"b\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"pb\"}, \"key\": \"vals\"}}, \"default\": {\"type\": \"Lit\", \"value\": 0.0}}}]}}}}, \"b\": {\"type\": \"Sum\", \"source\": {\"type\": \"Neighbours\", \"node\": {\"type\": \"Var\", \"name\": \"sense\"}, \"edge_type\": \"has_field\", \"any_type\": false}, \"var_name\": \"f1\", \"value\": {\"type\": \"Count\", \"source\": {\"type\": \"Filter\", \"source\": {\"type\": \"Neighbours\", \"node\": {\"type\": \"Var\", \"name\": \"sense\"}, \"edge_type\": \"has_field\", \"any_type\": false}, \"var_name\": \"f2\", \"predicate\": {\"type\": \"And\", \"items\": [{\"type\": \"Eq\", \"a\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"f1\"}, \"key\": \"label\"}, \"b\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"f2\"}, \"key\": \"label\"}}, {\"type\": \"Not\", \"arg\": {\"type\": \"Eq\", \"a\": {\"type\": \"Var\", \"name\": \"f1\"}, \"b\": {\"type\": \"Var\", \"name\": \"f2\"}}}]}}}}}}, \"b\": {\"type\": \"Plus\", \"items\": [{\"type\": \"Div\", \"a\": {\"type\": \"Sum\", \"source\": {\"type\": \"Neighbours\", \"node\": {\"type\": \"Var\", \"name\": \"sense\"}, \"edge_type\": \"has_field\", \"any_type\": false}, \"var_name\": \"f1\", \"value\": {\"type\": \"Sum\", \"source\": {\"type\": \"Filter\", \"source\": {\"type\": \"Neighbours\", \"node\": {\"type\": \"Var\", \"name\": \"sense\"}, \"edge_type\": \"has_field\", \"any_type\": false}, \"var_name\": \"f2\", \"predicate\": {\"type\": \"Not\", \"arg\": {\"type\": \"Eq\", \"a\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"f1\"}, \"key\": \"label\"}, \"b\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"f2\"}, \"key\": \"label\"}}}}, \"var_name\": \"f2\", \"value\": {\"type\": \"Sum\", \"source\": {\"type\": \"Neighbours\", \"node\": {\"type\": \"Var\", \"name\": \"sense\"}, \"edge_type\": \"kept_kernel\", \"any_type\": false}, \"var_name\": \"k\", \"value\": {\"type\": \"Times\", \"items\": [{\"type\": \"Minus\", \"a\": {\"type\": \"MaxOver\", \"source\": {\"type\": \"Neighbours\", \"node\": {\"type\": \"Var\", \"name\": \"f1\"}, \"edge_type\": \"has_patch\", \"any_type\": false}, \"var_name\": \"pa\", \"value\": {\"type\": \"Dot\", \"a\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"k\"}, \"key\": \"weights\"}, \"b\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"pa\"}, \"key\": \"vals\"}}, \"default\": {\"type\": \"Lit\", \"value\": 0.0}}, \"b\": {\"type\": \"MaxOver\", \"source\": {\"type\": \"Neighbours\", \"node\": {\"type\": \"Var\", \"name\": \"f2\"}, \"edge_type\": \"has_patch\", \"any_type\": false}, \"var_name\": \"pb\", \"value\": {\"type\": \"Dot\", \"a\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"k\"}, \"key\": \"weights\"}, \"b\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"pb\"}, \"key\": \"vals\"}}, \"default\": {\"type\": \"Lit\", \"value\": 0.0}}}, {\"type\": \"Minus\", \"a\": {\"type\": \"MaxOver\", \"source\": {\"type\": \"Neighbours\", \"node\": {\"type\": \"Var\", \"name\": \"f1\"}, \"edge_type\": \"has_patch\", \"any_type\": false}, \"var_name\": \"pa\", \"value\": {\"type\": \"Dot\", \"a\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"k\"}, \"key\": \"weights\"}, \"b\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"pa\"}, \"key\": \"vals\"}}, \"default\": {\"type\": \"Lit\", \"value\": 0.0}}, \"b\": {\"type\": \"MaxOver\", \"source\": {\"type\": \"Neighbours\", \"node\": {\"type\": \"Var\", \"name\": \"f2\"}, \"edge_type\": \"has_patch\", \"any_type\": false}, \"var_name\": \"pb\", \"value\": {\"type\": \"Dot\", \"a\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"k\"}, \"key\": \"weights\"}, \"b\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"pb\"}, \"key\": \"vals\"}}, \"default\": {\"type\": \"Lit\", \"value\": 0.0}}}]}}}}, \"b\": {\"type\": \"Sum\", \"source\": {\"type\": \"Neighbours\", \"node\": {\"type\": \"Var\", \"name\": \"sense\"}, \"edge_type\": \"has_field\", \"any_type\": false}, \"var_name\": \"f1\", \"value\": {\"type\": \"Count\", \"source\": {\"type\": \"Filter\", \"source\": {\"type\": \"Neighbours\", \"node\": {\"type\": \"Var\", \"name\": \"sense\"}, \"edge_type\": \"has_field\", \"any_type\": false}, \"var_name\": \"f2\", \"predicate\": {\"type\": \"Not\", \"arg\": {\"type\": \"Eq\", \"a\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"f1\"}, \"key\": \"label\"}, \"b\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"f2\"}, \"key\": \"label\"}}}}}}}, {\"type\": \"Div\", \"a\": {\"type\": \"Sum\", \"source\": {\"type\": \"Neighbours\", \"node\": {\"type\": \"Var\", \"name\": \"sense\"}, \"edge_type\": \"has_field\", \"any_type\": false}, \"var_name\": \"f1\", \"value\": {\"type\": \"Sum\", \"source\": {\"type\": \"Filter\", \"source\": {\"type\": \"Neighbours\", \"node\": {\"type\": \"Var\", \"name\": \"sense\"}, \"edge_type\": \"has_field\", \"any_type\": false}, \"var_name\": \"f2\", \"predicate\": {\"type\": \"And\", \"items\": [{\"type\": \"Eq\", \"a\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"f1\"}, \"key\": \"label\"}, \"b\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"f2\"}, \"key\": \"label\"}}, {\"type\": \"Not\", \"arg\": {\"type\": \"Eq\", \"a\": {\"type\": \"Var\", \"name\": \"f1\"}, \"b\": {\"type\": \"Var\", \"name\": \"f2\"}}}]}}, \"var_name\": \"f2\", \"value\": {\"type\": \"Sum\", \"source\": {\"type\": \"Neighbours\", \"node\": {\"type\": \"Var\", \"name\": \"sense\"}, \"edge_type\": \"kept_kernel\", \"any_type\": false}, \"var_name\": \"k\", \"value\": {\"type\": \"Times\", \"items\": [{\"type\": \"Minus\", \"a\": {\"type\": \"MaxOver\", \"source\": {\"type\": \"Neighbours\", \"node\": {\"type\": \"Var\", \"name\": \"f1\"}, \"edge_type\": \"has_patch\", \"any_type\": false}, \"var_name\": \"pa\", \"value\": {\"type\": \"Dot\", \"a\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"k\"}, \"key\": \"weights\"}, \"b\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"pa\"}, \"key\": \"vals\"}}, \"default\": {\"type\": \"Lit\", \"value\": 0.0}}, \"b\": {\"type\": \"MaxOver\", \"source\": {\"type\": \"Neighbours\", \"node\": {\"type\": \"Var\", \"name\": \"f2\"}, \"edge_type\": \"has_patch\", \"any_type\": false}, \"var_name\": \"pb\", \"value\": {\"type\": \"Dot\", \"a\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"k\"}, \"key\": \"weights\"}, \"b\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"pb\"}, \"key\": \"vals\"}}, \"default\": {\"type\": \"Lit\", \"value\": 0.0}}}, {\"type\": \"Minus\", \"a\": {\"type\": \"MaxOver\", \"source\": {\"type\": \"Neighbours\", \"node\": {\"type\": \"Var\", \"name\": \"f1\"}, \"edge_type\": \"has_patch\", \"any_type\": false}, \"var_name\": \"pa\", \"value\": {\"type\": \"Dot\", \"a\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"k\"}, \"key\": \"weights\"}, \"b\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"pa\"}, \"key\": \"vals\"}}, \"default\": {\"type\": \"Lit\", \"value\": 0.0}}, \"b\": {\"type\": \"MaxOver\", \"source\": {\"type\": \"Neighbours\", \"node\": {\"type\": \"Var\", \"name\": \"f2\"}, \"edge_type\": \"has_patch\", \"any_type\": false}, \"var_name\": \"pb\", \"value\": {\"type\": \"Dot\", \"a\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"k\"}, \"key\": \"weights\"}, \"b\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"pb\"}, \"key\": \"vals\"}}, \"default\": {\"type\": \"Lit\", \"value\": 0.0}}}]}}}}, \"b\": {\"type\": \"Sum\", \"source\": {\"type\": \"Neighbours\", \"node\": {\"type\": \"Var\", \"name\": \"sense\"}, \"edge_type\": \"has_field\", \"any_type\": false}, \"var_name\": \"f1\", \"value\": {\"type\": \"Count\", \"source\": {\"type\": \"Filter\", \"source\": {\"type\": \"Neighbours\", \"node\": {\"type\": \"Var\", \"name\": \"sense\"}, \"edge_type\": \"has_field\", \"any_type\": false}, \"var_name\": \"f2\", \"predicate\": {\"type\": \"And\", \"items\": [{\"type\": \"Eq\", \"a\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"f1\"}, \"key\": \"label\"}, \"b\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"f2\"}, \"key\": \"label\"}}, {\"type\": \"Not\", \"arg\": {\"type\": \"Eq\", \"a\": {\"type\": \"Var\", \"name\": \"f1\"}, \"b\": {\"type\": \"Var\", \"name\": \"f2\"}}}]}}}}}, {\"type\": \"Lit\", \"value\": 1e-06}]}}",
+        "discrimination_comment": "GRAPH-NATIVE discrimination over a Sense's labelled fields: (mean between-label dist - mean within-label dist) / (between + within), scale-normalised. dist(f1,f2) = Sum over kept_kernel of (conv_resp(f1,k)-conv_resp(f2,k))^2. A Rust DSL fold; no Python math."
+      }
+    },
+    {
+      "local_id": 1,
+      "type": "Kernel",
+      "attrs": {
+        "name": "onset",
+        "kh": 3,
+        "kw": 3,
+        "designed": 1.0,
+        "weights": [
+          -1,
+          -1,
+          -1,
+          0,
+          0,
+          0,
+          1,
+          1,
+          1
+        ]
+      }
+    },
+    {
+      "local_id": 2,
+      "type": "Kernel",
+      "attrs": {
+        "name": "offset",
+        "kh": 3,
+        "kw": 3,
+        "designed": 1.0,
+        "weights": [
+          1,
+          1,
+          1,
+          0,
+          0,
+          0,
+          -1,
+          -1,
+          -1
+        ]
+      }
+    },
+    {
+      "local_id": 3,
+      "type": "Kernel",
+      "attrs": {
+        "name": "edge_axis1",
+        "kh": 3,
+        "kw": 3,
+        "designed": 1.0,
+        "weights": [
+          -1,
+          0,
+          1,
+          -1,
+          0,
+          1,
+          -1,
+          0,
+          1
+        ]
+      }
+    },
+    {
+      "local_id": 4,
+      "type": "Kernel",
+      "attrs": {
+        "name": "centre_surround",
+        "kh": 3,
+        "kw": 3,
+        "designed": 1.0,
+        "weights": [
+          -1,
+          -1,
+          -1,
+          -1,
+          8,
+          -1,
+          -1,
+          -1,
+          -1
+        ]
+      }
+    },
+    {
+      "local_id": 5,
+      "type": "Kernel",
+      "attrs": {
+        "name": "diagonal",
+        "kh": 3,
+        "kw": 3,
+        "designed": 1.0,
+        "weights": [
+          -1,
+          -1,
+          0,
+          -1,
+          0,
+          1,
+          0,
+          1,
+          1
+        ]
+      }
+    },
+    {
+      "local_id": 6,
+      "type": "Kernel",
+      "attrs": {
+        "name": "smoother",
+        "kh": 3,
+        "kw": 3,
+        "designed": 1.0,
+        "weights": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ]
+      }
+    }
+  ],
+  "edges": [
+    {
+      "src": {
+        "local": 0
+      },
+      "type": "has_kernel",
+      "tgt": {
+        "local": 1
+      }
+    },
+    {
+      "src": {
+        "local": 0
+      },
+      "type": "has_kernel",
+      "tgt": {
+        "local": 2
+      }
+    },
+    {
+      "src": {
+        "local": 0
+      },
+      "type": "has_kernel",
+      "tgt": {
+        "local": 3
+      }
+    },
+    {
+      "src": {
+        "local": 0
+      },
+      "type": "has_kernel",
+      "tgt": {
+        "local": 4
+      }
+    },
+    {
+      "src": {
+        "local": 0
+      },
+      "type": "has_kernel",
+      "tgt": {
+        "local": 5
+      }
+    },
+    {
+      "src": {
+        "local": 0
+      },
+      "type": "has_kernel",
+      "tgt": {
+        "local": 6
+      }
+    }
+  ],
+  "productions": [
+    {
+      "provenance": "seed:sensory_convolution:has_patch",
+      "src": {
+        "type": "Field",
+        "var": "a"
+      },
+      "edge_type": "has_patch",
+      "tgt": {
+        "type": "Patch",
+        "var": "b"
+      }
+    },
+    {
+      "provenance": "seed:sensory_convolution:has_kernel",
+      "src": {
+        "type": "ConvFaculty",
+        "var": "a"
+      },
+      "edge_type": "has_kernel",
+      "tgt": {
+        "type": "Kernel",
+        "var": "b"
+      }
+    },
+    {
+      "provenance": "seed:sensory_convolution:kept_kernel",
+      "src": {
+        "type": "Sense",
+        "var": "a"
+      },
+      "edge_type": "kept_kernel",
+      "tgt": {
+        "type": "Kernel",
+        "var": "b"
+      }
+    },
+    {
+      "provenance": "seed:sensory_convolution:considers",
+      "src": {
+        "type": "Sense",
+        "var": "a"
+      },
+      "edge_type": "considers",
+      "tgt": {
+        "type": "ConvFaculty",
+        "var": "b"
+      }
+    },
+    {
+      "provenance": "seed:sensory_convolution:has_field",
+      "src": {
+        "type": "Sense",
+        "var": "a"
+      },
+      "edge_type": "has_field",
+      "tgt": {
+        "type": "Field",
+        "var": "b"
+      }
+    }
+  ],
+  "rules": [
+    {
+      "name": "keep_discriminative_kernel",
+      "comment": "GRAPH-NATIVE effect-gate: a sense (considers the ConvFaculty, has_field its labelled fields) KEEPS a kernel whose response SPREAD across the fields exceeds 0.1x the most-varying kernel's spread. spread(k)=MaxOver(fields, conv_resp)-MinOver(fields, conv_resp); conv_resp=MaxOver(patches, Dot(kernel.weights, patch.vals)). The KEEP decision is this Rule (Rust-evaluated), not Python; the world only provides the fields (affordances).",
+      "match": [
+        [
+          "fac",
+          "has_kernel",
+          "k"
+        ],
+        [
+          "sense",
+          "considers",
+          "fac"
+        ]
+      ],
+      "where": {
+        "type": "Gt",
+        "a": {
+          "type": "Minus",
+          "a": {
+            "type": "MaxOver",
+            "source": {
+              "type": "Neighbours",
+              "node": {
+                "type": "Var",
+                "name": "sense"
+              },
+              "edge_type": "has_field",
+              "any_type": false
+            },
+            "var_name": "f",
+            "value": {
+              "type": "MaxOver",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "f"
+                },
+                "edge_type": "has_patch",
+                "any_type": false
+              },
+              "var_name": "p1",
+              "value": {
+                "type": "Dot",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "k"
+                  },
+                  "key": "weights"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "p1"
+                  },
+                  "key": "vals"
+                }
+              },
+              "default": {
+                "type": "Lit",
+                "value": 0.0
+              }
+            },
+            "default": {
+              "type": "Lit",
+              "value": 0.0
+            }
+          },
+          "b": {
+            "type": "MinOver",
+            "source": {
+              "type": "Neighbours",
+              "node": {
+                "type": "Var",
+                "name": "sense"
+              },
+              "edge_type": "has_field",
+              "any_type": false
+            },
+            "var_name": "f",
+            "value": {
+              "type": "MaxOver",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "f"
+                },
+                "edge_type": "has_patch",
+                "any_type": false
+              },
+              "var_name": "p1",
+              "value": {
+                "type": "Dot",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "k"
+                  },
+                  "key": "weights"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "p1"
+                  },
+                  "key": "vals"
+                }
+              },
+              "default": {
+                "type": "Lit",
+                "value": 0.0
+              }
+            },
+            "default": {
+              "type": "Lit",
+              "value": 0.0
+            }
+          }
+        },
+        "b": {
+          "type": "Times",
+          "items": [
+            {
+              "type": "Lit",
+              "value": 0.1
+            },
+            {
+              "type": "MaxOver",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "fac"
+                },
+                "edge_type": "has_kernel",
+                "any_type": false
+              },
+              "var_name": "k2",
+              "value": {
+                "type": "Minus",
+                "a": {
+                  "type": "MaxOver",
+                  "source": {
+                    "type": "Neighbours",
+                    "node": {
+                      "type": "Var",
+                      "name": "sense"
+                    },
+                    "edge_type": "has_field",
+                    "any_type": false
+                  },
+                  "var_name": "f",
+                  "value": {
+                    "type": "MaxOver",
+                    "source": {
+                      "type": "Neighbours",
+                      "node": {
+                        "type": "Var",
+                        "name": "f"
+                      },
+                      "edge_type": "has_patch",
+                      "any_type": false
+                    },
+                    "var_name": "p2",
+                    "value": {
+                      "type": "Dot",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "k2"
+                        },
+                        "key": "weights"
+                      },
+                      "b": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "p2"
+                        },
+                        "key": "vals"
+                      }
+                    },
+                    "default": {
+                      "type": "Lit",
+                      "value": 0.0
+                    }
+                  },
+                  "default": {
+                    "type": "Lit",
+                    "value": 0.0
+                  }
+                },
+                "b": {
+                  "type": "MinOver",
+                  "source": {
+                    "type": "Neighbours",
+                    "node": {
+                      "type": "Var",
+                      "name": "sense"
+                    },
+                    "edge_type": "has_field",
+                    "any_type": false
+                  },
+                  "var_name": "f",
+                  "value": {
+                    "type": "MaxOver",
+                    "source": {
+                      "type": "Neighbours",
+                      "node": {
+                        "type": "Var",
+                        "name": "f"
+                      },
+                      "edge_type": "has_patch",
+                      "any_type": false
+                    },
+                    "var_name": "p2",
+                    "value": {
+                      "type": "Dot",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "k2"
+                        },
+                        "key": "weights"
+                      },
+                      "b": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "p2"
+                        },
+                        "key": "vals"
+                      }
+                    },
+                    "default": {
+                      "type": "Lit",
+                      "value": 0.0
+                    }
+                  },
+                  "default": {
+                    "type": "Lit",
+                    "value": 0.0
+                  }
+                }
+              },
+              "default": {
+                "type": "Lit",
+                "value": 0.0
+              }
+            }
+          ]
+        }
+      },
+      "effects": [
+        [
+          "add_edge",
+          "sense",
+          "kept_kernel",
+          "k"
+        ]
+      ]
+    }
+  ]
+}

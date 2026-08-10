@@ -1,0 +1,84 @@
+{
+ "id": "code_constructions",
+ "version": "1.2.0",
+ "depends_on": [],
+ "description": "CODE-1: reading a function's compute-core is the SAME collapse-over-a-codebook mechanism domains/reading_collapse.py already applies to English clauses, pointed at a Python AST/Term shape instead of a marker skeleton. A function's Return expression is reduced to its ROOT node's normalised CLASS marker (ARITH for BinOp/UnaryOp, COMPARE for Compare, COND for IfExp, FIELD for Attribute/Subscript -- the fixed, mechanical map domains/code_reading.py._root_marker applies, mirroring ast_to_term.py's own fixed BinOp->Term map: 'the SAME for every faculty', not a decision). Each ShapeSignature{kind:'code_construction'} carries that ONE-token skeleton as its signature (CODE-1's smallest-vertical-slice scope: root-node-class granularity, not full nested-AST-shape depth -- a documented residual for a later wave) + a ground_template with a role-slotted natural-language readout. Reading DECODES the skeleton against this codebook via reflective_faculty.compose_design_for_goal (the SAME Rust ShapeDecode Term reading_collapse uses); the construction with the best shape_fit WINS. A function whose root shape no held construction covers has a non-empty residual -> the sd loop (seeds/shape_decode_loop.json) mints a quantum -> domains/code_reading.py installs the shape as a NEW code_construction ShapeSignature + bumps codebook_epoch -> re-decode grounds it. Exactly the reading_collapse recognize-or-mint discipline, applied to code. CODE-2 (v1.1.0) adds two STATEMENT-LEVEL constructions for bodies wider than one pure-expression Return (domains/code_reading.py._multi_stmt_skeleton_and_kind): 'sequential_computation' (a straight-line N-assignment-then-Return body, collapsed to ONE 'LET' token regardless of N -- the same shape-not-count discipline) and 'accumulation_loop' (an init/for-loop-with-one-accumulate-step/Return body, the FIXED four-token 'ASSIGN,FOR,AUGASSIGN,RETURN' skeleton -- the first skeleton to genuinely deepen beyond the Return root). Recognition (this codebook) and Term EMISSION (domains/ast_to_term.py's emit_let_chain/emit_accumulation, into native Let-chains / Fold) are separate, independently-honest concerns, exactly the CODE-1 precedent. WHOLE-CURRICULUM WAVE 2 (v1.2.0) adds 'branching_return': a ONE-statement body that is EXHAUSTIVELY an if/[elif...]/else return chain (domains/ast_to_term.py.is_return_chain), the FIXED single 'BRANCH_RETURN' token regardless of elif depth -- the same shape-not-count discipline again. Emission (domains/ast_to_term.py.emit_branching_return) nests native IfThenElse Terms, one per branch level -- the SAME Term type the pre-existing ternary (IfExp) path already produces, since a branching return and a ternary chain are the SAME meaning; only the WRITE-side surface differs (domains/code_writing.py's branch_style).",
+ "microtheory": {
+  "name": "code_constructions",
+  "description": "reading a function's compute-core is ShapeDecode over a code-construction codebook; a novel shape is minted, not hand-parsed"
+ },
+ "nodes": [
+  {
+   "local_id": 1,
+   "type": "ShapeSignature",
+   "attrs": {
+    "name": "arithmetic_expression",
+    "kind": "code_construction",
+    "signature": "[[\"ARITH\"]]",
+    "ground_template": "{\"desc\": \"computes an arithmetic expression\", \"mode\": \"code_pair\"}"
+   }
+  },
+  {
+   "local_id": 2,
+   "type": "ShapeSignature",
+   "attrs": {
+    "name": "comparison_predicate",
+    "kind": "code_construction",
+    "signature": "[[\"COMPARE\"]]",
+    "ground_template": "{\"desc\": \"evaluates a comparison / predicate\", \"mode\": \"code_pair\"}"
+   }
+  },
+  {
+   "local_id": 3,
+   "type": "ShapeSignature",
+   "attrs": {
+    "name": "conditional_expression",
+    "kind": "code_construction",
+    "signature": "[[\"COND\"]]",
+    "ground_template": "{\"desc\": \"selects between two values by a condition\", \"mode\": \"code_pair\"}"
+   }
+  },
+  {
+   "local_id": 4,
+   "type": "ShapeSignature",
+   "attrs": {
+    "name": "field_access",
+    "kind": "code_construction",
+    "signature": "[[\"FIELD\"]]",
+    "ground_template": "{\"desc\": \"looks up a field or index\", \"mode\": \"code_pair\"}"
+   }
+  },
+  {
+   "local_id": 5,
+   "type": "ShapeSignature",
+   "attrs": {
+    "name": "sequential_computation",
+    "kind": "code_construction",
+    "signature": "[[\"LET\"]]",
+    "ground_template": "{\"desc\": \"computes a value through a sequence of intermediate bindings\", \"mode\": \"code_pair\"}"
+   }
+  },
+  {
+   "local_id": 6,
+   "type": "ShapeSignature",
+   "attrs": {
+    "name": "accumulation_loop",
+    "kind": "code_construction",
+    "signature": "[[\"ASSIGN\"],[\"FOR\"],[\"AUGASSIGN\"],[\"RETURN\"]]",
+    "ground_template": "{\"desc\": \"folds an operation over a collection\", \"mode\": \"code_pair\"}"
+   }
+  },
+  {
+   "local_id": 7,
+   "type": "ShapeSignature",
+   "attrs": {
+    "name": "branching_return",
+    "kind": "code_construction",
+    "signature": "[[\"BRANCH_RETURN\"]]",
+    "ground_template": "{\"desc\": \"chooses which value to return by branching on a condition\", \"mode\": \"code_pair\"}"
+   }
+  }
+ ],
+ "edges": [],
+ "productions": []
+}

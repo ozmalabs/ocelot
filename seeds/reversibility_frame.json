@@ -1,0 +1,198 @@
+{
+ "id": "reversibility_frame",
+ "version": "1.0.0",
+ "depends_on": [],
+ "description": "Declarative FRAME DATA classifying action/effect kinds as reversible (free exploration -- cheap, re-collapsible; the agent can re-run the fixpoint and try again) or committing (irreversible or externally-consequential -- expensive, must pass a gate before it happens). This generalizes a distinction the substrate already implements bespoke for ONE case: `run_rules` is a reversible monotone fixpoint (Tarski -- a rule can only ADD facts within a tick, so re-running it from the same state always reaches the same answer, nothing is lost by trying again), while `fold_clock_edge` (the DSL's 'tock', runners/dsl/src/py.rs ~line 2705) is the substrate's own lawful NON-MONOTONE down-stroke -- it is a SEPARATE phase from run_rules precisely because committing next_X -> X cannot be undone by re-running the fixpoint. domains/proposal_install.py's five-guardrail install gate is the same shape hand-built for ONE action class (runtime install: hot-swapping the agent's own .so). This seed makes the distinction a first-class, extensible PROPERTY OF THE ACTION/EFFECT KIND rather than a one-off, so any new action class gets the classification for free instead of a bespoke re-derivation.",
+ "microtheory": {
+  "name": "reversibility_frame",
+  "description": "commit-vs-explore (reversible vs committing) classification of action/effect kinds, read by domains/commitment_gate.py"
+ },
+ "default_category": "committing",
+ "default_reason": "unclassified kind -- fail closed: an action/effect kind this frame has no entry for is treated as committing (gated) until a human/agent extends this file on purpose. Silence in the frame is never read as permission.",
+ "nodes": [
+  {
+   "local_id": 1,
+   "type": "ReversibilityClass",
+   "attrs": {
+    "kind": "add_node",
+    "category": "reversible",
+    "archetype": false,
+    "reason": "In-graph mutation applied inside the run_rules fixpoint. run_rules is monotone (Tarski): a rule can only add facts within a tick, so the same starting state always reaches the same fixpoint regardless of how many times it is (re-)run. A node minted this way is re-collapsible -- if the surrounding reasoning turns out to be wrong, the agent re-collapses (re-derives) rather than needing to undo anything."
+   }
+  },
+  {
+   "local_id": 2,
+   "type": "ReversibilityClass",
+   "attrs": {
+    "kind": "add_node_if_absent",
+    "category": "reversible",
+    "archetype": false,
+    "reason": "Same shape as add_node, plus dedup: reuses an existing witness instead of minting a duplicate. Still monotone, still in-fixpoint, still re-collapsible."
+   }
+  },
+  {
+   "local_id": 3,
+   "type": "ReversibilityClass",
+   "attrs": {
+    "kind": "add_edge",
+    "category": "reversible",
+    "archetype": false,
+    "reason": "In-graph relation added inside the run_rules fixpoint. Same monotonicity argument as add_node -- adding a relation never removes a witness for a later re-derivation."
+   }
+  },
+  {
+   "local_id": 4,
+   "type": "ReversibilityClass",
+   "attrs": {
+    "kind": "set_attr",
+    "category": "reversible",
+    "archetype": false,
+    "reason": "In-fixpoint attribute write. The rule-authoring convention (see fold_clock_edge's own doc comment) is that a rule reads CURRENT and writes NEXT_<attr> combinationally, never mutating its own inputs -- so set_attr during run_rules is exploratory scratch, not a commitment. (A rule that instead clobbers a CURRENT attr read by other rules in the same fixpoint is the one case this frame is deliberately conservative about -- see the discriminative note in domains/commitment_gate.py.)"
+   }
+  },
+  {
+   "local_id": 5,
+   "type": "ReversibilityClass",
+   "attrs": {
+    "kind": "set_attr_if_different",
+    "category": "reversible",
+    "archetype": false,
+    "reason": "Delta-only variant of set_attr -- a no-op when the value is unchanged, otherwise identical reasoning: in-fixpoint, re-collapsible."
+   }
+  },
+  {
+   "local_id": 6,
+   "type": "ReversibilityClass",
+   "attrs": {
+    "kind": "sandbox_operation",
+    "category": "reversible",
+    "archetype": false,
+    "reason": "Operates on a DISPOSABLE sandbox copy of the crate (self_extend_rust's cargo_check in a scratch dir, rust_runtime_world's validate_designs_in_sandbox) -- never the live tree. The whole point of the sandbox (see domains/rust_runtime_world.py's module docstring) is that anything that happens inside it is free to discard; nothing outside the sandbox root is ever touched, so there is nothing to revert."
+   }
+  },
+  {
+   "local_id": 7,
+   "type": "ReversibilityClass",
+   "attrs": {
+    "kind": "perceive",
+    "category": "reversible",
+    "archetype": false,
+    "reason": "Read-only query of graph state (node/nodes/neighbours/has_node, or ingesting a percept into the graph as new nodes covered by add_node above). Nothing is destroyed or sent outside the graph, so it is trivially reversible: reading twice never changes what is true."
+   }
+  },
+  {
+   "local_id": 8,
+   "type": "ReversibilityClass",
+   "attrs": {
+    "kind": "render_spec",
+    "category": "reversible",
+    "archetype": false,
+    "reason": "Pure text templating (self_extend_rust.render_spec) -- builds fragment strings in memory, touches no file and no external resource. Calling it is exactly as free as calling it twice."
+   }
+  },
+  {
+   "local_id": 20,
+   "type": "ReversibilityClass",
+   "attrs": {
+    "kind": "del_node",
+    "category": "committing",
+    "archetype": false,
+    "reason": "Destroys a node and its incident edges. Non-monotone: run_rules cannot re-derive exactly this deletion by re-running the fixpoint (Tarski monotonicity means a rule fixpoint can only prove MORE facts, never fewer) -- an explicit re-add afterwards is a NEW mutation, not an undo, and any downstream state that depended on the deleted node's identity (its NodeID) cannot be recovered even if content is re-added, because node ids recycle from a freelist (see CLAUDE.md's node-id caution)."
+   }
+  },
+  {
+   "local_id": 21,
+   "type": "ReversibilityClass",
+   "attrs": {
+    "kind": "del_edge",
+    "category": "committing",
+    "archetype": false,
+    "reason": "Removes a relation. Same non-monotone-deletion argument as del_node: nothing in the monotone fixpoint can restore exactly this state on its own."
+   }
+  },
+  {
+   "local_id": 22,
+   "type": "ReversibilityClass",
+   "attrs": {
+    "kind": "fold_clock_edge",
+    "category": "committing",
+    "archetype": true,
+    "reason": "THE ARCHETYPE this whole frame generalizes from. runners/dsl/src/py.rs's fold_clock_edge is the substrate's own lawful non-monotone down-stroke: it commits next_<X> -> <X> on clocked nodes, in a SEPARATE phase from run_rules specifically because a value going DOWN is impossible inside the monotone in-tick fixpoint (Tarski) -- so the commit needs its OWN phase, after exploration is done, not interleaved with it (interleaving next-state computation and commit within one fixpoint IS the limit-cycle bug the doc comment there warns about). Every other 'committing' entry in this frame is a member of the same family: a down-stroke that must not be chased by further exploration until it is deliberately fired."
+   }
+  },
+  {
+   "local_id": 23,
+   "type": "ReversibilityClass",
+   "attrs": {
+    "kind": "runtime_install",
+    "category": "committing",
+    "archetype": false,
+    "aligns_with": "fold_clock_edge",
+    "reason": "Hot-swaps the on-disk _native*.so via `maturin develop --release` (domains.self_extend.PrimitiveExtension.extend, called from domains/proposal_install.py). Changes the agent's own runtime for every future process that imports substrate_rs after the swap. This is the bespoke instance the whole frame generalizes: domains/proposal_install.py's five guardrails ARE a commit gate for exactly this one action class, built before this frame existed."
+   }
+  },
+  {
+   "local_id": 24,
+   "type": "ReversibilityClass",
+   "attrs": {
+    "kind": "http_get",
+    "category": "committing",
+    "archetype": false,
+    "reason": "Reaches outside the graph to a live network resource (domains/fetch_dispatch.py's agent-authored http_get effector). The response is a fact about the outside world captured at read time -- the request itself may also have external side effects the agent cannot observe or undo (server-side state, rate limits, logs), and the exact same GET is not guaranteed repeatable (the resource can change or vanish)."
+   }
+  },
+  {
+   "local_id": 25,
+   "type": "ReversibilityClass",
+   "attrs": {
+    "kind": "browser_apply",
+    "category": "committing",
+    "archetype": false,
+    "reason": "Issues a real action (click/type/navigate) against a live BrowserWorld DOM session (worlds/browser.py, dispatched from domains/browse_dispatch.py). The target page's own state is external and not owned by the agent's graph -- a click can submit a form, follow a link, or trigger server-side effects that cannot be reversed by discarding the BrowserSession node."
+   }
+  },
+  {
+   "local_id": 26,
+   "type": "ReversibilityClass",
+   "attrs": {
+    "kind": "arc_apply",
+    "category": "committing",
+    "archetype": false,
+    "reason": "Issues a real move against a live ARC game/world (domains/arc3_world.py, domains/arc3_thin.py apply_action). The world's own state machine advances whether or not the move was the right one -- there is no 'undo the last move' primitive in the world, only playing forward from wherever it lands."
+   }
+  },
+  {
+   "local_id": 27,
+   "type": "ReversibilityClass",
+   "attrs": {
+    "kind": "voice_emit",
+    "category": "committing",
+    "archetype": false,
+    "reason": "Emits audible speech to the outside world (or any produced utterance handed to a world adapter for external playback). Once spoken, it cannot be unsaid -- unlike an in-graph Message node, which can simply not be selected for outbound emission."
+   }
+  },
+  {
+   "local_id": 28,
+   "type": "ReversibilityClass",
+   "attrs": {
+    "kind": "teach_to_disk",
+    "category": "committing",
+    "archetype": false,
+    "aligns_with": "fold_clock_edge",
+    "reason": "domains/teach.py's SAVE half: appends the taught item to a seed manifest file (seeds/<category>.json) on disk. Persists across every future boot -- reverting requires a manual edit of the seed file outside the graph, not something the agent can undo from inside a tick. (The LIVE-graph half of teach() -- adding the node to the running substrate -- is itself an add_node and is reversible on its own; it is the disk write that makes teach() as a whole a commit.)"
+   }
+  },
+  {
+   "local_id": 29,
+   "type": "ReversibilityClass",
+   "attrs": {
+    "kind": "checkpoint_overwrite",
+    "category": "committing",
+    "archetype": false,
+    "reason": "WorldAdapter.save overwriting an existing on-disk checkpoint that a future process resumes from. Overwriting the last good checkpoint with a bad one destroys the recovery point -- not undoable from inside the graph, only from a separate backup outside this system's control."
+   }
+  }
+ ],
+ "edges": [],
+ "productions": []
+}

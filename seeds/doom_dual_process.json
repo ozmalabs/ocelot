@@ -1,0 +1,1331 @@
+{
+  "id": "doom_dual_process",
+  "version": "1.0.0",
+  "self_load_only": true,
+  "depends_on": ["dual_process_core", "default_mode_core", "control_bundle"],
+  "description": "Doom-specific graph policy connecting raw proprioceptive/optic observations to PSI drives, dual-process candidates, and the existing ControlBundle. Python only copies measured state and enacts the graph-authored intent.",
+  "nodes": [
+    {
+      "local_id": 1,
+      "type": "SystemTwoTaskSet",
+      "attrs": {
+        "name": "doom_executive_task_set",
+        "area": "executive",
+        "enabled": 1
+      }
+    },
+    {
+      "local_id": 2,
+      "type": "SystemTwoTaskSet",
+      "attrs": {
+        "name": "doom_learning_task_set",
+        "area": "learning",
+        "enabled": 1
+      }
+    },
+    {
+      "local_id": 3,
+      "type": "DoomLifecyclePolicy",
+      "attrs": {
+        "name": "doom_lifecycle_policy",
+        "causal_window_epochs": 3,
+        "retention_epochs": 8,
+        "archived_outcome_count": 0
+      }
+    }
+  ],
+  "edges": [
+    {
+      "src": {"role": "agent_root"},
+      "type": "has_doom_system_two_task_set",
+      "tgt": {"local": 1},
+      "attrs": {}
+    },
+    {
+      "src": {"role": "agent_root"},
+      "type": "has_doom_system_two_task_set",
+      "tgt": {"local": 2},
+      "attrs": {}
+    },
+    {
+      "src": {"role": "agent_root"},
+      "type": "has_doom_lifecycle_policy",
+      "tgt": {"local": 3},
+      "attrs": {}
+    }
+  ],
+  "productions": [
+    {
+      "provenance": "doom_dual_process:context_observation",
+      "src": {"type": "DualProcessContext", "var": "context"},
+      "edge_type": "observes_doom_state",
+      "tgt": {"type": "DoomStateObservation", "var": "observation"}
+    },
+    {
+      "provenance": "doom_dual_process:candidate_control",
+      "src": {"type": "SystemOneCandidate", "var": "candidate"},
+      "edge_type": "proposes_control",
+      "tgt": {"type": "Control", "var": "control"}
+    },
+    {
+      "provenance": "doom_dual_process:game_context",
+      "src": {"type": "WorldInstance", "var": "game"},
+      "edge_type": "has_current_dual_process_context",
+      "tgt": {"type": "DualProcessContext", "var": "context"}
+    },
+    {
+      "provenance": "doom_dual_process:game_attempt",
+      "src": {"type": "WorldInstance", "var": "game"},
+      "edge_type": "has_doom_action_attempt",
+      "tgt": {"type": "DoomActionAttempt", "var": "attempt"}
+    },
+    {
+      "provenance": "doom_dual_process:game_action_receipt",
+      "src": {"type": "WorldInstance", "var": "game"},
+      "edge_type": "has_doom_action_receipt",
+      "tgt": {"type": "DoomActionReceipt", "var": "receipt"}
+    },
+    {
+      "provenance": "doom_dual_process:attempt_candidate",
+      "src": {"type": "DoomActionAttempt", "var": "attempt"},
+      "edge_type": "credits_candidate",
+      "tgt": {"type": "SystemOneCandidate", "var": "candidate"}
+    },
+    {
+      "provenance": "doom_dual_process:attempt_escalation",
+      "src": {"type": "DoomActionAttempt", "var": "attempt"},
+      "edge_type": "credits_escalation",
+      "tgt": {"type": "SystemTwoEscalation", "var": "escalation"}
+    },
+    {
+      "provenance": "doom_dual_process:attempt_intent",
+      "src": {"type": "DoomActionAttempt", "var": "attempt"},
+      "edge_type": "issued_by_intent",
+      "tgt": {"type": "ActionIntent", "var": "intent"}
+    },
+    {
+      "provenance": "doom_dual_process:attempt_control",
+      "src": {"type": "DoomActionAttempt", "var": "attempt"},
+      "edge_type": "attempted_control",
+      "tgt": {"type": "Control", "var": "control"}
+    },
+    {
+      "provenance": "doom_dual_process:attempt_outcome",
+      "src": {"type": "DoomActionAttempt", "var": "attempt"},
+      "edge_type": "resolved_as",
+      "tgt": {"type": "SystemTwoOutcome", "var": "outcome"}
+    },
+    {
+      "provenance": "doom_dual_process:outcome_observation",
+      "src": {"type": "SystemTwoOutcome", "var": "outcome"},
+      "edge_type": "has_doom_outcome_observation",
+      "tgt": {"type": "DoomStateObservation", "var": "observation"}
+    }
+  ],
+  "rules": [
+    {
+      "name": "doom_publish_network_mode_sample",
+      "area": "arbitration",
+      "order": -7,
+      "latency_class": "hard_realtime",
+      "comment": "Translate the current measured Doom observation into the generic graph-held network-mode vocabulary. All weighting and default-mode recruitment remain graph rules; the host publishes no mode decision.",
+      "match": [
+        ["game", "for_agent", "agent"],
+        ["game", "has_current_dual_process_context", "context"],
+        ["context", "observes_doom_state", "observation"],
+        ["agent", "has_network_mode_state", "mode"]
+      ],
+      "where": {
+        "type": "Not",
+        "arg": {
+          "type": "Eq",
+          "a": {"type": "Attr", "node": {"type": "Var", "name": "observation"}, "key": "network_mode_sampled"},
+          "b": {"type": "Lit", "value": 1}
+        }
+      },
+      "effects": [
+        ["add_node", "sample", "NetworkModeSample", {
+          "epoch": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "observation"}, "key": "epoch"}},
+          "exteroceptive_load": {"__term__": {
+            "type": "Max", "items": [
+              {"type": "Lit", "value": 0.0},
+              {"type": "Min", "items": [
+                {"type": "Lit", "value": 1.0},
+                {"type": "Attr", "node": {"type": "Var", "name": "observation"}, "key": "motion_count"}
+              ]}
+            ]
+          }},
+          "task_demand": {"__term__": {
+            "type": "Max", "items": [
+              {"type": "Lit", "value": 0.0},
+              {"type": "Min", "items": [
+                {"type": "Lit", "value": 1.0},
+                {"type": "Plus", "items": [
+                  {"type": "Attr", "node": {"type": "Var", "name": "observation"}, "key": "damage_taken"},
+                  {"type": "Attr", "node": {"type": "Var", "name": "observation"}, "key": "respawned"}
+                ]}
+              ]}
+            ]
+          }},
+          "interoceptive_urgency": {"__term__": {
+            "type": "Max", "items": [
+              {"type": "Lit", "value": 0.0},
+              {"type": "Min", "items": [
+                {"type": "Lit", "value": 1.0},
+                {"type": "Minus",
+                 "a": {"type": "Lit", "value": 1.0},
+                 "b": {"type": "Div",
+                   "a": {"type": "Attr", "node": {"type": "Var", "name": "observation"}, "key": "health"},
+                   "b": {"type": "Lit", "value": 100.0}}}
+              ]},
+              {"type": "Min", "items": [
+                {"type": "Lit", "value": 1.0},
+                {"type": "Minus",
+                 "a": {"type": "Lit", "value": 1.0},
+                 "b": {"type": "Div",
+                   "a": {"type": "Attr", "node": {"type": "Var", "name": "observation"}, "key": "ammo"},
+                   "b": {"type": "Lit", "value": 50.0}}}
+              ]}
+            ]
+          }},
+          "uncertainty": {"__term__": {
+            "type": "Max", "items": [
+              {"type": "Lit", "value": 0.0},
+              {"type": "Min", "items": [
+                {"type": "Lit", "value": 1.0},
+                {"type": "Attr", "node": {"type": "Var", "name": "observation"}, "key": "attention_refused"}
+              ]}
+            ]
+          }},
+          "idle_duration": {"__term__": {
+            "type": "Times", "items": [
+              {"type": "Plus", "items": [
+                {"type": "Attr", "node": {"type": "Var", "name": "mode"}, "key": "idle_duration"},
+                {"type": "Lit", "value": 1.0}
+              ]},
+              {"type": "Minus",
+               "a": {"type": "Lit", "value": 1.0},
+               "b": {"type": "Min", "items": [
+                 {"type": "Lit", "value": 1.0},
+                 {"type": "Max", "items": [
+                   {"type": "Lit", "value": 0.0},
+                   {"type": "Plus", "items": [
+                     {"type": "Attr", "node": {"type": "Var", "name": "observation"}, "key": "motion_count"},
+                     {"type": "Attr", "node": {"type": "Var", "name": "observation"}, "key": "damage_taken"},
+                     {"type": "Attr", "node": {"type": "Var", "name": "observation"}, "key": "respawned"},
+                     {"type": "Attr", "node": {"type": "Var", "name": "observation"}, "key": "kill_delta"}
+                   ]}
+                 ]}
+               ]}}
+            ]
+          }},
+          "status": "raw",
+          "source_kind": "doom_observation",
+          "provenance_kind": "observed"
+        }],
+        ["add_edge", "agent", "has_network_mode_sample", "sample"],
+        ["set_attr", "observation", "network_mode_sampled", 1]
+      ]
+    },
+    {
+      "name": "doom_feed_health_drive",
+      "area": "arbitration",
+      "order": -6,
+      "latency_class": "hard_realtime",
+      "match": [
+        ["game", "has_current_dual_process_context", "context"],
+        ["context", "observes_doom_state", "observation"],
+        ["observation", "feeds_doom_drive", "drive"]
+      ],
+      "where": {"type": "And", "items": [
+        {"type": "Eq",
+         "a": {"type": "Attr", "node": {"type": "Var", "name": "drive"}, "key": "doom_need"},
+         "b": {"type": "Lit", "value": "health"}},
+        {"type": "Not", "arg": {"type": "Eq",
+         "a": {"type": "Attr", "node": {"type": "Var", "name": "drive"}, "key": "doom_observation_epoch"},
+         "b": {"type": "Attr", "node": {"type": "Var", "name": "observation"}, "key": "epoch"}}}
+      ]},
+      "effects": [
+        ["set_attr", "drive", "c_d_prev", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "drive"}, "key": "c_d"}}],
+        ["set_attr", "drive", "c_d", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "observation"}, "key": "health"}}],
+        ["set_attr", "drive", "now_epoch", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "observation"}, "key": "epoch"}}],
+        ["set_attr", "drive", "last_tend", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "observation"}, "key": "epoch"}}],
+        ["set_attr", "drive", "doom_observation_epoch", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "observation"}, "key": "epoch"}}],
+        ["set_attr", "drive", "threat", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "observation"}, "key": "damage_taken"}}],
+        ["set_attr", "drive", "arousal_contrib", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "observation"}, "key": "damage_taken"}}]
+      ]
+    },
+    {
+      "name": "doom_feed_ammo_drive",
+      "area": "arbitration",
+      "order": -6,
+      "latency_class": "hard_realtime",
+      "match": [
+        ["game", "has_current_dual_process_context", "context"],
+        ["context", "observes_doom_state", "observation"],
+        ["observation", "feeds_doom_drive", "drive"]
+      ],
+      "where": {"type": "And", "items": [
+        {"type": "Eq",
+         "a": {"type": "Attr", "node": {"type": "Var", "name": "drive"}, "key": "doom_need"},
+         "b": {"type": "Lit", "value": "ammo"}},
+        {"type": "Not", "arg": {"type": "Eq",
+         "a": {"type": "Attr", "node": {"type": "Var", "name": "drive"}, "key": "doom_observation_epoch"},
+         "b": {"type": "Attr", "node": {"type": "Var", "name": "observation"}, "key": "epoch"}}}
+      ]},
+      "effects": [
+        ["set_attr", "drive", "c_d_prev", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "drive"}, "key": "c_d"}}],
+        ["set_attr", "drive", "c_d", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "observation"}, "key": "ammo"}}],
+        ["set_attr", "drive", "now_epoch", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "observation"}, "key": "epoch"}}],
+        ["set_attr", "drive", "last_tend", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "observation"}, "key": "epoch"}}],
+        ["set_attr", "drive", "doom_observation_epoch", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "observation"}, "key": "epoch"}}]
+      ]
+    },
+    {
+      "name": "doom_feed_exploration_drive",
+      "area": "arbitration",
+      "order": -6,
+      "latency_class": "hard_realtime",
+      "match": [
+        ["game", "has_current_dual_process_context", "context"],
+        ["context", "observes_doom_state", "observation"],
+        ["observation", "feeds_doom_drive", "drive"]
+      ],
+      "where": {"type": "And", "items": [
+        {"type": "Eq",
+         "a": {"type": "Attr", "node": {"type": "Var", "name": "drive"}, "key": "doom_need"},
+         "b": {"type": "Lit", "value": "exploration"}},
+        {"type": "Not", "arg": {"type": "Eq",
+         "a": {"type": "Attr", "node": {"type": "Var", "name": "drive"}, "key": "doom_observation_epoch"},
+         "b": {"type": "Attr", "node": {"type": "Var", "name": "observation"}, "key": "epoch"}}}
+      ]},
+      "effects": [
+        ["set_attr", "drive", "c_d_prev", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "drive"}, "key": "c_d"}}],
+        ["set_attr", "drive", "c_d", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "observation"}, "key": "new_cells"}}],
+        ["set_attr", "drive", "now_epoch", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "observation"}, "key": "epoch"}}],
+        ["set_attr", "drive", "last_tend", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "observation"}, "key": "epoch"}}],
+        ["set_attr", "drive", "doom_observation_epoch", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "observation"}, "key": "epoch"}}],
+        ["set_attr", "drive", "learning_progress", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "observation"}, "key": "new_cells"}}]
+      ]
+    },
+    {
+      "name": "doom_context_reads_measured_surprise",
+      "area": "arbitration",
+      "order": -4,
+      "latency_class": "hard_realtime",
+      "match": [["context", "observes_doom_state", "observation"]],
+      "effects": [
+        ["set_attr", "context", "novelty", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "observation"}, "key": "new_cells"}}],
+        ["set_attr", "context", "prediction_error", {"__term__": {"type": "Plus", "items": [
+          {"type": "Attr", "node": {"type": "Var", "name": "observation"}, "key": "damage_taken"},
+          {"type": "Attr", "node": {"type": "Var", "name": "observation"}, "key": "respawned"}
+        ]}}],
+        ["set_attr", "context", "uncertainty", {"__term__": {"type": "Times", "items": [
+          {"type": "Lit", "value": 2.0},
+          {"type": "Attr", "node": {"type": "Var", "name": "observation"}, "key": "attention_refused"}
+        ]}}]
+      ]
+    },
+    {
+      "name": "doom_modulator_reads_current_epoch",
+      "area": "arbitration",
+      "order": -5,
+      "latency_class": "hard_realtime",
+      "match": [
+        ["game", "has_current_dual_process_context", "context"],
+        ["context", "observes_doom_state", "observation"],
+        ["game", "has_emotion_hub", "hub"],
+        ["hub", "has_modulator_state", "ms"]
+      ],
+      "effects": [
+        ["set_attr", "ms", "epoch", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "observation"}, "key": "epoch"}}]
+      ]
+    },
+    {
+      "name": "doom_context_activates_after_candidate_preparation",
+      "area": "arbitration",
+      "order": -1,
+      "latency_class": "hard_realtime",
+      "match": [
+        ["context", "observes_doom_state", "observation"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq",
+           "a": {"type": "Attr", "node": {"type": "Var", "name": "context"}, "key": "status"},
+           "b": {"type": "Lit", "value": "preparing"}},
+          {"type": "Eq",
+           "a": {"type": "Attr", "node": {"type": "Var", "name": "context"}, "key": "manifest_complete"},
+           "b": {"type": "Lit", "value": 1}},
+          {"type": "Gt",
+           "a": {"type": "Count", "source": {
+             "type": "Neighbours",
+             "node": {"type": "Var", "name": "context"},
+             "edge_type": "has_system_one_candidate"
+           }},
+           "b": {"type": "Lit", "value": 0}},
+          {"type": "Eq",
+           "a": {"type": "Count", "source": {
+             "type": "Neighbours",
+             "node": {"type": "Var", "name": "context"},
+             "edge_type": "has_system_one_candidate"
+           }},
+           "b": {"type": "Attr", "node": {"type": "Var", "name": "context"}, "key": "expected_candidate_count"}},
+          {"type": "Not", "arg": {
+            "type": "Exists",
+            "source": {"type": "Neighbours", "node": {"type": "Var", "name": "context"}, "edge_type": "has_system_one_candidate"},
+            "var_name": "candidate",
+            "predicate": {"type": "Not", "arg": {"type": "Eq",
+              "a": {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "status"},
+              "b": {"type": "Lit", "value": "ready"}
+            }}
+          }}
+        ]
+      },
+      "effects": [
+        ["set_attr", "context", "status", "pending"]
+      ]
+    },
+    {
+      "name": "doom_candidate_exploration_value",
+      "area": "arbitration",
+      "order": -3,
+      "latency_class": "hard_realtime",
+      "match": [
+        ["context", "has_system_one_candidate", "candidate"],
+        ["candidate", "proposes_control", "control"]
+      ],
+      "effects": [
+        ["set_attr", "candidate", "default_value", {"__term__": {"type": "Minus",
+          "a": {"type": "Attr", "node": {"type": "Var", "name": "control"}, "key": "doom_predicted_value"},
+          "b": {"type": "Plus", "items": [
+            {"type": "Times", "items": [
+              {"type": "Attr", "node": {"type": "Var", "name": "control"}, "key": "n_trials"},
+              {"type": "Lit", "value": 10.0}
+            ]},
+            {"type": "Times", "items": [
+              {"type": "Attr", "node": {"type": "Var", "name": "control"}, "key": "control_ordinal"},
+              {"type": "Lit", "value": 0.1}
+            ]}
+          ]}
+        }}],
+        ["set_attr", "candidate", "predicted_value", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "control"}, "key": "doom_predicted_value"}}],
+        ["set_attr", "candidate", "consolidation_strength", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "control"}, "key": "doom_consolidation_strength"}}],
+        ["set_attr", "candidate", "experience_count", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "control"}, "key": "doom_experience_count"}}],
+        ["set_attr", "candidate", "reliability", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "control"}, "key": "doom_reliability"}}],
+        ["set_attr", "candidate", "grounded", 1.0],
+        ["set_attr", "candidate", "residual", 0.0],
+        ["set_attr", "candidate", "evidence_increment", {"__term__": {"type": "Minus",
+          "a": {"type": "Lit", "value": 1.0},
+          "b": {"type": "Times", "items": [
+            {"type": "Attr", "node": {"type": "Var", "name": "control"}, "key": "control_ordinal"},
+            {"type": "Lit", "value": 0.01}
+          ]}
+        }}],
+        ["set_attr", "candidate", "status", "ready"]
+      ]
+    },
+    {
+      "name": "doom_use_affective_tendency",
+      "area": "arbitration",
+      "order": -2,
+      "latency_class": "hard_realtime",
+      "match": [
+        ["candidate", "proposes_control", "control"]
+      ],
+      "where": {
+        "type": "Eq",
+        "a": {"type": "Attr", "node": {"type": "Var", "name": "control"}, "key": "token"},
+        "b": {"type": "Lit", "value": "use"}
+      },
+      "effects": [
+        ["set_attr", "candidate", "urgency", 1.0],
+        ["set_attr", "candidate", "valence", 1.0]
+      ]
+    },
+    {
+      "name": "doom_attack_affective_tendency",
+      "area": "arbitration",
+      "order": -2,
+      "latency_class": "hard_realtime",
+      "match": [
+        ["candidate", "proposes_control", "control"]
+      ],
+      "where": {
+        "type": "Eq",
+        "a": {"type": "Attr", "node": {"type": "Var", "name": "control"}, "key": "token"},
+        "b": {"type": "Lit", "value": "attack"}
+      },
+      "effects": [
+        ["set_attr", "candidate", "urgency", 0.8],
+        ["set_attr", "candidate", "valence", 0.5]
+      ]
+    },
+    {
+      "name": "doom_score_intent_authorization",
+      "area": "motor",
+      "order": 2,
+      "latency_class": "hard_realtime",
+      "comment": "The host publishes consequence facts and a final completeness bit. The graph derives the same commit/wait/refine values used by the general information-commitment faculty; missing or partial descriptions remain proposed and therefore fail closed.",
+      "match": [
+        ["intent", "enacts_bundle", "bundle"]
+      ],
+      "where": {"type": "And", "items": [
+        {"type": "Eq",
+         "a": {"type": "Attr", "node": {"type": "Var", "name": "intent"}, "key": "status"},
+         "b": {"type": "Lit", "value": "proposed"}},
+        {"type": "Eq",
+         "a": {"type": "Attr", "node": {"type": "Var", "name": "intent"}, "key": "doom_authorization_input_complete"},
+         "b": {"type": "Lit", "value": 1}}
+      ]},
+      "effects": [
+        ["set_attr", "intent", "doom_information_destroyed", {"__term__": {
+          "type": "Plus", "items": [
+            {"type": "Attr", "node": {"type": "Var", "name": "intent"}, "key": "doom_deleted_facts"},
+            {"type": "Times", "items": [
+              {"type": "Attr", "node": {"type": "Var", "name": "intent"}, "key": "doom_overwritten_facts"},
+              {"type": "Minus",
+               "a": {"type": "Lit", "value": 1.0},
+               "b": {"type": "Attr", "node": {"type": "Var", "name": "intent"}, "key": "doom_recoverability"}}
+            ]},
+            {"type": "Attr", "node": {"type": "Var", "name": "intent"}, "key": "doom_externality"}
+          ]
+        }}],
+        ["set_attr", "intent", "doom_commit_value", {"__term__": {
+          "type": "Minus",
+          "a": {"type": "Plus", "items": [
+            {"type": "Attr", "node": {"type": "Var", "name": "intent"}, "key": "doom_expected_goal_work"},
+            {"type": "Attr", "node": {"type": "Var", "name": "intent"}, "key": "doom_expected_information_gain"}
+          ]},
+          "b": {"type": "Plus", "items": [
+            {"type": "Attr", "node": {"type": "Var", "name": "intent"}, "key": "doom_deleted_facts"},
+            {"type": "Times", "items": [
+              {"type": "Attr", "node": {"type": "Var", "name": "intent"}, "key": "doom_overwritten_facts"},
+              {"type": "Minus",
+               "a": {"type": "Lit", "value": 1.0},
+               "b": {"type": "Attr", "node": {"type": "Var", "name": "intent"}, "key": "doom_recoverability"}}
+            ]},
+            {"type": "Attr", "node": {"type": "Var", "name": "intent"}, "key": "doom_externality"},
+            {"type": "Times", "items": [
+              {"type": "Attr", "node": {"type": "Var", "name": "intent"}, "key": "doom_uncertainty"},
+              {"type": "Minus",
+               "a": {"type": "Lit", "value": 1.0},
+               "b": {"type": "Attr", "node": {"type": "Var", "name": "intent"}, "key": "doom_recoverability"}}
+            ]}
+          ]}
+        }}],
+        ["set_attr", "intent", "doom_wait_value", {"__term__": {
+          "type": "Minus",
+          "a": {"type": "Lit", "value": 0.0},
+          "b": {"type": "Attr", "node": {"type": "Var", "name": "intent"}, "key": "doom_wait_delay_cost"}
+        }}],
+        ["set_attr", "intent", "doom_refine_value", {"__term__": {
+          "type": "Minus",
+          "a": {"type": "Attr", "node": {"type": "Var", "name": "intent"}, "key": "doom_uncertainty"},
+          "b": {"type": "Attr", "node": {"type": "Var", "name": "intent"}, "key": "doom_refinement_cost"}
+        }}],
+        ["set_attr", "intent", "doom_authorization_scored", 1]
+      ]
+    },
+    {
+      "name": "doom_authorize_intent_from_graph_commitment",
+      "area": "motor",
+      "order": 3,
+      "latency_class": "hard_realtime",
+      "match": [
+        ["intent", "enacts_bundle", "bundle"]
+      ],
+      "where": {"type": "And", "items": [
+        {"type": "Eq",
+         "a": {"type": "Attr", "node": {"type": "Var", "name": "intent"}, "key": "status"},
+         "b": {"type": "Lit", "value": "proposed"}},
+        {"type": "Eq",
+         "a": {"type": "Attr", "node": {"type": "Var", "name": "intent"}, "key": "doom_authorization_scored"},
+         "b": {"type": "Lit", "value": 1}},
+        {"type": "Gt",
+         "a": {"type": "Attr", "node": {"type": "Var", "name": "intent"}, "key": "doom_commit_value"},
+         "b": {"type": "Attr", "node": {"type": "Var", "name": "intent"}, "key": "doom_wait_value"}},
+        {"type": "Gt",
+         "a": {"type": "Attr", "node": {"type": "Var", "name": "intent"}, "key": "doom_commit_value"},
+         "b": {"type": "Attr", "node": {"type": "Var", "name": "intent"}, "key": "doom_refine_value"}}
+      ]},
+      "effects": [
+        ["set_attr", "intent", "status", "authorized"],
+        ["set_attr", "intent", "authorization_source", "graph_information_commitment"],
+        ["set_attr", "intent", "authorization_decision", "commit"]
+      ]
+    },
+    {
+      "name": "doom_defer_intent_from_graph_commitment",
+      "area": "motor",
+      "order": 3,
+      "latency_class": "hard_realtime",
+      "match": [
+        ["intent", "enacts_bundle", "bundle"]
+      ],
+      "where": {"type": "And", "items": [
+        {"type": "Eq",
+         "a": {"type": "Attr", "node": {"type": "Var", "name": "intent"}, "key": "status"},
+         "b": {"type": "Lit", "value": "proposed"}},
+        {"type": "Eq",
+         "a": {"type": "Attr", "node": {"type": "Var", "name": "intent"}, "key": "doom_authorization_scored"},
+         "b": {"type": "Lit", "value": 1}},
+        {"type": "Or", "items": [
+          {"type": "Lte",
+           "a": {"type": "Attr", "node": {"type": "Var", "name": "intent"}, "key": "doom_commit_value"},
+           "b": {"type": "Attr", "node": {"type": "Var", "name": "intent"}, "key": "doom_wait_value"}},
+          {"type": "Lte",
+           "a": {"type": "Attr", "node": {"type": "Var", "name": "intent"}, "key": "doom_commit_value"},
+           "b": {"type": "Attr", "node": {"type": "Var", "name": "intent"}, "key": "doom_refine_value"}}
+        ]}
+      ]},
+      "effects": [
+        ["set_attr", "intent", "status", "deferred"],
+        ["set_attr", "intent", "authorization_source", "graph_information_commitment"],
+        ["set_attr", "intent", "authorization_decision", "wait_or_refine"]
+      ]
+    },
+    {
+      "name": "doom_system_one_commit_opens_control_bundle",
+      "area": "motor",
+      "order": 0,
+      "latency_class": "hard_realtime",
+      "match": [
+        ["game", "has_current_dual_process_context", "context"],
+        ["context", "has_system_one_commit", "commit"],
+        ["commit", "selects_candidate", "candidate"],
+        ["candidate", "proposes_control", "control"]
+      ],
+      "effects": [
+        ["set_attr_if_different", "game", "chosen_control", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "control"}, "key": "name"}}],
+        ["set_attr_if_different", "game", "chosen_source", "dual_process"]
+      ]
+    },
+    {
+      "name": "doom_system_two_records_selected_candidate",
+      "area": "executive",
+      "order": 3,
+      "latency_class": "soft_realtime",
+      "match": [
+        ["game", "has_current_dual_process_context", "context"],
+        ["context", "has_system_two_escalation", "escalation"],
+        ["context", "has_system_one_candidate", "candidate"],
+        ["candidate", "proposes_control", "control"]
+      ],
+      "where": {
+        "type": "Eq",
+        "a": {"type": "Attr", "node": {"type": "Var", "name": "control"}, "key": "name"},
+        "b": {"type": "Attr", "node": {"type": "Var", "name": "game"}, "key": "chosen_control"}
+      },
+      "effects": [
+        ["add_edge", "escalation", "selects_candidate", "candidate"],
+        ["set_attr_if_different", "candidate", "status", "provisional"],
+        ["set_attr_if_different", "candidate", "eligibility_trace", 1.0]
+      ]
+    },
+    {
+      "name": "doom_enacted_system_two_intent_opens_action_attempt",
+      "area": "motor",
+      "order": 4,
+      "latency_class": "hard_realtime",
+      "comment": "Local enactment authors a transport-pending eligibility record, not evidence that Doom applied the action. Only a lossless child-process receipt may open its causal observation window.",
+      "match": [
+        ["game", "for_agent", "agent"],
+        ["agent", "has_doom_lifecycle_policy", "policy"],
+        ["game", "has_current_dual_process_context", "context"],
+        ["context", "has_system_two_escalation", "escalation"],
+        ["escalation", "selects_candidate", "candidate"],
+        ["candidate", "proposes_control", "control"],
+        ["game", "has_control_bundle", "bundle"],
+        ["bundle", "includes_control", "control"],
+        ["bundle", "has_intent", "intent"]
+      ],
+      "where": {"type": "And", "items": [
+        {"type": "Eq",
+         "a": {"type": "Attr", "node": {"type": "Var", "name": "intent"}, "key": "status"},
+         "b": {"type": "Lit", "value": "enacted"}},
+        {"type": "Eq",
+         "a": {"type": "Attr", "node": {"type": "Var", "name": "bundle"}, "key": "world_tick"},
+         "b": {"type": "Attr", "node": {"type": "Var", "name": "context"}, "key": "epoch"}},
+        {"type": "Not", "arg": {
+          "type": "Exists",
+          "source": {"type": "Neighbours", "node": {"type": "Var", "name": "game"}, "edge_type": "has_doom_action_attempt"},
+          "var_name": "existing",
+          "predicate": {"type": "Exists",
+            "source": {"type": "Neighbours", "node": {"type": "Var", "name": "existing"}, "edge_type": "issued_by_intent"},
+            "var_name": "source_intent",
+            "predicate": {"type": "Eq",
+              "a": {"type": "Var", "name": "source_intent"},
+              "b": {"type": "Var", "name": "intent"}}
+          }
+        }}
+      ]},
+      "effects": [
+        ["add_node", "attempt", "DoomActionAttempt", {
+          "status": "awaiting_transport",
+          "transport_status": "awaiting_receipt",
+          "action_id": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "intent"}, "key": "created_tick"}},
+          "source_epoch": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "context"}, "key": "epoch"}},
+          "authored_world_tick": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "intent"}, "key": "created_tick"}},
+          "enacted_world_tick": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "intent"}, "key": "enacted_tick"}},
+          "transport_expires_tick": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "intent"}, "key": "expires_tick"}},
+          "not_before_epoch": {"__term__": {"type": "Plus", "items": [
+            {"type": "Attr", "node": {"type": "Var", "name": "intent"}, "key": "enacted_tick"},
+            {"type": "Lit", "value": 1}
+          ]}},
+          "causal_deadline_epoch": {"__term__": {"type": "Plus", "items": [
+            {"type": "Attr", "node": {"type": "Var", "name": "intent"}, "key": "enacted_tick"},
+            {"type": "Attr", "node": {"type": "Var", "name": "policy"}, "key": "causal_window_epochs"}
+          ]}}
+        }],
+        ["add_edge", "game", "has_doom_action_attempt", "attempt"],
+        ["add_edge", "attempt", "credits_candidate", "candidate"],
+        ["add_edge", "attempt", "credits_escalation", "escalation"],
+        ["add_edge", "attempt", "issued_by_intent", "intent"],
+        ["add_edge", "attempt", "attempted_control", "control"]
+      ]
+    },
+    {
+      "name": "doom_applied_receipt_opens_causal_window",
+      "area": "arbitration",
+      "order": -3,
+      "latency_class": "hard_realtime",
+      "comment": "Correlate a lossless applied receipt by action identity. The receipt's first graph-visible sensory epoch, not local enqueue time, starts the eligibility window.",
+      "match": [
+        ["game", "for_agent", "agent"],
+        ["agent", "has_doom_lifecycle_policy", "policy"],
+        ["game", "has_doom_action_attempt", "attempt"],
+        ["game", "has_doom_action_receipt", "receipt"]
+      ],
+      "where": {"type": "And", "items": [
+        {"type": "Eq",
+         "a": {"type": "Attr", "node": {"type": "Var", "name": "attempt"}, "key": "status"},
+         "b": {"type": "Lit", "value": "awaiting_transport"}},
+        {"type": "Eq",
+         "a": {"type": "Attr", "node": {"type": "Var", "name": "receipt"}, "key": "status"},
+         "b": {"type": "Lit", "value": "applied"}},
+        {"type": "Eq",
+         "a": {"type": "Attr", "node": {"type": "Var", "name": "receipt"}, "key": "doom_receipt_consumed"},
+         "b": {"type": "Lit", "value": 0}},
+        {"type": "Eq",
+         "a": {"type": "Attr", "node": {"type": "Var", "name": "attempt"}, "key": "action_id"},
+         "b": {"type": "Attr", "node": {"type": "Var", "name": "receipt"}, "key": "action_id"}}
+      ]},
+      "effects": [
+        ["set_attr", "attempt", "status", "awaiting_observation"],
+        ["set_attr", "attempt", "transport_status", "applied"],
+        ["set_attr", "attempt", "transport_applied_world_tick", {"__term__": {
+          "type": "Attr", "node": {"type": "Var", "name": "receipt"}, "key": "applied_world_tick"
+        }}],
+        ["set_attr", "attempt", "transport_receipt_epoch", {"__term__": {
+          "type": "Attr", "node": {"type": "Var", "name": "receipt"}, "key": "observed_epoch"
+        }}],
+        ["set_attr", "attempt", "not_before_epoch", {"__term__": {
+          "type": "Attr", "node": {"type": "Var", "name": "receipt"}, "key": "observed_epoch"
+        }}],
+        ["set_attr", "attempt", "causal_deadline_epoch", {"__term__": {
+          "type": "Plus", "items": [
+            {"type": "Attr", "node": {"type": "Var", "name": "receipt"}, "key": "observed_epoch"},
+            {"type": "Attr", "node": {"type": "Var", "name": "policy"}, "key": "causal_window_epochs"}
+          ]
+        }}],
+        ["set_attr", "receipt", "doom_receipt_consumed", 1]
+      ]
+    },
+    {
+      "name": "doom_expired_receipt_closes_without_learning",
+      "area": "arbitration",
+      "order": -3,
+      "latency_class": "hard_realtime",
+      "comment": "A pulse that the world never applied is a transport outcome, not negative evidence about the selected control.",
+      "match": [
+        ["game", "has_doom_action_attempt", "attempt"],
+        ["game", "has_doom_action_receipt", "receipt"]
+      ],
+      "where": {"type": "And", "items": [
+        {"type": "Eq",
+         "a": {"type": "Attr", "node": {"type": "Var", "name": "attempt"}, "key": "status"},
+         "b": {"type": "Lit", "value": "awaiting_transport"}},
+        {"type": "Or", "items": [
+          {"type": "Eq",
+           "a": {"type": "Attr", "node": {"type": "Var", "name": "receipt"}, "key": "status"},
+           "b": {"type": "Lit", "value": "expired_stale"}},
+          {"type": "Eq",
+           "a": {"type": "Attr", "node": {"type": "Var", "name": "receipt"}, "key": "status"},
+           "b": {"type": "Lit", "value": "expired_world_end"}}
+        ]},
+        {"type": "Eq",
+         "a": {"type": "Attr", "node": {"type": "Var", "name": "receipt"}, "key": "doom_receipt_consumed"},
+         "b": {"type": "Lit", "value": 0}},
+        {"type": "Eq",
+         "a": {"type": "Attr", "node": {"type": "Var", "name": "attempt"}, "key": "action_id"},
+         "b": {"type": "Attr", "node": {"type": "Var", "name": "receipt"}, "key": "action_id"}}
+      ]},
+      "effects": [
+        ["set_attr", "attempt", "status", "transport_expired"],
+        ["set_attr", "attempt", "transport_status", {"__term__": {
+          "type": "Attr", "node": {"type": "Var", "name": "receipt"}, "key": "status"
+        }}],
+        ["set_attr", "attempt", "closed_epoch", {"__term__": {
+          "type": "Attr", "node": {"type": "Var", "name": "receipt"}, "key": "observed_epoch"
+        }}],
+        ["set_attr", "receipt", "doom_receipt_consumed", 1]
+      ]
+    },
+    {
+      "name": "doom_action_attempt_closes_on_causal_success",
+      "area": "arbitration",
+      "order": -2,
+      "latency_class": "hard_realtime",
+      "comment": "A later measured benefit closes only the oldest eligible enacted attempt. One observation is consumed by at most one attempt, preventing a single kill or movement event from rewarding every outstanding action.",
+      "match": [
+        ["game", "has_current_dual_process_context", "context"],
+        ["context", "observes_doom_state", "observation"],
+        ["game", "has_doom_action_attempt", "attempt"],
+        ["attempt", "credits_candidate", "candidate"],
+        ["attempt", "credits_escalation", "escalation"]
+      ],
+      "where": {"type": "And", "items": [
+        {"type": "Eq",
+         "a": {"type": "Attr", "node": {"type": "Var", "name": "attempt"}, "key": "status"},
+         "b": {"type": "Lit", "value": "awaiting_observation"}},
+        {"type": "Eq",
+         "a": {"type": "Attr", "node": {"type": "Var", "name": "observation"}, "key": "doom_outcome_consumed"},
+         "b": {"type": "Lit", "value": 0}},
+        {"type": "Gte",
+         "a": {"type": "Attr", "node": {"type": "Var", "name": "observation"}, "key": "epoch"},
+         "b": {"type": "Attr", "node": {"type": "Var", "name": "attempt"}, "key": "not_before_epoch"}},
+        {"type": "Lte",
+         "a": {"type": "Attr", "node": {"type": "Var", "name": "observation"}, "key": "epoch"},
+         "b": {"type": "Attr", "node": {"type": "Var", "name": "attempt"}, "key": "causal_deadline_epoch"}},
+        {"type": "Eq",
+         "a": {"type": "Attr", "node": {"type": "Var", "name": "observation"}, "key": "respawned"},
+         "b": {"type": "Lit", "value": 0.0}},
+        {"type": "Gt", "a": {"type": "Plus", "items": [
+          {"type": "Attr", "node": {"type": "Var", "name": "observation"}, "key": "moved"},
+          {"type": "Attr", "node": {"type": "Var", "name": "observation"}, "key": "new_cells"},
+          {"type": "Attr", "node": {"type": "Var", "name": "observation"}, "key": "kill_delta"}
+        ]}, "b": {"type": "Lit", "value": 0.0}},
+        {"type": "Eq",
+         "a": {"type": "Var", "name": "attempt"},
+         "b": {"type": "ArgminUnique",
+           "source": {"type": "Filter",
+             "source": {"type": "Neighbours", "node": {"type": "Var", "name": "game"}, "edge_type": "has_doom_action_attempt"},
+             "var_name": "eligible",
+             "predicate": {"type": "And", "items": [
+               {"type": "Eq",
+                "a": {"type": "Attr", "node": {"type": "Var", "name": "eligible"}, "key": "status"},
+                "b": {"type": "Lit", "value": "awaiting_observation"}},
+               {"type": "Gte",
+                "a": {"type": "Attr", "node": {"type": "Var", "name": "observation"}, "key": "epoch"},
+                "b": {"type": "Attr", "node": {"type": "Var", "name": "eligible"}, "key": "not_before_epoch"}}
+             ]}},
+           "var_name": "eligible",
+           "value": {"type": "Attr", "node": {"type": "Var", "name": "eligible"}, "key": "action_id"},
+           "default": null}}
+      ]},
+      "effects": [
+        ["add_node", "outcome", "SystemTwoOutcome", {
+          "status": "pending",
+          "verified": 0,
+          "epoch": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "observation"}, "key": "epoch"}},
+          "action_id": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "attempt"}, "key": "action_id"}},
+          "source_epoch": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "attempt"}, "key": "source_epoch"}},
+          "actual_value": 0.0,
+          "prediction_error": 0.0
+        }],
+        ["add_edge", "escalation", "has_system_two_outcome", "outcome"],
+        ["add_edge", "outcome", "consolidates_candidate", "candidate"],
+        ["add_edge", "outcome", "has_doom_outcome_observation", "observation"],
+        ["add_edge", "attempt", "resolved_as", "outcome"],
+        ["set_attr", "attempt", "status", "successful"],
+        ["set_attr", "attempt", "closed_epoch", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "observation"}, "key": "epoch"}}],
+        ["set_attr", "observation", "doom_outcome_consumed", 1]
+      ]
+    },
+    {
+      "name": "doom_action_attempt_closes_on_failure_or_timeout",
+      "area": "arbitration",
+      "order": -1,
+      "latency_class": "hard_realtime",
+      "comment": "Respawn is immediate negative evidence. Mere absence of effect is not failure until the graph-held causal window expires, avoiding punishment of door motion and other delayed consequences.",
+      "match": [
+        ["game", "has_current_dual_process_context", "context"],
+        ["context", "observes_doom_state", "observation"],
+        ["game", "has_doom_action_attempt", "attempt"],
+        ["attempt", "credits_candidate", "candidate"],
+        ["attempt", "credits_escalation", "escalation"]
+      ],
+      "where": {"type": "And", "items": [
+        {"type": "Eq",
+         "a": {"type": "Attr", "node": {"type": "Var", "name": "attempt"}, "key": "status"},
+         "b": {"type": "Lit", "value": "awaiting_observation"}},
+        {"type": "Eq",
+         "a": {"type": "Attr", "node": {"type": "Var", "name": "observation"}, "key": "doom_outcome_consumed"},
+         "b": {"type": "Lit", "value": 0}},
+        {"type": "Gte",
+         "a": {"type": "Attr", "node": {"type": "Var", "name": "observation"}, "key": "epoch"},
+         "b": {"type": "Attr", "node": {"type": "Var", "name": "attempt"}, "key": "not_before_epoch"}},
+        {"type": "Or", "items": [
+          {"type": "Eq",
+           "a": {"type": "Attr", "node": {"type": "Var", "name": "observation"}, "key": "respawned"},
+           "b": {"type": "Lit", "value": 1.0}},
+          {"type": "Gte",
+           "a": {"type": "Attr", "node": {"type": "Var", "name": "observation"}, "key": "epoch"},
+           "b": {"type": "Attr", "node": {"type": "Var", "name": "attempt"}, "key": "causal_deadline_epoch"}}
+        ]},
+        {"type": "Eq",
+         "a": {"type": "Var", "name": "attempt"},
+         "b": {"type": "ArgminUnique",
+           "source": {"type": "Filter",
+             "source": {"type": "Neighbours", "node": {"type": "Var", "name": "game"}, "edge_type": "has_doom_action_attempt"},
+             "var_name": "eligible",
+             "predicate": {"type": "And", "items": [
+               {"type": "Eq",
+                "a": {"type": "Attr", "node": {"type": "Var", "name": "eligible"}, "key": "status"},
+                "b": {"type": "Lit", "value": "awaiting_observation"}},
+               {"type": "Gte",
+                "a": {"type": "Attr", "node": {"type": "Var", "name": "observation"}, "key": "epoch"},
+                "b": {"type": "Attr", "node": {"type": "Var", "name": "eligible"}, "key": "not_before_epoch"}}
+             ]}},
+           "var_name": "eligible",
+           "value": {"type": "Attr", "node": {"type": "Var", "name": "eligible"}, "key": "action_id"},
+           "default": null}}
+      ]},
+      "effects": [
+        ["add_node", "outcome", "SystemTwoOutcome", {
+          "status": "pending",
+          "verified": 0,
+          "epoch": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "observation"}, "key": "epoch"}},
+          "action_id": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "attempt"}, "key": "action_id"}},
+          "source_epoch": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "attempt"}, "key": "source_epoch"}},
+          "actual_value": 0.0,
+          "prediction_error": 0.0
+        }],
+        ["add_edge", "escalation", "has_system_two_outcome", "outcome"],
+        ["add_edge", "outcome", "consolidates_candidate", "candidate"],
+        ["add_edge", "outcome", "has_doom_outcome_observation", "observation"],
+        ["add_edge", "attempt", "resolved_as", "outcome"],
+        ["set_attr", "attempt", "status", "failed"],
+        ["set_attr", "attempt", "closed_epoch", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "observation"}, "key": "epoch"}}],
+        ["set_attr", "observation", "doom_outcome_consumed", 1]
+      ]
+    },
+    {
+      "name": "doom_verified_outcome_success",
+      "area": "learning",
+      "order": 0,
+      "latency_class": "soft_realtime",
+      "match": [
+        ["outcome", "has_doom_outcome_observation", "observation"],
+        ["outcome", "consolidates_candidate", "candidate"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "outcome"}, "key": "status"}, "b": {"type": "Lit", "value": "pending"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "observation"}, "key": "respawned"}, "b": {"type": "Lit", "value": 0.0}},
+          {"type": "Gt", "a": {"type": "Plus", "items": [
+            {"type": "Attr", "node": {"type": "Var", "name": "observation"}, "key": "moved"},
+            {"type": "Attr", "node": {"type": "Var", "name": "observation"}, "key": "new_cells"},
+            {"type": "Attr", "node": {"type": "Var", "name": "observation"}, "key": "kill_delta"}
+          ]}, "b": {"type": "Lit", "value": 0.0}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "outcome", "verified", 1],
+        ["set_attr", "outcome", "actual_value", 1.0],
+        ["set_attr", "outcome", "prediction_error", {"__term__": {"type": "Minus",
+          "a": {"type": "Lit", "value": 1.0},
+          "b": {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "predicted_value"}
+        }}],
+        ["set_attr", "outcome", "status", "successful"]
+      ]
+    },
+    {
+      "name": "doom_verified_outcome_failure",
+      "area": "learning",
+      "order": 0,
+      "latency_class": "soft_realtime",
+      "match": [
+        ["outcome", "has_doom_outcome_observation", "observation"],
+        ["outcome", "consolidates_candidate", "candidate"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "outcome"}, "key": "status"}, "b": {"type": "Lit", "value": "pending"}},
+          {"type": "Or", "items": [
+            {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "observation"}, "key": "respawned"}, "b": {"type": "Lit", "value": 1.0}},
+            {"type": "Eq", "a": {"type": "Plus", "items": [
+              {"type": "Attr", "node": {"type": "Var", "name": "observation"}, "key": "moved"},
+              {"type": "Attr", "node": {"type": "Var", "name": "observation"}, "key": "new_cells"},
+              {"type": "Attr", "node": {"type": "Var", "name": "observation"}, "key": "kill_delta"}
+            ]}, "b": {"type": "Lit", "value": 0.0}}
+          ]}
+        ]
+      },
+      "effects": [
+        ["set_attr", "outcome", "verified", 1],
+        ["set_attr", "outcome", "actual_value", -1.0],
+        ["set_attr", "outcome", "prediction_error", {"__term__": {"type": "Minus",
+          "a": {"type": "Lit", "value": -1.0},
+          "b": {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "predicted_value"}
+        }}],
+        ["set_attr", "outcome", "status", "failed"]
+      ]
+    },
+    {
+      "name": "doom_request_learning_for_pending_outcome",
+      "area": "arbitration",
+      "order": -1,
+      "latency_class": "hard_realtime",
+      "match": [
+        ["prior_escalation", "has_system_two_outcome", "outcome"],
+        ["prior_escalation", "about_context", "learned_context"],
+        ["agent", "has_doom_system_two_task_set", "task_set"]
+      ],
+      "where": {"type": "And", "items": [
+        {"type": "Eq",
+         "a": {"type": "Attr", "node": {"type": "Var", "name": "outcome"}, "key": "status"},
+         "b": {"type": "Lit", "value": "pending"}},
+        {"type": "Eq",
+         "a": {"type": "Attr", "node": {"type": "Var", "name": "task_set"}, "key": "area"},
+         "b": {"type": "Lit", "value": "learning"}},
+        {"type": "Not", "arg": {"type": "Eq",
+          "a": {"type": "Attr", "node": {"type": "Var", "name": "outcome"}, "key": "doom_learning_requested"},
+          "b": {"type": "Lit", "value": 1}
+        }}
+      ]},
+      "effects": [
+        ["add_node", "learning_request", "SystemTwoEscalation", {
+          "status": "requested",
+          "reason": "doom_outcome_learning",
+          "epoch": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "outcome"}, "key": "epoch"}}
+        }],
+        ["del_edge", "prior_escalation", "has_system_two_outcome", "outcome"],
+        ["add_edge", "learning_request", "has_system_two_outcome", "outcome"],
+        ["add_edge", "learning_request", "about_context", "learned_context"],
+        ["add_edge", "learned_context", "has_system_two_escalation", "learning_request"],
+        ["add_edge", "learning_request", "recruits_task_set", "task_set"],
+        ["set_attr", "outcome", "doom_learning_requested", 1]
+      ]
+    },
+    {
+      "name": "doom_fold_learned_control_memory",
+      "area": "learning",
+      "order": 110,
+      "latency_class": "soft_realtime",
+      "match": [
+        ["outcome", "consolidates_candidate", "candidate"],
+        ["candidate", "proposes_control", "control"]
+      ],
+      "where": {"type": "And", "items": [
+        {"type": "Eq",
+         "a": {"type": "Attr", "node": {"type": "Var", "name": "outcome"}, "key": "verified"},
+         "b": {"type": "Lit", "value": 1}},
+        {"type": "Or", "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "outcome"}, "key": "status"}, "b": {"type": "Lit", "value": "consolidated"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "outcome"}, "key": "status"}, "b": {"type": "Lit", "value": "revalued"}}
+        ]},
+        {"type": "Not", "arg": {"type": "Eq",
+          "a": {"type": "Attr", "node": {"type": "Var", "name": "outcome"}, "key": "doom_memory_folded"},
+          "b": {"type": "Lit", "value": 1}
+        }}
+      ]},
+      "effects": [
+        ["set_attr", "control", "doom_predicted_value", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "predicted_value"}}],
+        ["set_attr", "control", "doom_consolidation_strength", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "consolidation_strength"}}],
+        ["set_attr", "control", "doom_experience_count", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "experience_count"}}],
+        ["set_attr", "candidate", "doom_memory_folded", 1],
+        ["set_attr", "outcome", "doom_memory_folded", 1]
+      ]
+    },
+    {
+      "name": "doom_archive_folded_outcome",
+      "area": "learning",
+      "order": 120,
+      "latency_class": "soft_realtime",
+      "comment": "Durable learned values live on Control. Before transient episode evidence ages out, retain a bounded aggregate count and mark the causal outcome safe for lifecycle pruning.",
+      "match": [
+        ["agent", "has_doom_lifecycle_policy", "policy"],
+        ["escalation", "has_system_two_outcome", "outcome"]
+      ],
+      "where": {"type": "And", "items": [
+        {"type": "Eq",
+         "a": {"type": "Attr", "node": {"type": "Var", "name": "outcome"}, "key": "doom_memory_folded"},
+         "b": {"type": "Lit", "value": 1}},
+        {"type": "Not", "arg": {"type": "Eq",
+         "a": {"type": "Attr", "node": {"type": "Var", "name": "outcome"}, "key": "doom_lifecycle_archived"},
+         "b": {"type": "Lit", "value": 1}}}
+      ]},
+      "effects": [
+        ["set_attr", "policy", "archived_outcome_count", {"__term__": {"type": "Plus", "items": [
+          {"type": "Attr", "node": {"type": "Var", "name": "policy"}, "key": "archived_outcome_count"},
+          {"type": "Lit", "value": 1}
+        ]}}],
+        ["set_attr", "outcome", "doom_lifecycle_archived", 1]
+      ]
+    },
+    {
+      "name": "doom_prune_stale_candidate",
+      "area": "arbitration",
+      "order": 50,
+      "latency_class": "hard_realtime",
+      "match": [
+        ["game", "for_agent", "agent"],
+        ["agent", "has_doom_lifecycle_policy", "policy"],
+        ["game", "has_current_dual_process_context", "current"],
+        ["old_context", "has_system_one_candidate", "candidate"]
+      ],
+      "where": {"type": "And", "items": [
+        {"type": "Lt",
+         "a": {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "epoch"},
+         "b": {"type": "Minus",
+           "a": {"type": "Attr", "node": {"type": "Var", "name": "current"}, "key": "epoch"},
+           "b": {"type": "Attr", "node": {"type": "Var", "name": "policy"}, "key": "retention_epochs"}}},
+        {"type": "Or", "items": [
+          {"type": "Not", "arg": {"type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "status"},
+            "b": {"type": "Lit", "value": "provisional"}}},
+          {"type": "Eq",
+           "a": {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "doom_memory_folded"},
+           "b": {"type": "Lit", "value": 1}}
+        ]},
+        {"type": "Not", "arg": {
+          "type": "Exists",
+          "source": {"type": "Neighbours", "node": {"type": "Var", "name": "game"}, "edge_type": "has_doom_action_attempt"},
+          "var_name": "attempt",
+          "predicate": {"type": "And", "items": [
+            {"type": "Eq",
+             "a": {"type": "Attr", "node": {"type": "Var", "name": "attempt"}, "key": "status"},
+             "b": {"type": "Lit", "value": "awaiting_observation"}},
+            {"type": "Exists",
+             "source": {"type": "Neighbours", "node": {"type": "Var", "name": "attempt"}, "edge_type": "credits_candidate"},
+             "var_name": "credited",
+             "predicate": {"type": "Eq",
+               "a": {"type": "Var", "name": "credited"},
+               "b": {"type": "Var", "name": "candidate"}}
+            }
+          ]}
+        }}
+      ]},
+      "effects": [
+        ["del_node", "candidate"]
+      ]
+    },
+    {
+      "name": "doom_prune_stale_observation",
+      "area": "arbitration",
+      "order": 51,
+      "latency_class": "hard_realtime",
+      "match": [
+        ["game", "for_agent", "agent"],
+        ["agent", "has_doom_lifecycle_policy", "policy"],
+        ["game", "has_current_dual_process_context", "current"],
+        ["old_context", "observes_doom_state", "observation"]
+      ],
+      "where": {"type": "Lt",
+        "a": {"type": "Attr", "node": {"type": "Var", "name": "observation"}, "key": "epoch"},
+        "b": {"type": "Minus",
+          "a": {"type": "Attr", "node": {"type": "Var", "name": "current"}, "key": "epoch"},
+          "b": {"type": "Attr", "node": {"type": "Var", "name": "policy"}, "key": "retention_epochs"}}},
+      "effects": [
+        ["del_node", "observation"]
+      ]
+    },
+    {
+      "name": "doom_prune_stale_system_one_commit",
+      "area": "arbitration",
+      "order": 52,
+      "latency_class": "hard_realtime",
+      "match": [
+        ["game", "for_agent", "agent"],
+        ["agent", "has_doom_lifecycle_policy", "policy"],
+        ["game", "has_current_dual_process_context", "current"],
+        ["old_context", "has_system_one_commit", "commit"]
+      ],
+      "where": {"type": "Lt",
+        "a": {"type": "Attr", "node": {"type": "Var", "name": "commit"}, "key": "epoch"},
+        "b": {"type": "Minus",
+          "a": {"type": "Attr", "node": {"type": "Var", "name": "current"}, "key": "epoch"},
+          "b": {"type": "Attr", "node": {"type": "Var", "name": "policy"}, "key": "retention_epochs"}}},
+      "effects": [
+        ["del_node", "commit"]
+      ]
+    },
+    {
+      "name": "doom_prune_stale_context",
+      "area": "arbitration",
+      "order": 54,
+      "latency_class": "hard_realtime",
+      "match": [
+        ["game", "for_agent", "agent"],
+        ["agent", "has_doom_lifecycle_policy", "policy"],
+        ["game", "has_current_dual_process_context", "current"],
+        ["agent", "has_dual_process_context", "old_context"]
+      ],
+      "where": {"type": "And", "items": [
+        {"type": "Lt",
+         "a": {"type": "Attr", "node": {"type": "Var", "name": "old_context"}, "key": "epoch"},
+         "b": {"type": "Minus",
+           "a": {"type": "Attr", "node": {"type": "Var", "name": "current"}, "key": "epoch"},
+           "b": {"type": "Attr", "node": {"type": "Var", "name": "policy"}, "key": "retention_epochs"}}},
+        {"type": "Eq",
+         "a": {"type": "Count", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "old_context"}, "edge_type": "has_system_one_candidate"}},
+         "b": {"type": "Lit", "value": 0}},
+        {"type": "Eq",
+         "a": {"type": "Count", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "old_context"}, "edge_type": "observes_doom_state"}},
+         "b": {"type": "Lit", "value": 0}},
+        {"type": "Eq",
+         "a": {"type": "Count", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "old_context"}, "edge_type": "has_system_one_commit"}},
+         "b": {"type": "Lit", "value": 0}},
+        {"type": "Eq",
+         "a": {"type": "Count", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "old_context"}, "edge_type": "has_system_two_escalation"}},
+         "b": {"type": "Lit", "value": 0}}
+      ]},
+      "effects": [
+        ["del_node", "old_context"]
+      ]
+    },
+    {
+      "name": "doom_prune_stale_action_intent",
+      "area": "arbitration",
+      "order": 55,
+      "latency_class": "hard_realtime",
+      "match": [
+        ["game", "for_agent", "agent"],
+        ["agent", "has_doom_lifecycle_policy", "policy"],
+        ["game", "has_control_bundle", "bundle"],
+        ["bundle", "has_intent", "intent"]
+      ],
+      "where": {"type": "Lt",
+        "a": {"type": "Attr", "node": {"type": "Var", "name": "intent"}, "key": "created_tick"},
+        "b": {"type": "Minus",
+          "a": {"type": "Attr", "node": {"type": "Var", "name": "game"}, "key": "world_tick"},
+          "b": {"type": "Attr", "node": {"type": "Var", "name": "policy"}, "key": "retention_epochs"}}},
+      "effects": [
+        ["del_node", "intent"]
+      ]
+    },
+    {
+      "name": "doom_prune_stale_control_bundle",
+      "area": "arbitration",
+      "order": 56,
+      "latency_class": "hard_realtime",
+      "match": [
+        ["game", "for_agent", "agent"],
+        ["agent", "has_doom_lifecycle_policy", "policy"],
+        ["game", "has_control_bundle", "bundle"]
+      ],
+      "where": {"type": "And", "items": [
+        {"type": "Lt",
+         "a": {"type": "Attr", "node": {"type": "Var", "name": "bundle"}, "key": "world_tick"},
+         "b": {"type": "Minus",
+           "a": {"type": "Attr", "node": {"type": "Var", "name": "game"}, "key": "world_tick"},
+           "b": {"type": "Attr", "node": {"type": "Var", "name": "policy"}, "key": "retention_epochs"}}},
+        {"type": "Eq",
+         "a": {"type": "Count", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "bundle"}, "edge_type": "has_intent"}},
+         "b": {"type": "Lit", "value": 0}}
+      ]},
+      "effects": [
+        ["del_node", "bundle"]
+      ]
+    },
+    {
+      "name": "doom_prune_closed_action_attempt",
+      "area": "arbitration",
+      "order": 57,
+      "latency_class": "hard_realtime",
+      "match": [
+        ["game", "for_agent", "agent"],
+        ["agent", "has_doom_lifecycle_policy", "policy"],
+        ["game", "has_doom_action_attempt", "attempt"]
+      ],
+      "where": {"type": "And", "items": [
+        {"type": "Not", "arg": {"type": "Eq",
+          "a": {"type": "Attr", "node": {"type": "Var", "name": "attempt"}, "key": "status"},
+          "b": {"type": "Lit", "value": "awaiting_observation"}}},
+        {"type": "Not", "arg": {"type": "Eq",
+          "a": {"type": "Attr", "node": {"type": "Var", "name": "attempt"}, "key": "status"},
+          "b": {"type": "Lit", "value": "awaiting_transport"}}},
+        {"type": "Lt",
+         "a": {"type": "Attr", "node": {"type": "Var", "name": "attempt"}, "key": "closed_epoch"},
+         "b": {"type": "Minus",
+           "a": {"type": "Attr", "node": {"type": "Var", "name": "game"}, "key": "world_tick"},
+           "b": {"type": "Attr", "node": {"type": "Var", "name": "policy"}, "key": "retention_epochs"}}
+        }
+      ]},
+      "effects": [
+        ["del_node", "attempt"]
+      ]
+    },
+    {
+      "name": "doom_prune_consumed_action_receipt",
+      "area": "arbitration",
+      "order": 58,
+      "latency_class": "hard_realtime",
+      "match": [
+        ["game", "has_doom_action_receipt", "receipt"]
+      ],
+      "where": {
+        "type": "Eq",
+        "a": {"type": "Attr", "node": {"type": "Var", "name": "receipt"}, "key": "doom_receipt_consumed"},
+        "b": {"type": "Lit", "value": 1}
+      },
+      "effects": [
+        ["del_node", "receipt"]
+      ]
+    },
+    {
+      "name": "doom_prune_archived_outcome",
+      "area": "arbitration",
+      "order": 52,
+      "latency_class": "hard_realtime",
+      "match": [
+        ["game", "for_agent", "agent"],
+        ["agent", "has_doom_lifecycle_policy", "policy"],
+        ["escalation", "has_system_two_outcome", "outcome"]
+      ],
+      "where": {"type": "And", "items": [
+        {"type": "Eq",
+         "a": {"type": "Attr", "node": {"type": "Var", "name": "outcome"}, "key": "doom_lifecycle_archived"},
+         "b": {"type": "Lit", "value": 1}},
+        {"type": "Lt",
+         "a": {"type": "Attr", "node": {"type": "Var", "name": "outcome"}, "key": "epoch"},
+         "b": {"type": "Minus",
+           "a": {"type": "Attr", "node": {"type": "Var", "name": "game"}, "key": "world_tick"},
+           "b": {"type": "Attr", "node": {"type": "Var", "name": "policy"}, "key": "retention_epochs"}}
+        }
+      ]},
+      "effects": [
+        ["del_node", "outcome"]
+      ]
+    },
+    {
+      "name": "doom_prune_stale_escalation",
+      "area": "arbitration",
+      "order": 53,
+      "latency_class": "hard_realtime",
+      "match": [
+        ["game", "for_agent", "agent"],
+        ["agent", "has_doom_lifecycle_policy", "policy"],
+        ["old_context", "has_system_two_escalation", "escalation"]
+      ],
+      "where": {"type": "And", "items": [
+        {"type": "Lt",
+         "a": {"type": "Attr", "node": {"type": "Var", "name": "escalation"}, "key": "epoch"},
+         "b": {"type": "Minus",
+           "a": {"type": "Attr", "node": {"type": "Var", "name": "game"}, "key": "world_tick"},
+           "b": {"type": "Attr", "node": {"type": "Var", "name": "policy"}, "key": "retention_epochs"}}},
+        {"type": "Eq",
+         "a": {"type": "Count", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "escalation"}, "edge_type": "has_system_two_outcome"}},
+         "b": {"type": "Lit", "value": 0}}
+      ]},
+      "effects": [
+        ["del_node", "escalation"]
+      ]
+    }
+  ]
+}

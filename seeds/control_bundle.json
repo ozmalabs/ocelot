@@ -1,0 +1,1387 @@
+{
+ "id": "control_bundle",
+ "version": "1.0.0",
+ "self_load_only": true,
+ "depends_on": [
+  "affordance_basis",
+  "discovered_navigation",
+  "motor_core",
+  "information_commitment"
+ ],
+ "area": "motor",
+ "description": "Bridge existing cognition to simultaneous physical control. Worlds publish independent ControlAxis/Control nodes. Graph-resolved retinal attention selects an orienting primitive while curiosity independently explores the least-tried compatible apparatus axis; navigation and held operate terms may compose with both. Enacted bundle membership, not a scalar host action label, advances every primitive's trial memory. No Python action scorer and no world-authored combinations.",
+ "microtheory": {
+  "name": "control_bundle",
+  "description": "independent cognitive control intents -> compatible simultaneous bundle"
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [
+  {
+   "provenance": "seed:control_bundle:axis",
+   "src": {
+    "type": "WorldInstance",
+    "var": "g"
+   },
+   "edge_type": "has_control_axis",
+   "tgt": {
+    "type": "ControlAxis",
+    "var": "a"
+   }
+  },
+  {
+   "provenance": "seed:control_bundle:axis-control",
+   "src": {
+    "type": "ControlAxis",
+    "var": "a"
+   },
+   "edge_type": "has_control",
+   "tgt": {
+    "type": "Control",
+    "var": "c"
+   }
+  },
+  {
+   "provenance": "seed:control_bundle:exclusive",
+   "src": {
+    "type": "Control",
+    "var": "a"
+   },
+   "edge_type": "exclusive_with",
+   "tgt": {
+    "type": "Control",
+    "var": "b"
+   }
+  },
+  {
+   "provenance": "seed:control_bundle:game-control",
+   "src": {
+    "type": "WorldInstance",
+    "var": "g"
+   },
+   "edge_type": "has_control",
+   "tgt": {
+    "type": "Control",
+    "var": "c"
+   }
+  },
+  {
+   "provenance": "seed:control_bundle:selected",
+   "src": {
+    "type": "WorldInstance",
+    "var": "g"
+   },
+   "edge_type": "selected_control",
+   "tgt": {
+    "type": "Control",
+    "var": "c"
+   }
+  },
+  {
+   "provenance": "seed:control_bundle:bundle",
+   "src": {
+    "type": "WorldInstance",
+    "var": "g"
+   },
+   "edge_type": "has_control_bundle",
+   "tgt": {
+    "type": "ControlBundle",
+    "var": "b"
+   }
+  },
+  {
+   "provenance": "seed:control_bundle:includes",
+   "src": {
+    "type": "ControlBundle",
+    "var": "b"
+   },
+   "edge_type": "includes_control",
+   "tgt": {
+    "type": "Control",
+    "var": "c"
+   }
+  },
+  {
+   "provenance": "seed:control_bundle:intent",
+   "src": {
+    "type": "ControlBundle",
+    "var": "b"
+   },
+   "edge_type": "has_intent",
+   "tgt": {
+    "type": "ActionIntent",
+    "var": "i"
+   }
+  },
+  {
+   "provenance": "seed:control_bundle:enacts",
+   "src": {
+    "type": "ActionIntent",
+    "var": "i"
+   },
+   "edge_type": "enacts_bundle",
+   "tgt": {
+    "type": "ControlBundle",
+    "var": "b"
+   }
+  },
+  {
+   "provenance": "seed:control_bundle:agent",
+   "src": {
+    "type": "WorldInstance",
+    "var": "g"
+   },
+   "edge_type": "for_agent",
+   "tgt": {
+    "type": "Agent",
+    "var": "a"
+   }
+  }
+ ],
+ "rules": [
+  {
+   "name": "control_attention_orients_unique_best",
+   "area": "motor",
+   "order": 0,
+   "latency_class": "hard_realtime",
+   "match": [
+    [
+     "game",
+     "has_control",
+     "control"
+    ],
+    [
+     "game",
+     "for_agent",
+     "agent"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "agent"
+         },
+         "key": "attention_refused"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.0
+        }
+       },
+       {
+        "type": "Gt",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "agent"
+         },
+         "key": "attention_salience"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 2.0
+        }
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Var",
+       "name": "control"
+      },
+      "b": {
+       "type": "ArgminUnique",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "game"
+        },
+        "edge_type": "has_control",
+        "any_type": false
+       },
+       "var_name": "control",
+       "value": {
+        "type": "Neg",
+        "arg": {
+         "type": "EvalSubgraph",
+         "node": {
+          "type": "Pick",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "agent"
+           },
+           "edge_type": "attention_value_term",
+           "any_type": false
+          }
+         }
+        }
+       },
+       "default": null
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_edge",
+     "game",
+     "selected_control",
+     "control",
+     {}
+    ],
+    [
+     "set_attr_if_different",
+     "game",
+     "chosen_source",
+     "retinal_attention"
+    ],
+    [
+     "set_attr_if_different",
+     "game",
+     "attention_control_epoch",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "agent"
+       },
+       "key": "attention_sensor_epoch"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "control_curiosity_explores_least_tried",
+   "area": "executive",
+   "order": 2,
+   "latency_class": "best_effort",
+   "match": [
+    [
+     "game",
+     "has_control",
+     "control"
+    ],
+    [
+     "game",
+     "for_agent",
+     "agent"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Var",
+       "name": "control"
+      },
+      "b": {
+       "type": "ArgminUnique",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "game"
+         },
+         "edge_type": "has_control",
+         "any_type": false
+        },
+        "var_name": "option",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Not",
+           "arg": {
+            "type": "Exists",
+            "source": {
+             "type": "Neighbours",
+             "node": {
+              "type": "Var",
+              "name": "game"
+             },
+             "edge_type": "selected_control",
+             "any_type": false
+            },
+            "var_name": "selected",
+            "predicate": {
+             "type": "Eq",
+             "a": {
+              "type": "Var",
+              "name": "selected"
+             },
+             "b": {
+              "type": "Var",
+              "name": "option"
+             }
+            }
+           }
+          },
+          {
+           "type": "Not",
+           "arg": {
+            "type": "Exists",
+            "source": {
+             "type": "Neighbours",
+             "node": {
+              "type": "Var",
+              "name": "option"
+             },
+             "edge_type": "exclusive_with",
+             "any_type": false
+            },
+            "var_name": "blocked",
+            "predicate": {
+             "type": "Exists",
+             "source": {
+              "type": "Neighbours",
+              "node": {
+               "type": "Var",
+               "name": "game"
+              },
+              "edge_type": "selected_control",
+              "any_type": false
+             },
+             "var_name": "selected",
+             "predicate": {
+              "type": "Eq",
+              "a": {
+               "type": "Var",
+               "name": "selected"
+              },
+              "b": {
+               "type": "Var",
+               "name": "blocked"
+              }
+             }
+            }
+           }
+          },
+          {
+           "type": "Not",
+           "arg": {
+            "type": "And",
+            "items": [
+             {
+              "type": "And",
+              "items": [
+               {
+                "type": "Eq",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "agent"
+                 },
+                 "key": "attention_refused"
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": 0.0
+                }
+               },
+               {
+                "type": "Gt",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "agent"
+                 },
+                 "key": "attention_salience"
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": 2.0
+                }
+               }
+              ]
+             },
+             {
+              "type": "Or",
+              "items": [
+               {
+                "type": "Eq",
+                "a": {
+                 "type": "Var",
+                 "name": "option"
+                },
+                "b": {
+                 "type": "ArgminUnique",
+                 "source": {
+                  "type": "Neighbours",
+                  "node": {
+                   "type": "Var",
+                   "name": "game"
+                  },
+                  "edge_type": "has_control",
+                  "any_type": false
+                 },
+                 "var_name": "control",
+                 "value": {
+                  "type": "Neg",
+                  "arg": {
+                   "type": "EvalSubgraph",
+                   "node": {
+                    "type": "Pick",
+                    "source": {
+                     "type": "Neighbours",
+                     "node": {
+                      "type": "Var",
+                      "name": "agent"
+                     },
+                     "edge_type": "attention_value_term",
+                     "any_type": false
+                    }
+                   }
+                  }
+                 },
+                 "default": null
+                }
+               },
+               {
+                "type": "Exists",
+                "source": {
+                 "type": "Neighbours",
+                 "node": {
+                  "type": "Var",
+                  "name": "option"
+                 },
+                 "edge_type": "exclusive_with",
+                 "any_type": false
+                },
+                "var_name": "blocked",
+                "predicate": {
+                 "type": "Eq",
+                 "a": {
+                  "type": "Var",
+                  "name": "blocked"
+                 },
+                 "b": {
+                  "type": "ArgminUnique",
+                  "source": {
+                   "type": "Neighbours",
+                   "node": {
+                    "type": "Var",
+                    "name": "game"
+                   },
+                   "edge_type": "has_control",
+                   "any_type": false
+                  },
+                  "var_name": "control",
+                  "value": {
+                   "type": "Neg",
+                   "arg": {
+                    "type": "EvalSubgraph",
+                    "node": {
+                     "type": "Pick",
+                     "source": {
+                      "type": "Neighbours",
+                      "node": {
+                       "type": "Var",
+                       "name": "agent"
+                      },
+                      "edge_type": "attention_value_term",
+                      "any_type": false
+                     }
+                    }
+                   }
+                  },
+                  "default": null
+                 }
+                }
+               }
+              ]
+             }
+            ]
+           }
+          }
+         ]
+        }
+       },
+       "var_name": "option",
+       "value": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Times",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "option"
+            },
+            "key": "n_trials"
+           },
+           {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Count",
+              "source": {
+               "type": "Neighbours",
+               "node": {
+                "type": "Var",
+                "name": "game"
+               },
+               "edge_type": "has_control",
+               "any_type": false
+              }
+             },
+             {
+              "type": "Lit",
+              "value": 1
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "option"
+          },
+          "key": "control_ordinal"
+         }
+        ]
+       },
+       "default": null
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "game"
+       },
+       "key": "chosen_control"
+      },
+      "b": {
+       "type": "Lit",
+       "value": ""
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr_if_different",
+     "game",
+     "chosen_control",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "control"
+       },
+       "key": "name"
+      }
+     }
+    ],
+    [
+     "set_attr_if_different",
+     "game",
+     "chosen_source",
+     "curiosity"
+    ],
+    [
+     "set_attr_if_different",
+     "game",
+     "curiosity_min_trials",
+     {
+      "__term__": {
+       "type": "MinOver",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "game"
+         },
+         "edge_type": "has_control",
+         "any_type": false
+        },
+        "var_name": "option",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Not",
+           "arg": {
+            "type": "Exists",
+            "source": {
+             "type": "Neighbours",
+             "node": {
+              "type": "Var",
+              "name": "game"
+             },
+             "edge_type": "selected_control",
+             "any_type": false
+            },
+            "var_name": "selected",
+            "predicate": {
+             "type": "Eq",
+             "a": {
+              "type": "Var",
+              "name": "selected"
+             },
+             "b": {
+              "type": "Var",
+              "name": "option"
+             }
+            }
+           }
+          },
+          {
+           "type": "Not",
+           "arg": {
+            "type": "Exists",
+            "source": {
+             "type": "Neighbours",
+             "node": {
+              "type": "Var",
+              "name": "option"
+             },
+             "edge_type": "exclusive_with",
+             "any_type": false
+            },
+            "var_name": "blocked",
+            "predicate": {
+             "type": "Exists",
+             "source": {
+              "type": "Neighbours",
+              "node": {
+               "type": "Var",
+               "name": "game"
+              },
+              "edge_type": "selected_control",
+              "any_type": false
+             },
+             "var_name": "selected",
+             "predicate": {
+              "type": "Eq",
+              "a": {
+               "type": "Var",
+               "name": "selected"
+              },
+              "b": {
+               "type": "Var",
+               "name": "blocked"
+              }
+             }
+            }
+           }
+          },
+          {
+           "type": "Not",
+           "arg": {
+            "type": "And",
+            "items": [
+             {
+              "type": "And",
+              "items": [
+               {
+                "type": "Eq",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "agent"
+                 },
+                 "key": "attention_refused"
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": 0.0
+                }
+               },
+               {
+                "type": "Gt",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "agent"
+                 },
+                 "key": "attention_salience"
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": 2.0
+                }
+               }
+              ]
+             },
+             {
+              "type": "Or",
+              "items": [
+               {
+                "type": "Eq",
+                "a": {
+                 "type": "Var",
+                 "name": "option"
+                },
+                "b": {
+                 "type": "ArgminUnique",
+                 "source": {
+                  "type": "Neighbours",
+                  "node": {
+                   "type": "Var",
+                   "name": "game"
+                  },
+                  "edge_type": "has_control",
+                  "any_type": false
+                 },
+                 "var_name": "control",
+                 "value": {
+                  "type": "Neg",
+                  "arg": {
+                   "type": "EvalSubgraph",
+                   "node": {
+                    "type": "Pick",
+                    "source": {
+                     "type": "Neighbours",
+                     "node": {
+                      "type": "Var",
+                      "name": "agent"
+                     },
+                     "edge_type": "attention_value_term",
+                     "any_type": false
+                    }
+                   }
+                  }
+                 },
+                 "default": null
+                }
+               },
+               {
+                "type": "Exists",
+                "source": {
+                 "type": "Neighbours",
+                 "node": {
+                  "type": "Var",
+                  "name": "option"
+                 },
+                 "edge_type": "exclusive_with",
+                 "any_type": false
+                },
+                "var_name": "blocked",
+                "predicate": {
+                 "type": "Eq",
+                 "a": {
+                  "type": "Var",
+                  "name": "blocked"
+                 },
+                 "b": {
+                  "type": "ArgminUnique",
+                  "source": {
+                   "type": "Neighbours",
+                   "node": {
+                    "type": "Var",
+                    "name": "game"
+                   },
+                   "edge_type": "has_control",
+                   "any_type": false
+                  },
+                  "var_name": "control",
+                  "value": {
+                   "type": "Neg",
+                   "arg": {
+                    "type": "EvalSubgraph",
+                    "node": {
+                     "type": "Pick",
+                     "source": {
+                      "type": "Neighbours",
+                      "node": {
+                       "type": "Var",
+                       "name": "agent"
+                      },
+                      "edge_type": "attention_value_term",
+                      "any_type": false
+                     }
+                    }
+                   }
+                  },
+                  "default": null
+                 }
+                }
+               }
+              ]
+             }
+            ]
+           }
+          }
+         ]
+        }
+       },
+       "var_name": "option",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "option"
+        },
+        "key": "n_trials"
+       },
+       "default": null
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "control_chosen_to_independent_selection",
+   "area": "motor",
+   "order": 1,
+   "latency_class": "hard_realtime",
+   "match": [
+    [
+     "game",
+     "has_control",
+     "control"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "control"
+       },
+       "key": "name"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "game"
+       },
+       "key": "chosen_control"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "game"
+        },
+        "edge_type": "selected_control",
+        "any_type": false
+       },
+       "var_name": "x",
+       "predicate": {
+        "type": "Eq",
+        "a": {
+         "type": "Var",
+         "name": "x"
+        },
+        "b": {
+         "type": "Var",
+         "name": "control"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_edge",
+     "game",
+     "selected_control",
+     "control",
+     {}
+    ]
+   ]
+  },
+  {
+   "name": "control_operate_term_selects_operation_axes",
+   "area": "motor",
+   "order": 0,
+   "latency_class": "hard_realtime",
+   "match": [
+    [
+     "game",
+     "has_control_axis",
+     "axis"
+    ],
+    [
+     "axis",
+     "has_control",
+     "control"
+    ],
+    [
+     "game",
+     "for_agent",
+     "agent"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "axis"
+       },
+       "key": "role"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "operate"
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "EvalSubgraph",
+       "node": {
+        "type": "Pick",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "agent"
+         },
+         "edge_type": "operate_control_term",
+         "any_type": false
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "game"
+        },
+        "edge_type": "selected_control",
+        "any_type": false
+       },
+       "var_name": "x",
+       "predicate": {
+        "type": "Eq",
+        "a": {
+         "type": "Var",
+         "name": "x"
+        },
+        "b": {
+         "type": "Var",
+         "name": "control"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_edge",
+     "game",
+     "selected_control",
+     "control",
+     {}
+    ]
+   ]
+  },
+  {
+   "name": "control_bundle_from_selected_primitives",
+   "area": "motor",
+   "order": 1,
+   "latency_class": "hard_realtime",
+   "match": [
+    [
+     "game",
+     "selected_control",
+     "control"
+    ]
+   ],
+   "where": {
+    "type": "Eq",
+    "a": {
+     "type": "Attr",
+     "node": {
+      "type": "Var",
+      "name": "game"
+     },
+     "key": "bundle_open"
+    },
+    "b": {
+     "type": "Lit",
+     "value": 1.0
+    }
+   },
+   "effects": [
+    [
+     "add_node_if_absent",
+     "bundle",
+     "ControlBundle",
+     {
+      "world_tick": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "game"
+        },
+        "key": "world_tick"
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "game",
+     "has_control_bundle",
+     "bundle",
+     {}
+    ],
+    [
+     "add_edge",
+     "bundle",
+     "includes_control",
+     "control",
+     {}
+    ]
+   ]
+  },
+  {
+   "name": "control_bundle_initial_status",
+   "area": "motor",
+   "order": 1,
+   "latency_class": "hard_realtime",
+   "match": [
+    [
+     "game",
+     "has_control_bundle",
+     "bundle"
+    ]
+   ],
+   "where": {
+    "type": "Eq",
+    "a": {
+     "type": "Attr",
+     "node": {
+      "type": "Var",
+      "name": "bundle"
+     },
+     "key": "status"
+    },
+    "b": {
+     "type": "Lit",
+     "value": null
+    }
+   },
+   "effects": [
+    [
+     "set_attr",
+     "bundle",
+     "status",
+     "proposed"
+    ]
+   ]
+  },
+  {
+   "name": "control_bundle_rejects_same_axis_pair",
+   "area": "motor",
+   "order": 1,
+   "latency_class": "hard_realtime",
+   "match": [
+    [
+     "bundle",
+     "includes_control",
+     "a"
+    ],
+    [
+     "a",
+     "exclusive_with",
+     "b"
+    ]
+   ],
+   "where": {
+    "type": "Exists",
+    "source": {
+     "type": "Neighbours",
+     "node": {
+      "type": "Var",
+      "name": "bundle"
+     },
+     "edge_type": "includes_control",
+     "any_type": false
+    },
+    "var_name": "x",
+    "predicate": {
+     "type": "Eq",
+     "a": {
+      "type": "Var",
+      "name": "x"
+     },
+     "b": {
+      "type": "Var",
+      "name": "b"
+     }
+    }
+   },
+   "effects": [
+    [
+     "set_attr_if_different",
+     "bundle",
+     "status",
+     "inadmissible"
+    ]
+   ]
+  },
+  {
+   "name": "control_bundle_mints_one_tick_intent",
+   "area": "motor",
+   "order": 1,
+   "latency_class": "hard_realtime",
+   "match": [
+    [
+     "game",
+     "has_control_bundle",
+     "bundle"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "bundle"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "proposed"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "bundle"
+        },
+        "edge_type": "has_intent",
+        "any_type": false
+       },
+       "var_name": "i",
+       "predicate": {
+        "type": "Lit",
+        "value": true
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "intent",
+     "ActionIntent",
+     {
+      "created_tick": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "game"
+        },
+        "key": "world_tick"
+       }
+      },
+      "expires_tick": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "game"
+          },
+          "key": "world_tick"
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "game"
+          },
+          "key": "intent_horizon_ticks"
+         }
+        ]
+       }
+      },
+      "status": "proposed"
+     }
+    ],
+    [
+     "add_edge",
+     "bundle",
+     "has_intent",
+     "intent",
+     {}
+    ],
+    [
+     "add_edge",
+     "intent",
+     "enacts_bundle",
+     "bundle",
+     {}
+    ]
+   ]
+  },
+  {
+   "name": "control_trial_count_enacted_bundle_once",
+   "area": "learning",
+   "order": 1,
+   "latency_class": "soft_realtime",
+   "match": [
+    [
+     "intent",
+     "enacts_bundle",
+     "bundle"
+    ],
+    [
+     "bundle",
+     "includes_control",
+     "control"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "intent"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "enacted"
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "control"
+       },
+       "key": "last_trial_epoch"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "intent"
+       },
+       "key": "enacted_tick"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr_if_different",
+     "control",
+     "n_trials",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "control"
+         },
+         "key": "n_trials"
+        },
+        {
+         "type": "Lit",
+         "value": 1
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr_if_different",
+     "control",
+     "last_trial_epoch",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "intent"
+       },
+       "key": "enacted_tick"
+      }
+     }
+    ]
+   ]
+  }
+ ]
+}

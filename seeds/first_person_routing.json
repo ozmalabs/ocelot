@@ -1,0 +1,45 @@
+{
+ "id": "first_person_routing",
+ "version": "1.0.0",
+ "depends_on": ["intent"],
+ "description": "BLIND-SPOT CLOSURE R6 -- bare first-person routing ('Who am I?', 'What do I want?'). Today comprehend_text's reflexive gate (domains/comprehend_text.py::_has_self_cue) only recognises SECOND-person self-cues ('you'/'your'/'yourself'/'yours'/'me'); a bare first-person subject question has none, so comp.reflexive stays False and the turn falls through to the non-reflexive 'know' dispatch, which treats the composed relation's topic nominal ('I') as an external WORLD CONCEPT to look up -- 'I don't hold that.' The interlocutor_model reflective reader already answers exactly this shape ('You are <name>.' for identity, the tracked wants list for desires) but is unreachable from a bare first-person question: the meta lexicon (seeds/question_targets.json) only matches phrasings containing 'me' ('know about me', 'told me', 'trust me'), and 'who am I'/'what do I want' contain neither. This seed closes the gap WITHOUT touching comprehend_text.py's Python ladder and WITHOUT hand-listing pronoun forms in a rule (that would just re-grow the blind spot one layer down): it reuses the graph's OWN existing first-person resolution -- seeds/intent.json::rule_first_person_resolves_to_speaker already binds every Mention whose text is 'i'/'me'/'my'/'mine' to the turn's Intent.speaker (the party who authored the turn) via a real refers_to edge, for EVERY message, regardless of what comprehend_text decided. The routing rule below fires only when (a) the general 'know' dispatch fired (comp_dispatch_path=='know' -- world_adapter's own mechanical echo of comp.dispatch['concept'], NOT a new decision) and (b) a Mention on THIS message has text equal to that echoed concept AND resolves (refers_to) to the SAME node bound as this message's own Intent.speaker -- i.e. the 'know' path's topic nominal literally IS the speaker, graph-resolved, not string-matched against a hand-written pronoun list. On a hit it mints Goal{kind:answer_interlocutor_meta}, read by world_adapter._answer_interlocutor_meta_reply (the SAME 'rule decided, adapter renders' precedent as route_question_to_topic / _answer_topic_reply, calling reflective_faculty.reflect('interlocutor_model', ...) instead of answer_about). A genuine external-topic 'know' question ('what is an LLM?') has no Mention resolving to the speaker, so this rule never fires and that path is byte-unchanged; a question the meta lexicon already routes ('what do you know about me?') never reaches comp_dispatch_path=='know' at all (it fastpaths through comprehend_question's table or the keyword-overlap meta branch), so it is unaffected too.",
+ "nodes": [],
+ "edges": [],
+ "productions": [],
+ "rules": [
+  {
+   "name": "route_first_person_question_to_interlocutor",
+   "match": [
+    ["agent", "received", "m"],
+    ["m", "has_intent", "intent"],
+    ["intent", "speaker", "spk"]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "comp_kind"}, "b": {"type": "Lit", "value": "question"}},
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "comp_dispatch_path"}, "b": {"type": "Lit", "value": "know"}},
+     {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "comprehended"}, "b": {"type": "Lit", "value": 1.0}}},
+     {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "comp_know_concept"}, "b": {"type": "Lit", "value": null}}},
+     {"type": "Exists", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "m"}, "edge_type": "has_mention"}, "var_name": "pm",
+      "predicate": {"type": "And", "items": [
+       {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "pm"}, "key": "text"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "comp_know_concept"}},
+       {"type": "Exists", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "pm"}, "edge_type": "refers_to"}, "var_name": "spk2",
+        "predicate": {"type": "Eq", "a": {"type": "Var", "name": "spk2"}, "b": {"type": "Var", "name": "spk"}}}
+      ]}}
+    ]
+   },
+   "effects": [
+    ["set_attr", "m", "comprehended", 1.0],
+    ["add_node", "g", "Goal", {
+      "kind": "answer_interlocutor_meta",
+      "status": "active",
+      "source": "conversation"
+    }],
+    ["add_edge", "agent", "has_goal", "g"],
+    ["add_edge", "g", "comprehends", "m"],
+    ["add_edge", "m", "comprehended_by", "g"]
+   ]
+  }
+ ]
+}

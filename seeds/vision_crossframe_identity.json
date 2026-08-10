@@ -1,0 +1,89 @@
+{
+ "id": "vision_crossframe_identity",
+ "version": "1.0.0",
+ "depends_on": ["shape_decode_loop"],
+ "description": "CROSS-FRAME IDENTITY (VISION_CROSSFRAME_IDENTITY_PREREG.md, seeds 55000-55999). Decides, for an Observation carrying a pixel-derived relation system, WHICH held ShapeSignature best explains it -- the 16-way identification the cross-frame measurement reads off. Built entirely from existing Terms: NO new Rust, NO new Term, NO new constant. The scoring composition is ShapeDecode's own covered_count with codebook_scope pointed at a SINGLETON name set (the per-net basin affordance seeds/reflex_net.json::reflex_ground_residual already uses), so a whole-codebook decode becomes a PER-CANDIDATE score; MaxOver supplies the best score and Argmax supplies the winning name. On ['cell', r, c, 'v<q>'] tuples ShapeDecode's covers_relation (same arity + same predicate + Covers) makes covered_count exactly the number of cells identical in local position and quantized value. SHIPS OFF (CrossFrameParams.crossframe > 0.5) and is NOT in the default boot set -- the runner loads this manifest explicitly, so every committed result reproduces byte-identically (protocol section 9). The two rules are staged on a PRIVATE status ladder (xf_pending -> xf_scored -> xf_done) that no shape_decode_loop rule matches ('pending' would have collided with sd_decode), so this seed is inert with respect to the sd loop even when both are installed.",
+ "nodes": [
+  {"local_id": 0, "type": "CrossFrameParams", "attrs": {"crossframe": 0.0}}
+ ],
+ "edges": [],
+ "productions": [],
+ "rules": [
+  {
+   "name": "xf_score",
+   "comment": "Stage 1 of 2. Score the observation against EVERY held ShapeSignature and keep the best score. MaxOver evaluates ShapeDecode once per candidate with the codebook scoped to that candidate alone, so the value is that candidate's covered_count. Kept as a separate rule/stage so xf_identify's tie COUNT can read the maximum as a stored attr rather than re-deriving it inside a Filter predicate (which would cost N^2 decodes per observation). Guarded on CrossFrameParams.crossframe so the seed is inert unless the measurement explicitly arms it (protocol section 9).",
+   "match_type": "Observation",
+   "match": [["ag", "observed", "obs"]],
+   "where": {
+    "type": "And",
+    "items": [
+     {"type": "Eq",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "status"},
+      "b": {"type": "Lit", "value": "xf_pending"}},
+     {"type": "Gt",
+      "a": {"type": "Count",
+            "source": {"type": "Filter",
+                       "source": {"type": "NodesOfType", "node_type": "CrossFrameParams"},
+                       "var_name": "cp",
+                       "predicate": {"type": "Gt",
+                                     "a": {"type": "Attr", "node": {"type": "Var", "name": "cp"}, "key": "crossframe"},
+                                     "b": {"type": "Lit", "value": 0.5}}}},
+      "b": {"type": "Lit", "value": 0}}
+    ]
+   },
+   "effects": [
+    ["set_attr", "obs", "xf_max",
+     {"__term__": {
+       "type": "MaxOver",
+       "source": {"type": "NodesOfType", "node_type": "ShapeSignature"},
+       "var_name": "sig",
+       "value": {"type": "ShapeDecode",
+                 "goal": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "signature"},
+                 "codebook_type": "ShapeSignature",
+                 "codebook_scope": {"type": "SetT", "items": [{"type": "Attr", "node": {"type": "Var", "name": "sig"}, "key": "name"}]},
+                 "field": "covered_count", "beam": 1, "max_steps": 1, "cand_k": 1},
+       "default": {"type": "Lit", "value": -1}}}],
+    ["set_attr", "obs", "status", "xf_scored"]
+   ]
+  },
+  {
+   "name": "xf_identify",
+   "comment": "Stage 2 of 2. THE DECISION: Argmax over the held codebook by the same per-candidate covered_count picks the signature that best explains this observation, and its name is written to identified_as -- the adapter only reads that attr back. xf_ntied counts how many candidates achieve the stored maximum, so a top-1 answer produced by an arbitrary tie-break is VISIBLE rather than silent (the Pick-returns-one-of-N disease, protocol section 12.3). Argmax's default is None so an empty codebook yields None, never a fabricated winner.",
+   "match_type": "Observation",
+   "match": [["ag", "observed", "obs"]],
+   "where": {
+    "type": "Eq",
+    "a": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "status"},
+    "b": {"type": "Lit", "value": "xf_scored"}
+   },
+   "effects": [
+    ["set_attr", "obs", "identified_as",
+     {"__term__": {
+       "type": "Attr", "key": "name",
+       "node": {"type": "Argmax",
+                "source": {"type": "NodesOfType", "node_type": "ShapeSignature"},
+                "var_name": "sig",
+                "value": {"type": "ShapeDecode",
+                          "goal": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "signature"},
+                          "codebook_type": "ShapeSignature",
+                          "codebook_scope": {"type": "SetT", "items": [{"type": "Attr", "node": {"type": "Var", "name": "sig"}, "key": "name"}]},
+                          "field": "covered_count", "beam": 1, "max_steps": 1, "cand_k": 1},
+                "default": null}}}],
+    ["set_attr", "obs", "xf_ntied",
+     {"__term__": {
+       "type": "Count",
+       "source": {"type": "Filter",
+                  "source": {"type": "NodesOfType", "node_type": "ShapeSignature"},
+                  "var_name": "sig",
+                  "predicate": {"type": "Eq",
+                                "a": {"type": "ShapeDecode",
+                                      "goal": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "signature"},
+                                      "codebook_type": "ShapeSignature",
+                                      "codebook_scope": {"type": "SetT", "items": [{"type": "Attr", "node": {"type": "Var", "name": "sig"}, "key": "name"}]},
+                                      "field": "covered_count", "beam": 1, "max_steps": 1, "cand_k": 1},
+                                "b": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "xf_max"}}}}}],
+    ["set_attr", "obs", "status", "xf_done"]
+   ]
+  }
+ ]
+}

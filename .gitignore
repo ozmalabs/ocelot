@@ -1,0 +1,38 @@
+# --- python ---
+__pycache__/
+*.pyc
+.env
+.venv/
+venv/
+
+# --- editor / os ---
+.DS_Store
+*.swp
+.aider*
+
+# --- rust build artifacts ---
+target/
+runners/dsl/target/
+
+# --- large datasets / corpora (not source, fetched/generated separately) ---
+data/
+recordings/
+repeating_corpus/
+naming_corpus/
+pronunciation_corpus/
+
+# --- experiment outputs / run artifacts (regenerable, huge) ---
+results/
+runs/
+var/
+
+# --- bulk-imported seed data (not hand-authored; grounded_lexicon.json exceeds GitHub's 100MB limit) ---
+seeds/acquired/
+seeds/grounded_lexicon.json
+
+# --- local git worktrees / scratch / caches ---
+.worktrees/
+.bigtmp/
+.pytest_cache/
+.ruff_cache/
+.claude/

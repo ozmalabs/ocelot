@@ -1,0 +1,39 @@
+{
+  "protocol": "aerial_broken_prop_v1",
+  "status": "development_demonstration",
+  "simulator": "gym-pybullet-drones",
+  "vehicle": "Crazyflie 2.x",
+  "seed": 21,
+  "steps": 120,
+  "goal": [
+    0.75,
+    0.75,
+    1.0
+  ],
+  "babble_samples_per_actuator": 2,
+  "action_duration_seconds": 0.25,
+  "enable_yaw_actuators": true,
+  "angular_stability_weight": 0.1,
+  "damage": {
+    "kind": "broken_propeller",
+    "onset_action": 40,
+    "thrust_retention": [
+      1.0,
+      0.87,
+      1.0,
+      1.0
+    ],
+    "torque_retention": [
+      1.0,
+      0.74,
+      1.0,
+      1.0
+    ],
+    "model": "averaged partial-blade aerodynamic effectiveness loss at unchanged motor RPM"
+  },
+  "conditions": [
+    "adaptive_flight",
+    "frozen_flight"
+  ],
+  "comparison": "same initial graph, simulator seed, goal, action alphabet, and hidden propeller break"
+}

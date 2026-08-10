@@ -1,0 +1,118 @@
+{
+  "id": "semiconductor_physics_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "band_theory_semiconductors",
+  "in_microtheory": "materials_chemistry",
+  "description": "Semiconductor physics decomposed. Direct vs indirect bandgap, density of states, Fermi-Dirac distribution, intrinsic vs extrinsic carriers, mobility + drift, recombination, heterojunctions, quantum wells, 2D materials.",
+  "sub_mechanisms": [
+    {
+      "name": "direct_vs_indirect_bandgap",
+      "definition": "Direct: VBM + CBM at same k. Indirect: different k. Phonon needed for indirect.",
+      "why": "GaAs direct → efficient LED, laser. Si indirect → poor light emission. Foundation of opto-electronics.",
+      "category": "semi_phys_mechanism"
+    },
+    {
+      "name": "density_of_states",
+      "definition": "DOS(E) dE = number of states in energy range. ∝ √(E-Ec) in 3D bulk.",
+      "why": "Quantum wells, wires, dots have different DOS. 2D: step function; 1D: 1/√E; 0D: delta. Drives device physics.",
+      "category": "semi_phys_mechanism"
+    },
+    {
+      "name": "Fermi_Dirac_distribution",
+      "definition": "f(E) = 1/(1+exp((E-Ef)/kT)). Probability state occupied at temperature T.",
+      "why": "Foundation of semiconductor carrier concentration. n = ∫ DOS(E) f(E) dE. Universal in solid state.",
+      "category": "semi_phys_mechanism"
+    },
+    {
+      "name": "intrinsic_carrier_density",
+      "definition": "n_i = √(Nc Nv) exp(-Eg/2kT). Pure semiconductor carrier concentration.",
+      "why": "Si at 300K: ni = 10^10/cm³. Strong T dependence. Foundation: doping must exceed ni for extrinsic behavior.",
+      "category": "semi_phys_mechanism"
+    },
+    {
+      "name": "mobility_drift_velocity",
+      "definition": "μ relates drift velocity to field: v_d = μE. Si electron mobility ~1400 cm²/Vs.",
+      "why": "Determines conductivity σ = nqμ. Phonon + impurity scattering limit. Foundation of transport.",
+      "category": "semi_phys_mechanism"
+    },
+    {
+      "name": "Hall_effect",
+      "definition": "Magnetic field on current → transverse voltage. Sign reveals carrier type.",
+      "why": "n vs p identification. Measure carrier density + mobility. Standard semiconductor characterisation.",
+      "category": "semi_phys_mechanism"
+    },
+    {
+      "name": "recombination_radiative",
+      "definition": "Electron + hole recombine, emit photon. Foundation of LED.",
+      "why": "Direct bandgap semiconductors. GaAs, GaN, InGaN. Efficiency depends on bandgap directness.",
+      "category": "semi_phys_mechanism"
+    },
+    {
+      "name": "recombination_Shockley_Read_Hall",
+      "definition": "Defects in bandgap act as trap. Non-radiative recombination.",
+      "why": "Limits LED efficiency. Solar cells too. Material quality = defect density. Foundation.",
+      "category": "semi_phys_mechanism"
+    },
+    {
+      "name": "Auger_recombination",
+      "definition": "Three-body: electron-hole pair recombines, gives energy to third carrier.",
+      "why": "Dominates at high carrier density. Limits high-brightness LEDs. Direct gap. Fundamental physics.",
+      "category": "semi_phys_mechanism"
+    },
+    {
+      "name": "heterojunction_band_alignment",
+      "definition": "Two semiconductors with different bandgaps. Type I (straddling), II (staggered), III (broken).",
+      "why": "Confines carriers in narrow-gap region. Foundation of quantum well lasers, HEMTs, multi-junction solar.",
+      "category": "semi_phys_mechanism"
+    },
+    {
+      "name": "quantum_well_2D",
+      "definition": "Thin (<10 nm) layer between wider-gap barriers. Quantised energy levels.",
+      "why": "Diode lasers, blue LEDs (InGaN QW), HEMTs. Wavelength tunable by well width. Standard photonics.",
+      "category": "semi_phys_mechanism"
+    },
+    {
+      "name": "2D_materials_TMDC",
+      "definition": "Transition Metal Dichalcogenides. MoS2, WSe2. Direct gap monolayer, indirect in bulk.",
+      "why": "Beyond Si. Monolayer: 1 nm thick. Flexible electronics, photonics. Active research → emerging products.",
+      "category": "semi_phys_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "direct_bandgap_enables_efficient_LEDs",
+      "if": ["semiconductor has direct bandgap"],
+      "then": ["radiative recombination is efficient"],
+      "why": "Direct: photon emission only needs to satisfy energy + momentum (same k). Indirect needs phonon = much rarer. GaN blue, GaAs IR LEDs.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "mobility_determined_by_scattering",
+      "if": ["semiconductor has phonon + impurity scattering"],
+      "then": ["mobility μ = qτ/m* where τ is scattering time"],
+      "why": "Higher mobility = faster devices. Doping decreases (more impurity scattering). High-mobility 2DEG in HEMTs.",
+      "soundness_category": "algebraic_law"
+    },
+    {
+      "name": "quantum_confinement_blue_shifts_emission",
+      "if": ["semiconductor layer is thin enough for confinement"],
+      "then": ["effective bandgap increases (emission blue-shifts)"],
+      "why": "Particle in box: E ∝ 1/L². InGaN blue LEDs: thinner = bluer. Standard QW design.",
+      "soundness_category": "algebraic_law"
+    },
+    {
+      "name": "heterojunction_carrier_confinement",
+      "if": ["narrow-gap region between wider-gap barriers"],
+      "then": ["carriers confine in narrow-gap region"],
+      "why": "Type I band alignment: electrons + holes both confined. High carrier density → high gain → laser. Foundation of QW lasers.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "SRH_recombination_limited_by_defects",
+      "if": ["semiconductor has high defect density"],
+      "then": ["non-radiative SRH dominates"],
+      "why": "Defects = traps in bandgap. Carriers recombine non-radiatively. Limits LED efficiency, solar cells. Material quality critical.",
+      "soundness_category": "extensional_equivalence"
+    }
+  ]
+}

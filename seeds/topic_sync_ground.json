@@ -1,0 +1,40 @@
+{
+  "id": "topic_sync_ground",
+  "version": "1.0.0",
+  "depends_on": ["conversation_topic_route"],
+  "description": "Graph-native synchronous topic grounding. When conversation_topic_route mints Goal{kind:answer_topic} and the agent holds no HeldAnswer yet, THIS rule mints GroundRequest{query, aspect?, status:requested}. The adapter's _dispatch_pending_io fulfils each request mechanically via domains.topic_grounding.ground_topic / ground_topic_aspect — the PRIMARY sync path (topic_search's SearchRequest is the background twin). Mint-once per goal via sync_grounded=1.0.",
+  "nodes": [],
+  "edges": [],
+  "productions": [],
+  "rules": [
+    {
+      "name": "sync_ground_request_from_answer_topic",
+      "match": [
+        ["agent", "has_goal", "g"],
+        ["g", "comprehends", "m"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "kind"}, "b": {"type": "Lit", "value": "answer_topic"}},
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "sync_grounded"}, "b": {"type": "Lit", "value": 1.0}}},
+          {"type": "Not", "arg": {"type": "Exists", "source": {"type": "Filter",
+            "source": {"type": "Neighbours", "node": {"type": "Var", "name": "agent"}, "edge_type": "holds_answer"},
+            "var_name": "ha",
+            "predicate": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "ha"}, "key": "topic"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "concept"}}},
+            "var_name": "ha", "predicate": {"type": "Lit", "value": true}}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "g", "sync_grounded", 1.0],
+        ["add_node", "gr", "GroundRequest", {
+          "status": "requested",
+          "source": "answer_topic",
+          "query": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "concept"}},
+          "aspect": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "comp_aspect"}}
+        }],
+        ["add_edge", "g", "ground_request", "gr"]
+      ]
+    }
+  ]
+}

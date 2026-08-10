@@ -1,0 +1,105 @@
+{
+ "id": "marshmallow_delay",
+ "version": "1.0.0",
+ "self_load_only": true,
+ "depends_on": [],
+ "area": "retina",
+ "description": "BLOCK 240000 -- MARSHMALLOW DISSOLUTION: separate TEMPERAMENT from the RELIABILITY-PRIOR, the confound the wet marshmallow test structurally cannot escape (Kidd/Palmeri/Aslin 2013; Watts/Duncan/Quan 2018). Wait-time is CONFOUNDED -- it depends on BOTH how heavily the agent weights the per-tick time-cost of waiting (TEMPERAMENT) AND the agent's belief the delayed reward will materialise (RELIABILITY-PRIOR). Humans cannot reset the prior, so cannot separate the two. The substrate CAN: both are settable, inspectable graph ATTRS, and the wait/take DECISION is a RULE. The choice is the graph's OWN Argmax over two candidate Appraisals (wait, take) by total_value, decided ENTIRELY over the LANDED 204000 core_emotions value economy -- NO new decision logic. wait's value rides the 207000 TIME-COST DRIVE: mm_appraise_wait reads drive.weight (=TEMPERAMENT) to scale the accrued time-cost (individual_cost = cost_per_tick*weight*elapsed) and reads dec.reliability_prior to scale the expected delayed reward (individual_benefit = prior*delayed/scale); take's value = immediate_small. em_happiness (benefit-cost) + em_total_value drive the Argmax; the Argmax FLIPS to take when accrued cost + a low prior drop wait below take. wait-time = the elapsed tick at which the Argmax first returns take (the adapter sweeps elapsed; capped at delay). Temperament and prior are ORTHOGONAL node attrs the RULE reads -- the adapter only sets them (data) and reads chosen_action (emit); NO Python decision, NO reward/punishment shaping (the prior is a fixed belief, never updated from experienced outcomes). Integer-native (IDiv/Times/Argmax/Attr/Eq/And only; NO Rust, NO new Term). Tie-free: total_value(wait)=2P-2*weight*t is EVEN, total_value(take)=101 is ODD, so the Argmax never faces a tie. OFF by default: self_load_only, nothing depends_on it, every rule guards on HeldEmotionParams.enabled the measure adapter creates only on opt-in -- absent it every existing path is byte-identical. A CAPABILITY demonstration (the substrate CAN dissolve the entangled causes), NOT an empirical claim about real children; the contribution is the glass-box separation to two named orthogonal knobs.",
+ "microtheory": {
+  "name": "marshmallow_delay",
+  "description": "Wait-time in a delay-of-gratification choice is (temperament x reliability-prior), two orthogonal causes the confounded human test cannot separate. Temperament = the weight on the time-cost drive; reliability-prior = the belief scaling the expected delayed reward. Both are readable graph attrs; the wait/take choice is an Argmax over the core_emotions value economy; wait-time falls out of repeatedly applying that Argmax as the accrued time-cost grows."
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [
+  {"provenance": "seed:marshmallow_delay:time-drive",
+   "src": {"type": "EmotionHub", "var": "hub"},
+   "edge_type": "has_time_drive",
+   "tgt": {"type": "Drive", "var": "drive"}},
+  {"provenance": "seed:marshmallow_delay:decision",
+   "src": {"type": "EmotionHub", "var": "hub"},
+   "edge_type": "has_delay_decision",
+   "tgt": {"type": "DelayDecision", "var": "dec"}},
+  {"provenance": "seed:marshmallow_delay:candidate",
+   "src": {"type": "EmotionHub", "var": "hub"},
+   "edge_type": "has_candidate",
+   "tgt": {"type": "Appraisal", "var": "c"}}
+ ],
+ "rules": [
+  {"name": "mm_appraise_wait",
+   "area": "retina",
+   "order": 1,
+   "latency_class": "hard_realtime",
+   "comment": "The WAIT candidate's valuation. individual_benefit = expected delayed reward under the belief = IDiv(reliability_prior * delayed_reward, prior_scale). individual_cost = accrued time-cost, scaled by TEMPERAMENT = the time-cost drive's weight = cost_per_tick * drive.weight * elapsed. Both read as node attrs; NO decision here -- the DECISION is mm_choose.",
+   "match": [
+    ["hub", "has_emotion_params", "ep"],
+    ["hub", "has_delay_decision", "dec"],
+    ["hub", "has_time_drive", "drive"],
+    ["hub", "has_candidate", "c"]
+   ],
+   "where": {"type": "And", "items": [
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "ep"}, "key": "enabled"}, "b": {"type": "Lit", "value": 1.0}},
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "action"}, "b": {"type": "Lit", "value": 1.0}}
+   ]},
+   "effects": [
+    ["set_attr", "c", "individual_benefit",
+     {"__term__": {"type": "IDiv",
+       "a": {"type": "Times", "items": [
+         {"type": "Attr", "node": {"type": "Var", "name": "dec"}, "key": "reliability_prior"},
+         {"type": "Attr", "node": {"type": "Var", "name": "dec"}, "key": "delayed_reward"}
+       ]},
+       "b": {"type": "Attr", "node": {"type": "Var", "name": "dec"}, "key": "prior_scale"}}}],
+    ["set_attr", "c", "individual_cost",
+     {"__term__": {"type": "Times", "items": [
+       {"type": "Attr", "node": {"type": "Var", "name": "dec"}, "key": "cost_per_tick"},
+       {"type": "Attr", "node": {"type": "Var", "name": "drive"}, "key": "weight"},
+       {"type": "Attr", "node": {"type": "Var", "name": "dec"}, "key": "elapsed"}
+     ]}}]
+   ]},
+
+  {"name": "mm_appraise_take",
+   "area": "retina",
+   "order": 1,
+   "latency_class": "hard_realtime",
+   "comment": "The TAKE candidate's valuation: individual_benefit = immediate_small, individual_cost = 0. The immediate small reward is taken now, no accrued time-cost.",
+   "match": [
+    ["hub", "has_emotion_params", "ep"],
+    ["hub", "has_delay_decision", "dec"],
+    ["hub", "has_candidate", "c"]
+   ],
+   "where": {"type": "And", "items": [
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "ep"}, "key": "enabled"}, "b": {"type": "Lit", "value": 1.0}},
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "action"}, "b": {"type": "Lit", "value": 0.0}}
+   ]},
+   "effects": [
+    ["set_attr", "c", "individual_benefit",
+     {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "dec"}, "key": "immediate_small"}}],
+    ["set_attr", "c", "individual_cost", {"__term__": {"type": "Lit", "value": 0.0}}]
+   ]},
+
+  {"name": "mm_choose",
+   "area": "retina",
+   "order": 20,
+   "latency_class": "hard_realtime",
+   "comment": "THE DECISION. Identical Argmax structure to hv_choose_harvest: chosen_action = the action of whichever candidate Appraisal has the greatest total_value (= happiness + fulfilment_value, computed by core_emotions em_happiness/em_total_value from the individual_benefit/individual_cost the appraise rules set). action==1 (wait) wins while prior*delayed/scale - cost_per_tick*weight*elapsed > immediate_small; else action==0 (take). No tie ever: wait value is even, take value (101) is odd.",
+   "match": [
+    ["hub", "has_emotion_params", "ep"],
+    ["hub", "has_delay_decision", "dec"]
+   ],
+   "where": {"type": "Eq",
+    "a": {"type": "Attr", "node": {"type": "Var", "name": "ep"}, "key": "enabled"},
+    "b": {"type": "Lit", "value": 1.0}},
+   "effects": [
+    ["set_attr", "dec", "chosen_action",
+     {"__term__": {"type": "Attr",
+       "node": {"type": "Argmax",
+         "source": {"type": "Neighbours",
+           "node": {"type": "Var", "name": "hub"},
+           "edge_type": "has_candidate",
+           "any_type": false},
+         "var_name": "c",
+         "value": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "total_value"}},
+       "key": "action"}}]
+   ]}
+ ]
+}

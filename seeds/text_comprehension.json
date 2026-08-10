@@ -1,0 +1,210 @@
+{
+  "id": "text_comprehension",
+  "version": "0.1.0",
+  "description": "The agent's vocabulary for understanding text — the pragmatic and inferential layer above syntax. Reference resolution, inference relations, discourse coherence, comprehension failure modes. Distinct from the existing comprehension.py loader which installs narrative-comprehension Mts (TV-Tropes-style).",
+  "depends_on": [
+    "language_foundation"
+  ],
+  "concepts": [
+    {
+      "name": "literal_meaning",
+      "definition": "The truth-conditional content of an utterance, derived compositionally from word meanings + syntactic structure. The level at which 'a cat is on the mat' means there is a cat located on the mat.",
+      "category": "meaning_layer"
+    },
+    {
+      "name": "speaker_meaning",
+      "definition": "What a speaker intends to communicate, which may go beyond, fall short of, or diverge from the literal meaning. Computed via pragmatic inference.",
+      "category": "meaning_layer"
+    },
+    {
+      "name": "presupposition",
+      "definition": "A proposition the speaker takes for granted as background. 'John stopped smoking' presupposes John used to smoke. Presuppositions project through negation and questions.",
+      "category": "inference"
+    },
+    {
+      "name": "entailment",
+      "definition": "Strict logical consequence: if A entails B, A's truth guarantees B's truth. Truth-conditional. 'X killed Y' entails 'Y died'.",
+      "category": "inference"
+    },
+    {
+      "name": "implicature",
+      "definition": "Defeasible inference based on speaker cooperation (Grice's maxims). 'Some students passed' implicates 'not all did' but doesn't entail it.",
+      "category": "inference"
+    },
+    {
+      "name": "scalar_implicature",
+      "definition": "Implicature from a scale of strength. 'Some' implicates 'not all'; 'warm' implicates 'not hot'. The speaker chose the weaker term, suggesting the stronger doesn't apply.",
+      "category": "inference"
+    },
+    {
+      "name": "conventional_implicature",
+      "definition": "Non-truth-conditional meaning conventionally associated with particular words. 'But' implicates contrast; 'even' implicates surprise. Not cancellable.",
+      "category": "inference"
+    },
+    {
+      "name": "anaphora",
+      "definition": "A linguistic expression that refers back to a previously introduced referent. Pronouns ('it', 'she'), demonstratives ('this'), definite descriptions ('the result').",
+      "category": "reference"
+    },
+    {
+      "name": "cataphora",
+      "definition": "A linguistic expression that refers forward to a referent introduced later. 'When she arrived, Mary said hello.' Rarer than anaphora.",
+      "category": "reference"
+    },
+    {
+      "name": "deixis",
+      "definition": "Linguistic expressions whose reference depends on the context of utterance. 'I', 'here', 'now', 'this'. Cannot be resolved by text alone.",
+      "category": "reference"
+    },
+    {
+      "name": "coreference",
+      "definition": "Two expressions in a discourse refer to the same entity. 'John... he... the boy' — coreference chain to a single person. Reading requires tracking these.",
+      "category": "reference"
+    },
+    {
+      "name": "topic",
+      "definition": "What a clause/sentence/discourse is about. Often (but not always) the syntactic subject. Topic continuity is a marker of coherence.",
+      "category": "information_structure"
+    },
+    {
+      "name": "focus",
+      "definition": "The newsworthy or contrastive part of a clause. Marked by stress, clefts, or position. The answer to an implicit wh-question.",
+      "category": "information_structure"
+    },
+    {
+      "name": "given_information",
+      "definition": "Content the speaker assumes the addressee already knows. Encoded with definite articles, pronouns, ellipsis. Distinguishes from new information.",
+      "category": "information_structure"
+    },
+    {
+      "name": "new_information",
+      "definition": "Content the speaker assumes the addressee does not yet know. Encoded with indefinite articles, focused position, prosodic stress.",
+      "category": "information_structure"
+    },
+    {
+      "name": "discourse_coherence",
+      "definition": "The property of a text that its parts hang together — topic chains, lexical cohesion, rhetorical relations. Coherent texts are easier to extract from.",
+      "category": "discourse"
+    },
+    {
+      "name": "rhetorical_relation",
+      "definition": "Functional relation between discourse units — elaboration, contrast, causation, condition, exemplification. The skeleton of paragraph structure (RST).",
+      "category": "discourse"
+    },
+    {
+      "name": "elaboration",
+      "definition": "Rhetorical relation: a sentence develops or specifies the content of a preceding sentence. 'X happened. Specifically, Y.'",
+      "category": "rhetorical_relation_kind"
+    },
+    {
+      "name": "contrast",
+      "definition": "Rhetorical relation: two sentences present opposing or differing content. Marked by 'but', 'however', 'whereas'.",
+      "category": "rhetorical_relation_kind"
+    },
+    {
+      "name": "causation",
+      "definition": "Rhetorical relation: one sentence states a cause, another its effect. Marked by 'because', 'so', 'therefore', 'thus'.",
+      "category": "rhetorical_relation_kind"
+    },
+    {
+      "name": "world_knowledge_required",
+      "definition": "A comprehension failure mode: understanding requires background facts not stated in the text. The substrate must either have the knowledge or be told it.",
+      "category": "failure_mode"
+    },
+    {
+      "name": "unknown_term",
+      "definition": "A comprehension failure mode: a word in the text doesn't match the agent's vocabulary. Resolvable by definition lookup, citation following, or teacher consultation.",
+      "category": "failure_mode"
+    },
+    {
+      "name": "ambiguous_referent",
+      "definition": "A comprehension failure mode: a pronoun or definite description has multiple plausible antecedents. Resolvable by salience, recency, world knowledge.",
+      "category": "failure_mode"
+    },
+    {
+      "name": "missing_context",
+      "definition": "A comprehension failure mode: deictic expressions ('this', 'now') without enough situational grounding. Common in excerpts.",
+      "category": "failure_mode"
+    }
+  ],
+  "rules": [
+    {
+      "name": "extracting_a_claim_requires_resolving_its_references",
+      "if": [
+        "a Sentence asserts a claim",
+        "the claim contains pronouns or definite descriptions"
+      ],
+      "then": [
+        "the references must be resolved to concrete entities before the claim is usable",
+        "unresolved references reduce the claim's match value to the substrate"
+      ],
+      "why": "A Sentence 'it has 4 elements' cannot match a question 'how many elements does the quandle have' without coreference resolution."
+    },
+    {
+      "name": "scalar_implicature_lets_some_imply_not_all",
+      "if": [
+        "a Sentence uses a weaker scalar term ('some', 'often', 'may')"
+      ],
+      "then": [
+        "the speaker implicates the stronger term does not apply (cancellable)"
+      ],
+      "why": "Reading research text accurately requires understanding hedging. 'Some methods work' implicates not all of them do."
+    },
+    {
+      "name": "an_elaboration_relation_supplies_specifics_for_a_general_claim",
+      "if": [
+        "a Sentence states a general claim",
+        "the next Sentence elaborates"
+      ],
+      "then": [
+        "the elaboration sentence carries the specifics needed to answer specific questions",
+        "the matcher should rank the elaboration above the generality for quantitative questions"
+      ],
+      "why": "HLE-style questions ask for specifics. Identifying elaborations directs the matcher to the right depth."
+    },
+    {
+      "name": "a_causation_relation_links_premise_to_conclusion",
+      "if": [
+        "two Sentences are linked by causation markers ('because', 'so', 'therefore')"
+      ],
+      "then": [
+        "the first is a premise; the second is a conclusion (or vice versa)",
+        "the pair encodes an inference step the substrate can extract as a Rule"
+      ],
+      "why": "Causation chains in research text are the textual realization of theorems' if/then structure."
+    },
+    {
+      "name": "an_unknown_term_blocks_comprehension_until_resolved",
+      "if": [
+        "a Sentence contains a term outside the agent's vocabulary"
+      ],
+      "then": [
+        "the Sentence's content cannot be fully extracted",
+        "the agent should mark the unknown term for resolution (definition lookup, teacher query, citation following)"
+      ],
+      "why": "Building text-to-graph extraction requires explicit handling of vocabulary gaps. Pretending an unknown term is known produces wrong extractions."
+    },
+    {
+      "name": "topic_continuity_marks_coherent_discourse",
+      "if": [
+        "successive Sentences share their topic (subject)"
+      ],
+      "then": [
+        "the discourse is locally coherent — likely on a single subject",
+        "the matcher should treat the cluster as a unit"
+      ],
+      "why": "Topic-coherent passages are the natural unit for extracting domain-specific claims."
+    },
+    {
+      "name": "deixis_is_unresolvable_from_text_alone",
+      "if": [
+        "a Sentence contains deictic expressions ('I', 'here', 'now', 'this')"
+      ],
+      "then": [
+        "resolution requires context outside the text"
+      ],
+      "why": "Research text usually avoids unanchored deixis, but rationale text + emails + web pages may contain it. The substrate should flag the limitation rather than guess."
+    }
+  ],
+  "parent_mt": "pragmatics_linguistics"
+}

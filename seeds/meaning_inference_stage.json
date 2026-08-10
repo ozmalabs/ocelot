@@ -1,0 +1,66 @@
+{
+  "id": "meaning_inference_stage",
+  "version": "1.0.0",
+  "depends_on": [],
+  "description": "WIRES meaning-inference (domains/meaning_inference.py + seeds/meaning_inference.json) into the real comprehension pipeline as a `meaning_inference` AnalysisStage (seeds/literary_analysis_driving.json's la_dispatch_* / AnalysisStage / Cortex machinery, unmodified). read_and_comprehend's own ~24 read_clause calls per sentence pair are ALWAYS write=False (its own decomposition machinery), so the five meaning-inference sources (selectional/definition/morphology/analogy/in-situ construction) never fired through it before this seed -- only a DIRECT read_clause(agent, sentence, write=True) call fires them. This rule's DECISION is graph-native: dispatch the 'meaning_inference' stage once the flow's own SentenceParse nodes exist (the spine is done -- there is text to re-read) AND the 'monitoring' stage (the last GUARANTEED-to-complete comprehension stage -- gated only on Count(SmEntity)>0, same precondition as infer_goal/discourse, empirically reached 'done' even for texts with no SmEvent/DiscourseEvent, e.g. a bare copular definition) has itself reached 'done'. This deliberately excludes the OPTIONAL, material-triggered order-N stages ('narrative'/'trope', gated on Count(SmEvent)/Count(NarrativeRole) > 0) as a precondition -- those can legitimately stay 'pending' forever for a non-narrative text (verified empirically: 'A glimt is a lake.' never mints an SmEvent), so requiring them would deadlock this stage for exactly the definitional/analogy test sentences meaning-inference itself targets. Waiting on 'monitoring' still guarantees this stage runs AFTER every stage that reads predication/entity graph state (spine, infer_goal, discourse, infer_causal, enabling, centrality, tom, monitoring), so its purely-additive Concept/Predication/PredicationSlot/InferredSense/AffixCandidate/ConceptSignature writes (verified: no SmEntity/SmEvent/DiscourseEvent/NarrativeRole/Trope/Claim node is ever touched) can never perturb an earlier stage's already-computed output -- the comprehension report is byte-identical with/without this stage. The mechanical re-read itself (one read_clause(agent, sentence, write=True) call per SentenceParse) is domains/reading_drive.py's `_shim_meaning_inference` -- a thin boundary invocation, the SAME shape as every other stage shim; the fold/mint/combine/abstain/supersede decision for the inferred senses themselves lives entirely in seeds/meaning_inference.json's rules, loaded automatically (idempotent) by the annotators read_clause(write=True) already calls.",
+  "microtheory": {
+    "name": "meaning_inference_stage",
+    "description": "a standing rule that dispatches the meaning_inference comprehension stage once the spine is done and the last guaranteed-to-complete comprehension stage (monitoring) has finished, so a re-read for meaning-inference purposes runs late and cannot perturb any earlier stage's output."
+  },
+  "nodes": [],
+  "edges": [],
+  "productions": [],
+  "rules": [
+    {
+      "name": "la_dispatch_meaning_inference",
+      "comment": "Fire the 'meaning_inference' faculty stage once the flow's own SentenceParse nodes exist (spine done -- there is text to re-read) AND the 'monitoring' stage has reached 'done' (the last comprehension stage GUARANTEED to complete, so meaning_inference always runs LAST, after every stage that reads graph state -- see this seed's description for why 'narrative'/'trope' are deliberately NOT gated on). The DECISION-to-fire + the ORDER are this where-clause, evaluated by run_rules -- never a Python faculty sequence.",
+      "match_type": "AnalysisStage",
+      "match": [
+        ["ag", "has_analysis_stage", "stage"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "stage"}, "key": "name"},
+            "b": {"type": "Lit", "value": "meaning_inference"}
+          },
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "stage"}, "key": "status"},
+            "b": {"type": "Lit", "value": "pending"}
+          },
+          {
+            "type": "Gt",
+            "a": {"type": "Count", "source": {"type": "NodesOfType", "node_type": "SentenceParse"}},
+            "b": {"type": "Lit", "value": 0}
+          },
+          {
+            "type": "Exists",
+            "source": {"type": "NodesOfType", "node_type": "AnalysisStage"},
+            "var_name": "mi_mon",
+            "predicate": {
+              "type": "And",
+              "items": [
+                {
+                  "type": "Eq",
+                  "a": {"type": "Attr", "node": {"type": "Var", "name": "mi_mon"}, "key": "name"},
+                  "b": {"type": "Lit", "value": "monitoring"}
+                },
+                {
+                  "type": "Eq",
+                  "a": {"type": "Attr", "node": {"type": "Var", "name": "mi_mon"}, "key": "status"},
+                  "b": {"type": "Lit", "value": "done"}
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "effects": [
+        ["set_attr", "stage", "status", "dispatched"]
+      ]
+    }
+  ]
+}

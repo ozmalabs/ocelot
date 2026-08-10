@@ -1,0 +1,773 @@
+{
+ "id": "media_analysis",
+ "version": "1.2.0",
+ "depends_on": [],
+ "description": "AGENT DELETION -- the rhetorical move where an agentless passive omits the responsible actor (Halliday transitivity / critical discourse analysis: 'Shots were fired.' backgrounds WHO fired them; 'Police fired shots.' does not). domains/media_analysis.py's Python side is PURE ANNOTATION: for every 'passive'-construction reading `read_clause` grounds (write=True only, off the byte-parity path) it writes ONE `PassivePredication{verb, patient, agent, agent_filled}` fact -- unconditionally, whether or not any AgentiveVerb row will ever match it. `agent`/`agent_filled` are a MECHANICAL read of the clause's own marker sequence (the SAME by-phrase-head read `reading_collapse._arg_head` already performs elsewhere), tightly gated to the unambiguous single-clause shape [COP, PPART, BY] -- 'X was V-ed by Y', nothing else in the clause -- because the frozen parity corpus's real Aesop/Grimm prose contains cases where a trailing BY belongs to an EMBEDDED reduced-relative participle ('...occasioned BY its fall...') rather than the clause's own passive predicate; a looser 'BY appears somewhere' gate would misattribute agency there. `AgentiveVerb{verb}` is the scalar-row codebook (the SAME normal form as meaning_inference's SelectionalClassPair -- one row per verb entailing a responsible human/institutional actor: fire/kill/beat/pass/detain/arrest/make/shoot/injure), TEACHABLE via domains.teach.teach(agent, 'AgentiveVerb', {'verb': ...}) with NO code change. The rule below makes the WHOLE decision, in Rust: `mint_agent_deletion` JOINS a PassivePredication to an AgentiveVerb row by Eq(pp.verb, av.verb) -- the graph join that replaces `if verb in AGENTIVE_VERBS` -- gated on Eq(pp.agent_filled, 0.0) (a mechanically-read by-phrase agent is decisive: NO deletion) and deduped by a Not-Exists guard on an existing FramingObservation for the same (verb, patient). Mints a REVISABLE `FramingObservation{device:'agent_deletion', verb, patient, confidence, revisable:1.0, note}` -- the same ReadingBelief-shaped layer (value/confidence/source/revisable) `reading_collapse._record_reading_belief` already uses for the passive/stative collapse. `held_framing_observations` (domains/media_analysis.py) is the mechanical reader that queries these back out -- a pure graph read, no decision. UNSAID ROLE (v1.1.0) -- the SAME shape, generalised from a verb's deleted AGENT to a RELATIONAL NOUN's absent complement: 'right' is always a right TO something, so 'states' rights' (no 'to'-complement anywhere) has a residual the reader can FORMULATE ('a right to what?') without ever trying to FILL it (filling needs the world; asking never does). `RelationalNoun{noun, complement_role, theme, question}` is the codebook (one row per expected complement; a noun with several expected complements, e.g. 'killing'->of/by, is several rows), TEACHABLE the same way AgentiveVerb is. `annotate_relational_noun` (domains/media_analysis.py) writes ONE `NominalMention{noun, role, theme, question, complement_present}` fact per (matched relational-noun mention, expected complement) UNCONDITIONALLY -- `complement_present` is a MECHANICAL read (is the token immediately following the noun equal to the row's own complement_role marker -- the same exact-adjacency discipline the agent_deletion by-phrase read uses, not 'the marker appears somewhere'). `mint_unsaid_role` below is the WHOLE decision: Eq(nm.complement_present, 0.0), deduped by a Not-Exists guard, mints a REVISABLE `UnsaidRole{host, role, theme, question, filled:0.0, revisable:1.0, note}' -- the QUESTION, never an answer. POSIT INTENTIONALITY (v1.2.0) -- given a residual (a FramingObservation agent_deletion OR an UnsaidRole), POSIT whether the omission is STRATEGIC (a euphemism/agency-hiding move doing rhetorical work) or INCIDENTAL, GRADED and DEFEASIBLE, honestly UNDETERMINED when signal is thin. `annotate_intent_signals` (domains/media_analysis.py) writes ONE `IntentSignal{residual_type, residual_ref, verb, host, role, register, relevance_key}` fact per held residual, UNCONDITIONALLY -- `register` is a MECHANICAL read of `register_source.decode_register`'s verdict, gated to its OWN `confident` flag (empty string when the shape evidence is not confident, e.g. a bare single-clause residual with too few words -- honest absence, never a guessed register); `relevance_key` is a MECHANICAL structural key built from the residual's own fields ('verb:<verb>' for agent_deletion, 'role:<host>:<role>' for unsaid_role) -- no lookup, no weight, just the join key. `StrategicRegister{register, strategic_weight}` (register/source signal) and `RelevanceWeight{key, relevance_weight}` (Gricean-relevance signal: HIGH for the AGENT of an agentive verb, or a relational noun's DEFINING complement; LOW for a routinely-omitted role) are the TWO teachable codebooks the three rules below JOIN against by Eq(is.register, sr.register) / Eq(is.relevance_key, rw.key) -- the SAME graph-join idiom `mint_agent_deletion`/`mint_unsaid_role` use, generalised to a numeric combine. `ensure_media_analysis_seed` additively registers ONE new register, `official_statement` (an impersonal/no-contraction/no-reference-marker institutional shape -- the register euphemism is written in), into `register_source`'s OWN dynamic codebook via its documented `add_register('added by hint')` extension path (register_source.py itself is untouched; this mirrors that module's own test-suite 'legalese' precedent) -- so the STRATEGIC signal is a REAL, non-fabricated ShapeDecode verdict, never a Python register table. The combine + the THREE-WAY posit decision live entirely in the rules: `mint_intent_attribution_strategic`/`_incidental`/`_undetermined` each Gte/Lte/Gt+Lt-gate `Plus(sr.strategic_weight, rw.relevance_weight)` against the SAME two thresholds (0.7 strategic, 0.15 incidental) and mint a REVISABLE `IntentAttribution{residual_ref, residual_type, posit, confidence, register, register_weight, relevance_weight, source_weight:0.0, basis, revisable:1.0, note}` -- `posit`/`basis` are Lit values on the matching rule, never a Python if/else over a computed number. SOURCE (family 3) is explicitly GATED (`source_weight` is a Lit 0.0 on every rule, `basis` says so) -- `domains/source_provenance.py` requires an explicit `source` label a bare clause residual does not carry, so wiring it here would be fabrication; the two-signal (register+relevance) combine is the honest first posit. `held_intent_attributions` (domains/media_analysis.py) is the mechanical reader.",
+ "microtheory": {
+  "name": "media_analysis",
+  "description": "an agentless passive over a held AGENTIVE verb, with no by-phrase agent mechanically found, is rhetorical agent deletion; a relational noun with no adjacent expected complement is an UNSAID ROLE -- both revisable, graph-joined judgments, never a Python membership test"
+ },
+ "nodes": [
+  {
+   "local_id": 1,
+   "type": "AgentiveVerb",
+   "attrs": {
+    "verb": "fire",
+    "note": "'Shots were fired.' -- firing entails a responsible agent (a shooter)."
+   }
+  },
+  {
+   "local_id": 2,
+   "type": "AgentiveVerb",
+   "attrs": {
+    "verb": "kill",
+    "note": "'A civilian was killed.' -- killing entails a responsible agent."
+   }
+  },
+  {
+   "local_id": 3,
+   "type": "AgentiveVerb",
+   "attrs": {
+    "verb": "beat",
+    "note": "beating entails a responsible agent (the beater)."
+   }
+  },
+  {
+   "local_id": 4,
+   "type": "AgentiveVerb",
+   "attrs": {
+    "verb": "pass",
+    "note": "'The bill was passed.' -- passing legislation entails a responsible voting body."
+   }
+  },
+  {
+   "local_id": 5,
+   "type": "AgentiveVerb",
+   "attrs": {
+    "verb": "detain",
+    "note": "detention entails a responsible authority (who detained)."
+   }
+  },
+  {
+   "local_id": 6,
+   "type": "AgentiveVerb",
+   "attrs": {
+    "verb": "arrest",
+    "note": "arrest entails a responsible authority (who arrested)."
+   }
+  },
+  {
+   "local_id": 7,
+   "type": "AgentiveVerb",
+   "attrs": {
+    "verb": "make",
+    "note": "manufacture/creation entails a responsible maker."
+   }
+  },
+  {
+   "local_id": 8,
+   "type": "AgentiveVerb",
+   "attrs": {
+    "verb": "shoot",
+    "note": "shooting entails a responsible agent (a shooter)."
+   }
+  },
+  {
+   "local_id": 9,
+   "type": "AgentiveVerb",
+   "attrs": {
+    "verb": "injure",
+    "note": "injuring entails a responsible agent (who caused the injury)."
+   }
+  },
+  {
+   "local_id": 10,
+   "type": "RelationalNoun",
+   "attrs": {
+    "noun": "right",
+    "complement_role": "to",
+    "theme": "object",
+    "question": "a right to what?",
+    "note": "a right is always a right TO something -- the object slot is a valency, not decoration."
+   }
+  },
+  {
+   "local_id": 11,
+   "type": "RelationalNoun",
+   "attrs": {
+    "noun": "killing",
+    "complement_role": "of",
+    "theme": "patient",
+    "question": "the killing of whom?",
+    "note": "a killing is always a killing OF someone -- the patient slot."
+   }
+  },
+  {
+   "local_id": 12,
+   "type": "RelationalNoun",
+   "attrs": {
+    "noun": "killing",
+    "complement_role": "by",
+    "theme": "agent",
+    "question": "killed by whom?",
+    "note": "a killing entails a killer -- the agent slot, mirroring agent-deletion at the nominal grain."
+   }
+  },
+  {
+   "local_id": 13,
+   "type": "RelationalNoun",
+   "attrs": {
+    "noun": "reform",
+    "complement_role": "of",
+    "theme": "domain",
+    "question": "reform of what?",
+    "note": "reform is always reform OF some domain."
+   }
+  },
+  {
+   "local_id": 14,
+   "type": "RelationalNoun",
+   "attrs": {
+    "noun": "cuts",
+    "complement_role": "to",
+    "theme": "domain",
+    "question": "cuts to what?",
+    "note": "cuts are always cuts TO some budget/programme."
+   }
+  },
+  {
+   "local_id": 15,
+   "type": "RelationalNoun",
+   "attrs": {
+    "noun": "growth",
+    "complement_role": "of",
+    "theme": "domain",
+    "question": "growth of what?",
+    "note": "growth is always growth OF some measured thing."
+   }
+  },
+  {
+   "local_id": 16,
+   "type": "RelationalNoun",
+   "attrs": {
+    "noun": "growth",
+    "complement_role": "in",
+    "theme": "domain",
+    "question": "growth in what?",
+    "note": "the alternate 'growth IN some domain' complement realisation."
+   }
+  },
+  {
+   "local_id": 17,
+   "type": "RelationalNoun",
+   "attrs": {
+    "noun": "casualties",
+    "complement_role": "among",
+    "theme": "group",
+    "question": "casualties among whom?",
+    "note": "casualties are always casualties AMONG some group."
+   }
+  },
+  {
+   "local_id": 18,
+   "type": "RelationalNoun",
+   "attrs": {
+    "noun": "ban",
+    "complement_role": "on",
+    "theme": "domain",
+    "question": "a ban on what?",
+    "note": "a ban is always a ban ON something."
+   }
+  },
+  {
+   "local_id": 19,
+   "type": "RelationalNoun",
+   "attrs": {
+    "noun": "death",
+    "complement_role": "of",
+    "theme": "patient",
+    "question": "the death of whom?",
+    "note": "a death is always the death OF someone."
+   }
+  },
+  {
+   "local_id": 20,
+   "type": "StrategicRegister",
+   "attrs": {
+    "register": "",
+    "strategic_weight": 0.0,
+    "note": "no confident register signal (decode_by_shape/decode_register was not CONFIDENT for this clause's text -- typically too short; see _MIN_CONFIDENT_WORDS) -- register contributes NOTHING to the combine, honestly, rather than guessing."
+   }
+  },
+  {
+   "local_id": 21,
+   "type": "StrategicRegister",
+   "attrs": {
+    "register": "wikipedia",
+    "strategic_weight": 0.0,
+    "note": "a wikipedia-shaped entry is a neutral tertiary reference source -- LOW strategic prior."
+   }
+  },
+  {
+   "local_id": 22,
+   "type": "StrategicRegister",
+   "attrs": {
+    "register": "encyclopedic",
+    "strategic_weight": 0.0,
+    "note": "generic encyclopedic/reference prose -- LOW strategic prior."
+   }
+  },
+  {
+   "local_id": 23,
+   "type": "StrategicRegister",
+   "attrs": {
+    "register": "narrative",
+    "strategic_weight": 0.0,
+    "note": "a story -- LOW strategic prior (fiction is not deploying euphemism to manage a real-world audience)."
+   }
+  },
+  {
+   "local_id": 24,
+   "type": "StrategicRegister",
+   "attrs": {
+    "register": "casual",
+    "strategic_weight": 0.0,
+    "note": "conversational aside -- LOW strategic prior."
+   }
+  },
+  {
+   "local_id": 25,
+   "type": "StrategicRegister",
+   "attrs": {
+    "register": "code",
+    "strategic_weight": 0.0,
+    "note": "a structural code block -- not a register that frames anything rhetorically."
+   }
+  },
+  {
+   "local_id": 26,
+   "type": "StrategicRegister",
+   "attrs": {
+    "register": "conversational",
+    "strategic_weight": 0.0,
+    "note": "the live chat-turn aperture register -- LOW strategic prior."
+   }
+  },
+  {
+   "local_id": 27,
+   "type": "StrategicRegister",
+   "attrs": {
+    "register": "official_statement",
+    "strategic_weight": 0.45,
+    "note": "an impersonal, no-contraction, no-reference-marker institutional register (a press release / official announcement shape: domains/media_analysis.py:ensure_media_analysis_seed installs it into register_source's codebook via the SAME add_register('added by hint') extension path the register_source test suite's own 'legalese' precedent uses) -- HIGH strategic prior: institutional voices choose their register, and this is the register euphemism/agent-hiding is written in."
+   }
+  },
+  {
+   "local_id": 28,
+   "type": "RelevanceWeight",
+   "attrs": {
+    "key": "verb:fire",
+    "relevance_weight": 0.45,
+    "note": "the AGENT of an agentive verb is a HIGH-relevance omission by construction -- this residual only exists because 'fire' already joined AgentiveVerb."
+   }
+  },
+  {
+   "local_id": 29,
+   "type": "RelevanceWeight",
+   "attrs": {"key": "verb:kill", "relevance_weight": 0.45, "note": "AGENT of an agentive verb -- HIGH relevance by construction."}
+  },
+  {
+   "local_id": 30,
+   "type": "RelevanceWeight",
+   "attrs": {"key": "verb:beat", "relevance_weight": 0.45, "note": "AGENT of an agentive verb -- HIGH relevance by construction."}
+  },
+  {
+   "local_id": 31,
+   "type": "RelevanceWeight",
+   "attrs": {"key": "verb:pass", "relevance_weight": 0.45, "note": "AGENT of an agentive verb -- HIGH relevance by construction."}
+  },
+  {
+   "local_id": 32,
+   "type": "RelevanceWeight",
+   "attrs": {"key": "verb:detain", "relevance_weight": 0.45, "note": "AGENT of an agentive verb -- HIGH relevance by construction."}
+  },
+  {
+   "local_id": 33,
+   "type": "RelevanceWeight",
+   "attrs": {"key": "verb:arrest", "relevance_weight": 0.45, "note": "AGENT of an agentive verb -- HIGH relevance by construction."}
+  },
+  {
+   "local_id": 34,
+   "type": "RelevanceWeight",
+   "attrs": {"key": "verb:make", "relevance_weight": 0.45, "note": "AGENT of an agentive verb -- HIGH relevance by construction."}
+  },
+  {
+   "local_id": 35,
+   "type": "RelevanceWeight",
+   "attrs": {"key": "verb:shoot", "relevance_weight": 0.45, "note": "AGENT of an agentive verb -- HIGH relevance by construction."}
+  },
+  {
+   "local_id": 36,
+   "type": "RelevanceWeight",
+   "attrs": {"key": "verb:injure", "relevance_weight": 0.45, "note": "AGENT of an agentive verb -- HIGH relevance by construction."}
+  },
+  {
+   "local_id": 37,
+   "type": "RelevanceWeight",
+   "attrs": {
+    "key": "role:right:to",
+    "relevance_weight": 0.45,
+    "note": "a right's TO-complement is its DEFINING valency -- a competent speaker would know what right is meant; HIGH relevance (the canonical 'states' rights' euphemism case)."
+   }
+  },
+  {
+   "local_id": 38,
+   "type": "RelevanceWeight",
+   "attrs": {"key": "role:killing:of", "relevance_weight": 0.45, "note": "a killing's victim (OF) is defining -- HIGH relevance."}
+  },
+  {
+   "local_id": 39,
+   "type": "RelevanceWeight",
+   "attrs": {"key": "role:killing:by", "relevance_weight": 0.45, "note": "a killing's agent (BY) is defining -- HIGH relevance, the nominal twin of agent-deletion."}
+  },
+  {
+   "local_id": 40,
+   "type": "RelevanceWeight",
+   "attrs": {"key": "role:death:of", "relevance_weight": 0.4, "note": "a death's subject (OF) is defining -- HIGH relevance."}
+  },
+  {
+   "local_id": 41,
+   "type": "RelevanceWeight",
+   "attrs": {"key": "role:casualties:among", "relevance_weight": 0.4, "note": "who bore the casualties (AMONG) is defining -- HIGH relevance."}
+  },
+  {
+   "local_id": 42,
+   "type": "RelevanceWeight",
+   "attrs": {
+    "key": "role:growth:of",
+    "relevance_weight": 0.05,
+    "note": "growth's measured domain is routinely left implicit in ordinary usage ('the economy is growing') -- LOW relevance, not a marked omission."
+   }
+  },
+  {
+   "local_id": 43,
+   "type": "RelevanceWeight",
+   "attrs": {"key": "role:growth:in", "relevance_weight": 0.05, "note": "the alternate growth complement -- LOW relevance, same reasoning as role:growth:of."}
+  },
+  {
+   "local_id": 44,
+   "type": "RelevanceWeight",
+   "attrs": {"key": "role:cuts:to", "relevance_weight": 0.1, "note": "cuts' target is often contextually obvious/optional in casual mention -- LOW relevance."}
+  },
+  {
+   "local_id": 45,
+   "type": "RelevanceWeight",
+   "attrs": {"key": "role:ban:on", "relevance_weight": 0.15, "note": "usually named nearby in practice -- LOW-moderate relevance."}
+  }
+ ],
+ "edges": [
+  {"src": {"role": "agent_root"}, "tgt": {"local": 1}, "attrs": {}, "type": "has_agentive_verb"},
+  {"src": {"role": "agent_root"}, "tgt": {"local": 2}, "attrs": {}, "type": "has_agentive_verb"},
+  {"src": {"role": "agent_root"}, "tgt": {"local": 3}, "attrs": {}, "type": "has_agentive_verb"},
+  {"src": {"role": "agent_root"}, "tgt": {"local": 4}, "attrs": {}, "type": "has_agentive_verb"},
+  {"src": {"role": "agent_root"}, "tgt": {"local": 5}, "attrs": {}, "type": "has_agentive_verb"},
+  {"src": {"role": "agent_root"}, "tgt": {"local": 6}, "attrs": {}, "type": "has_agentive_verb"},
+  {"src": {"role": "agent_root"}, "tgt": {"local": 7}, "attrs": {}, "type": "has_agentive_verb"},
+  {"src": {"role": "agent_root"}, "tgt": {"local": 8}, "attrs": {}, "type": "has_agentive_verb"},
+  {"src": {"role": "agent_root"}, "tgt": {"local": 9}, "attrs": {}, "type": "has_agentive_verb"},
+  {"src": {"role": "agent_root"}, "tgt": {"local": 10}, "attrs": {}, "type": "has_relational_noun"},
+  {"src": {"role": "agent_root"}, "tgt": {"local": 11}, "attrs": {}, "type": "has_relational_noun"},
+  {"src": {"role": "agent_root"}, "tgt": {"local": 12}, "attrs": {}, "type": "has_relational_noun"},
+  {"src": {"role": "agent_root"}, "tgt": {"local": 13}, "attrs": {}, "type": "has_relational_noun"},
+  {"src": {"role": "agent_root"}, "tgt": {"local": 14}, "attrs": {}, "type": "has_relational_noun"},
+  {"src": {"role": "agent_root"}, "tgt": {"local": 15}, "attrs": {}, "type": "has_relational_noun"},
+  {"src": {"role": "agent_root"}, "tgt": {"local": 16}, "attrs": {}, "type": "has_relational_noun"},
+  {"src": {"role": "agent_root"}, "tgt": {"local": 17}, "attrs": {}, "type": "has_relational_noun"},
+  {"src": {"role": "agent_root"}, "tgt": {"local": 18}, "attrs": {}, "type": "has_relational_noun"},
+  {"src": {"role": "agent_root"}, "tgt": {"local": 19}, "attrs": {}, "type": "has_relational_noun"},
+  {"src": {"role": "agent_root"}, "tgt": {"local": 20}, "attrs": {}, "type": "has_strategic_register"},
+  {"src": {"role": "agent_root"}, "tgt": {"local": 21}, "attrs": {}, "type": "has_strategic_register"},
+  {"src": {"role": "agent_root"}, "tgt": {"local": 22}, "attrs": {}, "type": "has_strategic_register"},
+  {"src": {"role": "agent_root"}, "tgt": {"local": 23}, "attrs": {}, "type": "has_strategic_register"},
+  {"src": {"role": "agent_root"}, "tgt": {"local": 24}, "attrs": {}, "type": "has_strategic_register"},
+  {"src": {"role": "agent_root"}, "tgt": {"local": 25}, "attrs": {}, "type": "has_strategic_register"},
+  {"src": {"role": "agent_root"}, "tgt": {"local": 26}, "attrs": {}, "type": "has_strategic_register"},
+  {"src": {"role": "agent_root"}, "tgt": {"local": 27}, "attrs": {}, "type": "has_strategic_register"},
+  {"src": {"role": "agent_root"}, "tgt": {"local": 28}, "attrs": {}, "type": "has_relevance_weight"},
+  {"src": {"role": "agent_root"}, "tgt": {"local": 29}, "attrs": {}, "type": "has_relevance_weight"},
+  {"src": {"role": "agent_root"}, "tgt": {"local": 30}, "attrs": {}, "type": "has_relevance_weight"},
+  {"src": {"role": "agent_root"}, "tgt": {"local": 31}, "attrs": {}, "type": "has_relevance_weight"},
+  {"src": {"role": "agent_root"}, "tgt": {"local": 32}, "attrs": {}, "type": "has_relevance_weight"},
+  {"src": {"role": "agent_root"}, "tgt": {"local": 33}, "attrs": {}, "type": "has_relevance_weight"},
+  {"src": {"role": "agent_root"}, "tgt": {"local": 34}, "attrs": {}, "type": "has_relevance_weight"},
+  {"src": {"role": "agent_root"}, "tgt": {"local": 35}, "attrs": {}, "type": "has_relevance_weight"},
+  {"src": {"role": "agent_root"}, "tgt": {"local": 36}, "attrs": {}, "type": "has_relevance_weight"},
+  {"src": {"role": "agent_root"}, "tgt": {"local": 37}, "attrs": {}, "type": "has_relevance_weight"},
+  {"src": {"role": "agent_root"}, "tgt": {"local": 38}, "attrs": {}, "type": "has_relevance_weight"},
+  {"src": {"role": "agent_root"}, "tgt": {"local": 39}, "attrs": {}, "type": "has_relevance_weight"},
+  {"src": {"role": "agent_root"}, "tgt": {"local": 40}, "attrs": {}, "type": "has_relevance_weight"},
+  {"src": {"role": "agent_root"}, "tgt": {"local": 41}, "attrs": {}, "type": "has_relevance_weight"},
+  {"src": {"role": "agent_root"}, "tgt": {"local": 42}, "attrs": {}, "type": "has_relevance_weight"},
+  {"src": {"role": "agent_root"}, "tgt": {"local": 43}, "attrs": {}, "type": "has_relevance_weight"},
+  {"src": {"role": "agent_root"}, "tgt": {"local": 44}, "attrs": {}, "type": "has_relevance_weight"},
+  {"src": {"role": "agent_root"}, "tgt": {"local": 45}, "attrs": {}, "type": "has_relevance_weight"}
+ ],
+ "productions": [
+  {"provenance": "seed:media_analysis:has_agentive_verb", "src": {"type": "Agent", "var": "s"}, "edge_type": "has_agentive_verb", "tgt": {"type": "AgentiveVerb", "var": "t"}},
+  {"provenance": "seed:media_analysis:has_passive_predication", "src": {"type": "Agent", "var": "s"}, "edge_type": "has_passive_predication", "tgt": {"type": "PassivePredication", "var": "t"}},
+  {"provenance": "seed:media_analysis:has_framing_observation", "src": {"type": "Agent", "var": "s"}, "edge_type": "has_framing_observation", "tgt": {"type": "FramingObservation", "var": "t"}},
+  {"provenance": "seed:media_analysis:has_relational_noun", "src": {"type": "Agent", "var": "s"}, "edge_type": "has_relational_noun", "tgt": {"type": "RelationalNoun", "var": "t"}},
+  {"provenance": "seed:media_analysis:has_nominal_mention", "src": {"type": "Agent", "var": "s"}, "edge_type": "has_nominal_mention", "tgt": {"type": "NominalMention", "var": "t"}},
+  {"provenance": "seed:media_analysis:has_unsaid_role", "src": {"type": "Agent", "var": "s"}, "edge_type": "has_unsaid_role", "tgt": {"type": "UnsaidRole", "var": "t"}},
+  {"provenance": "seed:media_analysis:has_strategic_register", "src": {"type": "Agent", "var": "s"}, "edge_type": "has_strategic_register", "tgt": {"type": "StrategicRegister", "var": "t"}},
+  {"provenance": "seed:media_analysis:has_relevance_weight", "src": {"type": "Agent", "var": "s"}, "edge_type": "has_relevance_weight", "tgt": {"type": "RelevanceWeight", "var": "t"}},
+  {"provenance": "seed:media_analysis:has_intent_signal", "src": {"type": "Agent", "var": "s"}, "edge_type": "has_intent_signal", "tgt": {"type": "IntentSignal", "var": "t"}},
+  {"provenance": "seed:media_analysis:has_intent_attribution", "src": {"type": "Agent", "var": "s"}, "edge_type": "has_intent_attribution", "tgt": {"type": "IntentAttribution", "var": "t"}}
+ ],
+ "rules": [
+  {
+   "name": "mint_agent_deletion",
+   "batch": false,
+   "match": [
+    ["agent", "has_passive_predication", "pp"],
+    ["agent", "has_agentive_verb", "av"]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "pp"}, "key": "agent_filled"},
+      "b": {"type": "Lit", "value": 0.0}
+     },
+     {
+      "type": "Eq",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "pp"}, "key": "verb"},
+      "b": {"type": "Attr", "node": {"type": "Var", "name": "av"}, "key": "verb"}
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {"type": "NodesOfType", "node_type": "FramingObservation"},
+       "var_name": "fo2",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {"type": "Attr", "node": {"type": "Var", "name": "fo2"}, "key": "device"},
+          "b": {"type": "Lit", "value": "agent_deletion"}
+         },
+         {
+          "type": "Eq",
+          "a": {"type": "Attr", "node": {"type": "Var", "name": "fo2"}, "key": "verb"},
+          "b": {"type": "Attr", "node": {"type": "Var", "name": "pp"}, "key": "verb"}
+         },
+         {
+          "type": "Eq",
+          "a": {"type": "Attr", "node": {"type": "Var", "name": "fo2"}, "key": "patient"},
+          "b": {"type": "Attr", "node": {"type": "Var", "name": "pp"}, "key": "patient"}
+         }
+        ]
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    ["add_node", "fo", "FramingObservation", {
+      "device": "agent_deletion",
+      "verb": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "pp"}, "key": "verb"}},
+      "patient": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "pp"}, "key": "patient"}},
+      "confidence": 0.8,
+      "revisable": 1.0,
+      "note": "agentless passive over an agentive verb -- the responsible actor is omitted"
+    }],
+    ["add_edge", "agent", "has_framing_observation", "fo"]
+   ]
+  },
+  {
+   "name": "mint_unsaid_role",
+   "batch": false,
+   "match": [
+    ["agent", "has_nominal_mention", "nm"],
+    ["agent", "has_relational_noun", "rn"]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "nm"}, "key": "noun"},
+      "b": {"type": "Attr", "node": {"type": "Var", "name": "rn"}, "key": "noun"}
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {"type": "Attr", "node": {"type": "Var", "name": "nm"}, "key": "next_word"},
+       "b": {"type": "Attr", "node": {"type": "Var", "name": "rn"}, "key": "complement_role"}
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {"type": "NodesOfType", "node_type": "UnsaidRole"},
+       "var_name": "ur2",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {"type": "Attr", "node": {"type": "Var", "name": "ur2"}, "key": "host"},
+          "b": {"type": "Attr", "node": {"type": "Var", "name": "rn"}, "key": "noun"}
+         },
+         {
+          "type": "Eq",
+          "a": {"type": "Attr", "node": {"type": "Var", "name": "ur2"}, "key": "role"},
+          "b": {"type": "Attr", "node": {"type": "Var", "name": "rn"}, "key": "complement_role"}
+         }
+        ]
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    ["add_node", "ur", "UnsaidRole", {
+      "host": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "rn"}, "key": "noun"}},
+      "role": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "rn"}, "key": "complement_role"}},
+      "theme": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "rn"}, "key": "theme"}},
+      "question": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "rn"}, "key": "question"}},
+      "filled": 0.0,
+      "revisable": 1.0,
+      "note": "relational noun with an absent expected complement -- the residual is the formulated question, never an answer"
+    }],
+    ["add_edge", "agent", "has_unsaid_role", "ur"]
+   ]
+  },
+  {
+   "name": "mint_intent_attribution_strategic",
+   "batch": false,
+   "match": [
+    ["agent", "has_intent_signal", "is"],
+    ["agent", "has_strategic_register", "sr"],
+    ["agent", "has_relevance_weight", "rw"]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "is"}, "key": "register"},
+      "b": {"type": "Attr", "node": {"type": "Var", "name": "sr"}, "key": "register"}
+     },
+     {
+      "type": "Eq",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "is"}, "key": "relevance_key"},
+      "b": {"type": "Attr", "node": {"type": "Var", "name": "rw"}, "key": "key"}
+     },
+     {
+      "type": "Gte",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {"type": "Attr", "node": {"type": "Var", "name": "sr"}, "key": "strategic_weight"},
+        {"type": "Attr", "node": {"type": "Var", "name": "rw"}, "key": "relevance_weight"}
+       ]
+      },
+      "b": {"type": "Lit", "value": 0.7}
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {"type": "NodesOfType", "node_type": "IntentAttribution"},
+       "var_name": "ia2",
+       "predicate": {
+        "type": "Eq",
+        "a": {"type": "Attr", "node": {"type": "Var", "name": "ia2"}, "key": "residual_ref"},
+        "b": {"type": "Attr", "node": {"type": "Var", "name": "is"}, "key": "residual_ref"}
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    ["add_node", "ia", "IntentAttribution", {
+      "residual_ref": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "is"}, "key": "residual_ref"}},
+      "residual_type": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "is"}, "key": "residual_type"}},
+      "register": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "is"}, "key": "register"}},
+      "register_weight": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "sr"}, "key": "strategic_weight"}},
+      "relevance_weight": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "rw"}, "key": "relevance_weight"}},
+      "source_weight": 0.0,
+      "confidence": {"__term__": {
+       "type": "Plus",
+       "items": [
+        {"type": "Attr", "node": {"type": "Var", "name": "sr"}, "key": "strategic_weight"},
+        {"type": "Attr", "node": {"type": "Var", "name": "rw"}, "key": "relevance_weight"}
+       ]
+      }},
+      "posit": "strategic",
+      "basis": "register+relevance combined >= strategic threshold (0.7) -- source signal gated (not reachable for a bare-clause residual)",
+      "revisable": 1.0,
+      "note": "DEFEASIBLE posit: the omission plausibly does rhetorical work here -- graded and revisable, never a certainty"
+    }],
+    ["add_edge", "agent", "has_intent_attribution", "ia"]
+   ]
+  },
+  {
+   "name": "mint_intent_attribution_incidental",
+   "batch": false,
+   "match": [
+    ["agent", "has_intent_signal", "is"],
+    ["agent", "has_strategic_register", "sr"],
+    ["agent", "has_relevance_weight", "rw"]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "is"}, "key": "register"},
+      "b": {"type": "Attr", "node": {"type": "Var", "name": "sr"}, "key": "register"}
+     },
+     {
+      "type": "Eq",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "is"}, "key": "relevance_key"},
+      "b": {"type": "Attr", "node": {"type": "Var", "name": "rw"}, "key": "key"}
+     },
+     {
+      "type": "Lte",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {"type": "Attr", "node": {"type": "Var", "name": "sr"}, "key": "strategic_weight"},
+        {"type": "Attr", "node": {"type": "Var", "name": "rw"}, "key": "relevance_weight"}
+       ]
+      },
+      "b": {"type": "Lit", "value": 0.15}
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {"type": "NodesOfType", "node_type": "IntentAttribution"},
+       "var_name": "ia2",
+       "predicate": {
+        "type": "Eq",
+        "a": {"type": "Attr", "node": {"type": "Var", "name": "ia2"}, "key": "residual_ref"},
+        "b": {"type": "Attr", "node": {"type": "Var", "name": "is"}, "key": "residual_ref"}
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    ["add_node", "ia", "IntentAttribution", {
+      "residual_ref": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "is"}, "key": "residual_ref"}},
+      "residual_type": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "is"}, "key": "residual_type"}},
+      "register": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "is"}, "key": "register"}},
+      "register_weight": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "sr"}, "key": "strategic_weight"}},
+      "relevance_weight": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "rw"}, "key": "relevance_weight"}},
+      "source_weight": 0.0,
+      "confidence": {"__term__": {
+       "type": "Plus",
+       "items": [
+        {"type": "Attr", "node": {"type": "Var", "name": "sr"}, "key": "strategic_weight"},
+        {"type": "Attr", "node": {"type": "Var", "name": "rw"}, "key": "relevance_weight"}
+       ]
+      }},
+      "posit": "incidental",
+      "basis": "register+relevance combined <= incidental threshold (0.15) -- source signal gated (not reachable for a bare-clause residual)",
+      "revisable": 1.0,
+      "note": "DEFEASIBLE posit: the omission looks routine/unmarked here -- graded and revisable, never a certainty"
+    }],
+    ["add_edge", "agent", "has_intent_attribution", "ia"]
+   ]
+  },
+  {
+   "name": "mint_intent_attribution_undetermined",
+   "batch": false,
+   "match": [
+    ["agent", "has_intent_signal", "is"],
+    ["agent", "has_strategic_register", "sr"],
+    ["agent", "has_relevance_weight", "rw"]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "is"}, "key": "register"},
+      "b": {"type": "Attr", "node": {"type": "Var", "name": "sr"}, "key": "register"}
+     },
+     {
+      "type": "Eq",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "is"}, "key": "relevance_key"},
+      "b": {"type": "Attr", "node": {"type": "Var", "name": "rw"}, "key": "key"}
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {"type": "Attr", "node": {"type": "Var", "name": "sr"}, "key": "strategic_weight"},
+        {"type": "Attr", "node": {"type": "Var", "name": "rw"}, "key": "relevance_weight"}
+       ]
+      },
+      "b": {"type": "Lit", "value": 0.15}
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {"type": "Attr", "node": {"type": "Var", "name": "sr"}, "key": "strategic_weight"},
+        {"type": "Attr", "node": {"type": "Var", "name": "rw"}, "key": "relevance_weight"}
+       ]
+      },
+      "b": {"type": "Lit", "value": 0.7}
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {"type": "NodesOfType", "node_type": "IntentAttribution"},
+       "var_name": "ia2",
+       "predicate": {
+        "type": "Eq",
+        "a": {"type": "Attr", "node": {"type": "Var", "name": "ia2"}, "key": "residual_ref"},
+        "b": {"type": "Attr", "node": {"type": "Var", "name": "is"}, "key": "residual_ref"}
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    ["add_node", "ia", "IntentAttribution", {
+      "residual_ref": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "is"}, "key": "residual_ref"}},
+      "residual_type": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "is"}, "key": "residual_type"}},
+      "register": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "is"}, "key": "register"}},
+      "register_weight": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "sr"}, "key": "strategic_weight"}},
+      "relevance_weight": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "rw"}, "key": "relevance_weight"}},
+      "source_weight": 0.0,
+      "confidence": {"__term__": {
+       "type": "Plus",
+       "items": [
+        {"type": "Attr", "node": {"type": "Var", "name": "sr"}, "key": "strategic_weight"},
+        {"type": "Attr", "node": {"type": "Var", "name": "rw"}, "key": "relevance_weight"}
+       ]
+      }},
+      "posit": "undetermined",
+      "basis": "register+relevance combined between thresholds (0.15, 0.7) -- neither signal family is strong enough alone to commit; source signal gated (not reachable for a bare-clause residual)",
+      "revisable": 1.0,
+      "note": "HONEST posit: signal is too thin to call this strategic OR incidental -- the agent declines to guess"
+    }],
+    ["add_edge", "agent", "has_intent_attribution", "ia"]
+   ]
+  }
+ ]
+}

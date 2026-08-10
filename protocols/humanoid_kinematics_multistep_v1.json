@@ -1,0 +1,62 @@
+{
+  "protocol": "humanoid_kinematics_multistep_v1",
+  "status": "development_experiment",
+  "claim": "Opaque graph-native joint-coordinate context can turn reset-local endpoint consequences into configuration-conditioned forward models and improve multi-step inverse reaching toward an off-manifold body-relative goal.",
+  "simulator": "pybullet",
+  "asset": "mjcf/humanoid.xml",
+  "seed": 0,
+  "body": {
+    "time_step_seconds": 0.004166666666666667,
+    "gravity_acceleration": 9.81,
+    "initial_settling_frames": 480,
+    "joint_twitch_radians": 0.085,
+    "maximum_joint_force": 50.0,
+    "position_gain": 0.3,
+    "velocity_gain": 1.0
+  },
+  "calibration": {
+    "samples_per_non_tonic_actuator": 1,
+    "reset_body_before_each_sample": true
+  },
+  "curriculum": {
+    "selection": "decision_core_curiosity",
+    "difficulty": "receipt_gated_challenge_point",
+    "authorization": "reactive_balance_frontier",
+    "safe_verdict": "upright_plus_directed_progress_plus_new_support_cycle",
+    "bootstrap": "shape_indexed_recovery_utility_at_known_safe_scale",
+    "kinematics_study": true,
+    "inverse_reach": {
+      "enabled": true,
+      "body_direction": [-1.0, 0.0, 1.0],
+      "target": "body_direction_at_learned_scale",
+      "endpoint": "graph_selected_non_support_terminal"
+    },
+    "kinematics_comparison": [
+      "global_additive_endpoint_model",
+      "support_conditioned_hierarchical_endpoint_model",
+      "support_conditioned_plus_learned_synergy_residual",
+      "prequential_context_arbitration"
+    ],
+    "evaluation": "paired_prequential_before_receipt_update"
+  },
+  "locomotion": {
+    "actions": 180,
+    "heading_x": -1.0,
+    "target_froude_speed": 0.05,
+    "target_directed_progress_m": 3.0,
+    "support_geometry_preview_authority": 1.0,
+    "persistent_task_residual_authority": 1.0,
+    "modes": [
+      "directed_walk"
+    ]
+  },
+  "evaluation": {
+    "minimum_upright_height_fraction": 0.75,
+    "minimum_directed_progress_metres": 0.1,
+    "maximum_final_lateral_drift_metres": 0.3,
+    "minimum_support_alternations": 1,
+    "maximum_aerial_samples_per_locomotor_cycle": 1.0,
+    "adaptive_must_remain_upright": true,
+    "tonic_control_must_not_match_progress": false
+  }
+}

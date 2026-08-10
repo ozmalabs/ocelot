@@ -1,0 +1,627 @@
+{
+ "id": "prog_chunk_growth",
+ "version": "1.0.0",
+ "depends_on": [],
+ "description": "P7-C of PROGRAM_SYNTHESIS_PLAN.md (PROGRAM_SYNTHESIS_P7C.md par.1.6): the SELF-TEACH tier of the idiom-grain chunk codebook. The agent grows its own write codebook from its own ACCEPTED programs: ckg_mark_scan DECIDES which Program nodes enter the chunk-learning flow (provenance program_synthesis, once per Program); the adapter (domains/prog_chunk_growth.scan_marked_programs) applies the marked decision MECHANICALLY -- the SAME fixed role/slot-abstraction walk the corpus miner uses -- ingesting Observation{kind:'prog_chunk', pk_status:'pending'} rows; ckg_recognize DECIDES a chunk is already held (standalone Covers over chunk_rels -- pattern-side WILD matches, so AntiUnify-merged mined entries recognize their variants; the pcon_recognize_covered precedent); ckg_mint DECIDES novelty (Not-Exists cover) and MINTS the write-codebook entry fully in-rule (bounded Term-computed name ckt_<snake(head)>_q<held-count>; attrs copied off the observation's own recorded facts; provenance self_taught) with the in-rule write_codebook_epoch bump (code_write_growth's own counter -- the established three-line epoch move; the curriculum re-arm rules already read this counter). ISOLATION: pk_status/kind prog_chunk attrs -- the frozen sd loop keys on 'status', the P3 loop on pc_status/kind prog_construction, so neither can see these observations; the minted entries' kind IS code_write_construction because that is the ONLY kind ps_propose reads (proposability is the point). ONE-MINT-PER-PASS: the pcon_mint Argmin-survivor serializer (measured engine fact: the non-batch attempt path is SNAPSHOT-DRAIN -- two novel observations in one pass would both mint before either saw the other's entry; the Argmin guard makes exactly one apply per pass, every other candidate re-decides against the grown codebook next pass). NO edit to seeds/program_synthesis.json: ckg_mark_scan only READS the Program nodes that seed's ps_accept produces.",
+ "microtheory": {
+  "name": "prog_chunk_growth",
+  "description": "an accepted program's recurring sub-trees are chunk observations; a novel chunk (nothing held covers it) becomes a new proposable write-codebook entry, self-taught; the run_rules fixpoint is the recognize-or-grow loop at idiom grain."
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [],
+ "rules": [
+  {
+   "name": "ckg_mark_scan",
+   "comment": "An accepted Program{provenance:'program_synthesis'} enters the chunk-learning flow ONCE (ck_scan_marked guard). The DECISION (which programs feed self-teach) is this rule's; the extraction walk is the adapter's mechanical application (the P3 decision-in-rules / application-in-adapter split).",
+   "batch": true,
+   "match": [
+    [
+     "g",
+     "accepted_program",
+     "p"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "p"
+       },
+       "key": "provenance"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "program_synthesis"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "p"
+        },
+        "key": "ck_scan_marked"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "p",
+     "ck_scan_marked",
+     1.0
+    ]
+   ]
+  },
+  {
+   "name": "ckg_recognize",
+   "comment": "A pending prog_chunk observation COVERED by a held chunk entry (standalone Covers over chunk_rels -- pattern-side WILD matches, so AntiUnify-merged mined entries recognize leaf-variants) is RECOGNIZED, not re-minted: covered_by = the most-specific coverer (Argmax by FixedCount -- the pcon_recognize_covered idiom). Entries without a chunk_rels attr (the starter shapes) evaluate Covers(None, ...) = false and can never match.",
+   "batch": true,
+   "match": [
+    [
+     "ag",
+     "observed",
+     "obs"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "kind"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "prog_chunk"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "pk_status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "pending"
+      }
+     },
+     {
+      "type": "Exists",
+      "source": {
+       "type": "NodesOfType",
+       "node_type": "ShapeSignature"
+      },
+      "var_name": "ce",
+      "predicate": {
+       "type": "And",
+       "items": [
+        {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "ce"
+          },
+          "key": "kind"
+         },
+         "b": {
+          "type": "Lit",
+          "value": "code_write_construction"
+         }
+        },
+        {
+         "type": "Covers",
+         "pattern": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "ce"
+          },
+          "key": "chunk_rels"
+         },
+         "instance": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "obs"
+          },
+          "key": "chunk_rels"
+         }
+        }
+       ]
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "obs",
+     "covered_by",
+     {
+      "__term__": {
+       "type": "Attr",
+       "key": "name",
+       "node": {
+        "type": "Argmax",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "ShapeSignature"
+         },
+         "var_name": "cf",
+         "predicate": {
+          "type": "And",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "cf"
+             },
+             "key": "kind"
+            },
+            "b": {
+             "type": "Lit",
+             "value": "code_write_construction"
+            }
+           },
+           {
+            "type": "Covers",
+            "pattern": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "cf"
+             },
+             "key": "chunk_rels"
+            },
+            "instance": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "obs"
+             },
+             "key": "chunk_rels"
+            }
+           }
+          ]
+         }
+        },
+        "var_name": "cw",
+        "value": {
+         "type": "FixedCount",
+         "pattern": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "cw"
+          },
+          "key": "chunk_rels"
+         }
+        },
+        "default": null
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "pk_status",
+     "recognized"
+    ]
+   ]
+  },
+  {
+   "name": "ckg_mint",
+   "comment": "NOVELTY -> SELF-TAUGHT MINT, fully in-rule: a pending prog_chunk observation NOTHING covers (Not-Exists Covers over chunk_rels) becomes a new proposable write-codebook entry -- kind code_write_construction (the only kind ps_propose reads), provenance self_taught, attrs copied off the observation's own recorded facts (the adapter prepared them mechanically at scan time; the rule decides AND applies). NAME: bounded, Term-computed -- ckt_<snake(chunk_head)>_q<count of held code_write_construction entries> (the pcon_mint naming law; ckt_ prefix distinguishes self-taught entries from the miner's ck_ rows and the count discriminator is strictly increasing per substrate). EPOCH: write_codebook_epoch bumped IN-RULE (the code_write_growth counter -- growth is a fact other seeds re-arm on). SERIALIZER: the observation must BE the Argmin survivor over the mint-eligible snapshot (the pcon_mint / retire_duplicate_gap precedent) -- exactly one mint per pass under the engine's snapshot-drain attempt path; a same-key twin is recognized next pass instead of double-minting.",
+   "match": [
+    [
+     "ag",
+     "observed",
+     "obs"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "kind"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "prog_chunk"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "pk_status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "pending"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "ShapeSignature"
+       },
+       "var_name": "ne",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "ne"
+           },
+           "key": "kind"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "code_write_construction"
+          }
+         },
+         {
+          "type": "Covers",
+          "pattern": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "ne"
+           },
+           "key": "chunk_rels"
+          },
+          "instance": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "obs"
+           },
+           "key": "chunk_rels"
+          }
+         }
+        ]
+       }
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Var",
+       "name": "obs"
+      },
+      "b": {
+       "type": "Argmin",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "Observation"
+        },
+        "var_name": "mo",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "mo"
+            },
+            "key": "kind"
+           },
+           "b": {
+            "type": "Lit",
+            "value": "prog_chunk"
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "mo"
+            },
+            "key": "pk_status"
+           },
+           "b": {
+            "type": "Lit",
+            "value": "pending"
+           }
+          },
+          {
+           "type": "Not",
+           "arg": {
+            "type": "Exists",
+            "source": {
+             "type": "NodesOfType",
+             "node_type": "ShapeSignature"
+            },
+            "var_name": "mc",
+            "predicate": {
+             "type": "And",
+             "items": [
+              {
+               "type": "Eq",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "mc"
+                },
+                "key": "kind"
+               },
+               "b": {
+                "type": "Lit",
+                "value": "code_write_construction"
+               }
+              },
+              {
+               "type": "Covers",
+               "pattern": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "mc"
+                },
+                "key": "chunk_rels"
+               },
+               "instance": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "mo"
+                },
+                "key": "chunk_rels"
+               }
+              }
+             ]
+            }
+           }
+          }
+         ]
+        }
+       },
+       "var_name": "mo2",
+       "value": {
+        "type": "Lit",
+        "value": 0
+       },
+       "default": null
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "q",
+     "ShapeSignature",
+     {
+      "name": {
+       "__term__": {
+        "type": "StringConcat",
+        "parts": [
+         {
+          "type": "Lit",
+          "value": "ckt_"
+         },
+         {
+          "type": "SnakeCase",
+          "text": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "obs"
+           },
+           "key": "chunk_head"
+          }
+         },
+         {
+          "type": "Lit",
+          "value": "_q"
+         },
+         {
+          "type": "ToJsonString",
+          "value": {
+           "type": "Count",
+           "source": {
+            "type": "Filter",
+            "source": {
+             "type": "NodesOfType",
+             "node_type": "ShapeSignature"
+            },
+            "var_name": "nq",
+            "predicate": {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "nq"
+              },
+              "key": "kind"
+             },
+             "b": {
+              "type": "Lit",
+              "value": "code_write_construction"
+             }
+            }
+           }
+          }
+         }
+        ]
+       }
+      },
+      "kind": "code_write_construction",
+      "provenance": "self_taught",
+      "chunk_key": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "chunk_key"
+       }
+      },
+      "chunk_rels": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "chunk_rels"
+       }
+      },
+      "signature": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "sig_str"
+       }
+      },
+      "trigger_tokens": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "trigger_tokens"
+       }
+      },
+      "ground_template": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "ground_template"
+       }
+      },
+      "spine": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "spine"
+       }
+      },
+      "support": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "occurrences"
+       }
+      },
+      "source": "prog_chunk_growth"
+     }
+    ],
+    [
+     "add_edge",
+     "obs",
+     "minted",
+     "q"
+    ],
+    [
+     "set_attr",
+     "ag",
+     "write_codebook_epoch",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "ag"
+         },
+         "key": "write_codebook_epoch"
+        },
+        {
+         "type": "Lit",
+         "value": 1
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "pk_status",
+     "minted"
+    ]
+   ]
+  }
+ ]
+}

@@ -1,0 +1,118 @@
+{
+  "id": "tiered_jit_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "tiered_compilation",
+  "in_microtheory": "compilers",
+  "description": "Tiered JIT compilation decomposed. Multiple compilation tiers with increasing cost + quality. HotSpot's C1 + C2. V8's Sparkplug + Maglev + TurboFan. .NET's Tier0 + Tier1. Tier promotion via call/loop counters. OSR for hot loops in cold methods. Deoptimisation when speculative assumptions fail.",
+  "sub_mechanisms": [
+    {
+      "name": "interpreter_tier",
+      "definition": "Bottom tier: bytecode interpreter. Slow per-instruction but instant startup. No compilation cost.",
+      "why": "Cold code stays here. Interpreter is the safety net + the source of profile information. Method's first executions interpreted; counter triggers promotion.",
+      "category": "tiered_jit_mechanism"
+    },
+    {
+      "name": "baseline_JIT_tier",
+      "definition": "First compiled tier. Fast compilation, minimal optimisation. JVM's C1, V8's Sparkplug, .NET Tier0.",
+      "why": "Translates bytecode to machine code with light optimisation. Captures runtime profile (inline caches, branch counts). Used for moderately-hot code; bridges interpreter and optimising tier.",
+      "category": "tiered_jit_mechanism"
+    },
+    {
+      "name": "optimising_JIT_tier",
+      "definition": "Top tier: aggressive optimisations. JVM's C2, V8's TurboFan, .NET Tier1. Uses profile data from lower tiers.",
+      "why": "Inlining, escape analysis, vectorisation, speculative optimisation. Compile time 10x+ baseline; runtime substantially faster. Only triggered for verified hot code.",
+      "category": "tiered_jit_mechanism"
+    },
+    {
+      "name": "tier_promotion_counter",
+      "definition": "Per-method counter: incremented on call or back-edge. Crosses threshold → promote to next tier.",
+      "why": "Hotness detection. Different thresholds per tier (e.g., 100 for baseline, 10000 for optimising). Tuned to balance compile cost against expected return.",
+      "category": "tiered_jit_mechanism"
+    },
+    {
+      "name": "OSR_on_stack_replacement",
+      "definition": "Transition from lower-tier to higher-tier code WHILE executing. Often triggered by loop back-edge crossing threshold.",
+      "why": "Hot loop in cold method: function counter low but loop counter high. Without OSR, loop runs in interpreter despite being hot. OSR copies interpreter state to optimised frame mid-execution.",
+      "category": "tiered_jit_mechanism"
+    },
+    {
+      "name": "OSR_entry_point",
+      "definition": "Compiled code has multiple entry points: normal (method start) + OSR (mid-method, after the loop's iteration setup).",
+      "why": "OSR transition jumps directly to where the loop is. Requires distinct entry handling — locals must be set up to match interpreter state. Compiler emits multiple entries during baseline → optimising promotion.",
+      "category": "tiered_jit_mechanism"
+    },
+    {
+      "name": "deoptimisation",
+      "definition": "Transition from optimised code back to interpreter, typically because a speculative assumption failed.",
+      "why": "Optimised code makes optimistic assumptions (this call is monomorphic, this branch never taken). When violated, code is unsafe. Deopt reconstructs interpreter state from compiled state; resumes in interpreter.",
+      "category": "tiered_jit_mechanism"
+    },
+    {
+      "name": "speculative_inlining",
+      "definition": "Optimising tier inlines polymorphic calls assuming a specific receiver type, with a deopt guard.",
+      "why": "Dynamic dispatch is slow + opaque to further optimisation. If profile shows mostly-monomorphic call, inline the common case. Guard checks the type; mismatch deopts. Major performance win for OOP code.",
+      "category": "tiered_jit_mechanism"
+    },
+    {
+      "name": "speculative_loop_optimisation",
+      "definition": "Assume loop's bounds, iteration counts, or array sizes based on profile. Eliminate bounds checks, vectorise.",
+      "why": "Speculative bounds elimination + vectorisation gives big speedups on numeric code. JVM's C2, V8's TurboFan both do this aggressively.",
+      "category": "tiered_jit_mechanism"
+    },
+    {
+      "name": "code_cache",
+      "definition": "Memory region holding compiled code. Each tier has its own region. Size-limited; eviction can deoptimise functions.",
+      "why": "Hot code lives in cache, cold code evicted. Cache exhaustion forces deopt (back to interpreter). JVM operators tune code cache size to avoid this.",
+      "category": "tiered_jit_mechanism"
+    },
+    {
+      "name": "JVM_HotSpot_tiered",
+      "definition": "JVM's tiered compilation: interpreter → C1 (with/without profiling) → C2. Five logical tiers (0-4); tier 4 is C2.",
+      "why": "Battle-tested. Default in OpenJDK + Oracle JDK. Demonstrates the value of tiering — heavy optimisation only for proven-hot code, fast compilation for moderately-hot.",
+      "category": "tiered_jit_mechanism"
+    },
+    {
+      "name": "V8_tiered",
+      "definition": "Ignition (interpreter) → Sparkplug (baseline) → Maglev (mid-tier, 2023) → TurboFan (top). Sparkplug + Maglev added for warm code optimisation.",
+      "why": "V8's evolution toward more tiers reflects the realisation that the gap between cheap baseline + expensive top was too large. Maglev fills the gap. Modern JITs trend toward more, finer-grained tiers.",
+      "category": "tiered_jit_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "tiered_compilation_balances_latency_and_throughput",
+      "if": ["different code regions have different hotness"],
+      "then": ["tiered compilation optimises each appropriately"],
+      "why": "Cold code: don't waste compile cost. Warm code: cheap baseline. Hot code: full optimisation. Single-tier JIT either over-spends on cold code or under-optimises hot code. Tiering avoids both.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "OSR_required_for_hot_loops_in_cold_methods",
+      "if": ["a function contains a hot loop but the function call rate is low"],
+      "then": ["OSR is needed to optimise the loop without waiting for next call"],
+      "why": "Loop runs for millions of iterations within a single function call. Without OSR, optimised code never runs. With OSR, loop transitions to optimised code mid-execution. Critical for long-running computations.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "deoptimisation_required_for_speculative_safety",
+      "if": ["compiled code makes speculative assumptions"],
+      "then": ["deoptimisation is required for soundness when assumptions fail"],
+      "why": "Speculative inlining, type assumptions, branch predictions all unsafe without deopt. Deopt restores interpreter's safe execution. Without it, speculation would produce wrong results on assumption violation.",
+      "soundness_category": "referential_transparency"
+    },
+    {
+      "name": "profile_data_from_lower_tiers_drives_optimisation",
+      "if": ["lower tier collects runtime profile (inline caches, branch counts)"],
+      "then": ["upper tier uses this data for better optimisation decisions"],
+      "why": "Profile-driven inlining (which calls to specialise), branch layout (which paths are hot), loop optimisation (which loops are hot). Cold-start compilation lacks this; tiered systems collect it cheaply in lower tiers.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "more_tiers_finer_grained_optimisation",
+      "if": ["a JIT adds an intermediate tier between baseline and optimising"],
+      "then": ["warm code (between cold and hot) gets appropriately-optimised code"],
+      "why": "Baseline → top is a big jump. Intermediate tier (V8's Maglev) handles the middle ground. Each tier serves a different fraction of execution. The progression toward more tiers reflects this principle.",
+      "soundness_category": "cost_equivalence"
+    }
+  ]
+}

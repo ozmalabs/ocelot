@@ -1,0 +1,119 @@
+{
+  "id": "oauth_oidc_jwt_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "OAuth_2_0",
+  "in_microtheory": "security_and_cryptography",
+  "description": "OAuth 2.0 + OIDC + JWT decomposed. Authorization code flow, PKCE, client credentials, device code, refresh tokens. OIDC ID tokens. JWT structure, common bugs (alg=none, weak signing, missing validation). Modern patterns + pitfalls.",
+  "sub_mechanisms": [
+    {
+      "name": "authorization_code_flow",
+      "definition": "Client redirects to auth server; user authenticates + consents; auth server redirects back with code; client exchanges code for tokens.",
+      "why": "Most secure OAuth flow for confidential clients. Code short-lived + one-time-use. Tokens never seen by browser. Standard for server-side web apps.",
+      "category": "oauth_mechanism"
+    },
+    {
+      "name": "PKCE_proof_key",
+      "definition": "Proof Key for Code Exchange. Client generates random verifier + sends hash (challenge). Code redemption requires verifier.",
+      "why": "Mitigates code interception in public clients (mobile, SPA). Auth server returns code; only client with original verifier can exchange. Required for mobile/SPA per RFC 8252.",
+      "category": "oauth_mechanism"
+    },
+    {
+      "name": "client_credentials_flow",
+      "definition": "Machine-to-machine. Client sends client_id + client_secret; receives access token. No user.",
+      "why": "Service-to-service auth. Simpler than user flows. Client secret = static credential; rotation + storage matters.",
+      "category": "oauth_mechanism"
+    },
+    {
+      "name": "device_code_flow",
+      "definition": "Devices without browser (CLI, TV). Display code; user enters at separate device. CLI polls until approved.",
+      "why": "CLI auth (Google Cloud, GitHub CLI). Awkward UX but only secure option for headless. RFC 8628.",
+      "category": "oauth_mechanism"
+    },
+    {
+      "name": "refresh_token",
+      "definition": "Long-lived token to obtain fresh access tokens without user interaction. Used when access token expires.",
+      "why": "Access tokens short (minutes-hour); refresh long (days-permanent). User stays logged in without re-prompting. Cost: refresh token theft = persistent compromise. Rotation strategies help.",
+      "category": "oauth_mechanism"
+    },
+    {
+      "name": "scope_consent",
+      "definition": "Each authorization request specifies scopes. User consents to specific access. Resource server enforces.",
+      "why": "User-informed authorization. Granularity matters: too coarse = excessive access; too fine = consent fatigue. Industry trend toward finer scopes.",
+      "category": "oauth_mechanism"
+    },
+    {
+      "name": "OIDC_ID_token",
+      "definition": "JWT signed by auth server containing identity claims (sub, email, name). Returned alongside OAuth access token.",
+      "why": "Authentication layer over OAuth. Tells you WHO; access token tells you WHAT. SSO standard. Validate signature + issuer + audience + expiry.",
+      "category": "oidc_mechanism"
+    },
+    {
+      "name": "JWT_structure",
+      "definition": "Three base64url parts: header.payload.signature. Header: algorithm + key id. Payload: claims. Signature: over header + payload.",
+      "why": "Compact, URL-safe. Self-contained (claims travel with token). Cost: revocation hard (must check denylist or short expiry).",
+      "category": "jwt_mechanism"
+    },
+    {
+      "name": "JWT_alg_none_vulnerability",
+      "definition": "Some libraries accept JWT with alg=none (unsigned). Attacker sets header alg=none, payload anything, no signature.",
+      "why": "Famous JWT bug. Fixed in modern libraries; old versions still around. Mitigation: explicit alg validation, never trust alg from header without check.",
+      "category": "jwt_mechanism"
+    },
+    {
+      "name": "JWT_signing_algorithm_confusion",
+      "definition": "Token signed RS256 (asymmetric); verifier uses HS256 (symmetric) with public key as 'secret'. Validates incorrectly.",
+      "why": "Classic JWT bug. Library auto-selects algorithm from header. Mitigation: hardcode expected algorithm, never trust header.",
+      "category": "jwt_mechanism"
+    },
+    {
+      "name": "JWT_claim_validation",
+      "definition": "Verify iss (issuer), aud (audience), exp (expiry), nbf (not before), iat (issued at).",
+      "why": "Signature alone insufficient. Token from wrong issuer, for wrong audience, expired = invalid. Common bug: validate signature only, not claims.",
+      "category": "jwt_mechanism"
+    },
+    {
+      "name": "token_introspection",
+      "definition": "Resource server queries auth server: 'is this access token valid?' Returns active + claims.",
+      "why": "Alternative to self-validating JWT. Allows revocation. Cost: extra round trip per request. Hybrid: JWT for short-lived access + introspection for sensitive ops.",
+      "category": "oauth_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "PKCE_required_for_public_clients",
+      "if": ["client is public (mobile, SPA) without client secret"],
+      "then": ["PKCE is required to prevent code interception"],
+      "why": "Public clients can't keep secrets. PKCE proves possession via challenge/verifier pair. RFC 8252 mandates. Modern OAuth implementations enforce.",
+      "soundness_category": "referential_transparency"
+    },
+    {
+      "name": "JWT_validation_must_check_multiple_claims",
+      "if": ["a JWT is verified by signature only"],
+      "then": ["it may be expired, from wrong issuer, or for different audience"],
+      "why": "Signature proves authenticity, not currency or relevance. Library must check exp + iss + aud. Common bug: trust signature, ignore claims.",
+      "soundness_category": "referential_transparency"
+    },
+    {
+      "name": "ID_token_separate_from_access_token",
+      "definition": "ID token authenticates user; access token authorizes API access.",
+      "if": ["application needs both who + what"],
+      "then": ["ID token + access token serve distinct purposes"],
+      "why": "Don't use access token for auth (no identity claim) or ID token for API access (no authorization scope). OIDC standard split.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "refresh_token_theft_severe",
+      "if": ["refresh token is stolen"],
+      "then": ["attacker has persistent access until detected"],
+      "why": "Refresh tokens last days-permanent. Mitigation: token rotation (each use issues new RT, old invalidates), bind to client (sender-constrained tokens), DPoP.",
+      "soundness_category": "referential_transparency"
+    },
+    {
+      "name": "JWT_revocation_inherently_hard",
+      "if": ["JWT is self-contained"],
+      "then": ["revoking before expiry requires denylist or introspection"],
+      "why": "Server has no state. Mitigation: short expiry (5-15 min) + refresh token rotation; or introspection (heavy); or token denylist (state). Trade-offs per application.",
+      "soundness_category": "extensional_equivalence"
+    }
+  ]
+}

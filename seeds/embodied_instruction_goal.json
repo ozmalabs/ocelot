@@ -1,0 +1,2440 @@
+{
+  "id": "embodied_instruction_goal",
+  "version": "1.0.0",
+  "depends_on": [
+    "instruction_understanding",
+    "cognitive_supervision",
+    "humanoid_developmental_curriculum"
+  ],
+  "area": "humanoid_sensorimotor_adaptation",
+  "latency_class": "hard_realtime",
+  "description": "Graph-native bridge from a locally verified natural-language InstructionInterpretation to an output-null active generic order-N humanoid mission. The developmental plan remains the only motor authority. Competence confirmation requires a later causally closed embodied receipt and new integer capability success evidence; LLM and other teacher evidence are never authoritative for bodily action.",
+  "nodes": [],
+  "edges": [],
+  "productions": [
+    {
+      "provenance": "embodied_instruction_goal:agent_proposal",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_embodied_instruction_goal_proposal",
+      "tgt": {
+        "type": "EmbodiedInstructionGoalProposal",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "embodied_instruction_goal:proposal_interpretation",
+      "src": {
+        "type": "EmbodiedInstructionGoalProposal",
+        "var": "src"
+      },
+      "edge_type": "derives_from_interpretation",
+      "tgt": {
+        "type": "InstructionInterpretation",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "embodied_instruction_goal:proposal_goal",
+      "src": {
+        "type": "EmbodiedInstructionGoalProposal",
+        "var": "src"
+      },
+      "edge_type": "proposes_goal",
+      "tgt": {
+        "type": "Goal",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "embodied_instruction_goal:proposal_capability",
+      "src": {
+        "type": "EmbodiedInstructionGoalProposal",
+        "var": "src"
+      },
+      "edge_type": "requires_embodied_capability",
+      "tgt": {
+        "type": "EmbodiedSituatedDevelopmentalCapability",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "embodied_instruction_goal:proposal_confirmation",
+      "src": {
+        "type": "EmbodiedInstructionGoalProposal",
+        "var": "src"
+      },
+      "edge_type": "requires_embodied_goal_confirmation",
+      "tgt": {
+        "type": "EmbodiedInstructionGoalConfirmation",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "embodied_instruction_goal:confirmation_goal",
+      "src": {
+        "type": "EmbodiedInstructionGoalConfirmation",
+        "var": "src"
+      },
+      "edge_type": "confirms_goal",
+      "tgt": {
+        "type": "Goal",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "embodied_instruction_goal:confirmation_capability",
+      "src": {
+        "type": "EmbodiedInstructionGoalConfirmation",
+        "var": "src"
+      },
+      "edge_type": "confirms_capability",
+      "tgt": {
+        "type": "EmbodiedSituatedDevelopmentalCapability",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "embodied_instruction_goal:confirmation_receipt",
+      "src": {
+        "type": "EmbodiedInstructionGoalConfirmation",
+        "var": "src"
+      },
+      "edge_type": "grounded_in_embodied_receipt",
+      "tgt": {
+        "type": "Node",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "embodied_instruction_goal:proposal_request",
+      "src": {
+        "type": "EmbodiedInstructionGoalProposal",
+        "var": "src"
+      },
+      "edge_type": "has_embodied_mission_trial_request",
+      "tgt": {
+        "type": "EmbodiedExternalTrialRequest",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "embodied_instruction_goal:request_goal",
+      "src": {
+        "type": "EmbodiedExternalTrialRequest",
+        "var": "src"
+      },
+      "edge_type": "for_embodied_instruction_goal",
+      "tgt": {
+        "type": "Goal",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "embodied_instruction_goal:confirmation_bound_receipt",
+      "src": {
+        "type": "EmbodiedInstructionGoalConfirmation",
+        "var": "src"
+      },
+      "edge_type": "has_mission_bound_embodied_receipt",
+      "tgt": {
+        "type": "EmbodiedLearningTrialReceipt",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "embodied_instruction_goal:receipt_instruction_goal",
+      "src": {
+        "type": "EmbodiedLearningTrialReceipt",
+        "var": "src"
+      },
+      "edge_type": "grounds_embodied_instruction_goal",
+      "tgt": {
+        "type": "EmbodiedInstructionGoalProposal",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "embodied_instruction_goal:proposal_lease_renewal",
+      "src": {
+        "type": "EmbodiedInstructionGoalProposal",
+        "var": "src"
+      },
+      "edge_type": "has_embodied_mission_lease_renewal",
+      "tgt": {
+        "type": "EmbodiedMissionLeaseRenewal",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "embodied_instruction_goal:goal_subgoal",
+      "src": {
+        "type": "Goal",
+        "var": "src"
+      },
+      "edge_type": "has_subgoal",
+      "tgt": {
+        "type": "Goal",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "embodied_instruction_goal:goal_capability",
+      "src": {
+        "type": "Goal",
+        "var": "src"
+      },
+      "edge_type": "grounds_learning_capability",
+      "tgt": {
+        "type": "EmbodiedSituatedDevelopmentalCapability",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "embodied_instruction_goal:goal_episode",
+      "src": {
+        "type": "Goal",
+        "var": "src"
+      },
+      "edge_type": "supervises_embodied_episode",
+      "tgt": {
+        "type": "EmbodiedDevelopmentEpisode",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "embodied_instruction_goal:agent_goal",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_goal",
+      "tgt": {
+        "type": "Goal",
+        "var": "tgt"
+      }
+    }
+  ],
+  "rules": [
+    {
+      "name": "eig_propose_order_n_humanoid_goal_from_locally_verified_instruction",
+      "area": "humanoid_sensorimotor_adaptation",
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "comment": "A locally verified imperative authorises an output-null mission, never a motor command. The developmental plan selects every actual capability and action.",
+      "match": [
+        [
+          "agent",
+          "holds_interpretation",
+          "interpretation"
+        ],
+        [
+          "interpretation",
+          "interprets",
+          "message"
+        ],
+        [
+          "interpretation",
+          "has_understanding_check",
+          "check"
+        ],
+        [
+          "agent",
+          "has_embodied_development_episode",
+          "episode"
+        ],
+        [
+          "episode",
+          "has_embodied_learning_session",
+          "session"
+        ],
+        [
+          "episode",
+          "has_self_directed_learning_plan",
+          "plan"
+        ],
+        [
+          "plan",
+          "has_learning_plan_step",
+          "step"
+        ],
+        [
+          "step",
+          "plans_learning_capability",
+          "capability"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "interpretation"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "verified"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "check"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "verified"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "interpretation"
+                  },
+                  "key": "local_grounded"
+                },
+                {
+                  "type": "Lit",
+                  "value": 0
+                }
+              ]
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Or",
+            "items": [
+              {
+                "type": "Exists",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {
+                    "type": "Var",
+                    "name": "episode"
+                  },
+                  "edge_type": "grounded_in_embodied_simulator_connection",
+                  "any_type": false
+                },
+                "var_name": "connection",
+                "predicate": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Plus",
+                    "items": [
+                      {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "connection"
+                        },
+                        "key": "current_attachment"
+                      },
+                      {
+                        "type": "Lit",
+                        "value": 0
+                      }
+                    ]
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": 1
+                  }
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Count",
+                  "source": {
+                    "type": "Neighbours",
+                    "node": {
+                      "type": "Var",
+                      "name": "agent"
+                    },
+                    "edge_type": "has_embodied_simulator_connection",
+                    "any_type": false
+                  }
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 0
+                }
+              }
+            ]
+          },
+          {
+            "type": "Or",
+            "items": [
+              {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "capability"
+                      },
+                      "key": "status"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "active"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "step"
+                      },
+                      "key": "status"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "active"
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "capability"
+                      },
+                      "key": "status"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "available"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "step"
+                      },
+                      "key": "status"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "ready"
+                    }
+                  },
+                  {
+                    "type": "Not",
+                    "arg": {
+                      "type": "Exists",
+                      "source": {
+                        "type": "Neighbours",
+                        "node": {
+                          "type": "Var",
+                          "name": "episode"
+                        },
+                        "edge_type": "has_active_embodied_developmental_capability",
+                        "any_type": false
+                      },
+                      "var_name": "active_capability",
+                      "predicate": {
+                        "type": "Lit",
+                        "value": true
+                      }
+                    }
+                  },
+                  {
+                    "type": "Not",
+                    "arg": {
+                      "type": "Exists",
+                      "source": {
+                        "type": "Neighbours",
+                        "node": {
+                          "type": "Var",
+                          "name": "plan"
+                        },
+                        "edge_type": "has_selected_learning_plan_step",
+                        "any_type": false
+                      },
+                      "var_name": "active_step",
+                      "predicate": {
+                        "type": "Lit",
+                        "value": true
+                      }
+                    }
+                  },
+                  {
+                    "type": "Not",
+                    "arg": {
+                      "type": "Exists",
+                      "source": {
+                        "type": "Neighbours",
+                        "node": {
+                          "type": "Var",
+                          "name": "plan"
+                        },
+                        "edge_type": "has_learning_plan_step",
+                        "any_type": false
+                      },
+                      "var_name": "lower_step",
+                      "predicate": {
+                        "type": "And",
+                        "items": [
+                          {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "lower_step"
+                              },
+                              "key": "status"
+                            },
+                            "b": {
+                              "type": "Lit",
+                              "value": "ready"
+                            }
+                          },
+                          {
+                            "type": "Lt",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "lower_step"
+                              },
+                              "key": "ordinal"
+                            },
+                            "b": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "step"
+                              },
+                              "key": "ordinal"
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "capability"
+                      },
+                      "key": "status"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "meta_suspended"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "step"
+                      },
+                      "key": "status"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "meta_suspended"
+                    }
+                  },
+                  {
+                    "type": "Not",
+                    "arg": {
+                      "type": "Exists",
+                      "source": {
+                        "type": "Neighbours",
+                        "node": {
+                          "type": "Var",
+                          "name": "episode"
+                        },
+                        "edge_type": "has_active_embodied_developmental_capability",
+                        "any_type": false
+                      },
+                      "var_name": "active_capability",
+                      "predicate": {
+                        "type": "Lit",
+                        "value": true
+                      }
+                    }
+                  },
+                  {
+                    "type": "Not",
+                    "arg": {
+                      "type": "Exists",
+                      "source": {
+                        "type": "Neighbours",
+                        "node": {
+                          "type": "Var",
+                          "name": "plan"
+                        },
+                        "edge_type": "has_selected_learning_plan_step",
+                        "any_type": false
+                      },
+                      "var_name": "active_step",
+                      "predicate": {
+                        "type": "Lit",
+                        "value": true
+                      }
+                    }
+                  },
+                  {
+                    "type": "Not",
+                    "arg": {
+                      "type": "Exists",
+                      "source": {
+                        "type": "Neighbours",
+                        "node": {
+                          "type": "Var",
+                          "name": "plan"
+                        },
+                        "edge_type": "has_learning_plan_step",
+                        "any_type": false
+                      },
+                      "var_name": "ready_step",
+                      "predicate": {
+                        "type": "And",
+                        "items": [
+                          {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "ready_step"
+                              },
+                              "key": "status"
+                            },
+                            "b": {
+                              "type": "Lit",
+                              "value": "ready"
+                            }
+                          },
+                          {
+                            "type": "Exists",
+                            "source": {
+                              "type": "Neighbours",
+                              "node": {
+                                "type": "Var",
+                                "name": "ready_step"
+                              },
+                              "edge_type": "plans_learning_capability",
+                              "any_type": false
+                            },
+                            "var_name": "ready_capability",
+                            "predicate": {
+                              "type": "Eq",
+                              "a": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "ready_capability"
+                                },
+                                "key": "status"
+                              },
+                              "b": {
+                                "type": "Lit",
+                                "value": "available"
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    "type": "Not",
+                    "arg": {
+                      "type": "Exists",
+                      "source": {
+                        "type": "Neighbours",
+                        "node": {
+                          "type": "Var",
+                          "name": "plan"
+                        },
+                        "edge_type": "has_learning_plan_step",
+                        "any_type": false
+                      },
+                      "var_name": "lower_step",
+                      "predicate": {
+                        "type": "And",
+                        "items": [
+                          {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "lower_step"
+                              },
+                              "key": "status"
+                            },
+                            "b": {
+                              "type": "Lit",
+                              "value": "meta_suspended"
+                            }
+                          },
+                          {
+                            "type": "Lt",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "lower_step"
+                              },
+                              "key": "ordinal"
+                            },
+                            "b": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "step"
+                              },
+                              "key": "ordinal"
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "NodesOfType",
+                "node_type": "EmbodiedInstructionGoalProposal"
+              },
+              "var_name": "known_proposal",
+              "predicate": {
+                "type": "Exists",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {
+                    "type": "Var",
+                    "name": "known_proposal"
+                  },
+                  "edge_type": "derives_from_interpretation",
+                  "any_type": false
+                },
+                "var_name": "known_interpretation",
+                "predicate": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Var",
+                    "name": "known_interpretation"
+                  },
+                  "b": {
+                    "type": "Var",
+                    "name": "interpretation"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "proposal",
+          "EmbodiedInstructionGoalProposal",
+          {
+            "status": "accepted",
+            "order_n": 2,
+            "predicate": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "interpretation"
+                },
+                "key": "predicate"
+              }
+            },
+            "content": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "interpretation"
+                },
+                "key": "content"
+              }
+            },
+            "integer_native": 1,
+            "output_authority": 0,
+            "confirmation_required": 1,
+            "baseline_trial_seq": {
+              "__term__": {
+                "type": "Plus",
+                "items": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "session"
+                    },
+                    "key": "trial_seq"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": 0
+                  }
+                ]
+              }
+            }
+          }
+        ],
+        [
+          "add_node",
+          "root",
+          "Goal",
+          {
+            "kind": "humanoid_embodied_instruction",
+            "status": "active",
+            "order_n": 2,
+            "predicate": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "interpretation"
+                },
+                "key": "predicate"
+              }
+            },
+            "content": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "interpretation"
+                },
+                "key": "content"
+              }
+            },
+            "progress_units": 0,
+            "resolved_units": 0,
+            "integer_native": 1,
+            "output_authority": 0
+          }
+        ],
+        [
+          "add_node",
+          "enact",
+          "Goal",
+          {
+            "kind": "enact_embodied_capability",
+            "status": "active",
+            "order_n": 1,
+            "progress_units": 0,
+            "resolved_units": 0,
+            "integer_native": 1,
+            "output_authority": 0
+          }
+        ],
+        [
+          "add_node",
+          "verify",
+          "Goal",
+          {
+            "kind": "verify_embodied_receipt",
+            "status": "active",
+            "order_n": 1,
+            "progress_units": 0,
+            "resolved_units": 0,
+            "integer_native": 1,
+            "output_authority": 0
+          }
+        ],
+        [
+          "add_edge",
+          "agent",
+          "has_embodied_instruction_goal_proposal",
+          "proposal"
+        ],
+        [
+          "add_edge",
+          "proposal",
+          "derives_from_interpretation",
+          "interpretation"
+        ],
+        [
+          "add_edge",
+          "proposal",
+          "proposes_goal",
+          "root"
+        ],
+        [
+          "add_edge",
+          "proposal",
+          "requires_embodied_capability",
+          "capability"
+        ],
+        [
+          "add_edge",
+          "episode",
+          "has_active_embodied_developmental_capability",
+          "capability"
+        ],
+        [
+          "add_edge",
+          "plan",
+          "has_selected_learning_plan_step",
+          "step"
+        ],
+        [
+          "add_edge",
+          "agent",
+          "has_goal",
+          "root"
+        ],
+        [
+          "add_edge",
+          "root",
+          "grounds_learning_capability",
+          "capability"
+        ],
+        [
+          "add_edge",
+          "root",
+          "supervises_embodied_episode",
+          "episode"
+        ],
+        [
+          "add_edge",
+          "root",
+          "has_subgoal",
+          "enact"
+        ],
+        [
+          "add_edge",
+          "root",
+          "has_subgoal",
+          "verify"
+        ],
+        [
+          "add_edge",
+          "enact",
+          "grounds_learning_capability",
+          "capability"
+        ],
+        [
+          "add_edge",
+          "verify",
+          "grounds_learning_capability",
+          "capability"
+        ],
+        [
+          "add_node",
+          "reply",
+          "Message",
+          {
+            "from": "agent",
+            "text": {
+              "__term__": {
+                "type": "StringConcat",
+                "parts": [
+                  {
+                    "type": "Lit",
+                    "value": "I have an attached embodied world and am pursuing "
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "interpretation"
+                    },
+                    "key": "predicate"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": " through the developmental controller."
+                  }
+                ]
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "reply",
+          "responds_to",
+          "message"
+        ],
+        [
+          "add_edge",
+          "agent",
+          "sent",
+          "reply"
+        ],
+        [
+          "set_attr",
+          "capability",
+          "status",
+          "active"
+        ],
+        [
+          "set_attr",
+          "step",
+          "status",
+          "active"
+        ]
+      ]
+    },
+    {
+      "name": "eig_abstain_when_no_ready_embodied_developmental_capability_exists",
+      "area": "humanoid_sensorimotor_adaptation",
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "comment": "A verified instruction without an active or ready graph-selected developmental capability is understood but not enacted.",
+      "match": [
+        [
+          "agent",
+          "holds_interpretation",
+          "interpretation"
+        ],
+        [
+          "interpretation",
+          "interprets",
+          "message"
+        ],
+        [
+          "interpretation",
+          "has_understanding_check",
+          "check"
+        ],
+        [
+          "agent",
+          "has_embodied_development_episode",
+          "episode"
+        ],
+        [
+          "episode",
+          "has_self_directed_learning_plan",
+          "plan"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "interpretation"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "verified"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "check"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "verified"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "interpretation"
+                  },
+                  "key": "local_grounded"
+                },
+                {
+                  "type": "Lit",
+                  "value": 0
+                }
+              ]
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "episode"
+                },
+                "edge_type": "has_active_embodied_developmental_capability",
+                "any_type": false
+              },
+              "var_name": "active_capability",
+              "predicate": {
+                "type": "Lit",
+                "value": true
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "plan"
+                },
+                "edge_type": "has_selected_learning_plan_step",
+                "any_type": false
+              },
+              "var_name": "active_step",
+              "predicate": {
+                "type": "Lit",
+                "value": true
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "plan"
+                },
+                "edge_type": "has_learning_plan_step",
+                "any_type": false
+              },
+              "var_name": "ready_step",
+              "predicate": {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "ready_step"
+                      },
+                      "key": "status"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "ready"
+                    }
+                  },
+                  {
+                    "type": "Exists",
+                    "source": {
+                      "type": "Neighbours",
+                      "node": {
+                        "type": "Var",
+                        "name": "ready_step"
+                      },
+                      "edge_type": "plans_learning_capability",
+                      "any_type": false
+                    },
+                    "var_name": "ready_capability",
+                    "predicate": {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "ready_capability"
+                        },
+                        "key": "status"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": "available"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "plan"
+                },
+                "edge_type": "has_learning_plan_step",
+                "any_type": false
+              },
+              "var_name": "suspended_step",
+              "predicate": {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "suspended_step"
+                      },
+                      "key": "status"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "meta_suspended"
+                    }
+                  },
+                  {
+                    "type": "Exists",
+                    "source": {
+                      "type": "Neighbours",
+                      "node": {
+                        "type": "Var",
+                        "name": "suspended_step"
+                      },
+                      "edge_type": "plans_learning_capability",
+                      "any_type": false
+                    },
+                    "var_name": "suspended_capability",
+                    "predicate": {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "suspended_capability"
+                        },
+                        "key": "status"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": "meta_suspended"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "NodesOfType",
+                "node_type": "EmbodiedInstructionGoalProposal"
+              },
+              "var_name": "known_proposal",
+              "predicate": {
+                "type": "Exists",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {
+                    "type": "Var",
+                    "name": "known_proposal"
+                  },
+                  "edge_type": "derives_from_interpretation",
+                  "any_type": false
+                },
+                "var_name": "known_interpretation",
+                "predicate": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Var",
+                    "name": "known_interpretation"
+                  },
+                  "b": {
+                    "type": "Var",
+                    "name": "interpretation"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "proposal",
+          "EmbodiedInstructionGoalProposal",
+          {
+            "status": "abstained",
+            "order_n": 2,
+            "predicate": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "interpretation"
+                },
+                "key": "predicate"
+              }
+            },
+            "content": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "interpretation"
+                },
+                "key": "content"
+              }
+            },
+            "integer_native": 1,
+            "output_authority": 0,
+            "abstention_reason": "no_ready_embodied_developmental_capability"
+          }
+        ],
+        [
+          "add_edge",
+          "agent",
+          "has_embodied_instruction_goal_proposal",
+          "proposal"
+        ],
+        [
+          "add_edge",
+          "proposal",
+          "derives_from_interpretation",
+          "interpretation"
+        ],
+        [
+          "add_node",
+          "reply",
+          "Message",
+          {
+            "from": "agent",
+            "text": {
+              "__term__": {
+                "type": "StringConcat",
+                "parts": [
+                  {
+                    "type": "Lit",
+                    "value": "I understood the embodied instruction, but no ready developmental capability is currently available."
+                  }
+                ]
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "reply",
+          "responds_to",
+          "message"
+        ],
+        [
+          "add_edge",
+          "agent",
+          "sent",
+          "reply"
+        ]
+      ]
+    },
+    {
+      "name": "eig_open_receipt_confirmation_for_proposed_humanoid_goal",
+      "area": "humanoid_sensorimotor_adaptation",
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "comment": "Snapshot integer success evidence at proposal time.  A confirmation needs a strictly later observed improvement, not a language-model verdict or an already-held success.",
+      "match": [
+        [
+          "proposal",
+          "proposes_goal",
+          "root"
+        ],
+        [
+          "proposal",
+          "requires_embodied_capability",
+          "capability"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "proposal"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "accepted"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "proposal"
+                },
+                "edge_type": "requires_embodied_goal_confirmation",
+                "any_type": false
+              },
+              "var_name": "known_confirmation",
+              "predicate": {
+                "type": "Lit",
+                "value": true
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "confirmation",
+          "EmbodiedInstructionGoalConfirmation",
+          {
+            "status": "awaiting_competence_receipt",
+            "baseline_positive_progress_units": {
+              "__term__": {
+                "type": "Plus",
+                "items": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "capability"
+                    },
+                    "key": "positive_progress_count"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": 0
+                  }
+                ]
+              }
+            },
+            "integer_native": 1,
+            "output_authority": 0
+          }
+        ],
+        [
+          "add_edge",
+          "proposal",
+          "requires_embodied_goal_confirmation",
+          "confirmation"
+        ],
+        [
+          "add_edge",
+          "confirmation",
+          "confirms_goal",
+          "root"
+        ],
+        [
+          "add_edge",
+          "confirmation",
+          "confirms_capability",
+          "capability"
+        ]
+      ]
+    },
+    {
+      "name": "eig_mission_supervises_selected_developmental_goal",
+      "area": "humanoid_sensorimotor_adaptation",
+      "latency_class": "hard_realtime",
+      "batch": true,
+      "comment": "Natural language sets the mission boundary. The generic developmental plan still chooses the current capability; the mission only adopts that graph-selected goal as an order-N subgoal.",
+      "match": [
+        [
+          "root",
+          "supervises_embodied_episode",
+          "episode"
+        ],
+        [
+          "episode",
+          "has_self_directed_learning_plan",
+          "plan"
+        ],
+        [
+          "plan",
+          "has_selected_learning_plan_step",
+          "step"
+        ],
+        [
+          "step",
+          "pursues_goal",
+          "developmental_goal"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "root"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "active"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "developmental_goal"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "active"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "root"
+                },
+                "edge_type": "has_subgoal",
+                "any_type": false
+              },
+              "var_name": "known_goal",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Var",
+                  "name": "known_goal"
+                },
+                "b": {
+                  "type": "Var",
+                  "name": "developmental_goal"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_edge",
+          "root",
+          "has_subgoal",
+          "developmental_goal"
+        ]
+      ]
+    },
+    {
+      "name": "eig_renew_supervisory_lease_for_verified_embodied_mission",
+      "area": "cognitive_supervision",
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "comment": "A verified instruction is top-down evidence that the held embodied frontier is again worth pursuing; it renews the existing process rather than bypassing it.",
+      "match": [
+        [
+          "proposal",
+          "proposes_goal",
+          "root"
+        ],
+        [
+          "proposal",
+          "requires_embodied_capability",
+          "capability"
+        ],
+        [
+          "root",
+          "supervises_embodied_episode",
+          "episode"
+        ],
+        [
+          "episode",
+          "has_self_directed_learning_plan",
+          "plan"
+        ],
+        [
+          "plan",
+          "has_learning_plan_step",
+          "step"
+        ],
+        [
+          "step",
+          "plans_learning_capability",
+          "capability"
+        ],
+        [
+          "episode",
+          "has_cognitive_process",
+          "process"
+        ],
+        [
+          "process",
+          "supervises_learning_plan_step",
+          "step"
+        ],
+        [
+          "process",
+          "supervises_learning_capability",
+          "capability"
+        ],
+        [
+          "process",
+          "governed_by_cognitive_supervision_policy",
+          "policy"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "proposal"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "accepted"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "proposal"
+                },
+                "edge_type": "has_embodied_mission_lease_renewal",
+                "any_type": false
+              },
+              "var_name": "known_renewal",
+              "predicate": {
+                "type": "Lit",
+                "value": true
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "renewal",
+          "EmbodiedMissionLeaseRenewal",
+          {
+            "status": "renewed",
+            "integer_native": 1,
+            "output_authority": 0
+          }
+        ],
+        [
+          "add_edge",
+          "proposal",
+          "has_embodied_mission_lease_renewal",
+          "renewal"
+        ],
+        [
+          "add_edge",
+          "renewal",
+          "renews_cognitive_process",
+          "process"
+        ],
+        [
+          "add_edge",
+          "episode",
+          "has_active_embodied_developmental_capability",
+          "capability"
+        ],
+        [
+          "add_edge",
+          "plan",
+          "has_selected_learning_plan_step",
+          "step"
+        ],
+        [
+          "set_attr",
+          "capability",
+          "status",
+          "active"
+        ],
+        [
+          "set_attr",
+          "step",
+          "status",
+          "active"
+        ],
+        [
+          "set_attr",
+          "capability",
+          "activation_receipt_seq",
+          {
+            "__term__": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "episode"
+                  },
+                  "key": "latest_development_receipt_seq"
+                },
+                {
+                  "type": "Lit",
+                  "value": 0
+                }
+              ]
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "process",
+          "status",
+          "monitoring"
+        ],
+        [
+          "set_attr",
+          "process",
+          "continuation_authority",
+          1
+        ],
+        [
+          "set_attr",
+          "process",
+          "lease_generation",
+          {
+            "__term__": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Plus",
+                  "items": [
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "process"
+                      },
+                      "key": "lease_generation"
+                    },
+                    {
+                      "type": "Lit",
+                      "value": 0
+                    }
+                  ]
+                },
+                {
+                  "type": "Lit",
+                  "value": 1
+                }
+              ]
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "process",
+          "last_checkin_epoch",
+          {
+            "__term__": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "policy"
+                  },
+                  "key": "cognitive_epoch"
+                },
+                {
+                  "type": "Lit",
+                  "value": 0
+                }
+              ]
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "process",
+          "renew_before_epoch",
+          {
+            "__term__": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Plus",
+                  "items": [
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "policy"
+                      },
+                      "key": "cognitive_epoch"
+                    },
+                    {
+                      "type": "Lit",
+                      "value": 0
+                    }
+                  ]
+                },
+                {
+                  "type": "Plus",
+                  "items": [
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "process"
+                      },
+                      "key": "checkin_span_units"
+                    },
+                    {
+                      "type": "Lit",
+                      "value": 0
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "process",
+          "next_checkin_epoch",
+          {
+            "__term__": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Plus",
+                  "items": [
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "policy"
+                      },
+                      "key": "cognitive_epoch"
+                    },
+                    {
+                      "type": "Lit",
+                      "value": 0
+                    }
+                  ]
+                },
+                {
+                  "type": "Plus",
+                  "items": [
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "process"
+                      },
+                      "key": "checkin_span_units"
+                    },
+                    {
+                      "type": "Lit",
+                      "value": 0
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "process",
+          "baseline_effort_units",
+          {
+            "__term__": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "step"
+                  },
+                  "key": "evidence_spent_units"
+                },
+                {
+                  "type": "Lit",
+                  "value": 0
+                }
+              ]
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "process",
+          "checkin_count",
+          {
+            "__term__": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Plus",
+                  "items": [
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "process"
+                      },
+                      "key": "checkin_count"
+                    },
+                    {
+                      "type": "Lit",
+                      "value": 0
+                    }
+                  ]
+                },
+                {
+                  "type": "Lit",
+                  "value": 1
+                }
+              ]
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "policy",
+          "enabled",
+          1
+        ],
+        [
+          "set_attr",
+          "episode",
+          "cognitive_continuation_authority",
+          1
+        ],
+        [
+          "set_attr",
+          "episode",
+          "cognitive_checkin_terminal",
+          0
+        ]
+      ]
+    },
+    {
+      "name": "eig_bind_embodied_mission_to_exact_external_trial_request",
+      "area": "humanoid_sensorimotor_adaptation",
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "comment": "The root mission retains every distinct post-baseline session request pursuing one of its graph-selected developmental subgoals.  This is an ordered causal provenance set, not a one-shot latch: an early unproductive probe must not sever later competent evidence, and unrelated or historical requests remain inadmissible.",
+      "match": [
+        [
+          "proposal",
+          "proposes_goal",
+          "root"
+        ],
+        [
+          "root",
+          "supervises_embodied_episode",
+          "episode"
+        ],
+        [
+          "root",
+          "has_subgoal",
+          "developmental_goal"
+        ],
+        [
+          "episode",
+          "has_embodied_learning_session",
+          "session"
+        ],
+        [
+          "session",
+          "has_grounded_external_trial_request",
+          "request"
+        ],
+        [
+          "request",
+          "pursues_goal",
+          "developmental_goal"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "proposal"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "accepted"
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "attempt_ordinal"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "proposal"
+              },
+              "key": "baseline_trial_seq"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "proposal"
+                },
+                "edge_type": "has_embodied_mission_trial_request",
+                "any_type": false
+              },
+              "var_name": "known_request",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Var",
+                  "name": "known_request"
+                },
+                "b": {
+                  "type": "Var",
+                  "name": "request"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_edge",
+          "proposal",
+          "has_embodied_mission_trial_request",
+          "request"
+        ],
+        [
+          "add_edge",
+          "request",
+          "for_embodied_instruction_goal",
+          "root"
+        ]
+      ]
+    },
+    {
+      "name": "eig_bind_embodied_mission_to_exact_causal_trial_receipt",
+      "area": "humanoid_sensorimotor_adaptation",
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "comment": "Every exact receipt minted by a mission-bound request remains available as causal provenance.  Confirmation later consumes the first positive receipt, rather than treating an early zero-yield probe as terminal evidence.",
+      "match": [
+        [
+          "proposal",
+          "requires_embodied_goal_confirmation",
+          "confirmation"
+        ],
+        [
+          "proposal",
+          "has_embodied_mission_trial_request",
+          "request"
+        ],
+        [
+          "request",
+          "has_embodied_learning_trial_receipt",
+          "receipt"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "receipt"
+                  },
+                  "key": "development_receipt_closed"
+                },
+                {
+                  "type": "Lit",
+                  "value": 0
+                }
+              ]
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "confirmation"
+                },
+                "edge_type": "has_mission_bound_embodied_receipt",
+                "any_type": false
+              },
+              "var_name": "known_receipt",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Var",
+                  "name": "known_receipt"
+                },
+                "b": {
+                  "type": "Var",
+                  "name": "receipt"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_edge",
+          "confirmation",
+          "has_mission_bound_embodied_receipt",
+          "receipt"
+        ],
+        [
+          "add_edge",
+          "receipt",
+          "grounds_embodied_instruction_goal",
+          "proposal"
+        ]
+      ]
+    },
+    {
+      "name": "eig_confirm_goal_only_from_later_closed_embodied_receipt",
+      "area": "humanoid_sensorimotor_adaptation",
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "comment": "The confirming datum is the first positive causally bound developmental receipt plus a new capability success unit.  Earlier zero-yield receipts remain inspectable but cannot consume confirmation.  No text, teacher evidence, direct actuator command, or float enters this transition.",
+      "match": [
+        [
+          "proposal",
+          "proposes_goal",
+          "root"
+        ],
+        [
+          "proposal",
+          "requires_embodied_goal_confirmation",
+          "confirmation"
+        ],
+        [
+          "confirmation",
+          "confirms_capability",
+          "capability"
+        ],
+        [
+          "proposal",
+          "has_embodied_mission_trial_request",
+          "request"
+        ],
+        [
+          "request",
+          "has_embodied_learning_trial_receipt",
+          "receipt"
+        ],
+        [
+          "confirmation",
+          "has_mission_bound_embodied_receipt",
+          "receipt"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "proposal"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "accepted"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "confirmation"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "awaiting_competence_receipt"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "receipt"
+                  },
+                  "key": "development_receipt_closed"
+                },
+                {
+                  "type": "Lit",
+                  "value": 0
+                }
+              ]
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "receipt"
+                  },
+                  "key": "success_delta_units"
+                },
+                {
+                  "type": "Lit",
+                  "value": 0
+                }
+              ]
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "capability"
+                  },
+                  "key": "positive_progress_count"
+                },
+                {
+                  "type": "Lit",
+                  "value": 0
+                }
+              ]
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "confirmation"
+              },
+              "key": "baseline_positive_progress_units"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "confirmation"
+                },
+                "edge_type": "grounded_in_embodied_receipt",
+                "any_type": false
+              },
+              "var_name": "known_receipt",
+              "predicate": {
+                "type": "Lit",
+                "value": true
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "confirmation",
+          "status",
+          "confirmed"
+        ],
+        [
+          "set_attr",
+          "proposal",
+          "status",
+          "confirmed"
+        ],
+        [
+          "set_attr",
+          "root",
+          "progress_units",
+          1
+        ],
+        [
+          "set_attr",
+          "root",
+          "resolved_units",
+          1
+        ],
+        [
+          "add_edge",
+          "confirmation",
+          "grounded_in_embodied_receipt",
+          "receipt"
+        ]
+      ]
+    }
+  ]
+}

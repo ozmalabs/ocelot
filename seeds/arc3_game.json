@@ -1,0 +1,474 @@
+{
+ "id": "arc3_game",
+ "version": "1.0.0",
+ "description": "Meta-rules for the ARC-AGI-3 interactive grid-game CLASS, specified by the jabberwock itself. Supplies the GENUS vocabulary (me / wall / opening / door / goal-cell) it currently sees only as opaque CellC<n>, the productions admitting the grid AS A MAP, the action-meaning slots, and the objective + terminal predicates wired to its existing Goal / preserve-resources machinery. NO transition rules \u2014 the agent discovers transitions by interaction. The agent GROUNDS the cell-role concepts by acting; this seed only names them in terms it already holds.",
+ "microtheory": {
+  "name": "arc3_game",
+  "description": "The ARC-AGI-3 grid-game class: a turn-based n-dim map game I am PLAYING. I am the player, OUTSIDE the game frame; I operate it through an AVATAR \u2014 a controllable token inside the map whose motion correlates with my actions (found by acting, not assumed). Some actions move the avatar through the map, some act at a point. My objective is to UNDERSTAND the game \u2014 to build its model: what the cells are, what my actions do, what makes it tick. Winning is NOT the goal; it is a BY-PRODUCT of understanding \u2014 understand the game well enough and winning follows. I play to reduce my surprise and grow my model; reaching the salient goal-cell matters because it FURTHERS UNDERSTANDING (it tests what that cell is and what reaching it does), and the WIN / GAME_OVER signals are INFORMATION that confirms or refutes my hypotheses and feeds the model \u2014 not the point. Understanding this is a game I play (not a world I inhabit) is the frame: the avatar is my instrument, the goal-cell a hypothesis to resolve, the win signal data. The world hands me this context and my affordances exactly as it hands a human player \u2014 the grid I see, the labelled controls, the score, the state, RESET, and the game's NAME (the title, on the Game node \u2014 a WEAK hint for what it's worth; the real signal is what I see and learn, never the label) \u2014 it does not tell me HOW to play; my job is to ASSESS what I am looking at and play it (the same interface serves any ARC game \u2014 navigation, tetris, ... \u2014 I adapt to the one in front of me). RESET returns the game to its start while I KEEP what I have learned, so I can TEST a hypothesis and, whatever the game answers, reset and apply the learning: testing is WITHOUT PENALTY. That is how I understand \u2014 try, observe, reset, refine \u2014 and why playing to understand is possible: probing costs nothing.",
+  "action_slots": {
+   "a1": "move_in_map",
+   "a2": "move_in_map",
+   "a3": "move_in_map",
+   "a4": "move_in_map",
+   "a5": "act_in_place",
+   "c6": "act_at_a_point",
+   "reset": "restart_keeping_learnings__penalty_free_test"
+  },
+  "objective": "understand_the_game (winning is a by-product)",
+  "terminal": "game_over"
+ },
+ "concepts": [
+  {
+   "name": "avatar",
+   "domain": "game",
+   "comment": "The token I CONTROL in the game \u2014 the figure inside the map whose motion correlates with my actions (found by acting: it moves when I act, a landmark does not). It is my instrument, NOT myself: I am the player, outside the game frame; the avatar is my handle into it. The cell it occupies is reached by an at_position edge \u2014 that is where my avatar is now, not where I am.",
+   "definition": {
+    "type": "Gte",
+    "a": {
+     "type": "Count",
+     "source": {
+      "type": "Neighbours",
+      "node": {
+       "type": "Var",
+       "name": "agent"
+      },
+      "edge_type": "controls"
+     }
+    },
+    "b": {
+     "type": "Lit",
+     "value": 1
+    }
+   }
+  },
+  {
+   "name": "wall",
+   "domain": "boundary",
+   "comment": "A boundary I cannot pass \u2014 genus: a Boundary that is not passable. The agent learns passability from movement; this names the genus.",
+   "definition": {
+    "type": "Eq",
+    "a": {
+     "type": "Attr",
+     "node": {
+      "type": "Var",
+      "name": "b"
+     },
+     "key": "passable"
+    },
+    "b": {
+     "type": "Lit",
+     "value": false
+    }
+   }
+  },
+  {
+   "name": "opening",
+   "domain": "boundary",
+   "comment": "A boundary I can pass \u2014 genus: a Boundary that is passable.",
+   "definition": {
+    "type": "Eq",
+    "a": {
+     "type": "Attr",
+     "node": {
+      "type": "Var",
+      "name": "b"
+     },
+     "key": "passable"
+    },
+    "b": {
+     "type": "Lit",
+     "value": true
+    }
+   }
+  },
+  {
+   "name": "door",
+   "domain": "boundary",
+   "comment": "A boundary that is sometimes passable and sometimes not \u2014 genus: a Boundary that leads_to another location. Grounded once the agent has crossed it.",
+   "definition": {
+    "type": "Gte",
+    "a": {
+     "type": "Count",
+     "source": {
+      "type": "Neighbours",
+      "node": {
+       "type": "Var",
+       "name": "b"
+      },
+      "edge_type": "leads_to"
+     }
+    },
+    "b": {
+     "type": "Lit",
+     "value": 1
+    }
+   }
+  },
+  {
+   "name": "goal_cell",
+   "domain": "cell",
+   "comment": "A cell worth reaching, expressed as a genus over the VISIBLE structure every cell already carries \u2014 its colour. Genus: a SpatialLocation that is the SALIENT odd-one-out \u2014 the rarest non-empty colour-class \u2014 and is not where I am now (excluding my own avatar cell, which is also rare-coloured). A cell's colour-class population is read from the ColourClass node it has_colour; the global minimum non-empty population is the MinOver every colour-class the Game has_colour_class. This is the agent's salience-as-signal-over-noise applied to colour: the cell whose colour is the rarest is the one that stands out. It is a HYPOTHESIS the agent reaches in order to UNDERSTAND \u2014 reaching it resolves what that cell is and what reaching it does; the WIN/GAME_OVER signal it produces is information that confirms or refutes the hypothesis and feeds the model. Reaching it is worthwhile because it FURTHERS UNDERSTANDING, not because winning is the objective (winning is a by-product). Awaits the `value` + `population` attrs, which the agent computes itself (colour-class salience over its own cells) \u2014 ground-by-experience.",
+   "definition": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "x"
+        },
+        "key": "value"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 0
+       }
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Pick",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "x"
+         },
+         "edge_type": "has_colour"
+        }
+       },
+       "key": "population"
+      },
+      "b": {
+       "type": "MinOver",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Pick",
+         "source": {
+          "type": "InNeighbours",
+          "node": {
+           "type": "Pick",
+           "source": {
+            "type": "Neighbours",
+            "node": {
+             "type": "Var",
+             "name": "x"
+            },
+            "edge_type": "has_colour"
+           }
+          },
+          "edge_type": "has_colour_class"
+         }
+        },
+        "edge_type": "has_colour_class"
+       },
+       "var_name": "k",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "k"
+        },
+        "key": "population"
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0
+       }
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "InNeighbours",
+        "node": {
+         "type": "Var",
+         "name": "x"
+        },
+        "edge_type": "at_location"
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     }
+    ]
+   }
+  }
+ ],
+ "productions": [
+  {
+   "provenance": "seed:arc3_game:cell-within-location",
+   "src": {
+    "type": "CellC",
+    "var": "cell"
+   },
+   "edge_type": "within",
+   "tgt": {
+    "type": "SpatialLocation",
+    "var": "loc"
+   }
+  },
+  {
+   "provenance": "seed:arc3_game:location-adjacent-location",
+   "src": {
+    "type": "SpatialLocation",
+    "var": "loc"
+   },
+   "edge_type": "adjacent_location",
+   "tgt": {
+    "type": "SpatialLocation",
+    "var": "loc2"
+   }
+  },
+  {
+   "provenance": "seed:arc3_game:location-bounded-wall",
+   "src": {
+    "type": "SpatialLocation",
+    "var": "loc"
+   },
+   "edge_type": "bounded_by",
+   "tgt": {
+    "type": "Boundary",
+    "var": "b"
+   }
+  }
+ ],
+ "goals": [
+  {
+   "label": "win_the_game",
+   "priority": 1.0,
+   "persistent": true,
+   "comment": "NOT the objective \u2014 the objective is to UNDERSTAND the game (build its model). The win signal (my_won) is a CONFIRMATION: reaching WIN confirms a goal-hypothesis and lets the agent induce WHY the game wins, which deepens understanding. Winning is a BY-PRODUCT of understanding; this reads the signal so the agent can LEARN from it, not so it can chase a score. Proprioceptive \u2014 reads the win state the adapter mechanically folds onto the agent's self-state.",
+   "satisfaction_term": {
+    "type": "Eq",
+    "a": {
+     "type": "Attr",
+     "node": {
+      "type": "Var",
+      "name": "agent"
+     },
+     "key": "my_won"
+    },
+    "b": {
+     "type": "Lit",
+     "value": true
+    }
+   }
+  },
+  {
+   "label": "avoid_game_over",
+   "priority": 1.0,
+   "persistent": true,
+   "comment": "The terminal / step bound: keep the game out of GAME_OVER. Satisfied (no pressure) while my_over is false; when over, satisfaction drops \u2014 wired the same way preserve_resources keeps a depleting resource alive.",
+   "satisfaction_term": {
+    "type": "Not",
+    "arg": {
+     "type": "Eq",
+     "a": {
+      "type": "Attr",
+      "node": {
+       "type": "Var",
+       "name": "agent"
+      },
+      "key": "my_over"
+     },
+     "b": {
+      "type": "Lit",
+      "value": true
+     }
+    }
+   }
+  }
+ ],
+ "rules": [
+  {
+   "name": "avatar_role_bind",
+   "comment": "arc3_game DEMOTED TRANSLATION TEST (the ONLY rule that reads the translation manifestation): a ControlledElement the Body controls whose aggregate |drow|+|dcol| in [1,12] is the avatar-shaped motion. translate_frames counts qualifying frames ONCE each (translate_voted_frame guard); is_avatar = Gte(translate_frames,2) read AFTER the increment (effects apply in order) -> asserts the avatar role only once the rigid-translate has held >=2 frames. Sticky/monotone -> non-translating controlled elements (recolor/resize/countdown) never reach it. FRAME is read off the GAME (bound via [bd inhabits game]) \u2014 the Body carries no frame. Fixpoint-idempotent: the once-per-frame guard blocks re-fire; is_avatar recomputes to the same value.",
+   "match": [
+    [
+     "bd",
+     "controls",
+     "el"
+    ],
+    [
+     "bd",
+     "inhabits",
+     "game"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gte",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Abs",
+         "arg": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "el"
+          },
+          "key": "drow"
+         }
+        },
+        {
+         "type": "Abs",
+         "arg": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "el"
+          },
+          "key": "dcol"
+         }
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Lte",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Abs",
+         "arg": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "el"
+          },
+          "key": "drow"
+         }
+        },
+        {
+         "type": "Abs",
+         "arg": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "el"
+          },
+          "key": "dcol"
+         }
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 12.0
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "el"
+        },
+        "key": "translate_voted_frame"
+       },
+       "b": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "game"
+        },
+        "key": "frame"
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "el",
+     "translate_frames",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "el"
+         },
+         "key": "translate_frames"
+        },
+        {
+         "type": "Lit",
+         "value": 1.0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "el",
+     "translate_voted_frame",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "game"
+       },
+       "key": "frame"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "el",
+     "is_avatar",
+     {
+      "__term__": {
+       "type": "Gte",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "el"
+        },
+        "key": "translate_frames"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 2.0
+       }
+      }
+     }
+    ]
+   ]
+  }
+ ],
+ "depends_on": [
+  "agency"
+ ]
+}

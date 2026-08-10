@@ -1,0 +1,172 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jabberwock.local/schema/self-change-protocol/v1",
+  "title": "Graph-native proof-carrying self-change nodes",
+  "type": "object",
+  "required": [
+    "type",
+    "attrs"
+  ],
+  "properties": {
+    "type": {
+      "enum": [
+        "ObservedGap",
+        "CausalHypothesis",
+        "ChangeSpec",
+        "RulePatch",
+        "ProofObligation",
+        "Trial",
+        "Canary",
+        "Commit",
+        "Abort",
+        "Consolidation"
+      ]
+    },
+    "attrs": {
+      "type": "object"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "RulePatch"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "attrs": {
+            "required": [
+              "target_uid",
+              "expected_revision",
+              "expected_content_hash",
+              "field",
+              "proposed_clause",
+              "mdl_cost",
+              "blast_radius",
+              "status"
+            ],
+            "properties": {
+              "target_uid": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "expected_revision": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "expected_content_hash": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "field": {
+                "enum": [
+                  "where",
+                  "effect",
+                  "effects"
+                ]
+              },
+              "mdl_cost": {
+                "type": "number",
+                "minimum": 0
+              },
+              "blast_radius": {
+                "type": "number",
+                "minimum": 0
+              },
+              "status": {
+                "enum": [
+                  "proposed",
+                  "committed",
+                  "refused"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "ProofObligation"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "attrs": {
+            "required": [
+              "kind",
+              "status"
+            ],
+            "properties": {
+              "kind": {
+                "enum": [
+                  "causal_gain",
+                  "protected_invariants",
+                  "beats_no_op_control",
+                  "beats_same_size_placebo",
+                  "resource_budget",
+                  "replication"
+                ]
+              },
+              "status": {
+                "enum": [
+                  "open",
+                  "discharged",
+                  "failed"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "Abort"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "attrs": {
+            "required": [
+              "stage",
+              "reason",
+              "rollback_required"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "Consolidation"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "attrs": {
+            "required": [
+              "status",
+              "new_revision",
+              "new_hash",
+              "retained_gain"
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "additionalProperties": false
+}

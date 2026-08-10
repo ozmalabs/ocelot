@@ -1,0 +1,83 @@
+{
+  "protocol": "full_racing_v1",
+  "purpose": "Evaluate graph-native closed-loop racing, traffic response, surface adaptation, recovery, and compound actuator-damage resilience in a coupled full-race plant.",
+  "guardrails": {
+    "agent_logic": "Rust graph rules and authored graph state only",
+    "host_role": "Simulator integration, exact transduction, termination, and reporting only",
+    "forbidden_host_behaviour": [
+      "racing line selection",
+      "target speed selection",
+      "steering or pedal control",
+      "opponent avoidance policy",
+      "recovery policy",
+      "damage adaptation",
+      "Pareto strategy selection",
+      "pit decision"
+    ]
+  },
+  "plant": {
+    "backend": "deterministic_full_racing_plant",
+    "physics_hz": 250.0,
+    "control_hz": 50.0,
+    "duration_s": 120.0,
+    "opponents": 3,
+    "features": [
+      "closed asymmetric sampled circuit",
+      "dynamic bicycle body",
+      "load-sensitive tyre saturation and friction ellipse",
+      "longitudinal load transfer",
+      "active front and rear aerodynamics",
+      "thermal tyre and brake state",
+      "tyre wear and fuel consumption",
+      "wet sectors and off-track terrain",
+      "scripted traffic and physical collisions",
+      "compound hidden actuator damage",
+      "dynamic non-dominated pace/fuel/tyre/risk/aggression strategy",
+      "fuel-to-finish and tyre-to-finish projection",
+      "pit entry, timed service, refuelling, tyres, and repair",
+      "independent drive and brake commands at all four wheels",
+      "graph-authored left/right torque vectoring"
+    ]
+  },
+  "scenarios": {
+    "baseline": {
+      "seed": 0,
+      "result": "results/full_racing_baseline_v1.json"
+    },
+    "compound_damage": {
+      "seed": 0,
+      "onset_s": 45.0,
+      "steering_retention": 0.42,
+      "power_retention": 0.68,
+      "front_brake_retention": 0.45,
+      "rear_brake_retention": 1.0,
+      "aero_retention": 0.6,
+      "yaw_bias_nm": 420.0,
+      "result": "results/full_racing_damage_v1.json"
+    }
+  },
+  "external_validation": {
+    "backend": "Speed Dreams 2.4.2 official AppImage",
+    "track": "jarama",
+    "car": "sc-cavallo-360",
+    "duration_s": 20.0,
+    "result": "results/speed_dreams_racing_smoke_v1.json",
+    "boundary": "Policy-free C++ UDP telemetry and actuator robot module"
+  },
+  "success_gates": {
+    "baseline_completed_laps_minimum": 2,
+    "baseline_offtrack_time_s_maximum": 6.0,
+    "baseline_collisions_maximum": 2,
+    "damage_completed_laps_minimum": 2,
+    "damage_progress_retention_minimum": 0.95,
+    "damage_offtrack_time_s_maximum": 6.0,
+    "graph_tick_p99_us_maximum": 1000.0,
+    "damage_adaptation_is_graph_native": true
+  },
+  "limitations": [
+    "The deterministic plant is not CFD or a suspension multibody solver.",
+    "Scripted opponents are environmental actors rather than other learning agents.",
+    "Contact avoidance remains an explicit improvement target because the v1 run reaches the collision ceiling.",
+    "The recorded Speed Dreams run is a short integration smoke, not a lap-time or racecraft benchmark."
+  ]
+}

@@ -1,0 +1,4271 @@
+{
+ "id": "doom_predictive_priors",
+ "version": "1.0.0",
+ "depends_on": [
+  "doom_ingraph_map"
+ ],
+ "description": "Graph-native top-down structural confabulation over the observed Doom map. Partial passable SpaceQuantum boxes are decoded as room/corridor/minimal-enclosure hypotheses; rules project complete unseen wall structure at the same tick as bottom-up accumulation. Later ObsCells mint confirmation or prediction-minus-observation residuals. Predictions never write has_cell.",
+ "microtheory": {
+  "name": "doom_predictive_priors",
+  "description": "partial spatial evidence -> whole room/corridor hypothesis -> projected walls -> residual"
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [],
+ "concepts": [],
+ "rules": [
+  {
+   "name": "dpp_project_room",
+   "comment": "TOP-DOWN room: decode a partial passable quantum and immediately project the schema's unseen wall structure. This deliberately predicts more than has been observed; no has_cell belief is written.",
+   "match": [
+    [
+     "Q",
+     "in_space",
+     "game"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "game"
+         },
+         "key": "map_mode"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "doom"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "game"
+         },
+         "key": "predictive_map"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "Q"
+       },
+       "key": "kind"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "passable"
+      }
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Gt",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Minus",
+           "a": {
+            "type": "IndexAt",
+            "seq": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "Q"
+             },
+             "key": "hi"
+            },
+            "index": {
+             "type": "Lit",
+             "value": 0
+            }
+           },
+           "b": {
+            "type": "IndexAt",
+            "seq": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "Q"
+             },
+             "key": "lo"
+            },
+            "index": {
+             "type": "Lit",
+             "value": 0
+            }
+           }
+          },
+          {
+           "type": "Lit",
+           "value": 1
+          }
+         ]
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "game"
+         },
+         "key": "body_w"
+        }
+       },
+       {
+        "type": "Gt",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Minus",
+           "a": {
+            "type": "IndexAt",
+            "seq": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "Q"
+             },
+             "key": "hi"
+            },
+            "index": {
+             "type": "Lit",
+             "value": 1
+            }
+           },
+           "b": {
+            "type": "IndexAt",
+            "seq": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "Q"
+             },
+             "key": "lo"
+            },
+            "index": {
+             "type": "Lit",
+             "value": 1
+            }
+           }
+          },
+          {
+           "type": "Lit",
+           "value": 1
+          }
+         ]
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "game"
+         },
+         "key": "body_w"
+        }
+       }
+      ]
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "game"
+        },
+        "edge_type": "has_hypothesis",
+        "any_type": false
+       },
+       "var_name": "H2",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "H2"
+           },
+           "key": "schema"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "room"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "H2"
+           },
+           "key": "epoch"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "Q"
+           },
+           "key": "epoch"
+          }
+         },
+         {
+          "type": "And",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "IndexAt",
+             "seq": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "H2"
+              },
+              "key": "lo"
+             },
+             "index": {
+              "type": "Lit",
+              "value": 0
+             }
+            },
+            "b": {
+             "type": "IndexAt",
+             "seq": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "lo"
+             },
+             "index": {
+              "type": "Lit",
+              "value": 0
+             }
+            }
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "IndexAt",
+             "seq": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "H2"
+              },
+              "key": "lo"
+             },
+             "index": {
+              "type": "Lit",
+              "value": 1
+             }
+            },
+            "b": {
+             "type": "IndexAt",
+             "seq": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "lo"
+             },
+             "index": {
+              "type": "Lit",
+              "value": 1
+             }
+            }
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "IndexAt",
+             "seq": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "H2"
+              },
+              "key": "hi"
+             },
+             "index": {
+              "type": "Lit",
+              "value": 0
+             }
+            },
+            "b": {
+             "type": "IndexAt",
+             "seq": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "hi"
+             },
+             "index": {
+              "type": "Lit",
+              "value": 0
+             }
+            }
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "IndexAt",
+             "seq": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "H2"
+              },
+              "key": "hi"
+             },
+             "index": {
+              "type": "Lit",
+              "value": 1
+             }
+            },
+            "b": {
+             "type": "IndexAt",
+             "seq": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "hi"
+             },
+             "index": {
+              "type": "Lit",
+              "value": 1
+             }
+            }
+           }
+          ]
+         }
+        ]
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "H",
+     "SpatialHypothesis",
+     {
+      "schema": "room",
+      "lo": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "Q"
+        },
+        "key": "lo"
+       }
+      },
+      "hi": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "Q"
+        },
+        "key": "hi"
+       }
+      },
+      "epoch": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "Q"
+        },
+        "key": "epoch"
+       }
+      },
+      "status": "projected"
+     }
+    ],
+    [
+     "add_edge",
+     "game",
+     "has_hypothesis",
+     "H",
+     {}
+    ],
+    [
+     "add_edge",
+     "H",
+     "based_on",
+     "Q",
+     {}
+    ],
+    [
+     "add_node",
+     "P0",
+     "MapPrediction",
+     {
+      "world_type": "CellBox",
+      "schema": "room",
+      "role": "wall_dim0_low",
+      "lo": {
+       "__term__": {
+        "type": "Vec",
+        "items": [
+         {
+          "type": "Minus",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "lo"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 0
+           }
+          },
+          "b": {
+           "type": "Lit",
+           "value": 1
+          }
+         },
+         {
+          "type": "Minus",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "lo"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 1
+           }
+          },
+          "b": {
+           "type": "Lit",
+           "value": 1
+          }
+         }
+        ]
+       }
+      },
+      "hi": {
+       "__term__": {
+        "type": "Vec",
+        "items": [
+         {
+          "type": "Minus",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "lo"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 0
+           }
+          },
+          "b": {
+           "type": "Lit",
+           "value": 1
+          }
+         },
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "IndexAt",
+            "seq": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "Q"
+             },
+             "key": "hi"
+            },
+            "index": {
+             "type": "Lit",
+             "value": 1
+            }
+           },
+           {
+            "type": "Lit",
+            "value": 1
+           }
+          ]
+         }
+        ]
+       }
+      },
+      "value": 1.0,
+      "epoch": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "Q"
+        },
+        "key": "epoch"
+       }
+      },
+      "status": "confabulated"
+     }
+    ],
+    [
+     "add_edge",
+     "game",
+     "has_prediction",
+     "P0",
+     {}
+    ],
+    [
+     "add_edge",
+     "H",
+     "projects",
+     "P0",
+     {}
+    ],
+    [
+     "add_node",
+     "P1",
+     "MapPrediction",
+     {
+      "world_type": "CellBox",
+      "schema": "room",
+      "role": "wall_dim0_high",
+      "lo": {
+       "__term__": {
+        "type": "Vec",
+        "items": [
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "IndexAt",
+            "seq": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "Q"
+             },
+             "key": "hi"
+            },
+            "index": {
+             "type": "Lit",
+             "value": 0
+            }
+           },
+           {
+            "type": "Lit",
+            "value": 1
+           }
+          ]
+         },
+         {
+          "type": "Minus",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "lo"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 1
+           }
+          },
+          "b": {
+           "type": "Lit",
+           "value": 1
+          }
+         }
+        ]
+       }
+      },
+      "hi": {
+       "__term__": {
+        "type": "Vec",
+        "items": [
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "IndexAt",
+            "seq": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "Q"
+             },
+             "key": "hi"
+            },
+            "index": {
+             "type": "Lit",
+             "value": 0
+            }
+           },
+           {
+            "type": "Lit",
+            "value": 1
+           }
+          ]
+         },
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "IndexAt",
+            "seq": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "Q"
+             },
+             "key": "hi"
+            },
+            "index": {
+             "type": "Lit",
+             "value": 1
+            }
+           },
+           {
+            "type": "Lit",
+            "value": 1
+           }
+          ]
+         }
+        ]
+       }
+      },
+      "value": 1.0,
+      "epoch": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "Q"
+        },
+        "key": "epoch"
+       }
+      },
+      "status": "confabulated"
+     }
+    ],
+    [
+     "add_edge",
+     "game",
+     "has_prediction",
+     "P1",
+     {}
+    ],
+    [
+     "add_edge",
+     "H",
+     "projects",
+     "P1",
+     {}
+    ],
+    [
+     "add_node",
+     "P2",
+     "MapPrediction",
+     {
+      "world_type": "CellBox",
+      "schema": "room",
+      "role": "wall_dim1_low",
+      "lo": {
+       "__term__": {
+        "type": "Vec",
+        "items": [
+         {
+          "type": "IndexAt",
+          "seq": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "Q"
+           },
+           "key": "lo"
+          },
+          "index": {
+           "type": "Lit",
+           "value": 0
+          }
+         },
+         {
+          "type": "Minus",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "lo"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 1
+           }
+          },
+          "b": {
+           "type": "Lit",
+           "value": 1
+          }
+         }
+        ]
+       }
+      },
+      "hi": {
+       "__term__": {
+        "type": "Vec",
+        "items": [
+         {
+          "type": "IndexAt",
+          "seq": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "Q"
+           },
+           "key": "hi"
+          },
+          "index": {
+           "type": "Lit",
+           "value": 0
+          }
+         },
+         {
+          "type": "Minus",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "lo"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 1
+           }
+          },
+          "b": {
+           "type": "Lit",
+           "value": 1
+          }
+         }
+        ]
+       }
+      },
+      "value": 1.0,
+      "epoch": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "Q"
+        },
+        "key": "epoch"
+       }
+      },
+      "status": "confabulated"
+     }
+    ],
+    [
+     "add_edge",
+     "game",
+     "has_prediction",
+     "P2",
+     {}
+    ],
+    [
+     "add_edge",
+     "H",
+     "projects",
+     "P2",
+     {}
+    ],
+    [
+     "add_node",
+     "P3",
+     "MapPrediction",
+     {
+      "world_type": "CellBox",
+      "schema": "room",
+      "role": "wall_dim1_high",
+      "lo": {
+       "__term__": {
+        "type": "Vec",
+        "items": [
+         {
+          "type": "IndexAt",
+          "seq": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "Q"
+           },
+           "key": "lo"
+          },
+          "index": {
+           "type": "Lit",
+           "value": 0
+          }
+         },
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "IndexAt",
+            "seq": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "Q"
+             },
+             "key": "hi"
+            },
+            "index": {
+             "type": "Lit",
+             "value": 1
+            }
+           },
+           {
+            "type": "Lit",
+            "value": 1
+           }
+          ]
+         }
+        ]
+       }
+      },
+      "hi": {
+       "__term__": {
+        "type": "Vec",
+        "items": [
+         {
+          "type": "IndexAt",
+          "seq": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "Q"
+           },
+           "key": "hi"
+          },
+          "index": {
+           "type": "Lit",
+           "value": 0
+          }
+         },
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "IndexAt",
+            "seq": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "Q"
+             },
+             "key": "hi"
+            },
+            "index": {
+             "type": "Lit",
+             "value": 1
+            }
+           },
+           {
+            "type": "Lit",
+            "value": 1
+           }
+          ]
+         }
+        ]
+       }
+      },
+      "value": 1.0,
+      "epoch": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "Q"
+        },
+        "key": "epoch"
+       }
+      },
+      "status": "confabulated"
+     }
+    ],
+    [
+     "add_edge",
+     "game",
+     "has_prediction",
+     "P3",
+     {}
+    ],
+    [
+     "add_edge",
+     "H",
+     "projects",
+     "P3",
+     {}
+    ]
+   ]
+  },
+  {
+   "name": "dpp_project_minimal_enclosure",
+   "comment": "TOP-DOWN minimal_enclosure: decode a partial passable quantum and immediately project the schema's unseen wall structure. This deliberately predicts more than has been observed; no has_cell belief is written.",
+   "match": [
+    [
+     "Q",
+     "in_space",
+     "game"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "game"
+         },
+         "key": "map_mode"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "doom"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "game"
+         },
+         "key": "predictive_map"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "Q"
+       },
+       "key": "kind"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "passable"
+      }
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Minus",
+           "a": {
+            "type": "IndexAt",
+            "seq": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "Q"
+             },
+             "key": "hi"
+            },
+            "index": {
+             "type": "Lit",
+             "value": 0
+            }
+           },
+           "b": {
+            "type": "IndexAt",
+            "seq": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "Q"
+             },
+             "key": "lo"
+            },
+            "index": {
+             "type": "Lit",
+             "value": 0
+            }
+           }
+          },
+          {
+           "type": "Lit",
+           "value": 1
+          }
+         ]
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "game"
+         },
+         "key": "body_w"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Minus",
+           "a": {
+            "type": "IndexAt",
+            "seq": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "Q"
+             },
+             "key": "hi"
+            },
+            "index": {
+             "type": "Lit",
+             "value": 1
+            }
+           },
+           "b": {
+            "type": "IndexAt",
+            "seq": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "Q"
+             },
+             "key": "lo"
+            },
+            "index": {
+             "type": "Lit",
+             "value": 1
+            }
+           }
+          },
+          {
+           "type": "Lit",
+           "value": 1
+          }
+         ]
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "game"
+         },
+         "key": "body_w"
+        }
+       }
+      ]
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "game"
+        },
+        "edge_type": "has_hypothesis",
+        "any_type": false
+       },
+       "var_name": "H2",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "H2"
+           },
+           "key": "schema"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "minimal_enclosure"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "H2"
+           },
+           "key": "epoch"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "Q"
+           },
+           "key": "epoch"
+          }
+         },
+         {
+          "type": "And",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "IndexAt",
+             "seq": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "H2"
+              },
+              "key": "lo"
+             },
+             "index": {
+              "type": "Lit",
+              "value": 0
+             }
+            },
+            "b": {
+             "type": "IndexAt",
+             "seq": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "lo"
+             },
+             "index": {
+              "type": "Lit",
+              "value": 0
+             }
+            }
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "IndexAt",
+             "seq": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "H2"
+              },
+              "key": "lo"
+             },
+             "index": {
+              "type": "Lit",
+              "value": 1
+             }
+            },
+            "b": {
+             "type": "IndexAt",
+             "seq": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "lo"
+             },
+             "index": {
+              "type": "Lit",
+              "value": 1
+             }
+            }
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "IndexAt",
+             "seq": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "H2"
+              },
+              "key": "hi"
+             },
+             "index": {
+              "type": "Lit",
+              "value": 0
+             }
+            },
+            "b": {
+             "type": "IndexAt",
+             "seq": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "hi"
+             },
+             "index": {
+              "type": "Lit",
+              "value": 0
+             }
+            }
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "IndexAt",
+             "seq": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "H2"
+              },
+              "key": "hi"
+             },
+             "index": {
+              "type": "Lit",
+              "value": 1
+             }
+            },
+            "b": {
+             "type": "IndexAt",
+             "seq": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "hi"
+             },
+             "index": {
+              "type": "Lit",
+              "value": 1
+             }
+            }
+           }
+          ]
+         }
+        ]
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "H",
+     "SpatialHypothesis",
+     {
+      "schema": "minimal_enclosure",
+      "lo": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "Q"
+        },
+        "key": "lo"
+       }
+      },
+      "hi": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "Q"
+        },
+        "key": "hi"
+       }
+      },
+      "epoch": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "Q"
+        },
+        "key": "epoch"
+       }
+      },
+      "status": "projected"
+     }
+    ],
+    [
+     "add_edge",
+     "game",
+     "has_hypothesis",
+     "H",
+     {}
+    ],
+    [
+     "add_edge",
+     "H",
+     "based_on",
+     "Q",
+     {}
+    ],
+    [
+     "add_node",
+     "P0",
+     "MapPrediction",
+     {
+      "world_type": "CellBox",
+      "schema": "minimal_enclosure",
+      "role": "wall_dim0_low",
+      "lo": {
+       "__term__": {
+        "type": "Vec",
+        "items": [
+         {
+          "type": "Minus",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "lo"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 0
+           }
+          },
+          "b": {
+           "type": "Lit",
+           "value": 1
+          }
+         },
+         {
+          "type": "Minus",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "lo"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 1
+           }
+          },
+          "b": {
+           "type": "Lit",
+           "value": 1
+          }
+         }
+        ]
+       }
+      },
+      "hi": {
+       "__term__": {
+        "type": "Vec",
+        "items": [
+         {
+          "type": "Minus",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "lo"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 0
+           }
+          },
+          "b": {
+           "type": "Lit",
+           "value": 1
+          }
+         },
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "IndexAt",
+            "seq": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "Q"
+             },
+             "key": "hi"
+            },
+            "index": {
+             "type": "Lit",
+             "value": 1
+            }
+           },
+           {
+            "type": "Lit",
+            "value": 1
+           }
+          ]
+         }
+        ]
+       }
+      },
+      "value": 1.0,
+      "epoch": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "Q"
+        },
+        "key": "epoch"
+       }
+      },
+      "status": "confabulated"
+     }
+    ],
+    [
+     "add_edge",
+     "game",
+     "has_prediction",
+     "P0",
+     {}
+    ],
+    [
+     "add_edge",
+     "H",
+     "projects",
+     "P0",
+     {}
+    ],
+    [
+     "add_node",
+     "P1",
+     "MapPrediction",
+     {
+      "world_type": "CellBox",
+      "schema": "minimal_enclosure",
+      "role": "wall_dim0_high",
+      "lo": {
+       "__term__": {
+        "type": "Vec",
+        "items": [
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "IndexAt",
+            "seq": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "Q"
+             },
+             "key": "hi"
+            },
+            "index": {
+             "type": "Lit",
+             "value": 0
+            }
+           },
+           {
+            "type": "Lit",
+            "value": 1
+           }
+          ]
+         },
+         {
+          "type": "Minus",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "lo"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 1
+           }
+          },
+          "b": {
+           "type": "Lit",
+           "value": 1
+          }
+         }
+        ]
+       }
+      },
+      "hi": {
+       "__term__": {
+        "type": "Vec",
+        "items": [
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "IndexAt",
+            "seq": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "Q"
+             },
+             "key": "hi"
+            },
+            "index": {
+             "type": "Lit",
+             "value": 0
+            }
+           },
+           {
+            "type": "Lit",
+            "value": 1
+           }
+          ]
+         },
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "IndexAt",
+            "seq": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "Q"
+             },
+             "key": "hi"
+            },
+            "index": {
+             "type": "Lit",
+             "value": 1
+            }
+           },
+           {
+            "type": "Lit",
+            "value": 1
+           }
+          ]
+         }
+        ]
+       }
+      },
+      "value": 1.0,
+      "epoch": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "Q"
+        },
+        "key": "epoch"
+       }
+      },
+      "status": "confabulated"
+     }
+    ],
+    [
+     "add_edge",
+     "game",
+     "has_prediction",
+     "P1",
+     {}
+    ],
+    [
+     "add_edge",
+     "H",
+     "projects",
+     "P1",
+     {}
+    ],
+    [
+     "add_node",
+     "P2",
+     "MapPrediction",
+     {
+      "world_type": "CellBox",
+      "schema": "minimal_enclosure",
+      "role": "wall_dim1_low",
+      "lo": {
+       "__term__": {
+        "type": "Vec",
+        "items": [
+         {
+          "type": "IndexAt",
+          "seq": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "Q"
+           },
+           "key": "lo"
+          },
+          "index": {
+           "type": "Lit",
+           "value": 0
+          }
+         },
+         {
+          "type": "Minus",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "lo"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 1
+           }
+          },
+          "b": {
+           "type": "Lit",
+           "value": 1
+          }
+         }
+        ]
+       }
+      },
+      "hi": {
+       "__term__": {
+        "type": "Vec",
+        "items": [
+         {
+          "type": "IndexAt",
+          "seq": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "Q"
+           },
+           "key": "hi"
+          },
+          "index": {
+           "type": "Lit",
+           "value": 0
+          }
+         },
+         {
+          "type": "Minus",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "lo"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 1
+           }
+          },
+          "b": {
+           "type": "Lit",
+           "value": 1
+          }
+         }
+        ]
+       }
+      },
+      "value": 1.0,
+      "epoch": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "Q"
+        },
+        "key": "epoch"
+       }
+      },
+      "status": "confabulated"
+     }
+    ],
+    [
+     "add_edge",
+     "game",
+     "has_prediction",
+     "P2",
+     {}
+    ],
+    [
+     "add_edge",
+     "H",
+     "projects",
+     "P2",
+     {}
+    ],
+    [
+     "add_node",
+     "P3",
+     "MapPrediction",
+     {
+      "world_type": "CellBox",
+      "schema": "minimal_enclosure",
+      "role": "wall_dim1_high",
+      "lo": {
+       "__term__": {
+        "type": "Vec",
+        "items": [
+         {
+          "type": "IndexAt",
+          "seq": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "Q"
+           },
+           "key": "lo"
+          },
+          "index": {
+           "type": "Lit",
+           "value": 0
+          }
+         },
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "IndexAt",
+            "seq": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "Q"
+             },
+             "key": "hi"
+            },
+            "index": {
+             "type": "Lit",
+             "value": 1
+            }
+           },
+           {
+            "type": "Lit",
+            "value": 1
+           }
+          ]
+         }
+        ]
+       }
+      },
+      "hi": {
+       "__term__": {
+        "type": "Vec",
+        "items": [
+         {
+          "type": "IndexAt",
+          "seq": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "Q"
+           },
+           "key": "hi"
+          },
+          "index": {
+           "type": "Lit",
+           "value": 0
+          }
+         },
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "IndexAt",
+            "seq": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "Q"
+             },
+             "key": "hi"
+            },
+            "index": {
+             "type": "Lit",
+             "value": 1
+            }
+           },
+           {
+            "type": "Lit",
+            "value": 1
+           }
+          ]
+         }
+        ]
+       }
+      },
+      "value": 1.0,
+      "epoch": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "Q"
+        },
+        "key": "epoch"
+       }
+      },
+      "status": "confabulated"
+     }
+    ],
+    [
+     "add_edge",
+     "game",
+     "has_prediction",
+     "P3",
+     {}
+    ],
+    [
+     "add_edge",
+     "H",
+     "projects",
+     "P3",
+     {}
+    ]
+   ]
+  },
+  {
+   "name": "dpp_project_corridor_dim0",
+   "comment": "TOP-DOWN corridor: decode a partial passable quantum and immediately project the schema's unseen wall structure. This deliberately predicts more than has been observed; no has_cell belief is written.",
+   "match": [
+    [
+     "Q",
+     "in_space",
+     "game"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "game"
+         },
+         "key": "map_mode"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "doom"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "game"
+         },
+         "key": "predictive_map"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "Q"
+       },
+       "key": "kind"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "passable"
+      }
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Minus",
+           "a": {
+            "type": "IndexAt",
+            "seq": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "Q"
+             },
+             "key": "hi"
+            },
+            "index": {
+             "type": "Lit",
+             "value": 0
+            }
+           },
+           "b": {
+            "type": "IndexAt",
+            "seq": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "Q"
+             },
+             "key": "lo"
+            },
+            "index": {
+             "type": "Lit",
+             "value": 0
+            }
+           }
+          },
+          {
+           "type": "Lit",
+           "value": 1
+          }
+         ]
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "game"
+         },
+         "key": "body_w"
+        }
+       },
+       {
+        "type": "Gt",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Minus",
+           "a": {
+            "type": "IndexAt",
+            "seq": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "Q"
+             },
+             "key": "hi"
+            },
+            "index": {
+             "type": "Lit",
+             "value": 1
+            }
+           },
+           "b": {
+            "type": "IndexAt",
+            "seq": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "Q"
+             },
+             "key": "lo"
+            },
+            "index": {
+             "type": "Lit",
+             "value": 1
+            }
+           }
+          },
+          {
+           "type": "Lit",
+           "value": 1
+          }
+         ]
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "game"
+         },
+         "key": "body_w"
+        }
+       }
+      ]
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "game"
+        },
+        "edge_type": "has_hypothesis",
+        "any_type": false
+       },
+       "var_name": "H2",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "H2"
+           },
+           "key": "schema"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "corridor"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "H2"
+           },
+           "key": "epoch"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "Q"
+           },
+           "key": "epoch"
+          }
+         },
+         {
+          "type": "And",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "IndexAt",
+             "seq": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "H2"
+              },
+              "key": "lo"
+             },
+             "index": {
+              "type": "Lit",
+              "value": 0
+             }
+            },
+            "b": {
+             "type": "IndexAt",
+             "seq": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "lo"
+             },
+             "index": {
+              "type": "Lit",
+              "value": 0
+             }
+            }
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "IndexAt",
+             "seq": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "H2"
+              },
+              "key": "lo"
+             },
+             "index": {
+              "type": "Lit",
+              "value": 1
+             }
+            },
+            "b": {
+             "type": "IndexAt",
+             "seq": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "lo"
+             },
+             "index": {
+              "type": "Lit",
+              "value": 1
+             }
+            }
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "IndexAt",
+             "seq": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "H2"
+              },
+              "key": "hi"
+             },
+             "index": {
+              "type": "Lit",
+              "value": 0
+             }
+            },
+            "b": {
+             "type": "IndexAt",
+             "seq": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "hi"
+             },
+             "index": {
+              "type": "Lit",
+              "value": 0
+             }
+            }
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "IndexAt",
+             "seq": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "H2"
+              },
+              "key": "hi"
+             },
+             "index": {
+              "type": "Lit",
+              "value": 1
+             }
+            },
+            "b": {
+             "type": "IndexAt",
+             "seq": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "hi"
+             },
+             "index": {
+              "type": "Lit",
+              "value": 1
+             }
+            }
+           }
+          ]
+         }
+        ]
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "H",
+     "SpatialHypothesis",
+     {
+      "schema": "corridor",
+      "lo": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "Q"
+        },
+        "key": "lo"
+       }
+      },
+      "hi": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "Q"
+        },
+        "key": "hi"
+       }
+      },
+      "epoch": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "Q"
+        },
+        "key": "epoch"
+       }
+      },
+      "status": "projected"
+     }
+    ],
+    [
+     "add_edge",
+     "game",
+     "has_hypothesis",
+     "H",
+     {}
+    ],
+    [
+     "add_edge",
+     "H",
+     "based_on",
+     "Q",
+     {}
+    ],
+    [
+     "add_node",
+     "P0",
+     "MapPrediction",
+     {
+      "world_type": "CellBox",
+      "schema": "corridor",
+      "role": "parallel_wall_low",
+      "lo": {
+       "__term__": {
+        "type": "Vec",
+        "items": [
+         {
+          "type": "Minus",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "lo"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 0
+           }
+          },
+          "b": {
+           "type": "Lit",
+           "value": 1
+          }
+         },
+         {
+          "type": "IndexAt",
+          "seq": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "Q"
+           },
+           "key": "lo"
+          },
+          "index": {
+           "type": "Lit",
+           "value": 1
+          }
+         }
+        ]
+       }
+      },
+      "hi": {
+       "__term__": {
+        "type": "Vec",
+        "items": [
+         {
+          "type": "Minus",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "lo"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 0
+           }
+          },
+          "b": {
+           "type": "Lit",
+           "value": 1
+          }
+         },
+         {
+          "type": "IndexAt",
+          "seq": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "Q"
+           },
+           "key": "hi"
+          },
+          "index": {
+           "type": "Lit",
+           "value": 1
+          }
+         }
+        ]
+       }
+      },
+      "value": 1.0,
+      "epoch": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "Q"
+        },
+        "key": "epoch"
+       }
+      },
+      "status": "confabulated"
+     }
+    ],
+    [
+     "add_edge",
+     "game",
+     "has_prediction",
+     "P0",
+     {}
+    ],
+    [
+     "add_edge",
+     "H",
+     "projects",
+     "P0",
+     {}
+    ],
+    [
+     "add_node",
+     "P1",
+     "MapPrediction",
+     {
+      "world_type": "CellBox",
+      "schema": "corridor",
+      "role": "parallel_wall_high",
+      "lo": {
+       "__term__": {
+        "type": "Vec",
+        "items": [
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "IndexAt",
+            "seq": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "Q"
+             },
+             "key": "hi"
+            },
+            "index": {
+             "type": "Lit",
+             "value": 0
+            }
+           },
+           {
+            "type": "Lit",
+            "value": 1
+           }
+          ]
+         },
+         {
+          "type": "IndexAt",
+          "seq": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "Q"
+           },
+           "key": "lo"
+          },
+          "index": {
+           "type": "Lit",
+           "value": 1
+          }
+         }
+        ]
+       }
+      },
+      "hi": {
+       "__term__": {
+        "type": "Vec",
+        "items": [
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "IndexAt",
+            "seq": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "Q"
+             },
+             "key": "hi"
+            },
+            "index": {
+             "type": "Lit",
+             "value": 0
+            }
+           },
+           {
+            "type": "Lit",
+            "value": 1
+           }
+          ]
+         },
+         {
+          "type": "IndexAt",
+          "seq": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "Q"
+           },
+           "key": "hi"
+          },
+          "index": {
+           "type": "Lit",
+           "value": 1
+          }
+         }
+        ]
+       }
+      },
+      "value": 1.0,
+      "epoch": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "Q"
+        },
+        "key": "epoch"
+       }
+      },
+      "status": "confabulated"
+     }
+    ],
+    [
+     "add_edge",
+     "game",
+     "has_prediction",
+     "P1",
+     {}
+    ],
+    [
+     "add_edge",
+     "H",
+     "projects",
+     "P1",
+     {}
+    ]
+   ]
+  },
+  {
+   "name": "dpp_project_corridor_dim1",
+   "comment": "TOP-DOWN corridor: decode a partial passable quantum and immediately project the schema's unseen wall structure. This deliberately predicts more than has been observed; no has_cell belief is written.",
+   "match": [
+    [
+     "Q",
+     "in_space",
+     "game"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "game"
+         },
+         "key": "map_mode"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "doom"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "game"
+         },
+         "key": "predictive_map"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "Q"
+       },
+       "key": "kind"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "passable"
+      }
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Minus",
+           "a": {
+            "type": "IndexAt",
+            "seq": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "Q"
+             },
+             "key": "hi"
+            },
+            "index": {
+             "type": "Lit",
+             "value": 1
+            }
+           },
+           "b": {
+            "type": "IndexAt",
+            "seq": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "Q"
+             },
+             "key": "lo"
+            },
+            "index": {
+             "type": "Lit",
+             "value": 1
+            }
+           }
+          },
+          {
+           "type": "Lit",
+           "value": 1
+          }
+         ]
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "game"
+         },
+         "key": "body_w"
+        }
+       },
+       {
+        "type": "Gt",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Minus",
+           "a": {
+            "type": "IndexAt",
+            "seq": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "Q"
+             },
+             "key": "hi"
+            },
+            "index": {
+             "type": "Lit",
+             "value": 0
+            }
+           },
+           "b": {
+            "type": "IndexAt",
+            "seq": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "Q"
+             },
+             "key": "lo"
+            },
+            "index": {
+             "type": "Lit",
+             "value": 0
+            }
+           }
+          },
+          {
+           "type": "Lit",
+           "value": 1
+          }
+         ]
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "game"
+         },
+         "key": "body_w"
+        }
+       }
+      ]
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "game"
+        },
+        "edge_type": "has_hypothesis",
+        "any_type": false
+       },
+       "var_name": "H2",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "H2"
+           },
+           "key": "schema"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "corridor"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "H2"
+           },
+           "key": "epoch"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "Q"
+           },
+           "key": "epoch"
+          }
+         },
+         {
+          "type": "And",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "IndexAt",
+             "seq": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "H2"
+              },
+              "key": "lo"
+             },
+             "index": {
+              "type": "Lit",
+              "value": 0
+             }
+            },
+            "b": {
+             "type": "IndexAt",
+             "seq": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "lo"
+             },
+             "index": {
+              "type": "Lit",
+              "value": 0
+             }
+            }
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "IndexAt",
+             "seq": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "H2"
+              },
+              "key": "lo"
+             },
+             "index": {
+              "type": "Lit",
+              "value": 1
+             }
+            },
+            "b": {
+             "type": "IndexAt",
+             "seq": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "lo"
+             },
+             "index": {
+              "type": "Lit",
+              "value": 1
+             }
+            }
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "IndexAt",
+             "seq": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "H2"
+              },
+              "key": "hi"
+             },
+             "index": {
+              "type": "Lit",
+              "value": 0
+             }
+            },
+            "b": {
+             "type": "IndexAt",
+             "seq": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "hi"
+             },
+             "index": {
+              "type": "Lit",
+              "value": 0
+             }
+            }
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "IndexAt",
+             "seq": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "H2"
+              },
+              "key": "hi"
+             },
+             "index": {
+              "type": "Lit",
+              "value": 1
+             }
+            },
+            "b": {
+             "type": "IndexAt",
+             "seq": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "hi"
+             },
+             "index": {
+              "type": "Lit",
+              "value": 1
+             }
+            }
+           }
+          ]
+         }
+        ]
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "H",
+     "SpatialHypothesis",
+     {
+      "schema": "corridor",
+      "lo": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "Q"
+        },
+        "key": "lo"
+       }
+      },
+      "hi": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "Q"
+        },
+        "key": "hi"
+       }
+      },
+      "epoch": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "Q"
+        },
+        "key": "epoch"
+       }
+      },
+      "status": "projected"
+     }
+    ],
+    [
+     "add_edge",
+     "game",
+     "has_hypothesis",
+     "H",
+     {}
+    ],
+    [
+     "add_edge",
+     "H",
+     "based_on",
+     "Q",
+     {}
+    ],
+    [
+     "add_node",
+     "P0",
+     "MapPrediction",
+     {
+      "world_type": "CellBox",
+      "schema": "corridor",
+      "role": "parallel_wall_low",
+      "lo": {
+       "__term__": {
+        "type": "Vec",
+        "items": [
+         {
+          "type": "IndexAt",
+          "seq": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "Q"
+           },
+           "key": "lo"
+          },
+          "index": {
+           "type": "Lit",
+           "value": 0
+          }
+         },
+         {
+          "type": "Minus",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "lo"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 1
+           }
+          },
+          "b": {
+           "type": "Lit",
+           "value": 1
+          }
+         }
+        ]
+       }
+      },
+      "hi": {
+       "__term__": {
+        "type": "Vec",
+        "items": [
+         {
+          "type": "IndexAt",
+          "seq": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "Q"
+           },
+           "key": "hi"
+          },
+          "index": {
+           "type": "Lit",
+           "value": 0
+          }
+         },
+         {
+          "type": "Minus",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "lo"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 1
+           }
+          },
+          "b": {
+           "type": "Lit",
+           "value": 1
+          }
+         }
+        ]
+       }
+      },
+      "value": 1.0,
+      "epoch": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "Q"
+        },
+        "key": "epoch"
+       }
+      },
+      "status": "confabulated"
+     }
+    ],
+    [
+     "add_edge",
+     "game",
+     "has_prediction",
+     "P0",
+     {}
+    ],
+    [
+     "add_edge",
+     "H",
+     "projects",
+     "P0",
+     {}
+    ],
+    [
+     "add_node",
+     "P1",
+     "MapPrediction",
+     {
+      "world_type": "CellBox",
+      "schema": "corridor",
+      "role": "parallel_wall_high",
+      "lo": {
+       "__term__": {
+        "type": "Vec",
+        "items": [
+         {
+          "type": "IndexAt",
+          "seq": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "Q"
+           },
+           "key": "lo"
+          },
+          "index": {
+           "type": "Lit",
+           "value": 0
+          }
+         },
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "IndexAt",
+            "seq": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "Q"
+             },
+             "key": "hi"
+            },
+            "index": {
+             "type": "Lit",
+             "value": 1
+            }
+           },
+           {
+            "type": "Lit",
+            "value": 1
+           }
+          ]
+         }
+        ]
+       }
+      },
+      "hi": {
+       "__term__": {
+        "type": "Vec",
+        "items": [
+         {
+          "type": "IndexAt",
+          "seq": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "Q"
+           },
+           "key": "hi"
+          },
+          "index": {
+           "type": "Lit",
+           "value": 0
+          }
+         },
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "IndexAt",
+            "seq": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "Q"
+             },
+             "key": "hi"
+            },
+            "index": {
+             "type": "Lit",
+             "value": 1
+            }
+           },
+           {
+            "type": "Lit",
+            "value": 1
+           }
+          ]
+         }
+        ]
+       }
+      },
+      "value": 1.0,
+      "epoch": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "Q"
+        },
+        "key": "epoch"
+       }
+      },
+      "status": "confabulated"
+     }
+    ],
+    [
+     "add_edge",
+     "game",
+     "has_prediction",
+     "P1",
+     {}
+    ],
+    [
+     "add_edge",
+     "H",
+     "projects",
+     "P1",
+     {}
+    ]
+   ]
+  },
+  {
+   "name": "dpp_confirm_wall",
+   "comment": "Compare a later bottom-up observation with the preceding top-down wall projection; mint a durable confirmed outcome.",
+   "match": [
+    [
+     "game",
+     "observed",
+     "O"
+    ],
+    [
+     "game",
+     "has_prediction",
+     "P"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "game"
+         },
+         "key": "map_mode"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "doom"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "game"
+         },
+         "key": "predictive_map"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       }
+      ]
+     },
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "O"
+         },
+         "key": "src"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "depth_wall"
+        }
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "P"
+       },
+       "key": "epoch"
+      },
+      "b": {
+       "type": "Minus",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "O"
+        },
+        "key": "obs_epoch"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1
+       }
+      }
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "And",
+        "items": [
+         {
+          "type": "Gte",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "O"
+            },
+            "key": "pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 0
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "P"
+            },
+            "key": "lo"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 0
+           }
+          }
+         },
+         {
+          "type": "Lte",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "O"
+            },
+            "key": "pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 0
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "P"
+            },
+            "key": "hi"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 0
+           }
+          }
+         }
+        ]
+       },
+       {
+        "type": "And",
+        "items": [
+         {
+          "type": "Gte",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "O"
+            },
+            "key": "pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 1
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "P"
+            },
+            "key": "lo"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 1
+           }
+          }
+         },
+         {
+          "type": "Lte",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "O"
+            },
+            "key": "pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 1
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "P"
+            },
+            "key": "hi"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 1
+           }
+          }
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "game"
+        },
+        "edge_type": "has_prediction_outcome",
+        "any_type": false
+       },
+       "var_name": "X",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "X"
+           },
+           "key": "prediction_epoch"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "P"
+           },
+           "key": "epoch"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "X"
+           },
+           "key": "observation_epoch"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "O"
+           },
+           "key": "obs_epoch"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "X"
+           },
+           "key": "pose"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "O"
+           },
+           "key": "pose"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "X"
+           },
+           "key": "prediction_lo"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "P"
+           },
+           "key": "lo"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "X"
+           },
+           "key": "prediction_hi"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "P"
+           },
+           "key": "hi"
+          }
+         }
+        ]
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "X",
+     "PredictionOutcome",
+     {
+      "result": "confirmed",
+      "pose": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "O"
+        },
+        "key": "pose"
+       }
+      },
+      "predicted_value": 1.0,
+      "observed_value": 1.0,
+      "schema": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "P"
+        },
+        "key": "schema"
+       }
+      },
+      "prediction_lo": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "P"
+        },
+        "key": "lo"
+       }
+      },
+      "prediction_hi": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "P"
+        },
+        "key": "hi"
+       }
+      },
+      "prediction_epoch": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "P"
+        },
+        "key": "epoch"
+       }
+      },
+      "observation_epoch": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "O"
+        },
+        "key": "obs_epoch"
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "game",
+     "has_prediction_outcome",
+     "X",
+     {}
+    ],
+    [
+     "add_edge",
+     "X",
+     "tests_prediction",
+     "P",
+     {}
+    ]
+   ]
+  },
+  {
+   "name": "dpp_correct_wall_to_free",
+   "comment": "Compare a later bottom-up observation with the preceding top-down wall projection; mint a durable corrected outcome and prediction-minus-observation residual.",
+   "match": [
+    [
+     "game",
+     "observed",
+     "O"
+    ],
+    [
+     "game",
+     "has_prediction",
+     "P"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "game"
+         },
+         "key": "map_mode"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "doom"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "game"
+         },
+         "key": "predictive_map"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       }
+      ]
+     },
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "O"
+         },
+         "key": "src"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "walk"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "O"
+         },
+         "key": "src"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "depth_free"
+        }
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "P"
+       },
+       "key": "epoch"
+      },
+      "b": {
+       "type": "Minus",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "O"
+        },
+        "key": "obs_epoch"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1
+       }
+      }
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "And",
+        "items": [
+         {
+          "type": "Gte",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "O"
+            },
+            "key": "pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 0
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "P"
+            },
+            "key": "lo"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 0
+           }
+          }
+         },
+         {
+          "type": "Lte",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "O"
+            },
+            "key": "pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 0
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "P"
+            },
+            "key": "hi"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 0
+           }
+          }
+         }
+        ]
+       },
+       {
+        "type": "And",
+        "items": [
+         {
+          "type": "Gte",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "O"
+            },
+            "key": "pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 1
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "P"
+            },
+            "key": "lo"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 1
+           }
+          }
+         },
+         {
+          "type": "Lte",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "O"
+            },
+            "key": "pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 1
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "P"
+            },
+            "key": "hi"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 1
+           }
+          }
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "game"
+        },
+        "edge_type": "has_prediction_outcome",
+        "any_type": false
+       },
+       "var_name": "X",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "X"
+           },
+           "key": "prediction_epoch"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "P"
+           },
+           "key": "epoch"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "X"
+           },
+           "key": "observation_epoch"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "O"
+           },
+           "key": "obs_epoch"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "X"
+           },
+           "key": "pose"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "O"
+           },
+           "key": "pose"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "X"
+           },
+           "key": "prediction_lo"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "P"
+           },
+           "key": "lo"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "X"
+           },
+           "key": "prediction_hi"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "P"
+           },
+           "key": "hi"
+          }
+         }
+        ]
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "X",
+     "PredictionOutcome",
+     {
+      "result": "corrected",
+      "pose": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "O"
+        },
+        "key": "pose"
+       }
+      },
+      "predicted_value": 1.0,
+      "observed_value": 0.0,
+      "schema": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "P"
+        },
+        "key": "schema"
+       }
+      },
+      "prediction_lo": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "P"
+        },
+        "key": "lo"
+       }
+      },
+      "prediction_hi": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "P"
+        },
+        "key": "hi"
+       }
+      },
+      "prediction_epoch": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "P"
+        },
+        "key": "epoch"
+       }
+      },
+      "observation_epoch": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "O"
+        },
+        "key": "obs_epoch"
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "game",
+     "has_prediction_outcome",
+     "X",
+     {}
+    ],
+    [
+     "add_edge",
+     "X",
+     "tests_prediction",
+     "P",
+     {}
+    ],
+    [
+     "add_node",
+     "R",
+     "MapResidual",
+     {
+      "kind": "prediction_minus_observation",
+      "pose": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "O"
+        },
+        "key": "pose"
+       }
+      },
+      "predicted_value": 1.0,
+      "observed_value": 0.0,
+      "schema": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "P"
+        },
+        "key": "schema"
+       }
+      },
+      "prediction_epoch": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "P"
+        },
+        "key": "epoch"
+       }
+      },
+      "observation_epoch": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "O"
+        },
+        "key": "obs_epoch"
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "game",
+     "has_map_residual",
+     "R",
+     {}
+    ],
+    [
+     "add_edge",
+     "R",
+     "from_prediction",
+     "P",
+     {}
+    ]
+   ]
+  }
+ ]
+}

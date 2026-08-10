@@ -1,0 +1,118 @@
+{
+  "id": "post_quantum_crypto_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "Kyber_post_quantum_KEM",
+  "in_microtheory": "security_and_cryptography",
+  "description": "Post-quantum cryptography decomposed. NIST PQC standardization. Lattice-based (Kyber/ML-KEM, Dilithium/ML-DSA, FALCON). Hash-based (SPHINCS+/SLH-DSA). Code-based (Classic McEliece). The threat (Shor's algorithm), the timeline, the migration patterns (hybrid schemes), the trade-offs.",
+  "sub_mechanisms": [
+    {
+      "name": "Shor_algorithm_threat",
+      "definition": "Quantum algorithm for factoring + discrete log. Polynomial time on sufficiently large quantum computer.",
+      "why": "Breaks RSA + ECC. Required quantum: ~2300 logical qubits for RSA-2048. Current state: ~1000 noisy physical qubits. ~10-20 years estimated to threat. Migration starting now.",
+      "category": "pq_mechanism"
+    },
+    {
+      "name": "Grover_algorithm_threat",
+      "definition": "Quantum search. Halves effective key length of symmetric crypto.",
+      "why": "AES-128 → 64-bit security under quantum. AES-256 → 128-bit (still safe). Symmetric easier to upgrade than asymmetric.",
+      "category": "pq_mechanism"
+    },
+    {
+      "name": "harvest_now_decrypt_later_attack",
+      "definition": "Adversary records encrypted traffic now; decrypts when quantum available.",
+      "why": "Long-term secrets vulnerable today. State secrets, medical records, etc. require PQ now. Forward secrecy doesn't help captured handshakes.",
+      "category": "pq_mechanism"
+    },
+    {
+      "name": "lattice_based_crypto",
+      "definition": "Security from hard problems on lattices (LWE, Module-LWE, SIS). Foundation of most NIST PQ winners.",
+      "why": "Well-studied since 1996. Believed quantum-resistant. Compact compared to other PQ. Kyber, Dilithium, FALCON all lattice-based.",
+      "category": "pq_mechanism"
+    },
+    {
+      "name": "ML_KEM_Kyber",
+      "definition": "NIST FIPS 203. Lattice-based KEM. 768-bit security at ~1.5 KB public key + ~1 KB ciphertext.",
+      "why": "Standard PQ KEM. Cloudflare, Google deploying. Often paired with X25519 in hybrid mode for transition. NIST standardised August 2024.",
+      "category": "pq_mechanism"
+    },
+    {
+      "name": "ML_DSA_Dilithium",
+      "definition": "NIST FIPS 204. Lattice-based signature. ~1.3 KB public key, ~2.5 KB signature for security level 2.",
+      "why": "Standard PQ signature. Replaces ECDSA/Ed25519 in PQ context. Larger keys + signatures than classical; rapid verification.",
+      "category": "pq_mechanism"
+    },
+    {
+      "name": "FALCON_compact_signatures",
+      "definition": "FN-DSA (FIPS 206). Lattice-based, compact signatures. ~700-byte sig vs Dilithium's 2.5 KB.",
+      "why": "Bandwidth-constrained use cases. Cost: complex implementation (floating point), harder to make constant-time. Adoption slower than Dilithium.",
+      "category": "pq_mechanism"
+    },
+    {
+      "name": "SLH_DSA_SPHINCS",
+      "definition": "FIPS 205. Hash-based signature. Security from cryptographic hash function strength. ~8-50 KB signatures.",
+      "why": "Different mathematical foundation than lattice. Defence in depth: if lattice broken, hash-based still works. Cost: large signatures, slow signing. Used where signing rare.",
+      "category": "pq_mechanism"
+    },
+    {
+      "name": "Classic_McEliece",
+      "definition": "Code-based KEM. ~250 KB public keys, fast operations. NIST alternate (not primary).",
+      "why": "Foundation 1978; well-studied. Massive public keys disqualify for many uses. Niche: embedded systems, long-term keys.",
+      "category": "pq_mechanism"
+    },
+    {
+      "name": "hybrid_PQ_classical",
+      "definition": "Combine classical (X25519) + PQ (Kyber) key exchange. Shared secret = KDF(both).",
+      "why": "Transition strategy. If PQ scheme broken, classical still works (and vice versa). Used in Cloudflare, Apple deployments. Standard during transition period.",
+      "category": "pq_mechanism"
+    },
+    {
+      "name": "NIST_PQC_timeline",
+      "definition": "Competition started 2016. Round 1 (2017) → 4 finalists (2022) → standardized (August 2024). Industry now migrating.",
+      "why": "Decade-long process. Provides confidence in scheme analysis. Migration: 5-10 years; deprecation 10-20 years. ECC continues until then.",
+      "category": "pq_mechanism"
+    },
+    {
+      "name": "quantum_resistance_uncertain",
+      "definition": "PQ schemes believed quantum-resistant but new attacks possible. Some candidates broken late in competition (SIKE, Rainbow).",
+      "why": "Cryptanalysis ongoing. Hybrid + algorithm agility (easy swap) protect. Standards may evolve as analysis matures.",
+      "category": "pq_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "PQ_migration_urgency_proportional_to_secret_lifetime",
+      "if": ["secret must remain confidential for N years"],
+      "then": ["if N > estimated time to large quantum computer, migrate now"],
+      "why": "Harvest-now-decrypt-later. 20-year secrets need PQ today; 1-year secrets can wait. Long-term: state secrets, medical records, intellectual property. Short-term: most TLS sessions.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "hybrid_schemes_safer_during_transition",
+      "if": ["a new PQ scheme is deployed"],
+      "then": ["pairing with classical scheme protects against PQ-scheme break"],
+      "why": "If PQ scheme broken (cryptanalysis advances), classical still secure. If classical broken (quantum arrives), PQ still secure. Belt + suspenders. Cost: slight overhead. Standard transition pattern.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "PQ_keys_larger_than_classical",
+      "if": ["protocol uses PQ scheme"],
+      "then": ["bandwidth + storage increases significantly"],
+      "why": "Kyber pubkey 1.5 KB vs X25519's 32 bytes. Dilithium signature 2.5 KB vs Ed25519's 64 bytes. SPHINCS+ 8-50 KB sig. Protocols designed for compact crypto need redesign.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "lattice_based_dominant_for_NIST_winners",
+      "if": ["NIST has selected primary PQ standards"],
+      "then": ["lattice-based schemes dominate"],
+      "why": "Kyber, Dilithium, FALCON all lattice. Decades of analysis, good performance, reasonable sizes. SPHINCS+ hash-based as backup (different foundation).",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "algorithm_agility_required_for_future_breaks",
+      "if": ["a system hardcodes specific algorithm"],
+      "then": ["future cryptanalysis break requires expensive migration"],
+      "why": "RSA → ECC migration took 20 years. PQ migration in progress. Future migrations inevitable. Modern protocols (TLS) negotiate algorithms; specific code paths can be retired.",
+      "soundness_category": "extensional_equivalence"
+    }
+  ]
+}

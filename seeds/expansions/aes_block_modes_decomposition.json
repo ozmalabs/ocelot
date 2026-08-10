@@ -1,0 +1,118 @@
+{
+  "id": "aes_block_modes_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "AES_block_cipher",
+  "in_microtheory": "security_and_cryptography",
+  "description": "AES + block cipher modes decomposed. AES round structure, key schedule, AES-NI hardware acceleration. Modes: ECB (never), CBC (legacy), CTR (stream), GCM (authenticated), XTS (disk encryption). Why each mode exists and which to use.",
+  "sub_mechanisms": [
+    {
+      "name": "AES_round_structure",
+      "definition": "AES applies 10/12/14 rounds (128/192/256 key). Each round: SubBytes, ShiftRows, MixColumns, AddRoundKey.",
+      "why": "SubBytes provides non-linearity; ShiftRows + MixColumns diffusion. 14 rounds for 256-bit ensures strong security margin. Reversible via inverse operations.",
+      "category": "aes_mechanism"
+    },
+    {
+      "name": "AES_key_schedule",
+      "definition": "Derives N round keys from master key. Each round needs separate subkey.",
+      "why": "Same key reused across rounds would weaken security. Key schedule mixes original key + round constants. Standard part of AES spec.",
+      "category": "aes_mechanism"
+    },
+    {
+      "name": "AES_NI_hardware",
+      "definition": "Intel/AMD instructions for AES rounds. aesenc, aesenclast, etc. 1 instruction per round.",
+      "why": "AES-NI: ~10 GB/s vs ~200 MB/s software. Standard on x86_64 since 2010. ARM has FEAT_AES. Universal modern AES is hardware-accelerated.",
+      "category": "aes_mechanism"
+    },
+    {
+      "name": "ECB_mode_never_use",
+      "definition": "Each block encrypted independently with same key. Identical plaintext blocks → identical ciphertext blocks.",
+      "why": "Famous penguin image: encrypted image preserves visible structure. Educational only. Should be disallowed by crypto libraries; some still expose for compatibility.",
+      "category": "aes_mode_mechanism"
+    },
+    {
+      "name": "CBC_mode_legacy",
+      "definition": "Cipher Block Chaining. Each plaintext block XORed with previous ciphertext before encrypt. Requires IV.",
+      "why": "Sequential encryption (can't parallelise). Padding required. Vulnerable to padding oracle without proper MAC. Replaced by GCM in TLS 1.3.",
+      "category": "aes_mode_mechanism"
+    },
+    {
+      "name": "CTR_mode_stream",
+      "definition": "Counter Mode. AES encrypts counter values to produce keystream. XOR with plaintext.",
+      "why": "Parallelisable encryption + decryption. No padding. Foundation of GCM. CRITICAL: counter reuse with same key reveals plaintexts.",
+      "category": "aes_mode_mechanism"
+    },
+    {
+      "name": "GCM_authenticated_encryption",
+      "definition": "AES-CTR + GMAC. AEAD: confidentiality + integrity from one operation.",
+      "why": "TLS 1.3 mandates. Hardware-accelerated. Authenticates associated data (AD: headers) without encrypting. Standard modern mode.",
+      "category": "aes_mode_mechanism"
+    },
+    {
+      "name": "GMAC_construction",
+      "definition": "Polynomial MAC over ciphertext + AD using key-derived value. Defined in GF(2^128).",
+      "why": "Galois field MAC fast on hardware. Cost: nonce reuse breaks GMAC catastrophically (recovers authentication key). Nonce hygiene mandatory.",
+      "category": "aes_mode_mechanism"
+    },
+    {
+      "name": "XTS_disk_encryption",
+      "definition": "AES-XTS. Two-key mode designed for storage. Sector-aligned, no chaining between sectors.",
+      "why": "BitLocker, FileVault, LUKS use AES-XTS. Allows random access (no chaining). Cost: not authenticated (separate integrity layer needed).",
+      "category": "aes_mode_mechanism"
+    },
+    {
+      "name": "ChaCha20_alternative",
+      "definition": "Stream cipher. 20 rounds of ARX (Add-Rotate-XOR). No tables (constant-time by design).",
+      "why": "Fast on systems without AES-NI (ARM, mobile). Used in TLS 1.3, WireGuard, OpenSSH. Often paired with Poly1305 for AEAD.",
+      "category": "aes_mode_mechanism"
+    },
+    {
+      "name": "nonce_management",
+      "definition": "Each (key, nonce) pair must be unique. Strategies: random 96-bit nonces, counter, deterministic.",
+      "why": "GCM nonce reuse → catastrophe. Random 96-bit: 2^48 messages before collision risk. Counter: simple but state-dependent. Modern crypto APIs hide.",
+      "category": "aes_mode_mechanism"
+    },
+    {
+      "name": "padding_PKCS7",
+      "definition": "Padding scheme for block ciphers. Pad to block size with N bytes of value N.",
+      "why": "Required for CBC, not for CTR/GCM. Vulnerable to padding oracle without proper MAC. Modern: AEAD avoids the issue entirely.",
+      "category": "aes_mode_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "ECB_reveals_plaintext_patterns",
+      "if": ["data has repeated blocks"],
+      "then": ["ECB encryption reveals the pattern"],
+      "why": "Same plaintext block → same ciphertext block. Structured data (images, regular records) becomes visually inspectable. Never use ECB.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "GCM_provides_integrity_naturally",
+      "if": ["AES-GCM is used"],
+      "then": ["any ciphertext modification is detected at decrypt"],
+      "why": "GMAC over ciphertext fails on any change. Padding oracle attacks impossible. Modern AEAD approach to combined confidentiality + integrity.",
+      "soundness_category": "referential_transparency"
+    },
+    {
+      "name": "CTR_parallelism_at_random_access_cost",
+      "if": ["data is encrypted with CTR mode"],
+      "then": ["encryption + decryption parallelise across blocks"],
+      "why": "Each block depends only on counter, not previous blocks. CTR is parallelisable; CBC is sequential. Critical for high-throughput.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "nonce_reuse_GCM_catastrophic",
+      "if": ["GCM nonce repeated with same key"],
+      "then": ["both plaintexts recoverable + authentication key leaks"],
+      "why": "Both messages encrypt with same keystream → XOR reveals plaintexts. GMAC key derivable from nonce + tag. Disaster. Modern APIs prevent by generating nonces.",
+      "soundness_category": "referential_transparency"
+    },
+    {
+      "name": "AES_NI_makes_AES_GCM_universal_choice",
+      "if": ["target hardware has AES-NI"],
+      "then": ["AES-GCM is the fastest authenticated encryption"],
+      "why": "~10 GB/s with hardware support. Same hardware accelerates GMAC. ChaCha20-Poly1305 competitive only without AES-NI (mobile, embedded).",
+      "soundness_category": "cost_equivalence"
+    }
+  ]
+}

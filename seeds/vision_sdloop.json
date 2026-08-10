@@ -1,0 +1,175 @@
+{
+  "id": "vision_sdloop",
+  "version": "1.0.0",
+  "depends_on": [
+    "shape_decode_loop"
+  ],
+  "description": "THE SD-LOOP VISION RUNG (seeds 18000-18999, VISION_SDLOOP_PREREG.md) — point the substrate's OWN dynamic-quantization loop (sd_decode -> sd_recognize -> sd_transform_decode -> sd_infer_dimension -> sd_mint_quantum -> sd_redecode) at rung 7's decorrelated ON/OFF channels. Every vision rung before this used a BORROWED learning rule (Oja/BCM/Butts/GCAL) — a neural network inside a graph engine. This rung uses NO vision-specific machinery and NO learning rule at all: the retina's ON/OFF support is ingested as an Observation signature and the EXISTING sd loop decides everything. This seed adds exactly ONE rule, because exactly one thing was missing: sd_mint_quantum mints a CapabilityAxis but does NOT install a ShapeSignature, so a minted quantum can never be RE-RECOGNIZED (the codebook cannot grow from the loop's own mints, and every later orientation would re-mint against an empty basis, guaranteeing my headline statistic by construction rather than measuring it). vq_grow_quantum closes that loop as GRAPH DATA — the precedent is stroke_codebook.grow_stroke_quantum + codebook_epoch (CLAUDE.md's ink arc: 'OOV spans flow into the sd loop — sd_mint_quantum + grow_stroke_quantum + codebook_epoch — and re-decode recognizes the minted quantum'). PROTOCOL §9 / INERTNESS: load_all_seeds GLOBS seeds/*.json, so this file auto-loads into EVERY boot. The rule is guarded on `obs.vq == 1`, an attr NOTHING in the tree sets except this rung's own adapter (domains/sdloop_vision.py). On every other boot there are no vq Observations, the rule cannot match, and this seed is INERT — verified by tests/test_sdloop_vision_migrated.py::test_seed_is_inert_without_vq_observations. PROTOCOL §13 / NO MAGIC NUMBER: this rung commits no float. 'Active' is `!= 0` — the bipolar's own rectification (measured: zeros are EXACTLY 0.0, nonzeros bounded away at ON>=0.891 / OFF>=0.0090), so the integer lattice coord_ints requires falls OUT of the retina rather than going in; and the sd loop's mint condition is a STRUCTURAL predicate (residual non-empty AND both rungs looked AND both failed) with no threshold in it — vision_growth's `novelty` constant is NOT on this path.",
+  "microtheory": {
+    "name": "vision_sdloop",
+    "description": "the retina's ON/OFF support decoded by the substrate's own dynamic-quantization loop; a minted quantum becomes a held ShapeSignature so the codebook grows from the loop's OWN mints and re-decode can recognize them."
+  },
+  "rules": [
+    {
+      "name": "vq_grow_quantum",
+      "comment": "A minted CapabilityAxis becomes a held ShapeSignature + a codebook_epoch bump, so sd_redecode re-arms every earlier Observation against the grown codebook and a later orientation can be RECOGNIZED as a transform of an earlier one instead of re-minting. This is the ONE thing the stock sd loop lacks for an open-ended growth run (sd_mint_quantum mints an AXIS, not a codebook entry — grow_part_library, the Python builder, is what normally installs the ShapeSignature; here that install is a RULE so no Python decides what the agent holds). Fires ONCE per axis (guarded on `grown != 1`, the same no-second-fire idiom sd_recognize_transformed uses with its has_transform-edge check). The ShapeSignature name is the observation's OWN key, read straight off the graph via IndexAt — NOT supplied by Python, so the adapter never names what the agent holds. IT IS NOT BUILT WITH StringConcat. **THE ENGINE DEFECT THAT ONCE FORCED THIS IS FIXED (2026-07-17): `load_parts` now accepts BOTH `Value::Str` AND `Value::Surface(Text)` (`str_shaped`/`string_attr_or_panic` in shape_decode.rs), and a name of a NON-string type now PANICS instead of being silently skipped.** The history, kept because it is the reason this rung's headline is trustworthy: `StringConcat` evaluates to `Value::Surface(Text)` (term.rs: 'evaluate() can't intern new Syms, the same reason StringConcat returns Surface rather than Str'), while `load_parts` read the name as `let Value::Str(name_sym) = &nv else { continue }` — NO Surface arm — so a ShapeSignature named by a RULE was SILENTLY DROPPED: no error, no warning, the part simply did not exist and every later observation re-minted against a codebook that never grew. Measured here first-hand: it made all four LATTICE orientations mint, which would have been reported as a paradigm NEGATIVE when it was a harness artifact. **`IndexAt` is RETAINED, and now on its own merit, not as a workaround**: it names the part by the observation's OWN key read straight off the graph, so the adapter never names what the agent holds — the same property StringConcat would have, with one fewer moving part. Re-measured on the fixed engine (b77c6b8ff268): the orbit law {2:1,3:2,4:2,6:2,12:4} and the scrambled floor (12 mints) are BYTE-IDENTICAL, because this rule never took the dropping path. dim_types is copied from the Observation because DimInfer only ever reads dim_types off the CODEBOOK (ShapeSignature) side; without this copy rung 2 could never fire on a grown quantum and the loop would be silently dead at rung 2 (PROTOCOL §1 clause 4: a low mint-count from a DEAD rung is not a success).",
+      "match_type": "Observation",
+      "match": [
+        [
+          "ag",
+          "observed",
+          "obs"
+        ],
+        [
+          "obs",
+          "minted",
+          "ax"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "obs"
+              },
+              "key": "vq"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ax"
+                },
+                "key": "grown"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 1
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "ss",
+          "ShapeSignature",
+          {
+            "name": {
+              "__term__": {
+                "type": "IndexAt",
+                "seq": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "obs"
+                  },
+                  "key": "key"
+                },
+                "index": {
+                  "type": "Lit",
+                  "value": 0
+                }
+              }
+            },
+            "faculty": {
+              "__term__": {
+                "type": "IndexAt",
+                "seq": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "obs"
+                  },
+                  "key": "key"
+                },
+                "index": {
+                  "type": "Lit",
+                  "value": 0
+                }
+              }
+            },
+            "signature": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "obs"
+                },
+                "key": "signature"
+              }
+            },
+            "dim_types": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "obs"
+                },
+                "key": "dim_types"
+              }
+            },
+            "kind": "faculty",
+            "vq_grown": {
+              "__term__": {
+                "type": "Lit",
+                "value": 1.0
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "ax",
+          "grew",
+          "ss"
+        ],
+        [
+          "set_attr",
+          "ax",
+          "grown",
+          1
+        ],
+        [
+          "set_attr",
+          "ag",
+          "codebook_epoch",
+          {
+            "__term__": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "ag"
+                  },
+                  "key": "codebook_epoch"
+                },
+                {
+                  "type": "Lit",
+                  "value": 1.0
+                }
+              ]
+            }
+          }
+        ]
+      ]
+    }
+  ]
+}

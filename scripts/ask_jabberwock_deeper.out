@@ -1,0 +1,288 @@
+==============================================================================
+JABBERWOCK DEEPER SURVEY — structural issues surface scan misses
+==============================================================================
+
+  Installed 152 seeds
+  Substrate: 152 Mts, 5519 Concepts, 1170 Rules
+
+==============================================================================
+1. CONCEPT DUPLICATION — same name across multiple seeds/Mts
+==============================================================================
+
+  In-substrate Concept-node duplicates: 97
+  Seed-file Concept duplicates:         160
+
+  Top in-substrate duplicates (with inconsistent definitions):
+    · substrate_rs_canonical_instance  (4 nodes, 4 distinct defs)
+      owners: ['adaptive_tiered_dispatch', 'drives_estimation_control', 'reflective_codegen_axiom3', 'typed_graph_arena_layout']
+      def: substrate_rs (Jabberwock's actual Rust runtime) IS the canonical instance of thi
+      def: substrate_rs as canonical instance. jit.rs (commit history pre-this-Mt) compiles
+    · object  (3 nodes, 3 distinct defs)
+      owners: ['language_foundation', 'syntax_linguistics', 'vision_foundation']
+      def: Argument of transitive verb. Direct vs indirect. Patient/theme role. Substrate a
+      def: Syntactic role: the noun phrase argument of a transitive verb. Direct object (ac
+    · inline_cache_per_callsite  (2 nodes, 2 distinct defs)
+      owners: ['adaptive_tiered_dispatch', 'reflective_codegen_axiom3']
+      def: Component 5. Per-dispatch-site cache mapping observed kind → resolved compiled a
+      def: Component 5. Per dispatch site, an inline cache maps observed kind → resolved co
+    · tracing_vs_method_jit_choice  (2 nodes, 2 distinct defs)
+      owners: ['adaptive_tiered_dispatch', 'reflective_codegen_axiom3']
+      def: Component 6. Method JIT compiles whole rule where-clauses; tracing JIT compiles 
+      def: Component 6. Method JIT compiles whole rules; tracing JIT compiles hot paths thr
+    · pypy_meta_tracing_reference  (2 nodes, 2 distinct defs)
+      owners: ['adaptive_tiered_dispatch', 'reflective_codegen_axiom3']
+      def: PyPy's meta-tracing. Trace through the interpreter itself; specialise to the exe
+      def: PyPy's meta-tracing. Trace through the interpreter itself + specialise to the ex
+    · gestalt_principles  (2 nodes, 2 distinct defs)
+      owners: ['art_design_drawing', 'cognitive_psychology']
+      def: Wertheimer 1923. Proximity, similarity, closure, continuity, common fate, figure
+      def: Proximity, similarity, closure, continuity, figure/ground. Visual grouping rules
+    · figure_ground  (2 nodes, 2 distinct defs)
+      owners: ['art_design_drawing', 'vision_foundation']
+      def: Separating foreground object from background. Substrate analogue: substrate's sa
+      def: Object vs background distinction. Reversal: Rubin vase.
+    · aliasing  (2 nodes, 2 distinct defs)
+      owners: ['audio_coding_theory', 'digital_audio']
+      def: Distortion caused when a signal is sampled below the Nyquist rate. Frequencies a
+      def: Frequencies above Nyquist fold back into baseband as false low frequencies. Anti
+
+  Concepts named in >1 seed file (top 10):
+    · substrate_rs_canonical_instance  in ['adaptive_tiered_dispatch.json', 'drives_estimation_control.json', 'reflective_codegen_axiom3.json', 'typed_graph_arena_layout.json']
+    · repair  in ['conversation.json', 'ling_pragmatics.json', 'pragmatics.json']
+    · jitter  in ['distributed_systems.json', 'embedded_iot_realtime.json', 'realtime_systems.json']
+    · genre  in ['humanities_foundation.json', 'ling_discourse.json', 'narrative_convention.json']
+    · object  in ['language_foundation.json', 'ling_syntax.json', 'vision_foundation.json']
+    · tokenization  in ['ling_computational.json', 'machine_learning.json', 'parsing_concepts.json']
+    · focus  in ['ling_discourse.json', 'prosody.json', 'text_comprehension.json']
+    · deixis  in ['ling_pragmatics.json', 'pragmatics.json', 'text_comprehension.json']
+    · presupposition  in ['ling_semantics.json', 'pragmatics.json', 'text_comprehension.json']
+    · implicature  in ['ling_semantics.json', 'pragmatics.json', 'text_comprehension.json']
+
+==============================================================================
+2. DEFINITION-PATTERN COVERAGE — patterns walker misses
+==============================================================================
+
+  Walker promoted: 85 concepts
+  Walker missed:   5434 concepts
+
+  Patterns found across 5433 walker-missed concepts:
+
+     177  X when Y (conditional)
+      83  X if Y (conditional)
+      43  X requires Y
+      29  X produces Y
+      27  X has Y
+      22  X causes Y
+      19  X equals Y / =
+      17  X means Y
+      16  X depends on Y
+      15  X maps Y to Z
+      12  X enables Y
+      10  X represents Y
+       7  X measures Y
+       7  X refers to Y
+       4  X operates on Y
+
+  30-CONCEPT RANDOM SAMPLE (walker-missed; for eye-grep):
+    · contrast: Rhetorical relation: two sentences present opposing or differing content. Marked by 'but', 'however', 'whereas'.
+    · reverse_mathematics: Friedman 1975. Identifying minimum axioms needed to prove theorems. Substrate analogue: substrate's minimal-axiom analysis.
+    · aliasing: Distortion caused when a signal is sampled below the Nyquist rate. Frequencies above sampling_rate/2 appear as lower-frequency artifacts ('a
+    · random_walk_graph: Markov chain on graph: from vertex v, go to uniform random neighbor. Substrate analogue: substrate's stochastic traversal.
+    · shaft_design: Combined bending + torsion + axial. Design for static + fatigue.
+    · trace_context_propagation: Trace ID + span ID + sampling decision passed in headers. W3C Trace Context standard.
+    · Mt_temperature_attr: Architecturally: Microtheory gains β attribute (effective inverse temperature). Attention = high β; passive = low β.
+    · modal_system_s4: T + (□P → □□P). Transitive R: necessities are necessarily necessary. Substrate analogue: substrate's stable modality.
+    · basal_ganglia: Subcortical loop. Cortex-striatum-thalamus circuit; action selection + reinforcement learning + habit formation. Direct + indirect pathways 
+    · competitive_exclusion_principle: Gause 1934. Two species with identical niches cannot coexist. One outcompetes. Substrate analogue: substrate-substrate selection.
+    · need_for_power: McClelland. Drive for influence + impact. Substrate analogue: substrate's coverage-drive — extending the reach of its Mts.
+    · public_good: Non-excludable + non-rivalrous. Defense, clean air. Free-rider problem → underprovision by market.
+    · EnCodec: Meta's neural audio codec (2022). Streaming convolutional codec with adversarial training. Targets 1.5-24 kbps.
+    · Opus: IETF RFC 6716 (2012). Hybrid codec combining SILK (LPC-based, speech-optimised) and CELT (MDCT-based, music-optimised). Switches modes per f
+    · soundness_argument: Valid + premises actually true. Conclusion must be true. Substrate analogue: substrate's grounded valid inference.
+    · timeout_propagation: Context-aware deadline. Request enters with deadline; passed through service calls; each call respects remaining budget.
+    · STM32: ST Microelectronics Cortex-M family. Vast peripherals + variants.
+    · bearer_of_name: The entity a name refers to. Names need bearers. A name without a bearer (Vulcan the planet, Frege's morning star/evening star pre-discovery
+    · dual_route_reading_model: Coltheart's model: reading uses two routes in parallel. Lexical (direct visual recognition) for familiar words; non-lexical (phonological de
+    · mu_law_companding: Logarithmic-style amplitude compression: μ-law (mu-law) compresses 14-bit linear PCM into 8 bits using a log-shaped curve. Standard for Nort
+    · parse_tree: A tree showing how the input derives from the grammar's start symbol via production rules. Each internal node corresponds to a nonterminal; 
+    · binary_search: Halve the search interval each step. Requires sorted array. O(log n).
+    · P_frame: Predictive frame: blocks use either intra or inter prediction from past reference frames.
+    · feedforward_pathway: The bottom-up flow from sensory input through cortical hierarchy. Drives feature extraction and pattern recognition. Substrate analogue: the
+    · constructivism_ir: Wendt. Anarchy is what states make of it. Identities + norms constitute interests.
+    · lamport_timestamp: Logical clock: increment on local event, max(local, received)+1 on receive. Defines partial order.
+    · asthenosphere: Plastic upper mantle below lithosphere. Convection cells drive plate motion.
+    · fairness_norm: Equity theory (Adams 1965). People prefer outcomes proportional to inputs; perceive inequality as aversive. Ultimatum game: refusing 'unfair
+    · vector_grounding_extends_substrate_features: Babbling produces grounding-vector samples (not binary edges). Curiosity drive becomes 'reduce uncertainty in vector' (information gain). Su
+    · color_wheel: Primary (R/Y/B), secondary (O/G/V), tertiary. Arranged circularly.
+
+  TOP 3 unrecognized patterns (walker should learn):
+    [177 matches] X when Y (conditional)
+        example: adaptive_tiered_dispatch_pattern: The composition pattern. Submits flow through a base EDF scheduler (l2_dispatch::Scheduler); each Task carries a kind (S
+        example: inline_cache_per_callsite: Component 5. Per-dispatch-site cache mapping observed kind → resolved compiled artefact pointer. Avoids the per-call Has
+    [83 matches] X if Y (conditional)
+        example: anchor_uniqueness_invariant: Invariant: every anchor string must be VERBATIM (byte-for-byte) and UNIQUE in its target file at patch-application time.
+        example: observation_is_data_for_assessment: An Observation node is what the substrate SEES about a subject. The role of the assessment faculty is to apply qualities
+    [43 matches] X requires Y
+        example: absolute_pitch: Naming exact pitches without reference. Rare (~1 in 10,000); requires early exposure to musical labeling. Substrate anal
+        example: condenser_microphone: Capacitive element. Sensitive, wide-bandwidth. Requires phantom power. Vocals + instruments. Substrate analogue: substra
+
+==============================================================================
+3. INTERNAL Mt CONNECTIVITY — intra-Mt Holds references
+==============================================================================
+
+  Total Mts: 151
+  Mts with concepts and ZERO intra-Mt Holds: 151
+  Mts WITH at least one intra-Mt Holds:
+
+  Largest FLAT Mts (>=10 concepts, none reference siblings):
+    engineering                              129 concepts, all isolated
+    video_coding_theory                      128 concepts, all isolated
+    computer_architecture                    122 concepts, all isolated
+    mathematics                              117 concepts, all isolated
+    databases_and_storage                    112 concepts, all isolated
+    embedded_iot_realtime                    100 concepts, all isolated
+    security_and_cryptography                100 concepts, all isolated
+    art_design_drawing                       95 concepts, all isolated
+    cloud_infrastructure                     87 concepts, all isolated
+    philosophy                               86 concepts, all isolated
+    data_structures_algorithms               85 concepts, all isolated
+    operating_systems                        85 concepts, all isolated
+
+==============================================================================
+4. CIRCULAR CONCEPT PAIRS — A holds B, B holds A
+==============================================================================
+
+  Mutually-referencing concept pairs: 0
+
+  Same-Mt pairs (likely genuine): 0
+  Cross-Mt pairs (likely accidental): 0
+
+  Detection heuristic the substrate could adopt:
+    GENUINE = both concepts in same Mt + Mt explicitly tags
+              the Term-tree as reciprocal_definition
+    ACCIDENTAL = cross-Mt mutual reference with no signal
+
+==============================================================================
+5. SHAPE DIVERSITY BY Mt — which Mts contribute distinct shapes
+==============================================================================
+
+  Total Mts donating shapes: 31
+  Total distinct shape sigs (top-level Term type):
+    ['Eq']
+
+  Mts with HIGHEST shape diversity:
+    astronomy_foundation                      shapes=['Eq'] (donors=4)
+    audio_music_foundation                    shapes=['Eq'] (donors=1)
+    acoustics                                 shapes=['Eq'] (donors=1)
+    nonclassical_logic                        shapes=['Eq'] (donors=1)
+    proof_model_theory                        shapes=['Eq'] (donors=1)
+    mathematical_logic                        shapes=['Eq'] (donors=1)
+    causal_attitude_networks                  shapes=['Eq'] (donors=9)
+    realtime_systems                          shapes=['Eq'] (donors=2)
+
+  Mts with ONLY ONE shape (count: 31; top 10 by donors):
+    engineering                               shape=Eq  (donors=22)
+    physics_foundation                        shape=Eq  (donors=10)
+    causal_attitude_networks                  shape=Eq  (donors=9)
+    materials_chemistry                       shape=Eq  (donors=9)
+    astronomy_foundation                      shape=Eq  (donors=4)
+    optimal_estimation_control                shape=Eq  (donors=3)
+    mathematics                               shape=Eq  (donors=3)
+    realtime_systems                          shape=Eq  (donors=2)
+    markov_chains_mixing                      shape=Eq  (donors=2)
+    personal_identity_self                    shape=Eq  (donors=2)
+
+==============================================================================
+6. DEFINITION LENGTH DISTRIBUTION — stubs and over-longs
+==============================================================================
+
+  Total concepts with definition attr: 5519
+    empty            (   0) 0.0%
+    very short <50   (  31) 0.6%
+    short      50-99 (1358) 24.6%
+    medium  100-249  (3717) 67.3%
+    long    250-499  ( 403) 7.3%
+    very long >=500  (  10) 0.2%
+
+  STUB-CANDIDATE (very short, may be unfinished):
+    [27c]  chain_rule: "(f∘g)'(x) = f'(g(x))·g'(x)."
+    [29c]  first_law_thermodynamics: 'Energy conserved. ΔU = Q - W.'
+    [34c]  radiation_Stefan_Boltzmann: 'q = εσT⁴. Radiative heat transfer.'
+    [36c]  moment_of_inertia_mass: 'I_mass = ∫r² dm. Rotational inertia.'
+    [37c]  work_energy_theorem: 'Work done on object = ΔKE. W = ∫F·dx.'
+    [38c]  Azure_AKS: 'Azure Kubernetes Service. Managed K8s.'
+    [39c]  Hicks_law: 'Decision time ∝ log(number of options).'
+    [39c]  ohms_law: 'V = IR. Voltage = current × resistance.'
+
+  DECOMPOSITION-CANDIDATE (very long, may need split):
+    [ 518c]  substrate_rs_subsystem_realisation_status: substrate_rs's current subsystem realisation: HIERARCHICAL_INVARIANCE_BUILDUP (partial — Mt nesting + genlMt walks); SELECTIVE_GATING (partial — admissibility c...
+    [ 535c]  drives_estimation_control_pattern: The composition pattern. Each substrate drive has a setpoint + a state estimator (Kalman-style) that produces an unbiased belief about current state from noisy ...
+    [ 552c]  reflective_codegen_axiom3_pattern: The composition pattern. Γ is a subgraph of G; mutating Γ goes through Substrate::add_production (which bumps gamma_epoch); rules + productions have Term-tree w...
+    [ 569c]  universal_coordination_pattern: The composition pattern. The top of the runner design stack. Below: L1 data, L2 dispatch, L3 drives, L4 subsystems, L5 codegen, shared executable-memory. L6 coo...
+    [ 569c]  universal_coordination_pattern: The composition pattern. The top of the runner design stack. Below: L1 data, L2 dispatch, L3 drives, L4 subsystems, L5 codegen, shared executable-memory. L6 coo...
+
+==============================================================================
+7. RULE DORMANCY — rules whose if/then keywords name no Concept
+==============================================================================
+
+  Total Rule nodes:                 1170
+  Rule nodes with text head/body/if/then: 611
+  Rule nodes referencing a Concept:       478
+  DORMANT rules (no Concept overlap):     133
+
+  Dormant rule examples (first 8):
+    · tier_up_fires_exactly_at_threshold: "Jabberwock's HotCounter records the Nth fire for kind K where N == TierUpPolicy.threshold submit returns DispatchOutcome::TierUp { kind: K, "
+      keywords none-matched: ['acts', 'artefact', 'asynchronous', 'cached', 'caller', 'compile']
+    · guard_failure_cools_speculation: "Jabberwock's JIT'd kind hits its Nth consecutive guard failure N consecutive failures (e.g. 3) cool the kind back to interpreted-only for M "
+      keywords none-matched: ['after', 'avoids', 'back', 'consecutive', 'cool', 'deopt']
+    · stars_produce_heavier_elements: 'Jabberwock considers where elements come from H + He primarily from Big Bang nucleosynthesis. Heavier elements (C, O, Fe) from stellar nucle'
+      keywords none-matched: ['bang', 'big', 'come', 'considers', 'element', 'elements']
+    · polyrhythm_requires_parallel_period_tracking: 'the substrate hears two rhythms at conflicting periods (3:2) it tracks both periods in parallel; tension comes from mismatched alignment. Su'
+      keywords none-matched: ['alignment', 'both', 'comes', 'conflicting', 'hears', 'mismatched']
+    · natural_selection_explains_adaptation: 'the substrate has structures that fit their function selection on heritable variation over generations produced them. Darwin 1859. Substrate'
+      keywords none-matched: ['darwin', 'evolved', 'explanation', 'fit', 'function', 'generations']
+    · autopoiesis_distinguishes_living_systems: "the substrate produces + maintains its own components Maturana + Varela. Substrate's self-modification + persistence loop."
+      keywords none-matched: ['components', 'loop', 'maintains', 'maturana', 'modification', 'own']
+    · drift_dominates_at_low_selection_strength: "selection coefficient is small relative to population size drift dominates. Neutral changes accumulate. Kimura. Substrate's weakly-selected "
+      keywords none-matched: ['accumulate', 'changes', 'coefficient', 'dominates', 'drift', 'kimura']
+    · inclusive_fitness_explains_altruism: "the substrate helps related individuals at cost to self Hamilton's rule: br > c. Benefit × relatedness > cost. Substrate's shared-coverage b"
+      keywords none-matched: ['benefit', 'cost', 'coverage', 'hamilton', 'helps', 'individuals']
+
+==============================================================================
+8. CORTEX SCORE AXES — which axes don't discriminate
+==============================================================================
+
+  Mts: 153, scored: 153
+
+  Per-axis score distribution across 153 Mts:
+    axis                              min  max   mean     stuck-at
+    abstraction_layering                2   10   4.70  
+    compositional_reuse                 0   10   0.91  
+    data_drivenness                     8    8   8.00  ALL=8
+    introspectability                  10   10  10.00  ALL=10
+    separation_of_concerns              5    5   5.00  ALL=5
+
+  STUCK / NEAR-STUCK axes (no discriminative power):
+    · data_drivenness  (sits at 8)
+    · introspectability  (sits at 10)
+    · separation_of_concerns  (sits at 5)
+
+==============================================================================
+JABBERWOCK'S NEXT 3 PROPOSED REFACTORS
+==============================================================================
+
+  1. EXTEND THE CONCEPT WALKER WITH PATTERN: "X when Y (conditional)"
+     rationale: 177 walker-missed concepts match this pattern. Adding a single parser stanza to domains/concept_promotion_rules.py would lift them all to Term-tree definitions in one pass.
+     files: domains/concept_promotion_rules.py (add parse_<pattern_name>() + emit_<pattern_name>_term() alongside parse_equation_identity)
+
+  2. WIRE INTRA-Mt HOLDS REFERENCES IN: engineering
+     rationale: 10 Mts have >=10 concepts AND no concept Holds-references any sibling. They read as flat lists, not theories. Biggest targets: engineering (129c), video_coding_theory (128c), computer_architecture (122c).
+     files: seeds/engineering.json (and similar) — add 'term' fields with Holds() pointing at sibling concepts; this also feeds shape diversity (axis 5).
+
+  3. FIX STUCK CORTEX AXIS: data_drivenness (sits at 8)
+     rationale: 3 of 5 cortex axes show no variance across 153 Mts — they cannot discriminate good Mts from bad. Either change the scorer's input signal or delete the axis to stop inflating the cortex's 'overall' score.
+     files: domains/architecture_assessment.py (score_data_drivenness() — read a SIGNAL that VARIES across Mts, e.g. concept Term-tree presence / shape diversity / intra-Mt connectivity from survey #3 or #5)
+
+==============================================================================
+END OF DEEPER SURVEY
+==============================================================================

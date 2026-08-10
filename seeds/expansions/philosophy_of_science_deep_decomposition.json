@@ -1,0 +1,118 @@
+{
+  "id": "philosophy_of_science_deep_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "Bayesian_confirmation",
+  "in_microtheory": "philosophy",
+  "description": "Philosophy of science decomposed. Duhem-Quine thesis, underdetermination, inference to best explanation, no miracles argument, pessimistic meta-induction, structural realism, scientific values, replicability crisis, scientific revolutions in detail.",
+  "sub_mechanisms": [
+    {
+      "name": "Duhem_Quine_thesis",
+      "definition": "Theories tested in bundles, not individually. Falsification ambiguous about which hypothesis fails.",
+      "why": "Counters naive Popper. Any auxiliary assumption can be revised. 'Anywhere I please' (Quine). Foundation of underdetermination.",
+      "category": "phil_sci_deep_mechanism"
+    },
+    {
+      "name": "underdetermination",
+      "definition": "Multiple theories consistent with all evidence. Choice underdetermined by data.",
+      "why": "Quine + others. Empirical equivalence + theoretical difference. Challenge to realism: which theory describes reality?",
+      "category": "phil_sci_deep_mechanism"
+    },
+    {
+      "name": "inference_to_best_explanation",
+      "definition": "Accept hypothesis that best explains data. Common scientific reasoning.",
+      "why": "Lipton, Harman. Beyond enumerative induction. Cost: what makes explanation 'best'?",
+      "category": "phil_sci_deep_mechanism"
+    },
+    {
+      "name": "no_miracles_argument",
+      "definition": "Realism best explains scientific success. Otherwise success would be miraculous.",
+      "why": "Putnam. Classic argument for scientific realism. Cost: success doesn't guarantee truth (pessimistic meta-induction).",
+      "category": "phil_sci_deep_mechanism"
+    },
+    {
+      "name": "pessimistic_meta_induction",
+      "definition": "Past successful theories turned out false. By induction, current ones too.",
+      "why": "Laudan. Counter-argument to realism. Phlogiston, caloric, ether all 'successful' but false. Drives structural realism.",
+      "category": "phil_sci_deep_mechanism"
+    },
+    {
+      "name": "structural_realism",
+      "definition": "Theories preserved structurally across change. Realism about structure, not ontology.",
+      "why": "Worrall. Compromise: realism about math structure of theories. ESR (epistemic) vs OSR (ontic). Contemporary realism.",
+      "category": "phil_sci_deep_mechanism"
+    },
+    {
+      "name": "scientific_values",
+      "definition": "Values shape science: choice of problems, methods, evidence weights.",
+      "why": "Longino, Douglas. Beyond value-free ideal. Inductive risk: scientists make value-laden choices about evidence.",
+      "category": "phil_sci_deep_mechanism"
+    },
+    {
+      "name": "replicability_crisis",
+      "definition": "Many published results fail replication. Psychology, biology, medicine.",
+      "why": "Modern problem. p-hacking, publication bias, statistical issues. Foundation crisis. Reforms: pre-registration, larger samples.",
+      "category": "phil_sci_deep_mechanism"
+    },
+    {
+      "name": "incommensurability",
+      "definition": "Kuhn: paradigms use different concepts; can't be directly compared.",
+      "why": "Foundation of relativism in science. Newton's mass ≠ Einstein's mass. Costs: communication, rational comparison.",
+      "category": "phil_sci_deep_mechanism"
+    },
+    {
+      "name": "scientific_method_pluralism",
+      "definition": "No single scientific method. Different sciences different methods.",
+      "why": "Feyerabend, modern. Biology vs physics vs psychology different methods. Cardinal sin: methodological monism.",
+      "category": "phil_sci_deep_mechanism"
+    },
+    {
+      "name": "natural_kinds",
+      "definition": "Categories that 'carve nature at the joints'. Gold, water, electron.",
+      "why": "Kripke, Putnam. Foundation of essentialism. Cost: which kinds natural? Convention vs discovery debate.",
+      "category": "phil_sci_deep_mechanism"
+    },
+    {
+      "name": "models_in_science",
+      "definition": "Models as representations: scale, ideal, computational. Not reducible to theories.",
+      "why": "Modern philosophy of science. Cartwright: laws lie; models work. Foundation: science via modelling.",
+      "category": "phil_sci_deep_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "Duhem_Quine_blocks_naive_falsification",
+      "if": ["experiment yields negative result"],
+      "then": ["target theory may be saved by revising auxiliaries"],
+      "why": "Falsification never unique. Saves theories from premature rejection but allows ad hoc rescue. Lakatos's progressive vs degenerating addresses.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "IBE_drives_scientific_reasoning",
+      "if": ["scientist reasons about evidence"],
+      "then": ["inference to best explanation typically applied"],
+      "why": "Beyond formal logic. 'What best explains?' is daily scientific reasoning. Foundation of method. Probability frameworks formalise.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "structural_realism_survives_theory_change",
+      "if": ["theories change but mathematical structure preserved"],
+      "then": ["structural realism justified"],
+      "why": "Fresnel's wave equations preserved through theory changes. Structures persist; entities replaced. Contemporary realist response to PMI.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "values_shape_inductive_risk",
+      "if": ["scientist sets evidence threshold"],
+      "then": ["values determine balance of false positives + negatives"],
+      "why": "Douglas: false positives vs false negatives have asymmetric costs. Cancer vs drug approval. Values inevitable, even in 'pure' science.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "replicability_crisis_drives_reform",
+      "if": ["field has high non-replication rate"],
+      "then": ["methods must reform (pre-registration, transparency, larger N)"],
+      "why": "Psychology 2010s, biology + medicine following. Open science movement. Affects how AI evaluations done. Modern.",
+      "soundness_category": "extensional_equivalence"
+    }
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "id": "categorical_perception",
+  "version": "1.0.0",
+  "depends_on": [
+    "auditory_cortex"
+  ],
+  "description": "STG-style categorical perception: clusters A1 patch responses into emergent Phoneme nodes. Online leader-follower clustering with cosine distance; Phonemes persist across runs and accumulate samples.",
+  "nodes": [],
+  "edges": [],
+  "productions": [
+    {
+      "src": {
+        "type": "AudioStream",
+        "var": "src"
+      },
+      "edge_type": "has_phoneme_instance",
+      "tgt": {
+        "type": "PhonemeInstance",
+        "var": "tgt"
+      },
+      "provenance": "categorical_perception:stream_instance"
+    },
+    {
+      "src": {
+        "type": "PhonemeInstance",
+        "var": "src"
+      },
+      "edge_type": "from_stream",
+      "tgt": {
+        "type": "AudioStream",
+        "var": "tgt"
+      },
+      "provenance": "categorical_perception:instance_from_stream"
+    },
+    {
+      "src": {
+        "type": "PhonemeInstance",
+        "var": "src"
+      },
+      "edge_type": "is_a",
+      "tgt": {
+        "type": "Phoneme",
+        "var": "tgt"
+      },
+      "provenance": "categorical_perception:instance_is_a"
+    }
+  ]
+}

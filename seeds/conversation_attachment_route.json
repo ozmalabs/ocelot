@@ -1,0 +1,39 @@
+{
+  "id": "conversation_attachment_route",
+  "version": "1.0.0",
+  "depends_on": ["intent"],
+  "description": "Graph-native routing for follow-up questions about the agent's CURRENT upload. The adapter writes attachment_pending=1.0 when a question/instruction refers to the held upload (agent -current_attachment-> UploadedDocument); THIS rule mints Goal{kind:answer_attachment} instead of letting the honest floor or wiki table handle the turn.",
+  "nodes": [],
+  "edges": [],
+  "productions": [],
+  "rules": [
+    {
+      "name": "route_question_to_attachment",
+      "match": [
+        ["agent", "received", "m"],
+        ["agent", "current_attachment", "ca"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "In", "member": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "comp_kind"}, "container": {"type": "Lit", "value": ["question", "instruction"]}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "attachment_pending"}, "b": {"type": "Lit", "value": 1.0}},
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "comprehended"}, "b": {"type": "Lit", "value": 1.0}}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "m", "comprehended", 1.0],
+        ["add_node", "g", "Goal", {
+          "kind": "answer_attachment",
+          "status": "active",
+          "source": "conversation",
+          "concept": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "ca"}, "key": "filename"}}
+        }],
+        ["add_edge", "agent", "has_goal", "g"],
+        ["add_edge", "g", "comprehends", "m"],
+        ["add_edge", "g", "about_attachment", "ca"],
+        ["add_edge", "m", "comprehended_by", "g"]
+      ]
+    }
+  ]
+}

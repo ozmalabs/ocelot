@@ -1,0 +1,894 @@
+{
+  "id": "agent_judgment",
+  "version": "1.0.0",
+  "depends_on": [],
+  "self_load_only": true,
+  "description": "GENERIC decision-by-collapse (block 312000): ANY agent forms its OWN conclusion about a matter and acts on it. An agent that -considers-> a Matter{claim,weight} (-about_subject-> a person) COLLAPSES over the seeded Stance candidates (denounce/condemn/doubt/exonerate, each a signed pole): jc_conclude sets its Conclusion.verdict = Attr(Argmax over Stances valued by -(stance.pole - lean)^2, 'label'), where lean mixes the EVIDENCE (m.weight, as THIS agent weighs it by its own credence), the agent's own disposition (punitiveness; negative=lenient), and who the SUBJECT is (the agent's deference to the subject's standing). Different agents reach DIFFERENT verdicts on the SAME matter because the value Term reads each agent's OWN held params -- the collapse is subjective by construction (set every disposition equal -> everyone lands on one verdict: the built-in falsifier). Then the citizenry ACTS: jc_act -- a condemning conclusion (verdict_pole>0) strips the subject's public standing by that agent's own sanction, once, when the town is armed to act; the accused's standing emerges from the distribution of independent private verdicts. The court is one application (councillors are agents whose aggregated condemnation, past a threshold, carries legal force); the townsfolk are agents whose aggregated condemnation carries social force -- ONE decision mechanism, two consequences.",
+  "nodes": [],
+  "edges": [],
+  "productions": [],
+  "concepts": [],
+  "rules": [
+    {
+      "name": "jc_conclude",
+      "batch": false,
+      "comment": "Any agent the town governs, that CONSIDERS a matter, COLLAPSES over the Stance candidates into its OWN conclusion (Argmax nearest-pole to its assessed lean). Once per (agent,matter) via the concluded_on marker.",
+      "match": [
+        [
+          "town",
+          "governs",
+          "a"
+        ],
+        [
+          "a",
+          "considers",
+          "m"
+        ],
+        [
+          "m",
+          "about_subject",
+          "b"
+        ]
+      ],
+      "where": {
+        "type": "Not",
+        "arg": {
+          "type": "Exists",
+          "source": {
+            "type": "Neighbours",
+            "node": {
+              "type": "Var",
+              "name": "a"
+            },
+            "edge_type": "concluded_on"
+          },
+          "var_name": "mm",
+          "predicate": {
+            "type": "Eq",
+            "a": {
+              "type": "Var",
+              "name": "mm"
+            },
+            "b": {
+              "type": "Var",
+              "name": "m"
+            }
+          }
+        }
+      },
+      "effects": [
+        [
+          "add_node",
+          "concl",
+          "Conclusion",
+          {
+            "verdict": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Argmax",
+                  "source": {
+                    "type": "NodesOfType",
+                    "node_type": "Stance"
+                  },
+                  "var_name": "c",
+                  "value": {
+                    "type": "Minus",
+                    "a": {
+                      "type": "Lit",
+                      "value": 0.0
+                    },
+                    "b": {
+                      "type": "Times",
+                      "items": [
+                        {
+                          "type": "Minus",
+                          "a": {
+                            "type": "Plus",
+                            "items": [
+                              {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "c"
+                                },
+                                "key": "pole"
+                              },
+                              {
+                                "type": "Lit",
+                                "value": 0.0
+                              }
+                            ]
+                          },
+                          "b": {
+                            "type": "Plus",
+                            "items": [
+                              {
+                                "type": "Times",
+                                "items": [
+                                  {
+                                    "type": "Plus",
+                                    "items": [
+                                      {
+                                        "type": "Attr",
+                                        "node": {
+                                          "type": "Var",
+                                          "name": "m"
+                                        },
+                                        "key": "weight"
+                                      },
+                                      {
+                                        "type": "Lit",
+                                        "value": 0.0
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "type": "Plus",
+                                    "items": [
+                                      {
+                                        "type": "Attr",
+                                        "node": {
+                                          "type": "Var",
+                                          "name": "a"
+                                        },
+                                        "key": "credence"
+                                      },
+                                      {
+                                        "type": "Lit",
+                                        "value": 0.0
+                                      }
+                                    ]
+                                  }
+                                ]
+                              },
+                              {
+                                "type": "Plus",
+                                "items": [
+                                  {
+                                    "type": "Attr",
+                                    "node": {
+                                      "type": "Var",
+                                      "name": "a"
+                                    },
+                                    "key": "punitiveness"
+                                  },
+                                  {
+                                    "type": "Lit",
+                                    "value": 0.0
+                                  }
+                                ]
+                              },
+                              {
+                                "type": "Times",
+                                "items": [
+                                  {
+                                    "type": "Lit",
+                                    "value": -1.0
+                                  },
+                                  {
+                                    "type": "Plus",
+                                    "items": [
+                                      {
+                                        "type": "Attr",
+                                        "node": {
+                                          "type": "Var",
+                                          "name": "a"
+                                        },
+                                        "key": "deference"
+                                      },
+                                      {
+                                        "type": "Lit",
+                                        "value": 0.0
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "type": "Plus",
+                                    "items": [
+                                      {
+                                        "type": "Attr",
+                                        "node": {
+                                          "type": "Var",
+                                          "name": "b"
+                                        },
+                                        "key": "standing"
+                                      },
+                                      {
+                                        "type": "Lit",
+                                        "value": 0.0
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "type": "Minus",
+                          "a": {
+                            "type": "Plus",
+                            "items": [
+                              {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "c"
+                                },
+                                "key": "pole"
+                              },
+                              {
+                                "type": "Lit",
+                                "value": 0.0
+                              }
+                            ]
+                          },
+                          "b": {
+                            "type": "Plus",
+                            "items": [
+                              {
+                                "type": "Times",
+                                "items": [
+                                  {
+                                    "type": "Plus",
+                                    "items": [
+                                      {
+                                        "type": "Attr",
+                                        "node": {
+                                          "type": "Var",
+                                          "name": "m"
+                                        },
+                                        "key": "weight"
+                                      },
+                                      {
+                                        "type": "Lit",
+                                        "value": 0.0
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "type": "Plus",
+                                    "items": [
+                                      {
+                                        "type": "Attr",
+                                        "node": {
+                                          "type": "Var",
+                                          "name": "a"
+                                        },
+                                        "key": "credence"
+                                      },
+                                      {
+                                        "type": "Lit",
+                                        "value": 0.0
+                                      }
+                                    ]
+                                  }
+                                ]
+                              },
+                              {
+                                "type": "Plus",
+                                "items": [
+                                  {
+                                    "type": "Attr",
+                                    "node": {
+                                      "type": "Var",
+                                      "name": "a"
+                                    },
+                                    "key": "punitiveness"
+                                  },
+                                  {
+                                    "type": "Lit",
+                                    "value": 0.0
+                                  }
+                                ]
+                              },
+                              {
+                                "type": "Times",
+                                "items": [
+                                  {
+                                    "type": "Lit",
+                                    "value": -1.0
+                                  },
+                                  {
+                                    "type": "Plus",
+                                    "items": [
+                                      {
+                                        "type": "Attr",
+                                        "node": {
+                                          "type": "Var",
+                                          "name": "a"
+                                        },
+                                        "key": "deference"
+                                      },
+                                      {
+                                        "type": "Lit",
+                                        "value": 0.0
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "type": "Plus",
+                                    "items": [
+                                      {
+                                        "type": "Attr",
+                                        "node": {
+                                          "type": "Var",
+                                          "name": "b"
+                                        },
+                                        "key": "standing"
+                                      },
+                                      {
+                                        "type": "Lit",
+                                        "value": 0.0
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                "key": "label"
+              }
+            },
+            "verdict_pole": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Argmax",
+                  "source": {
+                    "type": "NodesOfType",
+                    "node_type": "Stance"
+                  },
+                  "var_name": "c",
+                  "value": {
+                    "type": "Minus",
+                    "a": {
+                      "type": "Lit",
+                      "value": 0.0
+                    },
+                    "b": {
+                      "type": "Times",
+                      "items": [
+                        {
+                          "type": "Minus",
+                          "a": {
+                            "type": "Plus",
+                            "items": [
+                              {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "c"
+                                },
+                                "key": "pole"
+                              },
+                              {
+                                "type": "Lit",
+                                "value": 0.0
+                              }
+                            ]
+                          },
+                          "b": {
+                            "type": "Plus",
+                            "items": [
+                              {
+                                "type": "Times",
+                                "items": [
+                                  {
+                                    "type": "Plus",
+                                    "items": [
+                                      {
+                                        "type": "Attr",
+                                        "node": {
+                                          "type": "Var",
+                                          "name": "m"
+                                        },
+                                        "key": "weight"
+                                      },
+                                      {
+                                        "type": "Lit",
+                                        "value": 0.0
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "type": "Plus",
+                                    "items": [
+                                      {
+                                        "type": "Attr",
+                                        "node": {
+                                          "type": "Var",
+                                          "name": "a"
+                                        },
+                                        "key": "credence"
+                                      },
+                                      {
+                                        "type": "Lit",
+                                        "value": 0.0
+                                      }
+                                    ]
+                                  }
+                                ]
+                              },
+                              {
+                                "type": "Plus",
+                                "items": [
+                                  {
+                                    "type": "Attr",
+                                    "node": {
+                                      "type": "Var",
+                                      "name": "a"
+                                    },
+                                    "key": "punitiveness"
+                                  },
+                                  {
+                                    "type": "Lit",
+                                    "value": 0.0
+                                  }
+                                ]
+                              },
+                              {
+                                "type": "Times",
+                                "items": [
+                                  {
+                                    "type": "Lit",
+                                    "value": -1.0
+                                  },
+                                  {
+                                    "type": "Plus",
+                                    "items": [
+                                      {
+                                        "type": "Attr",
+                                        "node": {
+                                          "type": "Var",
+                                          "name": "a"
+                                        },
+                                        "key": "deference"
+                                      },
+                                      {
+                                        "type": "Lit",
+                                        "value": 0.0
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "type": "Plus",
+                                    "items": [
+                                      {
+                                        "type": "Attr",
+                                        "node": {
+                                          "type": "Var",
+                                          "name": "b"
+                                        },
+                                        "key": "standing"
+                                      },
+                                      {
+                                        "type": "Lit",
+                                        "value": 0.0
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "type": "Minus",
+                          "a": {
+                            "type": "Plus",
+                            "items": [
+                              {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "c"
+                                },
+                                "key": "pole"
+                              },
+                              {
+                                "type": "Lit",
+                                "value": 0.0
+                              }
+                            ]
+                          },
+                          "b": {
+                            "type": "Plus",
+                            "items": [
+                              {
+                                "type": "Times",
+                                "items": [
+                                  {
+                                    "type": "Plus",
+                                    "items": [
+                                      {
+                                        "type": "Attr",
+                                        "node": {
+                                          "type": "Var",
+                                          "name": "m"
+                                        },
+                                        "key": "weight"
+                                      },
+                                      {
+                                        "type": "Lit",
+                                        "value": 0.0
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "type": "Plus",
+                                    "items": [
+                                      {
+                                        "type": "Attr",
+                                        "node": {
+                                          "type": "Var",
+                                          "name": "a"
+                                        },
+                                        "key": "credence"
+                                      },
+                                      {
+                                        "type": "Lit",
+                                        "value": 0.0
+                                      }
+                                    ]
+                                  }
+                                ]
+                              },
+                              {
+                                "type": "Plus",
+                                "items": [
+                                  {
+                                    "type": "Attr",
+                                    "node": {
+                                      "type": "Var",
+                                      "name": "a"
+                                    },
+                                    "key": "punitiveness"
+                                  },
+                                  {
+                                    "type": "Lit",
+                                    "value": 0.0
+                                  }
+                                ]
+                              },
+                              {
+                                "type": "Times",
+                                "items": [
+                                  {
+                                    "type": "Lit",
+                                    "value": -1.0
+                                  },
+                                  {
+                                    "type": "Plus",
+                                    "items": [
+                                      {
+                                        "type": "Attr",
+                                        "node": {
+                                          "type": "Var",
+                                          "name": "a"
+                                        },
+                                        "key": "deference"
+                                      },
+                                      {
+                                        "type": "Lit",
+                                        "value": 0.0
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "type": "Plus",
+                                    "items": [
+                                      {
+                                        "type": "Attr",
+                                        "node": {
+                                          "type": "Var",
+                                          "name": "b"
+                                        },
+                                        "key": "standing"
+                                      },
+                                      {
+                                        "type": "Lit",
+                                        "value": 0.0
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                "key": "pole"
+              }
+            },
+            "lean": {
+              "__term__": {
+                "type": "Plus",
+                "items": [
+                  {
+                    "type": "Times",
+                    "items": [
+                      {
+                        "type": "Plus",
+                        "items": [
+                          {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "m"
+                            },
+                            "key": "weight"
+                          },
+                          {
+                            "type": "Lit",
+                            "value": 0.0
+                          }
+                        ]
+                      },
+                      {
+                        "type": "Plus",
+                        "items": [
+                          {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "a"
+                            },
+                            "key": "credence"
+                          },
+                          {
+                            "type": "Lit",
+                            "value": 0.0
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "type": "Plus",
+                    "items": [
+                      {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "a"
+                        },
+                        "key": "punitiveness"
+                      },
+                      {
+                        "type": "Lit",
+                        "value": 0.0
+                      }
+                    ]
+                  },
+                  {
+                    "type": "Times",
+                    "items": [
+                      {
+                        "type": "Lit",
+                        "value": -1.0
+                      },
+                      {
+                        "type": "Plus",
+                        "items": [
+                          {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "a"
+                            },
+                            "key": "deference"
+                          },
+                          {
+                            "type": "Lit",
+                            "value": 0.0
+                          }
+                        ]
+                      },
+                      {
+                        "type": "Plus",
+                        "items": [
+                          {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "b"
+                            },
+                            "key": "standing"
+                          },
+                          {
+                            "type": "Lit",
+                            "value": 0.0
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            "acted": 0.0
+          }
+        ],
+        [
+          "add_edge",
+          "a",
+          "holds_conclusion",
+          "concl"
+        ],
+        [
+          "add_edge",
+          "concl",
+          "about",
+          "m"
+        ],
+        [
+          "add_edge",
+          "concl",
+          "concerns",
+          "b"
+        ],
+        [
+          "add_edge",
+          "a",
+          "concluded_on",
+          "m"
+        ]
+      ]
+    },
+    {
+      "name": "jc_act",
+      "batch": false,
+      "comment": "The citizenry acts accordingly: a CONDEMNING conclusion (verdict_pole>0) strips the subject's public standing by the concluding agent's OWN sanction, exactly once, and only when the town is armed to act (town.acting==1) -- so deliberation reads the ORIGINAL standing and action applies afterwards (no within-fixpoint cascade).",
+      "match": [
+        [
+          "town",
+          "governs",
+          "a"
+        ],
+        [
+          "a",
+          "holds_conclusion",
+          "concl"
+        ],
+        [
+          "concl",
+          "concerns",
+          "b"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "town"
+                  },
+                  "key": "acting"
+                },
+                {
+                  "type": "Lit",
+                  "value": 0.0
+                }
+              ]
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "concl"
+                  },
+                  "key": "verdict_pole"
+                },
+                {
+                  "type": "Lit",
+                  "value": 0.0
+                }
+              ]
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0.0
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "concl"
+                },
+                "key": "acted"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 1.0
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "b",
+          "standing",
+          {
+            "__term__": {
+              "type": "Minus",
+              "a": {
+                "type": "Plus",
+                "items": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "b"
+                    },
+                    "key": "standing"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": 0.0
+                  }
+                ]
+              },
+              "b": {
+                "type": "Plus",
+                "items": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "a"
+                    },
+                    "key": "sanction"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": 0.0
+                  }
+                ]
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "concl",
+          "acted",
+          1.0
+        ]
+      ]
+    }
+  ]
+}

@@ -1,0 +1,118 @@
+{
+  "id": "resilience_patterns_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "circuit_breaker",
+  "in_microtheory": "distributed_systems",
+  "description": "Resilience patterns decomposed. Circuit breaker states (closed/open/half-open), bulkhead variants (thread pool, semaphore), retry strategies (exponential, decorrelated jitter), timeout (deadline, hedged request), backpressure, load shedding. The patterns that prevent cascading failure.",
+  "sub_mechanisms": [
+    {
+      "name": "circuit_breaker_closed_state",
+      "definition": "Normal operation. Calls pass through. Track failures within window.",
+      "why": "Default state. Reset failure count on success. Window typically 10-30s rolling.",
+      "category": "resilience_mechanism"
+    },
+    {
+      "name": "circuit_breaker_open_state",
+      "definition": "Fail fast. All calls rejected immediately without attempting. Timer until half-open.",
+      "why": "Don't waste resources on known-broken dependency. Caller sees immediate failure, can use fallback. Timeout typically 30-60s.",
+      "category": "resilience_mechanism"
+    },
+    {
+      "name": "circuit_breaker_half_open_state",
+      "definition": "Allow limited calls (often one). Success → close; failure → reopen.",
+      "why": "Probing recovery without flood. Single test request is cheap. Result determines next state.",
+      "category": "resilience_mechanism"
+    },
+    {
+      "name": "bulkhead_thread_pool",
+      "definition": "Separate thread pool per dependency. Saturation in one pool doesn't affect others.",
+      "why": "Hystrix originated. Slow dependency exhausts its pool only. Cost: thread context switching overhead.",
+      "category": "resilience_mechanism"
+    },
+    {
+      "name": "bulkhead_semaphore",
+      "definition": "Counting semaphore limits concurrent calls per dependency. Lighter than thread pool.",
+      "why": "Same isolation goal, lower overhead. No separate threads — caller blocks on permit. Used in resilience4j.",
+      "category": "resilience_mechanism"
+    },
+    {
+      "name": "exponential_backoff",
+      "definition": "Wait time doubles each retry: 100ms, 200ms, 400ms, 800ms, ...",
+      "why": "Don't hammer recovering dependency. Geometric growth = bounded total time. Cap at max (often 30s) to limit user wait.",
+      "category": "resilience_mechanism"
+    },
+    {
+      "name": "decorrelated_jitter",
+      "definition": "AWS-recommended: sleep = min(cap, random_between(base, prev_sleep * 3)).",
+      "why": "Better than full jitter at preventing herd. AWS architecture blog 2015. Recommended by AWS SDK retry handlers.",
+      "category": "resilience_mechanism"
+    },
+    {
+      "name": "hedged_requests",
+      "definition": "Send request; if no response in T, send duplicate to different replica. Use first response.",
+      "why": "Reduce tail latency at cost of duplicate work. Google Tail at Scale paper. Used for read paths where duplicate cost is low.",
+      "category": "resilience_mechanism"
+    },
+    {
+      "name": "deadline_propagation",
+      "definition": "Request enters with deadline; passed through service calls; respect remaining budget.",
+      "why": "gRPC context.Deadline standard. Each service checks remaining time; abort if exceeded. Prevents wasted work after client timeout.",
+      "category": "resilience_mechanism"
+    },
+    {
+      "name": "load_shedding",
+      "definition": "Reject excess requests rather than degrade or crash. Return 503 with retry-after.",
+      "why": "Capacity-aware system. Better fast failure than slow success. Adaptive based on current load metrics.",
+      "category": "resilience_mechanism"
+    },
+    {
+      "name": "adaptive_concurrency_limit",
+      "definition": "Netflix's algorithm: gradient descent on observed latency. Concurrency limit adjusts dynamically.",
+      "why": "Manual tuning brittle. Adaptive responds to changing conditions. Netflix concurrency-limits library. Pattern in modern load balancers.",
+      "category": "resilience_mechanism"
+    },
+    {
+      "name": "fallback_response",
+      "definition": "When primary fails: return cached, default, or simplified response.",
+      "why": "Partial service > error. Cache last successful response; degraded recommendations vs no recommendations. Standard graceful degradation.",
+      "category": "resilience_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "circuit_breaker_three_state_machine_prevents_cascading",
+      "if": ["downstream fails > threshold"],
+      "then": ["circuit opens → fast failure → upstream resources freed"],
+      "why": "Without: every request waits for timeout. Threads exhausted. Cascading. With: open circuit fails in microseconds. Upstream stays healthy. Hystrix popularised, ubiquitous now.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "bulkhead_isolates_failure_domain",
+      "if": ["dependencies have separate pools"],
+      "then": ["one dependency's saturation doesn't affect others"],
+      "why": "Without: shared pool exhausted by slow dependency = all calls fail. With: only slow dependency's calls fail. Standard fault isolation.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "decorrelated_jitter_beats_full_jitter",
+      "if": ["clients retry under contention"],
+      "then": ["decorrelated jitter outperforms full jitter"],
+      "why": "Full jitter still has all clients waiting on same overall distribution. Decorrelated: each next sleep depends on prev → spread broader. AWS blog measured.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "hedged_requests_reduce_tail_at_throughput_cost",
+      "if": ["read tail latency matters"],
+      "then": ["hedged requests reduce p99 at ~2x request count"],
+      "why": "Send to 2 replicas; use first. Slow replica's response discarded. Reduces tail (slower of two becomes fastest of two). Cost: doubled load. Used in Google's Spanner, Bigtable.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "load_shedding_better_than_uncontrolled_degradation",
+      "if": ["traffic exceeds capacity"],
+      "then": ["reject excess > degrade quality across all requests"],
+      "why": "Degradation: all requests slow, eventually timeout. Shedding: some fast success + some explicit failure. Clients can retry; UX better; system stable. SRE principle.",
+      "soundness_category": "extensional_equivalence"
+    }
+  ]
+}

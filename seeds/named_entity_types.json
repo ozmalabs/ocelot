@@ -1,0 +1,22 @@
+{
+ "_doc": "NAMED-ENTITY -> TYPE aliases — the agent's named need for a PROPER NOUN it reads (e.g. 'mike knoop') that has NO lexical synset (WordNet) and NO encyclopedic article (Wikipedia / Wikidata / DBpedia all miss the ARC-Prize co-founder). A proper noun does not name a KIND, so the genus-differentia lexical ladder has nothing to climb; what it DOES carry is an entity-level TYPE (this individual is-a person), the same shape a knowledge base records as `instance_of person`. The TYPE here is read FROM THE PAPER's own text — ARC-AGI-3 states 'the ARC Prize Foundation, co-founded by Mike Knoop and Francois Chollet', an apposition that types Mike Knoop as a person (a co-founder is a person). This is graph-resident bedrock the grounding cone reaches (an is-a edge to the `person` type, which itself grounds down the WordNet ladder person -> causal agent -> ... -> the held `agent`/`entity` primes), NOT a per-term meaning decision in Python — the agent's OWN ground_recursively still comprehends + grounds; the alias only supplies the entity->type fact no lexical/encyclopedic source held. Mirrors lexical_ontology_roots.json (a held floor the cone reaches), restricted to read proper nouns the WordNet ladder cannot type.",
+ "microtheory": "communication",
+ "concepts": [
+  {
+   "name": "person",
+   "kind": "entity_type",
+   "gloss": "a human individual — a self-conscious causal AGENT (the type a personal proper noun denotes). is-a agent (the held communication prime the doer/cause of an event), the same floor the WordNet ladder 'person -> causal agent -> agent' reaches.",
+   "roles": [],
+   "built_from": ["agent"],
+   "combination": "isa(person, agent)"
+  },
+  {
+   "name": "mike knoop",
+   "kind": "named_entity",
+   "gloss": "a proper noun naming a PERSON — an individual (the co-founder of the ARC Prize Foundation, read off the paper's apposition 'co-founded by Mike Knoop'). is-a person.",
+   "roles": [],
+   "built_from": ["person"],
+   "combination": "isa(mike_knoop, person)"
+  }
+ ]
+}

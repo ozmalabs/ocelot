@@ -1,0 +1,1342 @@
+{
+ "no_cue_wall": {
+  "installed_rule_names": [],
+  "residual_predicates": [
+   "zqxw_novel_marker_predicate"
+  ],
+  "result": {
+   "concern": [
+    "induced_no_cue_wall"
+   ],
+   "grounded": false,
+   "path": "predicate_grounding",
+   "residual_predicates": [
+    "zqxw_novel_marker_predicate"
+   ],
+   "wall": "the residual's predicates ground to NO held structural relation (they are genuinely-novel terms outside the held RelationCue lexicon); the shape cannot be composed from held vocab without inventing a law. NEXT FRONTIER: predicate-grounding (extend the lexicon, or self-author a base primitive for the novel shape) \u2014 NOT hand-picked here (that would be the donkey)."
+  },
+  "rule_count_after": 20,
+  "rule_count_before": 20,
+  "rule_count_delta": 0
+ },
+ "path2_feedback": {
+  "installed_rule_names": [],
+  "residual_predicates": [
+   "from the prior",
+   "bounded"
+  ],
+  "result": {
+   "callable": true,
+   "captures": true,
+   "concern": [
+    "induced_path2_feedback"
+   ],
+   "covers": true,
+   "dynamics": {
+    "early_amp": 0.7,
+    "late_amp": 0.228,
+    "zero_crossings": 4
+   },
+   "env": {
+    "nc": -0.15,
+    "nk": -0.3
+   },
+   "grounded": true,
+   "grounded_relations": [
+    [
+     "build",
+     "NEW",
+     "from",
+     "PRIOR"
+    ],
+    [
+     "bound",
+     "SELF",
+     "by",
+     "UNIT"
+    ]
+   ],
+   "how": "I GROUND the novel concern by composing the Fold-iterate of its residual-feedback recurrence (a shape IS the iterate of its residual): the grounded relations select the recurrence structure (feedback + decay), and the held Fold/Plus/Times/Append compose it. Run, it reproduces the observed dynamics \u2014 capture, not just cover.",
+   "path": "generate_from_residual",
+   "persisted": true,
+   "recompiled": false,
+   "residual_predicates": [
+    "from the prior",
+    "bounded"
+   ],
+   "restarted": false,
+   "term_name": "grounded_induced_path2_feedback",
+   "trajectory_sample": [
+    0.7,
+    0.235,
+    -0.231,
+    -0.557,
+    -0.668,
+    -0.561,
+    -0.302,
+    0.008,
+    0.27,
+    0.411,
+    0.408,
+    0.283,
+    0.092,
+    -0.098,
+    -0.231,
+    -0.274
+   ]
+  },
+  "rule_count_after": 20,
+  "rule_count_before": 20,
+  "rule_count_delta": 0
+ },
+ "relation_head_cases": {
+  "communicate": {
+   "installed_rule_names": [
+    "communicate_what_i_see_induced_communicate"
+   ],
+   "residual_predicates": [
+    "communicate"
+   ],
+   "result": {
+    "concern": [
+     "induced_communicate"
+    ],
+    "form": "communicate_rule",
+    "grounded": true,
+    "grounded_relations": [
+     [
+      "communicate",
+      "UTTERANCE",
+      "to",
+      "AUDIENCE"
+     ]
+    ],
+    "how": "I GROUND the communicate concern by composing an ACTION RULE (not a Fold term): the grounded relations select its parts \u2014 iterate -> match each recognised thing in a scene I'm told to describe; decompose -> mint a subgoal; communicate -> its action is produce-utterance; source -> bind it to the recognition. Installed live; run_rules mints a produce-utterance subgoal per thing I see.",
+    "path": "compose_communicate_rule",
+    "rule": {
+     "effects": [],
+     "match": [
+      [
+       "g",
+       "describes",
+       "scene"
+      ],
+      [
+       "scene",
+       "has_percept",
+       "p"
+      ]
+     ],
+     "name": "communicate_what_i_see_induced_communicate",
+     "where": {
+      "arg": {
+       "predicate": {
+        "type": "Lit",
+        "value": true
+       },
+       "source": {
+        "edge_type": "uttered",
+        "node": {
+         "name": "p",
+         "type": "Var"
+        },
+        "type": "Neighbours"
+       },
+       "type": "Exists",
+       "var_name": "_i"
+      },
+      "type": "Not"
+     }
+    },
+    "rule_idx": 20,
+    "served_by": "python"
+   },
+   "rule_count_after": 21,
+   "rule_count_before": 20,
+   "rule_count_delta": 1
+  },
+  "comprehend": {
+   "installed_rule_names": [
+    "comprehend_describe_directive_induced_comprehend"
+   ],
+   "residual_predicates": [
+    "comprehend"
+   ],
+   "result": {
+    "concern": [
+     "induced_comprehend"
+    ],
+    "form": "comprehension_rule",
+    "grounded": true,
+    "grounded_relations": [
+     [
+      "comprehend",
+      "DIRECTIVE",
+      "mint",
+      "GOAL"
+     ]
+    ],
+    "how": "I GROUND the comprehension concern via the PILOT GRAPH-RESIDENT compose_comprehension_graph meta-rule.",
+    "path": "compose_comprehension_rule",
+    "rule": {
+     "active": true,
+     "batch": false,
+     "effects": [
+      [
+       "add_node",
+       "g",
+       "Goal",
+       {
+        "kind": "describe_scene"
+       }
+      ],
+      [
+       "add_edge",
+       "g",
+       "describes",
+       "scene",
+       {}
+      ],
+      [
+       "add_edge",
+       "scene",
+       "described_by",
+       "g",
+       {}
+      ]
+     ],
+     "match": [
+      [
+       "m",
+       "has_mention",
+       "mention"
+      ],
+      [
+       "m",
+       "about",
+       "scene"
+      ]
+     ],
+     "match_type": null,
+     "name": "comprehend_describe_directive_induced_comprehend",
+     "where": {
+      "items": [
+       {
+        "a": {
+         "key": "text",
+         "node": {
+          "name": "mention",
+          "type": "Var"
+         },
+         "type": "Attr"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "describe"
+        },
+        "type": "Eq"
+       },
+       {
+        "arg": {
+         "predicate": {
+          "type": "Lit",
+          "value": true
+         },
+         "source": {
+          "edge_type": "described_by",
+          "node": {
+           "name": "scene",
+           "type": "Var"
+          },
+          "type": "Neighbours"
+         },
+         "type": "Exists",
+         "var_name": "_i"
+        },
+        "type": "Not"
+       }
+      ],
+      "type": "And"
+     }
+    },
+    "rule_idx": 20,
+    "served_by": "graph"
+   },
+   "rule_count_after": 21,
+   "rule_count_before": 20,
+   "rule_count_delta": 1
+  },
+  "construct": {
+   "installed_rule_names": [
+    "construct_function_frames_content_induced_construct"
+   ],
+   "residual_predicates": [
+    "construct"
+   ],
+   "result": {
+    "concern": [
+     "induced_construct"
+    ],
+    "form": "construction_rule",
+    "grounded": true,
+    "grounded_relations": [
+     [
+      "construct",
+      "FORM",
+      "frames",
+      "MEANING"
+     ]
+    ],
+    "how": "I GROUND the syntactic concern via the GRAPH-RESIDENT compose_construction_graph meta-rule.",
+    "path": "compose_construction_rule",
+    "rule": {
+     "active": true,
+     "batch": false,
+     "effects": [
+      [
+       "set_attr",
+       "c",
+       "referent_bearer",
+       1.0
+      ],
+      [
+       "add_edge",
+       "c",
+       "framed_by",
+       "f",
+       {}
+      ]
+     ],
+     "match": [
+      [
+       "f",
+       "precedes",
+       "c"
+      ]
+     ],
+     "match_type": null,
+     "name": "construct_function_frames_content_induced_construct",
+     "where": {
+      "items": [
+       {
+        "a": {
+         "key": "is_function",
+         "node": {
+          "name": "f",
+          "type": "Var"
+         },
+         "type": "Attr"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        },
+        "type": "Eq"
+       },
+       {
+        "a": {
+         "key": "is_content",
+         "node": {
+          "name": "c",
+          "type": "Var"
+         },
+         "type": "Attr"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        },
+        "type": "Eq"
+       }
+      ],
+      "type": "And"
+     }
+    },
+    "rule_idx": 20,
+    "served_by": "graph"
+   },
+   "rule_count_after": 21,
+   "rule_count_before": 20,
+   "rule_count_delta": 1
+  },
+  "control": {
+   "installed_rule_names": [
+    "default_no_response_induced_control",
+    "control_my_body_induced_control"
+   ],
+   "residual_predicates": [
+    "control"
+   ],
+   "result": {
+    "concern": [
+     "induced_control"
+    ],
+    "form": "control_rule",
+    "grounded": true,
+    "grounded_relations": [
+     [
+      "control",
+      "WHOLE",
+      "is",
+      "SELF"
+     ]
+    ],
+    "how": "I GROUND 'what I control' via the GRAPH-RESIDENT compose_control_graph meta-rule (seeds/composer_control_graph.json), which minted these two rules itself from a ComposeRequest \u2014 not Python authoring at request time.",
+    "path": "compose_control_rule",
+    "rule_idx": [
+     20,
+     21
+    ],
+    "rules": [
+     {
+      "active": true,
+      "batch": false,
+      "effects": [
+       [
+        "set_attr",
+        "F",
+        "responds_to_my_action",
+        false
+       ]
+      ],
+      "match": [
+       [
+        "game",
+        "has_feature",
+        "F"
+       ]
+      ],
+      "match_type": null,
+      "name": "default_no_response_induced_control",
+      "where": {
+       "a": {
+        "key": "responds_to_my_action",
+        "node": {
+         "name": "F",
+         "type": "Var"
+        },
+        "type": "Attr"
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       },
+       "type": "Eq"
+      }
+     },
+     {
+      "active": true,
+      "batch": false,
+      "effects": [
+       [
+        "set_attr",
+        "F",
+        "responds_to_my_action",
+        true
+       ],
+       [
+        "set_attr",
+        "F",
+        "selective",
+        true
+       ]
+      ],
+      "match": [
+       [
+        "game",
+        "has_candidate",
+        "cand"
+       ],
+       [
+        "game",
+        "has_feature",
+        "F"
+       ]
+      ],
+      "match_type": null,
+      "name": "control_my_body_induced_control",
+      "where": {
+       "items": [
+        {
+         "a": {
+          "key": "is_avatar",
+          "node": {
+           "name": "cand",
+           "type": "Var"
+          },
+          "type": "Attr"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1.0
+         },
+         "type": "Eq"
+        },
+        {
+         "a": {
+          "arg": {
+           "a": {
+            "key": "cy",
+            "node": {
+             "name": "F",
+             "type": "Var"
+            },
+            "type": "Attr"
+           },
+           "b": {
+            "key": "cy",
+            "node": {
+             "name": "cand",
+             "type": "Var"
+            },
+            "type": "Attr"
+           },
+           "type": "Minus"
+          },
+          "type": "Abs"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 3.0
+         },
+         "type": "Lt"
+        },
+        {
+         "a": {
+          "arg": {
+           "a": {
+            "key": "cx",
+            "node": {
+             "name": "F",
+             "type": "Var"
+            },
+            "type": "Attr"
+           },
+           "b": {
+            "key": "cx",
+            "node": {
+             "name": "cand",
+             "type": "Var"
+            },
+            "type": "Attr"
+           },
+           "type": "Minus"
+          },
+          "type": "Abs"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 3.0
+         },
+         "type": "Lt"
+        },
+        {
+         "arg": {
+          "a": {
+           "key": "responds_to_my_action",
+           "node": {
+            "name": "F",
+            "type": "Var"
+           },
+           "type": "Attr"
+          },
+          "b": {
+           "type": "Lit",
+           "value": true
+          },
+          "type": "Eq"
+         },
+         "type": "Not"
+        }
+       ],
+       "type": "And"
+      }
+     }
+    ],
+    "served_by": "graph"
+   },
+   "rule_count_after": 22,
+   "rule_count_before": 20,
+   "rule_count_delta": 2
+  },
+  "decompose": {
+   "installed_rule_names": [
+    "communicate_what_i_see_induced_decompose"
+   ],
+   "residual_predicates": [
+    "decompose"
+   ],
+   "result": {
+    "concern": [
+     "induced_decompose"
+    ],
+    "form": "communicate_rule",
+    "grounded": true,
+    "grounded_relations": [
+     [
+      "decompose",
+      "GOAL",
+      "into",
+      "SUBGOAL"
+     ]
+    ],
+    "how": "I GROUND the communicate concern by composing an ACTION RULE (not a Fold term): the grounded relations select its parts \u2014 iterate -> match each recognised thing in a scene I'm told to describe; decompose -> mint a subgoal; communicate -> its action is produce-utterance; source -> bind it to the recognition. Installed live; run_rules mints a produce-utterance subgoal per thing I see.",
+    "path": "compose_communicate_rule",
+    "rule": {
+     "effects": [
+      [
+       "add_node",
+       "sg",
+       "Goal",
+       {
+        "kind": "produce_utterance"
+       }
+      ],
+      [
+       "add_edge",
+       "g",
+       "has_subgoal",
+       "sg"
+      ]
+     ],
+     "match": [
+      [
+       "g",
+       "describes",
+       "scene"
+      ],
+      [
+       "scene",
+       "has_percept",
+       "p"
+      ]
+     ],
+     "name": "communicate_what_i_see_induced_decompose",
+     "where": {
+      "arg": {
+       "predicate": {
+        "type": "Lit",
+        "value": true
+       },
+       "source": {
+        "edge_type": "uttered",
+        "node": {
+         "name": "p",
+         "type": "Var"
+        },
+        "type": "Neighbours"
+       },
+       "type": "Exists",
+       "var_name": "_i"
+      },
+      "type": "Not"
+     }
+    },
+    "rule_idx": 20,
+    "served_by": "python"
+   },
+   "rule_count_after": 21,
+   "rule_count_before": 20,
+   "rule_count_delta": 1
+  },
+  "distribute": {
+   "installed_rule_names": [
+    "distributional_function_split_induced_distribute"
+   ],
+   "residual_predicates": [
+    "distribute"
+   ],
+   "result": {
+    "concern": [
+     "induced_distribute"
+    ],
+    "form": "distributional_rule",
+    "grounded": true,
+    "grounded_relations": [
+     [
+      "distribute",
+      "FORM",
+      "independent",
+      "CONTEXT"
+     ]
+    ],
+    "how": "I GROUND the function/content split via the GRAPH-RESIDENT compose_distributional_graph meta-rule.",
+    "path": "compose_distributional_rule",
+    "rule": {
+     "active": true,
+     "batch": false,
+     "effects": [
+      [
+       "set_attr",
+       "w",
+       "is_function",
+       1.0
+      ]
+     ],
+     "match": [
+      [
+       "w",
+       "is_a",
+       "WordForm"
+      ]
+     ],
+     "match_type": null,
+     "name": "distributional_function_split_induced_distribute",
+     "where": {
+      "items": [
+       {
+        "a": {
+         "key": "freq_norm",
+         "node": {
+          "name": "w",
+          "type": "Var"
+         },
+         "type": "Attr"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        },
+        "type": "Gte"
+       },
+       {
+        "a": {
+         "key": "ctx_entropy_norm",
+         "node": {
+          "name": "w",
+          "type": "Var"
+         },
+         "type": "Attr"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        },
+        "type": "Gte"
+       }
+      ],
+      "type": "And"
+     }
+    },
+    "rule_idx": 20,
+    "served_by": "graph"
+   },
+   "rule_count_after": 21,
+   "rule_count_before": 20,
+   "rule_count_delta": 1
+  },
+  "group": {
+   "installed_rule_names": [
+    "fuse_whole_induced_group",
+    "whole_cells_induced_group"
+   ],
+   "residual_predicates": [
+    "co-moving"
+   ],
+   "result": {
+    "concern": [
+     "induced_group"
+    ],
+    "form": "grouping_rule",
+    "grounded": true,
+    "grounded_relations": [
+     [
+      "group",
+      "WHOLE",
+      "from",
+      "PARTS"
+     ]
+    ],
+    "how": "I COMPOSE the order-N whole via the GRAPH-RESIDENT compose_grouping_graph meta-rule, which minted fuse_whole/whole_cells itself.",
+    "path": "compose_grouping_rule",
+    "rule_idx": [
+     20,
+     21
+    ],
+    "rules": [
+     {
+      "active": true,
+      "batch": false,
+      "effects": [
+       [
+        "add_node_if_absent",
+        "obj",
+        "Object",
+        {
+         "fkey": 777777.0,
+         "is_body": 1.0
+        }
+       ],
+       [
+        "add_edge",
+        "game",
+        "has_object",
+        "obj",
+        {}
+       ],
+       [
+        "add_edge",
+        "obj",
+        "has_part",
+        "F",
+        {}
+       ]
+      ],
+      "match": [
+       [
+        "game",
+        "has_feature",
+        "F"
+       ]
+      ],
+      "match_type": null,
+      "name": "fuse_whole_induced_group",
+      "where": {
+       "a": {
+        "key": "responds_to_my_action",
+        "node": {
+         "name": "F",
+         "type": "Var"
+        },
+        "type": "Attr"
+       },
+       "b": {
+        "type": "Lit",
+        "value": true
+       },
+       "type": "Eq"
+      }
+     },
+     {
+      "active": true,
+      "batch": false,
+      "effects": [
+       [
+        "add_edge",
+        "c",
+        "within",
+        "obj",
+        {}
+       ]
+      ],
+      "match": [
+       [
+        "game",
+        "has_object",
+        "obj"
+       ],
+       [
+        "obj",
+        "has_part",
+        "F"
+       ],
+       [
+        "R",
+        "realises",
+        "F"
+       ],
+       [
+        "c",
+        "within",
+        "R"
+       ]
+      ],
+      "match_type": null,
+      "name": "whole_cells_induced_group",
+      "where": {
+       "a": {
+        "key": "is_body",
+        "node": {
+         "name": "obj",
+         "type": "Var"
+        },
+        "type": "Attr"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1.0
+       },
+       "type": "Eq"
+      }
+     }
+    ],
+    "served_by": "graph"
+   },
+   "rule_count_after": 22,
+   "rule_count_before": 20,
+   "rule_count_delta": 2
+  },
+  "utility": {
+   "installed_rule_names": [
+    "decide_under_uncertainty_induced_utility"
+   ],
+   "residual_predicates": [
+    "utility"
+   ],
+   "result": {
+    "concern": [
+     "induced_utility"
+    ],
+    "form": "decision_rule",
+    "grounded": true,
+    "grounded_relations": [
+     [
+      "utility",
+      "ARGMAX",
+      "over",
+      "CANDIDATE"
+     ]
+    ],
+    "how": "I GROUND acting-under-uncertainty via the GRAPH-RESIDENT compose_decision_graph meta-rule.",
+    "path": "compose_decision_rule",
+    "rule": {
+     "active": true,
+     "batch": false,
+     "effects": [
+      [
+       "set_attr",
+       "game",
+       "chosen_action",
+       {
+        "__term__": {
+         "key": "name",
+         "node": {
+          "default": {
+           "type": "Lit",
+           "value": 0
+          },
+          "source": {
+           "edge_type": "affordance",
+           "node": {
+            "name": "game",
+            "type": "Var"
+           },
+           "type": "Neighbours"
+          },
+          "type": "Argmax",
+          "value": {
+           "source": {
+            "edge_type": "avatar_candidate",
+            "node": {
+             "name": "game",
+             "type": "Var"
+            },
+            "type": "Neighbours"
+           },
+           "type": "Sum",
+           "value": {
+            "a": {
+             "items": [
+              {
+               "cond": {
+                "a": {
+                 "a": {
+                  "key": "cy",
+                  "node": {
+                   "name": "c",
+                   "type": "Var"
+                  },
+                  "type": "Attr"
+                 },
+                 "b": {
+                  "key": "cy",
+                  "node": {
+                   "name": "goal",
+                   "type": "Var"
+                  },
+                  "type": "Attr"
+                 },
+                 "type": "Minus"
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": 0
+                },
+                "type": "Gte"
+               },
+               "other": {
+                "a": {
+                 "type": "Lit",
+                 "value": 0
+                },
+                "b": {
+                 "a": {
+                  "key": "cy",
+                  "node": {
+                   "name": "c",
+                   "type": "Var"
+                  },
+                  "type": "Attr"
+                 },
+                 "b": {
+                  "key": "cy",
+                  "node": {
+                   "name": "goal",
+                   "type": "Var"
+                  },
+                  "type": "Attr"
+                 },
+                 "type": "Minus"
+                },
+                "type": "Minus"
+               },
+               "then": {
+                "a": {
+                 "key": "cy",
+                 "node": {
+                  "name": "c",
+                  "type": "Var"
+                 },
+                 "type": "Attr"
+                },
+                "b": {
+                 "key": "cy",
+                 "node": {
+                  "name": "goal",
+                  "type": "Var"
+                 },
+                 "type": "Attr"
+                },
+                "type": "Minus"
+               },
+               "type": "IfThenElse"
+              },
+              {
+               "cond": {
+                "a": {
+                 "a": {
+                  "key": "cx",
+                  "node": {
+                   "name": "c",
+                   "type": "Var"
+                  },
+                  "type": "Attr"
+                 },
+                 "b": {
+                  "key": "cx",
+                  "node": {
+                   "name": "goal",
+                   "type": "Var"
+                  },
+                  "type": "Attr"
+                 },
+                 "type": "Minus"
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": 0
+                },
+                "type": "Gte"
+               },
+               "other": {
+                "a": {
+                 "type": "Lit",
+                 "value": 0
+                },
+                "b": {
+                 "a": {
+                  "key": "cx",
+                  "node": {
+                   "name": "c",
+                   "type": "Var"
+                  },
+                  "type": "Attr"
+                 },
+                 "b": {
+                  "key": "cx",
+                  "node": {
+                   "name": "goal",
+                   "type": "Var"
+                  },
+                  "type": "Attr"
+                 },
+                 "type": "Minus"
+                },
+                "type": "Minus"
+               },
+               "then": {
+                "a": {
+                 "key": "cx",
+                 "node": {
+                  "name": "c",
+                  "type": "Var"
+                 },
+                 "type": "Attr"
+                },
+                "b": {
+                 "key": "cx",
+                 "node": {
+                  "name": "goal",
+                  "type": "Var"
+                 },
+                 "type": "Attr"
+                },
+                "type": "Minus"
+               },
+               "type": "IfThenElse"
+              }
+             ],
+             "type": "Plus"
+            },
+            "b": {
+             "items": [
+              {
+               "cond": {
+                "a": {
+                 "a": {
+                  "items": [
+                   {
+                    "key": "cy",
+                    "node": {
+                     "name": "c",
+                     "type": "Var"
+                    },
+                    "type": "Attr"
+                   },
+                   {
+                    "key": "drow",
+                    "node": {
+                     "name": "act",
+                     "type": "Var"
+                    },
+                    "type": "Attr"
+                   }
+                  ],
+                  "type": "Plus"
+                 },
+                 "b": {
+                  "key": "cy",
+                  "node": {
+                   "name": "goal",
+                   "type": "Var"
+                  },
+                  "type": "Attr"
+                 },
+                 "type": "Minus"
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": 0
+                },
+                "type": "Gte"
+               },
+               "other": {
+                "a": {
+                 "type": "Lit",
+                 "value": 0
+                },
+                "b": {
+                 "a": {
+                  "items": [
+                   {
+                    "key": "cy",
+                    "node": {
+                     "name": "c",
+                     "type": "Var"
+                    },
+                    "type": "Attr"
+                   },
+                   {
+                    "key": "drow",
+                    "node": {
+                     "name": "act",
+                     "type": "Var"
+                    },
+                    "type": "Attr"
+                   }
+                  ],
+                  "type": "Plus"
+                 },
+                 "b": {
+                  "key": "cy",
+                  "node": {
+                   "name": "goal",
+                   "type": "Var"
+                  },
+                  "type": "Attr"
+                 },
+                 "type": "Minus"
+                },
+                "type": "Minus"
+               },
+               "then": {
+                "a": {
+                 "items": [
+                  {
+                   "key": "cy",
+                   "node": {
+                    "name": "c",
+                    "type": "Var"
+                   },
+                   "type": "Attr"
+                  },
+                  {
+                   "key": "drow",
+                   "node": {
+                    "name": "act",
+                    "type": "Var"
+                   },
+                   "type": "Attr"
+                  }
+                 ],
+                 "type": "Plus"
+                },
+                "b": {
+                 "key": "cy",
+                 "node": {
+                  "name": "goal",
+                  "type": "Var"
+                 },
+                 "type": "Attr"
+                },
+                "type": "Minus"
+               },
+               "type": "IfThenElse"
+              },
+              {
+               "cond": {
+                "a": {
+                 "a": {
+                  "items": [
+                   {
+                    "key": "cx",
+                    "node": {
+                     "name": "c",
+                     "type": "Var"
+                    },
+                    "type": "Attr"
+                   },
+                   {
+                    "key": "dcol",
+                    "node": {
+                     "name": "act",
+                     "type": "Var"
+                    },
+                    "type": "Attr"
+                   }
+                  ],
+                  "type": "Plus"
+                 },
+                 "b": {
+                  "key": "cx",
+                  "node": {
+                   "name": "goal",
+                   "type": "Var"
+                  },
+                  "type": "Attr"
+                 },
+                 "type": "Minus"
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": 0
+                },
+                "type": "Gte"
+               },
+               "other": {
+                "a": {
+                 "type": "Lit",
+                 "value": 0
+                },
+                "b": {
+                 "a": {
+                  "items": [
+                   {
+                    "key": "cx",
+                    "node": {
+                     "name": "c",
+                     "type": "Var"
+                    },
+                    "type": "Attr"
+                   },
+                   {
+                    "key": "dcol",
+                    "node": {
+                     "name": "act",
+                     "type": "Var"
+                    },
+                    "type": "Attr"
+                   }
+                  ],
+                  "type": "Plus"
+                 },
+                 "b": {
+                  "key": "cx",
+                  "node": {
+                   "name": "goal",
+                   "type": "Var"
+                  },
+                  "type": "Attr"
+                 },
+                 "type": "Minus"
+                },
+                "type": "Minus"
+               },
+               "then": {
+                "a": {
+                 "items": [
+                  {
+                   "key": "cx",
+                   "node": {
+                    "name": "c",
+                    "type": "Var"
+                   },
+                   "type": "Attr"
+                  },
+                  {
+                   "key": "dcol",
+                   "node": {
+                    "name": "act",
+                    "type": "Var"
+                   },
+                   "type": "Attr"
+                  }
+                 ],
+                 "type": "Plus"
+                },
+                "b": {
+                 "key": "cx",
+                 "node": {
+                  "name": "goal",
+                  "type": "Var"
+                 },
+                 "type": "Attr"
+                },
+                "type": "Minus"
+               },
+               "type": "IfThenElse"
+              }
+             ],
+             "type": "Plus"
+            },
+            "type": "Minus"
+           },
+           "var_name": "c"
+          },
+          "var_name": "act"
+         },
+         "type": "Attr"
+        }
+       }
+      ]
+     ],
+     "match": [
+      [
+       "game",
+       "has_goal",
+       "goal"
+      ]
+     ],
+     "match_type": null,
+     "name": "decide_under_uncertainty_induced_utility",
+     "where": null
+    },
+    "rule_idx": 20,
+    "served_by": "graph"
+   },
+   "rule_count_after": 21,
+   "rule_count_before": 20,
+   "rule_count_delta": 1
+  }
+ }
+}

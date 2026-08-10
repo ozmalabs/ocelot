@@ -1,0 +1,118 @@
+{
+  "id": "tcp_congestion_control_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "TCP_congestion_control",
+  "in_microtheory": "network_protocols",
+  "description": "TCP congestion control family decomposed. Reno (1990) established the AIMD foundation. NewReno + SACK refined recovery. CUBIC scales to high-BDP. BBR models bandwidth and RTT instead of reacting to loss. Each variant has different fairness, throughput, and latency characteristics; choice depends on link properties and competing flows.",
+  "sub_mechanisms": [
+    {
+      "name": "congestion_window",
+      "definition": "cwnd: sender's running estimate of how much data the network can hold in flight. Limits the unacked data to min(cwnd, rwnd).",
+      "why": "Per-sender pacing. Without cwnd, sender would fill the receiver's window — and overshoot router queues. cwnd implements TCP's share of self-control over the bottleneck.",
+      "category": "tcp_cc_mechanism"
+    },
+    {
+      "name": "AIMD_additive_increase_multiplicative_decrease",
+      "definition": "Reno's core: per RTT without loss, cwnd += 1 segment (additive). On loss, cwnd /= 2 (multiplicative).",
+      "why": "Provably converges to fair sharing among flows. Each flow probes upward gently, backs off hard on congestion. The math (Chiu-Jain 1989) shows AIMD reaches equilibrium where flows share the bottleneck proportionally.",
+      "category": "tcp_cc_mechanism"
+    },
+    {
+      "name": "slow_start_phase",
+      "definition": "Initial growth: cwnd doubles per RTT until reaching ssthresh (or loss). Exits to congestion avoidance.",
+      "why": "Probes available bandwidth quickly. Doubling each RTT covers wide BW range in few RTTs. Misnomer 'slow' compared to original TCP which started at line rate.",
+      "category": "tcp_cc_mechanism"
+    },
+    {
+      "name": "congestion_avoidance_phase",
+      "definition": "Post-slow-start: cwnd += 1 per RTT. Linear growth.",
+      "why": "After identifying approximate capacity (slow-start exit), grow slowly to avoid overshoot. AIMD's 'additive increase' phase.",
+      "category": "tcp_cc_mechanism"
+    },
+    {
+      "name": "fast_recovery",
+      "definition": "Reno: on 3 dup-ACKs, retransmit + halve cwnd (don't go to slow start). Stay in fast recovery until new ACK arrives.",
+      "why": "Three duplicate ACKs indicates loss but not full collapse. Halving cwnd is enough backoff; going to slow start would over-react. Standard since 1990.",
+      "category": "tcp_cc_mechanism"
+    },
+    {
+      "name": "NewReno_multiple_losses",
+      "definition": "Extends Reno to handle multiple losses in one window: partial ACKs (covering only some retransmitted segments) keep fast recovery active and retransmit the next loss.",
+      "why": "Plain Reno exits fast recovery on first partial ACK, going back to slow start. NewReno stays in fast recovery, retransmitting as needed. Substantial improvement when multiple segments are lost per window.",
+      "category": "tcp_cc_mechanism"
+    },
+    {
+      "name": "SACK_selective_ack",
+      "definition": "Receiver reports specific received segments, not just cumulative ACK. Sender retransmits only what's missing.",
+      "why": "Without SACK, lost segments in a 10-segment window force retransmitting all 10. SACK retransmits only the missing ones. Standard since 1996; recovery throughput improvement is dramatic.",
+      "category": "tcp_cc_mechanism"
+    },
+    {
+      "name": "CUBIC_growth_function",
+      "definition": "cwnd(t) = C(t - K)³ + W_max, where W_max is the last loss point. K = (W_max × β / C)^(1/3). Defaults: C = 0.4, β = 0.7.",
+      "why": "Probes faster initially (after a backoff), then plateaus near W_max, then probes upward again. Better than linear AIMD at high BDP: quickly recovers throughput; conservative near the prior congestion point.",
+      "category": "tcp_cc_mechanism"
+    },
+    {
+      "name": "BBR_bandwidth_estimation",
+      "definition": "BBR continuously estimates the bottleneck bandwidth as max(delivered_rate over recent windows).",
+      "why": "Models the bottleneck instead of detecting it via loss. Maintains an active estimate; the bandwidth probe phase periodically increases pacing to test for higher BW.",
+      "category": "tcp_cc_mechanism"
+    },
+    {
+      "name": "BBR_RTT_estimation",
+      "definition": "BBR continuously estimates RTT_min as the smallest RTT observed in a recent window. Periodically probes downward to refresh.",
+      "why": "RTT_min represents the bottleneck propagation delay (no queue). If observed RTT exceeds RTT_min, queues are building → reduce rate. Direct latency control vs CUBIC's loss-driven.",
+      "category": "tcp_cc_mechanism"
+    },
+    {
+      "name": "BBR_pacing",
+      "definition": "Send packets at rate = bandwidth × pacing_gain, not in bursts as cwnd allows.",
+      "why": "Bursty sends fill queues even at correct average rate. Pacing keeps the line constantly utilised without bursting → no queue build-up. Critical for BBR's no-bufferbloat property.",
+      "category": "tcp_cc_mechanism"
+    },
+    {
+      "name": "ECN_explicit_congestion_notification",
+      "definition": "IP-level: routers mark packets at queue build-up instead of dropping. Receiver echoes mark via TCP; sender reduces cwnd as if loss.",
+      "why": "Detect congestion before loss. Avoids the latency hit of waiting for actual drops. Required for L4S (low-latency low-loss scalable throughput) congestion control. Deployment still limited.",
+      "category": "tcp_cc_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "AIMD_converges_to_fairness",
+      "if": ["all flows use AIMD"],
+      "then": ["bottleneck bandwidth converges to fair sharing"],
+      "why": "Chiu-Jain 1989 proof. AIMD's geometry (multiplicative decrease + additive increase) drives the system toward the fair line in the rate-rate plane. Fundamental property that lets the Internet work without centralised coordination.",
+      "soundness_category": "algebraic_law"
+    },
+    {
+      "name": "loss_signals_congestion_in_traditional_CC",
+      "if": ["congestion control reacts to loss"],
+      "then": ["queues must fill to drops before backoff"],
+      "why": "Loss is the only signal CUBIC, Reno, NewReno see. To get loss, queues must overflow. Inherently bufferbloat-prone: congestion is detected after the queue is full. BBR's bandwidth modeling sidesteps this.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "CUBIC_outperforms_Reno_at_high_BDP",
+      "if": ["BDP is very high (>10 MB)"],
+      "then": ["CUBIC recovers throughput faster than Reno"],
+      "why": "Reno's linear growth at 1 segment per RTT takes O(BDP) RTTs to refill the pipe after a loss. CUBIC's cubic growth reaches W_max in few RTTs. On a 1 Gbps × 100 ms link, Reno can take minutes; CUBIC seconds.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "BBR_eliminates_bufferbloat_on_sender_side",
+      "if": ["sender uses BBR"],
+      "then": ["pacing keeps queues empty regardless of buffer size"],
+      "why": "BBR sends at bandwidth rate, not at cwnd burst rate. Even if routers have deep buffers, BBR doesn't fill them. Other senders sharing the link can still cause queues; BBR plays well with itself but can be unfair against CUBIC.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "ECN_avoids_loss_latency_penalty",
+      "if": ["ECN is enabled end-to-end"],
+      "then": ["congestion is signalled without packet drops"],
+      "why": "Drop-based CC pays the retransmission latency (1+ RTT). ECN-marked packets are delivered; the marking informs CC. Removes the loss latency tax. L4S takes this further with very low queue targets.",
+      "soundness_category": "cost_equivalence"
+    }
+  ]
+}

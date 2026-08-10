@@ -1,0 +1,1058 @@
+{
+ "id": "vision_lateral",
+ "version": "1.0.0",
+ "depends_on": [
+  "vision_waves"
+ ],
+ "description": "RUNG 7 \u2014 RETINAL LATERAL INHIBITION, so CENTRE-SURROUND EMERGES. A horizontal cell pools the RetinaCell's radius-1/radius-2 rings over the `neighbour` edges rung 1 declared and never used; the bipolar transmits the RESIDUAL centre - g1*h1 - g2*h2, split into two non-negative rectified halves. The surround gain is LEARNED by anti-Hebbian decorrelation (fixed point = the normal equations = Srinivasan's optimal linear predictor), never hand-set -- so centre-surround FALLS OUT of predictive coding instead of being bolted on as a numpy DoG, and Atick & Redlich's SNR-dependent surround becomes a falsifiable prediction. Ships INERT (lateral=0).",
+ "microtheory": {
+  "name": "retinal_lateral_inhibition",
+  "description": "Predict the centre from the surround; transmit the residual. Centre-surround is redundancy reduction (Atick & Redlich 1992; Srinivasan, Laughlin & Dubs 1982; Barlow), i.e. the substrate's own prediction_minus_observation shape in the first synapse. Rung 6 measured that the complementary split x_OFF = 1 - x_ON is degenerate (C_ON,OFF(d) = -C_ON,ON(d) identically), so the channels carry no independent correlation structure for waves to sculpt (Miller 1994 needs DIFFERENT spatial dependence). Lateral inhibition gives each channel its own spatial dependence -- grown from the grid's adjacency, not handed over as a kernel."
+ },
+ "nodes": [
+  {
+   "local_id": 0,
+   "type": "LatParams",
+   "attrs": {
+    "lateral": 0.0,
+    "learn_gain": 1.0,
+    "radius2": 1.0,
+    "frozen": 0.0,
+    "lat_eta": 0.002,
+    "lat_gmax": 2.0,
+    "lat_g0": 0.0
+   }
+  }
+ ],
+ "edges": [],
+ "productions": [
+  {
+   "src": {
+    "type": "Retina",
+    "var": "a"
+   },
+   "edge_type": "has_hcell",
+   "tgt": {
+    "type": "HCell",
+    "var": "b"
+   },
+   "provenance": "seed:vision_lateral:has_hcell"
+  },
+  {
+   "src": {
+    "type": "RetinaCell",
+    "var": "a"
+   },
+   "edge_type": "pools_to",
+   "tgt": {
+    "type": "HCell",
+    "var": "b"
+   },
+   "provenance": "seed:vision_lateral:pools_to"
+  },
+  {
+   "src": {
+    "type": "Retina",
+    "var": "a"
+   },
+   "edge_type": "has_lbipolar",
+   "tgt": {
+    "type": "LBipolar",
+    "var": "b"
+   },
+   "provenance": "seed:vision_lateral:has_lbipolar"
+  },
+  {
+   "src": {
+    "type": "HCell",
+    "var": "a"
+   },
+   "edge_type": "rectifies_to",
+   "tgt": {
+    "type": "LBipolar",
+    "var": "b"
+   },
+   "provenance": "seed:vision_lateral:rectifies_to"
+  },
+  {
+   "src": {
+    "type": "RetinaCell",
+    "var": "a"
+   },
+   "edge_type": "neighbour2",
+   "tgt": {
+    "type": "RetinaCell",
+    "var": "b"
+   },
+   "provenance": "seed:vision_lateral:neighbour2"
+  }
+ ],
+ "rules": [
+  {
+   "name": "lat_pool",
+   "comment": "THE SURROUND. h1/h2 = mean burst over the RetinaCell's radius-1 / radius-2 rings, along the `neighbour` / `neighbour2` edges the adapter wires as grid geometry. Divided by the adapter-recorded neighbour COUNT, so a cell at the retina's edge pools a true MEAN rather than a fabricated dark surround. radius2=0 pins h2=0 with the anatomy untouched. Phase-guarded by pool_step.",
+   "match_type": "HCell",
+   "match": [
+    [
+     "r",
+     "has_hcell",
+     "h"
+    ],
+    [
+     "c",
+     "pools_to",
+     "h"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "LatParams"
+        }
+       },
+       "key": "lateral"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "h"
+       },
+       "key": "pool_step"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "h",
+     "h1",
+     {
+      "__term__": {
+       "type": "Div",
+       "a": {
+        "type": "Fold",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "c"
+         },
+         "edge_type": "neighbour",
+         "any_type": false
+        },
+        "var_name": "n",
+        "acc_name": "acc",
+        "init": {
+         "type": "Lit",
+         "value": 0.0
+        },
+        "body": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Var",
+           "name": "acc"
+          },
+          {
+           "type": "IfThenElse",
+           "cond": {
+            "type": "Lte",
+            "a": {
+             "type": "Minus",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "r"
+              },
+              "key": "step"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "n"
+              },
+              "key": "last_burst"
+             }
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "PickUnique",
+              "source": {
+               "type": "NodesOfType",
+               "node_type": "WaveParams"
+              }
+             },
+             "key": "window_steps"
+            }
+           },
+           "then": {
+            "type": "Lit",
+            "value": 1.0
+           },
+           "other": {
+            "type": "Lit",
+            "value": 0.0
+           }
+          }
+         ]
+        }
+       },
+       "b": {
+        "type": "Max",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "h"
+          },
+          "key": "n_nb1"
+         },
+         {
+          "type": "Lit",
+          "value": 1.0
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "h",
+     "h2",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gt",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "PickUnique",
+          "source": {
+           "type": "NodesOfType",
+           "node_type": "LatParams"
+          }
+         },
+         "key": "radius2"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       },
+       "then": {
+        "type": "Div",
+        "a": {
+         "type": "Fold",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "c"
+          },
+          "edge_type": "neighbour2",
+          "any_type": false
+         },
+         "var_name": "n",
+         "acc_name": "acc",
+         "init": {
+          "type": "Lit",
+          "value": 0.0
+         },
+         "body": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Var",
+            "name": "acc"
+           },
+           {
+            "type": "IfThenElse",
+            "cond": {
+             "type": "Lte",
+             "a": {
+              "type": "Minus",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "r"
+               },
+               "key": "step"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "n"
+               },
+               "key": "last_burst"
+              }
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "PickUnique",
+               "source": {
+                "type": "NodesOfType",
+                "node_type": "WaveParams"
+               }
+              },
+              "key": "window_steps"
+             }
+            },
+            "then": {
+             "type": "Lit",
+             "value": 1.0
+            },
+            "other": {
+             "type": "Lit",
+             "value": 0.0
+            }
+           }
+          ]
+         }
+        },
+        "b": {
+         "type": "Max",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "h"
+           },
+           "key": "n_nb2"
+          },
+          {
+           "type": "Lit",
+           "value": 1.0
+          }
+         ]
+        }
+       },
+       "other": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "h",
+     "pool_step",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "lat_residual",
+   "comment": "PREDICTIVE CODING, one line: resid = centre - g1*h1 - g2*h2. The surround is the optimal linear predictor of the centre (Srinivasan/Laughlin/Dubs 1982) and the transmitted signal is the RESIDUAL. g1,g2 are non-negative gains on a sign-constant inhibitory pathway (Dale). Waits on lat_pool via pool_step == r.step -- data dependency, not Python sequencing.",
+   "match_type": "HCell",
+   "match": [
+    [
+     "r",
+     "has_hcell",
+     "h"
+    ],
+    [
+     "c",
+     "pools_to",
+     "h"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "LatParams"
+        }
+       },
+       "key": "lateral"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "h"
+       },
+       "key": "resid_step"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "h"
+       },
+       "key": "pool_step"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "h",
+     "resid",
+     {
+      "__term__": {
+       "type": "Minus",
+       "a": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Lte",
+         "a": {
+          "type": "Minus",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "r"
+           },
+           "key": "step"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "c"
+           },
+           "key": "last_burst"
+          }
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "PickUnique",
+           "source": {
+            "type": "NodesOfType",
+            "node_type": "WaveParams"
+           }
+          },
+          "key": "window_steps"
+         }
+        },
+        "then": {
+         "type": "Lit",
+         "value": 1.0
+        },
+        "other": {
+         "type": "Lit",
+         "value": 0.0
+        }
+       },
+       "b": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Times",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "h"
+            },
+            "key": "g1"
+           },
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "h"
+            },
+            "key": "h1"
+           }
+          ]
+         },
+         {
+          "type": "Times",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "h"
+            },
+            "key": "g2"
+           },
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "h"
+            },
+            "key": "h2"
+           }
+          ]
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "h",
+     "resid_step",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "lat_bipolar",
+   "comment": "x_ON = [resid]+, x_OFF = [-resid]+ : two NON-NEGATIVE channels whose difference is the signed residual. No signed weight, no hand-built DoG, Dale intact. NOTE: with g=0 the OFF channel is SILENT (resid = c >= 0) -- correct biology, and the reason the learned predictor is what BRINGS THE OFF CHANNEL TO LIFE: only a non-zero prediction makes a non-bursting cell a decrement. Waits on lat_residual via resid_step == r.step.",
+   "match_type": "LBipolar",
+   "match": [
+    [
+     "r",
+     "has_lbipolar",
+     "b"
+    ],
+    [
+     "h",
+     "rectifies_to",
+     "b"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "LatParams"
+        }
+       },
+       "key": "lateral"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "b"
+       },
+       "key": "bstep"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "h"
+       },
+       "key": "resid_step"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "b",
+     "bursting",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gt",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "b"
+         },
+         "key": "polarity"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.0
+        }
+       },
+       "then": {
+        "type": "Max",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "h"
+          },
+          "key": "resid"
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       },
+       "other": {
+        "type": "Max",
+        "items": [
+         {
+          "type": "Times",
+          "items": [
+           {
+            "type": "Lit",
+            "value": -1.0
+           },
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "h"
+            },
+            "key": "resid"
+           }
+          ]
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "b",
+     "bstep",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "lat_learn_gain",
+   "comment": "ANTI-HEBBIAN DECORRELATION: dg_k = eta*resid*h_k, clipped to [0, lat_gmax]. Fixed point E[resid*h_k]=0 == the normal equations == Srinivasan's optimal linear predictor of centre from surround, DERIVED not hand-set. This is what makes Atick & Redlich's SNR-dependent surround a falsifiable PREDICTION of the mechanism rather than a fitted constant. learn_gain=0 pins g (fixed-gain control). Non-negative by clipping: Dale holds -- the pathway's SIGN is fixed, only its MAGNITUDE is learned. Gated by `frozen` (a REAL freeze: oja=0 is NOT a freeze -- rung 5 measured 47.9 max|dw| per probe from that trap).",
+   "match_type": "HCell",
+   "match": [
+    [
+     "r",
+     "has_hcell",
+     "h"
+    ],
+    [
+     "c",
+     "pools_to",
+     "h"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "LatParams"
+        }
+       },
+       "key": "lateral"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "LatParams"
+        }
+       },
+       "key": "frozen"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "LatParams"
+        }
+       },
+       "key": "learn_gain"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "h"
+       },
+       "key": "gain_step"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "h"
+       },
+       "key": "resid_step"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "h",
+     "g1",
+     {
+      "__term__": {
+       "type": "Min",
+       "items": [
+        {
+         "type": "Max",
+         "items": [
+          {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "h"
+             },
+             "key": "g1"
+            },
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "PickUnique",
+                "source": {
+                 "type": "NodesOfType",
+                 "node_type": "LatParams"
+                }
+               },
+               "key": "lat_eta"
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "h"
+               },
+               "key": "resid"
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "h"
+               },
+               "key": "h1"
+              }
+             ]
+            }
+           ]
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        },
+        {
+         "type": "Attr",
+         "node": {
+          "type": "PickUnique",
+          "source": {
+           "type": "NodesOfType",
+           "node_type": "LatParams"
+          }
+         },
+         "key": "lat_gmax"
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "h",
+     "g2",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gt",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "PickUnique",
+          "source": {
+           "type": "NodesOfType",
+           "node_type": "LatParams"
+          }
+         },
+         "key": "radius2"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       },
+       "then": {
+        "type": "Min",
+        "items": [
+         {
+          "type": "Max",
+          "items": [
+           {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "h"
+              },
+              "key": "g2"
+             },
+             {
+              "type": "Times",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "PickUnique",
+                 "source": {
+                  "type": "NodesOfType",
+                  "node_type": "LatParams"
+                 }
+                },
+                "key": "lat_eta"
+               },
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "h"
+                },
+                "key": "resid"
+               },
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "h"
+                },
+                "key": "h2"
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "Lit",
+            "value": 0.0
+           }
+          ]
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "PickUnique",
+           "source": {
+            "type": "NodesOfType",
+            "node_type": "LatParams"
+           }
+          },
+          "key": "lat_gmax"
+         }
+        ]
+       },
+       "other": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "h",
+     "gain_step",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   ]
+  }
+ ]
+}

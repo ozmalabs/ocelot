@@ -1,0 +1,94 @@
+{
+  "schema": "self-change-blind-faults/v1",
+  "description": "Inputs contain observations and measured arm outcomes only. They deliberately contain no expected repair label; the held graph rules diagnose and select.",
+  "cases": [
+    {
+      "case_id": "fn_threshold_001",
+      "signals": {
+        "false_negative": 4,
+        "threshold_sensitivity": 1
+      },
+      "evidence": {
+        "threshold_adjustment": 42
+      },
+      "noop_gain": 0,
+      "placebo_gain": 1
+    },
+    {
+      "case_id": "fp_context_002",
+      "signals": {
+        "false_positive": 3,
+        "context_sensitivity": 1
+      },
+      "evidence": {
+        "guard_strengthening": 35
+      },
+      "noop_gain": 0,
+      "placebo_gain": -1
+    },
+    {
+      "case_id": "missing_relation_003",
+      "signals": {
+        "false_negative": 2,
+        "relation_counterfactual": 1
+      },
+      "evidence": {
+        "relation_addition": 31
+      },
+      "noop_gain": 1,
+      "placebo_gain": 0
+    },
+    {
+      "case_id": "wrong_effect_004",
+      "signals": {
+        "outcome_mismatch": 5,
+        "effect_counterfactual": 1
+      },
+      "evidence": {
+        "effect_substitution": 47
+      },
+      "noop_gain": 0,
+      "placebo_gain": 2
+    },
+    {
+      "case_id": "runaway_noop_005",
+      "signals": {
+        "cost_excess": 6,
+        "repeated_noop_firings": 12
+      },
+      "evidence": {
+        "firing_budget_guard": 55
+      },
+      "noop_gain": 0,
+      "placebo_gain": 1
+    },
+    {
+      "case_id": "ambiguous_minimal_006",
+      "signals": {
+        "false_negative": 3,
+        "threshold_sensitivity": 1,
+        "relation_counterfactual": 1
+      },
+      "evidence": {
+        "threshold_adjustment": 29,
+        "relation_addition": 31
+      },
+      "noop_gain": 0,
+      "placebo_gain": 1
+    },
+    {
+      "case_id": "correlation_only_007",
+      "signals": {
+        "false_negative": 2,
+        "threshold_sensitivity": 1,
+        "relation_counterfactual": 1
+      },
+      "evidence": {
+        "threshold_adjustment": 3,
+        "relation_addition": 4
+      },
+      "noop_gain": 2,
+      "placebo_gain": 3
+    }
+  ]
+}

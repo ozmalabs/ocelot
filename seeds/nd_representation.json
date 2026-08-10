@@ -1,0 +1,45 @@
+{
+  "id": "nd_representation",
+  "version": "1.0.0",
+  "depends_on": [],
+  "description": "The jabberwock's N-DIMENSIONAL representation (docs/jabberwock_representation_design.md): the grid is a RENDER, obs = pi(phi); (cy,cx) are just two coordinates of a longer state vector phi. This builds phi as a Vec on each Region (a superset of position: cy, cx, drow, dcol, rvalue, count) and runs the SAME predict->surprise->fold loop over phi instead of 2D — 'the loop I already run, in the thing itself instead of its shadow.' The grid is recovered as pi(phi) = Nth(phi,0..1); a basis change is Rotate(phi)=Dot-over-axes (no new primitive — the agent's Dot). Core skill: represent interaction/dynamics projection-independently; the game is the means, the representation skill is the end.",
+  "microtheory": {"name": "nd_representation", "description": "phi = the N-D state; the grid is pi(phi), one projection; predict the next phi, fold; rotate (Dot-over-axes) to the natural frame."},
+  "nodes": [],
+  "edges": [],
+  "productions": [],
+  "rules": [
+    {
+      "name": "build_phi",
+      "comment": "Lift each Region's observation into its N-D descriptor phi = Vec(cy, cx, drow, dcol, rvalue, count). (cy,cx) are two of its coordinates; the grid is one projection pi(phi)=Nth(phi,0..1). phi is a Tuple-valued attr.",
+      "match": [["game", "has_region", "r"]],
+      "where": {"type": "Lit", "value": true},
+      "effects": [
+        ["set_attr", "r", "phi", {"__term__": {"type": "Vec", "items": [
+          {"type": "Plus", "items": [{"type": "Attr", "node": {"type": "Var", "name": "r"}, "key": "cy"}, {"type": "Lit", "value": 0.0}]},
+          {"type": "Plus", "items": [{"type": "Attr", "node": {"type": "Var", "name": "r"}, "key": "cx"}, {"type": "Lit", "value": 0.0}]},
+          {"type": "Plus", "items": [{"type": "Attr", "node": {"type": "Var", "name": "r"}, "key": "drow"}, {"type": "Lit", "value": 0.0}]},
+          {"type": "Plus", "items": [{"type": "Attr", "node": {"type": "Var", "name": "r"}, "key": "dcol"}, {"type": "Lit", "value": 0.0}]},
+          {"type": "Plus", "items": [{"type": "Attr", "node": {"type": "Var", "name": "r"}, "key": "rvalue"}, {"type": "Lit", "value": 0.0}]},
+          {"type": "Plus", "items": [{"type": "Attr", "node": {"type": "Var", "name": "r"}, "key": "count"}, {"type": "Lit", "value": 0.0}]}
+        ]}}]
+      ]
+    },
+    {
+      "name": "predict_phi",
+      "comment": "The forward model IN N-D: predict the next phi = constant velocity in the state (position advances by its velocity; velocity/identity persist). Written as next_phi_pred (a Vec) + clocked=1, so the engine's clock-edge fold commits next_phi_pred->phi_pred — the SAME predict->fold mechanism as Stage 0, now over the N-D state. surprise = ||phi_obs - phi_pred|| (the N-D residual; measured against the prediction committed last tick).",
+      "match": [["game", "has_region", "r"]],
+      "where": {"type": "Lit", "value": true},
+      "effects": [
+        ["set_attr", "r", "clocked", 1.0],
+        ["set_attr", "r", "next_phi_pred", {"__term__": {"type": "Vec", "items": [
+          {"type": "Plus", "items": [{"type": "Attr", "node": {"type": "Var", "name": "r"}, "key": "cy"}, {"type": "Attr", "node": {"type": "Var", "name": "r"}, "key": "drow"}]},
+          {"type": "Plus", "items": [{"type": "Attr", "node": {"type": "Var", "name": "r"}, "key": "cx"}, {"type": "Attr", "node": {"type": "Var", "name": "r"}, "key": "dcol"}]},
+          {"type": "Plus", "items": [{"type": "Attr", "node": {"type": "Var", "name": "r"}, "key": "drow"}, {"type": "Lit", "value": 0.0}]},
+          {"type": "Plus", "items": [{"type": "Attr", "node": {"type": "Var", "name": "r"}, "key": "dcol"}, {"type": "Lit", "value": 0.0}]},
+          {"type": "Plus", "items": [{"type": "Attr", "node": {"type": "Var", "name": "r"}, "key": "rvalue"}, {"type": "Lit", "value": 0.0}]},
+          {"type": "Plus", "items": [{"type": "Attr", "node": {"type": "Var", "name": "r"}, "key": "count"}, {"type": "Lit", "value": 0.0}]}
+        ]}}]
+      ]
+    }
+  ]
+}

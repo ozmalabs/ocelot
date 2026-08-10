@@ -1,0 +1,118 @@
+{
+  "id": "register_allocation_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "register_allocation",
+  "in_microtheory": "compilers",
+  "description": "Register allocation decomposed. The back-end's hardest problem. Liveness analysis, interference graph, graph coloring (Chaitin-Briggs, IRC), linear scan, LLVM's Greedy. SSA-based allocation. Spill cost models, live range splitting, coalescing.",
+  "sub_mechanisms": [
+    {
+      "name": "liveness_analysis",
+      "definition": "Backward dataflow: for each program point, which variables are live (used in some future path)? Iterates to fixed point.",
+      "why": "Required input for register allocation. A variable can use a register only when live. Standard backward analysis: live_out = ∪ live_in of successors; live_in = use ∪ (live_out - def).",
+      "category": "ra_mechanism"
+    },
+    {
+      "name": "interference_graph",
+      "definition": "Graph where nodes are values + edges connect two values simultaneously live. K-coloring assigns registers without conflicts.",
+      "why": "K colors = K physical registers. Two values that interfere need different registers. Coloring the graph with K colors solves register assignment. NP-hard in general but tractable heuristically.",
+      "category": "ra_mechanism"
+    },
+    {
+      "name": "Chaitin_Briggs_algorithm",
+      "definition": "Repeatedly: remove low-degree (< K) nodes from graph (push on stack); pop + color avoiding neighbours. If high-degree node remains, choose to spill.",
+      "why": "Classic graph coloring RA. Simplification (push) + selection (pop + color). Optimistic coloring: assume high-degree nodes might still color. Heuristic spill choice when no K-color exists.",
+      "category": "ra_mechanism"
+    },
+    {
+      "name": "spill_cost",
+      "definition": "Estimated cost of spilling a value: function of use count, loop nesting depth, distance to next use.",
+      "why": "Choosing which value to spill matters: spilling a hot variable hurts much more than a cold one. Cost models guide the choice. Modern allocators use loop-nesting-weighted use count.",
+      "category": "ra_mechanism"
+    },
+    {
+      "name": "live_range_splitting",
+      "definition": "Split a live range at a strategic point (often a basic block boundary). Two halves can have different register assignments.",
+      "why": "A long live range might span high-pressure regions; splitting lets the pressure regions get registers. Pre-split, the whole range either fits or spills. Modern allocators do this extensively.",
+      "category": "ra_mechanism"
+    },
+    {
+      "name": "coalescing",
+      "definition": "When a move instruction copies a to b, attempt to assign both to the same register, eliminating the move.",
+      "why": "Code with many move instructions (common after SSA destruction) wastes registers + executes unnecessary copies. Coalescing eliminates moves at the cost of merging live ranges (more potential interference).",
+      "category": "ra_mechanism"
+    },
+    {
+      "name": "iterated_register_coalescing",
+      "definition": "IRC: integrate coalescing into the coloring pipeline. Coalesce conservatively, simplify, repeat.",
+      "why": "Aggressive coalescing causes spills; conservative misses optimisations. IRC's interleaved approach (Briggs-style) is the standard production technique.",
+      "category": "ra_mechanism"
+    },
+    {
+      "name": "linear_scan_algorithm",
+      "definition": "Sort live ranges by start point. Sweep through: at each point, assign register to ranges starting; release registers of ranges ending. Spill if pool exhausted.",
+      "why": "O(n log n) vs graph coloring's NP-hard. Lower quality (~10% worse codes). Used in JITs where compile time matters. LLVM's first allocator was linear scan; replaced by Greedy.",
+      "category": "ra_mechanism"
+    },
+    {
+      "name": "LLVM_Greedy_allocator",
+      "definition": "LLVM's current allocator. Priority-based: process live ranges by priority. Splits ranges, evicts lower-priority assignments. Iterative refinement.",
+      "why": "Quality close to graph coloring + speed close to linear scan. Default in LLVM since 2011. The priority + splitting + eviction triad lets it handle complex pressure scenarios.",
+      "category": "ra_mechanism"
+    },
+    {
+      "name": "SSA_based_RA",
+      "definition": "Allocator that preserves SSA form throughout. Interference graphs of SSA programs are chordal — polynomial-time K-colorable.",
+      "why": "Chordal graphs have polynomial-time optimal coloring. SSA-based RA exploits this. Active research; some implementations (HotSpot's Graal) use it. Compile-time advantage for high-quality allocation.",
+      "category": "ra_mechanism"
+    },
+    {
+      "name": "caller_callee_saved_registers",
+      "definition": "Calling convention divides registers: caller-saved (caller preserves before call), callee-saved (callee preserves on entry).",
+      "why": "Lets allocator know which registers are 'free' across calls (caller-saved) vs requiring save/restore (callee-saved). Affects spill cost analysis. Different per ABI.",
+      "category": "ra_mechanism"
+    },
+    {
+      "name": "register_pressure",
+      "definition": "Number of simultaneously live values at a point. If > K, some values must spill.",
+      "why": "Local property predicting spills. High-pressure regions need attention from the allocator + IR generator. Spill-reload pairs are the cost.",
+      "category": "ra_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "K_colorable_iff_no_spill_needed",
+      "if": ["interference graph is K-colorable (K = available registers)"],
+      "then": ["no spilling is needed"],
+      "why": "K-coloring assigns each value to one of K registers without conflicts. Spill required only when no K-coloring exists. Coloring being NP-hard means allocators sometimes spill where optimal solution wouldn't.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "SSA_interference_graphs_chordal",
+      "if": ["program is in SSA form"],
+      "then": ["interference graph is chordal, hence optimally K-colorable in polynomial time"],
+      "why": "Property of SSA: live ranges are tree-shaped (single definition). Resulting interference graphs are chordal. Chordal graphs have O(V+E) optimal coloring. Active research direction in JIT allocation.",
+      "soundness_category": "algebraic_law"
+    },
+    {
+      "name": "linear_scan_trades_quality_for_compile_time",
+      "if": ["compile time is critical (JIT)"],
+      "then": ["linear scan beats graph coloring"],
+      "why": "Linear scan: O(n log n) vs graph coloring's super-linear. JITs compile while user waits — fast allocation wins even at 10% code quality loss. V8, LuaJIT, .NET JITs use linear scan or variants.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "live_range_splitting_relieves_local_pressure",
+      "if": ["a live range spans regions of varying register pressure"],
+      "then": ["splitting at pressure boundaries lets each segment get a register"],
+      "why": "Without splitting, whole range either fits or spills. With splitting, low-pressure sub-ranges keep registers; high-pressure sub-ranges spill. Total spill traffic reduces.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "coalescing_eliminates_redundant_moves",
+      "if": ["copy instruction has non-interfering source and destination"],
+      "then": ["coalescing merges them, eliminating the copy"],
+      "why": "SSA destruction inserts copies; many are redundant. Coalescing identifies them. Quality matters: aggressive coalescing causes spills (merged range has more interference); conservative misses opportunities.",
+      "soundness_category": "extensional_equivalence"
+    }
+  ]
+}

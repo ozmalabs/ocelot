@@ -1,0 +1,931 @@
+{
+ "id": "drives",
+ "version": "1.0.0",
+ "self_load_only": true,
+ "depends_on": [],
+ "area": "retina",
+ "description": "THE DRIVE SYSTEM (block 207000) -- Dorner/Bach PSI/MicroPsi needs as first-class graph nodes. A Drive{name, target v_d, current c_d, critical v_0, weight, decay, gain, loss, half_life} with the MicroPsi demand equations as integer rules: urge = |v_d-c_d| (drive_urge); urgency = |v_d-c_d|*SCALE / max(1,|v_d-v_0|) (drive_urgency); the drive IS a decaying held quantity -- c_d <- Ashr(c_d, IDiv(now-last_tend, half_life)) reuses the 196000 staleness_decay scale2 atom (drive_decay); pleasure/displeasure = sign of delta c_d, the motivational reinforcers. A threat drive carries the 196000 freshness atom on its threat channel (drive_threat_precision/persist): a SHORT threat_half_life decays the precision below t_present (FEAR), a LONG one persists (ANXIETY) -- the fear<->anxiety minimal pair, the SAME PTSD knob. AFFILIATION is the social currency: a legitimacy_signal ingest (praise +gain, reproach -loss, scaled by the source's social_weight) is a rule (drive_affiliation_legitimacy); NURTURING is its complement and its ABSENCE is the 204000 w_supergraph~0 psychopathy knob (convergent glass-box). Each drive exposes an arousal_contrib for the modulator layer. Integer-native, NO Rust, NO new Term. OFF by default: every rule guards on the bound ModulatorState.enabled the measure adapter creates only on opt-in; absent it every existing path is byte-identical.",
+ "microtheory": {
+  "name": "drives",
+  "description": "A minimal orthogonal set of needs (demands); goals are learned situations that satisfy/frustrate them. urge=|v_d-c_d|, urgency normalises by proximity to the critical extreme; the drive is a decaying held quantity (the 196000 scale2 atom); pleasure/displeasure = sign of delta c_d. Affiliation is the social currency, nurturing its complement (absence = psychopathy)."
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [
+  {
+   "provenance": "seed:drives:modstate-active-drive",
+   "src": {
+    "type": "ModulatorState",
+    "var": "ms"
+   },
+   "edge_type": "has_active_drive",
+   "tgt": {
+    "type": "Drive",
+    "var": "d"
+   }
+  },
+  {
+   "provenance": "seed:drives:modstate-leading-drive",
+   "src": {
+    "type": "ModulatorState",
+    "var": "ms"
+   },
+   "edge_type": "leading_drive",
+   "tgt": {
+    "type": "Drive",
+    "var": "d"
+   }
+  }
+ ],
+ "rules": [
+  {
+   "name": "drive_decay",
+   "area": "retina",
+   "order": 0,
+   "latency_class": "hard_realtime",
+   "match": [
+    [
+     "ms",
+     "has_active_drive",
+     "d"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ms"
+       },
+       "key": "enabled"
+      },
+      "b": {
+       "type": "Lit",
+      "value": 1.0
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "d"
+       },
+       "key": "now_epoch"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "d"
+       },
+       "key": "last_tend"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "d",
+     "c_d",
+     {
+      "__term__": {
+       "type": "Ashr",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "d"
+        },
+        "key": "c_d"
+       },
+       "b": {
+        "type": "IDiv",
+        "a": {
+         "type": "Minus",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "d"
+          },
+          "key": "now_epoch"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "d"
+          },
+          "key": "last_tend"
+         }
+        },
+        "b": {
+         "type": "Max",
+         "items": [
+          {
+           "type": "Lit",
+           "value": 1.0
+          },
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "d"
+           },
+           "key": "half_life"
+          }
+         ]
+        }
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "d",
+     "last_tend",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "d"
+       },
+       "key": "now_epoch"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "drive_urge",
+   "area": "retina",
+   "order": 1,
+   "latency_class": "hard_realtime",
+   "match": [
+    [
+     "ms",
+     "has_active_drive",
+     "d"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ms"
+       },
+       "key": "enabled"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "d",
+     "urge",
+     {
+      "__term__": {
+       "type": "Abs",
+       "arg": {
+        "type": "Minus",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "d"
+         },
+         "key": "v_d"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "d"
+         },
+         "key": "c_d"
+        }
+       }
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "drive_urgency",
+   "area": "retina",
+   "order": 2,
+   "latency_class": "hard_realtime",
+   "match": [
+    [
+     "ms",
+     "has_active_drive",
+     "d"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ms"
+       },
+       "key": "enabled"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "d",
+     "urgency",
+     {
+      "__term__": {
+       "type": "IDiv",
+       "a": {
+        "type": "Times",
+        "items": [
+         {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "d"
+            },
+            "key": "v_d"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "d"
+            },
+            "key": "c_d"
+           }
+          }
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "d"
+          },
+          "key": "scale"
+         }
+        ]
+       },
+       "b": {
+        "type": "Max",
+        "items": [
+         {
+          "type": "Lit",
+          "value": 1.0
+         },
+         {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "d"
+            },
+            "key": "v_d"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "d"
+            },
+            "key": "v_0"
+           }
+          }
+         }
+        ]
+       }
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "drive_threat_precision",
+   "area": "retina",
+   "order": 1,
+   "latency_class": "hard_realtime",
+   "match": [
+    [
+     "ms",
+     "has_active_drive",
+     "d"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ms"
+       },
+       "key": "enabled"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "d"
+       },
+       "key": "threat"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "d",
+     "threat_precision",
+     {
+      "__term__": {
+       "type": "Ashr",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "d"
+        },
+        "key": "threat_c0"
+       },
+       "b": {
+        "type": "IDiv",
+        "a": {
+         "type": "Minus",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "d"
+          },
+          "key": "threat_now_epoch"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "d"
+          },
+          "key": "threat_last_refresh"
+         }
+        },
+        "b": {
+         "type": "Max",
+         "items": [
+          {
+           "type": "Lit",
+           "value": 1.0
+          },
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "d"
+           },
+           "key": "threat_half_life"
+          }
+         ]
+        }
+       }
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "drive_threat_persist",
+   "area": "retina",
+   "order": 2,
+   "latency_class": "hard_realtime",
+   "match": [
+    [
+     "ms",
+     "has_active_drive",
+     "d"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ms"
+       },
+       "key": "enabled"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "d"
+       },
+       "key": "threat"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "d",
+     "threat_persists",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gte",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "d"
+         },
+         "key": "threat_precision"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "d"
+         },
+         "key": "t_present"
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": 1.0
+       },
+       "other": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "drive_pleasure",
+   "area": "retina",
+   "order": 2,
+   "latency_class": "hard_realtime",
+   "match": [
+    [
+     "ms",
+     "has_active_drive",
+     "d"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ms"
+       },
+       "key": "enabled"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "d",
+     "pleasure",
+     {
+      "__term__": {
+       "type": "Max",
+       "items": [
+        {
+         "type": "Lit",
+         "value": 0.0
+        },
+        {
+         "type": "Minus",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "d"
+          },
+          "key": "c_d"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "d"
+          },
+          "key": "c_d_prev"
+         }
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "drive_displeasure",
+   "area": "retina",
+   "order": 2,
+   "latency_class": "hard_realtime",
+   "match": [
+    [
+     "ms",
+     "has_active_drive",
+     "d"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ms"
+       },
+       "key": "enabled"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "d",
+     "displeasure",
+     {
+      "__term__": {
+       "type": "Max",
+       "items": [
+        {
+         "type": "Lit",
+         "value": 0.0
+        },
+        {
+         "type": "Minus",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "d"
+          },
+          "key": "c_d_prev"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "d"
+          },
+          "key": "c_d"
+         }
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "drive_arousal_contrib",
+   "area": "retina",
+   "order": 3,
+   "latency_class": "hard_realtime",
+   "match": [
+    [
+     "ms",
+     "has_active_drive",
+     "d"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ms"
+       },
+       "key": "enabled"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "d",
+     "arousal_contrib",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "d"
+         },
+         "key": "threat"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       "then": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "d"
+        },
+        "key": "threat_precision"
+       },
+       "other": {
+        "type": "IDiv",
+        "a": {
+         "type": "Times",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "d"
+           },
+           "key": "urge"
+          },
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "d"
+           },
+           "key": "urgency"
+          }
+         ]
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "d"
+         },
+         "key": "scale"
+        }
+       }
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "drive_affiliation_legitimacy",
+   "area": "retina",
+   "order": 0,
+   "latency_class": "hard_realtime",
+   "match": [
+    [
+     "ms",
+     "has_active_drive",
+     "d"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ms"
+       },
+       "key": "enabled"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "d"
+       },
+       "key": "is_affiliation"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "d"
+        },
+        "key": "legitimacy"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "d",
+     "c_d",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "d"
+         },
+         "key": "c_d"
+        },
+        {
+         "type": "Times",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "d"
+           },
+           "key": "legitimacy"
+          },
+          {
+           "type": "IfThenElse",
+           "cond": {
+            "type": "Gt",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "d"
+             },
+             "key": "legitimacy"
+            },
+            "b": {
+             "type": "Lit",
+             "value": 0.0
+            }
+           },
+           "then": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "d"
+            },
+            "key": "gain"
+           },
+           "other": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "d"
+            },
+            "key": "loss"
+           }
+          },
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "d"
+           },
+           "key": "social_weight"
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "d",
+     "legitimacy",
+     {
+      "__term__": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     }
+    ]
+   ]
+  }
+ ]
+}

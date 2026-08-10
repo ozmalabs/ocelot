@@ -1,0 +1,50 @@
+{
+  "microtheory": {
+    "name": "ecological_psychology_perception",
+    "definition": "Gibson's ecological approach to perception. Direct perception of affordances. Information specifies perceiver-environment relations. Rejects representationalism. Substrate analogue: substrate's direct-affordance approach to inputs.",
+    "category": "embodied_domain",
+    "parent": "embodied_cognition_foundation"
+  },
+  "concepts": [
+    {"name": "direct_perception", "definition": "Gibson. Perception not constructed from impoverished input via inference. Information specifies environment directly. Substrate analogue: substrate's direct-input interpretation.", "category": "principles"},
+    {"name": "rich_stimulus", "definition": "Gibson. Environment provides ample information for perception when correctly analyzed. Substrate analogue: substrate's information-rich input.", "category": "principles"},
+    {"name": "ambient_array", "definition": "Optic, acoustic, etc. Structured arrays of energy reaching perceiver. Substrate analogue: substrate's full-input field.", "category": "principles"},
+    {"name": "optic_array_gibson", "definition": "Structured light from environment. Constrained by 3D world. Substrate analogue: substrate's structured visual input.", "category": "principles"},
+    {"name": "invariant_information", "definition": "Properties of stimulus array constant under transformation (e.g., self-motion). Specify environmental features. Substrate analogue: substrate's transformation-invariant features.", "category": "principles"},
+    {"name": "transformational_invariant", "definition": "What persists across changes. Substrate analogue: substrate's basin-stable properties.", "category": "principles"},
+
+    {"name": "affordance_concept", "definition": "Gibson 1979. Action possibilities for animal in environment. Relational property. Substrate analogue: substrate's environment-action coupling.", "category": "affordances"},
+    {"name": "graspability", "definition": "Affordance for grasping. Specified by handle size relative to hand. Substrate analogue: substrate's action-capability matching.", "category": "affordances"},
+    {"name": "walkability", "definition": "Affordance for walking. Surface flatness, friction, gap size relative to step. Substrate analogue: substrate's traversability.", "category": "affordances"},
+    {"name": "reachability", "definition": "Affordance for reaching. Distance relative to arm length. Substrate analogue: substrate's range-of-action.", "category": "affordances"},
+    {"name": "affordance_perception", "definition": "Affordances perceived directly, not inferred from features. Substrate analogue: substrate's direct-action-availability.", "category": "affordances"},
+
+    {"name": "tau_function", "definition": "Lee 1976. Time-to-contact from optical expansion rate. Used in steering + collision avoidance. Substrate analogue: substrate's temporal-margin computation.", "category": "tau"},
+    {"name": "optical_flow", "definition": "Pattern of motion in optic array. Specifies self-motion + scene structure + heading. Substrate analogue: substrate's flow-from-action.", "category": "tau"},
+    {"name": "focus_of_expansion_ecological", "definition": "Point in optic flow that doesn't move during locomotion. Heading direction. Substrate analogue: substrate's action-direction marker.", "category": "tau"},
+
+    {"name": "perception_action_cycle_gibson", "definition": "Continuous loop of perception → action → new perception. No discrete steps. Substrate analogue: substrate's continuous loop.", "category": "cycle"},
+    {"name": "active_exploration", "definition": "Perception requires + drives exploration. Movement generates new information. Substrate analogue: substrate's exploration-based learning.", "category": "cycle"},
+    {"name": "perception_as_information_pickup", "definition": "Not construction — picking up what's already there. Substrate analogue: substrate's affordance-detection.", "category": "cycle"},
+
+    {"name": "ecological_optics", "definition": "Gibson. Optics of perceiver-environment system. Substrate analogue: substrate's perceiver-environment coupling theory.", "category": "ecological_optics"},
+    {"name": "texture_gradient", "definition": "Surface texture density varies with distance + slant. Cue to depth + orientation. Substrate analogue: substrate's spatial-feature cue.", "category": "ecological_optics"},
+    {"name": "horizon_ratio", "definition": "Same-height objects intersect horizon at same fraction. Invariant for size. Substrate analogue: substrate's reference-invariant.", "category": "ecological_optics"},
+
+    {"name": "ecological_validity", "definition": "Brunswik. Cue's correlation with environmental property. Useful info has high ecological validity. Substrate analogue: substrate's reliable-feature criterion.", "category": "validation"},
+    {"name": "brunswik_lens_model", "definition": "Brunswik. Probabilistic relations between distal property, proximal cues, perceiver inference. Substrate analogue: substrate's inferential cue-utilization.", "category": "validation"},
+
+    {"name": "infant_perception_ecological", "definition": "Babies use ecological information from birth. Visual cliff (Walk + Gibson 1961). Substrate analogue: substrate's seeded ecological priors.", "category": "development"},
+    {"name": "visual_cliff_experiment", "definition": "Walk + Gibson 1961. Infants refuse to crawl over apparent drop. Direct depth perception. Substrate analogue: substrate's seeded-danger detection.", "category": "development"},
+
+    {"name": "ecological_realism", "definition": "Environment exists independently + provides perceivable information about itself. Substrate analogue: substrate's grounded-environment view.", "category": "philosophy"},
+    {"name": "anti_representationalism_gibson", "definition": "Gibson + ecological psychology reject internal representations as theoretical entities. Information IN the environment. Substrate analogue: substrate's direct-information view.", "category": "philosophy"}
+  ],
+  "rules": [
+    {"name": "perception_is_direct_information_pickup", "head": "the substrate receives structured input", "body": "the input contains information specifying environmental features directly — perception picks it up, doesn't reconstruct. Gibson. Substrate's direct perception."},
+    {"name": "affordances_couple_environment_to_action", "head": "the substrate perceives an environment", "body": "affordances specify available actions given substrate's capabilities. Substrate's coupled action-perception."},
+    {"name": "movement_generates_invariants_for_pickup", "head": "the substrate moves through environment", "body": "optical flow + transformation invariants emerge that specify both self-motion + environment. Substrate's exploration-generates-info."},
+    {"name": "tau_specifies_time_to_contact", "head": "the substrate approaches an object", "body": "the inverse rate of optical expansion specifies time-to-contact. Lee 1976. Substrate's temporal-margin estimation."},
+    {"name": "ecological_validity_filters_useful_cues", "head": "the substrate uses environmental cues for inference", "body": "high-validity cues (those reliably correlated with environmental properties) are most useful. Brunswik. Substrate's reliable-cue prioritization."}
+  ]
+}

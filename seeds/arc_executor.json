@@ -1,0 +1,1343 @@
+{
+  "_GENERATED_BY": "tools/build_arc_executor_seed.py",
+  "_REGENERATION_IS_GATED_BYTE_IDENTICAL": "tests/test_arc_executor_migrated.py::test_ex6_the_seed_REGENERATES_byte_identically re-runs this builder and diffs.  The Term idioms are IMPORTED from tools/build_arc_goals_seed.py, so if MEASURE_EPOCH or the pool predicate ever changes there, this seed goes out of date LOUDLY instead of silently diverging.",
+  "self_load_only": true,
+  "_SELF_LOAD_ONLY_RATIONALE": "substrate/boot_all.py::_read_seeds GLOBS seeds/*.json and installs every match at boot, so a file here is live in EVERY agent in the tree the moment it lands.  seeds/arc_goals.json and seeds/arc_magnitude.json both ship self_load_only for that reason and this seed keeps the gating: an executor that dispatches jobs is the LAST thing that should arrive in every agent by a glob.  Activation is one key and a paired tree-wide sweep.",
+  "id": "arc_executor",
+  "version": "1.0.0",
+  "depends_on": [
+    "goal_residuals",
+    "arc_goals"
+  ],
+  "description": "AG-5 -- THE EXECUTOR AND THE STATUS LIFECYCLE.  Two independent rungs converged on this as the blocker: the arc-goal rung called itself 'a planning layer with no hands', and the magnitude rung found decomposition blocked because a parent goal must LEAVE THE POOL and nothing in this tree ever wrote a terminal status.  This seed is the missing seam, and it is four rules. ax_dispatch turns the arc-grain collapse's winner into an ExecOrder, routed by route_pick's own Argmin-over-cues shape, and is STRUCTURALLY INCAPABLE of ordering a goal whose kind has no ExecClass -- on the shipped graph the winner is exactly such a goal.  ax_retired_epoch stamps when a goal went terminal.  ax_rearm is the anti-oscillation latch: a retired goal re-enters the pool only when its source residual is genuinely stale again AND the measurement epoch has advanced.  ax_close makes a completed execution countable. THE EPOCH ITSELF: `arc_measure_epoch` was a counter with no producer, and every expiry mechanism in the two rungs below turns on it.  The adapter bumps it WHEN AND ONLY WHEN a measurement actually ran, so an unconditioned answer's one-epoch life is now measured in measurements.",
+  "microtheory": "arc6_executor",
+  "nodes": [
+    {
+      "local_id": 4000,
+      "type": "ExecPolicy",
+      "attrs": {
+        "name": "default_exec_policy",
+        "priority": 1,
+        "_confinement_is_STRUCTURAL_not_promised": "The executor can act on exactly the goal kinds for which an ExecClass cue exists.  There is ONE, and the dispatch route is an Argmin over the cues matching the goal's kind -- so a supply_blocker / source_claim / self_concern winner routes to NOTHING and mints no order.  Adding a class is a seed edit, visible in a diff; it is not something a rule can do."
+      }
+    },
+    {
+      "local_id": 4010,
+      "type": "ExecClass",
+      "attrs": {
+        "name": "re_measure",
+        "runner": "arc6_remeasure_row_verdict",
+        "priority": 1,
+        "evidence_artifact": "results/arc6_verdict_pricing.json",
+        "source_rid": "arc6.verdict.row_verdict_seed_only",
+        "denominator_unit": "mbpp_tasks",
+        "_the_route_key_is_THREE_PART": "kind + evidence_artifact + source_rid.  MEASURED: `kind` alone is not enough -- an expired unconditioned testimony mints arc.remeasure.arc.testimony.<region> with kind:'re_measure' and NO evidence_artifact, and a kind-only route would have handed that to this runner.",
+        "description": "THE ONE EXECUTABLE CLASS.  A re-measurement goal names an artifact, a condition and a denominator, and the measurement it asks for ALREADY EXISTS AS A SCRIPT -- so executing it is re-running that script on the current binary, which is mechanical I/O.  The other seven goals on the shipped agenda come from seam A's measured blocker split and from claims with no artifact: they require BUILDING something, and nothing here can do that.",
+        "_runner_is_a_NAME_not_a_command": "The adapter resolves this name against a frozen capability table.  A name with no table entry is REFUSED and recorded; the string is never a path, never an argv and never a shell word."
+      }
+    }
+  ],
+  "edges": [
+    {
+      "src": {
+        "local": 4000
+      },
+      "tgt": {
+        "local": 4010
+      },
+      "type": "has_exec_class",
+      "attrs": {}
+    }
+  ],
+  "productions": [
+    {
+      "provenance": "seed:arc_executor:has_exec_class-0",
+      "src": {
+        "type": "ExecPolicy",
+        "var": "s"
+      },
+      "edge_type": "has_exec_class",
+      "tgt": {
+        "type": "ExecClass",
+        "var": "t"
+      }
+    },
+    {
+      "provenance": "seed:arc_executor:has_exec_order-1",
+      "src": {
+        "type": "ArcGoal",
+        "var": "s"
+      },
+      "edge_type": "has_exec_order",
+      "tgt": {
+        "type": "ExecOrder",
+        "var": "t"
+      }
+    },
+    {
+      "provenance": "seed:arc_executor:has_exec_order-2",
+      "src": {
+        "type": "ArcAgenda",
+        "var": "s"
+      },
+      "edge_type": "has_exec_order",
+      "tgt": {
+        "type": "ExecOrder",
+        "var": "t"
+      }
+    }
+  ],
+  "rules": [
+    {
+      "name": "ax_dispatch",
+      "comment": "AG-5, THE COLLAPSE->ACTION SEAM, AND IT IS route_pick's OWN SHAPE. The DECISION of what to run is this rule; running it is the adapter's mechanical I/O.  Three things are load-bearing and each has a measured reason. (1) THE WINNER IS BOUND BY ag_select'S OWN STAMP, never re-ranked -- the ag_select_audit / ag_ask precedent -- AND THE STAMP MUST HAVE SETTLED.  MEASURED: reading the stamp inside the same fixpoint that writes it reads a TRANSIENT, and the first draft of this rule ordered the RUNNER-UP on the shipped boot while the fixpoint's final winner was a different goal.  `_armed` is the two-tick agreement test that closes it, on the winner AND its value. (2) CONFINEMENT IS THE EMPTY ARGMIN.  The route is Argmin(Filter(ExecClass, <the THREE-PART key of _cue_matches plus _routable's source_rid check>), priority) and ONE ExecClass ships, so a goal that does not match on ALL THREE routes to null and the Exists guard refuses the mint.  kind ALONE IS NOT THE KEY, and that was measured, not foreseen -- see _cue_matches.  On the SHIPPED graph the winner IS unroutable (the 42-task blocker goal), so this branch is exercised by the boot itself, not by a fixture. (3) THE POOL PREDICATE IS RE-ASSERTED ON THE BOUND GOAL.  ag_select writes arc_sel_agid only while the pool is non-empty, so the stamp can outlive its goal's membership; without this the executor could run a goal that had already retired. SERIALISED TWO WAYS: at most one outstanding order globally, and at most one order per (goal, measurement epoch) -- so re-running the fixpoint cannot mint a second order for the same job, and a job may only recur once a NEW MEASUREMENT has happened.",
+      "batch": true,
+      "match": [
+        [
+          "agenda",
+          "uses_policy",
+          "pol"
+        ],
+        [
+          "agenda",
+          "has_arc_goal",
+          "g"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "And",
+            "items": [
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "agenda"
+                  },
+                  "key": "arc_exec_armed_agid"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "g"
+                  },
+                  "key": "agid"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "agenda"
+                  },
+                  "key": "arc_exec_armed_agid"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "agenda"
+                  },
+                  "key": "arc_sel_agid"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "agenda"
+                  },
+                  "key": "arc_exec_armed_value"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "agenda"
+                  },
+                  "key": "arc_sel_value"
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "agenda"
+                    },
+                    "key": "arc_exec_armed_agid"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": null
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "type": "And",
+            "items": [
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "g"
+                    },
+                    "key": "status"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": "retired"
+                  }
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "g"
+                    },
+                    "key": "status"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": "settled"
+                  }
+                }
+              },
+              {
+                "type": "Gt",
+                "a": {
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "g"
+                      },
+                      "key": "headroom_n"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": null
+                    }
+                  },
+                  "then": {
+                    "type": "Lit",
+                    "value": 0.0
+                  },
+                  "other": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "g"
+                    },
+                    "key": "headroom_n"
+                  }
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 0.0
+                }
+              }
+            ]
+          },
+          {
+            "type": "And",
+            "items": [
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "g"
+                    },
+                    "key": "evidence_artifact"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": null
+                  }
+                }
+              },
+              {
+                "type": "Exists",
+                "source": {
+                  "type": "NodesOfType",
+                  "node_type": "ExecClass"
+                },
+                "var_name": "ec3",
+                "predicate": {
+                  "type": "And",
+                  "items": [
+                    {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "ec3"
+                        },
+                        "key": "name"
+                      },
+                      "b": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "g"
+                        },
+                        "key": "kind"
+                      }
+                    },
+                    {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "ec3"
+                        },
+                        "key": "evidence_artifact"
+                      },
+                      "b": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "g"
+                        },
+                        "key": "evidence_artifact"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Argmin",
+                    "source": {
+                      "type": "Neighbours",
+                      "node": {
+                        "type": "Var",
+                        "name": "g"
+                      },
+                      "edge_type": "mint_source",
+                      "any_type": false
+                    },
+                    "var_name": "msr",
+                    "value": {
+                      "type": "Lit",
+                      "value": 0
+                    },
+                    "default": null
+                  },
+                  "key": "rid"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Argmin",
+                    "source": {
+                      "type": "Filter",
+                      "source": {
+                        "type": "NodesOfType",
+                        "node_type": "ExecClass"
+                      },
+                      "var_name": "ec",
+                      "predicate": {
+                        "type": "And",
+                        "items": [
+                          {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "ec"
+                              },
+                              "key": "name"
+                            },
+                            "b": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "g"
+                              },
+                              "key": "kind"
+                            }
+                          },
+                          {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "ec"
+                              },
+                              "key": "evidence_artifact"
+                            },
+                            "b": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "g"
+                              },
+                              "key": "evidence_artifact"
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    "var_name": "ec2",
+                    "value": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "ec2"
+                      },
+                      "key": "priority"
+                    },
+                    "default": null
+                  },
+                  "key": "source_rid"
+                }
+              }
+            ]
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "g"
+                },
+                "edge_type": "mint_source",
+                "any_type": false
+              }
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "NodesOfType",
+                "node_type": "ExecOrder"
+              },
+              "var_name": "o1",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "o1"
+                  },
+                  "key": "status"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "ordered"
+                }
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "NodesOfType",
+                "node_type": "ExecOrder"
+              },
+              "var_name": "o2",
+              "predicate": {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "o2"
+                      },
+                      "key": "agid"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "g"
+                      },
+                      "key": "agid"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "o2"
+                      },
+                      "key": "ordered_epoch"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Argmin",
+                        "source": {
+                          "type": "Filter",
+                          "source": {
+                            "type": "NodesOfType",
+                            "node_type": "ResidualFact"
+                          },
+                          "var_name": "aef",
+                          "predicate": {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "aef"
+                              },
+                              "key": "name"
+                            },
+                            "b": {
+                              "type": "Lit",
+                              "value": "arc_measure_epoch"
+                            }
+                          }
+                        },
+                        "var_name": "aef2",
+                        "value": {
+                          "type": "Lit",
+                          "value": 0
+                        },
+                        "default": null
+                      },
+                      "key": "value"
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "o",
+          "ExecOrder",
+          {
+            "agid": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "g"
+                },
+                "key": "agid"
+              }
+            },
+            "goal_kind": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "g"
+                },
+                "key": "kind"
+              }
+            },
+            "runner": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Argmin",
+                  "source": {
+                    "type": "Filter",
+                    "source": {
+                      "type": "NodesOfType",
+                      "node_type": "ExecClass"
+                    },
+                    "var_name": "ec",
+                    "predicate": {
+                      "type": "And",
+                      "items": [
+                        {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "ec"
+                            },
+                            "key": "name"
+                          },
+                          "b": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "g"
+                            },
+                            "key": "kind"
+                          }
+                        },
+                        {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "ec"
+                            },
+                            "key": "evidence_artifact"
+                          },
+                          "b": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "g"
+                            },
+                            "key": "evidence_artifact"
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  "var_name": "ec2",
+                  "value": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "ec2"
+                    },
+                    "key": "priority"
+                  },
+                  "default": null
+                },
+                "key": "runner"
+              }
+            },
+            "exec_class": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Argmin",
+                  "source": {
+                    "type": "Filter",
+                    "source": {
+                      "type": "NodesOfType",
+                      "node_type": "ExecClass"
+                    },
+                    "var_name": "ec",
+                    "predicate": {
+                      "type": "And",
+                      "items": [
+                        {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "ec"
+                            },
+                            "key": "name"
+                          },
+                          "b": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "g"
+                            },
+                            "key": "kind"
+                          }
+                        },
+                        {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "ec"
+                            },
+                            "key": "evidence_artifact"
+                          },
+                          "b": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "g"
+                            },
+                            "key": "evidence_artifact"
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  "var_name": "ec2",
+                  "value": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "ec2"
+                    },
+                    "key": "priority"
+                  },
+                  "default": null
+                },
+                "key": "name"
+              }
+            },
+            "source_rid": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Argmin",
+                  "source": {
+                    "type": "Neighbours",
+                    "node": {
+                      "type": "Var",
+                      "name": "g"
+                    },
+                    "edge_type": "mint_source",
+                    "any_type": false
+                  },
+                  "var_name": "ms",
+                  "value": {
+                    "type": "Lit",
+                    "value": 0
+                  },
+                  "default": null
+                },
+                "key": "rid"
+              }
+            },
+            "evidence_artifact": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "g"
+                },
+                "key": "evidence_artifact"
+              }
+            },
+            "ordered_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Argmin",
+                  "source": {
+                    "type": "Filter",
+                    "source": {
+                      "type": "NodesOfType",
+                      "node_type": "ResidualFact"
+                    },
+                    "var_name": "aef",
+                    "predicate": {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "aef"
+                        },
+                        "key": "name"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": "arc_measure_epoch"
+                      }
+                    }
+                  },
+                  "var_name": "aef2",
+                  "value": {
+                    "type": "Lit",
+                    "value": 0
+                  },
+                  "default": null
+                },
+                "key": "value"
+              }
+            },
+            "status": "ordered",
+            "_the_decision_lives_here": "which job to run is this rule's Argmin over the route table applied to the collapse's own winner.  The adapter reads `runner` and looks it up in a frozen table; it chooses nothing."
+          }
+        ],
+        [
+          "add_edge",
+          "g",
+          "has_exec_order",
+          "o"
+        ],
+        [
+          "add_edge",
+          "agenda",
+          "has_exec_order",
+          "o"
+        ],
+        [
+          "set_attr",
+          "g",
+          "status",
+          "pursued"
+        ],
+        [
+          "set_attr",
+          "g",
+          "pursued_epoch",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Argmin",
+                "source": {
+                  "type": "Filter",
+                  "source": {
+                    "type": "NodesOfType",
+                    "node_type": "ResidualFact"
+                  },
+                  "var_name": "aef",
+                  "predicate": {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "aef"
+                      },
+                      "key": "name"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "arc_measure_epoch"
+                    }
+                  }
+                },
+                "var_name": "aef2",
+                "value": {
+                  "type": "Lit",
+                  "value": 0
+                },
+                "default": null
+              },
+              "key": "value"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "ax_retired_epoch",
+      "comment": "WHEN a goal reached its terminal status.  ag_remeasure_retire (seeds/arc_goals.json, byte-frozen and gated) writes THAT it retired; the anti-oscillation latch below is defined in MEASUREMENT EPOCHS, and until this rung the epoch had no producer, so there was nothing to stamp.  Fires on an ABSENT stamp (`Eq(attr, Lit null)` is this tree's 'absent' test) OR on one ax_rearm has CONSUMED -- the second disjunct is what makes a SECOND retirement get its own epoch instead of inheriting the first one's.  Disjoint from ax_rearm's guard by construction, so the two never contend for the same goal in one pass.",
+      "batch": true,
+      "match": [
+        [
+          "agenda",
+          "uses_policy",
+          "pol"
+        ],
+        [
+          "agenda",
+          "has_arc_goal",
+          "g"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "g"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "retired"
+            }
+          },
+          {
+            "type": "Or",
+            "items": [
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "g"
+                  },
+                  "key": "retired_epoch"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": null
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "g"
+                  },
+                  "key": "retired_epoch"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "__consumed_by_ax_rearm__"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "g",
+          "retired_epoch",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Argmin",
+                "source": {
+                  "type": "Filter",
+                  "source": {
+                    "type": "NodesOfType",
+                    "node_type": "ResidualFact"
+                  },
+                  "var_name": "aef",
+                  "predicate": {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "aef"
+                      },
+                      "key": "name"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "arc_measure_epoch"
+                    }
+                  }
+                },
+                "var_name": "aef2",
+                "value": {
+                  "type": "Lit",
+                  "value": 0
+                },
+                "default": null
+              },
+              "key": "value"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "ax_rearm",
+      "comment": "THE ANTI-OSCILLATION LATCH, AND IT IS TWO-SIDED BY CONSTRUCTION. The arc-goal design's SS8.2 guard -- 'a selected goal moves to a terminal status and only re-enters the pool on a measure_epoch bump' -- recorded by that rung as NOT implemented because a terminal status with no executor empties the pool with nothing done.  Now there is an executor. A retired re-measurement goal comes back ONLY when BOTH hold: its source residual is GENUINELY STALE AGAIN (gr_condition_lapse's own verdict, read off the residual -- this rule never re-evaluates a condition), AND the MEASUREMENT EPOCH HAS ADVANCED past the epoch it retired in.  The second half is what makes it a latch rather than a flap: the moment after a re-measurement the residual is un-stale AND the epoch is the retirement epoch, so BOTH halves refuse.  A condition that re-fails inside the same epoch waits; a new measurement without a re-failed condition changes nothing. WHY NOT ag_mint_remeasure.  That rule's mint-once guard is the monotone `remeasure_goal` EDGE LATCH and this engine has no remove_edge, so it can never fire twice for one residual.  Re-arming the EXISTING goal is therefore the only re-entry there is, and it is the better one: the pool never grows a duplicate, and `rearm_count` makes oscillation COUNTABLE.",
+      "batch": true,
+      "match": [
+        [
+          "agenda",
+          "uses_policy",
+          "pol"
+        ],
+        [
+          "agenda",
+          "has_arc_goal",
+          "g"
+        ],
+        [
+          "r",
+          "remeasure_goal",
+          "g"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "g"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "retired"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "r"
+              },
+              "key": "stale"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "g"
+                },
+                "key": "retired_epoch"
+              },
+              "b": {
+                "type": "Lit",
+                "value": null
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "g"
+                },
+                "key": "retired_epoch"
+              },
+              "b": {
+                "type": "Lit",
+                "value": "__consumed_by_ax_rearm__"
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "g"
+                },
+                "key": "retired_epoch"
+              },
+              "b": {
+                "type": "Attr",
+                "node": {
+                  "type": "Argmin",
+                  "source": {
+                    "type": "Filter",
+                    "source": {
+                      "type": "NodesOfType",
+                      "node_type": "ResidualFact"
+                    },
+                    "var_name": "aef",
+                    "predicate": {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "aef"
+                        },
+                        "key": "name"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": "arc_measure_epoch"
+                      }
+                    }
+                  },
+                  "var_name": "aef2",
+                  "value": {
+                    "type": "Lit",
+                    "value": 0
+                  },
+                  "default": null
+                },
+                "key": "value"
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "g",
+          "status",
+          "minted"
+        ],
+        [
+          "set_attr",
+          "g",
+          "rearmed_epoch",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Argmin",
+                "source": {
+                  "type": "Filter",
+                  "source": {
+                    "type": "NodesOfType",
+                    "node_type": "ResidualFact"
+                  },
+                  "var_name": "aef",
+                  "predicate": {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "aef"
+                      },
+                      "key": "name"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "arc_measure_epoch"
+                    }
+                  }
+                },
+                "var_name": "aef2",
+                "value": {
+                  "type": "Lit",
+                  "value": 0
+                },
+                "default": null
+              },
+              "key": "value"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "g",
+          "rearmed_because",
+          "source_residual_stale_again_at_a_LATER_measurement_epoch"
+        ],
+        [
+          "set_attr",
+          "g",
+          "rearm_count",
+          {
+            "__term__": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "g"
+                      },
+                      "key": "rearm_count"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": null
+                    }
+                  },
+                  "then": {
+                    "type": "Lit",
+                    "value": 0.0
+                  },
+                  "other": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "g"
+                    },
+                    "key": "rearm_count"
+                  }
+                },
+                {
+                  "type": "Lit",
+                  "value": 1.0
+                }
+              ]
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "g",
+          "retired_epoch",
+          "__consumed_by_ax_rearm__"
+        ]
+      ]
+    },
+    {
+      "name": "ax_close",
+      "comment": "AN EXECUTION THAT COMPLETED IS A COUNTABLE GRAPH FACT.  The order closes when its own goal has reached the terminal status -- i.e. when ag_remeasure_retire fired, which happens only if the re-measurement actually un-staled the source residual.  So a CLOSED order is evidence the loop closed, and an order left at `ran` is evidence it did not: the two are distinguishable without reading any adapter return value.",
+      "batch": true,
+      "match": [
+        [
+          "g",
+          "has_exec_order",
+          "o"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "o"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "ran"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "g"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "retired"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "o",
+          "status",
+          "closed"
+        ],
+        [
+          "set_attr",
+          "o",
+          "closed_epoch",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Argmin",
+                "source": {
+                  "type": "Filter",
+                  "source": {
+                    "type": "NodesOfType",
+                    "node_type": "ResidualFact"
+                  },
+                  "var_name": "aef",
+                  "predicate": {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "aef"
+                      },
+                      "key": "name"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "arc_measure_epoch"
+                    }
+                  }
+                },
+                "var_name": "aef2",
+                "value": {
+                  "type": "Lit",
+                  "value": 0
+                },
+                "default": null
+              },
+              "key": "value"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "o",
+          "outcome",
+          "goal_retired_source_residual_no_longer_stale"
+        ]
+      ]
+    }
+  ]
+}

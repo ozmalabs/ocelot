@@ -1,0 +1,46 @@
+{
+ "id": "semantic_relations",
+ "version": "1.0.0",
+ "depends_on": ["semantic_comprehension"],
+ "description": "The SEMANTICS faculty's CONCEPT-RELATIONS piece (graph-native): the meaning concepts are wired into a SEMANTIC NETWORK by Rules over the meaning net. Two relations — a TAXONOMIC one (script_sibling: same writing system) and a PERCEPTUAL one (looks_like: confusable, GROUNDED in the agent's OWN recogniser distance, PointSetDist between the concepts' canonical exemplar forms, below a threshold carried on the script node). relate_meaning_form first lifts each meaning's canonical form off its recognised exemplar so the perceptual relation has something to compare. The relations ARE the Rules; the host only sets the threshold parameter and reads the graph back.",
+ "microtheory": {"name": "semantic_relations", "description": "wire meanings into a semantic network"},
+ "nodes": [], "edges": [], "productions": [],
+ "rules": [
+  {
+   "name": "relate_meaning_form",
+   "match": [["m", "recognised_as", "cand"], ["m", "denotes", "meaning"]],
+   "where": {"type": "Eq",
+     "a": {"type": "Count", "source": {"type": "Neighbours",
+            "node": {"type": "Var", "name": "meaning"}, "edge_type": "exemplar", "any_type": false}},
+     "b": {"type": "Lit", "value": 0}},
+   "effects": [
+     ["add_edge", "meaning", "exemplar", "cand"],
+     ["set_attr", "meaning", "form_feat",
+       {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "cand"}, "key": "axs_synth_feat"}}]
+   ]
+  },
+  {
+   "name": "relate_script_sibling",
+   "match": [["m1", "in_alphabet", "a"], ["m2", "in_alphabet", "a"]],
+   "where": {"type": "Not", "arg": {"type": "Eq",
+     "a": {"type": "Attr", "node": {"type": "Var", "name": "m1"}, "key": "name"},
+     "b": {"type": "Attr", "node": {"type": "Var", "name": "m2"}, "key": "name"}}},
+   "effects": [["add_edge", "m1", "script_sibling", "m2"]]
+  },
+  {
+   "name": "relate_confusable",
+   "match": [["m1", "in_alphabet", "a"], ["m2", "in_alphabet", "a"]],
+   "where": {"type": "And", "items": [
+     {"type": "Not", "arg": {"type": "Eq",
+       "a": {"type": "Attr", "node": {"type": "Var", "name": "m1"}, "key": "name"},
+       "b": {"type": "Attr", "node": {"type": "Var", "name": "m2"}, "key": "name"}}},
+     {"type": "Lt",
+       "a": {"type": "PointSetDist",
+              "a": {"type": "Attr", "node": {"type": "Var", "name": "m1"}, "key": "form_feat"},
+              "b": {"type": "Attr", "node": {"type": "Var", "name": "m2"}, "key": "form_feat"}},
+       "b": {"type": "Attr", "node": {"type": "Var", "name": "a"}, "key": "looks_like_thr"}}
+   ]},
+   "effects": [["add_edge", "m1", "looks_like", "m2"]]
+  }
+ ]
+}

@@ -1,0 +1,118 @@
+{
+  "id": "thermo_cycles_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "Carnot_cycle",
+  "in_microtheory": "engineering",
+  "description": "Thermodynamic cycles decomposed. Carnot ideal, Rankine + supercritical + reheat + regeneration, Brayton + combined cycle + intercooling, Otto + Diesel + Atkinson, refrigeration cycles, absorption refrigeration, heat pumps.",
+  "sub_mechanisms": [
+    {
+      "name": "regenerative_Rankine",
+      "definition": "Steam extracted from turbine preheats feedwater. Reduces heat rejected at condenser.",
+      "why": "Improves Rankine efficiency. Modern power plants have multiple feedwater heaters. ~3-5% efficiency gain per heater.",
+      "category": "thermo_cycle_mechanism"
+    },
+    {
+      "name": "supercritical_Rankine",
+      "definition": "Operate above critical pressure (22 MPa for water). No phase boundary; continuous transition.",
+      "why": "Higher efficiency. Modern plants: 25 MPa, 600°C → 45%+ efficiency. Ultra-supercritical pushes further. Cost: exotic materials.",
+      "category": "thermo_cycle_mechanism"
+    },
+    {
+      "name": "reheat_cycle",
+      "definition": "Steam expanded partially, reheated, expanded again. Avoid wet steam in low-pressure turbine.",
+      "why": "Standard in large power plants. Improves efficiency + prevents blade erosion. Single reheat common; double in some designs.",
+      "category": "thermo_cycle_mechanism"
+    },
+    {
+      "name": "combined_cycle",
+      "definition": "Brayton + Rankine: gas turbine exhaust drives steam cycle. Modern peakers + base load.",
+      "why": "60%+ efficiency vs ~40% standalone. Standard modern gas plant. CCGT = Combined Cycle Gas Turbine.",
+      "category": "thermo_cycle_mechanism"
+    },
+    {
+      "name": "intercooling_recuperation",
+      "definition": "Intercool: cool gas between compression stages, reducing work. Recuperate: preheat compressed air with turbine exhaust.",
+      "why": "Improves Brayton efficiency. Intercooler + recuperator + reheater = best Brayton. LMS100 aero-derivative gas turbine.",
+      "category": "thermo_cycle_mechanism"
+    },
+    {
+      "name": "Atkinson_Miller_cycle",
+      "definition": "Variant of Otto with expansion stroke > compression stroke. Higher efficiency, lower power.",
+      "why": "Hybrid car engines (Prius). Trade: efficiency for power. Atkinson via late intake closing (effectively).",
+      "category": "thermo_cycle_mechanism"
+    },
+    {
+      "name": "vapor_compression_refrigeration",
+      "definition": "Standard cycle: evaporator → compressor → condenser → expansion valve. Refrigerant phase changes.",
+      "why": "Universal AC + refrigeration. COP = Q_cold/W. R134a, R410a, R32, R290 refrigerants. Standard.",
+      "category": "thermo_cycle_mechanism"
+    },
+    {
+      "name": "absorption_refrigeration",
+      "definition": "Uses heat (not compressor) to drive cycle. Lithium bromide-water or ammonia-water.",
+      "why": "Where waste heat available. Cogen + district cooling. Low COP but uses heat (often free). Industrial application.",
+      "category": "thermo_cycle_mechanism"
+    },
+    {
+      "name": "heat_pump_COP",
+      "definition": "Heating COP = Q_hot/W. Theoretical max = T_H/(T_H-T_C). >1 because moving heat, not creating.",
+      "why": "Modern heating: 3-4 COP at moderate climates. Better than 1.0 max for electric resistance. Climate strategy.",
+      "category": "thermo_cycle_mechanism"
+    },
+    {
+      "name": "isentropic_efficiency",
+      "definition": "η = (actual work) / (isentropic work). Loss vs ideal.",
+      "why": "Real turbines, compressors, pumps not isentropic. Typical turbine: 85-90%. Compressor: 80-85%. Standard in cycle analysis.",
+      "category": "thermo_cycle_mechanism"
+    },
+    {
+      "name": "Mollier_diagram",
+      "definition": "h-s (enthalpy-entropy) chart for steam. Read process states.",
+      "why": "Standard Rankine analysis tool. Modern: software tables. Foundation of steam plant design.",
+      "category": "thermo_cycle_mechanism"
+    },
+    {
+      "name": "exergy_analysis",
+      "definition": "Available work potential. Distinguishes useful from waste energy.",
+      "why": "Second-law analysis. Heat at high T has more exergy than same at low T. Identifies process improvements.",
+      "category": "thermo_cycle_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "higher_temperature_higher_efficiency",
+      "if": ["heat engine inlet temperature increases"],
+      "then": ["maximum efficiency increases (Carnot bound)"],
+      "why": "η = 1 - T_C/T_H. Higher T_H = closer to 100%. Drives turbine inlet temperatures higher each generation. Materials limit.",
+      "soundness_category": "algebraic_law"
+    },
+    {
+      "name": "combined_cycle_60_percent_efficient",
+      "if": ["gas turbine + Rankine bottoming"],
+      "then": ["combined cycle reaches ~60% efficiency"],
+      "why": "Gas turbine 40% + bottoming 30% on exhaust = ~60%. Standard modern gas-fired plant. Best fossil efficiency.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "heat_pump_beats_electric_resistance",
+      "if": ["heating with electricity available"],
+      "then": ["heat pump 3-4x more efficient than resistance"],
+      "why": "Resistance: COP = 1. Heat pump: COP 3-4. Same electricity, 3-4× heat delivered. Climate strategy for decarbonisation.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "refrigerant_choice_balances_GWP_efficiency",
+      "if": ["new refrigerant system"],
+      "then": ["low-GWP refrigerant balances climate + efficiency"],
+      "why": "R134a high GWP (1430). R32: 675. R290 (propane): 3. R32 widespread; R290 emerging. Regulation drives change.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "isentropic_efficiency_real_world_correction",
+      "if": ["cycle analysis is preliminary"],
+      "then": ["apply isentropic efficiency for realistic predictions"],
+      "why": "Ideal cycle: optimistic. With efficiencies: realistic. Standard practice. Modern analyses include details (cooling, leakage, mechanical losses).",
+      "soundness_category": "cost_equivalence"
+    }
+  ]
+}

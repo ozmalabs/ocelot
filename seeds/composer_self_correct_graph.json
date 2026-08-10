@@ -1,0 +1,235 @@
+{
+ "id": "composer_self_correct_graph",
+ "version": "1.0.0",
+ "depends_on": [],
+ "description": "GRAPH-RESIDENT: TIER 5 COGNITION (autonomous SELF-CORRECTION -- the agent's OWN decision about WHICH predicted-divergence Impasse is worth the expense of correcting, and WHICH converging candidate fix to prefer) authored by the jabberwock via the composer (CLAUDE.md discipline: no hand-written agent rule). domains/self_correction.py's imagine_and_check_convergence / intervene_on_divergence are the MECHANICAL machinery (imagine a candidate fix, predict whether it converges, veto against the frozen-core denylist, adopt-or-propose) -- that module's own docstring names the follow-on cognition this seed closes: 'WHETHER to even ATTEMPT self-correction' and 'WHICH candidate is best when more than one converges'. This seed mints TWO artefacts from an agent -wants_self_correct_rule-> ComposeRequest trigger (ground_concern's 'correct' relation head, seeds/relation_vocabulary.json's new self_correct_action cue + seeds/composer_dispatch.json's new ComposerCue, priority 21). (1) self_correct_gate_<tag> is THE ATTEMPT-GATE: fires on every agent -surprised_by-> impasse -about_model-> cm triple (the SAME surprised_by channel composer_collapse_watch_graph.json's own predict_intervene_<tag> rule mints into) where impasse.kind=='predicted_divergence' and the CollapseModel's OWN frontier_growth_rate attr (domains/collapse_model.py's own bounded-forward-look measurement -- the mean per-round GROWTH of the volatile Observation frontier the forward-look extrapolates) is >= 2.0 -- a genuine cost-worth-it gate mirroring seeds/composer_escalation_gate_graph.json's cost_salience shape (trust the default -- most predicted divergences are left alone; only a genuinely FAST-growing frontier earns the expense of imagining candidate fixes). Deliberately a GROWTH RATE, not a static residual RATIO or raw volatile count: those are confounded by standing structural baggage every grounded concern leaves behind (domains.reflective_faculty.induce_concern's own minted CapabilityAxis never saturates, so it stays permanently volatile -- an existing collapse_model.py characteristic, not introduced here) and by how much of the frozen core has been scanned onto this agent (domains.self_model.ensure_self_model can carry dozens of frozen RuleSummary/SeedSummary nodes). frontier_growth_rate is read straight off the forward-look's own Observation-only trajectory (counts_trajectory), immune to both confounds -- it measures the divergence's OWN velocity, nothing else. Sets impasse.correct_ready, the SAME idiom domains/self_correct_dispatch.py's mechanical host hook (scan_and_self_correct -- Python calling domains.self_correction.intervene_on_divergence, an in-process call a Rust rule effect cannot make itself, exactly why the hook exists) reads back before acting -- a predicted_divergence Impasse below the threshold is NEVER marked, so the host hook silently skips it: the agent chose not to spend correction effort there. (2) self_correct_rank_<tag> is THE RANK PROGRAM: an Argmin Term-tree (graph-resident data, a Program node -- not a Rule, since it fires once per correction attempt over a small EPHEMERAL candidate set, not a persistent match pattern) that picks the CHEAPEST/least-invasive CorrectionCandidate node (Argmin over NodesOfType('CorrectionCandidate') filtered to the current attempt_tag, scored by each node's own 'cost' attr -- the SAME Argmax-over-provenance shape domains.reflective_faculty._compose_structural_variant already uses to pick an EditOp; deliberately over REAL graph nodes, not a plain env-supplied list, since Attr() only resolves through an actual NodeID). domains/self_correct_dispatch.py mints one CorrectionCandidate node per candidate (mechanical: label + a real, mechanically-measured structural-footprint cost -- JSON-size delta between a candidate's variant rule and the original it replaces, never an opinion) before evaluating this Program, and reads the winner's label back off the graph. The dispatch hook then reorders domains.self_correction._default_candidates's own list (the mechanical candidate ENUMERATION stays exactly as machinery-authored) so the agent's Argmin pick is tried FIRST by intervene_on_divergence's existing try-until-converges loop -- when >=2 candidates would converge, the cheaper one is adopted; the loop's own denylist veto (safety boundary, host-enforced, untouched) still decides adopt-vs-propose after a candidate is chosen. Both artefacts are graph data the agent authored at compose time, not Python decisions at request time -- served_by='graph', the SAME migration ledger every other tier-3/tier-4 composer in this file already carries.",
+ "nodes": [
+  {
+   "local_id": 1,
+   "type": "Rule",
+   "attrs": {
+    "id": "compose_self_correct_graph",
+    "match": [
+     [
+      "agent",
+      "wants_self_correct_rule",
+      "cr"
+     ]
+    ],
+    "where": {
+     "type": "Lt",
+     "a": {
+      "type": "Plus",
+      "items": [
+       {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "cr"
+        },
+        "key": "composed"
+       },
+       {
+        "type": "Lit",
+        "value": 0.0
+       }
+      ]
+     },
+     "b": {
+      "type": "Lit",
+      "value": 0.5
+     }
+    },
+    "effect": [
+     [
+      "add_node",
+      "rn0",
+      "Rule",
+      {
+       "minted": 0.0
+      }
+     ],
+     [
+      "set_attr",
+      "rn0",
+      "id",
+      {
+       "__term__": {
+        "type": "StringConcat",
+        "parts": [
+         {
+          "type": "Lit",
+          "value": "self_correct_gate_"
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "cr"
+          },
+          "key": "tag"
+         }
+        ]
+       }
+      }
+     ],
+     [
+      "set_attr",
+      "rn0",
+      "match",
+      [
+       [
+        "ag",
+        "surprised_by",
+        "mi"
+       ],
+       [
+        "mi",
+        "about_model",
+        "cm"
+       ]
+      ]
+     ],
+     [
+      "set_attr",
+      "rn0",
+      "where",
+      {
+       "type": "And",
+       "items": [
+        {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "mi"
+          },
+          "key": "kind"
+         },
+         "b": {
+          "type": "Lit",
+          "value": "predicted_divergence"
+         }
+        },
+        {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "mi"
+          },
+          "key": "correct_ready"
+         },
+         "b": {
+          "type": "Lit",
+          "value": null
+         }
+        },
+        {
+         "type": "Gte",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "cm"
+          },
+          "key": "frontier_growth_rate"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 2.0
+         }
+        }
+       ]
+      }
+     ],
+     [
+      "set_attr",
+      "rn0",
+      "effect",
+      [
+       [
+        "set_attr",
+        "mi",
+        "correct_ready",
+        true
+       ]
+      ]
+     ],
+     [
+      "set_rule_clause",
+      {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "rn0"
+        },
+        "key": "id"
+       }
+      },
+      "__mint__",
+      {
+       "__term__": {
+        "type": "Var",
+        "name": "rn0"
+       }
+      }
+     ],
+     [
+      "add_node",
+      "rn1",
+      "Program",
+      {}
+     ],
+     [
+      "set_attr",
+      "rn1",
+      "name",
+      {
+       "__term__": {
+        "type": "StringConcat",
+        "parts": [
+         {
+          "type": "Lit",
+          "value": "self_correct_rank_"
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "cr"
+          },
+          "key": "tag"
+         }
+        ]
+       }
+      }
+     ],
+     [
+      "set_attr",
+      "rn1",
+      "form",
+      "term_tree"
+     ],
+     [
+      "set_attr",
+      "rn1",
+      "program",
+      "{\"type\": \"Argmin\", \"source\": {\"type\": \"Filter\", \"source\": {\"type\": \"NodesOfType\", \"node_type\": \"CorrectionCandidate\"}, \"var_name\": \"x\", \"predicate\": {\"type\": \"Eq\", \"a\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"x\"}, \"key\": \"attempt_tag\"}, \"b\": {\"type\": \"Var\", \"name\": \"tag\"}}}, \"var_name\": \"x\", \"value\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"x\"}, \"key\": \"cost\"}, \"default\": null}"
+     ],
+     [
+      "set_attr",
+      "cr",
+      "composed",
+      1.0
+     ]
+    ]
+   }
+  }
+ ],
+ "edges": [],
+ "productions": []
+}

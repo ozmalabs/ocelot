@@ -1,0 +1,628 @@
+{
+ "id": "retinal_carve_2d_focused",
+ "version": "1.0.0",
+ "self_load_only": true,
+ "depends_on": [
+  "retinal_onset_2d"
+ ],
+ "area": "retina",
+ "description": "Opt-in attention-settled twin of retinal_carve_2d. It uses the identical retinal_common_fate_carve_2d task output, thresholds, effects, and VisionPolygon contract, but enumerates Retina -settles_column-> RetinalColumn rather than the whole has_column sheet. The graph-issued focus command maintains that relation as a bounded rectangle; an explicit attention refusal restores every column. This changes compute allocation, not the carve decision, and is loaded only when retinal_focus is requested.",
+ "microtheory": {
+  "name": "retinal_carve_2d_focused",
+  "description": "8-connected common-fate grouping of (az,el) onset events -> VisionPolygon (az,el) regions"
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [
+  {
+   "provenance": "seed:retinal_carve_2d_focused:retina-carve-params-2d",
+   "src": {
+    "type": "Retina",
+    "var": "retina"
+   },
+   "edge_type": "has_carve_params_2d",
+   "tgt": {
+    "type": "RetinaCarveParams2d",
+    "var": "cparams"
+   }
+  },
+  {
+   "provenance": "seed:retinal_carve_2d_focused:retina-carve-task-2d",
+   "src": {
+    "type": "Retina",
+    "var": "retina"
+   },
+   "edge_type": "has_carve_task_2d",
+   "tgt": {
+    "type": "CognitiveTask",
+    "var": "task"
+   }
+  },
+  {
+   "provenance": "seed:retinal_carve_2d_focused:retina-vision-polygon",
+   "src": {
+    "type": "Retina",
+    "var": "retina"
+   },
+   "edge_type": "has_vision_polygon",
+   "tgt": {
+    "type": "VisionPolygon",
+    "var": "polygon"
+   }
+  }
+ ],
+ "rules": [
+  {
+   "name": "retinal_mint_carve_2d_focused",
+   "area": "retina",
+   "order": 4,
+   "latency_class": "hard_realtime",
+   "match": [
+    [
+     "retina",
+     "has_carve_params_2d",
+     "cparams"
+    ],
+    [
+     "retina",
+     "settles_column",
+     "column"
+    ],
+    [
+     "retina",
+     "has_carve_task_2d",
+     "task"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "task"
+       },
+       "key": "kind"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "retinal_common_fate_carve_2d"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "task"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "done"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "column"
+        },
+        "key": "carve2d_epoch"
+       },
+       "b": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "task"
+        },
+        "key": "input_epoch"
+       }
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "IndexAt",
+       "seq": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "task"
+        },
+        "key": "output"
+       },
+       "index": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Times",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "column"
+            },
+            "key": "cell_index"
+           },
+           {
+            "type": "Lit",
+            "value": 9
+           }
+          ]
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "IndexAt",
+       "seq": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "task"
+        },
+        "key": "output"
+       },
+       "index": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Times",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "column"
+            },
+            "key": "cell_index"
+           },
+           {
+            "type": "Lit",
+            "value": 9
+           }
+          ]
+         },
+         {
+          "type": "Lit",
+          "value": 7
+         }
+        ]
+       }
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "cparams"
+       },
+       "key": "min_coherence"
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "IndexAt",
+       "seq": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "task"
+        },
+        "key": "output"
+       },
+       "index": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Times",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "column"
+            },
+            "key": "cell_index"
+           },
+           {
+            "type": "Lit",
+            "value": 9
+           }
+          ]
+         },
+         {
+          "type": "Lit",
+          "value": 8
+         }
+        ]
+       }
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "cparams"
+       },
+       "key": "min_events"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "polygon",
+     "VisionPolygon",
+     {
+      "col_min": {
+       "__term__": {
+        "type": "IndexAt",
+        "seq": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "task"
+         },
+         "key": "output"
+        },
+        "index": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "column"
+             },
+             "key": "cell_index"
+            },
+            {
+             "type": "Lit",
+             "value": 9
+            }
+           ]
+          },
+          {
+           "type": "Lit",
+           "value": 1
+          }
+         ]
+        }
+       }
+      },
+      "col_max": {
+       "__term__": {
+        "type": "IndexAt",
+        "seq": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "task"
+         },
+         "key": "output"
+        },
+        "index": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "column"
+             },
+             "key": "cell_index"
+            },
+            {
+             "type": "Lit",
+             "value": 9
+            }
+           ]
+          },
+          {
+           "type": "Lit",
+           "value": 2
+          }
+         ]
+        }
+       }
+      },
+      "row_min": {
+       "__term__": {
+        "type": "IndexAt",
+        "seq": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "task"
+         },
+         "key": "output"
+        },
+        "index": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "column"
+             },
+             "key": "cell_index"
+            },
+            {
+             "type": "Lit",
+             "value": 9
+            }
+           ]
+          },
+          {
+           "type": "Lit",
+           "value": 3
+          }
+         ]
+        }
+       }
+      },
+      "row_max": {
+       "__term__": {
+        "type": "IndexAt",
+        "seq": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "task"
+         },
+         "key": "output"
+        },
+        "index": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "column"
+             },
+             "key": "cell_index"
+            },
+            {
+             "type": "Lit",
+             "value": 9
+            }
+           ]
+          },
+          {
+           "type": "Lit",
+           "value": 4
+          }
+         ]
+        }
+       }
+      },
+      "direction": {
+       "__term__": {
+        "type": "IndexAt",
+        "seq": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "task"
+         },
+         "key": "output"
+        },
+        "index": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "column"
+             },
+             "key": "cell_index"
+            },
+            {
+             "type": "Lit",
+             "value": 9
+            }
+           ]
+          },
+          {
+           "type": "Lit",
+           "value": 5
+          }
+         ]
+        }
+       }
+      },
+      "speed": {
+       "__term__": {
+        "type": "IndexAt",
+        "seq": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "task"
+         },
+         "key": "output"
+        },
+        "index": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "column"
+             },
+             "key": "cell_index"
+            },
+            {
+             "type": "Lit",
+             "value": 9
+            }
+           ]
+          },
+          {
+           "type": "Lit",
+           "value": 6
+          }
+         ]
+        }
+       }
+      },
+      "coherence": {
+       "__term__": {
+        "type": "IndexAt",
+        "seq": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "task"
+         },
+         "key": "output"
+        },
+        "index": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "column"
+             },
+             "key": "cell_index"
+            },
+            {
+             "type": "Lit",
+             "value": 9
+            }
+           ]
+          },
+          {
+           "type": "Lit",
+           "value": 7
+          }
+         ]
+        }
+       }
+      },
+      "n_events": {
+       "__term__": {
+        "type": "IndexAt",
+        "seq": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "task"
+         },
+         "key": "output"
+        },
+        "index": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "column"
+             },
+             "key": "cell_index"
+            },
+            {
+             "type": "Lit",
+             "value": 9
+            }
+           ]
+          },
+          {
+           "type": "Lit",
+           "value": 8
+          }
+         ]
+        }
+       }
+      },
+      "epoch": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "task"
+        },
+        "key": "input_epoch"
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "retina",
+     "has_vision_polygon",
+     "polygon"
+    ],
+    [
+     "set_attr",
+     "column",
+     "carve2d_epoch",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "task"
+       },
+       "key": "input_epoch"
+      }
+     }
+    ]
+   ]
+  }
+ ]
+}

@@ -1,0 +1,1379 @@
+{
+ "id": "doom_ingraph_map",
+ "version": "1.0.0",
+ "depends_on": [],
+ "description": "The persistent, GRAPH-NATIVE in-graph spatial map the agent accumulates while it explores (Doom, block 161000-161999). Composes the EXISTING Rust space_quantize primitive (has_cell belief -> SpaceQuantum passable/frontier boxes) with NEW seed rules that (1) GROW the persistent occupancy belief from the agent's own senses (pose/self-motion = walk-free; depth range-vision = depth_free/depth_wall) \u2014 unknown = ABSENCE, first-class; the merge POLICY (walk-free authoritative) is the dm_walk_frees_wall rule, never Python; and (2) TYPE each decoded area with a human region_kind (room/corridor/area/frontier) that falls out of the box's geometry relative to the agent's body width (config-space; no magic number). All rules guard on game.map_mode==\"doom\" -> INERT for every existing world (coarse path byte-identical). The ingest (pose/depth -> ObsCell world points) and the PNG display are mechanical world-adapter I/O (domains/doom_map_ingest.py); every ACCUMULATION and TYPING decision is a rule here.",
+ "microtheory": {
+  "name": "doom_ingraph_map",
+  "description": "persistent graph-native spatial map: grow occupancy from senses, type areas by geometry"
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [],
+ "concepts": [],
+ "rules": [
+  {
+   "name": "dm_free_new",
+   "comment": "GROW: an observed FREE cell (src=walk \u2014 first-hand occupancy \u2014 or src=depth_free \u2014 line-of-sight before a wall) whose pose is not yet a known has_cell Cell mints one (value 0). Registering an as-yet-unseen pose IS the explored region growing; a pose with no Cell stays absent = unknown (M3).",
+   "match": [
+    [
+     "game",
+     "observed",
+     "O"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "game"
+       },
+       "key": "map_mode"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "doom"
+      }
+     },
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "O"
+         },
+         "key": "src"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "walk"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "O"
+         },
+         "key": "src"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "depth_free"
+        }
+       }
+      ]
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "game"
+        },
+        "edge_type": "has_cell",
+        "any_type": false
+       },
+       "var_name": "C2",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "C2"
+            },
+            "key": "pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 0
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "O"
+            },
+            "key": "pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 0
+           }
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "C2"
+            },
+            "key": "pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 1
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "O"
+            },
+            "key": "pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 1
+           }
+          }
+         }
+        ]
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "C",
+     "Cell",
+     {
+      "world_type": "Cell",
+      "pose": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "O"
+        },
+        "key": "pose"
+       }
+      },
+      "value": 0.0
+     }
+    ],
+    [
+     "add_edge",
+     "game",
+     "has_cell",
+     "C",
+     {}
+    ]
+   ]
+  },
+  {
+   "name": "dm_wall_new",
+   "comment": "GROW: an observed WALL cell (src=depth_wall \u2014 the ray's hit, depth<range) whose pose is not yet known mints a Cell (value 1). Only fills UNKNOWN poses \u2014 never overwrites an already-known free cell (that is dm_walk_frees_wall's job, and depth-free never overwrites a wall): a first sensed wall persists.",
+   "match": [
+    [
+     "game",
+     "observed",
+     "O"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "game"
+       },
+       "key": "map_mode"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "doom"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "O"
+       },
+       "key": "src"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "depth_wall"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "game"
+        },
+        "edge_type": "has_cell",
+        "any_type": false
+       },
+       "var_name": "C2",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "C2"
+            },
+            "key": "pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 0
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "O"
+            },
+            "key": "pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 0
+           }
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "C2"
+            },
+            "key": "pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 1
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "O"
+            },
+            "key": "pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 1
+           }
+          }
+         }
+        ]
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "C",
+     "Cell",
+     {
+      "world_type": "Cell",
+      "pose": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "O"
+        },
+        "key": "pose"
+       }
+      },
+      "value": 1.0
+     }
+    ],
+    [
+     "add_edge",
+     "game",
+     "has_cell",
+     "C",
+     {}
+    ]
+   ]
+  },
+  {
+   "name": "dm_walk_frees_wall",
+   "comment": "MERGE POLICY: first-hand walking is authoritative. A cell the agent actually stood in (src=walk) that a depth ray had mis-registered as a wall is corrected to FREE. This is the rule that GUARANTEES the map never keeps a wall on a walked cell (M2 trajectory-consistency) \u2014 and it can only ever correct a depth mis-hit, since a real Doom wall is unwalkable.",
+   "match": [
+    [
+     "game",
+     "observed",
+     "O"
+    ],
+    [
+     "game",
+     "has_cell",
+     "C"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "game"
+       },
+       "key": "map_mode"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "doom"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "O"
+       },
+       "key": "src"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "walk"
+      }
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "IndexAt",
+         "seq": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "O"
+          },
+          "key": "pose"
+         },
+         "index": {
+          "type": "Lit",
+          "value": 0
+         }
+        },
+        "b": {
+         "type": "IndexAt",
+         "seq": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "C"
+          },
+          "key": "pose"
+         },
+         "index": {
+          "type": "Lit",
+          "value": 0
+         }
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "IndexAt",
+         "seq": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "O"
+          },
+          "key": "pose"
+         },
+         "index": {
+          "type": "Lit",
+          "value": 1
+         }
+        },
+        "b": {
+         "type": "IndexAt",
+         "seq": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "C"
+          },
+          "key": "pose"
+         },
+         "index": {
+          "type": "Lit",
+          "value": 1
+         }
+        }
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "C"
+       },
+       "key": "value"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr_if_different",
+     "C",
+     "value",
+     0.0
+    ]
+   ]
+  },
+  {
+   "name": "dm_kind_room",
+   "comment": "a passable area open in BOTH directions (both extents exceed body width) -> room.",
+   "match": [
+    [
+     "Q",
+     "in_space",
+     "game"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "game"
+       },
+       "key": "map_mode"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "doom"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "Q"
+       },
+       "key": "kind"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "passable"
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Minus",
+         "a": {
+          "type": "IndexAt",
+          "seq": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "Q"
+           },
+           "key": "hi"
+          },
+          "index": {
+           "type": "Lit",
+           "value": 0
+          }
+         },
+         "b": {
+          "type": "IndexAt",
+          "seq": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "Q"
+           },
+           "key": "lo"
+          },
+          "index": {
+           "type": "Lit",
+           "value": 0
+          }
+         }
+        },
+        {
+         "type": "Lit",
+         "value": 1
+        }
+       ]
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "game"
+       },
+       "key": "body_w"
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Minus",
+         "a": {
+          "type": "IndexAt",
+          "seq": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "Q"
+           },
+           "key": "hi"
+          },
+          "index": {
+           "type": "Lit",
+           "value": 1
+          }
+         },
+         "b": {
+          "type": "IndexAt",
+          "seq": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "Q"
+           },
+           "key": "lo"
+          },
+          "index": {
+           "type": "Lit",
+           "value": 1
+          }
+         }
+        },
+        {
+         "type": "Lit",
+         "value": 1
+        }
+       ]
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "game"
+       },
+       "key": "body_w"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr_if_different",
+     "Q",
+     "region_kind",
+     "room"
+    ]
+   ]
+  },
+  {
+   "name": "dm_kind_corridor",
+   "comment": "a passable area exactly one body wide in one dim and longer in the other -> corridor (a passage just wide enough for the body \u2014 the config-space corridor).",
+   "match": [
+    [
+     "Q",
+     "in_space",
+     "game"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "game"
+       },
+       "key": "map_mode"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "doom"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "Q"
+       },
+       "key": "kind"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "passable"
+      }
+     },
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Minus",
+             "a": {
+              "type": "IndexAt",
+              "seq": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "hi"
+              },
+              "index": {
+               "type": "Lit",
+               "value": 0
+              }
+             },
+             "b": {
+              "type": "IndexAt",
+              "seq": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "lo"
+              },
+              "index": {
+               "type": "Lit",
+               "value": 0
+              }
+             }
+            },
+            {
+             "type": "Lit",
+             "value": 1
+            }
+           ]
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "game"
+           },
+           "key": "body_w"
+          }
+         },
+         {
+          "type": "Gt",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Minus",
+             "a": {
+              "type": "IndexAt",
+              "seq": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "hi"
+              },
+              "index": {
+               "type": "Lit",
+               "value": 1
+              }
+             },
+             "b": {
+              "type": "IndexAt",
+              "seq": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "lo"
+              },
+              "index": {
+               "type": "Lit",
+               "value": 1
+              }
+             }
+            },
+            {
+             "type": "Lit",
+             "value": 1
+            }
+           ]
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "game"
+           },
+           "key": "body_w"
+          }
+         }
+        ]
+       },
+       {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Minus",
+             "a": {
+              "type": "IndexAt",
+              "seq": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "hi"
+              },
+              "index": {
+               "type": "Lit",
+               "value": 1
+              }
+             },
+             "b": {
+              "type": "IndexAt",
+              "seq": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "lo"
+              },
+              "index": {
+               "type": "Lit",
+               "value": 1
+              }
+             }
+            },
+            {
+             "type": "Lit",
+             "value": 1
+            }
+           ]
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "game"
+           },
+           "key": "body_w"
+          }
+         },
+         {
+          "type": "Gt",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Minus",
+             "a": {
+              "type": "IndexAt",
+              "seq": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "hi"
+              },
+              "index": {
+               "type": "Lit",
+               "value": 0
+              }
+             },
+             "b": {
+              "type": "IndexAt",
+              "seq": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "lo"
+              },
+              "index": {
+               "type": "Lit",
+               "value": 0
+              }
+             }
+            },
+            {
+             "type": "Lit",
+             "value": 1
+            }
+           ]
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "game"
+           },
+           "key": "body_w"
+          }
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr_if_different",
+     "Q",
+     "region_kind",
+     "corridor"
+    ]
+   ]
+  },
+  {
+   "name": "dm_kind_area",
+   "comment": "a passable box exactly one body across in both dims -> a single-body junction/pocket.",
+   "match": [
+    [
+     "Q",
+     "in_space",
+     "game"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "game"
+       },
+       "key": "map_mode"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "doom"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "Q"
+       },
+       "key": "kind"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "passable"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Minus",
+         "a": {
+          "type": "IndexAt",
+          "seq": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "Q"
+           },
+           "key": "hi"
+          },
+          "index": {
+           "type": "Lit",
+           "value": 0
+          }
+         },
+         "b": {
+          "type": "IndexAt",
+          "seq": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "Q"
+           },
+           "key": "lo"
+          },
+          "index": {
+           "type": "Lit",
+           "value": 0
+          }
+         }
+        },
+        {
+         "type": "Lit",
+         "value": 1
+        }
+       ]
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "game"
+       },
+       "key": "body_w"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Minus",
+         "a": {
+          "type": "IndexAt",
+          "seq": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "Q"
+           },
+           "key": "hi"
+          },
+          "index": {
+           "type": "Lit",
+           "value": 1
+          }
+         },
+         "b": {
+          "type": "IndexAt",
+          "seq": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "Q"
+           },
+           "key": "lo"
+          },
+          "index": {
+           "type": "Lit",
+           "value": 1
+          }
+         }
+        },
+        {
+         "type": "Lit",
+         "value": 1
+        }
+       ]
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "game"
+       },
+       "key": "body_w"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr_if_different",
+     "Q",
+     "region_kind",
+     "area"
+    ]
+   ]
+  },
+  {
+   "name": "dm_kind_frontier",
+   "comment": "a frontier quantum -> the still-UNKNOWN border of the explored region (M3: unknown is first-class, and the frontier is where it becomes known next).",
+   "match": [
+    [
+     "Q",
+     "in_space",
+     "game"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "game"
+       },
+       "key": "map_mode"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "doom"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "Q"
+       },
+       "key": "kind"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "frontier"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr_if_different",
+     "Q",
+     "region_kind",
+     "frontier"
+    ]
+   ]
+  },
+  {
+   "name": "dm_kind_lava",
+   "comment": "VALUE-keyed (not geometry): a passable area sitting over HAZARD cells (value 2 \u2014 a damaging floor the adapter marks when standing there costs health) -> lava. Shipped so the human-area taxonomy is extensible beyond geometry and gated; exercised by the constructed hazard case. NOTE: sensing lava on a live route needs the health-damage sense wired \u2014 a declared residual, not the short route.",
+   "match": [
+    [
+     "Q",
+     "in_space",
+     "game"
+    ],
+    [
+     "game",
+     "has_cell",
+     "C"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "game"
+       },
+       "key": "map_mode"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "doom"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "Q"
+       },
+       "key": "kind"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "passable"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "C"
+       },
+       "key": "value"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 2.0
+      }
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "And",
+        "items": [
+         {
+          "type": "Gte",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "C"
+            },
+            "key": "pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 0
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "lo"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 0
+           }
+          }
+         },
+         {
+          "type": "Lte",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "C"
+            },
+            "key": "pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 0
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "hi"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 0
+           }
+          }
+         }
+        ]
+       },
+       {
+        "type": "And",
+        "items": [
+         {
+          "type": "Gte",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "C"
+            },
+            "key": "pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 1
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "lo"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 1
+           }
+          }
+         },
+         {
+          "type": "Lte",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "C"
+            },
+            "key": "pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 1
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "hi"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 1
+           }
+          }
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr_if_different",
+     "Q",
+     "region_kind",
+     "lava"
+    ]
+   ]
+  }
+ ]
+}

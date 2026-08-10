@@ -1,0 +1,53 @@
+{
+ "id": "vision_cut_mint_policy",
+ "version": "1.0.0",
+ "depends_on": ["vision_cut_abstention", "vision_identity_seam"],
+ "description": "ABSTAIN FROM MINTING AT A MARKED CUT (VISION_CUT_MINT_POLICY_PREREG.md, seeds 75000-75999). THE DEFECT THIS ADDRESSES IS THE INCUMBENT'S OWN DECOMPOSITION: VISION_VIDEO_ACCUMULATION_RESULTS.md section 3.2 measured that MDL tile-selection is worth +0.0625 (C1) / +0.0475 (C2) with the frame distribution HELD FIXED -- CI-separated on both corpora, the mechanism works everywhere -- while drawing from the system's OWN cut-concentrated frame distribution COSTS -0.0265 / -0.0420, also CI-separated on both. `When it mints is a liability; which tile it picks is the asset.` So the fix is not a better selector; it is to STOP MINTING AT CUTS. ONE RULE, AND IT IS THE DECISION. `cm_abstain_mint` fires on an Observation the seam has already declared `is_novel` -- so the seam's own measured-noise-floor verdict has had its full say and the graph still holds what it WOULD have minted -- and, if a FrameStep INCIDENT ON THAT OBSERVATION'S FRAME carries the `is_cut` mark another rule wrote, it declines: status becomes `cm_abstained`, so `is_mint` (which requires `is_novel`) never matches, and no ShapeSignature is added. NOTHING HERE IS A PYTHON CONDITIONAL: the adapter draws one `at_step` edge from each Observation to the (at most two) steps incident on the frame the runner just presented -- an interval the runner already constructed, exactly the `spans` precedent of vision_cut_abstention -- and then stops. THE CUT MARK IS NOT THIS SEED'S: it is `seeds/vision_cut_abstention.json`, LOADED UNEDITED, whose `ca_step_mag` / `ca_otsu` / `ca_mark_cut` derive a threshold from the sequence's own distribution with NO free parameter and no numeric literal anywhere (protocol section 13, gated in that rung). THE WINDOW IS NOT A PARAMETER, AND THAT IS DELIBERATE. A frame abstains iff a step INCIDENT on it is marked -- the step into it or the step out of it. The seam rung's inherited W=3 window would have caught 16 (C1) / 10 (C2) of the incumbent's mints instead of 6 / 6, making the predicted effect 2.7x / 1.7x larger; W is a magic number and choosing it after computing that fraction would be metric surgery (protocol sections 5 and 13). The small fraction is reported as the cost of the discipline, not designed around. RULE ORDER IS LOAD ORDER AND IT IS LOAD-BEARING: `run_rules` iterates the rule vector in install order and restarts at index 0 on progress, so a rule that must pre-empt `is_mint` has to be INSTALLED BEFORE IT. `domains/cut_mint_world.py` therefore loads this manifest before `vision_identity_seam`, and two gates hold that honest -- the installed order is asserted, and with this seed DISARMED the grown codebook is byte-identical to the incumbent AccumWorld's (same K, same mints, same frames and regions). THE ABSTENTION LEAVES A TRACE, following the cut-abstention rung's finding that an abstention no reader can see is indistinguishable from a healthy run: a MintAbstention node is minted (add_node_if_absent, so exactly one per observation and the fixpoint terminates), a `mint_abstained_by` edge is drawn, and `mint_abstained` is set on the observation. SHIPS DISARMED (CutMintParams.armed = 0.0) and is NOT in the default boot set -- the runner loads this manifest explicitly and arms it, so the disarmed configuration reproduces every committed accumulation number (protocol section 9).",
+ "nodes": [
+  {"local_id": 0, "type": "CutMintParams", "attrs": {"armed": 0.0}}
+ ],
+ "edges": [],
+ "productions": [
+  {"provenance": "seed:vision_cut_mint_policy:has_cut_mint_params-0",
+   "src": {"type": "Agent", "var": "s"},
+   "edge_type": "has_cut_mint_params",
+   "tgt": {"type": "CutMintParams", "var": "t"}},
+  {"provenance": "seed:vision_cut_mint_policy:at_step-1",
+   "src": {"type": "Observation", "var": "s"},
+   "edge_type": "at_step",
+   "tgt": {"type": "FrameStep", "var": "t"}},
+  {"provenance": "seed:vision_cut_mint_policy:mint_abstained_by-2",
+   "src": {"type": "Observation", "var": "s"},
+   "edge_type": "mint_abstained_by",
+   "tgt": {"type": "MintAbstention", "var": "t"}}
+ ],
+ "rules": [
+  {
+   "name": "cm_abstain_mint",
+   "comment": "THE POLICY, AND IT IS THE GRAPH'S DECISION. An observation the seam has judged novel (is_decide wrote `is_novel` because its best NCC did not clear the MEASURED noise floor) whose own frame is incident on a step marked `is_cut` has had its frame-to-frame prior broken at exactly the moment it would have minted, so the system declines to add it to the codebook. `identified_as` is deliberately LEFT INTACT (is_decide wrote `novel` there) so the graph still holds what it would have done and the cost of the abstention stays measurable -- the same discipline ca_abstain used. The status write is what does the work: `is_mint` requires status == `is_novel`, so `cm_abstained` pre-empts it without this seed touching, reading or editing the seam's rule. The armed guard is a Count over CutMintParams with armed > 0.5, matching the seam's own arming idiom, so the seed is inert until a measurement arms it (protocol section 9). Note what is NOT here: no motion magnitude, no threshold, no window and no numeric literal outside {0.5, 1, 0} -- 0.5 is the seam's own arming midpoint idiom, 1 is the is_cut flag another rule set, 0 is a count. The cut decision was made by ca_mark_cut against a threshold ca_otsu derived from the data; this rule only reads the flag.",
+   "match_type": "Observation",
+   "match": [["ag", "observed", "obs"]],
+   "where": {"type": "And", "items": [
+    {"type": "Gt",
+     "a": {"type": "Count", "source": {"type": "Filter",
+           "source": {"type": "NodesOfType", "node_type": "CutMintParams"},
+           "var_name": "cmp",
+           "predicate": {"type": "Gt", "a": {"type": "Attr", "node": {"type": "Var", "name": "cmp"}, "key": "armed"}, "b": {"type": "Lit", "value": 0.5}}}},
+     "b": {"type": "Lit", "value": 0}},
+    {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "status"}, "b": {"type": "Lit", "value": "is_novel"}},
+    {"type": "Exists",
+     "source": {"type": "Neighbours", "node": {"type": "Var", "name": "obs"}, "edge_type": "at_step", "any_type": false},
+     "var_name": "sp",
+     "predicate": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "sp"}, "key": "is_cut"}, "b": {"type": "Lit", "value": 1}}}
+   ]},
+   "effects": [
+    ["add_node_if_absent", "ab", "MintAbstention", {
+      "reason": "cut_marked",
+      "obs_key": {"__term__": {"type": "IndexAt", "seq": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "key"}, "index": {"type": "Lit", "value": 0}}}}],
+    ["add_edge", "obs", "mint_abstained_by", "ab"],
+    ["set_attr", "obs", "mint_abstained", 1],
+    ["set_attr", "obs", "status", "cm_abstained"]
+   ]
+  }
+ ]
+}

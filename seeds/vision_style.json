@@ -1,0 +1,1878 @@
+{
+ "id": "vision_style",
+ "version": "1.0.0",
+ "depends_on": [
+  "vision_category"
+ ],
+ "description": "STYLE AS A DISCOVERED DIMENSION (FRONTIER T5) -- a style as a per-SOURCE COHERENT offset on a DISCOVERED continuous axis. Category (T2) captures the KIND (the discrete part-signature) and leaves the CONTINUOUS within-category variation unexplained; STYLE is the claim that this variation has structure -- part of it is a coherent offset shared by everything ONE source makes and DIFFERING across sources, orthogonally to the kind. sty_project projects a recognized ObjItem into its own category's frame (dv = v - box origin, the MinOver anchor that makes offsets comparable ACROSS KINDS; containment-gated, so T2's floor is inherited); sty_mint_a0/a1 -- ONE RULE PER AXIS, both running on every source, so THE AXIS IS DISCOVERED -- mint an ObjStyle where >= 3 of one source's offsets agree EXACTLY on that axis (m_min = 3 FALLS OUT of d_style = 2: a style is an (axis,delta) PAIR and membership is free because the source is observed); sty_recognize_a0/a1 recognize an item by offset, SOURCE-BLIND (no rule reads the produced edge), which makes discrimination a RISKED test; sty_memorize is the exact-raw-coordinate MEMORIZATION control. This is the Omniglot writer-dimension mint one level up ('the writer's physical limits become IMPLIED dimensions'; two hands mint DISTINCT styles, no cross-writer pollution). NO new Rust: reuses Minus / MinOver / Neighbours / Count / Filter / NodesOfType / Exists / Not / Eq / And / Gt / Gte / Lt / Lte + run_rules. Coordinates and offsets are INTEGER in-frame; no real-valued quantity is introduced (the frame/continuum invariant is untouched). Agreement is EXACT equality -- no radius, no tolerance anywhere. BOUNDED: axes GIVEN not learned from pixels; a style is a CONSTANT offset on ONE axis (not a scaling, rotation or instance-dependent function); two sources sharing a delta ARE one style; the anchor is the box origin, so cross-kind coherence requires consistent per-kind coverage; chance-level false agreement exists over a finite value pool. NOT the learned axis-codebook at natural-image scale, NOT deformation (the NAMED FRONTIERS). Flag-gated on StyleParams.style, OFF by default (sec 9 -- default 0 => byte-identical, seed inert). See VISION_STYLE_PREREG.md.",
+ "microtheory": {
+  "id": "vision_style_mt",
+  "label": "style as a discovered dimension: a per-source coherent offset on a discovered continuous axis of the category's within-kind variation"
+ },
+ "nodes": [
+  {
+   "local_id": 0,
+   "type": "StyleParams",
+   "attrs": {
+    "style": 0.0
+   }
+  }
+ ],
+ "edges": [],
+ "productions": [],
+ "rules": [
+  {
+   "name": "sty_project",
+   "comment": "PROJECT a recognized ObjItem into ITS OWN category's frame: dv0 = v0 - c.v0lo, dv1 = v1 - c.v1lo, where c is the ObjCategory whose signature matches AND whose region box CONTAINS the item (exactly T2's cat_recognize condition, build_vision_category.py:167-170). THE ANCHOR IS THE CATEGORY'S OWN MinOver BOX ORIGIN -- derived from the members' own spread, NO magic radius, no tolerance -- and it is what makes an offset COMPARABLE ACROSS KINDS: a RAW coordinate is not comparable (kind A and kind B occupy different parts of the axis space), a within-category offset is. Gating on containment INHERITS T2's floor: a novel-signature or out-of-box item is NEVER projected, so it can never contribute to or be recognized by a style. The anchor is fetched in effect position by MinOver over the singleton owning-category set. Guard: dv_set != 1 (idempotent -- fires once per item, so run_rules converges). BOUND (pre-registered, arm L): the anchor is the box origin, so offsets are cross-kind coherent only while every kind's anchor is set consistently -- a kind whose training coverage omits the anchor-defining source shifts, and coherence there correctly FAILS rather than being patched. Flag-gated on style>0.5, OFF by default (sec 9).",
+   "match": [
+    [
+     "scene",
+     "has_obj",
+     "R"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gte",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "StyleParams"
+        },
+        "var_name": "sp",
+        "predicate": {
+         "type": "Gt",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "sp"
+          },
+          "key": "style"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0.5
+         }
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Gte",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "ObjCategory"
+        },
+        "var_name": "c",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "c"
+              },
+              "key": "d0"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "d0"
+             }
+            },
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "c"
+              },
+              "key": "d1"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "d1"
+             }
+            }
+           ]
+          },
+          {
+           "type": "Lte",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "c"
+            },
+            "key": "v0lo"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "R"
+            },
+            "key": "v0"
+           }
+          },
+          {
+           "type": "Lte",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "R"
+            },
+            "key": "v0"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "c"
+            },
+            "key": "v0hi"
+           }
+          },
+          {
+           "type": "Lte",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "c"
+            },
+            "key": "v1lo"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "R"
+            },
+            "key": "v1"
+           }
+          },
+          {
+           "type": "Lte",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "R"
+            },
+            "key": "v1"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "c"
+            },
+            "key": "v1hi"
+           }
+          }
+         ]
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "R"
+        },
+        "key": "dv_set"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "R",
+     "dv0",
+     {
+      "__term__": {
+       "type": "Minus",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "R"
+        },
+        "key": "v0"
+       },
+       "b": {
+        "type": "MinOver",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "ObjCategory"
+         },
+         "var_name": "c",
+         "predicate": {
+          "type": "And",
+          "items": [
+           {
+            "type": "And",
+            "items": [
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "c"
+               },
+               "key": "d0"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "d0"
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "c"
+               },
+               "key": "d1"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "d1"
+              }
+             }
+            ]
+           },
+           {
+            "type": "Lte",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "c"
+             },
+             "key": "v0lo"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "v0"
+            }
+           },
+           {
+            "type": "Lte",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "v0"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "c"
+             },
+             "key": "v0hi"
+            }
+           },
+           {
+            "type": "Lte",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "c"
+             },
+             "key": "v1lo"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "v1"
+            }
+           },
+           {
+            "type": "Lte",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "v1"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "c"
+             },
+             "key": "v1hi"
+            }
+           }
+          ]
+         }
+        },
+        "var_name": "c",
+        "value": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "c"
+         },
+         "key": "v0lo"
+        }
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "R",
+     "dv1",
+     {
+      "__term__": {
+       "type": "Minus",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "R"
+        },
+        "key": "v1"
+       },
+       "b": {
+        "type": "MinOver",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "ObjCategory"
+         },
+         "var_name": "c",
+         "predicate": {
+          "type": "And",
+          "items": [
+           {
+            "type": "And",
+            "items": [
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "c"
+               },
+               "key": "d0"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "d0"
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "c"
+               },
+               "key": "d1"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "d1"
+              }
+             }
+            ]
+           },
+           {
+            "type": "Lte",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "c"
+             },
+             "key": "v0lo"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "v0"
+            }
+           },
+           {
+            "type": "Lte",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "v0"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "c"
+             },
+             "key": "v0hi"
+            }
+           },
+           {
+            "type": "Lte",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "c"
+             },
+             "key": "v1lo"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "v1"
+            }
+           },
+           {
+            "type": "Lte",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "v1"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "c"
+             },
+             "key": "v1hi"
+            }
+           }
+          ]
+         }
+        },
+        "var_name": "c",
+        "value": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "c"
+         },
+         "key": "v1lo"
+        }
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "R",
+     "dv_set",
+     {
+      "__term__": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "sty_mint_a0",
+   "comment": "MINT an ObjStyle where >= 3 of ONE source's projected items agree EXACTLY on AXIS 0's within-category offset (dv0). THE STYLE IS A DISCOVERED DIMENSION: there is ONE RULE PER AXIS and BOTH run on EVERY source, so nothing tells the mechanism which axis carries the style -- a source whose axis-0 offsets cohere while its other axis varies freely mints EXACTLY ONE style, on axis 0, and the minted node RECORDS the axis it found. A source that coheres on neither mints NOTHING (the coherence crux: a mechanism that mints a style for ANY source would be a universal container and is disqualified). This is the Omniglot writer-dimension mint one level up (writer_dimensions.json:228 -- pool per source, require >= 3 exact agreement, mint the implied dimension); per-instance an offset is noise, POOLED across one source's output it is a coherent quantum coordinate. MDL: m_min = 3 FALLS OUT of d_style = 2 -- a style is an (axis, delta) PAIR (2 units: WHICH axis + WHAT offset) and membership is FREE because the source is OBSERVED (the produced edge), so the style pays iff m > d_style = 2 <=> m >= 3 (VISION_PROTOCOL sec 13; NOT tuned, and the same >= 3 the writer rung derived). Guards: (a) the CANONICAL-REPRESENTATIVE guard -- only the min-oidx member of an agreeing pool may mint, so under batch tick() (all bindings snapshotted before any effect) exactly ONE member mints exactly ONE style per (source, axis, delta); (b) Not Exists an ObjStyle already at this (src, axis, delta) -- recognize-not-re-mint across passes. Records src / axis / delta / members and the minting instance's RAW exemplar (ex_v0, ex_v1) for the memorization control. UNSUPERVISED: no label is read; the SOURCE is an observable (which hand produced it), not a category label. Flag-gated on style>0.5, OFF by default (sec 9).",
+   "match": [
+    [
+     "W",
+     "produced",
+     "R"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gte",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "StyleParams"
+        },
+        "var_name": "sp",
+        "predicate": {
+         "type": "Gt",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "sp"
+          },
+          "key": "style"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0.5
+         }
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "R"
+       },
+       "key": "dv_set"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Gte",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "W"
+         },
+         "edge_type": "produced",
+         "any_type": false
+        },
+        "var_name": "q",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "q"
+            },
+            "key": "dv_set"
+           },
+           "b": {
+            "type": "Lit",
+            "value": 1.0
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "q"
+            },
+            "key": "dv0"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "R"
+            },
+            "key": "dv0"
+           }
+          }
+         ]
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 3
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "W"
+         },
+         "edge_type": "produced",
+         "any_type": false
+        },
+        "var_name": "q",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "q"
+            },
+            "key": "dv_set"
+           },
+           "b": {
+            "type": "Lit",
+            "value": 1.0
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "q"
+            },
+            "key": "dv0"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "R"
+            },
+            "key": "dv0"
+           }
+          }
+         ]
+        }
+       },
+       "var_name": "p",
+       "predicate": {
+        "type": "Lt",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "p"
+         },
+         "key": "oidx"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "R"
+         },
+         "key": "oidx"
+        }
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "ObjStyle"
+       },
+       "var_name": "st",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "st"
+           },
+           "key": "src"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "W"
+           },
+           "key": "sid"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "st"
+           },
+           "key": "axis"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0.0
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "st"
+           },
+           "key": "delta"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "R"
+           },
+           "key": "dv0"
+          }
+         }
+        ]
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "st",
+     "ObjStyle",
+     {
+      "src": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "W"
+        },
+        "key": "sid"
+       }
+      },
+      "axis": {
+       "__term__": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      },
+      "delta": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "R"
+        },
+        "key": "dv0"
+       }
+      },
+      "members": {
+       "__term__": {
+        "type": "Count",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "W"
+          },
+          "edge_type": "produced",
+          "any_type": false
+         },
+         "var_name": "q",
+         "predicate": {
+          "type": "And",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "q"
+             },
+             "key": "dv_set"
+            },
+            "b": {
+             "type": "Lit",
+             "value": 1.0
+            }
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "q"
+             },
+             "key": "dv0"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "dv0"
+            }
+           }
+          ]
+         }
+        }
+       }
+      },
+      "ex_v0": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "R"
+        },
+        "key": "v0"
+       }
+      },
+      "ex_v1": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "R"
+        },
+        "key": "v1"
+       }
+      },
+      "minted": {
+       "__term__": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "W",
+     "has_style",
+     "st"
+    ]
+   ]
+  },
+  {
+   "name": "sty_mint_a1",
+   "comment": "MINT an ObjStyle where >= 3 of ONE source's projected items agree EXACTLY on AXIS 1's within-category offset (dv1). THE STYLE IS A DISCOVERED DIMENSION: there is ONE RULE PER AXIS and BOTH run on EVERY source, so nothing tells the mechanism which axis carries the style -- a source whose axis-1 offsets cohere while its other axis varies freely mints EXACTLY ONE style, on axis 1, and the minted node RECORDS the axis it found. A source that coheres on neither mints NOTHING (the coherence crux: a mechanism that mints a style for ANY source would be a universal container and is disqualified). This is the Omniglot writer-dimension mint one level up (writer_dimensions.json:228 -- pool per source, require >= 3 exact agreement, mint the implied dimension); per-instance an offset is noise, POOLED across one source's output it is a coherent quantum coordinate. MDL: m_min = 3 FALLS OUT of d_style = 2 -- a style is an (axis, delta) PAIR (2 units: WHICH axis + WHAT offset) and membership is FREE because the source is OBSERVED (the produced edge), so the style pays iff m > d_style = 2 <=> m >= 3 (VISION_PROTOCOL sec 13; NOT tuned, and the same >= 3 the writer rung derived). Guards: (a) the CANONICAL-REPRESENTATIVE guard -- only the min-oidx member of an agreeing pool may mint, so under batch tick() (all bindings snapshotted before any effect) exactly ONE member mints exactly ONE style per (source, axis, delta); (b) Not Exists an ObjStyle already at this (src, axis, delta) -- recognize-not-re-mint across passes. Records src / axis / delta / members and the minting instance's RAW exemplar (ex_v0, ex_v1) for the memorization control. UNSUPERVISED: no label is read; the SOURCE is an observable (which hand produced it), not a category label. Flag-gated on style>0.5, OFF by default (sec 9).",
+   "match": [
+    [
+     "W",
+     "produced",
+     "R"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gte",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "StyleParams"
+        },
+        "var_name": "sp",
+        "predicate": {
+         "type": "Gt",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "sp"
+          },
+          "key": "style"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0.5
+         }
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "R"
+       },
+       "key": "dv_set"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Gte",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "W"
+         },
+         "edge_type": "produced",
+         "any_type": false
+        },
+        "var_name": "q",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "q"
+            },
+            "key": "dv_set"
+           },
+           "b": {
+            "type": "Lit",
+            "value": 1.0
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "q"
+            },
+            "key": "dv1"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "R"
+            },
+            "key": "dv1"
+           }
+          }
+         ]
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 3
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "W"
+         },
+         "edge_type": "produced",
+         "any_type": false
+        },
+        "var_name": "q",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "q"
+            },
+            "key": "dv_set"
+           },
+           "b": {
+            "type": "Lit",
+            "value": 1.0
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "q"
+            },
+            "key": "dv1"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "R"
+            },
+            "key": "dv1"
+           }
+          }
+         ]
+        }
+       },
+       "var_name": "p",
+       "predicate": {
+        "type": "Lt",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "p"
+         },
+         "key": "oidx"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "R"
+         },
+         "key": "oidx"
+        }
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "ObjStyle"
+       },
+       "var_name": "st",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "st"
+           },
+           "key": "src"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "W"
+           },
+           "key": "sid"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "st"
+           },
+           "key": "axis"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 1.0
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "st"
+           },
+           "key": "delta"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "R"
+           },
+           "key": "dv1"
+          }
+         }
+        ]
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "st",
+     "ObjStyle",
+     {
+      "src": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "W"
+        },
+        "key": "sid"
+       }
+      },
+      "axis": {
+       "__term__": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      },
+      "delta": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "R"
+        },
+        "key": "dv1"
+       }
+      },
+      "members": {
+       "__term__": {
+        "type": "Count",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "W"
+          },
+          "edge_type": "produced",
+          "any_type": false
+         },
+         "var_name": "q",
+         "predicate": {
+          "type": "And",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "q"
+             },
+             "key": "dv_set"
+            },
+            "b": {
+             "type": "Lit",
+             "value": 1.0
+            }
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "q"
+             },
+             "key": "dv1"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "dv1"
+            }
+           }
+          ]
+         }
+        }
+       }
+      },
+      "ex_v0": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "R"
+        },
+        "key": "v0"
+       }
+      },
+      "ex_v1": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "R"
+        },
+        "key": "v1"
+       }
+      },
+      "minted": {
+       "__term__": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "W",
+     "has_style",
+     "st"
+    ]
+   ]
+  },
+  {
+   "name": "sty_recognize_a0",
+   "comment": "RECOGNIZE an ObjItem as being in a held style on AXIS 0 iff its within-category offset (dv0) EQUALS a held ObjStyle's delta on that axis. THE RULE IS SOURCE-BLIND -- it matches on the SCENE edge and NEVER reads the `produced` edge, W, or any source attribute. It is therefore mechanically POSSIBLE for an item of one source to be recognized as another source's style, and DISCRIMINATION (no cross-source pollution) is a RISKED test decided by the deltas alone, not a label lookup (sec 13.1). This is also the GENERALIZATION readout: a NEW instance with a coordinate never trained -- in a kind whose (source, kind) pair may itself be new -- is recognized by its OFFSET, which is the discovered dimension's own coordinate. Writes PER-AXIS attributes (sty_recognized_a0 / sty_src_a0) so the two axis rules can NEVER race or overwrite one another; an item genuinely in a style on both axes is reported on both, which is the correct semantics. sty_src is read back with MinOver over the matching styles (two sources sharing an identical delta on one axis ARE the same style -- a declared bound, sec 8). Effect values are constant once set, so run_rules converges. Flag-gated on style>0.5, OFF by default (sec 9).",
+   "match": [
+    [
+     "scene",
+     "has_obj",
+     "R"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gte",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "StyleParams"
+        },
+        "var_name": "sp",
+        "predicate": {
+         "type": "Gt",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "sp"
+          },
+          "key": "style"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0.5
+         }
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "R"
+       },
+       "key": "dv_set"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Gte",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "ObjStyle"
+        },
+        "var_name": "st",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "st"
+            },
+            "key": "axis"
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0.0
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "st"
+            },
+            "key": "delta"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "R"
+            },
+            "key": "dv0"
+           }
+          }
+         ]
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "R",
+     "sty_recognized_a0",
+     {
+      "__term__": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "R",
+     "sty_src_a0",
+     {
+      "__term__": {
+       "type": "MinOver",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "ObjStyle"
+        },
+        "var_name": "st",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "st"
+            },
+            "key": "axis"
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0.0
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "st"
+            },
+            "key": "delta"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "R"
+            },
+            "key": "dv0"
+           }
+          }
+         ]
+        }
+       },
+       "var_name": "st",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "st"
+        },
+        "key": "src"
+       }
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "sty_recognize_a1",
+   "comment": "RECOGNIZE an ObjItem as being in a held style on AXIS 1 iff its within-category offset (dv1) EQUALS a held ObjStyle's delta on that axis. THE RULE IS SOURCE-BLIND -- it matches on the SCENE edge and NEVER reads the `produced` edge, W, or any source attribute. It is therefore mechanically POSSIBLE for an item of one source to be recognized as another source's style, and DISCRIMINATION (no cross-source pollution) is a RISKED test decided by the deltas alone, not a label lookup (sec 13.1). This is also the GENERALIZATION readout: a NEW instance with a coordinate never trained -- in a kind whose (source, kind) pair may itself be new -- is recognized by its OFFSET, which is the discovered dimension's own coordinate. Writes PER-AXIS attributes (sty_recognized_a1 / sty_src_a1) so the two axis rules can NEVER race or overwrite one another; an item genuinely in a style on both axes is reported on both, which is the correct semantics. sty_src is read back with MinOver over the matching styles (two sources sharing an identical delta on one axis ARE the same style -- a declared bound, sec 8). Effect values are constant once set, so run_rules converges. Flag-gated on style>0.5, OFF by default (sec 9).",
+   "match": [
+    [
+     "scene",
+     "has_obj",
+     "R"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gte",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "StyleParams"
+        },
+        "var_name": "sp",
+        "predicate": {
+         "type": "Gt",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "sp"
+          },
+          "key": "style"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0.5
+         }
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "R"
+       },
+       "key": "dv_set"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Gte",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "ObjStyle"
+        },
+        "var_name": "st",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "st"
+            },
+            "key": "axis"
+           },
+           "b": {
+            "type": "Lit",
+            "value": 1.0
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "st"
+            },
+            "key": "delta"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "R"
+            },
+            "key": "dv1"
+           }
+          }
+         ]
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "R",
+     "sty_recognized_a1",
+     {
+      "__term__": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "R",
+     "sty_src_a1",
+     {
+      "__term__": {
+       "type": "MinOver",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "ObjStyle"
+        },
+        "var_name": "st",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "st"
+            },
+            "key": "axis"
+           },
+           "b": {
+            "type": "Lit",
+            "value": 1.0
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "st"
+            },
+            "key": "delta"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "R"
+            },
+            "key": "dv1"
+           }
+          }
+         ]
+        }
+       },
+       "var_name": "st",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "st"
+        },
+        "key": "src"
+       }
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "sty_memorize",
+   "comment": "The MEMORIZATION CONTROL (T2's cat_memorize, build_vision_category.py:184, at the style grain): sty_mem_recognized = 1 iff the ObjItem's RAW (v0,v1) EXACTLY equals some ObjStyle's stored exemplar (ex_v0, ex_v1) -- the raw coordinate of the instance that minted the style. A memorizer recognizes ONLY coordinates it stored, so a held-out instance (raw coordinate never trained) gets 0 while sty_recognize_a* gives 1, because the OFFSET generalizes what the raw coordinate memorizes. DECLARED ENTAILED (sec 13.1, prereg sec 5): the held-outs are constructed with unseen raw coordinates, so this control MUST return 0 -- it is reported as a CONSISTENCY check that the two channels are distinct, NOT banked as evidence. Flag-gated on style>0.5, OFF by default.",
+   "match": [
+    [
+     "scene",
+     "has_obj",
+     "R"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gte",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "StyleParams"
+        },
+        "var_name": "sp",
+        "predicate": {
+         "type": "Gt",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "sp"
+          },
+          "key": "style"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0.5
+         }
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Exists",
+      "source": {
+       "type": "NodesOfType",
+       "node_type": "ObjStyle"
+      },
+      "var_name": "st",
+      "predicate": {
+       "type": "And",
+       "items": [
+        {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "st"
+          },
+          "key": "ex_v0"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "R"
+          },
+          "key": "v0"
+         }
+        },
+        {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "st"
+          },
+          "key": "ex_v1"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "R"
+          },
+          "key": "v1"
+         }
+        }
+       ]
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "R",
+     "sty_mem_recognized",
+     {
+      "__term__": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ]
+   ]
+  }
+ ]
+}

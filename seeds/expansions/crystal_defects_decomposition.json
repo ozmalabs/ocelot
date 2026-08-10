@@ -1,0 +1,118 @@
+{
+  "id": "crystal_defects_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "line_defects_dislocations",
+  "in_microtheory": "materials_chemistry",
+  "description": "Crystal defects decomposed. Vacancies (Schottky, Frenkel), interstitials, substitutional solutes, edge + screw dislocations, Burgers vectors, dislocation interactions, twin boundaries, stacking faults, dislocation density evolution.",
+  "sub_mechanisms": [
+    {
+      "name": "Schottky_defect",
+      "definition": "Vacancy + missing counter-ion in ionic crystal. Maintains charge neutrality.",
+      "why": "Standard in ionic crystals. Concentration ∝ exp(-E/2kT). Conductivity mechanism in solid electrolytes.",
+      "category": "defects_mechanism"
+    },
+    {
+      "name": "Frenkel_defect",
+      "definition": "Ion displaced from lattice site to interstitial position. Vacancy + interstitial pair.",
+      "why": "Smaller ions (e.g., Ag⁺) common. Used to explain ionic conduction in AgCl. Standard.",
+      "category": "defects_mechanism"
+    },
+    {
+      "name": "edge_dislocation",
+      "definition": "Extra half-plane of atoms inserted in lattice. Edge of half-plane = dislocation line.",
+      "why": "Easy slip mechanism. Burgers vector perpendicular to line. Foundation of plasticity.",
+      "category": "defects_mechanism"
+    },
+    {
+      "name": "screw_dislocation",
+      "definition": "Helical distortion. Burgers vector parallel to dislocation line.",
+      "why": "Crystal growth (spiral growth). Cross-slip possible (changes slip plane).",
+      "category": "defects_mechanism"
+    },
+    {
+      "name": "Burgers_vector",
+      "definition": "Vector closure failure around dislocation. Magnitude + direction.",
+      "why": "Slip direction + magnitude. Foundation of dislocation theory. Determines slip systems.",
+      "category": "defects_mechanism"
+    },
+    {
+      "name": "Peierls_stress",
+      "definition": "Stress required to move dislocation in perfect lattice. Lower than yield.",
+      "why": "Intrinsic resistance to slip. Higher in BCC (ductile-brittle transition). Foundation.",
+      "category": "defects_mechanism"
+    },
+    {
+      "name": "dislocation_interaction",
+      "definition": "Dislocations attract/repel. Cutting + jogs. Pinning at obstacles.",
+      "why": "Foundation of work hardening. Dislocation density increases → mutual obstacles → higher stress required. Tangled forests.",
+      "category": "defects_mechanism"
+    },
+    {
+      "name": "slip_systems",
+      "definition": "Plane + direction along which dislocations move. FCC: 12 systems {111}<110>.",
+      "why": "Determines plastic deformation. FCC active at all T (12 systems); BCC inactive at low T. Foundation of ductility.",
+      "category": "defects_mechanism"
+    },
+    {
+      "name": "twin_boundary",
+      "definition": "Mirror plane in crystal. One side mirror image of other.",
+      "why": "Deformation twinning at low T (hcp, bcc). Annealing twins in FCC. Standard microstructural feature.",
+      "category": "defects_mechanism"
+    },
+    {
+      "name": "stacking_fault",
+      "definition": "Error in stacking sequence (ABCABC interrupted). Energy per area.",
+      "why": "Low SFE: easy dislocation dissociation, twinning common. Cu low, Al high. Influences strengthening.",
+      "category": "defects_mechanism"
+    },
+    {
+      "name": "Frank_Read_source",
+      "definition": "Dislocation segment between pinning points; bows under stress; multiplies.",
+      "why": "Dislocation multiplication mechanism. Explains how density grows during deformation. Foundation.",
+      "category": "defects_mechanism"
+    },
+    {
+      "name": "grain_boundary_strengthening",
+      "definition": "GBs pin dislocations. Hall-Petch: σ_y = σ_0 + k·d^(-1/2).",
+      "why": "Smaller grains = more boundaries = stronger. Universal strengthening mechanism. Already in main; here mechanism.",
+      "category": "defects_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "dislocation_glide_easier_than_lattice_shear",
+      "if": ["metal deforms plastically"],
+      "then": ["dislocation glide is the mechanism, not rigid shear"],
+      "why": "Rigid shear: all bonds simultaneously, GPa stress. Dislocation: one bond at a time, MPa. Foundation of plasticity (Orowan + Taylor 1934).",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "FCC_ductile_at_all_T",
+      "if": ["metal has FCC structure"],
+      "then": ["ductile from cryogenic to high T"],
+      "why": "12 active slip systems at any T. BCC: 12 but Peierls stress high at low T → brittle. HCP: limited systems. Foundation of cryogenic materials.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "Frank_Read_explains_density_increase",
+      "if": ["metal deforms plastically"],
+      "then": ["dislocation density grows from sources"],
+      "why": "Initial: ~10⁶ /cm². Heavily worked: 10¹². Need source. Frank-Read: bowing dislocation multiplies. Foundation work hardening.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "low_SFE_enables_twinning",
+      "if": ["stacking fault energy is low"],
+      "then": ["mechanical twinning competes with slip"],
+      "why": "Low SFE: dissociated dislocations don't recombine to cross-slip. Twinning easier. TWIP steels exploit (twinning-induced plasticity).",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "grain_boundary_pinning_strengthens",
+      "if": ["dislocations encounter grain boundary"],
+      "then": ["pile-up generates back-stress + strengthens"],
+      "why": "GB acts as obstacle. Pile-up creates stress concentration → activates adjacent grain. Hall-Petch quantifies. Foundation strengthening.",
+      "soundness_category": "extensional_equivalence"
+    }
+  ]
+}

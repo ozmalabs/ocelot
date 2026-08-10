@@ -1,0 +1,716 @@
+{
+ "id": "information_commitment",
+ "version": "1.0.0",
+ "self_load_only": true,
+ "depends_on": [
+  "cognitive_areas"
+ ],
+ "area": "executive",
+ "description": "Thermodynamic commitment as graph cognition. Wait, refine and commit are co-present candidates; concrete effect footprints determine information destruction and irreversibility; hard host vetoes remain outside scalar trade-offs.",
+ "microtheory": {
+  "name": "information_commitment",
+  "description": "goal work and information gain versus erasure, option loss, uncertainty and delay"
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [
+  {
+   "provenance": "seed:information_commitment:candidates",
+   "src": {
+    "type": "DecisionContext",
+    "var": "ctx"
+   },
+   "edge_type": "has_candidate",
+   "tgt": {
+    "type": "CommitOption",
+    "var": "candidate"
+   }
+  },
+  {
+   "provenance": "seed:information_commitment:footprint",
+   "src": {
+    "type": "CommitOption",
+    "var": "candidate"
+   },
+   "edge_type": "has_effect_footprint",
+   "tgt": {
+    "type": "EffectFootprint",
+    "var": "fp"
+   }
+  },
+  {
+   "provenance": "seed:information_commitment:decision",
+   "src": {
+    "type": "DecisionContext",
+    "var": "ctx"
+   },
+   "edge_type": "has_commit_decision",
+   "tgt": {
+    "type": "CommitDecision",
+    "var": "decision"
+   }
+  },
+  {
+   "provenance": "seed:information_commitment:selected",
+   "src": {
+    "type": "CommitDecision",
+    "var": "decision"
+   },
+   "edge_type": "selected",
+   "tgt": {
+    "type": "CommitOption",
+    "var": "candidate"
+   }
+  }
+ ],
+ "rules": [
+  {
+   "name": "ic_commit_without_footprint_fails_closed",
+   "area": "executive",
+   "order": 3,
+   "latency_class": "soft_realtime",
+   "match": [
+    [
+     "ctx",
+     "has_candidate",
+     "candidate"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "candidate"
+       },
+       "key": "decision_kind"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "commit"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "candidate"
+        },
+        "edge_type": "has_effect_footprint",
+        "any_type": false
+       },
+       "var_name": "fp",
+       "predicate": {
+        "type": "Lit",
+        "value": true
+       }
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "candidate"
+       },
+       "key": "hard_veto"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr_if_different",
+     "candidate",
+     "hard_veto",
+     1.0
+    ],
+    [
+     "set_attr_if_different",
+     "candidate",
+     "veto_reason",
+     "unknown_effect_footprint"
+    ]
+   ]
+  },
+  {
+   "name": "ic_derive_information_destruction",
+   "area": "executive",
+   "order": 3,
+   "latency_class": "soft_realtime",
+   "match": [
+    [
+     "ctx",
+     "has_candidate",
+     "candidate"
+    ],
+    [
+     "candidate",
+     "has_effect_footprint",
+     "fp"
+    ]
+   ],
+   "where": {
+    "type": "Eq",
+    "a": {
+     "type": "Attr",
+     "node": {
+      "type": "Var",
+      "name": "candidate"
+     },
+     "key": "decision_kind"
+    },
+    "b": {
+     "type": "Lit",
+     "value": "commit"
+    }
+   },
+   "effects": [
+    [
+     "set_attr_if_different",
+     "candidate",
+     "information_destroyed",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "fp"
+         },
+         "key": "deleted_facts"
+        },
+        {
+         "type": "Times",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "fp"
+           },
+           "key": "overwritten_facts"
+          },
+          {
+           "type": "Minus",
+           "a": {
+            "type": "Lit",
+            "value": 1.0
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "fp"
+            },
+            "key": "recoverability"
+           }
+          }
+         ]
+        },
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "fp"
+         },
+         "key": "externality"
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr_if_different",
+     "candidate",
+     "irreversibility",
+     {
+      "__term__": {
+       "type": "Minus",
+       "a": {
+        "type": "Lit",
+        "value": 1.0
+       },
+       "b": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "fp"
+        },
+        "key": "recoverability"
+       }
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "ic_score_wait",
+   "area": "executive",
+   "order": 3,
+   "latency_class": "soft_realtime",
+   "match": [
+    [
+     "ctx",
+     "has_candidate",
+     "candidate"
+    ]
+   ],
+   "where": {
+    "type": "Eq",
+    "a": {
+     "type": "Attr",
+     "node": {
+      "type": "Var",
+      "name": "candidate"
+     },
+     "key": "decision_kind"
+    },
+    "b": {
+     "type": "Lit",
+     "value": "wait"
+    }
+   },
+   "effects": [
+    [
+     "set_attr_if_different",
+     "candidate",
+     "net_value",
+     {
+      "__term__": {
+       "type": "Minus",
+       "a": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "candidate"
+          },
+          "key": "preservation_value"
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "candidate"
+          },
+          "key": "expected_information_gain"
+         }
+        ]
+       },
+       "b": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "candidate"
+          },
+          "key": "delay_cost"
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "candidate"
+          },
+          "key": "opportunity_cost"
+         }
+        ]
+       }
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "ic_score_refine",
+   "area": "executive",
+   "order": 3,
+   "latency_class": "soft_realtime",
+   "match": [
+    [
+     "ctx",
+     "has_candidate",
+     "candidate"
+    ]
+   ],
+   "where": {
+    "type": "Eq",
+    "a": {
+     "type": "Attr",
+     "node": {
+      "type": "Var",
+      "name": "candidate"
+     },
+     "key": "decision_kind"
+    },
+    "b": {
+     "type": "Lit",
+     "value": "refine"
+    }
+   },
+   "effects": [
+    [
+     "set_attr_if_different",
+     "candidate",
+     "net_value",
+     {
+      "__term__": {
+       "type": "Minus",
+       "a": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "candidate"
+          },
+          "key": "preservation_value"
+         },
+         {
+          "type": "Times",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "candidate"
+            },
+            "key": "expected_information_gain"
+           },
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "candidate"
+            },
+            "key": "decision_relevance"
+           }
+          ]
+         }
+        ]
+       },
+       "b": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "candidate"
+          },
+          "key": "refinement_cost"
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "candidate"
+          },
+          "key": "delay_cost"
+         }
+        ]
+       }
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "ic_score_commit",
+   "area": "executive",
+   "order": 3,
+   "latency_class": "soft_realtime",
+   "match": [
+    [
+     "ctx",
+     "has_candidate",
+     "candidate"
+    ]
+   ],
+   "where": {
+    "type": "Eq",
+    "a": {
+     "type": "Attr",
+     "node": {
+      "type": "Var",
+      "name": "candidate"
+     },
+     "key": "decision_kind"
+    },
+    "b": {
+     "type": "Lit",
+     "value": "commit"
+    }
+   },
+   "effects": [
+    [
+     "set_attr_if_different",
+     "candidate",
+     "net_value",
+     {
+      "__term__": {
+       "type": "Minus",
+       "a": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "candidate"
+          },
+          "key": "expected_goal_work"
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "candidate"
+          },
+          "key": "expected_information_gain"
+         }
+        ]
+       },
+       "b": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "candidate"
+          },
+          "key": "information_destroyed"
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "candidate"
+          },
+          "key": "option_volume_lost"
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "candidate"
+          },
+          "key": "resource_cost"
+         },
+         {
+          "type": "Times",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "candidate"
+            },
+            "key": "uncertainty"
+           },
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "candidate"
+            },
+            "key": "irreversibility"
+           }
+          ]
+         }
+        ]
+       }
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "ic_choose_unique_admissible_option",
+   "area": "executive",
+   "order": 3,
+   "latency_class": "soft_realtime",
+   "match": [
+    [
+     "ctx",
+     "has_candidate",
+     "candidate"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Var",
+       "name": "candidate"
+      },
+      "b": {
+       "type": "ArgminUnique",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "ctx"
+         },
+         "edge_type": "has_candidate",
+         "any_type": false
+        },
+        "var_name": "option",
+        "predicate": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "option"
+          },
+          "key": "hard_veto"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        }
+       },
+       "var_name": "option",
+       "value": {
+        "type": "Neg",
+        "arg": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "option"
+         },
+         "key": "net_value"
+        }
+       },
+       "default": null
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ctx"
+       },
+       "key": "decided"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr_if_different",
+     "candidate",
+     "chosen",
+     1.0
+    ],
+    [
+     "set_attr_if_different",
+     "ctx",
+     "decided",
+     1.0
+    ],
+    [
+     "set_attr_if_different",
+     "ctx",
+     "decision",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "candidate"
+       },
+       "key": "decision_kind"
+      }
+     }
+    ],
+    [
+     "add_node",
+     "decision",
+     "CommitDecision",
+     {
+      "decision_kind": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "candidate"
+        },
+        "key": "decision_kind"
+       }
+      },
+      "candidate_name": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "candidate"
+        },
+        "key": "name"
+       }
+      },
+      "net_value": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "candidate"
+        },
+        "key": "net_value"
+       }
+      },
+      "status": "resolved"
+     }
+    ],
+    [
+     "add_edge",
+     "ctx",
+     "has_commit_decision",
+     "decision",
+     {}
+    ],
+    [
+     "add_edge",
+     "decision",
+     "selected",
+     "candidate",
+     {}
+    ]
+   ]
+  }
+ ]
+}

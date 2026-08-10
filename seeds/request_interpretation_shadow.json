@@ -1,0 +1,114 @@
+{
+  "id": "request_interpretation_shadow",
+  "version": "1.0.0",
+  "depends_on": ["instruction_understanding"],
+  "capability_keys": ["request_interpretation_shadow", "interpretation_surprise"],
+  "description": "General request/question interpretation shadow. The local graph parse runs first and remains authoritative. In blocking/shadow supervision modes, an asynchronous evidence-only Terra request receives that parse plus the utterance. Structured alternate interpretations are retained as TeacherEvidence. Graph rules preserve a per-dimension residual vector, calculate an integer surprise count, and file a general comprehension concern for critical scope/mode/act disagreements. No model prose becomes a reply and no LLM field overwrites the local parse.",
+  "nodes": [],
+  "edges": [],
+  "productions": [
+    {"provenance": "seed:request_interpretation_shadow:message-request", "src": {"type": "Message", "var": "message"}, "edge_type": "seeks_interpretation_shadow", "tgt": {"type": "TeacherRequest", "var": "request"}},
+    {"provenance": "seed:request_interpretation_shadow:evidence-difference", "src": {"type": "TeacherEvidence", "var": "evidence"}, "edge_type": "proposes_difference", "tgt": {"type": "InterpretationDifference", "var": "difference"}},
+    {"provenance": "seed:request_interpretation_shadow:evidence-relation", "src": {"type": "TeacherEvidence", "var": "evidence"}, "edge_type": "proposes_requested_relation", "tgt": {"type": "RequestedRelationCandidate", "var": "relation"}},
+    {"provenance": "seed:request_interpretation_shadow:message-residual", "src": {"type": "Message", "var": "message"}, "edge_type": "has_interpretation_residual", "tgt": {"type": "InterpretationResidual", "var": "residual"}},
+    {"provenance": "seed:request_interpretation_shadow:residual-evidence", "src": {"type": "InterpretationResidual", "var": "residual"}, "edge_type": "supported_by", "tgt": {"type": "TeacherEvidence", "var": "evidence"}},
+    {"provenance": "seed:request_interpretation_shadow:residual-difference", "src": {"type": "InterpretationResidual", "var": "residual"}, "edge_type": "corresponds_to", "tgt": {"type": "InterpretationDifference", "var": "difference"}},
+    {"provenance": "seed:request_interpretation_shadow:concern-message", "src": {"type": "SelfConcern", "var": "concern"}, "edge_type": "about_message", "tgt": {"type": "Message", "var": "message"}}
+  ],
+  "rules": [
+    {
+      "name": "ris_request_independent_shadow",
+      "area": "supervisory",
+      "order": 12,
+      "latency_class": "best_effort",
+      "match": [["agent", "received", "message"], ["agent", "has_teacher_weaning_metrics", "metrics"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "message"}, "key": "from"}, "b": {"type": "Lit", "value": "interlocutor"}},
+        {"type": "In", "member": {"type": "Attr", "node": {"type": "Var", "name": "message"}, "key": "comp_kind"}, "container": {"type": "Lit", "value": ["question", "instruction", "request"]}},
+        {"type": "In", "member": {"type": "Attr", "node": {"type": "Var", "name": "metrics"}, "key": "mode"}, "container": {"type": "Lit", "value": ["blocking", "shadow"]}},
+        {"type": "Not", "arg": {"type": "Exists", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "message"}, "edge_type": "seeks_interpretation_shadow", "any_type": false}, "var_name": "prior", "predicate": {"type": "Lit", "value": true}}}
+      ]},
+      "effects": [
+        ["add_node", "request", "TeacherRequest", {
+          "status": "requested", "teacher_tier": "llm", "origin": "agent",
+          "question_kind": "shadow_request_interpretation", "blocking": 0,
+          "question_predicate": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "message"}, "key": "comp_predicate"}},
+          "question_content": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "message"}, "key": "comp_content"}},
+          "local_speech_act": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "message"}, "key": "comp_kind"}},
+          "local_dispatch_path": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "message"}, "key": "comp_dispatch_path"}},
+          "local_intent": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "message"}, "key": "comp_intent"}},
+          "local_topic": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "message"}, "key": "comp_topic"}},
+          "instruction_context": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "message"}, "key": "text"}}
+        }],
+        ["add_edge", "message", "seeks_interpretation_shadow", "request"],
+        ["set_attr_if_different", "metrics", "llm_requests", {"__term__": {"type": "Plus", "items": [
+          {"type": "Attr", "node": {"type": "Var", "name": "metrics"}, "key": "llm_requests"},
+          {"type": "Lit", "value": 1}
+        ]}}]
+      ]
+    },
+    {
+      "name": "ris_reify_shadow_difference_as_residual",
+      "area": "learning",
+      "order": 13,
+      "latency_class": "soft_realtime",
+      "match": [["message", "seeks_interpretation_shadow", "request"], ["request", "has_evidence", "evidence"], ["evidence", "proposes_difference", "difference"]],
+      "where": {"type": "Not", "arg": {"type": "Exists", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "message"}, "edge_type": "has_interpretation_residual", "any_type": false}, "var_name": "prior", "predicate": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "prior"}, "key": "dimension"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "difference"}, "key": "dimension"}}}},
+      "effects": [
+        ["add_node", "residual", "InterpretationResidual", {"status": "open", "source": "llm_shadow", "dimension": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "difference"}, "key": "dimension"}}}],
+        ["add_edge", "message", "has_interpretation_residual", "residual"],
+        ["add_edge", "residual", "supported_by", "evidence"],
+        ["add_edge", "residual", "corresponds_to", "difference"]
+      ]
+    },
+    {
+      "name": "ris_calculate_surprise_from_residual_vector",
+      "area": "learning",
+      "order": 14,
+      "latency_class": "soft_realtime",
+      "match": [["message", "seeks_interpretation_shadow", "request"], ["request", "has_evidence", "evidence"]],
+      "where": {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "message"}, "key": "interpretation_surprise"}, "b": {"type": "Count", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "message"}, "edge_type": "has_interpretation_residual", "any_type": false}}}},
+      "effects": [["set_attr_if_different", "message", "interpretation_surprise", {"__term__": {"type": "Count", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "message"}, "edge_type": "has_interpretation_residual", "any_type": false}}}]]
+    },
+    {
+      "name": "ris_mark_corroborated_interpretation",
+      "area": "learning",
+      "order": 14,
+      "latency_class": "soft_realtime",
+      "match": [["message", "seeks_interpretation_shadow", "request"], ["request", "has_evidence", "evidence"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "verdict"}, "b": {"type": "Lit", "value": "supported"}},
+        {"type": "Not", "arg": {"type": "Exists", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "evidence"}, "edge_type": "proposes_difference", "any_type": false}, "var_name": "difference", "predicate": {"type": "Lit", "value": true}}}
+      ]},
+      "effects": [["set_attr", "message", "shadow_interpretation_status", "corroborated"]]
+    },
+    {
+      "name": "ris_mark_surprising_interpretation",
+      "area": "learning",
+      "order": 14,
+      "latency_class": "soft_realtime",
+      "match": [["message", "has_interpretation_residual", "residual"]],
+      "where": {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "message"}, "key": "shadow_interpretation_status"}, "b": {"type": "Lit", "value": "surprising"}}},
+      "effects": [["set_attr", "message", "shadow_interpretation_status", "surprising"]]
+    },
+    {
+      "name": "ris_file_critical_interpretation_gap",
+      "area": "learning",
+      "order": 15,
+      "latency_class": "soft_realtime",
+      "match": [["agent", "received", "message"], ["message", "seeks_interpretation_shadow", "request"], ["request", "has_evidence", "evidence"]],
+      "where": {"type": "And", "items": [
+        {"type": "Exists", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "evidence"}, "edge_type": "proposes_difference", "any_type": false}, "var_name": "critical", "predicate": {"type": "In", "member": {"type": "Attr", "node": {"type": "Var", "name": "critical"}, "key": "dimension"}, "container": {"type": "Lit", "value": ["speech_act", "target_scope", "answer_mode"]}}},
+        {"type": "Not", "arg": {"type": "Exists", "source": {"type": "NodesOfType", "node_type": "SelfConcern"}, "var_name": "prior", "predicate": {"type": "And", "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "prior"}, "key": "kind"}, "b": {"type": "Lit", "value": "interpretation_surprise"}},
+          {"type": "Exists", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "prior"}, "edge_type": "about_message", "any_type": false}, "var_name": "same", "predicate": {"type": "Eq", "a": {"type": "Var", "name": "same"}, "b": {"type": "Var", "name": "message"}}}
+        ]}}}
+      ]},
+      "effects": [
+        ["add_node", "concern", "SelfConcern", {"status": "noted", "source": "implicit", "kind": "interpretation_surprise", "content": "independent interpretation evidence disagrees with a critical dimension of my request model"}],
+        ["add_edge", "agent", "has_self_concern", "concern"],
+        ["add_edge", "concern", "about_message", "message"]
+      ]
+    }
+  ]
+}

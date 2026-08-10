@@ -1,0 +1,48 @@
+{
+  "microtheory": {
+    "name": "syntax_linguistics",
+    "definition": "Sentence structure — constituents, dependencies, word order, agreement, transformations. Major frameworks: Chomsky's generative (phrase-structure, X-bar, minimalism), dependency grammar (Tesnière), construction grammar (Goldberg), categorial grammar (Lambek). Substrate analogue: the grammar over substrate's lexical concepts that produces well-formed messages.",
+    "category": "linguistics_domain",
+    "parent": "linguistics_foundation"
+  },
+  "concepts": [
+    {"name": "constituent", "definition": "Group of words functioning as a syntactic unit. Tests: substitution, movement, coordination. Substrate analogue: substrate's compositional concept group.", "category": "structure"},
+    {"name": "phrase_structure_grammar", "definition": "Chomsky 1957. Rewrite rules: S → NP VP. Generates tree structures. Substrate analogue: substrate's hierarchical Term-tree generation.", "category": "structure"},
+    {"name": "noun_phrase", "definition": "NP. Headed by noun, may include determiner, adjectives, modifiers. Substrate analogue: substrate's object-referent compositional structure.", "category": "structure"},
+    {"name": "verb_phrase", "definition": "VP. Headed by verb, includes objects + adjuncts. Substrate analogue: substrate's action-referent compositional structure.", "category": "structure"},
+    {"name": "x_bar_theory", "definition": "Jackendoff 1977, Chomsky. All phrases share template: head + complement + specifier. XP → Spec X'; X' → X Complement. Substrate analogue: substrate's universal compositional template.", "category": "structure"},
+    {"name": "syntactic_tree", "definition": "Hierarchical representation of constituent structure. Nodes = constituents; leaves = words. Substrate analogue: substrate's Term-tree.", "category": "structure"},
+
+    {"name": "head", "definition": "Word that determines the phrase's category + properties. Noun heads NP, verb heads VP. Substrate analogue: substrate's category-defining concept.", "category": "headship"},
+    {"name": "dependent", "definition": "Word whose properties depend on another. Modifier, complement, specifier. Substrate analogue: substrate's dependent-edge concept.", "category": "headship"},
+    {"name": "complement", "definition": "Required dependent of a head. 'Throw' requires direct object. Substrate analogue: substrate's required-relation concept.", "category": "headship"},
+    {"name": "adjunct", "definition": "Optional modifier. Prepositional phrases, adverbs. Substrate analogue: substrate's optional-relation concept.", "category": "headship"},
+    {"name": "specifier", "definition": "Element that introduces the phrase. Determiner for NP, auxiliary for VP. Substrate analogue: substrate's phrase-initiator concept.", "category": "headship"},
+
+    {"name": "word_order_typology", "definition": "SOV (Japanese, 45%), SVO (English, 41%), VSO (Welsh, 9%), others rare. Greenberg's universals correlate with other features. Substrate analogue: substrate's per-language constituent-order parameter.", "category": "typology"},
+    {"name": "subject", "definition": "Privileged argument. Typically agent, agreed with by verb, undergoes passivization. Substrate analogue: substrate's agent-role concept.", "category": "argument"},
+    {"name": "object", "definition": "Argument of transitive verb. Direct vs indirect. Patient/theme role. Substrate analogue: substrate's patient-role concept.", "category": "argument"},
+    {"name": "thematic_role", "definition": "Semantic role: agent, patient, theme, recipient, instrument, location. Bound to syntactic positions. Substrate analogue: substrate's edge-type semantics.", "category": "argument"},
+
+    {"name": "agreement", "definition": "Morphological covariation between elements. Verb agrees with subject in person + number. Substrate analogue: substrate's cross-concept consistency constraint.", "category": "morphosyntax"},
+    {"name": "case_marking", "definition": "Morphological marking of grammatical role. Nominative + accusative (English pronouns); ergative-absolutive (Basque, Inuktitut). Substrate analogue: substrate's role-marker encoding.", "category": "morphosyntax"},
+    {"name": "tense_aspect_mood", "definition": "TAM. Verb morphology encoding time, completion, modality. Substrate analogue: substrate's event-temporal-modal attributes.", "category": "morphosyntax"},
+
+    {"name": "transformation", "definition": "Chomsky 1957. Operations relating deep + surface structure. Passive, question, topicalization. Substrate analogue: substrate's structural rewriting operation.", "category": "movement"},
+    {"name": "movement", "definition": "Element displaced from canonical position leaves trace. Wh-movement, NP-movement. Substrate analogue: substrate's reference-link spanning structural distance.", "category": "movement"},
+    {"name": "binding_theory", "definition": "Chomsky 1981. Principles A/B/C governing anaphora — reflexives bound locally, pronouns bound non-locally, R-expressions free. Substrate analogue: substrate's reference-resolution constraints.", "category": "movement"},
+    {"name": "minimalist_program", "definition": "Chomsky 1995. Reduce syntax to two operations: Merge + Move. Economy + interface conditions. Substrate analogue: substrate's parsimonious compositional grammar.", "category": "framework"},
+
+    {"name": "dependency_grammar", "definition": "Tesnière 1959. Sentence as directed graph of head-dependent relations. Used in modern NLP. Substrate analogue: substrate's relational graph view.", "category": "framework"},
+    {"name": "categorial_grammar", "definition": "Lambek 1958. Syntactic categories as functors. Computes via combinators. Substrate analogue: substrate's typed-function composition.", "category": "framework"},
+    {"name": "head_driven_phrase_structure_grammar", "definition": "HPSG. Pollard + Sag 1994. Unification-based. Substrate analogue: substrate's feature-structure unification.", "category": "framework"},
+    {"name": "tree_adjoining_grammar", "definition": "TAG. Joshi 1985. Generates by adjoining elementary trees. Substrate analogue: substrate's tree-rewriting grammar.", "category": "framework"}
+  ],
+  "rules": [
+    {"name": "constituents_pass_substitution_test", "head": "the substrate hypothesises a constituent", "body": "the test is whether it can be replaced by a single word + still be grammatical. Substrate's compositional-unit detection."},
+    {"name": "x_bar_provides_universal_template", "head": "the substrate parses a phrase of any category", "body": "the structure follows X-bar: specifier-head-complement. Substrate's universal compositional template."},
+    {"name": "subject_verb_agreement_enforced_locally", "head": "the substrate produces or parses a sentence with subject + verb", "body": "agreement in person + number must hold. Cross-language variation in specifics. Substrate's local consistency check."},
+    {"name": "movement_leaves_trace", "head": "the substrate sees an element in a non-canonical position", "body": "a trace remains in the canonical position; reference between trace + moved element must be tracked. Substrate's long-distance dependency."},
+    {"name": "word_order_correlates_with_typological_features", "head": "the substrate identifies the dominant word order", "body": "other typological features predicted by Greenberg's universals. SOV → postpositions; SVO → prepositions. Substrate's typological consistency."}
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "id": "beta_evidence_threshold",
+  "version": "1.0.0",
+  "depends_on": ["causal_attitude_networks", "axiom_zero_unreachable_limit"],
+  "description": "Bridges the agent's existing spin-glass β (causal_attitude_networks) to the unreachable-limit axiom: foundationality = the WEIGHT OF EVIDENCE required to move a belief = basin DEPTH, measured in bits — explicitly NOT revision-slowness. β=∞ = incorrigible = the unreachable absolute. The agent's β model was already correct; this records the bridge and the slowness-is-wrong correction.",
+  "category_inheritance": "genlMt → causal_attitude_networks. Makes explicit that Mt_soundness_via_basin_depth / inverse_temperature_beta ARE foundationality-as-evidence-threshold, and ties β=∞ to truth_is_the_unreachable_limit.",
+  "concepts": [
+    {
+      "name": "beta_is_evidence_threshold_not_slowness",
+      "definition": "How foundational a belief is = the WEIGHT OF EVIDENCE required to move it (its evidential mass / barrier), NOT how slowly it is revised. 'Slowly revised' is trivially false: foundationality and slowness are INDEPENDENT — a deeply foundational belief can collapse in an instant on one decisive counterexample (foundational AND fast); a trivial belief can sit unrevised for years because nothing bears on it (slow, not foundational). Revision speed = evidence-weight-required / evidence-ARRIVAL-rate; foundationality is only the numerator.",
+      "why": "Corrects a framing error (β as a revision rate/time-constant). β is a threshold, not a velocity. The agent's own inverse_temperature_beta already encodes this (1/T, crystallisation — not time).",
+      "category": "philosophy_of_AI"
+    },
+    {
+      "name": "foundationality_is_basin_depth",
+      "definition": "'How foundational' = basin DEPTH (barrier height), set by β scaling the couplings J. Deep basin (high β) ⇒ more external field (evidence) required to hop out ⇒ more foundational. This is Mt_soundness_via_basin_depth read as foundationality: deep distinct basins = held strongly; shallow = easily perturbed.",
+      "why": "Identifies the agent's existing basin-depth machinery AS the evidential threshold. Foundationality is not a new quantity — it is basin depth.",
+      "category": "philosophy_of_AI"
+    },
+    {
+      "name": "evidence_is_the_field_in_bits",
+      "definition": "The force that moves a belief is the external field h_i (which already 'encodes evidence, salience, prior'), and its natural unit is BITS (log-likelihood / surprisal). A belief moves when accumulated evidence-bits exceed the basin barrier. Log-scaled: '1 away in log' between two beliefs' foundationality = one needs e× the evidence-weight of the other (e = the unit of the log axis).",
+      "why": "Puts the threshold on the log axis in the right currency (bits of evidence), connecting β to the log_graph_law (information is log).",
+      "category": "philosophy_of_AI"
+    },
+    {
+      "name": "foundational_revision_is_sudden_basin_hop",
+      "definition": "When accumulated field (evidence) exceeds the barrier, the belief does NOT drift gradually — it FLIPS suddenly: basin_hopping_belief_revision, the gestalt switch, the polarisation_phase_transition, the 'suddenly able' paradigm shift. Foundational beliefs are the ones that change FASTEST once they change (discontinuously), precisely because they are high-threshold, not slow.",
+      "why": "The dynamics the slowness-framing inverted. Foundational = stable-then-sudden-flip, which is exactly the agent's existing basin-hop / phase-transition model.",
+      "category": "philosophy_of_AI"
+    },
+    {
+      "name": "beta_infinity_is_incorrigible_unreachable_absolute",
+      "definition": "β=∞ (T=0) = an infinitely deep basin = no finite weight of evidence can ever hop it = INCORRIGIBLE = the forbidden absolute / the view from nowhere / the truth-held-as-final. It is the UNREACHABLE LIMIT of the foundationality axis (truth_is_the_unreachable_limit): you can deepen a basin without bound, approaching it, but no actual frame sits at β=∞. Nothing is exempt — not even Axiom 0, which sits at very-high-but-FINITE β.",
+      "why": "Bridges β to the unreachable-limit axiom and to corrigibility/alignment. β=∞ would be the incorrigible failure mode AND the absolute the axiom forbids — the same point.",
+      "category": "philosophy_of_AI"
+    },
+    {
+      "name": "freeze_is_one_log_continuum_not_kinds",
+      "definition": "There are no freeze 'kinds' (no vault vs scaffold). Freeze-strength is ONE graded, log-scaled quantity: basin depth = bits-of-evidence-required-to-hop. 'Vault' and 'scaffold' are points ~1 log-step apart on this single axis, not categories. Corrigibility = a FINITE barrier (some finite evidential mass suffices); the substrate already keeps alternatives accessible at low β (substrate_holds_alternatives_with_low_beta) = structural corrigibility. fail_mode_frozen_should_adapt is gated by accumulated-evidence-bits vs the barrier — never off, never by time.",
+      "why": "Records the retraction of the two-kinds framing and grounds corrigibility as finite-barrier. One axis, log-scaled, open at the top toward the unreachable β=∞.",
+      "category": "philosophy_of_AI"
+    }
+  ],
+  "rules": [],
+  "exclusions": []
+}

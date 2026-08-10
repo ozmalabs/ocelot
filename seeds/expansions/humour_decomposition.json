@@ -1,0 +1,52 @@
+{
+  "id": "humour_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "incongruity",
+  "in_microtheory": "humour",
+  "description": "The humour mechanism as derivation rules — so the agent INFERS funniness (and its failure modes) from the setup→benign-violation→resolution shape, rather than being told what is funny. The rules also encode the negative cases (what makes something confusing, or clever, or frightening instead of funny), which is what makes 'funny' a discriminable judgement.",
+  "sub_mechanisms": [],
+  "derivation_rules": [
+    {
+      "name": "humour_is_a_resolved_benign_violation",
+      "if": ["a setup installs an expectation", "the punchline violates it", "the violation is benign (safe)", "a second frame resolves the violation so it coheres"],
+      "then": ["the result is HUMOUR (funny)"],
+      "why": "Incongruity-resolution composed with benign-violation: all three of violation, benignness, and resolution must hold. This is the positive case the negative rules below carve away from.",
+      "soundness_category": "humour_inference"
+    },
+    {
+      "name": "unresolved_incongruity_is_confusion_not_humour",
+      "if": ["an incongruity is present", "no resolving second frame is found"],
+      "then": ["the result is CONFUSING, not funny"],
+      "why": "Without the re-compression that resolves the clash, the audience is left with an unintegrated mismatch — the 'I don't get it' state.",
+      "soundness_category": "humour_inference"
+    },
+    {
+      "name": "resolution_without_violation_is_clever_not_funny",
+      "if": ["a reframe resolves cleanly", "no expectation was actually violated"],
+      "then": ["the result is CLEVER or elegant, not funny"],
+      "why": "Elegance is resolution without surprise. Humour needs the violation; a neat reframe of something expected reads as smart, not comic.",
+      "soundness_category": "humour_inference"
+    },
+    {
+      "name": "non_benign_violation_is_fear_not_humour",
+      "if": ["an expectation is violated", "the violation is threatening (non-benign)"],
+      "then": ["the result is ALARM or fear, not humour"],
+      "why": "The benign tag is the gate: the SAME violated expectation is funny when safe and frightening when not. This is why context (who it happens to, whether it matters) flips a joke into horror.",
+      "soundness_category": "humour_inference"
+    },
+    {
+      "name": "subverted_convention_is_a_joke_engine",
+      "if": ["a known convention is subverted (trope_play)", "the subversion is benign"],
+      "then": ["the convention supplies the expectation", "the subversion supplies the benign violation", "recognising the device supplies the resolution", "the result is HUMOUR"],
+      "why": "The bridge from trope_play to humour: most catalogued 'Played for Laughs' examples are exactly a benign subversion of a convention the audience already holds.",
+      "soundness_category": "humour_inference"
+    },
+    {
+      "name": "dramatic_irony_is_a_cross_frame_mismatch",
+      "if": ["the audience holds a frame the character lacks"],
+      "then": ["the gap between the two frames is DRAMATIC IRONY", "meaning rides on the audience's expectation about what the character will wrongly do"],
+      "why": "Irony is an expectation mismatch held open across frames (viewer-frame vs character-frame) rather than resolved — comic when benign, agonising when not.",
+      "soundness_category": "pragmatic_inference"
+    }
+  ]
+}

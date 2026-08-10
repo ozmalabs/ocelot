@@ -1,0 +1,118 @@
+{
+  "id": "cloud_iam_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "AWS_IAM",
+  "in_microtheory": "cloud_infrastructure",
+  "description": "Cloud IAM decomposed. AWS IAM policy types + evaluation, IRSA (IAM Roles for Service Accounts), Workload Identity (GKE), OIDC federation for CI/CD, AWS Organizations + SCPs, permission boundaries.",
+  "sub_mechanisms": [
+    {
+      "name": "identity_policy",
+      "definition": "Attached to user/role/group. Says what this identity can do.",
+      "why": "Standard authz unit. Multiple policies merge (union of allows). Common pattern: managed policies + inline policies.",
+      "category": "iam_mechanism"
+    },
+    {
+      "name": "resource_policy",
+      "definition": "Attached to resource (S3 bucket, KMS key). Says who can access this resource.",
+      "why": "Resource-side control. Cross-account: only resource policies grant external access. S3 bucket policy + KMS key policy famous examples.",
+      "category": "iam_mechanism"
+    },
+    {
+      "name": "permission_boundary",
+      "definition": "Max permissions a principal can have. Acts as ceiling regardless of policies.",
+      "why": "Delegation: give team admin within their boundary. Even if they add policies, boundary caps. Standard for self-service org governance.",
+      "category": "iam_mechanism"
+    },
+    {
+      "name": "SCP_organisations",
+      "definition": "Service Control Policy. AWS Org-level. Acts as allowlist on services + actions.",
+      "why": "Org-wide guardrails. 'No CloudTrail disable' across all accounts. Defense in depth above account IAM.",
+      "category": "iam_mechanism"
+    },
+    {
+      "name": "IRSA_EKS",
+      "definition": "IAM Roles for Service Accounts. K8s SA → IAM role via OIDC.",
+      "why": "Pod gets AWS creds without static keys. Service-account-based access. Standard for EKS workloads accessing AWS APIs.",
+      "category": "iam_mechanism"
+    },
+    {
+      "name": "GKE_Workload_Identity",
+      "definition": "K8s SA → GCP SA via OIDC. GCP's equivalent of IRSA.",
+      "why": "Same pattern: pod gets GCP creds via SA, no static keys. Standard GKE security baseline.",
+      "category": "iam_mechanism"
+    },
+    {
+      "name": "AKS_Workload_Identity",
+      "definition": "K8s SA → Azure managed identity. OIDC-based federation.",
+      "why": "Azure's equivalent. All three clouds now have similar patterns. Eliminates static keys for K8s → cloud API access.",
+      "category": "iam_mechanism"
+    },
+    {
+      "name": "OIDC_federation_CI",
+      "definition": "GitHub Actions, GitLab CI, etc. issue OIDC token. Cloud trusts; STS issues creds.",
+      "why": "No long-term cloud creds in CI. CI's OIDC trust to specific repo + branch. Standard 2024+ CI/CD pattern.",
+      "category": "iam_mechanism"
+    },
+    {
+      "name": "IAM_Identity_Center_SSO",
+      "definition": "AWS SSO (renamed Identity Center). Central identity → assume roles in member accounts.",
+      "why": "No per-account users. SSO user assumes role; STS creds; short-lived. Modern AWS Org pattern. Replaces IAM users + access keys.",
+      "category": "iam_mechanism"
+    },
+    {
+      "name": "session_policy",
+      "definition": "Restrict assumed role permissions further at assume-role time.",
+      "why": "Narrowing for specific use. Role might have broad permissions; session limits to needed. Common in CI/CD chains.",
+      "category": "iam_mechanism"
+    },
+    {
+      "name": "ABAC_with_tags",
+      "definition": "IAM policies use tag-based conditions: Allow if resource has tag matching principal's tag.",
+      "why": "Scalable: don't write policy per project. Policy: 'allow if principal:project = resource:project'. Used at scale.",
+      "category": "iam_mechanism"
+    },
+    {
+      "name": "external_id_third_party",
+      "definition": "When third-party assumes role: external ID prevents confused-deputy attack.",
+      "why": "Without: any third-party with role ARN could assume. With external ID: only when ID matches. Standard third-party integration pattern.",
+      "category": "iam_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "explicit_deny_always_wins",
+      "if": ["any applicable policy denies"],
+      "then": ["access blocked regardless of allows"],
+      "why": "Deny > Allow > Implicit deny. Critical: deny in identity OR resource OR SCP OR boundary blocks. Root cannot bypass SCP. Foundational IAM logic.",
+      "soundness_category": "algebraic_law"
+    },
+    {
+      "name": "IRSA_eliminates_static_keys_in_pods",
+      "if": ["EKS pods use IRSA"],
+      "then": ["no AWS access keys in pod env or filesystem"],
+      "why": "Service account annotated with role. Webhook injects projected token. Pod uses STS-issued temporary creds. No keys to leak. Modern EKS baseline.",
+      "soundness_category": "referential_transparency"
+    },
+    {
+      "name": "OIDC_federation_eliminates_CI_secrets",
+      "if": ["CI/CD uses OIDC federation"],
+      "then": ["no long-term cloud creds in CI secrets"],
+      "why": "CI requests OIDC token; trades for STS creds; uses; expires. Trust relationship: scope to specific repo + branch + workflow. Industry direction.",
+      "soundness_category": "referential_transparency"
+    },
+    {
+      "name": "permission_boundaries_enable_safe_delegation",
+      "if": ["team gets self-service IAM within boundary"],
+      "then": ["risk of privilege escalation bounded"],
+      "why": "Without: give team admin = total compromise possible. With: even if team adds policies, boundary caps. Self-service without blanket trust.",
+      "soundness_category": "referential_transparency"
+    },
+    {
+      "name": "tag_based_ABAC_scales_better_than_role_per_project",
+      "if": ["organisation has many projects"],
+      "then": ["tag-based policies scale better than per-project roles"],
+      "why": "Per-project: explode in policies + maintenance. Tag-based: one policy 'allow if tag matches'. Add project = add tag. Standard at scale.",
+      "soundness_category": "cost_equivalence"
+    }
+  ]
+}

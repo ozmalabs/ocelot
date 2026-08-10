@@ -1,0 +1,138 @@
+{
+ "id": "retinal_motion_2d",
+ "version": "1.0.0",
+ "self_load_only": true,
+ "depends_on": [
+  "retinal_onset_2d"
+ ],
+ "area": "retina",
+ "description": "Async 2-D MOTION from the onset-event stream (the 2-D expansion of Rung 2, closing the 2-D loop after 166000). Rungs 1-4 read azimuth (column_index) ONLY, so a PURELY VERTICAL mover -- onset events at ONE azimuth column, its rows sweeping over successive epochs -- has zero azimuth spatial spread and is INVISIBLE to the 1-D retinal_event_motion (speed 0, coherence 0). Here the events carry (column_index=az, row_index=el, epoch) and the velocity is recovered in BOTH axes: the `retinal_event_motion_2d` Rust task kind computes v_az = least-squares slope of col on epoch and v_el = slope of row on epoch, output = [v_az, v_el, dir_az, dir_el, speed=|(v_az,v_el)|, residual, coherence, n] where coherence is the combined multiple-correlation that reduces EXACTLY to the 1-D |Pearson r| when there is no elevation spread and is 1.0 for a noiseless sweep in ANY direction including pure elevation. This rule mints a RetinalMotionPercept (carrying v_az, v_el, direction, speed, residual, coherence) when coherence (output[6]) and event count (output[7]) exceed thresholds held as DATA on a RetinaMotionParams2d node. A static scene mints no events; a scrambled-epoch set decorrelates (coherence -> 0 -> no percept). OFF by default: the rule cannot fire unless a RetinaMotionParams2d node exists (created by the adapter only when context['visual_motion'] AND context['retina_2d'] are set), and the adapter creates the 2-D motion task only then. The 1-D retinal_event_motion kind + retinal_motion seed are byte-untouched.",
+ "microtheory": {
+  "name": "retinal_motion_2d",
+  "description": "2-D space-time slope of (az,el) onset events -> async 2-D motion percept (v_az, v_el)"
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [
+  {
+   "provenance": "seed:retinal_motion_2d:retina-motion-params-2d",
+   "src": {"type": "Retina", "var": "retina"},
+   "edge_type": "has_motion_params_2d",
+   "tgt": {"type": "RetinaMotionParams2d", "var": "params"}
+  },
+  {
+   "provenance": "seed:retinal_motion_2d:retina-motion-task-2d",
+   "src": {"type": "Retina", "var": "retina"},
+   "edge_type": "has_motion_task_2d",
+   "tgt": {"type": "CognitiveTask", "var": "task"}
+  },
+  {
+   "provenance": "seed:retinal_motion_2d:retina-motion-percept-2d",
+   "src": {"type": "Retina", "var": "retina"},
+   "edge_type": "has_motion_percept_2d",
+   "tgt": {"type": "RetinalMotionPercept", "var": "percept"}
+  }
+ ],
+ "rules": [
+  {
+   "name": "retinal_mint_motion_2d",
+   "area": "retina",
+   "order": 3,
+   "latency_class": "hard_realtime",
+   "match": [
+    ["retina", "has_motion_params_2d", "params"],
+    ["retina", "has_motion_task_2d", "task"]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "task"}, "key": "kind"},
+      "b": {"type": "Lit", "value": "retinal_event_motion_2d"}
+     },
+     {
+      "type": "Eq",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "task"}, "key": "status"},
+      "b": {"type": "Lit", "value": "done"}
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {"type": "Attr", "node": {"type": "Var", "name": "task"}, "key": "motion_seen"},
+       "b": {"type": "Lit", "value": 1.0}
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "IndexAt",
+       "seq": {"type": "Attr", "node": {"type": "Var", "name": "task"}, "key": "output"},
+       "index": {"type": "Lit", "value": 6}
+      },
+      "b": {"type": "Attr", "node": {"type": "Var", "name": "params"}, "key": "min_coherence"}
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "IndexAt",
+       "seq": {"type": "Attr", "node": {"type": "Var", "name": "task"}, "key": "output"},
+       "index": {"type": "Lit", "value": 7}
+      },
+      "b": {"type": "Attr", "node": {"type": "Var", "name": "params"}, "key": "min_events"}
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "percept",
+     "RetinalMotionPercept",
+     {
+      "v_az": {"__term__": {
+       "type": "IndexAt",
+       "seq": {"type": "Attr", "node": {"type": "Var", "name": "task"}, "key": "output"},
+       "index": {"type": "Lit", "value": 0}
+      }},
+      "v_el": {"__term__": {
+       "type": "IndexAt",
+       "seq": {"type": "Attr", "node": {"type": "Var", "name": "task"}, "key": "output"},
+       "index": {"type": "Lit", "value": 1}
+      }},
+      "direction": {"__term__": {
+       "type": "IndexAt",
+       "seq": {"type": "Attr", "node": {"type": "Var", "name": "task"}, "key": "output"},
+       "index": {"type": "Lit", "value": 2}
+      }},
+      "direction_el": {"__term__": {
+       "type": "IndexAt",
+       "seq": {"type": "Attr", "node": {"type": "Var", "name": "task"}, "key": "output"},
+       "index": {"type": "Lit", "value": 3}
+      }},
+      "speed": {"__term__": {
+       "type": "IndexAt",
+       "seq": {"type": "Attr", "node": {"type": "Var", "name": "task"}, "key": "output"},
+       "index": {"type": "Lit", "value": 4}
+      }},
+      "residual": {"__term__": {
+       "type": "IndexAt",
+       "seq": {"type": "Attr", "node": {"type": "Var", "name": "task"}, "key": "output"},
+       "index": {"type": "Lit", "value": 5}
+      }},
+      "coherence": {"__term__": {
+       "type": "IndexAt",
+       "seq": {"type": "Attr", "node": {"type": "Var", "name": "task"}, "key": "output"},
+       "index": {"type": "Lit", "value": 6}
+      }},
+      "epoch": {"__term__": {
+       "type": "Attr", "node": {"type": "Var", "name": "task"}, "key": "input_epoch"
+      }}
+     }
+    ],
+    ["add_edge", "retina", "has_motion_percept_2d", "percept"],
+    ["set_attr", "task", "motion_seen", 1.0]
+   ]
+  }
+ ]
+}

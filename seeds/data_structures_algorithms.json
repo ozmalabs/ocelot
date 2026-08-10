@@ -1,0 +1,762 @@
+{
+ "id": "data_structures_algorithms",
+ "version": "0.1.0",
+ "depends_on": [
+  "compiler_theory"
+ ],
+ "description": "The foundational CS layer the substrate was missing — explicit theory of arrays, linked lists, trees, graphs, hash tables, heaps, sorting, searching, recursion, asymptotic complexity. The simple trees we missed while building the forest of codecs, microarchitectures, and protocols. Every other Mt references these implicitly; this Mt makes them queryable as graph data. Each concept carries the WHY — not just 'red-black trees are self-balancing' but why the balance condition works, why the rotations preserve the BST invariant, why the worst-case is O(log n).",
+ "category_inheritance": "genlMt → compiler_theory. Complexity reasoning (Big O bounds, amortised analysis) is exactly compiler_theory's cost_equivalence. Data structure invariants (BST property, heap property, hash table load factor) are denotational equivalences — the structure's operations preserve them. Algorithm correctness arguments (loop invariants, induction) are the algebraic_law category. The substrate's compiler-theory vocabulary applies directly to data structures and algorithms.",
+ "concepts": [
+  {
+   "name": "big_O_notation",
+   "definition": "Asymptotic upper bound: f(n) = O(g(n)) iff ∃ c, n₀ such that ∀ n ≥ n₀, f(n) ≤ c·g(n). Describes how runtime/space grows with input size in the worst case.",
+   "why": "Hides constants and lower-order terms — what matters at scale is the growth rate. O(n log n) and O(n²) differ by an unbounded factor as n grows; constants matter only at small n.",
+   "category": "complexity"
+  },
+  {
+   "name": "big_Theta_notation",
+   "definition": "Asymptotic tight bound: f(n) = Θ(g(n)) iff f(n) = O(g(n)) AND f(n) = Ω(g(n)). The function grows AT THE SAME RATE as g, not just no faster.",
+   "why": "Big O is an upper bound; an algorithm that's O(n²) might actually be Θ(n). Big Theta states the exact growth. Often what people mean when they say 'O' colloquially.",
+   "category": "complexity"
+  },
+  {
+   "name": "big_Omega_notation",
+   "definition": "Asymptotic lower bound: f(n) = Ω(g(n)) iff ∃ c, n₀ such that ∀ n ≥ n₀, f(n) ≥ c·g(n).",
+   "why": "Used to prove an algorithm can't be faster than X — e.g., comparison sort is Ω(n log n) because the decision tree must have n! leaves. Lower bounds tell us when an algorithm is optimal.",
+   "category": "complexity"
+  },
+  {
+   "name": "time_complexity",
+   "definition": "How runtime scales with input size, in operations / instructions / comparisons. The dominant axis of algorithm analysis.",
+   "why": "Hardware speed varies; growth rate doesn't. An O(n log n) sort scales to billions of elements on modern hardware; an O(n²) sort doesn't, no matter the constant factor or clock speed.",
+   "category": "complexity"
+  },
+  {
+   "name": "space_complexity",
+   "definition": "How memory usage scales with input size. Includes auxiliary space (excluding input/output).",
+   "why": "Sometimes the constraint. In-place algorithms (O(1) auxiliary) matter for embedded, GPU, cache-constrained code. Time-space trade-offs (memoisation, lookup tables) are everywhere.",
+   "category": "complexity"
+  },
+  {
+   "name": "amortised_analysis",
+   "definition": "Total cost of N operations divided by N. Some operations may be expensive but rare; amortised cost smooths them out.",
+   "why": "Dynamic array's O(1) amortised append: most appends are cheap; rare doublings cost O(n) but amortise to O(1). Without amortised analysis, the worst case (O(n) per append) would mislead about typical performance.",
+   "category": "complexity"
+  },
+  {
+   "name": "worst_case",
+   "definition": "Maximum cost over all inputs of size n. Bounds adversarial behaviour.",
+   "why": "Robust guarantee: regardless of input distribution, runtime won't exceed this. Some algorithms (quicksort) have terrible worst case (O(n²)) but excellent average case — choice depends on whether adversaries can craft bad inputs.",
+   "category": "complexity"
+  },
+  {
+   "name": "average_case",
+   "definition": "Expected cost averaged over a distribution of inputs (typically uniform). Common case performance.",
+   "why": "Quicksort's average O(n log n) makes it widely usable despite O(n²) worst case. Hash tables' O(1) average lookup despite O(n) worst case. Most real-world choices are driven by average case.",
+   "category": "complexity"
+  },
+  {
+   "name": "best_case",
+   "definition": "Minimum cost. Often uninformative (sorted input + insertion sort = O(n)).",
+   "why": "Rarely matters unless the algorithm has an early-exit optimisation for common easy inputs. Best case is mostly a curiosity — both worst and average case dominate practical reasoning.",
+   "category": "complexity"
+  },
+  {
+   "name": "P_class",
+   "definition": "Decision problems solvable by a deterministic Turing machine in polynomial time. 'Efficiently solvable' in computer science's standard sense.",
+   "why": "Sorting, shortest path, primality testing all in P. The class of 'practical' problems — though P includes O(n^1000), which isn't practical. P represents the boundary of tractability in theory.",
+   "category": "complexity"
+  },
+  {
+   "name": "NP_class",
+   "definition": "Decision problems whose YES answers have polynomial-time-checkable certificates. Equivalently: solvable in polynomial time by a nondeterministic Turing machine.",
+   "why": "Captures 'can be verified efficiently'. SAT, TSP-decision, graph colouring all in NP. P ⊆ NP; whether P = NP is the most famous open question in computer science.",
+   "category": "complexity"
+  },
+  {
+   "name": "NP_complete",
+   "definition": "Problems in NP to which every other NP problem polynomially reduces. SAT (Cook 1971), 3-SAT, Hamiltonian cycle, etc.",
+   "why": "If any NP-complete problem has a polynomial algorithm, then P = NP. Practically: NP-complete is the bar for 'almost certainly no efficient algorithm'. The problem is reducing other problems TO known NP-complete to prove their hardness.",
+   "category": "complexity"
+  },
+  {
+   "name": "array",
+   "definition": "Contiguous block of memory storing N elements of fixed type. Indexed access in O(1).",
+   "why": "Cache-friendly (spatial locality), fast indexing. The default data structure for most uses. Fixed size; resizing requires reallocation + copy. The 'random access' part of RAM was named after array semantics.",
+   "category": "data_structure"
+  },
+  {
+   "name": "dynamic_array",
+   "definition": "Array that grows as needed. C++ std::vector, Java ArrayList, Python list, Rust Vec. Amortised O(1) append by doubling capacity on overflow.",
+   "why": "Convenience of variable size + array's cache friendliness. Doubling strategy: average O(1) cost per append; total copies for N appends is O(N). The default list-like container in most languages.",
+   "category": "data_structure"
+  },
+  {
+   "name": "linked_list",
+   "definition": "Sequence of nodes each holding a value + pointer to the next. Singly linked has next only; doubly linked has prev too.",
+   "why": "O(1) insertion/deletion at known position. Pointer chasing breaks cache locality — typically slower than arrays in practice. Used when you need O(1) splicing (e.g., LRU cache) or can't move elements (e.g., Linux kernel's intrusive lists).",
+   "category": "data_structure"
+  },
+  {
+   "name": "stack",
+   "definition": "LIFO structure. push, pop, peek operations all O(1). The function call stack is the canonical example.",
+   "why": "Natural for nested processing: function calls, expression evaluation, DFS, undo stacks. Hardware-supported (SP register on most CPUs). Conceptually simple; implementations are array-backed or linked-list-backed.",
+   "category": "data_structure"
+  },
+  {
+   "name": "queue",
+   "definition": "FIFO structure. enqueue at one end, dequeue at the other. Both O(1).",
+   "why": "Natural for breadth-first processing: BFS, scheduling, IPC. Often implemented as a ring buffer (array-backed with head/tail pointers) for cache efficiency.",
+   "category": "data_structure"
+  },
+  {
+   "name": "deque",
+   "definition": "Double-ended queue. Insert and remove at both ends in O(1). Common implementation: ring buffer with bidirectional growth.",
+   "why": "Generalises stack + queue. Useful for sliding-window algorithms, some scheduling. Python's collections.deque, C++ std::deque are standard.",
+   "category": "data_structure"
+  },
+  {
+   "name": "hash_table",
+   "definition": "Map from keys to values via a hash function. Average O(1) insert, lookup, delete. Worst case O(n) on bad hashing or adversarial input.",
+   "why": "The universal associative container. Python dict, Java HashMap, Rust HashMap, C++ unordered_map. Load factor + collision strategy determine performance. Hash function quality matters — bad hashes degrade to O(n).",
+   "category": "data_structure"
+  },
+  {
+   "name": "hash_function",
+   "definition": "Function mapping arbitrary keys to integers in [0, m). Good hash: uniformly distributed output, deterministic, cheap to compute.",
+   "why": "Determines the hash table's performance. Cryptographic hashes (SHA, BLAKE) are expensive overkill; non-crypto hashes (xxHash, FxHash, Murmur) are designed for hash table speed.",
+   "category": "data_structure"
+  },
+  {
+   "name": "set",
+   "definition": "Unordered collection of unique elements. Operations: add, remove, contains, union, intersection, difference. Hash-set is the common implementation.",
+   "why": "Membership testing in O(1). Set algebra operations. Python set, Java HashSet, C++ unordered_set. Tree-backed sets (TreeSet) give ordered iteration at O(log n) per op.",
+   "category": "data_structure"
+  },
+  {
+   "name": "tree_general",
+   "definition": "Hierarchical structure: each node has a value + zero or more children. No cycles. Root is the topmost node; leaves have no children.",
+   "why": "Foundation. Filesystems, expression parsing, syntax trees, decision trees, search structures all use trees. The recursive structure mirrors many problems' natural decomposition.",
+   "category": "data_structure"
+  },
+  {
+   "name": "binary_tree",
+   "definition": "Tree where each node has at most two children: left and right.",
+   "why": "Natural for binary search, expression trees (binary operators), Huffman trees, heaps. The most common tree variant in practice; many algorithms specialise to it.",
+   "category": "data_structure"
+  },
+  {
+   "name": "binary_search_tree",
+   "definition": "Binary tree where for each node, left subtree's keys < node's key < right subtree's keys (the BST property).",
+   "why": "Ordered structure with O(log n) average operations (if balanced). The BST property makes search a 1-D version of binary search. Without balancing, worst case is O(n).",
+   "category": "tree_type"
+  },
+  {
+   "name": "self_balancing_BST",
+   "definition": "BST that maintains height O(log n) via tree rotations on insert/delete. AVL, red-black, splay trees, treaps.",
+   "why": "Unbalanced BST degrades to a linked list on sorted input. Self-balancing guarantees O(log n) per operation. Different schemes trade off rebalancing cost vs query cost vs implementation complexity.",
+   "category": "tree_type"
+  },
+  {
+   "name": "AVL_tree",
+   "definition": "Self-balancing BST where heights of left + right subtrees differ by at most 1 per node. Rebalanced via rotations.",
+   "why": "Strictest balance condition → fastest lookups. Costs more on insert/delete (more rotations). Use when reads dominate writes; otherwise red-black is more common.",
+   "category": "tree_type"
+  },
+  {
+   "name": "red_black_tree",
+   "definition": "Self-balancing BST with red/black node coloring + rules: root is black, no red-red parent-child, every root-to-leaf path has the same number of black nodes.",
+   "why": "Looser balance than AVL → fewer rotations on insert/delete. Slightly slower lookups but faster modifications. Default in Linux kernel (rbtree), C++ std::map, Java TreeMap.",
+   "category": "tree_type"
+  },
+  {
+   "name": "B_tree",
+   "definition": "Multi-way self-balancing tree. Each node holds up to M-1 keys + M child pointers, M typically 100-1000. Height O(log_M n) — very shallow.",
+   "why": "Designed for disk/SSD: each node is a page-sized read. Shallow tree = few I/Os per query. Foundation of database indexes (InnoDB, PostgreSQL B-tree indexes) and filesystems (ext4, NTFS).",
+   "category": "tree_type"
+  },
+  {
+   "name": "B_plus_tree",
+   "definition": "B-tree variant where all data lives in leaf nodes; internal nodes hold only keys. Leaves linked for range scans.",
+   "why": "Range queries (SELECT * WHERE x BETWEEN ...) scan linked leaves sequentially. Internal nodes hold more keys per page (no data) → even shallower. Standard for relational database indexes.",
+   "category": "tree_type"
+  },
+  {
+   "name": "trie",
+   "definition": "Tree where each edge is labelled with a character. Path from root to a node spells a prefix; nodes marking word-ends are special.",
+   "why": "Prefix-based lookup in O(m) where m is key length, regardless of dictionary size. Used in autocomplete, spell checkers, IP routing tables (radix tries), Aho-Corasick.",
+   "category": "tree_type"
+  },
+  {
+   "name": "binary_heap",
+   "definition": "Complete binary tree where each node's key is ≤ (min-heap) or ≥ (max-heap) its children's. Array-backed via parent/child index arithmetic.",
+   "why": "Priority queue's standard implementation. O(log n) insert + extract-min, O(1) peek. Array layout is cache-friendly; no pointer overhead.",
+   "category": "data_structure"
+  },
+  {
+   "name": "priority_queue",
+   "definition": "Abstract container with extract-best (highest priority) operation. Binary heap is the standard backing; Fibonacci heaps offer better theoretical amortised bounds.",
+   "why": "Greedy algorithms (Dijkstra, Prim), scheduling, simulation. The 'next best thing to do' abstraction. Standard libraries usually expose heaps as priority queues.",
+   "category": "data_structure"
+  },
+  {
+   "name": "graph",
+   "definition": "Set of vertices + set of edges connecting pairs. Directed (edges have direction) or undirected. Weighted (edges have values) or unweighted.",
+   "why": "Universal model for relationships: web links, social networks, computer networks, dependency graphs, transit systems. Many problems decompose to graph algorithms.",
+   "category": "data_structure"
+  },
+  {
+   "name": "adjacency_list",
+   "definition": "Per-vertex list of neighbours. Space O(V + E). Good for sparse graphs (most real graphs).",
+   "why": "Iterating a vertex's neighbours is O(degree), not O(V). Modern hardware also better at sequential scans of small arrays. Standard for graph libraries (igraph, NetworkX, Boost Graph).",
+   "category": "data_structure"
+  },
+  {
+   "name": "adjacency_matrix",
+   "definition": "V × V boolean (or weight) matrix where entry [i][j] = 1 iff edge from i to j. Space O(V²).",
+   "why": "Edge lookup is O(1). Good for dense graphs or algorithms doing matrix operations (Floyd-Warshall, transitive closure). Most real graphs are too sparse to justify the space.",
+   "category": "data_structure"
+  },
+  {
+   "name": "disjoint_set",
+   "definition": "Union-find: track elements in disjoint groups. Operations: find(x) returns x's group representative; union(x, y) merges groups.",
+   "why": "Connected components, Kruskal's MST, cycle detection. With path compression + union by rank, amortised O(α(n)) per op — essentially constant. The α (inverse Ackermann) is < 5 for any conceivable n.",
+   "category": "data_structure"
+  },
+  {
+   "name": "bloom_filter",
+   "definition": "Probabilistic set with no false negatives but possible false positives. K hash functions; bits in a bitmap.",
+   "why": "Saves space when most queries are 'not in set'. Caches (CDN cache misses), databases (LSM-tree's bloom filter per SSTable), spam filters. Order-of-magnitude space savings vs exact set.",
+   "category": "data_structure"
+  },
+  {
+   "name": "skip_list",
+   "definition": "Randomised balanced search structure. Multiple sorted linked lists at different 'levels'; level i has half the nodes of level i-1. Expected O(log n) per operation.",
+   "why": "Simpler than balanced BSTs to implement and parallelise. Used in Redis (sorted set), some concurrent databases. Probabilistic balance via randomisation avoids the structural complexity of AVL / RB rotations.",
+   "category": "data_structure"
+  },
+  {
+   "name": "LRU_cache",
+   "definition": "Cache with Least Recently Used eviction. Hash map + doubly linked list: O(1) get + put.",
+   "why": "The standard general-purpose cache. The hash map gives O(1) lookup; the linked list maintains access order for O(1) reorder + eviction. Used in OS page replacement, web cache, Python's functools.lru_cache.",
+   "category": "data_structure"
+  },
+  {
+   "name": "segment_tree",
+   "definition": "Tree for range queries over an array. Each node represents an interval; can answer range-sum, range-min, etc. in O(log n).",
+   "why": "Mutable array with fast range queries. Update + query both O(log n). Used in competitive programming, some database engines, computational geometry.",
+   "category": "data_structure"
+  },
+  {
+   "name": "fenwick_tree",
+   "definition": "Binary Indexed Tree (BIT). Compact alternative to segment tree for prefix sums + point updates. O(log n) per operation.",
+   "why": "Tighter constants + simpler code than segment tree for the prefix-sum case. Bit manipulation tricks make the implementation surprisingly short. Standard for online range-sum / kth-element problems.",
+   "category": "data_structure"
+  },
+  {
+   "name": "linear_search",
+   "definition": "Scan through elements in order, comparing each to the target. O(n).",
+   "why": "Simplest possible search. Optimal for unsorted arrays; cache-friendly for small N (modern CPUs prefetch); often beats binary search up to ~64 elements. Don't underestimate the constant factor.",
+   "category": "search_algorithm"
+  },
+  {
+   "name": "binary_search",
+   "definition": "Halve the search interval each step. Requires sorted array. O(log n).",
+   "why": "Logarithmic vs linear is the difference between 30 comparisons and a billion. Foundation of many algorithms (treap, B-tree, std::lower_bound). Subtle bugs (off-by-one, infinite loop) common — write carefully.",
+   "category": "search_algorithm"
+  },
+  {
+   "name": "bubble_sort",
+   "definition": "Repeatedly swap adjacent out-of-order pairs. O(n²).",
+   "why": "Pedagogically useful, practically useless beyond a textbook. Doesn't scale; no significant constant-factor advantage. Teaches loop invariants + the cost of inefficient algorithms.",
+   "category": "sorting_algorithm"
+  },
+  {
+   "name": "insertion_sort",
+   "definition": "Build sorted prefix one element at a time. O(n²) worst, O(n) on nearly-sorted.",
+   "why": "Best in-class for small N (<~30) and nearly-sorted inputs. Cache-friendly + low constant. Used as the base case in hybrid sorts (TimSort, Introsort) once recursion bottoms out.",
+   "category": "sorting_algorithm"
+  },
+  {
+   "name": "merge_sort",
+   "definition": "Divide array in half, recursively sort each, merge sorted halves. O(n log n) always, stable, O(n) auxiliary space.",
+   "why": "Predictable performance (no bad case), stable. Standard for external sorting (data exceeds RAM). Linked lists sort cleanly with merge sort because the merge requires no random access.",
+   "category": "sorting_algorithm"
+  },
+  {
+   "name": "quick_sort",
+   "definition": "Pick a pivot, partition elements < pivot and > pivot, recursively sort halves. O(n log n) average, O(n²) worst, O(log n) stack.",
+   "why": "Typically the fastest in-memory sort due to low constant factor + cache-friendly partitioning. Worst case avoidable by randomising pivot or using median-of-three. Used in std::sort (introsort variant).",
+   "category": "sorting_algorithm"
+  },
+  {
+   "name": "heap_sort",
+   "definition": "Build a heap, then repeatedly extract max. O(n log n) always, in-place (O(1) auxiliary).",
+   "why": "In-place + O(n log n) guarantee. But poor cache behaviour vs quicksort. Used as the fallback in Introsort (when quicksort recursion gets too deep).",
+   "category": "sorting_algorithm"
+  },
+  {
+   "name": "radix_sort",
+   "definition": "Sort by digits, least significant first (or most significant). O(d·n) where d is digit count.",
+   "why": "Linear time for fixed-width keys. Beats comparison sorts when keys are short (32-bit integers) and n is large. Used in some specialised contexts (string sorting, data warehousing).",
+   "category": "sorting_algorithm"
+  },
+  {
+   "name": "TimSort",
+   "definition": "Hybrid sort: identifies sorted runs in input + merges them. O(n) on sorted input, O(n log n) general. Stable.",
+   "why": "Adaptive: real-world data has many sorted runs. Python's default sort, Java's Arrays.sort (for objects). Recognises and exploits existing order.",
+   "category": "sorting_algorithm"
+  },
+  {
+   "name": "introsort",
+   "definition": "Hybrid: quicksort, but switch to heapsort when recursion depth exceeds threshold. Switch to insertion sort below small-N threshold.",
+   "why": "Combines quicksort's speed with heapsort's worst-case guarantee. C++ std::sort. Avoids O(n²) worst case while preserving average performance.",
+   "category": "sorting_algorithm"
+  },
+  {
+   "name": "BFS",
+   "definition": "Breadth-First Search: explore graph level by level using a queue. O(V + E).",
+   "why": "Finds shortest paths in unweighted graphs. Level-order traversal. Used in shortest-hop, web crawling, network broadcast simulation.",
+   "category": "graph_algorithm"
+  },
+  {
+   "name": "DFS",
+   "definition": "Depth-First Search: explore as deep as possible before backtracking. Uses a stack (or recursion). O(V + E).",
+   "why": "Topological sort, cycle detection, connected components, SCC algorithms all build on DFS. The recursive structure mirrors backtracking algorithms.",
+   "category": "graph_algorithm"
+  },
+  {
+   "name": "Dijkstra_algorithm",
+   "definition": "Single-source shortest path with non-negative weights. Greedy: always expand the unvisited vertex with smallest distance. O((V + E) log V) with binary heap.",
+   "why": "Standard shortest-path algorithm. Used in maps, network routing, game AI. Fails on negative weights (use Bellman-Ford).",
+   "category": "graph_algorithm"
+  },
+  {
+   "name": "Bellman_Ford",
+   "definition": "Single-source shortest path including negative-weight edges. Detects negative cycles. O(V·E).",
+   "why": "Slower than Dijkstra but handles negative weights. Used by routing protocols (RIP, BGP path attributes). The relaxation framework underlies many shortest-path variants.",
+   "category": "graph_algorithm"
+  },
+  {
+   "name": "Floyd_Warshall",
+   "definition": "All-pairs shortest path. O(V³). Tiny constant; works on adjacency matrix.",
+   "why": "When you need all-pairs distances (transitive closure, small dense graph), simpler than running Dijkstra V times. Plenty fast for V ≤ ~500.",
+   "category": "graph_algorithm"
+  },
+  {
+   "name": "A_star_search",
+   "definition": "Best-first search with heuristic. f(n) = g(n) (cost so far) + h(n) (heuristic estimate to goal). Optimal if heuristic is admissible.",
+   "why": "Pathfinding in games, robotics, planning. Heuristic guides the search toward the goal — much faster than Dijkstra on large state spaces. Quality of heuristic matters most.",
+   "category": "graph_algorithm"
+  },
+  {
+   "name": "topological_sort",
+   "definition": "Linear ordering of DAG vertices such that all edges go forward. Two algorithms: Kahn's (BFS-based) and DFS-based.",
+   "why": "Dependency resolution (Makefile, build systems, package managers), task scheduling. Existence equivalent to acyclicity.",
+   "category": "graph_algorithm"
+  },
+  {
+   "name": "MST_minimum_spanning_tree",
+   "definition": "Subset of edges connecting all vertices with minimum total weight. Kruskal's (sort edges + union-find) or Prim's (greedy from a vertex).",
+   "why": "Network design, clustering, image segmentation. Kruskal's is conceptually simple via union-find; Prim's is similar in spirit to Dijkstra.",
+   "category": "graph_algorithm"
+  },
+  {
+   "name": "SCC_strongly_connected_components",
+   "definition": "Maximal subsets of vertices where every pair has a path each way. Tarjan's, Kosaraju's algorithms find them in O(V + E).",
+   "why": "Cycle structure in directed graphs. Used in compiler analysis (mutually recursive function detection), social network analysis, dependency resolution.",
+   "category": "graph_algorithm"
+  },
+  {
+   "name": "max_flow_min_cut",
+   "definition": "Maximum flow from source to sink equals the minimum cut separating them. Ford-Fulkerson + variants (Edmonds-Karp, Dinic's, push-relabel).",
+   "why": "Network capacity, bipartite matching, image segmentation. Theorem (max-flow = min-cut) is one of the elegant results of combinatorial optimisation.",
+   "category": "graph_algorithm"
+  },
+  {
+   "name": "KMP_string_matching",
+   "definition": "Knuth-Morris-Pratt: find pattern in text in O(n + m). Preprocesses pattern to skip ahead on mismatch.",
+   "why": "Beats naive O(n·m). Failure function captures the longest proper prefix-that-is-suffix at each position — lets the match continue without restarting from scratch on mismatch.",
+   "category": "string_algorithm"
+  },
+  {
+   "name": "Rabin_Karp_string_matching",
+   "definition": "Rolling hash of pattern + each window of text. Compare hashes; verify on match. Average O(n + m); worst O(n·m).",
+   "why": "Works well for multiple-pattern search (compute pattern hashes, scan once). Rolling hash is the key trick: update hash in O(1) when window shifts.",
+   "category": "string_algorithm"
+  },
+  {
+   "name": "Boyer_Moore_string_matching",
+   "definition": "Compares pattern to text right-to-left. Uses bad-character + good-suffix heuristics to skip ahead.",
+   "why": "Sub-linear in best case (long patterns skip large chunks). Standard in grep + many text editors. The right-to-left direction is the unintuitive but critical insight.",
+   "category": "string_algorithm"
+  },
+  {
+   "name": "Aho_Corasick",
+   "definition": "Multi-pattern matching via trie of patterns + failure links. Find all occurrences of N patterns in O(text + total_pattern_length + matches).",
+   "why": "Single pass through text finds all patterns. Used in network IDS (Snort), grep -F with multiple patterns. The failure-link construction generalises KMP's failure function.",
+   "category": "string_algorithm"
+  },
+  {
+   "name": "dynamic_programming",
+   "definition": "Solve a problem by breaking into overlapping subproblems, storing results to avoid recomputation. Memoisation (top-down) or tabulation (bottom-up).",
+   "why": "Turns exponential brute-force recursion into polynomial. Knapsack, edit distance, LCS, parsing, optimal control. Recognising that subproblems overlap is the key insight.",
+   "category": "paradigm"
+  },
+  {
+   "name": "memoisation",
+   "definition": "Top-down DP: cache function results by arguments. Naturally recursive style.",
+   "why": "Easy to add to existing recursive code (Python's @functools.cache decorator). Cache size = solved subproblem count. Good when only some subproblems are needed.",
+   "category": "paradigm"
+  },
+  {
+   "name": "tabulation",
+   "definition": "Bottom-up DP: explicit loop filling a table from base cases up to the answer.",
+   "why": "Better cache locality + avoids recursion overhead. Compiler-friendly. Often faster in practice than memoised version. Memory order can be 1-D rolled when only previous row matters.",
+   "category": "paradigm"
+  },
+  {
+   "name": "longest_common_subsequence",
+   "definition": "LCS: longest subsequence appearing in two sequences (not necessarily contiguous). O(n·m) DP.",
+   "why": "diff / patch, bioinformatics (sequence alignment), spell-check. The DP table fills in O(n·m); reconstruction walks back. Classic introductory DP problem.",
+   "category": "dp_algorithm"
+  },
+  {
+   "name": "edit_distance",
+   "definition": "Levenshtein distance: minimum number of single-char insertions, deletions, substitutions to transform one string into another. O(n·m).",
+   "why": "Fuzzy string matching, spell correction, autocorrect, bioinformatics alignment. Variants weight different operations differently (Hamming, Damerau-Levenshtein).",
+   "category": "dp_algorithm"
+  },
+  {
+   "name": "knapsack_problem",
+   "definition": "0/1 knapsack: choose items with values v_i and weights w_i to maximise value subject to capacity W. NP-complete in general; pseudo-polynomial O(n·W) DP.",
+   "why": "Resource allocation, budgeting, scheduling. Pseudo-polynomial: polynomial in numeric value W, exponential in bit-length of W. Beautiful illustration of P vs NP boundary.",
+   "category": "dp_algorithm"
+  },
+  {
+   "name": "greedy_paradigm",
+   "definition": "Make locally optimal choice at each step. Doesn't always find global optimum.",
+   "why": "When the problem has the greedy choice property (Kruskal, Dijkstra, Huffman), simplest possible algorithm. When it doesn't (knapsack), gives heuristic approximation. Matroid theory characterises when greedy is exactly correct.",
+   "category": "paradigm"
+  },
+  {
+   "name": "divide_and_conquer",
+   "definition": "Split problem into smaller subproblems, solve recursively, combine. Mergesort, quicksort, FFT, closest pair, Strassen's matrix multiply.",
+   "why": "Master theorem analyses many algorithms in this form: T(n) = a·T(n/b) + f(n). The combine step's cost relative to the recursion determines the overall complexity.",
+   "category": "paradigm"
+  },
+  {
+   "name": "backtracking",
+   "definition": "Systematically explore all possibilities, abandoning a branch as soon as it can't satisfy constraints.",
+   "why": "N-queens, sudoku, constraint satisfaction. Often the only practical approach for NP-hard problems where the search space has prunable structure. Worst case is exponential; pruning can make average case tractable.",
+   "category": "paradigm"
+  },
+  {
+   "name": "branch_and_bound",
+   "definition": "Backtracking with optimisation: maintain best-known solution; prune branches whose bound proves they can't improve it.",
+   "why": "Integer programming, TSP solvers, theorem provers. Effectiveness depends on bound tightness — loose bounds prune little; tight bounds find optimum fast.",
+   "category": "paradigm"
+  },
+  {
+   "name": "recursion",
+   "definition": "Function calling itself with smaller arguments. Requires a base case to terminate.",
+   "why": "Natural expression of divide-and-conquer, tree traversal, mathematical induction. Stack-limited; deep recursion can overflow. Many algorithms have iterative equivalents that are sometimes faster.",
+   "category": "paradigm"
+  },
+  {
+   "name": "tail_recursion",
+   "definition": "Recursive call is the function's last operation. Can be transformed to iteration by the compiler (tail call optimisation).",
+   "why": "Functional languages (Scheme, Haskell) require tail calls to be optimised. Lets recursion be used everywhere without stack overflow. C++ + many compilers do TCO; Python explicitly doesn't.",
+   "category": "paradigm"
+  },
+  {
+   "name": "tree_traversal",
+   "definition": "Visiting all nodes of a tree. Pre-order (root first), in-order (left-root-right; for BST gives sorted), post-order (root last), level-order (BFS).",
+   "why": "Different orders for different purposes. In-order on BST: sorted output. Post-order: evaluate expressions, delete tree. Level-order: render tree top-down.",
+   "category": "paradigm"
+  },
+  {
+   "name": "iterator",
+   "definition": "Abstract interface for sequential access. Has-next + next operations. Implementations: array iterator, list iterator, range iterator.",
+   "why": "Decouples traversal from data structure. Code written for iterators works on any iterable. Foundation of for-each loops, generators, functional pipelines.",
+   "category": "paradigm"
+  },
+  {
+   "name": "generator",
+   "definition": "Function producing values on demand, pausing between. Python's yield, JavaScript's function*, Rust's iterator combinators.",
+   "why": "Lazy evaluation: only compute values as consumed. Memory-efficient for large or infinite sequences. Enables streaming + pipeline patterns.",
+   "category": "paradigm"
+  },
+  {
+   "name": "loop_invariant",
+   "definition": "Condition that holds before each iteration of a loop. Used to prove algorithm correctness inductively.",
+   "why": "Foundation of formal algorithm correctness. Insertion sort: 'A[0..i] is sorted' invariant. Establishing the invariant + maintaining it + termination ⇒ post-condition. Floyd-Hoare logic formalises this.",
+   "category": "complexity"
+  },
+  {
+   "name": "randomised_algorithm",
+   "definition": "Algorithm using random choices. Las Vegas: always correct, expected fast (randomised quicksort). Monte Carlo: probably correct, fast (Miller-Rabin primality).",
+   "why": "Avoid worst-case adversarial inputs (randomised quicksort). Solve hard problems probabilistically (Monte Carlo simulations). Hash table salting prevents algorithmic complexity attacks.",
+   "category": "paradigm"
+  },
+  {
+   "name": "amortised_doubling",
+   "definition": "Dynamic array's growth strategy: when full, allocate 2x larger + copy. Amortised O(1) per append.",
+   "why": "Total cost of n appends: ~3n (each element copied at most log n times, but total ~2n via geometric series). Per-append amortised: ~3 = O(1). The basis of all dynamic array implementations.",
+   "category": "complexity"
+  },
+  {
+   "name": "load_factor",
+   "definition": "Hash table's fullness: n / m where n = entries, m = bucket count. Common threshold for resize: 0.7-0.75.",
+   "why": "High load factor: more collisions, slower operations. Low load factor: wasted memory. Threshold is the sweet spot. When exceeded, table resizes to double the buckets + rehashes all entries.",
+   "category": "complexity"
+  },
+  {
+   "name": "tree_rotation",
+   "definition": "Local restructuring of a BST that preserves the in-order traversal. Left + right rotations. Used by AVL, red-black, splay trees.",
+   "why": "The single primitive that keeps BSTs balanced. Each rotation: 3 pointer updates, O(1) work. Rotations are the operations that 'rotate' parent-child relationships without changing the in-order traversal.",
+   "category": "data_structure"
+  }
+ ],
+ "rules": [
+  {
+   "name": "asymptotic_growth_dominates_at_scale",
+   "if": [
+    "two algorithms have different time complexities"
+   ],
+   "then": [
+    "the lower-complexity one wins at sufficiently large n"
+   ],
+   "why": "Constants matter at small n. At n = 1000, an O(n²) algorithm at 1ns/op (1ms total) beats an O(n log n) at 1µs/op (10ms). At n = 1M, O(n log n) wins by 100x even with worse constants. Asymptotic analysis is about scaling, not raw speed.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "amortised_smooths_worst_case",
+   "if": [
+    "operation has worst-case O(f(n)) but amortised O(g(n)) with g < f"
+   ],
+   "then": [
+    "typical performance is O(g(n)), not O(f(n))"
+   ],
+   "why": "Worst case is rare. Dynamic array append: occasionally O(n) on resize; usually O(1). Amortised analysis captures the typical cost across a sequence of operations. The right metric for predicting real-world performance.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "balanced_BST_gives_log_n_operations",
+   "if": [
+    "a BST is height-balanced"
+   ],
+   "then": [
+    "search, insert, delete are all O(log n)"
+   ],
+   "why": "Each step descends one level; height log n means log n steps. Balance is the property preserved by rotations after each update. Without balance, BST degrades to a sorted linked list (O(n) operations).",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "hash_table_average_O1_via_uniform_hashing",
+   "if": [
+    "hash function is uniformly distributed and load factor is bounded"
+   ],
+   "then": [
+    "operations are O(1) on average"
+   ],
+   "why": "Each bucket holds an expected O(1) items if hash is uniform. Maintaining bounded load factor (via resize) keeps the expectation constant. Bad hash functions or adversarial inputs can degrade to O(n).",
+   "soundness_category": "algebraic_law"
+  },
+  {
+   "name": "BFS_finds_shortest_unweighted_paths",
+   "if": [
+    "graph is unweighted and search is breadth-first"
+   ],
+   "then": [
+    "first discovery of any vertex is via a shortest path"
+   ],
+   "why": "BFS visits all vertices at distance k before distance k+1. The first time a vertex is reached must be via the minimum number of edges. The queue's FIFO order is what guarantees this property.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "Dijkstra_correct_with_nonneg_weights",
+   "if": [
+    "all edge weights are non-negative"
+   ],
+   "then": [
+    "Dijkstra's greedy choice (extract min) gives optimal shortest paths"
+   ],
+   "why": "When extracting vertex u with minimum tentative distance, u's distance can't be improved by any later path — non-negative weights mean later paths can only add cost. The exchange argument formalises this. With negative weights, the property fails (use Bellman-Ford).",
+   "soundness_category": "algebraic_law"
+  },
+  {
+   "name": "comparison_sort_lower_bound_n_log_n",
+   "if": [
+    "sort uses only comparisons (not e.g. radix)"
+   ],
+   "then": [
+    "worst case is Ω(n log n) comparisons"
+   ],
+   "why": "Decision tree must have n! leaves (one per permutation); minimum height of binary tree with n! leaves is ⌈log₂(n!)⌉ = Θ(n log n). The lower bound is information-theoretic — comparisons just don't give enough information faster.",
+   "soundness_category": "algebraic_law"
+  },
+  {
+   "name": "DP_correct_when_subproblems_have_optimal_substructure",
+   "if": [
+    "the optimal solution to a problem uses optimal solutions to subproblems"
+   ],
+   "then": [
+    "DP correctly solves the problem"
+   ],
+   "why": "Optimal substructure is what lets DP work: combining optimal sub-solutions gives an optimal full solution. Shortest path has it; longest path doesn't (because reusing nodes is forbidden). Recognising which problems have it is the DP design step.",
+   "soundness_category": "algebraic_law"
+  },
+  {
+   "name": "memoisation_eliminates_redundant_recomputation",
+   "if": [
+    "a recursive algorithm recomputes the same subproblems"
+   ],
+   "then": [
+    "memoisation reduces complexity by the recompute factor"
+   ],
+   "why": "Naive Fibonacci recursion: O(2^n). Memoised: O(n) — each Fib(k) computed once. The trick is recognising overlapping subproblems; the speedup can be exponential.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "greedy_optimal_under_matroid_structure",
+   "if": [
+    "the problem has matroid structure (exchange property)"
+   ],
+   "then": [
+    "greedy choice gives optimal solution"
+   ],
+   "why": "Matroids generalise the conditions under which greedy works. MST (graphic matroid), Kruskal's algorithm is greedy + correct. Knapsack lacks matroid structure — greedy gives heuristic, not optimum. The theory tells us when greedy is safe.",
+   "soundness_category": "algebraic_law"
+  },
+  {
+   "name": "union_find_with_path_compression_amortised_near_constant",
+   "if": [
+    "union-find uses path compression + union by rank"
+   ],
+   "then": [
+    "each operation is O(α(n)) amortised, ~constant"
+   ],
+   "why": "Tarjan's analysis. α(n) is the inverse Ackermann function — α(n) < 5 for any n ≤ 2^65536. Effectively constant for any practical input. Without path compression, operations degrade to O(log n) or worse.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "binary_search_requires_sorted_input",
+   "if": [
+    "data is sorted"
+   ],
+   "then": [
+    "binary search finds an element in O(log n)"
+   ],
+   "why": "Each comparison halves the search space. log₂(n) halvings reduce n to 1. Without sorting, the strategy of 'is target less than or greater than middle' doesn't work — you'd need to check every element.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "cache_friendly_layout_beats_pointer_chasing",
+   "if": [
+    "operations primarily traverse contiguous data"
+   ],
+   "then": [
+    "array-backed structures outperform pointer-linked ones"
+   ],
+   "why": "Modern CPUs prefetch sequential memory. Array traversal is bandwidth-bound; pointer chasing is latency-bound (each pointer dereference can be a cache miss). std::vector usually beats std::list. The asymptotic complexity is the same; the constants are wildly different.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "tree_rotation_preserves_inorder",
+   "if": [
+    "a BST rotation is applied"
+   ],
+   "then": [
+    "the in-order traversal of the tree is unchanged"
+   ],
+   "why": "Rotations are the structural primitive of self-balancing BSTs. They restructure the tree (changing parent-child relationships) without changing key order. AVL and red-black trees rely on this property to maintain the BST invariant during rebalancing.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "topological_sort_exists_iff_DAG",
+   "if": [
+    "a graph has a topological ordering"
+   ],
+   "then": [
+    "the graph is a DAG (no cycles)"
+   ],
+   "why": "A cycle means some vertex precedes itself in any candidate ordering — contradiction. Conversely, every DAG admits a topological order (proof by induction: remove a sink, recurse). The two are equivalent.",
+   "soundness_category": "algebraic_law"
+  },
+  {
+   "name": "graph_size_dominates_algorithm_choice",
+   "if": [
+    "a graph algorithm's complexity is O(f(V, E))"
+   ],
+   "then": [
+    "dense vs sparse graphs favour different representations"
+   ],
+   "why": "Adjacency matrix: O(1) edge lookup but O(V²) space. Adjacency list: O(degree) lookup but O(V + E) space. For sparse graphs (E ≈ V), list wins; for dense (E ≈ V²), matrix wins. Real-world graphs are mostly sparse.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "stable_sort_preserves_equal_element_order",
+   "if": [
+    "sort is stable"
+   ],
+   "then": [
+    "elements that compare equal retain their original relative order"
+   ],
+   "why": "Stability matters when sorting by multiple keys: stable sort by secondary key, then by primary, gives correct lexicographic order. Mergesort and TimSort are stable; quicksort and heapsort are not.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "doubling_strategy_amortises_to_constant",
+   "if": [
+    "a dynamic array grows by doubling on overflow"
+   ],
+   "then": [
+    "per-append amortised cost is O(1)"
+   ],
+   "why": "Total copy cost for n appends: 1 + 2 + 4 + ... + n/2 + n = 2n - 1. Divided by n appends: ~2 = O(1) amortised. Geometric growth is essential — linear growth (e.g., +10 each time) gives O(n) amortised.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "B_tree_depth_amortises_disk_IO",
+   "if": [
+    "a B-tree node contains many keys (M typically 100+)"
+   ],
+   "then": [
+    "tree depth is logarithmic with large base, requiring few disk I/Os"
+   ],
+   "why": "B-tree height is log_M(n). For n = 1B and M = 200: height ~ 4. Four disk reads to find any record — that's the secret of database indexes. Wide branching factor + page-sized nodes + caching of internal pages makes lookup fast.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "small_input_wins_for_simple_algorithms",
+   "if": [
+    "input size is small (n < ~32)"
+   ],
+   "then": [
+    "simple algorithms (insertion sort, linear search) often outperform asymptotically-better ones"
+   ],
+   "why": "Asymptotic analysis ignores constants; small n is dominated by constants. Insertion sort's cache behaviour + low constants beat mergesort's allocation + recursion at small n. Real implementations use hybrid algorithms exactly because of this.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "NP_complete_unlikely_polynomial",
+   "if": [
+    "a problem is NP-complete"
+   ],
+   "then": [
+    "no polynomial algorithm is known and one is conjectured not to exist"
+   ],
+   "why": "If any NP-complete problem had a polynomial algorithm, every NP problem would (via reductions). Decades of effort haven't found one. Practical implication: when you've reduced your problem to an NP-complete problem, look for approximation, heuristics, or constraint-specific structure.",
+   "soundness_category": "algebraic_law"
+  }
+ ],
+ "exclusions": [],
+ "relations": [
+  {
+   "src": "data_structures_algorithms",
+   "edge": "genlMt",
+   "tgt": "compiler_theory"
+  }
+ ]
+}

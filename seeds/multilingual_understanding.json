@@ -1,0 +1,28 @@
+{
+  "id": "multilingual_understanding",
+  "version": "1.0.0",
+  "depends_on": ["speech_capability"],
+  "description": "THE TARGET: human-equivalent speech understanding across FOUR languages (en/fr/de/es). One CapabilityAxis per language + one `understand` Operator per language (carrying its `lang`). Each measures the agent's understanding by AGREEMENT with multilingual whisper (the human-equivalent reference); target 0.9 = human-equivalent. The understand-drive ranks the four languages and the agent works the one it is furthest below human on, authoring its ear as it must. The operators applies_in speech_world (wired by the driver to the existing Microtheory).",
+  "microtheory": {
+    "name": "multilingual_understanding",
+    "description": "understand speech across en/fr/de/es at human level (agreement with whisper); the frontier is the per-language gap to human."
+  },
+  "nodes": [
+    {"local_id": 0, "type": "Operator", "attrs": {"name": "understand_en", "runner": "understand", "lang": "en", "metric": "understanding", "target": 0.9}},
+    {"local_id": 1, "type": "Operator", "attrs": {"name": "understand_fr", "runner": "understand", "lang": "fr", "metric": "understanding", "target": 0.9}},
+    {"local_id": 2, "type": "Operator", "attrs": {"name": "understand_de", "runner": "understand", "lang": "de", "metric": "understanding", "target": 0.9}},
+    {"local_id": 3, "type": "Operator", "attrs": {"name": "understand_es", "runner": "understand", "lang": "es", "metric": "understanding", "target": 0.9}},
+    {"local_id": 4, "type": "CapabilityAxis", "attrs": {"is_axis": 1.0, "lang": "en", "capability_keys": ["understand", "speech", "en"], "saturation": 0.0, "shortfall": 0.7, "min_order": 1.0, "investigated_count": 0, "mf_stall": 0}},
+    {"local_id": 5, "type": "CapabilityAxis", "attrs": {"is_axis": 1.0, "lang": "fr", "capability_keys": ["understand", "speech", "fr"], "saturation": 0.0, "shortfall": 0.7, "min_order": 1.0, "investigated_count": 0, "mf_stall": 0}},
+    {"local_id": 6, "type": "CapabilityAxis", "attrs": {"is_axis": 1.0, "lang": "de", "capability_keys": ["understand", "speech", "de"], "saturation": 0.0, "shortfall": 0.7, "min_order": 1.0, "investigated_count": 0, "mf_stall": 0}},
+    {"local_id": 7, "type": "CapabilityAxis", "attrs": {"is_axis": 1.0, "lang": "es", "capability_keys": ["understand", "speech", "es"], "saturation": 0.0, "shortfall": 0.7, "min_order": 1.0, "investigated_count": 0, "mf_stall": 0}}
+  ],
+  "edges": [
+    {"src": {"local": 4}, "type": "investigated_by", "tgt": {"local": 0}},
+    {"src": {"local": 5}, "type": "investigated_by", "tgt": {"local": 1}},
+    {"src": {"local": 6}, "type": "investigated_by", "tgt": {"local": 2}},
+    {"src": {"local": 7}, "type": "investigated_by", "tgt": {"local": 3}}
+  ],
+  "productions": [],
+  "rules": []
+}

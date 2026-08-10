@@ -1,0 +1,45 @@
+{
+  "microtheory": {
+    "name": "rhythm_meter",
+    "definition": "Temporal organization of music — beat, tempo, meter, polyrhythm, syncopation, groove, microtiming. The dimension of musical structure orthogonal to pitch. Substrate analogue: temporal pattern grammar applied to substrate's onset event stream.",
+    "category": "audio_domain",
+    "parent": "audio_music_foundation"
+  },
+  "concepts": [
+    {"name": "pulse", "definition": "Underlying regular tick implied by music. Listeners + performers extract a common pulse. Substrate analogue: substrate's periodicity-extractor output.", "category": "beat"},
+    {"name": "tactus", "definition": "Most natural pulse rate, ~600ms (100bpm). Foot-tap speed. Lerdahl + Jackendoff. Substrate analogue: substrate's preferred clock rate.", "category": "beat"},
+    {"name": "subdivision", "definition": "Faster pulse subdividing beat — eighths, sixteenths, triplets. Substrate analogue: substrate's finer-grain temporal grid.", "category": "beat"},
+    {"name": "beat_classes", "definition": "Within a measure: 1 = strong; 3 = medium; 2 + 4 = weak (in 4/4). Substrate analogue: substrate's per-position-in-cycle weighting.", "category": "beat"},
+
+    {"name": "time_signature", "definition": "Notation: 4/4 means 4 quarter-note beats per measure. 3/4, 6/8, 5/4, 7/8. Substrate analogue: substrate's measure-structure parameter.", "category": "meter"},
+    {"name": "simple_meter", "definition": "Each beat divides into 2. 2/4, 3/4, 4/4. Substrate analogue: substrate's binary subdivision tracker.", "category": "meter"},
+    {"name": "compound_meter", "definition": "Each beat divides into 3. 6/8, 9/8, 12/8. Substrate analogue: substrate's ternary subdivision tracker.", "category": "meter"},
+    {"name": "irregular_meter", "definition": "5/4, 7/8, 11/16. Groups of 2 + 3 alternating. Bartók, Dave Brubeck. Substrate analogue: substrate's non-uniform period tracker.", "category": "meter"},
+    {"name": "polymeter", "definition": "Two or more meters simultaneously. 3 against 4. Substrate analogue: substrate's parallel periodicity tracking.", "category": "meter"},
+
+    {"name": "polyrhythm", "definition": "Two or more conflicting rhythmic patterns simultaneously. 3:2 (hemiola) is classic. African + Latin music. Substrate analogue: substrate's multi-stream rhythm parsing.", "category": "polyrhythm"},
+    {"name": "hemiola", "definition": "Specific 3:2 polyrhythm — two beats of three against three beats of two. Substrate analogue: substrate's locked 3:2 period detection.", "category": "polyrhythm"},
+    {"name": "cross_rhythm", "definition": "Sustained polyrhythm felt as conflict. Substrate analogue: substrate's parallel-conflicting-period state.", "category": "polyrhythm"},
+
+    {"name": "syncopation", "definition": "Accent on weak beat or off-beat. Creates tension; expected metric position is silenced or weak. Substrate analogue: substrate's metric-expectation-violation.", "category": "groove"},
+    {"name": "swing", "definition": "Long-short subdivision feel. Eighth note pairs played as ~2:1 instead of 1:1. Jazz fundamental. Substrate analogue: substrate's non-isochronous subdivision template.", "category": "groove"},
+    {"name": "shuffle", "definition": "Triplet-based subdivision feel. Blues + shuffle rhythms. Substrate analogue: substrate's ternary subdivision template.", "category": "groove"},
+    {"name": "groove", "definition": "The sustained urge-to-move quality. Janata 2012. Depends on subtle timing relationships. Substrate analogue: substrate's high-coherence rhythmic state driving motor reflex.", "category": "groove"},
+    {"name": "microtiming", "definition": "Sub-beat deviations from grid. Drummer pushing or laying back. Critical for feel. Substrate analogue: substrate's beat-tracking with phase-deviation tolerance.", "category": "groove"},
+
+    {"name": "anacrusis", "definition": "Pickup notes leading into the downbeat. Phrase begins before measure 1. Substrate analogue: substrate's leading-up-to-attractor phrase shape.", "category": "phrase"},
+    {"name": "phrase_rhythm", "definition": "Hierarchical grouping above the bar. 2-bar, 4-bar, 8-bar phrases. Substrate analogue: substrate's nested temporal grouping.", "category": "phrase"},
+    {"name": "rubato", "definition": "Expressive tempo variation — speeding up + slowing down for emphasis. Romantic-era + jazz. Substrate analogue: substrate's tempo-tracker with rapid-adaptation mode.", "category": "phrase"},
+
+    {"name": "tempo_range", "definition": "Larghissimo (<20bpm) → Prestissimo (>200bpm). Natural perception ~80-160 bpm. Substrate analogue: substrate's clock-rate range.", "category": "tempo"},
+    {"name": "metronome_marking", "definition": "Notation: ♩= 120 means quarter note = 120 bpm. Substrate analogue: substrate's beat-rate parameter.", "category": "tempo"},
+    {"name": "accelerando_ritardando", "definition": "Gradual speeding up + slowing down. Italian musical terms. Substrate analogue: substrate's tempo-trajectory parameter.", "category": "tempo"}
+  ],
+  "rules": [
+    {"name": "tactus_is_substrates_preferred_pulse_rate", "head": "the substrate is presented with a wide tempo range", "body": "it most readily extracts a pulse near ~120bpm (tactus); extremes degrade beat tracking. Substrate's natural clock-rate."},
+    {"name": "subdivision_supports_microtiming", "head": "the substrate tracks beats with sub-beat precision", "body": "the subdivision grid (2 or 3 per beat) lets microtiming deviations be measured + felt. Substrate's grid-based temporal precision."},
+    {"name": "syncopation_creates_tension_via_expectation_violation", "head": "the substrate expects an accent on a strong beat", "body": "an accent on a weak beat + silence on the strong beat creates tension. Resolution restores metric alignment. Substrate's metric expectation."},
+    {"name": "swing_alters_subdivision_template", "head": "the substrate is in a swing context", "body": "eighth-note pairs are perceived + produced as long-short (~2:1) rather than even. Per-style subdivision template. Substrate's contextual rhythm prior."},
+    {"name": "polyrhythm_requires_parallel_period_tracking", "head": "the substrate hears two rhythms at conflicting periods (3:2)", "body": "it tracks both periods in parallel; tension comes from mismatched alignment. Substrate's multi-stream periodicity."}
+  ]
+}

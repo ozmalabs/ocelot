@@ -1,0 +1,226 @@
+{
+ "_doc": "The MATHEMATICAL BEDROCK — a small set of foundational mathematics concepts SEEDED as the agent's grounded PRIMITIVES, the math analogue of the NSM communication primes. This is what 'grounded' BOTTOMS OUT on when the recursive Wikipedia descent climbs a math concept (cobordism -> equivalence relation -> binary relation -> relation; manifold -> topological space -> space; boundary -> set). Without these, the descent CLIMBS the right ladder but never TERMINATES — it keeps going one hop too far into Wikipedia DISAMBIGUATION pages ('Space', 'Relation', 'Set' = 'X may refer to:') and stalls. These foundational concepts (set, relation, space, number, point, ...) are the END of the climb: they do NOT reduce further within mathematics (they are the bedrock a working mathematician takes as primitive / reuses the existing NSM/logic basis). A descent that reaches one of these has GROUNDED the concept as a web of grounded math concepts. HONEST: the bedrock set is small + hand-chosen (the math analogue of the ~65 NSM primes is itself a small basis); it grounds the CONCEPT (it coheres / 'understands what it is'), it does NOT by itself COMPUTE a research-math answer (that is the separate derivation machinery). Faithful: graph data, reusing the existing basis (the seeded `relation` concept) where natural; no LLM, no per-concept Python.",
+ "microtheory": "math_foundations",
+ "concepts": [
+  {
+   "name": "set",
+   "kind": "math_primitive",
+   "gloss": "a COLLECTION of distinct objects considered as a whole (its members / elements). The foundational object of mathematics (Cantor/Zermelo-Fraenkel): nearly everything else is built from sets. A math BEDROCK primitive — the descent bottoms out here (it does not reduce further within mathematics). Grounds in the NSM part_whole/kind basis (a set is a whole of its member parts; a kind whose instances are its elements)."
+  },
+  {
+   "name": "element",
+   "kind": "math_primitive",
+   "gloss": "a MEMBER of a set — one of the objects a set contains (x is an element of S, x in S). The membership relation is the primitive of set theory. A math BEDROCK primitive (the part-side of set's whole)."
+  },
+  {
+   "name": "relation",
+   "kind": "math_primitive",
+   "gloss": "a RELATION links objects to each other — formally a set of ordered tuples (which elements stand in the relation). The seeded communication `relation` prime (owner/value role) IS this, reused as the math bedrock: an equivalence relation, a binary relation, an order relation all bottom out HERE. A math BEDROCK primitive — the descent stops here (cobordism -> equivalence relation -> binary relation -> RELATION). Reuses the existing basis."
+  },
+  {
+   "name": "binary_relation",
+   "kind": "math_primitive",
+   "gloss": "a RELATION between the elements of two sets — a set of ordered PAIRS (the most common kind of relation). is-a relation. The genus of an equivalence relation; the descent bottoms out at relation through it.",
+   "built_from": [
+    "relation"
+   ],
+   "combination": "isa(binary_relation, relation)"
+  },
+  {
+   "name": "equivalence_relation",
+   "kind": "math_primitive",
+   "gloss": "a BINARY RELATION that is reflexive, symmetric, and transitive — it partitions a set into equivalence classes. is-a binary relation. What cobordism IS (an equivalence relation on manifolds); the descent grounds cobordism through it down to relation.",
+   "built_from": [
+    "binary_relation"
+   ],
+   "combination": "isa(equivalence_relation, binary_relation)"
+  },
+  {
+   "name": "function",
+   "kind": "math_primitive",
+   "gloss": "a MAPPING that assigns to each element of one set exactly one element of another (a special relation). is-a relation. A math BEDROCK primitive (reduces to relation, the bedrock).",
+   "built_from": [
+    "relation"
+   ],
+   "combination": "isa(function, relation)"
+  },
+  {
+   "name": "mapping",
+   "kind": "math_primitive",
+   "gloss": "a FUNCTION between sets (a synonym for function in most contexts) — an assignment of outputs to inputs. is-a function. The descent bottoms out at relation through it.",
+   "built_from": [
+    "function"
+   ],
+   "combination": "isa(mapping, function)"
+  },
+  {
+   "name": "number",
+   "kind": "math_primitive",
+   "gloss": "a mathematical object used to COUNT, MEASURE, and LABEL (natural / integer / rational / real / complex). A math BEDROCK primitive — the descent bottoms out here (it does not reduce further within elementary mathematics)."
+  },
+  {
+   "name": "space",
+   "kind": "math_primitive",
+   "gloss": "a SET of points equipped with structure (closeness / distance / linearity): a topological space, a metric space, a vector space, Euclidean space all are spaces. A math BEDROCK primitive — what manifold/topological space bottom out at (manifold -> topological space -> SPACE). The descent stops here rather than climbing into the 'Space' disambiguation page."
+  },
+  {
+   "name": "point",
+   "kind": "math_primitive",
+   "gloss": "an idealized exact POSITION with no size — the primitive element of a geometric space (a space is a set of points). A math BEDROCK primitive."
+  },
+  {
+   "name": "boundary",
+   "kind": "math_primitive",
+   "gloss": "the BOUNDARY of a manifold / region — the set of its limit/edge points (what separates inside from outside). A math BEDROCK primitive — used to set up cobordism (manifolds glued along a common boundary). The descent stops here rather than climbing into the 'Boundary' disambiguation page."
+  },
+  {
+   "name": "operation",
+   "kind": "math_primitive",
+   "gloss": "an OPERATION takes one or more objects (operands) and produces another (addition, composition) — a function on a set to itself. is-a function. A math BEDROCK primitive (reduces to relation via function).",
+   "built_from": [
+    "function"
+   ],
+   "combination": "isa(operation, function)"
+  },
+  {
+   "name": "structure",
+   "kind": "math_primitive",
+   "gloss": "a STRUCTURE is a set together with operations / relations / distinguished elements defined on it (a group, a ring, a space are structures). A math BEDROCK primitive — what a 'space' / 'group' is, at root (a set with structure)."
+  },
+  {
+   "name": "dimension",
+   "kind": "math_primitive",
+   "gloss": "the DIMENSION of a space — the number of independent directions / coordinates needed to specify a point (a line is 1-D, a plane 2-D). A math BEDROCK primitive (used to type manifolds: an n-manifold)."
+  },
+  {
+   "name": "group",
+   "kind": "math_primitive",
+   "gloss": "a SET with an associative operation, an identity, and inverses (a structure capturing symmetry). is-a structure. A math BEDROCK primitive (reduces to structure -> set). The G in 'Spin bordism of BG' is a group.",
+   "built_from": [
+    "structure"
+   ],
+   "combination": "isa(group, structure)"
+  },
+  {
+   "name": "order",
+   "kind": "math_primitive",
+   "gloss": "an ORDER — either an ORDER RELATION (a relation arranging elements: less-than, subset) or the ORDER of a group/element (its size / smallest power giving identity). A math BEDROCK primitive. The descent stops here rather than climbing into the 'Order' disambiguation page."
+  },
+  {
+   "name": "collection",
+   "kind": "math_primitive",
+   "gloss": "a COLLECTION of objects grouped together — the informal notion a SET formalizes. is-a set (the formal counterpart). A math BEDROCK primitive. The descent stops here rather than climbing into the 'Collection' disambiguation page.",
+   "built_from": [
+    "set"
+   ],
+   "combination": "isa(collection, set)"
+  }
+ ],
+ "relations": [
+  {
+   "src": "binary_relation",
+   "edge": "built_from",
+   "tgt": "relation"
+  },
+  {
+   "src": "binary_relation",
+   "edge": "depends_on",
+   "tgt": "relation"
+  },
+  {
+   "src": "binary_relation",
+   "edge": "grounds",
+   "tgt": "equivalence_relation"
+  },
+  {
+   "src": "collection",
+   "edge": "built_from",
+   "tgt": "set"
+  },
+  {
+   "src": "collection",
+   "edge": "depends_on",
+   "tgt": "set"
+  },
+  {
+   "src": "equivalence_relation",
+   "edge": "built_from",
+   "tgt": "binary_relation"
+  },
+  {
+   "src": "equivalence_relation",
+   "edge": "depends_on",
+   "tgt": "binary_relation"
+  },
+  {
+   "src": "function",
+   "edge": "built_from",
+   "tgt": "relation"
+  },
+  {
+   "src": "function",
+   "edge": "depends_on",
+   "tgt": "relation"
+  },
+  {
+   "src": "function",
+   "edge": "grounds",
+   "tgt": "mapping"
+  },
+  {
+   "src": "function",
+   "edge": "grounds",
+   "tgt": "operation"
+  },
+  {
+   "src": "group",
+   "edge": "built_from",
+   "tgt": "structure"
+  },
+  {
+   "src": "group",
+   "edge": "depends_on",
+   "tgt": "structure"
+  },
+  {
+   "src": "mapping",
+   "edge": "built_from",
+   "tgt": "function"
+  },
+  {
+   "src": "mapping",
+   "edge": "depends_on",
+   "tgt": "function"
+  },
+  {
+   "src": "operation",
+   "edge": "built_from",
+   "tgt": "function"
+  },
+  {
+   "src": "operation",
+   "edge": "depends_on",
+   "tgt": "function"
+  },
+  {
+   "src": "relation",
+   "edge": "grounds",
+   "tgt": "binary_relation"
+  },
+  {
+   "src": "relation",
+   "edge": "grounds",
+   "tgt": "function"
+  },
+  {
+   "src": "set",
+   "edge": "grounds",
+   "tgt": "collection"
+  },
+  {
+   "src": "structure",
+   "edge": "grounds",
+   "tgt": "group"
+  }
+ ]
+}

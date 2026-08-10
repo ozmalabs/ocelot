@@ -1,0 +1,1902 @@
+{
+  "id": "shape_sense",
+  "version": "1.0.0",
+  "depends_on": [
+    "figure_ground"
+  ],
+  "description": "The jabberwock's self-authored rotation+scale-invariant shape descriptor (normalised second central moments over a figure's `within` cells). Lets it tell two figures are the same shape regardless of orientation/size. + same_shape(x,y) and is_cross(x) the jabberwock derived from it.",
+  "nodes": [],
+  "edges": [],
+  "productions": [],
+  "concepts": [
+    {
+      "name": "shape_descriptor",
+      "domain": "space",
+      "definition": {
+        "type": "Let",
+        "name": "cells",
+        "value": {
+          "type": "InNeighbours",
+          "node": {
+            "type": "Var",
+            "name": "x"
+          },
+          "edge_type": "within"
+        },
+        "body": {
+          "type": "Let",
+          "name": "n",
+          "value": {
+            "type": "Count",
+            "source": {
+              "type": "Var",
+              "name": "cells"
+            }
+          },
+          "body": {
+            "type": "Let",
+            "name": "cx",
+            "value": {
+              "type": "Div",
+              "a": {
+                "type": "Sum",
+                "source": {
+                  "type": "Var",
+                  "name": "cells"
+                },
+                "var_name": "c",
+                "value": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "c"
+                  },
+                  "key": "row"
+                }
+              },
+              "b": {
+                "type": "Var",
+                "name": "n"
+              }
+            },
+            "body": {
+              "type": "Let",
+              "name": "cy",
+              "value": {
+                "type": "Div",
+                "a": {
+                  "type": "Sum",
+                  "source": {
+                    "type": "Var",
+                    "name": "cells"
+                  },
+                  "var_name": "c",
+                  "value": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "c"
+                    },
+                    "key": "col"
+                  }
+                },
+                "b": {
+                  "type": "Var",
+                  "name": "n"
+                }
+              },
+              "body": {
+                "type": "Let",
+                "name": "m20",
+                "value": {
+                  "type": "Sum",
+                  "source": {
+                    "type": "Var",
+                    "name": "cells"
+                  },
+                  "var_name": "c",
+                  "value": {
+                    "type": "Pow",
+                    "a": {
+                      "type": "Minus",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "c"
+                        },
+                        "key": "row"
+                      },
+                      "b": {
+                        "type": "Var",
+                        "name": "cx"
+                      }
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": 2
+                    }
+                  }
+                },
+                "body": {
+                  "type": "Let",
+                  "name": "m02",
+                  "value": {
+                    "type": "Sum",
+                    "source": {
+                      "type": "Var",
+                      "name": "cells"
+                    },
+                    "var_name": "c",
+                    "value": {
+                      "type": "Pow",
+                      "a": {
+                        "type": "Minus",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "c"
+                          },
+                          "key": "col"
+                        },
+                        "b": {
+                          "type": "Var",
+                          "name": "cy"
+                        }
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 2
+                      }
+                    }
+                  },
+                  "body": {
+                    "type": "Let",
+                    "name": "m11",
+                    "value": {
+                      "type": "Sum",
+                      "source": {
+                        "type": "Var",
+                        "name": "cells"
+                      },
+                      "var_name": "c",
+                      "value": {
+                        "type": "Times",
+                        "items": [
+                          {
+                            "type": "Minus",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "c"
+                              },
+                              "key": "row"
+                            },
+                            "b": {
+                              "type": "Var",
+                              "name": "cx"
+                            }
+                          },
+                          {
+                            "type": "Minus",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "c"
+                              },
+                              "key": "col"
+                            },
+                            "b": {
+                              "type": "Var",
+                              "name": "cy"
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    "body": {
+                      "type": "Let",
+                      "name": "fill",
+                      "value": {
+                        "type": "Div",
+                        "a": {
+                          "type": "Var",
+                          "name": "n"
+                        },
+                        "b": {
+                          "type": "Times",
+                          "items": [
+                            {
+                              "type": "Plus",
+                              "items": [
+                                {
+                                  "type": "Minus",
+                                  "a": {
+                                    "type": "MaxOver",
+                                    "source": {
+                                      "type": "Var",
+                                      "name": "cells"
+                                    },
+                                    "var_name": "c",
+                                    "value": {
+                                      "type": "Attr",
+                                      "node": {
+                                        "type": "Var",
+                                        "name": "c"
+                                      },
+                                      "key": "row"
+                                    },
+                                    "default": {
+                                      "type": "Lit",
+                                      "value": 0
+                                    }
+                                  },
+                                  "b": {
+                                    "type": "MinOver",
+                                    "source": {
+                                      "type": "Var",
+                                      "name": "cells"
+                                    },
+                                    "var_name": "c",
+                                    "value": {
+                                      "type": "Attr",
+                                      "node": {
+                                        "type": "Var",
+                                        "name": "c"
+                                      },
+                                      "key": "row"
+                                    },
+                                    "default": {
+                                      "type": "Lit",
+                                      "value": 0
+                                    }
+                                  }
+                                },
+                                {
+                                  "type": "Lit",
+                                  "value": 1
+                                }
+                              ]
+                            },
+                            {
+                              "type": "Plus",
+                              "items": [
+                                {
+                                  "type": "Minus",
+                                  "a": {
+                                    "type": "MaxOver",
+                                    "source": {
+                                      "type": "Var",
+                                      "name": "cells"
+                                    },
+                                    "var_name": "c",
+                                    "value": {
+                                      "type": "Attr",
+                                      "node": {
+                                        "type": "Var",
+                                        "name": "c"
+                                      },
+                                      "key": "col"
+                                    },
+                                    "default": {
+                                      "type": "Lit",
+                                      "value": 0
+                                    }
+                                  },
+                                  "b": {
+                                    "type": "MinOver",
+                                    "source": {
+                                      "type": "Var",
+                                      "name": "cells"
+                                    },
+                                    "var_name": "c",
+                                    "value": {
+                                      "type": "Attr",
+                                      "node": {
+                                        "type": "Var",
+                                        "name": "c"
+                                      },
+                                      "key": "col"
+                                    },
+                                    "default": {
+                                      "type": "Lit",
+                                      "value": 0
+                                    }
+                                  }
+                                },
+                                {
+                                  "type": "Lit",
+                                  "value": 1
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      },
+                      "body": {
+                        "type": "Let",
+                        "name": "i1",
+                        "value": {
+                          "type": "Div",
+                          "a": {
+                            "type": "Plus",
+                            "items": [
+                              {
+                                "type": "Var",
+                                "name": "m20"
+                              },
+                              {
+                                "type": "Var",
+                                "name": "m02"
+                              }
+                            ]
+                          },
+                          "b": {
+                            "type": "Times",
+                            "items": [
+                              {
+                                "type": "Var",
+                                "name": "n"
+                              },
+                              {
+                                "type": "Var",
+                                "name": "n"
+                              }
+                            ]
+                          }
+                        },
+                        "body": {
+                          "type": "Let",
+                          "name": "i2",
+                          "value": {
+                            "type": "Div",
+                            "a": {
+                              "type": "Plus",
+                              "items": [
+                                {
+                                  "type": "Pow",
+                                  "a": {
+                                    "type": "Minus",
+                                    "a": {
+                                      "type": "Var",
+                                      "name": "m20"
+                                    },
+                                    "b": {
+                                      "type": "Var",
+                                      "name": "m02"
+                                    }
+                                  },
+                                  "b": {
+                                    "type": "Lit",
+                                    "value": 2
+                                  }
+                                },
+                                {
+                                  "type": "Times",
+                                  "items": [
+                                    {
+                                      "type": "Lit",
+                                      "value": 4
+                                    },
+                                    {
+                                      "type": "Pow",
+                                      "a": {
+                                        "type": "Var",
+                                        "name": "m11"
+                                      },
+                                      "b": {
+                                        "type": "Lit",
+                                        "value": 2
+                                      }
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            "b": {
+                              "type": "Pow",
+                              "a": {
+                                "type": "Var",
+                                "name": "n"
+                              },
+                              "b": {
+                                "type": "Lit",
+                                "value": 4
+                              }
+                            }
+                          },
+                          "body": {
+                            "type": "Vec",
+                            "items": [
+                              {
+                                "type": "Var",
+                                "name": "fill"
+                              },
+                              {
+                                "type": "Times",
+                                "items": [
+                                  {
+                                    "type": "Lit",
+                                    "value": 5
+                                  },
+                                  {
+                                    "type": "Var",
+                                    "name": "i1"
+                                  }
+                                ]
+                              },
+                              {
+                                "type": "Times",
+                                "items": [
+                                  {
+                                    "type": "Lit",
+                                    "value": 20
+                                  },
+                                  {
+                                    "type": "Var",
+                                    "name": "i2"
+                                  }
+                                ]
+                              },
+                              {
+                                "type": "Times",
+                                "items": [
+                                  {
+                                    "type": "Lit",
+                                    "value": 0.5
+                                  },
+                                  {
+                                    "type": "Holds",
+                                    "concept": "holes",
+                                    "node": {
+                                      "type": "Var",
+                                      "name": "x"
+                                    }
+                                  }
+                                ]
+                              },
+                              {
+                                "type": "Times",
+                                "items": [
+                                  {
+                                    "type": "Lit",
+                                    "value": 0.25
+                                  },
+                                  {
+                                    "type": "Holds",
+                                    "concept": "convex_corners",
+                                    "node": {
+                                      "type": "Var",
+                                      "name": "x"
+                                    }
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "same_shape",
+      "domain": "space",
+      "definition": {
+        "type": "Lt",
+        "a": {
+          "type": "Magnitude",
+          "arg": {
+            "type": "VecSub",
+            "a": {
+              "type": "Holds",
+              "concept": "shape_descriptor",
+              "node": {
+                "type": "Var",
+                "name": "x"
+              }
+            },
+            "b": {
+              "type": "Holds",
+              "concept": "shape_descriptor",
+              "node": {
+                "type": "Var",
+                "name": "y"
+              }
+            }
+          }
+        },
+        "b": {
+          "type": "Lit",
+          "value": 0.1847
+        }
+      }
+    },
+    {
+      "name": "is_cross",
+      "domain": "space",
+      "definition": {
+        "type": "Lt",
+        "a": {
+          "type": "Magnitude",
+          "arg": {
+            "type": "VecSub",
+            "a": {
+              "type": "Holds",
+              "concept": "shape_descriptor",
+              "node": {
+                "type": "Var",
+                "name": "x"
+              }
+            },
+            "b": {
+              "type": "Vec",
+              "items": [
+                {
+                  "type": "Lit",
+                  "value": 0.5555555555555556
+                },
+                {
+                  "type": "Lit",
+                  "value": 0.8
+                },
+                {
+                  "type": "Lit",
+                  "value": 0.0
+                }
+              ]
+            }
+          }
+        },
+        "b": {
+          "type": "Lit",
+          "value": 0.1847
+        }
+      }
+    },
+    {
+      "name": "holes",
+      "domain": "topology",
+      "definition": {
+        "type": "Minus",
+        "a": {
+          "type": "Minus",
+          "a": {
+            "type": "Plus",
+            "items": [
+              {
+                "type": "Lit",
+                "value": 1
+              },
+              {
+                "type": "Sum",
+                "source": {
+                  "type": "InNeighbours",
+                  "node": {
+                    "type": "Var",
+                    "name": "x"
+                  },
+                  "edge_type": "within"
+                },
+                "var_name": "c",
+                "value": {
+                  "type": "Plus",
+                  "items": [
+                    {
+                      "type": "IfThenElse",
+                      "cond": {
+                        "type": "Exists",
+                        "source": {
+                          "type": "InNeighbours",
+                          "node": {
+                            "type": "Var",
+                            "name": "x"
+                          },
+                          "edge_type": "within"
+                        },
+                        "var_name": "c2",
+                        "predicate": {
+                          "type": "And",
+                          "items": [
+                            {
+                              "type": "Eq",
+                              "a": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "c2"
+                                },
+                                "key": "row"
+                              },
+                              "b": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "c"
+                                },
+                                "key": "row"
+                              }
+                            },
+                            {
+                              "type": "Eq",
+                              "a": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "c2"
+                                },
+                                "key": "col"
+                              },
+                              "b": {
+                                "type": "Plus",
+                                "items": [
+                                  {
+                                    "type": "Attr",
+                                    "node": {
+                                      "type": "Var",
+                                      "name": "c"
+                                    },
+                                    "key": "col"
+                                  },
+                                  {
+                                    "type": "Lit",
+                                    "value": 1
+                                  }
+                                ]
+                              }
+                            }
+                          ]
+                        }
+                      },
+                      "then": {
+                        "type": "Lit",
+                        "value": 1
+                      },
+                      "other": {
+                        "type": "Lit",
+                        "value": 0
+                      }
+                    },
+                    {
+                      "type": "IfThenElse",
+                      "cond": {
+                        "type": "Exists",
+                        "source": {
+                          "type": "InNeighbours",
+                          "node": {
+                            "type": "Var",
+                            "name": "x"
+                          },
+                          "edge_type": "within"
+                        },
+                        "var_name": "c2",
+                        "predicate": {
+                          "type": "And",
+                          "items": [
+                            {
+                              "type": "Eq",
+                              "a": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "c2"
+                                },
+                                "key": "row"
+                              },
+                              "b": {
+                                "type": "Plus",
+                                "items": [
+                                  {
+                                    "type": "Attr",
+                                    "node": {
+                                      "type": "Var",
+                                      "name": "c"
+                                    },
+                                    "key": "row"
+                                  },
+                                  {
+                                    "type": "Lit",
+                                    "value": 1
+                                  }
+                                ]
+                              }
+                            },
+                            {
+                              "type": "Eq",
+                              "a": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "c2"
+                                },
+                                "key": "col"
+                              },
+                              "b": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "c"
+                                },
+                                "key": "col"
+                              }
+                            }
+                          ]
+                        }
+                      },
+                      "then": {
+                        "type": "Lit",
+                        "value": 1
+                      },
+                      "other": {
+                        "type": "Lit",
+                        "value": 0
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "b": {
+            "type": "Count",
+            "source": {
+              "type": "InNeighbours",
+              "node": {
+                "type": "Var",
+                "name": "x"
+              },
+              "edge_type": "within"
+            }
+          }
+        },
+        "b": {
+          "type": "Sum",
+          "source": {
+            "type": "InNeighbours",
+            "node": {
+              "type": "Var",
+              "name": "x"
+            },
+            "edge_type": "within"
+          },
+          "var_name": "c",
+          "value": {
+            "type": "IfThenElse",
+            "cond": {
+              "type": "And",
+              "items": [
+                {
+                  "type": "Exists",
+                  "source": {
+                    "type": "InNeighbours",
+                    "node": {
+                      "type": "Var",
+                      "name": "x"
+                    },
+                    "edge_type": "within"
+                  },
+                  "var_name": "c2",
+                  "predicate": {
+                    "type": "And",
+                    "items": [
+                      {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "c2"
+                          },
+                          "key": "row"
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "c"
+                          },
+                          "key": "row"
+                        }
+                      },
+                      {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "c2"
+                          },
+                          "key": "col"
+                        },
+                        "b": {
+                          "type": "Plus",
+                          "items": [
+                            {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "c"
+                              },
+                              "key": "col"
+                            },
+                            {
+                              "type": "Lit",
+                              "value": 1
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "Exists",
+                  "source": {
+                    "type": "InNeighbours",
+                    "node": {
+                      "type": "Var",
+                      "name": "x"
+                    },
+                    "edge_type": "within"
+                  },
+                  "var_name": "c2",
+                  "predicate": {
+                    "type": "And",
+                    "items": [
+                      {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "c2"
+                          },
+                          "key": "row"
+                        },
+                        "b": {
+                          "type": "Plus",
+                          "items": [
+                            {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "c"
+                              },
+                              "key": "row"
+                            },
+                            {
+                              "type": "Lit",
+                              "value": 1
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "c2"
+                          },
+                          "key": "col"
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "c"
+                          },
+                          "key": "col"
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "Exists",
+                  "source": {
+                    "type": "InNeighbours",
+                    "node": {
+                      "type": "Var",
+                      "name": "x"
+                    },
+                    "edge_type": "within"
+                  },
+                  "var_name": "c2",
+                  "predicate": {
+                    "type": "And",
+                    "items": [
+                      {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "c2"
+                          },
+                          "key": "row"
+                        },
+                        "b": {
+                          "type": "Plus",
+                          "items": [
+                            {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "c"
+                              },
+                              "key": "row"
+                            },
+                            {
+                              "type": "Lit",
+                              "value": 1
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "c2"
+                          },
+                          "key": "col"
+                        },
+                        "b": {
+                          "type": "Plus",
+                          "items": [
+                            {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "c"
+                              },
+                              "key": "col"
+                            },
+                            {
+                              "type": "Lit",
+                              "value": 1
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            "then": {
+              "type": "Lit",
+              "value": 1
+            },
+            "other": {
+              "type": "Lit",
+              "value": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "convex_corners",
+      "domain": "shape",
+      "definition": {
+        "type": "Sum",
+        "source": {
+          "type": "InNeighbours",
+          "node": {
+            "type": "Var",
+            "name": "x"
+          },
+          "edge_type": "within"
+        },
+        "var_name": "c",
+        "value": {
+          "type": "Plus",
+          "items": [
+            {
+              "type": "IfThenElse",
+              "cond": {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Not",
+                    "arg": {
+                      "type": "Exists",
+                      "source": {
+                        "type": "InNeighbours",
+                        "node": {
+                          "type": "Var",
+                          "name": "x"
+                        },
+                        "edge_type": "within"
+                      },
+                      "var_name": "c2",
+                      "predicate": {
+                        "type": "And",
+                        "items": [
+                          {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "c2"
+                              },
+                              "key": "row"
+                            },
+                            "b": {
+                              "type": "Minus",
+                              "a": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "c"
+                                },
+                                "key": "row"
+                              },
+                              "b": {
+                                "type": "Lit",
+                                "value": 1
+                              }
+                            }
+                          },
+                          {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "c2"
+                              },
+                              "key": "col"
+                            },
+                            "b": {
+                              "type": "Minus",
+                              "a": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "c"
+                                },
+                                "key": "col"
+                              },
+                              "b": {
+                                "type": "Lit",
+                                "value": 1
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    "type": "Not",
+                    "arg": {
+                      "type": "Exists",
+                      "source": {
+                        "type": "InNeighbours",
+                        "node": {
+                          "type": "Var",
+                          "name": "x"
+                        },
+                        "edge_type": "within"
+                      },
+                      "var_name": "c2",
+                      "predicate": {
+                        "type": "And",
+                        "items": [
+                          {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "c2"
+                              },
+                              "key": "row"
+                            },
+                            "b": {
+                              "type": "Minus",
+                              "a": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "c"
+                                },
+                                "key": "row"
+                              },
+                              "b": {
+                                "type": "Lit",
+                                "value": 1
+                              }
+                            }
+                          },
+                          {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "c2"
+                              },
+                              "key": "col"
+                            },
+                            "b": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "c"
+                              },
+                              "key": "col"
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    "type": "Not",
+                    "arg": {
+                      "type": "Exists",
+                      "source": {
+                        "type": "InNeighbours",
+                        "node": {
+                          "type": "Var",
+                          "name": "x"
+                        },
+                        "edge_type": "within"
+                      },
+                      "var_name": "c2",
+                      "predicate": {
+                        "type": "And",
+                        "items": [
+                          {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "c2"
+                              },
+                              "key": "row"
+                            },
+                            "b": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "c"
+                              },
+                              "key": "row"
+                            }
+                          },
+                          {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "c2"
+                              },
+                              "key": "col"
+                            },
+                            "b": {
+                              "type": "Minus",
+                              "a": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "c"
+                                },
+                                "key": "col"
+                              },
+                              "b": {
+                                "type": "Lit",
+                                "value": 1
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  }
+                ]
+              },
+              "then": {
+                "type": "Lit",
+                "value": 1
+              },
+              "other": {
+                "type": "Lit",
+                "value": 0
+              }
+            },
+            {
+              "type": "IfThenElse",
+              "cond": {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Not",
+                    "arg": {
+                      "type": "Exists",
+                      "source": {
+                        "type": "InNeighbours",
+                        "node": {
+                          "type": "Var",
+                          "name": "x"
+                        },
+                        "edge_type": "within"
+                      },
+                      "var_name": "c2",
+                      "predicate": {
+                        "type": "And",
+                        "items": [
+                          {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "c2"
+                              },
+                              "key": "row"
+                            },
+                            "b": {
+                              "type": "Minus",
+                              "a": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "c"
+                                },
+                                "key": "row"
+                              },
+                              "b": {
+                                "type": "Lit",
+                                "value": 1
+                              }
+                            }
+                          },
+                          {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "c2"
+                              },
+                              "key": "col"
+                            },
+                            "b": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "c"
+                              },
+                              "key": "col"
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    "type": "Not",
+                    "arg": {
+                      "type": "Exists",
+                      "source": {
+                        "type": "InNeighbours",
+                        "node": {
+                          "type": "Var",
+                          "name": "x"
+                        },
+                        "edge_type": "within"
+                      },
+                      "var_name": "c2",
+                      "predicate": {
+                        "type": "And",
+                        "items": [
+                          {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "c2"
+                              },
+                              "key": "row"
+                            },
+                            "b": {
+                              "type": "Minus",
+                              "a": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "c"
+                                },
+                                "key": "row"
+                              },
+                              "b": {
+                                "type": "Lit",
+                                "value": 1
+                              }
+                            }
+                          },
+                          {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "c2"
+                              },
+                              "key": "col"
+                            },
+                            "b": {
+                              "type": "Plus",
+                              "items": [
+                                {
+                                  "type": "Attr",
+                                  "node": {
+                                    "type": "Var",
+                                    "name": "c"
+                                  },
+                                  "key": "col"
+                                },
+                                {
+                                  "type": "Lit",
+                                  "value": 1
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    "type": "Not",
+                    "arg": {
+                      "type": "Exists",
+                      "source": {
+                        "type": "InNeighbours",
+                        "node": {
+                          "type": "Var",
+                          "name": "x"
+                        },
+                        "edge_type": "within"
+                      },
+                      "var_name": "c2",
+                      "predicate": {
+                        "type": "And",
+                        "items": [
+                          {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "c2"
+                              },
+                              "key": "row"
+                            },
+                            "b": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "c"
+                              },
+                              "key": "row"
+                            }
+                          },
+                          {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "c2"
+                              },
+                              "key": "col"
+                            },
+                            "b": {
+                              "type": "Plus",
+                              "items": [
+                                {
+                                  "type": "Attr",
+                                  "node": {
+                                    "type": "Var",
+                                    "name": "c"
+                                  },
+                                  "key": "col"
+                                },
+                                {
+                                  "type": "Lit",
+                                  "value": 1
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  }
+                ]
+              },
+              "then": {
+                "type": "Lit",
+                "value": 1
+              },
+              "other": {
+                "type": "Lit",
+                "value": 0
+              }
+            },
+            {
+              "type": "IfThenElse",
+              "cond": {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Not",
+                    "arg": {
+                      "type": "Exists",
+                      "source": {
+                        "type": "InNeighbours",
+                        "node": {
+                          "type": "Var",
+                          "name": "x"
+                        },
+                        "edge_type": "within"
+                      },
+                      "var_name": "c2",
+                      "predicate": {
+                        "type": "And",
+                        "items": [
+                          {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "c2"
+                              },
+                              "key": "row"
+                            },
+                            "b": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "c"
+                              },
+                              "key": "row"
+                            }
+                          },
+                          {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "c2"
+                              },
+                              "key": "col"
+                            },
+                            "b": {
+                              "type": "Minus",
+                              "a": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "c"
+                                },
+                                "key": "col"
+                              },
+                              "b": {
+                                "type": "Lit",
+                                "value": 1
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    "type": "Not",
+                    "arg": {
+                      "type": "Exists",
+                      "source": {
+                        "type": "InNeighbours",
+                        "node": {
+                          "type": "Var",
+                          "name": "x"
+                        },
+                        "edge_type": "within"
+                      },
+                      "var_name": "c2",
+                      "predicate": {
+                        "type": "And",
+                        "items": [
+                          {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "c2"
+                              },
+                              "key": "row"
+                            },
+                            "b": {
+                              "type": "Plus",
+                              "items": [
+                                {
+                                  "type": "Attr",
+                                  "node": {
+                                    "type": "Var",
+                                    "name": "c"
+                                  },
+                                  "key": "row"
+                                },
+                                {
+                                  "type": "Lit",
+                                  "value": 1
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "c2"
+                              },
+                              "key": "col"
+                            },
+                            "b": {
+                              "type": "Minus",
+                              "a": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "c"
+                                },
+                                "key": "col"
+                              },
+                              "b": {
+                                "type": "Lit",
+                                "value": 1
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    "type": "Not",
+                    "arg": {
+                      "type": "Exists",
+                      "source": {
+                        "type": "InNeighbours",
+                        "node": {
+                          "type": "Var",
+                          "name": "x"
+                        },
+                        "edge_type": "within"
+                      },
+                      "var_name": "c2",
+                      "predicate": {
+                        "type": "And",
+                        "items": [
+                          {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "c2"
+                              },
+                              "key": "row"
+                            },
+                            "b": {
+                              "type": "Plus",
+                              "items": [
+                                {
+                                  "type": "Attr",
+                                  "node": {
+                                    "type": "Var",
+                                    "name": "c"
+                                  },
+                                  "key": "row"
+                                },
+                                {
+                                  "type": "Lit",
+                                  "value": 1
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "c2"
+                              },
+                              "key": "col"
+                            },
+                            "b": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "c"
+                              },
+                              "key": "col"
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  }
+                ]
+              },
+              "then": {
+                "type": "Lit",
+                "value": 1
+              },
+              "other": {
+                "type": "Lit",
+                "value": 0
+              }
+            },
+            {
+              "type": "IfThenElse",
+              "cond": {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Not",
+                    "arg": {
+                      "type": "Exists",
+                      "source": {
+                        "type": "InNeighbours",
+                        "node": {
+                          "type": "Var",
+                          "name": "x"
+                        },
+                        "edge_type": "within"
+                      },
+                      "var_name": "c2",
+                      "predicate": {
+                        "type": "And",
+                        "items": [
+                          {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "c2"
+                              },
+                              "key": "row"
+                            },
+                            "b": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "c"
+                              },
+                              "key": "row"
+                            }
+                          },
+                          {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "c2"
+                              },
+                              "key": "col"
+                            },
+                            "b": {
+                              "type": "Plus",
+                              "items": [
+                                {
+                                  "type": "Attr",
+                                  "node": {
+                                    "type": "Var",
+                                    "name": "c"
+                                  },
+                                  "key": "col"
+                                },
+                                {
+                                  "type": "Lit",
+                                  "value": 1
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    "type": "Not",
+                    "arg": {
+                      "type": "Exists",
+                      "source": {
+                        "type": "InNeighbours",
+                        "node": {
+                          "type": "Var",
+                          "name": "x"
+                        },
+                        "edge_type": "within"
+                      },
+                      "var_name": "c2",
+                      "predicate": {
+                        "type": "And",
+                        "items": [
+                          {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "c2"
+                              },
+                              "key": "row"
+                            },
+                            "b": {
+                              "type": "Plus",
+                              "items": [
+                                {
+                                  "type": "Attr",
+                                  "node": {
+                                    "type": "Var",
+                                    "name": "c"
+                                  },
+                                  "key": "row"
+                                },
+                                {
+                                  "type": "Lit",
+                                  "value": 1
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "c2"
+                              },
+                              "key": "col"
+                            },
+                            "b": {
+                              "type": "Plus",
+                              "items": [
+                                {
+                                  "type": "Attr",
+                                  "node": {
+                                    "type": "Var",
+                                    "name": "c"
+                                  },
+                                  "key": "col"
+                                },
+                                {
+                                  "type": "Lit",
+                                  "value": 1
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    "type": "Not",
+                    "arg": {
+                      "type": "Exists",
+                      "source": {
+                        "type": "InNeighbours",
+                        "node": {
+                          "type": "Var",
+                          "name": "x"
+                        },
+                        "edge_type": "within"
+                      },
+                      "var_name": "c2",
+                      "predicate": {
+                        "type": "And",
+                        "items": [
+                          {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "c2"
+                              },
+                              "key": "row"
+                            },
+                            "b": {
+                              "type": "Plus",
+                              "items": [
+                                {
+                                  "type": "Attr",
+                                  "node": {
+                                    "type": "Var",
+                                    "name": "c"
+                                  },
+                                  "key": "row"
+                                },
+                                {
+                                  "type": "Lit",
+                                  "value": 1
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "c2"
+                              },
+                              "key": "col"
+                            },
+                            "b": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "c"
+                              },
+                              "key": "col"
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  }
+                ]
+              },
+              "then": {
+                "type": "Lit",
+                "value": 1
+              },
+              "other": {
+                "type": "Lit",
+                "value": 0
+              }
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

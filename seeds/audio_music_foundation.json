@@ -1,0 +1,272 @@
+{
+  "microtheory": {
+    "name": "audio_music_foundation",
+    "definition": "The substrate's foundational vocabulary for sound and music — basic acoustic + musical concepts that ground its existing audio cortices (auditory_cortex, cochlear_nucleus, phonology, speech_science) and provide the explanatory layer for what those mechanisms compute on. Spans physical (waveform, frequency, amplitude), perceptual (pitch, timbre, loudness), and musical (melody, harmony, rhythm) levels. Substrate analogue: the input domain its existing speech + auditory pipelines process.",
+    "category": "foundation"
+  },
+  "concepts": [
+    {
+      "name": "sound",
+      "definition": "Mechanical wave propagating through a medium. Compression + rarefaction of particles. Substrate analogue: the input modality of its auditory pipeline.",
+      "category": "physical"
+    },
+    {
+      "name": "waveform",
+      "definition": "Time-domain representation of sound — pressure vs time. Substrate analogue: the raw audio buffer at the input of cochlear processing.",
+      "category": "physical"
+    },
+    {
+      "name": "frequency",
+      "definition": "Number of cycles per second; Hz. Determines pitch. Human range ~20Hz-20kHz. Substrate analogue: the axis of substrate's tonotopic gammatone filterbank.",
+      "category": "physical"
+    },
+    {
+      "name": "amplitude",
+      "definition": "Magnitude of pressure variation. Determines loudness. Logarithmic perception. Substrate analogue: power output of each gammatone channel.",
+      "category": "physical"
+    },
+    {
+      "name": "phase",
+      "definition": "Position within a cycle, in radians. Phase relationships between frequencies determine timbre + localization. Substrate analogue: per-channel temporal alignment in the cochlear nucleus.",
+      "category": "physical"
+    },
+    {
+      "name": "wavelength",
+      "definition": "Spatial distance of one cycle. λ = c/f where c is sound speed (~343 m/s). Substrate analogue: subsumed by frequency representation.",
+      "category": "physical"
+    },
+    {
+      "name": "pitch",
+      "definition": "Perceptual correlate of frequency. Categorical (notes) + continuous (siren). Substrate analogue: peak in substrate's tonotopic representation; F0 estimate.",
+      "category": "perception"
+    },
+    {
+      "name": "timbre",
+      "definition": "What distinguishes a violin from a flute playing the same pitch + loudness. Determined by spectral envelope + temporal envelope + transients. Substrate analogue: the substrate's pattern across multiple gammatone channels simultaneously.",
+      "category": "perception"
+    },
+    {
+      "name": "loudness",
+      "definition": "Perceptual correlate of amplitude. Sone scale; equal-loudness contours (Fletcher-Munson). Logarithmic. Substrate analogue: integrated power across gammatone bands with frequency-dependent weighting.",
+      "category": "perception"
+    },
+    {
+      "name": "duration",
+      "definition": "Perceived length of a sound. Cortical integration time ~50-200ms for fine perception. Substrate analogue: substrate's persistent σ activation period.",
+      "category": "perception"
+    },
+    {
+      "name": "harmonic",
+      "definition": "Integer-multiple frequency of a fundamental. Pure tones at 100, 200, 300 Hz form a harmonic series. Substrate analogue: substrate's harmonic-template matching in pitch perception.",
+      "category": "spectral"
+    },
+    {
+      "name": "fundamental_frequency",
+      "definition": "F0 — lowest periodic component of a complex tone. The pitch we hear. Substrate analogue: substrate's F0 estimate from auditory_cortex.",
+      "category": "spectral"
+    },
+    {
+      "name": "overtone",
+      "definition": "Frequency above F0 in a complex tone. Harmonic overtones are integer multiples; inharmonic ones aren't (bells, drums). Substrate analogue: secondary peaks in substrate's gammatone output.",
+      "category": "spectral"
+    },
+    {
+      "name": "partial",
+      "definition": "Any sinusoidal component of a complex sound, harmonic or not. Substrate analogue: individual gammatone channel output.",
+      "category": "spectral"
+    },
+    {
+      "name": "formant",
+      "definition": "Resonance of a vocal tract — peaks in the spectral envelope of speech. F1 + F2 distinguish vowels. Substrate analogue: substrate's formant detector in phonology Mt.",
+      "category": "spectral"
+    },
+    {
+      "name": "spectrum",
+      "definition": "Frequency-domain representation. Amplitude per frequency at one moment. Substrate analogue: substrate's gammatone output at one tick.",
+      "category": "spectral"
+    },
+    {
+      "name": "spectrogram",
+      "definition": "Time × frequency × amplitude. Visual + computational standard for analysis. Substrate analogue: substrate's auditory cortex input — frequency by tick.",
+      "category": "spectral"
+    },
+    {
+      "name": "envelope",
+      "definition": "Slowly-varying outline of a signal — amplitude over time. Substrate analogue: substrate's per-channel envelope follower.",
+      "category": "envelope"
+    },
+    {
+      "name": "attack",
+      "definition": "ADSR. Time from silence to peak. Distinguishes percussive (fast) from sustained (slow). Substrate analogue: substrate's onset detector in cochlear nucleus.",
+      "category": "envelope"
+    },
+    {
+      "name": "decay",
+      "definition": "ADSR. Time from peak to sustain level. Substrate analogue: substrate's envelope-derivative tracker.",
+      "category": "envelope"
+    },
+    {
+      "name": "sustain",
+      "definition": "ADSR. Steady-state level during note hold. Substrate analogue: substrate's sustained σ level.",
+      "category": "envelope"
+    },
+    {
+      "name": "release",
+      "definition": "ADSR. Time from sustain to silence after note ends. Substrate analogue: substrate's offset-decay rate.",
+      "category": "envelope"
+    },
+    {
+      "name": "transient",
+      "definition": "Brief high-energy onset characterizing percussive + plucked sounds. Critical for instrument identification. Substrate analogue: substrate's high-derivative onset event.",
+      "category": "envelope"
+    },
+    {
+      "name": "noise",
+      "definition": "Aperiodic + irregular signal. White (flat spectrum), pink (1/f), brown (1/f²). Substrate analogue: substrate's high-entropy unstructured input.",
+      "category": "type"
+    },
+    {
+      "name": "tone",
+      "definition": "Periodic signal with defined pitch. Pure (sine) or complex (multiple harmonics). Substrate analogue: substrate's peaked gammatone output.",
+      "category": "type"
+    },
+    {
+      "name": "interval",
+      "definition": "Distance between two pitches, measured in semitones or ratios. Octave = 2:1, fifth = 3:2, fourth = 4:3. Substrate analogue: relational concept between two pitch detections.",
+      "category": "music_basic"
+    },
+    {
+      "name": "octave",
+      "definition": "12 semitone interval; 2:1 frequency ratio. Pitches an octave apart are heard as the same note class — chroma. Substrate analogue: substrate's modular pitch representation.",
+      "category": "music_basic"
+    },
+    {
+      "name": "semitone",
+      "definition": "Smallest interval in 12-TET = factor of 2^(1/12). Substrate analogue: substrate's discrete pitch quantum.",
+      "term": {
+        "type": "Eq",
+        "a": {
+          "type": "Lit",
+          "value": "Smallest interval in 12-TET"
+        },
+        "b": {
+          "type": "Lit",
+          "value": "factor of 2^(1/12)"
+        }
+      },
+      "category": "music_basic"
+    },
+    {
+      "name": "scale",
+      "definition": "Ordered set of pitches within an octave. Major, minor, modes, pentatonic. Substrate analogue: substrate's expected-pitch template.",
+      "category": "music_basic"
+    },
+    {
+      "name": "key",
+      "definition": "Tonal center; one pitch around which others gravitate. Major or minor mode. Substrate analogue: substrate's basin attractor for melodic prediction.",
+      "category": "music_basic"
+    },
+    {
+      "name": "mode",
+      "definition": "Specific pattern of intervals defining a scale. Dorian, Mixolydian, etc. Each has a distinctive flavor. Substrate analogue: substrate's per-context expectation pattern.",
+      "category": "music_basic"
+    },
+    {
+      "name": "melody",
+      "definition": "Sequence of pitches over time forming a coherent musical line. Substrate analogue: substrate's pitch-vs-time pattern.",
+      "category": "music_basic"
+    },
+    {
+      "name": "harmony",
+      "definition": "Simultaneous sounding of pitches — chords + progression. Substrate analogue: substrate's parallel pattern across pitch detectors.",
+      "category": "music_basic"
+    },
+    {
+      "name": "chord",
+      "definition": "Three or more pitches sounding together. Triads, sevenths, extensions. Substrate analogue: substrate's multi-peak gammatone state.",
+      "category": "music_basic"
+    },
+    {
+      "name": "counterpoint",
+      "definition": "Multiple independent melodic lines sounding simultaneously. Bach. Substrate analogue: substrate's parallel pitch-tracking.",
+      "category": "music_basic"
+    },
+    {
+      "name": "consonance",
+      "definition": "Pitches whose combination sounds stable + pleasant. Simple frequency ratios. Substrate analogue: substrate's low-frustration multi-pitch state.",
+      "category": "music_basic"
+    },
+    {
+      "name": "dissonance",
+      "definition": "Pitches whose combination sounds unstable + tense, demanding resolution. Substrate analogue: substrate's high-frustration multi-pitch state.",
+      "category": "music_basic"
+    },
+    {
+      "name": "rhythm",
+      "definition": "Pattern of durations + accents over time. Substrate analogue: substrate's temporal pattern of onset events.",
+      "category": "music_basic"
+    },
+    {
+      "name": "beat",
+      "definition": "Underlying pulse; the felt regular time-unit. Substrate analogue: substrate's tempo-tracker output.",
+      "category": "music_basic"
+    },
+    {
+      "name": "tempo",
+      "definition": "Speed of beats; bpm. Most natural ~120 bpm. Substrate analogue: substrate's clock-rate for music-related cortices.",
+      "category": "music_basic"
+    },
+    {
+      "name": "meter",
+      "definition": "Grouping of beats. 4/4 = four beats per bar. Strong + weak accents. Substrate analogue: substrate's higher-order temporal periodicity tracker.",
+      "category": "music_basic"
+    },
+    {
+      "name": "dynamics",
+      "definition": "Musical loudness levels. Pianissimo to fortissimo. Expressive variation. Substrate analogue: substrate's amplitude-modulation tracker.",
+      "category": "expression"
+    },
+    {
+      "name": "articulation",
+      "definition": "How notes are attacked + connected. Staccato vs legato. Substrate analogue: substrate's note-boundary detection.",
+      "category": "expression"
+    },
+    {
+      "name": "vibrato",
+      "definition": "Periodic frequency modulation, ~5-7 Hz. Vocal + string-instrument expression. Substrate analogue: substrate's frequency-modulation detector.",
+      "category": "expression"
+    }
+  ],
+  "rules": [
+    {
+      "name": "pitch_arises_from_periodicity",
+      "head": "the substrate detects periodic structure in audio input",
+      "body": "the period maps to a pitch via F0 estimation; the inverse of period in Hz is the pitch. Substrate's fundamental-frequency pipeline."
+    },
+    {
+      "name": "timbre_emerges_from_spectral_pattern",
+      "head": "two sounds have the same pitch but differ in instrument or vowel",
+      "body": "they differ in spectral envelope across gammatone channels. Substrate's timbre representation = multi-channel pattern, not a single value."
+    },
+    {
+      "name": "consonance_is_simple_frequency_ratios",
+      "head": "two pitches sound together in simple integer ratios (2:1, 3:2)",
+      "body": "the substrate computes low frustration / high coherence between their gammatone representations. Helmholtz 1863. Substrate's consonance detector."
+    },
+    {
+      "name": "beat_induction_from_temporal_pattern",
+      "head": "the substrate hears a repeated rhythmic pattern",
+      "body": "it extracts an underlying beat — the most parsimonious periodicity that fits the events. Large + Kolen 1994. Substrate's beat-tracking via temporal expectation."
+    },
+    {
+      "name": "tonal_hierarchy_emerges_from_exposure",
+      "head": "the substrate has heard much music in a given key",
+      "body": "it develops a hierarchy: tonic > dominant > mediant > others. Krumhansl 1990. Substrate's per-key basin landscape."
+    },
+    {
+      "name": "expectation_drives_musical_emotion",
+      "head": "the substrate hears music violating or fulfilling expectations",
+      "body": "the prediction error drives emotional response. Huron 2006 — substrate's coherence-drive on musical predictions."
+    }
+  ]
+}

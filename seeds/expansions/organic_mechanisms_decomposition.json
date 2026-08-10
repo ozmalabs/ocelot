@@ -1,0 +1,118 @@
+{
+  "id": "organic_mechanisms_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "SN1_SN2_substitution",
+  "in_microtheory": "materials_chemistry",
+  "description": "Organic mechanisms decomposed. SN1/SN2/E1/E2, electrophilic addition, nucleophilic addition, electrophilic aromatic substitution, radical reactions, organometallic, named reactions (Grignard, aldol, Diels-Alder), retrosynthesis.",
+  "sub_mechanisms": [
+    {
+      "name": "SN2_mechanism",
+      "definition": "Concerted backside attack. Inversion of stereochemistry. Rate = k[substrate][nucleophile].",
+      "why": "1° + good nucleophile + polar aprotic solvent. Inversion = Walden inversion. Standard organic.",
+      "category": "org_mech_mechanism"
+    },
+    {
+      "name": "SN1_carbocation",
+      "definition": "Stepwise. Substrate ionises to carbocation; nucleophile attacks. Racemisation.",
+      "why": "3° substrate + polar protic solvent. Carbocation stability: 3° > 2° > 1°. Standard.",
+      "category": "org_mech_mechanism"
+    },
+    {
+      "name": "E2_elimination",
+      "definition": "Concerted. Anti-periplanar H + leaving group eliminate. Forms alkene.",
+      "why": "Strong base + 2°/3° substrate. Zaitsev's rule: more substituted alkene. Stereospecific.",
+      "category": "org_mech_mechanism"
+    },
+    {
+      "name": "E1_elimination",
+      "definition": "Stepwise via carbocation. Weak base + 3° substrate.",
+      "why": "Same carbocation as SN1. Competes with SN1. Product = alkene (Saytzeff).",
+      "category": "org_mech_mechanism"
+    },
+    {
+      "name": "electrophilic_addition_alkene",
+      "definition": "Alkene + electrophile (HBr, Br2). Markovnikov: H to C with more H. Anti-Markovnikov (peroxide).",
+      "why": "Foundation alkene chemistry. Halogenation, hydration, hydrohalogenation. Standard.",
+      "category": "org_mech_mechanism"
+    },
+    {
+      "name": "EAS_aromatic_substitution",
+      "definition": "Electrophilic Aromatic Substitution. Arene + electrophile. Sigma complex intermediate.",
+      "why": "Benzene reactions. Nitration, halogenation, Friedel-Crafts. Substituent effects (ortho/para vs meta).",
+      "category": "org_mech_mechanism"
+    },
+    {
+      "name": "nucleophilic_addition_carbonyl",
+      "definition": "C=O + nucleophile → alcohol or related. Aldehydes more reactive than ketones.",
+      "why": "Grignard, hydride reductions, aldol, etc. Foundation of carbonyl chemistry.",
+      "category": "org_mech_mechanism"
+    },
+    {
+      "name": "Grignard_reaction",
+      "definition": "R-MgX + carbonyl → alcohol. RMgX prepared from R-X + Mg.",
+      "why": "Forms C-C bonds. Foundation of organic synthesis. Versatile. Sensitive to water + air.",
+      "category": "org_mech_mechanism"
+    },
+    {
+      "name": "aldol_reaction",
+      "definition": "Enolate + carbonyl → β-hydroxyaldehyde/ketone. Often followed by dehydration to enone.",
+      "why": "C-C bond formation. Common in natural product synthesis + biology (citric acid cycle).",
+      "category": "org_mech_mechanism"
+    },
+    {
+      "name": "Diels_Alder",
+      "definition": "Diene + dienophile → cyclohexene. [4+2] cycloaddition. Stereospecific.",
+      "why": "Powerful ring formation. Nobel 1950. Used in steroid + terpene synthesis. Concerted via cyclic TS.",
+      "category": "org_mech_mechanism"
+    },
+    {
+      "name": "radical_chain_reactions",
+      "definition": "Initiation, propagation, termination. Halogenation of alkanes.",
+      "why": "Industrial: polyethylene polymerisation, chlorination. Atmospheric chemistry (ozone). Foundation.",
+      "category": "org_mech_mechanism"
+    },
+    {
+      "name": "retrosynthesis",
+      "definition": "Plan backward from target. Disconnect bonds; identify synthons + reagents.",
+      "why": "Corey's framework. Foundation of synthesis design. Computer-aided synthesis tools now leverage. Nobel 1990.",
+      "category": "org_mech_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "SN1_vs_SN2_substrate_dependence",
+      "if": ["substrate is 3°"],
+      "then": ["SN1 favored over SN2"],
+      "why": "3° carbocation stable; steric hindrance to backside attack. 1°: opposite. 2°: depends on conditions. Foundation.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "Markovnikov_via_more_stable_carbocation",
+      "if": ["HX adds to alkene"],
+      "then": ["H goes to less substituted C (more stable carbocation forms)"],
+      "why": "Carbocation stability: 3° > 2° > 1°. Mechanism follows lowest energy path. Universal addition rule.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "Diels_Alder_concerted_stereospecific",
+      "if": ["DA reaction occurs"],
+      "then": ["stereochemistry of diene + dienophile preserved in product"],
+      "why": "Concerted: no intermediate. cis-dienophile → cis-product. Endo preferred (secondary orbital interactions). Standard.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "retrosynthesis_starts_from_target",
+      "if": ["complex molecule must be synthesised"],
+      "then": ["retrosynthetic analysis simplifies"],
+      "why": "Forward: combinatorial explosion. Backward: focused on bonds in target. Corey's method. Standard modern synthesis.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "EAS_substituents_direct_position",
+      "if": ["benzene ring has substituent"],
+      "then": ["next EAS goes ortho/para (activating) or meta (deactivating)"],
+      "why": "OR, NR2: o/p directors + activators. NO2, COOH: m directors + deactivators. Resonance + induction. Standard.",
+      "soundness_category": "denotational_equivalence"
+    }
+  ]
+}

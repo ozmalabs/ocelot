@@ -1,0 +1,118 @@
+{
+  "id": "http2_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "HTTP_2",
+  "in_microtheory": "network_protocols",
+  "description": "HTTP/2 decomposed. Binary framing replaces HTTP/1.1's text protocol. Streams multiplex over one TCP connection. HPACK compresses repeated headers. Server push, prioritisation, flow control. The protocol fixed HTTP/1.1's head-of-line blocking at the HTTP layer but left it at the TCP layer — motivating HTTP/3.",
+  "sub_mechanisms": [
+    {
+      "name": "binary_framing_layer",
+      "definition": "All HTTP/2 messages are sequences of binary frames. Frame header: length (24-bit), type (8-bit), flags (8-bit), stream ID (31-bit). Followed by payload.",
+      "why": "Binary parsing is faster than HTTP/1.1's text parsing (multiple state machines for whitespace, headers, line endings). Length-prefixed frames make framing unambiguous. The substrate for everything HTTP/2 does.",
+      "category": "http2_mechanism"
+    },
+    {
+      "name": "stream_concept",
+      "definition": "A logical bidirectional sequence of frames within a connection. Each stream has an ID, state machine, priority, flow control window.",
+      "why": "Streams are HTTP/2's multiplexing unit. Each request/response is one stream; many streams concurrent within a single TCP connection. Eliminates HTTP/1.1's connection-per-resource overhead.",
+      "category": "http2_mechanism"
+    },
+    {
+      "name": "frame_types",
+      "definition": "DATA (request/response body), HEADERS, PRIORITY, RST_STREAM, SETTINGS, PUSH_PROMISE, PING, GOAWAY, WINDOW_UPDATE, CONTINUATION.",
+      "why": "Each type is a specific protocol operation. Frames are typed for unambiguous handling. Adding new functionality is a new frame type — extensible while remaining backward-compatible.",
+      "category": "http2_mechanism"
+    },
+    {
+      "name": "HPACK_static_table",
+      "definition": "61 pre-defined common header (name, value) pairs. Sender encodes a header as just the index into the table — 1-2 bytes.",
+      "why": "Many headers are universal: :method GET, :path /, content-type text/html. Indexing them eliminates per-request encoding. Single-byte representations of the most common headers.",
+      "category": "http2_mechanism"
+    },
+    {
+      "name": "HPACK_dynamic_table",
+      "definition": "Per-connection table of headers seen in this connection. New headers append to it; old ones evict (FIFO). Senders reference recent headers by index.",
+      "why": "Cookies, user-agent, host headers repeat. Dynamic table makes the second occurrence cheap (an index). Per-connection state; reset on connection restart.",
+      "category": "http2_mechanism"
+    },
+    {
+      "name": "HPACK_huffman_encoding",
+      "definition": "Header strings can be Huffman-encoded with a static table optimised for ASCII characters common in headers.",
+      "why": "After indexing common headers, the remaining text (paths, custom header values) still benefits from byte-level compression. Huffman with a fixed table gives ~30% size reduction without per-connection state.",
+      "category": "http2_mechanism"
+    },
+    {
+      "name": "stream_prioritisation",
+      "definition": "Streams have parent + weight. Servers should serve high-priority streams (CSS, JS) before low-priority (images below the fold).",
+      "why": "Bandwidth allocation: critical-path resources first. Browser indicates priorities; well-behaved server respects them. In practice, implementations vary; HTTP/3 retried this with a simpler design.",
+      "category": "http2_mechanism"
+    },
+    {
+      "name": "flow_control_window",
+      "definition": "Per-stream and connection-wide window. Receiver signals available buffer space via WINDOW_UPDATE; sender stops if window is empty.",
+      "why": "Prevents fast sender from overwhelming slow receiver. Per-stream lets some streams be paused without blocking others. Initial windows configurable via SETTINGS (defaults to 65535 bytes).",
+      "category": "http2_mechanism"
+    },
+    {
+      "name": "server_push_PUSH_PROMISE",
+      "definition": "Server proactively sends resources before client requests them. E.g., when sending index.html, push the linked CSS + JS too.",
+      "why": "Saves the RTT of client parsing HTML, requesting CSS. Limited success in practice: server doesn't know what the client has cached, so often pushes unnecessary content. Deprecated in HTTP/3 + many HTTP/2 implementations.",
+      "category": "http2_mechanism"
+    },
+    {
+      "name": "SETTINGS_frame",
+      "definition": "Frame exchanging per-connection parameters: max frame size, max concurrent streams, initial flow-control window, header table size.",
+      "why": "Per-connection configuration. Allows endpoints to adapt parameters during the connection's lifetime. Negotiated mutually; both peers must respect each other's SETTINGS.",
+      "category": "http2_mechanism"
+    },
+    {
+      "name": "GOAWAY_graceful_shutdown",
+      "definition": "Frame indicating no new streams should be initiated. Reports last successfully processed stream ID. Existing streams continue.",
+      "why": "Graceful shutdown without dropping in-flight requests. Server can rotate connections without disrupting users. Standard load-balancer drain procedure.",
+      "category": "http2_mechanism"
+    },
+    {
+      "name": "HOL_blocking_at_TCP_level",
+      "definition": "HTTP/2 multiplexing solves L7 HOL — many streams concurrent. But if a TCP packet is lost, ALL streams stall until retransmit (TCP delivers in-order).",
+      "why": "TCP doesn't know about HTTP/2 streams. One packet loss blocks the entire byte stream. HTTP/2 over a lossy link can be SLOWER than HTTP/1.1 over multiple connections. The primary motivation for HTTP/3 + QUIC.",
+      "category": "http2_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "multiplexing_eliminates_HOL_blocking_at_HTTP_layer",
+      "if": ["multiple streams share one connection"],
+      "then": ["one stream's blocking doesn't block others at the HTTP level"],
+      "why": "HTTP/1.1 was strictly serial per connection; one slow response blocked all subsequent requests. HTTP/2 streams are independent — a slow image stream doesn't block a fast HTML stream. Massive page load improvement for resource-heavy sites.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "HPACK_amortises_header_cost_per_connection",
+      "if": ["multiple requests in a connection share common headers"],
+      "then": ["repeat headers cost near-zero bytes after the first occurrence"],
+      "why": "Static table covers universally-common headers (~10 bytes saved per request). Dynamic table covers connection-specific repeats (cookies, user-agent). Total header reduction: 50-90% for typical multi-request connections.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "binary_framing_faster_to_parse",
+      "if": ["protocol uses length-prefixed binary frames"],
+      "then": ["parser cost is bounded and predictable"],
+      "why": "HTTP/1.1 text parsing needs state machines for line endings, whitespace, header continuations. Binary frames have fixed-size headers + explicit length — no parsing decisions. Faster + more secure (less attack surface).",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "TCP_layer_HOL_motivates_QUIC",
+      "if": ["multiplexing is done over a single TCP connection"],
+      "then": ["TCP-level packet loss blocks all multiplexed streams"],
+      "why": "HTTP/2 solved HTTP-layer HOL but couldn't reach below TCP. TCP delivers the byte stream in order — one lost packet stalls everything. QUIC moves multiplexing below the reliability layer; per-stream loss only affects that stream.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "server_push_disappointed_in_practice",
+      "if": ["the server doesn't know what the client has cached"],
+      "then": ["pushed resources are often wasted"],
+      "why": "Server can push CSS thinking client needs it; client may have it cached. Push is wasted bandwidth + slot. Cache digests (cache_digest header) were proposed but not adopted. Major browsers removed push support in 2022; HTTP/3 removed it from spec.",
+      "soundness_category": "extensional_equivalence"
+    }
+  ]
+}

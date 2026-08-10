@@ -1,0 +1,112 @@
+{
+  "id": "trie_suffix_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "trie",
+  "in_microtheory": "data_structures_algorithms",
+  "description": "Tries + suffix structures decomposed. Standard trie for prefix lookup. Compressed trie / radix tree for space. Aho-Corasick for multi-pattern matching. Suffix tree + suffix array for substring queries. Each variant trades construction time, query time, and space for different patterns of use.",
+  "sub_mechanisms": [
+    {
+      "name": "trie_per_character_edge",
+      "definition": "Each node has child pointers indexed by character. Path from root to a node spells a prefix.",
+      "why": "O(m) lookup where m is key length. Independent of dictionary size. Used in autocomplete, spell-check, T9 predictive text. Space: O(σ · total_chars) where σ is alphabet size.",
+      "category": "trie_mechanism"
+    },
+    {
+      "name": "trie_end_of_word_marker",
+      "definition": "Nodes carry a boolean (or value pointer): 'this prefix is itself a complete word'. Distinguishes 'inter' (prefix of 'interesting') from inserted 'inter'.",
+      "why": "Without it, you couldn't distinguish 'inserted as a key' from 'happens to be a prefix'. End-of-word marker is what makes a trie a set/map vs just a prefix structure.",
+      "category": "trie_mechanism"
+    },
+    {
+      "name": "compressed_trie_radix",
+      "definition": "Merge single-child chains into one edge labelled with the substring. Reduces space dramatically when most strings share long prefixes.",
+      "why": "Original trie wastes space on long single-child chains (e.g., one rare word adds many nodes). Radix tree merges them. Used in IP routing tables (LPC, levelled radix trees), file system indexes.",
+      "category": "trie_mechanism"
+    },
+    {
+      "name": "patricia_trie",
+      "definition": "Compressed binary trie: each non-leaf branches on a specific bit position. Used for IP routing, bit-string indexing.",
+      "why": "Optimal for binary alphabets. Each internal node tests one bit; path encodes the prefix bit-by-bit. Used in Linux kernel for IPv4/v6 routing tables.",
+      "category": "trie_mechanism"
+    },
+    {
+      "name": "aho_corasick_automaton",
+      "definition": "Trie of patterns + failure links pointing to longest proper suffix that's also a prefix in the trie.",
+      "why": "Multi-pattern matching in O(text + total_pattern_length + matches). Find all occurrences of N patterns in one pass over text. Used in network IDS (Snort), grep -F, virus scanners.",
+      "category": "trie_mechanism"
+    },
+    {
+      "name": "aho_corasick_failure_links",
+      "definition": "On mismatch, jump to the failure link: longest proper suffix of current state that's also a state. Continue matching from there.",
+      "why": "Generalisation of KMP's failure function to multiple patterns. Computed by BFS over the trie. Without failure links, multi-pattern matching would restart at root on each mismatch — O(text × patterns) instead of O(text).",
+      "category": "trie_mechanism"
+    },
+    {
+      "name": "suffix_tree",
+      "definition": "Compressed trie of all suffixes of a string. Internal nodes represent shared prefixes; leaves represent suffixes (and their start positions).",
+      "why": "Substring queries in O(m). Build in O(n) (Ukkonen's algorithm). Used in bioinformatics (sequence analysis), substring search engines. Powerful but high constant + space (~20× input size).",
+      "category": "trie_mechanism"
+    },
+    {
+      "name": "suffix_array",
+      "definition": "Sorted array of all suffix start positions of a string. Smaller + simpler than suffix tree.",
+      "why": "~4× input space (vs ~20× for suffix tree). Sort-based construction is conceptually simple; O(n log² n) or O(n log n) algorithms. Search via binary search: O(m log n). Used in compression (BWT), bioinformatics.",
+      "category": "trie_mechanism"
+    },
+    {
+      "name": "longest_common_prefix_LCP_array",
+      "definition": "Auxiliary array alongside suffix array: LCP[i] = length of longest common prefix between suffix at sa[i] and sa[i-1].",
+      "why": "Many suffix-array algorithms (longest repeated substring, range LCP queries) reduce to LCP queries. Built in O(n) given suffix array (Kasai's algorithm).",
+      "category": "trie_mechanism"
+    },
+    {
+      "name": "trie_for_IP_routing",
+      "definition": "Routers store IP prefix → outgoing interface in a binary trie (or compressed variant). Longest prefix match: descend deepest matching node.",
+      "why": "IP routing tables have ~1M prefixes. Trie lookup is O(32) for IPv4 / O(128) for IPv6 in worst case. Real routers use hardware-accelerated tries (TCAM) for line-rate forwarding.",
+      "category": "trie_mechanism"
+    },
+    {
+      "name": "trie_memory_overhead",
+      "definition": "Standard trie with σ-sized child arrays: O(σ) per node. For σ = 256 (bytes), 1 KB per node — wasteful for sparse children.",
+      "why": "Compact trie variants address this: hash-trie (lazy child map), array-mapped trie (variable-size children), compressed prefixes. Real-world tries use one of these to control memory.",
+      "category": "trie_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "trie_lookup_independent_of_dictionary_size",
+      "if": ["a trie holds N words and lookup target has length m"],
+      "then": ["lookup is O(m)"],
+      "why": "Path length depends only on target's length. Dictionary size affects space + tree width but not lookup time. The 'index-by-character' approach turns N-way comparison into m-way path traversal.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "compressed_trie_avoids_unary_chains",
+      "if": ["a trie has long single-child paths"],
+      "then": ["compression merges them into edges with multi-char labels"],
+      "why": "Rare strings (e.g., 'pneumonoultramicroscopic...') create deep chains in standard trie. Compression collapses them: one edge with the full substring. Space drops from O(total_chars) to O(num_distinct_branches + total_chars in labels).",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "aho_corasick_processes_text_in_one_pass",
+      "if": ["patterns are pre-built into an Aho-Corasick automaton"],
+      "then": ["all pattern occurrences are found in O(text + matches)"],
+      "why": "Each character of text → one automaton transition. Failure links keep the work linear (each character is processed once, plus failure jumps that amortise). The breakthrough vs naive O(text × patterns) multi-search.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "suffix_array_smaller_than_suffix_tree",
+      "if": ["substring queries are needed but memory is constrained"],
+      "then": ["suffix array's O(n) space outperforms suffix tree's O(n) but with smaller constant"],
+      "why": "Suffix array: 4×n bytes (just integers). Suffix tree: 15-20×n bytes (nodes + pointers). Bioinformatics + search-engine indexes typically use suffix arrays + LCP for this reason.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "IP_routing_uses_trie_for_line_rate_lookup",
+      "if": ["routers must look up destination prefixes at line rate"],
+      "then": ["trie (often hardware-accelerated) is the standard"],
+      "why": "Hash table can't do longest-prefix-match (need to test all prefix lengths). Binary search on sorted prefixes is O(log n) but cache-unfriendly. Trie does LPM naturally + can be hardware-accelerated via TCAM. Industry standard for routing.",
+      "soundness_category": "cost_equivalence"
+    }
+  ]
+}

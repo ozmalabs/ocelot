@@ -1,0 +1,118 @@
+{
+  "id": "ipc_mechanisms_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "shared_memory",
+  "in_microtheory": "operating_systems",
+  "description": "IPC mechanisms decomposed across the spectrum: pipes (simple byte streams), Unix domain sockets (rich semantics + fd passing), shared memory + futex (highest throughput), signals (async notification), eventfd + signalfd + timerfd (modern Linux event integration), io_uring (covered in network), memfd_create. The trade-offs in latency, throughput, complexity, and what each is good for.",
+  "sub_mechanisms": [
+    {
+      "name": "anonymous_pipe",
+      "definition": "pipe() returns two fds: read end + write end. Bytes written to one come out the other. Kernel buffers ~64 KB.",
+      "why": "Simplest IPC. Survives fork (child + parent both have fds). Foundation of shell pipelines. Cost: kernel buffer + read/write copies vs shared memory.",
+      "category": "ipc_pack_mechanism"
+    },
+    {
+      "name": "pipe_blocking_semantics",
+      "definition": "Writer blocks when buffer full; reader blocks when buffer empty. EOF when all write ends closed.",
+      "why": "Natural flow control. SIGPIPE on write to a pipe with no readers. O_NONBLOCK flag enables polling instead of blocking. Standard producer-consumer semantics.",
+      "category": "ipc_pack_mechanism"
+    },
+    {
+      "name": "unix_socket_stream",
+      "definition": "AF_UNIX SOCK_STREAM. Bidirectional, ordered, reliable byte stream between processes on same host.",
+      "why": "Most-featured local IPC. Connection-oriented (accept + connect). Used by X11, postgresql, docker.sock. Avoids loopback TCP's overhead (no checksums, no fragmentation).",
+      "category": "ipc_pack_mechanism"
+    },
+    {
+      "name": "unix_socket_dgram",
+      "definition": "AF_UNIX SOCK_DGRAM. Connectionless, message-oriented, reliable on local host.",
+      "why": "Message boundaries preserved (vs SOCK_STREAM's byte stream). Used for short request-reply protocols. systemd uses for sd-bus.",
+      "category": "ipc_pack_mechanism"
+    },
+    {
+      "name": "fd_passing_SCM_RIGHTS",
+      "definition": "Unix socket can carry file descriptors via SCM_RIGHTS ancillary data. Receiver gets a duplicate of the sender's fd.",
+      "why": "Lets one process pass open files/sockets to another. Used by browser sandboxes (privileged process opens, passes fd to sandbox). Daemon supervisors (systemd's socket activation).",
+      "category": "ipc_pack_mechanism"
+    },
+    {
+      "name": "shm_open_memfd",
+      "definition": "Modern shared memory: shm_open(name) or memfd_create(name) returns fd; mmap it for shared access.",
+      "why": "Replaces legacy SysV shm. fd-based interface integrates with select/poll/CLOEXEC/sendfile/etc. memfd_create with MFD_SEAL prevents truncation/write — useful for safely sharing.",
+      "category": "ipc_pack_mechanism"
+    },
+    {
+      "name": "POSIX_signals_realtime",
+      "definition": "SIGRTMIN..SIGRTMAX (32-64): real-time signals queued + carry a payload (sigval). Standard signals are not queued.",
+      "why": "Standard signals coalesce: multiple identical signals before handling become one. RT signals queue + carry data → reliable async notification. Used by some servers for fd-ready notification (deprecated in favour of eventfd).",
+      "category": "ipc_pack_mechanism"
+    },
+    {
+      "name": "eventfd",
+      "definition": "fd that holds a 64-bit counter. write adds; read returns (and clears or decrements). Wakeable via poll/epoll.",
+      "why": "Lightweight signalling. One process writes; another reads. Integrates with epoll. Replaces self-pipe trick. Used by libraries to signal events to event loops.",
+      "category": "ipc_pack_mechanism"
+    },
+    {
+      "name": "signalfd",
+      "definition": "fd that delivers signals. read returns signalfd_siginfo per pending signal. Integrates with poll/epoll.",
+      "why": "Synchronous signal handling: no async-safe constraints. Process can read signals as data from event loop. Critical for sane signal handling in modern code; the alternative (async handlers) is a minefield.",
+      "category": "ipc_pack_mechanism"
+    },
+    {
+      "name": "timerfd",
+      "definition": "fd that fires on timer expiration. Set timeout via timerfd_settime. Read returns expiration count. Integrates with poll/epoll.",
+      "why": "Lets timers integrate with event loop. Alternative to signal-based timers (SIGALRM). Each fd = one timer; combine many in epoll.",
+      "category": "ipc_pack_mechanism"
+    },
+    {
+      "name": "dbus_messaging",
+      "definition": "D-Bus: high-level IPC bus on Linux. Brokered: messages go through dbus-daemon. Used by systemd, GNOME, KDE.",
+      "why": "Structured messaging with names + signatures + signals + properties. Higher-level than raw sockets. Cost: broker overhead. Modern: kdbus/bus1 attempted to move into kernel (failed); sd-bus is more efficient than dbus-daemon for systemd's use.",
+      "category": "ipc_pack_mechanism"
+    },
+    {
+      "name": "shared_memory_with_futex",
+      "definition": "Shared memory region + futex on a shared variable inside it. Producer + consumer coordinate via futex_wait/wake.",
+      "why": "Highest-throughput IPC. Zero-copy data exchange. Futex for synchronisation. Used in: LMAX Disruptor, network packet rings (DPDK, AF_XDP), database shared buffers.",
+      "category": "ipc_pack_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "shared_memory_zero_copy_beats_pipes",
+      "if": ["bulk data is exchanged frequently between processes"],
+      "then": ["shared memory beats pipes/sockets at throughput"],
+      "why": "Pipes: kernel buffer + 2 copies (user→kernel + kernel→user). Sockets: same. Shared memory: zero copy, direct memory access. For GB/s throughput, shared memory is the only option.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "fd_passing_safer_than_path_based_sharing",
+      "if": ["a process needs another to access an opened resource"],
+      "then": ["fd passing avoids race conditions of path-based sharing"],
+      "why": "Path can change between processes (TOCTOU). fd refers to a specific file description. Browser sandboxes use this: privileged opens, sandboxed accesses via passed fd. The file might not even be accessible by name to the receiver.",
+      "soundness_category": "referential_transparency"
+    },
+    {
+      "name": "signalfd_avoids_async_signal_minefield",
+      "if": ["a process handles signals via signalfd"],
+      "then": ["it avoids async-signal-safe constraints"],
+      "why": "Async handler: only ~50 safe syscalls. signalfd handler: any code, runs in normal context. Modern code uses signalfd or self-pipe trick precisely to escape async constraints.",
+      "soundness_category": "referential_transparency"
+    },
+    {
+      "name": "eventfd_integrates_signalling_with_epoll",
+      "if": ["a thread needs to signal another's event loop"],
+      "then": ["eventfd integrates naturally with epoll/select"],
+      "why": "Standalone signals require special handling in event loop. eventfd is just an fd — same code path as sockets, pipes. One eventfd per event source. The modern Linux pattern.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "pipe_buffer_provides_flow_control",
+      "if": ["a slow consumer reads from a pipe"],
+      "then": ["the producer blocks when buffer fills"],
+      "why": "Natural backpressure without explicit signalling. Producer can't outrun consumer. Standard shell pipeline behaviour. Failure mode (SIGPIPE on broken pipe) signals consumer death cleanly.",
+      "soundness_category": "extensional_equivalence"
+    }
+  ]
+}

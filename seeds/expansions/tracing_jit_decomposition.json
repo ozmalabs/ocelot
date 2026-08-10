@@ -1,0 +1,118 @@
+{
+  "id": "tracing_jit_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "tracing_JIT",
+  "in_microtheory": "compilers",
+  "description": "Tracing JIT decomposed. Trace recording, trace compilation, guards, deoptimisation, side exits, trace stitching. LuaJIT's design as the canonical example. Why tracing JITs excel at hot inner loops in dynamic languages + fail when traces don't form.",
+  "sub_mechanisms": [
+    {
+      "name": "trace_recording",
+      "definition": "When a hot loop is detected, record the exact sequence of instructions executed during the next iteration. Each operation is captured.",
+      "why": "Specialises to the actually-executed path. Cuts across function boundaries (inlining). Captures observed types. The recording mode is the JIT's information-gathering phase.",
+      "category": "tracing_jit_mechanism"
+    },
+    {
+      "name": "trace_anchor",
+      "definition": "Point where tracing begins (typically a loop back-edge). Subsequent execution is recorded into the trace until reaching the anchor again.",
+      "why": "Loop-centric: traces represent loop iterations. Anchor + body form the optimisation unit. Function entry can also be an anchor for non-loop hot paths.",
+      "category": "tracing_jit_mechanism"
+    },
+    {
+      "name": "guard",
+      "definition": "Runtime check inserted into the trace that the assumption (type, value, control flow) holds. On failure, exit the trace.",
+      "why": "Trace specialises to observed conditions. Guard verifies they still hold. Compiles to a single compare + jump in fast path; failure jumps to deoptimisation. Critical for trace correctness.",
+      "category": "tracing_jit_mechanism"
+    },
+    {
+      "name": "side_exit",
+      "definition": "When a guard fails, the trace exits to the interpreter or a different trace. Side exits are jump targets.",
+      "why": "Failed assumption means optimised code can't continue. Side exit transfers control safely. Implementation: each guard generates a small exit stub that restores interpreter state.",
+      "category": "tracing_jit_mechanism"
+    },
+    {
+      "name": "trace_compilation",
+      "definition": "After recording, optimise + compile the trace. Linear code (no branches except guards) — easier than general optimisation.",
+      "why": "Linear traces are easier to optimise than general CFGs. Constant propagation, CSE, scalar replacement all straightforward. The simplicity is part of tracing JIT's appeal.",
+      "category": "tracing_jit_mechanism"
+    },
+    {
+      "name": "trace_specialisation",
+      "definition": "Trace assumes specific types + values observed during recording. e.g., recorded with x being an integer, trace assumes integer for all subsequent execution.",
+      "why": "Specialised code is fast (no dispatch, direct ops). Guards enforce the assumption. Win when assumption holds; cost when it doesn't (deopt + retrace).",
+      "category": "tracing_jit_mechanism"
+    },
+    {
+      "name": "trace_stitching",
+      "definition": "Chain multiple traces together: end of trace A jumps to start of trace B if the appropriate condition holds.",
+      "why": "Complex control flow has multiple traces (one per common path). Stitching connects them, eliminating interpreter round-trips between traces. PyPy + LuaJIT use this extensively.",
+      "category": "tracing_jit_mechanism"
+    },
+    {
+      "name": "trace_explosion",
+      "definition": "Pathological case: highly variable execution patterns generate many traces, each covering small fraction of execution. Compile cost dominates.",
+      "why": "Tracing assumes most execution follows few hot paths. When this fails (highly polymorphic code), the JIT produces too many specialised traces. Threshold tuning + giving up to fall back to interpreter mitigate.",
+      "category": "tracing_jit_mechanism"
+    },
+    {
+      "name": "LuaJIT_design",
+      "definition": "Mike Pall's tracing JIT for Lua. Records bytecode-level traces, compiles via a sophisticated IR (LuaJIT IR), emits machine code directly.",
+      "why": "Often the fastest JIT for dynamic-language code. Demonstrates tracing's strengths. LuaJIT outperforms many statically-compiled languages on suitable workloads. Influenced PyPy + many later JITs.",
+      "category": "tracing_jit_mechanism"
+    },
+    {
+      "name": "PyPy_meta_tracing",
+      "definition": "PyPy's approach: generate a tracing JIT from an interpreter description. The JIT traces the interpreter's execution of user code.",
+      "why": "Meta-tracing means writing one tracing JIT generator + many interpreters get tracing for free. PyPy applies this to Python; the resulting JIT exceeds CPython by 10x+ on hot code. Generalises tracing to any interpreter.",
+      "category": "tracing_jit_mechanism"
+    },
+    {
+      "name": "TraceMonkey_history",
+      "definition": "Early Firefox JavaScript JIT (2008). Pioneered tracing for JavaScript. Replaced by IonMonkey (method JIT) in 2012.",
+      "why": "Historical: traced JavaScript was viable but had trace-explosion issues on real web code. Method JIT (whole-function compilation) proved more robust for the JS ecosystem. Tracing remained dominant for Lua.",
+      "category": "tracing_jit_mechanism"
+    },
+    {
+      "name": "blackhole_interpreter",
+      "definition": "Interpreter state at the side-exit point, used to resume execution when a trace deoptimises.",
+      "why": "Deoptimisation requires reconstructing the interpreter's view. Blackhole interp runs from the side-exit's state. Critical for correctness: optimised code must safely transition back to interpreter on assumption failure.",
+      "category": "tracing_jit_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "tracing_specialises_to_observed_path",
+      "if": ["a trace records execution through one specific control-flow path"],
+      "then": ["compiled code is specialised to that path"],
+      "why": "Linear trace has no branches except guards. Aggressive optimisations (constant propagation, scalar replacement, inlining) apply without merge-point complications. Optimised trace beats general compilation for the recorded path.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "guards_enable_specialisation_safely",
+      "if": ["a guard verifies an assumption"],
+      "then": ["trace specialisation based on that assumption is sound"],
+      "why": "Without guards, specialised code could execute on wrong types/values. Guards check at runtime; failure exits to safe code. Trade-off: more guards = more overhead; fewer = less safe. JITs tune guard placement carefully.",
+      "soundness_category": "referential_transparency"
+    },
+    {
+      "name": "tracing_excels_on_loop_intensive_dynamic_code",
+      "if": ["program has hot inner loops with consistent types"],
+      "then": ["tracing JIT outperforms method JIT"],
+      "why": "Traces capture exactly the hot path; guards specialise to observed types. LuaJIT outperforms most JITs on numeric Lua code for this reason. Loop-heavy benchmarks favour tracing; control-flow-heavy code favours method JITs.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "trace_explosion_limits_tracing_applicability",
+      "if": ["program has highly variable execution paths"],
+      "then": ["tracing JIT produces many specialised traces; performance degrades"],
+      "why": "Each unique path becomes a trace. Compile cost grows; cache locality drops; fallback to interpreter common. Method JITs handle this better — they compile whole functions, not paths. TraceMonkey's failure on real web code drove Firefox to method JITs.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "meta_tracing_amortises_JIT_construction",
+      "if": ["a meta-tracing system traces an interpreter's execution"],
+      "then": ["the interpreter implicitly defines a JIT for its language"],
+      "why": "Write the interpreter once, get JIT for free via meta-tracing. PyPy demonstrates this for Python. RPython framework generates the tracing JIT from interpreter source. Generalises tracing to any interpreter without rewriting the JIT for each language.",
+      "soundness_category": "extensional_equivalence"
+    }
+  ]
+}

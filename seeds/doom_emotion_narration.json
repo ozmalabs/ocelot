@@ -1,0 +1,2579 @@
+{
+ "id": "doom_emotion_narration",
+ "version": "1.0.0",
+ "self_load_only": true,
+ "depends_on": [
+  "drives",
+  "modulators"
+ ],
+ "area": "retina",
+ "description": "MODULATOR-DRIVEN DOOM EMOTION NARRATION (block 208000). Fuses 205000 active exploration with 207000 emergent-emotion regions. ONE new graph RULE `dem_drive_feed` (the appraisal: raw play observables ev_* on the play Drive -> the MicroPsi demand config + appraisal flags, a 7-way priority ladder as nested IfThenElse) and a narration LEXICON (EmotionNarration nodes, one per emotion code, FIXED template). The rule NEVER writes a hit_*/emotion attr -- the untouched 207000 modulator + region rules classify; the adapter reads ms.emotion and formats the matching template (mechanical emit). Guarded default-OFF on ModulatorState.enabled AND a play_fed drive flag set only by this rung's adapter; absent them every existing path (207000 canonical + 205000 exploration) is byte-identical. Integer-native, NO Rust, NO new Term.",
+ "microtheory": {
+  "name": "doom_emotion_narration",
+  "description": "As the exploration agent plays, the drive-feed appraisal maps live play observables to the drive's demand configuration; the 207000 modulators + region predicates fire the emotion; the agent narrates the graph's emotion via a template lexicon. The emotion is the graph's; the wording is a lexicon."
+ },
+ "nodes": [
+  {
+   "local_id": 1,
+   "type": "EmotionNarration",
+   "attrs": {
+    "code": 1.0,
+    "emotion_name": "surprise",
+    "tendency": "ORIENT",
+    "template": "New ground just opened up ahead \u2014 let me look at what appeared."
+   }
+  },
+  {
+   "local_id": 2,
+   "type": "EmotionNarration",
+   "attrs": {
+    "code": 5.0,
+    "emotion_name": "frustration",
+    "tendency": "PERSIST",
+    "template": "I'm pushing at this frontier and getting nowhere. I'll keep at it."
+   }
+  },
+  {
+   "local_id": 3,
+   "type": "EmotionNarration",
+   "attrs": {
+    "code": 7.0,
+    "emotion_name": "joy",
+    "tendency": "REINFORCE",
+    "template": "A stretch of new map just fell into place \u2014 more of this level is mine now."
+   }
+  },
+  {
+   "local_id": 4,
+   "type": "EmotionNarration",
+   "attrs": {
+    "code": 8.0,
+    "emotion_name": "sadness",
+    "tendency": "DISENGAGE",
+    "template": "That lead went cold and there's nowhere left to take it. I'll let it go."
+   }
+  },
+  {
+   "local_id": 5,
+   "type": "EmotionNarration",
+   "attrs": {
+    "code": 9.0,
+    "emotion_name": "curiosity",
+    "tendency": "ENGAGE",
+    "template": "Something to learn this way \u2014 I'm drawn onward into it."
+   }
+  },
+  {
+   "local_id": 6,
+   "type": "EmotionNarration",
+   "attrs": {
+    "code": 10.0,
+    "emotion_name": "boredom",
+    "tendency": "LEAVE",
+    "template": "Nothing new here anymore. Time to move on somewhere else."
+   }
+  }
+ ],
+ "edges": [],
+ "productions": [],
+ "rules": [
+  {
+   "name": "dem_drive_feed",
+   "area": "retina",
+   "order": 0,
+   "latency_class": "hard_realtime",
+   "match": [
+    [
+     "ms",
+     "has_active_drive",
+     "d"
+    ],
+    [
+     "ms",
+     "leading_drive",
+     "d"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ms"
+       },
+       "key": "enabled"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "d"
+       },
+       "key": "play_fed"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "d",
+     "appraised",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gte",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "d"
+         },
+         "key": "ev_novel"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "d"
+         },
+         "key": "novel_hi"
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": 0.0
+       },
+       "other": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "d"
+          },
+          "key": "ev_unreach"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1.0
+         }
+        },
+        "then": {
+         "type": "Lit",
+         "value": 1.0
+        },
+        "other": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "d"
+           },
+           "key": "ev_arrived"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 1.0
+          }
+         },
+         "then": {
+          "type": "Lit",
+          "value": 1.0
+         },
+         "other": {
+          "type": "IfThenElse",
+          "cond": {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "d"
+              },
+              "key": "ev_switched"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 1.0
+             }
+            },
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "d"
+              },
+              "key": "ev_novel"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0.0
+             }
+            }
+           ]
+          },
+          "then": {
+           "type": "Lit",
+           "value": 1.0
+          },
+          "other": {
+           "type": "IfThenElse",
+           "cond": {
+            "type": "And",
+            "items": [
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "d"
+               },
+               "key": "ev_committed"
+              },
+              "b": {
+               "type": "Lit",
+               "value": 1.0
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "d"
+               },
+               "key": "ev_novel"
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0.0
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "d"
+               },
+               "key": "ev_switched"
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0.0
+              }
+             }
+            ]
+           },
+           "then": {
+            "type": "Lit",
+            "value": 1.0
+           },
+           "other": {
+            "type": "IfThenElse",
+            "cond": {
+             "type": "Gt",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "d"
+              },
+              "key": "ev_novel"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0.0
+             }
+            },
+            "then": {
+             "type": "Lit",
+             "value": 1.0
+            },
+            "other": {
+             "type": "Lit",
+             "value": 1.0
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "d",
+     "residual",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "d"
+       },
+       "key": "ev_novel"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "d",
+     "explore",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gte",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "d"
+         },
+         "key": "ev_novel"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "d"
+         },
+         "key": "novel_hi"
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": 0.0
+       },
+       "other": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "d"
+          },
+          "key": "ev_unreach"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1.0
+         }
+        },
+        "then": {
+         "type": "Lit",
+         "value": 0.0
+        },
+        "other": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "d"
+           },
+           "key": "ev_arrived"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 1.0
+          }
+         },
+         "then": {
+          "type": "Lit",
+          "value": 0.0
+         },
+         "other": {
+          "type": "IfThenElse",
+          "cond": {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "d"
+              },
+              "key": "ev_switched"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 1.0
+             }
+            },
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "d"
+              },
+              "key": "ev_novel"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0.0
+             }
+            }
+           ]
+          },
+          "then": {
+           "type": "Lit",
+           "value": 1.0
+          },
+          "other": {
+           "type": "IfThenElse",
+           "cond": {
+            "type": "And",
+            "items": [
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "d"
+               },
+               "key": "ev_committed"
+              },
+              "b": {
+               "type": "Lit",
+               "value": 1.0
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "d"
+               },
+               "key": "ev_novel"
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0.0
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "d"
+               },
+               "key": "ev_switched"
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0.0
+              }
+             }
+            ]
+           },
+           "then": {
+            "type": "Lit",
+            "value": 0.0
+           },
+           "other": {
+            "type": "IfThenElse",
+            "cond": {
+             "type": "Gt",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "d"
+              },
+              "key": "ev_novel"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0.0
+             }
+            },
+            "then": {
+             "type": "Lit",
+             "value": 1.0
+            },
+            "other": {
+             "type": "Lit",
+             "value": 0.0
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "d",
+     "learning_progress",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gte",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "d"
+         },
+         "key": "ev_novel"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "d"
+         },
+         "key": "novel_hi"
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": 0.0
+       },
+       "other": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "d"
+          },
+          "key": "ev_unreach"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1.0
+         }
+        },
+        "then": {
+         "type": "Lit",
+         "value": 0.0
+        },
+        "other": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "d"
+           },
+           "key": "ev_arrived"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 1.0
+          }
+         },
+         "then": {
+          "type": "Lit",
+          "value": 0.0
+         },
+         "other": {
+          "type": "IfThenElse",
+          "cond": {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "d"
+              },
+              "key": "ev_switched"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 1.0
+             }
+            },
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "d"
+              },
+              "key": "ev_novel"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0.0
+             }
+            }
+           ]
+          },
+          "then": {
+           "type": "Lit",
+           "value": 0.0
+          },
+          "other": {
+           "type": "IfThenElse",
+           "cond": {
+            "type": "And",
+            "items": [
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "d"
+               },
+               "key": "ev_committed"
+              },
+              "b": {
+               "type": "Lit",
+               "value": 1.0
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "d"
+               },
+               "key": "ev_novel"
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0.0
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "d"
+               },
+               "key": "ev_switched"
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0.0
+              }
+             }
+            ]
+           },
+           "then": {
+            "type": "Lit",
+            "value": 0.0
+           },
+           "other": {
+            "type": "IfThenElse",
+            "cond": {
+             "type": "Gt",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "d"
+              },
+              "key": "ev_novel"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0.0
+             }
+            },
+            "then": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "d"
+             },
+             "key": "ev_novel"
+            },
+            "other": {
+             "type": "Lit",
+             "value": 0.0
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "d",
+     "value_progress",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gte",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "d"
+         },
+         "key": "ev_novel"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "d"
+         },
+         "key": "novel_hi"
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": 0.0
+       },
+       "other": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "d"
+          },
+          "key": "ev_unreach"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1.0
+         }
+        },
+        "then": {
+         "type": "Lit",
+         "value": -50.0
+        },
+        "other": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "d"
+           },
+           "key": "ev_arrived"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 1.0
+          }
+         },
+         "then": {
+          "type": "Lit",
+          "value": 448.0
+         },
+         "other": {
+          "type": "IfThenElse",
+          "cond": {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "d"
+              },
+              "key": "ev_switched"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 1.0
+             }
+            },
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "d"
+              },
+              "key": "ev_novel"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0.0
+             }
+            }
+           ]
+          },
+          "then": {
+           "type": "Lit",
+           "value": 0.0
+          },
+          "other": {
+           "type": "IfThenElse",
+           "cond": {
+            "type": "And",
+            "items": [
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "d"
+               },
+               "key": "ev_committed"
+              },
+              "b": {
+               "type": "Lit",
+               "value": 1.0
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "d"
+               },
+               "key": "ev_novel"
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0.0
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "d"
+               },
+               "key": "ev_switched"
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0.0
+              }
+             }
+            ]
+           },
+           "then": {
+            "type": "Lit",
+            "value": 0.0
+           },
+           "other": {
+            "type": "IfThenElse",
+            "cond": {
+             "type": "Gt",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "d"
+              },
+              "key": "ev_novel"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0.0
+             }
+            },
+            "then": {
+             "type": "Lit",
+             "value": 0.0
+            },
+            "other": {
+             "type": "Lit",
+             "value": 0.0
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "d",
+     "valued_goal",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gte",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "d"
+         },
+         "key": "ev_novel"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "d"
+         },
+         "key": "novel_hi"
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": 0.0
+       },
+       "other": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "d"
+          },
+          "key": "ev_unreach"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1.0
+         }
+        },
+        "then": {
+         "type": "Lit",
+         "value": 0.0
+        },
+        "other": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "d"
+           },
+           "key": "ev_arrived"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 1.0
+          }
+         },
+         "then": {
+          "type": "Lit",
+          "value": 0.0
+         },
+         "other": {
+          "type": "IfThenElse",
+          "cond": {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "d"
+              },
+              "key": "ev_switched"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 1.0
+             }
+            },
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "d"
+              },
+              "key": "ev_novel"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0.0
+             }
+            }
+           ]
+          },
+          "then": {
+           "type": "Lit",
+           "value": 0.0
+          },
+          "other": {
+           "type": "IfThenElse",
+           "cond": {
+            "type": "And",
+            "items": [
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "d"
+               },
+               "key": "ev_committed"
+              },
+              "b": {
+               "type": "Lit",
+               "value": 1.0
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "d"
+               },
+               "key": "ev_novel"
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0.0
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "d"
+               },
+               "key": "ev_switched"
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0.0
+              }
+             }
+            ]
+           },
+           "then": {
+            "type": "Lit",
+            "value": 1.0
+           },
+           "other": {
+            "type": "IfThenElse",
+            "cond": {
+             "type": "Gt",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "d"
+              },
+              "key": "ev_novel"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0.0
+             }
+            },
+            "then": {
+             "type": "Lit",
+             "value": 0.0
+            },
+            "other": {
+             "type": "Lit",
+             "value": 0.0
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "d",
+     "goal_blocked",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gte",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "d"
+         },
+         "key": "ev_novel"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "d"
+         },
+         "key": "novel_hi"
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": 0.0
+       },
+       "other": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "d"
+          },
+          "key": "ev_unreach"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1.0
+         }
+        },
+        "then": {
+         "type": "Lit",
+         "value": 0.0
+        },
+        "other": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "d"
+           },
+           "key": "ev_arrived"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 1.0
+          }
+         },
+         "then": {
+          "type": "Lit",
+          "value": 0.0
+         },
+         "other": {
+          "type": "IfThenElse",
+          "cond": {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "d"
+              },
+              "key": "ev_switched"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 1.0
+             }
+            },
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "d"
+              },
+              "key": "ev_novel"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0.0
+             }
+            }
+           ]
+          },
+          "then": {
+           "type": "Lit",
+           "value": 0.0
+          },
+          "other": {
+           "type": "IfThenElse",
+           "cond": {
+            "type": "And",
+            "items": [
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "d"
+               },
+               "key": "ev_committed"
+              },
+              "b": {
+               "type": "Lit",
+               "value": 1.0
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "d"
+               },
+               "key": "ev_novel"
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0.0
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "d"
+               },
+               "key": "ev_switched"
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0.0
+              }
+             }
+            ]
+           },
+           "then": {
+            "type": "Lit",
+            "value": 1.0
+           },
+           "other": {
+            "type": "IfThenElse",
+            "cond": {
+             "type": "Gt",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "d"
+              },
+              "key": "ev_novel"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0.0
+             }
+            },
+            "then": {
+             "type": "Lit",
+             "value": 0.0
+            },
+            "other": {
+             "type": "Lit",
+             "value": 0.0
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "d",
+     "was_engaged",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gte",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "d"
+         },
+         "key": "ev_novel"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "d"
+         },
+         "key": "novel_hi"
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": 0.0
+       },
+       "other": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "d"
+          },
+          "key": "ev_unreach"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1.0
+         }
+        },
+        "then": {
+         "type": "Lit",
+         "value": 0.0
+        },
+        "other": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "d"
+           },
+           "key": "ev_arrived"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 1.0
+          }
+         },
+         "then": {
+          "type": "Lit",
+          "value": 0.0
+         },
+         "other": {
+          "type": "IfThenElse",
+          "cond": {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "d"
+              },
+              "key": "ev_switched"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 1.0
+             }
+            },
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "d"
+              },
+              "key": "ev_novel"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0.0
+             }
+            }
+           ]
+          },
+          "then": {
+           "type": "Lit",
+           "value": 1.0
+          },
+          "other": {
+           "type": "IfThenElse",
+           "cond": {
+            "type": "And",
+            "items": [
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "d"
+               },
+               "key": "ev_committed"
+              },
+              "b": {
+               "type": "Lit",
+               "value": 1.0
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "d"
+               },
+               "key": "ev_novel"
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0.0
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "d"
+               },
+               "key": "ev_switched"
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0.0
+              }
+             }
+            ]
+           },
+           "then": {
+            "type": "Lit",
+            "value": 0.0
+           },
+           "other": {
+            "type": "IfThenElse",
+            "cond": {
+             "type": "Gt",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "d"
+              },
+              "key": "ev_novel"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0.0
+             }
+            },
+            "then": {
+             "type": "Lit",
+             "value": 0.0
+            },
+            "other": {
+             "type": "Lit",
+             "value": 0.0
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "d",
+     "v_d",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gte",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "d"
+         },
+         "key": "ev_novel"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "d"
+         },
+         "key": "novel_hi"
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": 0.0
+       },
+       "other": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "d"
+          },
+          "key": "ev_unreach"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1.0
+         }
+        },
+        "then": {
+         "type": "Lit",
+         "value": 100.0
+        },
+        "other": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "d"
+           },
+           "key": "ev_arrived"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 1.0
+          }
+         },
+         "then": {
+          "type": "Lit",
+          "value": 1000.0
+         },
+         "other": {
+          "type": "IfThenElse",
+          "cond": {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "d"
+              },
+              "key": "ev_switched"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 1.0
+             }
+            },
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "d"
+              },
+              "key": "ev_novel"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0.0
+             }
+            }
+           ]
+          },
+          "then": {
+           "type": "Lit",
+           "value": 100.0
+          },
+          "other": {
+           "type": "IfThenElse",
+           "cond": {
+            "type": "And",
+            "items": [
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "d"
+               },
+               "key": "ev_committed"
+              },
+              "b": {
+               "type": "Lit",
+               "value": 1.0
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "d"
+               },
+               "key": "ev_novel"
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0.0
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "d"
+               },
+               "key": "ev_switched"
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0.0
+              }
+             }
+            ]
+           },
+           "then": {
+            "type": "Lit",
+            "value": 1000.0
+           },
+           "other": {
+            "type": "IfThenElse",
+            "cond": {
+             "type": "Gt",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "d"
+              },
+              "key": "ev_novel"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0.0
+             }
+            },
+            "then": {
+             "type": "Lit",
+             "value": 1000.0
+            },
+            "other": {
+             "type": "Lit",
+             "value": 0.0
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "d",
+     "c_d",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gte",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "d"
+         },
+         "key": "ev_novel"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "d"
+         },
+         "key": "novel_hi"
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": 0.0
+       },
+       "other": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "d"
+          },
+          "key": "ev_unreach"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1.0
+         }
+        },
+        "then": {
+         "type": "Lit",
+         "value": 60.0
+        },
+        "other": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "d"
+           },
+           "key": "ev_arrived"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 1.0
+          }
+         },
+         "then": {
+          "type": "Lit",
+          "value": 600.0
+         },
+         "other": {
+          "type": "IfThenElse",
+          "cond": {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "d"
+              },
+              "key": "ev_switched"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 1.0
+             }
+            },
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "d"
+              },
+              "key": "ev_novel"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0.0
+             }
+            }
+           ]
+          },
+          "then": {
+           "type": "Lit",
+           "value": 60.0
+          },
+          "other": {
+           "type": "IfThenElse",
+           "cond": {
+            "type": "And",
+            "items": [
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "d"
+               },
+               "key": "ev_committed"
+              },
+              "b": {
+               "type": "Lit",
+               "value": 1.0
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "d"
+               },
+               "key": "ev_novel"
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0.0
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "d"
+               },
+               "key": "ev_switched"
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0.0
+              }
+             }
+            ]
+           },
+           "then": {
+            "type": "Lit",
+            "value": 200.0
+           },
+           "other": {
+            "type": "IfThenElse",
+            "cond": {
+             "type": "Gt",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "d"
+              },
+              "key": "ev_novel"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0.0
+             }
+            },
+            "then": {
+             "type": "Lit",
+             "value": 600.0
+            },
+            "other": {
+             "type": "Lit",
+             "value": 0.0
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "d",
+     "c_d_prev",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gte",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "d"
+         },
+         "key": "ev_novel"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "d"
+         },
+         "key": "novel_hi"
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": 0.0
+       },
+       "other": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "d"
+          },
+          "key": "ev_unreach"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1.0
+         }
+        },
+        "then": {
+         "type": "Lit",
+         "value": 60.0
+        },
+        "other": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "d"
+           },
+           "key": "ev_arrived"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 1.0
+          }
+         },
+         "then": {
+          "type": "Lit",
+          "value": 100.0
+         },
+         "other": {
+          "type": "IfThenElse",
+          "cond": {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "d"
+              },
+              "key": "ev_switched"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 1.0
+             }
+            },
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "d"
+              },
+              "key": "ev_novel"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0.0
+             }
+            }
+           ]
+          },
+          "then": {
+           "type": "Lit",
+           "value": 60.0
+          },
+          "other": {
+           "type": "IfThenElse",
+           "cond": {
+            "type": "And",
+            "items": [
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "d"
+               },
+               "key": "ev_committed"
+              },
+              "b": {
+               "type": "Lit",
+               "value": 1.0
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "d"
+               },
+               "key": "ev_novel"
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0.0
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "d"
+               },
+               "key": "ev_switched"
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0.0
+              }
+             }
+            ]
+           },
+           "then": {
+            "type": "Lit",
+            "value": 200.0
+           },
+           "other": {
+            "type": "IfThenElse",
+            "cond": {
+             "type": "Gt",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "d"
+              },
+              "key": "ev_novel"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0.0
+             }
+            },
+            "then": {
+             "type": "Lit",
+             "value": 100.0
+            },
+            "other": {
+             "type": "Lit",
+             "value": 0.0
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "d",
+     "v_0",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gte",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "d"
+         },
+         "key": "ev_novel"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "d"
+         },
+         "key": "novel_hi"
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": 0.0
+       },
+       "other": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "d"
+          },
+          "key": "ev_unreach"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1.0
+         }
+        },
+        "then": {
+         "type": "Lit",
+         "value": 0.0
+        },
+        "other": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "d"
+           },
+           "key": "ev_arrived"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 1.0
+          }
+         },
+         "then": {
+          "type": "Lit",
+          "value": 0.0
+         },
+         "other": {
+          "type": "IfThenElse",
+          "cond": {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "d"
+              },
+              "key": "ev_switched"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 1.0
+             }
+            },
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "d"
+              },
+              "key": "ev_novel"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0.0
+             }
+            }
+           ]
+          },
+          "then": {
+           "type": "Lit",
+           "value": 0.0
+          },
+          "other": {
+           "type": "IfThenElse",
+           "cond": {
+            "type": "And",
+            "items": [
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "d"
+               },
+               "key": "ev_committed"
+              },
+              "b": {
+               "type": "Lit",
+               "value": 1.0
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "d"
+               },
+               "key": "ev_novel"
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0.0
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "d"
+               },
+               "key": "ev_switched"
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0.0
+              }
+             }
+            ]
+           },
+           "then": {
+            "type": "Lit",
+            "value": 100.0
+           },
+           "other": {
+            "type": "IfThenElse",
+            "cond": {
+             "type": "Gt",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "d"
+              },
+              "key": "ev_novel"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0.0
+             }
+            },
+            "then": {
+             "type": "Lit",
+             "value": 0.0
+            },
+            "other": {
+             "type": "Lit",
+             "value": 0.0
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "d",
+     "dem_cfg",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gte",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "d"
+         },
+         "key": "ev_novel"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "d"
+         },
+         "key": "novel_hi"
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": 1.0
+       },
+       "other": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "d"
+          },
+          "key": "ev_unreach"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1.0
+         }
+        },
+        "then": {
+         "type": "Lit",
+         "value": 2.0
+        },
+        "other": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "d"
+           },
+           "key": "ev_arrived"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 1.0
+          }
+         },
+         "then": {
+          "type": "Lit",
+          "value": 3.0
+         },
+         "other": {
+          "type": "IfThenElse",
+          "cond": {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "d"
+              },
+              "key": "ev_switched"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 1.0
+             }
+            },
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "d"
+              },
+              "key": "ev_novel"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0.0
+             }
+            }
+           ]
+          },
+          "then": {
+           "type": "Lit",
+           "value": 4.0
+          },
+          "other": {
+           "type": "IfThenElse",
+           "cond": {
+            "type": "And",
+            "items": [
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "d"
+               },
+               "key": "ev_committed"
+              },
+              "b": {
+               "type": "Lit",
+               "value": 1.0
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "d"
+               },
+               "key": "ev_novel"
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0.0
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "d"
+               },
+               "key": "ev_switched"
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0.0
+              }
+             }
+            ]
+           },
+           "then": {
+            "type": "Lit",
+            "value": 5.0
+           },
+           "other": {
+            "type": "IfThenElse",
+            "cond": {
+             "type": "Gt",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "d"
+              },
+              "key": "ev_novel"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0.0
+             }
+            },
+            "then": {
+             "type": "Lit",
+             "value": 6.0
+            },
+            "other": {
+             "type": "Lit",
+             "value": 0.0
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    ]
+   ]
+  }
+ ]
+}

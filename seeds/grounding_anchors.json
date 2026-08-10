@@ -1,0 +1,47 @@
+{
+ "id": "grounding_anchors",
+ "version": "1.0.0",
+ "depends_on": [],
+ "description": "GROUNDING-REACHABILITY vocabulary (substrate for a follow-on agent-authored guard rule, NOT the guard itself). Names the anchor kinds an admissible `grounded_in` chain can terminate at (RealityAnchor / TeacherAnchor / ConsequenceAnchor / SensorAnchor) so a collapse's groundedness is a queryable graph property (domains/grounding_reach.py: ensure_grounding_edges mints `node -grounded_in-> anchor` edges mechanically from EXISTING grounding signals already written elsewhere for other reasons -- vision/audio perception ingestion, a real teacher_hook exchange, a judged Experiment outcome, a live vision-world binding -- and grounding_reach(node) answers reached/anchors/hops via the agent-installed native ReachableFrom(node,'grounded_in') Term, not a Python re-walk). The theory this substrate exists for: a cheap-model confidently-wrong basin-snap has LOW residual within its own basin (residual alone can't catch it); what distinguishes it from a genuinely-solved collapse is whether its grounding chain reaches something EXTERNAL to the agent's own generative loop, or loops back into itself. flag_ungrounded_confident (same module) flags a low-residual+high-confidence+ungrounded node as a GroundingGap -- the contract a follow-on guard rule consumes; this seed and module do not themselves escalate or correct anything.",
+ "microtheory": {
+  "name": "grounding_anchors",
+  "description": "the anchor vocabulary + grounded_in edge channel a collapse's provenance chain is checked against: RealityAnchor (a live world object bound to a current vision percept), TeacherAnchor (a real ask()-answered teacher exchange), ConsequenceAnchor (an Experiment judged from a real produced+done Run), SensorAnchor (a raw perceptual reading a world adapter ingested from outside the agent)."
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [],
+ "concepts": [
+  {
+   "name": "RealityAnchor",
+   "domain": "grounding_reach",
+   "comment": "grounding anchor kind: the external world OBJECT itself, as distinct from the sensory reading of it -- mapped from an Instance a live `VisionPolygon -depicts-> Instance` edge names (world_adapter.update_vision's percept/world binding). A node whose grounded_in chain reaches a RealityAnchor is backed by something currently and actually present outside the agent."
+  },
+  {
+   "name": "TeacherAnchor",
+   "domain": "grounding_reach",
+   "comment": "grounding anchor kind: a real teacher exchange -- the agent formulated its OWN question from a genuine self-diagnosed confusion (domains/teacher_hook.needs_teacher) and a teacher answered it (domains/teacher_hook.ask_if_needed, TaughtHint{origin:'teacher_hook'}). Other TaughtHint origins (self-derived experiment verdicts, etc.) are deliberately NOT mapped here -- only the one origin stamped by a genuine ask()-and-reply."
+  },
+  {
+   "name": "ConsequenceAnchor",
+   "domain": "grounding_reach",
+   "comment": "grounding anchor kind: an observed action-outcome -- an Experiment the agent authored, ran, and had judged by the judge_experiment_outcome_* rule family (domains/reflective_faculty.py) purely from a real produced Run's score/frames (status=='done'). Experiment.outcome is only ever set by that rule reading a real trial, never asserted."
+  },
+  {
+   "name": "SensorAnchor",
+   "domain": "grounding_reach",
+   "comment": "grounding anchor kind: a raw perceptual reading a world adapter mechanically ingested from outside the agent -- Agent-perceives->VisionPercept / Agent-sees_shape->VisionPolygon (the GraphEye cortex, world_adapter.update_vision) or a Message{source:'audio'} + its has_mention AcousticSign (world_adapter.ingest_audio_file, a real decoded audio file)."
+  },
+  {
+   "name": "grounded_in",
+   "domain": "grounding_reach",
+   "comment": "the edge channel a node's provenance chain is walked over. `grounding_reach(agent, node)` (domains/grounding_reach.py) evaluates the agent-installed native Term ReachableFrom(node, 'grounded_in') and intersects the closure with the four anchor-kind node types above -- reached==True iff the closure contains at least one anchor. GroundingGap (see below) is the flag a low-residual+high-confidence+unreached node mints; NOT itself an anchor and NOT itself grounded."
+  },
+  {
+   "name": "GroundingGap",
+   "domain": "grounding_reach",
+   "comment": "the signal domains/grounding_reach.flag_ungrounded_confident mints for a node whose residual is low AND confidence is high AND grounding_reach(node).reached is False -- the confidently-wrong-outside-its-range shape residual alone can't see. Fields: node, node_type, why, the residual/confidence attrs it was flagged under, anchors (the anchor kinds actually reached, always [] when flagged). This module only FLAGS; a follow-on agent-authored guard RULE (not part of this seed) is the thing that consumes GroundingGap to decide what to do -- escalate, re-check, distrust the collapse."
+  }
+ ],
+ "rules": [],
+ "goals": []
+}

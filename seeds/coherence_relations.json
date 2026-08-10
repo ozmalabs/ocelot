@@ -1,0 +1,147 @@
+{
+  "id": "coherence_relations",
+  "version": "1.0.0",
+  "depends_on": ["reading_constructions"],
+  "description": "DISCOURSE COHERENCE = COLLAPSE OVER A COHERENCE-RELATION CODEBOOK, one level up from reading_collapse's clause-construction codebook (a span-pair is decoded the same way a clause is: recognised markers -> skeleton -> ShapeDecode against held ShapeSignatureCoherence nodes, kept in their OWN codebook_type so they never compete with the clause-construction ShapeSignature pool). Two triggers feed the skeleton: (1) MARKED -- a discourse connective leading the second span, recognised via new MarkerClass discourse-cue classes (DISC_CONTRAST/DISC_CAUSE/DISC_SEQUENCE/DISC_CONDITION) using the SAME marker-lexicon mechanism reading_collapse's clause markers use; (2) UNMARKED -- a situation-model-style signal computed from the two spans' own grounded predications: shared entity (continuity, Centering Theory's 'preserved center'), spanA's verb a change-of-state (COS class, reused as-is from situation_model_reader.cos_membership) or spanB's verb a TELIC_RESULT (achievement) verb, or spanB itself a property-description construction (elaboration). Both paths mint the SAME token vocabulary (DISC_* or SM_*) that the decode reads -- the RELATION ITSELF is always ShapeDecode's verdict (the winning ShapeSignatureCoherence's `relation` attr), never a Python if/else naming the relation directly.",
+  "microtheory": {
+    "name": "coherence_relations",
+    "description": "RST-style coherence relations (elaboration/contrast/cause/sequence/condition) between adjacent spans, decoded by ShapeDecode over a dedicated ShapeSignatureCoherence codebook; marked (discourse connective) and unmarked (situation-model-style entity/verb-class signal) triggers feed the SAME decode."
+  },
+  "nodes": [
+    {
+      "local_id": 1,
+      "type": "MarkerClass",
+      "attrs": {
+        "cls": "DISC_CONTRAST",
+        "forms": ["however", "but", "yet", "although", "nevertheless", "nonetheless", "whereas"],
+        "note": "Discourse-level CONTRAST connective, checked at the LEADING position of the second span only (a mid-span 'but' is ordinary clause-internal coordination, out of scope here)."
+      }
+    },
+    {
+      "local_id": 2,
+      "type": "MarkerClass",
+      "attrs": {
+        "cls": "DISC_CAUSE",
+        "forms": ["therefore", "thus", "hence", "consequently", "so"],
+        "note": "Discourse-level CAUSE/RESULT connective, checked at the LEADING position of the second span."
+      }
+    },
+    {
+      "local_id": 3,
+      "type": "MarkerClass",
+      "attrs": {
+        "cls": "DISC_SEQUENCE",
+        "forms": ["then", "afterward", "afterwards", "subsequently", "next"],
+        "note": "Discourse-level TEMPORAL-SEQUENCE connective, checked at the LEADING position of the second span."
+      }
+    },
+    {
+      "local_id": 4,
+      "type": "MarkerClass",
+      "attrs": {
+        "cls": "DISC_CONDITION",
+        "forms": ["unless"],
+        "note": "Discourse-level CONDITION connective distinct from the existing clause-level IF class ('unless' has no within-clause IF/THEN counterpart). A leading 'if' is read via the EXISTING IF MarkerClass (seeds/reading_constructions.json) -- reused as-is, not duplicated here."
+      }
+    },
+    {
+      "local_id": 5,
+      "type": "MarkerClass",
+      "attrs": {
+        "cls": "TELIC_RESULT",
+        "forms": ["win", "won", "wins", "winning", "achieve", "achieved", "achieves",
+                   "succeed", "succeeded", "succeeds", "attain", "attained", "attains",
+                   "pass", "passed", "passes", "complete", "completed", "completes"],
+        "adjacency_anchor": ["achieve", "succeed", "attain", "complete"],
+        "adjacency_threshold": 0.6,
+        "adjacency_context": "other",
+        "note": "ACHIEVEMENT/TELIC-RESULT marker-class (the UNMARKED-cause signal's second leg, mirroring COS/DESIGNATE/POSSESS): a verb naming the attainment of a goal. The seed forms cover the common case directly (no adjacency gamble needed for the gate's own examples); a NEW surface verb (accomplishes/prevails/triumphs/...) JOINS by the SAME WordNet path-similarity adjacency mechanism reading_collapse._wordnet_nearness/_compute_adjacency already implements over ANY MarkerClass declaring adjacency_anchor -- reused as-is, no new adjacency code. When spanB's main verb is a member of this class AND the two spans share an entity, the unmarked signal reads SM_CAUSE (the achievement is caused by whatever the shared-entity's prior span did), the situation-model twin of situation_model_reader's COS-triggered SM_CAUSE leg (a physical change of state)."
+      }
+    },
+    {
+      "local_id": 10,
+      "type": "ShapeSignatureCoherence",
+      "attrs": {
+        "name": "contrast_marked",
+        "kind": "coherence_relation",
+        "relation": "contrast",
+        "signature": "[[\"DISC_CONTRAST\"]]"
+      }
+    },
+    {
+      "local_id": 11,
+      "type": "ShapeSignatureCoherence",
+      "attrs": {
+        "name": "cause_marked",
+        "kind": "coherence_relation",
+        "relation": "cause",
+        "signature": "[[\"DISC_CAUSE\"]]"
+      }
+    },
+    {
+      "local_id": 12,
+      "type": "ShapeSignatureCoherence",
+      "attrs": {
+        "name": "sequence_marked",
+        "kind": "coherence_relation",
+        "relation": "sequence",
+        "signature": "[[\"DISC_SEQUENCE\"]]"
+      }
+    },
+    {
+      "local_id": 13,
+      "type": "ShapeSignatureCoherence",
+      "attrs": {
+        "name": "condition_if",
+        "kind": "coherence_relation",
+        "relation": "condition",
+        "signature": "[[\"IF\"]]",
+        "note": "Signature reuses the EXISTING clause-level IF MarkerClass token ('if' leading the second span) -- not a new marker."
+      }
+    },
+    {
+      "local_id": 14,
+      "type": "ShapeSignatureCoherence",
+      "attrs": {
+        "name": "condition_unless",
+        "kind": "coherence_relation",
+        "relation": "condition",
+        "signature": "[[\"DISC_CONDITION\"]]"
+      }
+    },
+    {
+      "local_id": 15,
+      "type": "ShapeSignatureCoherence",
+      "attrs": {
+        "name": "cause_unmarked",
+        "kind": "coherence_relation",
+        "relation": "cause",
+        "signature": "[[\"SM_CAUSE\"]]",
+        "note": "UNMARKED cause: fires when the situation-model-style signal (shared entity + spanA change-of-state (COS) or spanB telic-result verb) is present with no discourse connective. Same relation name as cause_marked -- proves marked/unmarked convergence, not marker-regex."
+      }
+    },
+    {
+      "local_id": 16,
+      "type": "ShapeSignatureCoherence",
+      "attrs": {
+        "name": "sequence_unmarked",
+        "kind": "coherence_relation",
+        "relation": "sequence",
+        "signature": "[[\"SM_SEQUENCE\"]]",
+        "note": "UNMARKED sequence: shared entity (continuity) with no stronger cue and no discourse connective -- the weakest positive signal (temporal succession over a persisting participant)."
+      }
+    },
+    {
+      "local_id": 17,
+      "type": "ShapeSignatureCoherence",
+      "attrs": {
+        "name": "elaboration_unmarked",
+        "kind": "coherence_relation",
+        "relation": "elaboration",
+        "signature": "[[\"SM_ELABORATE\"]]",
+        "note": "UNMARKED elaboration: spanB is a property-description construction (definitional/attributive/possession/designation) about an entity spanA already introduced -- more detail about the SAME thing, not a new event. HONEST: the least reliably triggered relation of the five (needs the property-construction signal to line up); included for RST coverage, not exercised by a dedicated gate example."
+      }
+    }
+  ],
+  "edges": []
+}

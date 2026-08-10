@@ -1,0 +1,2423 @@
+{
+ "id": "vision_waves",
+ "version": "1.0.0",
+ "depends_on": [],
+ "description": "RUNG 1 \u2014 SPONTANEOUS RETINAL WAVES + BURST-BASED HEBBIAN. The agent generates its OWN structured training signal before it perceives anything, and learns from it with the measured burst rule. This seed exists because the developmental research (105-agent verified pass, see VISION_DEVELOPMENT_ARC.md) showed the previous approach was the wrong experiment: orientation selectivity is NOT created by learning on natural images (ferret maps emerge P31-36 with NO correlation to eye opening; dark-reared ferrets have maps; cat orientation emerges BEFORE eye opening), and before eye opening V1's training data is WAVE statistics, not image statistics. THE PARADIGM-FORCING SPLIT: the world adapter supplies ONLY unstructured entropy (random ignition \u2014 the stochastic-depolarisation analogue) plus a clock; ALL structure (local propagation, refractoriness, the resulting spatiotemporal correlation) is made by these rules. The `noise` control arm uses the SAME entropy with propagation disabled, so any difference between arms is produced by the graph, not handed to it.",
+ "microtheory": {
+  "name": "vision_waves",
+  "description": "self-generated spontaneous activity: random ignition + rule-driven local propagation + refractoriness produce spatiotemporally correlated waves; a burst-based Hebbian rule (~1s window, coincident +21.3% / non-overlapping -5.9%, Butts/Kanold/Shatz 2007) learns from them. Structure comes from the rules, entropy from the world."
+ },
+ "nodes": [
+  {
+   "local_id": 0,
+   "type": "WaveParams",
+   "attrs": {
+    "name": "default",
+    "refractory_steps": 4.0,
+    "enhance_rate": 0.213,
+    "depress_rate": 0.059,
+    "burst_threshold": 0.5,
+    "propagate": 1.0,
+    "comment": "Growth/learning knobs as GRAPH DATA. enhance_rate/depress_rate are the MEASURED constants from Butts, Kanold & Shatz 2007 (PLoS Biol 5(3):e61): coincident bursts +21.3 +/- 5.1% (n=7), non-overlapping bursts -5.9 +/- 1.4% (n=13, p<0.01). THE LATENCY AXIS (window_steps) is what makes this the BURST rule rather than its Dt=0 point: Butts' rule is a FUNCTION of pre->post burst latency over a ~1 SECOND window (explicitly NOT the ~10ms STDP window; Gjorgjieva 2010: ms-STDP 'would be very inefficient at driving developmental refinement given the actual activity patterns observed during development' \u2014 the timescale is load-bearing, not a detail). A synapse potentiates when its PRE cell burst within window_steps of the POST burst, and depresses otherwise. step_ms declares the discretisation honestly: at step_ms=250 and window_steps=2 the potentiation window is ~500ms and depression applies beyond it, consistent with 'coincident potentiates, ~1100ms depresses'. window_steps=0 recovers EXACTLY the old same-step-coincidence rule, so the temporal axis is an ablation expressed as DATA (it was measured absent: the temporal-shuffle control gave ordered vs shuffled p=0.43 with the Dt=0-only rule). refractory_steps: how long a fired cell cannot re-fire \u2014 what makes a wave TRAVEL rather than saturate. propagate: 1.0 = waves; 0.0 = the NOISE control arm (same entropy, no structure). target_sum: HOMEOSTASIS (Turrigiano multiplicative synaptic scaling) \u2014 a unit's total synaptic weight is renormalised to this after each learning step. Independently motivated by biology AND forced by a MEASURED pathology: with the latency window and no scaling, +21.3% compounding explodes the weights (norm 6.9 -> 93.0 over 200 steps, ~half the RF energy in 3 of 49 synapses), which destroys the readable RF even though the latency rule IS detecting temporal structure (ordered drives 7x more growth than shuffled: 93 vs 13). Scaling is what makes competition ZERO-SUM, so 'this synapse grew' means 'another shrank' rather than 'everything grew'. Set = the initial total (49 synapses x w0=1.0) so scaling preserves the starting scale. unit_burst_steps: TEMPORAL EXTENT OF THE POST BURST. Butts' rule is a latency between TWO bursts, BOTH of which have duration (~1s). The earlier cut gave the PRE side a memory (last_burst) but left the POST side instantaneous \u2014 wv_unit_activate read pre.bursting on the CURRENT step and winner-take-all crowned per-step \u2014 so there was no post-burst duration for a latency to be measured against, and the temporal-shuffle control stayed null at every window (p=0.32..0.63). A unit's burst now PERSISTS for unit_burst_steps, and its drive INTEGRATES pre-bursts across window_steps, so pre and post bursts can actually OVERLAP at non-zero latency \u2014 which is the only configuration in which the Butts window means anything. unit_burst_steps=1 + window_steps=0 recovers the instantaneous rule. bcm / theta_rate: BCM (Bienenstock-Cooper-Munro) SLIDING THRESHOLD. bcm=0 (default) keeps the fixed-sign Butts rule exactly, so every committed result reproduces; bcm=1 swaps in the BCM sign rule. WHY: five pre-registered attempts showed patterned vision NEVER refines (it only ever degrades, structured less than unstructured) across every drive and both schedules. The pre-committed implication was that the RULE is the defect: Butts' constants are FIXED-SIGN (+21.3% coincident / -5.9% not), so a unit potentiates whatever co-bursts and a bright blob teaches a blob \u2014 nothing can make vision SHARPEN rather than BLUR. BCM makes the sign depend on the postsynaptic drive relative to a threshold that SLIDES with the unit's own recent activity (theta <- theta + theta_rate*(act^2 - theta)): a unit that responds to everything raises its own threshold until only the strongest patterns still potentiate, and everything weaker is depressed. That is the selectivity mechanism the fixed-sign rule lacks. Butts' magnitudes are KEPT as the step sizes \u2014 only the SIGN rule changes \u2014 so the deviation from the measured biology is exactly one thing, named. oja / oja_eta: OJA'S RULE on the synapse population \u2014 w <- w(1 - eta*y^2) + eta*y*x with y = the unit's own drive. WHY: the convergence measurement showed NEITHER shipped rule has a usable fixed point on its own input distribution \u2014 fixed-sign never converges (drift 0.49-0.75) and decays THROUGH the random floor (0.345 peak -> 0.123 at 3200 steps), while BCM converges (drift -> 0.000) to ANNIHILATION (0.004). The scaffold was a TRANSIENT peaking ~100-200 steps, which is the whole explanation of nine failed experience attempts: any arm that keeps learning is pushed past the peak. Oja's decay term -eta*y^2*w is a CONTRACTION toward the leading principal component of the input \u2014 a stable, non-zero fixed point BY CONSTRUCTION, which is precisely the property the other two lack. oja=0 default => every committed result reproduces; oja=1 replaces the burst rules AND homeostasis (Oja self-normalises, so bh_scale would fight it).",
+    "window_steps": 2.0,
+    "step_ms": 250.0,
+    "target_sum": 49.0,
+    "unit_burst_steps": 3.0,
+    "bcm": 0.0,
+    "theta_rate": 0.05,
+    "oja": 0.0,
+    "oja_eta": 0.002
+   }
+  }
+ ],
+ "edges": [],
+ "productions": [
+  {
+   "src": {
+    "type": "RetinaCell",
+    "var": "a"
+   },
+   "edge_type": "neighbour",
+   "tgt": {
+    "type": "RetinaCell",
+    "var": "b"
+   },
+   "provenance": "seed:vision_waves:neighbour"
+  },
+  {
+   "src": {
+    "type": "RetinaCell",
+    "var": "a"
+   },
+   "edge_type": "pre",
+   "tgt": {
+    "type": "Synapse",
+    "var": "b"
+   },
+   "provenance": "seed:vision_waves:pre"
+  },
+  {
+   "src": {
+    "type": "Synapse",
+    "var": "a"
+   },
+   "edge_type": "post",
+   "tgt": {
+    "type": "Unit",
+    "var": "b"
+   },
+   "provenance": "seed:vision_waves:post"
+  },
+  {
+   "src": {
+    "type": "Retina",
+    "var": "a"
+   },
+   "edge_type": "has_cell",
+   "tgt": {
+    "type": "RetinaCell",
+    "var": "b"
+   },
+   "provenance": "seed:vision_waves:has_cell"
+  },
+  {
+   "src": {
+    "type": "Retina",
+    "var": "a"
+   },
+   "edge_type": "has_unit",
+   "tgt": {
+    "type": "Unit",
+    "var": "b"
+   },
+   "provenance": "seed:vision_waves:has_unit"
+  }
+ ],
+ "rules": [
+  {
+   "name": "wv_propagate",
+   "comment": "THE RULE THAT MAKES STRUCTURE OUT OF NOISE. A FRESHLY active cell recruits its RESTED neighbours: this local, one-hop-per-step spread is what turns a random ignition point into a spatially coherent travelling wave, and it is why the wave arm's activity is spatiotemporally CORRELATED while the noise arm's (same entropy, propagate=0) is not. PHASE GUARD, and it is load-bearing: only cells whose `activated_at` EQUALS the current step propagate, while wv_refract fires only on cells whose `activated_at` is STRICTLY LESS than it. The two conditions are disjoint, so the fixpoint cannot race them \u2014 the first cut had `wv_refract` fire on a cell in the same tick it ignited, refracting it before it could ever propagate or be observed, and the grid stayed empty (measured: 0/40 frames active). Disjoint clock phases are what make a rule fixpoint express a discrete-time process at all. Gated by WaveParams.propagate so the noise ablation is DATA, not a Python code path.",
+   "match_type": "RetinaCell",
+   "match": [
+    [
+     "r",
+     "has_cell",
+     "c"
+    ],
+    [
+     "c",
+     "neighbour",
+     "n"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "state"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "active"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "activated_at"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "n"
+       },
+       "key": "state"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "rested"
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "WaveParams"
+        }
+       },
+       "key": "propagate"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "n",
+     "state",
+     "recruited"
+    ]
+   ]
+  },
+  {
+   "name": "wv_refract",
+   "comment": "A cell that was active on a PREVIOUS step (activated_at < step \u2014 the disjoint counterpart of wv_propagate's activated_at == step) becomes REFRACTORY and records when it fired. Refractoriness is not bookkeeping \u2014 it is the mechanism that makes a wave TRAVEL outward instead of re-igniting in place and saturating the grid, i.e. it is what gives the activity its temporal structure and therefore what there is to learn from.",
+   "match_type": "RetinaCell",
+   "match": [
+    [
+     "r",
+     "has_cell",
+     "c"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "state"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "active"
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "activated_at"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "c",
+     "state",
+     "refractory"
+    ],
+    [
+     "set_attr",
+     "c",
+     "fired_at",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "wv_recover",
+   "comment": "A REFRACTORY cell returns to RESTED once `refractory_steps` (graph data) have elapsed since it fired, making it recruitable again \u2014 so waves can re-cross ground they have already covered, which is what keeps the activity non-stationary over long runs rather than settling into a fixed pattern.",
+   "match_type": "RetinaCell",
+   "match": [
+    [
+     "r",
+     "has_cell",
+     "c"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "state"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "refractory"
+      }
+     },
+     {
+      "type": "Gte",
+      "a": {
+       "type": "Minus",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "r"
+        },
+        "key": "step"
+       },
+       "b": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "c"
+        },
+        "key": "fired_at"
+       }
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "WaveParams"
+        }
+       },
+       "key": "refractory_steps"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "c",
+     "state",
+     "rested"
+    ]
+   ]
+  },
+  {
+   "name": "wv_unit_activate",
+   "comment": "A Unit's drive = sum over its synapses of weight x (pre cell burst WITHIN window_steps). TEMPORAL EXTENT ON THE INPUT SIDE: the unit integrates recent pre-bursts rather than reading only the current step, so it responds to a spatioTEMPORAL pattern (a wavefront sweeping its RF) instead of an instantaneous frame. Expressed with IfThenElse on the same Minus(step, pre.last_burst) latency the burst rules use, inside the Fold over InNeighbours(u,'post') \u2014 which is why Synapse had to be a NODE (no Zip/Range to pair w[i] with x[i]). window_steps=0 recovers the instantaneous drive exactly.",
+   "match_type": "Unit",
+   "match": [
+    [
+     "r",
+     "has_unit",
+     "u"
+    ]
+   ],
+   "where": {
+    "type": "Lt",
+    "a": {
+     "type": "Attr",
+     "node": {
+      "type": "Var",
+      "name": "u"
+     },
+     "key": "act_step"
+    },
+    "b": {
+     "type": "Attr",
+     "node": {
+      "type": "Var",
+      "name": "r"
+     },
+     "key": "step"
+    }
+   },
+   "effects": [
+    [
+     "set_attr",
+     "u",
+     "act",
+     {
+      "__term__": {
+       "type": "Fold",
+       "source": {
+        "type": "InNeighbours",
+        "node": {
+         "type": "Var",
+         "name": "u"
+        },
+        "edge_type": "post",
+        "any_type": false
+       },
+       "var_name": "sy",
+       "acc_name": "acc",
+       "init": {
+        "type": "Lit",
+        "value": 0.0
+       },
+       "body": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Var",
+          "name": "acc"
+         },
+         {
+          "type": "Times",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "sy"
+            },
+            "key": "weight"
+           },
+           {
+            "type": "IfThenElse",
+            "cond": {
+             "type": "Lte",
+             "a": {
+              "type": "Minus",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "r"
+               },
+               "key": "step"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Pick",
+                "source": {
+                 "type": "InNeighbours",
+                 "node": {
+                  "type": "Var",
+                  "name": "sy"
+                 },
+                 "edge_type": "pre",
+                 "any_type": false
+                }
+               },
+               "key": "last_burst"
+              }
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "PickUnique",
+               "source": {
+                "type": "NodesOfType",
+                "node_type": "WaveParams"
+               }
+              },
+              "key": "window_steps"
+             }
+            },
+            "then": {
+             "type": "Lit",
+             "value": 1.0
+            },
+            "other": {
+             "type": "Lit",
+             "value": 0.0
+            }
+           }
+          ]
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "u",
+     "act_step",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "wv_unit_burst_winner",
+   "comment": "WINNER-TAKE-ALL bursting: only the most strongly driven Unit bursts this step (Eq against Argmax over the retina's units by `act`, the same single-survivor idiom retire_duplicate_gap established \u2014 Eq compares Value::Node by id). Competition is what makes the population DIFFERENTIATE: without it every unit sees the same wave and the burst rule drives them all to the same receptive field. Requires act>0 so a silent step crowns no winner. Now also records last_burst, which wv_unit_burst_sustain uses to give the burst DURATION \u2014 without a post-burst duration there is nothing for a pre->post LATENCY to be measured against.",
+   "match_type": "Unit",
+   "match": [
+    [
+     "r",
+     "has_unit",
+     "u"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "burst_step"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "act_step"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "act"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Var",
+       "name": "u"
+      },
+      "b": {
+       "type": "Argmax",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "r"
+        },
+        "edge_type": "has_unit",
+        "any_type": false
+       },
+       "var_name": "u2",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "u2"
+        },
+        "key": "act"
+       },
+       "default": null
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "u",
+     "bursting",
+     1.0
+    ],
+    [
+     "set_attr",
+     "u",
+     "burst_step",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "u",
+     "last_burst",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "bh_potentiate",
+   "comment": "BURST-BASED HEBBIAN, POTENTIATION \u2014 THE LATENCY AXIS (Butts/Kanold/Shatz 2007). A synapse potentiates by the measured +21.3% when its PRE cell burst within window_steps of the POST unit's burst: latency = Minus(step, pre.last_burst), compared against WaveParams.window_steps (graph data). This is the ~1s window itself, not its origin \u2014 the earlier cut required pre.bursting==1 on the SAME step, i.e. the Dt=0 point only, and the temporal-shuffle control measured the consequence: replaying the same wave frames in shuffled order changed NOTHING (ordered 0.328 vs shuffled 0.301, p=0.43) because a rule with no cross-step term cannot see order. With a real window a unit potentiates the synapses of cells the wavefront crossed a step or two EARLIER, so it learns the wave's TRAJECTORY rather than an instantaneous frame. Local: the rule reads only the two endpoints of the synapse it updates + the clock. window_steps=0 recovers the old behaviour exactly.",
+   "match_type": "Synapse",
+   "match": [
+    [
+     "c",
+     "pre",
+     "s"
+    ],
+    [
+     "s",
+     "post",
+     "u"
+    ],
+    [
+     "r",
+     "has_cell",
+     "c"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "WaveParams"
+        }
+       },
+       "key": "oja"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "WaveParams"
+        }
+       },
+       "key": "bcm"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "s"
+       },
+       "key": "touched"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "bursting"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Lte",
+      "a": {
+       "type": "Minus",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "r"
+        },
+        "key": "step"
+       },
+       "b": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "c"
+        },
+        "key": "last_burst"
+       }
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "WaveParams"
+        }
+       },
+       "key": "window_steps"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "s",
+     "weight",
+     {
+      "__term__": {
+       "type": "Times",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "s"
+         },
+         "key": "weight"
+        },
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Lit",
+           "value": 1.0
+          },
+          {
+           "type": "Attr",
+           "node": {
+            "type": "PickUnique",
+            "source": {
+             "type": "NodesOfType",
+             "node_type": "WaveParams"
+            }
+           },
+           "key": "enhance_rate"
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "s",
+     "touched",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "bh_depress",
+   "comment": "BURST-BASED HEBBIAN, DEPRESSION \u2014 the other side of the latency curve. A synapse whose POST unit bursts while its PRE cell has NOT burst within window_steps (latency > window) is weakened by the measured -5.9%. The asymmetry (+21.3% vs -5.9%) is the measured biology, not a tuned ratio; the latency threshold is what makes 'non-overlapping' mean OUTSIDE THE ~1s WINDOW (Butts: -6.2% at -1100ms) rather than merely 'not this step'. Depression is what makes the rule SELECTIVE rather than accumulative. Disjoint from bh_potentiate by construction (Lte vs Gt on the same latency), so the fixpoint cannot race them.",
+   "match_type": "Synapse",
+   "match": [
+    [
+     "c",
+     "pre",
+     "s"
+    ],
+    [
+     "s",
+     "post",
+     "u"
+    ],
+    [
+     "r",
+     "has_cell",
+     "c"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "WaveParams"
+        }
+       },
+       "key": "oja"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "WaveParams"
+        }
+       },
+       "key": "bcm"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "s"
+       },
+       "key": "touched"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "bursting"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Minus",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "r"
+        },
+        "key": "step"
+       },
+       "b": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "c"
+        },
+        "key": "last_burst"
+       }
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "WaveParams"
+        }
+       },
+       "key": "window_steps"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "s",
+     "weight",
+     {
+      "__term__": {
+       "type": "Times",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "s"
+         },
+         "key": "weight"
+        },
+        {
+         "type": "Minus",
+         "a": {
+          "type": "Lit",
+          "value": 1.0
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "PickUnique",
+           "source": {
+            "type": "NodesOfType",
+            "node_type": "WaveParams"
+           }
+          },
+          "key": "depress_rate"
+         }
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "s",
+     "touched",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "bh_sum_weights",
+   "comment": "HOMEOSTASIS, PHASE 1 (Turrigiano synaptic scaling). Once every synapse on a bursting unit has been updated this step (Not Exists an untouched one \u2014 the data dependency that orders this AFTER learning without any Python sequencing), total the unit's synaptic weight with a Fold. Phase-guarded by wsum_step so it fires once per unit per step; bh_scale's guard requires wsum_step==step, so the fixpoint cannot race the two. SCOPE FIX (measured): the bursting==1 requirement tied homeostasis to winner-take-all. BCM learns on ALL units, so non-winners were never scaled and ran away (theta -> 1.8e5, RF std 25). The 'Not Exists an untouched synapse' guard already means 'this unit learned this step', which is the right condition \u2014 whoever learned gets scaled.",
+   "match_type": "Unit",
+   "match": [
+    [
+     "r",
+     "has_unit",
+     "u"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "WaveParams"
+        }
+       },
+       "key": "oja"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "wsum_step"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "InNeighbours",
+        "node": {
+         "type": "Var",
+         "name": "u"
+        },
+        "edge_type": "post",
+        "any_type": false
+       },
+       "var_name": "q",
+       "predicate": {
+        "type": "Lt",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "q"
+         },
+         "key": "touched"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "r"
+         },
+         "key": "step"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "u",
+     "wsum",
+     {
+      "__term__": {
+       "type": "Fold",
+       "source": {
+        "type": "InNeighbours",
+        "node": {
+         "type": "Var",
+         "name": "u"
+        },
+        "edge_type": "post",
+        "any_type": false
+       },
+       "var_name": "sy",
+       "acc_name": "acc",
+       "init": {
+        "type": "Lit",
+        "value": 0.0
+       },
+       "body": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Var",
+          "name": "acc"
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "sy"
+          },
+          "key": "weight"
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "u",
+     "wsum_step",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "bh_scale",
+   "comment": "HOMEOSTASIS, PHASE 2 (Turrigiano synaptic scaling). Multiplicatively renormalise every synapse on the unit so its total weight returns to target_sum: w <- w * (target_sum / wsum). MULTIPLICATIVE is the point \u2014 it preserves the RELATIVE pattern the burst rule just learned while removing the runaway, so competition becomes zero-sum. Without it the latency rule's real detection of temporal structure (ordered drives 7x more growth than shuffled) is destroyed by explosion before it can be read. Local: reads only the synapse and its own post unit's total.",
+   "match_type": "Synapse",
+   "match": [
+    [
+     "r",
+     "has_unit",
+     "u"
+    ],
+    [
+     "s",
+     "post",
+     "u"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "WaveParams"
+        }
+       },
+       "key": "oja"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "s"
+       },
+       "key": "scaled_step"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "wsum_step"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "wsum"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "s",
+     "weight",
+     {
+      "__term__": {
+       "type": "Times",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "s"
+         },
+         "key": "weight"
+        },
+        {
+         "type": "Div",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "PickUnique",
+           "source": {
+            "type": "NodesOfType",
+            "node_type": "WaveParams"
+           }
+          },
+          "key": "target_sum"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "u"
+          },
+          "key": "wsum"
+         }
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "s",
+     "scaled_step",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "wv_unit_burst_sustain",
+   "comment": "TEMPORAL EXTENT OF THE POST BURST. A unit that won recently keeps bursting for unit_burst_steps, so its burst has DURATION like the real thing (~1s) rather than lasting exactly one step. This is the missing half of the Butts geometry: the rule measures latency between a pre burst and a post burst, and until BOTH have extent they can only ever coincide at Dt=0. A sustained burst lets a pre cell that fired 1-2 steps earlier overlap the post burst at NON-ZERO latency and potentiate \u2014 which is what makes the order of frames able to matter at all. Fires at most once per unit per step (burst_step guard); disjoint from wv_unit_burst_winner in effect (both only ever set bursting=1).",
+   "match_type": "Unit",
+   "match": [
+    [
+     "r",
+     "has_unit",
+     "u"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "burst_step"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     },
+     {
+      "type": "Gte",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "last_burst"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Minus",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "r"
+        },
+        "key": "step"
+       },
+       "b": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "u"
+        },
+        "key": "last_burst"
+       }
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "WaveParams"
+        }
+       },
+       "key": "unit_burst_steps"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "u",
+     "bursting",
+     1.0
+    ],
+    [
+     "set_attr",
+     "u",
+     "burst_step",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "bcm_potentiate",
+   "comment": "BCM, ABOVE THRESHOLD. A synapse whose PRE burst within window_steps is STRENGTHENED (Butts' +21.3% step) iff the POST unit's drive EXCEEDS its own sliding threshold theta. Unlike the fixed-sign rule this is CONDITIONAL on how strongly the unit is driven relative to its own recent history \u2014 which is the entire point: only patterns that drive the unit better than it is used to being driven get reinforced. SCALE FIX (measured): classic BCM compares y against theta=E[y^2], which only works when y ~ O(1). Here act ~ 8 so theta slid to ~70 and act>theta was NEVER true \u2014 every synapse depressed and RF std collapsed to 0.17. The comparison is therefore act^2 vs theta (this step's squared drive against its own running mean): identical BCM semantics, scale-free.",
+   "match_type": "Synapse",
+   "match": [
+    [
+     "c",
+     "pre",
+     "s"
+    ],
+    [
+     "s",
+     "post",
+     "u"
+    ],
+    [
+     "r",
+     "has_cell",
+     "c"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "WaveParams"
+        }
+       },
+       "key": "oja"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "WaveParams"
+        }
+       },
+       "key": "bcm"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "s"
+       },
+       "key": "touched"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "act_step"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     },
+     {
+      "type": "Lte",
+      "a": {
+       "type": "Minus",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "r"
+        },
+        "key": "step"
+       },
+       "b": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "c"
+        },
+        "key": "last_burst"
+       }
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "WaveParams"
+        }
+       },
+       "key": "window_steps"
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Times",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "u"
+         },
+         "key": "act"
+        },
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "u"
+         },
+         "key": "act"
+        }
+       ]
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "theta"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "s",
+     "weight",
+     {
+      "__term__": {
+       "type": "Times",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "s"
+         },
+         "key": "weight"
+        },
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Lit",
+           "value": 1.0
+          },
+          {
+           "type": "Attr",
+           "node": {
+            "type": "PickUnique",
+            "source": {
+             "type": "NodesOfType",
+             "node_type": "WaveParams"
+            }
+           },
+           "key": "enhance_rate"
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "s",
+     "touched",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "bcm_depress",
+   "comment": "BCM, BELOW THRESHOLD \u2014 the sign flip the fixed-sign rule does not have. A synapse whose PRE burst within the window is WEAKENED (Butts' -5.9% step) iff the unit's drive is BELOW theta. This is what makes vision able to sharpen instead of blur: a weak/ambiguous pattern actively loses ground rather than being reinforced merely for coinciding. SCALE FIX (measured): classic BCM compares y against theta=E[y^2], which only works when y ~ O(1). Here act ~ 8 so theta slid to ~70 and act>theta was NEVER true \u2014 every synapse depressed and RF std collapsed to 0.17. The comparison is therefore act^2 vs theta (this step's squared drive against its own running mean): identical BCM semantics, scale-free.",
+   "match_type": "Synapse",
+   "match": [
+    [
+     "c",
+     "pre",
+     "s"
+    ],
+    [
+     "s",
+     "post",
+     "u"
+    ],
+    [
+     "r",
+     "has_cell",
+     "c"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "WaveParams"
+        }
+       },
+       "key": "oja"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "WaveParams"
+        }
+       },
+       "key": "bcm"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "s"
+       },
+       "key": "touched"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "act_step"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     },
+     {
+      "type": "Lte",
+      "a": {
+       "type": "Minus",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "r"
+        },
+        "key": "step"
+       },
+       "b": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "c"
+        },
+        "key": "last_burst"
+       }
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "WaveParams"
+        }
+       },
+       "key": "window_steps"
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Times",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "u"
+         },
+         "key": "act"
+        },
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "u"
+         },
+         "key": "act"
+        }
+       ]
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "theta"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "s",
+     "weight",
+     {
+      "__term__": {
+       "type": "Times",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "s"
+         },
+         "key": "weight"
+        },
+        {
+         "type": "Minus",
+         "a": {
+          "type": "Lit",
+          "value": 1.0
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "PickUnique",
+           "source": {
+            "type": "NodesOfType",
+            "node_type": "WaveParams"
+           }
+          },
+          "key": "depress_rate"
+         }
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "s",
+     "touched",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "bcm_slide_theta",
+   "comment": "BCM's SLIDING THRESHOLD: theta <- theta + theta_rate*(act^2 - theta), an EMA of the unit's own squared drive. This is the homeostatic core of BCM and the reason it is selective: a unit that starts responding to everything drives its own theta up until only the strongest patterns clear it, so the population differentiates without any winner-take-all being imposed. Local: the unit reads only its own activity.",
+   "match_type": "Unit",
+   "match": [
+    [
+     "r",
+     "has_unit",
+     "u"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "WaveParams"
+        }
+       },
+       "key": "oja"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "WaveParams"
+        }
+       },
+       "key": "bcm"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "theta_step"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "act_step"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "u",
+     "theta",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "u"
+         },
+         "key": "theta"
+        },
+        {
+         "type": "Times",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "PickUnique",
+            "source": {
+             "type": "NodesOfType",
+             "node_type": "WaveParams"
+            }
+           },
+           "key": "theta_rate"
+          },
+          {
+           "type": "Minus",
+           "a": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "u"
+              },
+              "key": "act"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "u"
+              },
+              "key": "act"
+             }
+            ]
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "u"
+            },
+            "key": "theta"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "u",
+     "theta_step",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "bcm_mark_silent",
+   "comment": "BCM leaves a synapse with NO presynaptic burst UNCHANGED (classic BCM: dw \u221d x, so a silent input learns nothing). But bh_sum_weights' ordering guarantee is 'every synapse on this unit has been updated this step' \u2014 so silent synapses must still be MARKED, or homeostasis never fires and the weights run away (measured: RF total 2000+ against target_sum 49). This rule marks them without touching the weight, preserving both the classic BCM semantics AND the data dependency that stops bh_scale racing the updates.",
+   "match_type": "Synapse",
+   "match": [
+    [
+     "c",
+     "pre",
+     "s"
+    ],
+    [
+     "s",
+     "post",
+     "u"
+    ],
+    [
+     "r",
+     "has_cell",
+     "c"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "WaveParams"
+        }
+       },
+       "key": "oja"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "WaveParams"
+        }
+       },
+       "key": "bcm"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "s"
+       },
+       "key": "touched"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "act_step"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Minus",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "r"
+        },
+        "key": "step"
+       },
+       "b": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "c"
+        },
+        "key": "last_burst"
+       }
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "WaveParams"
+        }
+       },
+       "key": "window_steps"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "s",
+     "touched",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "oja_learn",
+   "comment": "OJA'S RULE, per synapse: w <- w*(1 - eta*y^2) + eta*y*x, with y = the post unit's own drive (act) and x = 1 iff this synapse's PRE cell burst within the latency window. The decay term -eta*y^2*w is what makes this a CONTRACTION: it has a stable non-zero fixed point (the leading principal component of the input), which is exactly what fixed-sign (never converges, decays through the random floor) and BCM (converges to zero structure) both lack. Purely local \u2014 the rule reads only the synapse, its own pre cell, and its post unit. Winner-take-all is retained (u.bursting==1) so the population differentiates rather than every unit chasing the same component; that is the same pairing L0's vg_learn_kernel_oja already uses. Oja self-normalises, so homeostasis is gated OFF under oja=1 \u2014 bh_scale would fight the decay term.",
+   "match_type": "Synapse",
+   "match": [
+    [
+     "c",
+     "pre",
+     "s"
+    ],
+    [
+     "s",
+     "post",
+     "u"
+    ],
+    [
+     "r",
+     "has_cell",
+     "c"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "WaveParams"
+        }
+       },
+       "key": "oja"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "s"
+       },
+       "key": "touched"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "act_step"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "bursting"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "s",
+     "weight",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Times",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "s"
+           },
+           "key": "weight"
+          },
+          {
+           "type": "Minus",
+           "a": {
+            "type": "Lit",
+            "value": 1.0
+           },
+           "b": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "PickUnique",
+               "source": {
+                "type": "NodesOfType",
+                "node_type": "WaveParams"
+               }
+              },
+              "key": "oja_eta"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "u"
+              },
+              "key": "act"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "u"
+              },
+              "key": "act"
+             }
+            ]
+           }
+          }
+         ]
+        },
+        {
+         "type": "Times",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "PickUnique",
+            "source": {
+             "type": "NodesOfType",
+             "node_type": "WaveParams"
+            }
+           },
+           "key": "oja_eta"
+          },
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "u"
+           },
+           "key": "act"
+          },
+          {
+           "type": "IfThenElse",
+           "cond": {
+            "type": "Lte",
+            "a": {
+             "type": "Minus",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "r"
+              },
+              "key": "step"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "c"
+              },
+              "key": "last_burst"
+             }
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "PickUnique",
+              "source": {
+               "type": "NodesOfType",
+               "node_type": "WaveParams"
+              }
+             },
+             "key": "window_steps"
+            }
+           },
+           "then": {
+            "type": "Lit",
+            "value": 1.0
+           },
+           "other": {
+            "type": "Lit",
+            "value": 0.0
+           }
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "s",
+     "touched",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   ]
+  }
+ ]
+}

@@ -1,0 +1,118 @@
+{
+  "id": "cloud_storage_tiers_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "object_storage_API",
+  "in_microtheory": "cloud_infrastructure",
+  "description": "Cloud storage tiers decomposed. S3 storage classes + lifecycle, EBS volume types, EFS performance modes, Glacier retrieval, cross-region replication, S3 Object Lock, request pricing optimisation.",
+  "sub_mechanisms": [
+    {
+      "name": "S3_Standard_class",
+      "definition": "Default class. 99.99% availability. Low latency. Most expensive per GB ($0.023).",
+      "why": "Active data. Default until proven otherwise. Lifecycle to cheaper after period.",
+      "category": "cloud_storage_mechanism"
+    },
+    {
+      "name": "S3_IA_one_zone",
+      "definition": "Infrequent Access. ~50% cheaper than Standard. Per-GB retrieval charge.",
+      "why": "Backup, less-accessed data. One-Zone IA: cheaper still, single AZ (no AZ failure tolerance).",
+      "category": "cloud_storage_mechanism"
+    },
+    {
+      "name": "S3_Glacier_Instant",
+      "definition": "Archive tier with millisecond retrieval. Cheap per GB; per-GB retrieval.",
+      "why": "Compliance retention with occasional read. Modern alternative to legacy Glacier for use cases needing fast access.",
+      "category": "cloud_storage_mechanism"
+    },
+    {
+      "name": "S3_Glacier_Flexible",
+      "definition": "Cheaper. Retrieval: minutes (expedited) to hours (bulk).",
+      "why": "Long-term archives with rare access. Cost: pay for retrieval (free up to 10 GB/mo). 90-day minimum storage.",
+      "category": "cloud_storage_mechanism"
+    },
+    {
+      "name": "S3_Deep_Archive",
+      "definition": "Cheapest. ~$0.00099/GB. 12-hour minimum retrieval. 180-day minimum storage.",
+      "why": "Compliance archive: regulatory data kept years. Cheapest known storage. Glacier vault lock for WORM.",
+      "category": "cloud_storage_mechanism"
+    },
+    {
+      "name": "S3_Intelligent_Tiering",
+      "definition": "Auto-move between Frequent + Infrequent + Archive based on access pattern. Small monitoring fee.",
+      "why": "Set-and-forget cost optimisation. Unknown access patterns. Modern default for general workloads.",
+      "category": "cloud_storage_mechanism"
+    },
+    {
+      "name": "S3_lifecycle_rules",
+      "definition": "Transition objects between classes based on age. Or expire (delete).",
+      "why": "Automated cost optimisation. 'Standard → IA after 30d → Glacier after 90d → expire after 7 years'. Standard FinOps pattern.",
+      "category": "cloud_storage_mechanism"
+    },
+    {
+      "name": "EBS_gp3_vs_io2",
+      "definition": "gp3: $0.08/GB, provisioned IOPS independent. io2: $0.125/GB + IOPS, max 256K IOPS, multi-attach.",
+      "why": "gp3 default for most workloads. io2 for critical databases needing > 16K IOPS or multi-attach. gp2 deprecated.",
+      "category": "cloud_storage_mechanism"
+    },
+    {
+      "name": "EBS_snapshot_incremental",
+      "definition": "First snapshot full; subsequent incremental. Stored in S3 (managed).",
+      "why": "Cheap backup. Restore: instant attach with lazy load. Cross-region copy. Standard EBS backup pattern.",
+      "category": "cloud_storage_mechanism"
+    },
+    {
+      "name": "EFS_general_vs_max_IO",
+      "definition": "General: lower latency. MaxIO: higher throughput, higher latency.",
+      "why": "Choose by workload. Most: General. Big data: MaxIO. EFS Standard vs IA tier for cost.",
+      "category": "cloud_storage_mechanism"
+    },
+    {
+      "name": "S3_cross_region_replication",
+      "definition": "Async replicate objects to bucket in different region. Versioning required.",
+      "why": "DR. Compliance (data sovereignty). Cost: storage + cross-region transfer. Per-object delete replication explicit.",
+      "category": "cloud_storage_mechanism"
+    },
+    {
+      "name": "S3_Object_Lock_WORM",
+      "definition": "Write Once Read Many. Governance (override) or Compliance (immutable) mode.",
+      "why": "Regulatory compliance. Cannot delete or modify for retention period. Used for legal hold, audit logs.",
+      "category": "cloud_storage_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "Intelligent_Tiering_optimal_for_unknown_patterns",
+      "if": ["access pattern is unpredictable"],
+      "then": ["S3 Intelligent-Tiering outperforms manual lifecycle"],
+      "why": "Auto-moves based on actual access. Manual: best guess on access pattern, often wrong. Small monitoring fee but typically nets savings.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "Deep_Archive_for_compliance_retention",
+      "if": ["data must be retained per regulation but rarely accessed"],
+      "then": ["Deep Archive minimises storage cost"],
+      "why": "$0.00099/GB vs $0.023 Standard = 23x cheaper. Acceptable: 12h retrieval for rare regulatory access. Standard for healthcare, finance retention.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "gp3_default_io2_for_critical_dbs",
+      "if": ["new EBS volume for application"],
+      "then": ["gp3 is the default; io2 only for high-IOPS critical DBs"],
+      "why": "gp3 supports 16K IOPS, multi-AZ snapshots. io2: 256K IOPS, multi-attach, more expensive. Most workloads fit gp3.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "lifecycle_rules_save_dramatically",
+      "if": ["data ages with predictable pattern"],
+      "then": ["lifecycle to Glacier saves 95%+ on storage cost"],
+      "why": "Standard $0.023/GB → Deep Archive $0.001/GB. Setting one lifecycle rule reduces cost 95%. Major FinOps lever.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "Object_Lock_for_regulatory_immutability",
+      "if": ["regulatory requirement for immutable storage"],
+      "then": ["S3 Object Lock satisfies"],
+      "why": "Compliance mode: cannot delete or modify, even by root. Satisfies SEC 17a-4, GDPR retention. Standard for regulated industries.",
+      "soundness_category": "referential_transparency"
+    }
+  ]
+}

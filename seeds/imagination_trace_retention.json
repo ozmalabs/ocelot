@@ -1,0 +1,129 @@
+{
+ "id": "imagination_trace_retention",
+ "version": "1.0.0",
+ "depends_on": [],
+ "productions": [
+  {
+   "provenance": "seed:imagination_trace_retention:imagined-1",
+   "src": {
+    "type": "Imagination",
+    "var": "s"
+   },
+   "edge_type": "imagined",
+   "tgt": {
+    "type": "ImaginedConclusion",
+    "var": "t"
+   }
+  }
+ ],
+ "rules": [
+  {
+   "name": "itr_retire_null_conclusions_of_superseded_imagination",
+   "area": "general_cognition",
+   "latency_class": "hard_realtime",
+   "batch": true,
+   "comment": "A conclusion that survived because nothing live could contradict it carries no information once its imagination is superseded; the parent's n_survived already records how many there were. Discarded conclusions -- the caught fantasies -- are never retired, and the newest imagination's trace is never touched.",
+   "match": [
+    [
+     "imagination",
+     "imagined",
+     "conclusion"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "imagination"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "regrounded"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "conclusion"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "survived"
+      }
+     },
+     {
+      "type": "Exists",
+      "source": {
+       "type": "NodesOfType",
+       "node_type": "Imagination"
+      },
+      "var_name": "newer",
+      "predicate": {
+       "type": "And",
+       "items": [
+        {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "newer"
+          },
+          "key": "status"
+         },
+         "b": {
+          "type": "Lit",
+          "value": "regrounded"
+         }
+        },
+        {
+         "type": "Gt",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "newer"
+          },
+          "key": "ts"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "imagination"
+          },
+          "key": "ts"
+         }
+        }
+       ]
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "imagination",
+     "trace_compacted",
+     1
+    ],
+    [
+     "del_node",
+     "conclusion"
+    ]
+   ]
+  }
+ ]
+}

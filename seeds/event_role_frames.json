@@ -1,0 +1,191 @@
+{
+  "id": "event_role_frames",
+  "version": "0.3.0",
+  "depends_on": [
+    "reading_constructions"
+  ],
+  "description": "Graph-native EVENT GROUNDING (the Jabberwock grows its own argument roles). v0.2.0 (Phase 2): the CLAUSE-GRAPH VOCABULARY (EventClause/Token node types + has_token/next productions) PLUS the VerbFrame CODEBOOK (the `frames` array): one VerbFrame per step of _event_predication's role-assignment ladder (svo_base -> nom/acc case binding -> collision clear -> OSV fronted object -> locative inversion), each a priority + a guard Term (over the clause's precomputed candidate attrs and running-state r_* attrs) + an effect list. reading_collapse._decode_roles_graph reads these frames from the graph, evaluates each guard via the Rust `evaluate`, and applies the applicable frames in priority order to the running state (r_subj/r_obj/\u2026) \u2014 the graph-native replacement for the Python _resolve_roles_py cascade, byte-identical to _event_predication over the frozen Aesop+Grimm corpus. _ground_event emits predications from the resolved roles. Phase 3 adds the role-growth rungs so a novel role mints from a residual. Loaded idempotently by reading_collapse.ensure_event_frames via the Rust load_seed_manifest.",
+  "microtheory": {
+    "name": "event_role_frames",
+    "description": "an event clause is a graph of Token nodes; role assignment is DECODE over a VerbFrame codebook (priority-ordered guard/effect frames, evaluated by the Rust `evaluate`); a novel role grows from a residual via the sd loop."
+  },
+  "nodes": [],
+  "edges": [],
+  "productions": [
+    {
+      "provenance": "seed:event_role_frames:has_token",
+      "src": {
+        "type": "EventClause",
+        "var": "clause"
+      },
+      "edge_type": "has_token",
+      "tgt": {
+        "type": "Token",
+        "var": "tok"
+      }
+    },
+    {
+      "provenance": "seed:event_role_frames:next",
+      "src": {
+        "type": "Token",
+        "var": "a"
+      },
+      "edge_type": "next",
+      "tgt": {
+        "type": "Token",
+        "var": "b"
+      }
+    },
+    {
+      "provenance": "seed:event_role_frames:has_clause",
+      "src": {
+        "type": "Agent",
+        "var": "ag"
+      },
+      "edge_type": "has_clause",
+      "tgt": {
+        "type": "EventClause",
+        "var": "clause"
+      }
+    },
+    {
+      "provenance": "seed:event_role_frames:role_minted",
+      "src": {
+        "type": "EventClause",
+        "var": "clause"
+      },
+      "edge_type": "role_minted",
+      "tgt": {
+        "type": "RoleFrame",
+        "var": "rf"
+      }
+    }
+  ],
+  "rules": [],
+  "frames": [
+    {
+      "type": "VerbFrame",
+      "attrs": {
+        "codebook": "event_roles",
+        "name": "svo_base",
+        "priority": 0.0,
+        "note": "default SVO reading \u2014 subject before the verb, object after (PP-truncated); the byte-for-byte position baseline every override starts from.",
+        "guard_json": "{\"type\":\"Not\",\"arg\":{\"type\":\"Lt\",\"a\":{\"type\":\"Lit\",\"value\":1.0},\"b\":{\"type\":\"Lit\",\"value\":0.0}}}",
+        "effects_json": "[[\"r_subj\",{\"type\":\"Attr\",\"node\":{\"type\":\"Var\",\"name\":\"c\"},\"key\":\"def_subj\"}],[\"r_subj_span\",{\"type\":\"Attr\",\"node\":{\"type\":\"Var\",\"name\":\"c\"},\"key\":\"subj_span\"}],[\"r_obj\",{\"type\":\"Attr\",\"node\":{\"type\":\"Var\",\"name\":\"c\"},\"key\":\"def_obj\"}],[\"r_obj_span\",{\"type\":\"Attr\",\"node\":{\"type\":\"Var\",\"name\":\"c\"},\"key\":\"obj_span\"}],[\"r_obj_span_head\",{\"type\":\"Attr\",\"node\":{\"type\":\"Var\",\"name\":\"c\"},\"key\":\"inv_subj_head\"}],[\"r_inverted\",{\"type\":\"Lit\",\"value\":0.0}]]"
+      }
+    },
+    {
+      "type": "VerbFrame",
+      "attrs": {
+        "codebook": "event_roles",
+        "name": "nom_subject",
+        "priority": 10.0,
+        "note": "CASE: a nominative pronoun (he/she/they) binds SUBJECT wherever it sits, overriding the positional subject.",
+        "guard_json": "{\"type\":\"Not\",\"arg\":{\"type\":\"Lt\",\"a\":{\"type\":\"Attr\",\"node\":{\"type\":\"Var\",\"name\":\"c\"},\"key\":\"nom_idx\"},\"b\":{\"type\":\"Lit\",\"value\":0.0}}}",
+        "effects_json": "[[\"r_subj\",{\"type\":\"Attr\",\"node\":{\"type\":\"Var\",\"name\":\"c\"},\"key\":\"nom_surface\"}],[\"r_subj_span\",{\"type\":\"Attr\",\"node\":{\"type\":\"Var\",\"name\":\"c\"},\"key\":\"nom_surface\"}]]"
+      }
+    },
+    {
+      "type": "VerbFrame",
+      "attrs": {
+        "codebook": "event_roles",
+        "name": "nom_postposed",
+        "priority": 11.0,
+        "note": "a post-verbal nominative subject (nom_i > vi) marks a verb-subject inversion ('rested he').",
+        "guard_json": "{\"type\":\"And\",\"items\":[{\"type\":\"Not\",\"arg\":{\"type\":\"Lt\",\"a\":{\"type\":\"Attr\",\"node\":{\"type\":\"Var\",\"name\":\"c\"},\"key\":\"nom_idx\"},\"b\":{\"type\":\"Lit\",\"value\":0.0}}},{\"type\":\"Gt\",\"a\":{\"type\":\"Attr\",\"node\":{\"type\":\"Var\",\"name\":\"c\"},\"key\":\"nom_idx\"},\"b\":{\"type\":\"Attr\",\"node\":{\"type\":\"Var\",\"name\":\"c\"},\"key\":\"main_verb_index\"}}]}",
+        "effects_json": "[[\"r_inverted\",{\"type\":\"Lit\",\"value\":1.0}]]"
+      }
+    },
+    {
+      "type": "VerbFrame",
+      "attrs": {
+        "codebook": "event_roles",
+        "name": "acc_object",
+        "priority": 20.0,
+        "note": "CASE: a non-prepositional accusative pronoun (him/her/them) distinct from the subject binds OBJECT wherever it sits.",
+        "guard_json": "{\"type\":\"And\",\"items\":[{\"type\":\"Not\",\"arg\":{\"type\":\"Lt\",\"a\":{\"type\":\"Attr\",\"node\":{\"type\":\"Var\",\"name\":\"c\"},\"key\":\"acc_idx\"},\"b\":{\"type\":\"Lit\",\"value\":0.0}}},{\"type\":\"Not\",\"arg\":{\"type\":\"Eq\",\"a\":{\"type\":\"Attr\",\"node\":{\"type\":\"Var\",\"name\":\"c\"},\"key\":\"acc_surface\"},\"b\":{\"type\":\"Attr\",\"node\":{\"type\":\"Var\",\"name\":\"c\"},\"key\":\"r_subj\"}}}]}",
+        "effects_json": "[[\"r_obj\",{\"type\":\"Attr\",\"node\":{\"type\":\"Var\",\"name\":\"c\"},\"key\":\"acc_surface\"}],[\"r_obj_span\",{\"type\":\"Attr\",\"node\":{\"type\":\"Var\",\"name\":\"c\"},\"key\":\"acc_surface\"}],[\"r_obj_span_head\",{\"type\":\"Attr\",\"node\":{\"type\":\"Var\",\"name\":\"c\"},\"key\":\"acc_surface\"}]]"
+      }
+    },
+    {
+      "type": "VerbFrame",
+      "attrs": {
+        "codebook": "event_roles",
+        "name": "acc_fronted",
+        "priority": 21.0,
+        "note": "a pre-verbal accusative pronoun (acc_i < vi) is a fronted object \u2014 inversion.",
+        "guard_json": "{\"type\":\"And\",\"items\":[{\"type\":\"And\",\"items\":[{\"type\":\"Not\",\"arg\":{\"type\":\"Lt\",\"a\":{\"type\":\"Attr\",\"node\":{\"type\":\"Var\",\"name\":\"c\"},\"key\":\"acc_idx\"},\"b\":{\"type\":\"Lit\",\"value\":0.0}}},{\"type\":\"Not\",\"arg\":{\"type\":\"Eq\",\"a\":{\"type\":\"Attr\",\"node\":{\"type\":\"Var\",\"name\":\"c\"},\"key\":\"acc_surface\"},\"b\":{\"type\":\"Attr\",\"node\":{\"type\":\"Var\",\"name\":\"c\"},\"key\":\"r_subj\"}}}]},{\"type\":\"Lt\",\"a\":{\"type\":\"Attr\",\"node\":{\"type\":\"Var\",\"name\":\"c\"},\"key\":\"acc_idx\"},\"b\":{\"type\":\"Attr\",\"node\":{\"type\":\"Var\",\"name\":\"c\"},\"key\":\"main_verb_index\"}}]}",
+        "effects_json": "[[\"r_inverted\",{\"type\":\"Lit\",\"value\":1.0}]]"
+      }
+    },
+    {
+      "type": "VerbFrame",
+      "attrs": {
+        "codebook": "event_roles",
+        "name": "clear_collision",
+        "priority": 30.0,
+        "note": "a default-SVO object that collided with the (re)bound subject is spurious \u2014 clear it.",
+        "guard_json": "{\"type\":\"And\",\"items\":[{\"type\":\"Not\",\"arg\":{\"type\":\"Eq\",\"a\":{\"type\":\"Attr\",\"node\":{\"type\":\"Var\",\"name\":\"c\"},\"key\":\"r_obj\"},\"b\":{\"type\":\"Lit\",\"value\":\"\"}}},{\"type\":\"Eq\",\"a\":{\"type\":\"Attr\",\"node\":{\"type\":\"Var\",\"name\":\"c\"},\"key\":\"r_obj\"},\"b\":{\"type\":\"Attr\",\"node\":{\"type\":\"Var\",\"name\":\"c\"},\"key\":\"r_subj\"}}]}",
+        "effects_json": "[[\"r_obj\",{\"type\":\"Lit\",\"value\":\"\"}],[\"r_obj_span\",{\"type\":\"Lit\",\"value\":\"\"}],[\"r_obj_span_head\",{\"type\":\"Lit\",\"value\":\"\"}]]"
+      }
+    },
+    {
+      "type": "VerbFrame",
+      "attrs": {
+        "codebook": "event_roles",
+        "name": "osv_fronted_object",
+        "priority": 40.0,
+        "note": "OSV: a pre-verbal nominative subject with the object still open takes the DP abutting the subject pronoun on its left as the fronted object ('the manxome foe he sought').",
+        "guard_json": "{\"type\":\"And\",\"items\":[{\"type\":\"Not\",\"arg\":{\"type\":\"Lt\",\"a\":{\"type\":\"Attr\",\"node\":{\"type\":\"Var\",\"name\":\"c\"},\"key\":\"nom_idx\"},\"b\":{\"type\":\"Lit\",\"value\":0.0}}},{\"type\":\"Lt\",\"a\":{\"type\":\"Attr\",\"node\":{\"type\":\"Var\",\"name\":\"c\"},\"key\":\"nom_idx\"},\"b\":{\"type\":\"Attr\",\"node\":{\"type\":\"Var\",\"name\":\"c\"},\"key\":\"main_verb_index\"}},{\"type\":\"Eq\",\"a\":{\"type\":\"Attr\",\"node\":{\"type\":\"Var\",\"name\":\"c\"},\"key\":\"r_obj\"},\"b\":{\"type\":\"Lit\",\"value\":\"\"}},{\"type\":\"Not\",\"arg\":{\"type\":\"Eq\",\"a\":{\"type\":\"Attr\",\"node\":{\"type\":\"Var\",\"name\":\"c\"},\"key\":\"fronted_head\"},\"b\":{\"type\":\"Lit\",\"value\":\"\"}}},{\"type\":\"Not\",\"arg\":{\"type\":\"Eq\",\"a\":{\"type\":\"Attr\",\"node\":{\"type\":\"Var\",\"name\":\"c\"},\"key\":\"fronted_head\"},\"b\":{\"type\":\"Attr\",\"node\":{\"type\":\"Var\",\"name\":\"c\"},\"key\":\"r_subj\"}}}]}",
+        "effects_json": "[[\"r_obj\",{\"type\":\"Attr\",\"node\":{\"type\":\"Var\",\"name\":\"c\"},\"key\":\"fronted_head\"}],[\"r_obj_span\",{\"type\":\"Attr\",\"node\":{\"type\":\"Var\",\"name\":\"c\"},\"key\":\"fronted_span\"}],[\"r_obj_span_head\",{\"type\":\"Attr\",\"node\":{\"type\":\"Var\",\"name\":\"c\"},\"key\":\"fronted_head\"}],[\"r_inverted\",{\"type\":\"Lit\",\"value\":1.0}]]"
+      }
+    },
+    {
+      "type": "VerbFrame",
+      "attrs": {
+        "codebook": "event_roles",
+        "name": "locative_inversion_subject",
+        "priority": 50.0,
+        "note": "VS / locative inversion: a fronted adjunct PP consuming the whole pre-verb span (adj_end >= vi) makes the post-verb nominal the post-posed SUBJECT ('Into the room walked a tall man').",
+        "guard_json": "{\"type\":\"And\",\"items\":[{\"type\":\"Not\",\"arg\":{\"type\":\"Lt\",\"a\":{\"type\":\"Attr\",\"node\":{\"type\":\"Var\",\"name\":\"c\"},\"key\":\"lead_pp\"},\"b\":{\"type\":\"Lit\",\"value\":1.0}}},{\"type\":\"Not\",\"arg\":{\"type\":\"Lt\",\"a\":{\"type\":\"Attr\",\"node\":{\"type\":\"Var\",\"name\":\"c\"},\"key\":\"adj_end\"},\"b\":{\"type\":\"Attr\",\"node\":{\"type\":\"Var\",\"name\":\"c\"},\"key\":\"main_verb_index\"}}},{\"type\":\"Not\",\"arg\":{\"type\":\"Eq\",\"a\":{\"type\":\"Attr\",\"node\":{\"type\":\"Var\",\"name\":\"c\"},\"key\":\"r_obj_span_head\"},\"b\":{\"type\":\"Lit\",\"value\":\"\"}}}]}",
+        "effects_json": "[[\"r_subj\",{\"type\":\"Attr\",\"node\":{\"type\":\"Var\",\"name\":\"c\"},\"key\":\"r_obj_span_head\"}],[\"r_subj_span\",{\"type\":\"Attr\",\"node\":{\"type\":\"Var\",\"name\":\"c\"},\"key\":\"r_obj_span\"}],[\"r_inverted\",{\"type\":\"Lit\",\"value\":1.0}]]"
+      }
+    },
+    {
+      "type": "VerbFrame",
+      "attrs": {
+        "codebook": "event_roles",
+        "name": "locative_inversion_oblique",
+        "priority": 51.0,
+        "note": "\u2026and the fronted PP's own head fills the OBLIQUE complement when it differs from the post-posed subject (both roles fill).",
+        "guard_json": "{\"type\":\"And\",\"items\":[{\"type\":\"And\",\"items\":[{\"type\":\"Not\",\"arg\":{\"type\":\"Lt\",\"a\":{\"type\":\"Attr\",\"node\":{\"type\":\"Var\",\"name\":\"c\"},\"key\":\"lead_pp\"},\"b\":{\"type\":\"Lit\",\"value\":1.0}}},{\"type\":\"Not\",\"arg\":{\"type\":\"Lt\",\"a\":{\"type\":\"Attr\",\"node\":{\"type\":\"Var\",\"name\":\"c\"},\"key\":\"adj_end\"},\"b\":{\"type\":\"Attr\",\"node\":{\"type\":\"Var\",\"name\":\"c\"},\"key\":\"main_verb_index\"}}},{\"type\":\"Not\",\"arg\":{\"type\":\"Eq\",\"a\":{\"type\":\"Attr\",\"node\":{\"type\":\"Var\",\"name\":\"c\"},\"key\":\"r_obj_span_head\"},\"b\":{\"type\":\"Lit\",\"value\":\"\"}}}]},{\"type\":\"Not\",\"arg\":{\"type\":\"Eq\",\"a\":{\"type\":\"Attr\",\"node\":{\"type\":\"Var\",\"name\":\"c\"},\"key\":\"pp_head\"},\"b\":{\"type\":\"Lit\",\"value\":\"\"}}},{\"type\":\"Not\",\"arg\":{\"type\":\"Eq\",\"a\":{\"type\":\"Attr\",\"node\":{\"type\":\"Var\",\"name\":\"c\"},\"key\":\"pp_head\"},\"b\":{\"type\":\"Attr\",\"node\":{\"type\":\"Var\",\"name\":\"c\"},\"key\":\"r_subj\"}}}]}",
+        "effects_json": "[[\"r_obj\",{\"type\":\"Attr\",\"node\":{\"type\":\"Var\",\"name\":\"c\"},\"key\":\"pp_head\"}],[\"r_obj_span\",{\"type\":\"Attr\",\"node\":{\"type\":\"Var\",\"name\":\"c\"},\"key\":\"pp_span\"}]]"
+      }
+    },
+    {
+      "type": "VerbFrame",
+      "attrs": {
+        "codebook": "event_roles",
+        "name": "locative_inversion_no_oblique",
+        "priority": 52.0,
+        "note": "\u2026else (no distinct PP head) the inverted clause has no core object.",
+        "guard_json": "{\"type\":\"And\",\"items\":[{\"type\":\"And\",\"items\":[{\"type\":\"Not\",\"arg\":{\"type\":\"Lt\",\"a\":{\"type\":\"Attr\",\"node\":{\"type\":\"Var\",\"name\":\"c\"},\"key\":\"lead_pp\"},\"b\":{\"type\":\"Lit\",\"value\":1.0}}},{\"type\":\"Not\",\"arg\":{\"type\":\"Lt\",\"a\":{\"type\":\"Attr\",\"node\":{\"type\":\"Var\",\"name\":\"c\"},\"key\":\"adj_end\"},\"b\":{\"type\":\"Attr\",\"node\":{\"type\":\"Var\",\"name\":\"c\"},\"key\":\"main_verb_index\"}}},{\"type\":\"Not\",\"arg\":{\"type\":\"Eq\",\"a\":{\"type\":\"Attr\",\"node\":{\"type\":\"Var\",\"name\":\"c\"},\"key\":\"r_obj_span_head\"},\"b\":{\"type\":\"Lit\",\"value\":\"\"}}}]},{\"type\":\"Or\",\"items\":[{\"type\":\"Eq\",\"a\":{\"type\":\"Attr\",\"node\":{\"type\":\"Var\",\"name\":\"c\"},\"key\":\"pp_head\"},\"b\":{\"type\":\"Lit\",\"value\":\"\"}},{\"type\":\"Eq\",\"a\":{\"type\":\"Attr\",\"node\":{\"type\":\"Var\",\"name\":\"c\"},\"key\":\"pp_head\"},\"b\":{\"type\":\"Attr\",\"node\":{\"type\":\"Var\",\"name\":\"c\"},\"key\":\"r_subj\"}}]}]}",
+        "effects_json": "[[\"r_obj\",{\"type\":\"Lit\",\"value\":\"\"}],[\"r_obj_span\",{\"type\":\"Lit\",\"value\":\"\"}]]"
+      }
+    }
+  ],
+  "role_emits": [
+    {
+      "type": "RoleFrame",
+      "attrs": {
+        "codebook": "event_roles",
+        "kind": "role_emit",
+        "role": "oblique",
+        "head_attr": "obl_canon_head",
+        "note": "thematic OBLIQUE participant: an ANIMATE PP head (WordNet animacy + the VerbNet prep->role table, precomputed) distinct from subj/obj is registered as [verb, subj, head] so the thematic layer holds it.",
+        "guard_json": "{\"type\":\"And\",\"items\":[{\"type\":\"Not\",\"arg\":{\"type\":\"Eq\",\"a\":{\"type\":\"Attr\",\"node\":{\"type\":\"Var\",\"name\":\"c\"},\"key\":\"obl_canon_head\"},\"b\":{\"type\":\"Lit\",\"value\":\"\"}}},{\"type\":\"Not\",\"arg\":{\"type\":\"Lt\",\"a\":{\"type\":\"Attr\",\"node\":{\"type\":\"Var\",\"name\":\"c\"},\"key\":\"obl_animate\"},\"b\":{\"type\":\"Lit\",\"value\":1.0}}},{\"type\":\"Not\",\"arg\":{\"type\":\"Lt\",\"a\":{\"type\":\"Attr\",\"node\":{\"type\":\"Var\",\"name\":\"c\"},\"key\":\"obl_role_ok\"},\"b\":{\"type\":\"Lit\",\"value\":1.0}}},{\"type\":\"Not\",\"arg\":{\"type\":\"Eq\",\"a\":{\"type\":\"Attr\",\"node\":{\"type\":\"Var\",\"name\":\"c\"},\"key\":\"obl_canon_head\"},\"b\":{\"type\":\"Attr\",\"node\":{\"type\":\"Var\",\"name\":\"c\"},\"key\":\"r_subj\"}}},{\"type\":\"Not\",\"arg\":{\"type\":\"Eq\",\"a\":{\"type\":\"Attr\",\"node\":{\"type\":\"Var\",\"name\":\"c\"},\"key\":\"obl_canon_head\"},\"b\":{\"type\":\"Attr\",\"node\":{\"type\":\"Var\",\"name\":\"c\"},\"key\":\"r_obj\"}}}]}",
+        "residual_signal": "obl_canon_head"
+      }
+    }
+  ]
+}

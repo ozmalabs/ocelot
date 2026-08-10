@@ -1,0 +1,84 @@
+{
+  "id": "cochlear_nucleus",
+  "version": "1.0.0",
+  "depends_on": [
+    "audio"
+  ],
+  "description": "First stage above the cochlea. OnsetEvent + EnvelopeChannel + BroadbandOnset node types and their productions \u2014 graph schema for onset / sustained-response / cross-band coincidence channels. Compute lives in cochlear_nucleus_runtime.",
+  "nodes": [],
+  "edges": [],
+  "productions": [
+    {
+      "src": {
+        "type": "AudioStream",
+        "var": "src"
+      },
+      "edge_type": "has_broadband_onset",
+      "tgt": {
+        "type": "BroadbandOnset",
+        "var": "tgt"
+      },
+      "provenance": "cochlear_nucleus:stream_broadband"
+    },
+    {
+      "src": {
+        "type": "AudioStream",
+        "var": "src"
+      },
+      "edge_type": "has_envelope",
+      "tgt": {
+        "type": "EnvelopeChannel",
+        "var": "tgt"
+      },
+      "provenance": "cochlear_nucleus:stream_envelope"
+    },
+    {
+      "src": {
+        "type": "AudioStream",
+        "var": "src"
+      },
+      "edge_type": "has_onset_event",
+      "tgt": {
+        "type": "OnsetEvent",
+        "var": "tgt"
+      },
+      "provenance": "cochlear_nucleus:stream_onset"
+    },
+    {
+      "src": {
+        "type": "AudioStream",
+        "var": "src"
+      },
+      "edge_type": "has_pipeline_entry",
+      "tgt": {
+        "type": "Operation",
+        "var": "tgt"
+      },
+      "provenance": "cochlear_nucleus:stream_pipeline_entry"
+    },
+    {
+      "src": {
+        "type": "BroadbandOnset",
+        "var": "src"
+      },
+      "edge_type": "contributed_by",
+      "tgt": {
+        "type": "OnsetEvent",
+        "var": "tgt"
+      },
+      "provenance": "cochlear_nucleus:broadband_member"
+    },
+    {
+      "src": {
+        "type": "Operation",
+        "var": "src"
+      },
+      "edge_type": "feeds_into",
+      "tgt": {
+        "type": "Operation",
+        "var": "tgt"
+      },
+      "provenance": "cochlear_nucleus:operation_feeds_into"
+    }
+  ]
+}

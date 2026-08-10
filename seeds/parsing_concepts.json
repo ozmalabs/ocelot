@@ -1,0 +1,86 @@
+{
+  "id": "parsing_concepts",
+  "version": "0.1.0",
+  "description": "The agent's vocabulary for text-to-structure machinery — tokenization, lexical analysis, parsing algorithms, grammar formalisms, abstract syntax trees. The conceptual ground on which the substrate can build (and reason about) its own text-to-graph engine. Substantial overlap with compilers/compiler_theory but specifically oriented toward parsing AS A CAPABILITY the agent reasons about.",
+  "depends_on": ["language_foundation"],
+  "concepts": [
+    {"name": "token", "definition": "Atomic lexical unit produced by tokenization — a word, punctuation mark, number, or operator. The input to parsing.", "category": "lexical_unit"},
+    {"name": "lexeme", "definition": "(In parsing context) The actual character sequence of a token in the source. Distinct from token type. 'foo' is the lexeme; IDENTIFIER is the type.", "category": "lexical_unit"},
+    {"name": "tokenization", "definition": "The process of splitting raw text into tokens. Handles whitespace, comments, punctuation, multi-character operators. Output is a token stream.", "category": "process"},
+    {"name": "lexical_analysis", "definition": "Synonym for tokenization at the compiler-front-end level. The 'lexer' or 'scanner' performs this. Typically driven by regular expressions over the source language's lexical grammar.", "category": "process"},
+    {"name": "parser", "definition": "Component that consumes a token stream and produces a tree representing the syntactic structure of the input. Driven by a grammar.", "category": "component"},
+    {"name": "parse_tree", "definition": "A tree showing how the input derives from the grammar's start symbol via production rules. Each internal node corresponds to a nonterminal; leaves are tokens. Also called concrete syntax tree.", "category": "structure"},
+    {"name": "abstract_syntax_tree", "definition": "A tree representing the syntactic structure of the input with parse-irrelevant details (e.g., parentheses) removed. The 'AST' — the canonical structure downstream tools consume.", "category": "structure"},
+    {"name": "grammar", "definition": "Formal specification of a language's syntax — a set of production rules over terminals and nonterminals plus a designated start symbol.", "category": "formalism"},
+    {"name": "production_rule", "definition": "A rewrite rule of a grammar — 'nonterminal := body'. The body is a sequence of terminals and nonterminals. Defines how the nonterminal can expand.", "category": "formalism"},
+    {"name": "terminal", "definition": "A symbol of a grammar that appears in the parsed input — typically a token type. Cannot be rewritten further.", "category": "formalism"},
+    {"name": "nonterminal", "definition": "A symbol of a grammar that expands via production rules. Represents a syntactic category (Expression, Statement, Phrase). Does not appear in the input.", "category": "formalism"},
+    {"name": "context_free_grammar", "definition": "Grammar where each production's left side is a single nonterminal. The expansion does not depend on context. Sufficient for most programming languages and a useful approximation of natural language syntax.", "category": "grammar_class"},
+    {"name": "regular_grammar", "definition": "Grammar generating a regular language — productions of the form A := aB or A := a. Equivalent in expressive power to finite automata; can be implemented with regex.", "category": "grammar_class"},
+    {"name": "context_sensitive_grammar", "definition": "Grammar where productions may have non-trivial context on their left side. More expressive than CFG; less efficient to parse.", "category": "grammar_class"},
+    {"name": "top_down_parsing", "definition": "Parsing strategy: start from the grammar's start symbol and expand productions to match the input. Includes recursive descent and LL parsers.", "category": "parsing_strategy"},
+    {"name": "bottom_up_parsing", "definition": "Parsing strategy: start from the input tokens and reduce them to the start symbol via productions in reverse. Includes shift-reduce, LR parsers.", "category": "parsing_strategy"},
+    {"name": "recursive_descent_parser", "definition": "A top-down parser implemented as a set of mutually recursive functions, one per nonterminal. Simple to write by hand; restricted to predictive grammars.", "category": "parser_kind"},
+    {"name": "LL_parser", "definition": "Left-to-right, leftmost-derivation parser. LL(k) uses k tokens of lookahead. Predictive; cannot handle left recursion directly.", "category": "parser_kind"},
+    {"name": "LR_parser", "definition": "Left-to-right, rightmost-derivation parser. Bottom-up; uses a state machine + stack. Handles a strict superset of LL grammars. Includes LALR, SLR variants.", "category": "parser_kind"},
+    {"name": "PEG_parser", "definition": "Parsing expression grammar parser. Like CFG but with ordered alternatives — no ambiguity by construction. Implemented with packrat memoization for linear time.", "category": "parser_kind"},
+    {"name": "attribute_grammar", "definition": "A grammar augmented with attributes attached to nonterminals + semantic actions that compute them. The output of parsing is more than the tree — it's the synthesized attributes.", "category": "formalism"},
+    {"name": "semantic_action", "definition": "A code fragment attached to a production that fires when the production is reduced. Builds attributes, AST nodes, or substrate nodes.", "category": "formalism"},
+    {"name": "ambiguity", "definition": "A grammar property: the same input has multiple parse trees. Pathology in language design; resolved by precedence + associativity rules, or grammar refactoring.", "category": "grammar_property"},
+    {"name": "left_recursion", "definition": "A production where the nonterminal recurses on its leftmost position. Causes top-down parsers to loop; refactored by left-factoring or handled by LR parsers.", "category": "grammar_property"},
+    {"name": "lookahead", "definition": "The number of tokens a parser consults beyond the current position to decide between alternatives. LL(1) uses 1 token; PEG can use unbounded lookahead via backtracking.", "category": "parser_property"},
+    {"name": "error_recovery", "definition": "A parser's strategy for continuing after a syntax error rather than halting. Panic-mode skips tokens; phrase-level inserts repairs.", "category": "parser_capability"},
+    {"name": "tokenizer_rule", "definition": "An individual lexer rule mapping a regex pattern to a token type. The lexer fires the longest-matching rule at each position.", "category": "lexer_concept"},
+    {"name": "whitespace_handling", "definition": "Whether and how the tokenizer treats spaces, tabs, newlines. Most languages skip them; some (Python, Haskell) make indentation significant.", "category": "lexer_concept"}
+  ],
+  "rules": [
+    {
+      "name": "tokenization_must_precede_parsing",
+      "if": ["raw text is to be parsed into structure"],
+      "then": ["the text must first be tokenized — split into atomic lexical units", "the parser consumes the token stream, not raw characters"],
+      "why": "Mixing lexical and syntactic concerns is the classic source of parser bugs. The substrate's text-to-graph pipeline should keep them separate."
+    },
+    {
+      "name": "a_grammar_specifies_the_set_of_valid_inputs",
+      "if": ["a parser is to be written for a language"],
+      "then": ["a grammar must be authored specifying the language's valid syntactic forms", "the grammar's class (regular, CFG, CSG, PEG) determines what parsing techniques apply"],
+      "why": "Without a grammar, parsing is ad hoc and fragile. Substrate-grade text-to-graph extraction needs grammars."
+    },
+    {
+      "name": "a_parse_tree_records_the_full_derivation_an_ast_drops_noise",
+      "if": ["the parser produces a tree from the input"],
+      "then": ["the parse tree records every production application (including parentheses, separators)", "an AST keeps only the syntactically significant content for downstream consumers"],
+      "why": "Substrate-grade consumers usually want the AST, not the full derivation."
+    },
+    {
+      "name": "recursive_descent_parsers_cannot_handle_left_recursion_directly",
+      "if": ["a top-down parser is being written for a grammar with left recursion"],
+      "then": ["the grammar must be refactored to eliminate left recursion (left-factoring or rewriting as right recursion)", "OR a different parser kind (LR, PEG with packrat) must be used"],
+      "why": "Naive left-recursive top-down parsers loop forever; this is the single most-bitten compiler-construction issue."
+    },
+    {
+      "name": "an_attribute_grammar_lets_parsing_compute_synthesized_values",
+      "if": ["the goal of parsing is to produce structured data, not just a tree"],
+      "then": ["an attribute grammar with semantic actions can build the structured data during parsing", "the substrate's text-to-graph adapter is naturally expressible as an attribute grammar"],
+      "why": "Substrate-grade text-to-graph is fundamentally a transduction — input tokens → output graph nodes. Attribute grammars are the standard formalism for this transduction."
+    },
+    {
+      "name": "ambiguity_in_a_grammar_must_be_resolved_before_parsing_is_deterministic",
+      "if": ["a grammar has multiple parse trees for some input"],
+      "then": ["the grammar is ambiguous; the parser must choose between trees", "resolution: precedence + associativity, grammar refactoring, or operator-precedence parsing"],
+      "why": "Ambiguous grammars produce nondeterministic results; substrate-grade extraction requires determinism."
+    },
+    {
+      "name": "tokenization_handles_whitespace_and_comments_so_the_parser_does_not",
+      "if": ["the source language has whitespace and comments that don't contribute to syntax"],
+      "then": ["the tokenizer absorbs them — they never reach the parser", "the parser sees a clean token stream"],
+      "why": "Separation of concerns. Whitespace handling in the parser bloats it; in the tokenizer it's a tight loop."
+    },
+    {
+      "name": "error_recovery_lets_a_parser_report_multiple_errors_per_run",
+      "if": ["a parser encounters a syntax error"],
+      "then": ["if it halts, only one error is reported per run", "if it recovers (panic-mode or phrase-level), it continues and finds further errors"],
+      "why": "User-facing parsers need error recovery; the substrate's text-to-graph adapter benefits when ingesting noisy or partially-malformed input."
+    }
+  ]
+}

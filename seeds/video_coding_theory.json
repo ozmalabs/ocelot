@@ -1,0 +1,1224 @@
+{
+ "id": "video_coding_theory",
+ "version": "0.3.1",
+ "depends_on": [
+  "compiler_theory"
+ ],
+ "description": "The agent's conceptual understanding of WHY video codecs are shaped the way they are. Parsing an H.264 / H.265 / AV1 / VVC bitstream is recognition; this Mt is the reasoning. Each concept carries a `why` field — the principle that makes the choice work. Each Rule links concepts into a derivation chain so the agent can answer 'why is there a transform step?' or 'why does AV1 outperform HEVC?' from first principles, not from memorisation. Covers the four main codec families (H.26x, VP9, AV1, VVC), neural video codecs (DCVC family, INR, diffusion-based), the perceptual quality metrics that drive encoder tuning, emerging formats (HDR, volumetric, screen content), and the standards/tooling/patent landscape that shapes architecture as much as compression theory does.",
+ "category_inheritance": "genlMt → compiler_theory. Video coding shares compiler-theory's denotational + algebraic + extensional equivalence vocabulary under a loss budget. Each rule's `soundness_category` field names the compiler-theory category it instantiates: quantisation is denotational_equivalence with bounded error; larger partitions are cost_equivalence; pruning a redundant transform step is extensional_equivalence; the in-loop deblocking filter is referential_transparency (encoder and decoder must agree byte-for-byte).",
+ "concepts": [
+  {
+   "name": "information_content",
+   "definition": "Shannon entropy of a source — the average number of bits needed per symbol given a probability distribution.",
+   "why": "Information theory gives the lower bound: no lossless coder beats entropy. Every compression technique in video coding either reduces entropy (decorrelation) or approaches it (entropy coding).",
+   "category": "foundation"
+  },
+  {
+   "name": "redundancy",
+   "definition": "The gap between a source's raw representation and its information content. Where redundancy exists, compression is possible without information loss.",
+   "why": "Raw video is enormously redundant: nearby pixels look similar (spatial), consecutive frames overlap (temporal), and natural-image statistics are heavily skewed (statistical). All three are exploitable.",
+   "category": "foundation"
+  },
+  {
+   "name": "spatial_redundancy",
+   "definition": "Within-frame correlation: a pixel's value can be largely predicted from its neighbours. Caused by surfaces, textures, and gradients.",
+   "why": "Natural images are smooth on most scales. The DCT concentrates this smoothness into few low-frequency coefficients; quantisation then discards the high-frequency tail cheaply.",
+   "category": "redundancy_kind"
+  },
+  {
+   "name": "temporal_redundancy",
+   "definition": "Between-frame correlation: a frame's content is largely predictable from preceding (and sometimes future) frames. Caused by limited motion + scene continuity.",
+   "why": "Most pixels at time t+1 are at time t shifted by a small motion vector. Encoding (motion + residual) is far cheaper than encoding the whole frame.",
+   "category": "redundancy_kind"
+  },
+  {
+   "name": "statistical_redundancy",
+   "definition": "Non-uniform symbol probability distribution. After decorrelation, residual coefficients are heavily concentrated near zero; motion vectors cluster around small magnitudes; syntax elements have predictable contexts.",
+   "why": "Entropy coding (Huffman, arithmetic, CABAC, ANS) shrinks symbols by assigning shorter codewords to frequent ones. The more skewed the distribution, the closer to entropy bound the coder gets.",
+   "category": "redundancy_kind"
+  },
+  {
+   "name": "prediction",
+   "definition": "Estimating a value from already-decoded context. Intra prediction uses same-frame neighbours; inter prediction uses motion-compensated reference frames.",
+   "why": "What you can predict you don't need to send — you only send the correction (residual). The better the prediction, the smaller the residual, the fewer bits needed.",
+   "category": "mechanism"
+  },
+  {
+   "name": "residual",
+   "definition": "The difference between the source signal and its prediction. The thing actually coded after prediction.",
+   "why": "A good prediction concentrates source energy into a small-magnitude residual with peaked-at-zero distribution — ideal for transform + quantisation + entropy coding.",
+   "category": "mechanism"
+  },
+  {
+   "name": "decorrelation",
+   "definition": "A transform applied to residual blocks that reduces inter-coefficient correlation, concentrating energy into few coefficients (compaction).",
+   "why": "Once correlation is removed, each coefficient can be coded independently without loss of efficiency. The DCT does this near-optimally for natural-image residuals because it approximates the optimal KL transform under stationary Gaussian-Markov assumptions.",
+   "category": "mechanism"
+  },
+  {
+   "name": "quantisation",
+   "definition": "Mapping continuous transform coefficients to a discrete set via integer division (with optional perceptual weighting matrix).",
+   "why": "This is where compression actually pays its rate-distortion bill. The human visual system tolerates high-frequency loss; quantisation steps are tuned to discard exactly that. Larger steps → fewer bits + more distortion.",
+   "category": "mechanism"
+  },
+  {
+   "name": "entropy_coding",
+   "definition": "Lossless coding of the quantised residual + syntax elements using a model of their probability distribution.",
+   "why": "Without entropy coding the quantised values are encoded literally — wasteful when their distribution is skewed. CAVLC uses context-derived VLC tables; CABAC tracks adaptive arithmetic-coding models per syntax element; AV1's multi-symbol AC and ANS variants offer different speed/compression trade-offs.",
+   "category": "mechanism"
+  },
+  {
+   "name": "rate_distortion",
+   "definition": "The fundamental trade-off: for a given source, lower distortion (higher reconstruction quality) requires more bits.",
+   "why": "Every coding decision is a point on the R-D curve. The encoder's job is to operate as close to that curve as compute allows. This is what mode decision, quantisation parameter selection, and lambda-weighted Lagrangian search are about.",
+   "category": "foundation"
+  },
+  {
+   "name": "intra_prediction",
+   "definition": "Predicting a block from its already-decoded left and top neighbours within the same frame.",
+   "why": "Exploits spatial_redundancy without needing previous frames — essential for random access (I-frames) and the first frame in a stream. H.264 has 9 modes for 4x4 blocks; H.265 has 35 angular modes plus DC and planar; AV1 has 56 directional angles plus Paeth, smooth, and recursive filter modes; VVC matches AV1's angle count and adds CCLM.",
+   "category": "mechanism"
+  },
+  {
+   "name": "inter_prediction",
+   "definition": "Predicting a block from a previously-decoded reference frame, displaced by a motion vector.",
+   "why": "Exploits temporal_redundancy directly. Bipredictive blocks (B-frames) average two motion-compensated predictions. Sub-pel motion + interpolation lets the encoder match fractional displacements. Modern codecs extend simple translation to affine, warped, and per-sub-block motion.",
+   "category": "mechanism"
+  },
+  {
+   "name": "motion_estimation",
+   "definition": "The encoder's search for the displacement that minimises the prediction error (often SAD or RD-cost) for a given block in a reference frame.",
+   "why": "Asymmetric: encoder does the expensive search, decoder just applies the resulting MV. Full search is O(W*H); diamond/hexagon patterns are O(log) — most of the speed difference between encoders is here.",
+   "category": "mechanism"
+  },
+  {
+   "name": "motion_compensation",
+   "definition": "Applying a motion vector + sub-pixel interpolation filter to a reference frame to produce a prediction block.",
+   "why": "Spec-defined exactly so encoder and decoder agree byte-for-byte. The filter taps (6-tap for H.264, 8-tap for H.265/AV1/VVC) and clipping order are the standard's fixed choices — encoder must match.",
+   "category": "mechanism"
+  },
+  {
+   "name": "I_frame",
+   "definition": "An intra-only frame: every block uses intra_prediction. No dependence on other frames.",
+   "why": "Provides random-access points for seeking and channel-change. Costs more bits (no inter prediction) but lets the decoder start cold. IDR (Instantaneous Decoder Refresh) frames also flush the reference picture buffer.",
+   "category": "frame_type"
+  },
+  {
+   "name": "P_frame",
+   "definition": "Predictive frame: blocks use either intra or inter prediction from past reference frames.",
+   "why": "The encoder picks per block whether intra or inter wins on R-D cost. Far cheaper than I when temporal coherence is high; falls back to intra for occluded/new regions.",
+   "category": "frame_type"
+  },
+  {
+   "name": "B_frame",
+   "definition": "Bi-predictive frame: blocks may predict from a past AND a future reference, often averaged.",
+   "why": "Symmetric motion (objects moving smoothly through) averages out perfectly — B-frames are dramatically cheaper than P for those regions. The cost is more reordering at the decoder + the encoder must look ahead.",
+   "category": "frame_type"
+  },
+  {
+   "name": "macroblock",
+   "definition": "H.264's fundamental coding unit: 16x16 luma + 8x8 chroma. Can be partitioned to 16x8, 8x16, 8x8 (and further down to 4x4).",
+   "why": "Fixed size simplifies the decoder; partition flexibility within the macroblock lets it adapt to motion boundaries. The 16x16 size matches the era's content + compute trade-off.",
+   "category": "block_structure"
+  },
+  {
+   "name": "coding_tree_unit",
+   "definition": "H.265's hierarchical replacement for the macroblock. CTU can be up to 64x64; recursively split into CUs (down to 8x8), each with its own prediction type.",
+   "why": "Larger CTUs are dramatically more efficient on smooth regions of high-resolution content (less per-block syntax overhead). The hierarchy lets the encoder spend bits where they matter — small blocks on edges, large blocks on flat areas. This single change is most of why H.265 beats H.264 at 4K.",
+   "category": "block_structure"
+  },
+  {
+   "name": "slice",
+   "definition": "An independently-decodable subset of a frame's macroblocks (or CTUs). Each slice has its own header and parses without reference to other slices' state.",
+   "why": "Provides error resilience (one slice loss doesn't kill the whole frame) and parallelism (slices can be decoded concurrently). The standard requires intra-frame syntax independence at slice boundaries.",
+   "category": "structure"
+  },
+  {
+   "name": "DCT",
+   "definition": "The discrete cosine transform applied to a block to express its content as a sum of cosine basis functions of varying spatial frequency.",
+   "why": "Approximates the optimal KL transform for natural-image residuals (Markov-1 with high correlation). Concentrates energy into the top-left low-frequency coefficients; the bottom-right high-frequency coefficients are typically tiny and tolerate aggressive quantisation. H.264 uses an integer DCT (no float, byte-exact across decoders); H.265 and later have DCTs of multiple sizes plus DST and asymmetric variants.",
+   "category": "mechanism"
+  },
+  {
+   "name": "quantisation_matrix",
+   "definition": "A per-coefficient weighting matrix multiplying the quantisation step, giving more aggressive quantisation to high frequencies and finer steps to low ones.",
+   "why": "Models the HVS contrast sensitivity function: humans see low-frequency error easily and high-frequency error poorly. Tuning this matrix is most of perceptual quality engineering.",
+   "category": "mechanism"
+  },
+  {
+   "name": "CAVLC",
+   "definition": "Context-Adaptive Variable Length Coding. H.264's lower-complexity entropy coder. Uses a small set of VLC tables selected per-block based on neighbour statistics.",
+   "why": "Faster + simpler than CABAC, with ~10-15% bitrate penalty. Lives in H.264 Baseline profile for low-end decoders; main/high profile may use CABAC.",
+   "category": "entropy_coder"
+  },
+  {
+   "name": "CABAC",
+   "definition": "Context-Adaptive Binary Arithmetic Coding. Uses arithmetic coding with per-syntax-element probability contexts that update online.",
+   "why": "Closer to entropy bound than CAVLC. The adaptive contexts learn local statistics (e.g. residual magnitude after a zero is small) — gains ~10-15% over CAVLC. H.265 / H.266 are CABAC-only because the H.264 experiment showed it always wins on R-D when compute is available.",
+   "category": "entropy_coder"
+  },
+  {
+   "name": "multi_symbol_arithmetic_coder",
+   "definition": "AV1's entropy coder. Operates on up to 16-symbol alphabets via 15-bit cumulative-distribution-function (CDF) tables, vs CABAC's binary alphabet.",
+   "why": "Avoids the explicit binarisation and per-bin context overhead of CABAC; one CDF lookup encodes a whole syntax-element value. Higher CDF precision tracks rare symbols accurately, and the recursive averaging update rule is hardware-friendly.",
+   "category": "entropy_coder"
+  },
+  {
+   "name": "CDF_probability_table",
+   "definition": "Per-context cumulative distribution stored at 15-bit precision, adapted online by a simple recursive average. The state object of AV1's multi-symbol coder.",
+   "why": "Higher precision than CABAC's range-state probability tracks rare symbols accurately; simple adaptation rule is hardware-friendly and avoids the per-bin update CABAC needs.",
+   "category": "entropy_coder"
+  },
+  {
+   "name": "asymmetric_numeral_systems",
+   "definition": "ANS / rANS / tANS — a family of entropy coders (Duda, 2014) achieving arithmetic-coding compression ratios at Huffman-class speeds.",
+   "why": "rANS encodes ~50% faster than Huffman for 256-symbol alphabets at near-arithmetic-coding entropy. Used by JPEG XL (primary entropy coder), Zstandard, and tracked by AV2 research. The natural successor to CABAC when alphabet size > 2.",
+   "category": "entropy_coder"
+  },
+  {
+   "name": "context_modeling",
+   "definition": "Predict the probability of the next symbol from surrounding decoded context (spatial neighbours, syntax history). The state input to entropy coding.",
+   "why": "Entropy coding's compression is bounded by H(p|context); rich context drops conditional entropy and saves bits at zero quality cost. The art of designing a codec's contexts is the art of identifying which past observations correlate with the symbol about to be coded.",
+   "category": "mechanism"
+  },
+  {
+   "name": "deblocking_filter",
+   "definition": "An in-loop filter applied across block boundaries to suppress blocking artefacts caused by independent block-wise quantisation.",
+   "why": "Quantising each block independently creates visible discontinuities at boundaries. The deblocking filter smooths them based on boundary strength (which depends on inter/intra status, residual coding, MV difference). It's in the reconstruction loop (not post-processing) so encoder and decoder see the same reference for subsequent prediction.",
+   "category": "in_loop_filter"
+  },
+  {
+   "name": "sample_adaptive_offset",
+   "definition": "An H.265 in-loop filter applied after deblocking that adds a small per-band or per-edge offset to reconstructed samples.",
+   "why": "Catches residual artefacts the deblocking filter doesn't address: ringing around edges (edge-offset mode) and band-skewed shifts in flat regions (band-offset mode). H.265 added it precisely because the gains were too large to leave on the table.",
+   "category": "in_loop_filter"
+  },
+  {
+   "name": "CDEF",
+   "definition": "Constrained Directional Enhancement Filter — AV1's in-loop non-linear low-pass filter. First identifies the dominant edge direction in a block, then filters along it.",
+   "why": "Directional filtering removes ringing without blurring edges — the first practical 'follow the edge' loop filter in a deployed codec. Also: CDEF was designed partly as a patent-clean alternative to HEVC's SAO.",
+   "category": "in_loop_filter"
+  },
+  {
+   "name": "loop_restoration_filter",
+   "definition": "AV1's optional post-CDEF stage, switchable per tile-unit between a Wiener filter and a self-guided projection filter (SGRPROJ).",
+   "why": "Wiener targets stationary noise (DCT basis noise), SGR handles edge-preserving denoising; signaling lets the encoder pick the right tool per region. Adds another ~1-2% bitrate saving on top of CDEF.",
+   "category": "in_loop_filter"
+  },
+  {
+   "name": "adaptive_loop_filter",
+   "definition": "VVC's ALF — an in-loop Wiener-like filter with per-CTU classification (5x5 / 7x7 / 9x9 diamond) and signaled coefficient sets.",
+   "why": "Replaces HEVC's SAO with a higher-order, content-adapted filter; coefficients can be APS-signaled or inherited, enabling perceptual-style enhancement at codec level. Pulls ~4-6% of VVC's gain over HEVC.",
+   "category": "in_loop_filter"
+  },
+  {
+   "name": "H264",
+   "definition": "ISO/IEC 14496-10 / ITU-T H.264 / MPEG-4 AVC. The dominant video codec of 2003-2020.",
+   "why": "Designed for a wide range of content + a still-emerging hardware ecosystem. Choices reflect 2003 compute: 16x16 macroblocks, limited intra modes, CAVLC default + CABAC as Main/High extension. Its real innovation was the in-loop deblocking filter and the careful integer transform that gave byte-exact decoders.",
+   "category": "standard"
+  },
+  {
+   "name": "H265",
+   "definition": "ISO/IEC 23008-2 / ITU-T H.265 / HEVC. Designed 2010-2013 explicitly for 4K and HDR delivery.",
+   "why": "Same R-D goal as H.264, refined under a decade of compute growth and 4K target. CTU up to 64x64, 35 intra angular modes, CABAC-only, SAO, asymmetric motion partitions, sub-pel interpolation up to 8-tap. Each addition expands the encoder's mode-decision space; the bitrate win at 4K is roughly 50% over H.264.",
+   "category": "standard"
+  },
+  {
+   "name": "VP9",
+   "definition": "Google's open-source codec, predecessor to AV1. First widespread post-macroblock codec: 64x64 SB64 root with quadtree split, 10 intra modes, 4 transform sizes (DCT + ADST), compound inter prediction, 8 segment-level QP/filter zones.",
+   "why": "Broke H.264's 16x16 ceiling and introduced ADST as a deployed transform; established Google's video-codec foothold. Lost to AV1 because each VP9 strength (large blocks, ADST, compound) had clear scaling headroom that AOMedia consolidated.",
+   "category": "standard"
+  },
+  {
+   "name": "AV1",
+   "definition": "AOMedia Video 1. Open, royalty-free codec finalised 2018. Successor to VP9, designed by Google + Netflix + Cisco + Mozilla + Intel + AMD + NVIDIA + ARM + Samsung + Microsoft + Apple + Meta.",
+   "why": "Targets ~30% bitrate reduction over HEVC at equal quality. Combined contribution of larger superblocks (up to 128x128), 56 intra angles plus Paeth/smooth/recursive, warped + global motion, OBMC, wedge/difference/distance compound prediction, multi-symbol arithmetic coding with 15-bit CDFs, CDEF, loop restoration, film grain synthesis. Patent-free design constraint shaped each choice as much as compression theory did.",
+   "category": "standard"
+  },
+  {
+   "name": "VVC",
+   "definition": "Versatile Video Coding / ITU-T H.266 / ISO/IEC 23090-3. 2020 successor to HEVC.",
+   "why": "Targets ~50% bitrate reduction over HEVC at equal quality. CTU up to 128x128; Multi-type Tree (quad + binary + ternary splits); affine motion (4- or 6-parameter); sub-block temporal MV prediction; bidirectional optical flow refinement; Multiple Transform Selection (DCT-2 / DST-7 / DCT-8); Low-Frequency Non-Separable Transform; Cross-Component Linear Model; Adaptive Loop Filter; subpictures for region-of-interest streaming. Commercial rollout 2024-2026 (SBTVD, ATSC 3.0, MediaTek Pentonic TV chips).",
+   "category": "standard"
+  },
+  {
+   "name": "AV2",
+   "definition": "AOMedia's in-development successor to AV1, ~2026-2027 timeframe. Refines transform set (more variants), entropy (improved CDFs, partial rANS adoption), partitioning.",
+   "why": "Same compounding-improvements playbook as VVC vs HEVC — ~50 tools each contributing 1-3%, targeting ~30% over AV1. Keeps the royalty-free constraint.",
+   "category": "standard"
+  },
+  {
+   "name": "superblock",
+   "definition": "AV1's root coding unit, 128x128 (default) or 64x64. Recursively subdivided via a 10-way partition tree down to 4x4.",
+   "why": "Larger root than VP9's 64x64 lets the partition tree match the statistics of 4K/8K content where homogeneous regions are big. The ten partition types (including T-shaped 3-way and 4:1/1:4 splits) cheaply match object boundaries.",
+   "category": "block_structure"
+  },
+  {
+   "name": "partition_tree_10_way",
+   "definition": "AV1's nine non-trivial partitioning modes (NONE, SPLIT, HORZ, VERT, HORZ_A, HORZ_B, VERT_A, VERT_B, HORZ_4, VERT_4) plus the implicit NONE. Recursively decomposes a superblock to 4x4.",
+   "why": "T-shaped and 4:1/1:4 splits cheaply match real image structure — object boundaries are rarely quad-split symmetric. The asymmetric splits remove the over-quadtree-recursion VP9 carried over.",
+   "category": "block_structure"
+  },
+  {
+   "name": "multi_type_tree",
+   "definition": "VVC's hierarchical split: quadtree at top, with binary-tree (BT) and ternary-tree (TT) splits below.",
+   "why": "TT (1:2:1) splits match elongated objects (rivers, limbs, text rows) cheaply; mixing BT+TT+QT removes the must-be-quad-symmetric constraint that HEVC carried over from H.264.",
+   "category": "block_structure"
+  },
+  {
+   "name": "Paeth_predictor",
+   "definition": "AV1 intra mode that predicts each pixel as whichever of top / left / top-left is numerically closest to (top + left − top-left).",
+   "why": "Borrowed from PNG; it tracks smooth gradients and corners better than directional modes on natural-image content. Cheap to compute and cheap to signal.",
+   "category": "intra_prediction_mode"
+  },
+  {
+   "name": "smooth_predictor",
+   "definition": "AV1 intra mode using bilinear / quadratic interpolation across the block from edge samples.",
+   "why": "Cheaply models gradients and flat regions where directional modes overfit edges that aren't there. Complements Paeth at the other end of the smoothness spectrum.",
+   "category": "intra_prediction_mode"
+  },
+  {
+   "name": "recursive_intra_filter",
+   "definition": "AV1's five filter-intra modes, each a set of eight 7-tap filters that fill the block in 4x2 sub-block steps.",
+   "why": "Captures intra-block texture continuation that a single edge angle cannot. The recursion lets the filtered prediction propagate consistently across the block.",
+   "category": "intra_prediction_mode"
+  },
+  {
+   "name": "chroma_from_luma",
+   "definition": "Linear model predicting chroma from co-located reconstructed luma (AV1's CFL; VVC's CCLM is the same idea).",
+   "why": "In YCbCr, luma and chroma edges are correlated. A learned per-block scale/offset is cheaper than transmitting chroma residual independently. Near-zero-cost gain.",
+   "category": "intra_prediction_mode"
+  },
+  {
+   "name": "intra_block_copy",
+   "definition": "Predict a block from an already-decoded block in the same frame using a 'motion vector'. AV1 mandatory in main profile; HEVC SCC extension; VVC built-in.",
+   "why": "Screen content and graphics have repeating glyphs and UI elements; copying beats predicting them. AV1 makes IBC mandatory because the entropy-coding gains on text are too large to be optional.",
+   "category": "screen_content"
+  },
+  {
+   "name": "palette_mode",
+   "definition": "Signal a small per-block color palette + per-pixel indices coded by 3-mode run-length entropy.",
+   "why": "Matches the color statistics of UI / graphics (few distinct colors per region) which transform coding wastes bits on. Together with IBC it's the core of Screen Content Coding.",
+   "category": "screen_content"
+  },
+  {
+   "name": "affine_motion",
+   "definition": "VVC's per-CU 4- or 6-parameter affine motion model, derived from 2 or 3 control-point MVs. AV1 has a similar warped-motion mode.",
+   "why": "Real motion is rarely pure translation; affine captures camera zoom / rotation and perspective in 6 parameters. Same insight in two codecs — different signaling strategies (VVC per-CU, AV1 frame-level global).",
+   "category": "inter_prediction_mode"
+  },
+  {
+   "name": "warped_motion",
+   "definition": "AV1's affine-style per-block motion model — translation + rotation + scale + shear.",
+   "why": "Same motivation as VVC's affine motion. AV1's warped is per-block; AV1's global_motion is a single frame-level affine shared by opt-in blocks for camera-pan dominance.",
+   "category": "inter_prediction_mode"
+  },
+  {
+   "name": "global_motion",
+   "definition": "AV1's frame-level affine / translational model applied where individual blocks opt in.",
+   "why": "Camera pans and zooms produce coherent motion across the whole frame; one model removes thousands of redundant per-block MVs. Particularly effective on cinematography with smooth camera moves.",
+   "category": "inter_prediction_mode"
+  },
+  {
+   "name": "OBMC",
+   "definition": "Overlapped Block Motion Compensation. Each block's predictor is blended at its edges with predictors generated from its neighbours' MVs.",
+   "why": "Reduces blocking artifacts at MV boundaries that don't align with real object boundaries; smooths the discontinuity of independent block MVs. AV1's response to the problem HEVC's deblocking only partially addressed.",
+   "category": "inter_prediction_mode"
+  },
+  {
+   "name": "compound_prediction",
+   "definition": "AV1's predictor formed by combining two reference-frame predictors via average, wedge mask, difference modulation, or distance weighting.",
+   "why": "Real occlusion boundaries split a block; a wedge mask routes each side of the wedge to the better reference. Far more expressive than VP9's simple averaged-compound mode.",
+   "category": "inter_prediction_mode"
+  },
+  {
+   "name": "sub_block_motion",
+   "definition": "VVC's SbTMVP: a CU is split into sub-blocks (typically 8x8) each with its own MV inherited from a temporal collocated block.",
+   "why": "Captures non-rigid motion inside one CU (foliage, water, crowds) that one MV can't represent. Costs no extra MV signaling because the MVs are inherited from a previous frame's correlation.",
+   "category": "inter_prediction_mode"
+  },
+  {
+   "name": "bidirectional_optical_flow",
+   "definition": "VVC's BDOF: refines bi-predicted MVs by computing an optical-flow correction from the gradient of the two predictors.",
+   "why": "When both references have small residual motion, optical flow extracts sub-pixel refinement without sending more MV bits; pure prediction-side enhancement that costs only decoder cycles.",
+   "category": "inter_prediction_mode"
+  },
+  {
+   "name": "AV1_reference_frame_set",
+   "definition": "AV1's 7 references — LAST, LAST2, LAST3, GOLDEN, BWDREF, ALTREF, ALTREF2 — plus implicit intra.",
+   "why": "More references means lower residual; ALTREF (a non-displayed temporally filtered frame) acts as a clean reference free of compression noise. VP9 had 3 references; expanding to 7 is one of AV1's larger ME-side wins.",
+   "category": "inter_prediction_mode"
+  },
+  {
+   "name": "transform_skip",
+   "definition": "Coding mode that bypasses the DCT entirely and sends residual coefficients directly. HEVC SCC, VVC, AV1 (IDTX) all support it.",
+   "why": "Screen content has sparse residuals at sharp edges that the DCT actually DECOMPACTS — the transform hurts compression there. Skipping reverts to direct coefficient coding which entropy codes the sparse residual better.",
+   "category": "transform_kind"
+  },
+  {
+   "name": "ADST",
+   "definition": "Asymmetric Discrete Sine Transform. Used in VP9 / AV1 as an alternative to DCT for residuals whose energy ramps toward a boundary.",
+   "why": "Prediction-residual energy slopes toward the boundary with the predictor; ADST's basis matches that ramp, so an oriented transform decorrelates better than fixed DCT. VVC's DST-7 is the same insight under a different name.",
+   "category": "transform_kind"
+  },
+  {
+   "name": "DST_7",
+   "definition": "VVC's Discrete Sine Transform type 7. One of the bases in VVC's Multiple Transform Selection.",
+   "why": "Matches residual energy that ramps toward an intra-prediction boundary — same KL-optimality argument as ADST, formalised as a specific DST family member.",
+   "category": "transform_kind"
+  },
+  {
+   "name": "DCT_8",
+   "definition": "VVC's Discrete Cosine Transform type 8, paired with DST-7 in MTS to capture the flipped-ramp case.",
+   "why": "Some intra prediction modes leave residual ramping FROM the boundary outward instead of toward it; DCT-8 matches that case symmetrically to DST-7.",
+   "category": "transform_kind"
+  },
+  {
+   "name": "multiple_transform_selection",
+   "definition": "VVC's MTS — per-block choice among DCT-2, DST-7, DCT-8 (and Transform Skip / IDTX) per axis.",
+   "why": "DST-7 matches residual that ramps toward the predictor; DCT-8 catches the flipped case. Extends VP9 / AV1's ADST family with explicit DST/DCT type-7/8 basis. Per-axis choice lets the encoder match anisotropic residuals.",
+   "category": "transform_kind"
+  },
+  {
+   "name": "LFNST",
+   "definition": "VVC's Low-Frequency Non-Separable Transform — a secondary 4x4 or 8x8 non-separable transform applied to the top-left low-frequency coefficients after the primary transform.",
+   "why": "Primary separable transforms can't decorrelate non-axis-aligned residual structure (diagonal edges); LFNST cleans up that residual energy at low cost. ~2% of VVC's gain over HEVC.",
+   "category": "transform_kind"
+  },
+  {
+   "name": "arithmetic_coding",
+   "definition": "A lossless entropy coder that maps a symbol sequence to a binary fraction in [0, 1) by progressively narrowing an interval. Each symbol partitions the current interval proportional to its probability; the output is enough bits of the final interval to identify it uniquely.",
+   "why": "Approaches the Shannon entropy bound to within one bit per MESSAGE (not per symbol), regardless of alphabet skew. Huffman gives integer bits per symbol and loses on skewed distributions; arithmetic coding gives fractional bits and is asymptotically optimal. Every modern entropy coder (CABAC, MS-AC, ANS) is a finite-precision arithmetic coder.",
+   "category": "entropy_coder"
+  },
+  {
+   "name": "range_coder",
+   "definition": "A finite-precision integer implementation of arithmetic coding. Tracks the interval as (low, range) registers, splits range proportional to symbol probabilities, emits bits when range gets too small (renormalisation).",
+   "why": "Floating-point arithmetic is too lossy and not byte-exact across decoders. Range coders use integer math + careful renormalisation to maintain Shannon-optimal compression while being bit-exact. CABAC and AV1's multi-symbol AC are both range coders with different alphabet sizes and update rules.",
+   "category": "entropy_coder"
+  },
+  {
+   "name": "binarisation",
+   "definition": "CABAC's first stage. Converts non-binary syntax elements (motion vector differences, coefficient magnitudes) into a sequence of binary decisions (bins) via U (Unary), TU (Truncated Unary), EGk (k-th order Exp-Golomb), or FL (Fixed-Length).",
+   "why": "Reducing everything to binary lets CABAC model only ONE probability per context (P(bin=1)), tracked by a single state variable. Multi-bit contexts would need joint distributions — exploding the state space. The cost is more bins per symbol; the win is trivially-trackable contexts.",
+   "category": "cabac_mechanism"
+  },
+  {
+   "name": "unary_binarisation",
+   "definition": "Map non-negative integer N to N ones followed by a zero (Unary), or capped at K bins (Truncated Unary, used for bounded values like macroblock type).",
+   "why": "Each successive 1-bin is less likely than the previous (larger magnitudes are rarer in natural-image residuals). This monotonically-decreasing probability is exactly what context-adaptive coding exploits — early bins use 'high probability of MPS' contexts, later bins use 'near-equiprobable' contexts.",
+   "category": "cabac_mechanism"
+  },
+  {
+   "name": "exp_golomb_binarisation",
+   "definition": "Encode value N as a unary prefix indicating how many suffix bits, followed by N's bits in fixed length. EGk's k controls where unary ends and binary begins (k=0 for the smallest tail; larger k for distributions with heavy tails).",
+   "why": "A natural-image residual is heavy-tailed but with a small concentrated core. Unary is optimal for the core (small values); EGk's binary suffix handles the tail without paying unary's linear cost. Picking k matches the empirical residual distribution near the breakpoint.",
+   "category": "cabac_mechanism"
+  },
+  {
+   "name": "context_index",
+   "definition": "A function mapping (syntax element, bin position, neighbour values) to an index into the context state array. The CABAC standard defines these functions explicitly; encoder and decoder use identical ones.",
+   "why": "Different bins of the same syntax element have different statistics — the first bin of a coefficient is much more likely to be 0 than the third. Different neighbours imply different prediction quality. The context-index function captures these dependencies; choosing it well is decades of empirical R-D tuning.",
+   "category": "cabac_mechanism"
+  },
+  {
+   "name": "context_state",
+   "definition": "Each context's probability model is an integer in [0, 63] paired with the MPS bit (0 or 1). State 0 ≈ 50% LPS probability; state 62 ≈ 0% LPS. About 460 contexts in H.264; ~1500 in H.265.",
+   "why": "64 quantised states give ~7 bits of probability precision — enough to track effectively, small enough to update via one table lookup. Storing the MPS direction separately means the state only tracks magnitude of bias, not direction — halving the state-space size for the same precision.",
+   "category": "cabac_mechanism"
+  },
+  {
+   "name": "MPS_LPS",
+   "definition": "Most/Least Probable Symbol. The current context's binary alphabet is split into MPS (the more likely bit) and LPS (the other). MPS gets the wider sub-interval in arithmetic coding's narrowing.",
+   "why": "Arithmetic coding's compression IS interval narrowing weighted by probability — and the asymmetric narrowing is exactly the MPS/LPS split. Tracking which value IS the MPS (instead of assuming 0 or 1) lets one state machine handle both directional biases without doubling the state table.",
+   "category": "cabac_mechanism"
+  },
+  {
+   "name": "probability_update",
+   "definition": "After each bin, the context state is updated by a fixed transition table: on MPS, nudge toward more-biased state; on LPS, nudge toward less-biased state and possibly flip the MPS direction (when state index hits 0 on an LPS).",
+   "why": "Captures local statistical changes (after a residual zero, the next coefficient is also likely zero) within one table lookup. The transition table is empirically tuned for natural-image residual statistics. Adaptive update tracks scene changes without explicit reset.",
+   "category": "cabac_mechanism"
+  },
+  {
+   "name": "range_state",
+   "definition": "Two integer registers: range (the current interval width, e.g. 10-bit) and low (the bottom of the interval). On each bin: compute LPS_range = (range × LPS_probability) / 2^10. If bin = LPS, range = LPS_range, low += range − LPS_range. If bin = MPS, range -= LPS_range.",
+   "why": "Tracks the arithmetic-coding state in finite precision. Range is what arithmetic coding compresses INTO; low is the bottom of the current interval, what bits are committing toward. The split-narrow operation IS arithmetic coding, just implemented in integer registers.",
+   "category": "cabac_mechanism"
+  },
+  {
+   "name": "renormalisation",
+   "definition": "When range falls below a threshold (e.g., 256 in 10-bit CABAC), the most-significant bit of low is shifted out (emitted) and both range and low are doubled. This repeats until range is large enough.",
+   "why": "As the interval narrows, more bits become 'committed' — no future symbol can change them. Renormalisation detects exactly this condition (MSB of low is locked) and emits those bits to the output. Doubling range maintains precision; bit-by-bit output is the actual compressed stream.",
+   "category": "cabac_mechanism"
+  },
+  {
+   "name": "carry_propagation",
+   "definition": "A buffered output stream tracking 'outstanding bits'. When the encoder doesn't yet know whether a bit is 0 or 1 (because a future operation might cross a power-of-2 boundary), it tracks a count of outstanding bits; the next decided bit + the count flush correctly.",
+   "why": "Without this, you'd need to encode the WHOLE stream before emitting any bit. Carry propagation lets bits be emitted speculatively and corrected after-the-fact. It's the trick that makes streaming arithmetic coding actually possible — without it, arithmetic coding is a batch operation.",
+   "category": "cabac_mechanism"
+  },
+  {
+   "name": "bypass_mode",
+   "definition": "CABAC's mode for bins whose probability is known to be 0.5 (signs, EGk suffix bits, certain block flags). Skips context modeling entirely; encodes each bypass bin as one output bit via a fixed shift on range.",
+   "why": "At exactly 0.5 probability, Shannon entropy is exactly 1 bit; no context can compress further. Bypass cuts the per-bin work to a fixed register shift, doubling CABAC's throughput on those bins. About 10% of all CABAC bins are bypass; the speed gain is substantial without losing compression.",
+   "category": "cabac_mechanism"
+  },
+  {
+   "name": "regular_mode",
+   "definition": "CABAC's default per-bin mode. Reads the context state, splits range by LPS probability, decides MPS vs LPS, updates state, renormalises if needed.",
+   "why": "This is where CABAC's compression gain lives — Shannon-bound coding per bin weighted by the context probability. The cost is per-bin context lookup + state update + range arithmetic. Bypass is the speed-optimised counterpart; regular mode is the compression-optimised one.",
+   "category": "cabac_mechanism"
+  },
+  {
+   "name": "termination_state",
+   "definition": "A reserved context (typically index 276 in H.264) used to code a single bin signalling end-of-slice. Always coded with a fixed near-zero LPS probability (≈1/64).",
+   "why": "Decoder needs to know when to stop reading from the slice bitstream. A reserved context with extremely low LPS probability lets the encoder signal 'end here' with near-zero overhead — and the symmetric near-1 MPS probability means in-slice bins almost never accidentally look like termination.",
+   "category": "cabac_mechanism"
+  },
+  {
+   "name": "film_grain_synthesis",
+   "definition": "Encoder denoises before encoding and signals an AR grain model so the decoder regenerates statistically-matching grain. AV1 normative; H.264 / H.265 / H.266 carry it as SEI (ITU-T H.Suppl.21, Jan 2025).",
+   "why": "Grain is high-entropy and visually expensive to code; synthesising it cheaply preserves the cinematic look without bitrate cost. Particularly effective on 35mm-shot content where grain is part of the artistic intent.",
+   "category": "mechanism"
+  },
+  {
+   "name": "HDR10",
+   "definition": "10-bit BT.2020 colour + static PQ (Perceptual Quantizer) metadata.",
+   "why": "10 bits avoids banding in dark regions where 8 bits' 256 levels are visible. Static metadata is a single tone curve across the whole stream — fine for content with consistent dynamic range, but mis-renders scene-to-scene tone variation.",
+   "category": "emerging_format"
+  },
+  {
+   "name": "HDR10_plus",
+   "definition": "Extends HDR10 with dynamic per-scene tone-mapping metadata.",
+   "why": "Static metadata mis-renders scene-to-scene tone; dynamic metadata gives the display a per-shot tone curve. Royalty-free response to Dolby Vision; carried as SEI alongside the codec stream.",
+   "category": "emerging_format"
+  },
+  {
+   "name": "Dolby_Vision",
+   "definition": "12-bit colour + dynamic metadata + a proprietary tone mapper.",
+   "why": "12-bit removes banding in even more extreme dynamic ranges; dynamic metadata enables per-shot tone curves. Proprietary licensing model trades adoption breadth for tighter end-to-end control over rendering.",
+   "category": "emerging_format"
+  },
+  {
+   "name": "V_PCC",
+   "definition": "Video-based Point Cloud Compression. Segments dynamic point clouds into surface patches, parameterises them into 2D atlases (geometry + texture), encodes the atlases with a video codec.",
+   "why": "Reuses heavily-optimised 2D codec hardware for 3D content. Dynamic point clouds need temporal coding which point-graph methods don't natively offer; V-PCC inherits HEVC/VVC's temporal coding 'for free' by atlasing.",
+   "category": "emerging_format"
+  },
+  {
+   "name": "G_PCC",
+   "definition": "Geometry-based Point Cloud Compression. Octree-coded geometry + attribute coding (RAHT or predicting transform), targeting static content.",
+   "why": "Lossless or near-lossless geometry of LiDAR / cultural-heritage scans needs the geometry preserved exactly; 2D-projected atlases can't. Edition 2 / L3C2 (Low-Complexity Low-Latency LiDAR) is FDIS 2025.",
+   "category": "emerging_format"
+  },
+  {
+   "name": "NeRF_compression",
+   "definition": "Represent a 3D scene as a neural radiance field (or 3D Gaussians); compression target is the scene's neural parameters.",
+   "why": "Photorealistic novel-view synthesis from sparse captures; the compression target is the scene representation, not a viewport video. MPEG explorations 2024-2026 — no standard yet but a serious medium-term contender.",
+   "category": "emerging_format"
+  },
+  {
+   "name": "DCVC",
+   "definition": "Deep Contextual Video Compression. Replaces explicit motion-compensated residual coding with a learned conditional entropy model: the previous-frame feature is the context, not a numerical predictor.",
+   "why": "Removes the assumption that the best representation is 'predictor + residual'. Lets the network use any feature transform of past frames. The conceptual leap from hand-designed to learned video coding.",
+   "category": "neural_codec"
+  },
+  {
+   "name": "DCVC_DC",
+   "definition": "DCVC with Diverse Contexts (2023). First end-to-end neural video codec to outperform the ECM (Enhanced Compression Model — VVC's successor prototype).",
+   "why": "Established the threshold where learned codecs surpass the best hand-designed reference. ~1s/frame at 1080p on an RTX 2080 made it impractical but technically significant — proved the ceiling was reachable.",
+   "category": "neural_codec"
+  },
+  {
+   "name": "DCVC_FM",
+   "definition": "DCVC with Feature Modulation (CVPR 2024). Adds feature modulation to DCVC-DC; achieves 29.7% bitrate saving over DCVC-DC at 16% fewer MACs.",
+   "why": "Single model serving a wide quality range removes the per-rate-point training overhead that made neural codecs deployment-hostile. Supports both RGB and YUV in one model with rate control.",
+   "category": "neural_codec"
+  },
+  {
+   "name": "DCVC_RT",
+   "definition": "DCVC Real-Time (2025). First neural video codec at 100+ FPS for 1080p and 4K real-time, with compression ratio comparable to ECM.",
+   "why": "Closes the gap to 'deployable'. The milestone that makes neural codecs candidates for production. Demonstrates that the quality-vs-speed Pareto frontier is achievable with current architectures.",
+   "category": "neural_codec"
+  },
+  {
+   "name": "implicit_neural_representation",
+   "definition": "Represent the video itself as a neural network f(x, y, t) → pixel; compress by quantising / encoding the weights.",
+   "why": "No per-frame inference cost — decode is one forward pass on a coordinate query. Compression target is the network, not the bitstream of features. Different optimisation regime from feature-bitstream codecs.",
+   "category": "neural_codec"
+  },
+  {
+   "name": "HiNeRV",
+   "definition": "Hierarchical Encoding-based Neural Representation for Video (2023-2024). INR codec with hierarchical positional encodings + lightweight layers.",
+   "why": "Hierarchical positional encoding gives the network multi-scale spatial-temporal awareness without exploding parameter count. Competitive with feature-bitstream learned codecs; outperforms prior INRs at the same parameter budget.",
+   "category": "neural_codec"
+  },
+  {
+   "name": "GIViC",
+   "definition": "Generative Implicit Video Compression (2025). INR codec with implicit diffusive sampling across coarse-to-fine spatiotemporal decompositions.",
+   "why": "Borrows the iterative refinement structure that made diffusion dominant in image generation. Targets the extreme-low-bitrate regime where conventional codecs fall off a cliff. Hallucinates plausible content consistent with the source distribution.",
+   "category": "neural_codec"
+  },
+  {
+   "name": "hybrid_neural_conventional_codec",
+   "definition": "Conventional codec for transform / entropy, neural net for in-loop enhancement, post-processing, or super-resolution upscaling.",
+   "why": "Ships the gains today inside a backward-compatible container. Apple Silicon does neural super-resolution after AV1 decode; NVIDIA does SDR/HDR enhancement on conventional streams. The practical path until end-to-end neural codecs match conventional at all rates.",
+   "category": "neural_codec"
+  },
+  {
+   "name": "PSNR",
+   "definition": "Peak Signal-to-Noise Ratio. Log scale of pixel mean-squared error.",
+   "why": "Cheap to compute and the historical baseline. Doesn't predict viewer ratings well — high-PSNR encodes look blurred to humans. Still standard for academic comparisons because its math is unambiguous.",
+   "category": "perceptual_metric"
+  },
+  {
+   "name": "SSIM",
+   "definition": "Structural Similarity Index. Compares local luminance, contrast, and structure between source and reconstruction.",
+   "why": "Tracks human perception better than PSNR by modeling that structure (edge layout) matters more than pixel-exact intensity. Cheap to compute; biased toward smoothing artifacts.",
+   "category": "perceptual_metric"
+  },
+  {
+   "name": "MS_SSIM",
+   "definition": "Multi-Scale SSIM. Applies SSIM at multiple downsamplings and combines via empirical weights.",
+   "why": "Single-scale SSIM misses coarse structural errors that humans notice. Multi-scale catches both fine and coarse artifacts at modest extra cost.",
+   "category": "perceptual_metric"
+  },
+  {
+   "name": "VMAF",
+   "definition": "Video Multi-method Assessment Fusion. Full-reference perceptual quality metric combining VIF, DLM, motion via support-vector regression trained on subjective scores.",
+   "why": "PSNR doesn't predict viewer ratings; VMAF does, and it's open source — making it the industry default for encoder tuning and ABR ladder decisions. Netflix-developed, broadly adopted.",
+   "category": "perceptual_metric"
+  },
+  {
+   "name": "JND",
+   "definition": "Just Noticeable Difference. The smallest reconstruction error a viewer perceives, measured psycho-physically per scene / per region.",
+   "why": "Captures the true compression target — invisible distortion is free. JND-driven encoder tuning operates near the perceptual boundary; codec parameters that produce sub-JND artifacts are 'lossless' from the viewer's perspective even when PSNR is finite.",
+   "category": "perceptual_metric"
+  },
+  {
+   "name": "per_title_encoding",
+   "definition": "Run a matrix of (bitrate x resolution) encodes per asset and pick the convex hull on the VMAF-vs-rate plot to build the ABR ladder. Netflix's pioneer move.",
+   "why": "A single fixed ladder over-spends bits on simple content and starves complex content. Per-title encoding adapts the ladder; ~20% bitrate savings at equal quality.",
+   "category": "streaming_practice"
+  },
+  {
+   "name": "per_shot_encoding",
+   "definition": "Per-title taken further — encode each shot (scene) individually, optimise the ladder per shot.",
+   "why": "Different shots within one asset have very different difficulty (a static interview vs an action sequence). Per-shot adapts the ladder shot-by-shot; ~30% savings vs fixed ladder.",
+   "category": "streaming_practice"
+  },
+  {
+   "name": "convex_hull_ladder",
+   "definition": "For each (resolution, QP) pair, plot (VMAF, bitrate); the lower-right convex hull is the optimal ladder.",
+   "why": "Removes dominated encodes that no rational ABR client should ever pick. The mathematical foundation under per-title and per-shot encoding.",
+   "category": "streaming_practice"
+  },
+  {
+   "name": "rate_distortion_optimization",
+   "definition": "Encoder mode decision minimises J = D + lambda * R where D is distortion, R is bit cost, lambda is a Lagrange multiplier.",
+   "why": "Makes the discrete combinatorial mode-choice problem (block size, MV, transform, partitioning) tractable as a convex single-objective minimisation. The encoder-side art is non-normative — every standard requires RDO but doesn't specify the encoder's search strategy.",
+   "category": "foundation"
+  },
+  {
+   "name": "lambda_selection",
+   "definition": "Picking the Lagrange multiplier in RDO. Standard approximation: lambda ≈ c * 2^((QP-12)/3), derived from a Laplace residual model.",
+   "why": "Different stages of the encoder use different lambdas — early mode shortlisting may use a high lambda (favour few bits), final RD may use the modelled value. Tuning lambda per stage extracts another ~5-7% saving.",
+   "category": "foundation"
+  },
+  {
+   "name": "SAD_SSD_SATD",
+   "definition": "Sum of Absolute Differences (SAD, fast), Sum of Squared Differences (SSD, true distortion), Sum of Absolute Transformed Differences (SATD, post-transform energy proxy).",
+   "why": "Different metrics correlate with bitcost at different stages. Encoders use SAD in early search, SATD to predict post-transform energy without doing the full transform, SSD in final RDO. The metric ladder mirrors the encode-time vs accuracy ladder.",
+   "category": "foundation"
+  },
+  {
+   "name": "WebRTC",
+   "definition": "Sub-second peer-to-peer streaming protocol over UDP via SFUs (Selective Forwarding Units). H.264 default.",
+   "why": "Sub-second latency budget for video conferencing / live interaction. H.264 wins as default because of universal hardware encode availability — for real-time, encode latency matters more than compression efficiency.",
+   "category": "streaming_protocol"
+  },
+  {
+   "name": "LL_HLS",
+   "definition": "Low-Latency HTTP Live Streaming. ~2-5s glass-to-glass via partial segments and HTTP/2 push.",
+   "why": "OTT live with CDN reach. Trades sub-second latency for cache-friendliness — large audiences, modest interactivity (live sports, news).",
+   "category": "streaming_protocol"
+  },
+  {
+   "name": "CMAF_chunked",
+   "definition": "Common Media Application Format with chunked encoding. ~3-6s end-to-end via 200-400ms chunks.",
+   "why": "Single packaging for HLS and DASH, with HTTP-friendly chunks. 2026 production tunes CMAF to ~1.2-1.8s at scale via aggressive chunking.",
+   "category": "streaming_protocol"
+  },
+  {
+   "name": "libaom",
+   "definition": "AOMedia's AV1 reference encoder / decoder.",
+   "why": "Defines the standard's compression ceiling but is slow. Production AV1 pipelines use SVT-AV1; libaom remains the reference for bitstream-feature compliance.",
+   "category": "tooling"
+  },
+  {
+   "name": "SVT_AV1",
+   "definition": "Intel/Netflix open-source AV1 encoder/decoder, optimised for multi-core parallelism.",
+   "why": "Matches libaom compression at much lower latency through parallelism. The production AV1 encoder for OTT pipelines; receives the bulk of post-2023 encoder-side optimisation effort.",
+   "category": "tooling"
+  },
+  {
+   "name": "VVenC_VVdeC",
+   "definition": "Fraunhofer HHI's open-source H.266 encoder (VVenC) and decoder (VVdeC), SIMD-optimised for x86 and ARM.",
+   "why": "Makes VVC accessible without proprietary encoders. VVenC 1.11 (2025) closes the performance gap vs commercial encoders; VVdeC enables practical decoding without hardware.",
+   "category": "tooling"
+  },
+  {
+   "name": "VCEG_MPEG_AOMedia",
+   "definition": "Three standards bodies. VCEG (ITU-T SG16, H.26x naming); MPEG (ISO/IEC, MPEG-x naming); AOMedia (industry consortium, outside ITU/ISO). H.264 / H.265 / H.266 came from joint VCEG+MPEG teams (JVT / JCT-VC / JVET); AV1 from AOMedia.",
+   "why": "JVT/JCT-VC/JVET are joint VCEG+MPEG teams making royalty-bearing standards via patent pools. AOMedia exists specifically to develop royalty-free codecs outside this structure — the architectural choices reflect that constraint, not just compression theory.",
+   "category": "standards_body"
+  },
+  {
+   "name": "codec_generation_cadence",
+   "definition": "H.261 (1988) → H.263 (1995) → H.264 (2003) → H.265 (2013) → H.266 (2020) → AV2 (~2026-2027). Roughly 10-year gaps.",
+   "why": "Each generation needs ~50% gain to justify hardware re-spin; that gain compounds from ~50 small tools each contributing 1-3%, which takes ~10 years of JVET / AOM standardisation to assemble and patent-clear. The cadence is set by tool-collection time, not compression theory.",
+   "category": "codec_principle"
+  },
+  {
+   "name": "patent_landscape_drives_architecture",
+   "definition": "Tool choices are shaped by patent avoidance as much as by compression efficiency. AV1's CDEF (vs HEVC SAO), AV1's multi-symbol AC (vs CABAC), AV1's mandatory IBC / palette modes — all chosen partly to sidestep MPEG-LA / HEVC Advance pools.",
+   "why": "A patent-bearing tool that's 2% better may be excluded in favour of a patent-clean tool that's 1% better. Royalty-free architectures (VP9 / AV1) literally invented in-loop filters (CDEF) and entropy coders (15-bit CDF tables) to dodge patent landmines.",
+   "category": "codec_principle"
+  },
+  {
+   "name": "encoder_is_non_normative",
+   "definition": "All video standards specify only the DECODER. Every encoder (libaom, SVT-AV1, x265, VVenC, x264) is free in how it does RDO, mode search, lambda selection.",
+   "why": "Most of a codec's practical gain over its peers lives at encode-time. This is why x264 (an encoder) outperforms many H.264 encoders despite all targeting the same bitstream. The standard is the contract; the encoder is the player.",
+   "category": "codec_principle"
+  },
+  {
+   "name": "hardware_lag_dictates_rollout",
+   "definition": "A codec is adoptable only once hardware decode is widespread. VVC trails AV1 in browsers (even though VVC is more efficient); neural codecs aren't deployed (need GPU / NPU decode).",
+   "why": "Software decode at 1080p is fine; software decode at 4K HDR 60fps strains a phone's battery. Hardware decode is the prerequisite for mass deployment; encode hardware is the next bottleneck. 2024 saw AV1 hardware decode at ~10% of smartphones; 2026 will see VVC start the same curve.",
+   "category": "codec_principle"
+  },
+  {
+   "name": "compounding_small_gains",
+   "definition": "No video codec generation has a single defining feature. Each is ~50 tools each contributing 1-3% of the total ~50% per-generation improvement.",
+   "why": "The framework for thinking about a codec is 'what is the toolset and how do they combine,' not 'what is the algorithm.' This explains the cadence (it takes a decade to assemble 50 tools) and the patent strategy (any tool is replaceable, no tool is indispensable).",
+   "category": "codec_principle"
+  },
+  {
+   "name": "metric_choice_is_silent_specification",
+   "definition": "PSNR-tuned encodes blur; VMAF-tuned encodes preserve perceptual edges; JND-tuned encodes minimise visibility of any artifact.",
+   "why": "The metric the encoder optimises against determines what artifacts dominate the output. Industry shifts from PSNR to VMAF (2018-2023) and from VMAF to JND-based (2024-2026) are silent re-specifications of what 'quality' means.",
+   "category": "codec_principle"
+  },
+  {
+   "name": "h264_cabac_context_init",
+   "definition": "H.264's CABAC context initialisation tables: per-syntax-element initial probability (state, MPS) values indexed by cabac_init_idc and slice QP. The standard fixes ~460 contexts across all syntax elements; init tables are clause 9.3.1.1.",
+   "why": "Decoder must start with the same context probabilities the encoder used. Initialisation is QP-dependent because lower QP (better quality) makes coefficient distributions tighter; the init table embeds this assumption so the contexts start near their steady state.",
+   "category": "cabac_mechanism"
+  },
+  {
+   "name": "h265_cabac_context_init",
+   "definition": "H.265's CABAC context initialisation: ~150 contexts (fewer than H.264 because larger CU sizes amortise; some H.264 contexts merged), per-syntax-element init values indexed by initType (I/P/B slice) and slice QP. Clause 9.3.4.2.",
+   "why": "Same principle as H.264's table but tuned to HEVC's syntax: CU split flags, intra mode index over 35 modes, multi-size transform flags. Cannot share an init table with H.264 because syntax elements differ in alphabet and frequency.",
+   "category": "cabac_mechanism"
+  },
+  {
+   "name": "syntax_element_re_binarization",
+   "definition": "The act of decoding a CABAC bin sequence into syntax values under one codec's binarization rules, then re-encoding the same syntax values under another codec's binarization rules. Required at codec boundaries.",
+   "why": "Each codec maps syntax elements to bin strings using its own scheme (truncated unary, exp-Golomb of given order, fixed-length, custom). Bins are not portable across codecs; only the high-level syntax value is.",
+   "category": "cabac_mechanism"
+  },
+  {
+   "name": "h264_transform_set",
+   "definition": "H.264 supports a 4x4 integer DCT for residuals; Main and High profiles add an 8x8 integer DCT; 2x2 (chroma DC) and 4x4 Hadamard (16x16 intra luma DC) round out the set.",
+   "why": "Small sizes target the era's content + decoder complexity: 4x4 captures most natural-image residual energy when blocks are 16x16. 8x8 was added when High profile relaxed compute constraints. Bigger transforms had not yet justified themselves.",
+   "category": "transform_kind"
+  },
+  {
+   "name": "h265_transform_set",
+   "definition": "H.265 supports 4x4, 8x8, 16x16, and 32x32 integer DCT-II for luma residuals (4x4 chroma + 4x4 DST-VII for 4x4 intra luma residuals). Plus transform_skip for sharp residuals.",
+   "why": "Higher resolution and larger CUs mean residual energy can spread across regions H.264's 8x8 could not capture in one transform. 16x16 and 32x32 keep the per-block syntax cost low while capturing low-frequency components efficiently. DST-VII fits the asymmetric statistics of small intra residuals (boundary samples on one side).",
+   "category": "transform_kind"
+  },
+  {
+   "name": "h264_deblocking_strength",
+   "definition": "H.264 deblocking filter strength bS in {0, 1, 2, 3, 4}, derived from boundary type (intra/inter), motion difference, residual presence, and slice boundary. bS controls clipping range alpha/beta + filter taps.",
+   "why": "Larger bS means a more aggressive filter that can smooth visible blocking artefacts (especially across intra-coded boundaries with QP discontinuities). Lower bS preserves detail. The 5-level table is the minimum that distinguishes the relevant adjacency cases.",
+   "category": "in_loop_filter"
+  },
+  {
+   "name": "h265_deblocking_strength",
+   "definition": "H.265 deblocking filter strength bS in {0, 1, 2}, applied at 8x8 grid boundaries. bS=2 only at intra boundaries; bS=1 when at least one side has non-zero residual or different motion; bS=0 elsewhere.",
+   "why": "Larger CU sizes (up to 64x64) mean fewer total boundaries vs H.264's 16x16 grid, so the filter runs on far less area; the simplified 3-level bS captures most of H.264's discrimination at much lower cost. The 8x8 grid alignment matches CTU/CU split boundaries which dominate post-CTU.",
+   "category": "in_loop_filter"
+  },
+  {
+   "name": "h264_slice_header_syntax",
+   "definition": "H.264 slice header (Rec. H.264 clause 7.3.3): first_mb_in_slice, slice_type, pic_parameter_set_id, frame_num, idr_pic_id, pic_order_cnt fields, ref_pic_list_modification, pred_weight_table, dec_ref_pic_marking, slice_qp_delta, deblocking filter parameters.",
+   "why": "Defines the slice's anchor in the picture (first_mb_in_slice), prediction context (frame_num, POC), reference picture management (RPM), and per-slice tuning (QP delta, deblocking filter override). Encoder picks each field; decoder applies them before macroblock parsing begins.",
+   "category": "structure"
+  },
+  {
+   "name": "h265_slice_header_syntax",
+   "definition": "H.265 slice segment header (Rec. H.265 clause 7.3.6.1): first_slice_segment_in_pic_flag, slice_pic_parameter_set_id, dependent_slice_segment_flag, slice_segment_address, slice_type, pic_output_flag, slice_pic_order_cnt_lsb, short_term_ref_pic_set, RPS modification, sao_luma/chroma_flag, num_ref_idx_*, weighted_pred_table, dec_ref_pic_marking, qp_delta, deblocking params, tile_group_header_extension.",
+   "why": "Same purpose as H.264's slice header but with HEVC's structural changes: CTU-addressed positions (slice_segment_address points to CTU), explicit SAO enable per slice, RPS (reference picture set) signalled in PPS / inferred from idx, dependent slice segments to amortise header bits across slice segments in a tile.",
+   "category": "structure"
+  },
+  {
+   "name": "h264_intra_pred_9modes",
+   "definition": "H.264 supports 9 intra prediction modes for 4x4 luma blocks: vertical, horizontal, DC, and 6 diagonal/angular modes. 8x8 intra (High profile) uses the same 9-mode set with smoothed reference samples. 16x16 intra uses 4 modes (vertical/horizontal/DC/plane).",
+   "why": "Nine modes is the minimum that distinguishes the dominant edge angles in natural 4x4 patches at the SD/HD resolutions H.264 targeted. Adding more modes was not yet justified by R-D gains at those resolutions.",
+   "category": "intra_prediction_mode"
+  },
+  {
+   "name": "h265_intra_pred_35modes",
+   "definition": "H.265 supports 35 intra prediction modes per luma block: DC (mode 1), planar (mode 0), and 33 angular modes (2..34) spanning -135 to +135 degrees in fine increments. Available for block sizes 4x4 through 32x32.",
+   "why": "Finer angular resolution captures distinct edge orientations at 4K resolution where one 4x4 block of H.264 era now subtends finer detail. The 33-angle spread covers each direction within ~5 degrees of error, which is below the human-visible threshold for direction at typical viewing distances.",
+   "category": "intra_prediction_mode"
+  }
+ ],
+ "rules": [
+  {
+   "name": "redundancy_enables_compression",
+   "if": [
+    "source has redundancy R"
+   ],
+   "then": [
+    "source can be compressed by up to R bits"
+   ],
+   "why": "Information theory: only entropy is incompressible. Redundancy is what's left over.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "prediction_reduces_residual_magnitude",
+   "if": [
+    "block B has good prediction P"
+   ],
+   "then": [
+    "residual R = B - P has small variance"
+   ],
+   "why": "If prediction captures most of the block's structure, what's left is noise + small corrections — easy to code cheaply.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "decorrelation_concentrates_energy",
+   "if": [
+    "residual block R is decorrelated by transform T"
+   ],
+   "then": [
+    "T(R) has energy concentrated in few coefficients"
+   ],
+   "why": "Empirically true for the DCT applied to natural-image residuals; KLT-optimal under stationary Markov-1 model.",
+   "soundness_category": "algebraic_law"
+  },
+  {
+   "name": "quantisation_introduces_distortion",
+   "if": [
+    "coefficient c is quantised with step Q"
+   ],
+   "then": [
+    "reconstruction has expected squared error ≈ Q²/12"
+   ],
+   "why": "Uniform quantisation noise theorem. This is the source of the lossiness, and the only place where information is actually discarded.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "entropy_coding_efficiency_depends_on_skew",
+   "if": [
+    "symbol distribution is heavily skewed"
+   ],
+   "then": [
+    "entropy coding gains are large"
+   ],
+   "why": "VLC and arithmetic coding both win more when symbols' probabilities span a wide range. Uniform distributions are incompressible by entropy coding.",
+   "soundness_category": "algebraic_law"
+  },
+  {
+   "name": "larger_partitions_save_overhead",
+   "if": [
+    "region is flat or uniformly moving"
+   ],
+   "then": [
+    "large coding block saves syntax bits without quality loss"
+   ],
+   "why": "Each block costs syntax bits regardless of size. Big blocks on smooth regions are free wins. This is the main reason H.265 outperforms H.264 at 4K — CTUs up to 64x64 vs MBs fixed at 16x16. AV1 doubles again to 128x128 superblocks.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "intra_modes_expand_with_resolution",
+   "if": [
+    "resolution increases"
+   ],
+   "then": [
+    "more directional intra modes pay off"
+   ],
+   "why": "Higher resolution means more visibly distinct edge angles per macroblock. H.264's 9 4x4 intra modes are coarse at 4K; H.265 jumps to 35; AV1 to 56 — capturing finer directionality and reducing residual magnitude on edges. Direct crossover with vision: edge-density per receptive field grows with resolution.",
+   "soundness_category": "extensional_equivalence",
+   "vision_crossover": "spatial_redundancy + edge_directionality"
+  },
+  {
+   "name": "h265_dominates_h264_at_4k",
+   "if": [
+    "content is high-resolution + smooth regions are abundant"
+   ],
+   "then": [
+    "H.265 achieves ~50% bitrate reduction at equal quality"
+   ],
+   "why": "The combined effect of larger CTUs (overhead win), more intra modes (edge win), CABAC-only (entropy win), and SAO (artefact win). No single feature dominates; the combined R-D improvement is what defines the standard's generation.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "in_loop_filtering_required_for_prediction_consistency",
+   "if": [
+    "filter F is applied during decode"
+   ],
+   "then": [
+    "F must be in the reconstruction loop"
+   ],
+   "why": "Subsequent inter prediction references the filtered samples. If encoder and decoder applied different filtering, predictions would diverge. Deblocking, SAO, CDEF, and ALF are all in-loop precisely for this reason.",
+   "soundness_category": "referential_transparency"
+  },
+  {
+   "name": "encoder_decoder_asymmetry",
+   "if": [
+    "operation O is expensive at encode but cheap at decode"
+   ],
+   "then": [
+    "spec specifies the decode side, encoder is free"
+   ],
+   "why": "Motion estimation is the canonical example: spec only says how to apply an MV (decoder side); how to FIND it is encoder's problem. This is what lets one decoder play streams from many encoders of wildly different quality.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "av1_extends_vp9_via_compounding",
+   "if": [
+    "a codec generation is designed via tool aggregation"
+   ],
+   "then": [
+    "each tool adds 1-3% with the total reaching ~30% per generation"
+   ],
+   "why": "AV1's gain over VP9 came from doubling superblock area + expanding partitioning + 5x more intra angles + warped/global motion + OBMC + wedge compound + CDEF + loop restoration + 15-bit CDF entropy. No single feature dominates; tool aggregation is the framework.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "vvc_dominates_hevc_via_compounding",
+   "if": [
+    "sufficient tool aggregation has accumulated"
+   ],
+   "then": [
+    "a generational step ~50% over the predecessor is justified"
+   ],
+   "why": "VVC's ~50% gain over HEVC compounds MTT + affine motion + sub-block motion + BDOF + ALF + MTS + LFNST + CCLM. Same compounding template as AV1-over-VP9 and H.265-over-H.264.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "warped_motion_captures_camera_dynamics",
+   "if": [
+    "the camera rotates, zooms, or pans"
+   ],
+   "then": [
+    "one affine model removes thousands of per-block MV bits"
+   ],
+   "why": "Translation-only MVs need to differ across every block to track a zoom; one affine model captures the global trend. Particularly effective for cinematography. AV1 global_motion (frame-level) and VVC affine_motion (per-CU) are two signaling strategies for the same insight.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "screen_content_needs_transform_skip",
+   "if": [
+    "content is screen / UI / graphics"
+   ],
+   "then": [
+    "transform_skip + palette + IBC outperform DCT-based coding"
+   ],
+   "why": "Sharp edges have sparse residuals that the DCT DECOMPACTS — the transform hurts compression there. Skip the transform, send raw residuals; palette codes the few-distinct-colors case; IBC copies repeating glyphs. AV1 makes these mandatory in main profile precisely because the wins on screen content are too large to be optional.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "neural_codecs_win_at_low_bitrate",
+   "if": [
+    "bitrate is very low"
+   ],
+   "then": [
+    "learned prior beats hand-designed transform + entropy stack"
+   ],
+   "why": "At <100 kbps for 1080p, conventional codecs collapse into blocking/blurring. Learned priors hallucinate plausible texture/grain consistent with the source distribution — the right objective at low rate. GIViC and NeRV-Diffusion push this further with iterative refinement.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "neural_codecs_lose_at_high_bitrate",
+   "if": [
+    "bitrate is near-lossless"
+   ],
+   "then": [
+    "conventional codecs' exact transform/entropy stacks dominate"
+   ],
+   "why": "The prior can't help — no entropy left to spend on hallucination. Conventional codecs are decades-tuned at high rates. Neural codecs also lack random access, are slow, and require GPU inference at decode.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "metric_drives_artifact",
+   "if": [
+    "encoder optimises metric M"
+   ],
+   "then": [
+    "the artifacts that survive are the ones M tolerates"
+   ],
+   "why": "PSNR-tuned encodes blur (MSE tolerates smoothing). VMAF-tuned encodes preserve edges (VMAF rewards structural fidelity). JND-tuned encodes maximise invisible distortion. The metric is the silent specification of 'quality' — choosing the metric IS the codec tuning.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "hardware_decode_precedes_adoption",
+   "if": [
+    "a codec lacks widespread hardware decode"
+   ],
+   "then": [
+    "it cannot reach mass-market deployment"
+   ],
+   "why": "Software decode at 4K HDR 60fps strains battery. AV1 reached ~10% of smartphones in 2024 and YouTube serves >75% of videos as AV1; VVC's commercial rollout starts via dedicated TV chipsets (MediaTek Pentonic). Neural codec deployment waits on GPU/NPU decode standardisation.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "rate_distortion_optimization_is_lagrangian",
+   "if": [
+    "encoder picks per-block mode"
+   ],
+   "then": [
+    "choose argmin (D + lambda * R)"
+   ],
+   "why": "RDO frames the discrete mode-choice problem as a single-objective optimisation. Lambda balances distortion against bit cost. Every modern encoder is a heuristic search over modes evaluated via this Lagrangian — the spec doesn't specify lambda but the encoder must pick one.",
+   "soundness_category": "algebraic_law"
+  },
+  {
+   "name": "tool_count_drives_generational_cadence",
+   "if": [
+    "a new codec generation targets ~50% gain"
+   ],
+   "then": [
+    "it takes ~10 years to assemble + patent-clear ~50 tools"
+   ],
+   "why": "Each tool contributes 1-3%; the total compounds to ~50%. Assembling that many tools is JVET / AOM's actual work. Patent clearance is half the schedule. This explains the H.261 → H.263 → H.264 → H.265 → H.266 → AV2 cadence as a structural property, not an engineering choice.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "patent_constraint_shapes_tool_selection",
+   "if": [
+    "a codec is required to be royalty-free"
+   ],
+   "then": [
+    "tools are chosen partly to dodge existing patents"
+   ],
+   "why": "AOMedia's CDEF replaced HEVC's SAO; AOMedia's multi-symbol AC replaced CABAC; AOMedia's wedge compound replaced HEVC bi-prediction patents. Compression efficiency is one objective; patent landscape is another. Both constrain the design.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "convex_hull_ladder_is_optimal_for_ABR",
+   "if": [
+    "a streaming pipeline serves an asset at multiple bitrates"
+   ],
+   "then": [
+    "the optimal ABR ladder is the convex hull on the VMAF-vs-rate plot"
+   ],
+   "why": "Dominated encodes (higher rate, lower VMAF) are never chosen by a rational client. The convex hull is the Pareto frontier; per-title and per-shot encoding both exploit it. Netflix's 30% bitrate savings come from this insight.",
+   "soundness_category": "algebraic_law"
+  },
+  {
+   "name": "DST_matches_ramped_residual",
+   "if": [
+    "residual energy ramps toward an intra-prediction boundary"
+   ],
+   "then": [
+    "DST-7 outperforms DCT-2 as the transform basis"
+   ],
+   "why": "Prediction-residual energy slopes toward the boundary with the predictor. DST-7's basis matches that ramp; DCT-2's symmetric basis wastes coefficients on the asymmetry. VVC's MTS and AV1's ADST both implement this insight under different names.",
+   "soundness_category": "algebraic_law"
+  },
+  {
+   "name": "subpel_interpolation_must_be_exact",
+   "if": [
+    "motion vector has fractional precision"
+   ],
+   "then": [
+    "encoder and decoder must use IDENTICAL interpolation filters"
+   ],
+   "why": "Encoder's motion-compensated prediction must match decoder's byte-for-byte. The standard specifies the filter taps (H.264 6-tap; H.265/AV1/VVC 8-tap) and clipping order exactly. Any encoder that drifts from spec produces streams that don't decode correctly on the reference decoder.",
+   "soundness_category": "referential_transparency"
+  },
+  {
+   "name": "arithmetic_coding_approaches_entropy_bound",
+   "if": [
+    "arithmetic coding is used on a symbol stream"
+   ],
+   "then": [
+    "total bit count approaches Shannon entropy within one bit"
+   ],
+   "why": "The interval [0,1) maps any sequence's probability to a fractional position; emitting -log p bits of that position IS Shannon's source-coding theorem. Huffman gives integer bits per symbol (loss on skewed distributions); arithmetic coding gives fractional bits.",
+   "soundness_category": "algebraic_law"
+  },
+  {
+   "name": "binary_alphabet_simplifies_context_modeling",
+   "if": [
+    "a syntax element is binarised before coding"
+   ],
+   "then": [
+    "each context tracks only P(bin=1) — a single scalar"
+   ],
+   "why": "One probability per context is one state variable; updating it is one table lookup. Multi-bit contexts would need joint distributions, exploding the state space. CABAC's binary choice is a deliberate trade: more bins per symbol, but trivially-trackable contexts.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "context_selection_reduces_conditional_entropy",
+   "if": [
+    "the next bin's context is chosen from predictive prior observations"
+   ],
+   "then": [
+    "that bin's conditional entropy under the context is lower than its marginal entropy"
+   ],
+   "why": "H(X|Y) ≤ H(X) is Shannon's conditioning theorem. Choosing Y to be predictive of X is the entire art of CABAC context design; each context function is decades of empirical tuning over real video corpora.",
+   "soundness_category": "algebraic_law"
+  },
+  {
+   "name": "adaptive_state_tracks_local_statistics",
+   "if": [
+    "a state-transition table updates per bin"
+   ],
+   "then": [
+    "the context's probability tracks local stream statistics with O(state-space) lag"
+   ],
+   "why": "Single-scan adaptation captures regime changes (scene boundaries, foreground/background) without explicit segmentation. The 64-state space gives ~7-bit precision tracking through single-table updates — no division, no log, just one read and one write.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "bypass_doubles_speed_for_equiprobable_bins",
+   "if": [
+    "a bin has known 0.5 probability"
+   ],
+   "then": [
+    "bypass mode saves the context lookup and state update at no compression cost"
+   ],
+   "why": "At exactly 0.5 probability, Shannon entropy is exactly 1 bit; no context can compress further. Bypass is the optimal choice for equiprobable bins (signs, EGk suffixes); nearly-equiprobable bins also benefit because regular-mode gains there are tiny.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "renormalisation_emits_when_committed",
+   "if": [
+    "the range interval is narrowed enough that its MSB is fixed"
+   ],
+   "then": [
+    "that MSB is output and range and low are doubled"
+   ],
+   "why": "A bit can be committed only when no future symbol could change it. Renormalisation detects this condition (range below threshold means MSB locked) and commits the bit. Doubling range maintains precision; without renormalisation no bits would ever be output.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "carry_propagation_enables_streaming_arithmetic_coding",
+   "if": [
+    "future symbols could push low across a power-of-2 boundary"
+   ],
+   "then": [
+    "a buffered output tracking 'outstanding bits' lets bits be emitted speculatively and corrected"
+   ],
+   "why": "Without carry propagation, the encoder would need to know the whole stream before emitting any bit — making arithmetic coding a batch operation, not a streaming one. The carry-propagation trick is what makes CABAC actually streamable.",
+   "soundness_category": "referential_transparency"
+  },
+  {
+   "name": "cabac_efficiency_compounds_across_bins",
+   "if": [
+    "CABAC codes a sequence of bins, each with a tuned context"
+   ],
+   "then": [
+    "total bit cost approaches the sequence's joint entropy under the contexts"
+   ],
+   "why": "Each bin is locally Shannon-optimal; the chain rule of probability gives joint optimality across the sequence. CABAC's ~10-15% gain over CAVLC is the integrated benefit across millions of bins per second of video.",
+   "soundness_category": "algebraic_law"
+  },
+  {
+   "name": "binarisation_method_matches_distribution",
+   "if": [
+    "a syntax element's distribution is known to be heavy-tailed with a small core"
+   ],
+   "then": [
+    "EGk binarisation outperforms pure unary because the suffix bits absorb the tail"
+   ],
+   "why": "Unary is optimal for monotonically-decreasing probabilities near zero; pure unary on a heavy tail costs O(N) bits for large N. EGk's unary prefix + binary suffix is logarithmic for large N, matching the actual distribution of natural-image residual magnitudes.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "film_grain_synthesis_decouples_grain_from_rate",
+   "if": [
+    "source has high-frequency grain"
+   ],
+   "then": [
+    "synthesising grain at decode is cheaper than coding it"
+   ],
+   "why": "Grain is high-entropy; coding it requires fine quantisation. Synthesising statistically-matching grain at decode preserves the cinematic look at zero rate cost. AV1 makes this normative; H.264/H.265/H.266 carry an equivalent SEI (ITU-T H.Suppl.21, 2025).",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "cabac_contexts_differ_by_codec",
+   "if": [
+    "syntax element coded with CABAC under codec A",
+    "transcoding to codec B"
+   ],
+   "then": [
+    "context probability + binarization differ; must decode syntax value (not bin string) and re-encode under codec B's context init + binarizer"
+   ],
+   "why": "CABAC contexts are tables. Bins are not portable. Codec B's decoder will fail catastrophically if fed codec A's bin stream verbatim. The transcoder must re-binarise every syntax element through codec B's tables — even though both codecs use 'CABAC' as the entropy coder class.",
+   "soundness_category": "referential_transparency"
+  },
+  {
+   "name": "transform_size_set_expands_with_resolution",
+   "if": [
+    "target resolution increases generation-over-generation",
+    "encoder selects per-block transform size"
+   ],
+   "then": [
+    "successor codec adds larger transform sizes (e.g. 16x16, 32x32 in H.265) to capture broader residual energy with lower per-block syntax cost"
+   ],
+   "why": "Higher-resolution content has larger smooth regions whose residual energy disperses across blocks H.264's 8x8 transforms cannot capture in one pass. Bigger DCTs concentrate that energy into fewer coefficients with lower syntax overhead. The same logic drives AV1's 64x64 and VVC's MTS.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "deblocking_strength_remaps_with_grid",
+   "if": [
+    "transcoding between codecs with different fundamental block-size grids",
+    "deblocking applied to reconstructed boundaries"
+   ],
+   "then": [
+    "filter strength tables remap: boundary subset becomes the new grid's intersection; per-bS taps must be re-tabled to codec B's clipping rules"
+   ],
+   "why": "H.264 deblocks every 4x4 boundary across a 16x16 macroblock; H.265 deblocks the 8x8 grid only. Boundary inventory changes; bS levels collapse from 5 to 3. Mechanically: identify boundaries in the new grid, compute bS under the new rules, apply codec-B clipping.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "slice_header_syntax_must_be_re_emitted",
+   "if": [
+    "transcoding slice from codec A to codec B"
+   ],
+   "then": [
+    "slice header must be re-emitted under codec B's syntax: codec B's slice-address scheme (MB index vs CTU index), RPS/RPM scheme, SAO flags if codec B has SAO, weighted pred table layout"
+   ],
+   "why": "Slice headers are codec-specific schemas. H.264's first_mb_in_slice indexes 16x16 MBs; H.265's slice_segment_address indexes CTUs. RPS (HEVC) replaces explicit RPM (H.264) for reference management. Carrying H.264's header bytes verbatim produces a malformed H.265 NAL.",
+   "soundness_category": "referential_transparency"
+  },
+  {
+   "name": "transcoder_decomposes_into_concept_pair_rewrites",
+   "if": [
+    "two codecs share a concept category",
+    "each codec has its own concept instance in that category"
+   ],
+   "then": [
+    "the transcoder for codec-A→codec-B contains one graph rewrite per concept-pair, transforming codec-A nodes into codec-B nodes"
+   ],
+   "why": "The substrate represents bitstreams as typed graphs (per seeds/transcoding). Codecs differ by the concepts they instantiate in each category (block_structure, transform_kind, in_loop_filter, etc.). Per-category concept pairs name the rewrites; their composition is the full transcoder, graph-resident with no pixel round-trip.",
+   "soundness_category": "extensional_equivalence"
+  }
+ ],
+ "exclusions": [],
+ "parent_mt": "compilers",
+ "relations": [
+  {
+   "src": "video_coding_theory",
+   "edge": "genlMt",
+   "tgt": "compiler_theory"
+  }
+ ]
+}

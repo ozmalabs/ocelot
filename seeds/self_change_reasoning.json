@@ -1,0 +1,4161 @@
+{
+ "id": "self_change_reasoning",
+ "version": "1.1.0",
+ "depends_on": [
+  "self_repair"
+ ],
+ "capability_keys": [
+  "diagnose_self_change",
+  "proof_carrying_rule_patch",
+  "controlled_self_experiment"
+ ],
+ "description": "Graph-native proof-carrying self-change reasoning.  Mechanical FaultProbe measurements become ObservedGap -> CausalHypothesis -> ChangeSpec/RulePatch -> ProofObligation -> Trial -> Canary -> Commit|Abort -> Consolidation.  Candidate patches must beat both no-op and same-size placebo controls, preserve invariants, fit a resource budget, and replicate. Gains are integer evidence units; all cognitive quantities are integer. No Python decision.",
+ "microtheory": {
+  "name": "self_change_reasoning",
+  "description": "minimal causal self-repair under proof obligations, controls, canarying, rollback and consolidation"
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [
+  {
+   "provenance": "seed:self_change_reasoning:observes_fault_probe",
+   "src": {
+    "type": "Agent",
+    "var": "x"
+   },
+   "edge_type": "observes_fault_probe",
+   "tgt": {
+    "type": "FaultProbe",
+    "var": "y"
+   },
+   "where": null,
+   "weight": {
+    "type": "Lit",
+    "value": 1
+   }
+  },
+  {
+   "provenance": "seed:self_change_reasoning:considers_change",
+   "src": {
+    "type": "Agent",
+    "var": "x"
+   },
+   "edge_type": "considers_change",
+   "tgt": {
+    "type": "SelfChange",
+    "var": "y"
+   },
+   "where": null,
+   "weight": {
+    "type": "Lit",
+    "value": 1
+   }
+  },
+  {
+   "provenance": "seed:self_change_reasoning:observed_as",
+   "src": {
+    "type": "SelfChange",
+    "var": "x"
+   },
+   "edge_type": "observed_as",
+   "tgt": {
+    "type": "ObservedGap",
+    "var": "y"
+   },
+   "where": null,
+   "weight": {
+    "type": "Lit",
+    "value": 1
+   }
+  },
+  {
+   "provenance": "seed:self_change_reasoning:from_probe",
+   "src": {
+    "type": "ObservedGap",
+    "var": "x"
+   },
+   "edge_type": "from_probe",
+   "tgt": {
+    "type": "FaultProbe",
+    "var": "y"
+   },
+   "where": null,
+   "weight": {
+    "type": "Lit",
+    "value": 1
+   }
+  },
+  {
+   "provenance": "seed:self_change_reasoning:has_hypothesis",
+   "src": {
+    "type": "SelfChange",
+    "var": "x"
+   },
+   "edge_type": "has_hypothesis",
+   "tgt": {
+    "type": "CausalHypothesis",
+    "var": "y"
+   },
+   "where": null,
+   "weight": {
+    "type": "Lit",
+    "value": 1
+   }
+  },
+  {
+   "provenance": "seed:self_change_reasoning:supports_hypothesis",
+   "src": {
+    "type": "ObservedGap",
+    "var": "x"
+   },
+   "edge_type": "supports_hypothesis",
+   "tgt": {
+    "type": "CausalHypothesis",
+    "var": "y"
+   },
+   "where": null,
+   "weight": {
+    "type": "Lit",
+    "value": 1
+   }
+  },
+  {
+   "provenance": "seed:self_change_reasoning:proposes_spec",
+   "src": {
+    "type": "CausalHypothesis",
+    "var": "x"
+   },
+   "edge_type": "proposes_spec",
+   "tgt": {
+    "type": "ChangeSpec",
+    "var": "y"
+   },
+   "where": null,
+   "weight": {
+    "type": "Lit",
+    "value": 1
+   }
+  },
+  {
+   "provenance": "seed:self_change_reasoning:has_spec",
+   "src": {
+    "type": "SelfChange",
+    "var": "x"
+   },
+   "edge_type": "has_spec",
+   "tgt": {
+    "type": "ChangeSpec",
+    "var": "y"
+   },
+   "where": null,
+   "weight": {
+    "type": "Lit",
+    "value": 1
+   }
+  },
+  {
+   "provenance": "seed:self_change_reasoning:specifies_patch",
+   "src": {
+    "type": "ChangeSpec",
+    "var": "x"
+   },
+   "edge_type": "specifies_patch",
+   "tgt": {
+    "type": "RulePatch",
+    "var": "y"
+   },
+   "where": null,
+   "weight": {
+    "type": "Lit",
+    "value": 1
+   }
+  },
+  {
+   "provenance": "seed:self_change_reasoning:has_patch",
+   "src": {
+    "type": "SelfChange",
+    "var": "x"
+   },
+   "edge_type": "has_patch",
+   "tgt": {
+    "type": "RulePatch",
+    "var": "y"
+   },
+   "where": null,
+   "weight": {
+    "type": "Lit",
+    "value": 1
+   }
+  },
+  {
+   "provenance": "seed:self_change_reasoning:has_noop_control",
+   "src": {
+    "type": "SelfChange",
+    "var": "x"
+   },
+   "edge_type": "has_noop_control",
+   "tgt": {
+    "type": "ControlArm",
+    "var": "y"
+   },
+   "where": null,
+   "weight": {
+    "type": "Lit",
+    "value": 1
+   }
+  },
+  {
+   "provenance": "seed:self_change_reasoning:has_placebo_control",
+   "src": {
+    "type": "SelfChange",
+    "var": "x"
+   },
+   "edge_type": "has_placebo_control",
+   "tgt": {
+    "type": "ControlArm",
+    "var": "y"
+   },
+   "where": null,
+   "weight": {
+    "type": "Lit",
+    "value": 1
+   }
+  },
+  {
+   "provenance": "seed:self_change_reasoning:has_evidence",
+   "src": {
+    "type": "ControlArm",
+    "var": "x"
+   },
+   "edge_type": "has_evidence",
+   "tgt": {
+    "type": "TrialEvidence",
+    "var": "y"
+   },
+   "where": null,
+   "weight": {
+    "type": "Lit",
+    "value": 1
+   }
+  },
+  {
+   "provenance": "seed:self_change_reasoning:candidate_evidence",
+   "src": {
+    "type": "RulePatch",
+    "var": "x"
+   },
+   "edge_type": "candidate_evidence",
+   "tgt": {
+    "type": "TrialEvidence",
+    "var": "y"
+   },
+   "where": null,
+   "weight": {
+    "type": "Lit",
+    "value": 1
+   }
+  },
+  {
+   "provenance": "seed:self_change_reasoning:proof_causal",
+   "src": {
+    "type": "RulePatch",
+    "var": "x"
+   },
+   "edge_type": "proof_causal",
+   "tgt": {
+    "type": "ProofObligation",
+    "var": "y"
+   },
+   "where": null,
+   "weight": {
+    "type": "Lit",
+    "value": 1
+   }
+  },
+  {
+   "provenance": "seed:self_change_reasoning:proof_invariant",
+   "src": {
+    "type": "RulePatch",
+    "var": "x"
+   },
+   "edge_type": "proof_invariant",
+   "tgt": {
+    "type": "ProofObligation",
+    "var": "y"
+   },
+   "where": null,
+   "weight": {
+    "type": "Lit",
+    "value": 1
+   }
+  },
+  {
+   "provenance": "seed:self_change_reasoning:proof_noop",
+   "src": {
+    "type": "RulePatch",
+    "var": "x"
+   },
+   "edge_type": "proof_noop",
+   "tgt": {
+    "type": "ProofObligation",
+    "var": "y"
+   },
+   "where": null,
+   "weight": {
+    "type": "Lit",
+    "value": 1
+   }
+  },
+  {
+   "provenance": "seed:self_change_reasoning:proof_placebo",
+   "src": {
+    "type": "RulePatch",
+    "var": "x"
+   },
+   "edge_type": "proof_placebo",
+   "tgt": {
+    "type": "ProofObligation",
+    "var": "y"
+   },
+   "where": null,
+   "weight": {
+    "type": "Lit",
+    "value": 1
+   }
+  },
+  {
+   "provenance": "seed:self_change_reasoning:proof_budget",
+   "src": {
+    "type": "RulePatch",
+    "var": "x"
+   },
+   "edge_type": "proof_budget",
+   "tgt": {
+    "type": "ProofObligation",
+    "var": "y"
+   },
+   "where": null,
+   "weight": {
+    "type": "Lit",
+    "value": 1
+   }
+  },
+  {
+   "provenance": "seed:self_change_reasoning:proof_replication",
+   "src": {
+    "type": "RulePatch",
+    "var": "x"
+   },
+   "edge_type": "proof_replication",
+   "tgt": {
+    "type": "ProofObligation",
+    "var": "y"
+   },
+   "where": null,
+   "weight": {
+    "type": "Lit",
+    "value": 1
+   }
+  },
+  {
+   "provenance": "seed:self_change_reasoning:has_trial",
+   "src": {
+    "type": "RulePatch",
+    "var": "x"
+   },
+   "edge_type": "has_trial",
+   "tgt": {
+    "type": "Trial",
+    "var": "y"
+   },
+   "where": null,
+   "weight": {
+    "type": "Lit",
+    "value": 1
+   }
+  },
+  {
+   "provenance": "seed:self_change_reasoning:selected_patch",
+   "src": {
+    "type": "SelfChange",
+    "var": "x"
+   },
+   "edge_type": "selected_patch",
+   "tgt": {
+    "type": "RulePatch",
+    "var": "y"
+   },
+   "where": null,
+   "weight": {
+    "type": "Lit",
+    "value": 1
+   }
+  },
+  {
+   "provenance": "seed:self_change_reasoning:has_canary",
+   "src": {
+    "type": "RulePatch",
+    "var": "x"
+   },
+   "edge_type": "has_canary",
+   "tgt": {
+    "type": "Canary",
+    "var": "y"
+   },
+   "where": null,
+   "weight": {
+    "type": "Lit",
+    "value": 1
+   }
+  },
+  {
+   "provenance": "seed:self_change_reasoning:has_canary_evidence",
+   "src": {
+    "type": "Canary",
+    "var": "x"
+   },
+   "edge_type": "has_canary_evidence",
+   "tgt": {
+    "type": "CanaryEvidence",
+    "var": "y"
+   },
+   "where": null,
+   "weight": {
+    "type": "Lit",
+    "value": 1
+   }
+  },
+  {
+   "provenance": "seed:self_change_reasoning:evidence_batch",
+   "src": {
+    "type": "SelfChange",
+    "var": "x"
+   },
+   "edge_type": "evidence_batch",
+   "tgt": {
+    "type": "EvidenceBatch",
+    "var": "y"
+   },
+   "where": null,
+   "weight": {
+    "type": "Lit",
+    "value": 1
+   }
+  },
+  {
+   "provenance": "seed:self_change_reasoning:has_commit",
+   "src": {
+    "type": "SelfChange",
+    "var": "x"
+   },
+   "edge_type": "has_commit",
+   "tgt": {
+    "type": "Commit",
+    "var": "y"
+   },
+   "where": null,
+   "weight": {
+    "type": "Lit",
+    "value": 1
+   }
+  },
+  {
+   "provenance": "seed:self_change_reasoning:commits_patch",
+   "src": {
+    "type": "Commit",
+    "var": "x"
+   },
+   "edge_type": "commits_patch",
+   "tgt": {
+    "type": "RulePatch",
+    "var": "y"
+   },
+   "where": null,
+   "weight": {
+    "type": "Lit",
+    "value": 1
+   }
+  },
+  {
+   "provenance": "seed:self_change_reasoning:has_consolidation_evidence",
+   "src": {
+    "type": "Commit",
+    "var": "x"
+   },
+   "edge_type": "has_consolidation_evidence",
+   "tgt": {
+    "type": "ConsolidationEvidence",
+    "var": "y"
+   },
+   "where": null,
+   "weight": {
+    "type": "Lit",
+    "value": 1
+   }
+  },
+  {
+   "provenance": "seed:self_change_reasoning:has_abort",
+   "src": {
+    "type": "SelfChange",
+    "var": "x"
+   },
+   "edge_type": "has_abort",
+   "tgt": {
+    "type": "Abort",
+    "var": "y"
+   },
+   "where": null,
+   "weight": {
+    "type": "Lit",
+    "value": 1
+   }
+  },
+  {
+   "provenance": "seed:self_change_reasoning:rejects_patch",
+   "src": {
+    "type": "Abort",
+    "var": "x"
+   },
+   "edge_type": "rejects_patch",
+   "tgt": {
+    "type": "RulePatch",
+    "var": "y"
+   },
+   "where": null,
+   "weight": {
+    "type": "Lit",
+    "value": 1
+   }
+  },
+  {
+   "provenance": "seed:self_change_reasoning:has_consolidation",
+   "src": {
+    "type": "SelfChange",
+    "var": "x"
+   },
+   "edge_type": "has_consolidation",
+   "tgt": {
+    "type": "Consolidation",
+    "var": "y"
+   },
+   "where": null,
+   "weight": {
+    "type": "Lit",
+    "value": 1
+   }
+  },
+  {
+   "provenance": "seed:self_change_reasoning:consolidates_patch",
+   "src": {
+    "type": "Consolidation",
+    "var": "x"
+   },
+   "edge_type": "consolidates_patch",
+   "tgt": {
+    "type": "RulePatch",
+    "var": "y"
+   },
+   "where": null,
+   "weight": {
+    "type": "Lit",
+    "value": 1
+   }
+  }
+ ],
+ "rules": [
+  {
+   "name": "sc_observe_gap",
+   "comment": "Convert a mechanical FaultProbe into the explicit beginning of a SelfChange.  The probe contains measurements, never a diagnosis.",
+   "match": [
+    [
+     "agent",
+     "observes_fault_probe",
+     "probe"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "probe"
+         },
+         "key": "change_opened"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "probe"
+           },
+           "key": "false_negative"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "probe"
+           },
+           "key": "false_positive"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "probe"
+           },
+           "key": "relation_counterfactual"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "probe"
+           },
+           "key": "outcome_mismatch"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "probe"
+           },
+           "key": "cost_excess"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "gap",
+     "ObservedGap",
+     {
+      "status": "observed",
+      "case_id": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "probe"
+        },
+        "key": "case_id"
+       }
+      },
+      "target_uid": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "probe"
+        },
+        "key": "target_uid"
+       }
+      },
+      "expected_revision": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "probe"
+        },
+        "key": "expected_revision"
+       }
+      },
+      "baseline_hash": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "probe"
+        },
+        "key": "baseline_hash"
+       }
+      }
+     }
+    ],
+    [
+     "add_node",
+     "sc",
+     "SelfChange",
+     {
+      "status": "diagnosing",
+      "case_id": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "probe"
+        },
+        "key": "case_id"
+       }
+      },
+      "target_uid": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "probe"
+        },
+        "key": "target_uid"
+       }
+      },
+      "expected_revision": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "probe"
+        },
+        "key": "expected_revision"
+       }
+      },
+      "selected": 0
+     }
+    ],
+    [
+     "add_node",
+     "noop",
+     "ControlArm",
+     {
+      "kind": "no_op",
+      "required": 1
+     }
+    ],
+    [
+     "add_node",
+     "placebo",
+     "ControlArm",
+     {
+      "kind": "same_size_placebo",
+      "required": 1
+     }
+    ],
+    [
+     "add_edge",
+     "agent",
+     "considers_change",
+     "sc"
+    ],
+    [
+     "add_edge",
+     "sc",
+     "observed_as",
+     "gap"
+    ],
+    [
+     "add_edge",
+     "gap",
+     "from_probe",
+     "probe"
+    ],
+    [
+     "add_edge",
+     "sc",
+     "has_noop_control",
+     "noop"
+    ],
+    [
+     "add_edge",
+     "sc",
+     "has_placebo_control",
+     "placebo"
+    ],
+    [
+     "set_attr",
+     "probe",
+     "change_opened",
+     1
+    ]
+   ]
+  },
+  {
+   "name": "sc_hypothesise_threshold_adjustment",
+   "comment": "Minimal candidate family threshold_adjustment.  It is proposed from observed structural/behavioural evidence, not from a supplied answer key.",
+   "match": [
+    [
+     "sc",
+     "observed_as",
+     "gap"
+    ],
+    [
+     "gap",
+     "from_probe",
+     "probe"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "probe"
+         },
+         "key": "candidate_threshold_adjustment"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Gt",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "probe"
+           },
+           "key": "false_negative"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0
+        }
+       },
+       {
+        "type": "Gt",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "probe"
+           },
+           "key": "threshold_sensitivity"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "hyp",
+     "CausalHypothesis",
+     {
+      "family": "threshold_adjustment",
+      "status": "candidate",
+      "case_id": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "probe"
+        },
+        "key": "case_id"
+       }
+      },
+      "explanation": "Relax or move one threshold while preserving the surrounding guard."
+     }
+    ],
+    [
+     "add_node",
+     "spec",
+     "ChangeSpec",
+     {
+      "family": "threshold_adjustment",
+      "field": "where",
+      "minimality": "single_local_edit",
+      "status": "specified"
+     }
+    ],
+    [
+     "add_node",
+     "patch",
+     "RulePatch",
+     {
+      "family": "threshold_adjustment",
+      "field": "where",
+      "target_uid": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "probe"
+        },
+        "key": "target_uid"
+       }
+      },
+      "expected_revision": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "probe"
+        },
+        "key": "expected_revision"
+       }
+      },
+      "expected_content_hash": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "probe"
+        },
+        "key": "baseline_hash"
+       }
+      },
+      "proposed_clause": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "probe"
+        },
+        "key": "threshold_adjustment_clause"
+       }
+      },
+      "inverse_clause": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "probe"
+        },
+        "key": "live_clause"
+       }
+      },
+      "mdl_cost": 1,
+      "blast_radius": 1,
+      "status": "proposed",
+      "state": "proposed",
+      "obligations_minted": 0,
+      "proofs_passed": 0,
+      "trial_complete": 0
+     }
+    ],
+    [
+     "add_edge",
+     "gap",
+     "supports_hypothesis",
+     "hyp"
+    ],
+    [
+     "add_edge",
+     "hyp",
+     "proposes_spec",
+     "spec"
+    ],
+    [
+     "add_edge",
+     "spec",
+     "specifies_patch",
+     "patch"
+    ],
+    [
+     "add_edge",
+     "sc",
+     "has_hypothesis",
+     "hyp"
+    ],
+    [
+     "add_edge",
+     "sc",
+     "has_spec",
+     "spec"
+    ],
+    [
+     "add_edge",
+     "sc",
+     "has_patch",
+     "patch"
+    ],
+    [
+     "set_attr",
+     "probe",
+     "candidate_threshold_adjustment",
+     1
+    ]
+   ]
+  },
+  {
+   "name": "sc_hypothesise_guard_strengthening",
+   "comment": "Minimal candidate family guard_strengthening.  It is proposed from observed structural/behavioural evidence, not from a supplied answer key.",
+   "match": [
+    [
+     "sc",
+     "observed_as",
+     "gap"
+    ],
+    [
+     "gap",
+     "from_probe",
+     "probe"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "probe"
+         },
+         "key": "candidate_guard_strengthening"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Gt",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "probe"
+           },
+           "key": "false_positive"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0
+        }
+       },
+       {
+        "type": "Gt",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "probe"
+           },
+           "key": "context_sensitivity"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "hyp",
+     "CausalHypothesis",
+     {
+      "family": "guard_strengthening",
+      "status": "candidate",
+      "case_id": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "probe"
+        },
+        "key": "case_id"
+       }
+      },
+      "explanation": "Add the smallest discriminator that excludes the failing context."
+     }
+    ],
+    [
+     "add_node",
+     "spec",
+     "ChangeSpec",
+     {
+      "family": "guard_strengthening",
+      "field": "where",
+      "minimality": "single_local_edit",
+      "status": "specified"
+     }
+    ],
+    [
+     "add_node",
+     "patch",
+     "RulePatch",
+     {
+      "family": "guard_strengthening",
+      "field": "where",
+      "target_uid": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "probe"
+        },
+        "key": "target_uid"
+       }
+      },
+      "expected_revision": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "probe"
+        },
+        "key": "expected_revision"
+       }
+      },
+      "expected_content_hash": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "probe"
+        },
+        "key": "baseline_hash"
+       }
+      },
+      "proposed_clause": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "probe"
+        },
+        "key": "guard_strengthening_clause"
+       }
+      },
+      "inverse_clause": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "probe"
+        },
+        "key": "live_clause"
+       }
+      },
+      "mdl_cost": 2,
+      "blast_radius": 1,
+      "status": "proposed",
+      "state": "proposed",
+      "obligations_minted": 0,
+      "proofs_passed": 0,
+      "trial_complete": 0
+     }
+    ],
+    [
+     "add_edge",
+     "gap",
+     "supports_hypothesis",
+     "hyp"
+    ],
+    [
+     "add_edge",
+     "hyp",
+     "proposes_spec",
+     "spec"
+    ],
+    [
+     "add_edge",
+     "spec",
+     "specifies_patch",
+     "patch"
+    ],
+    [
+     "add_edge",
+     "sc",
+     "has_hypothesis",
+     "hyp"
+    ],
+    [
+     "add_edge",
+     "sc",
+     "has_spec",
+     "spec"
+    ],
+    [
+     "add_edge",
+     "sc",
+     "has_patch",
+     "patch"
+    ],
+    [
+     "set_attr",
+     "probe",
+     "candidate_guard_strengthening",
+     1
+    ]
+   ]
+  },
+  {
+   "name": "sc_hypothesise_relation_addition",
+   "comment": "Minimal candidate family relation_addition.  It is proposed from observed structural/behavioural evidence, not from a supplied answer key.",
+   "match": [
+    [
+     "sc",
+     "observed_as",
+     "gap"
+    ],
+    [
+     "gap",
+     "from_probe",
+     "probe"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "probe"
+         },
+         "key": "candidate_relation_addition"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "probe"
+         },
+         "key": "relation_counterfactual"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "hyp",
+     "CausalHypothesis",
+     {
+      "family": "relation_addition",
+      "status": "candidate",
+      "case_id": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "probe"
+        },
+        "key": "case_id"
+       }
+      },
+      "explanation": "Add one causally supported relation to the match or guard."
+     }
+    ],
+    [
+     "add_node",
+     "spec",
+     "ChangeSpec",
+     {
+      "family": "relation_addition",
+      "field": "where",
+      "minimality": "single_local_edit",
+      "status": "specified"
+     }
+    ],
+    [
+     "add_node",
+     "patch",
+     "RulePatch",
+     {
+      "family": "relation_addition",
+      "field": "where",
+      "target_uid": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "probe"
+        },
+        "key": "target_uid"
+       }
+      },
+      "expected_revision": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "probe"
+        },
+        "key": "expected_revision"
+       }
+      },
+      "expected_content_hash": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "probe"
+        },
+        "key": "baseline_hash"
+       }
+      },
+      "proposed_clause": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "probe"
+        },
+        "key": "relation_addition_clause"
+       }
+      },
+      "inverse_clause": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "probe"
+        },
+        "key": "live_clause"
+       }
+      },
+      "mdl_cost": 3,
+      "blast_radius": 2,
+      "status": "proposed",
+      "state": "proposed",
+      "obligations_minted": 0,
+      "proofs_passed": 0,
+      "trial_complete": 0
+     }
+    ],
+    [
+     "add_edge",
+     "gap",
+     "supports_hypothesis",
+     "hyp"
+    ],
+    [
+     "add_edge",
+     "hyp",
+     "proposes_spec",
+     "spec"
+    ],
+    [
+     "add_edge",
+     "spec",
+     "specifies_patch",
+     "patch"
+    ],
+    [
+     "add_edge",
+     "sc",
+     "has_hypothesis",
+     "hyp"
+    ],
+    [
+     "add_edge",
+     "sc",
+     "has_spec",
+     "spec"
+    ],
+    [
+     "add_edge",
+     "sc",
+     "has_patch",
+     "patch"
+    ],
+    [
+     "set_attr",
+     "probe",
+     "candidate_relation_addition",
+     1
+    ]
+   ]
+  },
+  {
+   "name": "sc_hypothesise_effect_substitution",
+   "comment": "Minimal candidate family effect_substitution.  It is proposed from observed structural/behavioural evidence, not from a supplied answer key.",
+   "match": [
+    [
+     "sc",
+     "observed_as",
+     "gap"
+    ],
+    [
+     "gap",
+     "from_probe",
+     "probe"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "probe"
+         },
+         "key": "candidate_effect_substitution"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Gt",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "probe"
+           },
+           "key": "outcome_mismatch"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0
+        }
+       },
+       {
+        "type": "Gt",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "probe"
+           },
+           "key": "effect_counterfactual"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "hyp",
+     "CausalHypothesis",
+     {
+      "family": "effect_substitution",
+      "status": "candidate",
+      "case_id": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "probe"
+        },
+        "key": "case_id"
+       }
+      },
+      "explanation": "Substitute one effect while keeping the triggering conditions fixed."
+     }
+    ],
+    [
+     "add_node",
+     "spec",
+     "ChangeSpec",
+     {
+      "family": "effect_substitution",
+      "field": "effect",
+      "minimality": "single_local_edit",
+      "status": "specified"
+     }
+    ],
+    [
+     "add_node",
+     "patch",
+     "RulePatch",
+     {
+      "family": "effect_substitution",
+      "field": "effect",
+      "target_uid": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "probe"
+        },
+        "key": "target_uid"
+       }
+      },
+      "expected_revision": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "probe"
+        },
+        "key": "expected_revision"
+       }
+      },
+      "expected_content_hash": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "probe"
+        },
+        "key": "baseline_hash"
+       }
+      },
+      "proposed_clause": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "probe"
+        },
+        "key": "effect_substitution_clause"
+       }
+      },
+      "inverse_clause": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "probe"
+        },
+        "key": "live_clause"
+       }
+      },
+      "mdl_cost": 4,
+      "blast_radius": 2,
+      "status": "proposed",
+      "state": "proposed",
+      "obligations_minted": 0,
+      "proofs_passed": 0,
+      "trial_complete": 0
+     }
+    ],
+    [
+     "add_edge",
+     "gap",
+     "supports_hypothesis",
+     "hyp"
+    ],
+    [
+     "add_edge",
+     "hyp",
+     "proposes_spec",
+     "spec"
+    ],
+    [
+     "add_edge",
+     "spec",
+     "specifies_patch",
+     "patch"
+    ],
+    [
+     "add_edge",
+     "sc",
+     "has_hypothesis",
+     "hyp"
+    ],
+    [
+     "add_edge",
+     "sc",
+     "has_spec",
+     "spec"
+    ],
+    [
+     "add_edge",
+     "sc",
+     "has_patch",
+     "patch"
+    ],
+    [
+     "set_attr",
+     "probe",
+     "candidate_effect_substitution",
+     1
+    ]
+   ]
+  },
+  {
+   "name": "sc_hypothesise_firing_budget_guard",
+   "comment": "Minimal candidate family firing_budget_guard.  It is proposed from observed structural/behavioural evidence, not from a supplied answer key.",
+   "match": [
+    [
+     "sc",
+     "observed_as",
+     "gap"
+    ],
+    [
+     "gap",
+     "from_probe",
+     "probe"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "probe"
+         },
+         "key": "candidate_firing_budget_guard"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Gt",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "probe"
+           },
+           "key": "cost_excess"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0
+        }
+       },
+       {
+        "type": "Gt",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "probe"
+           },
+           "key": "repeated_noop_firings"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "hyp",
+     "CausalHypothesis",
+     {
+      "family": "firing_budget_guard",
+      "status": "candidate",
+      "case_id": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "probe"
+        },
+        "key": "case_id"
+       }
+      },
+      "explanation": "Add an idempotence or epoch guard around repeated no-op firing."
+     }
+    ],
+    [
+     "add_node",
+     "spec",
+     "ChangeSpec",
+     {
+      "family": "firing_budget_guard",
+      "field": "where",
+      "minimality": "single_local_edit",
+      "status": "specified"
+     }
+    ],
+    [
+     "add_node",
+     "patch",
+     "RulePatch",
+     {
+      "family": "firing_budget_guard",
+      "field": "where",
+      "target_uid": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "probe"
+        },
+        "key": "target_uid"
+       }
+      },
+      "expected_revision": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "probe"
+        },
+        "key": "expected_revision"
+       }
+      },
+      "expected_content_hash": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "probe"
+        },
+        "key": "baseline_hash"
+       }
+      },
+      "proposed_clause": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "probe"
+        },
+        "key": "firing_budget_guard_clause"
+       }
+      },
+      "inverse_clause": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "probe"
+        },
+        "key": "live_clause"
+       }
+      },
+      "mdl_cost": 2,
+      "blast_radius": 1,
+      "status": "proposed",
+      "state": "proposed",
+      "obligations_minted": 0,
+      "proofs_passed": 0,
+      "trial_complete": 0
+     }
+    ],
+    [
+     "add_edge",
+     "gap",
+     "supports_hypothesis",
+     "hyp"
+    ],
+    [
+     "add_edge",
+     "hyp",
+     "proposes_spec",
+     "spec"
+    ],
+    [
+     "add_edge",
+     "spec",
+     "specifies_patch",
+     "patch"
+    ],
+    [
+     "add_edge",
+     "sc",
+     "has_hypothesis",
+     "hyp"
+    ],
+    [
+     "add_edge",
+     "sc",
+     "has_spec",
+     "spec"
+    ],
+    [
+     "add_edge",
+     "sc",
+     "has_patch",
+     "patch"
+    ],
+    [
+     "set_attr",
+     "probe",
+     "candidate_firing_budget_guard",
+     1
+    ]
+   ]
+  },
+  {
+   "name": "sc_mint_proof_obligations",
+   "comment": "Every patch must carry causal, invariant, two-control, budget, and replication obligations before it can enter a trial.",
+   "match": [
+    [
+     "sc",
+     "has_patch",
+     "patch"
+    ]
+   ],
+   "where": {
+    "type": "Eq",
+    "a": {
+     "type": "Plus",
+     "items": [
+      {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "patch"
+       },
+       "key": "obligations_minted"
+      },
+      {
+       "type": "Lit",
+       "value": 0
+      }
+     ]
+    },
+    "b": {
+     "type": "Lit",
+     "value": 0
+    }
+   },
+   "effects": [
+    [
+     "add_node",
+     "po_causal",
+     "ProofObligation",
+     {
+      "kind": "causal_gain",
+      "status": "open"
+     }
+    ],
+    [
+     "add_edge",
+     "patch",
+     "proof_causal",
+     "po_causal"
+    ],
+    [
+     "add_node",
+     "po_invariant",
+     "ProofObligation",
+     {
+      "kind": "protected_invariants",
+      "status": "open"
+     }
+    ],
+    [
+     "add_edge",
+     "patch",
+     "proof_invariant",
+     "po_invariant"
+    ],
+    [
+     "add_node",
+     "po_noop",
+     "ProofObligation",
+     {
+      "kind": "beats_no_op_control",
+      "status": "open"
+     }
+    ],
+    [
+     "add_edge",
+     "patch",
+     "proof_noop",
+     "po_noop"
+    ],
+    [
+     "add_node",
+     "po_placebo",
+     "ProofObligation",
+     {
+      "kind": "beats_same_size_placebo",
+      "status": "open"
+     }
+    ],
+    [
+     "add_edge",
+     "patch",
+     "proof_placebo",
+     "po_placebo"
+    ],
+    [
+     "add_node",
+     "po_budget",
+     "ProofObligation",
+     {
+      "kind": "resource_budget",
+      "status": "open"
+     }
+    ],
+    [
+     "add_edge",
+     "patch",
+     "proof_budget",
+     "po_budget"
+    ],
+    [
+     "add_node",
+     "po_repeat",
+     "ProofObligation",
+     {
+      "kind": "replication",
+      "status": "open"
+     }
+    ],
+    [
+     "add_edge",
+     "patch",
+     "proof_replication",
+     "po_repeat"
+    ],
+    [
+     "set_attr",
+     "patch",
+     "obligations_minted",
+     1
+    ],
+    [
+     "set_attr",
+     "patch",
+     "state",
+     "awaiting_trial"
+    ]
+   ]
+  },
+  {
+   "name": "sc_trial_discharge_proofs",
+   "comment": "A patch passes only when it beats both a no-op and a same-size placebo, preserves protected invariants, stays in budget, and replicates.  These are conjunctions, never an aggregate score.",
+   "match": [
+    [
+     "sc",
+     "has_patch",
+     "patch"
+    ],
+    [
+     "patch",
+     "proof_causal",
+     "po_causal"
+    ],
+    [
+     "patch",
+     "proof_invariant",
+     "po_invariant"
+    ],
+    [
+     "patch",
+     "proof_noop",
+     "po_noop"
+    ],
+    [
+     "patch",
+     "proof_placebo",
+     "po_placebo"
+    ],
+    [
+     "patch",
+     "proof_budget",
+     "po_budget"
+    ],
+    [
+     "patch",
+     "proof_replication",
+     "po_repeat"
+    ],
+    [
+     "patch",
+     "candidate_evidence",
+     "ev"
+    ],
+    [
+     "sc",
+     "has_noop_control",
+     "noop"
+    ],
+    [
+     "noop",
+     "has_evidence",
+     "noop_ev"
+    ],
+    [
+     "sc",
+     "has_placebo_control",
+     "placebo"
+    ],
+    [
+     "placebo",
+     "has_evidence",
+     "placebo_ev"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "patch"
+         },
+         "key": "trial_complete"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Gt",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "ev"
+           },
+           "key": "causal_gain"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        "b": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "noop_ev"
+             },
+             "key": "causal_gain"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          },
+          {
+           "type": "Lit",
+           "value": 5
+          }
+         ]
+        }
+       },
+       {
+        "type": "Gt",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "ev"
+           },
+           "key": "causal_gain"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        "b": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "placebo_ev"
+             },
+             "key": "causal_gain"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          },
+          {
+           "type": "Lit",
+           "value": 5
+          }
+         ]
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "ev"
+           },
+           "key": "protected_regressions"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0
+        }
+       },
+       {
+        "type": "Lte",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "ev"
+           },
+           "key": "resource_cost"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        "b": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "ev"
+           },
+           "key": "resource_budget"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        }
+       },
+       {
+        "type": "Gte",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "ev"
+           },
+           "key": "replications"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 2
+        }
+       },
+       {
+        "type": "Gte",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "ev"
+           },
+           "key": "replicated_gain"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 5
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "noop_ev"
+         },
+         "key": "arm"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "no_op"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "placebo_ev"
+         },
+         "key": "arm"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "same_size_placebo"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "trial",
+     "Trial",
+     {
+      "status": "passed",
+      "candidate_gain": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "ev"
+          },
+          "key": "causal_gain"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "noop_gain": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "noop_ev"
+          },
+          "key": "causal_gain"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "placebo_gain": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "placebo_ev"
+          },
+          "key": "causal_gain"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "patch",
+     "has_trial",
+     "trial"
+    ],
+    [
+     "set_attr",
+     "po_causal",
+     "status",
+     "discharged"
+    ],
+    [
+     "set_attr",
+     "po_invariant",
+     "status",
+     "discharged"
+    ],
+    [
+     "set_attr",
+     "po_noop",
+     "status",
+     "discharged"
+    ],
+    [
+     "set_attr",
+     "po_placebo",
+     "status",
+     "discharged"
+    ],
+    [
+     "set_attr",
+     "po_budget",
+     "status",
+     "discharged"
+    ],
+    [
+     "set_attr",
+     "po_repeat",
+     "status",
+     "discharged"
+    ],
+    [
+     "set_attr",
+     "patch",
+     "proofs_passed",
+     1
+    ],
+    [
+     "set_attr",
+     "patch",
+     "trial_complete",
+     1
+    ],
+    [
+     "set_attr",
+     "patch",
+     "state",
+     "trial_passed"
+    ],
+    [
+     "set_attr",
+     "patch",
+     "measured_gain",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "ev"
+         },
+         "key": "causal_gain"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "sc_trial_reject_unproven",
+   "comment": "Negative result is first-class evidence.  A measured patch that fails any preregistered obligation is retained as rejected rather than silently retried.",
+   "match": [
+    [
+     "sc",
+     "has_patch",
+     "patch"
+    ],
+    [
+     "patch",
+     "proof_causal",
+     "po_causal"
+    ],
+    [
+     "patch",
+     "proof_invariant",
+     "po_invariant"
+    ],
+    [
+     "patch",
+     "proof_noop",
+     "po_noop"
+    ],
+    [
+     "patch",
+     "proof_placebo",
+     "po_placebo"
+    ],
+    [
+     "patch",
+     "proof_budget",
+     "po_budget"
+    ],
+    [
+     "patch",
+     "proof_replication",
+     "po_repeat"
+    ],
+    [
+     "patch",
+     "candidate_evidence",
+     "ev"
+    ],
+    [
+     "sc",
+     "has_noop_control",
+     "noop"
+    ],
+    [
+     "noop",
+     "has_evidence",
+     "noop_ev"
+    ],
+    [
+     "sc",
+     "has_placebo_control",
+     "placebo"
+    ],
+    [
+     "placebo",
+     "has_evidence",
+     "placebo_ev"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "patch"
+         },
+         "key": "trial_complete"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "And",
+       "items": [
+        {
+         "type": "Gt",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "ev"
+            },
+            "key": "causal_gain"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         "b": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "noop_ev"
+              },
+              "key": "causal_gain"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           },
+           {
+            "type": "Lit",
+            "value": 5
+           }
+          ]
+         }
+        },
+        {
+         "type": "Gt",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "ev"
+            },
+            "key": "causal_gain"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         "b": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "placebo_ev"
+              },
+              "key": "causal_gain"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           },
+           {
+            "type": "Lit",
+            "value": 5
+           }
+          ]
+         }
+        },
+        {
+         "type": "Eq",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "ev"
+            },
+            "key": "protected_regressions"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0
+         }
+        },
+        {
+         "type": "Lte",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "ev"
+            },
+            "key": "resource_cost"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         "b": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "ev"
+            },
+            "key": "resource_budget"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         }
+        },
+        {
+         "type": "Gte",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "ev"
+            },
+            "key": "replications"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         "b": {
+          "type": "Lit",
+          "value": 2
+         }
+        },
+        {
+         "type": "Gte",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "ev"
+            },
+            "key": "replicated_gain"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         "b": {
+          "type": "Lit",
+          "value": 5
+         }
+        },
+        {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "noop_ev"
+          },
+          "key": "arm"
+         },
+         "b": {
+          "type": "Lit",
+          "value": "no_op"
+         }
+        },
+        {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "placebo_ev"
+          },
+          "key": "arm"
+         },
+         "b": {
+          "type": "Lit",
+          "value": "same_size_placebo"
+         }
+        }
+       ]
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "trial",
+     "Trial",
+     {
+      "status": "rejected",
+      "falsified": 1
+     }
+    ],
+    [
+     "add_edge",
+     "patch",
+     "has_trial",
+     "trial"
+    ],
+    [
+     "set_attr",
+     "patch",
+     "proofs_passed",
+     0
+    ],
+    [
+     "set_attr",
+     "patch",
+     "trial_complete",
+     1
+    ],
+    [
+     "set_attr",
+     "patch",
+     "state",
+     "rejected"
+    ]
+   ]
+  },
+  {
+   "name": "sc_select_minimal_proven_patch",
+   "comment": "Occam/MDL selection: among patches that independently discharged every obligation, choose the smallest description.  Evidence gates admissibility; MDL only breaks ties inside the admissible set.",
+   "match": [
+    [
+     "sc",
+     "has_patch",
+     "patch"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "sc"
+         },
+         "key": "selected"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "patch"
+         },
+         "key": "proofs_passed"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "sc"
+        },
+        "edge_type": "has_patch"
+       },
+       "var_name": "other",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Gt",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "other"
+             },
+             "key": "proofs_passed"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0
+          }
+         },
+         {
+          "type": "Lt",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "other"
+             },
+             "key": "mdl_cost"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          },
+          "b": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "patch"
+             },
+             "key": "mdl_cost"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          }
+         }
+        ]
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "canary",
+     "Canary",
+     {
+      "status": "pending",
+      "protected_regressions": -1,
+      "replicated_gain": 0
+     }
+    ],
+    [
+     "add_edge",
+     "sc",
+     "selected_patch",
+     "patch"
+    ],
+    [
+     "add_edge",
+     "patch",
+     "has_canary",
+     "canary"
+    ],
+    [
+     "set_attr",
+     "patch",
+     "state",
+     "selected_for_canary"
+    ],
+    [
+     "set_attr",
+     "patch",
+     "selected",
+     1
+    ],
+    [
+     "set_attr",
+     "sc",
+     "selected",
+     1
+    ],
+    [
+     "set_attr",
+     "sc",
+     "status",
+     "canary"
+    ]
+   ]
+  },
+  {
+   "name": "sc_canary_requests_commit",
+   "comment": "A canary does not mutate the parent by itself.  Passing canary evidence mints a Commit request carrying the selected RulePatch; the Rust transaction boundary is the mechanical enactor.",
+   "match": [
+    [
+     "sc",
+     "selected_patch",
+     "patch"
+    ],
+    [
+     "patch",
+     "has_canary",
+     "canary"
+    ],
+    [
+     "canary",
+     "has_canary_evidence",
+     "cev"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "canary"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "pending"
+      }
+     },
+     {
+      "type": "Gte",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "cev"
+         },
+         "key": "replicated_gain"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 5
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "cev"
+         },
+         "key": "protected_regressions"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Gte",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "cev"
+         },
+         "key": "replications"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 2
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "commit",
+     "Commit",
+     {
+      "status": "ready",
+      "enactor": "rust_rule_patch_transaction",
+      "target_uid": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "patch"
+        },
+        "key": "target_uid"
+       }
+      },
+      "expected_revision": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "patch"
+        },
+        "key": "expected_revision"
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "sc",
+     "has_commit",
+     "commit"
+    ],
+    [
+     "add_edge",
+     "commit",
+     "commits_patch",
+     "patch"
+    ],
+    [
+     "apply_rule_patch",
+     "patch"
+    ],
+    [
+     "set_attr",
+     "canary",
+     "status",
+     "passed"
+    ],
+    [
+     "set_attr",
+     "patch",
+     "state",
+     "transaction_queued"
+    ],
+    [
+     "set_attr",
+     "sc",
+     "status",
+     "commit_ready"
+    ]
+   ]
+  },
+  {
+   "name": "sc_canary_abort",
+   "match": [
+    [
+     "sc",
+     "selected_patch",
+     "patch"
+    ],
+    [
+     "patch",
+     "has_canary",
+     "canary"
+    ],
+    [
+     "canary",
+     "has_canary_evidence",
+     "cev"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "canary"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "pending"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "And",
+       "items": [
+        {
+         "type": "Gte",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "cev"
+            },
+            "key": "replicated_gain"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         "b": {
+          "type": "Lit",
+          "value": 5
+         }
+        },
+        {
+         "type": "Eq",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "cev"
+            },
+            "key": "protected_regressions"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0
+         }
+        },
+        {
+         "type": "Gte",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "cev"
+            },
+            "key": "replications"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         "b": {
+          "type": "Lit",
+          "value": 2
+         }
+        }
+       ]
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "abort",
+     "Abort",
+     {
+      "stage": "canary",
+      "reason": "canary_falsified",
+      "rollback_required": 0
+     }
+    ],
+    [
+     "add_edge",
+     "sc",
+     "has_abort",
+     "abort"
+    ],
+    [
+     "add_edge",
+     "abort",
+     "rejects_patch",
+     "patch"
+    ],
+    [
+     "set_attr",
+     "canary",
+     "status",
+     "failed"
+    ],
+    [
+     "set_attr",
+     "patch",
+     "state",
+     "aborted"
+    ],
+    [
+     "set_attr",
+     "sc",
+     "status",
+     "aborted"
+    ]
+   ]
+  },
+  {
+   "name": "sc_abort_exhausted_hypotheses",
+   "comment": "The host may close an evidence batch after mechanically running all arms.  If no patch survived the controls, the graph concludes abort; it never promotes the least-bad failure.",
+   "match": [
+    [
+     "sc",
+     "evidence_batch",
+     "batch"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "batch"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "closed"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "sc"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "diagnosing"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "sc"
+        },
+        "edge_type": "has_patch"
+       },
+       "var_name": "p",
+       "predicate": {
+        "type": "Gt",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "p"
+           },
+           "key": "proofs_passed"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "abort",
+     "Abort",
+     {
+      "stage": "trial",
+      "reason": "no_causally_supported_patch",
+      "rollback_required": 0
+     }
+    ],
+    [
+     "add_edge",
+     "sc",
+     "has_abort",
+     "abort"
+    ],
+    [
+     "set_attr",
+     "sc",
+     "status",
+     "aborted"
+    ]
+   ]
+  },
+  {
+   "name": "sc_abort_refused_transaction",
+   "comment": "The Rust CAS/validator is authoritative.  A refused RulePatch is turned into explicit graph evidence and never retried unchanged.",
+   "match": [
+    [
+     "sc",
+     "has_commit",
+     "commit"
+    ],
+    [
+     "commit",
+     "commits_patch",
+     "patch"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "commit"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "ready"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "patch"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "refused"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "abort",
+     "Abort",
+     {
+      "stage": "transaction",
+      "reason": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "patch"
+        },
+        "key": "reason"
+       }
+      },
+      "rollback_required": 0
+     }
+    ],
+    [
+     "add_edge",
+     "sc",
+     "has_abort",
+     "abort"
+    ],
+    [
+     "add_edge",
+     "abort",
+     "rejects_patch",
+     "patch"
+    ],
+    [
+     "set_attr",
+     "commit",
+     "status",
+     "refused"
+    ],
+    [
+     "set_attr",
+     "sc",
+     "status",
+     "aborted"
+    ]
+   ]
+  },
+  {
+   "name": "sc_consolidate_committed_change",
+   "comment": "A commit becomes retained knowledge only after the enactor reports success and independent post-commit evidence survives restart and cross-context replay.",
+   "match": [
+    [
+     "sc",
+     "has_commit",
+     "commit"
+    ],
+    [
+     "commit",
+     "commits_patch",
+     "patch"
+    ],
+    [
+     "commit",
+     "has_consolidation_evidence",
+     "evidence"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "commit"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "ready"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "patch"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "committed"
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "evidence"
+         },
+         "key": "restart_ok"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "evidence"
+         },
+         "key": "cross_context_ok"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Gte",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "evidence"
+         },
+         "key": "retained_gain"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 5
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "evidence"
+         },
+         "key": "protected_regressions"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "cons",
+     "Consolidation",
+     {
+      "status": "retained",
+      "new_revision": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "patch"
+        },
+        "key": "result_revision"
+       }
+      },
+      "new_hash": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "patch"
+        },
+        "key": "result_content_hash"
+       }
+      },
+      "retained_gain": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "evidence"
+          },
+          "key": "retained_gain"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "sc",
+     "has_consolidation",
+     "cons"
+    ],
+    [
+     "add_edge",
+     "cons",
+     "consolidates_patch",
+     "patch"
+    ],
+    [
+     "set_attr",
+     "commit",
+     "status",
+     "consolidated"
+    ],
+    [
+     "set_attr",
+     "sc",
+     "status",
+     "consolidated"
+    ]
+   ]
+  },
+  {
+   "name": "sc_abort_and_request_rollback_after_commit",
+   "match": [
+    [
+     "sc",
+     "has_commit",
+     "commit"
+    ],
+    [
+     "commit",
+     "commits_patch",
+     "patch"
+    ],
+    [
+     "commit",
+     "has_consolidation_evidence",
+     "evidence"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "commit"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "ready"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "And",
+       "items": [
+        {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "patch"
+          },
+          "key": "status"
+         },
+         "b": {
+          "type": "Lit",
+          "value": "committed"
+         }
+        },
+        {
+         "type": "Gt",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "evidence"
+            },
+            "key": "restart_ok"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0
+         }
+        },
+        {
+         "type": "Gt",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "evidence"
+            },
+            "key": "cross_context_ok"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0
+         }
+        },
+        {
+         "type": "Gte",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "evidence"
+            },
+            "key": "retained_gain"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         "b": {
+          "type": "Lit",
+          "value": 5
+         }
+        },
+        {
+         "type": "Eq",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "evidence"
+            },
+            "key": "protected_regressions"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0
+         }
+        }
+       ]
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "abort",
+     "Abort",
+     {
+      "stage": "consolidation",
+      "reason": "post_commit_regression",
+      "rollback_required": 1
+     }
+    ],
+    [
+     "add_edge",
+     "sc",
+     "has_abort",
+     "abort"
+    ],
+    [
+     "add_edge",
+     "abort",
+     "rejects_patch",
+     "patch"
+    ],
+    [
+     "set_attr",
+     "commit",
+     "status",
+     "rollback_ready"
+    ],
+    [
+     "set_attr",
+     "sc",
+     "status",
+     "rollback_ready"
+    ]
+   ]
+  }
+ ]
+}

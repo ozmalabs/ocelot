@@ -1,0 +1,118 @@
+{
+  "id": "neural_audio_codec_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "SoundStream",
+  "in_microtheory": "audio_coding_theory",
+  "description": "Neural audio codec architecture (SoundStream/EnCodec family) decomposed. These codecs replace the conventional codec's transform + entropy coding with learned neural networks. Encoder + decoder are CNNs; a residual vector quantisation (RVQ) bottleneck between them produces a discrete representation that can be efficiently entropy-coded. At low bitrates (1.5-6 kbps), neural codecs dramatically outperform conventional codecs because they hallucinate plausible content consistent with learned audio priors.",
+  "sub_mechanisms": [
+    {
+      "name": "convolutional_encoder",
+      "definition": "A 1D CNN that maps raw audio waveform to a sequence of latent feature vectors, typically downsampled by 200-400x in time.",
+      "why": "Learned transform optimised for the audio data distribution. Captures the salient features (envelope, pitch, harmonic structure, transients) into compact latent representations. The CNN architecture choices (kernel sizes, strides, depth) determine the encoder's receptive field and compression ceiling.",
+      "category": "neural_audio_mechanism"
+    },
+    {
+      "name": "residual_vector_quantisation",
+      "definition": "RVQ bottleneck: latent vector is quantised by a first codebook, the residual by a second codebook, the residual-of-residual by a third, etc. Typically 4-16 stages.",
+      "why": "Single VQ would need a huge codebook (millions of entries) for low distortion. RVQ stages give the same precision with much smaller per-stage codebooks (~1024 each). Each stage roughly halves the residual error; total quality scales with total stages.",
+      "category": "neural_audio_mechanism"
+    },
+    {
+      "name": "convolutional_decoder",
+      "definition": "Mirror CNN that maps quantised latents back to raw waveform. Uses transposed convolutions or upsampling to restore temporal resolution.",
+      "why": "Inverts the encoder transform. Trained jointly so reconstruction quality is maximised under the bottleneck's bit constraint. Generates audio in a single forward pass; no iterative sampling needed.",
+      "category": "neural_audio_mechanism"
+    },
+    {
+      "name": "adversarial_loss",
+      "definition": "Training loss includes a discriminator that tries to distinguish real audio from generated. The codec is trained to fool the discriminator (perceptually-realistic output) in addition to minimising waveform error.",
+      "why": "Pure MSE-trained codecs sound muffled and unnatural. The discriminator forces the codec's output to match real audio's distribution — including high-frequency texture and noise that MSE ignores. EnCodec and DAC use this; SoundStream's original paper introduced it for audio codecs.",
+      "category": "neural_audio_mechanism"
+    },
+    {
+      "name": "feature_matching_loss",
+      "definition": "During training, the codec's output and the original are passed through the discriminator; the L1 distance between their intermediate features is added to the loss.",
+      "why": "Adversarial loss alone can be unstable. Feature matching anchors the codec's output to match real audio at multiple representation levels — discriminator's early conv features (low-level texture), middle (mid-level structure), late (high-level perception). Stabilises training.",
+      "category": "neural_audio_mechanism"
+    },
+    {
+      "name": "causal_convolutions",
+      "definition": "All convolutions use only past context (no look-ahead). EnCodec uses this throughout; SoundStream uses a small look-ahead.",
+      "why": "Causal architecture enables streaming/real-time operation. The codec processes input as it arrives; no buffering of future samples. Trade-off: causal CNNs have slightly less spectral resolution at the same parameter count. Critical for live audio applications.",
+      "category": "neural_audio_mechanism"
+    },
+    {
+      "name": "streaming_inference",
+      "definition": "The trained codec can process audio in streaming chunks, maintaining only a small state (kernel-sized buffer at each layer). Continuous output stream from continuous input.",
+      "why": "Real-time audio requires this. Block-based inference (process N samples at a time, output N samples) has block-boundary artefacts; streaming inference processes samples continuously. EnCodec's design specifically targets this.",
+      "category": "neural_audio_mechanism"
+    },
+    {
+      "name": "discrete_token_stream",
+      "definition": "After RVQ, each time-step's latent is represented by k integers (one per RVQ stage). These integers form a discrete 'token stream' — the actual compressed representation.",
+      "why": "Discrete tokens are the natural input for LLM-style sequence modeling. Audio language models (AudioLM, MusicLM, VALL-E) treat the codec's token stream as a vocabulary and train transformers over it. The codec becomes a tokeniser; the LLM becomes the generation engine.",
+      "category": "neural_audio_mechanism"
+    },
+    {
+      "name": "variable_bitrate_via_token_count",
+      "definition": "Bitrate scales with the number of RVQ stages used. The same model can operate at 1.5 kbps (1 stage), 6 kbps (4 stages), 24 kbps (16 stages) — selectable at decode time.",
+      "why": "Single model serves a range of bitrates. The same codec can adapt to network conditions (drop RVQ stages at low bandwidth) or use higher quality offline. Conventional codecs need separate models for different bitrates.",
+      "category": "neural_audio_mechanism"
+    },
+    {
+      "name": "training_corpus_breadth",
+      "definition": "Neural codecs are trained on diverse audio corpora: LibriSpeech (speech), Jamendo (music), Tedlium (lectures), AudioSet (general). Tens of thousands of hours.",
+      "why": "Quality depends on training breadth. A speech-only-trained codec sounds bad on music. Mixed corpora produce codecs that handle any content type. The model architecture is identical; the training data determines the codec's scope.",
+      "category": "neural_audio_mechanism"
+    },
+    {
+      "name": "inference_latency",
+      "definition": "Forward-pass time on a GPU (or NPU): ~5-50 ms per second of audio for 24 kbps quality. Faster than real-time on modern hardware but with non-trivial latency.",
+      "why": "Conventional codecs decode at ~5x real-time on a CPU; neural codecs require GPU/NPU for real-time. Latency comes from the forward pass through the CNN. Mobile deployment requires careful optimisation (quantised inference, pruned models).",
+      "category": "neural_audio_mechanism"
+    },
+    {
+      "name": "use_as_audio_tokeniser",
+      "definition": "The RVQ token stream is used as the input/output 'vocabulary' for generative audio models (LMs trained on the codec's tokens).",
+      "why": "Audio LLMs predict next-token in this codec-derived vocabulary. The codec's quality bounds the LM's quality — better codec = better audio LM. Same insight as text LMs: tokeniser choice constrains downstream model capability.",
+      "category": "neural_audio_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "rvq_extends_vq_precision_with_small_codebooks",
+      "if": ["multiple RVQ stages each quantise the previous stage's residual"],
+      "then": ["total precision scales geometrically with stages, while per-stage codebook is small"],
+      "why": "Each stage halves the residual error. K stages give 2^K total precision with K * codebook_size storage. Plain VQ would need 2^K codebook entries — exponential vs linear. RVQ is the practical way to get high-precision VQ in neural codecs.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "adversarial_training_produces_natural_audio",
+      "if": ["the codec is trained with adversarial loss"],
+      "then": ["its output matches the natural-audio distribution"],
+      "why": "MSE loss alone allows generated audio to be statistically wrong (smoother than real, missing high frequencies). Discriminator-based loss forces the output to match real audio's distribution — including textures and noise MSE ignores. Audible naturalness improves substantially.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "causal_design_enables_real_time_use",
+      "if": ["all convolutions use only past context"],
+      "then": ["the codec can stream with bounded latency"],
+      "why": "Look-ahead requires buffering future samples — incompatible with real-time streaming. Causal architecture processes each sample as it arrives, with bounded state. Critical for WebRTC-style applications.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "discrete_tokens_enable_audio_lms",
+      "if": ["the codec produces a discrete token stream"],
+      "then": ["sequence models can be trained over those tokens"],
+      "why": "Transformers operate on discrete vocabularies. The RVQ token stream IS such a vocabulary. AudioLM, MusicLM, VALL-E, and other audio LMs depend on this structure — they couldn't operate on continuous waveforms or continuous latents directly.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "neural_codecs_dominate_at_extreme_low_bitrates",
+      "if": ["bitrate is below 6 kbps"],
+      "then": ["neural codecs outperform conventional by large margins"],
+      "why": "Conventional codecs hit a wall around 6 kbps — pure waveform/spectral coding can't preserve enough information. Neural codecs hallucinate plausible content consistent with learned priors. Same insight as video neural codecs but more dramatic in audio because the bitrate floor is lower.",
+      "soundness_category": "denotational_equivalence"
+    }
+  ]
+}

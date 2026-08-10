@@ -1,0 +1,39 @@
+{
+ "id": "langsim_build",
+ "version": "1.0.0",
+ "self_load_only": true,
+ "depends_on": [],
+ "area": "retina",
+ "description": "BLOCK 243000 -- LANGSIM: the BUILD/PRODUCTION affordance as a graph RULE for the economy+building language-limitation probe. An agent holding BOTH input resources (has_x==1 AND has_y==1) BUILDS a structure of value: the rule ls_build sets built=1 on the agent's BuildState. This is the agent DECISION that makes trade valuable -- you must acquire the resource you lack (via a real promise utterance the partner comprehends) before you can build. Integer-native (Eq/And/Attr only; no Rust, no new Term). OFF by default: self_load_only, nothing depends_on it, the rule guards on BuildState.enabled -- absent it every existing path is byte-identical. The give/keep trade decision is REUSED verbatim from glassbox_r1_social (gb_choose_give); this seed adds only the build decision.",
+ "microtheory": {
+  "name": "langsim_build",
+  "description": "Building is the production affordance that rewards trade: an agent gathers one input each tick but needs the complementary input (acquired by trade, mediated by a comprehended promise utterance) to build. Whether an agent builds is not scripted -- it is the ls_build rule firing once its held inputs are both present."
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [
+  {"provenance": "seed:langsim_build:buildstate",
+   "src": {"type": "EmotionHub", "var": "hub"},
+   "edge_type": "has_build",
+   "tgt": {"type": "BuildState", "var": "bs"}}
+ ],
+ "rules": [
+  {"name": "ls_build",
+   "area": "retina",
+   "order": 30,
+   "latency_class": "hard_realtime",
+   "comment": "THE BUILD DECISION: an agent whose BuildState holds both inputs (has_x==1 AND has_y==1) and is not already built sets built=1. Building consumes nothing here (the world adapter realises the value + resets holdings mechanically on the emit side); the rule DECIDES that a build is admissible now. Guarded on enabled so the seed is inert unless a BuildState carries enabled=1.",
+   "match": [
+    ["hub", "has_build", "bs"]
+   ],
+   "where": {"type": "And", "items": [
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "bs"}, "key": "enabled"}, "b": {"type": "Lit", "value": 1.0}},
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "bs"}, "key": "has_x"}, "b": {"type": "Lit", "value": 1.0}},
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "bs"}, "key": "has_y"}, "b": {"type": "Lit", "value": 1.0}},
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "bs"}, "key": "built"}, "b": {"type": "Lit", "value": 0.0}}
+   ]},
+   "effects": [
+    ["set_attr", "bs", "built", {"__term__": {"type": "Lit", "value": 1.0}}]
+   ]}
+ ]
+}

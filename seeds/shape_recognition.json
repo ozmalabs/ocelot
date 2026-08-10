@@ -1,0 +1,345 @@
+{
+  "id": "shape_recognition",
+  "version": "1.0.0",
+  "depends_on": [
+    "shape_library",
+    "shape_sense",
+    "feature_identity"
+  ],
+  "description": "Generic geometric-shape recognition for FIGURES (a Region realising a Feature) AND for order-N OBJECTS (a composed has_object whole, cells = union of its parts): compute the agent's shape_descriptor once, then link --geometric_shape--> the nearest ShapePrototype and record its label. One generic rule per level; the library is graph data.",
+  "nodes": [],
+  "edges": [],
+  "productions": [],
+  "concepts": [],
+  "rules": [
+    {
+      "name": "figure_shape_descriptor",
+      "match": [
+        [
+          "game",
+          "has_region",
+          "R"
+        ],
+        [
+          "R",
+          "realises",
+          "F"
+        ]
+      ],
+      "where": {
+        "type": "Not",
+        "arg": {
+          "type": "Eq",
+          "a": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "R"
+            },
+            "key": "has_desc"
+          },
+          "b": {
+            "type": "Lit",
+            "value": 1.0
+          }
+        }
+      },
+      "effects": [
+        [
+          "set_attr",
+          "R",
+          "shape_desc",
+          {
+            "__term__": {
+              "type": "Holds",
+              "concept": "shape_descriptor",
+              "node": {
+                "type": "Var",
+                "name": "R"
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "R",
+          "has_desc",
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "figure_geometric_shape",
+      "match": [
+        [
+          "R",
+          "realises",
+          "F"
+        ],
+        [
+          "lib",
+          "has_prototype",
+          "S"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "R"
+              },
+              "key": "has_desc"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "F"
+                },
+                "key": "shaped"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 1.0
+              }
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Magnitude",
+              "arg": {
+                "type": "VecSub",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "R"
+                  },
+                  "key": "shape_desc"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "S"
+                  },
+                  "key": "descriptor_vec"
+                }
+              }
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0.28
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_edge",
+          "F",
+          "geometric_shape",
+          "S"
+        ],
+        [
+          "set_attr",
+          "F",
+          "shape",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "S"
+              },
+              "key": "label"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "F",
+          "shaped",
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "object_shape_descriptor",
+      "match": [
+        [
+          "game",
+          "has_object",
+          "obj"
+        ]
+      ],
+      "where": {
+        "type": "Not",
+        "arg": {
+          "type": "Eq",
+          "a": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "obj"
+            },
+            "key": "has_desc"
+          },
+          "b": {
+            "type": "Lit",
+            "value": 1.0
+          }
+        }
+      },
+      "effects": [
+        [
+          "set_attr",
+          "obj",
+          "shape_desc",
+          {
+            "__term__": {
+              "type": "Holds",
+              "concept": "shape_descriptor",
+              "node": {
+                "type": "Var",
+                "name": "obj"
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "obj",
+          "has_desc",
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "object_geometric_shape",
+      "match": [
+        [
+          "game",
+          "has_object",
+          "obj"
+        ],
+        [
+          "lib",
+          "has_prototype",
+          "S"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "obj"
+              },
+              "key": "has_desc"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "obj"
+                },
+                "key": "shaped"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 1.0
+              }
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Magnitude",
+              "arg": {
+                "type": "VecSub",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "obj"
+                  },
+                  "key": "shape_desc"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "S"
+                  },
+                  "key": "descriptor_vec"
+                }
+              }
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0.28
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_edge",
+          "obj",
+          "geometric_shape",
+          "S"
+        ],
+        [
+          "set_attr",
+          "obj",
+          "shape",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "S"
+              },
+              "key": "label"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "obj",
+          "shaped",
+          1.0
+        ]
+      ]
+    }
+  ]
+}

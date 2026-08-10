@@ -1,0 +1,149 @@
+{
+  "microtheory": {
+    "name": "reference_resolution",
+    "definition": "How a listener binds a referring expression (it / the cat / she / there / that) to the discourse entity it denotes, across utterances. Closes the agent's biggest communication gap: the conversation was amnesiac about entities across turns. The verified human model layers three mechanisms over an explicit cross-utterance STATE — Centering Theory (Cf/Cb/transitions), the Givenness Hierarchy (form->cognitive-status), and Ariel's Accessibility Theory (form length inverse to salience) — plus an agreement+binding filter and the Hobbs/BFP resolution baselines. Substrate analogue: a discourse_referent_store updated each turn; resolution reads it. Wires the agent's HELD-but-inert anaphora / coreference / deixis / lexical_cohesion concepts into a working capability. Sources: Grosz-Joshi-Weinstein 1995 (Centering); Gundel-Hedberg-Zacharski 1993 (Givenness Hierarchy); Ariel (Accessibility); Hobbs 1978 / Brennan-Friedman-Pollard 1987.",
+    "category": "linguistics_domain",
+    "parent": "linguistics_foundation"
+  },
+  "concepts": [
+    {
+      "name": "discourse_referent",
+      "definition": "A mental representation of an entity introduced into the discourse, distinct from any single mention of it (multiple referring expressions can denote the same discourse_referent). Carries a cognitive_status, an accessibility, the turn it was last mentioned (recency), and the grammatical role of its last mention. The unit reference_resolution binds to. Refines the agent's held coreference/anaphora notion into a stored entity.",
+      "category": "state",
+      "status": "settled"
+    },
+    {
+      "name": "discourse_referent_store",
+      "definition": "The cross-utterance STATE: the set of discourse_referents active in the conversation, each with its cognitive_status + accessibility + recency + last role. Updated every turn (introduce new referents, promote mentioned ones to in_focus, decay others). reference_resolution searches it; the conversation's KnownFact entities populate it. This is the discourse memory the amnesiac conversation lacked.",
+      "category": "state",
+      "status": "settled"
+    },
+    {
+      "name": "centering_theory",
+      "definition": "Grosz-Joshi-Weinstein 1995: local coherence + reference are governed by per-utterance centers. Each utterance has forward_looking_centers (Cf) and a backward_looking_center (Cb); transitions between utterances (centering_transition) and two rules (centering_rule_1, centering_rule_2) drive pronoun choice and resolution. Foundational, uncontested.",
+      "category": "mechanism",
+      "status": "settled"
+    },
+    {
+      "name": "forward_looking_centers",
+      "definition": "Cf(U): the ranked set of discourse entities realized in utterance U, candidates for being referred to next. Ranked by cf_ranking. The top element is the preferred_center (Cp), the prediction of the next backward_looking_center.",
+      "category": "state",
+      "status": "settled"
+    },
+    {
+      "name": "backward_looking_center",
+      "definition": "Cb(U): the single entity U is most centrally about — the highest-ranked element of the previous utterance's Cf that is realized again in U. The discourse focus. A bare pronoun most strongly favors the Cb as antecedent (centering_rule_1).",
+      "category": "state",
+      "status": "settled"
+    },
+    {
+      "name": "preferred_center",
+      "definition": "Cp(U): the top-ranked element of forward_looking_centers — the predicted backward_looking_center of the NEXT utterance. When the realized Cb equals the Cp the discourse is maximally coherent (a Continue transition).",
+      "category": "state",
+      "status": "settled"
+    },
+    {
+      "name": "cf_ranking",
+      "definition": "The salience order on forward_looking_centers: SUBJECT > OBJECT(S) > OTHER (BFP refines: subject > object > indirect object > other complements > adjunct NPs). Grammatical role is the major determinant of which entity becomes the next Cb. The agent's frame slots (agent > patient > location/recipient/...) give this ranking directly. CONTESTED: cross-linguistically Cf-ranking is a parameter (information structure can substitute); the English grammatical-role primacy is settled.",
+      "category": "mechanism",
+      "status": "contested"
+    },
+    {
+      "name": "centering_transition",
+      "definition": "The relation between consecutive utterances: CONTINUE (Cb unchanged AND = top Cf), RETAIN (Cb unchanged but not top Cf), SHIFT (Cb changes). (BFP 4-way splits SHIFT into smooth/rough.) Computed each turn to score local coherence and constrain resolution.",
+      "category": "mechanism",
+      "status": "settled"
+    },
+    {
+      "name": "centering_rule_1",
+      "definition": "The Pronoun Rule: if ANY element of Cf(Un) is realized by a pronoun in Un+1, then the Cb(Un+1) must be realized by a pronoun too — an entity cannot be pronominalized unless the Cb is. RESOLUTION CONSTRAINT: a bare pronoun strongly favors the Cb as its antecedent.",
+      "category": "mechanism",
+      "status": "settled"
+    },
+    {
+      "name": "centering_rule_2",
+      "definition": "CONTINUE is preferred over RETAIN over SHIFT. This preference ranks competing interpretations: resolve a pronoun to the antecedent that yields the most-preferred transition (minimizes inference load / maximizes coherence).",
+      "category": "mechanism",
+      "status": "settled"
+    },
+    {
+      "name": "givenness_hierarchy",
+      "definition": "Gundel-Hedberg-Zacharski 1993: six NESTED cognitive statuses in a unidirectional entailment (Horn) scale — in_focus > activated > familiar > uniquely_identifiable > referential > type_identifiable — each licensing specific referring forms. A higher status entails all lower. Distinct from accessibility_theory: the hierarchy encodes the procedural MANNER of access, not a degree of salience.",
+      "category": "mechanism",
+      "status": "settled"
+    },
+    {
+      "name": "cognitive_status",
+      "definition": "A discourse_referent's place on the givenness_hierarchy = the memory state the speaker assumes for it: in_focus (current attention) / activated (working memory) / familiar (long-term memory) / uniquely_identifiable (can build a representation) / referential / type_identifiable. Set + updated per turn; the form used to refer signals a lower bound on it.",
+      "category": "state",
+      "status": "settled"
+    },
+    {
+      "name": "form_status_licensing",
+      "definition": "Each referring form sets a LOWER-BOUND cognitive_status (necessary, not exact): 'it'/'he'/'she' -> in_focus; 'this'/'that'/'this N' -> activated; 'that N' -> familiar; 'the N' -> uniquely_identifiable; indefinite 'this N' -> referential; 'a N' -> type_identifiable. RESOLUTION: a form restricts candidate referents to those whose status meets its lower bound (so 'it' can only pick an in_focus referent).",
+      "category": "mechanism",
+      "status": "settled"
+    },
+    {
+      "name": "form_status_implicature",
+      "definition": "Because givenness_hierarchy is a Horn scale, using a WEAKER form scalar-implicates that the higher status does NOT hold — e.g. 'a N' implicates the referent is not uniquely_identifiable (hence new). Lets the listener infer newness/givenness from the form choice. (Connects to the agent's held implicature concept.)",
+      "category": "mechanism",
+      "status": "settled"
+    },
+    {
+      "name": "accessibility_theory",
+      "definition": "Ariel: the choice of referring expression is governed by the referent's degree of ACCESSIBILITY in the addressee's memory (a property of the mental representation, not a syntactic rule). Speakers mark how accessible they deem the referent. Distinct construct from cognitive_status (degree vs manner).",
+      "category": "mechanism",
+      "status": "settled"
+    },
+    {
+      "name": "accessibility_marker",
+      "definition": "Referring expressions form a graded scale inversely mapped to accessibility: attenuated/short forms (zero, pronouns) retrieve HIGHLY accessible (salient, recent, in-focus) referents; informative/long forms (full names, definite descriptions) retrieve LESS accessible ones. The inverse length<->salience law guiding both production (which form to emit) and comprehension (how hard to search).",
+      "category": "mechanism",
+      "status": "settled"
+    },
+    {
+      "name": "salience_factors",
+      "definition": "What raises a referent's accessibility / Cf rank: RECENCY (mentioned recently), GRAMMATICAL ROLE (subject > object > other, = cf_ranking), and FREQUENCY (repeated mention). The resolver scores candidates by these when the form + agreement leave more than one.",
+      "category": "mechanism",
+      "status": "settled"
+    },
+    {
+      "name": "agreement_filter",
+      "definition": "A hard filter on candidate antecedents: the referring expression and the referent must agree in gender, number, and person ('she' rejects a male/plural/inanimate referent). Applied before salience ranking. Resolves a large fraction of pronouns by itself (often only one candidate survives).",
+      "category": "mechanism",
+      "status": "settled"
+    },
+    {
+      "name": "binding_constraint",
+      "definition": "Syntactic constraints distinguishing reflexives from pronouns: a reflexive ('himself') must be bound locally (c-commanded in its clause); a plain pronoun ('him') must NOT be locally bound. A high-level filter on candidate antecedents alongside agreement_filter. (Verified only at a high level; teach as the standard constraint.)",
+      "category": "mechanism",
+      "status": "settled"
+    },
+    {
+      "name": "reference_resolution_procedure",
+      "definition": "The pipeline binding a referring expression to a discourse_referent: (1) form_status_licensing -> candidate referents whose cognitive_status meets the form's lower bound; (2) agreement_filter + binding_constraint prune by gender/number/person + syntax; (3) rank survivors: a bare pronoun favors the Cb (centering_rule_1), else by salience_factors (cf_ranking + recency); centering_rule_2 breaks ties toward the most-coherent transition; (4) bind, then update the discourse_referent_store (promote the picked referent to in_focus, set recency + role). Hobbs' and the BFP centering algorithm are comparable baselines (~59-82%, no significant difference).",
+      "category": "procedure",
+      "status": "settled"
+    },
+    {
+      "name": "hobbs_algorithm",
+      "definition": "Hobbs 1978 naive algorithm: a breadth-first left-to-right search of the syntactic tree (current then prior sentences) for the first antecedent satisfying agreement + binding constraints. The classic structural baseline; performs comparably to centering-based resolution. The substrate analogue searches the discourse_referent_store by recency + role rather than a parse tree.",
+      "category": "procedure",
+      "status": "settled"
+    },
+    {
+      "name": "bridging_anaphora",
+      "definition": "Clark: associative/inferable reference — 'a house ... the door' binds 'the door' to the house via a part-of relation, not identity. The antecedent is INFERRED through a relation (meronymy, possession, role) over the discourse_referent_store, not matched directly. SCAFFOLDING: standard but NOT independently verified in this research pass; teach as a known mechanism to ground later via a relation reference.",
+      "category": "mechanism",
+      "status": "scaffolding"
+    },
+    {
+      "name": "deixis",
+      "definition": "Indexical reference resolved against the UTTERANCE CONTEXT (speaker, addressee, place, time) rather than prior text: person (I = speaker, you = addressee), spatial (here / there / this / that relative to speaker location), temporal (now / then relative to utterance time). Needs a context model (who/where/when) the discourse_referent_store does not by itself supply. SCAFFOLDING: standard but NOT verified in this pass; teach as a distinct mechanism requiring an utterance-context model.",
+      "category": "mechanism",
+      "status": "scaffolding"
+    }
+  ],
+  "rules": []
+}

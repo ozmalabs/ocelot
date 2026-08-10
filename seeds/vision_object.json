@@ -1,0 +1,50 @@
+{
+  "microtheory": {
+    "name": "object_recognition_vision",
+    "definition": "How visual input becomes object identification. Feature integration, view invariance, structural description, deep network models. Substrate analogue: substrate's Concept-extraction from visual input.",
+    "category": "vision_domain",
+    "parent": "vision_foundation"
+  },
+  "concepts": [
+    {"name": "structural_description_theory", "definition": "Marr + Biederman. Object recognition via decomposition into 3D primitives + their spatial relations. Substrate analogue: substrate's compositional object model.", "category": "theories"},
+    {"name": "geon", "definition": "Biederman 1987. Generalized cone primitives: cylinder, cone, brick, wedge. ~36 geons combine to ~30000 objects. Substrate analogue: substrate's visual-feature primitives.", "category": "theories"},
+    {"name": "recognition_by_components", "definition": "RBC. Biederman. Objects = configurations of geons. Substrate analogue: substrate's parts-relational object model.", "category": "theories"},
+    {"name": "view_based_theory", "definition": "Bülthoff + Edelman. Objects stored as collection of 2D views. Recognition via interpolation. Substrate analogue: substrate's view-collection-based recognition.", "category": "theories"},
+    {"name": "feature_integration_theory_object", "definition": "Treisman 1980. Features detected pre-attentively; binding into objects requires attention. Substrate analogue: substrate's attention-binding mechanism.", "category": "theories"},
+
+    {"name": "viewpoint_invariance", "definition": "Recognize same object from different angles. Substrate analogue: substrate's view-collapse mechanism.", "category": "invariance"},
+    {"name": "scale_invariance", "definition": "Recognize same object at different sizes. Substrate analogue: substrate's scale-normalization.", "category": "invariance"},
+    {"name": "translation_invariance", "definition": "Same identity regardless of position. Substrate analogue: substrate's position-pooling.", "category": "invariance"},
+    {"name": "illumination_invariance", "definition": "Recognize despite lighting changes. Substrate analogue: substrate's lighting-discounted identity.", "category": "invariance"},
+
+    {"name": "feature_hierarchy_visual", "definition": "Hubel + Wiesel + extensions. Edges → contours → parts → objects. Each level pools over lower. Substrate analogue: substrate's hierarchical genlMt.", "category": "hierarchy"},
+    {"name": "complex_cell_pooling", "definition": "V1 complex cells pool over position to gain translation invariance. Substrate analogue: substrate's translation-pooling mechanism.", "category": "hierarchy"},
+    {"name": "hmax_model", "definition": "Riesenhuber + Poggio. Alternating S (selectivity) + C (pooling) layers building invariance. Substrate analogue: substrate's alternating selectivity + pooling architecture.", "category": "hierarchy"},
+
+    {"name": "face_recognition", "definition": "Specialized system. FFA (fusiform face area). Holistic processing — face as gestalt. Bruce + Young model. Substrate analogue: substrate's specialized-category recognition.", "category": "specialized"},
+    {"name": "face_inversion_effect", "definition": "Inverted faces are much harder to recognize than inverted objects. Shows holistic processing. Substrate analogue: substrate's gestalt-required category.", "category": "specialized"},
+    {"name": "prosopagnosia", "definition": "Face-recognition deficit despite intact object recognition. Localized FFA damage. Substrate analogue: substrate's domain-specific deficit.", "category": "specialized"},
+
+    {"name": "object_constancy", "definition": "Stable object identity across views, distances, lighting. Substrate analogue: substrate's persistent-Concept-across-transformation.", "category": "constancy"},
+    {"name": "object_permanence", "definition": "Knowing object exists when occluded. Substrate analogue: substrate's persistent-Mt across input gaps.", "category": "constancy"},
+    {"name": "amodal_completion", "definition": "Perceiving occluded parts of objects. Substrate analogue: substrate's pattern-completion across occlusion.", "category": "constancy"},
+
+    {"name": "convolutional_neural_network", "definition": "CNN. LeCun 1989. Convolutional + pooling layers. Translates invariance + parameter sharing. Foundation of modern computer vision. Substrate analogue: substrate's local-pattern + position-invariant processing.", "category": "deep_learning"},
+    {"name": "imagenet_breakthrough", "definition": "AlexNet 2012. CNNs surpassed traditional methods. Started deep learning revolution. Substrate analogue: substrate's emergent visual recognition.", "category": "deep_learning"},
+    {"name": "transfer_learning_vision", "definition": "Networks trained on large datasets fine-tune to specific tasks with little data. Substrate analogue: substrate's foundational visual Mt transfer.", "category": "deep_learning"},
+    {"name": "adversarial_examples", "definition": "Small perturbations of input causing misclassification. Reveals fragility of CNN representations. Substrate analogue: substrate's failure modes under tiny shifts.", "category": "deep_learning"},
+    {"name": "vision_transformer", "definition": "Dosovitskiy 2020. Transformer on image patches. Competes with CNNs. Substrate analogue: substrate's attention-based visual processing.", "category": "deep_learning"},
+
+    {"name": "object_detection", "definition": "Locate + classify objects in scene. YOLO, R-CNN, DETR. Substrate analogue: substrate's spatial Concept localization.", "category": "tasks"},
+    {"name": "instance_segmentation", "definition": "Pixel-level localization of each object instance. Mask R-CNN. Substrate analogue: substrate's pixel-Concept assignment.", "category": "tasks"},
+    {"name": "semantic_segmentation", "definition": "Pixel-level category assignment (not instances). FCN, U-Net. Substrate analogue: substrate's pixel-category map.", "category": "tasks"},
+    {"name": "image_classification", "definition": "Assign category to whole image. Classic ImageNet task. Substrate analogue: substrate's image-level Concept assignment.", "category": "tasks"}
+  ],
+  "rules": [
+    {"name": "objects_are_parts_in_relation", "head": "the substrate recognises an object", "body": "the representation is parts (geons or features) in structural relation, not a holistic template. Biederman 1987. Substrate's compositional object."},
+    {"name": "invariance_built_through_pooling", "head": "the substrate must recognize objects across transformations", "body": "pooling operations (max, average) over spatial/scale/rotation neighborhoods build invariance. Substrate's pooling-based invariance."},
+    {"name": "faces_processed_holistically", "head": "the substrate processes a face", "body": "it's recognized as gestalt — features in relation, not separately. Inversion disrupts this. Substrate's holistic-processing category."},
+    {"name": "context_speeds_recognition", "head": "the substrate sees an object in a typical scene context", "body": "scene context primes the expected category. Faster + more accurate recognition. Substrate's context-conditioned Concept activation."},
+    {"name": "adversarial_perturbations_reveal_representation_limits", "head": "the substrate's recognition can be fooled by tiny input perturbations", "body": "the representation doesn't capture true object structure. Substrate's failure-mode probing."}
+  ]
+}

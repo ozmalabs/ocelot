@@ -1,0 +1,379 @@
+{
+  "id": "published_net_causal_debugger",
+  "version": "1.0.0",
+  "depends_on": ["experimentation_core", "learning_core"],
+  "description": "Graph-native causal investigation of a published neural network. The graph selects interventions, computes do-contrast utility, opens a head-level search under the best coarse component, admits causal candidates only with restoration and preservation evidence, and authors an inference-time patch. The adapter only exposes structure and enacts requests.",
+  "microtheory": {
+    "name": "published_net_causal_debugger",
+    "description": "autonomous intervention, causal diagnosis, and no-retraining runtime repair"
+  },
+  "nodes": [],
+  "edges": [],
+  "productions": [
+    {"provenance": "seed:published_net_debugger:agent-study", "src": {"type": "Agent", "var": "agent"}, "edge_type": "conducts_causal_debugging_study", "tgt": {"type": "CausalDebuggingStudy", "var": "study"}},
+    {"provenance": "seed:published_net_debugger:study-component", "src": {"type": "CausalDebuggingStudy", "var": "study"}, "edge_type": "has_inspectable_component", "tgt": {"type": "PublishedNetComponent", "var": "component"}},
+    {"provenance": "seed:published_net_debugger:component-parent", "src": {"type": "PublishedNetComponent", "var": "component"}, "edge_type": "part_of_published_component", "tgt": {"type": "PublishedNetComponent", "var": "parent"}},
+    {"provenance": "seed:published_net_debugger:study-request", "src": {"type": "CausalDebuggingStudy", "var": "study"}, "edge_type": "requests_network_intervention", "tgt": {"type": "NetworkIntervention", "var": "intervention"}},
+    {"provenance": "seed:published_net_debugger:intervention-target", "src": {"type": "NetworkIntervention", "var": "intervention"}, "edge_type": "targets_published_component", "tgt": {"type": "PublishedNetComponent", "var": "component"}},
+    {"provenance": "seed:published_net_debugger:intervention-outcome", "src": {"type": "NetworkIntervention", "var": "intervention"}, "edge_type": "has_intervention_outcome", "tgt": {"type": "InterventionOutcome", "var": "outcome"}},
+    {"provenance": "seed:published_net_debugger:study-patch", "src": {"type": "CausalDebuggingStudy", "var": "study"}, "edge_type": "authored_runtime_patch", "tgt": {"type": "RuntimeNetworkPatch", "var": "patch"}},
+    {"provenance": "seed:published_net_debugger:patch-component", "src": {"type": "RuntimeNetworkPatch", "var": "patch"}, "edge_type": "patches_published_component", "tgt": {"type": "PublishedNetComponent", "var": "component"}},
+    {"provenance": "seed:published_net_debugger:study-control", "src": {"type": "CausalDebuggingStudy", "var": "study"}, "edge_type": "authored_deterministic_control", "tgt": {"type": "RuntimeNetworkPatch", "var": "control"}},
+    {"provenance": "seed:published_net_debugger:patch-validation", "src": {"type": "RuntimeNetworkPatch", "var": "patch"}, "edge_type": "has_repair_validation", "tgt": {"type": "RepairValidationOutcome", "var": "validation"}},
+    {"provenance": "seed:published_net_debugger:conditional-study", "src": {"type": "Agent", "var": "agent"}, "edge_type": "conducts_conditional_repair_study", "tgt": {"type": "ConditionalRepairStudy", "var": "study"}},
+    {"provenance": "seed:published_net_debugger:gate-candidate", "src": {"type": "ConditionalRepairStudy", "var": "study"}, "edge_type": "has_runtime_gate_candidate", "tgt": {"type": "RuntimeGateCandidate", "var": "candidate"}},
+    {"provenance": "seed:published_net_debugger:gate-request", "src": {"type": "ConditionalRepairStudy", "var": "study"}, "edge_type": "requests_gate_intervention", "tgt": {"type": "GateIntervention", "var": "intervention"}},
+    {"provenance": "seed:published_net_debugger:gate-target", "src": {"type": "GateIntervention", "var": "intervention"}, "edge_type": "targets_runtime_gate_candidate", "tgt": {"type": "RuntimeGateCandidate", "var": "candidate"}},
+    {"provenance": "seed:published_net_debugger:gate-outcome", "src": {"type": "GateIntervention", "var": "intervention"}, "edge_type": "has_gate_intervention_outcome", "tgt": {"type": "GateInterventionOutcome", "var": "outcome"}},
+    {"provenance": "seed:published_net_debugger:conditional-patch", "src": {"type": "ConditionalRepairStudy", "var": "study"}, "edge_type": "authored_conditional_patch", "tgt": {"type": "ConditionalRuntimePatch", "var": "patch"}},
+    {"provenance": "seed:published_net_debugger:conditional-validation", "src": {"type": "ConditionalRuntimePatch", "var": "patch"}, "edge_type": "has_conditional_validation", "tgt": {"type": "RepairValidationOutcome", "var": "validation"}}
+  ],
+  "rules": [
+    {
+      "name": "published_net_selects_next_intervention",
+      "area": "experimentation",
+      "order": 71,
+      "latency_class": "deliberative",
+      "match": [["agent", "conducts_causal_debugging_study", "study"], ["study", "has_inspectable_component", "component"]],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "study"}, "key": "status"}, "b": {"type": "Lit", "value": "ready"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "component"}, "key": "eligible"}, "b": {"type": "Lit", "value": 1.0}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "component"}, "key": "tested"}, "b": {"type": "Lit", "value": 0.0}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "component"}, "key": "level"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "study"}, "key": "phase_level"}},
+          {"type": "Eq", "a": {"type": "Var", "name": "component"}, "b": {
+            "type": "Argmin",
+            "source": {"type": "Filter", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "study"}, "edge_type": "has_inspectable_component"}, "var_name": "c", "predicate": {"type": "And", "items": [
+              {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "eligible"}, "b": {"type": "Lit", "value": 1.0}},
+              {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "tested"}, "b": {"type": "Lit", "value": 0.0}},
+              {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "level"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "study"}, "key": "phase_level"}}
+            ]}},
+            "var_name": "pick",
+            "value": {"type": "Attr", "node": {"type": "Var", "name": "pick"}, "key": "experiment_order"},
+            "default": null
+          }}
+        ]
+      },
+      "effects": [
+        ["add_node", "intervention", "NetworkIntervention", {
+          "status": "requested",
+          "kind": "zero_residual_contribution",
+          "component_name": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "component"}, "key": "name"}},
+          "phase_level": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "study"}, "key": "phase_level"}},
+          "provenance_kind": "graph_selected_do_intervention"
+        }],
+        ["add_edge", "study", "requests_network_intervention", "intervention", {}],
+        ["add_edge", "intervention", "targets_published_component", "component", {}],
+        ["set_attr", "component", "selected", 1.0],
+        ["set_attr", "study", "status", "awaiting_outcome"]
+      ]
+    },
+    {
+      "name": "published_net_updates_causal_hypothesis",
+      "area": "learning",
+      "order": 72,
+      "latency_class": "deliberative",
+      "match": [["agent", "conducts_causal_debugging_study", "study"], ["study", "requests_network_intervention", "intervention"], ["intervention", "targets_published_component", "component"], ["intervention", "has_intervention_outcome", "outcome"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "study"}, "key": "status"}, "b": {"type": "Lit", "value": "awaiting_outcome"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "intervention"}, "key": "status"}, "b": {"type": "Lit", "value": "requested"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "outcome"}, "key": "status"}, "b": {"type": "Lit", "value": "measured"}}
+      ]},
+      "effects": [
+        ["set_attr", "component", "causal_utility", {"__term__": {"type": "Minus", "a": {"type": "Plus", "items": [
+          {"type": "Attr", "node": {"type": "Var", "name": "outcome"}, "key": "speech_hallucinations_removed"},
+          {"type": "Attr", "node": {"type": "Var", "name": "outcome"}, "key": "null_false_transcripts_removed"}
+        ]}, "b": {"type": "Plus", "items": [
+          {"type": "Attr", "node": {"type": "Var", "name": "outcome"}, "key": "null_false_transcripts_added"},
+          {"type": "Attr", "node": {"type": "Var", "name": "outcome"}, "key": "correct_controls_lost"}
+        ]}}}],
+        ["set_attr", "component", "causal_candidate", {"__term__": {
+          "type": "IfThenElse",
+          "cond": {"type": "And", "items": [
+            {"type": "Gt", "a": {"type": "Plus", "items": [
+              {"type": "Attr", "node": {"type": "Var", "name": "outcome"}, "key": "speech_hallucinations_removed"},
+              {"type": "Attr", "node": {"type": "Var", "name": "outcome"}, "key": "null_false_transcripts_removed"}
+            ]}, "b": {"type": "Attr", "node": {"type": "Var", "name": "outcome"}, "key": "correct_controls_lost"}},
+            {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "outcome"}, "key": "restoration_matches"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "outcome"}, "key": "restoration_total"}},
+            {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "outcome"}, "key": "correct_controls_lost"}, "b": {"type": "Lit", "value": 0.0}},
+            {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "outcome"}, "key": "null_false_transcripts_added"}, "b": {"type": "Lit", "value": 0.0}}
+          ]},
+          "then": {"type": "Lit", "value": 1.0},
+          "other": {"type": "Lit", "value": 0.0}
+        }}],
+        ["set_attr", "component", "tested", 1.0],
+        ["set_attr", "component", "selected", 0.0],
+        ["set_attr", "intervention", "status", "assimilated"],
+        ["set_attr", "study", "status", "ready"]
+      ]
+    },
+    {
+      "name": "published_net_opens_positive_coarse_components",
+      "area": "experimentation",
+      "order": 73,
+      "latency_class": "deliberative",
+      "match": [["agent", "conducts_causal_debugging_study", "study"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "study"}, "key": "status"}, "b": {"type": "Lit", "value": "ready"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "study"}, "key": "phase"}, "b": {"type": "Lit", "value": "coarse"}},
+        {"type": "Not", "arg": {"type": "Exists", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "study"}, "edge_type": "has_inspectable_component"}, "var_name": "u", "predicate": {"type": "And", "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "u"}, "key": "level"}, "b": {"type": "Lit", "value": 0.0}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "u"}, "key": "tested"}, "b": {"type": "Lit", "value": 0.0}}
+        ]}}}
+      ]},
+      "effects": [
+        ["set_attr", "study", "phase", "heads"],
+        ["set_attr", "study", "phase_level", 1.0]
+      ]
+    },
+    {
+      "name": "published_net_enables_heads_of_discovered_component",
+      "area": "experimentation",
+      "order": 74,
+      "latency_class": "deliberative",
+      "match": [["agent", "conducts_causal_debugging_study", "study"], ["study", "has_inspectable_component", "head"], ["head", "part_of_published_component", "parent"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "study"}, "key": "phase"}, "b": {"type": "Lit", "value": "heads"}},
+        {"type": "Gt", "a": {"type": "Attr", "node": {"type": "Var", "name": "parent"}, "key": "causal_utility"}, "b": {"type": "Lit", "value": 0.0}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "parent"}, "key": "kind"}, "b": {"type": "Lit", "value": "mlp"}}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "head"}, "key": "eligible"}, "b": {"type": "Lit", "value": 0.0}}
+      ]},
+      "effects": [
+        ["set_attr", "head", "eligible", 1.0],
+        ["set_attr", "parent", "opens_head_search", 1.0],
+        ["set_attr", "study", "head_search_initialized", 1.0]
+      ]
+    },
+    {
+      "name": "published_net_authors_runtime_patch",
+      "area": "learning",
+      "order": 75,
+      "latency_class": "deliberative",
+      "match": [["agent", "conducts_causal_debugging_study", "study"], ["study", "has_inspectable_component", "component"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "study"}, "key": "status"}, "b": {"type": "Lit", "value": "ready"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "study"}, "key": "phase"}, "b": {"type": "Lit", "value": "heads"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "study"}, "key": "head_search_initialized"}, "b": {"type": "Lit", "value": 1.0}},
+        {"type": "Not", "arg": {"type": "Exists", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "study"}, "edge_type": "has_inspectable_component"}, "var_name": "u", "predicate": {"type": "And", "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "u"}, "key": "eligible"}, "b": {"type": "Lit", "value": 1.0}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "u"}, "key": "level"}, "b": {"type": "Lit", "value": 1.0}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "u"}, "key": "tested"}, "b": {"type": "Lit", "value": 0.0}}
+        ]}}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "component"}, "key": "causal_candidate"}, "b": {"type": "Lit", "value": 1.0}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "component"}, "key": "level"}, "b": {"type": "Lit", "value": 1.0}},
+        {"type": "Eq", "a": {"type": "Var", "name": "component"}, "b": {"type": "Argmax", "source": {"type": "Filter", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "study"}, "edge_type": "has_inspectable_component"}, "var_name": "c", "predicate": {"type": "And", "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "causal_candidate"}, "b": {"type": "Lit", "value": 1.0}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "level"}, "b": {"type": "Lit", "value": 1.0}}
+        ]}}, "var_name": "best", "value": {"type": "Attr", "node": {"type": "Var", "name": "best"}, "key": "causal_utility"}, "default": null}}
+      ]},
+      "effects": [
+        ["add_node", "patch", "RuntimeNetworkPatch", {
+          "status": "authored",
+          "kind": "zero_residual_contribution",
+          "component_name": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "component"}, "key": "name"}},
+          "causal_utility": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "component"}, "key": "causal_utility"}},
+          "weights_changed": 0.0,
+          "provenance_kind": "graph_authored_from_do_contrasts"
+        }],
+        ["add_edge", "study", "authored_runtime_patch", "patch", {}],
+        ["add_edge", "patch", "patches_published_component", "component", {}],
+        ["set_attr", "study", "status", "patch_authored"]
+      ]
+    },
+    {
+      "name": "published_net_reports_no_safe_patch",
+      "area": "learning",
+      "order": 76,
+      "latency_class": "deliberative",
+      "match": [["agent", "conducts_causal_debugging_study", "study"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "study"}, "key": "status"}, "b": {"type": "Lit", "value": "ready"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "study"}, "key": "phase"}, "b": {"type": "Lit", "value": "heads"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "study"}, "key": "head_search_initialized"}, "b": {"type": "Lit", "value": 1.0}},
+        {"type": "Not", "arg": {"type": "Exists", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "study"}, "edge_type": "has_inspectable_component"}, "var_name": "u", "predicate": {"type": "And", "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "u"}, "key": "eligible"}, "b": {"type": "Lit", "value": 1.0}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "u"}, "key": "level"}, "b": {"type": "Lit", "value": 1.0}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "u"}, "key": "tested"}, "b": {"type": "Lit", "value": 0.0}}
+        ]}}},
+        {"type": "Not", "arg": {"type": "Exists", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "study"}, "edge_type": "has_inspectable_component"}, "var_name": "c", "predicate": {"type": "And", "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "causal_candidate"}, "b": {"type": "Lit", "value": 1.0}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "level"}, "b": {"type": "Lit", "value": 1.0}}
+        ]}}}
+      ]},
+      "effects": [
+        ["set_attr", "study", "status", "no_safe_patch"],
+        ["set_attr", "study", "terminal_reason", "no_component_met_causal_and_preservation_gate"]
+      ]
+    },
+    {
+      "name": "published_net_authors_deterministic_control",
+      "area": "experimentation",
+      "order": 77,
+      "latency_class": "deliberative",
+      "match": [["agent", "conducts_causal_debugging_study", "study"], ["study", "authored_runtime_patch", "patch"], ["patch", "patches_published_component", "winner"], ["study", "has_inspectable_component", "component"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "study"}, "key": "status"}, "b": {"type": "Lit", "value": "patch_authored"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "component"}, "key": "level"}, "b": {"type": "Lit", "value": 1.0}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Var", "name": "component"}, "b": {"type": "Var", "name": "winner"}}},
+        {"type": "Eq", "a": {"type": "Var", "name": "component"}, "b": {
+          "type": "Argmin",
+          "source": {"type": "Filter", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "study"}, "edge_type": "has_inspectable_component"}, "var_name": "c", "predicate": {"type": "And", "items": [
+            {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "level"}, "b": {"type": "Lit", "value": 1.0}},
+            {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Var", "name": "c"}, "b": {"type": "Var", "name": "winner"}}}
+          ]}},
+          "var_name": "pick",
+          "value": {"type": "Attr", "node": {"type": "Var", "name": "pick"}, "key": "experiment_order"},
+          "default": null
+        }}
+      ]},
+      "effects": [
+        ["add_node", "control", "RuntimeNetworkPatch", {
+          "status": "control_authored",
+          "kind": "zero_residual_contribution",
+          "component_name": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "component"}, "key": "name"}},
+          "weights_changed": 0.0,
+          "provenance_kind": "graph_authored_fixed_order_control"
+        }],
+        ["add_edge", "study", "authored_deterministic_control", "control", {}],
+        ["add_edge", "control", "patches_published_component", "component", {}],
+        ["set_attr", "study", "status", "awaiting_validation"]
+      ]
+    },
+    {
+      "name": "published_net_judges_prospective_repair",
+      "area": "learning",
+      "order": 78,
+      "latency_class": "deliberative",
+      "match": [["agent", "conducts_causal_debugging_study", "study"], ["study", "authored_runtime_patch", "patch"], ["patch", "has_repair_validation", "validation"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "study"}, "key": "status"}, "b": {"type": "Lit", "value": "awaiting_validation"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "validation"}, "key": "status"}, "b": {"type": "Lit", "value": "measured"}}
+      ]},
+      "effects": [
+        ["set_attr", "patch", "prospective_speech_gate", {"__term__": {"type": "IfThenElse", "cond": {"type": "Lte", "a": {"type": "Times", "items": [{"type": "Lit", "value": 2.0}, {"type": "Attr", "node": {"type": "Var", "name": "validation"}, "key": "patch_speech_hallucinations"}]}, "b": {"type": "Attr", "node": {"type": "Var", "name": "validation"}, "key": "baseline_speech_hallucinations"}}, "then": {"type": "Lit", "value": 1.0}, "other": {"type": "Lit", "value": 0.0}}}],
+        ["set_attr", "patch", "prospective_null_gate", {"__term__": {"type": "IfThenElse", "cond": {"type": "Lte", "a": {"type": "Times", "items": [{"type": "Lit", "value": 2.0}, {"type": "Attr", "node": {"type": "Var", "name": "validation"}, "key": "patch_null_false_transcripts"}]}, "b": {"type": "Attr", "node": {"type": "Var", "name": "validation"}, "key": "baseline_null_false_transcripts"}}, "then": {"type": "Lit", "value": 1.0}, "other": {"type": "Lit", "value": 0.0}}}],
+        ["set_attr", "patch", "prospective_preservation_gate", {"__term__": {"type": "IfThenElse", "cond": {"type": "Lt", "a": {"type": "Times", "items": [{"type": "Lit", "value": 100.0}, {"type": "Minus", "a": {"type": "Attr", "node": {"type": "Var", "name": "validation"}, "key": "baseline_correct_speech"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "validation"}, "key": "patch_correct_speech"}}]}, "b": {"type": "Attr", "node": {"type": "Var", "name": "validation"}, "key": "speech_total"}}, "then": {"type": "Lit", "value": 1.0}, "other": {"type": "Lit", "value": 0.0}}}],
+        ["set_attr", "patch", "prospective_specificity_gate", {"__term__": {"type": "IfThenElse", "cond": {"type": "Lt", "a": {"type": "Plus", "items": [{"type": "Attr", "node": {"type": "Var", "name": "validation"}, "key": "patch_speech_hallucinations"}, {"type": "Attr", "node": {"type": "Var", "name": "validation"}, "key": "patch_null_false_transcripts"}]}, "b": {"type": "Plus", "items": [{"type": "Attr", "node": {"type": "Var", "name": "validation"}, "key": "control_speech_hallucinations"}, {"type": "Attr", "node": {"type": "Var", "name": "validation"}, "key": "control_null_false_transcripts"}]}}, "then": {"type": "Lit", "value": 1.0}, "other": {"type": "Lit", "value": 0.0}}}],
+        ["set_attr", "patch", "validation_status", {"__term__": {"type": "IfThenElse", "cond": {"type": "And", "items": [
+          {"type": "Lte", "a": {"type": "Times", "items": [{"type": "Lit", "value": 2.0}, {"type": "Attr", "node": {"type": "Var", "name": "validation"}, "key": "patch_speech_hallucinations"}]}, "b": {"type": "Attr", "node": {"type": "Var", "name": "validation"}, "key": "baseline_speech_hallucinations"}},
+          {"type": "Lte", "a": {"type": "Times", "items": [{"type": "Lit", "value": 2.0}, {"type": "Attr", "node": {"type": "Var", "name": "validation"}, "key": "patch_null_false_transcripts"}]}, "b": {"type": "Attr", "node": {"type": "Var", "name": "validation"}, "key": "baseline_null_false_transcripts"}},
+          {"type": "Lt", "a": {"type": "Times", "items": [{"type": "Lit", "value": 100.0}, {"type": "Minus", "a": {"type": "Attr", "node": {"type": "Var", "name": "validation"}, "key": "baseline_correct_speech"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "validation"}, "key": "patch_correct_speech"}}]}, "b": {"type": "Attr", "node": {"type": "Var", "name": "validation"}, "key": "speech_total"}},
+          {"type": "Lt", "a": {"type": "Plus", "items": [{"type": "Attr", "node": {"type": "Var", "name": "validation"}, "key": "patch_speech_hallucinations"}, {"type": "Attr", "node": {"type": "Var", "name": "validation"}, "key": "patch_null_false_transcripts"}]}, "b": {"type": "Plus", "items": [{"type": "Attr", "node": {"type": "Var", "name": "validation"}, "key": "control_speech_hallucinations"}, {"type": "Attr", "node": {"type": "Var", "name": "validation"}, "key": "control_null_false_transcripts"}]}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "validation"}, "key": "weights_identical"}, "b": {"type": "Lit", "value": 1.0}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "validation"}, "key": "no_gradients"}, "b": {"type": "Lit", "value": 1.0}}
+        ]}, "then": {"type": "Lit", "value": "validated"}, "other": {"type": "Lit", "value": "rejected"}}}],
+        ["set_attr", "study", "status", "complete"]
+      ]
+    },
+    {
+      "name": "published_net_selects_runtime_gate_experiment",
+      "area": "experimentation",
+      "order": 79,
+      "latency_class": "deliberative",
+      "match": [["agent", "conducts_conditional_repair_study", "study"], ["study", "has_runtime_gate_candidate", "candidate"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "study"}, "key": "status"}, "b": {"type": "Lit", "value": "ready"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "tested"}, "b": {"type": "Lit", "value": 0.0}},
+        {"type": "Eq", "a": {"type": "Var", "name": "candidate"}, "b": {"type": "Argmin",
+          "source": {"type": "Filter", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "study"}, "edge_type": "has_runtime_gate_candidate"}, "var_name": "c", "predicate": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "tested"}, "b": {"type": "Lit", "value": 0.0}}},
+          "var_name": "pick", "value": {"type": "Attr", "node": {"type": "Var", "name": "pick"}, "key": "experiment_order"}, "default": null}}
+      ]},
+      "effects": [
+        ["add_node", "intervention", "GateIntervention", {
+          "status": "requested",
+          "threshold": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "threshold"}},
+          "provenance_kind": "graph_selected_runtime_gate_experiment"
+        }],
+        ["add_edge", "study", "requests_gate_intervention", "intervention", {}],
+        ["add_edge", "intervention", "targets_runtime_gate_candidate", "candidate", {}],
+        ["set_attr", "study", "status", "awaiting_gate_outcome"]
+      ]
+    },
+    {
+      "name": "published_net_updates_runtime_gate_hypothesis",
+      "area": "learning",
+      "order": 80,
+      "latency_class": "deliberative",
+      "match": [["agent", "conducts_conditional_repair_study", "study"], ["study", "requests_gate_intervention", "intervention"], ["intervention", "targets_runtime_gate_candidate", "candidate"], ["intervention", "has_gate_intervention_outcome", "outcome"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "study"}, "key": "status"}, "b": {"type": "Lit", "value": "awaiting_gate_outcome"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "intervention"}, "key": "status"}, "b": {"type": "Lit", "value": "requested"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "outcome"}, "key": "status"}, "b": {"type": "Lit", "value": "measured"}}
+      ]},
+      "effects": [
+        ["set_attr", "candidate", "causal_utility", {"__term__": {"type": "Minus", "a": {"type": "Plus", "items": [
+          {"type": "Attr", "node": {"type": "Var", "name": "outcome"}, "key": "speech_hallucinations_removed"},
+          {"type": "Attr", "node": {"type": "Var", "name": "outcome"}, "key": "null_false_transcripts_removed"}
+        ]}, "b": {"type": "Plus", "items": [
+          {"type": "Attr", "node": {"type": "Var", "name": "outcome"}, "key": "speech_hallucinations_added"},
+          {"type": "Attr", "node": {"type": "Var", "name": "outcome"}, "key": "null_false_transcripts_added"},
+          {"type": "Attr", "node": {"type": "Var", "name": "outcome"}, "key": "correct_controls_lost"}
+        ]}}}],
+        ["set_attr", "candidate", "causal_candidate", {"__term__": {"type": "IfThenElse", "cond": {"type": "And", "items": [
+          {"type": "Gt", "a": {"type": "Plus", "items": [
+            {"type": "Attr", "node": {"type": "Var", "name": "outcome"}, "key": "speech_hallucinations_removed"},
+            {"type": "Attr", "node": {"type": "Var", "name": "outcome"}, "key": "null_false_transcripts_removed"}
+          ]}, "b": {"type": "Lit", "value": 0.0}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "outcome"}, "key": "speech_hallucinations_added"}, "b": {"type": "Lit", "value": 0.0}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "outcome"}, "key": "null_false_transcripts_added"}, "b": {"type": "Lit", "value": 0.0}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "outcome"}, "key": "correct_controls_lost"}, "b": {"type": "Lit", "value": 0.0}}
+        ]}, "then": {"type": "Lit", "value": 1.0}, "other": {"type": "Lit", "value": 0.0}}}],
+        ["set_attr", "candidate", "tested", 1.0],
+        ["set_attr", "intervention", "status", "assimilated"],
+        ["set_attr", "study", "status", "ready"]
+      ]
+    },
+    {
+      "name": "published_net_authors_conditional_runtime_patch",
+      "area": "learning",
+      "order": 81,
+      "latency_class": "deliberative",
+      "match": [["agent", "conducts_conditional_repair_study", "study"], ["study", "has_runtime_gate_candidate", "candidate"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "study"}, "key": "status"}, "b": {"type": "Lit", "value": "ready"}},
+        {"type": "Not", "arg": {"type": "Exists", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "study"}, "edge_type": "has_runtime_gate_candidate"}, "var_name": "u", "predicate": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "u"}, "key": "tested"}, "b": {"type": "Lit", "value": 0.0}}}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "causal_candidate"}, "b": {"type": "Lit", "value": 1.0}},
+        {"type": "Eq", "a": {"type": "Var", "name": "candidate"}, "b": {"type": "Argmax",
+          "source": {"type": "Filter", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "study"}, "edge_type": "has_runtime_gate_candidate"}, "var_name": "c", "predicate": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "causal_candidate"}, "b": {"type": "Lit", "value": 1.0}}},
+          "var_name": "best", "value": {"type": "Attr", "node": {"type": "Var", "name": "best"}, "key": "causal_utility"}, "default": null}}
+      ]},
+      "effects": [
+        ["add_node", "patch", "ConditionalRuntimePatch", {
+          "status": "authored",
+          "kind": "no_speech_gated_head_ablation",
+          "component_name": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "study"}, "key": "component_name"}},
+          "control_component_name": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "study"}, "key": "control_component_name"}},
+          "threshold": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "threshold"}},
+          "causal_utility": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "causal_utility"}},
+          "weights_changed": 0.0,
+          "provenance_kind": "graph_authored_conditional_repair"
+        }],
+        ["add_edge", "study", "authored_conditional_patch", "patch", {}],
+        ["set_attr", "study", "status", "patch_authored"]
+      ]
+    },
+    {
+      "name": "published_net_judges_conditional_repair",
+      "area": "learning",
+      "order": 82,
+      "latency_class": "deliberative",
+      "match": [["agent", "conducts_conditional_repair_study", "study"], ["study", "authored_conditional_patch", "patch"], ["patch", "has_conditional_validation", "validation"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "study"}, "key": "status"}, "b": {"type": "Lit", "value": "patch_authored"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "validation"}, "key": "status"}, "b": {"type": "Lit", "value": "measured"}}
+      ]},
+      "effects": [
+        ["set_attr", "patch", "validation_status", {"__term__": {"type": "IfThenElse", "cond": {"type": "And", "items": [
+          {"type": "Lte", "a": {"type": "Times", "items": [{"type": "Lit", "value": 2.0}, {"type": "Attr", "node": {"type": "Var", "name": "validation"}, "key": "patch_speech_hallucinations"}]}, "b": {"type": "Attr", "node": {"type": "Var", "name": "validation"}, "key": "baseline_speech_hallucinations"}},
+          {"type": "Lte", "a": {"type": "Times", "items": [{"type": "Lit", "value": 2.0}, {"type": "Attr", "node": {"type": "Var", "name": "validation"}, "key": "patch_null_false_transcripts"}]}, "b": {"type": "Attr", "node": {"type": "Var", "name": "validation"}, "key": "baseline_null_false_transcripts"}},
+          {"type": "Lt", "a": {"type": "Times", "items": [{"type": "Lit", "value": 100.0}, {"type": "Minus", "a": {"type": "Attr", "node": {"type": "Var", "name": "validation"}, "key": "baseline_correct_speech"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "validation"}, "key": "patch_correct_speech"}}]}, "b": {"type": "Attr", "node": {"type": "Var", "name": "validation"}, "key": "speech_total"}},
+          {"type": "Lt", "a": {"type": "Plus", "items": [{"type": "Attr", "node": {"type": "Var", "name": "validation"}, "key": "patch_speech_hallucinations"}, {"type": "Attr", "node": {"type": "Var", "name": "validation"}, "key": "patch_null_false_transcripts"}]}, "b": {"type": "Plus", "items": [{"type": "Attr", "node": {"type": "Var", "name": "validation"}, "key": "control_speech_hallucinations"}, {"type": "Attr", "node": {"type": "Var", "name": "validation"}, "key": "control_null_false_transcripts"}]}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "validation"}, "key": "weights_identical"}, "b": {"type": "Lit", "value": 1.0}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "validation"}, "key": "no_gradients"}, "b": {"type": "Lit", "value": 1.0}}
+        ]}, "then": {"type": "Lit", "value": "validated"}, "other": {"type": "Lit", "value": "rejected"}}}],
+        ["set_attr", "study", "status", "complete"]
+      ]
+    }
+  ]
+}

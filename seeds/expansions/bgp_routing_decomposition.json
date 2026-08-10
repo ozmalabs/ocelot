@@ -1,0 +1,118 @@
+{
+  "id": "bgp_routing_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "BGP",
+  "in_microtheory": "network_protocols",
+  "description": "BGP routing decomposed. The Internet's inter-AS routing protocol. Path vector with policy hooks. ~75,000 ASes; ~1M IPv4 prefixes; ~200K IPv6. Convergence via UPDATE messages between peers. Best-path selection is heuristic + policy-driven, not shortest-path. Security via RPKI + route filters. Hijacking, leaks, and convergence anomalies are recurring operational issues.",
+  "sub_mechanisms": [
+    {
+      "name": "autonomous_system",
+      "definition": "AS: a set of IP networks under common technical administration. Assigned a 32-bit ASN. Each AS announces its prefixes via BGP to neighbours.",
+      "why": "Unit of routing policy. AS-level abstraction lets policy be expressed at organisational scope. AT&T is one AS; Google is another; Cloudflare is another. ~75K active ASes in the global BGP table.",
+      "category": "bgp_mechanism"
+    },
+    {
+      "name": "BGP_session",
+      "definition": "TCP connection between BGP-speaking routers. eBGP between ASes; iBGP within an AS. Keepalives + UPDATE messages.",
+      "why": "Persistent session lets neighbours exchange routing changes incrementally. TCP for reliability + order. Sessions are configured manually — BGP doesn't discover peers automatically.",
+      "category": "bgp_mechanism"
+    },
+    {
+      "name": "UPDATE_message",
+      "definition": "Carries route announcements (NLRI: prefix + path attributes) and withdrawals. Sent on route changes; not periodically.",
+      "why": "Incremental updates: only changes propagate, not full table dumps. Withdrawal advertises 'this prefix is no longer reachable via me'. Combined with announcements, neighbours rebuild their routing decisions.",
+      "category": "bgp_mechanism"
+    },
+    {
+      "name": "AS_PATH_attribute",
+      "definition": "Sequence of ASes a route has traversed. Each AS prepends its ASN before propagating.",
+      "why": "Loop prevention: if my own ASN appears in the path, reject the route. Shortest AS-PATH is one heuristic for best-path. AS-PATH is the most visible policy lever (AS-PATH prepending intentionally lengthens paths to make them less preferred).",
+      "category": "bgp_mechanism"
+    },
+    {
+      "name": "NEXT_HOP_attribute",
+      "definition": "The IP address of the next hop for this route. For eBGP, typically the peer's address; for iBGP, the originating router's loopback.",
+      "why": "Says where to forward packets for this prefix. Must be reachable via the AS's IGP (OSPF, IS-IS) — otherwise the route is unusable. Common operational issue: 'next-hop self' configuration to avoid IGP dependencies.",
+      "category": "bgp_mechanism"
+    },
+    {
+      "name": "LOCAL_PREF",
+      "definition": "Per-AS preference value (32-bit). Higher = preferred. Set inbound by import policies; ignored outside the AS.",
+      "why": "Primary intra-AS policy lever. Customer routes get high LOCAL_PREF (preferred over peer routes). Peer routes higher than transit (use peering before paying transit). The mechanism for encoding business relationships.",
+      "category": "bgp_mechanism"
+    },
+    {
+      "name": "MED_metric",
+      "definition": "Multi-Exit Discriminator. Inter-AS hint: 'use this exit point over that one to reach my AS'. Lower = preferred.",
+      "why": "Used for cold-potato routing: tell neighbour AS to send traffic to a specific exit point. Honoured between agreeing parties; ignored across competitors. Subtle interaction with policy can cause unexpected route choices.",
+      "category": "bgp_mechanism"
+    },
+    {
+      "name": "BGP_best_path_selection",
+      "definition": "Ordered decision tree: 1. weight, 2. local pref, 3. self-originated, 4. AS-PATH length, 5. origin type, 6. MED, 7. eBGP > iBGP, 8. IGP cost, 9. tie-breakers.",
+      "why": "Deterministic best-path among many candidates for the same prefix. Operators tune these levers via policy. Step 4 (AS-PATH length) is the default 'shortest path' heuristic; steps 1-3 let operators override it.",
+      "category": "bgp_mechanism"
+    },
+    {
+      "name": "iBGP_full_mesh",
+      "definition": "Within an AS, all BGP routers must directly peer with each other. iBGP doesn't propagate routes through intermediaries (loop prevention).",
+      "why": "iBGP loop prevention forbids re-advertising routes learned via iBGP. So all iBGP speakers need direct sessions. For N routers, N×(N-1)/2 sessions. Doesn't scale; mitigated by route reflectors / confederations.",
+      "category": "bgp_mechanism"
+    },
+    {
+      "name": "route_reflector",
+      "definition": "Central iBGP speaker that re-advertises learned routes to its 'clients'. Eliminates the full-mesh requirement.",
+      "why": "Scales iBGP to large ASes. ~10 route reflectors + ~1000 clients works; full mesh would be a million sessions. Cost: cluster ID + originator ID to prevent loops; redundancy considerations (lose the RR → routing breaks).",
+      "category": "bgp_mechanism"
+    },
+    {
+      "name": "RPKI_validation",
+      "definition": "Routers check route announcements against signed assertions in the RPKI. Routes from unauthorised ASes for that prefix are marked invalid.",
+      "why": "Prevents prefix hijacking. Pre-RPKI, BGP trusted all announcements. With RPKI, an AS announcing prefixes it doesn't own is detectably invalid. Adoption ~40% in 2024; growing slowly.",
+      "category": "bgp_mechanism"
+    },
+    {
+      "name": "BGP_convergence_time",
+      "definition": "Time for the global routing table to converge after a change. Typically seconds for simple events; minutes for cascading failures.",
+      "why": "Each router processes UPDATE messages from peers, recomputes best paths, propagates further. Delays accumulate. Convergence storms (route flapping) can cause minutes of instability. Damping mitigates flapping at cost of slow convergence.",
+      "category": "bgp_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "AS_PATH_provides_loop_prevention",
+      "if": ["a router sees its own ASN in an AS-PATH"],
+      "then": ["the route is rejected"],
+      "why": "AS-PATH records the path. Seeing own ASN means the route would loop back. Reject prevents the loop. Foundation of BGP's loop-free routing without distance-vector's count-to-infinity problem.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "LOCAL_PREF_encodes_business_relationships",
+      "if": ["operators set LOCAL_PREF based on peer commercial relationship"],
+      "then": ["customer routes are preferred over peer routes over transit"],
+      "why": "Customer → revenue; peer → free; transit → cost. Higher LOCAL_PREF for customer routes implements the business preference. The Gao-Rexford model formalises that this discipline leads to BGP convergence.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "shortest_AS_PATH_is_heuristic_not_optimal",
+      "if": ["best-path uses AS-PATH length"],
+      "then": ["paths through fewer ASes are preferred"],
+      "why": "Shortest AS-PATH is BGP's default tie-breaker. But ASes vary enormously (one ISP can be huge, another tiny); AS count is a weak proxy for latency or bandwidth. Operators routinely override via LOCAL_PREF, MED, weight.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "RPKI_filters_unauthorised_announcements",
+      "if": ["BGP routers validate announcements against RPKI"],
+      "then": ["announcements from unauthorised ASes are dropped"],
+      "why": "RPKI's ROAs (Route Origin Authorisations) bind prefix → AS. Announcements from other ASes are invalid. Major networks (AT&T, Cloudflare, Hurricane Electric) filter on RPKI; unfiltered networks remain vulnerable to hijacks.",
+      "soundness_category": "referential_transparency"
+    },
+    {
+      "name": "iBGP_full_mesh_scales_quadratically",
+      "if": ["an AS has N iBGP-speaking routers"],
+      "then": ["full-mesh iBGP requires N(N-1)/2 sessions"],
+      "why": "Every pair needs a direct session due to iBGP loop prevention. N=10: 45 sessions; N=100: 5,000; N=1,000: 500,000. Route reflectors / confederations are required at scale.",
+      "soundness_category": "cost_equivalence"
+    }
+  ]
+}

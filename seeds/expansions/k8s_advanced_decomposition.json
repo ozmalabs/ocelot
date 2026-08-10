@@ -1,0 +1,118 @@
+{
+  "id": "k8s_advanced_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "kubernetes_operator",
+  "in_microtheory": "cloud_infrastructure",
+  "description": "K8s advanced patterns decomposed. Operators (controller-runtime, kubebuilder), CRD validation + conversion, admission webhooks (mutating, validating), aggregated API server, ValidatingAdmissionPolicy (CEL). The mechanisms by which K8s is extended for complex workloads.",
+  "sub_mechanisms": [
+    {
+      "name": "controller_runtime_library",
+      "definition": "Go library for K8s controllers. Watch/queue/reconcile loop. Used by kubebuilder.",
+      "why": "Standard controller framework. Handles caching, leader election, event filtering. Don't reimplement.",
+      "category": "k8s_advanced_mechanism"
+    },
+    {
+      "name": "kubebuilder_scaffolding",
+      "definition": "Code generation for operators. CRD types → Go structs + manifests + reconciler skeleton.",
+      "why": "Idiomatic operator structure. Eliminates boilerplate. Standard for Go operators.",
+      "category": "k8s_advanced_mechanism"
+    },
+    {
+      "name": "CRD_validation_openAPI",
+      "definition": "CRD spec schema in OpenAPI v3. Apiserver validates on create/update.",
+      "why": "Reject invalid resources early. CEL expressions for cross-field validation. Eliminates custom admission webhook for simple validations.",
+      "category": "k8s_advanced_mechanism"
+    },
+    {
+      "name": "CRD_conversion_webhook",
+      "definition": "Convert between CRD versions (v1alpha1 ↔ v1beta1 ↔ v1). Apiserver calls webhook.",
+      "why": "Schema evolution. Old + new clients coexist. Required when CRD has incompatible changes.",
+      "category": "k8s_advanced_mechanism"
+    },
+    {
+      "name": "mutating_admission_webhook",
+      "definition": "HTTP endpoint apiserver calls before persisting. Returns JSON patch to modify object.",
+      "why": "Auto-inject sidecars (Istio), set defaults, apply policies. Powerful but error-prone (webhook down → API down).",
+      "category": "k8s_advanced_mechanism"
+    },
+    {
+      "name": "validating_admission_webhook",
+      "definition": "Endpoint apiserver calls; returns allow/deny. No mutation.",
+      "why": "Policy enforcement (OPA Gatekeeper). Reject non-compliant resources. Failed webhook can block entire API.",
+      "category": "k8s_advanced_mechanism"
+    },
+    {
+      "name": "ValidatingAdmissionPolicy_CEL",
+      "definition": "K8s 1.30+: in-cluster admission policies via CEL expressions. No webhook needed.",
+      "why": "Faster than webhook (no network), no separate deployment. Replaces simple OPA policies. Modern preferred.",
+      "category": "k8s_advanced_mechanism"
+    },
+    {
+      "name": "leader_election_in_controller",
+      "definition": "Multiple replicas of controller; only leader reconciles. Lease-based election.",
+      "why": "HA: backup ready if leader fails. Avoids dual-reconcile races. controller-runtime supports out of box.",
+      "category": "k8s_advanced_mechanism"
+    },
+    {
+      "name": "finalizer_pattern",
+      "definition": "Finalizer on resource: blocks deletion until controller cleans up + removes finalizer.",
+      "why": "External cleanup before resource gone. Operator pattern: delete K8s object → finalizer → cleanup cloud resource → finalizer removed → K8s object gone.",
+      "category": "k8s_advanced_mechanism"
+    },
+    {
+      "name": "owner_references_GC",
+      "definition": "Resource references its owner. Owner deleted → K8s garbage collects.",
+      "why": "Deployment → ReplicaSet → Pod cascade. Custom operators set OwnerRef on managed resources. Auto-cleanup.",
+      "category": "k8s_advanced_mechanism"
+    },
+    {
+      "name": "informer_cache",
+      "definition": "Client-side cache + watch on apiserver. Controllers read from cache, not apiserver.",
+      "why": "Avoid hammering apiserver. Watch keeps cache fresh. controller-runtime + client-go handle. Critical for controller performance.",
+      "category": "k8s_advanced_mechanism"
+    },
+    {
+      "name": "aggregated_API_server",
+      "definition": "Custom API server that K8s aggregates into main API. Provides /apis/<group>/v1/...",
+      "why": "More flexible than CRDs: arbitrary handlers, validation, sub-resources. metrics-server uses. Used when CRDs insufficient.",
+      "category": "k8s_advanced_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "operator_pattern_for_stateful_complexity",
+      "if": ["workload has nontrivial operational logic"],
+      "then": ["operator + CRD outperforms Helm chart"],
+      "why": "Helm: declarative install. Operator: ongoing reconciliation, failure handling, version upgrade automation. Postgres, Kafka, Prometheus operators exemplify.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "CRD_validation_cheaper_than_webhook",
+      "if": ["validation is per-field (not cross-resource)"],
+      "then": ["OpenAPI schema + CEL > admission webhook"],
+      "why": "Built-in: fast, reliable, no webhook deployment. Webhook: network call per request, can fail. Modern K8s pushes validation into CRD schema.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "webhook_failure_blocks_API_operations",
+      "if": ["admission webhook is required for an API operation"],
+      "then": ["webhook failure blocks that operation"],
+      "why": "failurePolicy=Fail = no webhook reply, no API op. Critical: webhook deployment must be HA + non-circular (don't depend on own resources). Common K8s outage cause.",
+      "soundness_category": "referential_transparency"
+    },
+    {
+      "name": "finalizer_required_for_external_resource_cleanup",
+      "if": ["operator manages external (cloud) resource"],
+      "then": ["finalizer required to clean up before K8s deletion"],
+      "why": "Without: K8s object gone, cloud resource orphaned (cost + clutter). With: K8s blocks deletion; operator deprovisions; removes finalizer; K8s deletes. Standard operator pattern.",
+      "soundness_category": "referential_transparency"
+    },
+    {
+      "name": "ValidatingAdmissionPolicy_replaces_simple_webhooks",
+      "if": ["policy is expressible in CEL"],
+      "then": ["VAP outperforms webhook"],
+      "why": "No webhook deploy + lifecycle. Runs in apiserver. Faster, more reliable. K8s 1.30+ standard for simple policies. OPA still needed for complex.",
+      "soundness_category": "cost_equivalence"
+    }
+  ]
+}

@@ -1,0 +1,128 @@
+{
+ "id": "route_to_authoring",
+ "version": "1.0.0",
+ "depends_on": [],
+ "description": "A frontier gap with no faculty to address it routes itself to order-4 authoring: route_unaddressed_axis_to_authoring mints a needs_tool Impasse for an is_axis the agent is focused on but cannot bind an operator to. Closes the no-operator-axis -> author gap so the self-mint -> author loop runs with no external nudge. Fires natively in master_tick.",
+ "nodes": [],
+ "edges": [],
+ "productions": [],
+ "concepts": [],
+ "rules": [
+  {
+   "name": "route_unaddressed_axis_to_authoring",
+   "match": [
+    [
+     "R",
+     "synthesised_gap",
+     "ax"
+    ],
+    [
+     "ag",
+     "operates_in",
+     "w"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "ax"
+         },
+         "key": "is_axis"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "ax"
+        },
+        "edge_type": "investigated_by",
+        "any_type": false
+       },
+       "var_name": "_o",
+       "predicate": {
+        "type": "Lit",
+        "value": true
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "ax"
+        },
+        "edge_type": "has_tool_impasse",
+        "any_type": false
+       },
+       "var_name": "_m",
+       "predicate": {
+        "type": "Lit",
+        "value": true
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "mi",
+     "Impasse",
+     {
+      "resolved": false,
+      "kind": "escalation",
+      "order": 4.0,
+      "acted_order": 4.0,
+      "why": "a frontier gap with no faculty to address it \u2014 author a new tool for it"
+     }
+    ],
+    [
+     "add_edge",
+     "mi",
+     "about_axis",
+     "ax"
+    ],
+    [
+     "add_edge",
+     "mi",
+     "needs_tool",
+     "ax"
+    ],
+    [
+     "add_edge",
+     "ax",
+     "has_tool_impasse",
+     "mi"
+    ]
+   ]
+  }
+ ]
+}

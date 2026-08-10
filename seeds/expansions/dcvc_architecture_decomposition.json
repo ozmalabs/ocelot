@@ -1,0 +1,118 @@
+{
+  "id": "dcvc_architecture_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "DCVC",
+  "in_microtheory": "video_coding_theory",
+  "description": "Deep Contextual Video Compression (DCVC) family architecture decomposed. DCVC replaces the conventional codec's transform + entropy coding stages with learned neural networks. The key architectural insight: instead of computing 'predictor + residual', DCVC computes a 'contextualised feature' from the past frame, then conditionally compresses the current frame's features given that context. The successor versions (DCVC-DC, DCVC-FM, DCVC-RT) each refine the architecture for compression efficiency, speed, or both.",
+  "sub_mechanisms": [
+    {
+      "name": "feature_encoder_network",
+      "definition": "A CNN that maps the input frame x_t to a latent feature representation z_t. Typically 4-5 conv layers with strides downsampling spatial resolution by 2x each.",
+      "why": "The encoder learns a transform optimised for the data distribution. Unlike DCT (fixed basis), the learned features can capture textures, edges, and motion-like patterns directly relevant to compression. The CNN backbone determines the achievable compression ceiling.",
+      "category": "dcvc_mechanism"
+    },
+    {
+      "name": "context_encoder",
+      "definition": "Network that processes the previously-decoded frame and motion vectors to produce a context feature c_t. Used as conditioning for the current frame's entropy model.",
+      "why": "Captures everything the decoder already knows. The current frame's entropy is reduced by knowing what's predictable from context. This replaces conventional 'predictor' + 'residual' decomposition with a more general 'features conditioned on context'.",
+      "category": "dcvc_mechanism"
+    },
+    {
+      "name": "motion_estimation_network",
+      "definition": "A separate CNN that estimates optical flow between current frame and reference. Outputs a per-sample motion vector field (dense rather than block-based).",
+      "why": "Dense motion captures non-rigid motion (foliage, water, deformation) that block-based motion can't. The network can learn motion patterns specific to natural video, beating hand-designed optical-flow algorithms on compression-relevant metrics.",
+      "category": "dcvc_mechanism"
+    },
+    {
+      "name": "motion_compensation_warp",
+      "definition": "Differentiable warping operator that applies the motion field to the reference feature map, producing a warped context feature.",
+      "why": "Differentiable warping lets the motion estimation be trained end-to-end via gradients flowing back from the entropy/reconstruction losses. Hand-designed (non-differentiable) warping would break the training pipeline.",
+      "category": "dcvc_mechanism"
+    },
+    {
+      "name": "hyperprior_network",
+      "definition": "Auxiliary network that estimates per-sample parameters (mean and scale) of a Gaussian distribution for each latent feature. Encoded as a small 'hyperprior' bitstream sent alongside the latent.",
+      "why": "Closes the loop between encoder and decoder: the decoder knows the per-sample probability distribution to decode the latent. The hyperprior is small (~1% of total bits) but enables accurate entropy estimation, which is the compression gain.",
+      "category": "dcvc_mechanism"
+    },
+    {
+      "name": "conditional_entropy_model",
+      "definition": "Entropy model that conditions the current frame's latent z_t on the context c_t. Computes P(z_t | c_t) and uses it to compress z_t via arithmetic coding.",
+      "why": "Conditional entropy H(Z|C) is lower than marginal H(Z) when context is predictive. This is the core compression mechanism in DCVC — the better the context model, the lower the bitcost.",
+      "category": "dcvc_mechanism"
+    },
+    {
+      "name": "feature_decoder_network",
+      "definition": "A CNN that maps the decoded latent z_t back to the reconstructed frame x_t_hat. Mirror of the encoder, with transposed convolutions or upsampling.",
+      "why": "Inverts the encoder transform. Trained jointly with the encoder so that reconstruction quality is maximised under the bit budget.",
+      "category": "dcvc_mechanism"
+    },
+    {
+      "name": "end_to_end_training",
+      "definition": "Loss function: L = lambda * R + D, where R is the estimated bitrate (from the entropy model) and D is the reconstruction distortion (MSE or MS-SSIM). All networks trained jointly via backprop.",
+      "why": "End-to-end optimisation of the rate-distortion trade-off. The encoder learns to produce latents that are compressible AND reconstructible. Each component informs the others' training. Conventional codecs train each stage independently, leaving compression efficiency on the table.",
+      "category": "dcvc_mechanism"
+    },
+    {
+      "name": "DCVC_DC_feature_modulation",
+      "definition": "DCVC-DC's innovation: feature modulation layers that scale the encoder's intermediate features based on context. Different parts of the feature map get different processing.",
+      "why": "Context isn't equally relevant everywhere — a moving region needs different treatment than a static one. Feature modulation lets the encoder adapt its processing per region without explicit region segmentation. Enables ~30% bitrate saving over DCVC.",
+      "category": "dcvc_mechanism"
+    },
+    {
+      "name": "DCVC_FM_diverse_contexts",
+      "definition": "DCVC-FM adds multiple parallel context streams (long-term, short-term, motion) merged at the entropy model.",
+      "why": "Different content benefits from different context types. Foreground objects need short-term reference; backgrounds benefit from longer-term temporal aggregation. Multiple contexts give the entropy model more information at minimal extra compute.",
+      "category": "dcvc_mechanism"
+    },
+    {
+      "name": "DCVC_RT_efficient_backbone",
+      "definition": "DCVC-RT's contribution: a smaller, faster network backbone (mobile architectures like MobileNetV3 building blocks) that runs at 100+ FPS for 1080p.",
+      "why": "Deployment requires speed. The DCVC-DC compression ceiling is held while throughput jumps 10-30x. Trade-offs: some compression efficiency lost, but the efficiency loss is small and the throughput gain enables real-time use.",
+      "category": "dcvc_mechanism"
+    },
+    {
+      "name": "single_model_rate_control",
+      "definition": "DCVC-FM and DCVC-RT use a single trained model that supports a wide range of rate-distortion points (via a scalar 'lambda' input).",
+      "why": "Conventional learned codecs needed one model per quality level (one for 1 Mbps, another for 5 Mbps, etc.). Single-model rate control trains one universal model. Lower memory footprint + simpler deployment.",
+      "category": "dcvc_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "learned_transform_beats_dct_for_specific_data_distribution",
+      "if": ["a transform is trained on the data distribution it will encode"],
+      "then": ["it captures content-specific structure DCT cannot"],
+      "why": "DCT is optimal for AR(1) signals but real video isn't perfectly AR(1). Learned transforms specialise to the actual distribution. The gain is bounded by the gap between AR(1) and real-video statistics — typically 10-20% at high quality, larger at low quality.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "conditional_entropy_drops_below_marginal_when_context_helps",
+      "if": ["the context is predictive of the current frame's latent"],
+      "then": ["the conditional entropy H(z_t | c_t) is below the marginal H(z_t)"],
+      "why": "Information theory. The amount of conditional-entropy reduction is exactly the mutual information between context and latent. DCVC's architectural choices (context encoder + entropy model) maximise this mutual information.",
+      "soundness_category": "algebraic_law"
+    },
+    {
+      "name": "end_to_end_training_extracts_more_than_per_stage",
+      "if": ["all stages are trained jointly"],
+      "then": ["compression efficiency exceeds independently-trained stages"],
+      "why": "Joint optimisation finds the global trade-off, not local. Conventional codecs leave gains on the table because their transform / quantisation / entropy stages are designed independently. End-to-end learning captures the inter-stage interactions.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "dense_motion_beats_block_motion_for_nonrigid",
+      "if": ["motion is non-rigid (foliage, water, deformation)"],
+      "then": ["dense optical-flow representation outperforms block-based"],
+      "why": "Block motion forces all samples in a block to share a motion vector. Non-rigid motion violates this. Dense per-sample motion captures it, at the cost of more bits to encode the motion itself. The per-sample motion is itself compressible via the learned motion network.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "throughput_pareto_dominates_at_real_time",
+      "if": ["a codec achieves real-time throughput"],
+      "then": ["it becomes a candidate for production deployment"],
+      "why": "Production codecs need to run at content rate (24-60 fps). DCVC-RT was the first learned codec at this throughput. Below real-time, learned codecs were academic curiosities; at real-time, they become deployable.",
+      "soundness_category": "cost_equivalence"
+    }
+  ]
+}

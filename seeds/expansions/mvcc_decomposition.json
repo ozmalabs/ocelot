@@ -1,0 +1,118 @@
+{
+  "id": "mvcc_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "MVCC",
+  "in_microtheory": "databases_and_storage",
+  "description": "MVCC decomposed. Postgres version chains in heap pages, hidden xmin/xmax columns, transaction visibility rules, vacuum. Oracle's undo segments. SQL Server's tempdb version store. The shared insight: writers create new versions; readers see version visible at transaction start.",
+  "sub_mechanisms": [
+    {
+      "name": "xmin_xmax_postgres",
+      "definition": "Hidden columns in every Postgres row: xmin = creating transaction ID, xmax = deleting transaction ID. Visibility derived from these.",
+      "why": "Row's life span = [xmin, xmax). Transaction T sees row if xmin committed before T started AND (xmax = 0 or xmax aborted or xmax > T). The visibility check at every read.",
+      "category": "mvcc_mechanism"
+    },
+    {
+      "name": "transaction_id_xid",
+      "definition": "Monotonically increasing 32-bit ID assigned per transaction. Used in visibility checks + WAL.",
+      "why": "Identifies transactions for ordering + visibility. Postgres XIDs wrap at 2^32; vacuum freezes old rows to prevent wraparound corruption. 64-bit XIDs in some systems.",
+      "category": "mvcc_mechanism"
+    },
+    {
+      "name": "snapshot_at_transaction_start",
+      "definition": "When transaction starts (or first reads), record: oldest active XID + set of currently-running XIDs. This snapshot determines visibility.",
+      "why": "Transaction sees: rows whose xmin committed before snapshot AND not in active set. Concurrent transactions invisible. Foundation of snapshot isolation.",
+      "category": "mvcc_mechanism"
+    },
+    {
+      "name": "heap_only_tuple_HOT",
+      "definition": "Postgres optimisation: if UPDATE doesn't change indexed columns, new version stays on same page + indexes not updated.",
+      "why": "Avoids index write amplification on updates. New tuple linked from old via t_ctid. Reads follow chain to current visible version. Critical optimisation for update-heavy tables.",
+      "category": "mvcc_mechanism"
+    },
+    {
+      "name": "version_chain",
+      "definition": "Doubly-linked list of row versions (old version → new via t_ctid). Multi-version visibility traversal walks the chain.",
+      "why": "Each visible-as-current version reached via chain traversal. Reads pay chain-length cost. Long chains (from many updates without vacuum) hurt performance.",
+      "category": "mvcc_mechanism"
+    },
+    {
+      "name": "vacuum_old_versions",
+      "definition": "Postgres background process. Reclaims space from dead row versions (rows nothing can see). Updates freespace map + visibility map.",
+      "why": "Without vacuum: dead tuples accumulate (table bloat). Autovacuum runs based on row change ratio. Long-running transactions block vacuum → bloat.",
+      "category": "mvcc_mechanism"
+    },
+    {
+      "name": "vacuum_freeze",
+      "definition": "Sets xmin to 'frozen XID' for very old rows. Prevents wraparound corruption (when XID space cycles).",
+      "why": "Postgres XIDs are 32-bit; wraparound destroys visibility. Vacuum freeze marks ancient rows as always-visible. Without periodic freeze, system can't tolerate XID wraparound — auto-vacuum addresses this.",
+      "category": "mvcc_mechanism"
+    },
+    {
+      "name": "long_transaction_problem",
+      "definition": "Long-running transaction holds oldest snapshot. Vacuum can't reclaim versions newer than that snapshot.",
+      "why": "Long transactions = blocked vacuum = bloat. Postgres exposes pg_stat_activity to find them. Best practice: keep transactions short; analytical queries on read replica.",
+      "category": "mvcc_mechanism"
+    },
+    {
+      "name": "oracle_undo_segment",
+      "definition": "Oracle stores old versions in separate undo tablespace. Reads of old versions reconstruct from undo records.",
+      "why": "Alternative to Postgres's in-heap versions. Old versions retrieved via undo apply (reverse changes). Pro: heap stays clean. Con: undo retention limited; ORA-01555 'snapshot too old' if undo recycled.",
+      "category": "mvcc_mechanism"
+    },
+    {
+      "name": "sql_server_tempdb_version_store",
+      "definition": "SQL Server's row versioning. Old versions stored in tempdb. Used by READ COMMITTED SNAPSHOT + SNAPSHOT isolation.",
+      "why": "tempdb can grow large under heavy versioning. Workload-specific tuning. Different design from Postgres + Oracle but same purpose.",
+      "category": "mvcc_mechanism"
+    },
+    {
+      "name": "serializable_snapshot_isolation",
+      "definition": "SSI: snapshot isolation + detect serialization anomalies. Abort one of two conflicting transactions instead of waiting.",
+      "why": "Postgres SERIALIZABLE level. Catches write skew that plain snapshot misses. Cost: false aborts under contention. The way to get serializable without pessimistic locking.",
+      "category": "mvcc_mechanism"
+    },
+    {
+      "name": "commit_timestamp",
+      "definition": "Some systems record actual commit time per transaction (vs XID's monotonic counter). Used by Spanner for external consistency.",
+      "why": "External consistency: if T1 commits before T2 in real time, T1's effects visible to T2. Spanner uses TrueTime to provide this. Stronger than serializability.",
+      "category": "mvcc_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "MVCC_readers_see_consistent_snapshot",
+      "if": ["a transaction snapshots active XIDs at start"],
+      "then": ["reads see only data committed before that point"],
+      "why": "Visibility check: xmin committed AND not in active set AND (xmax = 0 or aborted or > snapshot). Mathematical isolation. Foundation of snapshot isolation in Postgres + Oracle + SQL Server.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "HOT_avoids_index_write_amplification",
+      "if": ["update doesn't change indexed columns"],
+      "then": ["indexes are not updated"],
+      "why": "Old + new tuple on same page; old tuple's t_ctid points to new. Indexes still point to old, but reads chase the chain to new. Postgres update-heavy tables depend on this optimisation.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "long_transactions_block_vacuum",
+      "if": ["a transaction holds the oldest snapshot"],
+      "then": ["vacuum cannot reclaim versions newer than that snapshot"],
+      "why": "Vacuum could reclaim a version the long transaction would later read. Conservative: keep all versions newer than oldest snapshot. Production rule: monitor + kill old transactions to prevent bloat.",
+      "soundness_category": "referential_transparency"
+    },
+    {
+      "name": "SSI_detects_write_skew",
+      "if": ["transactions form a dangerous cycle in dependency graph"],
+      "then": ["SSI aborts one to preserve serializability"],
+      "why": "Snapshot isolation misses write skew. SSI tracks read + write sets, detects cycles. Aborts cheaper than locking. Cost: false aborts under contention; retry logic required in app code.",
+      "soundness_category": "algebraic_law"
+    },
+    {
+      "name": "vacuum_freeze_prevents_XID_wraparound",
+      "if": ["Postgres uses 32-bit XIDs"],
+      "then": ["periodic freeze of ancient rows is required"],
+      "why": "2^32 XIDs ~ 4 billion. Without freeze, ancient row's xmin appears 'in future' after wraparound. Postgres aggressively warns + then refuses connections at wraparound risk. Auto-vacuum freeze is mandatory operational concern.",
+      "soundness_category": "referential_transparency"
+    }
+  ]
+}

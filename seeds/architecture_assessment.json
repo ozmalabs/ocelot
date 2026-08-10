@@ -1,0 +1,124 @@
+{
+  "id": "architecture_assessment",
+  "version": "0.1.0",
+  "depends_on": ["design_patterns", "compiler_theory"],
+  "description": "The agent's vocabulary for assessing the architecture of any subgraph — its own cortices, the compiler stack it built, an external subsystem. Architectural qualities are scored 0-10 by graph queries; smells are pattern matches against structural shapes. The result is an Assessment node, graph-resident, queryable, and the input to the code-writing cortex when an architectural improvement is wanted.",
+
+  "qualities": [
+    {
+      "name": "separation_of_concerns",
+      "definition": "Distinct responsibilities live in distinct nodes; no node is doing two jobs that would change for different reasons.",
+      "measured_by": "Variance in the SIZE of each reflex's `concerns` list (the state keys it reads/writes). Tightly-scoped responsibilities → uniformly small concerns lists → low variance → high score. Falls back to priority-variance if no reflex annotates its concerns yet (legacy proxy; priorities are intrinsically spread for the scheduler so this metric over-penalises healthy cortices — `concerns` is the real signal).",
+      "max_score": 10,
+      "rationale": "Why it matters — coupled responsibilities means a change in one requires a change in the other; this is what makes evolution expensive."
+    },
+    {
+      "name": "abstraction_layering",
+      "definition": "Higher-level Microtheories inherit from lower-level ones via genlMt; there is a clear vertical structure rather than a flat soup.",
+      "measured_by": "Depth of the longest genlMt chain reachable from any Mt owned by the subject. Deeper layering → more careful abstraction → higher score.",
+      "max_score": 10,
+      "rationale": "Cyc taught us this: ist-formulae need a Microtheory hierarchy to disambiguate scope. Without layers, every concept must hold globally — that's unsoundness waiting."
+    },
+    {
+      "name": "introspectability",
+      "definition": "The subject's own behaviour can be read from its graph data; no logic is hidden in Python callables that the agent can't query.",
+      "measured_by": "Ratio of (Concept + Rule + Microtheory nodes) to (Reflex nodes carrying Python step callables). Higher ratio → more graph-resident reasoning → higher score.",
+      "max_score": 10,
+      "rationale": "If the agent can't read its own decision logic, it can't modify it. Introspectability is the precondition for self-improvement."
+    },
+    {
+      "name": "data_drivenness",
+      "definition": "Behaviour is governed by graph attrs and edges, not by hardcoded constants in Python source.",
+      "measured_by": "Count of nodes whose attrs include 'origin' tracing to a seed file (graph-driven) vs ones synthesised at runtime. Higher → more data-driven → higher score.",
+      "max_score": 10,
+      "rationale": "Updating a JSON seed → answer changes. Updating Python source → answer changes only after a deploy. The former is the agent's natural mode."
+    },
+    {
+      "name": "compositional_reuse",
+      "definition": "The subject's components are reused by other subjects (cross-cortex Microtheory sharing, shared Concepts).",
+      "measured_by": "Count of in-edges to the subject's Microtheories + Concepts from OTHER subjects' cortices. Higher → more reuse → higher score.",
+      "max_score": 10,
+      "rationale": "A piece of cognitive content that only one cortex uses is suspect — it might be misplaced or duplicating something a more general subject already owns."
+    }
+  ],
+
+  "smells": [
+    {
+      "name": "god_object",
+      "definition": "A single node whose outgoing edge-type diversity is a positive OUTLIER relative to the rest of the graph — it carries so many more distinct edge types than its peers that no narrative justifies them all together. Not an absolute count (8 edge types is unremarkable in a densely-typed graph and alarming in a sparse one) — a position on the graph's own diversity distribution.",
+      "detected_when": "a node's outgoing edge-type diversity exceeds mean + outlier_k * std of that diversity across all nodes",
+      "outlier_k": 2.0,
+      "remediation": "Split the node into focused sub-nodes connected by a structural relation."
+    },
+    {
+      "name": "circular_inheritance",
+      "definition": "A Microtheory's genlMt chain reaches back to itself.",
+      "detected_when": "DFS over genlMt edges encounters a previously-seen Mt",
+      "threshold": 0,
+      "remediation": "Pick the more specific Mt as primary; recast the other relationship as concept-level."
+    },
+    {
+      "name": "orphaned_concept",
+      "definition": "A Concept node with no incoming edges from any Microtheory, Rule, or Reflex — the agent installed it but nothing references it.",
+      "detected_when": "Concept with zero incoming edges",
+      "threshold": 0,
+      "remediation": "Either delete the concept, or wire the Mt that should own it."
+    },
+    {
+      "name": "redundant_data_in_python",
+      "definition": "A piece of authoring data lives BOTH in graph nodes AND in a Python dict — the source of truth is split.",
+      "detected_when": "Module-level dict with same keys as a known seed (heuristic only — agent flags as a smell to investigate)",
+      "threshold": 0,
+      "remediation": "Move the Python dict to a seed JSON file; let the graph be the single source of truth."
+    },
+    {
+      "name": "missing_assessment_subject",
+      "definition": "A Cortex with no `assesses` edge to anything — it has structure but no defined target.",
+      "detected_when": "Cortex with no assessment-shape outgoing edges",
+      "threshold": 0,
+      "remediation": "Either give it a subject (something to do) or remove it."
+    }
+  ],
+  "data_drivenness_config": {
+    "description": "Configuration for the data_drivenness scorer — moved from a hardcoded Python tuple to graph data so adding a new seed or cortex-construction family doesn't require a code change.",
+    "seed_origins": [
+      "design_patterns",
+      "programming_languages",
+      "compiler_theory",
+      "code_authoring_targets",
+      "architecture_assessment",
+      "code_authoring",
+      "code_writing_cortex",
+      "architecture_cortex",
+      "neural_networks",
+      "gadgets",
+      "video_coding_theory",
+      "audio_coding_theory",
+      "computer_architecture",
+      "network_protocols",
+      "data_structures_algorithms",
+      "compilers",
+      "operating_systems",
+      "databases_and_storage",
+      "machine_learning",
+      "security_and_cryptography",
+      "distributed_systems",
+      "cloud_infrastructure",
+      "embedded_iot_realtime",
+      "engineering",
+      "materials_chemistry",
+      "philosophy",
+      "art_design_drawing",
+      "mathematics",
+      "grounding_theory",
+      "causal_attitude_networks",
+      "mt_target_equilibria",
+      "self_improvement_dynamics"
+    ],
+    "dynamic_data_origin_prefixes": [
+      "cortex_constructed",
+      "concept_expansion"
+    ],
+    "rationale": "Nodes whose origin is a known seed file are graph-data. Nodes whose origin starts with `cortex_constructed` are dynamically minted DesignPatterns — but they are STILL graph data (the cortex writes them to the graph, the graph is the source of truth). Both kinds count as data-driven; only Python-only state would not."
+  }
+}

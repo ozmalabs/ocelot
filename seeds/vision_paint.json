@@ -1,0 +1,6640 @@
+{
+ "id": "vision_paint",
+ "version": "1.1.0",
+ "depends_on": [],
+ "description": "PAINT-FROM-SAMPLE \u2014 appearance as an order-k code sampled from a contour-bounded region, painted over the whole region as a cheap pass, and the residual taken where the paint was wrong. The order k FALLS OUT of the residual (PROTOCOL \u00a713): paint flat, and escalate only where the paint is refuted at the field's own alphabet resolution. Boundaries are strict local maxima of |\u0394| \u2014 an exact comparison with NO threshold and NO scale. Luminance is STRUCTURE (it defines the regions); appearance is a SIGN (it is sampled and painted). v1.1.0 adds the EDGE-ANCHORED DECAYING GRADIENT behind a second flag: the order-2 excursion is anchored at the boundary that sourced it and decays over the region's OWN mean geodesic depth, so the code is the fitted plane AT the edge and the order-1 constant FAR from it \u2014 never an extrapolation across the far field. Ships INERT (paint=0, pdecay=0) so every committed result reproduces (PROTOCOL \u00a79).",
+ "microtheory": {
+  "name": "paint_from_sample",
+  "description": "A surface's appearance is not computed per cell. It is SAMPLED as an order-k code over a region and PAINTED; the residual is where the paint was wrong, and it is the residual \u2014 not a parameter \u2014 that decides the order."
+ },
+ "nodes": [
+  {
+   "local_id": 0,
+   "type": "PaintParams",
+   "attrs": {
+    "paint": 0.0,
+    "pdecay": 0.0
+   }
+  }
+ ],
+ "edges": [],
+ "productions": [
+  {
+   "provenance": "seed:vision_paint:has_pcell",
+   "src": {
+    "type": "PaintField",
+    "var": "f"
+   },
+   "edge_type": "has_pcell",
+   "tgt": {
+    "type": "PaintCell",
+    "var": "c"
+   }
+  },
+  {
+   "provenance": "seed:vision_paint:neighbour",
+   "src": {
+    "type": "PaintCell",
+    "var": "a"
+   },
+   "edge_type": "neighbour",
+   "tgt": {
+    "type": "PaintCell",
+    "var": "b"
+   }
+  }
+ ],
+ "rules": [
+  {
+   "name": "pt_delta",
+   "comment": "Per cell: the forward |\u0394plum| to the east (pd_e) and south (pd_s) neighbour, and whether that link exists at all (pd_has_e / pd_has_s). Luminance is STRUCTURE \u2014 it is what defines the regions; appearance is a SIGN and is only ever sampled and painted. A link to an ABSENT or UNSENSED neighbour contributes nothing (Sum over the empty set = 0), which is why the blind spot never invents an edge. Reads ONLY raw plum/prow/pcol/psensed on self and neighbours \u2014 NO cross-node computed dependency, so firing order is irrelevant. Fires once (pdelta_done).",
+   "match": [
+    [
+     "field",
+     "has_pcell",
+     "c"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "PaintParams"
+        }
+       },
+       "key": "paint"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "pdelta_done"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     }
+    ]
+   },
+   "batch": true,
+   "effects": [
+    [
+     "set_attr",
+     "c",
+     "pd_e",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gt",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "c"
+         },
+         "key": "psensed"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       },
+       "then": {
+        "type": "Sum",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "c"
+          },
+          "edge_type": "neighbour",
+          "any_type": false
+         },
+         "var_name": "n",
+         "predicate": {
+          "type": "And",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "n"
+             },
+             "key": "prow"
+            },
+            "b": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "c"
+               },
+               "key": "prow"
+              },
+              {
+               "type": "Lit",
+               "value": 0.0
+              }
+             ]
+            }
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "n"
+             },
+             "key": "pcol"
+            },
+            "b": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "c"
+               },
+               "key": "pcol"
+              },
+              {
+               "type": "Lit",
+               "value": 1.0
+              }
+             ]
+            }
+           },
+           {
+            "type": "Gt",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "n"
+             },
+             "key": "psensed"
+            },
+            "b": {
+             "type": "Lit",
+             "value": 0.5
+            }
+           }
+          ]
+         }
+        },
+        "var_name": "n",
+        "value": {
+         "type": "Abs",
+         "arg": {
+          "type": "Minus",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "n"
+           },
+           "key": "plum"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "c"
+           },
+           "key": "plum"
+          }
+         }
+        }
+       },
+       "other": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "c",
+     "pd_s",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gt",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "c"
+         },
+         "key": "psensed"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       },
+       "then": {
+        "type": "Sum",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "c"
+          },
+          "edge_type": "neighbour",
+          "any_type": false
+         },
+         "var_name": "n",
+         "predicate": {
+          "type": "And",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "n"
+             },
+             "key": "prow"
+            },
+            "b": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "c"
+               },
+               "key": "prow"
+              },
+              {
+               "type": "Lit",
+               "value": 1.0
+              }
+             ]
+            }
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "n"
+             },
+             "key": "pcol"
+            },
+            "b": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "c"
+               },
+               "key": "pcol"
+              },
+              {
+               "type": "Lit",
+               "value": 0.0
+              }
+             ]
+            }
+           },
+           {
+            "type": "Gt",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "n"
+             },
+             "key": "psensed"
+            },
+            "b": {
+             "type": "Lit",
+             "value": 0.5
+            }
+           }
+          ]
+         }
+        },
+        "var_name": "n",
+        "value": {
+         "type": "Abs",
+         "arg": {
+          "type": "Minus",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "n"
+           },
+           "key": "plum"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "c"
+           },
+           "key": "plum"
+          }
+         }
+        }
+       },
+       "other": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "c",
+     "pd_has_e",
+     {
+      "__term__": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "c"
+         },
+         "edge_type": "neighbour",
+         "any_type": false
+        },
+        "var_name": "n",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "n"
+            },
+            "key": "prow"
+           },
+           "b": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "c"
+              },
+              "key": "prow"
+             },
+             {
+              "type": "Lit",
+              "value": 0.0
+             }
+            ]
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "n"
+            },
+            "key": "pcol"
+           },
+           "b": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "c"
+              },
+              "key": "pcol"
+             },
+             {
+              "type": "Lit",
+              "value": 1.0
+             }
+            ]
+           }
+          },
+          {
+           "type": "Gt",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "n"
+            },
+            "key": "psensed"
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0.5
+           }
+          }
+         ]
+        }
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "c",
+     "pd_has_s",
+     {
+      "__term__": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "c"
+         },
+         "edge_type": "neighbour",
+         "any_type": false
+        },
+        "var_name": "n",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "n"
+            },
+            "key": "prow"
+           },
+           "b": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "c"
+              },
+              "key": "prow"
+             },
+             {
+              "type": "Lit",
+              "value": 1.0
+             }
+            ]
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "n"
+            },
+            "key": "pcol"
+           },
+           "b": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "c"
+              },
+              "key": "pcol"
+             },
+             {
+              "type": "Lit",
+              "value": 0.0
+             }
+            ]
+           }
+          },
+          {
+           "type": "Gt",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "n"
+            },
+            "key": "psensed"
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0.5
+           }
+          }
+         ]
+        }
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "c",
+     "pdelta_done",
+     1.0
+    ]
+   ]
+  },
+  {
+   "name": "pt_block",
+   "comment": "THE BOUNDARY, and it carries NO threshold and NO scale (PROTOCOL \u00a713): the link east of c is BLOCKED iff its |\u0394| is STRICTLY GREATER than the |\u0394| of the link on either side of it along the same axis \u2014 non-maximum suppression written as an exact comparison. A uniform field (all \u0394 equal 0) and a LINEAR RAMP (all \u0394 equal) therefore have NO boundary anywhere and stay ONE region; a step has one; a Craik-O'Brien cusp has one AT THE CUSP and none at its shoulders, so each flat region KEEPS its ramp. A missing flank contributes 0 (Sum over the empty set). Fires once all neighbours' deltas are in (the handshake \u2014 never an ordering assumption).",
+   "match": [
+    [
+     "field",
+     "has_pcell",
+     "c"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "PaintParams"
+        }
+       },
+       "key": "paint"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "pdelta_done"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "pblock_done"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "c"
+        },
+        "edge_type": "neighbour",
+        "any_type": false
+       },
+       "var_name": "n",
+       "predicate": {
+        "type": "Lt",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "n"
+         },
+         "key": "pdelta_done"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       }
+      }
+     }
+    ]
+   },
+   "batch": true,
+   "effects": [
+    [
+     "set_attr",
+     "c",
+     "pblk_e",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Gt",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "c"
+           },
+           "key": "pd_has_e"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0.5
+          }
+         },
+         {
+          "type": "Gt",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "c"
+           },
+           "key": "pd_e"
+          },
+          "b": {
+           "type": "Sum",
+           "source": {
+            "type": "Filter",
+            "source": {
+             "type": "Neighbours",
+             "node": {
+              "type": "Var",
+              "name": "c"
+             },
+             "edge_type": "neighbour",
+             "any_type": false
+            },
+            "var_name": "n",
+            "predicate": {
+             "type": "And",
+             "items": [
+              {
+               "type": "Eq",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "n"
+                },
+                "key": "prow"
+               },
+               "b": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "c"
+                  },
+                  "key": "prow"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0.0
+                 }
+                ]
+               }
+              },
+              {
+               "type": "Eq",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "n"
+                },
+                "key": "pcol"
+               },
+               "b": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "c"
+                  },
+                  "key": "pcol"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": -1.0
+                 }
+                ]
+               }
+              }
+             ]
+            }
+           },
+           "var_name": "n",
+           "value": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "n"
+            },
+            "key": "pd_e"
+           }
+          }
+         },
+         {
+          "type": "Gt",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "c"
+           },
+           "key": "pd_e"
+          },
+          "b": {
+           "type": "Sum",
+           "source": {
+            "type": "Filter",
+            "source": {
+             "type": "Neighbours",
+             "node": {
+              "type": "Var",
+              "name": "c"
+             },
+             "edge_type": "neighbour",
+             "any_type": false
+            },
+            "var_name": "n",
+            "predicate": {
+             "type": "And",
+             "items": [
+              {
+               "type": "Eq",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "n"
+                },
+                "key": "prow"
+               },
+               "b": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "c"
+                  },
+                  "key": "prow"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0.0
+                 }
+                ]
+               }
+              },
+              {
+               "type": "Eq",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "n"
+                },
+                "key": "pcol"
+               },
+               "b": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "c"
+                  },
+                  "key": "pcol"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 1.0
+                 }
+                ]
+               }
+              }
+             ]
+            }
+           },
+           "var_name": "n",
+           "value": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "n"
+            },
+            "key": "pd_e"
+           }
+          }
+         }
+        ]
+       },
+       "then": {
+        "type": "Lit",
+        "value": 1.0
+       },
+       "other": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "c",
+     "pblk_s",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Gt",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "c"
+           },
+           "key": "pd_has_s"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0.5
+          }
+         },
+         {
+          "type": "Gt",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "c"
+           },
+           "key": "pd_s"
+          },
+          "b": {
+           "type": "Sum",
+           "source": {
+            "type": "Filter",
+            "source": {
+             "type": "Neighbours",
+             "node": {
+              "type": "Var",
+              "name": "c"
+             },
+             "edge_type": "neighbour",
+             "any_type": false
+            },
+            "var_name": "n",
+            "predicate": {
+             "type": "And",
+             "items": [
+              {
+               "type": "Eq",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "n"
+                },
+                "key": "prow"
+               },
+               "b": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "c"
+                  },
+                  "key": "prow"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": -1.0
+                 }
+                ]
+               }
+              },
+              {
+               "type": "Eq",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "n"
+                },
+                "key": "pcol"
+               },
+               "b": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "c"
+                  },
+                  "key": "pcol"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0.0
+                 }
+                ]
+               }
+              }
+             ]
+            }
+           },
+           "var_name": "n",
+           "value": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "n"
+            },
+            "key": "pd_s"
+           }
+          }
+         },
+         {
+          "type": "Gt",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "c"
+           },
+           "key": "pd_s"
+          },
+          "b": {
+           "type": "Sum",
+           "source": {
+            "type": "Filter",
+            "source": {
+             "type": "Neighbours",
+             "node": {
+              "type": "Var",
+              "name": "c"
+             },
+             "edge_type": "neighbour",
+             "any_type": false
+            },
+            "var_name": "n",
+            "predicate": {
+             "type": "And",
+             "items": [
+              {
+               "type": "Eq",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "n"
+                },
+                "key": "prow"
+               },
+               "b": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "c"
+                  },
+                  "key": "prow"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 1.0
+                 }
+                ]
+               }
+              },
+              {
+               "type": "Eq",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "n"
+                },
+                "key": "pcol"
+               },
+               "b": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "c"
+                  },
+                  "key": "pcol"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0.0
+                 }
+                ]
+               }
+              }
+             ]
+            }
+           },
+           "var_name": "n",
+           "value": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "n"
+            },
+            "key": "pd_s"
+           }
+          }
+         }
+        ]
+       },
+       "then": {
+        "type": "Lit",
+        "value": 1.0
+       },
+       "other": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "c",
+     "pblock_done",
+     1.0
+    ]
+   ]
+  },
+  {
+   "name": "pt_seed",
+   "comment": "pregion := pidx. Every cell starts as its own region; the flood then merges. Fires once (pseed_done).",
+   "match": [
+    [
+     "field",
+     "has_pcell",
+     "c"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "PaintParams"
+        }
+       },
+       "key": "paint"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "pseed_done"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     }
+    ]
+   },
+   "batch": true,
+   "effects": [
+    [
+     "set_attr",
+     "c",
+     "pregion",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "pidx"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "c",
+     "pseed_done",
+     1.0
+    ]
+   ]
+  },
+  {
+   "name": "pt_flood",
+   "comment": "THE REGION: pregion := min(self, every neighbour reachable across an UNBLOCKED link), to the run_rules fixpoint. Monotone non-increasing and bounded below by the region's minimum pidx, so it terminates. The HUB FALLS OUT \u2014 the unique cell with pidx == pregion \u2014 so no region node is minted and no id is assigned by the adapter. An UNSENSED cell (the optic disc) has no blocked links, so it joins the surround's region and is painted from it.",
+   "match": [
+    [
+     "field",
+     "has_pcell",
+     "c"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "PaintParams"
+        }
+       },
+       "key": "paint"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "pblock_done"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "c"
+        },
+        "edge_type": "neighbour",
+        "any_type": false
+       },
+       "var_name": "n",
+       "predicate": {
+        "type": "Lt",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "n"
+         },
+         "key": "pseed_done"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       }
+      }
+     }
+    ]
+   },
+   "batch": true,
+   "effects": [
+    [
+     "set_attr",
+     "c",
+     "pregion",
+     {
+      "__term__": {
+       "type": "Min",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "c"
+         },
+         "key": "pregion"
+        },
+        {
+         "type": "MinOver",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "c"
+           },
+           "edge_type": "neighbour",
+           "any_type": false
+          },
+          "var_name": "n",
+          "predicate": {
+           "type": "Or",
+           "items": [
+            {
+             "type": "And",
+             "items": [
+              {
+               "type": "Eq",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "n"
+                },
+                "key": "prow"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "c"
+                },
+                "key": "prow"
+               }
+              },
+              {
+               "type": "Eq",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "n"
+                },
+                "key": "pcol"
+               },
+               "b": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "c"
+                  },
+                  "key": "pcol"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 1.0
+                 }
+                ]
+               }
+              },
+              {
+               "type": "Lt",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "c"
+                },
+                "key": "pblk_e"
+               },
+               "b": {
+                "type": "Lit",
+                "value": 0.5
+               }
+              }
+             ]
+            },
+            {
+             "type": "And",
+             "items": [
+              {
+               "type": "Eq",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "n"
+                },
+                "key": "prow"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "c"
+                },
+                "key": "prow"
+               }
+              },
+              {
+               "type": "Eq",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "n"
+                },
+                "key": "pcol"
+               },
+               "b": {
+                "type": "Minus",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "c"
+                 },
+                 "key": "pcol"
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": 1.0
+                }
+               }
+              },
+              {
+               "type": "Lt",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "n"
+                },
+                "key": "pblk_e"
+               },
+               "b": {
+                "type": "Lit",
+                "value": 0.5
+               }
+              }
+             ]
+            },
+            {
+             "type": "And",
+             "items": [
+              {
+               "type": "Eq",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "n"
+                },
+                "key": "pcol"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "c"
+                },
+                "key": "pcol"
+               }
+              },
+              {
+               "type": "Eq",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "n"
+                },
+                "key": "prow"
+               },
+               "b": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "c"
+                  },
+                  "key": "prow"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 1.0
+                 }
+                ]
+               }
+              },
+              {
+               "type": "Lt",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "c"
+                },
+                "key": "pblk_s"
+               },
+               "b": {
+                "type": "Lit",
+                "value": 0.5
+               }
+              }
+             ]
+            },
+            {
+             "type": "And",
+             "items": [
+              {
+               "type": "Eq",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "n"
+                },
+                "key": "pcol"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "c"
+                },
+                "key": "pcol"
+               }
+              },
+              {
+               "type": "Eq",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "n"
+                },
+                "key": "prow"
+               },
+               "b": {
+                "type": "Minus",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "c"
+                 },
+                 "key": "prow"
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": 1.0
+                }
+               }
+              },
+              {
+               "type": "Lt",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "n"
+                },
+                "key": "pblk_s"
+               },
+               "b": {
+                "type": "Lit",
+                "value": 0.5
+               }
+              }
+             ]
+            }
+           ]
+          }
+         },
+         "var_name": "n",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "n"
+          },
+          "key": "pregion"
+         },
+         "default": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "c"
+          },
+          "key": "pregion"
+         }
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "pt_hub",
+   "comment": "MARK the region's representative. The hub already FALLS OUT of the flood (pidx == pregion); this rule only writes that fact onto the graph as `phub`, so the ADAPTER never has to compute it. Without this the read-back would need an `if` comparing two graph attributes in Python \u2014 a query, but one the graph can just as easily answer itself (CLAUDE.md).",
+   "match": [
+    [
+     "field",
+     "has_pcell",
+     "c"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "PaintParams"
+        }
+       },
+       "key": "paint"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "pblock_done"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     }
+    ]
+   },
+   "batch": true,
+   "effects": [
+    [
+     "set_attr",
+     "c",
+     "phub",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "c"
+         },
+         "key": "pidx"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "c"
+         },
+         "key": "pregion"
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": 1.0
+       },
+       "other": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "pt_fit1",
+   "comment": "THE SAMPLE, order 1: on the region's hub, the region mean of plum and papp plus the centroid \u2014 pooled over the field-anchored set of cells sharing this hub's pregion, counting ONLY cells that carry an observation (psensed). ONE sampling rule, applied to every stimulus identically; there is no per-stimulus branch anywhere in this seed. NOT done-flagged: the flood may still be merging, so the fit is idempotent and re-settles with it (it is a pure function of its inputs, so it cannot dither).",
+   "match": [
+    [
+     "field",
+     "has_pcell",
+     "h"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "PaintParams"
+        }
+       },
+       "key": "paint"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "h"
+       },
+       "key": "pblock_done"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "h"
+       },
+       "key": "pidx"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "h"
+       },
+       "key": "pregion"
+      }
+     }
+    ]
+   },
+   "batch": true,
+   "effects": [
+    [
+     "set_attr",
+     "h",
+     "pn",
+     {
+      "__term__": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "field"
+         },
+         "edge_type": "has_pcell",
+         "any_type": false
+        },
+        "var_name": "v",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "v"
+            },
+            "key": "pregion"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "h"
+            },
+            "key": "pregion"
+           }
+          },
+          {
+           "type": "Gt",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "v"
+            },
+            "key": "psensed"
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0.5
+           }
+          }
+         ]
+        }
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "h",
+     "pmean_lum",
+     {
+      "__term__": {
+       "type": "Div",
+       "a": {
+        "type": "Sum",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "field"
+          },
+          "edge_type": "has_pcell",
+          "any_type": false
+         },
+         "var_name": "v",
+         "predicate": {
+          "type": "And",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "v"
+             },
+             "key": "pregion"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "h"
+             },
+             "key": "pregion"
+            }
+           },
+           {
+            "type": "Gt",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "v"
+             },
+             "key": "psensed"
+            },
+            "b": {
+             "type": "Lit",
+             "value": 0.5
+            }
+           }
+          ]
+         }
+        },
+        "var_name": "v",
+        "value": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "v"
+         },
+         "key": "plum"
+        }
+       },
+       "b": {
+        "type": "Max",
+        "items": [
+         {
+          "type": "Count",
+          "source": {
+           "type": "Filter",
+           "source": {
+            "type": "Neighbours",
+            "node": {
+             "type": "Var",
+             "name": "field"
+            },
+            "edge_type": "has_pcell",
+            "any_type": false
+           },
+           "var_name": "v",
+           "predicate": {
+            "type": "And",
+            "items": [
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "v"
+               },
+               "key": "pregion"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "h"
+               },
+               "key": "pregion"
+              }
+             },
+             {
+              "type": "Gt",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "v"
+               },
+               "key": "psensed"
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0.5
+              }
+             }
+            ]
+           }
+          }
+         },
+         {
+          "type": "Lit",
+          "value": 1.0
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "h",
+     "pmean_app",
+     {
+      "__term__": {
+       "type": "Div",
+       "a": {
+        "type": "Sum",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "field"
+          },
+          "edge_type": "has_pcell",
+          "any_type": false
+         },
+         "var_name": "v",
+         "predicate": {
+          "type": "And",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "v"
+             },
+             "key": "pregion"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "h"
+             },
+             "key": "pregion"
+            }
+           },
+           {
+            "type": "Gt",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "v"
+             },
+             "key": "psensed"
+            },
+            "b": {
+             "type": "Lit",
+             "value": 0.5
+            }
+           }
+          ]
+         }
+        },
+        "var_name": "v",
+        "value": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "v"
+         },
+         "key": "papp"
+        }
+       },
+       "b": {
+        "type": "Max",
+        "items": [
+         {
+          "type": "Count",
+          "source": {
+           "type": "Filter",
+           "source": {
+            "type": "Neighbours",
+            "node": {
+             "type": "Var",
+             "name": "field"
+            },
+            "edge_type": "has_pcell",
+            "any_type": false
+           },
+           "var_name": "v",
+           "predicate": {
+            "type": "And",
+            "items": [
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "v"
+               },
+               "key": "pregion"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "h"
+               },
+               "key": "pregion"
+              }
+             },
+             {
+              "type": "Gt",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "v"
+               },
+               "key": "psensed"
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0.5
+              }
+             }
+            ]
+           }
+          }
+         },
+         {
+          "type": "Lit",
+          "value": 1.0
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "h",
+     "pcen_r",
+     {
+      "__term__": {
+       "type": "Div",
+       "a": {
+        "type": "Sum",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "field"
+          },
+          "edge_type": "has_pcell",
+          "any_type": false
+         },
+         "var_name": "v",
+         "predicate": {
+          "type": "And",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "v"
+             },
+             "key": "pregion"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "h"
+             },
+             "key": "pregion"
+            }
+           },
+           {
+            "type": "Gt",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "v"
+             },
+             "key": "psensed"
+            },
+            "b": {
+             "type": "Lit",
+             "value": 0.5
+            }
+           }
+          ]
+         }
+        },
+        "var_name": "v",
+        "value": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "v"
+         },
+         "key": "prow"
+        }
+       },
+       "b": {
+        "type": "Max",
+        "items": [
+         {
+          "type": "Count",
+          "source": {
+           "type": "Filter",
+           "source": {
+            "type": "Neighbours",
+            "node": {
+             "type": "Var",
+             "name": "field"
+            },
+            "edge_type": "has_pcell",
+            "any_type": false
+           },
+           "var_name": "v",
+           "predicate": {
+            "type": "And",
+            "items": [
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "v"
+               },
+               "key": "pregion"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "h"
+               },
+               "key": "pregion"
+              }
+             },
+             {
+              "type": "Gt",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "v"
+               },
+               "key": "psensed"
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0.5
+              }
+             }
+            ]
+           }
+          }
+         },
+         {
+          "type": "Lit",
+          "value": 1.0
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "h",
+     "pcen_c",
+     {
+      "__term__": {
+       "type": "Div",
+       "a": {
+        "type": "Sum",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "field"
+          },
+          "edge_type": "has_pcell",
+          "any_type": false
+         },
+         "var_name": "v",
+         "predicate": {
+          "type": "And",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "v"
+             },
+             "key": "pregion"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "h"
+             },
+             "key": "pregion"
+            }
+           },
+           {
+            "type": "Gt",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "v"
+             },
+             "key": "psensed"
+            },
+            "b": {
+             "type": "Lit",
+             "value": 0.5
+            }
+           }
+          ]
+         }
+        },
+        "var_name": "v",
+        "value": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "v"
+         },
+         "key": "pcol"
+        }
+       },
+       "b": {
+        "type": "Max",
+        "items": [
+         {
+          "type": "Count",
+          "source": {
+           "type": "Filter",
+           "source": {
+            "type": "Neighbours",
+            "node": {
+             "type": "Var",
+             "name": "field"
+            },
+            "edge_type": "has_pcell",
+            "any_type": false
+           },
+           "var_name": "v",
+           "predicate": {
+            "type": "And",
+            "items": [
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "v"
+               },
+               "key": "pregion"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "h"
+               },
+               "key": "pregion"
+              }
+             },
+             {
+              "type": "Gt",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "v"
+               },
+               "key": "psensed"
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0.5
+              }
+             }
+            ]
+           }
+          }
+         },
+         {
+          "type": "Lit",
+          "value": 1.0
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "h",
+     "pnall",
+     {
+      "__term__": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "field"
+         },
+         "edge_type": "has_pcell",
+         "any_type": false
+        },
+        "var_name": "v",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "v"
+            },
+            "key": "pregion"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "h"
+            },
+            "key": "pregion"
+           }
+          }
+         ]
+        }
+       }
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "pt_fit2",
+   "comment": "THE SAMPLE, order 2: a separable least-squares plane about the region centroid \u2014 one slope per coordinate per channel. Declared as a SEPARABLE estimate, not an optimal joint fit: for a region whose row and column coordinates are correlated it is the marginal slope. `Div` returns 0.0 on a zero denominator, which is exactly right here \u2014 a single-row region HAS no row slope \u2014 and is the reason no epsilon appears. Reads pmean_*/pcen_* written by pt_fit1 on the SAME node; pt_fit1 does not read anything pt_fit2 writes, so the pair has no cycle and the fixpoint settles it.",
+   "match": [
+    [
+     "field",
+     "has_pcell",
+     "h"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "PaintParams"
+        }
+       },
+       "key": "paint"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "h"
+       },
+       "key": "pblock_done"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "h"
+       },
+       "key": "pidx"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "h"
+       },
+       "key": "pregion"
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "h"
+       },
+       "key": "pn"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     }
+    ]
+   },
+   "batch": true,
+   "effects": [
+    [
+     "set_attr",
+     "h",
+     "pvar_r",
+     {
+      "__term__": {
+       "type": "Sum",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "field"
+         },
+         "edge_type": "has_pcell",
+         "any_type": false
+        },
+        "var_name": "v",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "v"
+            },
+            "key": "pregion"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "h"
+            },
+            "key": "pregion"
+           }
+          },
+          {
+           "type": "Gt",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "v"
+            },
+            "key": "psensed"
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0.5
+           }
+          }
+         ]
+        }
+       },
+       "var_name": "v",
+       "value": {
+        "type": "Times",
+        "items": [
+         {
+          "type": "Minus",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "v"
+           },
+           "key": "prow"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "h"
+           },
+           "key": "pcen_r"
+          }
+         },
+         {
+          "type": "Minus",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "v"
+           },
+           "key": "prow"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "h"
+           },
+           "key": "pcen_r"
+          }
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "h",
+     "pslope_r_plum",
+     {
+      "__term__": {
+       "type": "Div",
+       "a": {
+        "type": "Sum",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "field"
+          },
+          "edge_type": "has_pcell",
+          "any_type": false
+         },
+         "var_name": "v",
+         "predicate": {
+          "type": "And",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "v"
+             },
+             "key": "pregion"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "h"
+             },
+             "key": "pregion"
+            }
+           },
+           {
+            "type": "Gt",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "v"
+             },
+             "key": "psensed"
+            },
+            "b": {
+             "type": "Lit",
+             "value": 0.5
+            }
+           }
+          ]
+         }
+        },
+        "var_name": "v",
+        "value": {
+         "type": "Times",
+         "items": [
+          {
+           "type": "Minus",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "v"
+            },
+            "key": "prow"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "h"
+            },
+            "key": "pcen_r"
+           }
+          },
+          {
+           "type": "Minus",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "v"
+            },
+            "key": "plum"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "h"
+            },
+            "key": "pmean_lum"
+           }
+          }
+         ]
+        }
+       },
+       "b": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "h"
+        },
+        "key": "pvar_r"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "h",
+     "pslope_r_papp",
+     {
+      "__term__": {
+       "type": "Div",
+       "a": {
+        "type": "Sum",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "field"
+          },
+          "edge_type": "has_pcell",
+          "any_type": false
+         },
+         "var_name": "v",
+         "predicate": {
+          "type": "And",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "v"
+             },
+             "key": "pregion"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "h"
+             },
+             "key": "pregion"
+            }
+           },
+           {
+            "type": "Gt",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "v"
+             },
+             "key": "psensed"
+            },
+            "b": {
+             "type": "Lit",
+             "value": 0.5
+            }
+           }
+          ]
+         }
+        },
+        "var_name": "v",
+        "value": {
+         "type": "Times",
+         "items": [
+          {
+           "type": "Minus",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "v"
+            },
+            "key": "prow"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "h"
+            },
+            "key": "pcen_r"
+           }
+          },
+          {
+           "type": "Minus",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "v"
+            },
+            "key": "papp"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "h"
+            },
+            "key": "pmean_app"
+           }
+          }
+         ]
+        }
+       },
+       "b": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "h"
+        },
+        "key": "pvar_r"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "h",
+     "pvar_c",
+     {
+      "__term__": {
+       "type": "Sum",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "field"
+         },
+         "edge_type": "has_pcell",
+         "any_type": false
+        },
+        "var_name": "v",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "v"
+            },
+            "key": "pregion"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "h"
+            },
+            "key": "pregion"
+           }
+          },
+          {
+           "type": "Gt",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "v"
+            },
+            "key": "psensed"
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0.5
+           }
+          }
+         ]
+        }
+       },
+       "var_name": "v",
+       "value": {
+        "type": "Times",
+        "items": [
+         {
+          "type": "Minus",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "v"
+           },
+           "key": "pcol"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "h"
+           },
+           "key": "pcen_c"
+          }
+         },
+         {
+          "type": "Minus",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "v"
+           },
+           "key": "pcol"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "h"
+           },
+           "key": "pcen_c"
+          }
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "h",
+     "pslope_c_plum",
+     {
+      "__term__": {
+       "type": "Div",
+       "a": {
+        "type": "Sum",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "field"
+          },
+          "edge_type": "has_pcell",
+          "any_type": false
+         },
+         "var_name": "v",
+         "predicate": {
+          "type": "And",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "v"
+             },
+             "key": "pregion"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "h"
+             },
+             "key": "pregion"
+            }
+           },
+           {
+            "type": "Gt",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "v"
+             },
+             "key": "psensed"
+            },
+            "b": {
+             "type": "Lit",
+             "value": 0.5
+            }
+           }
+          ]
+         }
+        },
+        "var_name": "v",
+        "value": {
+         "type": "Times",
+         "items": [
+          {
+           "type": "Minus",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "v"
+            },
+            "key": "pcol"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "h"
+            },
+            "key": "pcen_c"
+           }
+          },
+          {
+           "type": "Minus",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "v"
+            },
+            "key": "plum"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "h"
+            },
+            "key": "pmean_lum"
+           }
+          }
+         ]
+        }
+       },
+       "b": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "h"
+        },
+        "key": "pvar_c"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "h",
+     "pslope_c_papp",
+     {
+      "__term__": {
+       "type": "Div",
+       "a": {
+        "type": "Sum",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "field"
+          },
+          "edge_type": "has_pcell",
+          "any_type": false
+         },
+         "var_name": "v",
+         "predicate": {
+          "type": "And",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "v"
+             },
+             "key": "pregion"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "h"
+             },
+             "key": "pregion"
+            }
+           },
+           {
+            "type": "Gt",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "v"
+             },
+             "key": "psensed"
+            },
+            "b": {
+             "type": "Lit",
+             "value": 0.5
+            }
+           }
+          ]
+         }
+        },
+        "var_name": "v",
+        "value": {
+         "type": "Times",
+         "items": [
+          {
+           "type": "Minus",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "v"
+            },
+            "key": "pcol"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "h"
+            },
+            "key": "pcen_c"
+           }
+          },
+          {
+           "type": "Minus",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "v"
+            },
+            "key": "papp"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "h"
+            },
+            "key": "pmean_app"
+           }
+          }
+         ]
+        }
+       },
+       "b": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "h"
+        },
+        "key": "pvar_c"
+       }
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "pt_anchor",
+   "comment": "THE ANCHOR. panchor := 1 iff this cell touches a BLOCKED link \u2014 its own east/south link, or the east link of its west neighbour, or the south link of its north neighbour. A blocked link IS a strict-|\u0394| maximum, i.e. a luminance edge, so 'edge-anchored' here means anchored at a luminance discontinuity and NOTHING ELSE. In particular THE FIELD'S OUTER BORDER IS NOT AN ANCHOR: a border link does not exist (pd_has_* = 0), so pt_block can never call it a maximum. Fires once all neighbours' block flags are in (the same handshake pt_block itself uses \u2014 never an ordering assumption).",
+   "match": [
+    [
+     "field",
+     "has_pcell",
+     "c"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "PaintParams"
+        }
+       },
+       "key": "paint"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "PaintParams"
+        }
+       },
+       "key": "pdecay"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "pblock_done"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "panchor_done"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "c"
+        },
+        "edge_type": "neighbour",
+        "any_type": false
+       },
+       "var_name": "n",
+       "predicate": {
+        "type": "Lt",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "n"
+         },
+         "key": "pblock_done"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       }
+      }
+     }
+    ]
+   },
+   "batch": true,
+   "effects": [
+    [
+     "set_attr",
+     "c",
+     "panchor",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Or",
+        "items": [
+         {
+          "type": "Gt",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "c"
+           },
+           "key": "pblk_e"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0.5
+          }
+         },
+         {
+          "type": "Gt",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "c"
+           },
+           "key": "pblk_s"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0.5
+          }
+         },
+         {
+          "type": "Gt",
+          "a": {
+           "type": "Sum",
+           "source": {
+            "type": "Filter",
+            "source": {
+             "type": "Neighbours",
+             "node": {
+              "type": "Var",
+              "name": "c"
+             },
+             "edge_type": "neighbour",
+             "any_type": false
+            },
+            "var_name": "n",
+            "predicate": {
+             "type": "And",
+             "items": [
+              {
+               "type": "Eq",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "n"
+                },
+                "key": "prow"
+               },
+               "b": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "c"
+                  },
+                  "key": "prow"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0.0
+                 }
+                ]
+               }
+              },
+              {
+               "type": "Eq",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "n"
+                },
+                "key": "pcol"
+               },
+               "b": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "c"
+                  },
+                  "key": "pcol"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": -1.0
+                 }
+                ]
+               }
+              }
+             ]
+            }
+           },
+           "var_name": "n",
+           "value": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "n"
+            },
+            "key": "pblk_e"
+           }
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0.5
+          }
+         },
+         {
+          "type": "Gt",
+          "a": {
+           "type": "Sum",
+           "source": {
+            "type": "Filter",
+            "source": {
+             "type": "Neighbours",
+             "node": {
+              "type": "Var",
+              "name": "c"
+             },
+             "edge_type": "neighbour",
+             "any_type": false
+            },
+            "var_name": "n",
+            "predicate": {
+             "type": "And",
+             "items": [
+              {
+               "type": "Eq",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "n"
+                },
+                "key": "prow"
+               },
+               "b": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "c"
+                  },
+                  "key": "prow"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": -1.0
+                 }
+                ]
+               }
+              },
+              {
+               "type": "Eq",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "n"
+                },
+                "key": "pcol"
+               },
+               "b": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "c"
+                  },
+                  "key": "pcol"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0.0
+                 }
+                ]
+               }
+              }
+             ]
+            }
+           },
+           "var_name": "n",
+           "value": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "n"
+            },
+            "key": "pblk_s"
+           }
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0.5
+          }
+         }
+        ]
+       },
+       "then": {
+        "type": "Lit",
+        "value": 1.0
+       },
+       "other": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "c",
+     "panchor_done",
+     1.0
+    ]
+   ]
+  },
+  {
+   "name": "pt_dist",
+   "comment": "THE DISTANCE FROM THE EDGE: pdist := 0 on an anchor, else 1 + the min over neighbours reachable across an UNBLOCKED link \u2014 THE SAME reachability pt_flood uses, so the distance is geodesic WITHIN the region and never crosses a boundary (Arend & Goldstein 1987: the code's domain of validity is its own compartment). Least fixed point from 0: monotone NON-DECREASING and bounded by the field's cell count, so it terminates. No threshold, no scale, no coordinate \u2014 a pure graph quantity.",
+   "match": [
+    [
+     "field",
+     "has_pcell",
+     "c"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "PaintParams"
+        }
+       },
+       "key": "paint"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "PaintParams"
+        }
+       },
+       "key": "pdecay"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "panchor_done"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "c"
+        },
+        "edge_type": "neighbour",
+        "any_type": false
+       },
+       "var_name": "n",
+       "predicate": {
+        "type": "Lt",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "n"
+         },
+         "key": "panchor_done"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       }
+      }
+     }
+    ]
+   },
+   "batch": true,
+   "effects": [
+    [
+     "set_attr",
+     "c",
+     "pdist",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gt",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "c"
+         },
+         "key": "panchor"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": 0.0
+       },
+       "other": {
+        "type": "Min",
+        "items": [
+         {
+          "type": "Times",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "field"
+            },
+            "key": "prows"
+           },
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "field"
+            },
+            "key": "pcols"
+           }
+          ]
+         },
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Lit",
+            "value": 1.0
+           },
+           {
+            "type": "MinOver",
+            "source": {
+             "type": "Filter",
+             "source": {
+              "type": "Neighbours",
+              "node": {
+               "type": "Var",
+               "name": "c"
+              },
+              "edge_type": "neighbour",
+              "any_type": false
+             },
+             "var_name": "n",
+             "predicate": {
+              "type": "Or",
+              "items": [
+               {
+                "type": "And",
+                "items": [
+                 {
+                  "type": "Eq",
+                  "a": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "n"
+                   },
+                   "key": "prow"
+                  },
+                  "b": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "c"
+                   },
+                   "key": "prow"
+                  }
+                 },
+                 {
+                  "type": "Eq",
+                  "a": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "n"
+                   },
+                   "key": "pcol"
+                  },
+                  "b": {
+                   "type": "Plus",
+                   "items": [
+                    {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "c"
+                     },
+                     "key": "pcol"
+                    },
+                    {
+                     "type": "Lit",
+                     "value": 1.0
+                    }
+                   ]
+                  }
+                 },
+                 {
+                  "type": "Lt",
+                  "a": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "c"
+                   },
+                   "key": "pblk_e"
+                  },
+                  "b": {
+                   "type": "Lit",
+                   "value": 0.5
+                  }
+                 }
+                ]
+               },
+               {
+                "type": "And",
+                "items": [
+                 {
+                  "type": "Eq",
+                  "a": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "n"
+                   },
+                   "key": "prow"
+                  },
+                  "b": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "c"
+                   },
+                   "key": "prow"
+                  }
+                 },
+                 {
+                  "type": "Eq",
+                  "a": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "n"
+                   },
+                   "key": "pcol"
+                  },
+                  "b": {
+                   "type": "Minus",
+                   "a": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "c"
+                    },
+                    "key": "pcol"
+                   },
+                   "b": {
+                    "type": "Lit",
+                    "value": 1.0
+                   }
+                  }
+                 },
+                 {
+                  "type": "Lt",
+                  "a": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "n"
+                   },
+                   "key": "pblk_e"
+                  },
+                  "b": {
+                   "type": "Lit",
+                   "value": 0.5
+                  }
+                 }
+                ]
+               },
+               {
+                "type": "And",
+                "items": [
+                 {
+                  "type": "Eq",
+                  "a": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "n"
+                   },
+                   "key": "pcol"
+                  },
+                  "b": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "c"
+                   },
+                   "key": "pcol"
+                  }
+                 },
+                 {
+                  "type": "Eq",
+                  "a": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "n"
+                   },
+                   "key": "prow"
+                  },
+                  "b": {
+                   "type": "Plus",
+                   "items": [
+                    {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "c"
+                     },
+                     "key": "prow"
+                    },
+                    {
+                     "type": "Lit",
+                     "value": 1.0
+                    }
+                   ]
+                  }
+                 },
+                 {
+                  "type": "Lt",
+                  "a": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "c"
+                   },
+                   "key": "pblk_s"
+                  },
+                  "b": {
+                   "type": "Lit",
+                   "value": 0.5
+                  }
+                 }
+                ]
+               },
+               {
+                "type": "And",
+                "items": [
+                 {
+                  "type": "Eq",
+                  "a": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "n"
+                   },
+                   "key": "pcol"
+                  },
+                  "b": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "c"
+                   },
+                   "key": "pcol"
+                  }
+                 },
+                 {
+                  "type": "Eq",
+                  "a": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "n"
+                   },
+                   "key": "prow"
+                  },
+                  "b": {
+                   "type": "Minus",
+                   "a": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "c"
+                    },
+                    "key": "prow"
+                   },
+                   "b": {
+                    "type": "Lit",
+                    "value": 1.0
+                   }
+                  }
+                 },
+                 {
+                  "type": "Lt",
+                  "a": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "n"
+                   },
+                   "key": "pblk_s"
+                  },
+                  "b": {
+                   "type": "Lit",
+                   "value": 0.5
+                  }
+                 }
+                ]
+               }
+              ]
+             }
+            },
+            "var_name": "n",
+            "value": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "n"
+             },
+             "key": "pdist"
+            },
+            "default": {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "field"
+               },
+               "key": "prows"
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "field"
+               },
+               "key": "pcols"
+              }
+             ]
+            }
+           }
+          ]
+         }
+        ]
+       }
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "pt_decay",
+   "comment": "THE DECAY LENGTH, AND IT FALLS OUT (PROTOCOL \u00a713). plam := the region's own MEAN GEODESIC DEPTH from its own boundary, \u03a3pdist/n. It is GEOMETRY ONLY \u2014 no tuning, no threshold, no imported constant, no reference to any target output \u2014 and it is the SAME KIND OF OBJECT pt_fit1 already computes: pcen_r/pcen_c are the region's first moment in the row/column coordinate; plam is its first moment in the DISTANCE-TO-ITS-OWN-BOUNDARY coordinate. It is RELATIVE, not absolute: the code depends only on the dimensionless pdist/plam, so it rescales with the lattice. CLOSED FORM: a region anchored on ONE side has pdist uniform on 0..d_max, so plam = d_max/2 EXACTLY and the far-edge weight is plam/(plam+d_max) = 1/3, INDEPENDENT OF REGION WIDTH \u2014 the decay cuts the plane's far-field excursion to exactly one third. Nothing was chosen to make that 1/3. panch_n counts the region's anchors, so a region with NO boundary can be told apart from one whose boundary is everywhere. Geometry is counted over ALL the region's cells, sensed or not: depth does not need an observation.",
+   "match": [
+    [
+     "field",
+     "has_pcell",
+     "h"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "PaintParams"
+        }
+       },
+       "key": "paint"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "PaintParams"
+        }
+       },
+       "key": "pdecay"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "h"
+       },
+       "key": "panchor_done"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "h"
+       },
+       "key": "pidx"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "h"
+       },
+       "key": "pregion"
+      }
+     }
+    ]
+   },
+   "batch": true,
+   "effects": [
+    [
+     "set_attr",
+     "h",
+     "panch_n",
+     {
+      "__term__": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "field"
+         },
+         "edge_type": "has_pcell",
+         "any_type": false
+        },
+        "var_name": "v",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "v"
+            },
+            "key": "pregion"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "h"
+            },
+            "key": "pregion"
+           }
+          },
+          {
+           "type": "Gt",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "v"
+            },
+            "key": "panchor"
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0.5
+           }
+          }
+         ]
+        }
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "h",
+     "plam",
+     {
+      "__term__": {
+       "type": "Div",
+       "a": {
+        "type": "Sum",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "field"
+          },
+          "edge_type": "has_pcell",
+          "any_type": false
+         },
+         "var_name": "v",
+         "predicate": {
+          "type": "And",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "v"
+             },
+             "key": "pregion"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "h"
+             },
+             "key": "pregion"
+            }
+           }
+          ]
+         }
+        },
+        "var_name": "v",
+        "value": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "v"
+         },
+         "key": "pdist"
+        }
+       },
+       "b": {
+        "type": "Max",
+        "items": [
+         {
+          "type": "Count",
+          "source": {
+           "type": "Filter",
+           "source": {
+            "type": "Neighbours",
+            "node": {
+             "type": "Var",
+             "name": "field"
+            },
+            "edge_type": "has_pcell",
+            "any_type": false
+           },
+           "var_name": "v",
+           "predicate": {
+            "type": "And",
+            "items": [
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "v"
+               },
+               "key": "pregion"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "h"
+               },
+               "key": "pregion"
+              }
+             }
+            ]
+           }
+          }
+         },
+         {
+          "type": "Lit",
+          "value": 1.0
+         }
+        ]
+       }
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "pt_paint",
+   "comment": "THE PAINT: every cell \u2014 sensed or not \u2014 takes ITS OWN hub's code at the hub's current korder. korder is read here and assigned NOWHERE but pt_escalate. The hub is found by pidx == this cell's pregion, which is unique by construction, so PickUnique is the honest read (PROTOCOL \u00a712.3: `Pick` would silently return one of N). v1.1.0 \u2014 THE DECAY: the order-2 excursion is multiplied by w = plam/(plam+pdist), which is 1 AT the anchoring edge and STRICTLY DECREASING to 0 away from it, so the code is the fitted plane at the edge and relaxes to the order-1 constant far from it \u2014 never a constant-slope extrapolation across the far field, which is the operation Arend & Goldstein 1987 show is ill-posed and Cohen-Duwek & Spitzer 2019 show reconstructs the veridical image. DECLARED (PROTOCOL \u00a713.1): the decay LENGTH falls out of the region's geometry, but the FALLOFF'S FORM is ARCHITECTURE \u2014 w is monotone BY CONSTRUCTION, so a decline-with-distance signature cannot fail to appear and is not evidence that one emerged.",
+   "match": [
+    [
+     "field",
+     "has_pcell",
+     "c"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "PaintParams"
+        }
+       },
+       "key": "paint"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "pblock_done"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     }
+    ]
+   },
+   "batch": true,
+   "effects": [
+    [
+     "set_attr",
+     "c",
+     "ppaint_lum",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gte",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "PickUnique",
+          "source": {
+           "type": "Filter",
+           "source": {
+            "type": "Neighbours",
+            "node": {
+             "type": "Var",
+             "name": "field"
+            },
+            "edge_type": "has_pcell",
+            "any_type": false
+           },
+           "var_name": "v",
+           "predicate": {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "v"
+             },
+             "key": "pidx"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "c"
+             },
+             "key": "pregion"
+            }
+           }
+          }
+         },
+         "key": "korder"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.5
+        }
+       },
+       "then": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "PickUnique",
+           "source": {
+            "type": "Filter",
+            "source": {
+             "type": "Neighbours",
+             "node": {
+              "type": "Var",
+              "name": "field"
+             },
+             "edge_type": "has_pcell",
+             "any_type": false
+            },
+            "var_name": "v",
+            "predicate": {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "v"
+              },
+              "key": "pidx"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "c"
+              },
+              "key": "pregion"
+             }
+            }
+           }
+          },
+          "key": "pmean_lum"
+         },
+         {
+          "type": "Times",
+          "items": [
+           {
+            "type": "IfThenElse",
+            "cond": {
+             "type": "And",
+             "items": [
+              {
+               "type": "Gt",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "PickUnique",
+                 "source": {
+                  "type": "NodesOfType",
+                  "node_type": "PaintParams"
+                 }
+                },
+                "key": "pdecay"
+               },
+               "b": {
+                "type": "Lit",
+                "value": 0.5
+               }
+              },
+              {
+               "type": "Gt",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "PickUnique",
+                 "source": {
+                  "type": "Filter",
+                  "source": {
+                   "type": "Neighbours",
+                   "node": {
+                    "type": "Var",
+                    "name": "field"
+                   },
+                   "edge_type": "has_pcell",
+                   "any_type": false
+                  },
+                  "var_name": "v",
+                  "predicate": {
+                   "type": "Eq",
+                   "a": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "v"
+                    },
+                    "key": "pidx"
+                   },
+                   "b": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "c"
+                    },
+                    "key": "pregion"
+                   }
+                  }
+                 }
+                },
+                "key": "panch_n"
+               },
+               "b": {
+                "type": "Lit",
+                "value": 0.5
+               }
+              }
+             ]
+            },
+            "then": {
+             "type": "Div",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "PickUnique",
+               "source": {
+                "type": "Filter",
+                "source": {
+                 "type": "Neighbours",
+                 "node": {
+                  "type": "Var",
+                  "name": "field"
+                 },
+                 "edge_type": "has_pcell",
+                 "any_type": false
+                },
+                "var_name": "v",
+                "predicate": {
+                 "type": "Eq",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "v"
+                  },
+                  "key": "pidx"
+                 },
+                 "b": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "c"
+                  },
+                  "key": "pregion"
+                 }
+                }
+               }
+              },
+              "key": "plam"
+             },
+             "b": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "PickUnique",
+                 "source": {
+                  "type": "Filter",
+                  "source": {
+                   "type": "Neighbours",
+                   "node": {
+                    "type": "Var",
+                    "name": "field"
+                   },
+                   "edge_type": "has_pcell",
+                   "any_type": false
+                  },
+                  "var_name": "v",
+                  "predicate": {
+                   "type": "Eq",
+                   "a": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "v"
+                    },
+                    "key": "pidx"
+                   },
+                   "b": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "c"
+                    },
+                    "key": "pregion"
+                   }
+                  }
+                 }
+                },
+                "key": "plam"
+               },
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "c"
+                },
+                "key": "pdist"
+               }
+              ]
+             }
+            },
+            "other": {
+             "type": "Lit",
+             "value": 1.0
+            }
+           },
+           {
+            "type": "Attr",
+            "node": {
+             "type": "PickUnique",
+             "source": {
+              "type": "Filter",
+              "source": {
+               "type": "Neighbours",
+               "node": {
+                "type": "Var",
+                "name": "field"
+               },
+               "edge_type": "has_pcell",
+               "any_type": false
+              },
+              "var_name": "v",
+              "predicate": {
+               "type": "Eq",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "v"
+                },
+                "key": "pidx"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "c"
+                },
+                "key": "pregion"
+               }
+              }
+             }
+            },
+            "key": "pslope_r_plum"
+           },
+           {
+            "type": "Minus",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "c"
+             },
+             "key": "prow"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "PickUnique",
+              "source": {
+               "type": "Filter",
+               "source": {
+                "type": "Neighbours",
+                "node": {
+                 "type": "Var",
+                 "name": "field"
+                },
+                "edge_type": "has_pcell",
+                "any_type": false
+               },
+               "var_name": "v",
+               "predicate": {
+                "type": "Eq",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "v"
+                 },
+                 "key": "pidx"
+                },
+                "b": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "c"
+                 },
+                 "key": "pregion"
+                }
+               }
+              }
+             },
+             "key": "pcen_r"
+            }
+           }
+          ]
+         },
+         {
+          "type": "Times",
+          "items": [
+           {
+            "type": "IfThenElse",
+            "cond": {
+             "type": "And",
+             "items": [
+              {
+               "type": "Gt",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "PickUnique",
+                 "source": {
+                  "type": "NodesOfType",
+                  "node_type": "PaintParams"
+                 }
+                },
+                "key": "pdecay"
+               },
+               "b": {
+                "type": "Lit",
+                "value": 0.5
+               }
+              },
+              {
+               "type": "Gt",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "PickUnique",
+                 "source": {
+                  "type": "Filter",
+                  "source": {
+                   "type": "Neighbours",
+                   "node": {
+                    "type": "Var",
+                    "name": "field"
+                   },
+                   "edge_type": "has_pcell",
+                   "any_type": false
+                  },
+                  "var_name": "v",
+                  "predicate": {
+                   "type": "Eq",
+                   "a": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "v"
+                    },
+                    "key": "pidx"
+                   },
+                   "b": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "c"
+                    },
+                    "key": "pregion"
+                   }
+                  }
+                 }
+                },
+                "key": "panch_n"
+               },
+               "b": {
+                "type": "Lit",
+                "value": 0.5
+               }
+              }
+             ]
+            },
+            "then": {
+             "type": "Div",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "PickUnique",
+               "source": {
+                "type": "Filter",
+                "source": {
+                 "type": "Neighbours",
+                 "node": {
+                  "type": "Var",
+                  "name": "field"
+                 },
+                 "edge_type": "has_pcell",
+                 "any_type": false
+                },
+                "var_name": "v",
+                "predicate": {
+                 "type": "Eq",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "v"
+                  },
+                  "key": "pidx"
+                 },
+                 "b": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "c"
+                  },
+                  "key": "pregion"
+                 }
+                }
+               }
+              },
+              "key": "plam"
+             },
+             "b": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "PickUnique",
+                 "source": {
+                  "type": "Filter",
+                  "source": {
+                   "type": "Neighbours",
+                   "node": {
+                    "type": "Var",
+                    "name": "field"
+                   },
+                   "edge_type": "has_pcell",
+                   "any_type": false
+                  },
+                  "var_name": "v",
+                  "predicate": {
+                   "type": "Eq",
+                   "a": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "v"
+                    },
+                    "key": "pidx"
+                   },
+                   "b": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "c"
+                    },
+                    "key": "pregion"
+                   }
+                  }
+                 }
+                },
+                "key": "plam"
+               },
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "c"
+                },
+                "key": "pdist"
+               }
+              ]
+             }
+            },
+            "other": {
+             "type": "Lit",
+             "value": 1.0
+            }
+           },
+           {
+            "type": "Attr",
+            "node": {
+             "type": "PickUnique",
+             "source": {
+              "type": "Filter",
+              "source": {
+               "type": "Neighbours",
+               "node": {
+                "type": "Var",
+                "name": "field"
+               },
+               "edge_type": "has_pcell",
+               "any_type": false
+              },
+              "var_name": "v",
+              "predicate": {
+               "type": "Eq",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "v"
+                },
+                "key": "pidx"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "c"
+                },
+                "key": "pregion"
+               }
+              }
+             }
+            },
+            "key": "pslope_c_plum"
+           },
+           {
+            "type": "Minus",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "c"
+             },
+             "key": "pcol"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "PickUnique",
+              "source": {
+               "type": "Filter",
+               "source": {
+                "type": "Neighbours",
+                "node": {
+                 "type": "Var",
+                 "name": "field"
+                },
+                "edge_type": "has_pcell",
+                "any_type": false
+               },
+               "var_name": "v",
+               "predicate": {
+                "type": "Eq",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "v"
+                 },
+                 "key": "pidx"
+                },
+                "b": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "c"
+                 },
+                 "key": "pregion"
+                }
+               }
+              }
+             },
+             "key": "pcen_c"
+            }
+           }
+          ]
+         }
+        ]
+       },
+       "other": {
+        "type": "Attr",
+        "node": {
+         "type": "PickUnique",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "field"
+           },
+           "edge_type": "has_pcell",
+           "any_type": false
+          },
+          "var_name": "v",
+          "predicate": {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "v"
+            },
+            "key": "pidx"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "c"
+            },
+            "key": "pregion"
+           }
+          }
+         }
+        },
+        "key": "pmean_lum"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "c",
+     "ppaint_app",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gte",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "PickUnique",
+          "source": {
+           "type": "Filter",
+           "source": {
+            "type": "Neighbours",
+            "node": {
+             "type": "Var",
+             "name": "field"
+            },
+            "edge_type": "has_pcell",
+            "any_type": false
+           },
+           "var_name": "v",
+           "predicate": {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "v"
+             },
+             "key": "pidx"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "c"
+             },
+             "key": "pregion"
+            }
+           }
+          }
+         },
+         "key": "korder"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.5
+        }
+       },
+       "then": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "PickUnique",
+           "source": {
+            "type": "Filter",
+            "source": {
+             "type": "Neighbours",
+             "node": {
+              "type": "Var",
+              "name": "field"
+             },
+             "edge_type": "has_pcell",
+             "any_type": false
+            },
+            "var_name": "v",
+            "predicate": {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "v"
+              },
+              "key": "pidx"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "c"
+              },
+              "key": "pregion"
+             }
+            }
+           }
+          },
+          "key": "pmean_app"
+         },
+         {
+          "type": "Times",
+          "items": [
+           {
+            "type": "IfThenElse",
+            "cond": {
+             "type": "And",
+             "items": [
+              {
+               "type": "Gt",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "PickUnique",
+                 "source": {
+                  "type": "NodesOfType",
+                  "node_type": "PaintParams"
+                 }
+                },
+                "key": "pdecay"
+               },
+               "b": {
+                "type": "Lit",
+                "value": 0.5
+               }
+              },
+              {
+               "type": "Gt",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "PickUnique",
+                 "source": {
+                  "type": "Filter",
+                  "source": {
+                   "type": "Neighbours",
+                   "node": {
+                    "type": "Var",
+                    "name": "field"
+                   },
+                   "edge_type": "has_pcell",
+                   "any_type": false
+                  },
+                  "var_name": "v",
+                  "predicate": {
+                   "type": "Eq",
+                   "a": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "v"
+                    },
+                    "key": "pidx"
+                   },
+                   "b": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "c"
+                    },
+                    "key": "pregion"
+                   }
+                  }
+                 }
+                },
+                "key": "panch_n"
+               },
+               "b": {
+                "type": "Lit",
+                "value": 0.5
+               }
+              }
+             ]
+            },
+            "then": {
+             "type": "Div",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "PickUnique",
+               "source": {
+                "type": "Filter",
+                "source": {
+                 "type": "Neighbours",
+                 "node": {
+                  "type": "Var",
+                  "name": "field"
+                 },
+                 "edge_type": "has_pcell",
+                 "any_type": false
+                },
+                "var_name": "v",
+                "predicate": {
+                 "type": "Eq",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "v"
+                  },
+                  "key": "pidx"
+                 },
+                 "b": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "c"
+                  },
+                  "key": "pregion"
+                 }
+                }
+               }
+              },
+              "key": "plam"
+             },
+             "b": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "PickUnique",
+                 "source": {
+                  "type": "Filter",
+                  "source": {
+                   "type": "Neighbours",
+                   "node": {
+                    "type": "Var",
+                    "name": "field"
+                   },
+                   "edge_type": "has_pcell",
+                   "any_type": false
+                  },
+                  "var_name": "v",
+                  "predicate": {
+                   "type": "Eq",
+                   "a": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "v"
+                    },
+                    "key": "pidx"
+                   },
+                   "b": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "c"
+                    },
+                    "key": "pregion"
+                   }
+                  }
+                 }
+                },
+                "key": "plam"
+               },
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "c"
+                },
+                "key": "pdist"
+               }
+              ]
+             }
+            },
+            "other": {
+             "type": "Lit",
+             "value": 1.0
+            }
+           },
+           {
+            "type": "Attr",
+            "node": {
+             "type": "PickUnique",
+             "source": {
+              "type": "Filter",
+              "source": {
+               "type": "Neighbours",
+               "node": {
+                "type": "Var",
+                "name": "field"
+               },
+               "edge_type": "has_pcell",
+               "any_type": false
+              },
+              "var_name": "v",
+              "predicate": {
+               "type": "Eq",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "v"
+                },
+                "key": "pidx"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "c"
+                },
+                "key": "pregion"
+               }
+              }
+             }
+            },
+            "key": "pslope_r_papp"
+           },
+           {
+            "type": "Minus",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "c"
+             },
+             "key": "prow"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "PickUnique",
+              "source": {
+               "type": "Filter",
+               "source": {
+                "type": "Neighbours",
+                "node": {
+                 "type": "Var",
+                 "name": "field"
+                },
+                "edge_type": "has_pcell",
+                "any_type": false
+               },
+               "var_name": "v",
+               "predicate": {
+                "type": "Eq",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "v"
+                 },
+                 "key": "pidx"
+                },
+                "b": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "c"
+                 },
+                 "key": "pregion"
+                }
+               }
+              }
+             },
+             "key": "pcen_r"
+            }
+           }
+          ]
+         },
+         {
+          "type": "Times",
+          "items": [
+           {
+            "type": "IfThenElse",
+            "cond": {
+             "type": "And",
+             "items": [
+              {
+               "type": "Gt",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "PickUnique",
+                 "source": {
+                  "type": "NodesOfType",
+                  "node_type": "PaintParams"
+                 }
+                },
+                "key": "pdecay"
+               },
+               "b": {
+                "type": "Lit",
+                "value": 0.5
+               }
+              },
+              {
+               "type": "Gt",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "PickUnique",
+                 "source": {
+                  "type": "Filter",
+                  "source": {
+                   "type": "Neighbours",
+                   "node": {
+                    "type": "Var",
+                    "name": "field"
+                   },
+                   "edge_type": "has_pcell",
+                   "any_type": false
+                  },
+                  "var_name": "v",
+                  "predicate": {
+                   "type": "Eq",
+                   "a": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "v"
+                    },
+                    "key": "pidx"
+                   },
+                   "b": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "c"
+                    },
+                    "key": "pregion"
+                   }
+                  }
+                 }
+                },
+                "key": "panch_n"
+               },
+               "b": {
+                "type": "Lit",
+                "value": 0.5
+               }
+              }
+             ]
+            },
+            "then": {
+             "type": "Div",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "PickUnique",
+               "source": {
+                "type": "Filter",
+                "source": {
+                 "type": "Neighbours",
+                 "node": {
+                  "type": "Var",
+                  "name": "field"
+                 },
+                 "edge_type": "has_pcell",
+                 "any_type": false
+                },
+                "var_name": "v",
+                "predicate": {
+                 "type": "Eq",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "v"
+                  },
+                  "key": "pidx"
+                 },
+                 "b": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "c"
+                  },
+                  "key": "pregion"
+                 }
+                }
+               }
+              },
+              "key": "plam"
+             },
+             "b": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "PickUnique",
+                 "source": {
+                  "type": "Filter",
+                  "source": {
+                   "type": "Neighbours",
+                   "node": {
+                    "type": "Var",
+                    "name": "field"
+                   },
+                   "edge_type": "has_pcell",
+                   "any_type": false
+                  },
+                  "var_name": "v",
+                  "predicate": {
+                   "type": "Eq",
+                   "a": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "v"
+                    },
+                    "key": "pidx"
+                   },
+                   "b": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "c"
+                    },
+                    "key": "pregion"
+                   }
+                  }
+                 }
+                },
+                "key": "plam"
+               },
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "c"
+                },
+                "key": "pdist"
+               }
+              ]
+             }
+            },
+            "other": {
+             "type": "Lit",
+             "value": 1.0
+            }
+           },
+           {
+            "type": "Attr",
+            "node": {
+             "type": "PickUnique",
+             "source": {
+              "type": "Filter",
+              "source": {
+               "type": "Neighbours",
+               "node": {
+                "type": "Var",
+                "name": "field"
+               },
+               "edge_type": "has_pcell",
+               "any_type": false
+              },
+              "var_name": "v",
+              "predicate": {
+               "type": "Eq",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "v"
+                },
+                "key": "pidx"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "c"
+                },
+                "key": "pregion"
+               }
+              }
+             }
+            },
+            "key": "pslope_c_papp"
+           },
+           {
+            "type": "Minus",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "c"
+             },
+             "key": "pcol"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "PickUnique",
+              "source": {
+               "type": "Filter",
+               "source": {
+                "type": "Neighbours",
+                "node": {
+                 "type": "Var",
+                 "name": "field"
+                },
+                "edge_type": "has_pcell",
+                "any_type": false
+               },
+               "var_name": "v",
+               "predicate": {
+                "type": "Eq",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "v"
+                 },
+                 "key": "pidx"
+                },
+                "b": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "c"
+                 },
+                 "key": "pregion"
+                }
+               }
+              }
+             },
+             "key": "pcen_c"
+            }
+           }
+          ]
+         }
+        ]
+       },
+       "other": {
+        "type": "Attr",
+        "node": {
+         "type": "PickUnique",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "field"
+           },
+           "edge_type": "has_pcell",
+           "any_type": false
+          },
+          "var_name": "v",
+          "predicate": {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "v"
+            },
+            "key": "pidx"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "c"
+            },
+            "key": "pregion"
+           }
+          }
+         }
+        },
+        "key": "pmean_app"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "c",
+     "pkorder_seen",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "field"
+          },
+          "edge_type": "has_pcell",
+          "any_type": false
+         },
+         "var_name": "v",
+         "predicate": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "v"
+           },
+           "key": "pidx"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "c"
+           },
+           "key": "pregion"
+          }
+         }
+        }
+       },
+       "key": "korder"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "pt_resid",
+   "comment": "SUBTRACT. presid := |observed \u2212 painted| per channel, on OBSERVED cells only. A cell is REFUTED iff its residual reaches pquant/2 \u2014 the paint is then closer to a DIFFERENT representable value than to the observed one. pquant is the field's OWN integer alphabet step (in-frame is INTEGER; the paint is a cross-frame rendering and may be real). It is a RESOLUTION, not a tolerance: nothing is tuned, and a scale-invariance arm re-runs the whole battery at a \u00d74 alphabet.",
+   "match": [
+    [
+     "field",
+     "has_pcell",
+     "c"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "PaintParams"
+        }
+       },
+       "key": "paint"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "psensed"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "pblock_done"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     }
+    ]
+   },
+   "batch": true,
+   "effects": [
+    [
+     "set_attr",
+     "c",
+     "presid_lum",
+     {
+      "__term__": {
+       "type": "Abs",
+       "arg": {
+        "type": "Minus",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "c"
+         },
+         "key": "plum"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "c"
+         },
+         "key": "ppaint_lum"
+        }
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "c",
+     "presid_app",
+     {
+      "__term__": {
+       "type": "Abs",
+       "arg": {
+        "type": "Minus",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "c"
+         },
+         "key": "papp"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "c"
+         },
+         "key": "ppaint_app"
+        }
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "c",
+     "prefuted_cell",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gte",
+        "a": {
+         "type": "Max",
+         "items": [
+          {
+           "type": "Abs",
+           "arg": {
+            "type": "Minus",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "c"
+             },
+             "key": "plum"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "c"
+             },
+             "key": "ppaint_lum"
+            }
+           }
+          },
+          {
+           "type": "Abs",
+           "arg": {
+            "type": "Minus",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "c"
+             },
+             "key": "papp"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "c"
+             },
+             "key": "ppaint_app"
+            }
+           }
+          }
+         ]
+        },
+        "b": {
+         "type": "Div",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "field"
+          },
+          "key": "pquant"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 2.0
+         }
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": 1.0
+       },
+       "other": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "c",
+     "presid_order",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "pkorder_seen"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "pt_escalate",
+   "comment": "K FALLS OUT OF THE RESIDUAL, and this is the ONLY rule that assigns korder. The region's order steps 1 -> 2 iff ANY of its observed cells is REFUTED at the order the residual was actually computed at (the presid_order handshake \u2014 never an ordering assumption). Nothing in the seed, the adapter or the tests chooses k: a flat surface stops at 1, a vague pattern reaches 2, and a surface the ladder cannot express reaches 2 and STAYS refuted. Monotone and capped by the built ladder, so it terminates.",
+   "match": [
+    [
+     "field",
+     "has_pcell",
+     "h"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "PaintParams"
+        }
+       },
+       "key": "paint"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "h"
+       },
+       "key": "pidx"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "h"
+       },
+       "key": "pregion"
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "h"
+       },
+       "key": "korder"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "h"
+       },
+       "key": "pn"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "field"
+         },
+         "edge_type": "has_pcell",
+         "any_type": false
+        },
+        "var_name": "v",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "v"
+            },
+            "key": "pregion"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "h"
+            },
+            "key": "pregion"
+           }
+          },
+          {
+           "type": "Gt",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "v"
+            },
+            "key": "psensed"
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0.5
+           }
+          }
+         ]
+        }
+       },
+       "var_name": "v",
+       "predicate": {
+        "type": "Not",
+        "arg": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "v"
+          },
+          "key": "presid_order"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "h"
+          },
+          "key": "korder"
+         }
+        }
+       }
+      }
+     },
+     {
+      "type": "Exists",
+      "source": {
+       "type": "Filter",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "field"
+        },
+        "edge_type": "has_pcell",
+        "any_type": false
+       },
+       "var_name": "v",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "v"
+           },
+           "key": "pregion"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "h"
+           },
+           "key": "pregion"
+          }
+         },
+         {
+          "type": "Gt",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "v"
+           },
+           "key": "psensed"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0.5
+          }
+         }
+        ]
+       }
+      },
+      "var_name": "v",
+      "predicate": {
+       "type": "Gt",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "v"
+        },
+        "key": "prefuted_cell"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 0.5
+       }
+      }
+     }
+    ]
+   },
+   "batch": true,
+   "effects": [
+    [
+     "set_attr",
+     "h",
+     "korder",
+     2.0
+    ]
+   ]
+  },
+  {
+   "name": "pt_verdict",
+   "comment": "THE MECHANISM SAYS WHETHER IT IS WRONG. At the top of the built ladder, prefuted := 1 iff some observed cell is STILL refuted \u2014 the ladder EXHAUSTED and the paint does not describe this surface. presid_mean is the readout (a measured magnitude, never a threshold).",
+   "match": [
+    [
+     "field",
+     "has_pcell",
+     "h"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "PaintParams"
+        }
+       },
+       "key": "paint"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "h"
+       },
+       "key": "pidx"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "h"
+       },
+       "key": "pregion"
+      }
+     },
+     {
+      "type": "Gte",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "h"
+       },
+       "key": "korder"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "h"
+       },
+       "key": "pn"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "field"
+         },
+         "edge_type": "has_pcell",
+         "any_type": false
+        },
+        "var_name": "v",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "v"
+            },
+            "key": "pregion"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "h"
+            },
+            "key": "pregion"
+           }
+          },
+          {
+           "type": "Gt",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "v"
+            },
+            "key": "psensed"
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0.5
+           }
+          }
+         ]
+        }
+       },
+       "var_name": "v",
+       "predicate": {
+        "type": "Not",
+        "arg": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "v"
+          },
+          "key": "presid_order"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "h"
+          },
+          "key": "korder"
+         }
+        }
+       }
+      }
+     }
+    ]
+   },
+   "batch": true,
+   "effects": [
+    [
+     "set_attr",
+     "h",
+     "prefuted",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Exists",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "field"
+          },
+          "edge_type": "has_pcell",
+          "any_type": false
+         },
+         "var_name": "v",
+         "predicate": {
+          "type": "And",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "v"
+             },
+             "key": "pregion"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "h"
+             },
+             "key": "pregion"
+            }
+           },
+           {
+            "type": "Gt",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "v"
+             },
+             "key": "psensed"
+            },
+            "b": {
+             "type": "Lit",
+             "value": 0.5
+            }
+           }
+          ]
+         }
+        },
+        "var_name": "v",
+        "predicate": {
+         "type": "Gt",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "v"
+          },
+          "key": "prefuted_cell"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0.5
+         }
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": 1.0
+       },
+       "other": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "h",
+     "presid_mean",
+     {
+      "__term__": {
+       "type": "Div",
+       "a": {
+        "type": "Sum",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "field"
+          },
+          "edge_type": "has_pcell",
+          "any_type": false
+         },
+         "var_name": "v",
+         "predicate": {
+          "type": "And",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "v"
+             },
+             "key": "pregion"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "h"
+             },
+             "key": "pregion"
+            }
+           },
+           {
+            "type": "Gt",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "v"
+             },
+             "key": "psensed"
+            },
+            "b": {
+             "type": "Lit",
+             "value": 0.5
+            }
+           }
+          ]
+         }
+        },
+        "var_name": "v",
+        "value": {
+         "type": "Max",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "v"
+           },
+           "key": "presid_lum"
+          },
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "v"
+           },
+           "key": "presid_app"
+          }
+         ]
+        }
+       },
+       "b": {
+        "type": "Max",
+        "items": [
+         {
+          "type": "Count",
+          "source": {
+           "type": "Filter",
+           "source": {
+            "type": "Neighbours",
+            "node": {
+             "type": "Var",
+             "name": "field"
+            },
+            "edge_type": "has_pcell",
+            "any_type": false
+           },
+           "var_name": "v",
+           "predicate": {
+            "type": "And",
+            "items": [
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "v"
+               },
+               "key": "pregion"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "h"
+               },
+               "key": "pregion"
+              }
+             },
+             {
+              "type": "Gt",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "v"
+               },
+               "key": "psensed"
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0.5
+              }
+             }
+            ]
+           }
+          }
+         },
+         {
+          "type": "Lit",
+          "value": 1.0
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "h",
+     "pverdict_done",
+     1.0
+    ]
+   ]
+  }
+ ]
+}

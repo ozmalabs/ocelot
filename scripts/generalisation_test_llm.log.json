@@ -1,0 +1,541 @@
+{
+  "summary": {
+    "n_train_llm": 20,
+    "n_held_llm": 8,
+    "train_match_llm": 13,
+    "train_teach_llm": 15,
+    "held_match_llm": 4,
+    "held_would_call_llm": 4,
+    "wall_clock_s": 72.3445348739624,
+    "by_cat_llm": {
+      "same_shape": [
+        3,
+        1
+      ],
+      "novel_corruption": [
+        3,
+        2
+      ],
+      "ambiguous": [
+        2,
+        1
+      ]
+    },
+    "stub_baseline": {
+      "n_train": 105,
+      "train_match": 75,
+      "train_teach": 51,
+      "n_held": 30,
+      "held_match": 14,
+      "by_cat": {
+        "same_shape": [
+          12,
+          10
+        ],
+        "novel_corruption": [
+          12,
+          2
+        ],
+        "ambiguous": [
+          6,
+          2
+        ]
+      }
+    }
+  },
+  "training": [
+    {
+      "text": "{\"x\": 1}",
+      "expected_repr": "{'x': 1}",
+      "parsed_repr": "{'x': 1}",
+      "format_id": "json",
+      "corruption": "clean",
+      "matched": true,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "format=json: no ParsingStrategy for this shape (shape=mapping_kv1_seq0_balanced)"
+      ],
+      "shape": "clean_json"
+    },
+    {
+      "text": "{\"name\": \"alice\", \"age\": 30}",
+      "expected_repr": "{'name': 'alice', 'age': 30}",
+      "parsed_repr": "{'name': 'alice', 'age': 30}",
+      "format_id": "json",
+      "corruption": "clean",
+      "matched": true,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "format=json: no ParsingStrategy for this shape (shape=nested_kv2to3_seq1_balanced)"
+      ],
+      "shape": "clean_json"
+    },
+    {
+      "text": "k: 1\n",
+      "expected_repr": "{'k': 1}",
+      "parsed_repr": "{'k': 1}",
+      "format_id": "yaml",
+      "corruption": "clean",
+      "matched": true,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "format=yaml: no ParsingStrategy for this shape (shape=mapping_kv1_seq0_balanced)"
+      ],
+      "shape": "clean_yaml"
+    },
+    {
+      "text": "items:\n  - id: 1\n    name: a\n  - id: 2\n    name: b\n",
+      "expected_repr": "{'items': [{'id': 1, 'name': 'a'}, {'id': 2, 'name': 'b'}]}",
+      "parsed_repr": "{'items': [{'id': 1, 'name': 'a'}, {'id': 2, 'name': 'b'}]}",
+      "format_id": "yaml",
+      "corruption": "clean",
+      "matched": true,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "format=yaml: no ParsingStrategy for this shape (shape=nested_kv4plus_seq2to3_balanced)"
+      ],
+      "shape": "clean_yaml"
+    },
+    {
+      "text": "k = 1\n",
+      "expected_repr": "{'k': 1}",
+      "parsed_repr": "'k = 1'",
+      "format_id": "yaml",
+      "corruption": "clean",
+      "matched": false,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "shape": "clean_toml"
+    },
+    {
+      "text": "title = \"doc\"\n[meta]\nversion = \"1.0\"\n",
+      "expected_repr": "{'title': 'doc', 'meta': {'version': '1.0'}}",
+      "parsed_repr": "{'title': 'doc', 'meta': {'version': '1.0'}}",
+      "format_id": "toml",
+      "corruption": "clean",
+      "matched": true,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "format=toml: no ParsingStrategy for this shape (shape=mapping_kv2to3_seq0_balanced)"
+      ],
+      "shape": "clean_toml"
+    },
+    {
+      "text": "<r><a>1</a></r>",
+      "expected_repr": "{'a': 1}",
+      "parsed_repr": "{'r': {'a': '1'}}",
+      "format_id": "xml",
+      "corruption": "clean",
+      "matched": false,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "format=xml: no ParsingStrategy for this shape (shape=atomic_kv0_seq0_balanced_unquoted_d1_angles)"
+      ],
+      "shape": "clean_xml"
+    },
+    {
+      "text": "<lst><item><k>1</k></item><item><k>2</k></item></lst>",
+      "expected_repr": "[{'k': 1}, {'k': 2}]",
+      "parsed_repr": "[{'k': 1}, {'k': 2}]",
+      "format_id": "xml",
+      "corruption": "clean",
+      "matched": true,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "shape": "clean_xml"
+    },
+    {
+      "text": "a,b\n1,2\n",
+      "expected_repr": "[['a', 'b'], ['1', '2']]",
+      "parsed_repr": "[{'a': '1', 'b': '2'}]",
+      "format_id": "csv",
+      "corruption": "clean",
+      "matched": false,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "unknown format \u2014 cannot classify text (shape=sequence_kv0_seq2to3_balanced)"
+      ],
+      "shape": "clean_csv"
+    },
+    {
+      "text": "x,y,z\n1,2,3\n4,5,6\n",
+      "expected_repr": "[['x', 'y', 'z'], ['1', '2', '3'], ['4', '5', '6']]",
+      "parsed_repr": "[{'x': '1', 'y': '2', 'z': '3'}, {'x': '4', 'y': '5', 'z': '6'}]",
+      "format_id": "csv",
+      "corruption": "clean",
+      "matched": false,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "unknown format \u2014 cannot classify text (shape=sequence_kv0_seq4plus_balanced)"
+      ],
+      "shape": "clean_csv"
+    },
+    {
+      "text": "[s]\nk = 1\n",
+      "expected_repr": "{'s': {'k': '1'}}",
+      "parsed_repr": "{'s': {'k': 1}}",
+      "format_id": "ini",
+      "corruption": "clean",
+      "matched": false,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "format=json corruption=unknown_json_error: no ParsingStrategy for this shape (shape=mapping_kv1_seq0_balanced)"
+      ],
+      "shape": "clean_ini"
+    },
+    {
+      "text": "[server]\nhost = localhost\nport = 80\n",
+      "expected_repr": "{'server': {'host': 'localhost', 'port': '80'}}",
+      "parsed_repr": "{'server': {'host': 'localhost', 'port': 80}}",
+      "format_id": "toml",
+      "corruption": "clean",
+      "matched": false,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "format=json corruption=unknown_json_error: no ParsingStrategy for this shape (shape=mapping_kv2to3_seq0_balanced)"
+      ],
+      "shape": "clean_ini"
+    },
+    {
+      "text": "{\"a\": 1, \"b\": 2,}",
+      "expected_repr": "{'a': 1, 'b': 2}",
+      "parsed_repr": "{'a': 1, 'b': 2}",
+      "format_id": "json",
+      "corruption": "trailing_comma",
+      "matched": true,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "format=json corruption=trailing_comma: no ParsingStrategy for this shape (shape=nested_kv2to3_seq2to3_balanced)"
+      ],
+      "shape": "json_trailing"
+    },
+    {
+      "text": "{\"nums\": [1, 2,], \"ok\": true,}",
+      "expected_repr": "{'nums': [1, 2], 'ok': True}",
+      "parsed_repr": "{'nums': [1, 2], 'ok': True}",
+      "format_id": "json",
+      "corruption": "trailing_comma",
+      "matched": true,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "shape": "json_trailing"
+    },
+    {
+      "text": "{a: 1}",
+      "expected_repr": "{'a': 1}",
+      "parsed_repr": "{'a': 1}",
+      "format_id": "yaml",
+      "corruption": "clean",
+      "matched": true,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "shape": "json_unquoted"
+    },
+    {
+      "text": "{empty: null}",
+      "expected_repr": "{'empty': None}",
+      "parsed_repr": "{'empty': None}",
+      "format_id": "yaml",
+      "corruption": "clean",
+      "matched": true,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "shape": "json_unquoted"
+    },
+    {
+      "text": "[true, false",
+      "expected_repr": "[True, False]",
+      "parsed_repr": "[True, False]",
+      "format_id": "json",
+      "corruption": "unterminated_array",
+      "matched": true,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "format=json corruption=missing_brace: no ParsingStrategy for this shape (shape=sequence_kv0_seq1_unbalanced)"
+      ],
+      "shape": "json_missing"
+    },
+    {
+      "text": "{a: 1, b: 2",
+      "expected_repr": "{'a': 1, 'b': 2}",
+      "parsed_repr": "{'a': 1, 'b': 2}",
+      "format_id": "json",
+      "corruption": "unclosed_brace_unquoted_keys",
+      "matched": true,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "format=json corruption=unquoted_key: no ParsingStrategy for this shape (shape=nested_kv2to3_seq1_unbalanced)"
+      ],
+      "shape": "mixed_corr"
+    },
+    {
+      "text": "<r><a>1</a><b>2</c></r>",
+      "expected_repr": "None",
+      "parsed_repr": "{'r': {'a': '1', 'b': '2'}}",
+      "format_id": "xml",
+      "corruption": "mismatched_tag",
+      "matched": false,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "format=xml corruption=mismatched_tag: no ParsingStrategy for this shape (shape=atomic_kv0_seq0_balanced_unquoted_d1_angles)"
+      ],
+      "shape": "misnested"
+    },
+    {
+      "text": "",
+      "expected_repr": "None",
+      "parsed_repr": "None",
+      "format_id": "unknown",
+      "corruption": "not_structured_data",
+      "matched": true,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "format=empty corruption=empty: no ParsingStrategy for this shape (shape=atomic_kv0_seq0_balanced_unquoted_d0_flat)"
+      ],
+      "shape": "empty"
+    }
+  ],
+  "heldout": [
+    {
+      "text": "[100, 200, 300]",
+      "expected_repr": "[100, 200, 300]",
+      "parsed_repr": "None",
+      "format_id": "unknown",
+      "corruption": "unhandled",
+      "matched": false,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "format=json: no ParsingStrategy for this shape (shape=sequence_kv0_seq2to3_balanced)"
+      ],
+      "category": "same_shape",
+      "shape": "clean_json"
+    },
+    {
+      "text": "{\"completely\": \"different\"",
+      "expected_repr": "{'completely': 'different'}",
+      "parsed_repr": "None",
+      "format_id": "unknown",
+      "corruption": "unhandled",
+      "matched": false,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "format=json corruption=missing_brace: no ParsingStrategy for this shape (shape=mapping_kv1_seq0_unbalanced)"
+      ],
+      "category": "same_shape",
+      "shape": "json_missing"
+    },
+    {
+      "text": "{\"deep\": {\"deeper\": [1, 2, 3]}}",
+      "expected_repr": "{'deep': {'deeper': [1, 2, 3]}}",
+      "parsed_repr": "{'deep': {'deeper': [1, 2, 3]}}",
+      "format_id": "json",
+      "corruption": "clean",
+      "matched": true,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "same_shape",
+      "shape": "clean_json"
+    },
+    {
+      "text": "{\"a\": 0x1A}",
+      "expected_repr": "{'a': 26}",
+      "parsed_repr": "{'a': 26}",
+      "format_id": "yaml",
+      "corruption": "clean",
+      "matched": true,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "novel_corruption",
+      "shape": "json_hex"
+    },
+    {
+      "text": "user = {\"name\": \"x\"}\n",
+      "expected_repr": "{'user': {'name': 'x'}}",
+      "parsed_repr": "None",
+      "format_id": "unknown",
+      "corruption": "unhandled",
+      "matched": false,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "format=toml corruption=unknown_toml_error: no ParsingStrategy for this shape (shape=mapping_kv2to3_seq0_balanced)"
+      ],
+      "category": "novel_corruption",
+      "shape": "toml_json_inline"
+    },
+    {
+      "text": "<r><a/></r>",
+      "expected_repr": "{'a': None}",
+      "parsed_repr": "{'a': None}",
+      "format_id": "xml",
+      "corruption": "clean",
+      "matched": true,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "novel_corruption",
+      "shape": "xml_self_closing"
+    },
+    {
+      "text": "foo: 1\n",
+      "expected_repr": "{'foo': 1}",
+      "parsed_repr": "{'foo': 1}",
+      "format_id": "yaml",
+      "corruption": "clean",
+      "matched": true,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "ambiguous",
+      "shape": "yaml_or_text"
+    },
+    {
+      "text": "42",
+      "expected_repr": "42",
+      "parsed_repr": "None",
+      "format_id": "unknown",
+      "corruption": "unhandled",
+      "matched": false,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "format=json: no ParsingStrategy for this shape (shape=atomic_kv0_seq0_balanced_unquoted_d0_flat)"
+      ],
+      "category": "ambiguous",
+      "shape": "naked_number"
+    }
+  ],
+  "teacher_calls": [
+    {
+      "gap": "format=json: no ParsingStrategy for this shape (shape=mapping_kv1_seq0_balanced)",
+      "text_short": "'{\"x\": 1}'",
+      "elapsed_s": 4.33,
+      "format": "json",
+      "corruption": "clean",
+      "parsed_repr_short": "{'x': 1}",
+      "reasoning": "The text is a well-formed JSON object with a single key-value pair and no syntax errors."
+    },
+    {
+      "gap": "format=json: no ParsingStrategy for this shape (shape=nested_kv2to3_seq1_balanced)",
+      "text_short": "'{\"name\": \"alice\", \"age\": 30}'",
+      "elapsed_s": 4.17,
+      "format": "json",
+      "corruption": "clean",
+      "parsed_repr_short": "{'name': 'alice', 'age': 30}",
+      "reasoning": "The text is a well-formed JSON object with quoted keys, valid string and integer values, and no syntax errors."
+    },
+    {
+      "gap": "format=yaml: no ParsingStrategy for this shape (shape=mapping_kv1_seq0_balanced)",
+      "text_short": "'k: 1\\n'",
+      "elapsed_s": 4.31,
+      "format": "yaml",
+      "corruption": "clean",
+      "parsed_repr_short": "{'k': 1}",
+      "reasoning": "A single unquoted key followed by a colon, space, and integer value is valid YAML mapping syntax (and also valid TOML, but YAML is the simplest fit)."
+    },
+    {
+      "gap": "format=yaml: no ParsingStrategy for this shape (shape=nested_kv4plus_seq2to3_balanced)",
+      "text_short": "'items:\\n  - id: 1\\n    name: a\\n  - id: 2\\n    name: b\\n'",
+      "elapsed_s": 4.74,
+      "format": "yaml",
+      "corruption": "clean",
+      "parsed_repr_short": "{'items': [{'id': 1, 'name': 'a'}, {'id': 2, 'name': 'b'}]}",
+      "reasoning": "Indented block sequence under a mapping key with two-space nesting is valid, well-formed YAML."
+    },
+    {
+      "gap": "format=toml: no ParsingStrategy for this shape (shape=mapping_kv2to3_seq0_balanced)",
+      "text_short": "'title = \"doc\"\\n[meta]\\nversion = \"1.0\"\\n'",
+      "elapsed_s": 4.62,
+      "format": "toml",
+      "corruption": "clean",
+      "parsed_repr_short": "{'title': 'doc', 'meta': {'version': '1.0'}}",
+      "reasoning": "Bare key = value assignments with a [meta] table header are TOML syntax, and the document parses cleanly."
+    },
+    {
+      "gap": "format=xml: no ParsingStrategy for this shape (shape=atomic_kv0_seq0_balanced_unquoted_d1_angles)",
+      "text_short": "'<r><a>1</a></r>'",
+      "elapsed_s": 3.52,
+      "format": "xml",
+      "corruption": "clean",
+      "parsed_repr_short": "{'r': {'a': '1'}}",
+      "reasoning": "The text is a well-formed XML document with a root element <r> containing a child <a> whose text content is 1."
+    },
+    {
+      "gap": "unknown format \u2014 cannot classify text (shape=sequence_kv0_seq2to3_balanced)",
+      "text_short": "'a,b\\n1,2\\n'",
+      "elapsed_s": 4.45,
+      "format": "csv",
+      "corruption": "clean",
+      "parsed_repr_short": "[{'a': '1', 'b': '2'}]",
+      "reasoning": "Two comma-separated lines with a header row (a,b) and one data row (1,2) form a well-formed CSV with no corruption."
+    },
+    {
+      "gap": "unknown format \u2014 cannot classify text (shape=sequence_kv0_seq4plus_balanced)",
+      "text_short": "'x,y,z\\n1,2,3\\n4,5,6\\n'",
+      "elapsed_s": 4.83,
+      "format": "csv",
+      "corruption": "clean",
+      "parsed_repr_short": "[{'x': '1', 'y': '2', 'z': '3'}, {'x': '4', 'y': '5', 'z'...",
+      "reasoning": "A header row of three comma-separated names followed by two well-formed numeric rows is valid CSV with no structural issues."
+    },
+    {
+      "gap": "format=json corruption=unknown_json_error: no ParsingStrategy for this shape (shape=mapping_kv1_seq0_balanced)",
+      "text_short": "'[s]\\nk = 1\\n'",
+      "elapsed_s": 4.54,
+      "format": "ini",
+      "corruption": "clean",
+      "parsed_repr_short": "{'s': {'k': 1}}",
+      "reasoning": "A bracketed section header `[s]` followed by a `key = value` line is the canonical INI structure, with no syntax errors present."
+    },
+    {
+      "gap": "format=json corruption=unknown_json_error: no ParsingStrategy for this shape (shape=mapping_kv2to3_seq0_balanced)",
+      "text_short": "'[server]\\nhost = localhost\\nport = 80\\n'",
+      "elapsed_s": 4.83,
+      "format": "toml",
+      "corruption": "clean",
+      "parsed_repr_short": "{'server': {'host': 'localhost', 'port': 80}}",
+      "reasoning": "The bracketed [server] table header with key = value pairs and an unquoted bare-integer port is valid TOML syntax."
+    },
+    {
+      "gap": "format=json corruption=trailing_comma: no ParsingStrategy for this shape (shape=nested_kv2to3_seq2to3_balanced)",
+      "text_short": "'{\"a\": 1, \"b\": 2,}'",
+      "elapsed_s": 4.03,
+      "format": "json",
+      "corruption": "trailing_comma",
+      "parsed_repr_short": "{'a': 1, 'b': 2}",
+      "reasoning": "Valid JSON object syntax except for a trailing comma after the last key-value pair, which strict JSON parsers reject."
+    },
+    {
+      "gap": "format=json corruption=missing_brace: no ParsingStrategy for this shape (shape=sequence_kv0_seq1_unbalanced)",
+      "text_short": "'[true, false'",
+      "elapsed_s": 4.37,
+      "format": "json",
+      "corruption": "unterminated_array",
+      "parsed_repr_short": "[True, False]",
+      "reasoning": "Begins with a JSON array opening bracket and boolean literals but the array is never closed, so it is truncated JSON recoverable as [true, false]."
+    },
+    {
+      "gap": "format=json corruption=unquoted_key: no ParsingStrategy for this shape (shape=nested_kv2to3_seq1_unbalanced)",
+      "text_short": "'{a: 1, b: 2'",
+      "elapsed_s": 3.85,
+      "format": "json",
+      "corruption": "unclosed_brace_unquoted_keys",
+      "parsed_repr_short": "{'a': 1, 'b': 2}",
+      "reasoning": "JSON-style object with unquoted keys and a missing closing brace, recovering the two key-value pairs."
+    },
+    {
+      "gap": "format=xml corruption=mismatched_tag: no ParsingStrategy for this shape (shape=atomic_kv0_seq0_balanced_unquoted_d1_angles)",
+      "text_short": "'<r><a>1</a><b>2</c></r>'",
+      "elapsed_s": 5.62,
+      "format": "xml",
+      "corruption": "mismatched_tag",
+      "parsed_repr_short": "{'r': {'a': '1', 'b': '2'}}",
+      "reasoning": "The text is XML where element <b> is incorrectly closed with </c> instead of </b>, a mismatched-tag corruption."
+    },
+    {
+      "gap": "format=empty corruption=empty: no ParsingStrategy for this shape (shape=atomic_kv0_seq0_balanced_unquoted_d0_flat)",
+      "text_short": "''",
+      "elapsed_s": 10.1,
+      "format": "unknown",
+      "corruption": "not_structured_data",
+      "parsed_repr_short": "None",
+      "reasoning": "The text is free-form prose and markdown bullet lists describing deferred tools, agent types, and skills \u2014 it has no consistent serialization syntax (no JSON/YAML/TOML/XML/CSV/INI structure), so it cannot be parsed into a data structure."
+    }
+  ]
+}

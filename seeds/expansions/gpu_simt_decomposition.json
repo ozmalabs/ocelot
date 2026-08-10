@@ -1,0 +1,124 @@
+{
+  "id": "gpu_simt_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "GPU_streaming_multiprocessor",
+  "in_microtheory": "computer_architecture",
+  "description": "GPU SIMT execution decomposed. The SM (streaming multiprocessor) is the basic execution unit on NVIDIA GPUs; AMD calls it CU (compute unit); Intel calls it Xe-core. Threads are grouped into warps (NVIDIA, 32 threads) or wavefronts (AMD, 32-64). One instruction executes across all threads in a warp simultaneously — SIMD with branch divergence handling. The full GPU has dozens to hundreds of SMs running thousands of threads. Memory hierarchy: registers → shared memory → L1 → L2 → HBM. CUDA / ROCm / Metal sit on top.",
+  "sub_mechanisms": [
+    {
+      "name": "warp_wavefront",
+      "definition": "Group of 32 (NVIDIA) or 32-64 (AMD) threads that execute the same instruction at the same time across different lanes. The atomic unit of GPU instruction issue.",
+      "why": "Hardware shares one program counter and instruction decoder across the warp. Per-instruction overhead is amortised across 32-64 threads. The 32-thread choice on NVIDIA matches typical SIMD widths; larger wavefronts (older AMD) had higher per-warp overhead.",
+      "category": "gpu_mechanism"
+    },
+    {
+      "name": "thread_block_cooperative",
+      "definition": "Group of warps (up to 32 warps = 1024 threads on modern NVIDIA) scheduled together on one SM. Share fast shared memory + can synchronise via __syncthreads.",
+      "why": "Cooperative parallelism unit. Threads within a block can synchronise + share data via shared memory; threads in different blocks cannot (without going through global memory). The block is the granularity of cooperation.",
+      "category": "gpu_mechanism"
+    },
+    {
+      "name": "branch_divergence",
+      "definition": "When threads in a warp take different branches: hardware executes both paths, masking out threads not taking each path. Serialises divergent paths.",
+      "why": "SIMT's compromise: same instruction across all threads in the warp. Divergence costs throughput proportional to the number of distinct paths. Highly divergent code (e.g., per-thread branch on random data) collapses GPU throughput.",
+      "category": "gpu_mechanism"
+    },
+    {
+      "name": "warp_scheduler",
+      "definition": "Each SM has 2-4 warp schedulers. Each cycle, picks ready warps and issues their next instruction to functional units.",
+      "why": "Many warps in flight per SM (up to 64). Schedulers swap warps to hide latency: while one warp waits for memory, another warp issues. Effective IPC depends on having enough independent warps available — 'occupancy'.",
+      "category": "gpu_mechanism"
+    },
+    {
+      "name": "occupancy_metric",
+      "definition": "Fraction of maximum possible warps per SM that are actually resident. Limited by register usage, shared memory, thread block size.",
+      "why": "Higher occupancy = more warps available for latency hiding. But high register/shared memory usage per thread reduces achievable occupancy. CUDA tuning is often about balancing occupancy vs per-thread resources.",
+      "category": "gpu_mechanism"
+    },
+    {
+      "name": "shared_memory_scratchpad",
+      "definition": "Per-SM fast memory (typically 48-128 KB), accessible by all threads in a block. Programmer-managed (not a cache).",
+      "why": "Allows explicit data sharing between threads in a block at register-like speed. Used for matrix tile blocking, reduction, prefix-sum implementations. The performance of well-tuned CUDA kernels heavily relies on shared memory.",
+      "category": "gpu_mechanism"
+    },
+    {
+      "name": "register_file_per_SM",
+      "definition": "Each SM has ~256 KB of register file (e.g., 65536 32-bit registers on NVIDIA Ampere). Divided among the resident warps.",
+      "why": "Larger register file = more warps can be resident = more latency hiding. But individual threads using many registers reduces how many warps fit. The register/warp trade is a fundamental GPU performance dial.",
+      "category": "gpu_mechanism"
+    },
+    {
+      "name": "L1_unified_cache",
+      "definition": "Modern GPUs have a unified L1 / shared memory pool, configurable as either. ~128 KB per SM typical.",
+      "why": "Programmer chooses: more shared memory (explicit blocking) or more L1 (transparent caching). For uniform-access kernels, L1 wins; for tiled algorithms, shared memory wins. Volta+ introduced this configurability.",
+      "category": "gpu_mechanism"
+    },
+    {
+      "name": "L2_cache_shared",
+      "definition": "Last-level cache shared across all SMs. Modern GPUs: 40-60 MB. Higher latency than L1 but acts as a coherence point.",
+      "why": "Cross-SM communication goes through L2 (and below, HBM). Atomics between SMs hit L2. Workloads with cross-SM data sharing depend on L2 bandwidth.",
+      "category": "gpu_mechanism"
+    },
+    {
+      "name": "HBM_memory",
+      "definition": "High Bandwidth Memory on the same package as the GPU. NVIDIA H100: 80 GB HBM3 at 3.35 TB/s. AMD MI300: 192 GB HBM3 at 5.3 TB/s.",
+      "why": "GPUs are bandwidth-hungry — thousands of threads each issuing memory accesses. HBM's stacked architecture + 1024+ bit width delivers the bandwidth. CPUs (with narrower DRAM channels) max out at ~500 GB/s; GPUs reach multi-TB/s.",
+      "category": "gpu_mechanism"
+    },
+    {
+      "name": "memory_coalescing",
+      "definition": "When threads in a warp access consecutive memory addresses, the hardware combines them into a single memory transaction.",
+      "why": "Scattered per-thread accesses (each at a random address) require 32 separate transactions. Coalesced accesses use 1. The 32x throughput gain is why CUDA kernels obsess over access patterns: 'strided' or 'random' kernels run at <10% of coalesced throughput.",
+      "category": "gpu_mechanism"
+    },
+    {
+      "name": "tensor_core_matrix_units",
+      "definition": "Dedicated matrix-multiply units in modern GPUs. NVIDIA Volta+: 4x4x4 matrix-mul-add per cycle per Tensor Core; many cores per SM.",
+      "why": "ML workloads dominated by matmul. Tensor cores do 64+ FLOPs per cycle vs ~32 for general SIMD. Specialised hardware delivers 5-10x speedup on dense matrix work. Critical for transformer inference + training.",
+      "category": "gpu_mechanism"
+    },
+    {
+      "name": "host_device_data_transfer",
+      "definition": "GPU is a separate device. CPU-GPU communication happens over PCIe (typically 16 GB/s PCIe 4.0, 32 GB/s PCIe 5.0). Much slower than GPU memory bandwidth.",
+      "why": "Data movement between CPU and GPU is often the bottleneck. Modern systems use Unified Memory (page-fault-on-access transparent migration) or explicit transfer. NVLink (NVIDIA proprietary) offers 600 GB/s GPU-to-GPU.",
+      "category": "gpu_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "simt_amortises_instruction_overhead_across_warp",
+      "if": ["32 threads share one instruction decode + scheduler"],
+      "then": ["per-instruction overhead is amortised across the warp"],
+      "why": "CPU cores spend significant silicon on per-instruction overhead (decode, schedule, register read). GPUs share this across 32 threads — the overhead per thread is 1/32. The width times throughput is the GPU's perf-per-area advantage on data-parallel workloads.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "divergence_serialises_warp_throughput",
+      "if": ["threads in a warp take different branches"],
+      "then": ["throughput is divided across the divergent paths"],
+      "why": "SIMT executes one instruction per cycle per warp. Divergence requires executing both paths in sequence with masking. N-way divergence costs Nx throughput. The reason GPU code rewards uniform branching and avoids per-thread branching.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "occupancy_determines_latency_hiding",
+      "if": ["multiple warps are resident on an SM"],
+      "then": ["the scheduler can swap warps to hide stalled-warp latency"],
+      "why": "Memory latency is high on GPUs (~600 cycles). With enough resident warps, the scheduler always has ready warps to issue while others wait. Low occupancy = idle SMs during memory stalls.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "memory_coalescing_critical_for_bandwidth",
+      "if": ["threads in a warp access consecutive addresses"],
+      "then": ["one memory transaction serves all 32 threads"],
+      "why": "Coalesced access: 1 transaction per warp. Scattered access: up to 32 transactions per warp. The 32x bandwidth difference makes coalescing the single most impactful GPU code optimisation. Achieved by ensuring warp threads' indices into arrays are contiguous.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "shared_memory_explicit_blocking_beats_l1",
+      "if": ["a kernel can be expressed as tile/block computations"],
+      "then": ["explicit shared memory beats L1 caching"],
+      "why": "Programmer-managed shared memory has no eviction (predictable), explicit prefetch, full reuse across the block. L1 caching is transparent but evicts unpredictably. Tiled matmul kernels obsessively use shared memory; the perf gap vs naive (L1-only) is 5-10x.",
+      "soundness_category": "cost_equivalence"
+    }
+  ]
+}

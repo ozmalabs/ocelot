@@ -1,0 +1,472 @@
+{
+ "id": "speech_act_classify",
+ "version": "1.0.0",
+ "depends_on": [
+  "intent"
+ ],
+ "capability_keys": [
+  "classify_speech_act",
+  "speech_act"
+ ],
+ "description": "Wave-4 blind-spot migration: the speech-act KIND decision (question / instruction / statement) moves from Python (domains/comprehend_text.py::_classify_kind, an if/else ladder) into graph rules the agent can see, experiment on and repair. The adapter writes ONLY the classification SIGNALS onto the inbound Message -- data the parse layer already computed, no decision: sak_pending=1.0 (signals present), sak_ends_q (politeness-stripped text ends with '?'), sak_first_role / sak_first_pos (the first parsed frame element's role/pos). THESE rules then DECIDE the kind and mint it as sak_kind, mirroring _classify_kind's ladder exactly (parity-gated byte-for-byte against tests/fixtures/speech_act_parity/speech_act.json): QUESTION iff ends-? OR subject-aux inversion (first element a function copula/auxiliary) OR a clause-leading wh-focus; else INSTRUCTION iff the first element is a bare content verb; else STATEMENT. Precedence is encoded in the guards (the instruction/statement rules carry Not(<question signals>)), so the three rules are order-independent within one run_rules pass; Eq(sak_kind, null) is the mint-once fixpoint guard. Python reads sak_kind back (a mechanical read) as the general path's kind; comp_kind stays the FINAL comprehension record (the still-Python intercepts -- satisfiable / self-identity / rule-name promotion / table fastpath -- may override it, exactly as before; those are ledger items for later waves). The rules deliberately mint sak_kind, NOT comp_kind: minting comp_kind directly in the pre-comprehension pass would expose a PROVISIONAL kind to the downstream comp_kind-keyed rules (comprehend_instruction etc.) mid-turn -- e.g. 'Tell me about the moon.' is ladder-instruction but final-question -- and that would be a behavior change this wave forbids. EXECUTION (WorldAdapter._graph_kind_for): the agent's HELD copies of these rules are exported from its live engine and run in an ISOLATED engine pass over the live Message's signals (not a full comprehend() fixpoint -- a full pass before the comp_* parse facts exist lets mention-keyed rules fire on a half-ingested turn; measured on the elaboration serve-vs-anaphor race). Held-copy execution is what makes the decision self-repairable: an experiment/adopt edit to a held sak rule changes the live classification with no Python change. Single-anchor match on agent -received-> m (the sd 'agent observed obs' pattern).",
+ "nodes": [],
+ "edges": [],
+ "productions": [],
+ "rules": [
+  {
+   "name": "sak_kind_question",
+   "match": [
+    [
+     "agent",
+     "received",
+     "m"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "m"
+       },
+       "key": "sak_pending"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "m"
+       },
+       "key": "sak_kind"
+      },
+      "b": {
+       "type": "Lit",
+       "value": null
+      }
+     },
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "m"
+         },
+         "key": "sak_ends_q"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "m"
+           },
+           "key": "sak_first_role"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "function"
+          }
+         },
+         {
+          "type": "In",
+          "member": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "m"
+           },
+           "key": "sak_first_pos"
+          },
+          "container": {
+           "type": "Lit",
+           "value": [
+            "copula",
+            "auxiliary",
+            "aux"
+           ]
+          }
+         }
+        ]
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "m"
+         },
+         "key": "sak_first_role"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "focus"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "m",
+     "sak_kind",
+     "question"
+    ]
+   ]
+  },
+  {
+   "name": "sak_kind_instruction",
+   "match": [
+    [
+     "agent",
+     "received",
+     "m"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "m"
+       },
+       "key": "sak_pending"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "m"
+       },
+       "key": "sak_kind"
+      },
+      "b": {
+       "type": "Lit",
+       "value": null
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Or",
+       "items": [
+        {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "m"
+          },
+          "key": "sak_ends_q"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1.0
+         }
+        },
+        {
+         "type": "And",
+         "items": [
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "m"
+            },
+            "key": "sak_first_role"
+           },
+           "b": {
+            "type": "Lit",
+            "value": "function"
+           }
+          },
+          {
+           "type": "In",
+           "member": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "m"
+            },
+            "key": "sak_first_pos"
+           },
+           "container": {
+            "type": "Lit",
+            "value": [
+             "copula",
+             "auxiliary",
+             "aux"
+            ]
+           }
+          }
+         ]
+        },
+        {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "m"
+          },
+          "key": "sak_first_role"
+         },
+         "b": {
+          "type": "Lit",
+          "value": "focus"
+         }
+        }
+       ]
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "m"
+       },
+       "key": "sak_first_role"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "content"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "m"
+       },
+       "key": "sak_first_pos"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "verb"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "m",
+     "sak_kind",
+     "instruction"
+    ]
+   ]
+  },
+  {
+   "name": "sak_kind_statement",
+   "match": [
+    [
+     "agent",
+     "received",
+     "m"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "m"
+       },
+       "key": "sak_pending"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "m"
+       },
+       "key": "sak_kind"
+      },
+      "b": {
+       "type": "Lit",
+       "value": null
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Or",
+       "items": [
+        {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "m"
+          },
+          "key": "sak_ends_q"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1.0
+         }
+        },
+        {
+         "type": "And",
+         "items": [
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "m"
+            },
+            "key": "sak_first_role"
+           },
+           "b": {
+            "type": "Lit",
+            "value": "function"
+           }
+          },
+          {
+           "type": "In",
+           "member": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "m"
+            },
+            "key": "sak_first_pos"
+           },
+           "container": {
+            "type": "Lit",
+            "value": [
+             "copula",
+             "auxiliary",
+             "aux"
+            ]
+           }
+          }
+         ]
+        },
+        {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "m"
+          },
+          "key": "sak_first_role"
+         },
+         "b": {
+          "type": "Lit",
+          "value": "focus"
+         }
+        }
+       ]
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "And",
+       "items": [
+        {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "m"
+          },
+          "key": "sak_first_role"
+         },
+         "b": {
+          "type": "Lit",
+          "value": "content"
+         }
+        },
+        {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "m"
+          },
+          "key": "sak_first_pos"
+         },
+         "b": {
+          "type": "Lit",
+          "value": "verb"
+         }
+        }
+       ]
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "m",
+     "sak_kind",
+     "statement"
+    ]
+   ]
+  }
+ ]
+}

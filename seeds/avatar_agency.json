@@ -1,0 +1,58 @@
+{
+ "id": "avatar_agency",
+ "version": "1.0.0",
+ "depends_on": [
+  "region_grouping",
+  "shape_sense",
+  "arc3_game",
+  "autonomy"
+ ],
+ "description": "Graph-native AVATAR DISCOVERY (jabberwock's design): the figure that TRANSLATES AS A RIGID BODY when the agent acts is the avatar. Cross-frame region_correspondence (count preserved + centroid shift) -> avatar_agency (controls edge + produces_delta motor edges, reused by the routing emit). Replaces the Python agency probe. The adapter mints ChangeEvent/Action nodes + Game.frame (mechanical ingest) and keeps prior-frame Regions. [RETIRED: avatar_vote/confirm/bounds moved to the game-blind agency seed; the avatar ROLE binding is in arc3_game (avatar_role_bind).]",
+ "microtheory": {
+  "name": "avatar_agency",
+  "description": "act -> the rigid mover is the avatar (controls); the field redraws (count changes) so it never corresponds; learned produces_delta = motor calibration reused by routing."
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [
+  {
+   "provenance": "seed:avatar_agency:corresponds_to-0",
+   "src": {
+    "type": "Region",
+    "var": "s"
+   },
+   "edge_type": "corresponds_to",
+   "tgt": {
+    "type": "Region",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:avatar_agency:controls-1",
+   "src": {
+    "type": "WorldInstance",
+    "var": "s"
+   },
+   "edge_type": "controls",
+   "tgt": {
+    "type": "Region",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:avatar_agency:produces_delta-2",
+   "src": {
+    "type": "WorldInstance",
+    "var": "s"
+   },
+   "edge_type": "produces_delta",
+   "tgt": {
+    "type": "MotorEffect",
+    "var": "t"
+   }
+  }
+ ],
+ "concepts": [],
+ "rules": [],
+ "goals": []
+}

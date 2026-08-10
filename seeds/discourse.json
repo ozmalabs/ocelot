@@ -1,0 +1,39 @@
+{
+  "id": "discourse",
+  "version": "1.0.0",
+  "depends_on": [],
+  "description": "The discourse rules as GRAPH DATA (the jabberwock's spec: 'control words are read by seeded discourse rules into control-structure nodes'). Two tables of NODES — the connective->plan-node mapping and the preposition->role mapping — plus bind_role as ONE seeded RULE. The connectives/mappings/binding live here as graph data, NOT hardcoded in a Python parser: adding a connective, a role-preposition, or changing the binding is adding/editing a node, never editing code. A generic interpreter reads these tables (the verb->primitive map already lives on the enact seed's OperationPrimitive `verbs` attr).",
+  "nodes": [
+    {"local_id": 0, "type": "DiscourseRule", "attrs": {"marker": "then", "plan_kind": "Seq", "comment": "X then Y -> Seq([X,Y]); satisfaction = sat(last)"}},
+    {"local_id": 1, "type": "DiscourseRule", "attrs": {"marker": "and then", "plan_kind": "Seq"}},
+    {"local_id": 2, "type": "DiscourseRule", "attrs": {"marker": ",", "plan_kind": "Seq"}},
+    {"local_id": 3, "type": "DiscourseRule", "attrs": {"marker": "until", "plan_kind": "Fix", "guard_slot": "after", "comment": "(repeatedly) B until P -> Fix(guard=P, body=B); satisfaction = guard"}},
+    {"local_id": 4, "type": "DiscourseRule", "attrs": {"marker": "while", "plan_kind": "While", "cond_slot": "after", "comment": "while P, B -> Fix(NOT P, B)"}},
+    {"local_id": 5, "type": "DiscourseRule", "attrs": {"marker": "if", "plan_kind": "Branch", "cond_slot": "between_if_then", "comment": "if P then X [else Y] -> Branch(P,X,Y); satisfaction = sat(taken)"}},
+    {"local_id": 6, "type": "RolePreposition", "attrs": {"marker": "to", "role": "goal"}},
+    {"local_id": 7, "type": "RolePreposition", "attrs": {"marker": "onto", "role": "goal"}},
+    {"local_id": 8, "type": "RolePreposition", "attrs": {"marker": "into", "role": "goal"}},
+    {"local_id": 9, "type": "RolePreposition", "attrs": {"marker": "from", "role": "source"}},
+    {"local_id": 10, "type": "RolePreposition", "attrs": {"marker": "with", "role": "instrument"}},
+    {"local_id": 11, "type": "RolePreposition", "attrs": {"marker": "on", "role": "goal"}}
+  ],
+  "edges": [],
+  "productions": [
+    {"provenance": "seed:discourse:act-has-filler", "src": {"type": "PlanAct", "var": "a"}, "edge_type": "has_filler", "tgt": {"type": "RoleFiller", "var": "rf"}},
+    {"provenance": "seed:discourse:filler-mention", "src": {"type": "RoleFiller", "var": "rf"}, "edge_type": "mention", "tgt": {"type": "Mention", "var": "m"}},
+    {"provenance": "seed:discourse:filler-filled-by", "src": {"type": "RoleFiller", "var": "rf"}, "edge_type": "filled_by", "tgt": {"type": "Entity", "var": "e"}}
+  ],
+  "rules": [
+    {
+      "name": "bind_role",
+      "comment": "ONE seeded rule (the jabberwock's spec): bind each role-filler to the entity its Mention refers_to. This REUSES the agent's existing referent-resolution (Mention -> refers_to -> the resolved entity, the selectional-match family). The role rides on the RoleFiller node; the binding is rf -filled_by-> e. No per-domain code, no Python parser branch — a join over refers_to.",
+      "match": [
+        ["rf", "mention", "m"],
+        ["m", "refers_to", "e"]
+      ],
+      "where": null,
+      "effects": [["add_edge", "rf", "filled_by", "e"]]
+    }
+  ],
+  "concepts": []
+}

@@ -1,0 +1,11 @@
+{
+  "id": "discriminative_invention",
+  "version": "0.1.0",
+  "depends_on": ["phonology"],
+  "description": "Configuration the agent boots with for discriminative feature invention: the dials it OWNS and tunes via its graph-resident rules. min_separation is the Fisher bar a band must clear (between-word mean gap vs within-word spread) before the agent mints a feature there; over_generation_cap is how many features added in one cycle counts as over-generating; bar_increment is how much the agent tightens min_separation when it over-generates. Parameters live here, not in Python — retuning or adding a dial = editing this JSON, no code change.",
+  "discriminative_root": {
+    "min_separation": 1.0,
+    "over_generation_cap": 30,
+    "bar_increment": 0.5
+  }
+}

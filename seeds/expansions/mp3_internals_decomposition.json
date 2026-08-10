@@ -1,0 +1,111 @@
+{
+  "id": "mp3_internals_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "MP3",
+  "in_microtheory": "audio_coding_theory",
+  "description": "MP3's specific internals decomposed. MP3 (MPEG-1/2 Audio Layer III) is the historical pioneer of perceptual audio coding. Its hybrid filterbank (32-band polyphase + MDCT) and psychoacoustic model 2 set the template that AAC later refined. Understanding MP3's pieces — frame structure, bit reservoir, scale factors, Huffman tables — reveals where each design decision came from.",
+  "sub_mechanisms": [
+    {
+      "name": "mp3_frame_structure",
+      "definition": "A frame contains 1152 PCM samples (at 44.1 kHz, ~26 ms). Layer III divides this into two 576-sample granules; each granule has its own bit budget.",
+      "why": "576-sample granules align with the polyphase + MDCT structure (32 bands × 18-pt MDCT = 576). Two granules per frame let the encoder allocate bits between them for transient handling.",
+      "category": "mp3_mechanism"
+    },
+    {
+      "name": "mp3_frame_header",
+      "definition": "32 bits at the start of every frame: sync word (11 bits all 1), MPEG version, layer, protection bit, bitrate index, sampling rate, padding, private bit, channel mode, mode extension, copyright, original, emphasis.",
+      "why": "Self-synchronising bitstream: a decoder can find any frame by scanning for the sync word. The header lets the decoder know everything about the frame's coding parameters without external metadata.",
+      "category": "mp3_mechanism"
+    },
+    {
+      "name": "polyphase_32_band",
+      "definition": "32-band polyphase filterbank: input PCM → 32 subbands each at 1/32 sampling rate. Each subband captures ~700 Hz of bandwidth at 44.1 kHz input.",
+      "why": "Approximates critical-band structure of hearing. Critical bands are roughly 100-200 Hz wide at low frequencies, ~1 kHz wide at high frequencies; 32 equal bands is a compromise — finer than critical bands at high frequencies but coarser at low frequencies.",
+      "category": "mp3_mechanism"
+    },
+    {
+      "name": "mp3_mdct_within_subbands",
+      "definition": "After polyphase: 18-point MDCT (long block) or 6-point MDCT (short block, 3 sets) per subband. Total: 576 spectral coefficients per granule.",
+      "why": "Polyphase alone has poor frequency resolution at low frequencies. MDCT within each subband provides the fine resolution needed for accurate masking-based bit allocation. Trade-off: hybrid design is more complex than pure MDCT but works within MP3's frame structure.",
+      "category": "mp3_mechanism"
+    },
+    {
+      "name": "mp3_psychoacoustic_model_2",
+      "definition": "MP3's psychoacoustic model: identifies tonal vs noise-like components, computes per-band signal-to-mask ratio (SMR), provides per-band bit-allocation hints.",
+      "why": "Model 1 (simpler) and Model 2 (more accurate) are both standardised. Model 2 distinguishes tonal/noise components for separate masking treatment — tonal components mask more broadly than noisy. Encoders nearly always use Model 2.",
+      "category": "mp3_mechanism"
+    },
+    {
+      "name": "mp3_scale_factors",
+      "definition": "Per-band gain values applied before quantisation. The bitstream sends scale factors + quantised coefficients; decoder reconstructs by dequantising and applying inverse scale factors.",
+      "why": "Lets the encoder boost weak bands above the quantiser's noise floor before quantising. Same band shows up in different frames with different scale factors as content changes. Essential for adaptive bit allocation.",
+      "category": "mp3_mechanism"
+    },
+    {
+      "name": "mp3_huffman_tables",
+      "definition": "32 pre-defined Huffman tables for quantised coefficient coding. Encoder picks the best table per region of the spectrum.",
+      "why": "Different regions have different coefficient distributions. Pre-defined tables avoid per-frame signalling. Encoder picks the optimal table by R-D cost.",
+      "category": "mp3_mechanism"
+    },
+    {
+      "name": "mp3_huffman_regions",
+      "definition": "Spectrum divided into 3 regions: 'big_values' (large magnitudes, coded with full Huffman), 'count1' (small magnitudes coded with run-length + Huffman), 'zero' (all-zero trailing portion).",
+      "why": "Different coefficient ranges have different statistics. The three-region scheme matches MP3's typical post-quantisation distribution: lots of small values trailing into zeros, with a few large values at low frequencies.",
+      "category": "mp3_mechanism"
+    },
+    {
+      "name": "mp3_bit_reservoir",
+      "definition": "MP3 allows frames to borrow bits from a reservoir built up by previous frames that needed fewer bits than the average. The header's 'main_data_begin' offset points back to where the actual data starts (which may be in a previous frame).",
+      "why": "Transients need more bits than steady-state content. Bit reservoir lets the encoder save bits on easy frames and spend them on hard ones, achieving consistent quality at constant average bitrate.",
+      "category": "mp3_mechanism"
+    },
+    {
+      "name": "mp3_main_data_begin",
+      "definition": "9-bit field in the header pointing back up to 512 bytes into previous frames. The actual data for THIS frame starts at this offset.",
+      "why": "Implements the bit reservoir at bitstream level. Decoder must remember the last 512 bytes; the main_data_begin tells it where the current frame's data starts in that buffer. Looks weird in hex dumps but is the bit-reservoir mechanism.",
+      "category": "mp3_mechanism"
+    },
+    {
+      "name": "mp3_joint_stereo_modes",
+      "definition": "MP3 supports M/S stereo and intensity stereo. Mode signalled per frame; intensity stereo can be enabled above a per-frame frequency threshold.",
+      "why": "Stereo content has channel correlation; M/S exploits it. Intensity stereo extends the saving to high frequencies (where phase doesn't matter for localisation) at significant additional bit saving.",
+      "category": "mp3_mechanism"
+    },
+    {
+      "name": "mp3_typical_bitrates",
+      "definition": "128 kbps was the de facto consumer quality default. 192-256 kbps for higher quality. 320 kbps is MP3's max constant bitrate. 32 kbps and below are mono / speech-quality.",
+      "why": "128 kbps was the 1990s sweet spot: just-acceptable for music on dial-up + early broadband. Modern listening typically uses 192-256 kbps for transparency. MP3 quality plateaus around 256 kbps; AAC and Opus exceed it from there.",
+      "category": "mp3_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "hybrid_filterbank_compromised_complexity_for_quality",
+      "if": ["polyphase + MDCT is used instead of pure MDCT"],
+      "then": ["frequency resolution is finer than polyphase alone but compute is higher"],
+      "why": "Polyphase alone has poor low-frequency resolution; adding MDCT within each subband fixes this. Pure MDCT (AAC's choice) is cleaner but breaks compatibility with MPEG-1's layer structure. MP3's hybrid was inherited; AAC's clean MDCT was the redesign.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "bit_reservoir_smooths_quality_under_constant_bitrate",
+      "if": ["frames have variable complexity but the bitrate must be constant"],
+      "then": ["bit reservoir borrows from easy frames to fund hard ones"],
+      "why": "Transients need more bits; steady-state needs fewer. Constant per-frame allocation either over-spends on steady-state or under-spends on transients. Reservoir averages the demand, achieving consistent quality at constant average bitrate.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "scale_factors_enable_adaptive_quantisation",
+      "if": ["different bands need different effective bit depth"],
+      "then": ["per-band scale factors boost weak bands above noise floor"],
+      "why": "Without scale factors, a weak band gets the same quantisation step as a strong band — wastes bits on the weak band's noise. Scaling lets the same quantiser deliver appropriate effective precision per band.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "frame_self_synchronisation_enables_radio_streaming",
+      "if": ["each frame's header carries a sync word"],
+      "then": ["decoders can resync mid-stream after error or seek"],
+      "why": "Broadcast / streaming may join a stream in progress; sync word lets the decoder find the next frame boundary. The 11-bit all-ones pattern is designed to be unique within MP3 data. The bitstream's resilience to packet loss comes from this.",
+      "soundness_category": "referential_transparency"
+    }
+  ]
+}

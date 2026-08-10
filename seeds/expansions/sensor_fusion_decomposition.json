@@ -1,0 +1,118 @@
+{
+  "id": "sensor_fusion_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "Kalman_filter",
+  "in_microtheory": "embedded_iot_realtime",
+  "description": "Sensor fusion decomposed. Kalman filter math (predict + update), EKF for non-linear, UKF (sigma points), particle filter (Monte Carlo), AHRS (Attitude/Heading Reference), Mahony filter, GNSS-INS fusion, visual-inertial odometry.",
+  "sub_mechanisms": [
+    {
+      "name": "kalman_predict_step",
+      "definition": "x' = Fx + Bu (state). P' = FPF^T + Q (covariance). Project state forward in time.",
+      "why": "Use model to predict where state should be. Q is process noise covariance — how much we trust the model. Foundation of Kalman.",
+      "category": "fusion_mechanism"
+    },
+    {
+      "name": "kalman_update_step",
+      "definition": "y = z - Hx (innovation). K = PH^T(HPH^T+R)^-1 (Kalman gain). x = x + Ky; P = (I-KH)P.",
+      "why": "Combine prediction with measurement. K is weight: more weight on lower-uncertainty source. R is measurement noise.",
+      "category": "fusion_mechanism"
+    },
+    {
+      "name": "extended_kalman_filter",
+      "definition": "EKF: linearise non-linear system about current state. Use Jacobians for F + H.",
+      "why": "Non-linear systems (most real robots). Cost: linearisation introduces error. Most-used non-linear estimator.",
+      "category": "fusion_mechanism"
+    },
+    {
+      "name": "unscented_kalman_filter",
+      "definition": "UKF: deterministic sigma points propagated through non-linear function. No Jacobian needed.",
+      "why": "Better than EKF for highly non-linear. ~2N+1 sigma points propagated. Slightly more compute, better accuracy.",
+      "category": "fusion_mechanism"
+    },
+    {
+      "name": "particle_filter_resampling",
+      "definition": "Particles weighted by observation likelihood. Resample: low-weight particles dropped, high-weight replicated.",
+      "why": "Handles arbitrary distributions. Particle degeneracy: most weight on few particles → resample. Adaptive Monte Carlo Localization classic.",
+      "category": "fusion_mechanism"
+    },
+    {
+      "name": "AHRS_orientation_estimation",
+      "definition": "Attitude/Heading Reference. IMU-based orientation estimate. Roll + pitch + yaw.",
+      "why": "Drones, AR/VR. Fuses accel (low-pass, tilt) + gyro (high-pass, rate) + magnetometer (yaw reference). Standard inertial sensing.",
+      "category": "fusion_mechanism"
+    },
+    {
+      "name": "Madgwick_Mahony_filters",
+      "definition": "Simpler than Kalman. Gradient descent (Madgwick) or PI controller (Mahony) on orientation error.",
+      "why": "Cheap (no matrix inversions). Quaternion-based. Used heavily in DIY drones, fitness trackers. Good enough for most applications.",
+      "category": "fusion_mechanism"
+    },
+    {
+      "name": "IMU_bias_estimation",
+      "definition": "Gyro/accel biases drift. EKF estimates as states alongside orientation.",
+      "why": "Without: bias accumulates → wrong orientation. With: bias estimated, removed. Critical for long-duration operation.",
+      "category": "fusion_mechanism"
+    },
+    {
+      "name": "GNSS_INS_fusion",
+      "definition": "GPS + IMU. INS provides high-rate dead reckoning between GPS fixes; GPS bounds drift.",
+      "why": "Autonomous vehicles, aerospace. GPS: absolute, slow, lossy. INS: relative, fast, drifting. Fusion combines strengths.",
+      "category": "fusion_mechanism"
+    },
+    {
+      "name": "visual_inertial_odometry",
+      "definition": "Camera + IMU. Visual features + inertial integration. Foundational for SLAM, AR.",
+      "why": "iPhone ARKit, drone navigation. IMU short-term, camera long-term. Tightly-coupled (joint optimisation) vs loosely-coupled.",
+      "category": "fusion_mechanism"
+    },
+    {
+      "name": "complementary_filter_quaternion",
+      "definition": "Quaternion blend of integrated gyro + accel/mag corrected attitude. q = a*q_gyro + (1-a)*q_acc_mag.",
+      "why": "Simple + cheap. No Kalman matrices. Used in millions of fitness wearables. Tune a for trust ratio.",
+      "category": "fusion_mechanism"
+    },
+    {
+      "name": "outlier_rejection_chi_squared",
+      "definition": "Test innovation magnitude against chi-squared distribution. Reject measurements beyond threshold.",
+      "why": "GPS multipath, IMU jolt. Single bad measurement throws off estimate. Outlier rejection keeps filter healthy.",
+      "category": "fusion_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "Kalman_optimal_for_Gaussian_linear",
+      "if": ["system + measurements have Gaussian noise + are linear"],
+      "then": ["Kalman filter is the optimal Bayesian estimator"],
+      "why": "Mathematically provable: minimum variance among unbiased estimators. Other approaches (complementary, particle) approximate or generalise.",
+      "soundness_category": "algebraic_law"
+    },
+    {
+      "name": "EKF_acceptable_for_mild_nonlinearity",
+      "if": ["non-linearity is mild around operating point"],
+      "then": ["EKF works well"],
+      "why": "Linearisation valid in small neighbourhood. Highly non-linear: UKF, particle filter. Most robotics: EKF good enough.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "particle_filter_for_multimodal_distributions",
+      "if": ["state could be in multiple distinct regions (multimodal)"],
+      "then": ["particle filter outperforms Kalman variants"],
+      "why": "Robot localisation: 'somewhere in left corridor OR right corridor'. Kalman: single Gaussian, can't represent. Particles: each in different mode.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "bias_estimation_required_for_long_duration",
+      "if": ["IMU operates more than minutes"],
+      "then": ["bias drift must be estimated + removed"],
+      "why": "Gyro bias: deg/hr drift. Integrated: 100m position error after 1 hour. Bias estimation as filter state. Required for GNSS-INS, AR longevity.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "outlier_rejection_protects_filter_health",
+      "if": ["sensors have occasional bad measurements"],
+      "then": ["outlier rejection prevents filter divergence"],
+      "why": "GPS multipath, IMU jerks, vision feature mismatches. One bad measurement: filter goes off. Chi-squared rejection: skip outliers; filter stays valid.",
+      "soundness_category": "extensional_equivalence"
+    }
+  ]
+}

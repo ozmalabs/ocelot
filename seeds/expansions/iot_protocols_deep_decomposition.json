@@ -1,0 +1,118 @@
+{
+  "id": "iot_protocols_deep_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "MQTT_pubsub",
+  "in_microtheory": "embedded_iot_realtime",
+  "description": "IoT protocols decomposed. MQTT keepalive + LWT + retained messages, CoAP observe, BLE GATT structure, Thread/Matter commissioning, LoRaWAN classes A/B/C, NB-IoT power saving modes.",
+  "sub_mechanisms": [
+    {
+      "name": "MQTT_keepalive",
+      "definition": "Client sends PINGREQ at configured interval. Broker disconnects if missed.",
+      "why": "Detect dead clients. Cellular IoT: long keepalive (minutes) for power. Tradeoff: detection time vs battery.",
+      "category": "iot_protocol_mechanism"
+    },
+    {
+      "name": "MQTT_last_will_testament",
+      "definition": "LWT: message broker sends on behalf of client on unclean disconnect.",
+      "why": "Inform peers that device offline. Standard for presence detection. 'device-X/status offline' published on unexpected disconnect.",
+      "category": "iot_protocol_mechanism"
+    },
+    {
+      "name": "MQTT_retained_message",
+      "definition": "Last published message on topic stored. New subscribers receive immediately.",
+      "why": "Late joiners get state without waiting. Useful for config + status. Cost: broker storage.",
+      "category": "iot_protocol_mechanism"
+    },
+    {
+      "name": "MQTT_session_persistence",
+      "definition": "CleanSession=false: broker retains subscriptions + queued messages across disconnect.",
+      "why": "Intermittent device connectivity. Messages queued during offline; delivered on reconnect. Cost: broker storage + complexity.",
+      "category": "iot_protocol_mechanism"
+    },
+    {
+      "name": "CoAP_observe",
+      "definition": "RFC 7641: subscribe to resource changes. Server pushes notifications on change.",
+      "why": "REST + pub/sub. Like MQTT but without broker. Server-direct observation. Used in LwM2M, embedded webs.",
+      "category": "iot_protocol_mechanism"
+    },
+    {
+      "name": "CoAP_block_transfer",
+      "definition": "RFC 7959: split large payloads into blocks. Negotiated block size.",
+      "why": "Constrained devices can't handle large UDP datagrams. Firmware updates over CoAP use block transfer.",
+      "category": "iot_protocol_mechanism"
+    },
+    {
+      "name": "BLE_GATT_service_characteristic",
+      "definition": "Service contains characteristics. Each characteristic has value, descriptors, properties (read/write/notify/indicate).",
+      "why": "Self-describing device API. Heart rate service has heart rate measurement characteristic. Standardised services across vendors.",
+      "category": "iot_protocol_mechanism"
+    },
+    {
+      "name": "BLE_advertising_intervals",
+      "definition": "Advertising every 20ms-10s. Power-latency tradeoff. Connection interval: 7.5ms-4s.",
+      "why": "Trade discovery latency for power. Fitness tracker: rare adv = days battery. Mouse: frequent for responsiveness.",
+      "category": "iot_protocol_mechanism"
+    },
+    {
+      "name": "Thread_commissioning",
+      "definition": "New device joins network. Commissioner (phone) authenticates + provisions credentials.",
+      "why": "Standardised onboarding. QR codes encode commissioning info. Border router bridges Thread to Wi-Fi. Foundation of Matter UX.",
+      "category": "iot_protocol_mechanism"
+    },
+    {
+      "name": "Matter_device_attestation",
+      "definition": "Cryptographic proof: device is genuine, certified. PKI chain to vendor + CSA.",
+      "why": "Prevent counterfeit. Device has DAC (Device Attestation Cert) signed by vendor; vendor by CSA root. Verified during commissioning.",
+      "category": "iot_protocol_mechanism"
+    },
+    {
+      "name": "LoRaWAN_class_A_B_C",
+      "definition": "Class A: device-initiated only. B: scheduled downlink. C: always-listening (mains-powered).",
+      "why": "Power-latency tradeoff. Class A: years on battery, downlink only after uplink. Class C: latency but always plugged in.",
+      "category": "iot_protocol_mechanism"
+    },
+    {
+      "name": "NB_IoT_PSM_eDRX",
+      "definition": "Power Saving Mode + extended Discontinuous Reception. Device sleeps, network agrees.",
+      "why": "Battery years on cellular. PSM: device deep sleep, network buffers. eDRX: rare paging cycles. Trade: downlink latency.",
+      "category": "iot_protocol_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "MQTT_keepalive_tradeoff_latency_battery",
+      "if": ["device is battery-powered"],
+      "then": ["long keepalive interval (minutes) saves power"],
+      "why": "PINGREQ wakes radio. Frequent = battery drain. Infrequent = slow dead-detection. Common: 60s for mains, 600s+ for battery.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "LWT_provides_offline_signalling",
+      "if": ["a client needs to signal abnormal disconnection"],
+      "then": ["MQTT Last Will provides automatic offline notification"],
+      "why": "Without: peers infer offline from missing data, slow. With: broker publishes 'offline' immediately on dead-detection. Standard pattern.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "BLE_advertising_dominates_battery_when_idle",
+      "if": ["BLE peripheral advertises continuously"],
+      "then": ["advertising power dominates idle battery"],
+      "why": "Adv interval 100ms = wake 10×/sec. Each wake costs μC. nRF52: 20μA average at 100ms adv. Tune to product requirements.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "Matter_attestation_prevents_counterfeit",
+      "if": ["device claims Matter compliance"],
+      "then": ["attestation chain must verify against CSA root"],
+      "why": "Without: any device claims Matter. With: cryptographic proof. Prevents commodity hardware impersonating certified devices. Foundation of Matter trust.",
+      "soundness_category": "referential_transparency"
+    },
+    {
+      "name": "Class_A_LoRaWAN_for_battery_years",
+      "if": ["sensor sends data periodically + tolerates downlink delay"],
+      "then": ["Class A LoRaWAN enables years on battery"],
+      "why": "Device sleeps 99%+. Wakes to send, then 2 short receive windows. Average current: μA. Class B/C trade for downlink responsiveness.",
+      "soundness_category": "cost_equivalence"
+    }
+  ]
+}

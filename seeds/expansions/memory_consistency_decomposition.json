@@ -1,0 +1,124 @@
+{
+  "id": "memory_consistency_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "memory_barrier",
+  "in_microtheory": "computer_architecture",
+  "description": "Memory consistency models and barriers decomposed. The contract between hardware and software about what orderings between memory accesses are visible to other cores. x86's TSO (strong); ARM/RISC-V/POWER's weak ordering. Acquire/release semantics. Memory barriers (fences) of various kinds. The relationship between hardware reorderings, compiler reorderings, and software-visible behaviour. C++/Rust/Java atomic ordering choices.",
+  "sub_mechanisms": [
+    {
+      "name": "sequential_consistency_definition",
+      "definition": "SC: there exists a single global ordering of all memory operations consistent with each program's program order; all cores see this same ordering.",
+      "why": "Easiest model to reason about for programmers. But hardware can't deliver SC efficiently — store buffers, write combining, out-of-order execution all break it. Most languages provide SC-DRF (data-race-free programs get SC behaviour).",
+      "category": "consistency_mechanism"
+    },
+    {
+      "name": "tso_total_store_order",
+      "definition": "x86's model. Sequential consistency EXCEPT loads may complete before earlier stores to different addresses. Store-load reordering allowed.",
+      "why": "x86 has a store buffer that holds stores until they retire. A subsequent load to a different address can pass the buffered store. To force ordering, MFENCE drains the store buffer.",
+      "category": "consistency_mechanism"
+    },
+    {
+      "name": "weak_ordering_arm_riscv",
+      "definition": "ARM/RISC-V/POWER: any load/store can be reordered with any other (between different addresses), unless explicit ordering is specified via barriers or release/acquire semantics.",
+      "why": "Maximum hardware flexibility = highest performance. Hardware can reorder freely; software must specify ordering explicitly where needed. Bugs from missing barriers are very common when porting from x86.",
+      "category": "consistency_mechanism"
+    },
+    {
+      "name": "store_buffer",
+      "definition": "Per-core buffer holding completed stores until they retire to L1 (and then potentially cache via coherence). Allows the core to continue executing past stores.",
+      "why": "Store buffer is why x86 isn't SC. The core sees its own stores (forwards from buffer to subsequent loads); other cores see stores only after retire to L1. This asymmetry creates the store-load reordering.",
+      "category": "consistency_mechanism"
+    },
+    {
+      "name": "store_forwarding",
+      "definition": "If a load matches a store still in the store buffer, the load gets the buffered value directly without going to cache.",
+      "why": "Common pattern: store X; load X. Without forwarding, the load would stall until the store completes. With forwarding, ~1 cycle. Critical for stack-heavy code (push then pop), recursive function returns.",
+      "category": "consistency_mechanism"
+    },
+    {
+      "name": "memory_barrier_full",
+      "definition": "x86 MFENCE / ARM DMB SY: orders ALL prior memory operations before ALL subsequent ones. Most expensive barrier.",
+      "why": "Strict ordering when needed. MFENCE drains the store buffer and waits for it to flush. DMB SY on ARM serialises everything. Used in lock primitives, init-then-publish sequences, IPC.",
+      "category": "consistency_mechanism"
+    },
+    {
+      "name": "memory_barrier_load",
+      "definition": "ARM DMB LD: ordering on prior loads only (subsequent loads + stores see them complete). Cheaper than DMB SY.",
+      "why": "Common case: 'check flag, then read data'. The flag check (load) must complete before data reads. DMB LD is sufficient and faster.",
+      "category": "consistency_mechanism"
+    },
+    {
+      "name": "memory_barrier_store",
+      "definition": "ARM DMB ST: ordering on prior stores only.",
+      "why": "Common case: 'write data, then set flag'. Data stores must be visible before flag store. DMB ST forces this ordering. Used in producer-consumer publishing.",
+      "category": "consistency_mechanism"
+    },
+    {
+      "name": "acquire_semantics",
+      "definition": "On a load: prevents subsequent memory operations from reordering before it. The classic 'acquire a lock' barrier.",
+      "why": "After acquiring a lock, subsequent reads/writes must stay after the lock acquire. Otherwise the protected critical section could leak. C++ memory_order_acquire, Rust Ordering::Acquire, Java volatile read all implement this.",
+      "category": "consistency_mechanism"
+    },
+    {
+      "name": "release_semantics",
+      "definition": "On a store: prevents prior memory operations from reordering after it. The classic 'release a lock' barrier.",
+      "why": "Before releasing the lock, all writes to the protected data must be visible. Otherwise another thread could acquire the lock and see partial writes. C++ memory_order_release, Rust Ordering::Release, Java volatile write all implement this.",
+      "category": "consistency_mechanism"
+    },
+    {
+      "name": "acquire_release_idiom",
+      "definition": "Pair of acquire + release on the same atomic variable forms a happens-before relationship: stores before the release are visible after the acquire.",
+      "why": "The fundamental synchronisation primitive. Build mutexes, condition variables, lock-free queues from acquire+release pairs. Captures the essential ordering without forcing full sequential consistency.",
+      "category": "consistency_mechanism"
+    },
+    {
+      "name": "relaxed_atomic",
+      "definition": "Atomic operation with no ordering guarantees: only atomicity of the access itself. C++ memory_order_relaxed, Rust Ordering::Relaxed.",
+      "why": "Cheapest atomic. Used for counters (where the count's exact ordering doesn't matter, only that increments don't lose updates). Hardware: typically just an atomic instruction without surrounding barriers.",
+      "category": "consistency_mechanism"
+    },
+    {
+      "name": "compiler_reordering",
+      "definition": "The compiler may reorder source-level memory accesses (within a single thread) as long as single-threaded semantics are preserved.",
+      "why": "Compiler optimisation. Stores to different addresses freely reorderable. Multi-thread correctness requires the programmer to use atomic/volatile/barriers — otherwise the compiler can move accesses freely. C++ memory model formalises what's allowed.",
+      "category": "consistency_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "weak_models_require_explicit_acquire_release",
+      "if": ["the ISA permits load/store reordering"],
+      "then": ["correct shared-memory code requires acquire/release pairs"],
+      "why": "Without explicit barriers, hardware reorders freely. Producer-consumer code depends on data being visible before flag — without release-on-write + acquire-on-read, the flag may be visible before the data. C++/Rust/Java atomics provide the abstraction.",
+      "soundness_category": "referential_transparency"
+    },
+    {
+      "name": "store_buffer_creates_store_load_reordering",
+      "if": ["a CPU has a store buffer"],
+      "then": ["loads can complete before earlier stores to different addresses"],
+      "why": "Store buffer holds stores; loads pass them. To other cores, the load happened first. This is fundamental to x86's TSO model — the store buffer IS the source of the relaxation. Forcing strict order requires MFENCE (drain).",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "acquire_release_pair_creates_happens_before",
+      "if": ["thread A does release-store on flag; thread B does acquire-load on flag"],
+      "then": ["A's writes before release are visible to B after acquire"],
+      "why": "The acquire/release pair establishes a synchronisation point. Hardware barriers + compiler barriers ensure the ordering. C++'s memory model formalises this; Java/Rust/C# all adopt the same semantics. Foundation of all lock-free synchronisation.",
+      "soundness_category": "referential_transparency"
+    },
+    {
+      "name": "barriers_must_appear_in_both_languages",
+      "if": ["a memory ordering is required"],
+      "then": ["both compiler barriers AND hardware barriers must be present"],
+      "why": "Hardware-only barriers don't constrain the compiler — it can move accesses past the barrier in its IR. Compiler-only barriers don't constrain the hardware. C++/Rust atomics insert both; raw assembly barriers without compiler hints are bugs in C/C++.",
+      "soundness_category": "referential_transparency"
+    },
+    {
+      "name": "relaxed_atomics_for_counters_only",
+      "if": ["the only requirement is atomicity (not ordering)"],
+      "then": ["relaxed atomic is sufficient and cheapest"],
+      "why": "Counters incrementing in any order are fine — only the final count matters. Relaxed atomic gives atomicity with zero extra ordering cost. Misuse (relaxed for synchronisation) is a common bug.",
+      "soundness_category": "cost_equivalence"
+    }
+  ]
+}

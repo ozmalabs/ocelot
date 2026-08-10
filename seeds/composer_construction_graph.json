@@ -1,0 +1,179 @@
+{
+ "id": "composer_construction_graph",
+ "version": "1.0.0",
+ "depends_on": [],
+ "description": "GRAPH-RESIDENT: _compose_construction_rule as a meta-rule. Mints construct_function_frames_content_<tag> from a wants_construction_rule trigger.",
+ "nodes": [
+  {
+   "local_id": 1,
+   "type": "Rule",
+   "attrs": {
+    "id": "compose_construction_graph",
+    "match": [
+     [
+      "agent",
+      "wants_construction_rule",
+      "cr"
+     ]
+    ],
+    "where": {
+     "type": "Lt",
+     "a": {
+      "type": "Plus",
+      "items": [
+       {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "cr"
+        },
+        "key": "composed"
+       },
+       {
+        "type": "Lit",
+        "value": 0.0
+       }
+      ]
+     },
+     "b": {
+      "type": "Lit",
+      "value": 0.5
+     }
+    },
+    "effect": [
+     [
+      "add_node",
+      "rn0",
+      "Rule",
+      {
+       "minted": 0.0
+      }
+     ],
+     [
+      "set_attr",
+      "rn0",
+      "id",
+      {
+       "__term__": {
+        "type": "StringConcat",
+        "parts": [
+         {
+          "type": "Lit",
+          "value": "construct_function_frames_content_"
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "cr"
+          },
+          "key": "tag"
+         }
+        ]
+       }
+      }
+     ],
+     [
+      "set_attr",
+      "rn0",
+      "match",
+      [
+       [
+        "f",
+        "precedes",
+        "c"
+       ]
+      ]
+     ],
+     [
+      "set_attr",
+      "rn0",
+      "where",
+      {
+       "type": "And",
+       "items": [
+        {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "f"
+          },
+          "key": "is_function"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1.0
+         }
+        },
+        {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "c"
+          },
+          "key": "is_content"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1.0
+         }
+        }
+       ]
+      }
+     ],
+     [
+      "set_attr",
+      "rn0",
+      "effect",
+      [
+       [
+        "set_attr",
+        "c",
+        "referent_bearer",
+        1.0
+       ],
+       [
+        "add_edge",
+        "c",
+        "framed_by",
+        "f"
+       ]
+      ]
+     ],
+     [
+      "set_rule_clause",
+      {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "rn0"
+        },
+        "key": "id"
+       }
+      },
+      "__mint__",
+      {
+       "__term__": {
+        "type": "Var",
+        "name": "rn0"
+       }
+      }
+     ],
+     [
+      "set_attr",
+      "cr",
+      "composed",
+      1.0
+     ]
+    ]
+   }
+  }
+ ],
+ "edges": [],
+ "productions": []
+}

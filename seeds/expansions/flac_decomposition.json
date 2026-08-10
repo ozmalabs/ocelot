@@ -1,0 +1,118 @@
+{
+  "id": "flac_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "FLAC",
+  "in_microtheory": "audio_coding_theory",
+  "description": "FLAC (Free Lossless Audio Codec) decomposed. FLAC achieves ~50% lossless compression of PCM audio via linear prediction + Rice coding of the residual. The choice of prediction order, block size, and Rice parameters is content-adaptive per block. Byte-exact reconstruction of source PCM is the design constraint; everything is engineered around that.",
+  "sub_mechanisms": [
+    {
+      "name": "flac_block_structure",
+      "definition": "Audio divided into independent blocks (typically 4096 samples). Each block is encoded with its own prediction order, predictor type, residual coding parameters.",
+      "why": "Different content benefits from different predictor settings. Per-block adaptation lets each block use what works best for its content. Block size is encoder choice — smaller blocks adapt faster, larger blocks have lower header overhead.",
+      "category": "flac_mechanism"
+    },
+    {
+      "name": "flac_fixed_predictors",
+      "definition": "4 pre-defined linear predictors of order 0-4. Order 0: no prediction (just samples). Order 1: y[n] = y[n-1]. Order 2: y[n] = 2y[n-1] - y[n-2]. Etc. Encoder picks the order that minimises residual energy.",
+      "why": "Cheap to compute and decode. Captures simple temporal correlation. Order 0 for noise; order 4 for smooth low-frequency content. Sufficient for many content types; LPC is used for harder cases.",
+      "category": "flac_mechanism"
+    },
+    {
+      "name": "flac_lpc_predictors",
+      "definition": "Up to order 32 linear predictor with explicitly-coded coefficients. Encoder fits LPC to the block, codes the coefficients + the residual.",
+      "why": "Higher order captures more complex correlation. The cost (sending coefficients) is per-block; with 4096-sample blocks, coefficient overhead is negligible. ~5-15% better compression than fixed predictors on complex content.",
+      "category": "flac_mechanism"
+    },
+    {
+      "name": "flac_rice_coding",
+      "definition": "Residual coded with Rice (Golomb-Rice) codes. Each residual value v is split into v mod 2^k (k bits, fixed) and v >> k (unary). The parameter k is chosen per partition.",
+      "why": "Residuals after good prediction are Laplacian-distributed (peaked at zero, exponential tails). Rice codes are near-optimal for this distribution. Choosing k per partition lets the encoder match the local residual variance.",
+      "category": "flac_mechanism"
+    },
+    {
+      "name": "flac_rice_partition",
+      "definition": "Residuals are divided into partitions; Rice parameter k is chosen separately per partition. Partition size is signalled in the header.",
+      "why": "Residual variance can change within a block (e.g., loud section vs quiet section). Per-partition k adapts to local variance without breaking the block structure. ~2-5% additional saving over single-k coding.",
+      "category": "flac_mechanism"
+    },
+    {
+      "name": "flac_channel_decorrelation",
+      "definition": "Stereo decorrelation: encoder can store L/R, M/S, L/S (L + side), or R/S — picking whichever produces the lower entropy.",
+      "why": "Stereo content typically has correlated L and R; storing M and S is more compressible. The choice is per-block; some blocks have nearly-correlated channels (M/S wins), others have independent channels (L/R wins). Encoder picks the best per block.",
+      "category": "flac_mechanism"
+    },
+    {
+      "name": "flac_frame_header",
+      "definition": "Each frame: sync code + block size + sample rate + channel assignment + bit depth + CRC. Self-synchronising for stream resync.",
+      "why": "Same role as MP3's sync header. Allows mid-stream tuning, error recovery, frame-level seeking. The CRC catches transmission errors.",
+      "category": "flac_mechanism"
+    },
+    {
+      "name": "flac_metadata_blocks",
+      "definition": "FLAC streams begin with metadata blocks (typed): STREAMINFO (mandatory: stream-level parameters), VORBIS_COMMENT (tags), PICTURE (album art), APPLICATION (custom).",
+      "why": "Self-describing format. Decoders/players parse the metadata to know what they're dealing with before processing audio. The block structure lets new metadata types be added without breaking older parsers.",
+      "category": "flac_mechanism"
+    },
+    {
+      "name": "flac_predictability_constraint",
+      "definition": "Encoder ensures the bitstream is deterministically decodable on any conforming decoder — bit-exact reconstruction of PCM samples.",
+      "why": "Lossless requires this. The spec defines the predictor types, Rice coding, and reconstruction order exactly; deviation produces non-decodable streams. The integer arithmetic everywhere ensures byte-exactness across platforms.",
+      "category": "flac_mechanism"
+    },
+    {
+      "name": "flac_subset_streams",
+      "definition": "FLAC defines a 'subset' constraint: certain combinations of parameters (max block size, max LPC order, max sample rate) are guaranteed decodable by minimal decoders.",
+      "why": "Decoder implementers can target a known subset and not worry about extreme parameter combinations. Subset streams are guaranteed to decode on any conformant subset decoder; full FLAC may need more elaborate decoders.",
+      "category": "flac_mechanism"
+    },
+    {
+      "name": "flac_compression_level",
+      "definition": "Encoder presets 0-8 (0 = fastest, 8 = best compression). Higher levels search more block sizes, predictor types, Rice parameters.",
+      "why": "Same trade as x264 presets: more search = better compression at higher encode cost. Decoder cost is unaffected (decode complexity is fixed by the format). Encoder typically defaults to level 5.",
+      "category": "flac_mechanism"
+    },
+    {
+      "name": "flac_seek_table",
+      "definition": "Optional metadata block listing the byte offsets of selected sample positions. Players use it for fast seeking without scanning.",
+      "why": "Without it, seeking requires parsing frames sequentially. The seek table is small (a few bytes per checkpoint) and makes random access fast — important for streaming and editing.",
+      "category": "flac_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "lossless_compression_bounded_by_signal_entropy",
+      "if": ["a codec produces bit-exact reconstruction"],
+      "then": ["compression ratio is bounded by Shannon entropy"],
+      "why": "Lossless coding cannot beat Shannon's source-coding theorem. FLAC's ~50% compression reflects audio's ~50% redundancy. Beating this would require finding more structure in the signal; current FLAC is near the entropy bound for typical audio.",
+      "soundness_category": "algebraic_law"
+    },
+    {
+      "name": "rice_codes_near_optimal_for_laplacian_residuals",
+      "if": ["the residual distribution is Laplacian (peaked at zero, exponential tails)"],
+      "then": ["Rice codes achieve near-entropy compression"],
+      "why": "Rice's mathematical form matches the Laplacian distribution. The parameter k controls how many bits to spend on the body vs the tail. For correctly-chosen k, Rice's overhead vs the entropy bound is small. Common across lossless audio codecs (FLAC, ALAC, WavPack).",
+      "soundness_category": "algebraic_law"
+    },
+    {
+      "name": "per_block_adaptation_matches_local_statistics",
+      "if": ["different blocks have different signal statistics"],
+      "then": ["per-block parameter selection beats fixed parameters"],
+      "why": "Audio's statistics vary — quiet sections vs loud, voiced vs unvoiced, music vs silence. Per-block prediction order, predictor type, partition size, Rice parameter all matter. Fixed parameters waste bits on blocks where they don't fit.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "fixed_predictors_for_simple_content_lpc_for_complex",
+      "if": ["block content is simple (smooth, low-frequency)"],
+      "then": ["fixed predictors beat LPC at lower encode cost"],
+      "why": "LPC coefficient overhead is per-block; if a fixed predictor already captures most of the correlation, LPC's overhead exceeds its gain. Encoder picks LPC only when its compression gain exceeds the coefficient cost. Simple content → fixed predictors.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "channel_decorrelation_per_block_finds_optimum",
+      "if": ["L and R have variable correlation across blocks"],
+      "then": ["per-block decorrelation choice finds the optimum"],
+      "why": "Sometimes M/S compresses better; sometimes L/R; sometimes one channel + the side. Per-block selection picks whichever produces the lowest entropy. Same insight as AAC's per-band M/S vs L/R selection.",
+      "soundness_category": "extensional_equivalence"
+    }
+  ]
+}

@@ -1,0 +1,2237 @@
+{
+ "seed": {
+  "id": "render_lua_statements",
+  "version": "1.0.0",
+  "language": "lua",
+  "depends_on": []
+ },
+ "doc": "Statement-grain LUA renderer as graph-resident RenderRules (P5 track B). Hub Program IR -> runnable lua (lua5.4 + luajit), inverse of seeds/lua_correspondence.json (P2) including the 1-based subscript shift, the inclusive-stop numeric-for shift, the ipairs desugar and the repeat fold \u2014 the cross-frame maps run in BOTH directions now. Installed by domains/render_rust_lua.py:install_renderer(sub, 'lua'); the teachable subset can arrive through the runtime render-gap -> self-teacher -> install_render_rule loop (teach_spec entries; tests/test_teach_lua_renderer_migrated.py precedent).",
+ "render_gaps": [
+  "IfThenElse",
+  "ProgTryOr",
+  "ProgRaise",
+  "ProgImportStmt",
+  "ProgAttrGet",
+  "ProgAttrSet",
+  "ProgTupleUnpack",
+  "ProgIsOp",
+  "ProgComprehensionList",
+  "ProgComprehensionGen"
+ ],
+ "render_rules": [
+  {
+   "head": "Lit",
+   "binding_pattern": [
+    "value"
+   ],
+   "template": {
+    "type": "Cat",
+    "items": [
+     {
+      "type": "ToJsonString",
+      "value": {
+       "type": "Slot",
+       "name": "value"
+      }
+     }
+    ]
+   },
+   "note": "ToJsonString spelling: true/false/nil-less ints/floats, double-quoted JSON-escaped strings (valid lua for the printable subset; exotic \\uXXXX escapes are a recorded residual). TEACH DELTA: the loop-carriable twin is the bare-Slot (int-faithful only) form \u2014 exactly the original taught-Lua precedent's Lit rule; bools/strings need ToJsonString, which the teach spec grammar cannot carry.",
+   "teachable": true,
+   "teach_spec": [
+    "Cat",
+    [
+     "Slot",
+     "value"
+    ]
+   ]
+  },
+  {
+   "head": "Var",
+   "binding_pattern": [
+    "name"
+   ],
+   "template": {
+    "type": "Cat",
+    "items": [
+     {
+      "type": "Slot",
+      "name": "name"
+     }
+    ]
+   },
+   "note": "identifier verbatim",
+   "teachable": true,
+   "teach_spec": [
+    "Cat",
+    [
+     "Slot",
+     "name"
+    ]
+   ]
+  },
+  {
+   "head": "Eq",
+   "binding_pattern": [
+    "a",
+    "b"
+   ],
+   "template": {
+    "type": "Cat",
+    "items": [
+     {
+      "type": "Surface",
+      "kind": "text",
+      "payload": "("
+     },
+     {
+      "type": "Render",
+      "term": {
+       "type": "Slot",
+       "name": "a"
+      }
+     },
+     {
+      "type": "Surface",
+      "kind": "text",
+      "payload": " == "
+     },
+     {
+      "type": "Render",
+      "term": {
+       "type": "Slot",
+       "name": "b"
+      }
+     },
+     {
+      "type": "Surface",
+      "kind": "text",
+      "payload": ")"
+     }
+    ]
+   },
+   "note": "binary Eq -> '(a == b)'; parens are transparent on re-read (unwrap_paren). hub Div IS lua '/' (both true division); IDiv/Mod per the P2 ledger; Pow is cross-frame only (lua reads avoid ^ per the float ledger).",
+   "teachable": true,
+   "teach_spec": [
+    "Cat",
+    [
+     "Surface",
+     "text",
+     "("
+    ],
+    [
+     "Render",
+     [
+      "Slot",
+      "a"
+     ]
+    ],
+    [
+     "Surface",
+     "text",
+     " == "
+    ],
+    [
+     "Render",
+     [
+      "Slot",
+      "b"
+     ]
+    ],
+    [
+     "Surface",
+     "text",
+     ")"
+    ]
+   ]
+  },
+  {
+   "head": "Gt",
+   "binding_pattern": [
+    "a",
+    "b"
+   ],
+   "template": {
+    "type": "Cat",
+    "items": [
+     {
+      "type": "Surface",
+      "kind": "text",
+      "payload": "("
+     },
+     {
+      "type": "Render",
+      "term": {
+       "type": "Slot",
+       "name": "a"
+      }
+     },
+     {
+      "type": "Surface",
+      "kind": "text",
+      "payload": " > "
+     },
+     {
+      "type": "Render",
+      "term": {
+       "type": "Slot",
+       "name": "b"
+      }
+     },
+     {
+      "type": "Surface",
+      "kind": "text",
+      "payload": ")"
+     }
+    ]
+   },
+   "note": "binary Gt -> '(a > b)'; parens are transparent on re-read (unwrap_paren). hub Div IS lua '/' (both true division); IDiv/Mod per the P2 ledger; Pow is cross-frame only (lua reads avoid ^ per the float ledger).",
+   "teachable": true,
+   "teach_spec": [
+    "Cat",
+    [
+     "Surface",
+     "text",
+     "("
+    ],
+    [
+     "Render",
+     [
+      "Slot",
+      "a"
+     ]
+    ],
+    [
+     "Surface",
+     "text",
+     " > "
+    ],
+    [
+     "Render",
+     [
+      "Slot",
+      "b"
+     ]
+    ],
+    [
+     "Surface",
+     "text",
+     ")"
+    ]
+   ]
+  },
+  {
+   "head": "Gte",
+   "binding_pattern": [
+    "a",
+    "b"
+   ],
+   "template": {
+    "type": "Cat",
+    "items": [
+     {
+      "type": "Surface",
+      "kind": "text",
+      "payload": "("
+     },
+     {
+      "type": "Render",
+      "term": {
+       "type": "Slot",
+       "name": "a"
+      }
+     },
+     {
+      "type": "Surface",
+      "kind": "text",
+      "payload": " >= "
+     },
+     {
+      "type": "Render",
+      "term": {
+       "type": "Slot",
+       "name": "b"
+      }
+     },
+     {
+      "type": "Surface",
+      "kind": "text",
+      "payload": ")"
+     }
+    ]
+   },
+   "note": "binary Gte -> '(a >= b)'; parens are transparent on re-read (unwrap_paren). hub Div IS lua '/' (both true division); IDiv/Mod per the P2 ledger; Pow is cross-frame only (lua reads avoid ^ per the float ledger).",
+   "teachable": true,
+   "teach_spec": [
+    "Cat",
+    [
+     "Surface",
+     "text",
+     "("
+    ],
+    [
+     "Render",
+     [
+      "Slot",
+      "a"
+     ]
+    ],
+    [
+     "Surface",
+     "text",
+     " >= "
+    ],
+    [
+     "Render",
+     [
+      "Slot",
+      "b"
+     ]
+    ],
+    [
+     "Surface",
+     "text",
+     ")"
+    ]
+   ]
+  },
+  {
+   "head": "Lt",
+   "binding_pattern": [
+    "a",
+    "b"
+   ],
+   "template": {
+    "type": "Cat",
+    "items": [
+     {
+      "type": "Surface",
+      "kind": "text",
+      "payload": "("
+     },
+     {
+      "type": "Render",
+      "term": {
+       "type": "Slot",
+       "name": "a"
+      }
+     },
+     {
+      "type": "Surface",
+      "kind": "text",
+      "payload": " < "
+     },
+     {
+      "type": "Render",
+      "term": {
+       "type": "Slot",
+       "name": "b"
+      }
+     },
+     {
+      "type": "Surface",
+      "kind": "text",
+      "payload": ")"
+     }
+    ]
+   },
+   "note": "binary Lt -> '(a < b)'; parens are transparent on re-read (unwrap_paren). hub Div IS lua '/' (both true division); IDiv/Mod per the P2 ledger; Pow is cross-frame only (lua reads avoid ^ per the float ledger).",
+   "teachable": true,
+   "teach_spec": [
+    "Cat",
+    [
+     "Surface",
+     "text",
+     "("
+    ],
+    [
+     "Render",
+     [
+      "Slot",
+      "a"
+     ]
+    ],
+    [
+     "Surface",
+     "text",
+     " < "
+    ],
+    [
+     "Render",
+     [
+      "Slot",
+      "b"
+     ]
+    ],
+    [
+     "Surface",
+     "text",
+     ")"
+    ]
+   ]
+  },
+  {
+   "head": "Lte",
+   "binding_pattern": [
+    "a",
+    "b"
+   ],
+   "template": {
+    "type": "Cat",
+    "items": [
+     {
+      "type": "Surface",
+      "kind": "text",
+      "payload": "("
+     },
+     {
+      "type": "Render",
+      "term": {
+       "type": "Slot",
+       "name": "a"
+      }
+     },
+     {
+      "type": "Surface",
+      "kind": "text",
+      "payload": " <= "
+     },
+     {
+      "type": "Render",
+      "term": {
+       "type": "Slot",
+       "name": "b"
+      }
+     },
+     {
+      "type": "Surface",
+      "kind": "text",
+      "payload": ")"
+     }
+    ]
+   },
+   "note": "binary Lte -> '(a <= b)'; parens are transparent on re-read (unwrap_paren). hub Div IS lua '/' (both true division); IDiv/Mod per the P2 ledger; Pow is cross-frame only (lua reads avoid ^ per the float ledger).",
+   "teachable": true,
+   "teach_spec": [
+    "Cat",
+    [
+     "Surface",
+     "text",
+     "("
+    ],
+    [
+     "Render",
+     [
+      "Slot",
+      "a"
+     ]
+    ],
+    [
+     "Surface",
+     "text",
+     " <= "
+    ],
+    [
+     "Render",
+     [
+      "Slot",
+      "b"
+     ]
+    ],
+    [
+     "Surface",
+     "text",
+     ")"
+    ]
+   ]
+  },
+  {
+   "head": "Minus",
+   "binding_pattern": [
+    "a",
+    "b"
+   ],
+   "template": {
+    "type": "Cat",
+    "items": [
+     {
+      "type": "Surface",
+      "kind": "text",
+      "payload": "("
+     },
+     {
+      "type": "Render",
+      "term": {
+       "type": "Slot",
+       "name": "a"
+      }
+     },
+     {
+      "type": "Surface",
+      "kind": "text",
+      "payload": " - "
+     },
+     {
+      "type": "Render",
+      "term": {
+       "type": "Slot",
+       "name": "b"
+      }
+     },
+     {
+      "type": "Surface",
+      "kind": "text",
+      "payload": ")"
+     }
+    ]
+   },
+   "note": "binary Minus -> '(a - b)'; parens are transparent on re-read (unwrap_paren). hub Div IS lua '/' (both true division); IDiv/Mod per the P2 ledger; Pow is cross-frame only (lua reads avoid ^ per the float ledger).",
+   "teachable": true,
+   "teach_spec": [
+    "Cat",
+    [
+     "Surface",
+     "text",
+     "("
+    ],
+    [
+     "Render",
+     [
+      "Slot",
+      "a"
+     ]
+    ],
+    [
+     "Surface",
+     "text",
+     " - "
+    ],
+    [
+     "Render",
+     [
+      "Slot",
+      "b"
+     ]
+    ],
+    [
+     "Surface",
+     "text",
+     ")"
+    ]
+   ]
+  },
+  {
+   "head": "Div",
+   "binding_pattern": [
+    "a",
+    "b"
+   ],
+   "template": {
+    "type": "Cat",
+    "items": [
+     {
+      "type": "Surface",
+      "kind": "text",
+      "payload": "("
+     },
+     {
+      "type": "Render",
+      "term": {
+       "type": "Slot",
+       "name": "a"
+      }
+     },
+     {
+      "type": "Surface",
+      "kind": "text",
+      "payload": " / "
+     },
+     {
+      "type": "Render",
+      "term": {
+       "type": "Slot",
+       "name": "b"
+      }
+     },
+     {
+      "type": "Surface",
+      "kind": "text",
+      "payload": ")"
+     }
+    ]
+   },
+   "note": "binary Div -> '(a / b)'; parens are transparent on re-read (unwrap_paren). hub Div IS lua '/' (both true division); IDiv/Mod per the P2 ledger; Pow is cross-frame only (lua reads avoid ^ per the float ledger).",
+   "teachable": true,
+   "teach_spec": [
+    "Cat",
+    [
+     "Surface",
+     "text",
+     "("
+    ],
+    [
+     "Render",
+     [
+      "Slot",
+      "a"
+     ]
+    ],
+    [
+     "Surface",
+     "text",
+     " / "
+    ],
+    [
+     "Render",
+     [
+      "Slot",
+      "b"
+     ]
+    ],
+    [
+     "Surface",
+     "text",
+     ")"
+    ]
+   ]
+  },
+  {
+   "head": "IDiv",
+   "binding_pattern": [
+    "a",
+    "b"
+   ],
+   "template": {
+    "type": "Cat",
+    "items": [
+     {
+      "type": "Surface",
+      "kind": "text",
+      "payload": "("
+     },
+     {
+      "type": "Render",
+      "term": {
+       "type": "Slot",
+       "name": "a"
+      }
+     },
+     {
+      "type": "Surface",
+      "kind": "text",
+      "payload": " // "
+     },
+     {
+      "type": "Render",
+      "term": {
+       "type": "Slot",
+       "name": "b"
+      }
+     },
+     {
+      "type": "Surface",
+      "kind": "text",
+      "payload": ")"
+     }
+    ]
+   },
+   "note": "binary IDiv -> '(a // b)'; parens are transparent on re-read (unwrap_paren). hub Div IS lua '/' (both true division); IDiv/Mod per the P2 ledger; Pow is cross-frame only (lua reads avoid ^ per the float ledger).",
+   "teachable": true,
+   "teach_spec": [
+    "Cat",
+    [
+     "Surface",
+     "text",
+     "("
+    ],
+    [
+     "Render",
+     [
+      "Slot",
+      "a"
+     ]
+    ],
+    [
+     "Surface",
+     "text",
+     " // "
+    ],
+    [
+     "Render",
+     [
+      "Slot",
+      "b"
+     ]
+    ],
+    [
+     "Surface",
+     "text",
+     ")"
+    ]
+   ]
+  },
+  {
+   "head": "Mod",
+   "binding_pattern": [
+    "a",
+    "b"
+   ],
+   "template": {
+    "type": "Cat",
+    "items": [
+     {
+      "type": "Surface",
+      "kind": "text",
+      "payload": "("
+     },
+     {
+      "type": "Render",
+      "term": {
+       "type": "Slot",
+       "name": "a"
+      }
+     },
+     {
+      "type": "Surface",
+      "kind": "text",
+      "payload": " % "
+     },
+     {
+      "type": "Render",
+      "term": {
+       "type": "Slot",
+       "name": "b"
+      }
+     },
+     {
+      "type": "Surface",
+      "kind": "text",
+      "payload": ")"
+     }
+    ]
+   },
+   "note": "binary Mod -> '(a % b)'; parens are transparent on re-read (unwrap_paren). hub Div IS lua '/' (both true division); IDiv/Mod per the P2 ledger; Pow is cross-frame only (lua reads avoid ^ per the float ledger).",
+   "teachable": true,
+   "teach_spec": [
+    "Cat",
+    [
+     "Surface",
+     "text",
+     "("
+    ],
+    [
+     "Render",
+     [
+      "Slot",
+      "a"
+     ]
+    ],
+    [
+     "Surface",
+     "text",
+     " % "
+    ],
+    [
+     "Render",
+     [
+      "Slot",
+      "b"
+     ]
+    ],
+    [
+     "Surface",
+     "text",
+     ")"
+    ]
+   ]
+  },
+  {
+   "head": "Pow",
+   "binding_pattern": [
+    "a",
+    "b"
+   ],
+   "template": {
+    "type": "Cat",
+    "items": [
+     {
+      "type": "Surface",
+      "kind": "text",
+      "payload": "("
+     },
+     {
+      "type": "Render",
+      "term": {
+       "type": "Slot",
+       "name": "a"
+      }
+     },
+     {
+      "type": "Surface",
+      "kind": "text",
+      "payload": " ^ "
+     },
+     {
+      "type": "Render",
+      "term": {
+       "type": "Slot",
+       "name": "b"
+      }
+     },
+     {
+      "type": "Surface",
+      "kind": "text",
+      "payload": ")"
+     }
+    ]
+   },
+   "note": "binary Pow -> '(a ^ b)'; parens are transparent on re-read (unwrap_paren). hub Div IS lua '/' (both true division); IDiv/Mod per the P2 ledger; Pow is cross-frame only (lua reads avoid ^ per the float ledger).",
+   "teachable": true,
+   "teach_spec": [
+    "Cat",
+    [
+     "Surface",
+     "text",
+     "("
+    ],
+    [
+     "Render",
+     [
+      "Slot",
+      "a"
+     ]
+    ],
+    [
+     "Surface",
+     "text",
+     " ^ "
+    ],
+    [
+     "Render",
+     [
+      "Slot",
+      "b"
+     ]
+    ],
+    [
+     "Surface",
+     "text",
+     ")"
+    ]
+   ]
+  },
+  {
+   "head": "Plus",
+   "binding_pattern": [
+    "items"
+   ],
+   "template": {
+    "type": "Cat",
+    "items": [
+     {
+      "type": "Surface",
+      "kind": "text",
+      "payload": "("
+     },
+     {
+      "type": "Join",
+      "separator": {
+       "type": "Surface",
+       "kind": "text",
+       "payload": " + "
+      },
+      "items": {
+       "type": "Slot",
+       "name": "items"
+      }
+     },
+     {
+      "type": "Surface",
+      "kind": "text",
+      "payload": ")"
+     }
+    ]
+   },
+   "note": "variadic Plus joined by ' + '; two-item nesting re-reads to the same left-assoc IR.",
+   "teachable": true,
+   "teach_spec": [
+    "Cat",
+    [
+     "Surface",
+     "text",
+     "("
+    ],
+    [
+     "Join",
+     [
+      "Surface",
+      "text",
+      " + "
+     ],
+     [
+      "Slot",
+      "items"
+     ]
+    ],
+    [
+     "Surface",
+     "text",
+     ")"
+    ]
+   ]
+  },
+  {
+   "head": "Times",
+   "binding_pattern": [
+    "items"
+   ],
+   "template": {
+    "type": "Cat",
+    "items": [
+     {
+      "type": "Surface",
+      "kind": "text",
+      "payload": "("
+     },
+     {
+      "type": "Join",
+      "separator": {
+       "type": "Surface",
+       "kind": "text",
+       "payload": " * "
+      },
+      "items": {
+       "type": "Slot",
+       "name": "items"
+      }
+     },
+     {
+      "type": "Surface",
+      "kind": "text",
+      "payload": ")"
+     }
+    ]
+   },
+   "note": "variadic Times joined by ' * '; two-item nesting re-reads to the same left-assoc IR.",
+   "teachable": true,
+   "teach_spec": [
+    "Cat",
+    [
+     "Surface",
+     "text",
+     "("
+    ],
+    [
+     "Join",
+     [
+      "Surface",
+      "text",
+      " * "
+     ],
+     [
+      "Slot",
+      "items"
+     ]
+    ],
+    [
+     "Surface",
+     "text",
+     ")"
+    ]
+   ]
+  },
+  {
+   "head": "And",
+   "binding_pattern": [
+    "items"
+   ],
+   "template": {
+    "type": "Cat",
+    "items": [
+     {
+      "type": "Surface",
+      "kind": "text",
+      "payload": "("
+     },
+     {
+      "type": "Join",
+      "separator": {
+       "type": "Surface",
+       "kind": "text",
+       "payload": " and "
+      },
+      "items": {
+       "type": "Slot",
+       "name": "items"
+      }
+     },
+     {
+      "type": "Surface",
+      "kind": "text",
+      "payload": ")"
+     }
+    ]
+   },
+   "note": "variadic And joined by ' and '; two-item nesting re-reads to the same left-assoc IR.",
+   "teachable": true,
+   "teach_spec": [
+    "Cat",
+    [
+     "Surface",
+     "text",
+     "("
+    ],
+    [
+     "Join",
+     [
+      "Surface",
+      "text",
+      " and "
+     ],
+     [
+      "Slot",
+      "items"
+     ]
+    ],
+    [
+     "Surface",
+     "text",
+     ")"
+    ]
+   ]
+  },
+  {
+   "head": "Or",
+   "binding_pattern": [
+    "items"
+   ],
+   "template": {
+    "type": "Cat",
+    "items": [
+     {
+      "type": "Surface",
+      "kind": "text",
+      "payload": "("
+     },
+     {
+      "type": "Join",
+      "separator": {
+       "type": "Surface",
+       "kind": "text",
+       "payload": " or "
+      },
+      "items": {
+       "type": "Slot",
+       "name": "items"
+      }
+     },
+     {
+      "type": "Surface",
+      "kind": "text",
+      "payload": ")"
+     }
+    ]
+   },
+   "note": "variadic Or joined by ' or '; two-item nesting re-reads to the same left-assoc IR.",
+   "teachable": true,
+   "teach_spec": [
+    "Cat",
+    [
+     "Surface",
+     "text",
+     "("
+    ],
+    [
+     "Join",
+     [
+      "Surface",
+      "text",
+      " or "
+     ],
+     [
+      "Slot",
+      "items"
+     ]
+    ],
+    [
+     "Surface",
+     "text",
+     ")"
+    ]
+   ]
+  },
+  {
+   "head": "Neg",
+   "binding_pattern": [
+    "arg"
+   ],
+   "template": {
+    "type": "Cat",
+    "items": [
+     {
+      "type": "Surface",
+      "kind": "text",
+      "payload": "(-"
+     },
+     {
+      "type": "Render",
+      "term": {
+       "type": "Slot",
+       "name": "arg"
+      }
+     },
+     {
+      "type": "Surface",
+      "kind": "text",
+      "payload": ")"
+     }
+    ]
+   },
+   "note": "unary minus",
+   "teachable": true,
+   "teach_spec": [
+    "Cat",
+    [
+     "Surface",
+     "text",
+     "(-"
+    ],
+    [
+     "Render",
+     [
+      "Slot",
+      "arg"
+     ]
+    ],
+    [
+     "Surface",
+     "text",
+     ")"
+    ]
+   ]
+  },
+  {
+   "head": "Not",
+   "binding_pattern": [
+    "arg"
+   ],
+   "template": {
+    "type": "Cat",
+    "items": [
+     {
+      "type": "Surface",
+      "kind": "text",
+      "payload": "(not "
+     },
+     {
+      "type": "Render",
+      "term": {
+       "type": "Slot",
+       "name": "arg"
+      }
+     },
+     {
+      "type": "Surface",
+      "kind": "text",
+      "payload": ")"
+     }
+    ]
+   },
+   "note": "logical not",
+   "teachable": true,
+   "teach_spec": [
+    "Cat",
+    [
+     "Surface",
+     "text",
+     "(not "
+    ],
+    [
+     "Render",
+     [
+      "Slot",
+      "arg"
+     ]
+    ],
+    [
+     "Surface",
+     "text",
+     ")"
+    ]
+   ]
+  },
+  {
+   "head": "ProgSeq",
+   "binding_pattern": [
+    "stmts"
+   ],
+   "template": {
+    "type": "Join",
+    "separator": {
+     "type": "Surface",
+     "kind": "text",
+     "payload": "\n"
+    },
+    "items": {
+     "type": "Slot",
+     "name": "stmts"
+    }
+   },
+   "note": "statements joined by newline (lua statements carry no terminator).",
+   "teachable": true,
+   "teach_spec": [
+    "Join",
+    [
+     "Surface",
+     "text",
+     "\n"
+    ],
+    [
+     "Slot",
+     "stmts"
+    ]
+   ]
+  },
+  {
+   "head": "ProgAssignVar",
+   "binding_pattern": [
+    "name",
+    "value",
+    "decl"
+   ],
+   "template": {
+    "type": "IfThenElse",
+    "cond": {
+     "type": "Slot",
+     "name": "decl"
+    },
+    "then": {
+     "type": "Cat",
+     "items": [
+      {
+       "type": "Surface",
+       "kind": "text",
+       "payload": "local "
+      },
+      {
+       "type": "Slot",
+       "name": "name"
+      },
+      {
+       "type": "Surface",
+       "kind": "text",
+       "payload": " = "
+      },
+      {
+       "type": "Render",
+       "term": {
+        "type": "Slot",
+        "name": "value"
+       }
+      }
+     ]
+    },
+    "other": {
+     "type": "Cat",
+     "items": [
+      {
+       "type": "Slot",
+       "name": "name"
+      },
+      {
+       "type": "Surface",
+       "kind": "text",
+       "payload": " = "
+      },
+      {
+       "type": "Render",
+       "term": {
+        "type": "Slot",
+        "name": "value"
+       }
+      }
+     ]
+    }
+   },
+   "note": "decl = the pre-pass first-assignment mark -> `local x = v` (the original `local` position for read IR); later assignments render plain. TEACH DELTA: the loop-carriable twin is the plain form only (no IfThenElse in the teach spec grammar) \u2014 assigns render as globals.",
+   "teachable": true,
+   "teach_spec": [
+    "Cat",
+    [
+     "Slot",
+     "name"
+    ],
+    [
+     "Surface",
+     "text",
+     " = "
+    ],
+    [
+     "Render",
+     [
+      "Slot",
+      "value"
+     ]
+    ]
+   ]
+  },
+  {
+   "head": "ProgAugAssign",
+   "binding_pattern": [
+    "name",
+    "op",
+    "value"
+   ],
+   "template": {
+    "type": "Cat",
+    "items": [
+     {
+      "type": "Slot",
+      "name": "name"
+     },
+     {
+      "type": "Surface",
+      "kind": "text",
+      "payload": " = ("
+     },
+     {
+      "type": "Slot",
+      "name": "name"
+     },
+     {
+      "type": "IfThenElse",
+      "cond": {
+       "type": "Eq",
+       "a": {
+        "type": "Slot",
+        "name": "op"
+       },
+       "b": {
+        "type": "Lit",
+        "value": "add"
+       }
+      },
+      "then": {
+       "type": "Surface",
+       "kind": "text",
+       "payload": " + "
+      },
+      "other": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Eq",
+        "a": {
+         "type": "Slot",
+         "name": "op"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "sub"
+        }
+       },
+       "then": {
+        "type": "Surface",
+        "kind": "text",
+        "payload": " - "
+       },
+       "other": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Eq",
+         "a": {
+          "type": "Slot",
+          "name": "op"
+         },
+         "b": {
+          "type": "Lit",
+          "value": "mult"
+         }
+        },
+        "then": {
+         "type": "Surface",
+         "kind": "text",
+         "payload": " * "
+        },
+        "other": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Eq",
+          "a": {
+           "type": "Slot",
+           "name": "op"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "floordiv"
+          }
+         },
+         "then": {
+          "type": "Surface",
+          "kind": "text",
+          "payload": " // "
+         },
+         "other": {
+          "type": "IfThenElse",
+          "cond": {
+           "type": "Eq",
+           "a": {
+            "type": "Slot",
+            "name": "op"
+           },
+           "b": {
+            "type": "Lit",
+            "value": "mod"
+           }
+          },
+          "then": {
+           "type": "Surface",
+           "kind": "text",
+           "payload": " % "
+          },
+          "other": {
+           "type": "Lit",
+           "value": null
+          }
+         }
+        }
+       }
+      }
+     },
+     {
+      "type": "Render",
+      "term": {
+       "type": "Slot",
+       "name": "value"
+      }
+     },
+     {
+      "type": "Surface",
+      "kind": "text",
+      "payload": ")"
+     }
+    ]
+   },
+   "note": "lua has no compound assignment: 'x = (x + v)'. Cross-frame only in practice \u2014 read-side AugAssign exists solely in the ipairs desugar, which the pre-pass folds away; a re-read of this form canonicalizes to ProgAssignVar (ledger).",
+   "teachable": false
+  },
+  {
+   "head": "ProgIfStmt",
+   "binding_pattern": [
+    "cond",
+    "then",
+    "orelse"
+   ],
+   "template": {
+    "type": "Cat",
+    "items": [
+     {
+      "type": "Surface",
+      "kind": "text",
+      "payload": "if "
+     },
+     {
+      "type": "Render",
+      "term": {
+       "type": "Slot",
+       "name": "cond"
+      }
+     },
+     {
+      "type": "Surface",
+      "kind": "text",
+      "payload": " then\n"
+     },
+     {
+      "type": "Render",
+      "term": {
+       "type": "Slot",
+       "name": "then"
+      }
+     },
+     {
+      "type": "Surface",
+      "kind": "text",
+      "payload": "\n"
+     },
+     {
+      "type": "IfThenElse",
+      "cond": {
+       "type": "Slot",
+       "name": "orelse"
+      },
+      "then": {
+       "type": "Cat",
+       "items": [
+        {
+         "type": "Surface",
+         "kind": "text",
+         "payload": "else\n"
+        },
+        {
+         "type": "Render",
+         "term": {
+          "type": "Slot",
+          "name": "orelse"
+         }
+        },
+        {
+         "type": "Surface",
+         "kind": "text",
+         "payload": "\n"
+        }
+       ]
+      },
+      "other": {
+       "type": "Surface",
+       "kind": "text",
+       "payload": ""
+      }
+     },
+     {
+      "type": "Surface",
+      "kind": "text",
+      "payload": "end"
+     }
+    ]
+   },
+   "note": "if statement; an elseif chain renders as else-nested ifs (each with its own `end`) \u2014 the read side folds `elseif` and `else if` to the IDENTICAL nested-ProgIfStmt IR.",
+   "teachable": false
+  },
+  {
+   "head": "ProgWhile",
+   "binding_pattern": [
+    "cond",
+    "body",
+    "repeat"
+   ],
+   "template": {
+    "type": "IfThenElse",
+    "cond": {
+     "type": "Slot",
+     "name": "repeat"
+    },
+    "then": {
+     "type": "Cat",
+     "items": [
+      {
+       "type": "Surface",
+       "kind": "text",
+       "payload": "repeat\n"
+      },
+      {
+       "type": "Render",
+       "term": {
+        "type": "Slot",
+        "name": "body"
+       }
+      },
+      {
+       "type": "Surface",
+       "kind": "text",
+       "payload": "\nuntil "
+      },
+      {
+       "type": "Render",
+       "term": {
+        "type": "Slot",
+        "name": "cond"
+       }
+      }
+     ]
+    },
+    "other": {
+     "type": "Cat",
+     "items": [
+      {
+       "type": "Surface",
+       "kind": "text",
+       "payload": "while "
+      },
+      {
+       "type": "Render",
+       "term": {
+        "type": "Slot",
+        "name": "cond"
+       }
+      },
+      {
+       "type": "Surface",
+       "kind": "text",
+       "payload": " do\n"
+      },
+      {
+       "type": "Render",
+       "term": {
+        "type": "Slot",
+        "name": "body"
+       }
+      },
+      {
+       "type": "Surface",
+       "kind": "text",
+       "payload": "\nend"
+      }
+     ]
+    }
+   },
+   "note": "while; `repeat` is the pre-pass fold mark (a Seq [B..., While(Not C){B}] with a duplicated body folds to While{repeat, cond=C, body=B} and renders `repeat B until C`, whose re-read restores the duplicated IR exactly). TEACH DELTA: the loop-carriable twin is the plain while form only.",
+   "teachable": true,
+   "teach_spec": [
+    "Cat",
+    [
+     "Surface",
+     "text",
+     "while "
+    ],
+    [
+     "Render",
+     [
+      "Slot",
+      "cond"
+     ]
+    ],
+    [
+     "Surface",
+     "text",
+     " do\n"
+    ],
+    [
+     "Render",
+     [
+      "Slot",
+      "body"
+     ]
+    ],
+    [
+     "Surface",
+     "text",
+     "\nend"
+    ]
+   ]
+  },
+  {
+   "head": "ProgForEach",
+   "binding_pattern": [
+    "var",
+    "iter",
+    "body",
+    "ipairs_k",
+    "nf_start",
+    "nf_stop",
+    "nf_step"
+   ],
+   "template": {
+    "type": "IfThenElse",
+    "cond": {
+     "type": "Slot",
+     "name": "nf_stop"
+    },
+    "then": {
+     "type": "Cat",
+     "items": [
+      {
+       "type": "Surface",
+       "kind": "text",
+       "payload": "for "
+      },
+      {
+       "type": "Slot",
+       "name": "var"
+      },
+      {
+       "type": "Surface",
+       "kind": "text",
+       "payload": " = "
+      },
+      {
+       "type": "Render",
+       "term": {
+        "type": "Slot",
+        "name": "nf_start"
+       }
+      },
+      {
+       "type": "Surface",
+       "kind": "text",
+       "payload": ", "
+      },
+      {
+       "type": "Render",
+       "term": {
+        "type": "Slot",
+        "name": "nf_stop"
+       }
+      },
+      {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Slot",
+        "name": "nf_step"
+       },
+       "then": {
+        "type": "Cat",
+        "items": [
+         {
+          "type": "Surface",
+          "kind": "text",
+          "payload": ", "
+         },
+         {
+          "type": "Render",
+          "term": {
+           "type": "Slot",
+           "name": "nf_step"
+          }
+         }
+        ]
+       },
+       "other": {
+        "type": "Surface",
+        "kind": "text",
+        "payload": ""
+       }
+      },
+      {
+       "type": "Surface",
+       "kind": "text",
+       "payload": " do\n"
+      },
+      {
+       "type": "Render",
+       "term": {
+        "type": "Slot",
+        "name": "body"
+       }
+      },
+      {
+       "type": "Surface",
+       "kind": "text",
+       "payload": "\nend"
+      }
+     ]
+    },
+    "other": {
+     "type": "IfThenElse",
+     "cond": {
+      "type": "Slot",
+      "name": "ipairs_k"
+     },
+     "then": {
+      "type": "Cat",
+      "items": [
+       {
+        "type": "Surface",
+        "kind": "text",
+        "payload": "for "
+       },
+       {
+        "type": "Slot",
+        "name": "ipairs_k"
+       },
+       {
+        "type": "Surface",
+        "kind": "text",
+        "payload": ", "
+       },
+       {
+        "type": "Slot",
+        "name": "var"
+       },
+       {
+        "type": "Surface",
+        "kind": "text",
+        "payload": " in ipairs("
+       },
+       {
+        "type": "Render",
+        "term": {
+         "type": "Slot",
+         "name": "iter"
+        }
+       },
+       {
+        "type": "Surface",
+        "kind": "text",
+        "payload": ") do\n"
+       },
+       {
+        "type": "Render",
+        "term": {
+         "type": "Slot",
+         "name": "body"
+        }
+       },
+       {
+        "type": "Surface",
+        "kind": "text",
+        "payload": "\nend"
+       }
+      ]
+     },
+     "other": {
+      "type": "Cat",
+      "items": [
+       {
+        "type": "Surface",
+        "kind": "text",
+        "payload": "for _, "
+       },
+       {
+        "type": "Slot",
+        "name": "var"
+       },
+       {
+        "type": "Surface",
+        "kind": "text",
+        "payload": " in ipairs("
+       },
+       {
+        "type": "Render",
+        "term": {
+         "type": "Slot",
+         "name": "iter"
+        }
+       },
+       {
+        "type": "Surface",
+        "kind": "text",
+        "payload": ") do\n"
+       },
+       {
+        "type": "Render",
+        "term": {
+         "type": "Slot",
+         "name": "body"
+        }
+       },
+       {
+        "type": "Surface",
+        "kind": "text",
+        "payload": "\nend"
+       }
+      ]
+     }
+    }
+   },
+   "note": "three inversions: nf_* = the pre-pass numeric-for mark (range-extern iter, INCLUSIVE stop recovered by structurally stripping the read-side \u00b11 shift \u2014 the 1-based cross-frame map run backwards); ipairs_k = the pre-pass generic-for fold (counter+ForEach desugar inverted to `for k, v in ipairs(xs)`, re-reads to the identical desugared IR); fallback = ipairs with '_' (cross-frame ForEach; re-read canonicalizes to the counter desugar \u2014 ledger).",
+   "teachable": false
+  },
+  {
+   "head": "ProgLoopCtl",
+   "binding_pattern": [
+    "kind"
+   ],
+   "template": {
+    "type": "IfThenElse",
+    "cond": {
+     "type": "Eq",
+     "a": {
+      "type": "Slot",
+      "name": "kind"
+     },
+     "b": {
+      "type": "Lit",
+      "value": "break"
+     }
+    },
+    "then": {
+     "type": "Surface",
+     "kind": "text",
+     "payload": "break"
+    },
+    "other": {
+     "type": "Lit",
+     "value": null
+    }
+   },
+   "note": "break only; `continue` does not exist in lua -> honest gap.",
+   "teachable": false
+  },
+  {
+   "head": "ProgReturn",
+   "binding_pattern": [
+    "value"
+   ],
+   "template": {
+    "type": "IfThenElse",
+    "cond": {
+     "type": "Slot",
+     "name": "value"
+    },
+    "then": {
+     "type": "Cat",
+     "items": [
+      {
+       "type": "Surface",
+       "kind": "text",
+       "payload": "return "
+      },
+      {
+       "type": "Render",
+       "term": {
+        "type": "Slot",
+        "name": "value"
+       }
+      }
+     ]
+    },
+    "other": {
+     "type": "Surface",
+     "kind": "text",
+     "payload": "return"
+    }
+   },
+   "note": "return / bare return. TEACH DELTA: the loop-carriable twin is the valued form only.",
+   "teachable": true,
+   "teach_spec": [
+    "Cat",
+    [
+     "Surface",
+     "text",
+     "return "
+    ],
+    [
+     "Render",
+     [
+      "Slot",
+      "value"
+     ]
+    ]
+   ]
+  },
+  {
+   "head": "ProgCallExtern",
+   "binding_pattern": [
+    "name",
+    "recv",
+    "args"
+   ],
+   "template": {
+    "type": "IfThenElse",
+    "cond": {
+     "type": "Slot",
+     "name": "recv"
+    },
+    "then": {
+     "type": "Cat",
+     "items": [
+      {
+       "type": "Surface",
+       "kind": "text",
+       "payload": "("
+      },
+      {
+       "type": "Render",
+       "term": {
+        "type": "Slot",
+        "name": "recv"
+       }
+      },
+      {
+       "type": "Surface",
+       "kind": "text",
+       "payload": "):"
+      },
+      {
+       "type": "Slot",
+       "name": "name"
+      },
+      {
+       "type": "Surface",
+       "kind": "text",
+       "payload": "("
+      },
+      {
+       "type": "Join",
+       "separator": {
+        "type": "Surface",
+        "kind": "text",
+        "payload": ", "
+       },
+       "items": {
+        "type": "Slot",
+        "name": "args"
+       }
+      },
+      {
+       "type": "Surface",
+       "kind": "text",
+       "payload": ")"
+      }
+     ]
+    },
+    "other": {
+     "type": "IfThenElse",
+     "cond": {
+      "type": "Eq",
+      "a": {
+       "type": "Slot",
+       "name": "name"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "len"
+      }
+     },
+     "then": {
+      "type": "Cat",
+      "items": [
+       {
+        "type": "Surface",
+        "kind": "text",
+        "payload": "#("
+       },
+       {
+        "type": "Render",
+        "term": {
+         "type": "Nth",
+         "items": {
+          "type": "Slot",
+          "name": "args"
+         },
+         "index": 0
+        }
+       },
+       {
+        "type": "Surface",
+        "kind": "text",
+        "payload": ")"
+       }
+      ]
+     },
+     "other": {
+      "type": "Cat",
+      "items": [
+       {
+        "type": "Slot",
+        "name": "name"
+       },
+       {
+        "type": "Surface",
+        "kind": "text",
+        "payload": "("
+       },
+       {
+        "type": "Join",
+        "separator": {
+         "type": "Surface",
+         "kind": "text",
+         "payload": ", "
+        },
+        "items": {
+         "type": "Slot",
+         "name": "args"
+        }
+       },
+       {
+        "type": "Surface",
+        "kind": "text",
+        "payload": ")"
+       }
+      ]
+     }
+    }
+   },
+   "note": "recv -> '(recv):name(args)' (method inversion); the declared len oracle inverts to '#(x)'; dotted lua names (math.floor) render verbatim. A bare range() call outside a folded numeric-for renders verbatim and is a lua-runtime residual (never produced by reads).",
+   "teachable": false
+  },
+  {
+   "head": "ProgSubscript",
+   "binding_pattern": [
+    "obj",
+    "index"
+   ],
+   "template": {
+    "type": "Cat",
+    "items": [
+     {
+      "type": "Render",
+      "term": {
+       "type": "Slot",
+       "name": "obj"
+      }
+     },
+     {
+      "type": "Surface",
+      "kind": "text",
+      "payload": "["
+     },
+     {
+      "type": "Render",
+      "term": {
+       "type": "Slot",
+       "name": "index"
+      }
+     },
+     {
+      "type": "Surface",
+      "kind": "text",
+      "payload": "]"
+     }
+    ]
+   },
+   "note": "the 1-based cross-frame map, render direction: the pre-pass strips the read-side `i - 1` shift structurally (else wraps `i + 1`), so t[i] round-trips byte-stably.",
+   "teachable": false
+  },
+  {
+   "head": "ProgSubscriptSet",
+   "binding_pattern": [
+    "obj",
+    "index",
+    "value"
+   ],
+   "template": {
+    "type": "Cat",
+    "items": [
+     {
+      "type": "Render",
+      "term": {
+       "type": "Slot",
+       "name": "obj"
+      }
+     },
+     {
+      "type": "Surface",
+      "kind": "text",
+      "payload": "["
+     },
+     {
+      "type": "Render",
+      "term": {
+       "type": "Slot",
+       "name": "index"
+      }
+     },
+     {
+      "type": "Surface",
+      "kind": "text",
+      "payload": "] = "
+     },
+     {
+      "type": "Render",
+      "term": {
+       "type": "Slot",
+       "name": "value"
+      }
+     }
+    ]
+   },
+   "note": "subscript write; same 1-based inversion as ProgSubscript.",
+   "teachable": false
+  },
+  {
+   "head": "ProgContainerLit",
+   "binding_pattern": [
+    "kind",
+    "items"
+   ],
+   "template": {
+    "type": "IfThenElse",
+    "cond": {
+     "type": "Eq",
+     "a": {
+      "type": "Slot",
+      "name": "kind"
+     },
+     "b": {
+      "type": "Lit",
+      "value": "list"
+     }
+    },
+    "then": {
+     "type": "Cat",
+     "items": [
+      {
+       "type": "Surface",
+       "kind": "text",
+       "payload": "{"
+      },
+      {
+       "type": "Join",
+       "separator": {
+        "type": "Surface",
+        "kind": "text",
+        "payload": ", "
+       },
+       "items": {
+        "type": "Slot",
+        "name": "items"
+       }
+      },
+      {
+       "type": "Surface",
+       "kind": "text",
+       "payload": "}"
+      }
+     ]
+    },
+    "other": {
+     "type": "Lit",
+     "value": null
+    }
+   },
+   "note": "list -> array-part table literal; non-list kinds -> honest gap (the read-side map-part blocker, render direction).",
+   "teachable": false
+  },
+  {
+   "head": "ProgFString",
+   "binding_pattern": [
+    "parts"
+   ],
+   "template": {
+    "type": "Cat",
+    "items": [
+     {
+      "type": "Surface",
+      "kind": "text",
+      "payload": "("
+     },
+     {
+      "type": "Join",
+      "separator": {
+       "type": "Surface",
+       "kind": "text",
+       "payload": " .. "
+      },
+      "items": {
+       "type": "Slot",
+       "name": "parts"
+      }
+     },
+     {
+      "type": "Surface",
+      "kind": "text",
+      "payload": ")"
+     }
+    ]
+   },
+   "note": "concat inversion: parts joined by ' .. ' (2-part reads round-trip; N-part python f-strings flatten to left-assoc pairs on re-read \u2014 ledger).",
+   "teachable": true,
+   "teach_spec": [
+    "Cat",
+    [
+     "Surface",
+     "text",
+     "("
+    ],
+    [
+     "Join",
+     [
+      "Surface",
+      "text",
+      " .. "
+     ],
+     [
+      "Slot",
+      "parts"
+     ]
+    ],
+    [
+     "Surface",
+     "text",
+     ")"
+    ]
+   ]
+  }
+ ]
+}

@@ -1,0 +1,118 @@
+{
+  "id": "ros2_dds_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "ROS2",
+  "in_microtheory": "embedded_iot_realtime",
+  "description": "ROS2 + DDS decomposed. Node lifecycle, executor model, topics/services/actions, QoS profiles, parameters, namespaces, launch system, DDS discovery, RMW abstraction, tf2 transforms.",
+  "sub_mechanisms": [
+    {
+      "name": "ROS2_node",
+      "definition": "Process containing one or more nodes. Each node has unique name + namespace.",
+      "why": "Modular processing unit. Sensors, planners, controllers each = node. Distributed across processes + machines. Foundation of ROS2.",
+      "category": "ros2_mechanism"
+    },
+    {
+      "name": "ROS2_executor",
+      "definition": "Manages callback execution. Single-threaded, multi-threaded, static (compile-time scheduled).",
+      "why": "Different latency + throughput characteristics. Multi-threaded: parallel callbacks. Static: deterministic for RT. Choose per requirements.",
+      "category": "ros2_mechanism"
+    },
+    {
+      "name": "ROS2_topic_pub_sub",
+      "definition": "Asynchronous many-to-many messaging. Publishers + subscribers; topic name + message type.",
+      "why": "Standard sensor data flow. Camera publishes /camera/image; many subscribers process. Decoupled. Foundation of robotic perception.",
+      "category": "ros2_mechanism"
+    },
+    {
+      "name": "ROS2_service",
+      "definition": "Request-response RPC. Synchronous (blocking) or async client. One-shot.",
+      "why": "Commands with reply: 'compute path', 'capture image'. Distinct from topic (continuous data flow). Standard RPC for robotics.",
+      "category": "ros2_mechanism"
+    },
+    {
+      "name": "ROS2_action",
+      "definition": "Long-running goal: goal, feedback (progress), result. Cancellation supported.",
+      "why": "'Navigate to position': minutes-long. Action lets client monitor + cancel. Built on services + topics. Standard for plannable behaviours.",
+      "category": "ros2_mechanism"
+    },
+    {
+      "name": "ROS2_QoS_profile",
+      "definition": "Per-topic settings. Reliability (best-effort vs reliable), durability (volatile vs transient_local), history (keep last N).",
+      "why": "Sensor stream: best-effort + small queue. Commands: reliable. Latched data: transient_local. Match QoS to data semantics.",
+      "category": "ros2_mechanism"
+    },
+    {
+      "name": "ROS2_parameter_server",
+      "definition": "Each node has parameter dict. Settable at launch + runtime. Typed.",
+      "why": "Runtime tuning. PID gains, threshold values. Standard config mechanism. Persists via parameter YAML.",
+      "category": "ros2_mechanism"
+    },
+    {
+      "name": "ROS2_namespace",
+      "definition": "Hierarchical naming for nodes + topics. /robot1/camera/image, /robot2/camera/image.",
+      "why": "Multi-robot systems. Avoid name collisions. Remap topic names at launch. Standard scaling pattern.",
+      "category": "ros2_mechanism"
+    },
+    {
+      "name": "ROS2_launch_python",
+      "definition": "Python-based launch files. Compose nodes + parameters + conditions.",
+      "why": "Complex robotic systems. Conditional launches, parameter overrides, sub-launches. Python = full expressiveness.",
+      "category": "ros2_mechanism"
+    },
+    {
+      "name": "DDS_discovery_protocol",
+      "definition": "Nodes discover each other via multicast. SPDP for participants, SEDP for endpoints.",
+      "why": "Decentralised: no broker. Cost: multicast can't traverse subnets without help. Discovery server for cloud robotics.",
+      "category": "ros2_mechanism"
+    },
+    {
+      "name": "RMW_layer",
+      "definition": "ROS Middleware abstraction. Pluggable: Fast DDS (default), Cyclone DDS, RTI Connext.",
+      "why": "Decouples ROS2 from specific DDS. Vendor change without app rewrite. Different vendors have different strengths.",
+      "category": "ros2_mechanism"
+    },
+    {
+      "name": "tf2_transform_tree",
+      "definition": "Time-stamped coordinate frame transformations. Tree of frames; query 'pose of A in B at time T'.",
+      "why": "Robotics needs frame transforms (camera → base → world). tf2 handles. Time-aware: transforms valid at specific times.",
+      "category": "ros2_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "QoS_must_match_for_compatible_endpoints",
+      "if": ["publisher + subscriber QoS profiles don't match"],
+      "then": ["they don't connect (silent failure)"],
+      "why": "Reliable publisher + best-effort subscriber: OK. Best-effort publisher + reliable subscriber: incompatible. Common debugging issue.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "multi_threaded_executor_for_parallel_callbacks",
+      "if": ["node has independent expensive callbacks"],
+      "then": ["multi-threaded executor improves throughput"],
+      "why": "Single-threaded: serialised. Multi-threaded: parallel up to thread count. Cost: shared state needs locking. Trade-off per node.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "DDS_decentralised_discovery_scales_within_subnet",
+      "if": ["nodes on same multicast-reachable network"],
+      "then": ["DDS discovers automatically"],
+      "why": "No central broker. Multicast SPDP/SEDP. Scales well in subnet. Crosses subnets requires discovery server. Standard ROS2 model.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "actions_for_long_running_goals",
+      "if": ["operation takes seconds-minutes + needs feedback"],
+      "then": ["action outperforms service or topic"],
+      "why": "Service: blocking, no progress. Topic: no result. Action: client monitors progress + can cancel. Standard for navigation, manipulation.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "namespace_isolation_enables_multi_robot",
+      "if": ["multiple robots share ROS2 network"],
+      "then": ["namespaces prevent topic collisions"],
+      "why": "Each robot's nodes in own namespace. /robot1/camera, /robot2/camera. Same code different namespace = different topics. Standard multi-robot pattern.",
+      "soundness_category": "extensional_equivalence"
+    }
+  ]
+}

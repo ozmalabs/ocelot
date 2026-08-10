@@ -1,0 +1,91 @@
+{
+ "id": "mood_r1",
+ "version": "1.0.0",
+ "self_load_only": true,
+ "depends_on": ["mood_r1_task"],
+ "area": "retina",
+ "description": "MOOD AS MOMENTUM -- R1 momentum layer (block 236000). A readable Mood node hung off the SAME EmotionHub as the MoodTask (by has_mood), joined to the task through the hub. Mood.momentum is a SLOW LEAKY EMA of the signed valence-RPE -- the RAW ORDER-0 SIGNED RESIDUAL (r-v) the task exposes as raw_rpe (pre-registered RPE choice, = Eldar/Niv 2016's m_{t+1}=m_t+eta'((r-v)-m_t)). The update `momentum += momentum_lr*(raw_rpe - momentum)` = `(1-momentum_lr)*momentum + momentum_lr*raw_rpe` is STRUCTURALLY sd_blend (staleness_decay's Kalman held-vs-new blend `held + alpha*(new-held)`), the (1-alpha) factor IS the leak -- the extensional per-tick form of the scale2 half-life decay toward zero -- reusing the SAME atoms (Plus/Times/Minus), NO new Term. It integrates the RAW rpe (an honest trend tracker; feeding the self-inflated perceived rpe back is the R3 runaway, deliberately NOT done here). mood_bias writes `bias = gain*momentum` (Eldar/Niv's f_t*m_t) onto the MoodTask, so mt_learn adds it to the perceived RPE before the reinforcer forms. OFF by default: every rule guards on Mood.enabled==1; the WITHOUT-mood arm is the SAME graph with enabled=0 (bias stays 0, mt_learn is a plain delta rule); absent the Mood node every task path is byte-identical. Each accumulating rule SELF-CLOSES on its own per-rule epoch marker (input_epoch > e_x + set e_x=input_epoch), fixpoint-safe under run_rules. Momentum = order-1 'velocity of value': the eye's motion inference (TimeInfer/diff_pyramid) pointed at reward -- no new Term.",
+ "microtheory": {
+  "name": "mood_r1",
+  "description": "Mood momentum = a slow leaky EMA of the signed value-prediction-error (the paper's m), biasing appraisal additively via a readable gain; the momentum of value, the slow layer over the fast appraisal core. The continuous-looking EMA is a cross-frame map (decay/blend), never an in-frame float."
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [
+  {
+   "provenance": "seed:mood_r1:hub-mood",
+   "src": {"type": "EmotionHub", "var": "hub"},
+   "edge_type": "has_mood",
+   "tgt": {"type": "Mood", "var": "mood"}
+  }
+ ],
+ "rules": [
+  {
+   "name": "mood_bias",
+   "area": "retina",
+   "order": 3,
+   "latency_class": "hard_realtime",
+   "match": [
+    ["hub", "has_mood_task", "mt"],
+    ["hub", "has_mood", "mood"]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {"type": "Eq",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "mood"}, "key": "enabled"},
+      "b": {"type": "Lit", "value": 1.0}},
+     {"type": "Gt",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "mt"}, "key": "input_epoch"},
+      "b": {"type": "Attr", "node": {"type": "Var", "name": "mood"}, "key": "e_bias"}}
+    ]
+   },
+   "effects": [
+    ["set_attr", "mt", "bias", {"__term__": {
+     "type": "Times",
+     "items": [
+      {"type": "Attr", "node": {"type": "Var", "name": "mood"}, "key": "gain"},
+      {"type": "Attr", "node": {"type": "Var", "name": "mood"}, "key": "momentum"}
+     ]
+    }}],
+    ["set_attr", "mood", "e_bias", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "mt"}, "key": "input_epoch"}}]
+   ]
+  },
+  {
+   "name": "mood_momentum",
+   "area": "retina",
+   "order": 4,
+   "latency_class": "hard_realtime",
+   "match": [
+    ["hub", "has_mood_task", "mt"],
+    ["hub", "has_mood", "mood"]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {"type": "Eq",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "mood"}, "key": "enabled"},
+      "b": {"type": "Lit", "value": 1.0}},
+     {"type": "Gt",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "mt"}, "key": "input_epoch"},
+      "b": {"type": "Attr", "node": {"type": "Var", "name": "mood"}, "key": "e_mom"}}
+    ]
+   },
+   "effects": [
+    ["set_attr", "mood", "momentum", {"__term__": {
+     "type": "Plus",
+     "items": [
+      {"type": "Attr", "node": {"type": "Var", "name": "mood"}, "key": "momentum"},
+      {"type": "Times", "items": [
+       {"type": "Attr", "node": {"type": "Var", "name": "mood"}, "key": "momentum_lr"},
+       {"type": "Minus",
+        "a": {"type": "Attr", "node": {"type": "Var", "name": "mt"}, "key": "raw_rpe"},
+        "b": {"type": "Attr", "node": {"type": "Var", "name": "mood"}, "key": "momentum"}}
+      ]}
+     ]
+    }}],
+    ["set_attr", "mood", "e_mom", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "mt"}, "key": "input_epoch"}}]
+   ]
+  }
+ ]
+}

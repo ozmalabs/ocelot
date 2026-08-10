@@ -1,0 +1,39 @@
+{
+  "protocol": "humanoid_bench_h1_walk_v1",
+  "status": "cross_simulator_development_test",
+  "claim": "The same graph-native opaque motor learner transfers to the official HumanoidBench H1 body, derives its response horizon from the new morphology and MuJoCo clock, and can compose simultaneous movements without a pretrained policy.",
+  "simulator": "humanoid_bench_mujoco",
+  "environment_id": "h1-walk-v0",
+  "seed": 0,
+  "body": {
+    "time_step_seconds": 0.002,
+    "gravity_acceleration": 9.81,
+    "initial_settling_frames": 1,
+    "joint_twitch_radians": 0.08,
+    "maximum_joint_force": 1.0,
+    "position_gain": 1.0,
+    "velocity_gain": 1.0
+  },
+  "calibration": {
+    "samples_per_non_tonic_actuator": 1,
+    "reset_body_before_each_sample": true
+  },
+  "locomotion": {
+    "actions": 400,
+    "heading_x": 1.0,
+    "target_froude_speed": 0.05,
+    "modes": [
+      "directed_walk",
+      "tonic_posture_control"
+    ]
+  },
+  "evaluation": {
+    "minimum_upright_height_fraction": 0.75,
+    "minimum_directed_progress_metres": 0.05,
+    "maximum_final_lateral_drift_metres": 1.0,
+    "minimum_support_alternations": 1,
+    "maximum_aerial_samples": 400,
+    "adaptive_must_remain_upright": true,
+    "tonic_control_must_not_match_progress": true
+  }
+}

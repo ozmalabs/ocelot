@@ -1,0 +1,39 @@
+{
+  "id": "topic_search_verify",
+  "version": "1.0.0",
+  "depends_on": ["topic_search"],
+  "description": "Graph-native Wikipedia search VERIFICATION. fetch_dispatch.scan_and_search ingests opensearch hits as SearchCandidate nodes (mechanical I/O: title, extract, overlap_ratio, is_disambiguation) — it never picks the first hit. THIS rule DECIDES which candidate is relevant (overlap_ratio >= min_overlap AND NOT is_disambiguation) and marks it selected=1.0 on the highest-overlap qualifying candidate; scan_and_search then commits ONLY the selected candidate via learn_from_teacher. A miss leaves the SearchRequest failed with 'no verified candidate' — honest, never a blind first-hit dump.",
+  "nodes": [],
+  "edges": [],
+  "productions": [],
+  "rules": [
+    {
+      "name": "select_verified_search_candidate",
+      "match": [
+        ["sr", "has_candidate", "c"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "sr"}, "key": "status"}, "b": {"type": "Lit", "value": "candidates_ready"}},
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "sr"}, "key": "candidate_selected"}, "b": {"type": "Lit", "value": 1.0}}},
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "selected"}, "b": {"type": "Lit", "value": 1.0}}},
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "is_disambiguation"}, "b": {"type": "Lit", "value": 1.0}}},
+          {"type": "Not", "arg": {"type": "Lt", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "overlap_ratio"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "sr"}, "key": "min_overlap"}}},
+          {"type": "Not", "arg": {"type": "Exists", "source": {"type": "InNeighbours", "node": {"type": "Var", "name": "sr"}, "edge_type": "has_candidate"}, "var_name": "better",
+            "predicate": {"type": "And", "items": [
+              {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "better"}, "key": "is_disambiguation"}, "b": {"type": "Lit", "value": 1.0}}},
+              {"type": "Not", "arg": {"type": "Lt", "a": {"type": "Attr", "node": {"type": "Var", "name": "better"}, "key": "overlap_ratio"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "sr"}, "key": "min_overlap"}}},
+              {"type": "Gt", "a": {"type": "Attr", "node": {"type": "Var", "name": "better"}, "key": "overlap_ratio"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "overlap_ratio"}}
+            ]}}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "c", "selected", 1.0],
+        ["set_attr", "sr", "candidate_selected", 1.0],
+        ["set_attr", "sr", "chosen_title", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "title"}}],
+        ["set_attr", "sr", "chosen_extract", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "extract"}}]
+      ]
+    }
+  ]
+}

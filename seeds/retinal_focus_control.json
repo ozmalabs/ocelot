@@ -1,0 +1,381 @@
+{
+  "id": "retinal_focus_control",
+  "version": "1.0.0",
+  "depends_on": [
+    "held_prediction_attention"
+  ],
+  "description": "Generic graph-native conversion of the shared retinal attention verdict into a bounded next-observation focus command. The attention faculties own selection and exact-tie refusal; this seed only publishes their verdict in sensor-allocation vocabulary. A unique current-epoch winner requests a rectangular focus centred on its retinal cell. A refusal explicitly disables focus, so stale coordinates are never retained. Half-extents are graph data on RetinalFocusController, not host policy. The world adapter may mechanically copy these attrs into an optical apparatus; it never chooses the focus. No task- or world-specific vocabulary.",
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "RetinalFocusController",
+      "attrs": {
+        "purpose": "attention_directed_sensor_allocation",
+        "half_width": 4,
+        "half_height": 4
+      }
+    }
+  ],
+  "edges": [
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_retinal_focus_controller",
+      "tgt": {
+        "local": 0
+      },
+      "attrs": {}
+    }
+  ],
+  "productions": [
+    {
+      "provenance": "seed:retinal_focus_control:agent-controller",
+      "src": {
+        "type": "Agent",
+        "var": "agent"
+      },
+      "edge_type": "has_retinal_focus_controller",
+      "tgt": {
+        "type": "RetinalFocusController",
+        "var": "controller"
+      }
+    }
+  ],
+  "rules": [
+    {
+      "name": "retinal_focus_publish_unique_attention",
+      "area": "attention",
+      "order": 9,
+      "latency_class": "soft_realtime",
+      "comment": "Translate an already-resolved, current-epoch attention verdict into a sensor-allocation command. Selection happened upstream through the tie-refusing fovea resolver; this rule performs no ranking.",
+      "match": [
+        [
+          "agent",
+          "has_retinal_focus_controller",
+          "controller"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "agent"
+              },
+              "key": "attention_sensor_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "agent"
+              },
+              "key": "vision_settled_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "agent"
+              },
+              "key": "attention_refused"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0.0
+            }
+          },
+          {
+            "type": "Or",
+            "items": [
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "agent"
+                    },
+                    "key": "retinal_focus_active"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": 1.0
+                  }
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "agent"
+                    },
+                    "key": "retinal_focus_source_epoch"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "agent"
+                    },
+                    "key": "attention_sensor_epoch"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "agent",
+          "retinal_focus_active",
+          {
+            "__term__": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "agent",
+          "retinal_focus_column",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "agent"
+              },
+              "key": "attention_column_index"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "agent",
+          "retinal_focus_row",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "agent"
+              },
+              "key": "attention_row_index"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "agent",
+          "retinal_focus_half_width",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "controller"
+              },
+              "key": "half_width"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "agent",
+          "retinal_focus_half_height",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "controller"
+              },
+              "key": "half_height"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "agent",
+          "retinal_focus_source_epoch",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "agent"
+              },
+              "key": "attention_sensor_epoch"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "retinal_focus_publish_attention_refusal",
+      "area": "attention",
+      "order": 10,
+      "latency_class": "soft_realtime",
+      "comment": "An explicit current-epoch attention refusal is also an explicit focus refusal. This prevents yesterday's focus from surviving an empty, inadmissible, or exactly tied field.",
+      "match": [
+        [
+          "agent",
+          "has_retinal_focus_controller",
+          "controller"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "agent"
+              },
+              "key": "attention_sensor_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "agent"
+              },
+              "key": "vision_settled_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "agent"
+              },
+              "key": "attention_refused"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Or",
+            "items": [
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "agent"
+                    },
+                    "key": "retinal_focus_active"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": 0.0
+                  }
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "agent"
+                    },
+                    "key": "retinal_focus_source_epoch"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "agent"
+                    },
+                    "key": "attention_sensor_epoch"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "agent",
+          "retinal_focus_active",
+          {
+            "__term__": {
+              "type": "Lit",
+              "value": 0.0
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "agent",
+          "retinal_focus_column",
+          {
+            "__term__": {
+              "type": "Lit",
+              "value": -1
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "agent",
+          "retinal_focus_row",
+          {
+            "__term__": {
+              "type": "Lit",
+              "value": -1
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "agent",
+          "retinal_focus_source_epoch",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "agent"
+              },
+              "key": "attention_sensor_epoch"
+            }
+          }
+        ]
+      ]
+    }
+  ]
+}

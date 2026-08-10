@@ -1,0 +1,2215 @@
+{
+  "id": "physics_derivation",
+  "version": "1.0.0",
+  "depends_on": [
+    "epistemics_core"
+  ],
+  "description": "RESTORED physics-from-observation derivation (Galileo / momentum / lever), graph-native. Rules mint velocity+acceleration from published position (the agent invents the rate), accumulate per-(type,attr) Attribute value-sets and per-(regime,type,quantity) RegimeStat counts over an Obs log, and REUSE the surviving epistemics_core law_predicate / conservation_predicate (via EvalSubgraph) to reify Law nodes. Restores the deleted CuriousAgent observe()/_note_quantity/_accumulate_regimes/_discover_invariants/_discover_conservation.",
+  "nodes": [],
+  "edges": [],
+  "productions": [],
+  "rules": [
+    {
+      "name": "pw_kinematics",
+      "match": [
+        [
+          "sys",
+          "has_body",
+          "b"
+        ]
+      ],
+      "effects": [
+        [
+          "set_attr",
+          "b",
+          "acc_y",
+          {
+            "__term__": {
+              "type": "Minus",
+              "a": {
+                "type": "Minus",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "b"
+                  },
+                  "key": "y_bin"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "b"
+                  },
+                  "key": "prev_y"
+                }
+              },
+              "b": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "b"
+                },
+                "key": "prev_vy"
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "b",
+          "acc_x",
+          {
+            "__term__": {
+              "type": "Minus",
+              "a": {
+                "type": "Minus",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "b"
+                  },
+                  "key": "x_bin"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "b"
+                  },
+                  "key": "prev_x"
+                }
+              },
+              "b": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "b"
+                },
+                "key": "prev_vx"
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "b",
+          "vel_y",
+          {
+            "__term__": {
+              "type": "Minus",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "b"
+                },
+                "key": "y_bin"
+              },
+              "b": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "b"
+                },
+                "key": "prev_y"
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "b",
+          "vel_x",
+          {
+            "__term__": {
+              "type": "Minus",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "b"
+                },
+                "key": "x_bin"
+              },
+              "b": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "b"
+                },
+                "key": "prev_x"
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "b",
+          "prev_vy",
+          {
+            "__term__": {
+              "type": "Minus",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "b"
+                },
+                "key": "y_bin"
+              },
+              "b": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "b"
+                },
+                "key": "prev_y"
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "b",
+          "prev_vx",
+          {
+            "__term__": {
+              "type": "Minus",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "b"
+                },
+                "key": "x_bin"
+              },
+              "b": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "b"
+                },
+                "key": "prev_x"
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "b",
+          "prev_y",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "b"
+              },
+              "key": "y_bin"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "b",
+          "prev_x",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "b"
+              },
+              "key": "x_bin"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "b",
+          "nobs",
+          {
+            "__term__": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "b"
+                  },
+                  "key": "nobs"
+                },
+                {
+                  "type": "Lit",
+                  "value": 1
+                }
+              ]
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "b",
+          "stamp",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "b"
+              },
+              "key": "cur_tick"
+            }
+          }
+        ]
+      ],
+      "where": {
+        "type": "Not",
+        "arg": {
+          "type": "Eq",
+          "a": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "b"
+            },
+            "key": "stamp"
+          },
+          "b": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "b"
+            },
+            "key": "cur_tick"
+          }
+        }
+      }
+    },
+    {
+      "name": "pw_log_acc_y",
+      "match": [
+        [
+          "agent",
+          "owns_system",
+          "sys"
+        ],
+        [
+          "sys",
+          "has_body",
+          "b"
+        ]
+      ],
+      "effects": [
+        [
+          "set_attr",
+          "b",
+          "log_ay_stamp",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "b"
+              },
+              "key": "cur_tick"
+            }
+          }
+        ],
+        [
+          "add_node",
+          "o",
+          "Obs",
+          {
+            "type_name": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "b"
+                },
+                "key": "type_name"
+              }
+            },
+            "q": "acc_y",
+            "regime": {
+              "__term__": {
+                "type": "IfThenElse",
+                "cond": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "b"
+                    },
+                    "key": "on_ground"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": 0
+                  }
+                },
+                "then": {
+                  "type": "Lit",
+                  "value": "falling"
+                },
+                "other": {
+                  "type": "Lit",
+                  "value": "grounded"
+                }
+              }
+            },
+            "v": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "b"
+                },
+                "key": "acc_y"
+              }
+            },
+            "body": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "b"
+                },
+                "key": "id"
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "agent",
+          "has_obs",
+          "o"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "b"
+              },
+              "key": "type_name"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "Ball"
+            }
+          },
+          {
+            "type": "Gte",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "b"
+              },
+              "key": "nobs"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 3
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "b"
+                },
+                "key": "log_ay_stamp"
+              },
+              "b": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "b"
+                },
+                "key": "cur_tick"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "pw_log_ball_mass",
+      "match": [
+        [
+          "agent",
+          "owns_system",
+          "sys"
+        ],
+        [
+          "sys",
+          "has_body",
+          "b"
+        ]
+      ],
+      "effects": [
+        [
+          "set_attr",
+          "b",
+          "log_m_stamp",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "b"
+              },
+              "key": "cur_tick"
+            }
+          }
+        ],
+        [
+          "add_node",
+          "o",
+          "Obs",
+          {
+            "type_name": "Ball",
+            "q": "mass",
+            "regime": {
+              "__term__": {
+                "type": "IfThenElse",
+                "cond": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "b"
+                    },
+                    "key": "on_ground"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": 0
+                  }
+                },
+                "then": {
+                  "type": "Lit",
+                  "value": "falling"
+                },
+                "other": {
+                  "type": "Lit",
+                  "value": "grounded"
+                }
+              }
+            },
+            "v": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "b"
+                },
+                "key": "mass"
+              }
+            },
+            "body": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "b"
+                },
+                "key": "id"
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "agent",
+          "has_obs",
+          "o"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "b"
+              },
+              "key": "type_name"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "Ball"
+            }
+          },
+          {
+            "type": "Gte",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "b"
+              },
+              "key": "nobs"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 3
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "b"
+                },
+                "key": "log_m_stamp"
+              },
+              "b": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "b"
+                },
+                "key": "cur_tick"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "pw_log_puck_vel_x",
+      "match": [
+        [
+          "agent",
+          "owns_system",
+          "sys"
+        ],
+        [
+          "sys",
+          "has_body",
+          "b"
+        ]
+      ],
+      "effects": [
+        [
+          "set_attr",
+          "b",
+          "log_vx_stamp",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "b"
+              },
+              "key": "cur_tick"
+            }
+          }
+        ],
+        [
+          "add_node",
+          "o",
+          "Obs",
+          {
+            "type_name": "Puck",
+            "q": "vel_x",
+            "regime": "isolated",
+            "v": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "b"
+                },
+                "key": "vel_x"
+              }
+            },
+            "body": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "b"
+                },
+                "key": "id"
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "agent",
+          "has_obs",
+          "o"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "b"
+              },
+              "key": "type_name"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "Puck"
+            }
+          },
+          {
+            "type": "Gte",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "b"
+              },
+              "key": "nobs"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 2
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "b"
+                },
+                "key": "log_vx_stamp"
+              },
+              "b": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "b"
+                },
+                "key": "cur_tick"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "pw_log_momentum",
+      "match": [
+        [
+          "agent",
+          "owns_system",
+          "sys"
+        ]
+      ],
+      "effects": [
+        [
+          "set_attr",
+          "sys",
+          "mom_stamp",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "sys"
+              },
+              "key": "cur_tick"
+            }
+          }
+        ],
+        [
+          "add_node",
+          "o",
+          "Obs",
+          {
+            "type_name": "System",
+            "q": "momentum",
+            "regime": "isolated",
+            "composite": 1,
+            "v": {
+              "__term__": {
+                "type": "Sum",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {
+                    "type": "Var",
+                    "name": "sys"
+                  },
+                  "edge_type": "has_body"
+                },
+                "var_name": "p",
+                "value": {
+                  "type": "Times",
+                  "items": [
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "p"
+                      },
+                      "key": "mass"
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "p"
+                      },
+                      "key": "vel_x"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "agent",
+          "has_obs",
+          "o"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "sys"
+                },
+                "key": "mom_stamp"
+              },
+              "b": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "sys"
+                },
+                "key": "cur_tick"
+              }
+            }
+          },
+          {
+            "type": "Exists",
+            "source": {
+              "type": "Neighbours",
+              "node": {
+                "type": "Var",
+                "name": "sys"
+              },
+              "edge_type": "has_body"
+            },
+            "var_name": "p",
+            "predicate": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "p"
+                },
+                "key": "type_name"
+              },
+              "b": {
+                "type": "Lit",
+                "value": "Puck"
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "sys"
+                },
+                "edge_type": "has_body"
+              },
+              "var_name": "p",
+              "predicate": {
+                "type": "Lt",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "p"
+                  },
+                  "key": "nobs"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 2
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "pw_log_torque",
+      "match": [
+        [
+          "agent",
+          "owns_lever",
+          "lev"
+        ]
+      ],
+      "effects": [
+        [
+          "set_attr",
+          "lev",
+          "tq_stamp",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "lev"
+              },
+              "key": "cur_tick"
+            }
+          }
+        ],
+        [
+          "add_node",
+          "o",
+          "Obs",
+          {
+            "type_name": "Lever",
+            "q": "net_torque",
+            "regime": {
+              "__term__": {
+                "type": "IfThenElse",
+                "cond": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "lev"
+                    },
+                    "key": "balanced"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": 1
+                  }
+                },
+                "then": {
+                  "type": "Lit",
+                  "value": "balanced"
+                },
+                "other": {
+                  "type": "Lit",
+                  "value": "unbalanced"
+                }
+              }
+            },
+            "v": {
+              "__term__": {
+                "type": "Sum",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {
+                    "type": "Var",
+                    "name": "lev"
+                  },
+                  "edge_type": "has_weight"
+                },
+                "var_name": "w",
+                "value": {
+                  "type": "Times",
+                  "items": [
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "w"
+                      },
+                      "key": "mass"
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "w"
+                      },
+                      "key": "signed_distance"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "agent",
+          "has_obs",
+          "o"
+        ],
+        [
+          "add_node",
+          "o2",
+          "Obs",
+          {
+            "type_name": "Lever",
+            "q": "total_load",
+            "regime": {
+              "__term__": {
+                "type": "IfThenElse",
+                "cond": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "lev"
+                    },
+                    "key": "balanced"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": 1
+                  }
+                },
+                "then": {
+                  "type": "Lit",
+                  "value": "balanced"
+                },
+                "other": {
+                  "type": "Lit",
+                  "value": "unbalanced"
+                }
+              }
+            },
+            "v": {
+              "__term__": {
+                "type": "Sum",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {
+                    "type": "Var",
+                    "name": "lev"
+                  },
+                  "edge_type": "has_weight"
+                },
+                "var_name": "w",
+                "value": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "w"
+                  },
+                  "key": "mass"
+                }
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "agent",
+          "has_obs",
+          "o2"
+        ]
+      ],
+      "where": {
+        "type": "Not",
+        "arg": {
+          "type": "Eq",
+          "a": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "lev"
+            },
+            "key": "tq_stamp"
+          },
+          "b": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "lev"
+            },
+            "key": "cur_tick"
+          }
+        }
+      }
+    },
+    {
+      "name": "pw_ensure_regime_stat",
+      "match": [
+        [
+          "agent",
+          "has_obs",
+          "o"
+        ]
+      ],
+      "effects": [
+        [
+          "add_node_if_absent",
+          "stat",
+          "RegimeStat",
+          {
+            "regime": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "o"
+                },
+                "key": "regime"
+              }
+            },
+            "type_name": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "o"
+                },
+                "key": "type_name"
+              }
+            },
+            "quantity": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "o"
+                },
+                "key": "q"
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "agent",
+          "tracks_regime_stat",
+          "stat"
+        ]
+      ]
+    },
+    {
+      "name": "pw_recompute_regime_stat",
+      "match": [
+        [
+          "agent",
+          "tracks_regime_stat",
+          "stat"
+        ]
+      ],
+      "effects": [
+        [
+          "set_attr",
+          "stat",
+          "obs_count",
+          {
+            "__term__": {
+              "type": "Count",
+              "source": {
+                "type": "Filter",
+                "source": {
+                  "type": "NodesOfType",
+                  "node_type": "Obs"
+                },
+                "var_name": "o",
+                "predicate": {
+                  "type": "And",
+                  "items": [
+                    {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "o"
+                        },
+                        "key": "type_name"
+                      },
+                      "b": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "stat"
+                        },
+                        "key": "type_name"
+                      }
+                    },
+                    {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "o"
+                        },
+                        "key": "q"
+                      },
+                      "b": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "stat"
+                        },
+                        "key": "quantity"
+                      }
+                    },
+                    {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "o"
+                        },
+                        "key": "regime"
+                      },
+                      "b": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "stat"
+                        },
+                        "key": "regime"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "stat",
+          "distinct_count",
+          {
+            "__term__": {
+              "type": "Count",
+              "source": {
+                "type": "MapSet",
+                "source": {
+                  "type": "Filter",
+                  "source": {
+                    "type": "NodesOfType",
+                    "node_type": "Obs"
+                  },
+                  "var_name": "o",
+                  "predicate": {
+                    "type": "And",
+                    "items": [
+                      {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "o"
+                          },
+                          "key": "type_name"
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "stat"
+                          },
+                          "key": "type_name"
+                        }
+                      },
+                      {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "o"
+                          },
+                          "key": "q"
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "stat"
+                          },
+                          "key": "quantity"
+                        }
+                      },
+                      {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "o"
+                          },
+                          "key": "regime"
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "stat"
+                          },
+                          "key": "regime"
+                        }
+                      }
+                    ]
+                  }
+                },
+                "var_name": "o",
+                "value": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "o"
+                  },
+                  "key": "v"
+                }
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "stat",
+          "global_distinct",
+          {
+            "__term__": {
+              "type": "Count",
+              "source": {
+                "type": "MapSet",
+                "source": {
+                  "type": "Filter",
+                  "source": {
+                    "type": "NodesOfType",
+                    "node_type": "Obs"
+                  },
+                  "var_name": "o",
+                  "predicate": {
+                    "type": "And",
+                    "items": [
+                      {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "o"
+                          },
+                          "key": "type_name"
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "stat"
+                          },
+                          "key": "type_name"
+                        }
+                      },
+                      {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "o"
+                          },
+                          "key": "q"
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "stat"
+                          },
+                          "key": "quantity"
+                        }
+                      }
+                    ]
+                  }
+                },
+                "var_name": "o",
+                "value": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "o"
+                  },
+                  "key": "v"
+                }
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "stat",
+          "invariant_value",
+          {
+            "__term__": {
+              "type": "Pick",
+              "source": {
+                "type": "MapSet",
+                "source": {
+                  "type": "Filter",
+                  "source": {
+                    "type": "NodesOfType",
+                    "node_type": "Obs"
+                  },
+                  "var_name": "o",
+                  "predicate": {
+                    "type": "And",
+                    "items": [
+                      {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "o"
+                          },
+                          "key": "type_name"
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "stat"
+                          },
+                          "key": "type_name"
+                        }
+                      },
+                      {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "o"
+                          },
+                          "key": "q"
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "stat"
+                          },
+                          "key": "quantity"
+                        }
+                      },
+                      {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "o"
+                          },
+                          "key": "regime"
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "stat"
+                          },
+                          "key": "regime"
+                        }
+                      }
+                    ]
+                  }
+                },
+                "var_name": "o",
+                "value": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "o"
+                  },
+                  "key": "v"
+                }
+              }
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "pw_discover_law",
+      "match": [
+        [
+          "agent",
+          "tracks_regime_stat",
+          "stat"
+        ]
+      ],
+      "effects": [
+        [
+          "add_node_if_absent",
+          "l",
+          "Law",
+          {
+            "kind": "regime_invariant",
+            "regime": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "stat"
+                },
+                "key": "regime"
+              }
+            },
+            "type_name": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "stat"
+                },
+                "key": "type_name"
+              }
+            },
+            "quantity": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "stat"
+                },
+                "key": "quantity"
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "l",
+          "invariant_value",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "stat"
+              },
+              "key": "invariant_value"
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "agent",
+          "discovered_law",
+          "l"
+        ],
+        [
+          "add_edge",
+          "l",
+          "holds_in_regime",
+          "stat"
+        ],
+        [
+          "add_edge",
+          "l",
+          "about_quantity",
+          "stat"
+        ]
+      ],
+      "where": {
+        "type": "EvalSubgraph",
+        "node": {
+          "type": "Pick",
+          "source": {
+            "type": "Neighbours",
+            "node": {
+              "type": "Var",
+              "name": "agent"
+            },
+            "edge_type": "law_predicate"
+          }
+        }
+      }
+    },
+    {
+      "name": "pw_law_independent_of",
+      "match": [
+        [
+          "agent",
+          "discovered_law",
+          "l"
+        ],
+        [
+          "agent",
+          "tracks_regime_stat",
+          "stat2"
+        ]
+      ],
+      "effects": [
+        [
+          "add_edge",
+          "l",
+          "independent_of",
+          "stat2"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "l"
+              },
+              "key": "kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "regime_invariant"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "l"
+              },
+              "key": "regime"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "stat2"
+              },
+              "key": "regime"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "l"
+              },
+              "key": "type_name"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "stat2"
+              },
+              "key": "type_name"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "l"
+                },
+                "key": "quantity"
+              },
+              "b": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "stat2"
+                },
+                "key": "quantity"
+              }
+            }
+          },
+          {
+            "type": "Gte",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "stat2"
+              },
+              "key": "distinct_count"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 2
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "l"
+                },
+                "edge_type": "independent_of"
+              },
+              "var_name": "q2",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "q2"
+                  },
+                  "key": "quantity"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "stat2"
+                  },
+                  "key": "quantity"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "pw_ensure_attribute",
+      "match": [
+        [
+          "agent",
+          "has_obs",
+          "o"
+        ]
+      ],
+      "effects": [
+        [
+          "add_node_if_absent",
+          "att",
+          "Attribute",
+          {
+            "type_name": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "o"
+                },
+                "key": "type_name"
+              }
+            },
+            "attr": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "o"
+                },
+                "key": "q"
+              }
+            },
+            "composite": 1
+          }
+        ],
+        [
+          "add_edge",
+          "agent",
+          "tracks_attribute",
+          "att"
+        ]
+      ],
+      "where": {
+        "type": "Eq",
+        "a": {
+          "type": "Attr",
+          "node": {
+            "type": "Var",
+            "name": "o"
+          },
+          "key": "composite"
+        },
+        "b": {
+          "type": "Lit",
+          "value": 1
+        }
+      }
+    },
+    {
+      "name": "pw_recompute_attribute",
+      "match": [
+        [
+          "agent",
+          "tracks_attribute",
+          "att"
+        ]
+      ],
+      "effects": [
+        [
+          "set_attr",
+          "att",
+          "observed_count",
+          {
+            "__term__": {
+              "type": "Count",
+              "source": {
+                "type": "Filter",
+                "source": {
+                  "type": "NodesOfType",
+                  "node_type": "Obs"
+                },
+                "var_name": "o",
+                "predicate": {
+                  "type": "And",
+                  "items": [
+                    {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "o"
+                        },
+                        "key": "type_name"
+                      },
+                      "b": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "att"
+                        },
+                        "key": "type_name"
+                      }
+                    },
+                    {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "o"
+                        },
+                        "key": "q"
+                      },
+                      "b": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "att"
+                        },
+                        "key": "attr"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "att",
+          "distinct_count",
+          {
+            "__term__": {
+              "type": "Count",
+              "source": {
+                "type": "MapSet",
+                "source": {
+                  "type": "Filter",
+                  "source": {
+                    "type": "NodesOfType",
+                    "node_type": "Obs"
+                  },
+                  "var_name": "o",
+                  "predicate": {
+                    "type": "And",
+                    "items": [
+                      {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "o"
+                          },
+                          "key": "type_name"
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "att"
+                          },
+                          "key": "type_name"
+                        }
+                      },
+                      {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "o"
+                          },
+                          "key": "q"
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "att"
+                          },
+                          "key": "attr"
+                        }
+                      }
+                    ]
+                  }
+                },
+                "var_name": "o",
+                "value": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "o"
+                  },
+                  "key": "v"
+                }
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "att",
+          "invariant_value",
+          {
+            "__term__": {
+              "type": "Pick",
+              "source": {
+                "type": "MapSet",
+                "source": {
+                  "type": "Filter",
+                  "source": {
+                    "type": "NodesOfType",
+                    "node_type": "Obs"
+                  },
+                  "var_name": "o",
+                  "predicate": {
+                    "type": "And",
+                    "items": [
+                      {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "o"
+                          },
+                          "key": "type_name"
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "att"
+                          },
+                          "key": "type_name"
+                        }
+                      },
+                      {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "o"
+                          },
+                          "key": "q"
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "att"
+                          },
+                          "key": "attr"
+                        }
+                      }
+                    ]
+                  }
+                },
+                "var_name": "o",
+                "value": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "o"
+                  },
+                  "key": "v"
+                }
+              }
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "pw_discover_conservation",
+      "match": [
+        [
+          "agent",
+          "tracks_attribute",
+          "att"
+        ]
+      ],
+      "effects": [
+        [
+          "add_node_if_absent",
+          "l",
+          "Law",
+          {
+            "kind": "conservation",
+            "type_name": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "att"
+                },
+                "key": "type_name"
+              }
+            },
+            "quantity": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "att"
+                },
+                "key": "attr"
+              }
+            },
+            "conserved_despite": "vel_x"
+          }
+        ],
+        [
+          "set_attr",
+          "l",
+          "invariant_value",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "att"
+              },
+              "key": "invariant_value"
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "agent",
+          "discovered_law",
+          "l"
+        ],
+        [
+          "add_edge",
+          "l",
+          "about_attribute",
+          "att"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "EvalSubgraph",
+            "node": {
+              "type": "Pick",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "agent"
+                },
+                "edge_type": "conservation_predicate"
+              }
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "att"
+              },
+              "key": "composite"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Exists",
+            "source": {
+              "type": "NodesOfType",
+              "node_type": "RegimeStat"
+            },
+            "var_name": "s2",
+            "predicate": {
+              "type": "And",
+              "items": [
+                {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "s2"
+                    },
+                    "key": "quantity"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": "vel_x"
+                  }
+                },
+                {
+                  "type": "Gte",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "s2"
+                    },
+                    "key": "distinct_count"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": 2
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "NodesOfType",
+                "node_type": "Law"
+              },
+              "var_name": "l2",
+              "predicate": {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "l2"
+                      },
+                      "key": "kind"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "conservation"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "l2"
+                      },
+                      "key": "quantity"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "att"
+                      },
+                      "key": "attr"
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

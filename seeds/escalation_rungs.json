@@ -1,0 +1,118 @@
+{
+  "id": "escalation_rungs",
+  "version": "1.0.0",
+  "depends_on": [],
+  "description": "cascade_decide's rung ladder (reflective_faculty.py:1794, gap_prioritiser.PIPELINE_LEVELS: perception_units -> segmentation -> speaker_normalization -> feature_extraction -> recognition) as DATA: Rung nodes {name, level} chained by next_rung edges in level order, + a stored Program 'cascade_pick' generalising cascade_decide's Lt(margin, threshold) escalate-or-stay Term-tree gate to an explicit CURRENT rung (env: margin, threshold, current) -- escalate (margin < threshold, the EffortDial VOC gate) picks the next rung above current by Argmin(level); otherwise stays at current.",
+  "microtheory": {
+    "name": "escalation_rungs",
+    "description": "the cheap->expensive pipeline ladder + the confidence-gated escalate-or-stay pick."
+  },
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "Rung",
+      "attrs": {
+        "name": "perception_units",
+        "level": 1.0
+      }
+    },
+    {
+      "local_id": 1,
+      "type": "Rung",
+      "attrs": {
+        "name": "segmentation",
+        "level": 2.0
+      }
+    },
+    {
+      "local_id": 2,
+      "type": "Rung",
+      "attrs": {
+        "name": "speaker_normalization",
+        "level": 3.0
+      }
+    },
+    {
+      "local_id": 3,
+      "type": "Rung",
+      "attrs": {
+        "name": "feature_extraction",
+        "level": 4.0
+      }
+    },
+    {
+      "local_id": 4,
+      "type": "Rung",
+      "attrs": {
+        "name": "recognition",
+        "level": 5.0
+      }
+    },
+    {
+      "local_id": 5,
+      "type": "Program",
+      "attrs": {
+        "name": "cascade_pick",
+        "program": "{\"type\": \"IfThenElse\", \"cond\": {\"type\": \"Lt\", \"a\": {\"type\": \"Var\", \"name\": \"margin\"}, \"b\": {\"type\": \"Var\", \"name\": \"threshold\"}}, \"then\": {\"type\": \"Attr\", \"key\": \"name\", \"node\": {\"type\": \"Argmin\", \"source\": {\"type\": \"Filter\", \"source\": {\"type\": \"NodesOfType\", \"node_type\": \"Rung\"}, \"var_name\": \"r1\", \"predicate\": {\"type\": \"Gt\", \"a\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"r1\"}, \"key\": \"level\"}, \"b\": {\"type\": \"Attr\", \"node\": {\"type\": \"Pick\", \"source\": {\"type\": \"Filter\", \"source\": {\"type\": \"NodesOfType\", \"node_type\": \"Rung\"}, \"var_name\": \"r0\", \"predicate\": {\"type\": \"Eq\", \"a\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"r0\"}, \"key\": \"name\"}, \"b\": {\"type\": \"Var\", \"name\": \"current\"}}}}, \"key\": \"level\"}}}, \"var_name\": \"r2\", \"value\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"r2\"}, \"key\": \"level\"}, \"default\": null}}, \"other\": {\"type\": \"Var\", \"name\": \"current\"}}",
+        "form": "term_tree"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "src": {
+        "local": 0
+      },
+      "tgt": {
+        "local": 1
+      },
+      "type": "next_rung",
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 1
+      },
+      "tgt": {
+        "local": 2
+      },
+      "type": "next_rung",
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 2
+      },
+      "tgt": {
+        "local": 3
+      },
+      "type": "next_rung",
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 3
+      },
+      "tgt": {
+        "local": 4
+      },
+      "type": "next_rung",
+      "attrs": {}
+    }
+  ],
+  "productions": [
+    {
+      "provenance": "seed:escalation_rungs:next_rung-0",
+      "src": {
+        "type": "Rung",
+        "var": "s"
+      },
+      "edge_type": "next_rung",
+      "tgt": {
+        "type": "Rung",
+        "var": "t"
+      }
+    }
+  ],
+  "rules": []
+}

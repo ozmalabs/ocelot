@@ -1,0 +1,197 @@
+{
+  "id": "event_reasoning",
+  "version": "1.0.0",
+  "depends_on": [
+    "situation_model"
+  ],
+  "description": "Event/temporal/causal fabula (typed before/causes edges over situation-model events + a precedence flood for story-time) and inference/entailment/QA (the rule engine over the model: forward-chain to fixpoint, entailment = did B materialise, QA = bind the WH-slot). Implication rules chain fell+fragile -> on_floor -> broken -> worthless.",
+  "microtheory": {
+    "name": "event_reasoning",
+    "description": "fabula + inference/entailment/QA over events"
+  },
+  "nodes": [
+    {
+      "local_id": 1,
+      "type": "Concept",
+      "attrs": {
+        "name": "fabula",
+        "description": "The ordering structure OVER the situation-model events: two edge-types between event nodes \u2014 before/after (from tense/aspect + connectives then/after) and causes/enables (from because/so + role-continuity) \u2014 with story-time resolved as a precedence flood (a topological flood over the event-DAG, the sibling of the navigation distance-field). It is the INVERSE of the narrative faculty: narrative linearises fabula->sjuzhet to tell it, fabula reads the arc back."
+      }
+    },
+    {
+      "local_id": 2,
+      "type": "Concept",
+      "attrs": {
+        "name": "inference_qa",
+        "description": "Not a new faculty \u2014 the RULE ENGINE standing over the situation model. Forward-chaining = run_rules to fixpoint across Implication rules; ENTAILMENT of B = run to fixpoint then check whether B materialised (or its negation -> contradiction); QA = the bind mechanism run inward (a question is a model node with one unbound WH-role; answering = match-and-bind). Entailment, multi-hop, and QA collapse into one operation: match-and-bind to fixpoint."
+      }
+    },
+    {
+      "local_id": 3,
+      "type": "Principle",
+      "attrs": {
+        "name": "fabula_recovers_chronology",
+        "head": "event reasoning",
+        "body": "test: unscramble a flashback-ordered text into true chronology and recover trip->fall from \"he fell because he tripped\""
+      }
+    },
+    {
+      "local_id": 4,
+      "type": "Principle",
+      "attrs": {
+        "name": "inference_is_multi_hop",
+        "head": "event reasoning",
+        "body": "a good inference chains: fell + fragile -> on_floor -> broken -> worthless (3 hops) materialised by running the implication rules to fixpoint"
+      }
+    },
+    {
+      "local_id": 5,
+      "type": "Principle",
+      "attrs": {
+        "name": "qa_is_match_and_bind",
+        "head": "event reasoning",
+        "body": "answering a question is binding its unbound WH-slot against the fixpoint model; entailment is the yes/no case of the same bind"
+      }
+    }
+  ],
+  "edges": [],
+  "rules": [
+    {
+      "name": "infer_on_floor",
+      "match": [
+        [
+          "x",
+          "is_entity",
+          "x"
+        ]
+      ],
+      "where": {
+        "type": "Eq",
+        "a": {
+          "type": "Attr",
+          "node": {
+            "type": "Var",
+            "name": "x"
+          },
+          "key": "fell"
+        },
+        "b": {
+          "type": "Lit",
+          "value": 1
+        }
+      },
+      "effects": [
+        [
+          "set_attr",
+          "x",
+          "on_floor",
+          1
+        ],
+        [
+          "set_attr",
+          "x",
+          "on_floor_inferred",
+          1
+        ]
+      ]
+    },
+    {
+      "name": "infer_broken",
+      "match": [
+        [
+          "x",
+          "is_entity",
+          "x"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "x"
+              },
+              "key": "on_floor"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "x"
+              },
+              "key": "fragile"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "x",
+          "broken",
+          1
+        ],
+        [
+          "set_attr",
+          "x",
+          "broken_inferred",
+          1
+        ]
+      ]
+    },
+    {
+      "name": "infer_worthless",
+      "match": [
+        [
+          "x",
+          "is_entity",
+          "x"
+        ]
+      ],
+      "where": {
+        "type": "Eq",
+        "a": {
+          "type": "Attr",
+          "node": {
+            "type": "Var",
+            "name": "x"
+          },
+          "key": "broken"
+        },
+        "b": {
+          "type": "Lit",
+          "value": 1
+        }
+      },
+      "effects": [
+        [
+          "set_attr",
+          "x",
+          "worthless",
+          1
+        ],
+        [
+          "set_attr",
+          "x",
+          "worthless_inferred",
+          1
+        ]
+      ]
+    }
+  ]
+}

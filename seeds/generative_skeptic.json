@@ -1,0 +1,77 @@
+{
+  "microtheory": {
+    "name": "generative_skeptic",
+    "definition": "The agent's BANKED FAILURE-LESSONS — episodes where one of its own conclusions went wrong, recorded so the generative skeptic can HARVEST the failure-SHAPE (the structural pattern a wrong conclusion exhibits) and, given a NEW raw conclusion, GENERATE the right skeptical probe by transfer. This is the DUAL of order_n_postulates: that module harvests IMPLICATION-shapes (transferred to find capability GAPS); this one harvests FAILURE-shapes (transferred to find the weak link / counterexample / missed-evidence check that a conclusion demands). Each FailureLesson is a real episode the agent lived; the shape (the pattern + the probe + which hat-inputs to extract) is harvested from it, not hand-authored as a probe list.",
+    "category": "metacognition"
+  },
+  "concepts": [
+    {
+      "name": "lesson_moving_degraded_baseline",
+      "node_type": "FailureLesson",
+      "definition": "W5-in-digit-path: the run printed 'FUSION CLOSES / matches-or-beats-OLD: True' while the OLD anchor baseline had CRASHED 62.5%->20%. The 'matches OLD' verdict compared the fused 20% to a DEGRADED OLD baseline. A regression HIDDEN by scoring against a moving/degraded reference.",
+      "failure_shape": "verdict_scored_against_a_moving_or_degraded_baseline",
+      "match_patterns": ["matches?\\s+old", "beats?\\s+old", "closes?", "no\\s+regression", "same\\s+as\\s+before", "matches?\\s+baseline", "vs\\.?\\s+old", "fusion", "ties\\s+the\\s+anchor", "consolidat", "wir(e|ed|ing)\\s+.*\\s+into"],
+      "probe_template": "CHECK THE OLD/ANCHOR BASELINE: is this verdict scored against a baseline that itself DEGRADED in this run? Re-measure the anchor's own integrity (its prior support vs what it realised this run) before trusting the comparison.",
+      "weak_link": "anchor/baseline integrity — did the reference itself hold its prior?",
+      "hat_inputs": "claimed_support = the anchor's PRIOR support; realised_support = what the anchor REALISED this run; a crash (realised << claimed) is the miss.",
+      "category": "failure_lesson"
+    },
+    {
+      "name": "lesson_breadth_junk_frontier",
+      "node_type": "FailureLesson",
+      "definition": "B-frontier: the order-N absent-capability channel, run with prune off over the full cross-domain breadth, surfaced 'frontier = 70B model fits on 48 GB GPU' (and galvanic-corrosion, generic compositional-generation) as top compression axes. These compress well but are DOMAIN-IRRELEVANT junk — not a speech frontier at all. A high-compression conclusion that is outside the question's domain.",
+      "failure_shape": "high_compression_but_domain_irrelevant_frontier",
+      "match_patterns": ["frontier\\s*=", "70b", "48\\s*gb", "gpu", "fits\\s+on", "model\\s+fits", "top\\s+axis", "highest\\s+payoff", "best\\s+compress", "unifies\\s+the\\s+most", "next\\s+capability"],
+      "probe_template": "CHECK DOMAIN ADMISSIBILITY: is this conclusion actually IN the domain of the question, or is it breadth junk that merely compresses well? Test the named capability's tokens against the domain's own surface; a high-compression axis from an unrelated domain is not a frontier.",
+      "weak_link": "domain admissibility — does this belong to the question's domain at all?",
+      "hat_inputs": "claimed_support = the compression payoff the axis claims; realised_support = its DOMAIN relevance (0 if the named tokens do not appear in the question's domain surface).",
+      "category": "failure_lesson"
+    },
+    {
+      "name": "lesson_hardware_knob_as_capability",
+      "node_type": "FailureLesson",
+      "definition": "bad-ears: the agent named its frontier 'densify the cochlea — the estimate quality, not the feature, caps recognition'. But 'more cochlear filters' is a HARDWARE KNOB (a continuous dial), not an admissible STRUCTURE/capability. The human existence proof (same coarse cochlea, robust recognition) shows the capability holds WITHOUT the sharper ear — the lever is top-down recovery, not the knob.",
+      "failure_shape": "hardware_or_knob_mistaken_for_a_capability_or_structure",
+      "match_patterns": ["densif", "more\\s+(filter|band|cochlea)", "sharper\\s+ear", "add\\s+(filter|band)", "higher\\s+resolution", "estimate\\s+quality", "tune\\s+the", "bigger\\s+model", "scale\\s+up", "more\\s+compute", "knob"],
+      "probe_template": "EXISTENCE-PROOF / COUNTEREXAMPLE: this names X (a knob) as NEEDED for Y. Search the agent's breadth for a system that achieves Y WITHOUT X. If one exists (humans recognise speech with the SAME coarse cochlea), X is a knob, not the lever — the real capability is whatever compensates.",
+      "weak_link": "is X a structure/capability, or a continuous hardware knob a counterexample defeats?",
+      "hat_inputs": "claimed_support = the conclusion's confidence X is the lever; realised_support = 0 when an existence-proof (Y-without-X) is found in breadth.",
+      "needs_for": "recognition robustness",
+      "lacks_thing": "sharp cochlea / dense filters",
+      "category": "failure_lesson"
+    },
+    {
+      "name": "lesson_consistency_mistaken_for_accuracy",
+      "node_type": "FailureLesson",
+      "definition": "A recogniser/chunker reported high CONSISTENCY (its units recur, it agrees with itself, low variance) and that was read as high ACCURACY. But a system can be reliably WRONG: consistency measures self-agreement, accuracy measures agreement with ground truth. A degenerate all-one-label predictor is perfectly consistent and useless.",
+      "failure_shape": "consistency_or_stability_mistaken_for_accuracy",
+      "match_patterns": ["consisten", "stable", "agrees?\\s+with\\s+itself", "low\\s+variance", "reproducib", "recurr", "reliab", "self-?agree", "repeatab"],
+      "probe_template": "CHECK GROUND TRUTH: is this scored against the TRUTH or only against ITSELF? Add the accuracy-vs-a-known-label control and the degenerate-baseline control (a single-label / shuffle predictor) — consistency alone is satisfied by being reliably wrong.",
+      "weak_link": "consistency vs accuracy — measured against ground truth, or only self-agreement?",
+      "hat_inputs": "claimed_support = the claimed accuracy the consistency was read as; realised_support = the accuracy against a real label / above the degenerate baseline.",
+      "category": "failure_lesson"
+    },
+    {
+      "name": "lesson_boolean_over_the_numbers",
+      "node_type": "FailureLesson",
+      "definition": "A run printed a boolean banner ('CLOSES: True', 'PASS', 'matches: True') and the boolean was trusted over the underlying numbers, which told a different story (the True was computed against a degraded value, or the margin was within noise). The boolean is a lossy summary; the numbers are the evidence.",
+      "failure_shape": "boolean_verdict_trusted_over_the_underlying_numbers",
+      "match_patterns": [":\\s*true", ":\\s*pass", "\\bpass(ed)?\\b", "\\bclose[sd]?\\b", "\\btrue\\b", "succeed", "\\bok\\b", "verdict\\s*=\\s*true", "result\\s*=\\s*pass"],
+      "probe_template": "READ THE NUMBERS BEHIND THE BOOLEAN: what are the actual magnitudes the True was computed from, and is the margin above noise / above the control? A boolean is a lossy summary; re-derive it from the raw numbers and the baseline.",
+      "weak_link": "the boolean vs the numbers it was computed from (margin above noise?)",
+      "hat_inputs": "claimed_support = the magnitude the boolean implies; realised_support = the actual measured margin over the control.",
+      "category": "failure_lesson"
+    },
+    {
+      "name": "lesson_premature_stop",
+      "node_type": "FailureLesson",
+      "definition": "A conclusion was committed after a single pass / one seed / one speaker, calling it done before the control, the held-out, or the n-th iteration was run. The result looked clean only because the test that would have broken it had not yet been run. Stopping at the first green is a premature stop.",
+      "failure_shape": "premature_stop_before_the_breaking_test",
+      "match_patterns": ["done", "complete", "solved", "first\\s+(pass|try|run)", "single\\s+(seed|run|pass)", "good\\s+enough", "ship\\s+it", "works", "one\\s+speaker", "looks\\s+(good|clean)", "no\\s+need\\s+to"],
+      "probe_template": "RUN THE BREAKING TEST FIRST: what control / held-out / shuffle / cross-speaker / n-th-iteration test has NOT yet been run? A conclusion is only as strong as the test that would have falsified it — run that before committing.",
+      "weak_link": "the un-run control / held-out / shuffle that would falsify this",
+      "hat_inputs": "claimed_support = the confidence of the early commit; realised_support = the support that survives the held-out / shuffle control.",
+      "category": "failure_lesson"
+    }
+  ]
+}

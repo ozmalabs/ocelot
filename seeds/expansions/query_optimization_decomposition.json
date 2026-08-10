@@ -1,0 +1,118 @@
+{
+  "id": "query_optimization_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "query_optimizer",
+  "in_microtheory": "databases_and_storage",
+  "description": "Query optimization decomposed. Statistics (histograms, MCV), selectivity estimation, join order enumeration (DP, genetic, greedy), index selection, predicate pushdown, join reordering, materialized view rewriting. The mechanisms by which databases turn SQL into fast plans.",
+  "sub_mechanisms": [
+    {
+      "name": "table_statistics",
+      "definition": "Per-column: row count, distinct values, null fraction, MCVs (most-common values), histogram of distribution.",
+      "why": "Drives all cost estimates. Selectivity (fraction of rows matching predicate) computed from stats. Stale stats give wrong selectivity → wrong plans. ANALYZE refreshes.",
+      "category": "qopt_mechanism"
+    },
+    {
+      "name": "histogram_estimation",
+      "definition": "Equi-depth or equi-width histogram of column values. Estimates selectivity of range predicates (col > X).",
+      "why": "Continuous-value predicates need distribution data. Histogram bucket containing X gives estimated fraction. Postgres default: 100 buckets per column; adjustable.",
+      "category": "qopt_mechanism"
+    },
+    {
+      "name": "most_common_values_MCV",
+      "definition": "List of frequently-occurring values + their frequencies. Selectivity of col = X uses MCV if X is in list; histogram otherwise.",
+      "why": "Skewed distributions (e.g., status column with 95% 'OK', 5% spread across other values). MCV captures the spike; histogram captures the tail. Together: accurate selectivity for any X.",
+      "category": "qopt_mechanism"
+    },
+    {
+      "name": "join_selectivity",
+      "definition": "Estimated rows output by join. For equality join: rows_left × rows_right / max(distinct_left, distinct_right).",
+      "why": "Drives join order decisions. Output size determines next join's input size. Bad join selectivity → cascading bad estimates.",
+      "category": "qopt_mechanism"
+    },
+    {
+      "name": "join_order_DP",
+      "definition": "Dynamic programming over subsets of joining tables. Computes optimal plan for each subset; combines. O(3^n) for n tables.",
+      "why": "Optimal up to ~12 tables. Tractable thanks to subset DP. Postgres uses this for ≤ geqo_threshold; falls back to genetic for more.",
+      "category": "qopt_mechanism"
+    },
+    {
+      "name": "genetic_query_optimisation",
+      "definition": "For large joins (>12 tables): genetic algorithm. Population of join orders; mutate + crossover + select.",
+      "why": "DP doesn't scale to 20+ tables. Genetic gives 'pretty good' plans for large joins. Postgres geqo. Sometimes finds worse plans than DP — tradeoff for tractability.",
+      "category": "qopt_mechanism"
+    },
+    {
+      "name": "predicate_pushdown",
+      "definition": "Move filtering predicates closer to data source. WHERE clause applied before join when possible.",
+      "why": "Reduces intermediate result size. Filter 1M rows down to 1000 before joining; far cheaper than join then filter. Standard rule-based optimisation.",
+      "category": "qopt_mechanism"
+    },
+    {
+      "name": "constant_folding_QP",
+      "definition": "Evaluate constant expressions at plan time: WHERE x > 5 + 3 → WHERE x > 8.",
+      "why": "Same compiler optimisation applied to SQL. Predicate becomes simpler; sometimes opens further opts (constant-vs-constant becomes always-true/false).",
+      "category": "qopt_mechanism"
+    },
+    {
+      "name": "subquery_unnesting",
+      "definition": "Transform correlated subquery into join. EXISTS becomes semi-join; IN becomes hash-join.",
+      "why": "Naive correlated subquery: re-execute for each outer row. Unnested: one pass. 10-1000x speedup common. Major Postgres + commercial DB optimisation.",
+      "category": "qopt_mechanism"
+    },
+    {
+      "name": "common_subexpression_elimination_QP",
+      "definition": "Same subquery appearing twice computed once. WITH CTE materialised once + referenced.",
+      "why": "Postgres 12+ inlines CTEs by default but can MATERIALIZED. Optimisation analogous to compiler CSE. Important for complex analytical queries.",
+      "category": "qopt_mechanism"
+    },
+    {
+      "name": "materialized_view_rewriting",
+      "definition": "Optimizer recognises that a query matches a materialised view; substitutes view scan for original computation.",
+      "why": "Snowflake, BigQuery, Oracle all do this. Auto-rewrite without app changes. Foundation of automatic aggregation pre-computation. Hot research area.",
+      "category": "qopt_mechanism"
+    },
+    {
+      "name": "plan_caching",
+      "definition": "Cache compiled execution plans for repeated queries. Skip planning on next execution.",
+      "why": "Planning can dominate cost for simple queries. Cache key: SQL text + parameter types. Most OLTP databases (Postgres prepared statements, SQL Server plan cache) do this.",
+      "category": "qopt_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "selectivity_estimation_dominates_plan_quality",
+      "if": ["selectivity estimates are off by factor F"],
+      "then": ["join orders downstream cascade errors growing as F^n for n joins"],
+      "why": "Each estimated output feeds next plan's cost. Compound errors blow up exponentially. Worst case: chose hash join when nested loop would have been better — orders of magnitude slowdown.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "predicate_pushdown_reduces_intermediate_size",
+      "if": ["a filter applies to one table in a join"],
+      "then": ["pushing it before the join reduces work"],
+      "why": "Filter 1M rows → 100 rows then join 100 vs filter 100 from 1M-row join result. The former does linear filter + small join; the latter does big join + linear filter. Same predicate; orders-of-magnitude perf difference.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "histogram_essential_for_range_predicates",
+      "if": ["predicate is range-based (col > X) on skewed data"],
+      "then": ["histogram is required for accurate selectivity"],
+      "why": "Without histogram: uniform assumption gives wrong estimates on skewed data. With histogram: bucket-based estimate captures distribution. Postgres + commercial DBs all use histograms.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "join_order_DP_optimal_for_small_n",
+      "if": ["n tables ≤ ~12"],
+      "then": ["DP finds optimal join order"],
+      "why": "Computational cost ~3^n. Tractable until ~12. Beyond: switch to genetic or other heuristic. Most queries have few enough tables; large analytical queries use genetic.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "plan_caching_amortises_planning_cost",
+      "if": ["same query template runs frequently"],
+      "then": ["cached plan eliminates per-execution planning cost"],
+      "why": "Planning can take ms; execution can take µs (point lookup). Cached plan = constant overhead. Critical for OLTP. Postgres prepared statements, MySQL binary protocol use this.",
+      "soundness_category": "cost_equivalence"
+    }
+  ]
+}

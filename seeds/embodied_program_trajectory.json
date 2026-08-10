@@ -1,0 +1,3456 @@
+{
+ "id": "embodied_program_trajectory",
+ "version": "1.0.0",
+ "depends_on": [
+  "cognitive_pareto"
+ ],
+ "area": "general_cognition",
+ "latency_class": "soft_realtime",
+ "description": "Arbitrary-order, integer, receipt-grounded program prefix construction under a situated graph budget, with relational Pareto refutation and output-null curiosity selection.",
+ "nodes": [],
+ "edges": [],
+ "productions": [
+  {
+   "provenance": "embodied_program_trajectory:request",
+   "src": {
+    "type": "Node",
+    "var": "src"
+   },
+   "edge_type": "requests_embodied_program_trajectory",
+   "tgt": {
+    "type": "Node",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "embodied_program_trajectory:trajectory",
+   "src": {
+    "type": "Node",
+    "var": "src"
+   },
+   "edge_type": "has_embodied_program_trajectory",
+   "tgt": {
+    "type": "ParetoProfile",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "embodied_program_trajectory:budget",
+   "src": {
+    "type": "ParetoProfile",
+    "var": "src"
+   },
+   "edge_type": "uses_embodied_program_budget",
+   "tgt": {
+    "type": "Node",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "embodied_program_trajectory:transition",
+   "src": {
+    "type": "ParetoProfile",
+    "var": "src"
+   },
+   "edge_type": "has_embodied_program_transition",
+   "tgt": {
+    "type": "Node",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "embodied_program_trajectory:from_program",
+   "src": {
+    "type": "Node",
+    "var": "src"
+   },
+   "edge_type": "starts_from_embodied_program",
+   "tgt": {
+    "type": "Node",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "embodied_program_trajectory:to_program",
+   "src": {
+    "type": "Node",
+    "var": "src"
+   },
+   "edge_type": "continues_with_embodied_program",
+   "tgt": {
+    "type": "Node",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "embodied_program_trajectory:base",
+   "src": {
+    "type": "Node",
+    "var": "src"
+   },
+   "edge_type": "has_embodied_program_base_path",
+   "tgt": {
+    "type": "ParetoCandidate",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "embodied_program_trajectory:extension",
+   "src": {
+    "type": "ParetoCandidate",
+    "var": "src"
+   },
+   "edge_type": "has_embodied_program_path_extension",
+   "tgt": {
+    "type": "ParetoCandidate",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "embodied_program_trajectory:parent",
+   "src": {
+    "type": "ParetoCandidate",
+    "var": "src"
+   },
+   "edge_type": "extends_embodied_program_path",
+   "tgt": {
+    "type": "ParetoCandidate",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "embodied_program_trajectory:append",
+   "src": {
+    "type": "ParetoCandidate",
+    "var": "src"
+   },
+   "edge_type": "appends_embodied_program_transition",
+   "tgt": {
+    "type": "Node",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "embodied_program_trajectory:first",
+   "src": {
+    "type": "ParetoCandidate",
+    "var": "src"
+   },
+   "edge_type": "starts_with_embodied_program_transition",
+   "tgt": {
+    "type": "Node",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "embodied_program_trajectory:last",
+   "src": {
+    "type": "ParetoCandidate",
+    "var": "src"
+   },
+   "edge_type": "ends_with_embodied_program_transition",
+   "tgt": {
+    "type": "Node",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "embodied_program_trajectory:selected",
+   "src": {
+    "type": "Node",
+    "var": "src"
+   },
+   "edge_type": "has_selected_embodied_program_path",
+   "tgt": {
+    "type": "ParetoCandidate",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "embodied_program_trajectory:current",
+   "src": {
+    "type": "Node",
+    "var": "src"
+   },
+   "edge_type": "has_current_embodied_program",
+   "tgt": {
+    "type": "Node",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "embodied_program_trajectory:path_transition",
+   "src": {
+    "type": "ParetoCandidate",
+    "var": "src"
+   },
+   "edge_type": "contains_embodied_program_transition",
+   "tgt": {
+    "type": "Node",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "embodied_program_trajectory:path_program",
+   "src": {
+    "type": "ParetoCandidate",
+    "var": "src"
+   },
+   "edge_type": "contains_embodied_program",
+   "tgt": {
+    "type": "Node",
+    "var": "tgt"
+   }
+  }
+ ],
+ "rules": [
+  {
+   "name": "ept_open_situated_program_trajectory",
+   "area": "embodied_program_trajectory",
+   "latency_class": "soft_realtime",
+   "batch": false,
+   "comment": "A situated owner requests arbitrary-order program composition under a horizon held by its current budget context.",
+   "match": [
+    [
+     "owner",
+     "requests_embodied_program_trajectory",
+     "budget"
+    ],
+    [
+     "owner",
+     "has_current_embodied_program",
+     "current_program"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "budget"
+         },
+         "key": "trajectory_horizon"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "owner"
+         },
+         "edge_type": "has_embodied_program_trajectory",
+         "any_type": false
+        },
+        "var_name": "situated_trajectory",
+        "predicate": {
+         "type": "Exists",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "situated_trajectory"
+          },
+          "edge_type": "starts_from_embodied_program",
+          "any_type": false
+         },
+         "var_name": "trajectory_origin",
+         "predicate": {
+          "type": "Eq",
+          "a": {
+           "type": "Var",
+           "name": "trajectory_origin"
+          },
+          "b": {
+           "type": "Var",
+           "name": "current_program"
+          }
+         }
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "trajectory",
+     "ParetoProfile",
+     {
+      "kind": "embodied_program_trajectory",
+      "dimension_count": 4,
+      "horizon": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "budget"
+          },
+          "key": "trajectory_horizon"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "expansion_count": 0,
+      "output_authority": 0,
+      "integer_native": 1
+     }
+    ],
+    [
+     "add_edge",
+     "owner",
+     "has_embodied_program_trajectory",
+     "trajectory"
+    ],
+    [
+     "add_edge",
+     "trajectory",
+     "uses_embodied_program_budget",
+     "budget"
+    ],
+    [
+     "add_edge",
+     "trajectory",
+     "starts_from_embodied_program",
+     "current_program"
+    ]
+   ]
+  },
+  {
+   "name": "ept_mint_verified_order_one_path",
+   "area": "embodied_program_trajectory",
+   "latency_class": "soft_realtime",
+   "batch": true,
+   "comment": "Every verified edge is the depth-one prefix. Its state coordinates and costs remain separate Pareto dimensions.",
+   "match": [
+    [
+     "owner",
+     "has_embodied_program_trajectory",
+     "trajectory"
+    ],
+    [
+     "owner",
+     "has_current_embodied_program",
+     "origin_program"
+    ],
+    [
+     "trajectory",
+     "starts_from_embodied_program",
+     "origin_program"
+    ],
+    [
+     "owner",
+     "has_embodied_program_transition",
+     "transition"
+    ],
+    [
+     "transition",
+     "starts_from_embodied_program",
+     "origin_program"
+    ],
+    [
+     "transition",
+     "continues_with_embodied_program",
+     "terminal_program"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "transition"
+         },
+         "key": "verified"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "transition"
+        },
+        "edge_type": "has_embodied_program_base_path",
+        "any_type": false
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "path",
+     "ParetoCandidate",
+     {
+      "kind": "embodied_program_path",
+      "depth": 1,
+      "origin_orientation_class": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "transition"
+          },
+          "key": "pre_orientation_class"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "terminal_orientation_class": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "transition"
+          },
+          "key": "post_orientation_class"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "origin_state_axis_x_units": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "transition"
+          },
+          "key": "pre_state_axis_x_units"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "origin_state_axis_y_units": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "transition"
+          },
+          "key": "pre_state_axis_y_units"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "origin_state_axis_z_units": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "transition"
+          },
+          "key": "pre_state_axis_z_units"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "terminal_state_axis_x_units": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "transition"
+          },
+          "key": "post_state_axis_x_units"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "terminal_state_axis_y_units": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "transition"
+          },
+          "key": "post_state_axis_y_units"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "terminal_state_axis_z_units": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "transition"
+          },
+          "key": "post_state_axis_z_units"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "orientation_span_units": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "transition"
+              },
+              "key": "post_state_axis_x_units"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           },
+           "b": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "transition"
+              },
+              "key": "pre_state_axis_x_units"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           }
+          }
+         },
+         {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "transition"
+              },
+              "key": "post_state_axis_y_units"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           },
+           "b": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "transition"
+              },
+              "key": "pre_state_axis_y_units"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           }
+          }
+         },
+         {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "transition"
+              },
+              "key": "post_state_axis_z_units"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           },
+           "b": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "transition"
+              },
+              "key": "pre_state_axis_z_units"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           }
+          }
+         }
+        ]
+       }
+      },
+      "boundary_transition_count": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "transition"
+          },
+          "key": "boundary_transition_count"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "energy_units": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "transition"
+          },
+          "key": "energy_units"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "peak_load_units": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "transition"
+          },
+          "key": "peak_load_units"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "replay_count": 0,
+      "verified": 1,
+      "dominated": 0,
+      "output_authority": 0,
+      "integer_native": 1
+     }
+    ],
+    [
+     "add_edge",
+     "trajectory",
+     "has_pareto_candidate",
+     "path"
+    ],
+    [
+     "add_edge",
+     "transition",
+     "has_embodied_program_base_path",
+     "path"
+    ],
+    [
+     "add_edge",
+     "path",
+     "starts_with_embodied_program_transition",
+     "transition"
+    ],
+    [
+     "add_edge",
+     "path",
+     "ends_with_embodied_program_transition",
+     "transition"
+    ],
+    [
+     "add_edge",
+     "path",
+     "starts_from_embodied_program",
+     "origin_program"
+    ],
+    [
+     "add_edge",
+     "path",
+     "continues_with_embodied_program",
+     "terminal_program"
+    ],
+    [
+     "add_edge",
+     "path",
+     "contains_embodied_program_transition",
+     "transition"
+    ],
+    [
+     "add_edge",
+     "path",
+     "contains_embodied_program",
+     "origin_program"
+    ],
+    [
+     "add_edge",
+     "path",
+     "contains_embodied_program",
+     "terminal_program"
+    ],
+    [
+     "add_node",
+     "path_value_0",
+     "ParetoValue",
+     {
+      "dimension_ordinal": 0,
+      "raw_value": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "transition"
+              },
+              "key": "post_state_axis_x_units"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           },
+           "b": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "transition"
+              },
+              "key": "pre_state_axis_x_units"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           }
+          }
+         },
+         {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "transition"
+              },
+              "key": "post_state_axis_y_units"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           },
+           "b": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "transition"
+              },
+              "key": "pre_state_axis_y_units"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           }
+          }
+         },
+         {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "transition"
+              },
+              "key": "post_state_axis_z_units"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           },
+           "b": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "transition"
+              },
+              "key": "pre_state_axis_z_units"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           }
+          }
+         }
+        ]
+       }
+      },
+      "signed_value": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "transition"
+              },
+              "key": "post_state_axis_x_units"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           },
+           "b": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "transition"
+              },
+              "key": "pre_state_axis_x_units"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           }
+          }
+         },
+         {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "transition"
+              },
+              "key": "post_state_axis_y_units"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           },
+           "b": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "transition"
+              },
+              "key": "pre_state_axis_y_units"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           }
+          }
+         },
+         {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "transition"
+              },
+              "key": "post_state_axis_z_units"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           },
+           "b": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "transition"
+              },
+              "key": "pre_state_axis_z_units"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           }
+          }
+         }
+        ]
+       }
+      },
+      "verified": 1,
+      "integer_native": 1
+     }
+    ],
+    [
+     "add_edge",
+     "path",
+     "has_pareto_value",
+     "path_value_0"
+    ],
+    [
+     "add_node",
+     "path_value_1",
+     "ParetoValue",
+     {
+      "dimension_ordinal": 1,
+      "raw_value": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "transition"
+          },
+          "key": "boundary_transition_count"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "signed_value": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "transition"
+          },
+          "key": "boundary_transition_count"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "verified": 1,
+      "integer_native": 1
+     }
+    ],
+    [
+     "add_edge",
+     "path",
+     "has_pareto_value",
+     "path_value_1"
+    ],
+    [
+     "add_node",
+     "path_value_2",
+     "ParetoValue",
+     {
+      "dimension_ordinal": 2,
+      "raw_value": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "transition"
+          },
+          "key": "energy_units"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "signed_value": {
+       "__term__": {
+        "type": "Neg",
+        "arg": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "transition"
+           },
+           "key": "energy_units"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        }
+       }
+      },
+      "verified": 1,
+      "integer_native": 1
+     }
+    ],
+    [
+     "add_edge",
+     "path",
+     "has_pareto_value",
+     "path_value_2"
+    ],
+    [
+     "add_node",
+     "path_value_3",
+     "ParetoValue",
+     {
+      "dimension_ordinal": 3,
+      "raw_value": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "transition"
+          },
+          "key": "peak_load_units"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "signed_value": {
+       "__term__": {
+        "type": "Neg",
+        "arg": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "transition"
+           },
+           "key": "peak_load_units"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        }
+       }
+      },
+      "verified": 1,
+      "integer_native": 1
+     }
+    ],
+    [
+     "add_edge",
+     "path",
+     "has_pareto_value",
+     "path_value_3"
+    ]
+   ]
+  },
+  {
+   "name": "ept_extend_path_with_compatible_verified_transition",
+   "area": "embodied_program_trajectory",
+   "latency_class": "soft_realtime",
+   "batch": false,
+   "comment": "Extend prefixes only through a shared program state and only while the situated graph horizon remains open.",
+   "match": [
+    [
+     "owner",
+     "has_embodied_program_trajectory",
+     "trajectory"
+    ],
+    [
+     "owner",
+     "has_current_embodied_program",
+     "origin_program"
+    ],
+    [
+     "trajectory",
+     "starts_from_embodied_program",
+     "origin_program"
+    ],
+    [
+     "trajectory",
+     "has_pareto_candidate",
+     "parent"
+    ],
+    [
+     "parent",
+     "starts_with_embodied_program_transition",
+     "first_transition"
+    ],
+    [
+     "parent",
+     "starts_from_embodied_program",
+     "origin_program"
+    ],
+    [
+     "parent",
+     "continues_with_embodied_program",
+     "middle_program"
+    ],
+    [
+     "owner",
+     "has_embodied_program_transition",
+     "transition"
+    ],
+    [
+     "transition",
+     "starts_from_embodied_program",
+     "middle_program"
+    ],
+    [
+     "transition",
+     "continues_with_embodied_program",
+     "terminal_program"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "parent"
+       },
+       "key": "kind"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "embodied_program_path"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "parent"
+         },
+         "key": "verified"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "transition"
+         },
+         "key": "verified"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "parent"
+         },
+         "key": "depth"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "trajectory"
+         },
+         "key": "horizon"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "trajectory"
+         },
+         "key": "expansion_count"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "trajectory"
+           },
+           "key": "horizon"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        {
+         "type": "Count",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "owner"
+          },
+          "edge_type": "has_embodied_program_transition",
+          "any_type": false
+         }
+        }
+       ]
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "trajectory"
+        },
+        "edge_type": "has_pareto_candidate",
+        "any_type": false
+       }
+      },
+      "b": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "trajectory"
+           },
+           "key": "horizon"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        {
+         "type": "Count",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "owner"
+          },
+          "edge_type": "has_embodied_program_transition",
+          "any_type": false
+         }
+        }
+       ]
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "parent"
+        },
+        "edge_type": "contains_embodied_program",
+        "any_type": false
+       },
+       "var_name": "known_program",
+       "predicate": {
+        "type": "Eq",
+        "a": {
+         "type": "Var",
+         "name": "known_program"
+        },
+        "b": {
+         "type": "Var",
+         "name": "terminal_program"
+        }
+       }
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "parent"
+         },
+         "edge_type": "has_embodied_program_path_extension",
+         "any_type": false
+        },
+        "var_name": "known_extension",
+        "predicate": {
+         "type": "Exists",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "known_extension"
+          },
+          "edge_type": "appends_embodied_program_transition",
+          "any_type": false
+         },
+         "var_name": "known_transition",
+         "predicate": {
+          "type": "Eq",
+          "a": {
+           "type": "Var",
+           "name": "known_transition"
+          },
+          "b": {
+           "type": "Var",
+           "name": "transition"
+          }
+         }
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "path",
+     "ParetoCandidate",
+     {
+      "kind": "embodied_program_path",
+      "depth": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "parent"
+            },
+            "key": "depth"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         {
+          "type": "Lit",
+          "value": 1
+         }
+        ]
+       }
+      },
+      "origin_orientation_class": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "parent"
+          },
+          "key": "origin_orientation_class"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "terminal_orientation_class": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "transition"
+          },
+          "key": "post_orientation_class"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "origin_state_axis_x_units": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "parent"
+          },
+          "key": "origin_state_axis_x_units"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "origin_state_axis_y_units": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "parent"
+          },
+          "key": "origin_state_axis_y_units"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "origin_state_axis_z_units": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "parent"
+          },
+          "key": "origin_state_axis_z_units"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "terminal_state_axis_x_units": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "transition"
+          },
+          "key": "post_state_axis_x_units"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "terminal_state_axis_y_units": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "transition"
+          },
+          "key": "post_state_axis_y_units"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "terminal_state_axis_z_units": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "transition"
+          },
+          "key": "post_state_axis_z_units"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "orientation_span_units": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "transition"
+              },
+              "key": "post_state_axis_x_units"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           },
+           "b": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "parent"
+              },
+              "key": "origin_state_axis_x_units"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           }
+          }
+         },
+         {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "transition"
+              },
+              "key": "post_state_axis_y_units"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           },
+           "b": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "parent"
+              },
+              "key": "origin_state_axis_y_units"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           }
+          }
+         },
+         {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "transition"
+              },
+              "key": "post_state_axis_z_units"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           },
+           "b": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "parent"
+              },
+              "key": "origin_state_axis_z_units"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           }
+          }
+         }
+        ]
+       }
+      },
+      "boundary_transition_count": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "parent"
+            },
+            "key": "boundary_transition_count"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "transition"
+            },
+            "key": "boundary_transition_count"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         }
+        ]
+       }
+      },
+      "energy_units": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "parent"
+            },
+            "key": "energy_units"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "transition"
+            },
+            "key": "energy_units"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         }
+        ]
+       }
+      },
+      "peak_load_units": {
+       "__term__": {
+        "type": "Max",
+        "items": [
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "parent"
+            },
+            "key": "peak_load_units"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "transition"
+            },
+            "key": "peak_load_units"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         }
+        ]
+       }
+      },
+      "replay_count": 0,
+      "verified": 1,
+      "dominated": 0,
+      "output_authority": 0,
+      "integer_native": 1
+     }
+    ],
+    [
+     "add_edge",
+     "trajectory",
+     "has_pareto_candidate",
+     "path"
+    ],
+    [
+     "add_edge",
+     "parent",
+     "has_embodied_program_path_extension",
+     "path"
+    ],
+    [
+     "add_edge",
+     "path",
+     "extends_embodied_program_path",
+     "parent"
+    ],
+    [
+     "add_edge",
+     "path",
+     "appends_embodied_program_transition",
+     "transition"
+    ],
+    [
+     "add_edge",
+     "path",
+     "starts_with_embodied_program_transition",
+     "first_transition"
+    ],
+    [
+     "add_edge",
+     "path",
+     "ends_with_embodied_program_transition",
+     "transition"
+    ],
+    [
+     "add_edge",
+     "path",
+     "starts_from_embodied_program",
+     "origin_program"
+    ],
+    [
+     "add_edge",
+     "path",
+     "continues_with_embodied_program",
+     "terminal_program"
+    ],
+    [
+     "add_edge",
+     "path",
+     "contains_embodied_program_transition",
+     "transition"
+    ],
+    [
+     "add_edge",
+     "path",
+     "contains_embodied_program",
+     "terminal_program"
+    ],
+    [
+     "set_attr",
+     "trajectory",
+     "expansion_count",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "trajectory"
+           },
+           "key": "expansion_count"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        {
+         "type": "Lit",
+         "value": 1
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "trajectory",
+     "expansion_budget_units",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "trajectory"
+           },
+           "key": "horizon"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        {
+         "type": "Count",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "owner"
+          },
+          "edge_type": "has_embodied_program_transition",
+          "any_type": false
+         }
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "add_node",
+     "path_value_0",
+     "ParetoValue",
+     {
+      "dimension_ordinal": 0,
+      "raw_value": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "transition"
+              },
+              "key": "post_state_axis_x_units"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           },
+           "b": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "parent"
+              },
+              "key": "origin_state_axis_x_units"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           }
+          }
+         },
+         {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "transition"
+              },
+              "key": "post_state_axis_y_units"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           },
+           "b": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "parent"
+              },
+              "key": "origin_state_axis_y_units"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           }
+          }
+         },
+         {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "transition"
+              },
+              "key": "post_state_axis_z_units"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           },
+           "b": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "parent"
+              },
+              "key": "origin_state_axis_z_units"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           }
+          }
+         }
+        ]
+       }
+      },
+      "signed_value": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "transition"
+              },
+              "key": "post_state_axis_x_units"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           },
+           "b": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "parent"
+              },
+              "key": "origin_state_axis_x_units"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           }
+          }
+         },
+         {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "transition"
+              },
+              "key": "post_state_axis_y_units"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           },
+           "b": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "parent"
+              },
+              "key": "origin_state_axis_y_units"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           }
+          }
+         },
+         {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "transition"
+              },
+              "key": "post_state_axis_z_units"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           },
+           "b": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "parent"
+              },
+              "key": "origin_state_axis_z_units"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           }
+          }
+         }
+        ]
+       }
+      },
+      "verified": 1,
+      "integer_native": 1
+     }
+    ],
+    [
+     "add_edge",
+     "path",
+     "has_pareto_value",
+     "path_value_0"
+    ],
+    [
+     "add_node",
+     "path_value_1",
+     "ParetoValue",
+     {
+      "dimension_ordinal": 1,
+      "raw_value": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "parent"
+            },
+            "key": "boundary_transition_count"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "transition"
+            },
+            "key": "boundary_transition_count"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         }
+        ]
+       }
+      },
+      "signed_value": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "parent"
+            },
+            "key": "boundary_transition_count"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "transition"
+            },
+            "key": "boundary_transition_count"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         }
+        ]
+       }
+      },
+      "verified": 1,
+      "integer_native": 1
+     }
+    ],
+    [
+     "add_edge",
+     "path",
+     "has_pareto_value",
+     "path_value_1"
+    ],
+    [
+     "add_node",
+     "path_value_2",
+     "ParetoValue",
+     {
+      "dimension_ordinal": 2,
+      "raw_value": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "parent"
+            },
+            "key": "energy_units"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "transition"
+            },
+            "key": "energy_units"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         }
+        ]
+       }
+      },
+      "signed_value": {
+       "__term__": {
+        "type": "Neg",
+        "arg": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "parent"
+             },
+             "key": "energy_units"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          },
+          {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "transition"
+             },
+             "key": "energy_units"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          }
+         ]
+        }
+       }
+      },
+      "verified": 1,
+      "integer_native": 1
+     }
+    ],
+    [
+     "add_edge",
+     "path",
+     "has_pareto_value",
+     "path_value_2"
+    ],
+    [
+     "add_node",
+     "path_value_3",
+     "ParetoValue",
+     {
+      "dimension_ordinal": 3,
+      "raw_value": {
+       "__term__": {
+        "type": "Max",
+        "items": [
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "parent"
+            },
+            "key": "peak_load_units"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "transition"
+            },
+            "key": "peak_load_units"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         }
+        ]
+       }
+      },
+      "signed_value": {
+       "__term__": {
+        "type": "Neg",
+        "arg": {
+         "type": "Max",
+         "items": [
+          {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "parent"
+             },
+             "key": "peak_load_units"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          },
+          {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "transition"
+             },
+             "key": "peak_load_units"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          }
+         ]
+        }
+       }
+      },
+      "verified": 1,
+      "integer_native": 1
+     }
+    ],
+    [
+     "add_edge",
+     "path",
+     "has_pareto_value",
+     "path_value_3"
+    ]
+   ]
+  },
+  {
+   "name": "ept_inherit_prefix_transition_membership",
+   "area": "embodied_program_trajectory",
+   "latency_class": "soft_realtime",
+   "batch": true,
+   "match": [
+    [
+     "parent",
+     "has_embodied_program_path_extension",
+     "path"
+    ],
+    [
+     "parent",
+     "contains_embodied_program_transition",
+     "transition"
+    ]
+   ],
+   "where": {
+    "type": "Not",
+    "arg": {
+     "type": "Exists",
+     "source": {
+      "type": "Neighbours",
+      "node": {
+       "type": "Var",
+       "name": "path"
+      },
+      "edge_type": "contains_embodied_program_transition",
+      "any_type": false
+     },
+     "var_name": "known_transition",
+     "predicate": {
+      "type": "Eq",
+      "a": {
+       "type": "Var",
+       "name": "known_transition"
+      },
+      "b": {
+       "type": "Var",
+       "name": "transition"
+      }
+     }
+    }
+   },
+   "effects": [
+    [
+     "add_edge",
+     "path",
+     "contains_embodied_program_transition",
+     "transition"
+    ]
+   ]
+  },
+  {
+   "name": "ept_inherit_prefix_program_membership",
+   "area": "embodied_program_trajectory",
+   "latency_class": "soft_realtime",
+   "batch": true,
+   "match": [
+    [
+     "parent",
+     "has_embodied_program_path_extension",
+     "path"
+    ],
+    [
+     "parent",
+     "contains_embodied_program",
+     "program"
+    ]
+   ],
+   "where": {
+    "type": "Not",
+    "arg": {
+     "type": "Exists",
+     "source": {
+      "type": "Neighbours",
+      "node": {
+       "type": "Var",
+       "name": "path"
+      },
+      "edge_type": "contains_embodied_program",
+      "any_type": false
+     },
+     "var_name": "known_program",
+     "predicate": {
+      "type": "Eq",
+      "a": {
+       "type": "Var",
+       "name": "known_program"
+      },
+      "b": {
+       "type": "Var",
+       "name": "program"
+      }
+     }
+    }
+   },
+   "effects": [
+    [
+     "add_edge",
+     "path",
+     "contains_embodied_program",
+     "program"
+    ]
+   ]
+  },
+  {
+   "name": "ept_retract_selected_path_when_counterexample_arrives",
+   "area": "cognitive_pareto",
+   "latency_class": "soft_realtime",
+   "batch": false,
+   "comment": "A later relational counterexample changes the next collapse; it never interrupts an already issued motor outcome.",
+   "match": [
+    [
+     "owner",
+     "has_selected_embodied_program_path",
+     "path"
+    ],
+    [
+     "path",
+     "is_dominated_by_pareto_candidate",
+     "alternative"
+    ]
+   ],
+   "effects": [
+    [
+     "del_edge",
+     "owner",
+     "has_selected_embodied_program_path",
+     "path"
+    ]
+   ]
+  },
+  {
+   "name": "ept_collapse_frontier_to_one_practice_path",
+   "area": "cognitive_pareto",
+   "latency_class": "soft_realtime",
+   "batch": false,
+   "comment": "Pareto removes only refuted paths. Curiosity then collapses the surviving frontier to one least-practised, deepest prefix; this selection grants no actuator authority.",
+   "match": [
+    [
+     "owner",
+     "has_embodied_program_trajectory",
+     "trajectory"
+    ],
+    [
+     "owner",
+     "has_current_embodied_program",
+     "current_program"
+    ],
+    [
+     "trajectory",
+     "has_pareto_candidate",
+     "path"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "trajectory"
+         },
+         "edge_type": "has_pareto_candidate",
+         "any_type": false
+        },
+        "var_name": "frontier_path",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "frontier_path"
+            },
+            "key": "kind"
+           },
+           "b": {
+            "type": "Lit",
+            "value": "embodied_program_path"
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "frontier_path"
+              },
+              "key": "verified"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           },
+           "b": {
+            "type": "Lit",
+            "value": 1
+           }
+          },
+          {
+           "type": "Gt",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "frontier_path"
+              },
+              "key": "orientation_span_units"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Count",
+            "source": {
+             "type": "Neighbours",
+             "node": {
+              "type": "Var",
+              "name": "frontier_path"
+             },
+             "edge_type": "contains_embodied_program_transition",
+             "any_type": false
+            }
+           },
+           "b": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "frontier_path"
+              },
+              "key": "depth"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Count",
+            "source": {
+             "type": "Neighbours",
+             "node": {
+              "type": "Var",
+              "name": "frontier_path"
+             },
+             "edge_type": "contains_embodied_program",
+             "any_type": false
+            }
+           },
+           "b": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "frontier_path"
+                },
+                "key": "depth"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             },
+             {
+              "type": "Lit",
+              "value": 1
+             }
+            ]
+           }
+          },
+          {
+           "type": "Exists",
+           "source": {
+            "type": "Neighbours",
+            "node": {
+             "type": "Var",
+             "name": "frontier_path"
+            },
+            "edge_type": "starts_from_embodied_program",
+            "any_type": false
+           },
+           "var_name": "path_origin",
+           "predicate": {
+            "type": "Eq",
+            "a": {
+             "type": "Var",
+             "name": "path_origin"
+            },
+            "b": {
+             "type": "Var",
+             "name": "current_program"
+            }
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Count",
+            "source": {
+             "type": "Neighbours",
+             "node": {
+              "type": "Var",
+              "name": "frontier_path"
+             },
+             "edge_type": "is_dominated_by_pareto_candidate",
+             "any_type": false
+            }
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0
+           }
+          }
+         ]
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Var",
+       "name": "path"
+      },
+      "b": {
+       "type": "Argmin",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "trajectory"
+         },
+         "edge_type": "has_pareto_candidate",
+         "any_type": false
+        },
+        "var_name": "frontier_path",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "frontier_path"
+            },
+            "key": "kind"
+           },
+           "b": {
+            "type": "Lit",
+            "value": "embodied_program_path"
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "frontier_path"
+              },
+              "key": "verified"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           },
+           "b": {
+            "type": "Lit",
+            "value": 1
+           }
+          },
+          {
+           "type": "Gt",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "frontier_path"
+              },
+              "key": "orientation_span_units"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Count",
+            "source": {
+             "type": "Neighbours",
+             "node": {
+              "type": "Var",
+              "name": "frontier_path"
+             },
+             "edge_type": "contains_embodied_program_transition",
+             "any_type": false
+            }
+           },
+           "b": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "frontier_path"
+              },
+              "key": "depth"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Count",
+            "source": {
+             "type": "Neighbours",
+             "node": {
+              "type": "Var",
+              "name": "frontier_path"
+             },
+             "edge_type": "contains_embodied_program",
+             "any_type": false
+            }
+           },
+           "b": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "frontier_path"
+                },
+                "key": "depth"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             },
+             {
+              "type": "Lit",
+              "value": 1
+             }
+            ]
+           }
+          },
+          {
+           "type": "Exists",
+           "source": {
+            "type": "Neighbours",
+            "node": {
+             "type": "Var",
+             "name": "frontier_path"
+            },
+            "edge_type": "starts_from_embodied_program",
+            "any_type": false
+           },
+           "var_name": "path_origin",
+           "predicate": {
+            "type": "Eq",
+            "a": {
+             "type": "Var",
+             "name": "path_origin"
+            },
+            "b": {
+             "type": "Var",
+             "name": "current_program"
+            }
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Count",
+            "source": {
+             "type": "Neighbours",
+             "node": {
+              "type": "Var",
+              "name": "frontier_path"
+             },
+             "edge_type": "is_dominated_by_pareto_candidate",
+             "any_type": false
+            }
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0
+           }
+          }
+         ]
+        }
+       },
+       "var_name": "frontier_path",
+       "value": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Times",
+          "items": [
+           {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "frontier_path"
+              },
+              "key": "replay_count"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           },
+           {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "trajectory"
+                },
+                "key": "horizon"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             },
+             {
+              "type": "Lit",
+              "value": 1
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "Neg",
+          "arg": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "frontier_path"
+             },
+             "key": "depth"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          }
+         }
+        ]
+       },
+       "default": {
+        "type": "Var",
+        "name": "owner"
+       }
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "owner"
+        },
+        "edge_type": "has_selected_embodied_program_path",
+        "any_type": false
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_edge",
+     "owner",
+     "has_selected_embodied_program_path",
+     "path"
+    ]
+   ]
+  }
+ ]
+}

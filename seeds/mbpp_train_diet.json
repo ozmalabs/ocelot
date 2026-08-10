@@ -1,0 +1,2501 @@
+{
+ "depends_on": [],
+ "description": "Arc 2 Q3: the PAIRED DIET -- chunks + prompt-earned triggers + head-grain construction bigrams + starter-shape cue affinity, mined EXCLUSIVELY from the 120 MBPP TRAIN-split tasks (task_id>=601) with their prompts. Additive to the arc-1 corpus-mined chunk/bigram seeds (distinct provenance: 'mbpp_train_chunk' / 'mbpp_train' vs 'chunk_mined' / the P3-corpus source) -- installing this seed never removes or rewrites the arc-1 population. Every node carries source_task_ids (all >=601) for the contamination list-gate. Built by scripts/mbpp_train_diet.py; see PROGRAM_SYNTHESIS_ARC2_Q3_NOTES.md.",
+ "edges": [],
+ "id": "mbpp_train_diet",
+ "microtheory": {
+  "description": "The MBPP-train-mined proposer diet: idiom chunks with prompt-co-occurrence triggers, construction bigrams, and starter-shape cue affinities.",
+  "name": "mbpp_train_diet"
+ },
+ "nodes": [
+  {
+   "attrs": {
+    "chunk_key": "[{\"name\":\"v0\",\"type\":\"ProgAssignVar\",\"value\":{\"type\":\"Lit\",\"value\":{\"__slot__\":0}}},{\"name\":\"v1\",\"type\":\"ProgAssignVar\",\"value\":{\"type\":\"Lit\",\"value\":{\"__slot__\":1}}}]",
+    "chunk_rels": [
+     [
+      "ckstmt",
+      0,
+      "ProgAssignVar"
+     ],
+     [
+      "ck",
+      0,
+      "name",
+      "v0"
+     ],
+     [
+      "ck",
+      0,
+      "type",
+      "ProgAssignVar"
+     ],
+     [
+      "ck",
+      0,
+      "value.type",
+      "Lit"
+     ],
+     [
+      "ck",
+      0,
+      "value.value",
+      "slot0"
+     ],
+     [
+      "ckstmt",
+      1,
+      "ProgAssignVar"
+     ],
+     [
+      "ck",
+      1,
+      "name",
+      "v1"
+     ],
+     [
+      "ck",
+      1,
+      "type",
+      "ProgAssignVar"
+     ],
+     [
+      "ck",
+      1,
+      "value.type",
+      "Lit"
+     ],
+     [
+      "ck",
+      1,
+      "value.value",
+      "slot1"
+     ]
+    ],
+    "ground_template": "{\"desc\": \"mined idiom: ProgAssignVar + ProgAssignVar\", \"mode\": \"code_write_stmts\", \"args\": [], \"stmts\": [{\"name\": \"v0\", \"type\": \"ProgAssignVar\", \"value\": {\"type\": \"Lit\", \"value\": 0}}, {\"name\": \"v1\", \"type\": \"ProgAssignVar\", \"value\": {\"type\": \"Lit\", \"value\": 0}}]}",
+    "kind": "code_write_construction",
+    "name": "mck_prog_assign_var_n2_q0",
+    "provenance": "mbpp_train_chunk",
+    "signature": "[]",
+    "source": "mbpp_train_diet.json",
+    "source_task_ids": [
+     619,
+     622,
+     734,
+     770,
+     806
+    ],
+    "spine": 1.0,
+    "support": 5,
+    "trigger_tokens": []
+   },
+   "local_id": 1,
+   "type": "ShapeSignature"
+  },
+  {
+   "attrs": {
+    "chunk_key": "[{\"cond\":{\"a\":{\"name\":\"v0\",\"type\":\"Var\"},\"b\":{\"name\":\"v1\",\"type\":\"Var\"},\"type\":\"Eq\"},\"orelse\":{\"type\":\"ProgReturn\",\"value\":{\"type\":\"Lit\",\"value\":{\"__slot__\":0}}},\"then\":{\"type\":\"ProgReturn\",\"value\":{\"type\":\"Lit\",\"value\":{\"__slot__\":1}}},\"type\":\"ProgIfStmt\"}]",
+    "chunk_rels": [
+     [
+      "ckstmt",
+      0,
+      "ProgIfStmt"
+     ],
+     [
+      "ck",
+      0,
+      "cond.a.name",
+      "v0"
+     ],
+     [
+      "ck",
+      0,
+      "cond.a.type",
+      "Var"
+     ],
+     [
+      "ck",
+      0,
+      "cond.b.name",
+      "v1"
+     ],
+     [
+      "ck",
+      0,
+      "cond.b.type",
+      "Var"
+     ],
+     [
+      "ck",
+      0,
+      "cond.type",
+      "Eq"
+     ],
+     [
+      "ck",
+      0,
+      "orelse.type",
+      "ProgReturn"
+     ],
+     [
+      "ck",
+      0,
+      "orelse.value.type",
+      "Lit"
+     ],
+     [
+      "ck",
+      0,
+      "orelse.value.value",
+      "slot0"
+     ],
+     [
+      "ck",
+      0,
+      "then.type",
+      "ProgReturn"
+     ],
+     [
+      "ck",
+      0,
+      "then.value.type",
+      "Lit"
+     ],
+     [
+      "ck",
+      0,
+      "then.value.value",
+      "slot1"
+     ],
+     [
+      "ck",
+      0,
+      "type",
+      "ProgIfStmt"
+     ]
+    ],
+    "ground_template": "{\"desc\": \"mined idiom: ProgIfStmt\", \"mode\": \"code_write_stmts\", \"args\": [\"v0\", \"v1\"], \"stmts\": [{\"cond\": {\"a\": {\"name\": \"v0\", \"type\": \"Var\"}, \"b\": {\"name\": \"v1\", \"type\": \"Var\"}, \"type\": \"Eq\"}, \"orelse\": {\"type\": \"ProgReturn\", \"value\": {\"type\": \"Lit\", \"value\": 2}}, \"then\": {\"type\": \"ProgReturn\", \"value\": {\"type\": \"Lit\", \"value\": 1}}, \"type\": \"ProgIfStmt\"}]}",
+    "kind": "code_write_construction",
+    "name": "mck_prog_if_stmt_n1_q1",
+    "provenance": "mbpp_train_chunk",
+    "signature": "[[\"AMOUNT\"], [\"FORM\"], [\"JUMPS\"], [\"LOSS\"], [\"ORIGIN\"]]",
+    "source": "mbpp_train_diet.json",
+    "source_task_ids": [
+     617,
+     637
+    ],
+    "spine": 1.0,
+    "support": 2,
+    "trigger_tokens": [
+     "AMOUNT",
+     "FORM",
+     "JUMPS",
+     "LOSS",
+     "ORIGIN"
+    ]
+   },
+   "local_id": 2,
+   "type": "ShapeSignature"
+  },
+  {
+   "attrs": {
+    "chunk_key": "[{\"cond\":{\"a\":{\"name\":\"v0\",\"type\":\"Var\"},\"b\":{\"type\":\"Lit\",\"value\":{\"__slot__\":0}},\"type\":\"Eq\"},\"orelse\":null,\"then\":{\"type\":\"ProgReturn\",\"value\":{\"type\":\"Lit\",\"value\":{\"__slot__\":1}}},\"type\":\"ProgIfStmt\"}]",
+    "chunk_rels": [
+     [
+      "ckstmt",
+      0,
+      "ProgIfStmt"
+     ],
+     [
+      "ck",
+      0,
+      "cond.a.name",
+      "v0"
+     ],
+     [
+      "ck",
+      0,
+      "cond.a.type",
+      "Var"
+     ],
+     [
+      "ck",
+      0,
+      "cond.b.type",
+      "Lit"
+     ],
+     [
+      "ck",
+      0,
+      "cond.b.value",
+      "slot0"
+     ],
+     [
+      "ck",
+      0,
+      "cond.type",
+      "Eq"
+     ],
+     [
+      "ck",
+      0,
+      "orelse",
+      "null"
+     ],
+     [
+      "ck",
+      0,
+      "then.type",
+      "ProgReturn"
+     ],
+     [
+      "ck",
+      0,
+      "then.value.type",
+      "Lit"
+     ],
+     [
+      "ck",
+      0,
+      "then.value.value",
+      "slot1"
+     ],
+     [
+      "ck",
+      0,
+      "type",
+      "ProgIfStmt"
+     ]
+    ],
+    "ground_template": "{\"desc\": \"mined idiom: ProgIfStmt\", \"mode\": \"code_write_stmts\", \"args\": [\"v0\"], \"stmts\": [{\"cond\": {\"a\": {\"name\": \"v0\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 0}, \"type\": \"Eq\"}, \"orelse\": null, \"then\": {\"type\": \"ProgReturn\", \"value\": {\"type\": \"Lit\", \"value\": 0}}, \"type\": \"ProgIfStmt\"}]}",
+    "kind": "code_write_construction",
+    "name": "mck_prog_if_stmt_n1_q2",
+    "provenance": "mbpp_train_chunk",
+    "signature": "[[\"EXPECT\"], [\"FORM\"], [\"JUMPS\"], [\"ORIGIN\"], [\"PLANE\"]]",
+    "source": "mbpp_train_diet.json",
+    "source_task_ids": [
+     617,
+     735
+    ],
+    "spine": 1.0,
+    "support": 2,
+    "trigger_tokens": [
+     "EXPECT",
+     "FORM",
+     "JUMPS",
+     "ORIGIN",
+     "PLANE"
+    ]
+   },
+   "local_id": 3,
+   "type": "ShapeSignature"
+  },
+  {
+   "attrs": {
+    "chunk_key": "[{\"name\":\"v0\",\"op\":\"add\",\"type\":\"ProgAugAssign\",\"value\":{\"name\":\"v1\",\"type\":\"Var\"}},{\"type\":\"ProgReturn\",\"value\":{\"name\":\"v0\",\"type\":\"Var\"}}]",
+    "chunk_rels": [
+     [
+      "ckstmt",
+      0,
+      "ProgAugAssign"
+     ],
+     [
+      "ck",
+      0,
+      "name",
+      "v0"
+     ],
+     [
+      "ck",
+      0,
+      "op",
+      "add"
+     ],
+     [
+      "ck",
+      0,
+      "type",
+      "ProgAugAssign"
+     ],
+     [
+      "ck",
+      0,
+      "value.name",
+      "v1"
+     ],
+     [
+      "ck",
+      0,
+      "value.type",
+      "Var"
+     ],
+     [
+      "ckstmt",
+      1,
+      "ProgReturn"
+     ],
+     [
+      "ck",
+      1,
+      "type",
+      "ProgReturn"
+     ],
+     [
+      "ck",
+      1,
+      "value.name",
+      "v0"
+     ],
+     [
+      "ck",
+      1,
+      "value.type",
+      "Var"
+     ]
+    ],
+    "ground_template": "{\"desc\": \"mined idiom: ProgAugAssign + ProgReturn\", \"mode\": \"code_write_stmts\", \"args\": [\"v1\", \"v0\"], \"stmts\": [{\"name\": \"v0\", \"op\": \"add\", \"type\": \"ProgAugAssign\", \"value\": {\"name\": \"v1\", \"type\": \"Var\"}}, {\"type\": \"ProgReturn\", \"value\": {\"name\": \"v0\", \"type\": \"Var\"}}]}",
+    "kind": "code_write_construction",
+    "name": "mck_prog_aug_assign_n2_q3",
+    "provenance": "mbpp_train_chunk",
+    "signature": "[[\"ADD\"], [\"MOVE\"], [\"END\"], [\"TUPLE\"], [\"ALL\"]]",
+    "source": "mbpp_train_diet.json",
+    "source_task_ids": [
+     619,
+     750
+    ],
+    "spine": 1.0,
+    "support": 2,
+    "trigger_tokens": [
+     "ADD",
+     "MOVE",
+     "END",
+     "TUPLE",
+     "ALL"
+    ]
+   },
+   "local_id": 4,
+   "type": "ShapeSignature"
+  },
+  {
+   "attrs": {
+    "chunk_key": "[{\"name\":\"v0\",\"op\":\"floordiv\",\"type\":\"ProgAugAssign\",\"value\":{\"type\":\"Lit\",\"value\":{\"__slot__\":0}}},{\"name\":\"v1\",\"type\":\"ProgAssignVar\",\"value\":{\"name\":\"v0\",\"type\":\"Var\"}}]",
+    "chunk_rels": [
+     [
+      "ckstmt",
+      0,
+      "ProgAugAssign"
+     ],
+     [
+      "ck",
+      0,
+      "name",
+      "v0"
+     ],
+     [
+      "ck",
+      0,
+      "op",
+      "floordiv"
+     ],
+     [
+      "ck",
+      0,
+      "type",
+      "ProgAugAssign"
+     ],
+     [
+      "ck",
+      0,
+      "value.type",
+      "Lit"
+     ],
+     [
+      "ck",
+      0,
+      "value.value",
+      "slot0"
+     ],
+     [
+      "ckstmt",
+      1,
+      "ProgAssignVar"
+     ],
+     [
+      "ck",
+      1,
+      "name",
+      "v1"
+     ],
+     [
+      "ck",
+      1,
+      "type",
+      "ProgAssignVar"
+     ],
+     [
+      "ck",
+      1,
+      "value.name",
+      "v0"
+     ],
+     [
+      "ck",
+      1,
+      "value.type",
+      "Var"
+     ]
+    ],
+    "ground_template": "{\"desc\": \"mined idiom: ProgAugAssign + ProgAssignVar\", \"mode\": \"code_write_stmts\", \"args\": [\"v0\"], \"stmts\": [{\"name\": \"v0\", \"op\": \"floordiv\", \"type\": \"ProgAugAssign\", \"value\": {\"type\": \"Lit\", \"value\": 2}}, {\"name\": \"v1\", \"type\": \"ProgAssignVar\", \"value\": {\"name\": \"v0\", \"type\": \"Var\"}}]}",
+    "kind": "code_write_construction",
+    "name": "mck_prog_aug_assign_n2_q4",
+    "provenance": "mbpp_train_chunk",
+    "signature": "[[\"ARRAY\"], [\"SORTED\"], [\"OCCURRENCE\"], [\"LAST\"], [\"POSITION\"]]",
+    "source": "mbpp_train_diet.json",
+    "source_task_ids": [
+     733,
+     793
+    ],
+    "spine": 1.0,
+    "support": 2,
+    "trigger_tokens": [
+     "ARRAY",
+     "SORTED",
+     "OCCURRENCE",
+     "LAST",
+     "POSITION"
+    ]
+   },
+   "local_id": 5,
+   "type": "ShapeSignature"
+  },
+  {
+   "attrs": {
+    "chunk_key": "[{\"name\":\"v0\",\"type\":\"ProgAssignVar\",\"value\":{\"a\":{\"items\":[{\"name\":\"v1\",\"type\":\"Var\"},{\"name\":\"v2\",\"type\":\"Var\"}],\"type\":\"Plus\"},\"b\":{\"a\":{\"items\":[{\"name\":\"v1\",\"type\":\"Var\"},{\"name\":\"v2\",\"type\":\"Var\"}],\"type\":\"Plus\"},\"b\":{\"type\":\"Lit\",\"value\":{\"__slot__\":0}},\"type\":\"Mod\"},\"type\":\"Minus\"}},{\"name\":\"v0\",\"op\":\"floordiv\",\"type\":\"ProgAugAssign\",\"value\":{\"type\":\"Lit\",\"value\":{\"__slot__\":1}}},{\"name\":\"v3\",\"type\":\"ProgAssignVar\",\"value\":{\"name\":\"v0\",\"type\":\"Var\"}}]",
+    "chunk_rels": [
+     [
+      "ckstmt",
+      0,
+      "ProgAssignVar"
+     ],
+     [
+      "ck",
+      0,
+      "name",
+      "v0"
+     ],
+     [
+      "ck",
+      0,
+      "type",
+      "ProgAssignVar"
+     ],
+     [
+      "ck",
+      0,
+      "value.a.items.0.name",
+      "v1"
+     ],
+     [
+      "ck",
+      0,
+      "value.a.items.0.type",
+      "Var"
+     ],
+     [
+      "ck",
+      0,
+      "value.a.items.1.name",
+      "v2"
+     ],
+     [
+      "ck",
+      0,
+      "value.a.items.1.type",
+      "Var"
+     ],
+     [
+      "ck",
+      0,
+      "value.a.type",
+      "Plus"
+     ],
+     [
+      "ck",
+      0,
+      "value.b.a.items.0.name",
+      "v1"
+     ],
+     [
+      "ck",
+      0,
+      "value.b.a.items.0.type",
+      "Var"
+     ],
+     [
+      "ck",
+      0,
+      "value.b.a.items.1.name",
+      "v2"
+     ],
+     [
+      "ck",
+      0,
+      "value.b.a.items.1.type",
+      "Var"
+     ],
+     [
+      "ck",
+      0,
+      "value.b.a.type",
+      "Plus"
+     ],
+     [
+      "ck",
+      0,
+      "value.b.b.type",
+      "Lit"
+     ],
+     [
+      "ck",
+      0,
+      "value.b.b.value",
+      "slot0"
+     ],
+     [
+      "ck",
+      0,
+      "value.b.type",
+      "Mod"
+     ],
+     [
+      "ck",
+      0,
+      "value.type",
+      "Minus"
+     ],
+     [
+      "ckstmt",
+      1,
+      "ProgAugAssign"
+     ],
+     [
+      "ck",
+      1,
+      "name",
+      "v0"
+     ],
+     [
+      "ck",
+      1,
+      "op",
+      "floordiv"
+     ],
+     [
+      "ck",
+      1,
+      "type",
+      "ProgAugAssign"
+     ],
+     [
+      "ck",
+      1,
+      "value.type",
+      "Lit"
+     ],
+     [
+      "ck",
+      1,
+      "value.value",
+      "slot1"
+     ],
+     [
+      "ckstmt",
+      2,
+      "ProgAssignVar"
+     ],
+     [
+      "ck",
+      2,
+      "name",
+      "v3"
+     ],
+     [
+      "ck",
+      2,
+      "type",
+      "ProgAssignVar"
+     ],
+     [
+      "ck",
+      2,
+      "value.name",
+      "v0"
+     ],
+     [
+      "ck",
+      2,
+      "value.type",
+      "Var"
+     ]
+    ],
+    "ground_template": "{\"desc\": \"mined idiom: ProgAssignVar + ProgAugAssign + ProgAssignVar\", \"mode\": \"code_write_stmts\", \"args\": [\"v1\", \"v2\"], \"stmts\": [{\"name\": \"v0\", \"type\": \"ProgAssignVar\", \"value\": {\"a\": {\"items\": [{\"name\": \"v1\", \"type\": \"Var\"}, {\"name\": \"v2\", \"type\": \"Var\"}], \"type\": \"Plus\"}, \"b\": {\"a\": {\"items\": [{\"name\": \"v1\", \"type\": \"Var\"}, {\"name\": \"v2\", \"type\": \"Var\"}], \"type\": \"Plus\"}, \"b\": {\"type\": \"Lit\", \"value\": 2}, \"type\": \"Mod\"}, \"type\": \"Minus\"}}, {\"name\": \"v0\", \"op\": \"floordiv\", \"type\": \"ProgAugAssign\", \"value\": {\"type\": \"Lit\", \"value\": 2}}, {\"name\": \"v3\", \"type\": \"ProgAssignVar\", \"value\": {\"name\": \"v0\", \"type\": \"Var\"}}]}",
+    "kind": "code_write_construction",
+    "name": "mck_prog_assign_var_n3_q5",
+    "provenance": "mbpp_train_chunk",
+    "signature": "[]",
+    "source": "mbpp_train_diet.json",
+    "source_task_ids": [
+     733,
+     793
+    ],
+    "spine": 1.0,
+    "support": 2,
+    "trigger_tokens": []
+   },
+   "local_id": 6,
+   "type": "ShapeSignature"
+  },
+  {
+   "attrs": {
+    "chunk_key": "[{\"name\":\"v0\",\"type\":\"ProgAssignVar\",\"value\":{\"a\":{\"items\":[{\"name\":\"v1\",\"type\":\"Var\"},{\"name\":\"v2\",\"type\":\"Var\"}],\"type\":\"Plus\"},\"b\":{\"a\":{\"items\":[{\"name\":\"v1\",\"type\":\"Var\"},{\"name\":\"v2\",\"type\":\"Var\"}],\"type\":\"Plus\"},\"b\":{\"type\":\"Lit\",\"value\":{\"__slot__\":0}},\"type\":\"Mod\"},\"type\":\"Minus\"}},{\"name\":\"v0\",\"op\":\"floordiv\",\"type\":\"ProgAugAssign\",\"value\":{\"type\":\"Lit\",\"value\":{\"__slot__\":1}}}]",
+    "chunk_rels": [
+     [
+      "ckstmt",
+      0,
+      "ProgAssignVar"
+     ],
+     [
+      "ck",
+      0,
+      "name",
+      "v0"
+     ],
+     [
+      "ck",
+      0,
+      "type",
+      "ProgAssignVar"
+     ],
+     [
+      "ck",
+      0,
+      "value.a.items.0.name",
+      "v1"
+     ],
+     [
+      "ck",
+      0,
+      "value.a.items.0.type",
+      "Var"
+     ],
+     [
+      "ck",
+      0,
+      "value.a.items.1.name",
+      "v2"
+     ],
+     [
+      "ck",
+      0,
+      "value.a.items.1.type",
+      "Var"
+     ],
+     [
+      "ck",
+      0,
+      "value.a.type",
+      "Plus"
+     ],
+     [
+      "ck",
+      0,
+      "value.b.a.items.0.name",
+      "v1"
+     ],
+     [
+      "ck",
+      0,
+      "value.b.a.items.0.type",
+      "Var"
+     ],
+     [
+      "ck",
+      0,
+      "value.b.a.items.1.name",
+      "v2"
+     ],
+     [
+      "ck",
+      0,
+      "value.b.a.items.1.type",
+      "Var"
+     ],
+     [
+      "ck",
+      0,
+      "value.b.a.type",
+      "Plus"
+     ],
+     [
+      "ck",
+      0,
+      "value.b.b.type",
+      "Lit"
+     ],
+     [
+      "ck",
+      0,
+      "value.b.b.value",
+      "slot0"
+     ],
+     [
+      "ck",
+      0,
+      "value.b.type",
+      "Mod"
+     ],
+     [
+      "ck",
+      0,
+      "value.type",
+      "Minus"
+     ],
+     [
+      "ckstmt",
+      1,
+      "ProgAugAssign"
+     ],
+     [
+      "ck",
+      1,
+      "name",
+      "v0"
+     ],
+     [
+      "ck",
+      1,
+      "op",
+      "floordiv"
+     ],
+     [
+      "ck",
+      1,
+      "type",
+      "ProgAugAssign"
+     ],
+     [
+      "ck",
+      1,
+      "value.type",
+      "Lit"
+     ],
+     [
+      "ck",
+      1,
+      "value.value",
+      "slot1"
+     ]
+    ],
+    "ground_template": "{\"desc\": \"mined idiom: ProgAssignVar + ProgAugAssign\", \"mode\": \"code_write_stmts\", \"args\": [\"v1\", \"v2\"], \"stmts\": [{\"name\": \"v0\", \"type\": \"ProgAssignVar\", \"value\": {\"a\": {\"items\": [{\"name\": \"v1\", \"type\": \"Var\"}, {\"name\": \"v2\", \"type\": \"Var\"}], \"type\": \"Plus\"}, \"b\": {\"a\": {\"items\": [{\"name\": \"v1\", \"type\": \"Var\"}, {\"name\": \"v2\", \"type\": \"Var\"}], \"type\": \"Plus\"}, \"b\": {\"type\": \"Lit\", \"value\": 2}, \"type\": \"Mod\"}, \"type\": \"Minus\"}}, {\"name\": \"v0\", \"op\": \"floordiv\", \"type\": \"ProgAugAssign\", \"value\": {\"type\": \"Lit\", \"value\": 2}}]}",
+    "kind": "code_write_construction",
+    "name": "mck_prog_assign_var_n2_q6",
+    "provenance": "mbpp_train_chunk",
+    "signature": "[[\"ARRAY\"], [\"SORTED\"], [\"OCCURRENCE\"], [\"LAST\"], [\"POSITION\"]]",
+    "source": "mbpp_train_diet.json",
+    "source_task_ids": [
+     733,
+     793
+    ],
+    "spine": 1.0,
+    "support": 2,
+    "trigger_tokens": [
+     "ARRAY",
+     "SORTED",
+     "OCCURRENCE",
+     "LAST",
+     "POSITION"
+    ]
+   },
+   "local_id": 7,
+   "type": "ShapeSignature"
+  },
+  {
+   "attrs": {
+    "chunk_key": "[{\"name\":\"v0\",\"type\":\"ProgAssignVar\",\"value\":{\"args\":[],\"name\":\"match.start\",\"recv\":null,\"type\":\"ProgCallExtern\"}},{\"name\":\"v1\",\"type\":\"ProgAssignVar\",\"value\":{\"args\":[],\"name\":\"match.end\",\"recv\":null,\"type\":\"ProgCallExtern\"}}]",
+    "chunk_rels": [
+     [
+      "ckstmt",
+      0,
+      "ProgAssignVar"
+     ],
+     [
+      "ck",
+      0,
+      "name",
+      "v0"
+     ],
+     [
+      "ck",
+      0,
+      "type",
+      "ProgAssignVar"
+     ],
+     [
+      "ck",
+      0,
+      "value.name",
+      "match.start"
+     ],
+     [
+      "ck",
+      0,
+      "value.recv",
+      "null"
+     ],
+     [
+      "ck",
+      0,
+      "value.type",
+      "ProgCallExtern"
+     ],
+     [
+      "ckstmt",
+      1,
+      "ProgAssignVar"
+     ],
+     [
+      "ck",
+      1,
+      "name",
+      "v1"
+     ],
+     [
+      "ck",
+      1,
+      "type",
+      "ProgAssignVar"
+     ],
+     [
+      "ck",
+      1,
+      "value.name",
+      "match.end"
+     ],
+     [
+      "ck",
+      1,
+      "value.recv",
+      "null"
+     ],
+     [
+      "ck",
+      1,
+      "value.type",
+      "ProgCallExtern"
+     ]
+    ],
+    "ground_template": "{\"desc\": \"mined idiom: ProgAssignVar + ProgAssignVar\", \"mode\": \"code_write_stmts\", \"args\": [], \"stmts\": [{\"name\": \"v0\", \"type\": \"ProgAssignVar\", \"value\": {\"args\": [], \"name\": \"match.start\", \"recv\": null, \"type\": \"ProgCallExtern\"}}, {\"name\": \"v1\", \"type\": \"ProgAssignVar\", \"value\": {\"args\": [], \"name\": \"match.end\", \"recv\": null, \"type\": \"ProgCallExtern\"}}]}",
+    "kind": "code_write_construction",
+    "name": "mck_prog_assign_var_n2_q7",
+    "provenance": "mbpp_train_chunk",
+    "signature": "[]",
+    "source": "mbpp_train_diet.json",
+    "source_task_ids": [
+     607,
+     773
+    ],
+    "spine": 1.0,
+    "support": 2,
+    "trigger_tokens": []
+   },
+   "local_id": 8,
+   "type": "ShapeSignature"
+  },
+  {
+   "attrs": {
+    "chunk_key": "[{\"name\":\"v0\",\"type\":\"ProgAssignVar\",\"value\":{\"args\":[{\"name\":\"v1\",\"type\":\"Var\"}],\"name\":\"len\",\"recv\":null,\"type\":\"ProgCallExtern\"}},{\"name\":\"v2\",\"type\":\"ProgAssignVar\",\"value\":{\"args\":[{\"name\":\"v3\",\"type\":\"Var\"}],\"name\":\"len\",\"recv\":null,\"type\":\"ProgCallExtern\"}}]",
+    "chunk_rels": [
+     [
+      "ckstmt",
+      0,
+      "ProgAssignVar"
+     ],
+     [
+      "ck",
+      0,
+      "name",
+      "v0"
+     ],
+     [
+      "ck",
+      0,
+      "type",
+      "ProgAssignVar"
+     ],
+     [
+      "ck",
+      0,
+      "value.args.0.name",
+      "v1"
+     ],
+     [
+      "ck",
+      0,
+      "value.args.0.type",
+      "Var"
+     ],
+     [
+      "ck",
+      0,
+      "value.name",
+      "len"
+     ],
+     [
+      "ck",
+      0,
+      "value.recv",
+      "null"
+     ],
+     [
+      "ck",
+      0,
+      "value.type",
+      "ProgCallExtern"
+     ],
+     [
+      "ckstmt",
+      1,
+      "ProgAssignVar"
+     ],
+     [
+      "ck",
+      1,
+      "name",
+      "v2"
+     ],
+     [
+      "ck",
+      1,
+      "type",
+      "ProgAssignVar"
+     ],
+     [
+      "ck",
+      1,
+      "value.args.0.name",
+      "v3"
+     ],
+     [
+      "ck",
+      1,
+      "value.args.0.type",
+      "Var"
+     ],
+     [
+      "ck",
+      1,
+      "value.name",
+      "len"
+     ],
+     [
+      "ck",
+      1,
+      "value.recv",
+      "null"
+     ],
+     [
+      "ck",
+      1,
+      "value.type",
+      "ProgCallExtern"
+     ]
+    ],
+    "ground_template": "{\"desc\": \"mined idiom: ProgAssignVar + ProgAssignVar\", \"mode\": \"code_write_stmts\", \"args\": [\"v1\", \"v3\"], \"stmts\": [{\"name\": \"v0\", \"type\": \"ProgAssignVar\", \"value\": {\"args\": [{\"name\": \"v1\", \"type\": \"Var\"}], \"name\": \"len\", \"recv\": null, \"type\": \"ProgCallExtern\"}}, {\"name\": \"v2\", \"type\": \"ProgAssignVar\", \"value\": {\"args\": [{\"name\": \"v3\", \"type\": \"Var\"}], \"name\": \"len\", \"recv\": null, \"type\": \"ProgCallExtern\"}}]}",
+    "kind": "code_write_construction",
+    "name": "mck_prog_assign_var_n2_q8",
+    "provenance": "mbpp_train_chunk",
+    "signature": "[]",
+    "source": "mbpp_train_diet.json",
+    "source_task_ids": [
+     747
+    ],
+    "spine": 1.0,
+    "support": 2,
+    "trigger_tokens": []
+   },
+   "local_id": 9,
+   "type": "ShapeSignature"
+  },
+  {
+   "attrs": {
+    "chunk_key": "[{\"name\":\"v0\",\"type\":\"ProgAssignVar\",\"value\":{\"index\":{\"name\":\"v1\",\"type\":\"Var\"},\"obj\":{\"name\":\"v2\",\"type\":\"Var\"},\"type\":\"ProgSubscript\"}},{\"name\":\"v1\",\"op\":\"add\",\"type\":\"ProgAugAssign\",\"value\":{\"type\":\"Lit\",\"value\":{\"__slot__\":0}}}]",
+    "chunk_rels": [
+     [
+      "ckstmt",
+      0,
+      "ProgAssignVar"
+     ],
+     [
+      "ck",
+      0,
+      "name",
+      "v0"
+     ],
+     [
+      "ck",
+      0,
+      "type",
+      "ProgAssignVar"
+     ],
+     [
+      "ck",
+      0,
+      "value.index.name",
+      "v1"
+     ],
+     [
+      "ck",
+      0,
+      "value.index.type",
+      "Var"
+     ],
+     [
+      "ck",
+      0,
+      "value.obj.name",
+      "v2"
+     ],
+     [
+      "ck",
+      0,
+      "value.obj.type",
+      "Var"
+     ],
+     [
+      "ck",
+      0,
+      "value.type",
+      "ProgSubscript"
+     ],
+     [
+      "ckstmt",
+      1,
+      "ProgAugAssign"
+     ],
+     [
+      "ck",
+      1,
+      "name",
+      "v1"
+     ],
+     [
+      "ck",
+      1,
+      "op",
+      "add"
+     ],
+     [
+      "ck",
+      1,
+      "type",
+      "ProgAugAssign"
+     ],
+     [
+      "ck",
+      1,
+      "value.type",
+      "Lit"
+     ],
+     [
+      "ck",
+      1,
+      "value.value",
+      "slot0"
+     ]
+    ],
+    "ground_template": "{\"desc\": \"mined idiom: ProgAssignVar + ProgAugAssign\", \"mode\": \"code_write_stmts\", \"args\": [\"v1\", \"v2\"], \"stmts\": [{\"name\": \"v0\", \"type\": \"ProgAssignVar\", \"value\": {\"index\": {\"name\": \"v1\", \"type\": \"Var\"}, \"obj\": {\"name\": \"v2\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}}, {\"name\": \"v1\", \"op\": \"add\", \"type\": \"ProgAugAssign\", \"value\": {\"type\": \"Lit\", \"value\": 1}}]}",
+    "kind": "code_write_construction",
+    "name": "mck_prog_assign_var_n2_q9",
+    "provenance": "mbpp_train_chunk",
+    "signature": "[[\"MEDIAN\"], [\"SIZE\"], [\"SAME\"], [\"SORTED\"], [\"LISTS\"]]",
+    "source": "mbpp_train_diet.json",
+    "source_task_ids": [
+     622
+    ],
+    "spine": 1.0,
+    "support": 2,
+    "trigger_tokens": [
+     "MEDIAN",
+     "SIZE",
+     "SAME",
+     "SORTED",
+     "LISTS"
+    ]
+   },
+   "local_id": 10,
+   "type": "ShapeSignature"
+  },
+  {
+   "attrs": {
+    "chunk_key": "[{\"name\":\"v0\",\"type\":\"ProgAssignVar\",\"value\":{\"index\":{\"type\":\"Lit\",\"value\":{\"__slot__\":0}},\"obj\":{\"name\":\"v1\",\"type\":\"Var\"},\"type\":\"ProgSubscript\"}},{\"kind\":\"break\",\"type\":\"ProgLoopCtl\"}]",
+    "chunk_rels": [
+     [
+      "ckstmt",
+      0,
+      "ProgAssignVar"
+     ],
+     [
+      "ck",
+      0,
+      "name",
+      "v0"
+     ],
+     [
+      "ck",
+      0,
+      "type",
+      "ProgAssignVar"
+     ],
+     [
+      "ck",
+      0,
+      "value.index.type",
+      "Lit"
+     ],
+     [
+      "ck",
+      0,
+      "value.index.value",
+      "slot0"
+     ],
+     [
+      "ck",
+      0,
+      "value.obj.name",
+      "v1"
+     ],
+     [
+      "ck",
+      0,
+      "value.obj.type",
+      "Var"
+     ],
+     [
+      "ck",
+      0,
+      "value.type",
+      "ProgSubscript"
+     ],
+     [
+      "ckstmt",
+      1,
+      "ProgLoopCtl"
+     ],
+     [
+      "ck",
+      1,
+      "kind",
+      "break"
+     ],
+     [
+      "ck",
+      1,
+      "type",
+      "ProgLoopCtl"
+     ]
+    ],
+    "ground_template": "{\"desc\": \"mined idiom: ProgAssignVar + ProgLoopCtl\", \"mode\": \"code_write_stmts\", \"args\": [\"v1\"], \"stmts\": [{\"name\": \"v0\", \"type\": \"ProgAssignVar\", \"value\": {\"index\": {\"type\": \"Lit\", \"value\": 0}, \"obj\": {\"name\": \"v1\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}}, {\"kind\": \"break\", \"type\": \"ProgLoopCtl\"}]}",
+    "kind": "code_write_construction",
+    "name": "mck_prog_assign_var_n2_q10",
+    "provenance": "mbpp_train_chunk",
+    "signature": "[]",
+    "source": "mbpp_train_diet.json",
+    "source_task_ids": [
+     622
+    ],
+    "spine": 1.0,
+    "support": 2,
+    "trigger_tokens": []
+   },
+   "local_id": 11,
+   "type": "ShapeSignature"
+  },
+  {
+   "attrs": {
+    "chunk_key": "[{\"name\":\"v0\",\"type\":\"ProgAssignVar\",\"value\":{\"name\":\"v1\",\"type\":\"Var\"}},{\"name\":\"v1\",\"type\":\"ProgAssignVar\",\"value\":{\"index\":{\"name\":\"v2\",\"type\":\"Var\"},\"obj\":{\"name\":\"v3\",\"type\":\"Var\"},\"type\":\"ProgSubscript\"}},{\"name\":\"v2\",\"op\":\"add\",\"type\":\"ProgAugAssign\",\"value\":{\"type\":\"Lit\",\"value\":{\"__slot__\":0}}}]",
+    "chunk_rels": [
+     [
+      "ckstmt",
+      0,
+      "ProgAssignVar"
+     ],
+     [
+      "ck",
+      0,
+      "name",
+      "v0"
+     ],
+     [
+      "ck",
+      0,
+      "type",
+      "ProgAssignVar"
+     ],
+     [
+      "ck",
+      0,
+      "value.name",
+      "v1"
+     ],
+     [
+      "ck",
+      0,
+      "value.type",
+      "Var"
+     ],
+     [
+      "ckstmt",
+      1,
+      "ProgAssignVar"
+     ],
+     [
+      "ck",
+      1,
+      "name",
+      "v1"
+     ],
+     [
+      "ck",
+      1,
+      "type",
+      "ProgAssignVar"
+     ],
+     [
+      "ck",
+      1,
+      "value.index.name",
+      "v2"
+     ],
+     [
+      "ck",
+      1,
+      "value.index.type",
+      "Var"
+     ],
+     [
+      "ck",
+      1,
+      "value.obj.name",
+      "v3"
+     ],
+     [
+      "ck",
+      1,
+      "value.obj.type",
+      "Var"
+     ],
+     [
+      "ck",
+      1,
+      "value.type",
+      "ProgSubscript"
+     ],
+     [
+      "ckstmt",
+      2,
+      "ProgAugAssign"
+     ],
+     [
+      "ck",
+      2,
+      "name",
+      "v2"
+     ],
+     [
+      "ck",
+      2,
+      "op",
+      "add"
+     ],
+     [
+      "ck",
+      2,
+      "type",
+      "ProgAugAssign"
+     ],
+     [
+      "ck",
+      2,
+      "value.type",
+      "Lit"
+     ],
+     [
+      "ck",
+      2,
+      "value.value",
+      "slot0"
+     ]
+    ],
+    "ground_template": "{\"desc\": \"mined idiom: ProgAssignVar + ProgAssignVar + ProgAugAssign\", \"mode\": \"code_write_stmts\", \"args\": [\"v1\", \"v2\", \"v3\"], \"stmts\": [{\"name\": \"v0\", \"type\": \"ProgAssignVar\", \"value\": {\"name\": \"v1\", \"type\": \"Var\"}}, {\"name\": \"v1\", \"type\": \"ProgAssignVar\", \"value\": {\"index\": {\"name\": \"v2\", \"type\": \"Var\"}, \"obj\": {\"name\": \"v3\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}}, {\"name\": \"v2\", \"op\": \"add\", \"type\": \"ProgAugAssign\", \"value\": {\"type\": \"Lit\", \"value\": 1}}]}",
+    "kind": "code_write_construction",
+    "name": "mck_prog_assign_var_n3_q11",
+    "provenance": "mbpp_train_chunk",
+    "signature": "[]",
+    "source": "mbpp_train_diet.json",
+    "source_task_ids": [
+     622
+    ],
+    "spine": 1.0,
+    "support": 2,
+    "trigger_tokens": []
+   },
+   "local_id": 12,
+   "type": "ShapeSignature"
+  },
+  {
+   "attrs": {
+    "chunk_key": "[{\"name\":\"v0\",\"type\":\"ProgAssignVar\",\"value\":{\"name\":\"v1\",\"type\":\"Var\"}},{\"name\":\"v1\",\"type\":\"ProgAssignVar\",\"value\":{\"index\":{\"name\":\"v2\",\"type\":\"Var\"},\"obj\":{\"name\":\"v3\",\"type\":\"Var\"},\"type\":\"ProgSubscript\"}}]",
+    "chunk_rels": [
+     [
+      "ckstmt",
+      0,
+      "ProgAssignVar"
+     ],
+     [
+      "ck",
+      0,
+      "name",
+      "v0"
+     ],
+     [
+      "ck",
+      0,
+      "type",
+      "ProgAssignVar"
+     ],
+     [
+      "ck",
+      0,
+      "value.name",
+      "v1"
+     ],
+     [
+      "ck",
+      0,
+      "value.type",
+      "Var"
+     ],
+     [
+      "ckstmt",
+      1,
+      "ProgAssignVar"
+     ],
+     [
+      "ck",
+      1,
+      "name",
+      "v1"
+     ],
+     [
+      "ck",
+      1,
+      "type",
+      "ProgAssignVar"
+     ],
+     [
+      "ck",
+      1,
+      [
+       "\u00b7?\u00b7"
+      ],
+      [
+       "\u00b7?\u00b7"
+      ]
+     ],
+     [
+      "ck",
+      1,
+      [
+       "\u00b7?\u00b7"
+      ],
+      [
+       "\u00b7?\u00b7"
+      ]
+     ],
+     [
+      "ck",
+      1,
+      "value.obj.name",
+      [
+       "\u00b7?\u00b7"
+      ]
+     ],
+     [
+      "ck",
+      1,
+      "value.obj.type",
+      "Var"
+     ],
+     [
+      "ck",
+      1,
+      "value.type",
+      "ProgSubscript"
+     ]
+    ],
+    "ground_template": "{\"desc\": \"mined idiom: ProgAssignVar + ProgAssignVar\", \"mode\": \"code_write_stmts\", \"args\": [\"v1\", \"v2\", \"v3\"], \"stmts\": [{\"name\": \"v0\", \"type\": \"ProgAssignVar\", \"value\": {\"name\": \"v1\", \"type\": \"Var\"}}, {\"name\": \"v1\", \"type\": \"ProgAssignVar\", \"value\": {\"index\": {\"name\": \"v2\", \"type\": \"Var\"}, \"obj\": {\"name\": \"v3\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}}]}",
+    "kind": "code_write_construction",
+    "name": "mck_prog_assign_var_n2_q12",
+    "provenance": "mbpp_train_chunk",
+    "signature": "[]",
+    "source": "mbpp_train_diet.json",
+    "source_task_ids": [
+     622
+    ],
+    "spine": 1.0,
+    "support": 4,
+    "trigger_tokens": []
+   },
+   "local_id": 13,
+   "type": "ShapeSignature"
+  },
+  {
+   "attrs": {
+    "chunk_key": "[{\"name\":\"v0\",\"type\":\"ProgAssignVar\",\"value\":{\"name\":\"v1\",\"type\":\"Var\"}},{\"name\":\"v1\",\"type\":\"ProgAssignVar\",\"value\":{\"index\":{\"type\":\"Lit\",\"value\":{\"__slot__\":0}},\"obj\":{\"name\":\"v2\",\"type\":\"Var\"},\"type\":\"ProgSubscript\"}},{\"kind\":\"break\",\"type\":\"ProgLoopCtl\"}]",
+    "chunk_rels": [
+     [
+      "ckstmt",
+      0,
+      "ProgAssignVar"
+     ],
+     [
+      "ck",
+      0,
+      "name",
+      "v0"
+     ],
+     [
+      "ck",
+      0,
+      "type",
+      "ProgAssignVar"
+     ],
+     [
+      "ck",
+      0,
+      "value.name",
+      "v1"
+     ],
+     [
+      "ck",
+      0,
+      "value.type",
+      "Var"
+     ],
+     [
+      "ckstmt",
+      1,
+      "ProgAssignVar"
+     ],
+     [
+      "ck",
+      1,
+      "name",
+      "v1"
+     ],
+     [
+      "ck",
+      1,
+      "type",
+      "ProgAssignVar"
+     ],
+     [
+      "ck",
+      1,
+      "value.index.type",
+      "Lit"
+     ],
+     [
+      "ck",
+      1,
+      "value.index.value",
+      "slot0"
+     ],
+     [
+      "ck",
+      1,
+      "value.obj.name",
+      "v2"
+     ],
+     [
+      "ck",
+      1,
+      "value.obj.type",
+      "Var"
+     ],
+     [
+      "ck",
+      1,
+      "value.type",
+      "ProgSubscript"
+     ],
+     [
+      "ckstmt",
+      2,
+      "ProgLoopCtl"
+     ],
+     [
+      "ck",
+      2,
+      "kind",
+      "break"
+     ],
+     [
+      "ck",
+      2,
+      "type",
+      "ProgLoopCtl"
+     ]
+    ],
+    "ground_template": "{\"desc\": \"mined idiom: ProgAssignVar + ProgAssignVar + ProgLoopCtl\", \"mode\": \"code_write_stmts\", \"args\": [\"v1\", \"v2\"], \"stmts\": [{\"name\": \"v0\", \"type\": \"ProgAssignVar\", \"value\": {\"name\": \"v1\", \"type\": \"Var\"}}, {\"name\": \"v1\", \"type\": \"ProgAssignVar\", \"value\": {\"index\": {\"type\": \"Lit\", \"value\": 0}, \"obj\": {\"name\": \"v2\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}}, {\"kind\": \"break\", \"type\": \"ProgLoopCtl\"}]}",
+    "kind": "code_write_construction",
+    "name": "mck_prog_assign_var_n3_q13",
+    "provenance": "mbpp_train_chunk",
+    "signature": "[]",
+    "source": "mbpp_train_diet.json",
+    "source_task_ids": [
+     622
+    ],
+    "spine": 1.0,
+    "support": 2,
+    "trigger_tokens": []
+   },
+   "local_id": 14,
+   "type": "ShapeSignature"
+  },
+  {
+   "attrs": {
+    "chunk_key": "[{\"name\":\"v0\",\"type\":\"ProgAssignVar\",\"value\":{\"type\":\"Lit\",\"value\":{\"__slot__\":0}}},{\"type\":\"ProgReturn\",\"value\":{\"args\":[{\"name\":\"v0\",\"type\":\"Var\"},{\"name\":\"v1\",\"type\":\"Var\"}],\"name\":\"re.search\",\"recv\":null,\"type\":\"ProgCallExtern\"}}]",
+    "chunk_rels": [
+     [
+      "ckstmt",
+      0,
+      "ProgAssignVar"
+     ],
+     [
+      "ck",
+      0,
+      "name",
+      "v0"
+     ],
+     [
+      "ck",
+      0,
+      "type",
+      "ProgAssignVar"
+     ],
+     [
+      "ck",
+      0,
+      "value.type",
+      "Lit"
+     ],
+     [
+      "ck",
+      0,
+      "value.value",
+      "slot0"
+     ],
+     [
+      "ckstmt",
+      1,
+      "ProgReturn"
+     ],
+     [
+      "ck",
+      1,
+      "type",
+      "ProgReturn"
+     ],
+     [
+      "ck",
+      1,
+      "value.args.0.name",
+      "v0"
+     ],
+     [
+      "ck",
+      1,
+      "value.args.0.type",
+      "Var"
+     ],
+     [
+      "ck",
+      1,
+      "value.args.1.name",
+      "v1"
+     ],
+     [
+      "ck",
+      1,
+      "value.args.1.type",
+      "Var"
+     ],
+     [
+      "ck",
+      1,
+      "value.name",
+      "re.search"
+     ],
+     [
+      "ck",
+      1,
+      "value.recv",
+      "null"
+     ],
+     [
+      "ck",
+      1,
+      "value.type",
+      "ProgCallExtern"
+     ]
+    ],
+    "ground_template": "{\"desc\": \"mined idiom: ProgAssignVar + ProgReturn\", \"mode\": \"code_write_stmts\", \"args\": [\"v1\"], \"stmts\": [{\"name\": \"v0\", \"type\": \"ProgAssignVar\", \"value\": {\"type\": \"Lit\", \"value\": \"a.*?b$\"}}, {\"type\": \"ProgReturn\", \"value\": {\"args\": [{\"name\": \"v0\", \"type\": \"Var\"}, {\"name\": \"v1\", \"type\": \"Var\"}], \"name\": \"re.search\", \"recv\": null, \"type\": \"ProgCallExtern\"}}]}",
+    "kind": "code_write_construction",
+    "name": "mck_prog_assign_var_n2_q14",
+    "provenance": "mbpp_train_chunk",
+    "signature": "[]",
+    "source": "mbpp_train_diet.json",
+    "source_task_ids": [
+     787,
+     794
+    ],
+    "spine": 1.0,
+    "support": 2,
+    "trigger_tokens": []
+   },
+   "local_id": 15,
+   "type": "ShapeSignature"
+  },
+  {
+   "attrs": {
+    "count": 49,
+    "grain": "head",
+    "next": "ProgAssignVar",
+    "prev": "<s>",
+    "prev_total": 90,
+    "provenance": "mbpp_train",
+    "source": "mbpp_train_diet.json",
+    "source_task_ids": [
+     606,
+     607,
+     608,
+     611,
+     614,
+     619,
+     620,
+     622,
+     625,
+     632,
+     633,
+     635,
+     638,
+     721,
+     723,
+     728,
+     731,
+     734,
+     736,
+     739,
+     740,
+     741,
+     742,
+     743,
+     747,
+     752,
+     756,
+     760,
+     763,
+     764,
+     765,
+     767,
+     770,
+     772,
+     776,
+     782,
+     784,
+     785,
+     787,
+     791,
+     793,
+     794,
+     796,
+     798,
+     801,
+     803,
+     806,
+     807,
+     808
+    ],
+    "trans_logp": -0.6931471805599453,
+    "vocab_size": 10
+   },
+   "local_id": 16,
+   "type": "ConstructionBigram"
+  },
+  {
+   "attrs": {
+    "count": 1,
+    "grain": "head",
+    "next": "ProgAugAssign",
+    "prev": "<s>",
+    "prev_total": 90,
+    "provenance": "mbpp_train",
+    "source": "mbpp_train_diet.json",
+    "source_task_ids": [
+     750
+    ],
+    "trans_logp": -3.912023005428146,
+    "vocab_size": 10
+   },
+   "local_id": 17,
+   "type": "ConstructionBigram"
+  },
+  {
+   "attrs": {
+    "count": 5,
+    "grain": "head",
+    "next": "ProgForEach",
+    "prev": "<s>",
+    "prev_total": 90,
+    "provenance": "mbpp_train",
+    "source": "mbpp_train_diet.json",
+    "source_task_ids": [
+     602,
+     640,
+     773,
+     802,
+     804
+    ],
+    "trans_logp": -2.8134107167600364,
+    "vocab_size": 10
+   },
+   "local_id": 18,
+   "type": "ConstructionBigram"
+  },
+  {
+   "attrs": {
+    "count": 6,
+    "grain": "head",
+    "next": "ProgIfStmt",
+    "prev": "<s>",
+    "prev_total": 90,
+    "provenance": "mbpp_train",
+    "source": "mbpp_train_diet.json",
+    "source_task_ids": [
+     626,
+     627,
+     637,
+     735,
+     738,
+     746
+    ],
+    "trans_logp": -2.659260036932778,
+    "vocab_size": 10
+   },
+   "local_id": 19,
+   "type": "ConstructionBigram"
+  },
+  {
+   "attrs": {
+    "count": 1,
+    "grain": "head",
+    "next": "ProgImportStmt",
+    "prev": "<s>",
+    "prev_total": 90,
+    "provenance": "mbpp_train",
+    "source": "mbpp_train_diet.json",
+    "source_task_ids": [
+     759
+    ],
+    "trans_logp": -3.912023005428146,
+    "vocab_size": 10
+   },
+   "local_id": 20,
+   "type": "ConstructionBigram"
+  },
+  {
+   "attrs": {
+    "count": 25,
+    "grain": "head",
+    "next": "ProgReturn",
+    "prev": "<s>",
+    "prev_total": 90,
+    "provenance": "mbpp_train",
+    "source": "mbpp_train_diet.json",
+    "source_task_ids": [
+     604,
+     610,
+     624,
+     628,
+     629,
+     630,
+     631,
+     641,
+     643,
+     644,
+     724,
+     725,
+     732,
+     737,
+     748,
+     751,
+     762,
+     769,
+     775,
+     786,
+     788,
+     790,
+     792,
+     797,
+     800
+    ],
+    "trans_logp": -1.3470736479666092,
+    "vocab_size": 10
+   },
+   "local_id": 21,
+   "type": "ConstructionBigram"
+  },
+  {
+   "attrs": {
+    "count": 3,
+    "grain": "head",
+    "next": "ProgTupleUnpack",
+    "prev": "<s>",
+    "prev_total": 90,
+    "provenance": "mbpp_train",
+    "source": "mbpp_train_diet.json",
+    "source_task_ids": [
+     617,
+     733,
+     783
+    ],
+    "trans_logp": -3.2188758248682006,
+    "vocab_size": 10
+   },
+   "local_id": 22,
+   "type": "ConstructionBigram"
+  },
+  {
+   "attrs": {
+    "count": 33,
+    "grain": "head",
+    "next": "ProgAssignVar",
+    "prev": "ProgAssignVar",
+    "prev_total": 88,
+    "provenance": "mbpp_train",
+    "source": "mbpp_train_diet.json",
+    "source_task_ids": [
+     607,
+     617,
+     619,
+     620,
+     622,
+     625,
+     632,
+     721,
+     731,
+     734,
+     747,
+     759,
+     763,
+     770,
+     772,
+     776,
+     782,
+     783,
+     784,
+     793,
+     806
+    ],
+    "trans_logp": -1.0586069540544105,
+    "vocab_size": 10
+   },
+   "local_id": 23,
+   "type": "ConstructionBigram"
+  },
+  {
+   "attrs": {
+    "count": 16,
+    "grain": "head",
+    "next": "ProgForEach",
+    "prev": "ProgAssignVar",
+    "prev_total": 88,
+    "provenance": "mbpp_train",
+    "source": "mbpp_train_diet.json",
+    "source_task_ids": [
+     619,
+     633,
+     635,
+     741,
+     747,
+     763,
+     764,
+     767,
+     770,
+     776,
+     782,
+     791,
+     796,
+     798,
+     806,
+     808
+    ],
+    "trans_logp": -1.751754134614356,
+    "vocab_size": 10
+   },
+   "local_id": 24,
+   "type": "ConstructionBigram"
+  },
+  {
+   "attrs": {
+    "count": 5,
+    "grain": "head",
+    "next": "ProgIfStmt",
+    "prev": "ProgAssignVar",
+    "prev_total": 88,
+    "provenance": "mbpp_train",
+    "source": "mbpp_train_diet.json",
+    "source_task_ids": [
+     617,
+     627,
+     756,
+     783,
+     801
+    ],
+    "trans_logp": -2.793208009442517,
+    "vocab_size": 10
+   },
+   "local_id": 25,
+   "type": "ConstructionBigram"
+  },
+  {
+   "attrs": {
+    "count": 24,
+    "grain": "head",
+    "next": "ProgReturn",
+    "prev": "ProgAssignVar",
+    "prev_total": 88,
+    "provenance": "mbpp_train",
+    "source": "mbpp_train_diet.json",
+    "source_task_ids": [
+     606,
+     607,
+     611,
+     614,
+     632,
+     638,
+     723,
+     728,
+     731,
+     736,
+     739,
+     740,
+     742,
+     743,
+     759,
+     760,
+     765,
+     772,
+     783,
+     784,
+     785,
+     787,
+     794,
+     807
+    ],
+    "trans_logp": -1.366091653802371,
+    "vocab_size": 10
+   },
+   "local_id": 26,
+   "type": "ConstructionBigram"
+  },
+  {
+   "attrs": {
+    "count": 5,
+    "grain": "head",
+    "next": "ProgSubscriptSet",
+    "prev": "ProgAssignVar",
+    "prev_total": 88,
+    "provenance": "mbpp_train",
+    "source": "mbpp_train_diet.json",
+    "source_task_ids": [
+     608,
+     620,
+     625,
+     721,
+     752
+    ],
+    "trans_logp": -2.793208009442517,
+    "vocab_size": 10
+   },
+   "local_id": 27,
+   "type": "ConstructionBigram"
+  },
+  {
+   "attrs": {
+    "count": 5,
+    "grain": "head",
+    "next": "ProgWhile",
+    "prev": "ProgAssignVar",
+    "prev_total": 88,
+    "provenance": "mbpp_train",
+    "source": "mbpp_train_diet.json",
+    "source_task_ids": [
+     622,
+     733,
+     734,
+     793,
+     803
+    ],
+    "trans_logp": -2.793208009442517,
+    "vocab_size": 10
+   },
+   "local_id": 28,
+   "type": "ConstructionBigram"
+  },
+  {
+   "attrs": {
+    "count": 2,
+    "grain": "head",
+    "next": "ProgReturn",
+    "prev": "ProgAugAssign",
+    "prev_total": 2,
+    "provenance": "mbpp_train",
+    "source": "mbpp_train_diet.json",
+    "source_task_ids": [
+     619,
+     750
+    ],
+    "trans_logp": -1.3862943611198906,
+    "vocab_size": 10
+   },
+   "local_id": 29,
+   "type": "ConstructionBigram"
+  },
+  {
+   "attrs": {
+    "count": 3,
+    "grain": "head",
+    "next": "</s>",
+    "prev": "ProgForEach",
+    "prev_total": 27,
+    "provenance": "mbpp_train",
+    "source": "mbpp_train_diet.json",
+    "source_task_ids": [
+     602,
+     640,
+     773
+    ],
+    "trans_logp": -2.2246235515243336,
+    "vocab_size": 10
+   },
+   "local_id": 30,
+   "type": "ConstructionBigram"
+  },
+  {
+   "attrs": {
+    "count": 1,
+    "grain": "head",
+    "next": "ProgAugAssign",
+    "prev": "ProgForEach",
+    "prev_total": 27,
+    "provenance": "mbpp_train",
+    "source": "mbpp_train_diet.json",
+    "source_task_ids": [
+     619
+    ],
+    "trans_logp": -2.917770732084279,
+    "vocab_size": 10
+   },
+   "local_id": 31,
+   "type": "ConstructionBigram"
+  },
+  {
+   "attrs": {
+    "count": 2,
+    "grain": "head",
+    "next": "ProgForEach",
+    "prev": "ProgForEach",
+    "prev_total": 27,
+    "provenance": "mbpp_train",
+    "source": "mbpp_train_diet.json",
+    "source_task_ids": [
+     721
+    ],
+    "trans_logp": -2.512305623976115,
+    "vocab_size": 10
+   },
+   "local_id": 32,
+   "type": "ConstructionBigram"
+  },
+  {
+   "attrs": {
+    "count": 2,
+    "grain": "head",
+    "next": "ProgIfStmt",
+    "prev": "ProgForEach",
+    "prev_total": 27,
+    "provenance": "mbpp_train",
+    "source": "mbpp_train_diet.json",
+    "source_task_ids": [
+     776,
+     806
+    ],
+    "trans_logp": -2.512305623976115,
+    "vocab_size": 10
+   },
+   "local_id": 33,
+   "type": "ConstructionBigram"
+  },
+  {
+   "attrs": {
+    "count": 19,
+    "grain": "head",
+    "next": "ProgReturn",
+    "prev": "ProgForEach",
+    "prev_total": 27,
+    "provenance": "mbpp_train",
+    "source": "mbpp_train_diet.json",
+    "source_task_ids": [
+     608,
+     620,
+     633,
+     635,
+     721,
+     741,
+     747,
+     752,
+     763,
+     764,
+     767,
+     770,
+     782,
+     791,
+     796,
+     798,
+     802,
+     804,
+     808
+    ],
+    "trans_logp": -0.6151856390902334,
+    "vocab_size": 10
+   },
+   "local_id": 34,
+   "type": "ConstructionBigram"
+  },
+  {
+   "attrs": {
+    "count": 5,
+    "grain": "head",
+    "next": "</s>",
+    "prev": "ProgIfStmt",
+    "prev_total": 19,
+    "provenance": "mbpp_train",
+    "source": "mbpp_train_diet.json",
+    "source_task_ids": [
+     617,
+     637,
+     738,
+     756,
+     801
+    ],
+    "trans_logp": -1.575536360758419,
+    "vocab_size": 10
+   },
+   "local_id": 35,
+   "type": "ConstructionBigram"
+  },
+  {
+   "attrs": {
+    "count": 2,
+    "grain": "head",
+    "next": "ProgAssignVar",
+    "prev": "ProgIfStmt",
+    "prev_total": 19,
+    "provenance": "mbpp_train",
+    "source": "mbpp_train_diet.json",
+    "source_task_ids": [
+     627,
+     783
+    ],
+    "trans_logp": -2.268683541318364,
+    "vocab_size": 10
+   },
+   "local_id": 36,
+   "type": "ConstructionBigram"
+  },
+  {
+   "attrs": {
+    "count": 6,
+    "grain": "head",
+    "next": "ProgIfStmt",
+    "prev": "ProgIfStmt",
+    "prev_total": 19,
+    "provenance": "mbpp_train",
+    "source": "mbpp_train_diet.json",
+    "source_task_ids": [
+     617,
+     627,
+     776,
+     783
+    ],
+    "trans_logp": -1.4213856809311607,
+    "vocab_size": 10
+   },
+   "local_id": 37,
+   "type": "ConstructionBigram"
+  },
+  {
+   "attrs": {
+    "count": 6,
+    "grain": "head",
+    "next": "ProgReturn",
+    "prev": "ProgIfStmt",
+    "prev_total": 19,
+    "provenance": "mbpp_train",
+    "source": "mbpp_train_diet.json",
+    "source_task_ids": [
+     626,
+     627,
+     735,
+     746,
+     776,
+     806
+    ],
+    "trans_logp": -1.4213856809311607,
+    "vocab_size": 10
+   },
+   "local_id": 38,
+   "type": "ConstructionBigram"
+  },
+  {
+   "attrs": {
+    "count": 1,
+    "grain": "head",
+    "next": "ProgAssignVar",
+    "prev": "ProgImportStmt",
+    "prev_total": 1,
+    "provenance": "mbpp_train",
+    "source": "mbpp_train_diet.json",
+    "source_task_ids": [
+     759
+    ],
+    "trans_logp": -1.7047480922384253,
+    "vocab_size": 10
+   },
+   "local_id": 39,
+   "type": "ConstructionBigram"
+  },
+  {
+   "attrs": {
+    "count": 82,
+    "grain": "head",
+    "next": "</s>",
+    "prev": "ProgReturn",
+    "prev_total": 82,
+    "provenance": "mbpp_train",
+    "source": "mbpp_train_diet.json",
+    "source_task_ids": [
+     604,
+     606,
+     607,
+     608,
+     610,
+     611,
+     614,
+     619,
+     620,
+     622,
+     624,
+     625,
+     626,
+     627,
+     628,
+     629,
+     630,
+     631,
+     632,
+     633,
+     635,
+     638,
+     641,
+     643,
+     644,
+     721,
+     723,
+     724,
+     725,
+     728,
+     731,
+     732,
+     733,
+     734,
+     735,
+     736,
+     737,
+     739,
+     740,
+     741,
+     742,
+     743,
+     746,
+     747,
+     748,
+     750,
+     751,
+     752,
+     759,
+     760,
+     762,
+     763,
+     764,
+     765,
+     767,
+     769,
+     770,
+     772,
+     775,
+     776,
+     782,
+     783,
+     784,
+     785,
+     786,
+     787,
+     788,
+     790,
+     791,
+     792,
+     793,
+     794,
+     796,
+     797,
+     798,
+     800,
+     802,
+     803,
+     804,
+     806,
+     807,
+     808
+    ],
+    "trans_logp": -0.10294796925244237,
+    "vocab_size": 10
+   },
+   "local_id": 40,
+   "type": "ConstructionBigram"
+  },
+  {
+   "attrs": {
+    "count": 4,
+    "grain": "head",
+    "next": "ProgForEach",
+    "prev": "ProgSubscriptSet",
+    "prev_total": 7,
+    "provenance": "mbpp_train",
+    "source": "mbpp_train_diet.json",
+    "source_task_ids": [
+     608,
+     620,
+     721,
+     752
+    ],
+    "trans_logp": -1.2237754316221157,
+    "vocab_size": 10
+   },
+   "local_id": 41,
+   "type": "ConstructionBigram"
+  },
+  {
+   "attrs": {
+    "count": 1,
+    "grain": "head",
+    "next": "ProgReturn",
+    "prev": "ProgSubscriptSet",
+    "prev_total": 7,
+    "provenance": "mbpp_train",
+    "source": "mbpp_train_diet.json",
+    "source_task_ids": [
+     625
+    ],
+    "trans_logp": -2.1400661634962708,
+    "vocab_size": 10
+   },
+   "local_id": 42,
+   "type": "ConstructionBigram"
+  },
+  {
+   "attrs": {
+    "count": 2,
+    "grain": "head",
+    "next": "ProgSubscriptSet",
+    "prev": "ProgSubscriptSet",
+    "prev_total": 7,
+    "provenance": "mbpp_train",
+    "source": "mbpp_train_diet.json",
+    "source_task_ids": [
+     625,
+     752
+    ],
+    "trans_logp": -1.7346010553881064,
+    "vocab_size": 10
+   },
+   "local_id": 43,
+   "type": "ConstructionBigram"
+  },
+  {
+   "attrs": {
+    "count": 3,
+    "grain": "head",
+    "next": "ProgAssignVar",
+    "prev": "ProgTupleUnpack",
+    "prev_total": 3,
+    "provenance": "mbpp_train",
+    "source": "mbpp_train_diet.json",
+    "source_task_ids": [
+     617,
+     733,
+     783
+    ],
+    "trans_logp": -1.1786549963416462,
+    "vocab_size": 10
+   },
+   "local_id": 44,
+   "type": "ConstructionBigram"
+  },
+  {
+   "attrs": {
+    "count": 5,
+    "grain": "head",
+    "next": "ProgReturn",
+    "prev": "ProgWhile",
+    "prev_total": 5,
+    "provenance": "mbpp_train",
+    "source": "mbpp_train_diet.json",
+    "source_task_ids": [
+     622,
+     733,
+     734,
+     793,
+     803
+    ],
+    "trans_logp": -0.916290731874155,
+    "vocab_size": 10
+   },
+   "local_id": 45,
+   "type": "ConstructionBigram"
+  }
+ ],
+ "productions": [],
+ "version": "1.0.0"
+}

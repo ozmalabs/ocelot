@@ -1,0 +1,21 @@
+{
+  "id": "epistemic_markers",
+  "version": "1.0.0",
+  "depends_on": ["logic_modal", "conversation"],
+  "description": "Graph-resident surface markers for the agent's HELD epistemic/modal\nconcepts, indexed by CONFIDENCE BAND. The confidence calculus\n(domains/conjecture.py) classifies an answer into a band\n(HIGH/MID/LOW); the conversation world adapter reads the\nEpistemicMarker node for that band and prefixes/wraps the produced\nutterance with its surface form. Mechanical graph read, no\ndecision.\n\nThe markers REALISE concepts the agent already holds:\n  * HIGH  -> bare assertion (necessity / factive knowledge — logic_modal\n            'necessity'/'knowledge_axioms'): say it plain.\n  * MID   -> 'probably' (high-but-not-certain — logic_modal 'possibility'\n            biased toward likely): a hedge that still commits.\n  * LOW   -> 'I think it's like' (doxastic conjecture — conversation\n            'think' + logic_modal 'possibility' ◇): an explicit guess.\n  * INADMISSIBLE -> the honest don't-know token (handled by the adapter's\n            existing _DONT_KNOW_TOKEN; listed here for completeness).\n\nEach EpistemicMarker carries (band, language, prefix, concept) so the\nadapter emits the right hedge per language from graph data, not a\nPython dict. `concept` names the held concept the marker realises\n(for inspection / honest provenance).",
+  "nodes": [
+    {"local_id": 1, "type": "EpistemicMarker", "attrs": {"band": "HIGH", "language": "en", "prefix": "",                 "concept": "necessity"}},
+    {"local_id": 2, "type": "EpistemicMarker", "attrs": {"band": "MID",  "language": "en", "prefix": "Probably,",        "concept": "possibility"}},
+    {"local_id": 3, "type": "EpistemicMarker", "attrs": {"band": "LOW",  "language": "en", "prefix": "I think it's like", "concept": "think"}},
+
+    {"local_id": 11, "type": "EpistemicMarker", "attrs": {"band": "HIGH", "language": "es", "prefix": "",                 "concept": "necessity"}},
+    {"local_id": 12, "type": "EpistemicMarker", "attrs": {"band": "MID",  "language": "es", "prefix": "Probablemente,",    "concept": "possibility"}},
+    {"local_id": 13, "type": "EpistemicMarker", "attrs": {"band": "LOW",  "language": "es", "prefix": "Creo que es como",  "concept": "think"}},
+
+    {"local_id": 21, "type": "EpistemicMarker", "attrs": {"band": "HIGH", "language": "ja", "prefix": "",                 "concept": "necessity"}},
+    {"local_id": 22, "type": "EpistemicMarker", "attrs": {"band": "MID",  "language": "ja", "prefix": "たぶん",            "concept": "possibility"}},
+    {"local_id": 23, "type": "EpistemicMarker", "attrs": {"band": "LOW",  "language": "ja", "prefix": "～みたいだと思う",   "concept": "think"}}
+  ],
+  "edges": [],
+  "productions": []
+}

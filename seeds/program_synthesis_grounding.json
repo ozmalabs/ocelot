@@ -1,0 +1,807 @@
+{
+  "id": "program_synthesis_grounding",
+  "version": "1.0.0",
+  "depends_on": [
+    "program_synthesis"
+  ],
+  "capability_keys": [
+    "synthesis_quantity_grounding",
+    "synthesis_shape_directed_operator_retrieval"
+  ],
+  "description": "Graph-native grounding for program synthesis. Held number lexemes become request quantities; request meta-shape collapses onto a held operator inventory before SynthEnumerate. All values and scores are integers.",
+  "microtheory": {
+    "name": "program_synthesis_grounding",
+    "description": "quantity and operator-shape proposal grounding"
+  },
+  "nodes": [
+    {
+      "local_id": 1,
+      "type": "SynthesisOperatorShape",
+      "attrs": {
+        "name": "thresholded_greater_branch",
+        "trigger_tokens": [
+          "MORE",
+          "GREATER",
+          "EXCEEDS",
+          "ABOVE",
+          "THAN",
+          "TIMES",
+          "THRESHOLD",
+          "WHEN",
+          "OTHERWISE",
+          "ELSE"
+        ],
+        "minimum_trigger_matches": 5,
+        "ops": [
+          "Times",
+          "Gt",
+          "IfThenElse"
+        ],
+        "description": "scaled or direct greater-than gate with two outcomes"
+      }
+    },
+    {
+      "local_id": 2,
+      "type": "SynthesisOperatorShape",
+      "attrs": {
+        "name": "thresholded_lower_branch",
+        "trigger_tokens": [
+          "LESS",
+          "BELOW",
+          "UNDER",
+          "THAN",
+          "TIMES",
+          "THRESHOLD",
+          "WHEN",
+          "OTHERWISE",
+          "ELSE"
+        ],
+        "minimum_trigger_matches": 5,
+        "ops": [
+          "Times",
+          "Lt",
+          "IfThenElse"
+        ],
+        "description": "scaled or direct less-than gate with two outcomes"
+      }
+    },
+    {
+      "local_id": 3,
+      "type": "SynthesisQuantityLexeme",
+      "attrs": {
+        "token": "ZERO",
+        "value": 0,
+        "source": "held_number_lexicon"
+      }
+    },
+    {
+      "local_id": 4,
+      "type": "SynthesisQuantityLexeme",
+      "attrs": {
+        "token": "ONE",
+        "value": 1,
+        "source": "held_number_lexicon"
+      }
+    },
+    {
+      "local_id": 5,
+      "type": "SynthesisQuantityLexeme",
+      "attrs": {
+        "token": "TWO",
+        "value": 2,
+        "source": "held_number_lexicon"
+      }
+    },
+    {
+      "local_id": 6,
+      "type": "SynthesisQuantityLexeme",
+      "attrs": {
+        "token": "THREE",
+        "value": 3,
+        "source": "held_number_lexicon"
+      }
+    },
+    {
+      "local_id": 7,
+      "type": "SynthesisQuantityLexeme",
+      "attrs": {
+        "token": "FOUR",
+        "value": 4,
+        "source": "held_number_lexicon"
+      }
+    },
+    {
+      "local_id": 8,
+      "type": "SynthesisQuantityLexeme",
+      "attrs": {
+        "token": "FIVE",
+        "value": 5,
+        "source": "held_number_lexicon"
+      }
+    },
+    {
+      "local_id": 9,
+      "type": "SynthesisQuantityLexeme",
+      "attrs": {
+        "token": "SIX",
+        "value": 6,
+        "source": "held_number_lexicon"
+      }
+    },
+    {
+      "local_id": 10,
+      "type": "SynthesisQuantityLexeme",
+      "attrs": {
+        "token": "SEVEN",
+        "value": 7,
+        "source": "held_number_lexicon"
+      }
+    },
+    {
+      "local_id": 11,
+      "type": "SynthesisQuantityLexeme",
+      "attrs": {
+        "token": "EIGHT",
+        "value": 8,
+        "source": "held_number_lexicon"
+      }
+    },
+    {
+      "local_id": 12,
+      "type": "SynthesisQuantityLexeme",
+      "attrs": {
+        "token": "NINE",
+        "value": 9,
+        "source": "held_number_lexicon"
+      }
+    },
+    {
+      "local_id": 13,
+      "type": "SynthesisQuantityLexeme",
+      "attrs": {
+        "token": "TEN",
+        "value": 10,
+        "source": "held_number_lexicon"
+      }
+    },
+    {
+      "local_id": 14,
+      "type": "SynthesisQuantityLexeme",
+      "attrs": {
+        "token": "ELEVEN",
+        "value": 11,
+        "source": "held_number_lexicon"
+      }
+    },
+    {
+      "local_id": 15,
+      "type": "SynthesisQuantityLexeme",
+      "attrs": {
+        "token": "TWELVE",
+        "value": 12,
+        "source": "held_number_lexicon"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_synthesis_operator_shape",
+      "tgt": {
+        "local": 1
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_synthesis_operator_shape",
+      "tgt": {
+        "local": 2
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_synthesis_quantity_lexeme",
+      "tgt": {
+        "local": 3
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_synthesis_quantity_lexeme",
+      "tgt": {
+        "local": 4
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_synthesis_quantity_lexeme",
+      "tgt": {
+        "local": 5
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_synthesis_quantity_lexeme",
+      "tgt": {
+        "local": 6
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_synthesis_quantity_lexeme",
+      "tgt": {
+        "local": 7
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_synthesis_quantity_lexeme",
+      "tgt": {
+        "local": 8
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_synthesis_quantity_lexeme",
+      "tgt": {
+        "local": 9
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_synthesis_quantity_lexeme",
+      "tgt": {
+        "local": 10
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_synthesis_quantity_lexeme",
+      "tgt": {
+        "local": 11
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_synthesis_quantity_lexeme",
+      "tgt": {
+        "local": 12
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_synthesis_quantity_lexeme",
+      "tgt": {
+        "local": 13
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_synthesis_quantity_lexeme",
+      "tgt": {
+        "local": 14
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_synthesis_quantity_lexeme",
+      "tgt": {
+        "local": 15
+      },
+      "attrs": {}
+    }
+  ],
+  "productions": [
+    {
+      "src": {
+        "type": "Agent",
+        "var": "s"
+      },
+      "edge_type": "has_synthesis_operator_shape",
+      "tgt": {
+        "type": "SynthesisOperatorShape",
+        "var": "t"
+      },
+      "provenance": "seed:program_synthesis_grounding:operator-shape"
+    },
+    {
+      "src": {
+        "type": "Agent",
+        "var": "s"
+      },
+      "edge_type": "has_synthesis_quantity_lexeme",
+      "tgt": {
+        "type": "SynthesisQuantityLexeme",
+        "var": "t"
+      },
+      "provenance": "seed:program_synthesis_grounding:quantity-lexeme"
+    },
+    {
+      "src": {
+        "type": "Message",
+        "var": "s"
+      },
+      "edge_type": "ps_grounds_quantity",
+      "tgt": {
+        "type": "SynthesisQuantityLexeme",
+        "var": "t"
+      },
+      "provenance": "seed:program_synthesis_grounding:grounds-quantity"
+    },
+    {
+      "src": {
+        "type": "Message",
+        "var": "s"
+      },
+      "edge_type": "ps_grounds_quantity",
+      "tgt": {
+        "type": "SynthesisQuantity",
+        "var": "t"
+      },
+      "provenance": "seed:program_synthesis_grounding:explicit-quantity"
+    }
+  ],
+  "rules": [
+    {
+      "name": "ps_ground_held_quantity_lexeme",
+      "area": "program_synthesis",
+      "latency_class": "background",
+      "batch": true,
+      "comment": "Exact surface-token equality grounds every matching held number lexeme onto the request. The vocabulary is graph data and can be taught without changing this rule.",
+      "match": [
+        [
+          "agent",
+          "received",
+          "message"
+        ],
+        [
+          "agent",
+          "has_synthesis_quantity_lexeme",
+          "quantity"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "message"
+              },
+              "key": "ps_write_request"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "In",
+            "member": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "quantity"
+              },
+              "key": "token"
+            },
+            "container": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "message"
+              },
+              "key": "ps_surface_tokens"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "message"
+                },
+                "edge_type": "ps_grounds_quantity",
+                "any_type": false
+              },
+              "var_name": "held_quantity",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Var",
+                  "name": "held_quantity"
+                },
+                "b": {
+                  "type": "Var",
+                  "name": "quantity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_edge",
+          "message",
+          "ps_grounds_quantity",
+          "quantity"
+        ]
+      ]
+    },
+    {
+      "name": "ps_select_synthesis_operator_shape",
+      "area": "program_synthesis",
+      "latency_class": "background",
+      "comment": "Collapse matching held meta-shapes by trigger coverage. The winning graph node supplies the enumerator's operator inventory; the adapter only transcribes the decided fact.",
+      "match": [
+        [
+          "agent",
+          "received",
+          "message"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "message"
+              },
+              "key": "ps_write_request"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "message"
+                },
+                "key": "ps_operator_shape_selected"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 1
+              }
+            }
+          },
+          {
+            "type": "Gte",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Filter",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {
+                    "type": "Var",
+                    "name": "agent"
+                  },
+                  "edge_type": "has_synthesis_operator_shape",
+                  "any_type": false
+                },
+                "var_name": "shape",
+                "predicate": {
+                  "type": "Gte",
+                  "a": {
+                    "type": "Count",
+                    "source": {
+                      "type": "Filter",
+                      "source": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "shape"
+                        },
+                        "key": "trigger_tokens"
+                      },
+                      "var_name": "shape_token",
+                      "predicate": {
+                        "type": "In",
+                        "member": {
+                          "type": "Var",
+                          "name": "shape_token"
+                        },
+                        "container": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "message"
+                          },
+                          "key": "ps_tokens"
+                        }
+                      }
+                    }
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "shape"
+                    },
+                    "key": "minimum_trigger_matches"
+                  }
+                }
+              }
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "message",
+          "ps_enum_ops",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Argmax",
+                "source": {
+                  "type": "Filter",
+                  "source": {
+                    "type": "Neighbours",
+                    "node": {
+                      "type": "Var",
+                      "name": "agent"
+                    },
+                    "edge_type": "has_synthesis_operator_shape",
+                    "any_type": false
+                  },
+                  "var_name": "shape",
+                  "predicate": {
+                    "type": "Gte",
+                    "a": {
+                      "type": "Count",
+                      "source": {
+                        "type": "Filter",
+                        "source": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "shape"
+                          },
+                          "key": "trigger_tokens"
+                        },
+                        "var_name": "shape_token",
+                        "predicate": {
+                          "type": "In",
+                          "member": {
+                            "type": "Var",
+                            "name": "shape_token"
+                          },
+                          "container": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "message"
+                            },
+                            "key": "ps_tokens"
+                          }
+                        }
+                      }
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "shape"
+                      },
+                      "key": "minimum_trigger_matches"
+                    }
+                  }
+                },
+                "var_name": "candidate_shape",
+                "value": {
+                  "type": "Count",
+                  "source": {
+                    "type": "Filter",
+                    "source": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "candidate_shape"
+                      },
+                      "key": "trigger_tokens"
+                    },
+                    "var_name": "candidate_token",
+                    "predicate": {
+                      "type": "In",
+                      "member": {
+                        "type": "Var",
+                        "name": "candidate_token"
+                      },
+                      "container": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "message"
+                        },
+                        "key": "ps_tokens"
+                      }
+                    }
+                  }
+                },
+                "default": null
+              },
+              "key": "ops"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "message",
+          "ps_enum_operator_shape",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Argmax",
+                "source": {
+                  "type": "Filter",
+                  "source": {
+                    "type": "Neighbours",
+                    "node": {
+                      "type": "Var",
+                      "name": "agent"
+                    },
+                    "edge_type": "has_synthesis_operator_shape",
+                    "any_type": false
+                  },
+                  "var_name": "shape",
+                  "predicate": {
+                    "type": "Gte",
+                    "a": {
+                      "type": "Count",
+                      "source": {
+                        "type": "Filter",
+                        "source": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "shape"
+                          },
+                          "key": "trigger_tokens"
+                        },
+                        "var_name": "shape_token",
+                        "predicate": {
+                          "type": "In",
+                          "member": {
+                            "type": "Var",
+                            "name": "shape_token"
+                          },
+                          "container": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "message"
+                            },
+                            "key": "ps_tokens"
+                          }
+                        }
+                      }
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "shape"
+                      },
+                      "key": "minimum_trigger_matches"
+                    }
+                  }
+                },
+                "var_name": "candidate_shape",
+                "value": {
+                  "type": "Count",
+                  "source": {
+                    "type": "Filter",
+                    "source": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "candidate_shape"
+                      },
+                      "key": "trigger_tokens"
+                    },
+                    "var_name": "candidate_token",
+                    "predicate": {
+                      "type": "In",
+                      "member": {
+                        "type": "Var",
+                        "name": "candidate_token"
+                      },
+                      "container": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "message"
+                        },
+                        "key": "ps_tokens"
+                      }
+                    }
+                  }
+                },
+                "default": null
+              },
+              "key": "name"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "message",
+          "ps_operator_shape_selected",
+          1
+        ]
+      ]
+    }
+  ],
+  "reflexes": []
+}

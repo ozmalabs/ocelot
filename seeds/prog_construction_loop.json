@@ -1,0 +1,1788 @@
+{
+ "id": "prog_construction_loop",
+ "version": "1.0.0",
+ "depends_on": [],
+ "description": "P3 of PROGRAM_SYNTHESIS_PLAN.md: the construction-codebook sd loop for kind 'prog_construction' -- a PARALLEL decode loop over hub-IR statement observations, following seeds/role_decode_loop.json's precedent (a sibling loop for a new kind; seeds/shape_decode_loop.json is FROZEN and untouched -- this seed uses its OWN pc_* status attrs, its OWN prog_codebook_epoch on the Agent, and namespaced relation predicates pstmt/parg/pop/parity/pblock, so neither loop can see the other's work: the frozen loop's rules key on the 'status' attr these Observations never carry, and no other codebook's signatures share these predicates, so literal cover cannot cross kinds). The ladder, Occam-ordered within one run_rules fixpoint: pcon_decode (literal ShapeDecode) -> pcon_recognize (empty residual: exact/compositional cover, no growth) -> pcon_recognize_covered (a WILDCARDED merged quantum whole-signature-Covers the observation -- the standalone Covers Term, pattern-side wilds match; needed because the literal ShapeDecode cover can never match a part-side WILD, a measured engine fact recorded in PROGRAM_SYNTHESIS_P3_PREREG.md par.2) -> pcon_mark_merge (MERGE-AT-MINT, the NEW piece: the 2/3-leaf-fix MDL join criterion in integer form, verdict marked on the Observation, application mechanical in the driver) -> pcon_mint (only when nothing covers and nothing joins; bounded Term-computed name; in-rule epoch bump) -> pcon_redecode (growth re-arms observations decoded under an older prog_codebook_epoch). Gates: tests/test_prog_constructions_migrated.py. RULE-NAME NAMESPACE: rules are pcon_* (not pc_*) because seeds/ls20_percell.json already owns a rule literally named pc_mint -- a name collision with rule-name-keyed machinery (e.g. the daemon's per-name rule refresh) is avoided by construction; the MINTED QUANTA keep the pc_ name prefix (node names, a different namespace).",
+ "microtheory": {
+  "name": "prog_construction_loop",
+  "description": "a program statement's IR shape decodes against the held construction codebook; a residual joins a near quantum by anti-unification (merge-at-mint) or mints a new one; the run_rules fixpoint is the decode->grow->re-decode loop, at code-construction grain."
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [
+  {
+   "provenance": "seed:prog_construction_loop:observed-0",
+   "src": {
+    "type": "Agent",
+    "var": "s"
+   },
+   "edge_type": "observed",
+   "tgt": {
+    "type": "Observation",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:prog_construction_loop:minted-1",
+   "src": {
+    "type": "Observation",
+    "var": "s"
+   },
+   "edge_type": "minted",
+   "tgt": {
+    "type": "ShapeSignature",
+    "var": "t"
+   }
+  }
+ ],
+ "rules": [
+  {
+   "name": "pcon_decode",
+   "comment": "DEQUANTIZE at construction grain: a pending prog_construction Observation decodes LITERALLY (wild_objects false -- the v1.2.0 lesson) against the held ShapeSignature codebook; only the residual field is stored (pcon_recognize needs nothing else). Stamps pcon_decoded_epoch from the Agent's DISTINCT prog_codebook_epoch (the voice_codebook_epoch precedent -- this loop never touches the frozen shape_decode_loop seed's attrs). batch-safe: per-observation independent attr writes. EMPTY-CODEBOOK BOOTSTRAP (measured): ShapeDecode with ZERO held ShapeSignature nodes returns {authored:False} and a None residual (Count 0 -- which would fake a full cover); the residual effect therefore falls back to the WHOLE signature when no ShapeSignature exists at all (IfThenElse over Count(NodesOfType) -- the first observation ever seen must mint, not fake-recognize).",
+   "batch": true,
+   "match_type": "Observation",
+   "match": [
+    [
+     "ag",
+     "observed",
+     "obs"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "kind"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "prog_construction"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "pc_status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "pending"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "obs",
+     "pc_residual",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gt",
+        "a": {
+         "type": "Count",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "ShapeSignature"
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0
+        }
+       },
+       "then": {
+        "type": "ShapeDecode",
+        "goal": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "signature"
+        },
+        "beam": 2,
+        "max_steps": 8,
+        "cand_k": 2,
+        "field": "residual",
+        "wild_objects": false
+       },
+       "other": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "signature"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "pc_decoded_epoch",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ag"
+       },
+       "key": "prog_codebook_epoch"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "pc_status",
+     "decoded"
+    ]
+   ]
+  },
+  {
+   "name": "pcon_recognize",
+   "comment": "COVERED branch (zero residual): the held codebook explains the statement exactly (or as a composition of parts) -- no growth. covered_by is the best prog_construction part by the SAME FixedCount(AntiUnify) fit metric sd_recognize uses, RESTRICTED to kind=='prog_construction' via Filter so another codebook's ShapeSignature can never be named.",
+   "batch": true,
+   "match_type": "Observation",
+   "match": [
+    [
+     "ag",
+     "observed",
+     "obs"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "kind"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "prog_construction"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "pc_status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "decoded"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "pc_residual"
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "obs",
+     "covered_by",
+     {
+      "__term__": {
+       "type": "Attr",
+       "key": "name",
+       "node": {
+        "type": "Argmax",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "ShapeSignature"
+         },
+         "var_name": "sgf",
+         "predicate": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "sgf"
+           },
+           "key": "kind"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "prog_construction"
+          }
+         }
+        },
+        "var_name": "sg",
+        "value": {
+         "type": "FixedCount",
+         "pattern": {
+          "type": "AntiUnify",
+          "values": {
+           "type": "SetT",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "obs"
+             },
+             "key": "signature"
+            },
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "sg"
+             },
+             "key": "signature"
+            }
+           ]
+          }
+         }
+        },
+        "default": null
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "pc_status",
+     "recognized"
+    ]
+   ]
+  },
+  {
+   "name": "pcon_recognize_covered",
+   "comment": "MERGED-QUANTUM cover: the literal decode left a residual, but a held prog_construction quantum's (possibly WILDCARDED, post-merge) signature Covers the whole observation -- pattern-side WILD matches, which the literal ShapeDecode cover cannot do (measured; prereg par.2). The most SPECIFIC covering quantum (highest FixedCount of its own signature) wins -- Occam. Terminal status recognized_merged, distinct from recognized (exact/compositional), the sd_dedup_existing status-precision precedent.",
+   "batch": true,
+   "match_type": "Observation",
+   "match": [
+    [
+     "ag",
+     "observed",
+     "obs"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "kind"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "prog_construction"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "pc_status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "decoded"
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "pc_residual"
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Exists",
+      "source": {
+       "type": "NodesOfType",
+       "node_type": "ShapeSignature"
+      },
+      "var_name": "cq",
+      "predicate": {
+       "type": "And",
+       "items": [
+        {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "cq"
+          },
+          "key": "kind"
+         },
+         "b": {
+          "type": "Lit",
+          "value": "prog_construction"
+         }
+        },
+        {
+         "type": "Covers",
+         "pattern": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "cq"
+          },
+          "key": "signature"
+         },
+         "instance": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "obs"
+          },
+          "key": "signature"
+         }
+        }
+       ]
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "obs",
+     "covered_by",
+     {
+      "__term__": {
+       "type": "Attr",
+       "key": "name",
+       "node": {
+        "type": "Argmax",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "ShapeSignature"
+         },
+         "var_name": "cqf",
+         "predicate": {
+          "type": "And",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "cqf"
+             },
+             "key": "kind"
+            },
+            "b": {
+             "type": "Lit",
+             "value": "prog_construction"
+            }
+           },
+           {
+            "type": "Covers",
+            "pattern": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "cqf"
+             },
+             "key": "signature"
+            },
+            "instance": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "obs"
+             },
+             "key": "signature"
+            }
+           }
+          ]
+         }
+        },
+        "var_name": "cq2",
+        "value": {
+         "type": "FixedCount",
+         "pattern": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "cq2"
+          },
+          "key": "signature"
+         }
+        },
+        "default": null
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "pc_status",
+     "recognized_merged"
+    ]
+   ]
+  },
+  {
+   "name": "pcon_mark_merge",
+   "comment": "MERGE-AT-MINT (H3a, prereg par.2): at the mint point (residual, nothing covers), an existing INDUCED same-head quantum whose AntiUnify LGG with the observation FIXES >= 2/3 of the observation's leaf positions -- integer form 3*FixedCount(lgg) >= 2*FixedCount(obs.signature) -- is a JOIN, not a new mint. Candidate filter: kind + induced==1 + IDENTICAL head relation (IndexAt 0 -- a merge never crosses statement variants; unequal relation counts anti-unify to WILD, FixedCount 0, and fail the criterion by construction). The verdict is MARKED on the Observation (merge_with = Argmax winner by LGG FixedCount; merge_lgg = the LGG against that same winner); the engine cannot add_edge to a Term-found node (the sd_dedup_existing limitation), so APPLICATION is the driver's mechanical domains/prog_ir_signature.apply_marked_merge -- decision in rules, application in the adapter, one marked merge per run_rules round. COLD (non-batch): one mark per pass, re-matched against the post-application codebook.",
+   "match_type": "Observation",
+   "match": [
+    [
+     "ag",
+     "observed",
+     "obs"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "kind"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "prog_construction"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "pc_status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "decoded"
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "pc_residual"
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "ShapeSignature"
+       },
+       "var_name": "cq3",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "cq3"
+           },
+           "key": "kind"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "prog_construction"
+          }
+         },
+         {
+          "type": "Covers",
+          "pattern": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "cq3"
+           },
+           "key": "signature"
+          },
+          "instance": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "obs"
+           },
+           "key": "signature"
+          }
+         }
+        ]
+       }
+      }
+     },
+     {
+      "type": "Exists",
+      "source": {
+       "type": "NodesOfType",
+       "node_type": "ShapeSignature"
+      },
+      "var_name": "mq",
+      "predicate": {
+       "type": "And",
+       "items": [
+        {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "mq"
+          },
+          "key": "kind"
+         },
+         "b": {
+          "type": "Lit",
+          "value": "prog_construction"
+         }
+        },
+        {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "mq"
+          },
+          "key": "induced"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1.0
+         }
+        },
+        {
+         "type": "Eq",
+         "a": {
+          "type": "IndexAt",
+          "seq": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "mq"
+           },
+           "key": "signature"
+          },
+          "index": {
+           "type": "Lit",
+           "value": 0
+          }
+         },
+         "b": {
+          "type": "IndexAt",
+          "seq": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "obs"
+           },
+           "key": "signature"
+          },
+          "index": {
+           "type": "Lit",
+           "value": 0
+          }
+         }
+        },
+        {
+         "type": "Gte",
+         "a": {
+          "type": "Times",
+          "items": [
+           {
+            "type": "Lit",
+            "value": 3
+           },
+           {
+            "type": "FixedCount",
+            "pattern": {
+             "type": "AntiUnify",
+             "values": {
+              "type": "SetT",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "obs"
+                },
+                "key": "signature"
+               },
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "mq"
+                },
+                "key": "signature"
+               }
+              ]
+             }
+            }
+           }
+          ]
+         },
+         "b": {
+          "type": "Times",
+          "items": [
+           {
+            "type": "Lit",
+            "value": 2
+           },
+           {
+            "type": "FixedCount",
+            "pattern": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "obs"
+             },
+             "key": "signature"
+            }
+           }
+          ]
+         }
+        }
+       ]
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "obs",
+     "merge_with",
+     {
+      "__term__": {
+       "type": "Attr",
+       "key": "name",
+       "node": {
+        "type": "Argmax",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "ShapeSignature"
+         },
+         "var_name": "mqf",
+         "predicate": {
+          "type": "And",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "mqf"
+             },
+             "key": "kind"
+            },
+            "b": {
+             "type": "Lit",
+             "value": "prog_construction"
+            }
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "mqf"
+             },
+             "key": "induced"
+            },
+            "b": {
+             "type": "Lit",
+             "value": 1.0
+            }
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "IndexAt",
+             "seq": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "mqf"
+              },
+              "key": "signature"
+             },
+             "index": {
+              "type": "Lit",
+              "value": 0
+             }
+            },
+            "b": {
+             "type": "IndexAt",
+             "seq": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "obs"
+              },
+              "key": "signature"
+             },
+             "index": {
+              "type": "Lit",
+              "value": 0
+             }
+            }
+           },
+           {
+            "type": "Gte",
+            "a": {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 3
+              },
+              {
+               "type": "FixedCount",
+               "pattern": {
+                "type": "AntiUnify",
+                "values": {
+                 "type": "SetT",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "obs"
+                   },
+                   "key": "signature"
+                  },
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "mqf"
+                   },
+                   "key": "signature"
+                  }
+                 ]
+                }
+               }
+              }
+             ]
+            },
+            "b": {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 2
+              },
+              {
+               "type": "FixedCount",
+               "pattern": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "obs"
+                },
+                "key": "signature"
+               }
+              }
+             ]
+            }
+           }
+          ]
+         }
+        },
+        "var_name": "mqa",
+        "value": {
+         "type": "FixedCount",
+         "pattern": {
+          "type": "AntiUnify",
+          "values": {
+           "type": "SetT",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "obs"
+             },
+             "key": "signature"
+            },
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "mqa"
+             },
+             "key": "signature"
+            }
+           ]
+          }
+         }
+        },
+        "default": null
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "merge_lgg",
+     {
+      "__term__": {
+       "type": "AntiUnify",
+       "values": {
+        "type": "SetT",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "obs"
+          },
+          "key": "signature"
+         },
+         {
+          "type": "Attr",
+          "key": "signature",
+          "node": {
+           "type": "Argmax",
+           "source": {
+            "type": "Filter",
+            "source": {
+             "type": "NodesOfType",
+             "node_type": "ShapeSignature"
+            },
+            "var_name": "mqg",
+            "predicate": {
+             "type": "And",
+             "items": [
+              {
+               "type": "Eq",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "mqg"
+                },
+                "key": "kind"
+               },
+               "b": {
+                "type": "Lit",
+                "value": "prog_construction"
+               }
+              },
+              {
+               "type": "Eq",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "mqg"
+                },
+                "key": "induced"
+               },
+               "b": {
+                "type": "Lit",
+                "value": 1.0
+               }
+              },
+              {
+               "type": "Eq",
+               "a": {
+                "type": "IndexAt",
+                "seq": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "mqg"
+                 },
+                 "key": "signature"
+                },
+                "index": {
+                 "type": "Lit",
+                 "value": 0
+                }
+               },
+               "b": {
+                "type": "IndexAt",
+                "seq": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "obs"
+                 },
+                 "key": "signature"
+                },
+                "index": {
+                 "type": "Lit",
+                 "value": 0
+                }
+               }
+              },
+              {
+               "type": "Gte",
+               "a": {
+                "type": "Times",
+                "items": [
+                 {
+                  "type": "Lit",
+                  "value": 3
+                 },
+                 {
+                  "type": "FixedCount",
+                  "pattern": {
+                   "type": "AntiUnify",
+                   "values": {
+                    "type": "SetT",
+                    "items": [
+                     {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "obs"
+                      },
+                      "key": "signature"
+                     },
+                     {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "mqg"
+                      },
+                      "key": "signature"
+                     }
+                    ]
+                   }
+                  }
+                 }
+                ]
+               },
+               "b": {
+                "type": "Times",
+                "items": [
+                 {
+                  "type": "Lit",
+                  "value": 2
+                 },
+                 {
+                  "type": "FixedCount",
+                  "pattern": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "obs"
+                   },
+                   "key": "signature"
+                  }
+                 }
+                ]
+               }
+              }
+             ]
+            }
+           },
+           "var_name": "mqb",
+           "value": {
+            "type": "FixedCount",
+            "pattern": {
+             "type": "AntiUnify",
+             "values": {
+              "type": "SetT",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "obs"
+                },
+                "key": "signature"
+               },
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "mqb"
+                },
+                "key": "signature"
+               }
+              ]
+             }
+            }
+           },
+           "default": null
+          }
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "pc_status",
+     "merge_marked"
+    ]
+   ]
+  },
+  {
+   "name": "pcon_mint",
+   "comment": "DYNAMIC QUANTIZATION at construction grain, LAST rung: nothing covers (neither the literal decode nor a wildcarded quantum) and nothing joins (the merge criterion, negated -- the sd_mint_quantum/sd_dedup_existing mirror pattern) -> the observation's own signature becomes a new induced ShapeSignature{kind:'prog_construction'}. The NAME is bounded and Term-computed from the dominant (predicate, role) pair -- the head relation's variant -- plus two small integers: pc_<snake(head)>_r<relation-count>_q<held-quanta-count> (prereg par.3; the strictly-increasing _q discriminator makes names unique per substrate -- the engine's cold path applies one mint per pass; a merge keeps the survivor's name). Epoch bump IN-RULE (the rf_mint_role precedent), so mint -> pcon_redecode re-arm -> literal re-decode -> recognize closes inside ONE run_rules fixpoint (the recognized-after-epoch law). ONE-MINT-PER-PASS SERIALIZER (measured engine fact, recorded in PROGRAM_SYNTHESIS_P3.md): this engine's non-batch attempt path is SNAPSHOT-DRAIN (substrate.rs::attempt_one_rule collects every binding once and applies each WITHOUT re-checking the where), so two novel observations in one pass would BOTH mint before either could see the other's quantum. The final where-item is the retire_duplicate_gap precedent: the observation must BE the Argmin survivor over the mint-eligible snapshot (Eq compares Value::Node by id; Argmin returns exactly one element from a fixed snapshot within a pass), so exactly ONE mint applies per pass and every other candidate re-decides against the grown codebook next pass -- dedup by construction, not by luck.",
+   "match_type": "Observation",
+   "match": [
+    [
+     "ag",
+     "observed",
+     "obs"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "kind"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "prog_construction"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "pc_status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "decoded"
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "pc_residual"
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "edge_type": "minted"
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "ShapeSignature"
+       },
+       "var_name": "cq4",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "cq4"
+           },
+           "key": "kind"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "prog_construction"
+          }
+         },
+         {
+          "type": "Covers",
+          "pattern": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "cq4"
+           },
+           "key": "signature"
+          },
+          "instance": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "obs"
+           },
+           "key": "signature"
+          }
+         }
+        ]
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "ShapeSignature"
+       },
+       "var_name": "mq2",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "mq2"
+           },
+           "key": "kind"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "prog_construction"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "mq2"
+           },
+           "key": "induced"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 1.0
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "mq2"
+            },
+            "key": "signature"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 0
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "obs"
+            },
+            "key": "signature"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 0
+           }
+          }
+         },
+         {
+          "type": "Gte",
+          "a": {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Lit",
+             "value": 3
+            },
+            {
+             "type": "FixedCount",
+             "pattern": {
+              "type": "AntiUnify",
+              "values": {
+               "type": "SetT",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "obs"
+                 },
+                 "key": "signature"
+                },
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "mq2"
+                 },
+                 "key": "signature"
+                }
+               ]
+              }
+             }
+            }
+           ]
+          },
+          "b": {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Lit",
+             "value": 2
+            },
+            {
+             "type": "FixedCount",
+             "pattern": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "obs"
+              },
+              "key": "signature"
+             }
+            }
+           ]
+          }
+         }
+        ]
+       }
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Var",
+       "name": "obs"
+      },
+      "b": {
+       "type": "Argmin",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "Observation"
+        },
+        "var_name": "mo",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "mo"
+            },
+            "key": "kind"
+           },
+           "b": {
+            "type": "Lit",
+            "value": "prog_construction"
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "mo"
+            },
+            "key": "pc_status"
+           },
+           "b": {
+            "type": "Lit",
+            "value": "decoded"
+           }
+          },
+          {
+           "type": "Gt",
+           "a": {
+            "type": "Count",
+            "source": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "mo"
+             },
+             "key": "pc_residual"
+            }
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0
+           }
+          }
+         ]
+        }
+       },
+       "var_name": "mo2",
+       "value": {
+        "type": "Lit",
+        "value": 0
+       },
+       "default": null
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "q",
+     "ShapeSignature",
+     {
+      "name": {
+       "__term__": {
+        "type": "StringConcat",
+        "parts": [
+         {
+          "type": "Lit",
+          "value": "pc_"
+         },
+         {
+          "type": "SnakeCase",
+          "text": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "IndexAt",
+            "seq": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "obs"
+             },
+             "key": "signature"
+            },
+            "index": {
+             "type": "Lit",
+             "value": 0
+            }
+           },
+           "index": {
+            "type": "Lit",
+            "value": 1
+           }
+          }
+         },
+         {
+          "type": "Lit",
+          "value": "_r"
+         },
+         {
+          "type": "ToJsonString",
+          "value": {
+           "type": "Count",
+           "source": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "obs"
+            },
+            "key": "signature"
+           }
+          }
+         },
+         {
+          "type": "Lit",
+          "value": "_q"
+         },
+         {
+          "type": "ToJsonString",
+          "value": {
+           "type": "Count",
+           "source": {
+            "type": "Filter",
+            "source": {
+             "type": "NodesOfType",
+             "node_type": "ShapeSignature"
+            },
+            "var_name": "nq",
+            "predicate": {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "nq"
+              },
+              "key": "kind"
+             },
+             "b": {
+              "type": "Lit",
+              "value": "prog_construction"
+             }
+            }
+           }
+          }
+         }
+        ]
+       }
+      },
+      "kind": "prog_construction",
+      "induced": {
+       "__term__": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      },
+      "signature": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "signature"
+       }
+      },
+      "sig_key": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "sig_key"
+       }
+      },
+      "provenance": "minted",
+      "source": "prog_construction_loop"
+     }
+    ],
+    [
+     "add_edge",
+     "obs",
+     "minted",
+     "q"
+    ],
+    [
+     "set_attr",
+     "ag",
+     "prog_codebook_epoch",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "ag"
+         },
+         "key": "prog_codebook_epoch"
+        },
+        {
+         "type": "Lit",
+         "value": 1
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "pc_status",
+     "minted"
+    ]
+   ]
+  },
+  {
+   "name": "pcon_redecode",
+   "comment": "Codebook GROWTH closes the loop: any prog_construction Observation whose pcon_decoded_epoch lags the Agent's prog_codebook_epoch (bumped by pcon_mint in-rule, or by the driver's apply_marked_merge) re-arms to pending for a fresh literal decode against the grown codebook -- sd_redecode's idiom on this loop's OWN epoch attr (the Or-arm-per-status pattern; 'decoded' is included so a mid-pipeline observation gets the fresh look too, and 'merge_marked' so an applied merge re-decodes its own observation into recognized_merged).",
+   "batch": true,
+   "match_type": "Observation",
+   "match": [
+    [
+     "ag",
+     "observed",
+     "obs"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "kind"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "prog_construction"
+      }
+     },
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "pc_status"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "decoded"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "pc_status"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "minted"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "pc_status"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "recognized"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "pc_status"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "recognized_merged"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "pc_status"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "merge_marked"
+        }
+       }
+      ]
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "pc_decoded_epoch"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ag"
+       },
+       "key": "prog_codebook_epoch"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "obs",
+     "pc_status",
+     "pending"
+    ],
+    [
+     "set_attr",
+     "obs",
+     "pc_decoded_epoch",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ag"
+       },
+       "key": "prog_codebook_epoch"
+      }
+     }
+    ]
+   ]
+  }
+ ]
+}

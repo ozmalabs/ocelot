@@ -1,0 +1,118 @@
+{
+  "id": "service_mesh_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "service_mesh",
+  "in_microtheory": "network_protocols",
+  "description": "Service mesh decomposed. The sidecar proxy injected next to each microservice. Envoy as the dominant data plane; Istio + Linkerd as control planes. mTLS for service-to-service authentication. Traffic policies: retries, timeouts, circuit breakers, rate limiting. Observability: metrics, traces, logs at the sidecar. Sidecar pattern's costs (latency, complexity) vs benefits (uniform cross-service policy).",
+  "sub_mechanisms": [
+    {
+      "name": "sidecar_proxy",
+      "definition": "Envoy (or similar) deployed as a container next to each service. All inbound + outbound traffic flows through the sidecar.",
+      "why": "Externalises cross-cutting concerns (mTLS, retries, observability). Service code stays simple; sidecar handles network policy. Pod / VM contains both processes; they communicate via localhost.",
+      "category": "service_mesh_mechanism"
+    },
+    {
+      "name": "control_plane",
+      "definition": "Central system (Istiod, Linkerd's destination service) that pushes configuration to all sidecars: routing rules, mTLS certificates, observability targets.",
+      "why": "Distributed sidecars need consistent policy. Control plane is the single source of truth. Updates propagate to sidecars via xDS (Envoy's discovery protocol).",
+      "category": "service_mesh_mechanism"
+    },
+    {
+      "name": "xDS_protocol",
+      "definition": "Envoy's discovery API: clusters (CDS), endpoints (EDS), listeners (LDS), routes (RDS), secrets (SDS). gRPC streams of config updates.",
+      "why": "Push-based config: control plane pushes changes; sidecars apply them. Lets routing change without sidecar restart. The de facto standard data plane interface for service meshes.",
+      "category": "service_mesh_mechanism"
+    },
+    {
+      "name": "mTLS_between_services",
+      "definition": "Mutual TLS: both client + server present certificates. Each service has an identity certificate; sidecars enforce that callers are authenticated.",
+      "why": "Zero-trust networking: no implicit trust based on network location. Every call authenticated cryptographically. Certificate rotation handled by sidecar automatically.",
+      "category": "service_mesh_mechanism"
+    },
+    {
+      "name": "service_identity",
+      "definition": "Each workload has a cryptographic identity (SPIFFE ID). Embedded in the certificate the sidecar presents.",
+      "why": "Authorisation based on identity, not IP. 'service-A can call service-B' rather than 'allow IP X to talk to IP Y'. Survives pod restarts + IP changes.",
+      "category": "service_mesh_mechanism"
+    },
+    {
+      "name": "circuit_breaker",
+      "definition": "Sidecar tracks errors / latency to each destination. When a threshold is crossed, fails fast (returns error without trying) until destination recovers.",
+      "why": "Prevents cascading failure. A failing service overwhelms its callers if they keep retrying; circuit breaker cuts that off. Standard pattern from Netflix's Hystrix.",
+      "category": "service_mesh_mechanism"
+    },
+    {
+      "name": "retry_with_budget",
+      "definition": "Sidecar retries failed requests up to a configured count. Often with budget: max retries per N requests, preventing retry storms.",
+      "why": "Transient failures (transient TCP RSTs, momentary 503s) often succeed on retry. Bounded budget prevents amplification during real outages — retrying a failed service in a loop makes it worse.",
+      "category": "service_mesh_mechanism"
+    },
+    {
+      "name": "outlier_detection",
+      "definition": "Sidecar tracks per-endpoint health. Endpoints with high error rates are temporarily ejected from the load-balancing pool.",
+      "why": "Active health checking from the data plane. A bad pod (memory leak, slow restart) is detected by behaviour, not just liveness probes. Self-healing routing.",
+      "category": "service_mesh_mechanism"
+    },
+    {
+      "name": "canary_deployment_routing",
+      "definition": "Sidecar routes a percentage of traffic to a new version of a service. Gradually increases as the new version proves healthy.",
+      "why": "Risk-mitigated rollouts. 1% canary catches bugs without blast radius. Full deployment only after metrics look good. Service mesh implements this without per-service code.",
+      "category": "service_mesh_mechanism"
+    },
+    {
+      "name": "distributed_tracing_injection",
+      "definition": "Sidecar adds trace headers (X-B3-TraceId or W3C TraceContext) to outgoing requests. Trace IDs flow through the whole call graph.",
+      "why": "Without trace injection, distributed traces would require each service to participate. Sidecar handles it transparently — applications don't need to be trace-aware.",
+      "category": "service_mesh_mechanism"
+    },
+    {
+      "name": "metrics_emission",
+      "definition": "Sidecar emits per-request metrics: latency, status code, retries, mTLS handshake outcomes. To Prometheus, OpenTelemetry, etc.",
+      "why": "Uniform metrics across all services without per-service code. RED metrics (Rate, Errors, Duration) automatically computed. Standard dashboards work for any service.",
+      "category": "service_mesh_mechanism"
+    },
+    {
+      "name": "ambient_mode_layer4_proxy",
+      "definition": "Newer pattern (Istio Ambient): split sidecar into per-node L4 proxy + per-namespace L7 proxy. Reduces per-pod overhead.",
+      "why": "Per-pod sidecar pays 1-2 hops latency per request + duplicates memory. Per-node L4 is shared; L7 only for namespaces that need it. Trade-off: less isolation, but lower overhead at scale.",
+      "category": "service_mesh_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "sidecar_externalises_cross_cutting_concerns",
+      "if": ["the sidecar handles auth / retries / observability"],
+      "then": ["application code stays free of those concerns"],
+      "why": "Without sidecar, each microservice reimplements mTLS, retries, tracing, rate limits. Service mesh handles them uniformly. Hundreds of services × multiple concerns = orders of magnitude code reduction + consistency.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "control_plane_centralises_policy",
+      "if": ["policies are managed centrally"],
+      "then": ["changes propagate uniformly to all sidecars"],
+      "why": "Distributed enforcement (sidecars) with central definition (control plane). Update a rule once; xDS pushes to all sidecars. Without central plane, each service operator would have to apply policies individually.",
+      "soundness_category": "referential_transparency"
+    },
+    {
+      "name": "mTLS_enables_zero_trust",
+      "if": ["every service-to-service call is mTLS-authenticated"],
+      "then": ["network location no longer determines trust"],
+      "why": "Pre-mesh model: 'trust traffic from inside the firewall'. Failed when attackers got inside. mTLS authenticates each call individually — attacker needs the service's private key, not just network access. Zero-trust pattern.",
+      "soundness_category": "referential_transparency"
+    },
+    {
+      "name": "circuit_breaker_prevents_cascading_failure",
+      "if": ["a downstream service is failing"],
+      "then": ["circuit breaker prevents callers from amplifying the failure"],
+      "why": "Without circuit breakers, every caller retries the failing service. Retries pile up; failing service can't recover; callers cascade their own failures. Circuit breaker stops the retry storm — callers fail fast, downstream can recover.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "sidecar_latency_compounds_per_hop",
+      "if": ["each microservice has a sidecar adding 1-2ms"],
+      "then": ["multi-hop call paths accumulate sidecar latency"],
+      "why": "A 5-hop microservice path adds 5-10ms of sidecar overhead. For latency-sensitive applications, this matters. Trade-off: developer productivity vs hop latency. Ambient mode (L4-only nodes) reduces but doesn't eliminate this.",
+      "soundness_category": "cost_equivalence"
+    }
+  ]
+}

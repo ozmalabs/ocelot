@@ -1,0 +1,2018 @@
+{
+ "id": "grid_navigation",
+ "version": "1.0.0",
+ "depends_on": [
+  "navigation_modes"
+ ],
+ "description": "Graph-native grid nav + exploration + MODE SELECTION. The agent UNDERSTANDS navigation modes (navigation_modes concepts) and ACTIVELY CHOOSES between them by its own shape (winner-take-all): activate_<mode> drive each NavMode's activation from a situation signal (cover_stuck->pocket_escape, frontier_flux->mover_avoid, baseline->frontier_seek); select_mode is the Argmax winner -> game.nav_mode; the mode gates behaviour (select_seek=nearest when seeking, select_escape=farthest when escaping, goal_abandon patient in mover_avoid). Plus the exploration core: mark_visited, cover_tick, goal_abandon+reopen_abandoned (quarantine), release_goal (on reached/abandoned), hop_descend_gradient. Host: measure body, fire slide_flood, wire has_mode, stamp fresh+frontier_flux, clear blocks in pocket_escape, read chosen_action. Every decision is a rule.",
+ "nodes": [],
+ "edges": [],
+ "productions": [],
+ "concepts": [],
+ "rules": [
+  {
+   "name": "mark_visited_self",
+   "match": [
+    [
+     "game",
+     "reached",
+     "A"
+    ]
+   ],
+   "where": {
+    "type": "Eq",
+    "a": {
+     "type": "Plus",
+     "items": [
+      {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "A"
+       },
+       "key": "is_avatar_cell"
+      },
+      {
+       "type": "Lit",
+       "value": 0
+      }
+     ]
+    },
+    "b": {
+     "type": "Lit",
+     "value": 1.0
+    }
+   },
+   "effects": [
+    [
+     "set_attr",
+     "A",
+     "visited",
+     1.0
+    ]
+   ]
+  },
+  {
+   "name": "mark_visited_footprint",
+   "match": [
+    [
+     "game",
+     "reached",
+     "A"
+    ],
+    [
+     "A",
+     "neighbour",
+     "n"
+    ]
+   ],
+   "where": {
+    "type": "Eq",
+    "a": {
+     "type": "Plus",
+     "items": [
+      {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "A"
+       },
+       "key": "is_avatar_cell"
+      },
+      {
+       "type": "Lit",
+       "value": 0
+      }
+     ]
+    },
+    "b": {
+     "type": "Lit",
+     "value": 1.0
+    }
+   },
+   "effects": [
+    [
+     "set_attr",
+     "n",
+     "visited",
+     1.0
+    ]
+   ]
+  },
+  {
+   "name": "cover_tick",
+   "match": [
+    [
+     "game",
+     "reached",
+     "A"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "A"
+         },
+         "key": "is_avatar_cell"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "game"
+          },
+          "key": "cover_stamp"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       },
+       "b": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "game"
+          },
+          "key": "flood_epoch"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "game",
+     "cover_stuck",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Eq",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "game"
+           },
+           "key": "fresh"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": 0.0
+       },
+       "other": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "game"
+            },
+            "key": "cover_stuck"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         {
+          "type": "Lit",
+          "value": 1.0
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "game",
+     "cover_stamp",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "game"
+         },
+         "key": "flood_epoch"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "activate_pocket_escape",
+   "match": [
+    [
+     "game",
+     "has_mode",
+     "m"
+    ]
+   ],
+   "where": {
+    "type": "Eq",
+    "a": {
+     "type": "Attr",
+     "node": {
+      "type": "Var",
+      "name": "m"
+     },
+     "key": "name"
+    },
+    "b": {
+     "type": "Lit",
+     "value": "pocket_escape"
+    }
+   },
+   "effects": [
+    [
+     "set_attr",
+     "m",
+     "activation",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gte",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "game"
+           },
+           "key": "cover_stuck"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 4.0
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": 2.0
+       },
+       "other": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "activate_mover_avoid",
+   "match": [
+    [
+     "game",
+     "has_mode",
+     "m"
+    ]
+   ],
+   "where": {
+    "type": "Eq",
+    "a": {
+     "type": "Attr",
+     "node": {
+      "type": "Var",
+      "name": "m"
+     },
+     "key": "name"
+    },
+    "b": {
+     "type": "Lit",
+     "value": "mover_avoid"
+    }
+   },
+   "effects": [
+    [
+     "set_attr",
+     "m",
+     "activation",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gte",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "game"
+           },
+           "key": "frontier_flux"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 10.0
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": 1.0
+       },
+       "other": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "activate_frontier_seek",
+   "match": [
+    [
+     "game",
+     "has_mode",
+     "m"
+    ]
+   ],
+   "where": {
+    "type": "Eq",
+    "a": {
+     "type": "Attr",
+     "node": {
+      "type": "Var",
+      "name": "m"
+     },
+     "key": "name"
+    },
+    "b": {
+     "type": "Lit",
+     "value": "frontier_seek"
+    }
+   },
+   "effects": [
+    [
+     "set_attr",
+     "m",
+     "activation",
+     0.5
+    ]
+   ]
+  },
+  {
+   "name": "select_mode",
+   "match": [
+    [
+     "game",
+     "reached",
+     "A"
+    ]
+   ],
+   "where": {
+    "type": "Eq",
+    "a": {
+     "type": "Plus",
+     "items": [
+      {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "A"
+       },
+       "key": "is_avatar_cell"
+      },
+      {
+       "type": "Lit",
+       "value": 0
+      }
+     ]
+    },
+    "b": {
+     "type": "Lit",
+     "value": 1.0
+    }
+   },
+   "effects": [
+    [
+     "set_attr",
+     "game",
+     "nav_mode",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Argmax",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "game"
+         },
+         "edge_type": "has_mode",
+         "any_type": false
+        },
+        "var_name": "m",
+        "value": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "m"
+           },
+           "key": "activation"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        "default": {
+         "type": "Var",
+         "name": "A"
+        }
+       },
+       "key": "name"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "goal_abandon",
+   "match": [
+    [
+     "game",
+     "committed_goal",
+     "G"
+    ]
+   ],
+   "where": {
+    "type": "Gte",
+    "a": {
+     "type": "Plus",
+     "items": [
+      {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "game"
+       },
+       "key": "cover_stuck"
+      },
+      {
+       "type": "Lit",
+       "value": 0
+      }
+     ]
+    },
+    "b": {
+     "type": "IfThenElse",
+     "cond": {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "game"
+       },
+       "key": "nav_mode"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "mover_avoid"
+      }
+     },
+     "then": {
+      "type": "Lit",
+      "value": 8.0
+     },
+     "other": {
+      "type": "Lit",
+      "value": 3.0
+     }
+    }
+   },
+   "effects": [
+    [
+     "set_attr",
+     "G",
+     "abandoned",
+     1.0
+    ],
+    [
+     "set_attr",
+     "G",
+     "abandon_frame",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "game"
+         },
+         "key": "flood_epoch"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "G",
+     "unreachable",
+     1.0
+    ],
+    [
+     "del_edge",
+     "game",
+     "committed_goal",
+     "G"
+    ],
+    [
+     "set_attr",
+     "G",
+     "committed",
+     0.0
+    ],
+    [
+     "set_attr",
+     "game",
+     "cover_stuck",
+     0.0
+    ]
+   ]
+  },
+  {
+   "name": "release_goal",
+   "match": [
+    [
+     "game",
+     "committed_goal",
+     "G"
+    ]
+   ],
+   "where": {
+    "type": "Or",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "G"
+         },
+         "key": "visited"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "G"
+         },
+         "key": "abandoned"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "del_edge",
+     "game",
+     "committed_goal",
+     "G"
+    ],
+    [
+     "set_attr",
+     "G",
+     "committed",
+     0.0
+    ]
+   ]
+  },
+  {
+   "name": "select_seek",
+   "match": [
+    [
+     "game",
+     "reached",
+     "c"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "game"
+        },
+        "edge_type": "committed_goal",
+        "any_type": false
+       },
+       "var_name": "_g",
+       "predicate": {
+        "type": "Lit",
+        "value": true
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "game"
+        },
+        "key": "nav_mode"
+       },
+       "b": {
+        "type": "Lit",
+        "value": "pocket_escape"
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "c"
+          },
+          "key": "visited"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "c"
+          },
+          "key": "abandoned"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "c"
+         },
+         "key": "_adist"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "MinOver",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "game"
+         },
+         "edge_type": "reached",
+         "any_type": false
+        },
+        "var_name": "C",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Not",
+           "arg": {
+            "type": "Eq",
+            "a": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "C"
+               },
+               "key": "visited"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            },
+            "b": {
+             "type": "Lit",
+             "value": 1.0
+            }
+           }
+          },
+          {
+           "type": "Not",
+           "arg": {
+            "type": "Eq",
+            "a": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "C"
+               },
+               "key": "abandoned"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            },
+            "b": {
+             "type": "Lit",
+             "value": 1.0
+            }
+           }
+          },
+          {
+           "type": "Not",
+           "arg": {
+            "type": "Eq",
+            "a": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "C"
+               },
+               "key": "near_mover"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            },
+            "b": {
+             "type": "Lit",
+             "value": 1.0
+            }
+           }
+          },
+          {
+           "type": "Not",
+           "arg": {
+            "type": "Eq",
+            "a": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "C"
+               },
+               "key": "unreachable"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            },
+            "b": {
+             "type": "Lit",
+             "value": 1.0
+            }
+           }
+          }
+         ]
+        }
+       },
+       "var_name": "C",
+       "value": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "C"
+          },
+          "key": "_adist"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       },
+       "default": {
+        "type": "Lit",
+        "value": 1000000.0
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "game"
+        },
+        "key": "nav_mode"
+       },
+       "b": {
+        "type": "Lit",
+        "value": "feature_pursuit"
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_edge",
+     "game",
+     "committed_goal",
+     "c"
+    ],
+    [
+     "set_attr",
+     "c",
+     "committed",
+     1.0
+    ]
+   ]
+  },
+  {
+   "name": "select_escape",
+   "match": [
+    [
+     "game",
+     "reached",
+     "c"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "game"
+        },
+        "edge_type": "committed_goal",
+        "any_type": false
+       },
+       "var_name": "_g",
+       "predicate": {
+        "type": "Lit",
+        "value": true
+       }
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "game"
+       },
+       "key": "nav_mode"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "pocket_escape"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "c"
+          },
+          "key": "visited"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "c"
+          },
+          "key": "abandoned"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "c"
+         },
+         "key": "_adist"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "MaxOver",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "game"
+         },
+         "edge_type": "reached",
+         "any_type": false
+        },
+        "var_name": "C",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Not",
+           "arg": {
+            "type": "Eq",
+            "a": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "C"
+               },
+               "key": "visited"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            },
+            "b": {
+             "type": "Lit",
+             "value": 1.0
+            }
+           }
+          },
+          {
+           "type": "Not",
+           "arg": {
+            "type": "Eq",
+            "a": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "C"
+               },
+               "key": "abandoned"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            },
+            "b": {
+             "type": "Lit",
+             "value": 1.0
+            }
+           }
+          },
+          {
+           "type": "Not",
+           "arg": {
+            "type": "Eq",
+            "a": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "C"
+               },
+               "key": "near_mover"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            },
+            "b": {
+             "type": "Lit",
+             "value": 1.0
+            }
+           }
+          },
+          {
+           "type": "Not",
+           "arg": {
+            "type": "Eq",
+            "a": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "C"
+               },
+               "key": "unreachable"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            },
+            "b": {
+             "type": "Lit",
+             "value": 1.0
+            }
+           }
+          }
+         ]
+        }
+       },
+       "var_name": "C",
+       "value": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "C"
+          },
+          "key": "_adist"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_edge",
+     "game",
+     "committed_goal",
+     "c"
+    ],
+    [
+     "set_attr",
+     "c",
+     "committed",
+     1.0
+    ]
+   ]
+  },
+  {
+   "name": "reopen_abandoned",
+   "match": [
+    [
+     "game",
+     "reached",
+     "C"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "C"
+         },
+         "key": "abandoned"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Gte",
+      "a": {
+       "type": "Minus",
+       "a": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "game"
+          },
+          "key": "flood_epoch"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       },
+       "b": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "C"
+          },
+          "key": "abandon_frame"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 12.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "C",
+     "abandoned",
+     0.0
+    ]
+   ]
+  },
+  {
+   "name": "hop_descend_gradient",
+   "match": [
+    [
+     "game",
+     "reached",
+     "A"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        { "type": "Attr", "node": { "type": "Var", "name": "A" }, "key": "is_avatar_cell" },
+        { "type": "Lit", "value": 0 }
+       ]
+      },
+      "b": { "type": "Lit", "value": 1.0 }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": { "type": "Attr", "node": { "type": "Var", "name": "game" }, "key": "nav_mode" },
+       "b": { "type": "Lit", "value": "pocket_escape" }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "game",
+     "chosen_action",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Lt",
+        "a": {
+         "type": "Minus",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Argmin",
+           "source": {
+            "type": "Filter",
+            "source": {
+             "type": "Neighbours",
+             "node": {
+              "type": "Var",
+              "name": "game"
+             },
+             "edge_type": "reached",
+             "any_type": false
+            },
+            "var_name": "n",
+            "predicate": {
+             "type": "And",
+             "items": [
+              {
+               "type": "Eq",
+               "a": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "n"
+                  },
+                  "key": "_adist"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0
+                 }
+                ]
+               },
+               "b": {
+                "type": "Lit",
+                "value": 1.0
+               }
+              },
+              {
+               "type": "Eq",
+               "a": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "n"
+                  },
+                  "key": "_epoch"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0
+                 }
+                ]
+               },
+               "b": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "game"
+                  },
+                  "key": "flood_epoch"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0
+                 }
+                ]
+               }
+              }
+             ]
+            }
+           },
+           "var_name": "n",
+           "value": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "n"
+              },
+              "key": "_dist"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           },
+           "default": {
+            "type": "Var",
+            "name": "A"
+           }
+          },
+          "key": "row"
+         },
+         "b": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "A"
+            },
+            "key": "row"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": "Up"
+       },
+       "other": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Gt",
+         "a": {
+          "type": "Minus",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Argmin",
+            "source": {
+             "type": "Filter",
+             "source": {
+              "type": "Neighbours",
+              "node": {
+               "type": "Var",
+               "name": "game"
+              },
+              "edge_type": "reached",
+              "any_type": false
+             },
+             "var_name": "n",
+             "predicate": {
+              "type": "And",
+              "items": [
+               {
+                "type": "Eq",
+                "a": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "n"
+                   },
+                   "key": "_adist"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 ]
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": 1.0
+                }
+               },
+               {
+                "type": "Eq",
+                "a": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "n"
+                   },
+                   "key": "_epoch"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 ]
+                },
+                "b": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "game"
+                   },
+                   "key": "flood_epoch"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 ]
+                }
+               }
+              ]
+             }
+            },
+            "var_name": "n",
+            "value": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "n"
+               },
+               "key": "_dist"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            },
+            "default": {
+             "type": "Var",
+             "name": "A"
+            }
+           },
+           "key": "row"
+          },
+          "b": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "A"
+             },
+             "key": "row"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          }
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0
+         }
+        },
+        "then": {
+         "type": "Lit",
+         "value": "Down"
+        },
+        "other": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Lt",
+          "a": {
+           "type": "Minus",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Argmin",
+             "source": {
+              "type": "Filter",
+              "source": {
+               "type": "Neighbours",
+               "node": {
+                "type": "Var",
+                "name": "game"
+               },
+               "edge_type": "reached",
+               "any_type": false
+              },
+              "var_name": "n",
+              "predicate": {
+               "type": "And",
+               "items": [
+                {
+                 "type": "Eq",
+                 "a": {
+                  "type": "Plus",
+                  "items": [
+                   {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "n"
+                    },
+                    "key": "_adist"
+                   },
+                   {
+                    "type": "Lit",
+                    "value": 0
+                   }
+                  ]
+                 },
+                 "b": {
+                  "type": "Lit",
+                  "value": 1.0
+                 }
+                },
+                {
+                 "type": "Eq",
+                 "a": {
+                  "type": "Plus",
+                  "items": [
+                   {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "n"
+                    },
+                    "key": "_epoch"
+                   },
+                   {
+                    "type": "Lit",
+                    "value": 0
+                   }
+                  ]
+                 },
+                 "b": {
+                  "type": "Plus",
+                  "items": [
+                   {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "game"
+                    },
+                    "key": "flood_epoch"
+                   },
+                   {
+                    "type": "Lit",
+                    "value": 0
+                   }
+                  ]
+                 }
+                }
+               ]
+              }
+             },
+             "var_name": "n",
+             "value": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "n"
+                },
+                "key": "_dist"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             },
+             "default": {
+              "type": "Var",
+              "name": "A"
+             }
+            },
+            "key": "col"
+           },
+           "b": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "A"
+              },
+              "key": "col"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           }
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0
+          }
+         },
+         "then": {
+          "type": "Lit",
+          "value": "Left"
+         },
+         "other": {
+          "type": "IfThenElse",
+          "cond": {
+           "type": "Gt",
+           "a": {
+            "type": "Minus",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Argmin",
+              "source": {
+               "type": "Filter",
+               "source": {
+                "type": "Neighbours",
+                "node": {
+                 "type": "Var",
+                 "name": "game"
+                },
+                "edge_type": "reached",
+                "any_type": false
+               },
+               "var_name": "n",
+               "predicate": {
+                "type": "And",
+                "items": [
+                 {
+                  "type": "Eq",
+                  "a": {
+                   "type": "Plus",
+                   "items": [
+                    {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "n"
+                     },
+                     "key": "_adist"
+                    },
+                    {
+                     "type": "Lit",
+                     "value": 0
+                    }
+                   ]
+                  },
+                  "b": {
+                   "type": "Lit",
+                   "value": 1.0
+                  }
+                 },
+                 {
+                  "type": "Eq",
+                  "a": {
+                   "type": "Plus",
+                   "items": [
+                    {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "n"
+                     },
+                     "key": "_epoch"
+                    },
+                    {
+                     "type": "Lit",
+                     "value": 0
+                    }
+                   ]
+                  },
+                  "b": {
+                   "type": "Plus",
+                   "items": [
+                    {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "game"
+                     },
+                     "key": "flood_epoch"
+                    },
+                    {
+                     "type": "Lit",
+                     "value": 0
+                    }
+                   ]
+                  }
+                 }
+                ]
+               }
+              },
+              "var_name": "n",
+              "value": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "n"
+                 },
+                 "key": "_dist"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
+              },
+              "default": {
+               "type": "Var",
+               "name": "A"
+              }
+             },
+             "key": "col"
+            },
+            "b": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "A"
+               },
+               "key": "col"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            }
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0
+           }
+          },
+          "then": {
+           "type": "Lit",
+           "value": "Right"
+          },
+          "other": {
+           "type": "Lit",
+           "value": ""
+          }
+         }
+        }
+       }
+      }
+     }
+    ]
+   ]
+  }
+ ]
+}

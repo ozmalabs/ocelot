@@ -1,0 +1,101 @@
+{
+  "id": "issue_reopen",
+  "version": "1.0.0",
+  "depends_on": [
+    "stopping_policy"
+  ],
+  "description": "THE REOPEN DECISION as DATA -- the twin of should_continue, run the OTHER way. stopping_policy STOPS by SUFFICIENCY and deliberately leaves low-salience gaps UNFIXED (gap_prioritization.run_cycle's `left` set -- the DEFERRED agenda). This seed lets the jabberwock DECIDE WHEN TO REOPEN one of those deferred gaps and PASS IT THROUGH into the running session. ONE graph-resident Program, should_reopen, is the twin of should_continue: for a DEFERRED gap it REOPENS iff the gap's CURRENT (re-measured) norm_salience exceeds the ReopenPolicy threshold -- Gt(gap.norm_salience, ReopenPolicy.threshold) inside an IfThenElse, both the gap-attr read and the threshold read living in the graph (the threshold via an Argmin over ReopenPolicy by priority, exactly as should_continue reads SufficiencyPolicy). The gap node is bound as env var `g`; Python passes only the id and reads the Program's 1.0/0.0 output -- it never compares salience to a threshold in Python, never counts ticks, never flags. HYSTERESIS is a STATED POLICY, not an accident: ReopenPolicy.threshold (0.7) is DISTINCT from and >= SufficiencyPolicy.threshold (0.5), so a gap DEFERRED at salience 0.2 does NOT immediately reopen -- reopen is a strictly HIGHER bar than un-defer; the gap reopens only once re-measurement lifts its salience above the higher reopen bar. The salience RE-MEASUREMENT is the perceivers'/normaliser's boundary I/O; the reopen threshold is graph-data POLICY (tunable). PASS-THROUGH is a genuine live-graph hand-off, not a print: a reopened gap is PROMOTED to a ReopenedConcern node with active=1, edged from the agent hub (has_concern), which the LIVE loop consumes -- the seeded `reopened_concern_pursue` Reflex's stimulus (an active ReopenedConcern exists) trips in fire_reflexes, so the running session SEES and acts on the reopened issue. The reopened gap re-enters the LIVE session, not the batch queue.",
+  "microtheory": {
+    "name": "issue_reopen",
+    "description": "when a DEFERRED gap (left unfixed by the sufficiency stop) is REOPENED and passed back into the running session: it reopens iff its CURRENT re-measured norm_salience exceeds the ReopenPolicy threshold -- a strictly HIGHER bar than the sufficiency threshold that deferred it (hysteresis). The reopen verdict is the should_reopen Program's output (Rust); the salience is re-measured at the boundary; the reopened gap is promoted to an active ReopenedConcern the live reflex/rule loop consumes."
+  },
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "ReopenPolicy",
+      "attrs": {
+        "name": "default_reopen_policy",
+        "threshold": 0.7,
+        "priority": 1,
+        "description": "the re-measured-salience bar a DEFERRED gap must clear to be REOPENED into the running session. DISTINCT from and deliberately HIGHER than the SufficiencyPolicy threshold (0.5) that deferred it: this is HYSTERESIS -- a gap deferred at 0.2 does not reopen when it drifts to 0.6; it reopens only once re-measurement lifts its salience above 0.7. A POLICY (tunable by editing this threshold), NOT a universal metric.",
+        "rationale": "reopen_threshold >= sufficiency_threshold gives a dead-band between 'good enough to leave' (<=0.5) and 'salient enough to reopen' (>0.7): issues do not thrash across the stop boundary. Raise it to reopen less eagerly (wider hysteresis); lower it toward the sufficiency threshold to reopen as soon as a deferred gap would no longer be deferred."
+      }
+    },
+    {
+      "local_id": 1,
+      "type": "Program",
+      "attrs": {
+        "name": "should_reopen",
+        "form": "term_tree",
+        "program": "{\"type\": \"IfThenElse\", \"cond\": {\"type\": \"Gt\", \"a\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"g\"}, \"key\": \"norm_salience\"}, \"b\": {\"type\": \"Attr\", \"key\": \"threshold\", \"node\": {\"type\": \"Argmin\", \"source\": {\"type\": \"NodesOfType\", \"node_type\": \"ReopenPolicy\"}, \"var_name\": \"p\", \"value\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"p\"}, \"key\": \"priority\"}, \"default\": null}}}, \"then\": {\"type\": \"Lit\", \"value\": 1.0}, \"other\": {\"type\": \"Lit\", \"value\": 0.0}}"
+      }
+    }
+  ],
+  "edges": [],
+  "productions": [],
+  "concepts": [],
+  "rules": [],
+  "reflexes": [
+    {
+      "name": "reopened_concern_pursue",
+      "stimulus": {
+        "type": "Gte",
+        "a": {
+          "type": "Count",
+          "source": {
+            "type": "Filter",
+            "source": {
+              "type": "NodesOfType",
+              "node_type": "ReopenedConcern"
+            },
+            "var_name": "c",
+            "predicate": {
+              "type": "And",
+              "items": [
+                {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "c"
+                    },
+                    "key": "active"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": 1.0
+                  }
+                },
+                {
+                  "type": "Not",
+                  "arg": {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "c"
+                      },
+                      "key": "resolved"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": 1.0
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "b": {
+          "type": "Lit",
+          "value": 1
+        }
+      },
+      "response": "reopened_concern_pursue",
+      "refractory_ticks": 0
+    }
+  ]
+}

@@ -1,0 +1,1180 @@
+{
+ "id": "program_self_modification",
+ "version": "1.0.0",
+ "depends_on": [
+  "program_synthesis",
+  "metacognitive_learning",
+  "self_change_reasoning",
+  "cognitive_pareto",
+  "dual_process_core"
+ ],
+ "area": "program_self_modification",
+ "latency_class": "soft_realtime",
+ "description": "Unifies programming gaps, order-N metacognitive learning plans, and proof-carrying self-change. Measurements enter at the interface; all diagnosis, planning, revision, and consolidation are graph-native and integer-only.",
+ "nodes": [],
+ "edges": [],
+ "productions": [
+  {
+   "provenance": "program_self_modification:agent_episode",
+   "src": {
+    "type": "Agent",
+    "var": "src"
+   },
+   "edge_type": "has_self_directed_learning_episode",
+   "tgt": {
+    "type": "SelfDirectedLearningEpisode",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "program_self_modification:episode_plan",
+   "src": {
+    "type": "SelfDirectedLearningEpisode",
+    "var": "src"
+   },
+   "edge_type": "has_self_directed_learning_plan",
+   "tgt": {
+    "type": "LearningPlan",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "program_self_modification:plan_step",
+   "src": {
+    "type": "LearningPlan",
+    "var": "src"
+   },
+   "edge_type": "has_learning_plan_step",
+   "tgt": {
+    "type": "LearningPlanStep",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "program_self_modification:plan_selected_step",
+   "src": {
+    "type": "LearningPlan",
+    "var": "src"
+   },
+   "edge_type": "has_selected_learning_plan_step",
+   "tgt": {
+    "type": "LearningPlanStep",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "program_self_modification:step_capability",
+   "src": {
+    "type": "LearningPlanStep",
+    "var": "src"
+   },
+   "edge_type": "plans_learning_capability",
+   "tgt": {
+    "type": "ProgramCapabilityInstance",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "program_self_modification:plan_residual",
+   "src": {
+    "type": "LearningPlan",
+    "var": "src"
+   },
+   "edge_type": "has_learning_plan_residual",
+   "tgt": {
+    "type": "LearningPlanResidual",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "program_self_modification:step_residual",
+   "src": {
+    "type": "LearningPlanStep",
+    "var": "src"
+   },
+   "edge_type": "has_learning_plan_residual",
+   "tgt": {
+    "type": "LearningPlanResidual",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "program_self_modification:residual_step",
+   "src": {
+    "type": "LearningPlanResidual",
+    "var": "src"
+   },
+   "edge_type": "about_learning_plan_step",
+   "tgt": {
+    "type": "LearningPlanStep",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "program_self_modification:concern_plan",
+   "src": {
+    "type": "SelfConcern",
+    "var": "src"
+   },
+   "edge_type": "has_program_self_change_plan",
+   "tgt": {
+    "type": "LearningPlan",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "program_self_modification:concern_request",
+   "src": {
+    "type": "SelfConcern",
+    "var": "src"
+   },
+   "edge_type": "requests_program_self_change_probe",
+   "tgt": {
+    "type": "SelfChangeProbeRequest",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "program_self_modification:request_residual",
+   "src": {
+    "type": "SelfChangeProbeRequest",
+    "var": "src"
+   },
+   "edge_type": "addresses_learning_plan_residual",
+   "tgt": {
+    "type": "LearningPlanResidual",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "program_self_modification:request_measurement",
+   "src": {
+    "type": "SelfChangeProbeRequest",
+    "var": "src"
+   },
+   "edge_type": "has_program_gap_measurement",
+   "tgt": {
+    "type": "ProgramGapMeasurement",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "program_self_modification:request_probe",
+   "src": {
+    "type": "SelfChangeProbeRequest",
+    "var": "src"
+   },
+   "edge_type": "materialized_as_fault_probe",
+   "tgt": {
+    "type": "FaultProbe",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "program_self_modification:plan_change",
+   "src": {
+    "type": "LearningPlan",
+    "var": "src"
+   },
+   "edge_type": "has_program_self_change",
+   "tgt": {
+    "type": "SelfChange",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "program_self_modification:revision_patch",
+   "src": {
+    "type": "LearningPlanRevision",
+    "var": "src"
+   },
+   "edge_type": "proposes_rule_patch",
+   "tgt": {
+    "type": "RulePatch",
+    "var": "tgt"
+   }
+  }
+ ],
+ "rules": [
+  {
+   "name": "psm_open_self_directed_program_learning_plan",
+   "area": "program_self_modification",
+   "latency_class": "soft_realtime",
+   "batch": false,
+   "comment": "An honest programming gap becomes an executable, metacognitively revisable learning plan without host promotion.",
+   "match": [
+    [
+     "agent",
+     "has_self_concern",
+     "concern"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "concern"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "noted"
+      }
+     },
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "concern"
+         },
+         "key": "kind"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "code_write"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "concern"
+         },
+         "key": "kind"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "prog_read"
+        }
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "concern"
+        },
+        "edge_type": "has_program_self_change_plan"
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "episode",
+     "SelfDirectedLearningEpisode",
+     {
+      "status": "active",
+      "kind": "program_self_modification",
+      "output_authority": 0,
+      "integer_native": 1
+     }
+    ],
+    [
+     "add_node",
+     "plan",
+     "LearningPlan",
+     {
+      "status": "active",
+      "goal": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "concern"
+        },
+        "key": "content"
+       }
+      },
+      "order_n": 1,
+      "output_authority": 0,
+      "integer_native": 1
+     }
+    ],
+    [
+     "add_node",
+     "step",
+     "LearningPlanStep",
+     {
+      "status": "ready",
+      "goal": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "concern"
+        },
+        "key": "content"
+       }
+      },
+      "evidence_spent_units": 0,
+      "evidence_budget_units": 1,
+      "budget_success_baseline": 0,
+      "context_evidence_units": 0,
+      "output_authority": 0,
+      "integer_native": 1
+     }
+    ],
+    [
+     "add_node",
+     "capability",
+     "ProgramCapabilityInstance",
+     {
+      "status": "learning",
+      "kind": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "concern"
+        },
+        "key": "kind"
+       }
+      },
+      "success_count": 0,
+      "failure_count": 0,
+      "output_authority": 0,
+      "integer_native": 1
+     }
+    ],
+    [
+     "add_node",
+     "residual",
+     "LearningPlanResidual",
+     {
+      "status": "open",
+      "kind": "published_program_gap",
+      "order_n": 1,
+      "evidence_spent_units": 0,
+      "causal_yield_units": 0,
+      "output_authority": 0,
+      "integer_native": 1
+     }
+    ],
+    [
+     "add_node",
+     "request",
+     "SelfChangeProbeRequest",
+     {
+      "status": "requested",
+      "kind": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "concern"
+        },
+        "key": "kind"
+       }
+      },
+      "measurement_count": 0,
+      "output_authority": 0,
+      "integer_native": 1
+     }
+    ],
+    [
+     "add_node",
+     "task_program",
+     "SystemTwoTaskSet",
+     {
+      "area": "program_synthesis",
+      "enabled": 1,
+      "integer_native": 1
+     }
+    ],
+    [
+     "add_node",
+     "task_change",
+     "SystemTwoTaskSet",
+     {
+      "area": "self_change_reasoning",
+      "enabled": 1,
+      "integer_native": 1
+     }
+    ],
+    [
+     "add_node",
+     "escalation",
+     "SystemTwoEscalation",
+     {
+      "status": "requested",
+      "reason": "program_capability_residual",
+      "output_authority": 0,
+      "integer_native": 1
+     }
+    ],
+    [
+     "add_edge",
+     "agent",
+     "has_self_directed_learning_episode",
+     "episode"
+    ],
+    [
+     "add_edge",
+     "episode",
+     "has_self_directed_learning_plan",
+     "plan"
+    ],
+    [
+     "add_edge",
+     "plan",
+     "has_learning_plan_step",
+     "step"
+    ],
+    [
+     "add_edge",
+     "plan",
+     "has_selected_learning_plan_step",
+     "step"
+    ],
+    [
+     "add_edge",
+     "step",
+     "plans_learning_capability",
+     "capability"
+    ],
+    [
+     "add_edge",
+     "plan",
+     "has_learning_plan_residual",
+     "residual"
+    ],
+    [
+     "add_edge",
+     "step",
+     "has_learning_plan_residual",
+     "residual"
+    ],
+    [
+     "add_edge",
+     "residual",
+     "about_learning_plan_step",
+     "step"
+    ],
+    [
+     "add_edge",
+     "concern",
+     "has_program_self_change_plan",
+     "plan"
+    ],
+    [
+     "add_edge",
+     "concern",
+     "requests_program_self_change_probe",
+     "request"
+    ],
+    [
+     "add_edge",
+     "request",
+     "addresses_learning_plan_residual",
+     "residual"
+    ],
+    [
+     "add_edge",
+     "escalation",
+     "about_context",
+     "residual"
+    ],
+    [
+     "add_edge",
+     "escalation",
+     "recruits_task_set",
+     "task_program"
+    ],
+    [
+     "add_edge",
+     "escalation",
+     "recruits_task_set",
+     "task_change"
+    ],
+    [
+     "set_attr",
+     "concern",
+     "self_change_status",
+     "investigating"
+    ]
+   ]
+  },
+  {
+   "name": "psm_materialize_measured_program_fault_probe",
+   "area": "program_self_modification",
+   "latency_class": "soft_realtime",
+   "batch": false,
+   "comment": "The interface may report measurements, but this rule alone admits them to the proof-carrying self-change faculty.",
+   "match": [
+    [
+     "agent",
+     "has_self_concern",
+     "concern"
+    ],
+    [
+     "concern",
+     "requests_program_self_change_probe",
+     "request"
+    ],
+    [
+     "request",
+     "has_program_gap_measurement",
+     "measurement"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "request"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "requested"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "measurement"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "observed"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "measurement"
+         },
+         "key": "materialized"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "probe",
+     "FaultProbe",
+     {
+      "case_id": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "measurement"
+        },
+        "key": "case_id"
+       }
+      },
+      "target_uid": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "measurement"
+        },
+        "key": "target_uid"
+       }
+      },
+      "expected_revision": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "measurement"
+        },
+        "key": "expected_revision"
+       }
+      },
+      "baseline_hash": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "measurement"
+        },
+        "key": "baseline_hash"
+       }
+      },
+      "live_clause": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "measurement"
+        },
+        "key": "live_clause"
+       }
+      },
+      "false_negative": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "measurement"
+        },
+        "key": "false_negative"
+       }
+      },
+      "false_positive": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "measurement"
+        },
+        "key": "false_positive"
+       }
+      },
+      "threshold_sensitivity": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "measurement"
+        },
+        "key": "threshold_sensitivity"
+       }
+      },
+      "context_sensitivity": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "measurement"
+        },
+        "key": "context_sensitivity"
+       }
+      },
+      "relation_counterfactual": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "measurement"
+        },
+        "key": "relation_counterfactual"
+       }
+      },
+      "outcome_mismatch": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "measurement"
+        },
+        "key": "outcome_mismatch"
+       }
+      },
+      "effect_counterfactual": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "measurement"
+        },
+        "key": "effect_counterfactual"
+       }
+      },
+      "cost_excess": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "measurement"
+        },
+        "key": "cost_excess"
+       }
+      },
+      "repeated_noop_firings": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "measurement"
+        },
+        "key": "repeated_noop_firings"
+       }
+      },
+      "threshold_adjustment_clause": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "measurement"
+        },
+        "key": "threshold_adjustment_clause"
+       }
+      },
+      "guard_strengthening_clause": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "measurement"
+        },
+        "key": "guard_strengthening_clause"
+       }
+      },
+      "relation_addition_clause": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "measurement"
+        },
+        "key": "relation_addition_clause"
+       }
+      },
+      "effect_substitution_clause": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "measurement"
+        },
+        "key": "effect_substitution_clause"
+       }
+      },
+      "firing_budget_guard_clause": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "measurement"
+        },
+        "key": "firing_budget_guard_clause"
+       }
+      },
+      "change_opened": 0,
+      "integer_native": 1
+     }
+    ],
+    [
+     "add_edge",
+     "request",
+     "materialized_as_fault_probe",
+     "probe"
+    ],
+    [
+     "add_edge",
+     "agent",
+     "observes_fault_probe",
+     "probe"
+    ],
+    [
+     "set_attr",
+     "measurement",
+     "materialized",
+     1
+    ],
+    [
+     "set_attr",
+     "request",
+     "status",
+     "measuring"
+    ],
+    [
+     "set_attr",
+     "request",
+     "measurement_count",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "request"
+           },
+           "key": "measurement_count"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        {
+         "type": "Lit",
+         "value": 1
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "psm_bind_self_change_diagnosis_to_learning_plan",
+   "area": "program_self_modification",
+   "latency_class": "hard_realtime",
+   "batch": false,
+   "match": [
+    [
+     "concern",
+     "requests_program_self_change_probe",
+     "request"
+    ],
+    [
+     "request",
+     "materialized_as_fault_probe",
+     "probe"
+    ],
+    [
+     "change",
+     "observed_as",
+     "gap"
+    ],
+    [
+     "gap",
+     "from_probe",
+     "probe"
+    ],
+    [
+     "concern",
+     "has_program_self_change_plan",
+     "plan"
+    ],
+    [
+     "plan",
+     "has_selected_learning_plan_step",
+     "step"
+    ]
+   ],
+   "where": {
+    "type": "Eq",
+    "a": {
+     "type": "Count",
+     "source": {
+      "type": "Neighbours",
+      "node": {
+       "type": "Var",
+       "name": "plan"
+      },
+      "edge_type": "has_program_self_change"
+     }
+    },
+    "b": {
+     "type": "Lit",
+     "value": 0
+    }
+   },
+   "effects": [
+    [
+     "add_edge",
+     "plan",
+     "has_program_self_change",
+     "change"
+    ],
+    [
+     "set_attr",
+     "request",
+     "status",
+     "diagnosing"
+    ],
+    [
+     "set_attr",
+     "step",
+     "status",
+     "active"
+    ]
+   ]
+  },
+  {
+   "name": "psm_publish_proven_program_change_as_plan_revision",
+   "area": "program_self_modification",
+   "latency_class": "hard_realtime",
+   "batch": false,
+   "match": [
+    [
+     "plan",
+     "has_program_self_change",
+     "change"
+    ],
+    [
+     "change",
+     "selected_patch",
+     "patch"
+    ],
+    [
+     "plan",
+     "has_selected_learning_plan_step",
+     "step"
+    ],
+    [
+     "plan",
+     "has_learning_plan_residual",
+     "residual"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "residual"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "open"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "plan"
+        },
+        "edge_type": "has_learning_plan_revision"
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "revision",
+     "LearningPlanRevision",
+     {
+      "status": "canarying",
+      "kind": "proof_carrying_program_change",
+      "order_n": 1,
+      "output_authority": 0,
+      "integer_native": 1
+     }
+    ],
+    [
+     "add_edge",
+     "plan",
+     "has_learning_plan_revision",
+     "revision"
+    ],
+    [
+     "add_edge",
+     "revision",
+     "revises_learning_plan_step",
+     "step"
+    ],
+    [
+     "add_edge",
+     "revision",
+     "resolves_learning_plan_residual",
+     "residual"
+    ],
+    [
+     "add_edge",
+     "revision",
+     "proposes_rule_patch",
+     "patch"
+    ],
+    [
+     "set_attr",
+     "residual",
+     "status",
+     "under_repair"
+    ],
+    [
+     "set_attr",
+     "plan",
+     "status",
+     "revising"
+    ]
+   ]
+  },
+  {
+   "name": "psm_consolidate_successful_program_self_change",
+   "area": "program_self_modification",
+   "latency_class": "hard_realtime",
+   "batch": false,
+   "match": [
+    [
+     "concern",
+     "has_program_self_change_plan",
+     "plan"
+    ],
+    [
+     "plan",
+     "has_program_self_change",
+     "change"
+    ],
+    [
+     "change",
+     "has_consolidation",
+     "consolidation"
+    ],
+    [
+     "plan",
+     "has_selected_learning_plan_step",
+     "step"
+    ],
+    [
+     "step",
+     "plans_learning_capability",
+     "capability"
+    ],
+    [
+     "plan",
+     "has_learning_plan_residual",
+     "residual"
+    ]
+   ],
+   "where": {
+    "type": "Eq",
+    "a": {
+     "type": "Attr",
+     "node": {
+      "type": "Var",
+      "name": "residual"
+     },
+     "key": "status"
+    },
+    "b": {
+     "type": "Lit",
+     "value": "under_repair"
+    }
+   },
+   "effects": [
+    [
+     "set_attr",
+     "residual",
+     "status",
+     "resolved"
+    ],
+    [
+     "set_attr",
+     "step",
+     "status",
+     "complete"
+    ],
+    [
+     "set_attr",
+     "plan",
+     "status",
+     "complete"
+    ],
+    [
+     "set_attr",
+     "capability",
+     "status",
+     "learned"
+    ],
+    [
+     "set_attr",
+     "capability",
+     "success_count",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "capability"
+           },
+           "key": "success_count"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        {
+         "type": "Lit",
+         "value": 1
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "concern",
+     "status",
+     "resolved"
+    ],
+    [
+     "set_attr",
+     "concern",
+     "self_change_status",
+     "consolidated"
+    ]
+   ]
+  }
+ ]
+}

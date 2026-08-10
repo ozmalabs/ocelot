@@ -1,0 +1,118 @@
+{
+  "id": "psychoacoustic_model_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "psychoacoustic_model",
+  "in_microtheory": "audio_coding_theory",
+  "description": "The psychoacoustic model decomposed. Every perceptual audio codec has one — a computational model of human hearing that predicts which signal components are audible and which are masked. The model's outputs drive bit allocation: bands above masking threshold get bits; bands below get few or none. Better psychoacoustic models = better codec quality at the same bitrate.",
+  "sub_mechanisms": [
+    {
+      "name": "ath_curve",
+      "definition": "Absolute Threshold of Hearing curve: SPL required for a tone to be audible at each frequency, in absence of other sounds. Minimum around 2-4 kHz; rises steeply above 16 kHz and below 200 Hz.",
+      "why": "First-order perceptual model: anything below ATH is inaudible. ATH varies between individuals but the standard curve (ISO 226) approximates average hearing. Encoders set the ABSOLUTE noise-floor target at ATH; anything below is free.",
+      "category": "psy_model_mechanism"
+    },
+    {
+      "name": "bark_scale",
+      "definition": "A frequency scale where equal intervals correspond to equal critical bands. 24 Bark covers 20 Hz – 20 kHz. Computed as Bark = 13 arctan(0.00076 f) + 3.5 arctan((f/7500)²).",
+      "why": "Linearises the perceptual frequency axis. Masking and discrimination work on Bark scale, not Hz scale. Psychoacoustic models compute on Bark to match auditory processing.",
+      "category": "psy_model_mechanism"
+    },
+    {
+      "name": "spreading_function",
+      "definition": "How much a masker at frequency F masks at nearby frequency F'. Asymmetric: more masking upward (toward higher frequencies) than downward. Typical: 27 dB/Bark below the masker, 15 dB/Bark above.",
+      "why": "Cochlear processing has asymmetric spreading — basilar membrane vibration extends more toward base (high frequencies) than apex (low). Spreading function captures this. The encoder convolves each band's signal with the spreading function to compute the masking pattern.",
+      "category": "psy_model_mechanism"
+    },
+    {
+      "name": "tonality_estimation",
+      "definition": "Per-band classification: tonal (concentrated narrowband energy) vs noisy (broadband). Computed from spectral flatness or autocorrelation.",
+      "why": "Tonal and noisy maskers have different masking properties. Tonal maskers are stronger but more localised; noisy maskers are weaker but broader. Combining them per band determines the local masking threshold.",
+      "category": "psy_model_mechanism"
+    },
+    {
+      "name": "tonal_masker_strength",
+      "definition": "A tonal masker at frequency F with level L (dB) creates a masking threshold near F that's typically L - 14.5 dB - some Bark offset.",
+      "why": "Tonal maskers are loud but narrow. The 14.5 dB offset is empirically derived from masking experiments; depends on listener and signal but the standard value works well across content types.",
+      "category": "psy_model_mechanism"
+    },
+    {
+      "name": "noise_masker_strength",
+      "definition": "A noise masker at frequency F with level L creates a masking threshold near F that's typically L - 5.5 dB - Bark offset.",
+      "why": "Noise maskers have less per-Hz energy but cover more bandwidth. They mask less per dB than tonal maskers; the empirical offset is smaller. Critical bands of noise mask more uniformly than tonal maskers.",
+      "category": "psy_model_mechanism"
+    },
+    {
+      "name": "global_masking_threshold",
+      "definition": "Per-band threshold derived by combining: (1) ATH at that band, (2) sum of tonal masker contributions, (3) sum of noise masker contributions. Take max of these.",
+      "why": "Signal below ANY of these thresholds is inaudible. Combining them gives the true per-band perceptibility floor. Encoder quantises each band's coefficients to keep noise below this threshold.",
+      "category": "psy_model_mechanism"
+    },
+    {
+      "name": "signal_to_mask_ratio",
+      "definition": "Per-band SMR: ratio of signal energy in the band to the masking threshold. Drives bit allocation — bands with high SMR get more bits.",
+      "why": "SMR directly maps to required quantisation precision: log2(SMR) is roughly the number of bits needed per coefficient to keep noise below masking. Per-band SMR is the bit allocation signal.",
+      "category": "psy_model_mechanism"
+    },
+    {
+      "name": "temporal_pre_masking",
+      "definition": "Masking that occurs BEFORE the masker (typically 20-50 ms). Quieter sounds preceding a loud sound are masked.",
+      "why": "Surprising but real: HVS pre-fires neuron groups when a transient is imminent. Codecs exploit this by tolerating more pre-echo (quantisation noise before a transient) than would be acceptable in steady state.",
+      "category": "psy_model_mechanism"
+    },
+    {
+      "name": "temporal_post_masking",
+      "definition": "Masking that occurs AFTER the masker (typically 100-200 ms). Quieter sounds following a loud sound are masked.",
+      "why": "Stronger than pre-masking and longer-lasting. After a loud event (drum hit), the listener can't hear quieter content for 100+ ms. Codecs can hide quantisation noise in this window.",
+      "category": "psy_model_mechanism"
+    },
+    {
+      "name": "psy_model_2_iso_mpeg",
+      "definition": "Psychoacoustic Model 2: standardised in MPEG-1 (informative annex). Used by MP3 and as starting point for many later codecs. Identifies tonal vs noise, computes spreading, derives SMR.",
+      "why": "First widely-adopted standard psychoacoustic model. Sufficient for ~128 kbps stereo MP3 quality. Codecs implementing it produce comparable quality regardless of specific manufacturer. Later models (e.g., AAC's) refine this.",
+      "category": "psy_model_mechanism"
+    },
+    {
+      "name": "perceptual_entropy_target",
+      "definition": "Total bits required per frame to keep all band noise below masking. Computed by summing log2(SMR) across bands.",
+      "why": "Bit budget below this entropy can't achieve perceptual transparency. Above it, additional bits provide diminishing returns. PE is the rate-control target — the encoder allocates bits to minimise quantisation noise above the masking threshold.",
+      "category": "psy_model_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "masking_threshold_determines_bit_allocation",
+      "if": ["the encoder knows per-band masking thresholds"],
+      "then": ["it allocates bits to keep noise below threshold in each band"],
+      "why": "Below threshold, noise is inaudible. Above threshold, every additional bit reduces audible distortion. The bit allocation strategy is direct: spend bits where threshold-to-signal gap requires precision; save bits where signal is masked.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "tonal_noise_distinction_matters_for_masking",
+      "if": ["a band contains tonal content"],
+      "then": ["it masks more strongly than equivalent noise content"],
+      "why": "Tonal maskers are concentrated in frequency, energising specific cochlear regions. Noise maskers spread across critical bands, energising broader regions but less intensely per Hz. Per-band tonality classification routes to appropriate masking calculations.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "temporal_masking_hides_pre_echo",
+      "if": ["a transient occurs after a quiet period"],
+      "then": ["quantisation noise immediately before the transient is masked"],
+      "why": "Pre-masking masks ~20-50 ms before a loud sound. Codecs exploit this to tolerate pre-echo from long-block coding of transient-containing blocks. Window switching addresses the worst cases; psychoacoustic model accounts for the rest.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "psy_model_quality_caps_codec_quality",
+      "if": ["a codec uses a less accurate psychoacoustic model"],
+      "then": ["its quality at a given bitrate is limited by model accuracy"],
+      "why": "Bit allocation can be no better than the model's per-band importance estimates. Better models = better allocation = better quality. Modern codecs (Opus, xHE-AAC) have more refined models than MP3's; this is part of their quality lead.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "perceptual_entropy_bounds_transparent_bitrate",
+      "if": ["the codec achieves perceptual transparency"],
+      "then": ["its bitrate is at or above the perceptual entropy of the signal"],
+      "why": "PE is the theoretical floor for transparent coding. Codecs above PE can be transparent (have enough bits to keep all noise below threshold); below PE they must be audibly lossy. Sets the target for codec evaluation.",
+      "soundness_category": "algebraic_law"
+    }
+  ]
+}

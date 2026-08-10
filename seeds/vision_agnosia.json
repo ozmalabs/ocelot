@@ -1,0 +1,20 @@
+{
+ "id": "vision_agnosia",
+ "version": "1.0.0",
+ "depends_on": [],
+ "description": "APPERCEPTIVE / ASSOCIATIVE AGNOSIA (FRONTIER T9) — the two LESION FLAGS for the FORM<->RECOGNITION seam, and nothing else. This seed carries ONE node: AgnosiaParams{associative, apperceptive}, both 0.0 = INTACT by default (PROTOCOL section 9). The guards that READ them live in the rules they lesion: 'associative' guards ONLY seeds/shape_decode_loop.json's sd_recognize / sd_recognize_transformed / sd_recognize_dim (the sole writers of covered_by — the IDENTITY assignment), leaving sd_decode / TransformDecode / sd_mint_quantum live, so the ablated arm is a lesion on RUNNING machinery; 'apperceptive' guards ONLY seeds/vision_ground.json's gr_fill (percept COMPLETION), leaving gr_label live, so the contour labelling still runs and it is the FORMING of the percept that is destroyed. Every guard is written absence-tolerantly as Count(Filter(NodesOfType(AgnosiaParams), ap, ap.<flag> > 0.5)) < 1: a graph that never loads this seed has NO AgnosiaParams node, so the count is 0 and the rule is INTACT. This is deliberately NOT the PickUnique idiom, which returns None on an absent node and would silently kill recognition in every graph that does not load this seed. An ablation is a FLAG on a params node, never a Python branch (CLAUDE.md / PROTOCOL section 0). See VISION_AGNOSIA_PREREG.md.",
+ "microtheory": "vision",
+ "nodes": [
+  {
+   "local_id": 0,
+   "type": "AgnosiaParams",
+   "attrs": {
+    "associative": 0.0,
+    "apperceptive": 0.0
+   }
+  }
+ ],
+ "edges": [],
+ "productions": [],
+ "rules": []
+}

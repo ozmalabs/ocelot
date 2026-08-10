@@ -1,0 +1,83 @@
+{
+  "_doc": "THEOREM-STATEMENT constructions (graph data, the agent's grammar). A THEOREM STATEMENT has the general shape '[quantifier] [SUBJECT object-class] [MODIFIER property] [COPULA has/is/iff] [PREDICATE invariant + value]'. comprehend_theorem (domains/comprehend_theorem) PARSES a theorem's PROSE into a grounded IMPLICATION (an ANTECEDENT held-predicate over the object => a CONSEQUENT value) by applying these constructions — NOT a per-theorem hand-coded clause-list. The PROPERTY-MODIFIER atoms TYPE the property word to a HELD PREDICATE (the cmsg128 ground_reductions held predicates, composed over the held free-product structure); the INVARIANT atoms type the invariant via the general reader (construction_grammar.comprehend_structure); the VALUE atoms type the consequent value. Adding a theorem-form = adding a statement construction (general, not a per-theorem hardcode). The generality test (paraphrase + held-out) is the proof it is not hand-wired: the SAME constructions parse the cd theorem AND a paraphrase AND a held-out theorem (a different invariant/value/form). The honest residual = theorem-prose forms no construction parses (each an addable construction).",
+
+  "_doc_statement_forms": "STATEMENT CONSTRUCTIONS — the general theorem-statement surface forms, ordered longest/most-specific first. Each has a `pattern` (literal tokens + {slots}) and a `copula` kind (has|is|iff) that sets the IMPLICATION DIRECTION. Slot roles: {subject} = the object-class, {modifier} = the property-modifier (the antecedent), {predicate} = the whole consequent span (the invariant + its value, in EITHER order), {condition} = the iff right-hand antecedent for biconditionals, {consequent} = the iff left-hand consequent span. The faculty does NOT positionally split the invariant from the value (they are adjacent with no delimiter); instead it SCANS the {predicate}/{consequent} span with the invariant_atoms + value_atoms (substring, order-independent) — so 'cohomological dimension infinite' and 'infinite cohomological dimension' both ground to (cd, inf). A statement with NO modifier (an unconditional 'X has <predicate>') yields an always-true antecedent. Quantifier openers ('a'/'every'/'a finitely generated') + subject adjuncts are stripped by the parser (not meaning).",
+  "statement_forms": [
+    {"name": "subject_has_consequent_iff_condition",
+     "pattern": ["{subject}", "has", "{consequent}", "if", "and", "only", "if", "{condition}"],
+     "copula": "iff", "antecedent_slot": "condition", "predicate_slot": "consequent",
+     "_doc": "BICONDITIONAL: 'a finitely generated group has MORE THAN ONE end IF AND ONLY IF it splits over a finite subgroup' -> antecedent = condition 'splits over a finite subgroup', consequent span = 'more than one end' (scanned -> invariant ends, value >1)."},
+    {"name": "subject_with_modifier_has_predicate",
+     "pattern": ["{subject}", "with", "{modifier}", "has", "{predicate}"],
+     "copula": "has", "antecedent_slot": "modifier", "predicate_slot": "predicate",
+     "_doc": "'a group WITH TORSION has cohomological dimension INFINITE' -> antecedent = property-modifier 'torsion'; predicate span 'cohomological dimension infinite' -> (cd, inf). The canonical cd theorem form."},
+    {"name": "subject_that_modifier_has_predicate",
+     "pattern": ["{subject}", "that", "{modifier}", "has", "{predicate}"],
+     "copula": "has", "antecedent_slot": "modifier", "predicate_slot": "predicate",
+     "_doc": "PARAPHRASE form: 'a group THAT contains an element of finite order has infinite cohomological dimension' — the relative-clause 'that <modifier>' carries the same antecedent; predicate span scanned for invariant+value (order-independent)."},
+    {"name": "subject_containing_modifier_has_predicate",
+     "pattern": ["{subject}", "containing", "{modifier}", "has", "{predicate}"],
+     "copula": "has", "antecedent_slot": "modifier", "predicate_slot": "predicate",
+     "_doc": "PARAPHRASE: 'a group CONTAINING an element of finite order has ...' — a participial relative the same as 'that contains'."},
+    {"name": "subjphrase_has_predicate",
+     "pattern": ["{subjphrase}", "has", "{predicate}"],
+     "copula": "has", "antecedent_slot": "subjphrase", "predicate_slot": "predicate",
+     "_doc": "ADJECTIVE-LEAD / UNCONDITIONAL: 'a FREE group has cohomological dimension 1' / 'a FREE ABELIAN group of rank n has cohomological dimension n' / 'a nontrivial FREE PRODUCT has infinitely many ends' / 'the trivial group has cohomological dimension 0'. The whole pre-'has' span is {subjphrase}; the faculty SCANS it for a property-modifier atom (the leading adjective). If a property atom is found, it is the antecedent; otherwise the theorem is UNCONDITIONAL (always-true antecedent). This is the catch-all 'has' form (tried after the 'with'/'that'/'containing' modifier forms)."},
+    {"name": "subjphrase_is_predicate",
+     "pattern": ["{subjphrase}", "is", "{predicate}"],
+     "copula": "is", "antecedent_slot": "subjphrase", "predicate_slot": "predicate",
+     "_doc": "COPULA-IS: 'a 2-ended group is VIRTUALLY Z' — the {subjphrase} scanned for the property antecedent (2-ended), the predicate is a bare VALUE/property (the invariant implicit in the value). For the value-as-property reads (virtually-Z etc.)."}
+  ],
+
+  "_doc_antecedent_stopwords": "ANTECEDENT STOPWORDS — the structural / grammatical words that carry NO antecedent content, so they do NOT need to be accounted for by a property atom. FULL-MODIFIER ACCOUNTING (the cmsg131 un-accounted-residual principle): a known property atom grounds the antecedent-bearing phrase ONLY IF the ENTIRE phrase is accounted for — every word is either covered by a matched atom phrase OR is one of these stopwords. If ANY contentful word is left unaccounted (e.g. 'residually' in 'residually finite', 'locally' in 'locally finite', 'virtually' in 'virtually torsion-free'), the modifier is NOT comprehended -> MISS (a known token buried in a LARGER unknown qualifier must NOT fire). These are general DATA: articles, the object-class noun heads (group/subgroup/product), relative/copula glue (that/which/is/has/with), the iff-subject pronoun (it/its), and the participle glue of the paraphrase forms (contains/containing/an/of) that introduces an atom phrase. Adding a stopword = data, never a per-phrase atom.",
+  "antecedent_stopwords": ["a", "an", "the", "group", "groups", "subgroup", "subgroups", "product", "element", "that", "which", "is", "has", "have", "with", "of", "it", "its", "contains", "containing", "and", "only", "if", "rank", "n"],
+
+  "_doc_property_modifiers": "PROPERTY-MODIFIER atoms — a property word/phrase (the antecedent) -> a HELD PREDICATE name (the cmsg128 ground_reductions held predicates) composed over the held free-product structure. The faculty grounds the parsed {modifier} slot by matching it (substring, longest-first) against these atoms and binding the named held predicate. `held_predicate` is the function name exported by domains/ground_reductions (some_factor_finite_cyclic / etc.); `negate` wraps it in NOT. This is the PROPERTY -> HELD-PREDICATE grounding the prompt requires (typed from the property word via the grammar, then composed over the held structure). Adding a property = adding an atom (data), reusing a held predicate — never a new hand-wired clause. FULL-MODIFIER ACCOUNTING: a property atom grounds the antecedent ONLY if EVERY contentful word of the antecedent phrase is covered by a matched atom phrase (the stopwords above are exempt); any unaccounted contentful word -> MISS (see _doc_antecedent_stopwords).",
+  "property_modifiers": [
+    {"name": "splits_over_finite", "phrases": ["splits over a finite subgroup", "splits nontrivially over a finite subgroup", "splits over a finite", "admits a nontrivial splitting over a finite subgroup"], "held_predicate": "splits_over_finite_nontrivially",
+     "_doc": "'splits over a finite subgroup' (the held-out ends iff condition) -> splits_over_finite_nontrivially. Listed FIRST so it wins over the bare 'finite' atom (longest-phrase match)."},
+    {"name": "torsion_free", "phrases": ["torsion-free", "torsion free"], "held_predicate": "all_factors_infinite_cyclic_nonempty",
+     "_doc": "'torsion-free' / 'torsion free' is the NEGATION of 'with torsion' — it must NOT ground to the torsion predicate. Listed BEFORE 'torsion' (longest-phrase-first matching already handles it, but the boundary-aware matcher also ensures 'torsion' does NOT fire inside 'torsion-free'/'torsion free'). A torsion-free group in the held free-product class is a free group (all factors infinite-cyclic), so it grounds to all_factors_infinite_cyclic_nonempty. NOTE: the cd VALUE 'finite' is not a seeded value atom, so 'a torsion-free group has finite cohomological dimension' still MISSes on the value — but it must NEVER ground the antecedent BACKWARDS to the torsion predicate."},
+    {"name": "torsion", "phrases": ["torsion", "an element of finite order", "elements of finite order", "a nontrivial element of finite order", "a finite order element", "an element of finite"], "held_predicate": "some_factor_finite_cyclic",
+     "_doc": "'with torsion' / 'contains an element of finite order' -> some_factor_finite_cyclic (Kurosh torsion criterion). The paraphrase 'contains an element of finite order' types to the SAME held predicate. MUST be boundary-aware: 'torsion' must NOT fire inside 'torsion-free' (the negation) — see the torsion_free atom + the word-boundary matcher."},
+    {"name": "free", "phrases": ["free"], "held_predicate": "all_factors_infinite_cyclic_nonempty",
+     "_doc": "'a free group' -> all factors infinite-cyclic & nonempty (a nontrivial free group). NOTE: 'free' must not swallow 'free product' / 'free abelian' — the longer property phrases are matched first."},
+    {"name": "free_abelian_rank_n", "phrases": ["free abelian", "free abelian of rank"], "held_predicate": "all_factors_infinite_cyclic_nonempty",
+     "_doc": "'a free abelian group of rank n' -> same free structure (the held-out theorem; its value is the rank n, bound from the subject's 'of rank n')."},
+    {"name": "free_product_nontrivial", "phrases": ["a nontrivial free product", "nontrivial free product", "free product"], "held_predicate": "splits_over_finite_nontrivially",
+     "_doc": "'a nontrivial free product' -> splits_over_finite_nontrivially (the held-out ends theorem: a nontrivial free product has infinitely many ends)."},
+    {"name": "virtually_z", "phrases": ["virtually z", "two ended", "2 ended", "two-ended"], "held_predicate": "is_virtually_Z",
+     "_doc": "'virtually Z' / 'two-ended' -> is_virtually_Z (the 2-ended signature)."},
+    {"name": "virtually_cyclic", "phrases": ["virtually cyclic"], "held_predicate": "is_virtually_Z",
+     "read_cite": "Virtually (Wikipedia, GET-only): 'the adverb virtually modifies a property so it need only hold for a subgroup of finite index; G is virtually P if there is a finite-index subgroup H with property P'. A virtually-cyclic INFINITE group is virtually the infinite cyclic Z (the finite-cyclic case is finite). [Virtually, 2024-09 enwiki snapshot]",
+     "self_verify": "PASSED vs known ends: is_virtually_Z fires on F_1(Z) and Z/2*Z/2(D_inf), both with known ends=2 -> the clause 'virtually cyclic group has two ends' self-verifies (verified=True).",
+     "_doc": "GREW BY READING (cmsg133 residual closed). 'virtually cyclic' READ from the 'Virtually' article (virtually-P = P holds for a finite-index subgroup; the infinite virtually-cyclic group is virtually Z) -> GROUNDS to the HELD predicate is_virtually_Z (composed over the held structure: the infinite cyclic Z, or D_inf = C_2*C_2). SELF-VERIFIED vs known ends (fires on F_1+D_inf, both ends=2). The honest reduction of 'virtually cyclic' to the held 2-ended signature."},
+    {"name": "finite", "phrases": ["finite"], "held_predicate": "is_finite_group",
+     "_doc": "'a finite group' -> is_finite_group."},
+    {"name": "infinite", "phrases": ["infinite"], "held_predicate": "is_infinite_group",
+     "_doc": "'an infinite group' -> is_infinite_group."}
+  ],
+
+  "_doc_invariant_atoms": "INVARIANT atoms — the invariant phrase -> a TYPED invariant id. The faculty types the {invariant} slot via the GENERAL READER (construction_grammar.comprehend_structure) when the phrase is a structured invariant ('cohomological dimension of X'); for the bare-noun invariant heads stated WITHOUT an explicit object (a theorem quantifies over the subject class, so the invariant is stated bare: 'has cohomological dimension inf') these atoms map the surface to the canonical invariant key the ground_reductions store routes by. Reuses the presupposition pipeline's invariant typing (the same canonical keys).",
+  "invariant_atoms": [
+    {"name": "cohomological_dimension", "phrases": ["cohomological dimension", "cd"], "invariant": "cohomological_dimension"},
+    {"name": "virtual_cohomological_dimension", "phrases": ["virtual cohomological dimension", "vcd"], "invariant": "virtual_cohomological_dimension"},
+    {"name": "ends", "phrases": ["ends", "end", "number of ends"], "invariant": "ends"},
+    {"name": "first_betti", "phrases": ["first betti number", "first betti", "rank of the abelianization", "rank of the abelianisation", "rank of the first homology"], "invariant": "first_betti",
+     "read_cite": "Betti number (Wikipedia, GET-only): 'the nth Betti number represents the RANK of the nth homology group H_n ... only the ranks of INFINITE (free) parts are considered, so if H_n = Z^k (+) finite then b_n = k' -> b_1 = rank of H_1 = rank of the abelianization. [Betti number, 2024-09 enwiki snapshot]",
+     "held_compute": "first_betti_number (domains/ground_reductions): b_1 = COUNT of infinite-cyclic free factors (the abelianization of C_{n_1}*...*C_{n_k} is the direct sum of the factor abelianizations; each infinite-cyclic Z gives a free Z, each finite C_n only torsion) -> composed over the held free-product structure.",
+     "self_verify": "PASSED vs known first_betti: b_1(F_1)=1, b_1(F_2)=2, b_1(F_3)=3, b_1(finite/torsion)=0 (textbook abelianization ranks) -> the symbolic theorem 'a free group of rank n has first betti number n' self-verifies (the 'free' antecedent fires only on F_1/F_2/F_3, where value=n=rank=b_1).",
+     "_doc": "GREW BY READING (cmsg133 residual closed) — a NEW INVARIANT fetched by reading. 'first betti number' / 'rank of the abelianization' READ from the Betti-number article (b_n = rank of H_n, torsion excluded) -> the HELD COMPUTE first_betti_number (count of infinite-cyclic factors), composed over the held abelianization structure. SELF-VERIFIED vs the textbook known b_1 values. The SYMBOLIC value 'n' (the same n the subject's rank is parameterised by) is realised as the object's rank = the count of infinite-cyclic factors at compute time."}
+  ],
+
+  "_doc_value_atoms": "VALUE atoms — the consequent value word/phrase -> the value the theorem assigns (the consequent of the implication). A NUMBER WORD ('one'/'1') -> the integer; an INFINITY word ('infinite'/'inf'/'infinitely many') -> 'inf'; a COMPARATIVE ('more than one') -> a structured value ('>1'); a SYMBOL bound by the subject's parameter ('n', when the subject is 'of rank n') -> the bound symbol. This is the VALUE -> consequent-value typing.",
+  "value_atoms": [
+    {"name": "infinite", "phrases": ["infinite", "inf", "infinitely many", "infinitely", "an infinite number of"], "value": "inf"},
+    {"name": "more_than_one", "phrases": ["more than one", "greater than one"], "value": ">1"},
+    {"name": "zero", "phrases": ["zero", "0"], "value": 0},
+    {"name": "one", "phrases": ["one", "1"], "value": 1},
+    {"name": "two", "phrases": ["two", "2"], "value": 2},
+    {"name": "n", "phrases": ["n"], "value": "n",
+     "_doc": "the bound parameter symbol n (the held-out 'free abelian of rank n has cd n' theorem): the value is the SAME n the subject's rank is parameterised by — a SYMBOLIC consequent, grounded to the object's rank at compute time."}
+  ]
+}

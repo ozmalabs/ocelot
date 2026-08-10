@@ -1,0 +1,20 @@
+{
+ "id": "write_shape_predication",
+ "version": "1.0.0",
+ "depends_on": [],
+ "description": "CODE-4's composition-from-predication path (domains.code_write_growth.compose_write_shape_from_predication): a SMALL held vocabulary of morphological multiplier/offset words (Concept{name, multiplier_factor} / Concept{name, offset_delta}) a request's own content-word predicate can resolve against -- 'doubles' (mechanically stemmed to 'double' by stripping a trailing 's', the SAME status ast_to_term's fixed maps have: a fixed text-prep step, not a decision) resolves to Concept{name:'double', multiplier_factor:2}, which composes Times(Var(arg), Lit(2)) from the ALREADY-HELD DSL vocabulary CODE-1/2 read/evaluate -- never a fabricated Term shape. Teachable: a human can `teach(agent, 'Concept', {name:'quadruple', multiplier_factor:4})` to widen this vocabulary with zero code change; the composer only reads what's held. A predicate with no held Concept honestly exhausts (domains.code_write_growth.compose_write_shape_from_predication returns {ok: False, reason: 'composition exhausted: ...'}) -- the documented CODE-4 boundary: pure composition from predication covers this SMALL closed multiplier/offset family, not arbitrary English-to-Term synthesis (that remains the teach-by-example path's job).",
+ "microtheory": {
+  "name": "write_shape_predication",
+  "description": "morphological multiplier/offset words the write-composer can resolve to an arithmetic Term without an example"
+ },
+ "nodes": [
+  {"local_id": 1, "type": "Concept", "attrs": {"name": "double", "multiplier_factor": 2.0, "description": "multiply by two"}},
+  {"local_id": 2, "type": "Concept", "attrs": {"name": "triple", "multiplier_factor": 3.0, "description": "multiply by three"}},
+  {"local_id": 3, "type": "Concept", "attrs": {"name": "quadruple", "multiplier_factor": 4.0, "description": "multiply by four"}},
+  {"local_id": 4, "type": "Concept", "attrs": {"name": "halve", "multiplier_factor": 0.5, "description": "multiply by one half"}},
+  {"local_id": 5, "type": "Concept", "attrs": {"name": "increment", "offset_delta": 1.0, "description": "add one"}},
+  {"local_id": 6, "type": "Concept", "attrs": {"name": "decrement", "offset_delta": -1.0, "description": "subtract one"}}
+ ],
+ "edges": [],
+ "productions": []
+}

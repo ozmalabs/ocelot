@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "protocol": "hidden_goal_aerial_mission_v1",
+  "claim": "The graph can learn opaque search and payload consequences, traverse terrain-masked landscape observations without receiving the target location, bind a locally detected signal as its goal, and emit exactly one flare at the located goal.",
+  "hidden_world": {
+    "target_location_exposed_to_graph": false,
+    "signal": "zero outside local range or when terrain occludes line of sight",
+    "action_semantics_exposed_to_graph": false
+  },
+  "gates": {
+    "goal_marked": true,
+    "flare_count": 1,
+    "no_flare_before_goal_location": true,
+    "all_action_model_semantics_remain_unknown": true
+  }
+}

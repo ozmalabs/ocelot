@@ -1,0 +1,2284 @@
+{
+ "id": "metacognitive_program_discrimination",
+ "version": "2.0.0",
+ "depends_on": [
+  "metacognitive_learning",
+  "faculty_autogenesis"
+ ],
+ "area": "metacognitive_learning",
+ "latency_class": "soft_realtime",
+ "description": "Executes a held integer classifier over unresolved Pareto learning-policy tails. The graph sweeps its own boundary, selects only a unique first crossing, and preserves ties.",
+ "nodes": [],
+ "edges": [],
+ "productions": [
+  {
+   "provenance": "metacognitive_program_discrimination:holds_classifier",
+   "src": {
+    "type": "Agent",
+    "var": "src"
+   },
+   "edge_type": "holds_faculty",
+   "tgt": {
+    "type": "Program",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "metacognitive_program_discrimination:program_root",
+   "src": {
+    "type": "Program",
+    "var": "src"
+   },
+   "edge_type": "ir_subgraph",
+   "tgt": {
+    "type": "Node",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "metacognitive_program_discrimination:request_classifier",
+   "src": {
+    "type": "LearningPolicyDiscriminationRequest",
+    "var": "src"
+   },
+   "edge_type": "uses_learned_classifier",
+   "tgt": {
+    "type": "Program",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "metacognitive_program_discrimination:request_result",
+   "src": {
+    "type": "LearningPolicyDiscriminationRequest",
+    "var": "src"
+   },
+   "edge_type": "has_discrimination_result",
+   "tgt": {
+    "type": "LearningPolicyDiscriminationResult",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "metacognitive_program_discrimination:result_classifier",
+   "src": {
+    "type": "LearningPolicyDiscriminationResult",
+    "var": "src"
+   },
+   "edge_type": "executed_classifier",
+   "tgt": {
+    "type": "Program",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "metacognitive_program_discrimination:result_candidate",
+   "src": {
+    "type": "LearningPolicyDiscriminationResult",
+    "var": "src"
+   },
+   "edge_type": "selected_policy_candidate",
+   "tgt": {
+    "type": "ParetoCandidate",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "metacognitive_program_discrimination:revision_result",
+   "src": {
+    "type": "LearningPlanRevision",
+    "var": "src"
+   },
+   "edge_type": "decided_by_discrimination_result",
+   "tgt": {
+    "type": "LearningPolicyDiscriminationResult",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "metacognitive_program_discrimination:step_assessment",
+   "src": {
+    "type": "LearningPlanStep",
+    "var": "src"
+   },
+   "edge_type": "has_learning_classifier_assessment",
+   "tgt": {
+    "type": "LearningPolicyClassifierAssessment",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "metacognitive_program_discrimination:assessment_classifier",
+   "src": {
+    "type": "LearningPolicyClassifierAssessment",
+    "var": "src"
+   },
+   "edge_type": "executed_classifier",
+   "tgt": {
+    "type": "Program",
+    "var": "tgt"
+   }
+  }
+ ],
+ "rules": [
+  {
+   "name": "mpd_request_missing_discrimination_faculty",
+   "area": "metacognitive_learning",
+   "latency_class": "soft_realtime",
+   "batch": false,
+   "comment": "A missing classifier becomes a general FacultyNeed. The graph supplies observed examples, not an implementation.",
+   "match": [
+    [
+     "agent",
+     "has_embodied_development_episode",
+     "episode"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "agent"
+         },
+         "edge_type": "holds_faculty",
+         "any_type": false
+        },
+        "var_name": "held_classifier",
+        "predicate": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "held_classifier"
+          },
+          "key": "faculty_kind"
+         },
+         "b": {
+          "type": "Lit",
+          "value": "threshold_classifier"
+         }
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "agent"
+         },
+         "edge_type": "has_faculty_need",
+         "any_type": false
+        },
+        "var_name": "known_need",
+        "predicate": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "known_need"
+          },
+          "key": "kind"
+         },
+         "b": {
+          "type": "Lit",
+          "value": "threshold_classifier"
+         }
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "need",
+     "FacultyNeed",
+     {
+      "status": "requested",
+      "kind": "threshold_classifier",
+      "program_name": "cost_excess",
+      "request": "write a function cost_excess that returns micros when processed is more than threshold times progress otherwise zero",
+      "order_n": 1,
+      "output_authority": 0,
+      "integer_native": 1
+     }
+    ],
+    [
+     "add_edge",
+     "agent",
+     "has_faculty_need",
+     "need"
+    ],
+    [
+     "add_node",
+     "example_0",
+     "FacultyExample",
+     {
+      "ordinal": 0,
+      "inputs_json": "{\"micros\":300,\"processed\":100,\"progress\":20,\"threshold\":10}",
+      "expected": 0,
+      "output_authority": 0,
+      "integer_native": 1
+     }
+    ],
+    [
+     "add_edge",
+     "need",
+     "has_faculty_example",
+     "example_0"
+    ],
+    [
+     "add_node",
+     "example_1",
+     "FacultyExample",
+     {
+      "ordinal": 1,
+      "inputs_json": "{\"micros\":300,\"processed\":201,\"progress\":20,\"threshold\":10}",
+      "expected": 300,
+      "output_authority": 0,
+      "integer_native": 1
+     }
+    ],
+    [
+     "add_edge",
+     "need",
+     "has_faculty_example",
+     "example_1"
+    ],
+    [
+     "add_node",
+     "example_2",
+     "FacultyExample",
+     {
+      "ordinal": 2,
+      "inputs_json": "{\"micros\":7,\"processed\":61,\"progress\":20,\"threshold\":3}",
+      "expected": 7,
+      "output_authority": 0,
+      "integer_native": 1
+     }
+    ],
+    [
+     "add_edge",
+     "need",
+     "has_faculty_example",
+     "example_2"
+    ],
+    [
+     "add_node",
+     "example_3",
+     "FacultyExample",
+     {
+      "ordinal": 3,
+      "inputs_json": "{\"micros\":11,\"processed\":60,\"progress\":20,\"threshold\":3}",
+      "expected": 0,
+      "output_authority": 0,
+      "integer_native": 1
+     }
+    ],
+    [
+     "add_edge",
+     "need",
+     "has_faculty_example",
+     "example_3"
+    ]
+   ]
+  },
+  {
+   "name": "mpd_classify_active_learning_effort_excess",
+   "area": "metacognitive_learning",
+   "latency_class": "hard_realtime",
+   "batch": false,
+   "comment": "Apply the learned Program to live causal-learning receipts. The threshold is the situated body's own evidence window; the graph publishes an excess fact but grants no motor authority.",
+   "match": [
+    [
+     "agent",
+     "holds_faculty",
+     "program"
+    ],
+    [
+     "program",
+     "ir_subgraph",
+     "root"
+    ],
+    [
+     "agent",
+     "has_embodied_development_episode",
+     "episode"
+    ],
+    [
+     "episode",
+     "has_self_directed_learning_plan",
+     "plan"
+    ],
+    [
+     "plan",
+     "has_selected_learning_plan_step",
+     "step"
+    ],
+    [
+     "step",
+     "plans_learning_capability",
+     "instance"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "program"
+       },
+       "key": "faculty_kind"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "threshold_classifier"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "instance"
+         },
+         "key": "classifier_effort_excess"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "instance"
+         },
+         "key": "attempt_count"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "ProgEval",
+       "prog": {
+        "type": "Var",
+        "name": "root"
+       },
+       "env": {
+        "type": "MkDict",
+        "items": [
+         {
+          "type": "Lit",
+          "value": "processed"
+         },
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "instance"
+            },
+            "key": "attempt_count"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         {
+          "type": "Lit",
+          "value": "progress"
+         },
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "instance"
+            },
+            "key": "success_count"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         {
+          "type": "Lit",
+          "value": "micros"
+         },
+         {
+          "type": "Lit",
+          "value": 1
+         },
+         {
+          "type": "Lit",
+          "value": "threshold"
+         },
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "episode"
+            },
+            "key": "development_evidence_window"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         }
+        ]
+       },
+       "oracles": null,
+       "fuel": 10000,
+       "field": "result"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "assessment",
+     "LearningPolicyClassifierAssessment",
+     {
+      "status": "excess",
+      "kind": "effort_exceeds_causal_yield_window",
+      "processed_units": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "instance"
+          },
+          "key": "attempt_count"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "progress_units": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "instance"
+          },
+          "key": "success_count"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "threshold_units": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "episode"
+          },
+          "key": "development_evidence_window"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "output_authority": 0,
+      "integer_native": 1
+     }
+    ],
+    [
+     "add_edge",
+     "step",
+     "has_learning_classifier_assessment",
+     "assessment"
+    ],
+    [
+     "add_edge",
+     "assessment",
+     "executed_classifier",
+     "program"
+    ],
+    [
+     "set_attr",
+     "instance",
+     "classifier_effort_excess",
+     1
+    ]
+   ]
+  },
+  {
+   "name": "mpd_clear_learning_effort_excess_after_causal_catchup",
+   "area": "metacognitive_learning",
+   "latency_class": "hard_realtime",
+   "batch": false,
+   "match": [
+    [
+     "agent",
+     "holds_faculty",
+     "program"
+    ],
+    [
+     "program",
+     "ir_subgraph",
+     "root"
+    ],
+    [
+     "agent",
+     "has_embodied_development_episode",
+     "episode"
+    ],
+    [
+     "episode",
+     "has_self_directed_learning_plan",
+     "plan"
+    ],
+    [
+     "plan",
+     "has_selected_learning_plan_step",
+     "step"
+    ],
+    [
+     "step",
+     "plans_learning_capability",
+     "instance"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "program"
+       },
+       "key": "faculty_kind"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "threshold_classifier"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "instance"
+         },
+         "key": "classifier_effort_excess"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "ProgEval",
+       "prog": {
+        "type": "Var",
+        "name": "root"
+       },
+       "env": {
+        "type": "MkDict",
+        "items": [
+         {
+          "type": "Lit",
+          "value": "processed"
+         },
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "instance"
+            },
+            "key": "attempt_count"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         {
+          "type": "Lit",
+          "value": "progress"
+         },
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "instance"
+            },
+            "key": "success_count"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         {
+          "type": "Lit",
+          "value": "micros"
+         },
+         {
+          "type": "Lit",
+          "value": 1
+         },
+         {
+          "type": "Lit",
+          "value": "threshold"
+         },
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "episode"
+            },
+            "key": "development_evidence_window"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         }
+        ]
+       },
+       "oracles": null,
+       "fuel": 10000,
+       "field": "result"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "assessment",
+     "LearningPolicyClassifierAssessment",
+     {
+      "status": "recovered",
+      "kind": "causal_yield_caught_up",
+      "processed_units": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "instance"
+          },
+          "key": "attempt_count"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "progress_units": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "instance"
+          },
+          "key": "success_count"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "threshold_units": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "episode"
+          },
+          "key": "development_evidence_window"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "output_authority": 0,
+      "integer_native": 1
+     }
+    ],
+    [
+     "add_edge",
+     "step",
+     "has_learning_classifier_assessment",
+     "assessment"
+    ],
+    [
+     "add_edge",
+     "assessment",
+     "executed_classifier",
+     "program"
+    ],
+    [
+     "set_attr",
+     "instance",
+     "classifier_effort_excess",
+     0
+    ]
+   ]
+  },
+  {
+   "name": "mpd_begin_learned_classifier_boundary_sweep",
+   "area": "metacognitive_learning",
+   "latency_class": "soft_realtime",
+   "batch": false,
+   "comment": "Zero is the multiplicative identity boundary, not a tuned constant. The graph moves it only while no route is admissible.",
+   "match": [
+    [
+     "agent",
+     "holds_faculty",
+     "program"
+    ],
+    [
+     "program",
+     "ir_subgraph",
+     "root"
+    ],
+    [
+     "residual",
+     "has_learning_policy_discrimination_request",
+     "request"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "program"
+       },
+       "key": "faculty_kind"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "threshold_classifier"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "request"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "requested"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "request"
+         },
+         "key": "classifier_sweep_started"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "request",
+     "classifier_threshold",
+     0
+    ],
+    [
+     "set_attr",
+     "request",
+     "classifier_sweep_count",
+     0
+    ],
+    [
+     "set_attr",
+     "request",
+     "classifier_sweep_started",
+     1
+    ],
+    [
+     "set_attr",
+     "request",
+     "status",
+     "sweeping_classifier"
+    ],
+    [
+     "add_edge",
+     "request",
+     "uses_learned_classifier",
+     "program"
+    ]
+   ]
+  },
+  {
+   "name": "mpd_sweep_boundary_until_a_policy_first_crosses",
+   "area": "metacognitive_learning",
+   "latency_class": "soft_realtime",
+   "batch": false,
+   "comment": "No fixed ratio and no host search: the held Program is re-executed after each graph-authored unit boundary change.",
+   "match": [
+    [
+     "agent",
+     "holds_faculty",
+     "program"
+    ],
+    [
+     "program",
+     "ir_subgraph",
+     "root"
+    ],
+    [
+     "plan",
+     "has_learning_policy_pareto_profile",
+     "profile"
+    ],
+    [
+     "profile",
+     "has_incumbent_pareto_candidate",
+     "incumbent"
+    ],
+    [
+     "residual",
+     "has_learning_policy_pareto_profile",
+     "profile"
+    ],
+    [
+     "residual",
+     "has_learning_policy_discrimination_request",
+     "request"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "program"
+       },
+       "key": "faculty_kind"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "threshold_classifier"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "request"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "sweeping_classifier"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "incumbent"
+          },
+          "edge_type": "is_dominated_by_pareto_candidate",
+          "any_type": false
+         },
+         "var_name": "frontier_candidate",
+         "predicate": {
+          "type": "Eq",
+          "a": {
+           "type": "Count",
+           "source": {
+            "type": "Neighbours",
+            "node": {
+             "type": "Var",
+             "name": "frontier_candidate"
+            },
+            "edge_type": "is_dominated_by_pareto_candidate",
+            "any_type": false
+           }
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0
+          }
+         }
+        },
+        "var_name": "candidate",
+        "predicate": {
+         "type": "Eq",
+         "a": {
+          "type": "ProgEval",
+          "prog": {
+           "type": "Var",
+           "name": "root"
+          },
+          "env": {
+           "type": "MkDict",
+           "items": [
+            {
+             "type": "Lit",
+             "value": "processed"
+            },
+            {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "candidate"
+               },
+               "key": "experiment_cost_units"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            },
+            {
+             "type": "Lit",
+             "value": "progress"
+            },
+            {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "candidate"
+               },
+               "key": "causal_yield_units"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            },
+            {
+             "type": "Lit",
+             "value": "micros"
+            },
+            {
+             "type": "Lit",
+             "value": 1
+            },
+            {
+             "type": "Lit",
+             "value": "threshold"
+            },
+            {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "request"
+               },
+               "key": "classifier_threshold"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            }
+           ]
+          },
+          "oracles": null,
+          "fuel": 10000,
+          "field": "result"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0
+         }
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "request",
+     "classifier_threshold",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "request"
+           },
+           "key": "classifier_threshold"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        {
+         "type": "Lit",
+         "value": 1
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "request",
+     "classifier_sweep_count",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "request"
+           },
+           "key": "classifier_sweep_count"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        {
+         "type": "Lit",
+         "value": 1
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "mpd_redirect_plan_at_unique_learned_classifier_crossing",
+   "area": "metacognitive_learning",
+   "latency_class": "soft_realtime",
+   "batch": false,
+   "comment": "The single graph outcome controls the whole plan change; the program can inspect several dimensions, but only one candidate may cross first.",
+   "match": [
+    [
+     "agent",
+     "holds_faculty",
+     "program"
+    ],
+    [
+     "program",
+     "ir_subgraph",
+     "root"
+    ],
+    [
+     "episode",
+     "has_self_directed_learning_plan",
+     "plan"
+    ],
+    [
+     "plan",
+     "has_active_metacognitive_learning_policy",
+     "policy"
+    ],
+    [
+     "plan",
+     "has_learning_policy_pareto_profile",
+     "profile"
+    ],
+    [
+     "profile",
+     "has_incumbent_pareto_candidate",
+     "incumbent"
+    ],
+    [
+     "incumbent",
+     "represents_learning_plan_step",
+     "current_step"
+    ],
+    [
+     "current_step",
+     "plans_learning_capability",
+     "current_instance"
+    ],
+    [
+     "incumbent",
+     "is_dominated_by_pareto_candidate",
+     "candidate"
+    ],
+    [
+     "candidate",
+     "represents_learning_policy_alternative",
+     "alternative"
+    ],
+    [
+     "alternative",
+     "proposes_learning_plan_step",
+     "next_step"
+    ],
+    [
+     "next_step",
+     "plans_learning_capability",
+     "next_instance"
+    ],
+    [
+     "residual",
+     "has_learning_policy_pareto_profile",
+     "profile"
+    ],
+    [
+     "residual",
+     "has_learning_policy_discrimination_request",
+     "request"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "program"
+       },
+       "key": "faculty_kind"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "threshold_classifier"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "request"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "sweeping_classifier"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "ProgEval",
+       "prog": {
+        "type": "Var",
+        "name": "root"
+       },
+       "env": {
+        "type": "MkDict",
+        "items": [
+         {
+          "type": "Lit",
+          "value": "processed"
+         },
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "candidate"
+            },
+            "key": "experiment_cost_units"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         {
+          "type": "Lit",
+          "value": "progress"
+         },
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "candidate"
+            },
+            "key": "causal_yield_units"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         {
+          "type": "Lit",
+          "value": "micros"
+         },
+         {
+          "type": "Lit",
+          "value": 1
+         },
+         {
+          "type": "Lit",
+          "value": "threshold"
+         },
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "request"
+            },
+            "key": "classifier_threshold"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         }
+        ]
+       },
+       "oracles": null,
+       "fuel": 10000,
+       "field": "result"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "incumbent"
+          },
+          "edge_type": "is_dominated_by_pareto_candidate",
+          "any_type": false
+         },
+         "var_name": "frontier_candidate",
+         "predicate": {
+          "type": "Eq",
+          "a": {
+           "type": "Count",
+           "source": {
+            "type": "Neighbours",
+            "node": {
+             "type": "Var",
+             "name": "frontier_candidate"
+            },
+            "edge_type": "is_dominated_by_pareto_candidate",
+            "any_type": false
+           }
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0
+          }
+         }
+        },
+        "var_name": "candidate",
+        "predicate": {
+         "type": "Eq",
+         "a": {
+          "type": "ProgEval",
+          "prog": {
+           "type": "Var",
+           "name": "root"
+          },
+          "env": {
+           "type": "MkDict",
+           "items": [
+            {
+             "type": "Lit",
+             "value": "processed"
+            },
+            {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "candidate"
+               },
+               "key": "experiment_cost_units"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            },
+            {
+             "type": "Lit",
+             "value": "progress"
+            },
+            {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "candidate"
+               },
+               "key": "causal_yield_units"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            },
+            {
+             "type": "Lit",
+             "value": "micros"
+            },
+            {
+             "type": "Lit",
+             "value": 1
+            },
+            {
+             "type": "Lit",
+             "value": "threshold"
+            },
+            {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "request"
+               },
+               "key": "classifier_threshold"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            }
+           ]
+          },
+          "oracles": null,
+          "fuel": 10000,
+          "field": "result"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0
+         }
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "result",
+     "LearningPolicyDiscriminationResult",
+     {
+      "status": "resolved",
+      "kind": "unique_threshold_classifier_crossing",
+      "threshold": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "request"
+          },
+          "key": "classifier_threshold"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "sweep_count": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "request"
+          },
+          "key": "classifier_sweep_count"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "output_authority": 0,
+      "integer_native": 1
+     }
+    ],
+    [
+     "add_node",
+     "revision",
+     "LearningPlanRevision",
+     {
+      "kind": "redirect_to_classifier_admissible_frontier",
+      "reason": "learned_classifier_unique_first_crossing",
+      "status": "enacted",
+      "order_n": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "policy"
+          },
+          "key": "order_n"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "redirect_success_baseline": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "next_instance"
+          },
+          "key": "success_count"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "output_authority": 0,
+      "integer_native": 1
+     }
+    ],
+    [
+     "add_edge",
+     "request",
+     "has_discrimination_result",
+     "result"
+    ],
+    [
+     "add_edge",
+     "result",
+     "executed_classifier",
+     "program"
+    ],
+    [
+     "add_edge",
+     "result",
+     "selected_policy_candidate",
+     "candidate"
+    ],
+    [
+     "add_edge",
+     "plan",
+     "has_learning_plan_revision",
+     "revision"
+    ],
+    [
+     "add_edge",
+     "revision",
+     "decided_by_discrimination_result",
+     "result"
+    ],
+    [
+     "add_edge",
+     "revision",
+     "revises_learning_plan_step",
+     "current_step"
+    ],
+    [
+     "add_edge",
+     "revision",
+     "redirects_to_learning_plan_step",
+     "next_step"
+    ],
+    [
+     "add_edge",
+     "revision",
+     "resolves_learning_plan_residual",
+     "residual"
+    ],
+    [
+     "add_edge",
+     "current_instance",
+     "reassess_after_learning_capability",
+     "next_instance"
+    ],
+    [
+     "del_edge",
+     "episode",
+     "has_active_embodied_developmental_capability",
+     "current_instance"
+    ],
+    [
+     "del_edge",
+     "plan",
+     "has_selected_learning_plan_step",
+     "current_step"
+    ],
+    [
+     "set_attr",
+     "current_step",
+     "status",
+     "meta_suspended"
+    ],
+    [
+     "set_attr",
+     "current_instance",
+     "status",
+     "meta_suspended"
+    ],
+    [
+     "set_attr",
+     "next_step",
+     "status",
+     "ready"
+    ],
+    [
+     "set_attr",
+     "residual",
+     "status",
+     "resolved"
+    ],
+    [
+     "set_attr",
+     "profile",
+     "status",
+     "classifier_revision_enacted"
+    ],
+    [
+     "set_attr",
+     "request",
+     "status",
+     "resolved"
+    ],
+    [
+     "set_attr",
+     "policy",
+     "status",
+     "active"
+    ],
+    [
+     "set_attr",
+     "policy",
+     "revision_count",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "policy"
+           },
+           "key": "revision_count"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        {
+         "type": "Lit",
+         "value": 1
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "plan",
+     "replan_count",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "plan"
+           },
+           "key": "replan_count"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        {
+         "type": "Lit",
+         "value": 1
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "mpd_retain_tied_classifier_crossing_as_underdetermined",
+   "area": "metacognitive_learning",
+   "latency_class": "soft_realtime",
+   "batch": false,
+   "match": [
+    [
+     "agent",
+     "holds_faculty",
+     "program"
+    ],
+    [
+     "program",
+     "ir_subgraph",
+     "root"
+    ],
+    [
+     "plan",
+     "has_learning_policy_pareto_profile",
+     "profile"
+    ],
+    [
+     "profile",
+     "has_incumbent_pareto_candidate",
+     "incumbent"
+    ],
+    [
+     "residual",
+     "has_learning_policy_pareto_profile",
+     "profile"
+    ],
+    [
+     "residual",
+     "has_learning_policy_discrimination_request",
+     "request"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "program"
+       },
+       "key": "faculty_kind"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "threshold_classifier"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "request"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "sweeping_classifier"
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "incumbent"
+          },
+          "edge_type": "is_dominated_by_pareto_candidate",
+          "any_type": false
+         },
+         "var_name": "frontier_candidate",
+         "predicate": {
+          "type": "Eq",
+          "a": {
+           "type": "Count",
+           "source": {
+            "type": "Neighbours",
+            "node": {
+             "type": "Var",
+             "name": "frontier_candidate"
+            },
+            "edge_type": "is_dominated_by_pareto_candidate",
+            "any_type": false
+           }
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0
+          }
+         }
+        },
+        "var_name": "candidate",
+        "predicate": {
+         "type": "Eq",
+         "a": {
+          "type": "ProgEval",
+          "prog": {
+           "type": "Var",
+           "name": "root"
+          },
+          "env": {
+           "type": "MkDict",
+           "items": [
+            {
+             "type": "Lit",
+             "value": "processed"
+            },
+            {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "candidate"
+               },
+               "key": "experiment_cost_units"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            },
+            {
+             "type": "Lit",
+             "value": "progress"
+            },
+            {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "candidate"
+               },
+               "key": "causal_yield_units"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            },
+            {
+             "type": "Lit",
+             "value": "micros"
+            },
+            {
+             "type": "Lit",
+             "value": 1
+            },
+            {
+             "type": "Lit",
+             "value": "threshold"
+            },
+            {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "request"
+               },
+               "key": "classifier_threshold"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            }
+           ]
+          },
+          "oracles": null,
+          "fuel": 10000,
+          "field": "result"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0
+         }
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "result",
+     "LearningPolicyDiscriminationResult",
+     {
+      "status": "underdetermined",
+      "kind": "tied_threshold_classifier_crossing",
+      "threshold": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "request"
+          },
+          "key": "classifier_threshold"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "candidate_count": {
+       "__term__": {
+        "type": "Count",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "incumbent"
+           },
+           "edge_type": "is_dominated_by_pareto_candidate",
+           "any_type": false
+          },
+          "var_name": "frontier_candidate",
+          "predicate": {
+           "type": "Eq",
+           "a": {
+            "type": "Count",
+            "source": {
+             "type": "Neighbours",
+             "node": {
+              "type": "Var",
+              "name": "frontier_candidate"
+             },
+             "edge_type": "is_dominated_by_pareto_candidate",
+             "any_type": false
+            }
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0
+           }
+          }
+         },
+         "var_name": "candidate",
+         "predicate": {
+          "type": "Eq",
+          "a": {
+           "type": "ProgEval",
+           "prog": {
+            "type": "Var",
+            "name": "root"
+           },
+           "env": {
+            "type": "MkDict",
+            "items": [
+             {
+              "type": "Lit",
+              "value": "processed"
+             },
+             {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "candidate"
+                },
+                "key": "experiment_cost_units"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             },
+             {
+              "type": "Lit",
+              "value": "progress"
+             },
+             {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "candidate"
+                },
+                "key": "causal_yield_units"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             },
+             {
+              "type": "Lit",
+              "value": "micros"
+             },
+             {
+              "type": "Lit",
+              "value": 1
+             },
+             {
+              "type": "Lit",
+              "value": "threshold"
+             },
+             {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "request"
+                },
+                "key": "classifier_threshold"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             }
+            ]
+           },
+           "oracles": null,
+           "fuel": 10000,
+           "field": "result"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0
+          }
+         }
+        }
+       }
+      },
+      "output_authority": 0,
+      "integer_native": 1
+     }
+    ],
+    [
+     "add_edge",
+     "request",
+     "has_discrimination_result",
+     "result"
+    ],
+    [
+     "add_edge",
+     "result",
+     "executed_classifier",
+     "program"
+    ],
+    [
+     "set_attr",
+     "request",
+     "status",
+     "needs_more_evidence"
+    ],
+    [
+     "set_attr",
+     "policy",
+     "status",
+     "awaiting_discrimination"
+    ]
+   ]
+  }
+ ]
+}

@@ -1,0 +1,118 @@
+{
+  "id": "sorting_algorithms_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "quick_sort",
+  "in_microtheory": "data_structures_algorithms",
+  "description": "Sorting algorithms decomposed. Comparison-based: merge, quick, heap, TimSort, introsort. Non-comparison: radix, counting, bucket. Each has its sweet spot. Quicksort's partition + random pivot. Mergesort's stable merge. TimSort's run detection. Introsort's hybrid strategy.",
+  "sub_mechanisms": [
+    {
+      "name": "comparison_count_lower_bound",
+      "definition": "Any comparison-based sort requires Ω(n log n) comparisons in the worst case. Proof via decision tree height.",
+      "why": "Information-theoretic: deciding which of n! permutations is correct requires log₂(n!) = Θ(n log n) bits of information. Comparisons give 1 bit each. No comparison sort can be asymptotically better.",
+      "category": "sorting_mechanism"
+    },
+    {
+      "name": "quicksort_partition",
+      "definition": "Choose pivot. Rearrange array so elements < pivot are left, > pivot are right. Pivot ends in its final position.",
+      "why": "The core operation of quicksort. After partition, recurse on left half + right half independently. Partition is O(n) in-place with two pointers walking toward each other.",
+      "category": "sorting_mechanism"
+    },
+    {
+      "name": "pivot_selection_strategy",
+      "definition": "First element (O(n²) on sorted input). Random (expected O(n log n)). Median-of-three (good in practice). Median-of-medians (O(n) worst case but high constant).",
+      "why": "Pivot choice determines partition balance. Bad choice = unbalanced partitions = O(n²). Random + median-of-three are the practical choices. Median-of-medians is theoretical (used in introsort as fallback).",
+      "category": "sorting_mechanism"
+    },
+    {
+      "name": "mergesort_merge",
+      "definition": "Merge two sorted arrays: two pointers, take smaller, advance. O(n) merge of two arrays totaling n.",
+      "why": "The merge is what makes mergesort work. Combined with divide-into-halves: T(n) = 2T(n/2) + O(n) → O(n log n). The merge requires auxiliary space O(n).",
+      "category": "sorting_mechanism"
+    },
+    {
+      "name": "mergesort_stable",
+      "definition": "Mergesort is stable: equal elements preserve original order. Achieved by taking from left array first on ties.",
+      "why": "Stability matters when sorting by multiple keys: stable sort by secondary then primary gives correct lexicographic. Mergesort is the canonical stable O(n log n) sort.",
+      "category": "sorting_mechanism"
+    },
+    {
+      "name": "timsort_run_detection",
+      "definition": "Scan input for sorted runs (ascending or descending). Reverse descending runs. Extend short runs with binary-insertion sort.",
+      "why": "Real-world data has natural sorted runs (mostly-sorted, partially-sorted). Exploiting them turns O(n log n) into O(n) on already-sorted input. Python + Java's default sort.",
+      "category": "sorting_mechanism"
+    },
+    {
+      "name": "timsort_merge_strategy",
+      "definition": "Use a stack of runs. Maintain invariants: run sizes form a Fibonacci-like sequence. Merge to restore invariant.",
+      "why": "Memory-efficient run management. Galloping mode accelerates merge when one run dominates. Complex but well-tuned for real-world data.",
+      "category": "sorting_mechanism"
+    },
+    {
+      "name": "introsort_depth_limit",
+      "definition": "Run quicksort. If recursion depth exceeds 2·log₂(n), switch to heapsort.",
+      "why": "Hybrid: quicksort's speed in common case + heapsort's worst-case guarantee. C++ std::sort. Depth limit detects pathological pivot choices (giving O(n²)) and bails out before degradation.",
+      "category": "sorting_mechanism"
+    },
+    {
+      "name": "introsort_insertion_threshold",
+      "definition": "Below ~16 elements, fall back to insertion sort.",
+      "why": "Insertion sort's low constant + cache-friendliness wins for small arrays. The threshold is empirically tuned per implementation. Hybrid approach exploits small-N regime.",
+      "category": "sorting_mechanism"
+    },
+    {
+      "name": "radix_sort_LSB",
+      "definition": "Sort by each digit, least significant first, using a stable sort per digit. For 32-bit integers, 4 passes of 8-bit counting sort.",
+      "why": "Linear time O(d·n) where d is digit count. Beats comparison sorts when keys are short. Used in some specialised contexts (high-throughput log processing, GPU sorting).",
+      "category": "sorting_mechanism"
+    },
+    {
+      "name": "counting_sort",
+      "definition": "Count occurrences of each value, then write them out in order. O(n + k) where k is value range.",
+      "why": "Linear when value range is small. Used as the per-digit sort in radix sort. Stable; in-place variants exist. Beats comparison sorts when k = O(n).",
+      "category": "sorting_mechanism"
+    },
+    {
+      "name": "in_place_vs_auxiliary",
+      "definition": "Quicksort + heapsort + insertion sort are in-place (O(log n) or O(1) auxiliary). Mergesort uses O(n) auxiliary. Trade-off.",
+      "why": "Memory-constrained environments (GPU shared memory, embedded systems) need in-place. Cache + bandwidth matter for big sorts. Some hybrid mergesorts use external memory (disk).",
+      "category": "sorting_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "comparison_sort_bounded_by_n_log_n",
+      "if": ["sort uses only comparisons"],
+      "then": ["worst case is Ω(n log n)"],
+      "why": "Decision tree must have n! leaves (one per output permutation). Height ≥ log₂(n!) = Θ(n log n). The bound is information-theoretic; no comparison sort can beat it asymptotically.",
+      "soundness_category": "algebraic_law"
+    },
+    {
+      "name": "random_pivot_makes_quicksort_expected_O_n_log_n",
+      "if": ["pivot is chosen uniformly at random"],
+      "then": ["expected runtime is O(n log n)"],
+      "why": "Expected partition balance is good. Even with bad luck on some recursions, the average behaves well. Standard analysis: expected comparisons ≤ 2n ln n. Eliminates adversarial worst-case.",
+      "soundness_category": "algebraic_law"
+    },
+    {
+      "name": "stable_sort_required_for_multi_key",
+      "if": ["sorting by multiple keys (primary then secondary)"],
+      "then": ["intermediate sorts must be stable"],
+      "why": "Unstable secondary sort scrambles the primary order. Multi-key sort = stable sort by least significant, then stable sort by next significant, etc. The 'stable' property is what makes multi-key composition work.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "radix_sort_linear_for_short_keys",
+      "if": ["keys have d digits where d is constant"],
+      "then": ["radix sort is O(n)"],
+      "why": "Each digit pass is O(n); d passes total. For 32-bit integers, d = 4 (8-bit digits). Linear time when keys are short enough that comparison-sort's Ω(n log n) is not asymptotically optimal.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "hybrid_sorts_win_via_small_input_specialisation",
+      "if": ["input has size <~32"],
+      "then": ["insertion sort beats divide-and-conquer sorts in practice"],
+      "why": "Recursion overhead + cache eviction kill divide-and-conquer at small N. Insertion sort has minimal overhead + perfect cache behaviour. Introsort, TimSort, std::sort all use this specialisation.",
+      "soundness_category": "cost_equivalence"
+    }
+  ]
+}

@@ -1,0 +1,609 @@
+{
+ "id": "hidden_goal_aerial_mission",
+ "version": "1.0.0",
+ "depends_on": [],
+ "area": "aerial_search",
+ "latency_class": "hard_realtime",
+ "nodes": [
+  {
+   "local_id": 1,
+   "type": "HiddenGoalPolicy",
+   "attrs": {
+    "signal_threshold": 0.05
+   }
+  }
+ ],
+ "edges": [
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "type": "has_hidden_goal_policy",
+   "tgt": {
+    "local": 1
+   },
+   "attrs": {}
+  }
+ ],
+ "productions": [],
+ "rules": [
+  {
+   "name": "hga_learn_opaque_search_action",
+   "area": "aerial_search_learning",
+   "latency_class": "soft_realtime",
+   "match": [
+    [
+     "episode",
+     "has_hidden_goal_calibration_trial",
+     "trial"
+    ],
+    [
+     "trial",
+     "tests_hidden_goal_action",
+     "model"
+    ],
+    [
+     "trial",
+     "has_hidden_goal_calibration_outcome",
+     "outcome"
+    ]
+   ],
+   "where": {
+    "type": "Eq",
+    "a": {
+     "type": "Plus",
+     "items": [
+      {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "outcome"
+       },
+       "key": "processed"
+      },
+      {
+       "type": "Lit",
+       "value": 0.0
+      }
+     ]
+    },
+    "b": {
+     "type": "Lit",
+     "value": 0.0
+    }
+   },
+   "effects": [
+    [
+     "set_attr",
+     "model",
+     "mean_progress",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "outcome"
+         },
+         "key": "progress_delta"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "model",
+     "mean_emission",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "outcome"
+         },
+         "key": "emission_delta"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "model",
+     "experience_count",
+     1.0
+    ],
+    [
+     "set_attr",
+     "outcome",
+     "processed",
+     1.0
+    ]
+   ]
+  },
+  {
+   "name": "hga_bind_hidden_signal_as_goal",
+   "area": "aerial_search",
+   "latency_class": "hard_realtime",
+   "match": [
+    [
+     "agent",
+     "has_hidden_goal_policy",
+     "policy"
+    ],
+    [
+     "agent",
+     "has_hidden_goal_episode",
+     "episode"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "episode"
+         },
+         "key": "goal_located"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "episode"
+         },
+         "key": "state_signal_strength"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "policy"
+         },
+         "key": "signal_threshold"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "episode",
+     "goal_located",
+     1.0
+    ],
+    [
+     "set_attr",
+     "episode",
+     "located_x",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "episode"
+         },
+         "key": "state_x"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "episode",
+     "located_y",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "episode"
+         },
+         "key": "state_y"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "hga_choose_search_or_goal_marker",
+   "area": "aerial_search",
+   "latency_class": "hard_realtime",
+   "batch": false,
+   "match": [
+    [
+     "agent",
+     "has_hidden_goal_policy",
+     "policy"
+    ],
+    [
+     "agent",
+     "has_hidden_goal_episode",
+     "episode"
+    ],
+    [
+     "episode",
+     "has_hidden_goal_action_model",
+     "model"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "episode"
+         },
+         "key": "action_ready"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "episode"
+         },
+         "key": "request_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "episode"
+         },
+         "key": "decision_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "model"
+         },
+         "key": "ordinal"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Gt",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "episode"
+            },
+            "key": "goal_located"
+           },
+           {
+            "type": "Lit",
+            "value": 0.0
+           }
+          ]
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0.5
+         }
+        },
+        "then": {
+         "type": "Argmax",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "episode"
+           },
+           "edge_type": "has_hidden_goal_action_model"
+          },
+          "var_name": "candidate",
+          "predicate": {
+           "type": "Gt",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "candidate"
+              },
+              "key": "mean_emission"
+             },
+             {
+              "type": "Lit",
+              "value": 0.0
+             }
+            ]
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0.5
+           }
+          }
+         },
+         "var_name": "candidate",
+         "value": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "candidate"
+            },
+            "key": "mean_emission"
+           },
+           {
+            "type": "Lit",
+            "value": 0.0
+           }
+          ]
+         },
+         "default": {
+          "type": "Var",
+          "name": "episode"
+         }
+        },
+        "other": {
+         "type": "Argmax",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "episode"
+           },
+           "edge_type": "has_hidden_goal_action_model"
+          },
+          "var_name": "candidate",
+          "predicate": {
+           "type": "Lt",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "candidate"
+              },
+              "key": "mean_emission"
+             },
+             {
+              "type": "Lit",
+              "value": 0.0
+             }
+            ]
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0.5
+           }
+          }
+         },
+         "var_name": "candidate",
+         "value": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "candidate"
+              },
+              "key": "mean_progress"
+             },
+             {
+              "type": "Lit",
+              "value": 0.0
+             }
+            ]
+           },
+           {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "candidate"
+              },
+              "key": "experience_count"
+             },
+             {
+              "type": "Lit",
+              "value": 0.0
+             }
+            ]
+           }
+          ]
+         },
+         "default": {
+          "type": "Var",
+          "name": "episode"
+         }
+        }
+       },
+       "key": "ordinal"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "episode",
+     "selected_token",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "model"
+       },
+       "key": "token"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "episode",
+     "decision_seq",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "episode"
+         },
+         "key": "request_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "episode",
+     "action_ready",
+     1.0
+    ]
+   ]
+  }
+ ]
+}

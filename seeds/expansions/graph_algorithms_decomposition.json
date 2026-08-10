@@ -1,0 +1,118 @@
+{
+  "id": "graph_algorithms_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "Dijkstra_algorithm",
+  "in_microtheory": "data_structures_algorithms",
+  "description": "Graph algorithms decomposed. BFS + DFS as the foundation. Dijkstra + Bellman-Ford + Floyd-Warshall for shortest paths. Prim + Kruskal for MST. Tarjan + Kosaraju for SCCs. Topological sort. Each is built on graph traversal + a specific bookkeeping structure (queue, priority queue, distance array, union-find).",
+  "sub_mechanisms": [
+    {
+      "name": "BFS_via_queue",
+      "definition": "BFS: initialise queue with source. Loop: dequeue vertex, visit it, enqueue unvisited neighbours. Use 'visited' set to prevent revisits.",
+      "why": "Queue's FIFO order ensures vertices are visited in non-decreasing distance from source. The visited set prevents infinite loops on graphs with cycles. O(V + E).",
+      "category": "graph_algo_mechanism"
+    },
+    {
+      "name": "DFS_via_stack_or_recursion",
+      "definition": "DFS: push source. Loop: pop vertex, visit, push unvisited neighbours. Or recursively: visit(v) = for each unvisited neighbour, recurse.",
+      "why": "Stack/recursion's LIFO order goes deep before going wide. Natural for tree-traversal-like operations (topological sort, cycle detection, SCC). Recursive form is more readable; iterative form avoids stack overflow on deep graphs.",
+      "category": "graph_algo_mechanism"
+    },
+    {
+      "name": "Dijkstra_relaxation",
+      "definition": "Maintain tentative distances. Extract vertex with smallest distance. For each neighbour, if dist[u] + weight < dist[neighbour], update dist[neighbour] (relaxation).",
+      "why": "Greedy choice: u's distance is final when extracted (non-negative weights mean later paths can only add cost). Relaxation propagates distances outward from the source. Foundation of shortest-path algorithms.",
+      "category": "graph_algo_mechanism"
+    },
+    {
+      "name": "Dijkstra_priority_queue",
+      "definition": "Vertex with smallest tentative distance extracted via min-priority queue. Binary heap → O((V + E) log V); Fibonacci heap → O(E + V log V).",
+      "why": "Choosing the right vertex efficiently is the algorithm's bottleneck. Heap lets extraction be log time. Without it, scanning all vertices each extraction is O(V²) — fine for dense graphs.",
+      "category": "graph_algo_mechanism"
+    },
+    {
+      "name": "Bellman_Ford_relaxation_rounds",
+      "definition": "Repeat V-1 times: for each edge, attempt relaxation. After V-1 rounds, shortest paths found. Extra round detects negative cycles.",
+      "why": "Each round propagates one additional hop. V-1 rounds cover the longest path. Handles negative weights that Dijkstra can't. Slower O(V·E) but more general.",
+      "category": "graph_algo_mechanism"
+    },
+    {
+      "name": "Floyd_Warshall_DP",
+      "definition": "DP: dist[i][j][k] = shortest path from i to j using intermediates from {0..k}. Recurrence: min(dist[i][j][k-1], dist[i][k][k-1] + dist[k][j][k-1]).",
+      "why": "All-pairs shortest path. O(V³) but tiny constant (one comparison + one add per cell). For V ≤ ~500, often beats running Dijkstra V times in practice.",
+      "category": "graph_algo_mechanism"
+    },
+    {
+      "name": "Prim_MST_greedy",
+      "definition": "Grow MST one vertex at a time. Maintain priority queue of cross-edges (one end in tree). Extract cheapest, add its tree-side end + edge.",
+      "why": "Greedy choice property: cheapest cross-edge must be in some MST (cut lemma). Priority queue makes the choice O(log V). Total O((V + E) log V).",
+      "category": "graph_algo_mechanism"
+    },
+    {
+      "name": "Kruskal_MST_union_find",
+      "definition": "Sort edges by weight. For each in order: if endpoints in different components, add edge to MST + union components.",
+      "why": "Greedy on edges instead of vertices. Union-find structure tracks components in O(α(n)) per operation. Total O(E log E) dominated by sort. Conceptually simpler than Prim; uses different data structure.",
+      "category": "graph_algo_mechanism"
+    },
+    {
+      "name": "Tarjan_SCC_with_low_link",
+      "definition": "DFS with low-link values: low[v] = min reachable index from v's subtree. v starts an SCC when v's low equals v's discovery index.",
+      "why": "Finds SCCs in single DFS pass: O(V + E). Low-link tracks 'how far back can we reach'; equality with discovery index means v can't reach back beyond itself — root of an SCC. Elegant single-pass.",
+      "category": "graph_algo_mechanism"
+    },
+    {
+      "name": "topological_sort_via_DFS_post_order",
+      "definition": "DFS through graph; record vertices in post-order. Reverse: topological order.",
+      "why": "When DFS finishes a vertex, all reachable vertices are already finished. Reversing the order puts dependencies first. Simple O(V + E) implementation.",
+      "category": "graph_algo_mechanism"
+    },
+    {
+      "name": "topological_sort_via_Kahn",
+      "definition": "Initialise queue with vertices of in-degree 0. Loop: dequeue, output, decrement neighbours' in-degrees, enqueue new in-degree-0.",
+      "why": "Alternative to DFS approach. Works incrementally — can detect partial DAGs. Same O(V + E). Often more intuitive for build-system applications.",
+      "category": "graph_algo_mechanism"
+    },
+    {
+      "name": "A_star_with_heuristic",
+      "definition": "Like Dijkstra but uses f(n) = g(n) + h(n) where g is cost-so-far, h is heuristic estimate to goal. Optimal if h is admissible (never overestimates).",
+      "why": "Heuristic directs search toward goal — skips regions Dijkstra would explore but A* knows are pointless. Quality of h is critical: perfect h = direct path; zero h = Dijkstra; bad h = wrong answer.",
+      "category": "graph_algo_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "BFS_distance_optimal_via_FIFO",
+      "if": ["BFS uses FIFO queue"],
+      "then": ["each vertex is first reached via a shortest unweighted path"],
+      "why": "Queue ensures vertices at distance k are processed before distance k+1. First time vertex is added to queue, it's via shortest path. The FIFO IS the correctness mechanism.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "Dijkstra_greedy_correct_under_nonnegative",
+      "if": ["edge weights are non-negative"],
+      "then": ["Dijkstra's extracted vertex distance is final"],
+      "why": "Any later path to extracted vertex would go through some other vertex u with distance ≥ current → total ≥ current. With negative weights, this fails: a later path could shortcut via negative edges. Cut lemma formalises.",
+      "soundness_category": "algebraic_law"
+    },
+    {
+      "name": "Bellman_Ford_handles_negative_weights_via_repeated_relaxation",
+      "if": ["graph has no negative cycles and we relax V-1 times"],
+      "then": ["all shortest paths are found"],
+      "why": "Each relaxation round can propagate at most one hop along a shortest path. Longest path has V-1 edges. After V-1 rounds, all paths fully relaxed. Vth round changing distances means negative cycle exists.",
+      "soundness_category": "algebraic_law"
+    },
+    {
+      "name": "MST_cut_lemma_justifies_greedy",
+      "if": ["edge e is minimum across some cut"],
+      "then": ["e is in some MST"],
+      "why": "Suppose not: MST contains a different edge f across the cut. Swap e for f: still spanning, lower weight. Contradiction. The lemma justifies both Prim's (greedy on vertices) + Kruskal's (greedy on edges) — both pick minimum cross-edges.",
+      "soundness_category": "algebraic_law"
+    },
+    {
+      "name": "A_star_optimal_with_admissible_heuristic",
+      "if": ["heuristic h never overestimates true cost-to-goal"],
+      "then": ["A* finds optimal path"],
+      "why": "Admissibility ensures A* never settles for a suboptimal path. Once goal is reached via f-min extraction, no other path could be cheaper (all unextracted have f ≥ goal's cost). Standard A* correctness proof.",
+      "soundness_category": "denotational_equivalence"
+    }
+  ]
+}

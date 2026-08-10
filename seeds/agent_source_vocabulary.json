@@ -1,0 +1,85 @@
+{
+  "id": "agent_source_vocabulary",
+  "version": "0.1.0",
+  "description": "Vocabulary the agent uses when emitting code into its own runtime. Names: variant homes (4 files per TermNode primitive), anchor patterns by site, the rendering pipeline (RustSource AST -> patches -> cargo build). Used by phase 3 RewriteRules that compose DesignedPatch nodes from PrimitiveSpec. NOTE: actual code uses TermIdx arena indices, not Box<TermNode>; the conceptual structure is what the agent reasons about.",
+  "depends_on": [],
+  "concepts": [
+    {
+      "name": "term_rs_enum_variant_home",
+      "definition": "The TermNode enum variant declaration in runners/dsl/src/term.rs. Shape: a new arm inside `pub enum TermNode { ... }` of form `VariantName { field1: TermIdx, field2: TermIdx }`. Must match the field names used by every other home.",
+      "category": "source_home"
+    },
+    {
+      "name": "term_rs_copy_subtree_arm_home",
+      "definition": "The match arm inside `fn copy_subtree` in runners/dsl/src/term.rs that deep-clones the new variant. Shape: `TermNode::VariantName { field1 } => TermNode::VariantName { field1: copy_subtree(src, dst, field1) }`. Every TermIdx child must be recursively copied.",
+      "category": "source_home"
+    },
+    {
+      "name": "term_rs_evaluator_arm_home",
+      "definition": "The match arm inside `evaluate` in runners/dsl/src/term.rs that executes the primitive. Shape: `TermNode::VariantName { field1 } => { let v = evaluate(arena, *field1, env, ctx); /* compute result */ Value::Whatever(...) }`. This is the body of the operator's semantics.",
+      "category": "source_home"
+    },
+    {
+      "name": "term_rs_children_arm_home",
+      "definition": "The match arm inside `children` in runners/dsl/src/term.rs that lists the variant's sub-Terms for traversal. Shape: `TermNode::VariantName { field1 } => out.push(*field1)`. Must include every TermIdx field, in declaration order.",
+      "category": "source_home"
+    },
+    {
+      "name": "jsonio_rs_name_arm_home",
+      "definition": "The match arm in src/jsonio.rs returning the variant's string tag. Shape: `TermNode::VariantName { .. } => \"VariantName\"`. This string is the JSON `type` discriminator and must be unique.",
+      "category": "source_home"
+    },
+    {
+      "name": "jsonio_rs_parse_arm_home",
+      "definition": "The string->variant arm inside the JSON parser in src/jsonio.rs. Shape: `\"VariantName\" => TermNode::VariantName { field1: child_of(\"field1\", obj, arena, interner, variant)? }`. Reads each named child sub-term from the JSON object.",
+      "category": "source_home"
+    },
+    {
+      "name": "jsonio_rs_serialize_arm_home",
+      "definition": "The variant->JSON arm inside the JSON writer in src/jsonio.rs. Shape: `TermNode::VariantName { field1 } => { m.insert(\"field1\".into(), child(*field1, arena, interner)); }`. Emits the canonical JSON form symmetric with the parse arm.",
+      "category": "source_home"
+    },
+    {
+      "name": "reflect_rs_describe_arm_home",
+      "definition": "The match arm inside `describe` in src/reflect.rs returning the variant's child-list spec. Shape: `TermNode::VariantName { field1 } => (\"VariantName\", vec![Child { name: \"field1\", child: *field1 }])`. Used by introspection.",
+      "category": "source_home"
+    },
+    {
+      "name": "reflect_rs_parse_arm_home",
+      "definition": "The match arm in src/reflect.rs reconstructing the variant from a subgraph encoding. Shape: `\"VariantName\" => TermNode::VariantName { field1: take_child!(\"field1\") }`. Symmetric with describe.",
+      "category": "source_home"
+    },
+    {
+      "name": "python_init_constructor_home",
+      "definition": "The Term factory function in python/substrate_rs/__init__.py. Shape: `def VariantName(field1: Term) -> Term: return Term(\"VariantName\", field1=field1)`. Agent-facing constructor; its JSON shape must match the jsonio parse arm.",
+      "category": "source_home"
+    },
+    {
+      "name": "anchor_after_neighbour_variant",
+      "definition": "Anchor strategy: pick an existing nearby variant in each file (e.g. Tokenize), copy its line verbatim as the anchor, and set position=after so the new variant's code is spliced immediately after it. Existing variants provide unique, stable anchors that move with the file as it grows.",
+      "category": "anchor_strategy"
+    },
+    {
+      "name": "anchor_uniqueness_invariant",
+      "definition": "Invariant: every anchor string must be VERBATIM (byte-for-byte) and UNIQUE in its target file at patch-application time. If an anchor matches zero or multiple positions, the patch fails. Prefer longer multi-token anchors over short fragments, and prefer variant-name anchors over generic punctuation.",
+      "category": "invariant"
+    },
+    {
+      "name": "agent_emits_via_DesignedPatch",
+      "definition": "The agent composes DesignedPatch graph nodes carrying attributes (target_path, anchor, position in {after, before, replace}, content). The world's button collects all DesignedPatch nodes, applies them by locating the anchor in the target file and splicing content at the chosen position, then runs cargo build. The agent never writes files directly; it only emits patch nodes.",
+      "category": "source_home"
+    },
+    {
+      "name": "term_node_lives_in_four_homes",
+      "definition": "Structural invariant: every new TermNode variant must have a DesignedPatch in all required homes across four files. term.rs needs four arms (enum variant, copy_subtree, evaluate, children); jsonio.rs needs three arms (name, parse, serialize); reflect.rs needs two arms (describe, parse_from_subgraph); python/substrate_rs/__init__.py needs one constructor. Missing any breaks the build.",
+      "category": "invariant"
+    },
+    {
+      "name": "tokenize_is_exemplar",
+      "definition": "Tokenize and Tokenize2 already exist as fully-wired transducer-class primitives across all four files. When composing a new transducer-class variant, copy their shape in each home: same field-naming convention, same TermIdx structure, same JSON tag pattern, same Python factory signature. Tokenize is the canonical template the agent imitates.",
+      "category": "exemplar"
+    }
+  ],
+  "rules": [],
+  "parent_mt": "rust_ast_vocabulary"
+}

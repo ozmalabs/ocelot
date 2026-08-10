@@ -1,0 +1,112 @@
+{
+  "id": "heap_priority_queue_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "binary_heap",
+  "in_microtheory": "data_structures_algorithms",
+  "description": "Binary heaps + priority queues decomposed. Array-backed complete binary tree with the heap property. Sift-up + sift-down maintain the property after insert/extract. Build-heap in O(n) via bottom-up. Variants: d-ary heaps for different fan-out, pairing heaps + Fibonacci heaps for better amortised decrease-key.",
+  "sub_mechanisms": [
+    {
+      "name": "heap_property",
+      "definition": "For each node: parent's key ≤ both children's keys (min-heap) or ≥ (max-heap). No constraint between siblings.",
+      "why": "Weaker than BST property → easier to maintain. Sufficient for extract-min in O(log n): root is always the minimum. The relaxed property is what makes heap operations cheap.",
+      "category": "heap_mechanism"
+    },
+    {
+      "name": "array_layout",
+      "definition": "Complete binary tree stored in array: parent of i is i/2; children of i are 2i and 2i+1 (1-indexed). Or 0-indexed with (i-1)/2, 2i+1, 2i+2.",
+      "why": "No pointer overhead. Cache-friendly: parent + children near each other in memory. The completeness invariant (tree filled left to right) is what makes this layout work.",
+      "category": "heap_mechanism"
+    },
+    {
+      "name": "sift_up",
+      "definition": "Insert: append to end of array. Sift-up: if new element < parent, swap; repeat until heap property restored.",
+      "why": "O(log n) work: walking up the tree's height. Single pass; no complex case analysis. The price of insert.",
+      "category": "heap_mechanism"
+    },
+    {
+      "name": "sift_down",
+      "definition": "Extract-min: replace root with last element. Sift-down: if root > smallest child, swap; repeat until heap property restored.",
+      "why": "O(log n) work walking down. Always swap with the smaller child to maintain order. Combined with deletion of last element, gives O(log n) extract-min.",
+      "category": "heap_mechanism"
+    },
+    {
+      "name": "build_heap_bottom_up",
+      "definition": "Build heap from arbitrary array: start at n/2 (last internal node), sift-down each in reverse order. O(n).",
+      "why": "Naively, n inserts × O(log n) = O(n log n). Bottom-up exploits that most nodes are near leaves (cheap sift-down). The sum is bounded by 2n via geometric series. Surprising O(n) result.",
+      "category": "heap_mechanism"
+    },
+    {
+      "name": "heapsort_use",
+      "definition": "Sort array via heap: build-heap (O(n)), then extract-max n times (O(n log n)).",
+      "why": "In-place: array is reused. O(n log n) guaranteed worst case. Lost popularity to quicksort + introsort because of cache behaviour, but used as fallback in introsort.",
+      "category": "heap_mechanism"
+    },
+    {
+      "name": "d_ary_heap",
+      "definition": "Generalisation: each node has d children instead of 2. Sift-up is O(log_d n); sift-down is O(d · log_d n).",
+      "why": "Higher d: shallower tree, faster decrease-key (sift-up). Lower d: faster extract-min. Dijkstra with d-ary heap can pick d to match graph density.",
+      "category": "heap_mechanism"
+    },
+    {
+      "name": "fibonacci_heap",
+      "definition": "Lazy heap with O(1) amortised insert + decrease-key, O(log n) amortised extract-min. Complex pointer structure of trees.",
+      "why": "Theoretically optimal for Dijkstra/Prim: with decrease-key in O(1), Dijkstra is O(E + V log V). In practice, constants are large; rarely faster than binary heap. Important theoretical result; less common implementation.",
+      "category": "heap_mechanism"
+    },
+    {
+      "name": "pairing_heap",
+      "definition": "Self-adjusting heap. Insert: pairwise merge with root. Extract-min: combine subtrees pairwise then sequentially.",
+      "why": "Simpler than Fibonacci. Empirically close to Fibonacci performance with much simpler code. Often the practical choice when Dijkstra performance matters.",
+      "category": "heap_mechanism"
+    },
+    {
+      "name": "heap_decrease_key",
+      "definition": "Lower a key's value: in binary heap, walk up sifting (O(log n)). In Fibonacci: cut the node + cascading-cut (O(1) amortised).",
+      "why": "Critical operation for Dijkstra + Prim: relax an edge decreases the dest's key. Frequency of decrease-key vs extract-min determines best heap variant.",
+      "category": "heap_mechanism"
+    },
+    {
+      "name": "priority_queue_abstraction",
+      "definition": "Interface: insert(item, priority), extract-best, peek. Implementation is a heap underneath.",
+      "why": "Many algorithms (Dijkstra, A*, scheduling) need 'next best thing to do' semantics. Decoupling the abstraction from implementation lets the heap variant be swapped per workload.",
+      "category": "heap_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "heap_property_sufficient_for_extract_min",
+      "if": ["heap property holds"],
+      "then": ["the root is the minimum element"],
+      "why": "Each node ≤ both children → recursively root ≤ everything. Direct from the invariant. Lets extract-min be O(1) lookup + O(log n) restoration.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "build_heap_O_n_via_amortised_cost",
+      "if": ["build-heap proceeds bottom-up"],
+      "then": ["total work is O(n) not O(n log n)"],
+      "why": "Most nodes are near the leaves (cheap sift-down: O(1) or O(2)). Few nodes are near the root (expensive: O(log n)). The sum ∑ h × n/2^(h+1) is bounded by 2n. The classical surprising O(n) result.",
+      "soundness_category": "algebraic_law"
+    },
+    {
+      "name": "array_layout_cache_friendly",
+      "if": ["heap is stored as array"],
+      "then": ["sift-up/down hit sequential cache lines"],
+      "why": "Parent + children in array indices i, 2i, 2i+1 are close in memory. Modern CPUs prefetch sequentially. Array-backed heap beats pointer-based heap by an order of magnitude in practice, even though both are O(log n).",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "fibonacci_heap_optimal_for_dijkstra_theoretical",
+      "if": ["Dijkstra is implemented with Fibonacci heap"],
+      "then": ["total time is O(E + V log V)"],
+      "why": "Each decrease-key is O(1) amortised; n total. Each extract-min is O(log V); V total. Better than binary heap's O((E + V) log V). In practice, binary heap usually wins on real graphs due to constants.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "d_ary_heap_optimises_for_workload",
+      "if": ["decrease-key dominates extract-min"],
+      "then": ["higher d (4-ary, 8-ary) outperforms binary heap"],
+      "why": "Sift-up cost scales with log_d (shallower tree). Sift-down cost scales with d × log_d (more children to scan). Pick d based on operation mix: dense graphs (many edges per vertex) favour higher d.",
+      "soundness_category": "cost_equivalence"
+    }
+  ]
+}

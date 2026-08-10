@@ -1,0 +1,28 @@
+{
+  "id": "cue_investigator",
+  "version": "1.0.0",
+  "depends_on": [
+    "acoustic_cue_vocab"
+  ],
+  "description": "Binds the CUE-SPECIFIC INVESTIGATOR for a teacher-grown, cue-grounded CapabilityAxis (Wall D, 81d1ddea). Wall D made a grown axis carry the REAL acoustic cue the teacher named (advice 'use the F2 trajectory' -> axis keyed `f2_trajectory`, the matched AcousticCue carrying `operator: f2_formant`, a hint_grounding.CUE_MENU operator), but its `investigated_by` pointed at a GENERIC held Operator only to prove pickability -- so dispatching the axis did NOT measure its cue. This seed holds the cue-specific Operator (an Operator node, runner='cue_investigator') that the grown axis's investigated_by is re-pointed at (graph-data swap, precedent 4bca77bc/81d1ddea). When the investigation reflex dispatches the axis, the runner composes the cue's Term via hint_grounding.compose_from_spec(res, operator), evaluates the held Term on cue-appropriate audio via substrate.evaluate (donkey=0), and banks a cue-DERIVED MeasuredCapability via record_measured_capability (feeding the residual/shortfall -> residual-salience). The cue axis is now fully INVESTIGABLE -- it MEASURES its cue, not just names it. The measurement DECISION is the held composed cue Term (Rust evaluate); the Python (domains/cue_investigator.py) is mechanical DSP I/O (render -> ingest -> enrich the bands the Term reads). The investigated_by re-point is graph data; existing investigation_teacher.json / world_adapter.py / speech_world.py are left UNTOUCHED.",
+  "microtheory": {
+    "name": "cue_investigator",
+    "description": "the cue-specific Operator that makes a teacher-grown cue axis measurable: its investigated_by points here; dispatch composes + evaluates the cue's held Term and banks a cue-derived measurement."
+  },
+  "nodes": [
+    {
+      "type": "Operator",
+      "var": "cue_investigator_op",
+      "attrs": {
+        "name": "cue_specific_investigator",
+        "runner": "cue_investigator",
+        "metric": "cue_discriminability",
+        "target": 0.6,
+        "keywords": ["f2", "formant", "trajectory", "voice onset", "vot", "burst", "nasal", "spectral tilt", "vowel", "cue"],
+        "origin": "cue_investigator",
+        "description": "Operator whose runner='cue_investigator' composes the bound axis's cue Term (compose_from_spec on the axis's cue_operator/cue) and evaluates it on cue-appropriate audio, banking a cue-derived MeasuredCapability. A cue-grounded axis's investigated_by is re-pointed here so dispatching it MEASURES its cue."
+      }
+    }
+  ],
+  "edges": []
+}

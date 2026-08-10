@@ -1,0 +1,118 @@
+{
+  "id": "opus_codec_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "Opus",
+  "in_microtheory": "audio_coding_theory",
+  "description": "Opus (IETF RFC 6716, 2012) decomposed. Opus is a hybrid codec combining SILK (LPC-based, speech-optimised) and CELT (MDCT-based, music-optimised), with per-frame mode switching. Operates from 6 kbps to 510 kbps, any content type, latency from 5 ms to 60 ms. The IETF's open response to AAC; standard in WebRTC, Discord, Spotify streaming, YouTube live.",
+  "sub_mechanisms": [
+    {
+      "name": "silk_layer",
+      "definition": "Opus's speech sub-codec, derived from Skype's SILK codec. Uses LPC + range-coded residuals. Targets 8-25 kbps for speech.",
+      "why": "Speech has strong autocorrelation; LPC captures most of its information cheaply. SILK's range-coded LPC residuals plus pitch prediction (long-term prediction) deliver natural-sounding speech down to ~8 kbps. The classical speech-coding heritage extended with modern entropy coding.",
+      "category": "opus_mechanism"
+    },
+    {
+      "name": "celt_layer",
+      "definition": "Opus's music sub-codec. MDCT-based with energy-preserving algebraic vector quantisation. Targets 32-256 kbps for music.",
+      "why": "Music has too many simultaneous tones for LPC's source-filter model. CELT's MDCT captures the spectral content directly; the energy-preserving VQ encodes residuals efficiently. Designed for sub-10ms latency — much lower than MP3/AAC.",
+      "category": "opus_mechanism"
+    },
+    {
+      "name": "hybrid_mode_switching",
+      "definition": "Per-frame switching between SILK-only (low bitrate speech), CELT-only (music), and hybrid (SILK for low frequencies + CELT for high). Auto-selected by encoder based on signal characteristics.",
+      "why": "Speech codecs sound bad on music; music codecs sound bad on speech. Mode switching gives each content type its optimal codec. The hybrid mode is critical for intermediate cases: voice with background music, podcasts with sound effects.",
+      "category": "opus_mechanism"
+    },
+    {
+      "name": "frame_sizes_2_5_to_60_ms",
+      "definition": "Opus supports frame sizes of 2.5, 5, 10, 20, 40, 60 ms. Smaller frames = lower latency, slightly higher overhead.",
+      "why": "Different applications have different latency budgets: WebRTC live wants 2.5-10 ms, streaming music tolerates 20-60 ms. The single codec supports the full range. Frame size is signalled per frame.",
+      "category": "opus_mechanism"
+    },
+    {
+      "name": "range_coder_entropy",
+      "definition": "Opus uses a range coder (binary arithmetic coding variant) for entropy coding both SILK residuals and CELT VQ indices.",
+      "why": "Range coding is closer to entropy bound than Huffman. The single coder serves both layers, simplifying the bitstream structure. Same entropy-coding family as CABAC; different bitstream choices.",
+      "category": "opus_mechanism"
+    },
+    {
+      "name": "energy_preserving_vq",
+      "definition": "CELT's vector quantisation explicitly preserves the energy of each band. Quantised coefficients are normalised, then scaled back at decode time with explicitly-coded gain.",
+      "why": "Audio's perceptual quality is dominated by spectral envelope (energy distribution across bands). Energy-preserving VQ ensures the envelope is exactly reconstructed; only the fine structure is approximated. Perceptually superior to plain VQ.",
+      "category": "opus_mechanism"
+    },
+    {
+      "name": "ltp_long_term_prediction",
+      "definition": "SILK's pitch predictor: at each frame, find the pitch lag (period of voiced sound), predict current frame from a delay-line of past samples.",
+      "why": "Voiced speech is highly periodic at fundamental frequency. Pitch prediction captures this periodicity cheaply; only the deviation from periodic structure (small residual) needs coding. The same insight as inter-frame motion prediction in video.",
+      "category": "opus_mechanism"
+    },
+    {
+      "name": "constant_average_bitrate_mode",
+      "definition": "Opus supports both CBR (each frame's bitrate constant) and VBR (per-frame variable, average target). VBR is default; CBR is for streaming with strict bitrate constraints.",
+      "why": "VBR achieves better quality for the same average bitrate (transient frames get more bits). CBR is required for some streaming protocols where each packet must fit a fixed budget.",
+      "category": "opus_mechanism"
+    },
+    {
+      "name": "fec_forward_error_correction",
+      "definition": "Opus can embed a lower-bitrate redundant copy of the previous frame in the current frame's bitstream. If a packet is lost, the decoder can use the FEC copy from the next frame.",
+      "why": "Packet loss in real-time conferencing destroys quality. FEC trades bits for robustness — losing one packet doesn't lose its audio, just degrades it to the FEC quality. Critical for WebRTC over lossy networks.",
+      "category": "opus_mechanism"
+    },
+    {
+      "name": "dtx_discontinuous_transmission",
+      "definition": "When silence is detected, Opus can send 'comfort noise' descriptors instead of full frames. Decoder regenerates background noise from the descriptor.",
+      "why": "Silence between speech is wasted bandwidth. DTX detects silence and sends ~10-byte descriptors instead of full frames. The decoder synthesises comfort noise so the listener doesn't think the line dropped. Standard for cellular voice; supported in Opus.",
+      "category": "opus_mechanism"
+    },
+    {
+      "name": "complexity_setting",
+      "definition": "Encoder complexity is settable 0-10. Higher = better quality at the same bitrate but more CPU. Decoder complexity is fixed.",
+      "why": "Mobile/embedded use cases want low complexity; cloud encoding wants max quality. The setting controls how exhaustively the encoder searches for optimal mode, VQ candidate, bit allocation. Encoder cost varies ~5x across the range.",
+      "category": "opus_mechanism"
+    },
+    {
+      "name": "channel_mapping_table",
+      "definition": "For multichannel content, Opus uses a channel mapping table identifying which channels carry what (left, right, surround, LFE, etc.).",
+      "why": "5.1 and 7.1 surround layouts are encoded as 6 or 8 streams plus the mapping. The mapping table is small; the streams can be independently encoded or jointly. Same architecture as Vorbis multichannel.",
+      "category": "opus_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "hybrid_codec_handles_all_content_types",
+      "if": ["a codec switches between speech and music modes per frame"],
+      "then": ["it outperforms single-purpose codecs on mixed content"],
+      "why": "Per-frame mode switching gives each content type its optimal architecture. Static codec choice forces a compromise. Same trade as AV1's per-block mode selection vs HEVC's macroblock-level choices.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "low_latency_requires_short_frames",
+      "if": ["application has <20 ms latency budget"],
+      "then": ["frame size must be ≤ 10 ms with no look-ahead"],
+      "why": "End-to-end latency = encoder buffer + frame size + decoder buffer + look-ahead. Live conferencing requires sub-20-ms; Opus's 2.5 ms frame size + 0 look-ahead mode hits 5 ms total latency. MP3/AAC's larger frames + look-ahead make them unusable for real-time.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "fec_trades_bits_for_packet_loss_resilience",
+      "if": ["the network drops packets occasionally"],
+      "then": ["forward error correction recovers audio without retransmission"],
+      "why": "WebRTC over the public internet sees 1-5% packet loss. Without FEC, each loss is a gap; with FEC, lost packets are reconstructed from redundant copies in subsequent packets. The bit cost is ~10-25% bitrate increase; quality at typical loss rates is dramatically better.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "dtx_eliminates_silence_bitrate",
+      "if": ["a frame is detected as silence"],
+      "then": ["sending comfort-noise descriptor saves ~99% of the frame's bitrate"],
+      "why": "Silence contains no information to code. Sending a comfort-noise descriptor (~10 bytes) tells the decoder to synthesise background noise. Half-duplex conversations are ~50% silence; DTX halves the average bitrate at zero perceptual cost.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "energy_preserving_vq_preserves_envelope",
+      "if": ["spectral envelope is the dominant perceptual dimension"],
+      "then": ["energy-preserving VQ outperforms plain VQ"],
+      "why": "Vector quantisation introduces noise proportional to codebook density; on plain VQ, this includes envelope noise (which is highly audible). Energy-preserving VQ separates envelope (exact) from fine structure (approximate), eliminating the most-audible component of the noise.",
+      "soundness_category": "denotational_equivalence"
+    }
+  ]
+}

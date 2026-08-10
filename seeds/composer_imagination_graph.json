@@ -1,0 +1,560 @@
+{
+ "id": "composer_imagination_graph",
+ "version": "1.0.0",
+ "depends_on": [],
+ "description": "GRAPH-RESIDENT: TIER 3 (imagination/counterfactual, model the collapse INDEPENDENT of the external reference frame) authored by the jabberwock via the composer (CLAUDE.md discipline: no hand-written agent rule). domains/imagination.py is the MECHANICAL machinery (snapshot / cut grounded_in / inject hypothesis / tick / diff / reground / gated commit) -- pure host I/O, never an agent decision, per that module's own docstring. THIS seed is the agent's OWN decision about WHEN to imagine and WHAT to do with the result, mirroring composer_grounding_guard_graph.json / composer_escalation_gate_graph.json's dual-process-arbitration shape exactly: mints THREE rules from an agent -wants_imagination_rule-> ComposeRequest trigger (ground_concern's 'imagine' relation head, seeds/relation_vocabulary.json's new imagine_counterfactual cue + seeds/composer_dispatch.json's new ComposerCue). (1) engage_imagine_grounding_gap_<tag> matches every agent -surprised_by-> impasse -about_gap-> gap edge (the SAME grounding_gap-kind Impasse composer_grounding_guard_graph's own escalate rule mints) not yet imagine_requested, and -- INSTEAD of letting the escalation only re-grind via seeds/autonomy.json's standing mint_goal_from_surprise -- mints an ImagineRequest{status: requested, kind: grounding_gap, hypothesis_template: a JSON-encoded counterfactual ('does the confident-but-ungrounded conclusion survive if I explicitly QUESTION it'), why} wired -focuses_on_gap-> gap (so the mechanical host hook, domains/imagination_dispatch.py's scan_and_imagine, can resolve the GroundingGap's own `node` attr to the concrete focus -- add_edge targets must be match-bound vars, so the rule cannot point directly at a node it never matched) and -about_impasse-> imp, then marks imp.imagine_requested so a re-run never re-imagines the same impasse (the SAME fixpoint-safety idiom gap.escalated / ax.cost_escalated already use). (2) engage_imagine_cost_worth_<tag> is the twin for the OTHER escalation arm: matches every agent -surprised_by-> impasse -about_axis-> ax edge (the cost_worth_refining-kind Impasse composer_escalation_gate_graph's own escalate rule mints) not yet imagine_requested, mints the SAME ImagineRequest shape (kind: cost_worth_refining) wired -focuses_on_axis-> ax directly (no extra indirection needed -- the CapabilityAxis IS the focus), marks imp.imagine_requested. (3) judge_imagined_conclusion_<tag> is the RETURN-PATH rule: matches every agent -produced_imagination-> imagination -imagined-> conclusion edge (the durable trace domains/imagination.py's imagine() mints on the live graph PLUS the produced_imagination edge the host hook adds once it runs the request -- imagine()/reground() are Python host calls that cannot execute inside a Rust rule effect, exactly why the hook exists, the SAME reason domains/experiment_dispatch.py spawns a child process the rule engine can't spawn itself) whose OWN status (written by reground(), not by this rule) is 'survived' and not yet acted -- and marks it acted + requests a gated commit (agent -wants_to_commit-> imagination; domains/imagination.py's commit_imagination stays the ONLY path that ever writes imagined content into the live graph, and it still requires an explicit approver -- this rule only REQUESTS, never blindly commits). A 'discarded' conclusion (reground's own verdict: it contradicted a grounded live fact) matches NO effect here -- dropped, no action, by construction (the rule's own where-guard), not by a second rule that has to remember to do nothing. Trust is the default; imagining is what a genuine escalation earns; committing is what a genuine survivor earns. EXTENDED (TIER 4 integration, seeds/composer_collapse_watch_graph.json's predict_intervene_<tag> rule): rn1's (engage_imagine_cost_worth_<tag>) kind-guard widened from a single Eq to an Or of two Eq arms so a `predicted_divergence`-kind Impasse (minted when domains/collapse_model.py's CollapseModel says converged=False -- the whole-graph forward-look predicts the volatile frontier will grow without bound) ALSO engages tier-3 imagination, not only cost_worth_refining -- predict_intervene wires its Impasse -about_axis-> the CollapseModel node itself (the un-checked add_edge target type is not enforced, so this reuses the existing focus-resolution path in domains/imagination_dispatch.py's `_resolve_focus` without needing a new focuses_on_model case there). Deliberately did NOT touch rn1's `match` or `effects` (the minted ImagineRequest's own `kind` attr stays the literal 'cost_worth_refining' even when triggered by a predicted_divergence impasse) -- tests/test_imagination_cognition.py::test_agent_authors_engage_and_judge_rules_via_graph_composer pins that literal exactly, and the semantic bridge only needed the guard widened, not the label.",
+ "nodes": [
+  {
+   "local_id": 1,
+   "type": "Rule",
+   "attrs": {
+    "id": "compose_imagination_graph",
+    "match": [
+     [
+      "agent",
+      "wants_imagination_rule",
+      "cr"
+     ]
+    ],
+    "where": {
+     "type": "Lt",
+     "a": {
+      "type": "Plus",
+      "items": [
+       {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "cr"
+        },
+        "key": "composed"
+       },
+       {
+        "type": "Lit",
+        "value": 0.0
+       }
+      ]
+     },
+     "b": {
+      "type": "Lit",
+      "value": 0.5
+     }
+    },
+    "effect": [
+     [
+      "add_node",
+      "rn0",
+      "Rule",
+      {
+       "minted": 0.0
+      }
+     ],
+     [
+      "set_attr",
+      "rn0",
+      "id",
+      {
+       "__term__": {
+        "type": "StringConcat",
+        "parts": [
+         {
+          "type": "Lit",
+          "value": "engage_imagine_grounding_gap_"
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "cr"
+          },
+          "key": "tag"
+         }
+        ]
+       }
+      }
+     ],
+     [
+      "set_attr",
+      "rn0",
+      "match",
+      [
+       [
+        "ag",
+        "surprised_by",
+        "imp"
+       ],
+       [
+        "imp",
+        "about_gap",
+        "gap"
+       ]
+      ]
+     ],
+     [
+      "set_attr",
+      "rn0",
+      "where",
+      {
+       "type": "And",
+       "items": [
+        {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "imp"
+          },
+          "key": "kind"
+         },
+         "b": {
+          "type": "Lit",
+          "value": "grounding_gap"
+         }
+        },
+        {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "imp"
+          },
+          "key": "imagine_requested"
+         },
+         "b": {
+          "type": "Lit",
+          "value": null
+         }
+        }
+       ]
+      }
+     ],
+     [
+      "set_attr",
+      "rn0",
+      "effect",
+      [
+       [
+        "add_node",
+        "ir",
+        "ImagineRequest",
+        {
+         "status": "requested",
+         "kind": "grounding_gap",
+         "hypothesis_template": "{\"nodes\": [{\"key\": \"h\", \"type\": \"Hypothesis\", \"attrs\": {}}], \"edges\": [{\"src\": \"h\", \"type\": \"contradicts\", \"tgt\": \"__FOCUS__\"}]}",
+         "why": "a confident-but-ungrounded snap was escalated -- imagine whether the conclusion survives a detached, groundless re-derivation before trusting it"
+        }
+       ],
+       [
+        "add_edge",
+        "ir",
+        "focuses_on_gap",
+        "gap",
+        {}
+       ],
+       [
+        "add_edge",
+        "ir",
+        "about_impasse",
+        "imp",
+        {}
+       ],
+       [
+        "set_attr",
+        "imp",
+        "imagine_requested",
+        true
+       ]
+      ]
+     ],
+     [
+      "set_rule_clause",
+      {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "rn0"
+        },
+        "key": "id"
+       }
+      },
+      "__mint__",
+      {
+       "__term__": {
+        "type": "Var",
+        "name": "rn0"
+       }
+      }
+     ],
+     [
+      "add_node",
+      "rn1",
+      "Rule",
+      {
+       "minted": 0.0
+      }
+     ],
+     [
+      "set_attr",
+      "rn1",
+      "id",
+      {
+       "__term__": {
+        "type": "StringConcat",
+        "parts": [
+         {
+          "type": "Lit",
+          "value": "engage_imagine_cost_worth_"
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "cr"
+          },
+          "key": "tag"
+         }
+        ]
+       }
+      }
+     ],
+     [
+      "set_attr",
+      "rn1",
+      "match",
+      [
+       [
+        "ag",
+        "surprised_by",
+        "imp"
+       ],
+       [
+        "imp",
+        "about_axis",
+        "ax"
+       ]
+      ]
+     ],
+     [
+      "set_attr",
+      "rn1",
+      "where",
+      {
+       "type": "And",
+       "items": [
+        {
+         "type": "Or",
+         "items": [
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "imp"
+            },
+            "key": "kind"
+           },
+           "b": {
+            "type": "Lit",
+            "value": "cost_worth_refining"
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "imp"
+            },
+            "key": "kind"
+           },
+           "b": {
+            "type": "Lit",
+            "value": "predicted_divergence"
+           }
+          }
+         ]
+        },
+        {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "imp"
+          },
+          "key": "imagine_requested"
+         },
+         "b": {
+          "type": "Lit",
+          "value": null
+         }
+        }
+       ]
+      }
+     ],
+     [
+      "set_attr",
+      "rn1",
+      "effect",
+      [
+       [
+        "add_node",
+        "ir",
+        "ImagineRequest",
+        {
+         "status": "requested",
+         "kind": "cost_worth_refining",
+         "hypothesis_template": "{\"nodes\": [{\"key\": \"h\", \"type\": \"Hypothesis\", \"attrs\": {}}], \"edges\": [{\"src\": \"h\", \"type\": \"contradicts\", \"tgt\": \"__FOCUS__\"}]}",
+         "why": "the cheap frontier pick's residual*value was judged worth refining -- imagine whether it survives a detached, groundless re-derivation before spending the refinement cost"
+        }
+       ],
+       [
+        "add_edge",
+        "ir",
+        "focuses_on_axis",
+        "ax",
+        {}
+       ],
+       [
+        "add_edge",
+        "ir",
+        "about_impasse",
+        "imp",
+        {}
+       ],
+       [
+        "set_attr",
+        "imp",
+        "imagine_requested",
+        true
+       ]
+      ]
+     ],
+     [
+      "set_rule_clause",
+      {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "rn1"
+        },
+        "key": "id"
+       }
+      },
+      "__mint__",
+      {
+       "__term__": {
+        "type": "Var",
+        "name": "rn1"
+       }
+      }
+     ],
+     [
+      "add_node",
+      "rn2",
+      "Rule",
+      {
+       "minted": 0.0
+      }
+     ],
+     [
+      "set_attr",
+      "rn2",
+      "id",
+      {
+       "__term__": {
+        "type": "StringConcat",
+        "parts": [
+         {
+          "type": "Lit",
+          "value": "judge_imagined_conclusion_"
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "cr"
+          },
+          "key": "tag"
+         }
+        ]
+       }
+      }
+     ],
+     [
+      "set_attr",
+      "rn2",
+      "match",
+      [
+       [
+        "ag",
+        "produced_imagination",
+        "imn"
+       ],
+       [
+        "imn",
+        "imagined",
+        "concl"
+       ]
+      ]
+     ],
+     [
+      "set_attr",
+      "rn2",
+      "where",
+      {
+       "type": "And",
+       "items": [
+        {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "concl"
+          },
+          "key": "status"
+         },
+         "b": {
+          "type": "Lit",
+          "value": "survived"
+         }
+        },
+        {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "concl"
+          },
+          "key": "acted"
+         },
+         "b": {
+          "type": "Lit",
+          "value": null
+         }
+        }
+       ]
+      }
+     ],
+     [
+      "set_attr",
+      "rn2",
+      "effect",
+      [
+       [
+        "set_attr",
+        "concl",
+        "acted",
+        true
+       ],
+       [
+        "add_edge",
+        "ag",
+        "wants_to_commit",
+        "imn",
+        {}
+       ]
+      ]
+     ],
+     [
+      "set_rule_clause",
+      {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "rn2"
+        },
+        "key": "id"
+       }
+      },
+      "__mint__",
+      {
+       "__term__": {
+        "type": "Var",
+        "name": "rn2"
+       }
+      }
+     ],
+     [
+      "set_attr",
+      "cr",
+      "composed",
+      1.0
+     ]
+    ]
+   }
+  }
+ ],
+ "edges": [],
+ "productions": [
+  {
+   "provenance": "seed:composer_imagination_graph:focuses_on_gap",
+   "src": {
+    "type": "ImagineRequest",
+    "var": "s"
+   },
+   "edge_type": "focuses_on_gap",
+   "tgt": {
+    "type": "GroundingGap",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:composer_imagination_graph:focuses_on_axis",
+   "src": {
+    "type": "ImagineRequest",
+    "var": "s"
+   },
+   "edge_type": "focuses_on_axis",
+   "tgt": {
+    "type": "CapabilityAxis",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:composer_imagination_graph:about_impasse",
+   "src": {
+    "type": "ImagineRequest",
+    "var": "s"
+   },
+   "edge_type": "about_impasse",
+   "tgt": {
+    "type": "Impasse",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:composer_imagination_graph:produced_imagination",
+   "src": {
+    "type": "Agent",
+    "var": "s"
+   },
+   "edge_type": "produced_imagination",
+   "tgt": {
+    "type": "Imagination",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:composer_imagination_graph:wants_to_commit",
+   "src": {
+    "type": "Agent",
+    "var": "s"
+   },
+   "edge_type": "wants_to_commit",
+   "tgt": {
+    "type": "Imagination",
+    "var": "t"
+   }
+  }
+ ]
+}

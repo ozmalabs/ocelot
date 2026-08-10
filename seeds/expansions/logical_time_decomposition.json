@@ -1,0 +1,118 @@
+{
+  "id": "logical_time_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "lamport_timestamp",
+  "in_microtheory": "distributed_systems",
+  "description": "Logical time decomposed. Lamport's happens-before relation. Vector clocks. Version vectors. Hybrid logical clocks. TrueTime. The mechanisms by which distributed systems order events without synchronised wall clocks.",
+  "sub_mechanisms": [
+    {
+      "name": "happens_before_relation",
+      "definition": "Lamport 1978. A → B if: same process and A before B; OR A is send and B is receive of same message; OR transitive.",
+      "why": "Partial order foundational to distributed systems. Concurrent events not ordered by →. Defines what 'before' means without global clock.",
+      "category": "time_mechanism"
+    },
+    {
+      "name": "lamport_clock_rules",
+      "definition": "On local event: counter++. On send: include counter. On receive: counter = max(local, received) + 1.",
+      "why": "Implements happens-before: A → B implies LC(A) < LC(B). Cannot detect concurrency: A || B may have LC(A) < LC(B) anyway.",
+      "category": "time_mechanism"
+    },
+    {
+      "name": "vector_clock_per_node",
+      "definition": "Each node N maintains vector VC. On local event: VC[N]++. On send: include vector. On receive: element-wise max, then VC[N]++.",
+      "why": "Captures full causal info. VC(A) ≤ VC(B) iff A → B. Incomparable vectors = concurrent. Used in Dynamo, Voldemort. Cost: O(N) size.",
+      "category": "time_mechanism"
+    },
+    {
+      "name": "version_vector",
+      "definition": "Variant of vector clock for tracking object versions across replicas. Same math, different use.",
+      "why": "Used in distributed storage for conflict detection. Two writes with incomparable vectors = conflict needing resolution.",
+      "category": "time_mechanism"
+    },
+    {
+      "name": "vector_clock_size_problem",
+      "definition": "Vector clock size O(N) for N nodes. Grows unboundedly in dynamic memberships.",
+      "why": "Cassandra's largest practical limitation. Solutions: bounded vectors (drop oldest), dotted version vectors, server-side timestamps.",
+      "category": "time_mechanism"
+    },
+    {
+      "name": "hybrid_logical_clock_HLC",
+      "definition": "Combines physical time + logical counter. (pt, c) tuple. Bounded drift from physical clock.",
+      "why": "Lamport unrelated to wall clock. HLC: roughly physical time + tie-breaker. CockroachDB, YugabyteDB use. Pragmatic compromise.",
+      "category": "time_mechanism"
+    },
+    {
+      "name": "TrueTime_API",
+      "definition": "Spanner: TT.now() returns [earliest, latest]. Uncertainty bounded by GPS + atomic clocks.",
+      "why": "Tight bounds (~7ms uncertainty) → can wait out uncertainty → external consistency. Google's atomic clock + GPS infrastructure in every datacenter.",
+      "category": "time_mechanism"
+    },
+    {
+      "name": "external_consistency",
+      "definition": "If T1 commits before T2 in real time, T1's effects visible to T2. Stronger than serializability.",
+      "why": "Spanner's flagship property. Possible because TrueTime bounds. Other systems (CockroachDB) approximate via HLC + larger uncertainty.",
+      "category": "time_mechanism"
+    },
+    {
+      "name": "commit_wait_for_TrueTime",
+      "definition": "Spanner: commit holds until TT.now().earliest > commit_time. Ensures real-time order.",
+      "why": "Wait out uncertainty window. ~7ms commit latency added. External consistency guarantee depends on this wait.",
+      "category": "time_mechanism"
+    },
+    {
+      "name": "Lamport_for_simple_ordering",
+      "definition": "When concurrency detection not needed, Lamport sufficient. Smaller than vector clocks.",
+      "why": "Used in distributed log ordering (Kafka offsets analogous), some optimistic concurrency. Trade simplicity for lost concurrency info.",
+      "category": "time_mechanism"
+    },
+    {
+      "name": "vector_clock_garbage_collection",
+      "definition": "Track which entries can be safely dropped. Per-entry causal stability.",
+      "why": "Without GC, vector grows unboundedly. With: bounded size + correct causal tracking. Complex to implement correctly.",
+      "category": "time_mechanism"
+    },
+    {
+      "name": "interval_tree_clocks",
+      "definition": "Bounded-size alternative to vector clocks. ID space partitioned + recombined dynamically.",
+      "why": "Almeida 2008. Solves vector clock growth problem for dynamic systems. Less widely deployed than vector clocks.",
+      "category": "time_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "logical_time_replaces_unreliable_wall_clock",
+      "if": ["events must be ordered consistently across nodes"],
+      "then": ["logical time (Lamport, vector, HLC) is more reliable than wall clock"],
+      "why": "Wall clocks drift ms; events within window have wrong relative order. Logical time captures causality. Spanner's TrueTime + commit-wait is the exception (atomic clock infrastructure).",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "vector_clocks_detect_concurrency_Lamport_does_not",
+      "if": ["concurrent updates must be detected (e.g. for conflict resolution)"],
+      "then": ["vector clocks are required; Lamport insufficient"],
+      "why": "Lamport: A || B may have LC(A) < LC(B), looks ordered. Vector clocks: incomparable vectors prove concurrency. Dynamo-style stores need vector clocks for last-write-wins conflict detection.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "HLC_balances_physical_and_logical",
+      "if": ["a distributed system needs roughly-physical-time + ordering"],
+      "then": ["HLC outperforms either alone"],
+      "why": "Pure logical: no relation to wall clock; can't say 'around 2pm'. Pure physical: unreliable for ordering. HLC: pt-ish for human-readable + logical for correct ordering. CockroachDB foundation.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "TrueTime_enables_external_consistency",
+      "if": ["uncertainty bounds are tight (~ms)"],
+      "then": ["commit-wait makes external consistency achievable"],
+      "why": "Wait out uncertainty window: T1's commit time < T2's start time in real time → T2 sees T1's writes. ~7ms commit latency for external consistency. Spanner's unique capability via atomic clocks.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "vector_clock_size_limits_membership",
+      "if": ["vector clocks grow with node membership"],
+      "then": ["dynamic membership requires bounded variants or GC"],
+      "why": "Cassandra clusters with 1000s of nodes: full vector impractical. Solutions: ID-based GC, dotted version vectors, server-side timestamps + sloppy consistency. Trade-offs per system.",
+      "soundness_category": "cost_equivalence"
+    }
+  ]
+}

@@ -1,0 +1,118 @@
+{
+  "id": "messaging_patterns_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "messaging_queue_pattern",
+  "in_microtheory": "distributed_systems",
+  "description": "Messaging patterns decomposed. Point-to-point vs pub-sub. Topic partitioning. Consumer groups. Backpressure. Exactly-once via idempotency + offsets. Outbox + transactional events. Specific systems (Kafka, RabbitMQ, NATS, SQS).",
+  "sub_mechanisms": [
+    {
+      "name": "kafka_topic_partition",
+      "definition": "Topic = stream. Each topic has N partitions. Partition = ordered log of messages. Producer keys determine partition.",
+      "why": "Parallelism unit. Ordering within partition guaranteed. Cross-partition no order. Foundation of Kafka scalability.",
+      "category": "messaging_mechanism"
+    },
+    {
+      "name": "consumer_group",
+      "definition": "Multiple consumers share work on a topic. Each partition assigned to one consumer in group.",
+      "why": "Parallel processing. Add consumers up to partition count. Rebalance on consumer add/remove. Standard Kafka pattern.",
+      "category": "messaging_mechanism"
+    },
+    {
+      "name": "offset_management",
+      "definition": "Consumer commits offset = position in partition. Restart resumes from committed offset.",
+      "why": "Decouples consumer crashes from message loss. Commit before or after processing = different semantics (at-most-once vs at-least-once).",
+      "category": "messaging_mechanism"
+    },
+    {
+      "name": "kafka_exactly_once",
+      "definition": "Idempotent producer + transactional offsets. Consumer + producer in one transaction.",
+      "why": "Pure exactly-once impossible globally. Kafka's: 'effectively' exactly-once within Kafka. Cross-system still requires idempotent consumers.",
+      "category": "messaging_mechanism"
+    },
+    {
+      "name": "rabbitmq_exchange",
+      "definition": "Producer publishes to exchange; exchange routes to queues based on routing key. Direct, topic, fanout, headers exchanges.",
+      "why": "AMQP model: decouple producer routing decisions from queue topology. Flexible routing patterns.",
+      "category": "messaging_mechanism"
+    },
+    {
+      "name": "ack_nack_redelivery",
+      "definition": "Consumer acks message → broker deletes. Nack or timeout → broker redelivers.",
+      "why": "RabbitMQ + SQS at-least-once semantic. Standard message broker pattern. Consumers must be idempotent.",
+      "category": "messaging_mechanism"
+    },
+    {
+      "name": "competing_consumers",
+      "definition": "Multiple consumers pull from queue. Broker assigns each message to one consumer (vs fanout to all).",
+      "why": "Work distribution pattern. Add consumers to scale processing. Standard queue model.",
+      "category": "messaging_mechanism"
+    },
+    {
+      "name": "publish_subscribe_topic",
+      "definition": "Producer publishes to topic; all subscribers receive copy. Fanout pattern.",
+      "why": "One event, many consumers. Kafka topics (consumer groups give pub-sub + competing-consumer hybrid). RabbitMQ fanout exchange. SNS.",
+      "category": "messaging_mechanism"
+    },
+    {
+      "name": "message_ordering_guarantees",
+      "definition": "Per-partition (Kafka), per-queue (RabbitMQ), or no ordering (SNS).",
+      "why": "Global ordering expensive. Per-partition ordering practical: same partition key → ordered. Choose partition key for required ordering.",
+      "category": "messaging_mechanism"
+    },
+    {
+      "name": "NATS_subject_hierarchy",
+      "definition": "NATS: hierarchical subjects (orders.us.east). Wildcard subscriptions (orders.*.east).",
+      "why": "Lightweight (~50 MB binary). Ultra-low latency. Used for IoT, microservices that don't need Kafka's durability.",
+      "category": "messaging_mechanism"
+    },
+    {
+      "name": "SQS_managed_queue",
+      "definition": "AWS managed FIFO + standard queues. No infrastructure to run.",
+      "why": "Serverless messaging. Pay per message. Cost: less throughput than self-hosted Kafka. Standard for AWS-native architectures.",
+      "category": "messaging_mechanism"
+    },
+    {
+      "name": "stream_processing_kafka_streams",
+      "definition": "Kafka Streams: process Kafka topics with stateful operations. Joins, aggregations, windowing.",
+      "why": "Without separate cluster. JVM library. State stored in RocksDB locally + backed by Kafka. Alternative: Flink, Spark Streaming.",
+      "category": "messaging_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "kafka_partition_count_limits_parallelism",
+      "if": ["topic has P partitions"],
+      "then": ["max consumer parallelism = P"],
+      "why": "Each partition → one consumer in group. Adding consumers beyond P leaves them idle. Tune partition count for expected parallelism + overhead trade-off.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "consumer_idempotency_required_for_at_least_once",
+      "if": ["broker delivers at-least-once"],
+      "then": ["consumer must handle duplicates"],
+      "why": "Crash + restart → reprocess after last committed offset. Without idempotency: side effects double. Standard message broker constraint.",
+      "soundness_category": "referential_transparency"
+    },
+    {
+      "name": "kafka_exactly_once_effectively_via_idempotent_producer_transactional_consumer",
+      "if": ["producer is idempotent + consumer commits offsets transactionally"],
+      "then": ["end-to-end semantics within Kafka are effectively exactly-once"],
+      "why": "Idempotent producer: dedupes producer retries via sequence numbers. Transactional consumer: offset commit + downstream produce atomic. Across Kafka: exactly-once. Beyond Kafka: still need idempotency.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "partition_key_determines_ordering_scope",
+      "if": ["messages with same key go to same partition"],
+      "then": ["per-key ordering preserved"],
+      "why": "Order user-id 12345's events → key = user_id → same partition → ordered. Cross-key no order. Pick key for required ordering granularity. Critical Kafka design decision.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "managed_queue_simpler_self_hosted_cheaper_at_scale",
+      "if": ["throughput is high + sustained"],
+      "then": ["self-hosted Kafka cheaper than SQS"],
+      "why": "SQS: pay per request. At millions/sec: SQS bill huge. Kafka: cluster cost amortised. Crossover ~10K msg/sec usually. SQS simpler operationally; Kafka cheaper at scale.",
+      "soundness_category": "cost_equivalence"
+    }
+  ]
+}

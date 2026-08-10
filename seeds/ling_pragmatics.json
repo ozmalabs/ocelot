@@ -1,0 +1,53 @@
+{
+  "microtheory": {
+    "name": "pragmatics_linguistics",
+    "definition": "Language in context. Speaker meaning vs sentence meaning. Grice's cooperative principle, speech act theory (Austin, Searle), deixis, relevance theory (Sperber + Wilson), politeness (Brown + Levinson). What makes the same sentence mean different things in different contexts. Substrate analogue: substrate's context-conditioned interpretation of incoming messages + drive-conditioned production.",
+    "category": "linguistics_domain",
+    "parent": "linguistics_foundation"
+  },
+  "concepts": [
+    {"name": "speaker_meaning", "definition": "What the speaker intends to communicate, which may differ from literal sentence meaning. Grice. Substrate analogue: substrate's intention attribute on Message.", "category": "foundation"},
+    {"name": "literal_meaning", "definition": "What sentence means independent of speaker intent. Substrate analogue: substrate's compositional Concept derivation from Message.", "category": "foundation"},
+    {"name": "contextualism", "definition": "Meaning irreducibly depends on context. Substrate analogue: substrate's per-Mt interpretation framework.", "category": "foundation"},
+
+    {"name": "cooperative_principle", "definition": "Grice 1975. 'Make your contribution as required by the accepted purpose of the talk exchange.' Substrate analogue: substrate's dialogue-coordination drive.", "category": "grice"},
+    {"name": "maxim_of_quantity", "definition": "Be as informative as required; not more. Substrate analogue: substrate's parsimony drive in communication.", "category": "grice"},
+    {"name": "maxim_of_quality", "definition": "Don't say what you believe false; don't say what you lack evidence for. Substrate analogue: substrate's coherence drive in communication.", "category": "grice"},
+    {"name": "maxim_of_relation", "definition": "Be relevant. Substrate analogue: substrate's relevance computation against current Mt context.", "category": "grice"},
+    {"name": "maxim_of_manner", "definition": "Be perspicuous: clear, brief, orderly, unambiguous. Substrate analogue: substrate's communication clarity drive.", "category": "grice"},
+    {"name": "conversational_implicature", "definition": "Inferred from maxim apparent-flouting. 'Some students passed' → not all (Quantity). 'John is a fine friend' said of betrayer → sarcasm (Quality flout). Substrate analogue: substrate's contextual default-inference.", "category": "grice"},
+
+    {"name": "speech_act", "definition": "Austin 1962, Searle 1969. Saying = doing. Asserting, asking, commanding, promising, declaring. Substrate analogue: substrate's Message-as-action.", "category": "speech_acts"},
+    {"name": "locutionary_act", "definition": "Act of saying (the utterance itself). Substrate analogue: substrate's Message production.", "category": "speech_acts"},
+    {"name": "illocutionary_act", "definition": "Act IN saying. Force: asserting / asking / commanding. Substrate analogue: substrate's Message intention attribute.", "category": "speech_acts"},
+    {"name": "perlocutionary_act", "definition": "Effect BY saying. Convincing, persuading, frightening. Substrate analogue: substrate's downstream-effect from Message.", "category": "speech_acts"},
+    {"name": "felicity_conditions", "definition": "Conditions for speech act to succeed. 'I pronounce you married' requires authorized speaker + valid couple. Substrate analogue: substrate's speech-act precondition check.", "category": "speech_acts"},
+    {"name": "indirect_speech_act", "definition": "Speech act performed by uttering different speech act type. 'Can you pass the salt?' is request, not question. Substrate analogue: substrate's intent-recognition over literal form.", "category": "speech_acts"},
+    {"name": "performative_utterance", "definition": "Utterance that performs the act named. 'I promise', 'I declare', 'I bet'. Substrate analogue: substrate's self-effecting Message.", "category": "speech_acts"},
+
+    {"name": "deixis", "definition": "Reference dependent on context of utterance. Person (I, you), place (here, there), time (now, then). Substrate analogue: substrate's context-bound reference.", "category": "deixis"},
+    {"name": "anaphora", "definition": "Pronoun resolution from previous context. 'John arrived. He waved.' Substrate analogue: substrate's reference-resolution mechanism.", "category": "deixis"},
+    {"name": "cataphora", "definition": "Pronoun precedes referent. 'When she arrived, Mary was hungry.' Substrate analogue: substrate's forward-reference resolution.", "category": "deixis"},
+
+    {"name": "relevance_theory", "definition": "Sperber + Wilson 1986. One cognitive principle: maximize cognitive effects, minimize processing effort. Replaces Gricean maxims. Substrate analogue: substrate's drive_parsimony in communication interpretation.", "category": "frameworks"},
+    {"name": "common_ground", "definition": "Stalnaker. Mutual knowledge between conversation participants. Updates with each utterance. Substrate analogue: substrate's shared-context tracker between Mts.", "category": "frameworks"},
+    {"name": "given_new", "definition": "Information already in common ground (given) vs new. Affects intonation + word order. Substrate analogue: substrate's known-vs-novel concept distinction.", "category": "frameworks"},
+
+    {"name": "politeness_theory", "definition": "Brown + Levinson 1987. Face threats (acts that risk hearer's self-image). Mitigation strategies: positive politeness (camaraderie), negative politeness (deference), indirectness, hints. Substrate analogue: substrate's identity-protection across communicators.", "category": "politeness"},
+    {"name": "positive_face", "definition": "Desire to be appreciated + included. Substrate analogue: substrate's relatedness drive.", "category": "politeness"},
+    {"name": "negative_face", "definition": "Desire for autonomy + freedom from imposition. Substrate analogue: substrate's autonomy drive.", "category": "politeness"},
+    {"name": "honorifics", "definition": "Grammaticalized politeness. Japanese -san/-sama, Korean speech levels. Substrate analogue: substrate's politeness-conditioned form selection.", "category": "politeness"},
+
+    {"name": "conversation_analysis", "definition": "Sacks + Schegloff + Jefferson 1974. Turn-taking, adjacency pairs (question-answer, greeting-greeting), repair. Substrate analogue: substrate's dialogue structure.", "category": "conversation"},
+    {"name": "turn_taking", "definition": "Conversation organized around speakership transitions. Substrate analogue: substrate's communicative-role exchange.", "category": "conversation"},
+    {"name": "adjacency_pair", "definition": "Two-utterance sequences where first creates expectation for specific second. Question-answer, summons-response. Substrate analogue: substrate's dialogue-step pairing.", "category": "conversation"},
+    {"name": "repair", "definition": "Mechanisms for handling problems in talk. Self-repair, other-repair. 'I mean...', 'You said...?' Substrate analogue: substrate's error-correction in dialogue.", "category": "conversation"}
+  ],
+  "rules": [
+    {"name": "gricean_inference_from_maxim_violation", "head": "the substrate notices an utterance apparently flouting a maxim", "body": "it infers what the speaker intends — sarcasm (Quality flout), over-informativeness implicature (Quantity flout). Substrate's cooperative-inference."},
+    {"name": "speech_act_recognition_drives_response", "head": "the substrate receives a Message", "body": "it identifies the illocutionary force (request, assertion, question), and that force determines the response type. Substrate's intent-attribute drives response."},
+    {"name": "indirect_speech_acts_require_pragmatic_recognition", "head": "the substrate receives a literally-questioning utterance in a context where action is expected", "body": "it recognises an indirect request + responds appropriately. Substrate's pragmatic intent-recognition."},
+    {"name": "deixis_requires_context_to_resolve", "head": "the substrate processes a deictic expression", "body": "it must consult context (speaker, time, place) to compute reference. Substrate's contextual reference-resolution."},
+    {"name": "politeness_modulates_form_for_face_threats", "head": "the substrate produces an utterance that could threaten the hearer's face", "body": "it applies politeness mitigation: indirection, hedging, distance markers. Substrate's identity-respecting form selection."}
+  ]
+}

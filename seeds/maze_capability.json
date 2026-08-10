@@ -1,0 +1,367 @@
+{
+ "id": "maze_capability",
+ "version": "1.0.0",
+ "depends_on": [
+  "enact",
+  "autonomy"
+ ],
+ "description": "The maze world's capability map: 2 weak baseline strategies (greedy_amnesia, wall_follower) the agent is GIVEN, plus the routing PRIMITIVES it already UNDERSTANDS (map_memory, distance_field, gradient_descent). When the baselines fall short the compose_routing_on_shortfall RULE composes a better strategy from those primitives itself \u2014 a graph-native design act, no teacher and no host Python.",
+ "nodes": [
+  {
+   "local_id": 0,
+   "type": "Microtheory",
+   "attrs": {
+    "name": "maze_world",
+    "domain": "maze"
+   }
+  },
+  {
+   "local_id": 1,
+   "type": "Operator",
+   "attrs": {
+    "name": "greedy_amnesia",
+    "runner": "flood_amnesia",
+    "metric": "maze_efficiency",
+    "target": 0.9,
+    "comment": "routing (distance_field + gradient_descent) but FORGETS the map each attempt -> re-explores."
+   }
+  },
+  {
+   "local_id": 2,
+   "type": "Operator",
+   "attrs": {
+    "name": "wall_follower",
+    "runner": "wall_follower",
+    "metric": "maze_efficiency",
+    "target": 0.9,
+    "comment": "reactive left-hand rule: no map, no routing -> a long path."
+   }
+  },
+  {
+   "local_id": 3,
+   "type": "CapabilityAxis",
+   "attrs": {
+    "is_axis": 1.0,
+    "capability_keys": [
+     "solve",
+     "maze",
+     "amnesia"
+    ],
+    "saturation": 0.0,
+    "shortfall": 0.5,
+    "min_order": 1.0,
+    "investigated_count": 0,
+    "mf_stall": 0
+   }
+  },
+  {
+   "local_id": 4,
+   "type": "CapabilityAxis",
+   "attrs": {
+    "is_axis": 1.0,
+    "capability_keys": [
+     "solve",
+     "maze",
+     "reactive"
+    ],
+    "saturation": 0.0,
+    "shortfall": 0.5,
+    "min_order": 1.0,
+    "investigated_count": 0,
+    "mf_stall": 0
+   }
+  },
+  {
+   "local_id": 5,
+   "type": "RoutingPrimitive",
+   "attrs": {
+    "name": "map_memory",
+    "does": "remember obstacles you discover so you don't re-explore \u2014 a learned map"
+   }
+  },
+  {
+   "local_id": 6,
+   "type": "RoutingPrimitive",
+   "attrs": {
+    "name": "distance_field",
+    "does": "compute distance-to-goal over the known map (a flood)"
+   }
+  },
+  {
+   "local_id": 7,
+   "type": "RoutingPrimitive",
+   "attrs": {
+    "name": "gradient_descent",
+    "does": "step to the neighbour with the lowest distance-to-goal"
+   }
+  }
+ ],
+ "edges": [
+  {
+   "src": {
+    "local": 3
+   },
+   "type": "investigated_by",
+   "tgt": {
+    "local": 1
+   }
+  },
+  {
+   "src": {
+    "local": 4
+   },
+   "type": "investigated_by",
+   "tgt": {
+    "local": 2
+   }
+  },
+  {
+   "src": {
+    "local": 1
+   },
+   "type": "applies_in",
+   "tgt": {
+    "local": 0
+   }
+  },
+  {
+   "src": {
+    "local": 2
+   },
+   "type": "applies_in",
+   "tgt": {
+    "local": 0
+   }
+  },
+  {
+   "src": {
+    "local": 5
+   },
+   "type": "understood_in",
+   "tgt": {
+    "local": 0
+   }
+  },
+  {
+   "src": {
+    "local": 6
+   },
+   "type": "understood_in",
+   "tgt": {
+    "local": 0
+   }
+  },
+  {
+   "src": {
+    "local": 7
+   },
+   "type": "understood_in",
+   "tgt": {
+    "local": 0
+   }
+  }
+ ],
+ "productions": [],
+ "concepts": [],
+ "rules": [
+  {
+   "name": "compose_routing_on_shortfall",
+   "match": [
+    [
+     "ag",
+     "operates_in",
+     "mt"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "mt"
+       },
+       "key": "name"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "maze_world"
+      }
+     },
+     {
+      "type": "Exists",
+      "source": {
+       "type": "NodesOfType",
+       "node_type": "CapabilityAxis"
+      },
+      "var_name": "x",
+      "predicate": {
+       "type": "And",
+       "items": [
+        {
+         "type": "Gt",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "x"
+            },
+            "key": "saturation"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        },
+        {
+         "type": "Lt",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "x"
+            },
+            "key": "saturation"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1.0
+         }
+        },
+        {
+         "type": "Not",
+         "arg": {
+          "type": "Eq",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "x"
+             },
+             "key": "composed"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          },
+          "b": {
+           "type": "Lit",
+           "value": 1.0
+          }
+         }
+        }
+       ]
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "CapabilityAxis"
+       },
+       "var_name": "y",
+       "predicate": {
+        "type": "Eq",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "y"
+           },
+           "key": "composed"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "cop",
+     "Operator",
+     {
+      "name": "composed_routing",
+      "runner": "composed_routing",
+      "metric": "maze_efficiency",
+      "target": 0.9,
+      "composed": 1.0,
+      "comment": "COMPOSED by the agent from the routing primitives it understands (map_memory + distance_field + gradient_descent), because its baseline routing fell short of target. No teacher."
+     }
+    ],
+    [
+     "add_node",
+     "cax",
+     "CapabilityAxis",
+     {
+      "is_axis": 1.0,
+      "capability_keys": [
+       "solve",
+       "maze",
+       "composed"
+      ],
+      "saturation": 0.0,
+      "shortfall": 0.7,
+      "min_order": 1.0,
+      "investigated_count": 0,
+      "mf_stall": 0,
+      "composed": 1.0
+     }
+    ],
+    [
+     "add_edge",
+     "cax",
+     "investigated_by",
+     "cop"
+    ],
+    [
+     "add_edge",
+     "cop",
+     "applies_in",
+     "mt"
+    ]
+   ]
+  }
+ ]
+}

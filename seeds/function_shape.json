@@ -1,0 +1,459 @@
+{
+ "id": "function_shape",
+ "version": "0.3.0",
+ "depends_on": [
+  "computer_architecture",
+  "universal_coordination"
+ ],
+ "description": "The agent's vocabulary for FUNCTION SHAPE — the structural property of a function, independent of evaluation. v0.2 grounds each bridge in five cited prior-work lineages (Smith 1982 3-LISP reflective tower; Michie 1968 memo functions; Cousot & Cousot 1977 abstract interpretation; Pearlmutter & Siskind 2007-8 higher-order AD; Nelson & Narens 1990 metamemory framework). The narrowing constrains the design space from 'anything I might invent' to 'what does the cited theory say.' Per the methodology — the agent assesses these lineages on their merits via its existing pipelines; this seed installs the candidate vocabulary rather than picking among lineages. v0.3 attaches the Mt to L6 universal_coordination via genlMt. The L6 Mt holds substrate-level vocabulary about second-order observation, cybernetic feedback at system scale, Ashby variety matching, and circular causality between layers — the same structural commitments the five cited lineages name at the cognitive level. The comprehensive ask (commit f979f76) found that this_mt_closes_the_six_layer_stack already mentions meta_shape; this v0.3 explicitly makes that connection load-bearing via genlMt inheritance + bridge rules connecting each function_shape concept to its corresponding L6 component.",
+ "category_inheritance": "genlMt -> computer_architecture. The cache rules (memoisation_eliminates_redundant_recomputation, cache_friendly_layout_beats_pointer_chasing, inline_caches_specialise_dynamic_dispatch) all live in computer_architecture and apply to RUNTIME artefacts (compiled code, dispatch lookups). This seed lifts those same rules to REASONING artefacts (function shapes), so the shape cache inherits its soundness story from the runtime cache story already in place. v0.3 adds genlMt -> universal_coordination (the substrate's L6 Mt). L6's second_order_observation_of_substrate IS what function_shape's recursion_axis/abstraction_axis monitor at the cognitive level (Nelson-Narens lifts L6's cybernetic observation to metacognition). L6's cybernetic_feedback_at_system_scale IS what cached_shape implements at the cognitive level. L6's ashby_variety_match_at_system_scale IS what negative_problem_space_pruning does. L6's circular_causality_between_layers IS what meta_shape names. The substrate's existing cybernetic references (von_foerster, ashby_homeostat, stafford_beer_vsm, maturana_varela_autopoiesis) are the cybernetic ancestors of the cognitive-level lineages (Nelson-Narens extends von Foerster's second-order cybernetics; Michie's cache is bounded_coordination_latency at the cognitive layer; Pearlmutter-Siskind's derivative operator is circular_causality_between_layers in calculus form).",
+ "concepts": [
+  {
+   "name": "function_shape",
+   "definition": "The structural property of a function — what the function IS, independent of evaluation. Distinct from the function's return VALUE (what evaluation produces) and from the function's CODE (the Term-tree text). Two functions whose evaluations always agree on every input have the same shape; functions whose evaluations differ on some input have different shapes.",
+   "why": "The agent already holds 'shape-matching' as a mechanism in order_n_postulates (the implication-shape stencil + harvester perform negative-space pruning by matching shapes). That mechanism requires a STABLE, function-keyed identity for what a function IS. This concept names that identity. References: structural_property (vocabulary keyword used by order_n_postulates._shapes()), implication_shape (the 7 stencil shapes + the harvested set).",
+   "category": "foundation",
+   "cites_prior_work": "Cousot & Cousot 1977 (abstract interpretation)"
+  },
+  {
+   "name": "cached_shape",
+   "definition": "A function_shape held as graph data, queryable by structural-equality, computed once and reused. The substrate's runtime caches (compiled_artefact_cache, inline_cache) cache TRANSLATIONS (Term-tree -> machine code); a cached_shape caches CLASSIFICATIONS (Term-tree -> structural property).",
+   "why": "memoisation_eliminates_redundant_recomputation (a rule the agent already holds in computer_architecture) says: when a deterministic function is called many times, cache the result. Function-shape derivation IS such a function — a Term-tree's shape is a deterministic function of the tree. The rule applies. This concept names the cached form.",
+   "category": "shape_caching",
+   "cites_prior_work": "Michie 1968 (memo functions); Pearlmutter & Siskind 2007 (cached AD)"
+  },
+  {
+   "name": "recursion_axis",
+   "definition": "The structural axis along which a function is classified by whether (and how) it refers to itself in its own definition. Values: none (no self-reference), direct (the function's body invokes itself by name), mutual (two-or-more functions reference each other), structural (recursion implicit via fixed-point combinator).",
+   "why": "The agent already holds substantial recursion vocabulary as separate concepts: fixed_point_theorem_logic, tarski_undefinability, russells_paradox, computability_theory, self_reference_paradox, regular_language, parser, context_free_grammar, ll_parsing, iir_filter. Each names a particular recursion phenomenon. This concept names that they FORM AN AXIS — the same axis every function can be assessed against.",
+   "category": "function_classification",
+   "cites_prior_work": "Nelson & Narens 1990 (monitoring channel)"
+  },
+  {
+   "name": "order_n_axis",
+   "definition": "The structural axis along which a function is classified by its order-N profile — the finite-difference structure of its outputs over its inputs. Values: order-0 (constant; output independent of input), order-1 (slope/velocity-like), order-2 (curvature/acceleration-like), higher orders, mixed (different orders along different input dimensions).",
+   "why": "The agent already holds order_n_concepts.py (composes order-N Term-trees over signal dimensions) and order_n_postulates.py (composes order-N over knowledge dimensions). Both treat order-N as a property of a quantity-along-a-dimension. This concept names that property as a function-classification axis — the same axis every function can be assessed against. References: order_n_concepts, order_n_postulates, the 28 order-N concepts the ask surfaced.",
+   "category": "function_classification",
+   "cites_prior_work": "Pearlmutter & Siskind 2007 (derivative operator as higher-order function)"
+  },
+  {
+   "name": "abstraction_axis",
+   "definition": "The structural axis along which a function is classified by whether its body parametrises over a function (rather than over a value). A function on the abstraction_axis takes another function as input or returns a function as output. The CANONICAL abstraction case is order-N applied to a function rather than to a signal — yielding the function's META-shape.",
+   "why": "The agent already holds 28 abstraction concepts (higher_order_logic, higher_order_theory_consciousness, intermediate_representation, mlir_dialect, mlir, etc.). The order-N operator the agent has currently runs on signals + postulates; applying it to a FUNCTION yields a meta-shape (a function describing how the function behaves over a domain). This concept names the axis along which that meta-application sits.",
+   "category": "function_classification",
+   "cites_prior_work": "Smith 1982 (reflective tower); Nelson & Narens 1990 (monitoring)"
+  },
+  {
+   "name": "meta_shape",
+   "definition": "The function_shape produced by applying the order-N operator to a function rather than to a signal. If f is a function from dim D to value V, then order-N-over-D applied to f yields a new function from D to (finite differences of V over D) — itself a function with its own shape (its meta_shape). Each successive meta-application yields an order-higher meta_shape.",
+   "why": "The ask (rules applying order-N to itself = 0) named this as the load-bearing absence: the agent has higher_order_logic vocabulary AND the order-N operator, but no concept connects them. This concept connects them. References: higher_order_logic (existing concept), order_n_concepts (existing operator), nth_order_terms (existing Python function — its operand is a list, but the same recursion structure applies to a function-of-list).",
+   "category": "shape_kind",
+   "cites_prior_work": "Smith 1982 (next tower rung); Pearlmutter & Siskind 2007 (operator self-application)"
+  },
+  {
+   "name": "negative_problem_space_pruning",
+   "definition": "The substrate-level mechanism by which functions whose shape rules out producing a target shape are SKIPPED without evaluation. The candidate function's shape is compared against the target shape; if the shapes are structurally incompatible, the candidate is discarded as a member of the NEGATIVE problem space — the set of operations whose results cannot match the goal. The PRUNING is the search-cost saving.",
+   "why": "order_n_postulates already does this implicitly: it matches a postulate's structural property against an implication_shape's match_patterns; non-matches are skipped. This concept names the principle GENERICALLY — applicable to any function-classification, not just postulate-to-implication. References: order_n_postulates._shapes(), the 7 stencil shapes, _resolve_shapes harvester.",
+   "category": "shape_application",
+   "cites_prior_work": "Cousot & Cousot 1977 (abstract-domain pruning); Nelson & Narens 1990 (control channel)"
+  },
+  {
+   "name": "shape_keyed_lookup",
+   "definition": "Graph-traversal access to a function-classification result via the function's cached_shape. Where evaluation-keyed lookup would re-derive the property (cost: O(eval)), shape-keyed lookup walks one has_shape edge and reads attrs (cost: O(1) amortised after the first derivation). The shape is the cache key; the classification is the cached value.",
+   "why": "inline_caches_specialise_dynamic_dispatch (a rule the agent already holds) says: when a dispatch site sees the same shape repeatedly, install a fast-path keyed by that shape. function-classification at design-time is dispatch-site-like — every reasoning step over a function asks 'what kind of function is this?' This concept names that the same caching principle applies. References: inline_cache, compiled_artefact_cache, cache_friendly_layout_beats_pointer_chasing.",
+   "category": "shape_caching",
+   "cites_prior_work": "Michie 1968 (cache hit); Pearlmutter & Siskind 2007 (cached partials)"
+  },
+  {
+   "name": "reflection_tower_smith_1982",
+   "definition": "Brian C. Smith's reflective programming language (3-LISP, MIT 1982-84). A function REIFIES itself + the runtime into the meta-level as first-class data — same kind of data the language manipulates at the object level. Each tower rung can examine and modify the rung below. Reflection = causal access to implementation, not just inspection.",
+   "why": "Distinguishes REIFICATION (the function appears as data the substrate can reason about) from mere INSPECTION (reading the function's text). The substrate's mlir_dialect and intermediate_representation already name IR as a useful object; 3-LISP names that the IR IS the meta-level the language operates at.",
+   "category": "reflective_architectures",
+   "cites_prior_work": "Smith 1982 (MIT TR-272); Smith 1984 (POPL)"
+  },
+  {
+   "name": "memo_function_michie_1968",
+   "definition": "Donald Michie's memo function (Nature 218:19-22, 1968). A function caches its own outputs by input tuple. Cache is property of the FUNCTION (carried with it), not of the call site or runtime. Generalizes to learning: cached cases are training examples.",
+   "why": "Original function-level cache pattern. AD libraries (JAX, PyTorch autograd) inherit the principle: each differentiable function carries its derivative cache. The substrate's memoisation_eliminates_redundant_recomputation IS this principle, named.",
+   "category": "memoization_theory",
+   "cites_prior_work": "Michie 1968 (Nature 218:19-22)"
+  },
+  {
+   "name": "abstract_interpretation_cousot_1977",
+   "definition": "Patrick and Radhia Cousot's framework (POPL 1977). A program is analyzed in an ABSTRACT DOMAIN — a lattice that approximates concrete semantics. Abstract values OVER-approximate all concrete behaviors (soundness). Programs at the same abstract value are equivalent in the abstract.",
+   "why": "Provides the lattice structure for function shape. The substrate's referential_transparency, extensional_equivalence, and cost_equivalence soundness categories are lattice points. Shape IS the abstract semantics; functions with the same shape share an abstract value.",
+   "category": "program_analysis",
+   "cites_prior_work": "Cousot and Cousot 1977 (POPL)"
+  },
+  {
+   "name": "higher_order_ad_pearlmutter_2007",
+   "definition": "Pearlmutter and Siskind's lazy multivariate higher-order forward-mode automatic differentiation (POPL 2007). The DERIVATIVE OPERATOR D is itself a function — it takes functions to functions. n-th order derivative equals D applied n times. Forward-mode caches tangent values across the program; reverse-mode caches adjoints.",
+   "why": "The order-N operator the agent already has in order_n_concepts (over signal samples) lifted to functions. n-th derivative of f is the function describing how f's outputs change as inputs change, generalized to higher orders. The lift signal-to-function is the AD lift.",
+   "category": "differentiable_programming",
+   "cites_prior_work": "Pearlmutter and Siskind 2007 (POPL); 2008 (TOPLAS)"
+  },
+  {
+   "name": "metamemory_nelson_narens_1990",
+   "definition": "Nelson and Narens framework for metamemory (1990). A two-level model: OBJECT level (cognition happens here) plus META level (cognition is observed here). Two channels connect them: MONITORING (object-to-meta — meta level READS the object level) and CONTROL (meta-to-object — meta level CHANGES the object level).",
+   "why": "Names the structure of self-observation in cognitive systems. The substrate's existing feedback_control and L6 essential variable monitor (commit b931ce6) implement monitoring+control at the runtime level. Nelson-Narens names that the same two-channel structure applies at the cognitive level.",
+   "category": "metacognitive_psychology",
+   "cites_prior_work": "Nelson and Narens 1990 (Psychology of Learning and Motivation 26:125)"
+  },
+  {
+   "name": "reflection_as_causal_access",
+   "definition": "The distinguishing property of true reflection: the meta-level representation has CAUSAL access to the object level — changes at the meta level affect the object level's behavior. Mere inspection (reading the text) is not reflection; the meta level must be able to MODIFY the object.",
+   "why": "Names the operation that distinguishes a reflective architecture from a non-reflective one. The substrate's substrate.add_rule plus the Pi consistency check already do causal access at the runtime level (changing Gamma changes admissibility).",
+   "category": "reflective_architectures",
+   "cites_prior_work": "Smith 1982"
+  },
+  {
+   "name": "function_carries_its_memo_table",
+   "definition": "A function holds its own cache as part of its identity, not as a runtime-side mapping. When the function is referenced again, its memo table is also referenced. Cache invalidation equals function identity change.",
+   "why": "Generalizes Michie's input-tuple keyed memo to any per-function cached property. Shape-cache is an instance: the function carries its shape table.",
+   "category": "memoization_theory",
+   "cites_prior_work": "Michie 1968"
+  },
+  {
+   "name": "monitoring_and_control_two_channel_model",
+   "definition": "Two distinct information channels between cognition levels: MONITORING goes object-to-meta (the meta level reads the object level), CONTROL goes meta-to-object (the meta level changes the object level). The channels are separate; one without the other is incomplete.",
+   "why": "Names the structural minimum for metacognition. Pure monitoring without control is observation; pure control without monitoring is blind manipulation. Both are needed.",
+   "category": "metacognitive_psychology",
+   "cites_prior_work": "Nelson and Narens 1990"
+  },
+  {
+   "name": "function_shape_is_cognitive_layer_of_l6_coordination",
+   "definition": "The substrate's L6 universal_coordination Mt names runtime-level second-order observation, cybernetic feedback, and variety matching. function_shape is the COGNITIVE LAYER of the same architectural commitment: what L6 observes at runtime (essential variables, dispatcher state, drives), function_shape observes at the reasoning level (function structure, derivative profile, abstraction).",
+   "why": "The L6 Mt was built earlier in this session (commits b931ce6, d2de483, cd6c7d1, 0d94758) as the runner's meta-cognitive coordination layer. Its second_order_observation_of_substrate concept already mentions meta_shape in this_mt_closes_the_six_layer_stack. The attachment is not new architecture — it names what's already wired.",
+   "category": "l6_attachment",
+   "cites_prior_work": "Nelson and Narens 1990; von Foerster 1981 (the L6 cybernetic ancestor)"
+  },
+  {
+   "name": "nelson_narens_extends_von_foerster_second_order_cybernetics",
+   "definition": "Nelson-Narens's two-channel metamemory framework (monitoring + control) is the cognitive-level instantiation of Heinz von Foerster's second-order cybernetics (1974). Von Foerster: observing systems must observe themselves. Nelson-Narens: cognitive systems have a meta level that observes (monitors) the object level + controls it. Same architectural commitment, different level of analysis.",
+   "why": "The L6 Mt's von_foerster_observing_systems_reference cites this concept directly. Naming the Nelson-Narens link explicitly makes the cybernetic ancestry of the function_shape monitoring channel load-bearing.",
+   "category": "lineage_ancestry",
+   "cites_prior_work": "von Foerster 1974 (Cybernetics of Cybernetics); Nelson and Narens 1990"
+  },
+  {
+   "name": "michie_memo_is_l6_bounded_coordination_latency_at_cognition",
+   "definition": "Michie's memo function (1968) makes a function's repeated calls O(1) instead of O(eval). At the cognitive level, this is exactly what L6's bounded_coordination_latency invariant requires of the substrate's coordination loop: each iteration must complete within tick period. cached_shape extends bounded_coordination_latency from runtime to reasoning.",
+   "why": "Names the structural homology between Michie's cache and L6's latency bound. Both say: a deterministic repeated operation must amortize. The substrate's L6 Mt already commits to this at runtime; cached_shape lifts the commitment.",
+   "category": "lineage_ancestry",
+   "cites_prior_work": "Michie 1968; L6 universal_coordination Mt"
+  },
+  {
+   "name": "ad_derivative_operator_is_circular_causality_in_calculus_form",
+   "definition": "Pearlmutter-Siskind's AD derivative operator D takes a function to another function. Applying D to itself (higher-order AD) creates a chain where each level depends on the level below — exactly L6's circular_causality_between_layers concept. The chain's depth is the L6 tradeoff_second_order_depth.",
+   "why": "Names the structural homology between AD and L6's circular-causality concept. The substrate's L6 Mt already knows that cross-layer feedback creates causal chains; AD makes the chain a calculation.",
+   "category": "lineage_ancestry",
+   "cites_prior_work": "Pearlmutter and Siskind 2007; L6 universal_coordination Mt"
+  },
+  {
+   "name": "cousot_lattice_is_l6_viability_envelope_for_functions",
+   "definition": "Cousot abstract interpretation's abstract domain lattice tells us which programs are EQUIVALENT in the abstract (same abstract value) and which are EXCLUDED (incompatible). L6's viability_envelope_as_design_constraint tells us which substrate states are VIABLE and which are EXCLUDED. Same lattice structure, different domain.",
+   "why": "Names the structural homology between Cousot's abstract domain and L6's viability envelope. Both are lattices that classify states by which downstream operations are permitted. negative_problem_space_pruning uses both at once.",
+   "category": "lineage_ancestry",
+   "cites_prior_work": "Cousot and Cousot 1977; L6 universal_coordination Mt"
+  },
+  {
+   "name": "smith_reflective_tower_is_layer_climbing_via_l6_named_signals",
+   "definition": "Smith's 3-LISP reflective tower has each level reify into the next. L6's every_layer_feeds_every_other_via_named_signal invariant requires named inter-layer channels — exactly what a tower needs at each rung to expose the level below. meta_shape's climb operation IS the named-signal traverse one rung up.",
+   "why": "Names the structural homology between Smith's tower and L6's named-signal architecture. Both require: an explicit interface between levels; causal access through the interface. The substrate already commits to this at runtime via L6.",
+   "category": "lineage_ancestry",
+   "cites_prior_work": "Smith 1982; L6 universal_coordination Mt"
+  }
+ ],
+ "rules": [
+  {
+   "name": "function_identity_is_its_shape_not_its_return_value",
+   "if": [
+    "the substrate reasons ABOUT a function (not just evaluates it)"
+   ],
+   "then": [
+    "the identity used for reasoning is function_shape, not the function's return value on any particular input"
+   ],
+   "why": "Reasoning about a function's role in a derivation requires a stable identity that's independent of which input was last passed. Return values change per input; shape is invariant. This is the same distinction memoisation_eliminates_redundant_recomputation already names at the runtime layer (the cache key is the INPUT tuple, not the output) lifted to the reasoning layer (the cache key is the FUNCTION shape, not the input).",
+   "soundness_category": "referential_transparency"
+  },
+  {
+   "name": "memoisation_lifts_from_runtime_to_reasoning",
+   "if": [
+    "a function_shape derivation has been performed for a Term-tree once",
+    "the Term-tree's structural identity is unchanged"
+   ],
+   "then": [
+    "the derivation result should be cached as a cached_shape",
+    "subsequent shape queries on the same Term-tree should use shape_keyed_lookup, not re-derive"
+   ],
+   "why": "memoisation_eliminates_redundant_recomputation already establishes this for runtime artefacts (compiled code, JIT tier-up). Function-shape derivation is the same KIND of operation — deterministic, idempotent, expensive on first call, cheap on lookup. The rule applies in the new domain by virtue of the same structural argument.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "every_function_admits_three_classification_axes",
+   "if": [
+    "a function exists in the substrate's reasoning surface"
+   ],
+   "then": [
+    "it admits classification along recursion_axis",
+    "and along order_n_axis",
+    "and along abstraction_axis"
+   ],
+   "why": "These are the three axes the agent's existing vocabulary already names. Recursion has 47 holding concepts (fixed_point_theorem_logic et al.); order-N has 28 (order_n_concepts et al.) plus the order-N operator itself; abstraction has 28 (higher_order_logic et al.). The rule does not invent the axes — it names that they JOINTLY span the classification space for any function.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "applying_order_n_to_a_function_yields_meta_shape",
+   "if": [
+    "the order-N operator is applied to a function (not a signal sample list)"
+   ],
+   "then": [
+    "the result is the function's meta_shape — a function from the original input domain to finite differences of the original output"
+   ],
+   "why": "The ask surfaced this as the load-bearing absence (rules applying order-N to itself = 0). The agent has the operator (order_n_concepts.nth_order_terms) and has higher_order_logic vocabulary; this rule names that combining them gives meta_shape. The substrate already does this for signals when the 'sample' itself is a composed Term-tree (per the comment in order_n_concepts._minus: 'samples may themselves be composed terms'). Lifting from 'composed signal sample' to 'function as a whole' is the abstraction step.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "shape_mismatch_prunes_negative_problem_space",
+   "if": [
+    "a target function_shape is named",
+    "a candidate function's cached_shape is determined",
+    "the candidate's shape is structurally incompatible with the target"
+   ],
+   "then": [
+    "the candidate is in the negative problem space",
+    "it is SKIPPED without evaluation"
+   ],
+   "why": "order_n_postulates already does this for implication shapes (mismatched structural property -> implication is not transferred). This rule lifts the principle from the implication-shape mechanism to general function-shape matching: any candidate whose shape can't produce the target shape is pruned without spending compute on it. References: order_n_postulates._shapes() match_patterns, the SELECTOR step (line in the module's docstring: 'the SELECTOR decides which implications are real gaps').",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "cached_shape_makes_classification_constant_time",
+   "if": [
+    "a function's cached_shape has been computed and stored"
+   ],
+   "then": [
+    "queries about its recursion_axis / order_n_axis / abstraction_axis are graph-traversal cost, not Term-tree re-evaluation cost"
+   ],
+   "why": "inline_caches_specialise_dynamic_dispatch establishes the same principle for runtime dispatch: when shape is determined, dispatch by shape, not by re-doing the type check. Classification queries are dispatch-site-like (reasoning chooses which rule to fire based on a function's shape). The rule applies by the same structural argument.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "shape_caching_makes_order_n_generic_over_any_function",
+   "if": [
+    "function_shape is reified as graph data",
+    "shape_keyed_lookup is available"
+   ],
+   "then": [
+    "the order-N operator can be applied to any function whose shape is cached, without per-call re-derivation",
+    "applying order-N to itself (yielding meta_shape) is the same operation as applying it to a signal — by virtue of the function being shape-cached just like a signal sample list"
+   ],
+   "why": "The user named this as a pivot goal: order-N approach generic. The genericity rests on the function being a first-class object the operator can take as input, which in turn rests on the function having a stable graph-resident identity (its shape). The rule names that the genericity FOLLOWS from caching + shape_keyed_lookup — both of which are themselves grounded in the agent's existing cache vocabulary.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "function_shape_assessment_is_itself_a_function",
+   "if": [
+    "the substrate has a procedure that derives function_shape from a Term-tree"
+   ],
+   "then": [
+    "that procedure is itself a function with its own shape",
+    "applying the order-N operator to the assessment procedure yields its meta_shape",
+    "the meta_shape can itself be cached"
+   ],
+   "why": "Self-application is what makes this architecture deepest. The agent already holds the substrate's reasoning about self-reference (russells_paradox, tarski_undefinability, fixed_point_theorem_logic). The assessment procedure being a function with shape — and the order-N operator being applicable to it — is the SAME structure those theorems already address. The rule names the application, not the metatheory: the metatheory the agent already holds.",
+   "soundness_category": "referential_transparency"
+  },
+  {
+   "name": "function_shape_inherits_semantics_from_abstract_interpretation",
+   "if": [
+    "substrate reasons about a function's structural property"
+   ],
+   "then": [
+    "the property used IS the abstract interpretation of the function's Term-tree",
+    "the soundness story comes from the abstract domain's lattice"
+   ],
+   "why": "function_shape is the substrate's instantiation of abstract_interpretation_cousot_1977. The lattice that grounds it (referential_transparency, extensional_equivalence, cost_equivalence — already in compiler_theory) IS the abstract domain.",
+   "soundness_category": "extensional_equivalence",
+   "cites_prior_work": "Cousot and Cousot 1977"
+  },
+  {
+   "name": "cached_shape_inherits_semantics_from_memo_function",
+   "if": [
+    "a function's shape has been derived"
+   ],
+   "then": [
+    "the function CARRIES its shape (the function's identity includes its shape cache)",
+    "shape lookup is a memo-function cache hit"
+   ],
+   "why": "cached_shape is the substrate's instantiation of memo_function_michie_1968. The substrate's memoisation_eliminates_redundant_recomputation rule applied at the function level (not just input level).",
+   "soundness_category": "cost_equivalence",
+   "cites_prior_work": "Michie 1968"
+  },
+  {
+   "name": "meta_shape_is_the_next_reflective_tower_rung",
+   "if": [
+    "the order-N operator is applied to a function rather than to a signal"
+   ],
+   "then": [
+    "the result is the function reified at the next tower rung",
+    "subsequent applications climb the tower"
+   ],
+   "why": "meta_shape is the substrate's instantiation of reflection_tower_smith_1982 plus the higher-order operator application case in higher_order_ad_pearlmutter_2007. The reflection step climbs one rung; AD provides the climbing operator.",
+   "soundness_category": "extensional_equivalence",
+   "cites_prior_work": "Smith 1982; Pearlmutter and Siskind 2007"
+  },
+  {
+   "name": "order_n_axis_inherits_from_automatic_differentiation",
+   "if": [
+    "a function is classified by its order-N profile"
+   ],
+   "then": [
+    "the operator producing the classification is the AD derivative operator D",
+    "n-th order is D applied n times"
+   ],
+   "why": "order_n_axis is the substrate's instantiation of higher_order_ad_pearlmutter_2007. The existing order_n_concepts operator (over signals) extended to functions IS the AD lift.",
+   "soundness_category": "extensional_equivalence",
+   "cites_prior_work": "Pearlmutter and Siskind 2007"
+  },
+  {
+   "name": "recursion_axis_is_a_nelson_narens_monitoring_output",
+   "if": [
+    "a function is assessed on the recursion_axis"
+   ],
+   "then": [
+    "the assessment is a monitoring (object-to-meta) operation",
+    "the meta-level representation includes the recursion structure"
+   ],
+   "why": "recursion_axis is a monitoring output per metamemory_nelson_narens_1990. The substrate's existing fixed_point_theorem_logic plus russells_paradox plus tarski_undefinability vocabulary supplies the recursion phenomena; Nelson-Narens supplies the channel.",
+   "soundness_category": "referential_transparency",
+   "cites_prior_work": "Nelson and Narens 1990"
+  },
+  {
+   "name": "abstraction_axis_is_a_nelson_narens_monitoring_climb_of_smith_tower",
+   "if": [
+    "a function is assessed on the abstraction_axis"
+   ],
+   "then": [
+    "the assessment is a monitoring operation that climbs the reflective tower"
+   ],
+   "why": "abstraction_axis combines monitoring (Nelson-Narens) with the next-rung case (Smith reflection). Same channel, climbing the tower.",
+   "soundness_category": "referential_transparency",
+   "cites_prior_work": "Smith 1982; Nelson and Narens 1990"
+  },
+  {
+   "name": "negative_problem_space_pruning_combines_cousot_lattice_with_nelson_narens_control",
+   "if": [
+    "a target shape is named",
+    "a candidate function's shape is determined",
+    "candidate's abstract value excludes target's abstract value"
+   ],
+   "then": [
+    "the candidate is pruned without evaluation",
+    "the pruning operation is meta-to-object control"
+   ],
+   "why": "negative_problem_space_pruning combines abstract_interpretation_cousot_1977's lattice-based pruning (the soundness story) with metamemory_nelson_narens_1990's control channel (the meta-to-object operation).",
+   "soundness_category": "cost_equivalence",
+   "cites_prior_work": "Cousot and Cousot 1977; Nelson and Narens 1990"
+  },
+  {
+   "name": "shape_keyed_lookup_is_memo_function_cache_hit",
+   "if": [
+    "a function's shape has been cached (the function carries its memo table)"
+   ],
+   "then": [
+    "shape queries are cache hits (constant time)",
+    "no Term-tree re-evaluation"
+   ],
+   "why": "shape_keyed_lookup is the cache-hit case of memo_function_michie_1968 — generalized from input-tuple key to structural-identity key.",
+   "soundness_category": "cost_equivalence",
+   "cites_prior_work": "Michie 1968"
+  },
+  {
+   "name": "function_shape_is_observed_by_l6_second_order_observation",
+   "if": [
+    "substrate reasons about a function via function_shape"
+   ],
+   "then": [
+    "the reasoning IS an instance of second_order_observation_of_substrate (L6)",
+    "the soundness story is L6's second_order_self_observation_is_complete invariant"
+   ],
+   "why": "function_shape_is_cognitive_layer_of_l6_coordination + the L6 Mt's existing commitment to second-order observation. Naming the inheritance makes L6's runtime soundness story apply to the cognitive layer.",
+   "soundness_category": "referential_transparency",
+   "cites_prior_work": "Nelson and Narens 1990; L6 second_order_observation_of_substrate"
+  },
+  {
+   "name": "cached_shape_is_required_by_l6_bounded_coordination_latency",
+   "if": [
+    "a function's shape is queried during the substrate's tick"
+   ],
+   "then": [
+    "the query MUST complete within the L6-defined tick period",
+    "therefore the shape MUST be cached (cached_shape), not re-derived"
+   ],
+   "why": "michie_memo_is_l6_bounded_coordination_latency_at_cognition + the L6 Mt's existing bounded_coordination_latency invariant. Makes the cache mandate FOLLOW from L6's runtime invariant rather than be an independent pivot goal.",
+   "soundness_category": "cost_equivalence",
+   "cites_prior_work": "Michie 1968; L6 bounded_coordination_latency"
+  },
+  {
+   "name": "negative_problem_space_pruning_is_l6_ashby_variety_match",
+   "if": [
+    "a target shape is named",
+    "candidate functions are being considered"
+   ],
+   "then": [
+    "L6's ashby_variety_match_at_system_scale REQUIRES variety match",
+    "shapes incompatible with the target are pruned (negative_problem_space_pruning) to reduce candidate variety to match target variety"
+   ],
+   "why": "cousot_lattice_is_l6_viability_envelope_for_functions + the L6 Mt's existing ashby_variety_match_at_system_scale component. Ashby's law (variety regulator must match variety of disturbance) APPLIED to function selection IS the pruning.",
+   "soundness_category": "cost_equivalence",
+   "cites_prior_work": "Cousot and Cousot 1977; Ashby 1957; L6 ashby_variety_match_at_system_scale"
+  },
+  {
+   "name": "meta_shape_is_one_rung_up_l6_circular_causality",
+   "if": [
+    "the order-N operator is applied to a function (yielding meta_shape)"
+   ],
+   "then": [
+    "the meta_shape sits one layer above the original function",
+    "applying the operator again climbs another layer",
+    "the climb IS L6's circular_causality_between_layers"
+   ],
+   "why": "smith_reflective_tower_is_layer_climbing_via_l6_named_signals + ad_derivative_operator_is_circular_causality_in_calculus_form + the L6 Mt's circular_causality_between_layers component. The reflective tower IS the L6 circular-causality structure made cognitive.",
+   "soundness_category": "extensional_equivalence",
+   "cites_prior_work": "Smith 1982; Pearlmutter and Siskind 2007; L6 circular_causality_between_layers"
+  },
+  {
+   "name": "recursion_axis_and_abstraction_axis_are_l6_named_signals_to_meta",
+   "if": [
+    "a function is assessed on recursion_axis or abstraction_axis"
+   ],
+   "then": [
+    "the assessment is a named-signal traverse from object level to meta level (L6's every_layer_feeds_every_other_via_named_signal)",
+    "the channel is L6's second_order_observation_of_substrate operating on the cognitive layer"
+   ],
+   "why": "Function classification axes ARE named signals in L6's sense — explicit interfaces between the object level (function as evaluable code) and the meta level (function as shape data). Nelson-Narens monitoring is L6's named-signal traverse for cognition.",
+   "soundness_category": "referential_transparency",
+   "cites_prior_work": "Nelson and Narens 1990; L6 every_layer_feeds_every_other_via_named_signal"
+  },
+  {
+   "name": "shape_keyed_lookup_uses_l6_named_signal_for_cache_query",
+   "if": [
+    "a cached shape is queried"
+   ],
+   "then": [
+    "the query goes through a named signal between caller and shape cache (per L6's every_layer_feeds_every_other_via_named_signal)",
+    "the lookup itself is O(1) (per L6's bounded_coordination_latency)"
+   ],
+   "why": "shape_keyed_lookup combines Michie's cache hit with L6's named-signal interface + bounded-latency invariant. The substrate's existing L6 infrastructure ALREADY provides the named-signal interface at runtime; shape_keyed_lookup names the cognitive-layer use of that interface.",
+   "soundness_category": "cost_equivalence",
+   "cites_prior_work": "Michie 1968; L6 every_layer_feeds_every_other_via_named_signal + bounded_coordination_latency"
+  }
+ ],
+ "relations": [
+  {
+   "src": "function_shape",
+   "edge": "genlMt",
+   "tgt": "computer_architecture"
+  }
+ ]
+}

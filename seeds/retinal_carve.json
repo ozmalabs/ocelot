@@ -1,0 +1,246 @@
+{
+ "id": "retinal_carve",
+ "version": "1.0.0",
+ "self_load_only": true,
+ "depends_on": [
+  "retinal_onset"
+ ],
+ "area": "retina",
+ "description": "Async common-fate carve (Rung 3 of the photon-eye migration). Objects are CARVED from the ASYNCHRONOUS onset-event stream (RetinalOnsetEvent, Rung 1) by COMMON FATE: contiguous retinal columns whose events share ONE coherent motion (one shared velocity Dc/De) group into a VisionPolygon azimuth span; columns carrying a DIFFERENT common-fate motion form a DIFFERENT polygon; a static/incoherent field carves nothing. This is the event-native replacement for the raster carve (native.segment on the coarse retinal_field) -- no raster, no frame diff, the SAME input Rung 2 reads. The `retinal_common_fate_carve` Rust task kind segments the sorted firing columns into maximal common-fate runs and fits each run's motion, emitting a fixed per-column stride-7 layout [is_group_start, col_min, col_max, direction, speed, coherence, n_events] with each run's block written at its START column's index. This rule matches every RetinalColumn against the done carve task and mints ONE VisionPolygon per run (anchored at the run's start column) when coherence and n_events exceed thresholds held as DATA on a RetinaCarveParams node, once per column-epoch via a carve_epoch guard. HONEST SCOPE: 1-D (an azimuth strip); a true 2-D carve needs the retina extended to elevation columns -- a named follow-on. OFF by default: the rule cannot fire unless a RetinaCarveParams node exists (created by the adapter only when context['visual_carve'] is set), and the adapter creates the carve task only then.",
+ "microtheory": {
+  "name": "retinal_carve",
+  "description": "common-fate grouping of onset events across columns -> VisionPolygon azimuth spans"
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [
+  {
+   "provenance": "seed:retinal_carve:retina-carve-params",
+   "src": {
+    "type": "Retina",
+    "var": "retina"
+   },
+   "edge_type": "has_carve_params",
+   "tgt": {
+    "type": "RetinaCarveParams",
+    "var": "cparams"
+   }
+  },
+  {
+   "provenance": "seed:retinal_carve:retina-carve-task",
+   "src": {
+    "type": "Retina",
+    "var": "retina"
+   },
+   "edge_type": "has_carve_task",
+   "tgt": {
+    "type": "CognitiveTask",
+    "var": "task"
+   }
+  },
+  {
+   "provenance": "seed:retinal_carve:retina-vision-polygon",
+   "src": {
+    "type": "Retina",
+    "var": "retina"
+   },
+   "edge_type": "has_vision_polygon",
+   "tgt": {
+    "type": "VisionPolygon",
+    "var": "polygon"
+   }
+  }
+ ],
+ "rules": [
+  {
+   "name": "retinal_mint_carve",
+   "area": "retina",
+   "order": 4,
+   "latency_class": "hard_realtime",
+   "match": [
+    [
+     "retina",
+     "has_carve_params",
+     "cparams"
+    ],
+    [
+     "retina",
+     "has_column",
+     "column"
+    ],
+    [
+     "retina",
+     "has_carve_task",
+     "task"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "task"}, "key": "kind"},
+      "b": {"type": "Lit", "value": "retinal_common_fate_carve"}
+     },
+     {
+      "type": "Eq",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "task"}, "key": "status"},
+      "b": {"type": "Lit", "value": "done"}
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {"type": "Attr", "node": {"type": "Var", "name": "column"}, "key": "carve_epoch"},
+       "b": {"type": "Attr", "node": {"type": "Var", "name": "task"}, "key": "input_epoch"}
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "IndexAt",
+       "seq": {"type": "Attr", "node": {"type": "Var", "name": "task"}, "key": "output"},
+       "index": {
+        "type": "Plus",
+        "items": [
+         {"type": "Times", "items": [
+          {"type": "Attr", "node": {"type": "Var", "name": "column"}, "key": "index"},
+          {"type": "Lit", "value": 7}
+         ]},
+         {"type": "Lit", "value": 0}
+        ]
+       }
+      },
+      "b": {"type": "Lit", "value": 1.0}
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "IndexAt",
+       "seq": {"type": "Attr", "node": {"type": "Var", "name": "task"}, "key": "output"},
+       "index": {
+        "type": "Plus",
+        "items": [
+         {"type": "Times", "items": [
+          {"type": "Attr", "node": {"type": "Var", "name": "column"}, "key": "index"},
+          {"type": "Lit", "value": 7}
+         ]},
+         {"type": "Lit", "value": 5}
+        ]
+       }
+      },
+      "b": {"type": "Attr", "node": {"type": "Var", "name": "cparams"}, "key": "min_coherence"}
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "IndexAt",
+       "seq": {"type": "Attr", "node": {"type": "Var", "name": "task"}, "key": "output"},
+       "index": {
+        "type": "Plus",
+        "items": [
+         {"type": "Times", "items": [
+          {"type": "Attr", "node": {"type": "Var", "name": "column"}, "key": "index"},
+          {"type": "Lit", "value": 7}
+         ]},
+         {"type": "Lit", "value": 6}
+        ]
+       }
+      },
+      "b": {"type": "Attr", "node": {"type": "Var", "name": "cparams"}, "key": "min_events"}
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "polygon",
+     "VisionPolygon",
+     {
+      "col_min": {"__term__": {
+       "type": "IndexAt",
+       "seq": {"type": "Attr", "node": {"type": "Var", "name": "task"}, "key": "output"},
+       "index": {"type": "Plus", "items": [
+        {"type": "Times", "items": [
+         {"type": "Attr", "node": {"type": "Var", "name": "column"}, "key": "index"},
+         {"type": "Lit", "value": 7}
+        ]},
+        {"type": "Lit", "value": 1}
+       ]}
+      }},
+      "col_max": {"__term__": {
+       "type": "IndexAt",
+       "seq": {"type": "Attr", "node": {"type": "Var", "name": "task"}, "key": "output"},
+       "index": {"type": "Plus", "items": [
+        {"type": "Times", "items": [
+         {"type": "Attr", "node": {"type": "Var", "name": "column"}, "key": "index"},
+         {"type": "Lit", "value": 7}
+        ]},
+        {"type": "Lit", "value": 2}
+       ]}
+      }},
+      "direction": {"__term__": {
+       "type": "IndexAt",
+       "seq": {"type": "Attr", "node": {"type": "Var", "name": "task"}, "key": "output"},
+       "index": {"type": "Plus", "items": [
+        {"type": "Times", "items": [
+         {"type": "Attr", "node": {"type": "Var", "name": "column"}, "key": "index"},
+         {"type": "Lit", "value": 7}
+        ]},
+        {"type": "Lit", "value": 3}
+       ]}
+      }},
+      "speed": {"__term__": {
+       "type": "IndexAt",
+       "seq": {"type": "Attr", "node": {"type": "Var", "name": "task"}, "key": "output"},
+       "index": {"type": "Plus", "items": [
+        {"type": "Times", "items": [
+         {"type": "Attr", "node": {"type": "Var", "name": "column"}, "key": "index"},
+         {"type": "Lit", "value": 7}
+        ]},
+        {"type": "Lit", "value": 4}
+       ]}
+      }},
+      "coherence": {"__term__": {
+       "type": "IndexAt",
+       "seq": {"type": "Attr", "node": {"type": "Var", "name": "task"}, "key": "output"},
+       "index": {"type": "Plus", "items": [
+        {"type": "Times", "items": [
+         {"type": "Attr", "node": {"type": "Var", "name": "column"}, "key": "index"},
+         {"type": "Lit", "value": 7}
+        ]},
+        {"type": "Lit", "value": 5}
+       ]}
+      }},
+      "n_events": {"__term__": {
+       "type": "IndexAt",
+       "seq": {"type": "Attr", "node": {"type": "Var", "name": "task"}, "key": "output"},
+       "index": {"type": "Plus", "items": [
+        {"type": "Times", "items": [
+         {"type": "Attr", "node": {"type": "Var", "name": "column"}, "key": "index"},
+         {"type": "Lit", "value": 7}
+        ]},
+        {"type": "Lit", "value": 6}
+       ]}
+      }},
+      "epoch": {"__term__": {
+       "type": "Attr", "node": {"type": "Var", "name": "task"}, "key": "input_epoch"
+      }}
+     }
+    ],
+    [
+     "add_edge",
+     "retina",
+     "has_vision_polygon",
+     "polygon"
+    ],
+    [
+     "set_attr",
+     "column",
+     "carve_epoch",
+     {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "task"}, "key": "input_epoch"}}
+    ]
+   ]
+  }
+ ]
+}

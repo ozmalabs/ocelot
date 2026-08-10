@@ -1,0 +1,131 @@
+{
+  "id": "motion_estimation_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "motion_estimation",
+  "in_microtheory": "video_coding_theory",
+  "description": "Motion estimation (ME) decomposed into its sub-mechanisms. ME is the encoder's search for the displacement that minimises a cost function for each block. The asymmetry between encoder (expensive search) and decoder (just apply the MV) is the key trade — encoders spend most of their compute here. The mechanisms below cover search patterns, cost functions, motion-vector prediction, sub-pixel refinement, and the engineering trade-offs that shape practical encoders.",
+  "sub_mechanisms": [
+    {
+      "name": "full_search",
+      "definition": "Exhaustively evaluate cost for every integer displacement in a search window (typically ±16, ±32, or ±64 pixels). Returns the global minimum within the window.",
+      "why": "Guaranteed best within the window — no local-minimum trap. But cost is O(W * H) per block, intractable for HD/4K at real-time. Used today only as a quality reference or in research encoders. Real encoders trade exactness for speed.",
+      "category": "me_mechanism"
+    },
+    {
+      "name": "diamond_search",
+      "definition": "Iteratively evaluate cost at 4 points in a diamond pattern around the current best; move to the lowest-cost point and repeat until centred. ~7 evaluations per iteration, log iterations.",
+      "why": "Exploits the empirical observation that motion-cost surfaces are largely unimodal (one minimum, gradient-shaped around it). Skips O(W*H) evaluations for O(log W) — typically 30-50 vs 1000+. Used by libvpx and the SVT encoder family.",
+      "category": "me_mechanism"
+    },
+    {
+      "name": "hexagon_search",
+      "definition": "Iteratively evaluate cost at 6 points in a hexagonal pattern around the current best; move to the lowest, repeat. Less symmetric than diamond, samples more directions per iteration.",
+      "why": "Marginally better than diamond on real motion (camera shake, object motion isn't axis-aligned). x264's default integer-pel pattern. ~3-5% quality gain over diamond at the same eval budget.",
+      "category": "me_mechanism"
+    },
+    {
+      "name": "UMHEX",
+      "definition": "Unsymmetric Multi-Hexagon: a multi-scale search starting with a large hexagon to find the rough region, then refining with smaller hexagons. Adds a horizontal/vertical bias to catch axis-aligned motion.",
+      "why": "Diamond and small hexagon can get trapped in local minima on multi-modal cost surfaces (occlusion boundaries, multiple objects). UMHEX's multi-scale shape sees larger structure first then refines. JM reference encoder's default.",
+      "category": "me_mechanism"
+    },
+    {
+      "name": "EPZS",
+      "definition": "Enhanced Predictive Zonal Search: starts from a set of predicted MV candidates (median predictor, neighbour MVs, temporal collocated MV, zero), tests each, then refines around the best.",
+      "why": "Real motion is heavily correlated with neighbouring blocks (a moving object's blocks all have similar MVs). Starting from neighbour predictions skips most of the search and lands on the basin of the true minimum directly. ~5-10x faster than diamond at the same quality on coherent motion.",
+      "category": "me_mechanism"
+    },
+    {
+      "name": "SAD_cost_function",
+      "definition": "Sum of Absolute Differences: cost = sum_(i,j) |source(i,j) - reference(i+dx, j+dy)|. Cheapest per-evaluation cost function.",
+      "why": "No multiplications, just subtractions and absolute values. Vectorises perfectly on SIMD (one SAD per pixel pair, fold-reduce across the block). Used in coarse search where many candidates are evaluated. Doesn't predict bitcost well, so used early.",
+      "category": "me_mechanism"
+    },
+    {
+      "name": "SATD_cost_function",
+      "definition": "Sum of Absolute Transformed Differences: apply a Hadamard transform to the residual, sum absolute values of coefficients. More expensive than SAD per evaluation.",
+      "why": "The Hadamard captures the post-transform energy that the DCT and quantiser will see. SATD correlates with actual bitcost ~3x better than SAD. Used in finer search where few candidates need accurate ranking.",
+      "category": "me_mechanism"
+    },
+    {
+      "name": "RD_cost_function",
+      "definition": "Full rate-distortion cost: J = D + λ * R, where D is distortion (SSD or SATD) and R is the bit cost of the MV + residual. Most expensive per evaluation.",
+      "why": "True bitcost-aware optimisation. Used only on the final few candidates in best-quality encoders because each evaluation requires partial encoding (transform + quantise + entropy estimate). Beats SATD by another ~1-3% at significant compute cost.",
+      "category": "me_mechanism"
+    },
+    {
+      "name": "MV_predictor_median",
+      "definition": "The standard MV predictor: the component-wise median of the top, top-right, and left neighbour MVs (with availability fallbacks). The encoded MV is the difference from this predictor.",
+      "why": "Spatial coherence of motion makes neighbours predictive. The median (vs mean) is robust to a single outlier neighbour (e.g., an intra-coded neighbour with zero MV). Encoding the residual MV saves typically 4-6 bits per MV.",
+      "category": "me_mechanism"
+    },
+    {
+      "name": "subpel_refinement",
+      "definition": "After integer-pel search, refine to half-pel and quarter-pel resolution by interpolating reference samples and testing the 8 surrounding fractional positions. The interpolation filter is spec-defined (6-tap for H.264, 8-tap for H.265/AV1/VVC).",
+      "why": "Motion is rarely integer-pel. Sub-pel refinement gives a typical 0.5-1.0 dB PSNR improvement at the cost of ~10x more interpolation work. The interpolation filter is in the standard so encoder and decoder match exactly.",
+      "category": "me_mechanism"
+    },
+    {
+      "name": "search_window",
+      "definition": "The bounded region in the reference frame where ME searches. Typically ±16 pixels for low-motion content, ±64 or larger for sports/action. Window size is an encoder parameter, not specified by the standard.",
+      "why": "Most motion in natural video is small. Bounding the search window caps compute predictably; larger windows catch fast motion but cost quadratically more. Adaptive windows (small base + expand on high motion estimate) split the difference.",
+      "category": "me_mechanism"
+    },
+    {
+      "name": "GPU_full_search",
+      "definition": "Offload ME's exhaustive search to a GPU. Each GPU thread evaluates one (block, displacement) pair; the lattice of all (block, displacement) pairs fills the GPU efficiently.",
+      "why": "ME is embarrassingly parallel — every block's search is independent. GPUs do ~1000x more SAD ops/sec than a CPU core. Useful for offline encoding (cloud transcoding pipelines) where decoder simplicity matters and the encoder has GPU available.",
+      "category": "me_mechanism"
+    },
+    {
+      "name": "hierarchical_search",
+      "definition": "Multi-resolution ME: downsample the reference and source, search at low resolution, refine at higher resolution. Each scale's result seeds the next scale's search.",
+      "why": "Catches large-magnitude motion that local diamond/hexagon would miss. Each scale's search window can be small because the coarser scale already localised the motion. Standard technique in production encoders for high-motion content.",
+      "category": "me_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "cost_function_quality_correlates_with_compute",
+      "if": ["a more accurate cost function is used"],
+      "then": ["search quality improves at proportional compute cost"],
+      "why": "SAD → SATD → RD form a ladder of increasing accuracy and cost. Practical encoders use SAD in coarse stages, SATD in refinement, RD only on final candidates. Each step buys ~5% compression for ~3x compute.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "search_pattern_assumes_unimodal_cost_surface",
+      "if": ["the cost surface is unimodal (single minimum)"],
+      "then": ["pattern-based search converges to the minimum in O(log) steps"],
+      "why": "Diamond, hexagon, UMHEX all assume gradient-shaped cost surfaces. The assumption mostly holds for natural motion; it breaks at occlusion boundaries (multi-modal). Multi-modal cases get caught by predictive starts (EPZS) or hierarchical multi-scale searches.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "predictive_start_skips_most_of_search",
+      "if": ["MV predictors include neighbouring + collocated + zero candidates"],
+      "then": ["the search starts in the basin of attraction of the true minimum"],
+      "why": "Spatial coherence of motion means neighbour MVs are usually close to the true MV. Predictive starts (EPZS) cut search budget by 5-10x with no quality loss on coherent motion.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "subpel_filter_must_match_decoder",
+      "if": ["sub-pel motion vectors are signalled"],
+      "then": ["encoder must use the spec-defined interpolation filter byte-exactly"],
+      "why": "If encoder and decoder use different filters, predictions diverge and decoding breaks. The spec defines the filter taps, clipping order, and intermediate-bit-depth — encoder has no freedom in the math, only in WHICH MV to send.",
+      "soundness_category": "referential_transparency"
+    },
+    {
+      "name": "GPU_speedup_assumes_offline_pipeline",
+      "if": ["encoding budget allows GPU access"],
+      "then": ["full or near-full search becomes tractable"],
+      "why": "GPU ME does ~1000x more candidate evaluations per second than CPU. Real-time encoders rarely have GPU access (or pay the latency cost); offline / cloud transcoding does, and uses it. The decoder is unchanged either way.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "hierarchical_search_handles_large_motion",
+      "if": ["motion magnitude exceeds a single-scale search window"],
+      "then": ["coarse-to-fine search captures it without quadratic compute growth"],
+      "why": "Each scale's window can be small because the coarser scale narrowed the search. Total compute is the sum across scales, not the product — typically 1.5-2x the single-scale cost, vs the 10x+ that growing the single window would cost.",
+      "soundness_category": "cost_equivalence"
+    }
+  ]
+}

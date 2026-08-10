@@ -1,0 +1,161 @@
+{
+  "microtheory": {
+    "name": "language_production",
+    "definition": "How a speaker turns a communicative GOAL into an utterance: the inverse of comprehension (meaning->form, vs form->meaning). The verified human model is Levelt / Levelt-Roelofs-Meyer 'blueprint of the speaker' (WEAVER++): a pipeline of named stages, each emitting a representation handed to the next, drawing on a discourse model, the mental lexicon, and a syllabary, run incrementally and checked by a self-monitoring loop that routes output back through the speaker's OWN comprehension system ('say it to yourself'). Substrate analogue: production reuses the lexicon + grammar the comprehension stack grounded, run in reverse, and self-monitors by parsing its own output back to the goal. Sources: Levelt 1989/1999; Levelt-Roelofs-Meyer 1999 (WEAVER++); Dell (cascade alternative); Roelofs 2020 (monitoring).",
+    "category": "linguistics_domain",
+    "parent": "linguistics_foundation"
+  },
+  "concepts": [
+    {
+      "name": "speaker_blueprint",
+      "definition": "The whole production pipeline: conceptual_preparation -> grammatical_encoding -> morphophonological_encoding -> phonetic_encoding -> articulation, each stage emitting a characteristic representation consumed by the next. The inverse of the comprehension pipeline; shares the mental_lexicon. SETTLED canon (the named stages and their outputs are agreed even by critics; only the dynamics between them are contested).",
+      "category": "architecture",
+      "status": "settled"
+    },
+    {
+      "name": "conceptual_preparation",
+      "definition": "First production stage (the Conceptualizer). Turns a communicative goal into a preverbal_message via macroplanning then microplanning. Draws on the discourse_model (common_ground). Produces: preverbal_message.",
+      "category": "stage",
+      "status": "settled"
+    },
+    {
+      "name": "macroplanning",
+      "definition": "Sub-process of conceptual_preparation: decides WHAT to say and in what order via discourse focus, governed by three principles — connectivity (next focus connects to current), stack (else top of the focus stack), and simplest-first — using a focus tree plus stack.",
+      "category": "process",
+      "status": "settled"
+    },
+    {
+      "name": "microplanning",
+      "definition": "Sub-process of conceptual_preparation: casts the selected information into propositional form, does perspective-taking, marks information as in-focus/given vs new (information_structure), selects pragmatically appropriate lexical_concepts, and performs mood_assignment. Feeds in-focus marking to grammatical_encoding.",
+      "category": "process",
+      "status": "settled"
+    },
+    {
+      "name": "preverbal_message",
+      "definition": "Output representation of conceptual_preparation: lexical_concepts plus a mood plus information_structure (given/new, topic/focus). NOT yet words. The input to grammatical_encoding. The substrate analogue is a goal-tagged SemanticFrame (event/agent/patient + mood) — the same frame comprehension produces, here used as the production target.",
+      "category": "representation",
+      "status": "settled"
+    },
+    {
+      "name": "mood_assignment",
+      "definition": "The hook from communicative goal to sentence type, set during microplanning. Each message carries a mood: declarative when the speaker intends to assert; interrogative when the speaker wants to invite the interlocutor to provide information; imperative when the speaker wants to express the desirability of a state of affairs. Mood is Levelt's verified bridge to illocution / speech_act; the fuller Searle taxonomy and indirect speech acts extend it.",
+      "category": "goal_to_form",
+      "status": "settled"
+    },
+    {
+      "name": "grammatical_encoding",
+      "definition": "Second stage (first half of the Formulator). Consumes the preverbal_message; does lemma selection (a lexical_concept selects a lemma) plus function and constituent assignment, building the syntactic frame. Produces: surface_structure. Substrate analogue: the comprehension grammar run in reverse — frame roles -> word order via the language's productions.",
+      "category": "stage",
+      "status": "settled"
+    },
+    {
+      "name": "surface_structure",
+      "definition": "Output representation of grammatical_encoding: lemmas arranged in a syntactic frame (constituents in positional order), NOT yet phonologically specified. Input to morphophonological_encoding.",
+      "category": "representation",
+      "status": "settled"
+    },
+    {
+      "name": "lemma_lexeme_rift",
+      "definition": "The 'major rift' in the lexicon, between the lemma (a word's meaning plus syntactic properties — word class, gender, argument structure; NOT phonologically specified) and the lexeme / word-form (a word's morphology and phonology; NOT syntactically or semantically specified). Lexical access crosses this rift in two_step_lexical_access. Evidenced by tip-of-the-tongue (syntax/gender available while form is blocked) and the split between semantic vs phonological speech errors.",
+      "category": "mechanism",
+      "status": "settled"
+    },
+    {
+      "name": "two_step_lexical_access",
+      "definition": "Lexical access is two ordered steps across the lemma_lexeme_rift: step 1 a lexical_concept selects a lemma; step 2, after lemma selection, the lemma's morpho-phonological form code (the lexeme) is retrieved. Broadly accepted that there are two steps; the strict ordering, exact timing, and whether step 1 is genuinely competitive are NOT settled (do not assert hard-wired order or fixed timing).",
+      "category": "mechanism",
+      "status": "settled"
+    },
+    {
+      "name": "luce_rule_competition",
+      "definition": "Levelt-Roelofs-Meyer account of lemma selection: the probability of selecting the target lemma is its activation divided by the total activation of all active lemmas in the stratum (Luce's rule). Whether selection is truly competitive is contested (the Response Exclusion Hypothesis locates interference post-lexically); teach as the WEAVER++ account, not as fact.",
+      "category": "mechanism",
+      "status": "contested"
+    },
+    {
+      "name": "morphophonological_encoding",
+      "definition": "Third stage (second half of the Formulator). Consumes surface_structure; retrieves each lemma's lexeme (word-form) and builds the phonological_word. Produces: phonological_word (a phonological score). Substrate analogue: concept/lemma -> surface word via the lexicon in reverse, plus inflectional morphology (the morphology_reference run as a generator).",
+      "category": "stage",
+      "status": "settled"
+    },
+    {
+      "name": "phonological_word",
+      "definition": "Output representation of morphophonological_encoding: morphemes assembled into phonological words (a phonological score), more abstract than the phonetic plan. This is the representation the internal self-monitoring loop inspects. Input to phonetic_encoding.",
+      "category": "representation",
+      "status": "settled"
+    },
+    {
+      "name": "phonetic_encoding",
+      "definition": "Fourth stage. Consumes the phonological_word; builds the articulatory (gestural) score, drawing on the syllabary of gestural scores. Produces: articulatory_score.",
+      "category": "stage",
+      "status": "settled"
+    },
+    {
+      "name": "articulatory_score",
+      "definition": "Output representation of phonetic_encoding: a gestural / articulatory plan, executed during articulation. The substrate's speak() forward model is the analogue.",
+      "category": "representation",
+      "status": "settled"
+    },
+    {
+      "name": "articulation",
+      "definition": "Final stage. Executes the articulatory_score to produce overt_speech.",
+      "category": "stage",
+      "status": "settled"
+    },
+    {
+      "name": "overt_speech",
+      "definition": "The end product: the externally realized utterance (acoustic, or for the text agent, the surface string). Fed back through the external self-monitoring loop.",
+      "category": "representation",
+      "status": "settled"
+    },
+    {
+      "name": "production_knowledge_sources",
+      "definition": "The three stores production draws on: a discourse_model (a model of the interlocutor and common_ground, used in conceptual_preparation), the mental_lexicon (lemmas plus morpho-phonological form codes — shared with comprehension), and a syllabary (precompiled gestural scores, used in phonetic_encoding).",
+      "category": "knowledge_source",
+      "status": "settled"
+    },
+    {
+      "name": "incremental_production",
+      "definition": "A processing stage starts on a still-incomplete fragment of the previous stage's output, so the stages are normally simultaneously active, overlapping 'as the tiles of a roof'. The least-contested feature of production — every camp presupposes it. Distinct from the contested narrow 'cascading' (unselected-node activation), see serial_vs_cascade.",
+      "category": "dynamics",
+      "status": "settled"
+    },
+    {
+      "name": "self_monitoring_loop",
+      "definition": "Production is checked by routing its output back through the SAME comprehension system used to understand others, comparing the representation selected in production against the one recovered in comprehension; on a discrepancy the speaker halts and repairs. Has an internal_loop and an external_loop. This is 'say it to yourself'. Substrate analogue: produce an utterance, parse it back with the comprehension stack, compare to the goal preverbal_message, repair on mismatch — the order-N analysis-by-synthesis loop.",
+      "category": "control_loop",
+      "status": "settled"
+    },
+    {
+      "name": "internal_loop",
+      "definition": "Self-monitoring of inner speech: the incrementally generated phonological_word is fed back into the speech comprehension system BEFORE articulation, so errors can be caught pre-articulation. Can begin during morphophonological_encoding and overlap phonetic_encoding.",
+      "category": "control_loop",
+      "status": "settled"
+    },
+    {
+      "name": "external_loop",
+      "definition": "Self-monitoring of overt_speech: the speaker hears their own externalized utterance through the comprehension system, with the lag that feedback via comprehension takes time.",
+      "category": "control_loop",
+      "status": "settled"
+    },
+    {
+      "name": "production_comprehension_shared",
+      "definition": "Production and comprehension share machinery: the self_monitoring_loop reuses the comprehension system, and the error signal is the comparison of production-selected vs comprehension-recovered representations. Production is meaning->form; comprehension is form->meaning; they meet at the shared lexicon and at monitoring. Whether the production and comprehension lexicons/grammars are FULLY shared or partly separate is not settled.",
+      "category": "architecture",
+      "status": "contested"
+    },
+    {
+      "name": "serial_vs_cascade",
+      "definition": "Contested architecture, teach as two named alternatives, not fact. serial_feedforward (WEAVER++): strictly serial between macro-stages, no feedback between lexical selection and form encoding (except self-monitoring), no free cascading, no inhibition — Ockham-minimal and falsifiable. cascading_interactive (Dell): activation flows toward phonology BEFORE lexical selection completes, with feedback. The discriminating pivot: do UNSELECTED lexical nodes activate their phonology? Behavioral evidence (picture-picture phonological facilitation from unspoken distractors) tilts toward at least limited cascading, so a built architecture should favor incremental/cascading activation between concept->lemma->form rather than a hard discrete gate.",
+      "category": "debate",
+      "status": "contested"
+    },
+    {
+      "name": "monitoring_mechanism_debate",
+      "definition": "Contested mechanism for self_monitoring, teach as named alternatives. (1) comprehension-based perceptual loop (Levelt/Roelofs): compare production-selected vs comprehension-recovered representations. (2) production-internal conflict monitoring (Nozari/Dell, ACC-based): detect competition within production, supported by aphasic dissociations (impaired comprehension but preserved self-correction). (3) forward-model prediction (Pickering & Garrod): compare a predicted against the implemented representation. The named perceptual-loop is canonical; the brain mechanism is unsettled. The forward-model variant aligns with the substrate's speak()-as-forward-model design.",
+      "category": "debate",
+      "status": "contested"
+    }
+  ],
+  "rules": []
+}

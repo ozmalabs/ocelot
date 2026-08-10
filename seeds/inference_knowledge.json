@@ -1,0 +1,138 @@
+{
+  "id": "inference_knowledge",
+  "version": "1.0.0",
+  "depends_on": ["event_reasoning"],
+  "description": "STEP 3 of the comprehension pipeline: the WORLD-KNOWLEDGE / BRIDGING codebook the gap-driven inference generator (domains/inference_generation.py) decodes gaps against. situation_model_reader (step 2) builds a situation model but only from STATED information -- a bare 'John dropped the glass.' infers on_floor but not broken, because the broken-rule (seeds/event_reasoning.json infer_broken) needs `fragile`, and fragility is WORLD KNOWLEDGE the text never states. This seed supplies that missing knowledge as a small, honest, FINITE codebook of ShapeSignature{kind:'knowledge_*'} schemas the decode (reflective_faculty.compose_design_for_goal = the ShapeDecode Term) matches gaps against -- the SAME collapse mechanism reading_collapse's construction codebook uses, at the knowledge grain instead of the syntax grain. Two flavors, one mechanism: 'knowledge_enabling' schemas supply an ENABLING-CONDITION property (glass/cup/vase/bottle -> fragile) that completes a stalled rule precondition; 'knowledge_elaborative' schemas supply a non-blocking elaboration (glass -> made_of_glass) that only fires under a DEEP standard_of_coherence; 'knowledge_partwhole' schemas supply a BRIDGING part_of link (beer/food/sandwiches/napkins/blanket -> supplies) for a definite NP with no discourse antecedent -- Haviland & Clark given-new bridging, no lexical cue required. The StandardOfCoherence node is the single tunable gate (McKoon & Ratcliff minimalist 'shallow' vs Graesser constructionist 'deep') that decides whether elaborative schemas are allowed to fire; enabling and bridging schemas are tagged 'blocking' and always fire (both frameworks agree a coherence-blocking / felicity-requiring inference is drawn). HONEST SCOPE: this codebook covers exactly the entities/attrs listed below -- an entity the codebook does not name (e.g. a bare 'ball') produces NO covering part, so the decode's own residual stays non-empty and nothing is minted (the discriminative, non-fabricating case). The KNOWLEDGE is finite and seeded; the MECHANISM (gap-detect -> ShapeDecode -> mint -> re-run the fixpoint) is general.",
+  "microtheory": {
+    "name": "inference_knowledge",
+    "description": "the world-knowledge + bridging codebook a gap collapses against"
+  },
+  "nodes": [
+    {
+      "local_id": 1,
+      "type": "Concept",
+      "attrs": {
+        "name": "inference_knowledge",
+        "description": "The sentinel concept guarding idempotent load of this seed (domains/inference_generation.py ensure_seeds)."
+      }
+    },
+    {
+      "local_id": 2,
+      "type": "StandardOfCoherence",
+      "attrs": {
+        "depth": "shallow"
+      }
+    },
+    {
+      "local_id": 3,
+      "type": "ShapeSignature",
+      "attrs": {
+        "name": "fragile_glassware",
+        "kind": "knowledge_enabling",
+        "coherence": "blocking",
+        "signature": "[[\"needs\", \"glass\", \"fragile\"], [\"needs\", \"cup\", \"fragile\"], [\"needs\", \"vase\", \"fragile\"], [\"needs\", \"bottle\", \"fragile\"], [\"needs\", \"mirror\", \"fragile\"], [\"needs\", \"plate\", \"fragile\"]]",
+        "supplies": "{\"relation\": \"is_a\", \"attr\": \"fragile\"}"
+      }
+    },
+    {
+      "local_id": 4,
+      "type": "ShapeSignature",
+      "attrs": {
+        "name": "glassware_composition",
+        "kind": "knowledge_elaborative",
+        "coherence": "elaborative",
+        "signature": "[[\"elaborate\", \"glass\"], [\"elaborate\", \"cup\"], [\"elaborate\", \"vase\"], [\"elaborate\", \"bottle\"], [\"elaborate\", \"mirror\"]]",
+        "supplies": "{\"relation\": \"is_a\", \"attr\": \"made_of_glass\"}"
+      }
+    },
+    {
+      "local_id": 5,
+      "type": "ShapeSignature",
+      "attrs": {
+        "name": "picnic_supplies_parts",
+        "kind": "knowledge_partwhole",
+        "coherence": "blocking",
+        "signature": "[[\"needs_whole\", \"beer\"], [\"needs_whole\", \"food\"], [\"needs_whole\", \"sandwiches\"], [\"needs_whole\", \"napkins\"], [\"needs_whole\", \"blanket\"], [\"needs_whole\", \"wine\"]]",
+        "supplies": "{\"relation\": \"part_of\", \"object\": \"supplies\"}"
+      }
+    },
+    {
+      "local_id": 6,
+      "type": "ShapeSignature",
+      "attrs": {
+        "name": "need_remedy_thirst",
+        "kind": "knowledge_goal",
+        "coherence": "blocking",
+        "signature": "[[\"needs_goal\", \"thirsty\"], [\"needs_goal\", \"dehydrated\"], [\"needs_goal\", \"parched\"]]",
+        "supplies": "{\"relation\": \"goal\", \"remedy\": \"drink\"}"
+      }
+    },
+    {
+      "local_id": 7,
+      "type": "ShapeSignature",
+      "attrs": {
+        "name": "need_remedy_hunger",
+        "kind": "knowledge_goal",
+        "coherence": "blocking",
+        "signature": "[[\"needs_goal\", \"hungry\"], [\"needs_goal\", \"starving\"], [\"needs_goal\", \"famished\"]]",
+        "supplies": "{\"relation\": \"goal\", \"remedy\": \"eat\"}"
+      }
+    },
+    {
+      "local_id": 8,
+      "type": "ShapeSignature",
+      "attrs": {
+        "name": "need_remedy_danger",
+        "kind": "knowledge_goal",
+        "coherence": "blocking",
+        "signature": "[[\"needs_goal\", \"afraid\"], [\"needs_goal\", \"in_danger\"], [\"needs_goal\", \"threatened\"], [\"needs_goal\", \"frightened\"]]",
+        "supplies": "{\"relation\": \"goal\", \"remedy\": \"escape\"}"
+      }
+    },
+    {
+      "local_id": 9,
+      "type": "ShapeSignature",
+      "attrs": {
+        "name": "physical_displacement_rise",
+        "kind": "knowledge_causal",
+        "coherence": "blocking",
+        "signature": "[[\"physical_effect\", \"drop\", \"rise\"], [\"physical_effect\", \"put\", \"rise\"], [\"physical_effect\", \"add\", \"rise\"], [\"physical_effect\", \"pour\", \"rise\"], [\"physical_effect\", \"drop\", \"raise\"], [\"physical_effect\", \"add\", \"raise\"]]",
+        "supplies": "{\"relation\": \"cause\"}"
+      }
+    },
+    {
+      "local_id": 10,
+      "type": "ShapeSignature",
+      "attrs": {
+        "name": "physical_addition_overflow",
+        "kind": "knowledge_causal",
+        "coherence": "blocking",
+        "signature": "[[\"physical_effect\", \"pour\", \"overflow\"], [\"physical_effect\", \"add\", \"overflow\"], [\"physical_effect\", \"put\", \"overflow\"], [\"physical_effect\", \"fill\", \"overflow\"]]",
+        "supplies": "{\"relation\": \"cause\"}"
+      }
+    },
+    {
+      "local_id": 11,
+      "type": "WarningLexicon",
+      "attrs": {
+        "forms": ["beware", "shun"],
+        "anchor": ["beware", "shun", "avoid"],
+        "threshold": 0.5,
+        "licensed_response": "slay",
+        "description": "The IMPERATIVE-WARNING lexicon the goal-level licensing gate reads (domains/inference_generation.detect_warning_gaps). A verb-INITIAL clause whose head is one of these caution/avoid-danger imperatives ('Beware the Jabberwock', 'shun the Bandersnatch') is a DIRECTIVE to an addressee, not a state predication about a protagonist -- it installs NO need-state, so it can never LICENSE a goal on its own (the DETACHED reader's verdict: held open). `licensed_response` names the QUEST a BELIEVED danger-warning warrants WITHIN a believer's belief-world (a named monster one is warned of -> the response the warning implies is to slay it) -- read only on the STANCE-RELATIVE / embedded path (resolve_warning_embedded), never on the detached path. Deliberately NOT a MarkerClass: it never enters reading_collapse's reading skeleton (an imperative verb in a clause's main-verb slot would collide with ordinary clause decoding, exactly the collision character_tom's ATTITUDE class avoids), only this module's warning scan reads it. An unseen caution verb JOINS by WordNet path-similarity to `anchor` >= `threshold` (the SAME nearness signal COS/ATTITUDE use), so it is graph-native codebook data, never a hardcoded story rule."
+      }
+    },
+    {
+      "local_id": 12,
+      "type": "TrustLexicon",
+      "attrs": {
+        "trusted_anchor": ["son", "child", "daughter", "father", "mother", "kin"],
+        "untrusted_anchor": ["stranger", "enemy", "foe", "adversary"],
+        "threshold": 0.5,
+        "description": "The STANCE-RELATIVE TRUST codebook the embedded-reading licensing gate reads (domains/inference_generation.trust_membership). A warning is LICENSED WITHIN a belief-world iff that world TRUSTS the warning's SOURCE. The addressee-vocative of a warning ('Beware the Jabberwock, my SON!') fixes the source-addressee relation: a KIN vocative (`trusted_anchor`: son/child/daughter/...) means the addresser is family -> the addressee TRUSTS the source -> WITHIN the addressee's belief-world the warning licenses 'the named threat is dangerous' and the quest to slay it. An ADVERSARIAL vocative (`untrusted_anchor`: stranger/enemy/foe/...) means the source is NOT trusted -> the warning licenses NOTHING even embedded. HONEST COVERAGE: the held nearness signal (reading_collapse._wordnet_nearness) is VERB-only (pos='v'); trust vocatives are NOUNS, so this lexicon resolves by SEED MEMBERSHIP (the listed anchors), NOT WordNet generalization -- a vocative outside these lists is `unknown` -> conservatively NOT trusted (no license), the discriminative non-fabricating null. This trust is a GRAPH SIGNAL over the vocative + the codebook, never a hardcoded 'jabberwock'/'father' story rule."
+      }
+    }
+  ],
+  "edges": [],
+  "rules": []
+}

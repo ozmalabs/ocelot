@@ -1,0 +1,85 @@
+{
+  "id": "design_patterns",
+  "version": "0.1.0",
+  "depends_on": ["compiler_theory"],
+  "description": "The agent's meta-programming vocabulary — architectural patterns the code-writing cortex consults BEFORE asking for code. Each pattern is a DesignPattern graph node; its applies_when tags + expected_speedup + category drive selection via a substrate query, not a hardcoded Python score. Add patterns by adding entries here; the cortex picks them up automatically on install.",
+  "category_inheritance": "genlMt → compiler_theory (the soundness vocabulary the agent already knows: denotational / algebraic / extensional / cost / referential_transparency / ub_preservation)",
+  "patterns": [
+    {
+      "name": "algorithmic_substitution",
+      "definition": "Replace the chosen algorithm with one of equal denotation but lower asymptotic or per-step cost. The compiler-theory cost_equivalence category at the algorithm level instead of the instruction level.",
+      "applies_when": ["expensive_inner_op", "math_heavy", "hot_loop"],
+      "mechanism": "Identify the dominant cost in the existing impl; substitute a textbook-equivalent algorithm with lower complexity (Horner for polynomials, Karatsuba for multiplication, Strassen for matmul, FFT for convolution).",
+      "tradeoff": "Modern superscalar CPUs may invert the textbook tradeoff for small fixed-size inputs (see polynomial demo's negative Horner result).",
+      "expected_speedup": 2.0,
+      "category": "cost_equivalence"
+    },
+    {
+      "name": "lookup_table",
+      "definition": "Precompute outputs for every input in a bounded domain; swap the runtime computation for an indexed read.",
+      "applies_when": ["small_input_domain", "pure_function", "precomputable", "hot_loop"],
+      "mechanism": "Build a `static [T; N]` (or const-evaluable equivalent) indexed by input; load instead of compute.",
+      "tradeoff": "Binary-size cost proportional to domain size; only wins if domain is small AND lookup is faster than recomputation.",
+      "expected_speedup": 4.0,
+      "category": "cost_equivalence"
+    },
+    {
+      "name": "memoization",
+      "definition": "Cache results of a pure function keyed by its inputs; subsequent calls with the same inputs return from cache.",
+      "applies_when": ["pure_function", "expensive_to_compute", "repeated_calls", "hot_loop"],
+      "mechanism": "Wrap with a `Vec`/`FxHashMap` keyed by input(s); first call computes + stores, later calls fetch.",
+      "tradeoff": "Memory grows with distinct call sites; only wins above a hit-rate threshold; cache invalidation needs care.",
+      "expected_speedup": 3.0,
+      "category": "referential_transparency"
+    },
+    {
+      "name": "loop_fusion",
+      "definition": "Merge multiple passes over the same data into a single loop — saves per-iteration overhead and improves cache behaviour.",
+      "applies_when": ["multi_pass_data", "hot_loop", "expensive_inner_op"],
+      "mechanism": "Inline the inner loops of independent passes into one outer loop body.",
+      "tradeoff": "Increased register pressure; reduces locality if the fused body grows too large for L1.",
+      "expected_speedup": 1.6,
+      "category": "extensional_equivalence"
+    },
+    {
+      "name": "simd_vectorization",
+      "definition": "Operate on multiple data elements per instruction using the CPU's SIMD lanes.",
+      "applies_when": ["vector_workload", "hot_loop", "i32_or_smaller", "data_parallel"],
+      "mechanism": "Use `core::simd` (or platform intrinsics) to process 4/8/16 lanes per iteration; ensure alignment + tail handling.",
+      "tradeoff": "Branchy code can't be vectorised; ABI must support SIMD regs; only wins on amenable inner loops.",
+      "expected_speedup": 4.0,
+      "category": "cost_equivalence"
+    },
+    {
+      "name": "specialization",
+      "definition": "Generate a separate code path for a known shape (small fixed size, known constant operand) — the compiler folds more aggressively when the shape is concrete.",
+      "applies_when": ["common_specific_case", "polymorphic_in_general", "hot_loop"],
+      "mechanism": "Split into `eval_small` and `eval_general`; dispatch on the calling pattern, let the compiler inline / constfold the specialised path.",
+      "tradeoff": "Code-size cost (extra paths); maintenance overhead when general implementation changes.",
+      "expected_speedup": 2.5,
+      "category": "denotational_equivalence"
+    },
+    {
+      "name": "bit_packing",
+      "definition": "Encode small enums or bool tuples into bit positions of a single integer; manipulate via bit ops.",
+      "applies_when": ["small_value_domain", "memory_bandwidth_bound"],
+      "mechanism": "`u8`/`u16`/`u32` holds N independent fields; access via shift + mask.",
+      "tradeoff": "Less readable; lots of `& 0x...` and `>> n` arithmetic in the source.",
+      "expected_speedup": 1.8,
+      "category": "cost_equivalence"
+    },
+    {
+      "name": "closed_form",
+      "definition": "Replace iteration with a mathematical closed-form expression — e.g. sum of n integers as n(n+1)/2, geometric series, etc.",
+      "applies_when": ["accumulator_loop", "math_heavy", "pure_function"],
+      "mechanism": "Derive the closed-form analytically; substitute the single expression.",
+      "tradeoff": "Requires the analytical identity to exist; numerical stability may differ.",
+      "expected_speedup": 100.0,
+      "category": "denotational_equivalence"
+    }
+  ],
+  "exclusions": [
+    ["precomputable", "unbounded_input"],
+    ["data_parallel", "inherently_serial"]
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "id": "conversation_reply_flag",
+  "version": "1.0.0",
+  "depends_on": ["intent"],
+  "description": "Human feedback on a bad reply from the web UI. The adapter writes reply_flag_pending=1.0 + reply_flag_note (the creator's note on how the reply SHOULD work) onto the flagged inbound Message; THIS rule DECIDES it is a fix request and files SelfConcern{source:'human_feedback', kind:'reply_fix', content:<the note>, status:'noted'} linked about_message, so the concern surfaces in the concerns tab and can be promoted through the existing human-gated self-improvement spine. Mint-once guard: reply_flag_noted=1.0.",
+  "nodes": [],
+  "edges": [],
+  "productions": [],
+  "rules": [
+    {
+      "name": "mint_reply_flag_concern",
+      "match": [
+        ["agent", "received", "m"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "reply_flag_pending"}, "b": {"type": "Lit", "value": 1.0}},
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "reply_flag_noted"}, "b": {"type": "Lit", "value": 1.0}}},
+          {"type": "Not", "arg": {"type": "Exists", "source": {"type": "NodesOfType", "node_type": "SelfConcern"}, "var_name": "sc2",
+            "predicate": {"type": "And", "items": [
+              {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "sc2"}, "key": "content"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "reply_flag_note"}},
+              {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "sc2"}, "key": "kind"}, "b": {"type": "Lit", "value": "reply_fix"}}
+            ]}}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "m", "reply_flag_noted", 1.0],
+        ["add_node", "sc", "SelfConcern", {
+          "status": "noted",
+          "source": "human_feedback",
+          "kind": "reply_fix",
+          "content": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "reply_flag_note"}}
+        }],
+        ["add_edge", "agent", "has_self_concern", "sc"],
+        ["add_edge", "sc", "about_message", "m"],
+        ["add_node", "reply", "Message", {
+          "from": "agent",
+          "text": {"__term__": {"type": "StringConcat", "parts": [
+            {"type": "Lit", "value": "Noted — I've filed your fix note for review. I won't change myself without review."}
+          ]}}
+        }],
+        ["add_edge", "reply", "responds_to", "m"],
+        ["add_edge", "agent", "sent", "reply"]
+      ]
+    }
+  ]
+}

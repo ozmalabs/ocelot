@@ -1,0 +1,56 @@
+{
+ "id": "container_orchestration_microtheory",
+ "version": "1.0.0",
+ "depends_on": [
+  "cloud_infrastructure_anchor_microtheory"
+ ],
+ "description": "CONTAINER ORCHESTRATION \u2014 the sub-world of cloud_infrastructure: the Kubernetes object model, giving the concept-graph descent a third rung below cloud.",
+ "microtheory": {
+  "name": "container_orchestration",
+  "definition": "The Kubernetes model for running containers: pods scheduled onto cluster nodes, services and ingress routing traffic, replica sets and autoscalers keeping the declared state, namespaces and Helm charts packaging it.",
+  "category": "container_orchestration"
+ },
+ "parent_mt": "cloud_infrastructure",
+ "concepts": [
+  {
+   "name": "pod",
+   "definition": "The smallest deployable unit \u2014 one or more co-located containers.",
+   "category": "container_orchestration"
+  },
+  {
+   "name": "node_cluster",
+   "definition": "The set of worker machines a container orchestrator schedules onto.",
+   "category": "container_orchestration"
+  },
+  {
+   "name": "service_mesh",
+   "definition": "An infrastructure layer handling service-to-service communication.",
+   "category": "container_orchestration"
+  },
+  {
+   "name": "ingress",
+   "definition": "The rules routing external traffic into cluster services.",
+   "category": "container_orchestration"
+  },
+  {
+   "name": "replica_set",
+   "definition": "The controller keeping a specified number of pod replicas running.",
+   "category": "container_orchestration"
+  },
+  {
+   "name": "scheduler",
+   "definition": "The component assigning pods to nodes by resource and constraint.",
+   "category": "container_orchestration"
+  },
+  {
+   "name": "namespace",
+   "definition": "A virtual partition isolating groups of resources within a cluster.",
+   "category": "container_orchestration"
+  },
+  {
+   "name": "helm_chart",
+   "definition": "A packaged, templated definition of a Kubernetes application.",
+   "category": "container_orchestration"
+  }
+ ]
+}

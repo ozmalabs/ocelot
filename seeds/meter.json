@@ -1,0 +1,3897 @@
+{
+ "id": "meter",
+ "version": "0.1.0",
+ "depends_on": [
+  "region_grouping",
+  "agency"
+ ],
+ "description": "Slice-1 PRIMARY meter recognition (extent read-out). A meter is the avatar's INVERSE: a region that STAYS PUT (stable_frames>=K) while its read-out coordinate VARIES, that you READ not control (not a ControlledElement, not ground). Slice-1 handles the EXTENT read-out (the ls20 value-11 countdown bar); monotone-extent is the COUNTDOWN sub-kind. Tracks the extent trend in graph state (eye gives no history). Excludes meters from control + mints a Mechanic model-fact. DEFERRED: other read-out forms (fill/gauge/counter/icons) + the order-N compound sub-indicators (the three dots = the bar's redline, a manifold frontier hypothesis). | ANCHOR REFINEMENT: 'stays put' is now RESIZE-based, not centroid-stable \u2014 a meter's bbox RESIZES (span changes via non-uniform edge motion) while an avatar's bbox TRANSLATES (rigid shift, span constant). meter_track tracks the 4 bbox edges (minr/minc/maxr/maxc, given by the eye each frame) -> resize_frames (increment on resize, reset on translation, hold on static); is_meter gates on resize_frames>=K. Records anchor_edge + readout_axis. Robust to end-depleting bars (drifting centroid) the old test missed. | FORMS slice-2a FILL: track observed_max (high-water) + ever_up/ever_down; a resize meter that oscillates (both up and down, bounded by observed_max) is a FILL (kind=fill, meter_fraction=count/observed_max), vs a monotone-depleting COUNTDOWN bar. Forms compete by which signature/trend the reading shows; gauge (bounded-translate) + icons (cardinality) are further slices. | FORMS slice-2b GAUGE: the meter/avatar cut is CONTROL not resize \u2014 a gauge marker TRANSLATES (rigid bbox shift, constant span) but is NOT controlled, so it's a meter whose read-out is BOUNDED POSITION. is_meter now = not-ground + not-controlled + (resize OR bounded-translate[rigid-move + reversed = confirmed bounded]); a gauge -> kind=gauge, meter_value=(cx-cx_min)/(cx_max-cx_min) normalised position.",
+ "microtheory": {
+  "name": "meter",
+  "description": "a meter is a measured quantity projected onto a visual form; recognise by stays-put-but-reading-varies; read = LIFT the varying coordinate; monotone is the countdown sub-kind. A meter is read, not controlled."
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [
+  {
+   "provenance": "seed:meter:has_mechanic-0",
+   "src": {
+    "type": "WorldInstance",
+    "var": "s"
+   },
+   "edge_type": "has_mechanic",
+   "tgt": {
+    "type": "Mechanic",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:meter:tracks-1",
+   "src": {
+    "type": "Mechanic",
+    "var": "s"
+   },
+   "edge_type": "tracks",
+   "tgt": {
+    "type": "Region",
+    "var": "t"
+   }
+  }
+ ],
+ "concepts": [],
+ "rules": [
+  {
+   "name": "meter_track",
+   "match": [
+    [
+     "game",
+     "has_region",
+     "region"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "region"
+          },
+          "key": "is_ground"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "region"
+          },
+          "key": "meter_frame"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       },
+       "b": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "game"
+          },
+          "key": "frame"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "region",
+     "delta_extent",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Eq",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "region"
+           },
+           "key": "meter_inited"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1
+        }
+       },
+       "then": {
+        "type": "Minus",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "region"
+         },
+         "key": "count"
+        },
+        "b": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "region"
+           },
+           "key": "count_prev"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        }
+       },
+       "other": {
+        "type": "Lit",
+        "value": 0
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "region",
+     "stable_frames",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Lte",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Abs",
+           "arg": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "region"
+            },
+            "key": "drow"
+           }
+          },
+          {
+           "type": "Abs",
+           "arg": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "region"
+            },
+            "key": "dcol"
+           }
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       },
+       "then": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "region"
+          },
+          "key": "stable_frames"
+         },
+         {
+          "type": "Lit",
+          "value": 1
+         }
+        ]
+       },
+       "other": {
+        "type": "Lit",
+        "value": 0
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "region",
+     "extent_varied",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Eq",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "region"
+           },
+           "key": "delta_extent"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0
+        }
+       },
+       "then": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "region"
+          },
+          "key": "extent_varied"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       },
+       "other": {
+        "type": "Lit",
+        "value": 1
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "region",
+     "monotone_run",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Eq",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "region"
+           },
+           "key": "delta_extent"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0
+        }
+       },
+       "then": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "region"
+          },
+          "key": "monotone_run"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       },
+       "other": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Eq",
+         "a": {
+          "type": "IfThenElse",
+          "cond": {
+           "type": "Lt",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "region"
+              },
+              "key": "delta_extent"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0
+           }
+          },
+          "then": {
+           "type": "Lit",
+           "value": -1
+          },
+          "other": {
+           "type": "Lit",
+           "value": 1
+          }
+         },
+         "b": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "region"
+            },
+            "key": "meter_dir"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         }
+        },
+        "then": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "region"
+           },
+           "key": "monotone_run"
+          },
+          {
+           "type": "Lit",
+           "value": 1
+          }
+         ]
+        },
+        "other": {
+         "type": "Lit",
+         "value": 1
+        }
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "region",
+     "meter_dir",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Eq",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "region"
+           },
+           "key": "delta_extent"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0
+        }
+       },
+       "then": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "region"
+          },
+          "key": "meter_dir"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       },
+       "other": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Lt",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "region"
+            },
+            "key": "delta_extent"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0
+         }
+        },
+        "then": {
+         "type": "Lit",
+         "value": -1
+        },
+        "other": {
+         "type": "Lit",
+         "value": 1
+        }
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "region",
+     "meter_rate",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Eq",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "region"
+           },
+           "key": "delta_extent"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0
+        }
+       },
+       "then": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "region"
+          },
+          "key": "meter_rate"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       },
+       "other": {
+        "type": "Abs",
+        "arg": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "region"
+           },
+           "key": "delta_extent"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        }
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "region",
+     "resize_frames",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Eq",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "region"
+           },
+           "key": "meter_inited"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1
+        }
+       },
+       "then": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Or",
+         "items": [
+          {
+           "type": "Not",
+           "arg": {
+            "type": "Eq",
+            "a": {
+             "type": "Minus",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "region"
+              },
+              "key": "maxr"
+             },
+             "b": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "region"
+                },
+                "key": "maxr_prev"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             }
+            },
+            "b": {
+             "type": "Minus",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "region"
+              },
+              "key": "minr"
+             },
+             "b": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "region"
+                },
+                "key": "minr_prev"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             }
+            }
+           }
+          },
+          {
+           "type": "Not",
+           "arg": {
+            "type": "Eq",
+            "a": {
+             "type": "Minus",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "region"
+              },
+              "key": "maxc"
+             },
+             "b": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "region"
+                },
+                "key": "maxc_prev"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             }
+            },
+            "b": {
+             "type": "Minus",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "region"
+              },
+              "key": "minc"
+             },
+             "b": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "region"
+                },
+                "key": "minc_prev"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             }
+            }
+           }
+          }
+         ]
+        },
+        "then": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "region"
+           },
+           "key": "resize_frames"
+          },
+          {
+           "type": "Lit",
+           "value": 1
+          }
+         ]
+        },
+        "other": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "And",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Minus",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "region"
+              },
+              "key": "maxr"
+             },
+             "b": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "region"
+                },
+                "key": "maxr_prev"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             }
+            },
+            "b": {
+             "type": "Minus",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "region"
+              },
+              "key": "minr"
+             },
+             "b": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "region"
+                },
+                "key": "minr_prev"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             }
+            }
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Minus",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "region"
+              },
+              "key": "maxc"
+             },
+             "b": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "region"
+                },
+                "key": "maxc_prev"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             }
+            },
+            "b": {
+             "type": "Minus",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "region"
+              },
+              "key": "minc"
+             },
+             "b": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "region"
+                },
+                "key": "minc_prev"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             }
+            }
+           },
+           {
+            "type": "Or",
+            "items": [
+             {
+              "type": "Not",
+              "arg": {
+               "type": "Eq",
+               "a": {
+                "type": "Minus",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "region"
+                 },
+                 "key": "minr"
+                },
+                "b": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "region"
+                   },
+                   "key": "minr_prev"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 ]
+                }
+               },
+               "b": {
+                "type": "Lit",
+                "value": 0
+               }
+              }
+             },
+             {
+              "type": "Not",
+              "arg": {
+               "type": "Eq",
+               "a": {
+                "type": "Minus",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "region"
+                 },
+                 "key": "minc"
+                },
+                "b": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "region"
+                   },
+                   "key": "minc_prev"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 ]
+                }
+               },
+               "b": {
+                "type": "Lit",
+                "value": 0
+               }
+              }
+             }
+            ]
+           }
+          ]
+         },
+         "then": {
+          "type": "Lit",
+          "value": 0
+         },
+         "other": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "region"
+            },
+            "key": "resize_frames"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         }
+        }
+       },
+       "other": {
+        "type": "Lit",
+        "value": 0
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "region",
+     "readout_axis",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Not",
+        "arg": {
+         "type": "Eq",
+         "a": {
+          "type": "Minus",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "region"
+           },
+           "key": "maxc"
+          },
+          "b": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "region"
+             },
+             "key": "maxc_prev"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          }
+         },
+         "b": {
+          "type": "Minus",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "region"
+           },
+           "key": "minc"
+          },
+          "b": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "region"
+             },
+             "key": "minc_prev"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          }
+         }
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": "col"
+       },
+       "other": {
+        "type": "Lit",
+        "value": "row"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "region",
+     "anchor_edge",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Not",
+        "arg": {
+         "type": "Eq",
+         "a": {
+          "type": "Minus",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "region"
+           },
+           "key": "maxc"
+          },
+          "b": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "region"
+             },
+             "key": "maxc_prev"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          }
+         },
+         "b": {
+          "type": "Minus",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "region"
+           },
+           "key": "minc"
+          },
+          "b": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "region"
+             },
+             "key": "minc_prev"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          }
+         }
+        }
+       },
+       "then": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Eq",
+         "a": {
+          "type": "Minus",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "region"
+           },
+           "key": "minc"
+          },
+          "b": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "region"
+             },
+             "key": "minc_prev"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          }
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0
+         }
+        },
+        "then": {
+         "type": "Lit",
+         "value": "minc"
+        },
+        "other": {
+         "type": "Lit",
+         "value": "maxc"
+        }
+       },
+       "other": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Eq",
+         "a": {
+          "type": "Minus",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "region"
+           },
+           "key": "minr"
+          },
+          "b": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "region"
+             },
+             "key": "minr_prev"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          }
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0
+         }
+        },
+        "then": {
+         "type": "Lit",
+         "value": "minr"
+        },
+        "other": {
+         "type": "Lit",
+         "value": "maxr"
+        }
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "region",
+     "cx_min",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Eq",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "region"
+           },
+           "key": "meter_inited"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1
+        }
+       },
+       "then": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Lt",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "region"
+          },
+          "key": "cx"
+         },
+         "b": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "region"
+            },
+            "key": "cx_min"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         }
+        },
+        "then": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "region"
+         },
+         "key": "cx"
+        },
+        "other": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "region"
+           },
+           "key": "cx_min"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        }
+       },
+       "other": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "region"
+        },
+        "key": "cx"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "region",
+     "cx_max",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Eq",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "region"
+           },
+           "key": "meter_inited"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1
+        }
+       },
+       "then": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Gt",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "region"
+          },
+          "key": "cx"
+         },
+         "b": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "region"
+            },
+            "key": "cx_max"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         }
+        },
+        "then": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "region"
+         },
+         "key": "cx"
+        },
+        "other": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "region"
+           },
+           "key": "cx_max"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        }
+       },
+       "other": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "region"
+        },
+        "key": "cx"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "region",
+     "translate_bounded_frames",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Eq",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "region"
+           },
+           "key": "meter_inited"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1
+        }
+       },
+       "then": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "And",
+         "items": [
+          {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Minus",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "region"
+               },
+               "key": "minr"
+              },
+              "b": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "region"
+                 },
+                 "key": "minr_prev"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
+              }
+             },
+             "b": {
+              "type": "Minus",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "region"
+               },
+               "key": "maxr"
+              },
+              "b": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "region"
+                 },
+                 "key": "maxr_prev"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
+              }
+             }
+            },
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Minus",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "region"
+               },
+               "key": "minc"
+              },
+              "b": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "region"
+                 },
+                 "key": "minc_prev"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
+              }
+             },
+             "b": {
+              "type": "Minus",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "region"
+               },
+               "key": "maxc"
+              },
+              "b": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "region"
+                 },
+                 "key": "maxc_prev"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
+              }
+             }
+            },
+            {
+             "type": "Or",
+             "items": [
+              {
+               "type": "Not",
+               "arg": {
+                "type": "Eq",
+                "a": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "region"
+                   },
+                   "key": "dcol"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 ]
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": 0
+                }
+               }
+              },
+              {
+               "type": "Not",
+               "arg": {
+                "type": "Eq",
+                "a": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "region"
+                   },
+                   "key": "drow"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 ]
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": 0
+                }
+               }
+              }
+             ]
+            }
+           ]
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Count",
+            "source": {
+             "type": "InNeighbours",
+             "node": {
+              "type": "Var",
+              "name": "region"
+             },
+             "edge_type": "comprises",
+             "any_type": false
+            }
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0
+           }
+          }
+         ]
+        },
+        "then": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "region"
+           },
+           "key": "translate_bounded_frames"
+          },
+          {
+           "type": "Lit",
+           "value": 1
+          }
+         ]
+        },
+        "other": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Or",
+          "items": [
+           {
+            "type": "Not",
+            "arg": {
+             "type": "Eq",
+             "a": {
+              "type": "Minus",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "region"
+               },
+               "key": "maxr"
+              },
+              "b": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "region"
+                 },
+                 "key": "maxr_prev"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
+              }
+             },
+             "b": {
+              "type": "Minus",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "region"
+               },
+               "key": "minr"
+              },
+              "b": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "region"
+                 },
+                 "key": "minr_prev"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
+              }
+             }
+            }
+           },
+           {
+            "type": "Not",
+            "arg": {
+             "type": "Eq",
+             "a": {
+              "type": "Minus",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "region"
+               },
+               "key": "maxc"
+              },
+              "b": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "region"
+                 },
+                 "key": "maxc_prev"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
+              }
+             },
+             "b": {
+              "type": "Minus",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "region"
+               },
+               "key": "minc"
+              },
+              "b": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "region"
+                 },
+                 "key": "minc_prev"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
+              }
+             }
+            }
+           }
+          ]
+         },
+         "then": {
+          "type": "Lit",
+          "value": 0
+         },
+         "other": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "region"
+            },
+            "key": "translate_bounded_frames"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         }
+        }
+       },
+       "other": {
+        "type": "Lit",
+        "value": 0
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "region",
+     "ever_reversed",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Not",
+          "arg": {
+           "type": "Eq",
+           "a": {
+            "type": "IfThenElse",
+            "cond": {
+             "type": "Lt",
+             "a": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "region"
+                },
+                "key": "dcol"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0
+             }
+            },
+            "then": {
+             "type": "Lit",
+             "value": -1
+            },
+            "other": {
+             "type": "IfThenElse",
+             "cond": {
+              "type": "Gt",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "region"
+                 },
+                 "key": "dcol"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0
+              }
+             },
+             "then": {
+              "type": "Lit",
+              "value": 1
+             },
+             "other": {
+              "type": "Lit",
+              "value": 0
+             }
+            }
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0
+           }
+          }
+         },
+         {
+          "type": "Not",
+          "arg": {
+           "type": "Eq",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "region"
+              },
+              "key": "dcol_sign_prev"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0
+           }
+          }
+         },
+         {
+          "type": "Not",
+          "arg": {
+           "type": "Eq",
+           "a": {
+            "type": "IfThenElse",
+            "cond": {
+             "type": "Lt",
+             "a": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "region"
+                },
+                "key": "dcol"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0
+             }
+            },
+            "then": {
+             "type": "Lit",
+             "value": -1
+            },
+            "other": {
+             "type": "IfThenElse",
+             "cond": {
+              "type": "Gt",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "region"
+                 },
+                 "key": "dcol"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0
+              }
+             },
+             "then": {
+              "type": "Lit",
+              "value": 1
+             },
+             "other": {
+              "type": "Lit",
+              "value": 0
+             }
+            }
+           },
+           "b": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "region"
+              },
+              "key": "dcol_sign_prev"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           }
+          }
+         }
+        ]
+       },
+       "then": {
+        "type": "Lit",
+        "value": 1
+       },
+       "other": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "region"
+          },
+          "key": "ever_reversed"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "region",
+     "dcol_sign_prev",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Lt",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "region"
+           },
+           "key": "dcol"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": -1
+       },
+       "other": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Gt",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "region"
+            },
+            "key": "dcol"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0
+         }
+        },
+        "then": {
+         "type": "Lit",
+         "value": 1
+        },
+        "other": {
+         "type": "Lit",
+         "value": 0
+        }
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "region",
+     "minr_prev",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "region"
+       },
+       "key": "minr"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "region",
+     "minc_prev",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "region"
+       },
+       "key": "minc"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "region",
+     "maxr_prev",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "region"
+       },
+       "key": "maxr"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "region",
+     "maxc_prev",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "region"
+       },
+       "key": "maxc"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "region",
+     "observed_max",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gt",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "region"
+         },
+         "key": "count"
+        },
+        "b": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "region"
+           },
+           "key": "observed_max"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        }
+       },
+       "then": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "region"
+        },
+        "key": "count"
+       },
+       "other": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "region"
+          },
+          "key": "observed_max"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "region",
+     "ever_up",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gt",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "region"
+           },
+           "key": "delta_extent"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": 1
+       },
+       "other": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "region"
+          },
+          "key": "ever_up"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "region",
+     "ever_down",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Lt",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "region"
+           },
+           "key": "delta_extent"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": 1
+       },
+       "other": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "region"
+          },
+          "key": "ever_down"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "region",
+     "count_prev",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "region"
+       },
+       "key": "count"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "region",
+     "meter_frame",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "game"
+       },
+       "key": "frame"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "region",
+     "meter_inited",
+     {
+      "__term__": {
+       "type": "Lit",
+       "value": 1
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "is_meter",
+   "match": [
+    [
+     "game",
+     "has_region",
+     "region"
+    ]
+   ],
+   "where": {
+    "type": "Eq",
+    "a": {
+     "type": "Plus",
+     "items": [
+      {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "region"
+       },
+       "key": "meter_inited"
+      },
+      {
+       "type": "Lit",
+       "value": 0
+      }
+     ]
+    },
+    "b": {
+     "type": "Lit",
+     "value": 1
+    }
+   },
+   "effects": [
+    [
+     "set_attr",
+     "region",
+     "is_meter",
+     {
+      "__term__": {
+       "type": "And",
+       "items": [
+        {
+         "type": "Not",
+         "arg": {
+          "type": "Eq",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "region"
+             },
+             "key": "is_ground"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          },
+          "b": {
+           "type": "Lit",
+           "value": 1.0
+          }
+         }
+        },
+        {
+         "type": "Eq",
+         "a": {
+          "type": "Count",
+          "source": {
+           "type": "InNeighbours",
+           "node": {
+            "type": "Var",
+            "name": "region"
+           },
+           "edge_type": "comprises",
+           "any_type": false
+          }
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0
+         }
+        },
+        {
+         "type": "Or",
+         "items": [
+          {
+           "type": "Gte",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "region"
+              },
+              "key": "resize_frames"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           },
+           "b": {
+            "type": "Lit",
+            "value": 2
+           }
+          },
+          {
+           "type": "And",
+           "items": [
+            {
+             "type": "Gte",
+             "a": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "region"
+                },
+                "key": "translate_bounded_frames"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             },
+             "b": {
+              "type": "Lit",
+              "value": 2
+             }
+            },
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "region"
+                },
+                "key": "ever_reversed"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             },
+             "b": {
+              "type": "Lit",
+              "value": 1
+             }
+            },
+            {
+             "type": "Gte",
+             "a": {
+              "type": "Minus",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "region"
+                 },
+                 "key": "cx_max"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
+              },
+              "b": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "region"
+                 },
+                 "key": "cx_min"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
+              }
+             },
+             "b": {
+              "type": "Lit",
+              "value": 3
+             }
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "meter_read",
+   "match": [
+    [
+     "game",
+     "has_region",
+     "region"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "region"
+         },
+         "key": "is_meter"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "region"
+          },
+          "key": "read_frame"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       },
+       "b": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "game"
+          },
+          "key": "frame"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "region",
+     "meter_value",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "region"
+       },
+       "key": "count"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "region",
+     "meter_kind",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gte",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "region"
+           },
+           "key": "monotone_run"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 2
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": "bar"
+       },
+       "other": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "region"
+        },
+        "key": "meter_kind"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "region",
+     "meter_trend",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gte",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "region"
+           },
+           "key": "monotone_run"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 2
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": "countdown"
+       },
+       "other": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "region"
+        },
+        "key": "meter_trend"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "region",
+     "meter_turns_left",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Gte",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "region"
+             },
+             "key": "monotone_run"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          },
+          "b": {
+           "type": "Lit",
+           "value": 2
+          }
+         },
+         {
+          "type": "Gt",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "region"
+             },
+             "key": "meter_rate"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0
+          }
+         }
+        ]
+       },
+       "then": {
+        "type": "Div",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "region"
+         },
+         "key": "count"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "region"
+         },
+         "key": "meter_rate"
+        }
+       },
+       "other": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "region"
+          },
+          "key": "meter_turns_left"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "region",
+     "meter_kind",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "region"
+             },
+             "key": "ever_up"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          },
+          "b": {
+           "type": "Lit",
+           "value": 1
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "region"
+             },
+             "key": "ever_down"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          },
+          "b": {
+           "type": "Lit",
+           "value": 1
+          }
+         }
+        ]
+       },
+       "then": {
+        "type": "Lit",
+        "value": "fill"
+       },
+       "other": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Gt",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "region"
+            },
+            "key": "monotone_run"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1
+         }
+        },
+        "then": {
+         "type": "Lit",
+         "value": "bar"
+        },
+        "other": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "region"
+           },
+           "key": "meter_kind"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        }
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "region",
+     "meter_fraction",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "And",
+        "items": [
+         {
+          "type": "And",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "region"
+               },
+               "key": "ever_up"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            },
+            "b": {
+             "type": "Lit",
+             "value": 1
+            }
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "region"
+               },
+               "key": "ever_down"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            },
+            "b": {
+             "type": "Lit",
+             "value": 1
+            }
+           }
+          ]
+         },
+         {
+          "type": "Gt",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "region"
+             },
+             "key": "observed_max"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0
+          }
+         }
+        ]
+       },
+       "then": {
+        "type": "Div",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "region"
+         },
+         "key": "count"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "region"
+         },
+         "key": "observed_max"
+        }
+       },
+       "other": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "region"
+          },
+          "key": "meter_fraction"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "region",
+     "meter_kind",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Gte",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "region"
+             },
+             "key": "translate_bounded_frames"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          },
+          "b": {
+           "type": "Lit",
+           "value": 2
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "region"
+             },
+             "key": "ever_reversed"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          },
+          "b": {
+           "type": "Lit",
+           "value": 1
+          }
+         },
+         {
+          "type": "Gte",
+          "a": {
+           "type": "Minus",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "region"
+              },
+              "key": "cx_max"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           },
+           "b": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "region"
+              },
+              "key": "cx_min"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           }
+          },
+          "b": {
+           "type": "Lit",
+           "value": 3
+          }
+         },
+         {
+          "type": "Not",
+          "arg": {
+           "type": "Gte",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "region"
+              },
+              "key": "resize_frames"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           },
+           "b": {
+            "type": "Lit",
+            "value": 2
+           }
+          }
+         }
+        ]
+       },
+       "then": {
+        "type": "Lit",
+        "value": "gauge"
+       },
+       "other": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "region"
+        },
+        "key": "meter_kind"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "region",
+     "meter_value",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Gte",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "region"
+             },
+             "key": "translate_bounded_frames"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          },
+          "b": {
+           "type": "Lit",
+           "value": 2
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "region"
+             },
+             "key": "ever_reversed"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          },
+          "b": {
+           "type": "Lit",
+           "value": 1
+          }
+         },
+         {
+          "type": "Gte",
+          "a": {
+           "type": "Minus",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "region"
+              },
+              "key": "cx_max"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           },
+           "b": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "region"
+              },
+              "key": "cx_min"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           }
+          },
+          "b": {
+           "type": "Lit",
+           "value": 3
+          }
+         },
+         {
+          "type": "Not",
+          "arg": {
+           "type": "Gte",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "region"
+              },
+              "key": "resize_frames"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           },
+           "b": {
+            "type": "Lit",
+            "value": 2
+           }
+          }
+         }
+        ]
+       },
+       "then": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Gt",
+         "a": {
+          "type": "Minus",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "region"
+             },
+             "key": "cx_max"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          },
+          "b": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "region"
+             },
+             "key": "cx_min"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          }
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0
+         }
+        },
+        "then": {
+         "type": "Div",
+         "a": {
+          "type": "Minus",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "region"
+           },
+           "key": "cx"
+          },
+          "b": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "region"
+             },
+             "key": "cx_min"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          }
+         },
+         "b": {
+          "type": "Minus",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "region"
+             },
+             "key": "cx_max"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          },
+          "b": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "region"
+             },
+             "key": "cx_min"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          }
+         }
+        },
+        "other": {
+         "type": "Lit",
+         "value": 0
+        }
+       },
+       "other": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "region"
+        },
+        "key": "count"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "region",
+     "read_frame",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "game"
+         },
+         "key": "frame"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "meter_unbind",
+   "match": [
+    [
+     "el",
+     "comprises",
+     "region"
+    ]
+   ],
+   "where": {
+    "type": "Eq",
+    "a": {
+     "type": "Plus",
+     "items": [
+      {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "region"
+       },
+       "key": "is_meter"
+      },
+      {
+       "type": "Lit",
+       "value": 0
+      }
+     ]
+    },
+    "b": {
+     "type": "Lit",
+     "value": 1
+    }
+   },
+   "effects": [
+    [
+     "del_edge",
+     "el",
+     "comprises",
+     "region"
+    ]
+   ]
+  },
+  {
+   "name": "meter_mint_mechanic",
+   "match": [
+    [
+     "game",
+     "has_region",
+     "region"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "region"
+         },
+         "key": "is_meter"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "region"
+          },
+          "key": "mint_frame"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       },
+       "b": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "game"
+          },
+          "key": "frame"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node_if_absent",
+     "mech",
+     "Mechanic",
+     {
+      "fkey": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "region"
+        },
+        "key": "rid"
+       }
+      },
+      "role": "meter"
+     }
+    ],
+    [
+     "add_edge",
+     "game",
+     "has_mechanic",
+     "mech"
+    ],
+    [
+     "add_edge",
+     "mech",
+     "tracks",
+     "region"
+    ],
+    [
+     "set_attr",
+     "mech",
+     "meter_value",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "region"
+       },
+       "key": "meter_value"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "mech",
+     "meter_kind",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "region"
+       },
+       "key": "meter_kind"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "mech",
+     "meter_trend",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "region"
+       },
+       "key": "meter_trend"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "mech",
+     "meter_rate",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "region"
+       },
+       "key": "meter_rate"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "mech",
+     "meter_turns_left",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "region"
+       },
+       "key": "meter_turns_left"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "mech",
+     "meter_fraction",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "region"
+       },
+       "key": "meter_fraction"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "region",
+     "mint_frame",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "game"
+         },
+         "key": "frame"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  }
+ ],
+ "goals": []
+}

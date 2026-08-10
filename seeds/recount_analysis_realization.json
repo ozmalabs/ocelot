@@ -1,0 +1,229 @@
+{
+  "id": "recount_analysis_realization",
+  "version": "1.1.0",
+  "depends_on": [],
+  "description": "GRAPH-NATIVE realization decisions for the ANALYSIS layer of the recount faculty -- the read twin of recount_realization.json, one level up: instead of realizing the article's SURFACE events, this realizes the agent's own HELD goal-layer / epistemic READINGS (ConflictingGoalsReading, SurfaceInversionReading, TemporalConflictReading, TropeReading, EpistemicLeanReading -- already graph state, minted by actor_goals.py's own classify-by-join rules; NEVER minted here). domains/recount_faculty.project_analysis_scene does PURELY MECHANICAL, type-BLIND work: for every string attr <= 6 words on a held reading node it writes a decorated `<key>_phrase` sibling (dash/underscore/pipe -> space, title-cased -- see _phrase/_named_phrase), bridges every decorated phrase to the production lexicon, and wires a fresh Percept -is_a-> THE READING NODE ITSELF into a new Scene (reusing the EXACT p-is_a->con shape the already-composed communicate_what_i_read rule reads -- that rule never type-checks con, so no new rule-authoring call is needed to reuse it). THESE RULES make the one decision recount_faculty.py's Python never makes: WHICH decorated field fills say_agent / say_event / say_patient for EACH reading TYPE (a per-type routing choice -- exactly recount_realization.json's say_* pattern, generalised to five reading shapes). Each rule's discriminator is a decorated field name UNIQUE to its reading type (tension_phrase only exists on ConflictingGoalsReading, reading_phrase only on SurfaceInversionReading, trope_phrase only on TropeReading, verdict_phrase only on EpistemicLeanReading; TemporalConflictReading is discriminated by pair_key_phrase present AND trope_phrase absent -- it and TropeReading share actor/object/pair_key, so the absence of a trope_phrase on THIS node is what says 'this reading was never given a name'), so no rule can ever fire on an unrelated is_a target elsewhere in the graph (only project_analysis_scene ever writes a `_phrase`-suffixed attr, and only onto these five reading types). Ablating any one rule drops exactly that reading type's analytical sentence -- proving the frame-construction decision is the rule's, not Python's.\n\nv1.1.0 -- FLUENT PHRASING + REDUNDANCY SUPPRESSION, filed after the Jabberwock was TOLD (over converse()) that its analysis prose 'reads the tension and pair slugs literally' and 'repeats the same point twice' and FILED that as a SelfConcern (seeds/gap_awareness.json's note_reported_gap). TWO held-data decisions fix it. (1) FLUENT PHRASING codebooks -- `TensionPhrasing{tension, phrase}` and `PairPhrasing{pair_key, phrase}` hold a genuinely fluent, already-cased, SHORT (produce fills one lexical item per role, so this stays a real limit, not a workaround) human phrase for a tension / pair_key the naive `_phrase`/`_named_phrase` slug-reversal would otherwise render mechanically ('express-vs-avoid-social-cost' -> 'Express Vs Avoid Social Cost'; 'fund|oppose' -> 'Fund Then Oppose'). `analysis_say_conflicting_goals_fluent` / `analysis_say_temporal_conflict_fluent` join the reading node's own tension/pair_key against the codebook (wired to the agent hub by project_analysis_scene, the SAME reconcile-by-presence idiom recount_fluency.json's ConnectiveMap/PronounMap wiring uses) and, ONLY on a match, speak the held phrase instead. The ORIGINAL `analysis_say_conflicting_goals`/`analysis_say_temporal_conflict` rules gained a `Not Exists <Phrasing row for this key>` guard, so the two rules per reading type are STRUCTURALLY mutually exclusive (never a race, never both firing) -- removing the phrasing CODEBOOK ROW (not the rule) makes the fluent rule's own join fail and the ORIGINAL slug-based rule's guard pass, reverting to the exact prior mechanical phrasing -- an honest, provable fallback, never a fabricated fluent gloss for a tension/pair the agent was never taught a phrasing for. (2) REDUNDANCY SUPPRESSION -- `analysis_suppress_superseded_temporal` (placed FIRST in this seed's rule list, so it always gets first claim on a fresh TemporalConflictReading node before any say_* rule considers it -- see runners/dsl/src/rewrite.rs::run_rules's documented one-progressing-binding-per-pass, rules-in-list-order discipline) marks a TemporalConflictReading `analysis_temporal_superseded=1.0` iff a HELD TropeReading already names the SAME actor+pair_key -- the trope line (analysis_say_trope, unchanged) already says everything the plain temporal line would ('Trojan Horse' subsumes 'Its Own Funding' for the SAME fund->oppose pattern). Both temporal say_* rules (fluent and slug-fallback) gained a `Not (analysis_temporal_superseded == 1.0)` guard. A TemporalConflictReading with NO matching TropeReading (an opposing-action pattern the agent's TropeSignature codebook was never taught a name for) is never suppressed -- it still gets recounted, fluently if a PairPhrasing row exists for its pair_key, in slug form otherwise. Ablating analysis_suppress_superseded_temporal alone (leaving the say_* rules untouched) means the marker attr is never written, so both mutually-exclusive-by-key-only temporal say_* rules' `Not superseded` guard is vacuously true again -- BOTH the temporal line and the trope line return, reproducing the pre-fix redundancy exactly (the ablation-proof this seed's tests exercise).",
+  "nodes": [
+    {"local_id": 1, "type": "AnalysisVocabulary", "attrs": {"surface": "signalled"}},
+    {"local_id": 2, "type": "AnalysisVocabulary", "attrs": {"surface": "marked"}},
+    {"local_id": 3, "type": "AnalysisVocabulary", "attrs": {"surface": "reversed"}},
+    {"local_id": 4, "type": "AnalysisVocabulary", "attrs": {"surface": "revealed"}},
+    {"local_id": 5, "type": "AnalysisVocabulary", "attrs": {"surface": "leaned"}},
+    {"local_id": 6, "type": "AnalysisVocabulary", "attrs": {"surface": "reading"}},
+    {"local_id": 50, "type": "TensionPhrasing", "attrs": {"tension": "express-vs-avoid-social-cost", "phrase": "A Polite Hedge"}},
+    {"local_id": 60, "type": "PairPhrasing", "attrs": {"pair_key": "fund|oppose", "phrase": "Its Own Funding"}},
+    {"local_id": 61, "type": "PairPhrasing", "attrs": {"pair_key": "support|block", "phrase": "Its Own Support"}},
+    {"local_id": 62, "type": "PairPhrasing", "attrs": {"pair_key": "promote|restrict", "phrase": "Its Own Promotion"}},
+    {"local_id": 63, "type": "PairPhrasing", "attrs": {"pair_key": "sponsor|ban", "phrase": "Its Own Sponsorship"}}
+  ],
+  "edges": [],
+  "productions": [],
+  "concepts": [],
+  "rules": [
+    {
+      "name": "analysis_suppress_superseded_temporal",
+      "match": [["p", "is_a", "nd"]],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Not", "arg": {"type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "nd"}, "key": "pair_key_phrase"},
+            "b": {"type": "Lit", "value": null}}},
+          {"type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "nd"}, "key": "trope_phrase"},
+            "b": {"type": "Lit", "value": null}},
+          {"type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "nd"}, "key": "analysis_temporal_superseded"},
+            "b": {"type": "Lit", "value": null}},
+          {"type": "Exists",
+            "source": {"type": "NodesOfType", "node_type": "TropeReading"},
+            "var_name": "tr2",
+            "predicate": {
+              "type": "And",
+              "items": [
+                {"type": "Eq",
+                  "a": {"type": "Attr", "node": {"type": "Var", "name": "tr2"}, "key": "actor"},
+                  "b": {"type": "Attr", "node": {"type": "Var", "name": "nd"}, "key": "actor"}},
+                {"type": "Eq",
+                  "a": {"type": "Attr", "node": {"type": "Var", "name": "tr2"}, "key": "pair_key"},
+                  "b": {"type": "Attr", "node": {"type": "Var", "name": "nd"}, "key": "pair_key"}}
+              ]
+            }}
+        ]
+      },
+      "effects": [
+        ["set_attr", "nd", "analysis_temporal_superseded", {"__term__": {"type": "Lit", "value": 1.0}}]
+      ]
+    },
+    {
+      "name": "analysis_say_conflicting_goals_fluent",
+      "match": [["p", "is_a", "nd"], ["agent", "has_tension_phrasing", "tp"]],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Not", "arg": {"type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "nd"}, "key": "tension"},
+            "b": {"type": "Lit", "value": null}}},
+          {"type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "nd"}, "key": "say_agent"},
+            "b": {"type": "Lit", "value": null}},
+          {"type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "tp"}, "key": "tension"},
+            "b": {"type": "Attr", "node": {"type": "Var", "name": "nd"}, "key": "tension"}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "nd", "say_agent", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "nd"}, "key": "phrase_phrase"}}],
+        ["set_attr", "nd", "say_event", {"__term__": {"type": "Lit", "value": "signalled"}}],
+        ["set_attr", "nd", "say_patient", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "tp"}, "key": "phrase"}}]
+      ]
+    },
+    {
+      "name": "analysis_say_conflicting_goals",
+      "match": [["p", "is_a", "nd"]],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Not", "arg": {"type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "nd"}, "key": "tension_phrase"},
+            "b": {"type": "Lit", "value": null}}},
+          {"type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "nd"}, "key": "say_agent"},
+            "b": {"type": "Lit", "value": null}},
+          {"type": "Not", "arg": {"type": "Exists",
+            "source": {"type": "NodesOfType", "node_type": "TensionPhrasing"},
+            "var_name": "tp2",
+            "predicate": {"type": "Eq",
+              "a": {"type": "Attr", "node": {"type": "Var", "name": "tp2"}, "key": "tension"},
+              "b": {"type": "Attr", "node": {"type": "Var", "name": "nd"}, "key": "tension"}}}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "nd", "say_agent", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "nd"}, "key": "phrase_phrase"}}],
+        ["set_attr", "nd", "say_event", {"__term__": {"type": "Lit", "value": "signalled"}}],
+        ["set_attr", "nd", "say_patient", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "nd"}, "key": "tension_phrase"}}]
+      ]
+    },
+    {
+      "name": "analysis_say_surface_inversion",
+      "match": [["p", "is_a", "nd"]],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Not", "arg": {"type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "nd"}, "key": "reading_phrase"},
+            "b": {"type": "Lit", "value": null}}},
+          {"type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "nd"}, "key": "say_agent"},
+            "b": {"type": "Lit", "value": null}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "nd", "say_agent", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "nd"}, "key": "phrase_phrase"}}],
+        ["set_attr", "nd", "say_event", {"__term__": {"type": "Lit", "value": "marked"}}],
+        ["set_attr", "nd", "say_patient", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "nd"}, "key": "reading_phrase"}}]
+      ]
+    },
+    {
+      "name": "analysis_say_temporal_conflict_fluent",
+      "match": [["p", "is_a", "nd"], ["agent", "has_pair_phrasing", "pp"]],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Not", "arg": {"type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "nd"}, "key": "pair_key_phrase"},
+            "b": {"type": "Lit", "value": null}}},
+          {"type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "nd"}, "key": "trope_phrase"},
+            "b": {"type": "Lit", "value": null}},
+          {"type": "Not", "arg": {"type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "nd"}, "key": "analysis_temporal_superseded"},
+            "b": {"type": "Lit", "value": 1.0}}},
+          {"type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "nd"}, "key": "say_agent"},
+            "b": {"type": "Lit", "value": null}},
+          {"type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "pp"}, "key": "pair_key"},
+            "b": {"type": "Attr", "node": {"type": "Var", "name": "nd"}, "key": "pair_key"}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "nd", "say_agent", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "nd"}, "key": "actor_phrase"}}],
+        ["set_attr", "nd", "say_event", {"__term__": {"type": "Lit", "value": "reversed"}}],
+        ["set_attr", "nd", "say_patient", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "pp"}, "key": "phrase"}}]
+      ]
+    },
+    {
+      "name": "analysis_say_temporal_conflict",
+      "match": [["p", "is_a", "nd"]],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Not", "arg": {"type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "nd"}, "key": "pair_key_phrase"},
+            "b": {"type": "Lit", "value": null}}},
+          {"type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "nd"}, "key": "trope_phrase"},
+            "b": {"type": "Lit", "value": null}},
+          {"type": "Not", "arg": {"type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "nd"}, "key": "analysis_temporal_superseded"},
+            "b": {"type": "Lit", "value": 1.0}}},
+          {"type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "nd"}, "key": "say_agent"},
+            "b": {"type": "Lit", "value": null}},
+          {"type": "Not", "arg": {"type": "Exists",
+            "source": {"type": "NodesOfType", "node_type": "PairPhrasing"},
+            "var_name": "pp2",
+            "predicate": {"type": "Eq",
+              "a": {"type": "Attr", "node": {"type": "Var", "name": "pp2"}, "key": "pair_key"},
+              "b": {"type": "Attr", "node": {"type": "Var", "name": "nd"}, "key": "pair_key"}}}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "nd", "say_agent", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "nd"}, "key": "actor_phrase"}}],
+        ["set_attr", "nd", "say_event", {"__term__": {"type": "Lit", "value": "reversed"}}],
+        ["set_attr", "nd", "say_patient", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "nd"}, "key": "pair_key_phrase"}}]
+      ]
+    },
+    {
+      "name": "analysis_say_trope",
+      "match": [["p", "is_a", "nd"]],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Not", "arg": {"type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "nd"}, "key": "trope_phrase"},
+            "b": {"type": "Lit", "value": null}}},
+          {"type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "nd"}, "key": "say_agent"},
+            "b": {"type": "Lit", "value": null}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "nd", "say_agent", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "nd"}, "key": "actor_phrase"}}],
+        ["set_attr", "nd", "say_event", {"__term__": {"type": "Lit", "value": "revealed"}}],
+        ["set_attr", "nd", "say_patient", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "nd"}, "key": "trope_phrase"}}]
+      ]
+    },
+    {
+      "name": "analysis_say_epistemic",
+      "match": [["p", "is_a", "nd"]],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Not", "arg": {"type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "nd"}, "key": "verdict_phrase"},
+            "b": {"type": "Lit", "value": null}}},
+          {"type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "nd"}, "key": "say_agent"},
+            "b": {"type": "Lit", "value": null}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "nd", "say_agent", {"__term__": {"type": "Lit", "value": "reading"}}],
+        ["set_attr", "nd", "say_event", {"__term__": {"type": "Lit", "value": "leaned"}}],
+        ["set_attr", "nd", "say_patient", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "nd"}, "key": "verdict_phrase"}}]
+      ]
+    }
+  ]
+}

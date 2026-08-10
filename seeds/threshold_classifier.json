@@ -1,0 +1,376 @@
+{
+ "id": "threshold_classifier",
+ "version": "1.0.0",
+ "depends_on": [],
+ "area": "program_synthesis",
+ "latency_class": "soft_realtime",
+ "description": "Persisted graph Program authored by the Jabberwock and verified on held-out integer examples. It returns micros iff processed exceeds progress times a supplied threshold.",
+ "nodes": [
+  {
+   "local_id": 1,
+   "type": "Program",
+   "attrs": {
+    "name": "cost_excess",
+    "faculty_kind": "threshold_classifier",
+    "status": "accepted",
+    "learned": 1,
+    "held_out_pass_count": 5,
+    "held_out_count": 5,
+    "tested_candidates": 14951,
+    "solution_size": 7,
+    "integer_native": 1,
+    "output_authority": 0
+   }
+  },
+  {
+   "local_id": 2,
+   "type": "Term.ProgDefFnParam",
+   "attrs": {
+    "name": "micros"
+   }
+  },
+  {
+   "local_id": 3,
+   "type": "Term.ProgDefFnParam",
+   "attrs": {
+    "name": "processed"
+   }
+  },
+  {
+   "local_id": 4,
+   "type": "Term.ProgDefFnParam",
+   "attrs": {
+    "name": "progress"
+   }
+  },
+  {
+   "local_id": 5,
+   "type": "Term.ProgDefFnParam",
+   "attrs": {
+    "name": "threshold"
+   }
+  },
+  {
+   "local_id": 6,
+   "type": "Term.Var",
+   "attrs": {
+    "name": "micros"
+   }
+  },
+  {
+   "local_id": 7,
+   "type": "Term.Var",
+   "attrs": {
+    "name": "processed"
+   }
+  },
+  {
+   "local_id": 8,
+   "type": "Term.Var",
+   "attrs": {
+    "name": "progress"
+   }
+  },
+  {
+   "local_id": 9,
+   "type": "Term.Var",
+   "attrs": {
+    "name": "threshold"
+   }
+  },
+  {
+   "local_id": 10,
+   "type": "Term.Times",
+   "attrs": {}
+  },
+  {
+   "local_id": 11,
+   "type": "Term.Gt",
+   "attrs": {}
+  },
+  {
+   "local_id": 12,
+   "type": "Term.Times",
+   "attrs": {}
+  },
+  {
+   "local_id": 13,
+   "type": "Term.ProgReturn",
+   "attrs": {}
+  },
+  {
+   "local_id": 14,
+   "type": "Term.ProgSeq",
+   "attrs": {}
+  }
+ ],
+ "edges": [
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "type": "holds_threshold_classifier",
+   "tgt": {
+    "local": 1
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "type": "holds_faculty",
+   "tgt": {
+    "local": 1
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 1
+   },
+   "type": "ir_subgraph",
+   "tgt": {
+    "local": 14
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 10
+   },
+   "type": "child.items",
+   "tgt": {
+    "local": 8
+   },
+   "attrs": {
+    "index": 0
+   }
+  },
+  {
+   "src": {
+    "local": 10
+   },
+   "type": "child.items",
+   "tgt": {
+    "local": 9
+   },
+   "attrs": {
+    "index": 1
+   }
+  },
+  {
+   "src": {
+    "local": 11
+   },
+   "type": "child.a",
+   "tgt": {
+    "local": 7
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 11
+   },
+   "type": "child.b",
+   "tgt": {
+    "local": 10
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 12
+   },
+   "type": "child.items",
+   "tgt": {
+    "local": 6
+   },
+   "attrs": {
+    "index": 0
+   }
+  },
+  {
+   "src": {
+    "local": 12
+   },
+   "type": "child.items",
+   "tgt": {
+    "local": 11
+   },
+   "attrs": {
+    "index": 1
+   }
+  },
+  {
+   "src": {
+    "local": 13
+   },
+   "type": "child.value",
+   "tgt": {
+    "local": 12
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 14
+   },
+   "type": "child.stmts",
+   "tgt": {
+    "local": 2
+   },
+   "attrs": {
+    "index": 0
+   }
+  },
+  {
+   "src": {
+    "local": 14
+   },
+   "type": "child.stmts",
+   "tgt": {
+    "local": 3
+   },
+   "attrs": {
+    "index": 1
+   }
+  },
+  {
+   "src": {
+    "local": 14
+   },
+   "type": "child.stmts",
+   "tgt": {
+    "local": 4
+   },
+   "attrs": {
+    "index": 2
+   }
+  },
+  {
+   "src": {
+    "local": 14
+   },
+   "type": "child.stmts",
+   "tgt": {
+    "local": 5
+   },
+   "attrs": {
+    "index": 3
+   }
+  },
+  {
+   "src": {
+    "local": 14
+   },
+   "type": "child.stmts",
+   "tgt": {
+    "local": 13
+   },
+   "attrs": {
+    "index": 4
+   }
+  }
+ ],
+ "productions": [
+  {
+   "provenance": "threshold_classifier:child.a",
+   "src": {
+    "type": "Node",
+    "var": "src"
+   },
+   "edge_type": "child.a",
+   "tgt": {
+    "type": "Node",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "threshold_classifier:child.b",
+   "src": {
+    "type": "Node",
+    "var": "src"
+   },
+   "edge_type": "child.b",
+   "tgt": {
+    "type": "Node",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "threshold_classifier:child.items",
+   "src": {
+    "type": "Node",
+    "var": "src"
+   },
+   "edge_type": "child.items",
+   "tgt": {
+    "type": "Node",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "threshold_classifier:child.stmts",
+   "src": {
+    "type": "Node",
+    "var": "src"
+   },
+   "edge_type": "child.stmts",
+   "tgt": {
+    "type": "Node",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "threshold_classifier:child.value",
+   "src": {
+    "type": "Node",
+    "var": "src"
+   },
+   "edge_type": "child.value",
+   "tgt": {
+    "type": "Node",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "threshold_classifier:holds_faculty",
+   "src": {
+    "type": "Node",
+    "var": "src"
+   },
+   "edge_type": "holds_faculty",
+   "tgt": {
+    "type": "Node",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "threshold_classifier:holds_threshold_classifier",
+   "src": {
+    "type": "Node",
+    "var": "src"
+   },
+   "edge_type": "holds_threshold_classifier",
+   "tgt": {
+    "type": "Node",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "threshold_classifier:ir_subgraph",
+   "src": {
+    "type": "Node",
+    "var": "src"
+   },
+   "edge_type": "ir_subgraph",
+   "tgt": {
+    "type": "Node",
+    "var": "tgt"
+   }
+  }
+ ],
+ "rules": []
+}

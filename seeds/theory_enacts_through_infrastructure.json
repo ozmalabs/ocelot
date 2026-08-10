@@ -1,0 +1,96 @@
+{
+  "microtheory": {
+    "name": "theory_enacts_through_infrastructure",
+    "definition": "Meta-meta-rule: the substrate exists in two layers — theory (graph-resident Mts, concepts, rules, failure modes, corrections, drives) and infrastructure (the runtime that actually walks graph state + applies handlers + computes scores). When a rule is added to graph data, no enactment changes; when a handler is added to infrastructure, no theory may name it. The substrate's coherence requires that the two layers stay connected: every Rule the substrate cares about should be derivable into a handler in some form, and every handler in the runtime should correspond to a Rule in graph data. Theory without enactment is dormant; enactment without theory is speculation. This Mt names the principle, recognising that this Mt itself is theory-without-enactment until the substrate has the mechanism to derive enactment from it.",
+    "category": "foundation"
+  },
+  "concepts": [
+    {
+      "name": "theory_resides_in_graph",
+      "definition": "The substrate's theory — Mts, concepts, rules, failure modes, corrections, drives — is graph data. It can be read, walked, queried. It is the substrate's record of what it cares about.",
+      "category": "principle"
+    },
+    {
+      "name": "infrastructure_resides_in_runtime",
+      "definition": "The substrate's infrastructure — cortices, detectors, action handlers, the loop step, the relax operation — is code in the runtime layer (currently Python orchestration + Rust evaluator). It is what actually executes when the substrate runs.",
+      "category": "principle"
+    },
+    {
+      "name": "theory_without_enactment_is_dormant",
+      "definition": "A Rule added to graph data with no corresponding handler in the runtime is dormant — the substrate knows the principle but does not act on it. Symptom: adding the Mt changes graph counts but does not change any behaviour the loop step exhibits.",
+      "category": "principle"
+    },
+    {
+      "name": "enactment_without_theory_is_speculation",
+      "definition": "A handler in the runtime with no corresponding Rule in graph data is undeclared — the substrate acts on a principle it has not made explicit. Symptom: the runtime does things the introspection can't surface as 'because of rule X.'",
+      "category": "principle"
+    },
+    {
+      "name": "coherence_between_theory_and_enactment",
+      "definition": "The substrate is coherent at the meta-layer when every Rule it holds is derivable into enactment in some form, AND every handler in its runtime corresponds to a Rule in graph data. Either direction broken is a coherence failure.",
+      "category": "principle"
+    },
+    {
+      "name": "derivation_makes_enactment_declarative",
+      "definition": "If the substrate has a mechanism to DERIVE handlers from Rules (theory → enactment) and to REGISTER handlers as Rules (enactment → theory), its two layers stay synchronised. Adding theory automatically updates behaviour; adding behaviour automatically updates theory. This is what is currently MISSING.",
+      "category": "principle"
+    },
+    {
+      "name": "fail_mode_dormant_theory",
+      "definition": "Failure mode: a Rule exists in graph data, the substrate's introspection can find it, but nothing in the runtime walks the rule. Symptom: graph count grows; loop behaviour unchanged. Surfaced by comparing rule count to handler count for matching domains.",
+      "category": "failure_modes"
+    },
+    {
+      "name": "fail_mode_undeclared_enactment",
+      "definition": "Failure mode: a handler exists in the runtime (a Python function called from the loop step) that has no Rule in graph data declaring what it implements. Symptom: behaviour the substrate exhibits without a graph-resident reason.",
+      "category": "failure_modes"
+    },
+    {
+      "name": "correction_derive_handler_from_rule",
+      "definition": "When a Rule is dormant: the substrate synthesises a handler whose shape is derived mechanically from the Rule's structure (head pattern + body action). The synthesised handler is registered into the runtime so the rule becomes enacted. NOT an LLM — a deterministic template generator per rule kind.",
+      "category": "corrections"
+    },
+    {
+      "name": "correction_register_handler_as_rule",
+      "definition": "When a handler is undeclared: the substrate writes a Rule into graph data that names what the handler does, so the introspection can surface it as a graph-resident principle.",
+      "category": "corrections"
+    },
+    {
+      "name": "drive_coherence_between_layers",
+      "definition": "The coherence drive should fire on theory/infrastructure mismatches. Every step: count Rules in graph data + count handlers in runtime + report the gap. Sustained non-zero gap surfaces as fail_mode_dormant_theory or fail_mode_undeclared_enactment.",
+      "category": "drive"
+    },
+    {
+      "name": "drive_curiosity_on_dormant_theory",
+      "definition": "The curiosity drive should rank dormant rules (rules with no handler) as high-information targets. A rule the substrate has declared but does not act on is exactly what curiosity exists for.",
+      "category": "drive"
+    },
+    {
+      "name": "this_mt_is_its_own_example",
+      "definition": "This Mt's rules will themselves be dormant immediately after installation — the substrate will hold the principle 'theory should enact through infrastructure' while not having the mechanism to enact this principle. The substrate's coherence drive should surface THIS as its first instance.",
+      "category": "self_reference"
+    }
+  ],
+  "rules": [
+    {
+      "name": "rule_count_should_match_handler_count_per_domain",
+      "head": "for each domain the substrate cares about (each Mt with a failure_modes / corrections / drives category)",
+      "body": "the number of failure_modes named in graph data should equal the number of detectors registered in the runtime that target those failure modes; similarly for corrections + correction handlers, drives + drive enactors. Mismatches surface as dormant theory or undeclared enactment."
+    },
+    {
+      "name": "introspection_reports_theory_enactment_gap",
+      "head": "whenever the substrate is asked to report its state",
+      "body": "it should include theory/enactment gap counts. How many Rules are dormant. How many handlers are undeclared. The gap is meta-data on the substrate's own coherence."
+    },
+    {
+      "name": "new_mt_triggers_coherence_check",
+      "head": "when a new Mt is installed into the graph",
+      "body": "the coherence drive should immediately compute the theory/enactment gap for the new Mt's category. If the new Mt names failure modes / corrections / drives that have no runtime handlers, surface that as a structural gap on the new Mt itself."
+    },
+    {
+      "name": "derivation_is_the_missing_capability",
+      "head": "the substrate currently lacks a Rule-to-handler derivation mechanism",
+      "body": "this is itself a fail_mode_dormant_theory case for THIS Mt's rules. The substrate should surface this recursively when introspecting — the principle that says 'theory should enact' is itself unenacted until the derivation mechanism is built."
+    }
+  ]
+}

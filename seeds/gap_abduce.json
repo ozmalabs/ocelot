@@ -1,0 +1,412 @@
+{
+ "id": "gap_abduce",
+ "version": "1.0.0",
+ "depends_on": [
+  "time_axis"
+ ],
+ "description": "THE ENDPOINT-ABDUCED GENERATOR -- the ONE operator the timephi rung (93000-93999) measured the substrate to lack. Every other temporal mechanism here (TimeInfer, DepthInfer, BlinkBridge) infers its generator G from a CONSECUTIVE VISIBLE PAIR and EXTRAPOLATES: CONTINUATION. A phi stimulus supplies exactly ONE pre-gap sample, so there is no pair to continue from and BlinkBridge correctly FREEZES (confidence 0.00, resume correction 32 = the dot's 16 cells counted twice). This rule does the other thing: it solves G^(gap+1)(f_before) = f_after for G from the TWO ENDPOINTS ALONE -- INTERPOLATION. The admissibility test is DIVISIBILITY -- D[i] %% steps == 0 on every coordinate slot, exact integer arithmetic -- so PROTOCOL \u00a713 is satisfied BY CONSTRUCTION: not a number that falls out, but NO NUMBER AT ALL. SCOPE LIMIT, stated where the mechanism is: any two same-shape figures ARE rigid translates, so on the translate class divisibility is the ONLY constraint and the acceptance rate on independent random endpoints is ~1/steps, NOT zero -- interpolation is cheap for exactly the reason continuation is safe. Flag-gated on agent.gap_abduce_enabled==1, OFF by default (PROTOCOL \u00a79); inert without it AND matches only status=='gap_seq'.",
+ "microtheory": {
+  "name": "gap_abduce",
+  "description": "a generator ABDUCED FROM THE TWO BANKS of a temporal gap rather than CONTINUED from a pair before it. Continuation needs two pre-gap samples and is CONSTRAINED by verification across every pair; interpolation needs only the endpoints and is constrained by nothing but divisibility. The substrate held the first and lacked the second."
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [
+  {
+   "provenance": "seed:gap_abduce:observed-0",
+   "src": {
+    "type": "Agent",
+    "var": "s"
+   },
+   "edge_type": "observed",
+   "tgt": {
+    "type": "Observation",
+    "var": "t"
+   }
+  }
+ ],
+ "rules": [
+  {
+   "name": "gap_abduce_endpoints",
+   "comment": "ABDUCE THE GENERATOR FROM THE GAP'S TWO ENDPOINTS. Flag ON (agent.gap_abduce_enabled==1). On a gap-sequence Observation (status=='gap_seq'), solve G^(gap+1)(f_before) = f_after for G and write the verdict. The DECISION is this rule's; the Term supplies the arithmetic. 'abduced' is the admissibility verdict (a divisibility test, NO THRESHOLD); 'closes' is the independently-computed check that G^steps actually REACHES f_after (construction-true on the translate branch, and computed rather than asserted because a check that is never evaluated is an inert instrument); 'abduce_correction' is the symmetric-difference cell count at the far bank -- 0 iff it closes, the quantity BlinkBridge reported as 32 at this same topology. 'abduce_reason' separates the refusals by KIND (identity / indivisible / not_rigid / no_gap_structure) so a null is DIAGNOSABLE rather than a shrug. status flips to 'gap_abduced'.",
+   "match_type": "Observation",
+   "match": [
+    [
+     "ag",
+     "observed",
+     "obs"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "gap_seq"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ag"
+       },
+       "key": "gap_abduce_enabled"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "obs",
+     "abduced",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Eq",
+        "a": {
+         "type": "GapAbduce",
+         "sequence": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "obs"
+          },
+          "key": "frames"
+         },
+         "codebook_type": "ShapeSignature",
+         "max_b": 8,
+         "field": "explained"
+        },
+        "b": {
+         "type": "Lit",
+         "value": true
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": 1.0
+       },
+       "other": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "abduce_reason",
+     {
+      "__term__": {
+       "type": "GapAbduce",
+       "sequence": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "frames"
+       },
+       "codebook_type": "ShapeSignature",
+       "max_b": 8,
+       "field": "reason"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "abduce_kind",
+     {
+      "__term__": {
+       "type": "GapAbduce",
+       "sequence": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "frames"
+       },
+       "codebook_type": "ShapeSignature",
+       "max_b": 8,
+       "field": "kind"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "abduce_offset",
+     {
+      "__term__": {
+       "type": "GapAbduce",
+       "sequence": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "frames"
+       },
+       "codebook_type": "ShapeSignature",
+       "max_b": 8,
+       "field": "offset"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "abduce_total",
+     {
+      "__term__": {
+       "type": "GapAbduce",
+       "sequence": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "frames"
+       },
+       "codebook_type": "ShapeSignature",
+       "max_b": 8,
+       "field": "total"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "abduce_gap",
+     {
+      "__term__": {
+       "type": "GapAbduce",
+       "sequence": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "frames"
+       },
+       "codebook_type": "ShapeSignature",
+       "max_b": 8,
+       "field": "gap"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "abduce_steps",
+     {
+      "__term__": {
+       "type": "GapAbduce",
+       "sequence": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "frames"
+       },
+       "codebook_type": "ShapeSignature",
+       "max_b": 8,
+       "field": "steps"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "abduce_prefix",
+     {
+      "__term__": {
+       "type": "GapAbduce",
+       "sequence": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "frames"
+       },
+       "codebook_type": "ShapeSignature",
+       "max_b": 8,
+       "field": "prefix_len"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "abduce_checked",
+     {
+      "__term__": {
+       "type": "GapAbduce",
+       "sequence": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "frames"
+       },
+       "codebook_type": "ShapeSignature",
+       "max_b": 8,
+       "field": "checked"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "abduce_correction",
+     {
+      "__term__": {
+       "type": "GapAbduce",
+       "sequence": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "frames"
+       },
+       "codebook_type": "ShapeSignature",
+       "max_b": 8,
+       "field": "correction"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "divisible",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Eq",
+        "a": {
+         "type": "GapAbduce",
+         "sequence": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "obs"
+          },
+          "key": "frames"
+         },
+         "codebook_type": "ShapeSignature",
+         "max_b": 8,
+         "field": "divisible"
+        },
+        "b": {
+         "type": "Lit",
+         "value": true
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": 1.0
+       },
+       "other": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "closes",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Eq",
+        "a": {
+         "type": "GapAbduce",
+         "sequence": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "obs"
+          },
+          "key": "frames"
+         },
+         "codebook_type": "ShapeSignature",
+         "max_b": 8,
+         "field": "closes"
+        },
+        "b": {
+         "type": "Lit",
+         "value": true
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": 1.0
+       },
+       "other": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "bridged",
+     {
+      "__term__": {
+       "type": "GapAbduce",
+       "sequence": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "frames"
+       },
+       "codebook_type": "ShapeSignature",
+       "max_b": 8,
+       "field": "bridged"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "status",
+     "gap_abduced"
+    ]
+   ]
+  }
+ ]
+}

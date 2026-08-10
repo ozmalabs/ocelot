@@ -1,0 +1,33 @@
+{
+  "_doc": "The WordNet UNIQUE-BEGINNERS (upper-ontology roots) as basis primes — the genus-deepening BEDROCK the agent asked for ('recurse deeper / seed the genus'). When the agent reads an abstract common noun's LEXICAL genus (WordNet hypernym ladder, domains/wordnet_genus.py) and recurses down it, every chain converges on a small fixed set of WordNet tops (entity / abstraction / physical_entity / psychological_feature / attribute / object / group). Those tops were NOT held, so every comprehended genus was a 'bare leaf' (the agent's own grounding reason). Seeding them as genuine basis Concept nodes gives the lexical-genus descent a FLOOR to bottom out on. This is the SAME bedrock-seed remedy the communication basis used (a held floor the grounding cone reaches), restricted to the lexical-ontology tops the WordNet ladder terminates at — not a per-term mapping. The is-a (built_from) edges among the tops (abstraction is-a entity, attribute is-a abstraction) mirror WordNet's own hypernymy so a chain that reaches 'attribute' still bottoms out at the single root 'entity'. depends_on grounding: the built_from / has_concept edges are admissible only once the grounding seed opens those Γ productions.",
+  "id": "lexical_ontology_roots",
+  "version": "1.0.0",
+  "depends_on": ["grounding"],
+  "description": "WordNet unique-beginners (entity / abstraction / physical_entity / psychological_feature / attribute / object / group) as basis-primitive Concepts, with is-a (built_from) edges mirroring WordNet hypernymy so every lexical-genus descent bottoms out at the single root 'entity'.",
+  "nodes": [
+    {"local_id": 1, "type": "Microtheory", "attrs": {"name": "lexical_ontology", "description": "the WordNet upper-ontology roots the lexical-genus descent terminates at"}},
+    {"local_id": 2, "type": "Concept", "attrs": {"name": "entity", "kind": "ontological_root", "description": "the WordNet unique-beginner: anything that exists (the most general thing). The single root every lexical hypernym ladder terminates at. NSM SOMETHING/THING at the limit."}},
+    {"local_id": 3, "type": "Concept", "attrs": {"name": "abstraction", "kind": "ontological_root", "combination": "isa(abstraction, entity)", "description": "an abstract entity — a general concept formed by extracting common features (a number, a quantity, an attribute, a relation, a measure, a group). The WordNet abstract top. is-a entity."}},
+    {"local_id": 4, "type": "Concept", "attrs": {"name": "physical_entity", "kind": "ontological_root", "combination": "isa(physical_entity, entity)", "description": "an entity that has physical existence (an object, a thing, a location, a body). The WordNet physical top. is-a entity."}},
+    {"local_id": 5, "type": "Concept", "attrs": {"name": "psychological_feature", "kind": "ontological_root", "combination": "isa(psychological_feature, abstraction)", "description": "a feature of the mind: a cognition, an event, or a motivation. The WordNet psychological top — where statistic / datum / information / cognition ladders bottom out. is-a abstraction."}},
+    {"local_id": 6, "type": "Concept", "attrs": {"name": "attribute", "kind": "ontological_root", "combination": "isa(attribute, abstraction)", "description": "an abstract property or quality an entity carries (a state, a condition, a degree, a magnitude). The WordNet attribute top — where state / condition / level / property ladders bottom out. is-a abstraction."}},
+    {"local_id": 7, "type": "Concept", "attrs": {"name": "object", "kind": "ontological_root", "combination": "isa(object, physical_entity)", "description": "a physical object — a tangible and visible thing (a location, a region, a whole). The WordNet object node every physical ladder passes through. is-a physical_entity."}},
+    {"local_id": 8, "type": "Concept", "attrs": {"name": "group", "kind": "ontological_root", "combination": "isa(group, abstraction)", "description": "any number of entities considered as a unit (a collection, a system, a set). The WordNet group top — where data / collection ladders bottom out. is-a abstraction."}}
+  ],
+  "edges": [
+    {"src": {"role": "agent_root"}, "type": "operates_in", "tgt": {"local": 1}, "attrs": {}},
+    {"src": {"local": 1}, "type": "has_concept", "tgt": {"local": 2}, "attrs": {}},
+    {"src": {"local": 1}, "type": "has_concept", "tgt": {"local": 3}, "attrs": {}},
+    {"src": {"local": 1}, "type": "has_concept", "tgt": {"local": 4}, "attrs": {}},
+    {"src": {"local": 1}, "type": "has_concept", "tgt": {"local": 5}, "attrs": {}},
+    {"src": {"local": 1}, "type": "has_concept", "tgt": {"local": 6}, "attrs": {}},
+    {"src": {"local": 1}, "type": "has_concept", "tgt": {"local": 7}, "attrs": {}},
+    {"src": {"local": 1}, "type": "has_concept", "tgt": {"local": 8}, "attrs": {}},
+    {"src": {"local": 3}, "type": "built_from", "tgt": {"local": 2}, "attrs": {}},
+    {"src": {"local": 4}, "type": "built_from", "tgt": {"local": 2}, "attrs": {}},
+    {"src": {"local": 5}, "type": "built_from", "tgt": {"local": 3}, "attrs": {}},
+    {"src": {"local": 6}, "type": "built_from", "tgt": {"local": 3}, "attrs": {}},
+    {"src": {"local": 7}, "type": "built_from", "tgt": {"local": 4}, "attrs": {}},
+    {"src": {"local": 8}, "type": "built_from", "tgt": {"local": 3}, "attrs": {}}
+  ]
+}

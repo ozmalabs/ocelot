@@ -1,0 +1,340 @@
+{
+  "id": "reading_review",
+  "version": "1.0.0",
+  "depends_on": [
+    "gap_prioritization",
+    "stopping_policy",
+    "escalation_rungs"
+  ],
+  "description": "THE MEANING-LEVEL REVIEW of a collapse reading, as DATA. reading_collapse.read_clause commits to the first shape-match; a shape that decodes CLEANLY but grounds NONSENSE ('I could of done that' -> the possessive learned_of with non-nominal args i_could/done_that) must ESCALATE, not commit. The same collapse recovers BOTH classes of error through ONE mechanism: an incoherent shape has ADJACENT shapes (near-neighbors in some domain's dimension-space) and the resolution is the adjacent shape that COHERES; WHICH domain the corruption came from EMERGES from which adjacency resolves it. TRANSCRIPTION (surface adjacency): 'could of'->PHONOLOGY 'could have' (speech); 'gaot'->KEYBOARD 'goat' (typing); 'tai1'->GLYPH 'tail' (OCR). COGNITIVE (concept adjacency): 'intensive purposes'->CONCEPT 'intents and purposes' (cognitive). The per-domain adjacency is seeded dimension-space structure (a phonology reduction/homophone set, the QWERTY layout, a glyph-confusable set, a concept-confusable set) -- legitimate domain adjacency, NOT a from->to output map: a neighbor WINS only by RE-DECODING to a more coherent reading (the collapse). The DECISIONS are graph Programs: order-N review by incoherence-salience (gap_priority Argmax, reused), escalate-or-stay across adjacency domains (review_escalate, the cascade_pick pattern over ReviewRung), the winning neighbor (candidate_pick Argmax over Candidate by coherence), and stop-by-sufficiency (should_continue, reused). The coherence MEASUREMENT is boundary I/O over the held lexical faculties (dictionary_lexicon / wiktionary) -- the twin of how the perf/understanding perceivers measure salience at the boundary.",
+  "microtheory": {
+    "name": "reading_review",
+    "description": "how a collapse reading is REVIEWED for meaning-level coherence: score each grounded predication's incoherence, order most-incoherent-first, escalate the top one across adjacency domains (phonology/keyboard/glyph/concept) until a near-neighbour re-decodes coherently, and stop by sufficiency. The corruption's DOMAIN is the adjacency that resolved it."
+  },
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "ReviewRung",
+      "attrs": {
+        "name": "phonology",
+        "level": 1.0,
+        "domain": "speech"
+      }
+    },
+    {
+      "local_id": 1,
+      "type": "ReviewRung",
+      "attrs": {
+        "name": "keyboard",
+        "level": 2.0,
+        "domain": "typing"
+      }
+    },
+    {
+      "local_id": 2,
+      "type": "ReviewRung",
+      "attrs": {
+        "name": "glyph",
+        "level": 3.0,
+        "domain": "ocr"
+      }
+    },
+    {
+      "local_id": 3,
+      "type": "ReviewRung",
+      "attrs": {
+        "name": "concept",
+        "level": 4.0,
+        "domain": "cognitive"
+      }
+    },
+    {
+      "local_id": 7,
+      "type": "SaliencePolicyWeight",
+      "attrs": {
+        "kind": "incoherence",
+        "weight": 1.5,
+        "priority": 3,
+        "rationale": "the review's raw measured salience is a reading's incoherence fraction in 0..1; scale it by 1.5 so ANY real incoherence (>=0.5 for a single ungroundable arg) normalizes above the 0.5 sufficiency floor (should_continue CONTINUES the review), while a coherent reading (0) stays 0 (STOP). A POLICY, tunable; the ORDER is monotone in incoherence either way."
+      }
+    },
+    {
+      "local_id": 4,
+      "type": "ReviewGate",
+      "attrs": {
+        "name": "default_review_gate",
+        "threshold": 0.5,
+        "priority": 1,
+        "description": "the coherence floor a candidate re-decode must clear (margin >= threshold) for the review to STAY at the current adjacency domain and ACCEPT that domain as the corruption's source; below it the review ESCALATES to the next domain. A POLICY, tunable -- NOT a universal 'coherent'. margin = 1 - incoherence of the domain's best candidate; a coherent re-decode scores ~1.0, no-candidate scores -1."
+      }
+    },
+    {
+      "local_id": 5,
+      "type": "Program",
+      "attrs": {
+        "name": "review_escalate",
+        "form": "term_tree",
+        "program": "{\"type\": \"IfThenElse\", \"cond\": {\"type\": \"Lt\", \"a\": {\"type\": \"Var\", \"name\": \"margin\"}, \"b\": {\"type\": \"Var\", \"name\": \"threshold\"}}, \"then\": {\"type\": \"Attr\", \"key\": \"name\", \"node\": {\"type\": \"Argmin\", \"source\": {\"type\": \"Filter\", \"source\": {\"type\": \"NodesOfType\", \"node_type\": \"ReviewRung\"}, \"var_name\": \"r1\", \"predicate\": {\"type\": \"Gt\", \"a\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"r1\"}, \"key\": \"level\"}, \"b\": {\"type\": \"Attr\", \"node\": {\"type\": \"Pick\", \"source\": {\"type\": \"Filter\", \"source\": {\"type\": \"NodesOfType\", \"node_type\": \"ReviewRung\"}, \"var_name\": \"r0\", \"predicate\": {\"type\": \"Eq\", \"a\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"r0\"}, \"key\": \"name\"}, \"b\": {\"type\": \"Var\", \"name\": \"current\"}}}}, \"key\": \"level\"}}}, \"var_name\": \"r2\", \"value\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"r2\"}, \"key\": \"level\"}, \"default\": null}}, \"other\": {\"type\": \"Var\", \"name\": \"current\"}}"
+      }
+    },
+    {
+      "local_id": 6,
+      "type": "Program",
+      "attrs": {
+        "name": "candidate_pick",
+        "form": "term_tree",
+        "program": "{\"type\": \"Argmax\", \"source\": {\"type\": \"Filter\", \"source\": {\"type\": \"NodesOfType\", \"node_type\": \"ReviewCandidate\"}, \"var_name\": \"c\", \"predicate\": {\"type\": \"Eq\", \"a\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"c\"}, \"key\": \"in_pool\"}, \"b\": {\"type\": \"Lit\", \"value\": 1.0}}}, \"var_name\": \"x\", \"value\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"x\"}, \"key\": \"pick_score\"}, \"default\": null}"
+      }
+    },
+    {
+      "local_id": 10,
+      "type": "PhonologyPair",
+      "attrs": {
+        "a": "of",
+        "b": "have",
+        "kind": "reduction",
+        "note": "the reduced modal-perfect: could've/should've/would've heard as 'could of'."
+      }
+    },
+    {
+      "local_id": 11,
+      "type": "PhonologyPair",
+      "attrs": {
+        "a": "your",
+        "b": "youre",
+        "kind": "homophone"
+      }
+    },
+    {
+      "local_id": 12,
+      "type": "PhonologyPair",
+      "attrs": {
+        "a": "their",
+        "b": "there",
+        "kind": "homophone"
+      }
+    },
+    {
+      "local_id": 13,
+      "type": "PhonologyPair",
+      "attrs": {
+        "a": "to",
+        "b": "too",
+        "kind": "homophone"
+      }
+    },
+    {
+      "local_id": 14,
+      "type": "PhonologyPair",
+      "attrs": {
+        "a": "then",
+        "b": "than",
+        "kind": "reduction"
+      }
+    },
+    {
+      "local_id": 20,
+      "type": "GlyphPair",
+      "attrs": {
+        "a": "1",
+        "b": "l",
+        "note": "digit-one / lowercase-L confusable"
+      }
+    },
+    {
+      "local_id": 21,
+      "type": "GlyphPair",
+      "attrs": {
+        "a": "0",
+        "b": "o",
+        "note": "digit-zero / letter-o"
+      }
+    },
+    {
+      "local_id": 22,
+      "type": "GlyphPair",
+      "attrs": {
+        "a": "1",
+        "b": "i",
+        "note": "digit-one / letter-i"
+      }
+    },
+    {
+      "local_id": 23,
+      "type": "GlyphPair",
+      "attrs": {
+        "a": "5",
+        "b": "s",
+        "note": "five / s"
+      }
+    },
+    {
+      "local_id": 24,
+      "type": "GlyphPair",
+      "attrs": {
+        "a": "8",
+        "b": "b",
+        "note": "eight / b"
+      }
+    },
+    {
+      "local_id": 25,
+      "type": "GlyphPair",
+      "attrs": {
+        "a": "rn",
+        "b": "m",
+        "note": "r-n / m ligature confusion"
+      }
+    },
+    {
+      "local_id": 26,
+      "type": "GlyphPair",
+      "attrs": {
+        "a": "cl",
+        "b": "d",
+        "note": "c-l / d"
+      }
+    },
+    {
+      "local_id": 30,
+      "type": "ConceptPair",
+      "attrs": {
+        "a": "intensive purposes",
+        "b": "intents and purposes",
+        "note": "idiom-level eggcorn: 'for all intensive purposes' <- 'for all intents and purposes'. A multi-word concept-adjacency move."
+      }
+    },
+    {
+      "local_id": 31,
+      "type": "ConceptPair",
+      "attrs": {
+        "a": "mute",
+        "b": "moot",
+        "note": "'a mute point' <- 'a moot point'."
+      }
+    },
+    {
+      "local_id": 32,
+      "type": "ConceptPair",
+      "attrs": {
+        "a": "infers",
+        "b": "implies",
+        "note": "the report infers/implies confusion."
+      }
+    },
+    {
+      "local_id": 33,
+      "type": "ConceptPair",
+      "attrs": {
+        "a": "tenterhooks",
+        "b": "tenterhooks",
+        "note": "placeholder self-pair (no-op)."
+      }
+    },
+    {
+      "local_id": 40,
+      "type": "KeyboardLayout",
+      "attrs": {
+        "name": "qwerty",
+        "rows": "qwertyuiop asdfghjkl zxcvbnm",
+        "note": "the QWERTY layout as dimension-space: a key's neighbours are its row/column-adjacent keys. Adjacency + transposition generate near-shapes; a neighbour wins only by re-decoding coherently."
+      }
+    },
+    {
+      "local_id": 50,
+      "type": "SelectionalRestriction",
+      "attrs": {
+        "kind": "animate_subject",
+        "verb_classes": [
+          "verb.cognition",
+          "verb.emotion"
+        ],
+        "requires": [
+          "noun.person",
+          "noun.animal"
+        ],
+        "note": "a MENTAL-STATE relation (cognition/emotion) selects a SENTIENT subject; a confidently-inanimate subject VIOLATES. This is the richer-than-groundability signal: 'the report infers ...' grounds (infer is a real verb, report a real noun) but the RELATION does not FIT its subject -- a report cannot infer. General linguistic structure (WordNet semantic classes), NOT a word->correction map. The subject's animacy is read from its CURRENT-USAGE sense distribution (WordNet), never from etymology or authority."
+      }
+    },
+    {
+      "local_id": 51,
+      "type": "SelectionalRestriction",
+      "attrs": {
+        "kind": "propositional_object",
+        "allows": [
+          "verb.cognition",
+          "verb.communication"
+        ],
+        "note": "a PROPOSITIONAL/clausal object (a that-clause, read as non-nominal by the held is_nominal faculty) is licensed only by a MENTAL or SPEECH relation; a physical relation with a clausal object VIOLATES -- 'the report inters that prices will rise' cannot bury a proposition. This is the discriminator that separates the meaning-correct 'implies' (communication) from the surface-adjacent 'inters' (social/physical), so the meaning repair beats the keyboard repair."
+      }
+    },
+    {
+      "local_id": 52,
+      "type": "ReviewLicense",
+      "attrs": {
+        "name": "default_license",
+        "margin": 0.15,
+        "abs_floor": 0.5,
+        "violation_confidence": 0.8,
+        "priority": 1,
+        "description": "the LICENSING policy (anti-polygraph): a collapse is licensed only when the best candidate's contextual coherence (1) clears an absolute floor, (2) exceeds the best SAME-TOKEN runner-up by a margin, and (3) exceeds the token-as-itself by a margin. UNDER-FORMED -- a tie within the margin, or a best that as-itself already coheres about as well -- HOLDS OPEN (emits a ReviewResidual carrying the candidates + confidences) rather than force least-perturbation. margin/abs_floor are the risk thresholds; violation_confidence is the precision-weight a selectional violation contributes to incoherence. Correctness is anchored to CURRENT USAGE (the WordNet sense distribution), NOT etymology/authority -- a form that is current-usage-correct is never collapsed to a 'more original' one. A POLICY, tunable."
+      }
+    },
+    {
+      "local_id": 53,
+      "type": "Program",
+      "attrs": {
+        "name": "review_license",
+        "form": "term_tree",
+        "program": "{\"type\": \"And\", \"items\": [{\"type\": \"Gte\", \"a\": {\"type\": \"Var\", \"name\": \"best\"}, \"b\": {\"type\": \"Var\", \"name\": \"floor\"}}, {\"type\": \"Gte\", \"a\": {\"type\": \"Minus\", \"a\": {\"type\": \"Var\", \"name\": \"best\"}, \"b\": {\"type\": \"Var\", \"name\": \"runnerup\"}}, \"b\": {\"type\": \"Var\", \"name\": \"margin\"}}, {\"type\": \"Gte\", \"a\": {\"type\": \"Minus\", \"a\": {\"type\": \"Var\", \"name\": \"best\"}, \"b\": {\"type\": \"Var\", \"name\": \"self\"}}, \"b\": {\"type\": \"Var\", \"name\": \"margin\"}}]}"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "src": {
+        "local": 0
+      },
+      "tgt": {
+        "local": 1
+      },
+      "type": "next_rung",
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 1
+      },
+      "tgt": {
+        "local": 2
+      },
+      "type": "next_rung",
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 2
+      },
+      "tgt": {
+        "local": 3
+      },
+      "type": "next_rung",
+      "attrs": {}
+    }
+  ],
+  "productions": [
+    {
+      "provenance": "seed:reading_review:next_rung-0",
+      "src": {
+        "type": "ReviewRung",
+        "var": "s"
+      },
+      "edge_type": "next_rung",
+      "tgt": {
+        "type": "ReviewRung",
+        "var": "t"
+      }
+    }
+  ],
+  "rules": []
+}

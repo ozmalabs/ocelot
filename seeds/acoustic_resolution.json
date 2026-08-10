@@ -1,0 +1,14 @@
+{
+  "id": "acoustic_resolution",
+  "version": "0.1.0",
+  "depends_on": ["audio"],
+  "description": "Configuration the agent boots with for the acoustic-resolution dial it owns: how finely it summarises the cochlear trajectory into frequency bands for discrimination, and when to raise that. resolution is the starting band count; ladder is the step sequence it climbs (3->6->12->25); max_resolution is the finest (25 = the A1 patch count); trickle is the discriminative-hypotheses-per-cycle at or below which generation counts as drying; saturate_after is how many such cycles (with poor recognition) before stepping up; poor_recognition_frac is the recognition fraction below which recognition counts as still-poor. All dials live here, not in Python.",
+  "resolution_root": {
+    "resolution": 3,
+    "max_resolution": 25,
+    "ladder": [3, 6, 12, 25],
+    "trickle": 1,
+    "saturate_after": 2,
+    "poor_recognition_frac": 0.9
+  }
+}

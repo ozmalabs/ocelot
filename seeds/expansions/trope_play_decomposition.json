@@ -1,0 +1,59 @@
+{
+  "id": "trope_play_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "subverted",
+  "in_microtheory": "trope_play",
+  "description": "The play-operations as derivation rules — the VERBS of the trope grammar. Each is a transform on a convention's EXPECTATION (from narrative_convention): a base expectation is set up, then operated on. These let the agent INFER which operation a passage performs (and what it means) rather than only hold the operation as a noun. Grounded against Example-text markers ('Subverted when…', 'Played for laughs').",
+  "sub_mechanisms": [],
+  "derivation_rules": [
+    {
+      "name": "subversion_is_setup_then_violation",
+      "if": ["a convention installs an expectation", "the work then violates that expectation"],
+      "then": ["the audience registers surprise", "the convention is SUBVERTED — not merely absent"],
+      "why": "Subversion requires the setup: the break only lands because the expectation was installed first. This is what distinguishes subverted from averted (which has no setup) and is the structural core of a joke.",
+      "soundness_category": "expectation_transform"
+    },
+    {
+      "name": "aversion_is_expected_but_never_invoked",
+      "if": ["a convention is expected in the active frame", "the convention is never invoked and never set up"],
+      "then": ["the convention is AVERTED", "its absence is meaningful only relative to the frame's expectation"],
+      "why": "Aversion grounds a convention negatively. With no setup there is nothing to break — the meaning is carried entirely by the pointed non-occurrence.",
+      "soundness_category": "expectation_transform"
+    },
+    {
+      "name": "inversion_reverses_the_outcome",
+      "if": ["the opposite of a convention's expected outcome is produced where the convention was expected"],
+      "then": ["the convention is INVERTED — a reversal of content, not a break in the prediction"],
+      "why": "Inversion keeps the prediction's slot but fills it with the opposite value; subversion empties the slot. Different operations on the same expectation.",
+      "soundness_category": "expectation_transform"
+    },
+    {
+      "name": "lampshade_signals_meta_awareness",
+      "if": ["a work names or remarks on its own use of a convention"],
+      "then": ["the convention is LAMPSHADED", "the work models its own structure (self-reference)"],
+      "why": "Lampshading is reflective access at the narrative level — the work holds a representation of its own device. Often the seam where humour and intertextuality enter.",
+      "soundness_category": "pragmatic_inference"
+    },
+    {
+      "name": "deconstruction_follows_consequences_past_the_stopping_point",
+      "if": ["a convention is taken to its realistic consequences", "those consequences run past where the convention normally stops"],
+      "then": ["the convention is DECONSTRUCTED", "the comfortable expectation is punctured by honouring the convention rigorously rather than breaking it"],
+      "why": "Deconstruction is not a break but an over-pursuit: the expectation fails because it is followed too faithfully, exposing what the convention usually elides.",
+      "soundness_category": "expectation_transform"
+    },
+    {
+      "name": "exaggeration_overshoots_the_expectation",
+      "if": ["a convention is pushed past its normal intensity"],
+      "then": ["the installed expectation is overshot", "the convention is EXAGGERATED — a common humour engine (incongruity by degree)"],
+      "why": "Overshoot is a graded violation: the expectation is met in kind but wildly exceeded in degree, which reads as comic when benign.",
+      "soundness_category": "expectation_transform"
+    },
+    {
+      "name": "zigzag_destroys_predictability",
+      "if": ["a convention is set up and broken repeatedly across a work"],
+      "then": ["the audience can no longer predict which way it will resolve", "the convention is ZIG-ZAGGED — higher-order play on the prediction itself"],
+      "why": "Where subversion breaks the prediction once, zig-zag attacks the audience's ability to form the prediction at all.",
+      "soundness_category": "expectation_transform"
+    }
+  ]
+}

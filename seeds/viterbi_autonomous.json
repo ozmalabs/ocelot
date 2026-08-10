@@ -1,0 +1,102 @@
+{
+ "id": "viterbi_autonomous",
+ "version": "1.0.0",
+ "depends_on": [],
+ "description": "Fully self-driving VITERBI decode — the whole decode (emissions, the position schedule, the forward recurrence, terminal selection, and the backtrace) runs in a SINGLE run_rules, no host loop. The host only builds the lattice graph (Hyp{pos} --reads--> Mark, --of_sym--> Concept template, --at_posnode--> Pos; LatEdge --src/dst-->; Lattice --has_pos--> Pos{pos,n}) and sets the initial active_pos=0 + lm_weight, then reads on_path. Rules: set_emission (emission = -PointSetDist(mark, template)); vit_step (forward recurrence at active_pos, records a scored_hyp edge); advance_pos (Count of scored_hyp reaches the position's n -> active_pos+1; a single-hop Count, reliable in a where); finish_forward (active_pos reached n_pos -> store term_max via MaxOver in an effect); seed_terminal (mark the terminal hyp whose vscore reaches term_max); vit_backtrace (propagate the optimal path back). Gates are simple comparisons / single-hop Counts; reductions live only in effects.",
+ "microtheory": {"name": "viterbi_autonomous", "description": "self-driving Viterbi: schedule, forward, terminal, backtrace, all as rules in one fixpoint"},
+ "nodes": [], "edges": [], "productions": [],
+ "rules": [
+  {
+   "name": "set_emission",
+   "match": [["h", "reads", "mk"], ["h", "of_sym", "sym"]],
+   "where": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "h"}, "key": "emitted"}, "b": {"type": "Lit", "value": 0.0}},
+   "effects": [
+     ["set_attr", "h", "emission", {"__term__": {"type": "Neg", "arg": {"type": "PointSetDist",
+        "a": {"type": "Attr", "node": {"type": "Var", "name": "mk"}, "key": "axs_heard_feat"},
+        "b": {"type": "Attr", "node": {"type": "Var", "name": "sym"}, "key": "axs_synth_feat"}}}}],
+     ["set_attr", "h", "emitted", 1.0]
+   ]
+  },
+  {
+   "name": "vit_step",
+   "match": [["h", "in_lattice", "lat"], ["h", "at_posnode", "pn"]],
+   "where": {"type": "And", "items": [
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "h"}, "key": "pos"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "lat"}, "key": "active_pos"}},
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "h"}, "key": "scored"}, "b": {"type": "Lit", "value": 0.0}},
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "h"}, "key": "emitted"}, "b": {"type": "Lit", "value": 1.0}}
+   ]},
+   "effects": [
+     ["set_attr", "h", "best_in", {"__term__":
+        {"type": "MaxOver", "var_name": "E", "default": {"type": "Lit", "value": 0.0},
+          "source": {"type": "InNeighbours", "node": {"type": "Var", "name": "h"}, "edge_type": "dst", "any_type": false},
+          "value": {"type": "Plus", "items": [
+            {"type": "Attr", "key": "vscore", "node": {"type": "Pick", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "E"}, "edge_type": "src", "any_type": false}}},
+            {"type": "Times", "items": [
+              {"type": "Attr", "node": {"type": "Var", "name": "lat"}, "key": "lm_weight"},
+              {"type": "Attr", "node": {"type": "Var", "name": "E"}, "key": "trans_logp"}
+            ]}
+          ]}}}],
+     ["set_attr", "h", "vscore", {"__term__": {"type": "Plus", "items": [
+        {"type": "Attr", "node": {"type": "Var", "name": "h"}, "key": "emission"},
+        {"type": "Attr", "node": {"type": "Var", "name": "h"}, "key": "best_in"}
+     ]}}],
+     ["set_attr", "h", "scored", 1.0],
+     ["add_edge", "pn", "scored_hyp", "h"]
+   ]
+  },
+  {
+   "name": "advance_pos",
+   "match": [["lat", "has_pos", "pn"]],
+   "where": {"type": "And", "items": [
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "pn"}, "key": "pos"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "lat"}, "key": "active_pos"}},
+     {"type": "Gte", "b": {"type": "Attr", "node": {"type": "Var", "name": "pn"}, "key": "n"},
+       "a": {"type": "Count", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "pn"}, "edge_type": "scored_hyp", "any_type": false}}}
+   ]},
+   "effects": [["set_attr", "lat", "active_pos", {"__term__": {"type": "Plus", "items": [
+       {"type": "Attr", "node": {"type": "Var", "name": "lat"}, "key": "active_pos"}, {"type": "Lit", "value": 1.0}]}}]]
+  },
+  {
+   "name": "finish_forward",
+   "match": [["lat", "has_pos", "pn"]],
+   "where": {"type": "And", "items": [
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "pn"}, "key": "pos"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "lat"}, "key": "last_pos"}},
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "lat"}, "key": "active_pos"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "lat"}, "key": "n_pos"}},
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "lat"}, "key": "forward_done"}, "b": {"type": "Lit", "value": 0.0}}
+   ]},
+   "effects": [
+     ["set_attr", "lat", "term_max", {"__term__":
+        {"type": "MaxOver", "var_name": "h", "default": {"type": "Lit", "value": 0.0},
+          "source": {"type": "Neighbours", "node": {"type": "Var", "name": "pn"}, "edge_type": "has_hyp", "any_type": false},
+          "value": {"type": "Attr", "node": {"type": "Var", "name": "h"}, "key": "vscore"}}}],
+     ["set_attr", "lat", "forward_done", 1.0]
+   ]
+  },
+  {
+   "name": "seed_terminal",
+   "match": [["lat", "has_pos", "pn"], ["pn", "has_hyp", "h"]],
+   "where": {"type": "And", "items": [
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "lat"}, "key": "forward_done"}, "b": {"type": "Lit", "value": 1.0}},
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "pn"}, "key": "pos"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "lat"}, "key": "last_pos"}},
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "h"}, "key": "on_path"}, "b": {"type": "Lit", "value": 0.0}},
+     {"type": "Gte", "a": {"type": "Attr", "node": {"type": "Var", "name": "h"}, "key": "vscore"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "lat"}, "key": "term_max"}}
+   ]},
+   "effects": [["set_attr", "h", "on_path", 1.0]]
+  },
+  {
+   "name": "vit_backtrace",
+   "match": [["E", "src", "srch"], ["E", "dst", "cur"], ["cur", "in_lattice", "lat"]],
+   "where": {"type": "And", "items": [
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "cur"}, "key": "on_path"}, "b": {"type": "Lit", "value": 1.0}},
+     {"type": "Gte", "b": {"type": "Attr", "node": {"type": "Var", "name": "cur"}, "key": "best_in"},
+       "a": {"type": "Plus", "items": [
+         {"type": "Attr", "node": {"type": "Var", "name": "srch"}, "key": "vscore"},
+         {"type": "Times", "items": [
+           {"type": "Attr", "node": {"type": "Var", "name": "lat"}, "key": "lm_weight"},
+           {"type": "Attr", "node": {"type": "Var", "name": "E"}, "key": "trans_logp"}
+         ]}
+       ]}}
+   ]},
+   "effects": [["set_attr", "srch", "on_path", 1.0], ["set_attr", "E", "on_path", 1.0]]
+  }
+ ]
+}

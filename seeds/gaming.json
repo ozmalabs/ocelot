@@ -1,0 +1,165 @@
+{
+  "id": "gaming",
+  "version": "2.0.0",
+  "depends_on": [],
+  "microtheory": {
+    "name": "gaming",
+    "definition": "The jabberwock's grounded GAMING ontology: each game-thing is recognised by a BEHAVIOURAL PREDICATE over a perceived thing's observed context (kind from feature_identity, selectivity from agency, passability learned), so the agent INFERS what a thing is by context \u2014 not by keyword."
+  },
+  "concepts": [
+    {
+      "name": "the_thing_i_control",
+      "behaviour": "responds to my action, and only to a proper SUBSET of my actions (agency's controlled-vs-environment discriminator) -> it is what I control",
+      "definition": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "x"
+              },
+              "key": "responds_to_my_action"
+            },
+            "b": {
+              "type": "Lit",
+              "value": true
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "x"
+              },
+              "key": "selective"
+            },
+            "b": {
+              "type": "Lit",
+              "value": true
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "a_thing_that_moves_itself",
+      "behaviour": "a mover that does NOT respond to my action -> autonomous",
+      "definition": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "x"
+              },
+              "key": "kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "mover"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "x"
+              },
+              "key": "responds_to_my_action"
+            },
+            "b": {
+              "type": "Lit",
+              "value": false
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "a_thing_that_stays_put",
+      "behaviour": "no motion -> fixed structure",
+      "definition": {
+        "type": "Eq",
+        "a": {
+          "type": "Attr",
+          "node": {
+            "type": "Var",
+            "name": "x"
+          },
+          "key": "kind"
+        },
+        "b": {
+          "type": "Lit",
+          "value": "static"
+        }
+      }
+    },
+    {
+      "name": "a_counter",
+      "behaviour": "value counts up/down in place -> a meter",
+      "definition": {
+        "type": "Eq",
+        "a": {
+          "type": "Attr",
+          "node": {
+            "type": "Var",
+            "name": "x"
+          },
+          "key": "kind"
+        },
+        "b": {
+          "type": "Lit",
+          "value": "meter"
+        }
+      }
+    },
+    {
+      "name": "a_barrier_i_cannot_pass",
+      "behaviour": "I cannot move through it -> a barrier/wall",
+      "definition": {
+        "type": "Eq",
+        "a": {
+          "type": "Attr",
+          "node": {
+            "type": "Var",
+            "name": "x"
+          },
+          "key": "passable"
+        },
+        "b": {
+          "type": "Lit",
+          "value": false
+        }
+      }
+    },
+    {
+      "name": "a_way_i_can_pass",
+      "behaviour": "I can move through it -> floor/opening",
+      "definition": {
+        "type": "Eq",
+        "a": {
+          "type": "Attr",
+          "node": {
+            "type": "Var",
+            "name": "x"
+          },
+          "key": "passable"
+        },
+        "b": {
+          "type": "Lit",
+          "value": true
+        }
+      }
+    }
+  ]
+}

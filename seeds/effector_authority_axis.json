@@ -1,0 +1,827 @@
+{
+ "id": "effector_authority_axis",
+ "version": "1.0.0",
+ "depends_on": [
+  "cognitive_pareto"
+ ],
+ "productions": [
+  {
+   "provenance": "seed:effector_authority_axis:profile-1",
+   "src": {
+    "type": "Agent",
+    "var": "s"
+   },
+   "edge_type": "has_effector_authority_profile",
+   "tgt": {
+    "type": "ParetoProfile",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:effector_authority_axis:goal-1",
+   "src": {
+    "type": "ParetoProfile",
+    "var": "s"
+   },
+   "edge_type": "deliberates_for_goal",
+   "tgt": {
+    "type": "Goal",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:effector_authority_axis:adopted-1",
+   "src": {
+    "type": "ParetoProfile",
+    "var": "s"
+   },
+   "edge_type": "adopted_authority_candidate",
+   "tgt": {
+    "type": "ParetoCandidate",
+    "var": "t"
+   }
+  }
+ ],
+ "rules": [
+  {
+   "name": "eaa_choose_priority_axis_from_goal",
+   "area": "general_cognition",
+   "latency_class": "hard_realtime",
+   "batch": false,
+   "comment": "The situation's declared priority axis, read off the goal's own instrument declaration. Never folded into dominance.",
+   "match": [
+    [
+     "agent",
+     "has_effector_authority_profile",
+     "profile"
+    ],
+    [
+     "profile",
+     "deliberates_for_goal",
+     "goal"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "goal"
+        },
+        "key": "goal_instrument_group_ordinal"
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "profile"
+        },
+        "key": "arm_group_ordinal"
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Not",
+       "arg": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "profile"
+         },
+         "key": "priority_axis_ordinal"
+        },
+        "b": {
+         "type": "Lit",
+         "value": null
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "profile",
+     "priority_axis_ordinal",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "goal"
+         },
+         "key": "goal_instrument_group_ordinal"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "profile"
+         },
+         "key": "arm_group_ordinal"
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": 1
+       },
+       "other": {
+        "type": "Lit",
+        "value": 0
+       }
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "eaa_read_priority_axis_value_off_candidate",
+   "area": "general_cognition",
+   "latency_class": "hard_realtime",
+   "batch": true,
+   "comment": "A single declared axis's own reading on this candidate.",
+   "match": [
+    [
+     "agent",
+     "has_effector_authority_profile",
+     "profile"
+    ],
+    [
+     "profile",
+     "has_pareto_candidate",
+     "candidate"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "profile"
+        },
+        "key": "priority_axis_ordinal"
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Not",
+       "arg": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "candidate"
+         },
+         "key": "priority_axis_value"
+        },
+        "b": {
+         "type": "Lit",
+         "value": null
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "candidate",
+     "priority_axis_value",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Argmin",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "candidate"
+         },
+         "edge_type": "has_pareto_value"
+        },
+        "var_name": "pv",
+        "value": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Eq",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "pv"
+             },
+             "key": "dimension_ordinal"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          },
+          "b": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "profile"
+             },
+             "key": "priority_axis_ordinal"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          }
+         },
+         "then": {
+          "type": "Lit",
+          "value": 0
+         },
+         "other": {
+          "type": "Lit",
+          "value": 1
+         }
+        },
+        "default": {
+         "type": "Lit",
+         "value": null
+        }
+       },
+       "key": "signed_value"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "eaa_adopt_authority_regime_on_priority_axis",
+   "area": "general_cognition",
+   "latency_class": "hard_realtime",
+   "batch": false,
+   "comment": "Select among the surviving frontier by the one axis the goal declared. The regime's own authority allocation is then what the body is flown by until the condition that chose it changes.",
+   "match": [
+    [
+     "agent",
+     "has_effector_authority_profile",
+     "profile"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "profile"
+        },
+        "key": "priority_axis_ordinal"
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       }
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "profile"
+        },
+        "edge_type": "has_pareto_candidate"
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Not",
+       "arg": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "profile"
+         },
+         "key": "adopted_regime"
+        },
+        "b": {
+         "type": "Lit",
+         "value": null
+        }
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Argmin",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "profile"
+         },
+         "edge_type": "has_pareto_candidate"
+        },
+        "var_name": "c",
+        "value": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "And",
+          "items": [
+           {
+            "type": "Not",
+            "arg": {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "c"
+              },
+              "key": "dominated"
+             },
+             "b": {
+              "type": "Lit",
+              "value": null
+             }
+            }
+           },
+           {
+            "type": "Not",
+            "arg": {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "c"
+              },
+              "key": "priority_axis_value"
+             },
+             "b": {
+              "type": "Lit",
+              "value": null
+             }
+            }
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "c"
+               },
+               "key": "dominated"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            },
+            "b": {
+             "type": "Lit",
+             "value": 0
+            }
+           }
+          ]
+         },
+         "then": {
+          "type": "Neg",
+          "arg": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "c"
+             },
+             "key": "priority_axis_value"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          }
+         },
+         "other": {
+          "type": "Lit",
+          "value": 1000000
+         }
+        },
+        "default": {
+         "type": "Lit",
+         "value": null
+        }
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "profile",
+     "adopted_regime",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Argmin",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "profile"
+         },
+         "edge_type": "has_pareto_candidate"
+        },
+        "var_name": "c",
+        "value": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "And",
+          "items": [
+           {
+            "type": "Not",
+            "arg": {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "c"
+              },
+              "key": "dominated"
+             },
+             "b": {
+              "type": "Lit",
+              "value": null
+             }
+            }
+           },
+           {
+            "type": "Not",
+            "arg": {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "c"
+              },
+              "key": "priority_axis_value"
+             },
+             "b": {
+              "type": "Lit",
+              "value": null
+             }
+            }
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "c"
+               },
+               "key": "dominated"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            },
+            "b": {
+             "type": "Lit",
+             "value": 0
+            }
+           }
+          ]
+         },
+         "then": {
+          "type": "Neg",
+          "arg": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "c"
+             },
+             "key": "priority_axis_value"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          }
+         },
+         "other": {
+          "type": "Lit",
+          "value": 1000000
+         }
+        },
+        "default": {
+         "type": "Lit",
+         "value": null
+        }
+       },
+       "key": "identity"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "profile",
+     "adopted_arm_authority_units",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Argmin",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "profile"
+         },
+         "edge_type": "has_pareto_candidate"
+        },
+        "var_name": "c",
+        "value": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "And",
+          "items": [
+           {
+            "type": "Not",
+            "arg": {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "c"
+              },
+              "key": "dominated"
+             },
+             "b": {
+              "type": "Lit",
+              "value": null
+             }
+            }
+           },
+           {
+            "type": "Not",
+            "arg": {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "c"
+              },
+              "key": "priority_axis_value"
+             },
+             "b": {
+              "type": "Lit",
+              "value": null
+             }
+            }
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "c"
+               },
+               "key": "dominated"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            },
+            "b": {
+             "type": "Lit",
+             "value": 0
+            }
+           }
+          ]
+         },
+         "then": {
+          "type": "Neg",
+          "arg": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "c"
+             },
+             "key": "priority_axis_value"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          }
+         },
+         "other": {
+          "type": "Lit",
+          "value": 1000000
+         }
+        },
+        "default": {
+         "type": "Lit",
+         "value": null
+        }
+       },
+       "key": "arm_authority_units"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "eaa_bind_adopted_authority_candidate",
+   "area": "general_cognition",
+   "latency_class": "hard_realtime",
+   "batch": true,
+   "match": [
+    [
+     "agent",
+     "has_effector_authority_profile",
+     "profile"
+    ],
+    [
+     "profile",
+     "has_pareto_candidate",
+     "candidate"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "profile"
+        },
+        "key": "adopted_regime"
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       }
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "candidate"
+       },
+       "key": "identity"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "profile"
+       },
+       "key": "adopted_regime"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "profile"
+        },
+        "edge_type": "adopted_authority_candidate"
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_edge",
+     "profile",
+     "adopted_authority_candidate",
+     "candidate"
+    ]
+   ]
+  }
+ ]
+}

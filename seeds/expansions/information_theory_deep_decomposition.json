@@ -1,0 +1,118 @@
+{
+  "id": "information_theory_deep_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "Shannon_entropy",
+  "in_microtheory": "mathematics",
+  "description": "Information theory decomposed. Differential entropy, rate-distortion theory, network information theory, error-correcting codes (Reed-Solomon, LDPC, polar, turbo), Kolmogorov complexity, algorithmic information, MDL principle.",
+  "sub_mechanisms": [
+    {
+      "name": "differential_entropy",
+      "definition": "h(X) = -∫p log p dx for continuous X.",
+      "why": "Generalises discrete entropy. Gaussian maximises for given variance. Foundation continuous information.",
+      "category": "info_deep_mechanism"
+    },
+    {
+      "name": "rate_distortion_theory",
+      "definition": "Minimum rate to encode source with distortion ≤ D. R(D) curve.",
+      "why": "Foundation lossy compression. JPEG, MP3. R-D theorem characterises optimum.",
+      "category": "info_deep_mechanism"
+    },
+    {
+      "name": "Reed_Solomon_codes",
+      "definition": "Block codes over finite field. Corrects t errors in 2t parity symbols.",
+      "why": "Foundation. CDs, QR codes, deep space. Standard error correction.",
+      "category": "info_deep_mechanism"
+    },
+    {
+      "name": "LDPC_codes",
+      "definition": "Low-Density Parity-Check. Sparse parity matrix. Near-Shannon capacity.",
+      "why": "Foundation modern coding. 5G, Wi-Fi 6, hard drives. Iterative decoding.",
+      "category": "info_deep_mechanism"
+    },
+    {
+      "name": "polar_codes",
+      "definition": "Arıkan 2009. Channel polarisation. Provably achieves capacity.",
+      "why": "First constructive capacity-achieving codes. 5G control channel. Foundation modern.",
+      "category": "info_deep_mechanism"
+    },
+    {
+      "name": "turbo_codes",
+      "definition": "Parallel concatenation with interleaver. Iterative decoding.",
+      "why": "Revolutionary 1993. Near-Shannon performance. 3G/4G. Foundation iterative decoding.",
+      "category": "info_deep_mechanism"
+    },
+    {
+      "name": "Kolmogorov_complexity",
+      "definition": "K(x) = length of shortest program outputting x. Uncomputable but meaningful.",
+      "why": "Algorithmic information theory. Foundation. Distinguishes random from compressible.",
+      "category": "info_deep_mechanism"
+    },
+    {
+      "name": "minimum_description_length",
+      "definition": "MDL: best model minimises code length(model) + code length(data | model).",
+      "why": "Foundation modern statistics + ML. Trades complexity vs fit. Bayesian connection.",
+      "category": "info_deep_mechanism"
+    },
+    {
+      "name": "channel_capacity_AWGN",
+      "definition": "C = B log(1 + SNR) for additive white Gaussian noise channel.",
+      "why": "Foundation wireless. Shannon-Hartley formula. Dictates achievable rates.",
+      "category": "info_deep_mechanism"
+    },
+    {
+      "name": "network_information_theory",
+      "definition": "Multi-user channels. Broadcast, multiple access, relay. Capacity regions.",
+      "why": "Foundation modern wireless. 5G beyond. Cell-free networks.",
+      "category": "info_deep_mechanism"
+    },
+    {
+      "name": "Slepian_Wolf_distributed",
+      "definition": "Encode correlated sources separately, decode jointly. Achieves H(X,Y) rate.",
+      "why": "Foundation distributed compression. Sensor networks. Surprising result.",
+      "category": "info_deep_mechanism"
+    },
+    {
+      "name": "Fisher_information",
+      "definition": "I(θ) = E[(∂log p/∂θ)²]. Curvature of log-likelihood.",
+      "why": "Foundation statistics. Cramér-Rao bound: variance ≥ 1/I. Modern: natural gradient.",
+      "category": "info_deep_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "Gaussian_maximises_differential_entropy",
+      "if": ["distribution has fixed variance"],
+      "then": ["Gaussian has maximum differential entropy"],
+      "why": "Foundation. Maximum entropy principle. Justifies normal in inference + estimation.",
+      "soundness_category": "algebraic_law"
+    },
+    {
+      "name": "rate_distortion_curve_characterises_compression",
+      "if": ["lossy compression with distortion D"],
+      "then": ["rate R(D) is information-theoretic minimum"],
+      "why": "Foundation. JPEG, MP3 approach but don't reach. Modern: learned compressors approaching.",
+      "soundness_category": "algebraic_law"
+    },
+    {
+      "name": "modern_codes_approach_capacity",
+      "if": ["channel coded with LDPC/polar/turbo"],
+      "then": ["rate near Shannon capacity achievable"],
+      "why": "Foundation modern communications. Within 1 dB of Shannon. 5G uses LDPC + polar.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "Kolmogorov_complexity_uncomputable_but_useful",
+      "if": ["interest in algorithmic randomness"],
+      "then": ["K-complexity provides framework"],
+      "why": "Uncomputable (Chaitin) but theoretically meaningful. Foundation algorithmic info theory.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "MDL_balances_fit_complexity",
+      "if": ["model selection from data"],
+      "then": ["MDL provides principled framework"],
+      "why": "Bayesian + information theory unite. Code length = -log probability. Standard model selection.",
+      "soundness_category": "extensional_equivalence"
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "id": "stopping_policy",
+  "version": "1.0.0",
+  "depends_on": [
+    "gap_prioritization"
+  ],
+  "description": "THE STOP DECISION as DATA -- the ONE step of the self-improvement loop that was still a Python drain. The jabberwock already PERCEIVES its gaps (#1), PRIORITIZES them most-salient-first (gap_prioritization: the gap_priority Argmax Program), DIAGNOSES + SELECTS + VERIFIES + APPLIES each fix (the perf/understanding drivers). What it did NOT yet DECIDE is WHEN TO STOP: the cycle simply drained the whole ordered agenda. This seed makes STOPPING the agent's OWN graph decision -- competent-man SUFFICIENCY, not completion: there is no win condition; the agent STOPS when what REMAINS is not salient enough to be worth fixing, deliberately leaving low-salience gaps UNFIXED ('sufficient -- move on; yeah yeah, the rest'). ONE graph-resident Program, the twin of perf_diagnose / gap_priority: should_continue reads the REMAINING agenda's TOP salience -- MaxOver the still-unfixed agenda gaps (Filter CapabilityGap where in_agenda==1 And Not fixed==1) by their norm_salience, default -1 when the agenda is empty -- and compares it to the SufficiencyPolicy threshold (graph data, tunable) via Gt inside an IfThenElse: CONTINUE (1.0) iff max_remaining_salience > sufficiency_threshold, else STOP (0.0). The DECISION is the Program's output, evaluated in Rust; Python only reads the boolean and breaks the loop -- it never counts, never `while gaps:`, never carries a threshold literal. The stop point MOVES with the salience DATA: RAISE a left gap's salience above the threshold and the SAME Program CONTINUES and fixes it; LOWER it and the SAME Program STOPS and leaves it. The sufficiency threshold is a stated POLICY (how much residual is 'good enough to leave'), NOT a universal metric -- tunable by editing the SufficiencyPolicy node.",
+  "microtheory": {
+    "name": "stopping_policy",
+    "description": "when the self-improvement cycle STOPS fixing perceived gaps: it CONTINUES iff the top remaining normalized salience exceeds the sufficiency threshold, else it STOPS and leaves the sub-threshold gaps UNFIXED. The salience is measured at the boundary; the threshold is a stated POLICY (graph data, tunable); the stop verdict is the should_continue Program's output, evaluated in Rust."
+  },
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "SufficiencyPolicy",
+      "attrs": {
+        "name": "default_sufficiency_policy",
+        "threshold": 0.5,
+        "priority": 1,
+        "description": "the residual-salience floor below which a remaining gap is 'good enough to leave': the cycle STOPS once the top remaining normalized salience drops to or below this. A POLICY (competent-man sufficiency, ~90%-and-move-on), tunable by editing this threshold -- NOT a universal 'good enough'.",
+        "rationale": "normalized salience is a residual; the two real understanding gaps sit at ~1.0 and the efficiency one-time-init at ~1.4, so a 0.5 default fixes all three real gaps (no early stop on a live boot) while any gap whose measured residual falls below 0.5 is deliberately left unfixed. Raise it to demand more sufficiency (stop sooner, leave more); lower it to fix more."
+      }
+    },
+    {
+      "local_id": 1,
+      "type": "Program",
+      "attrs": {
+        "name": "should_continue",
+        "form": "term_tree",
+        "program": "{\"type\": \"IfThenElse\", \"cond\": {\"type\": \"Gt\", \"a\": {\"type\": \"MaxOver\", \"source\": {\"type\": \"Filter\", \"source\": {\"type\": \"NodesOfType\", \"node_type\": \"CapabilityGap\"}, \"var_name\": \"c\", \"predicate\": {\"type\": \"And\", \"items\": [{\"type\": \"Eq\", \"a\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"c\"}, \"key\": \"in_agenda\"}, \"b\": {\"type\": \"Lit\", \"value\": 1.0}}, {\"type\": \"Not\", \"arg\": {\"type\": \"Eq\", \"a\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"c\"}, \"key\": \"fixed\"}, \"b\": {\"type\": \"Lit\", \"value\": 1.0}}}]}}, \"var_name\": \"x\", \"value\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"x\"}, \"key\": \"norm_salience\"}, \"default\": {\"type\": \"Lit\", \"value\": -1.0}}, \"b\": {\"type\": \"Attr\", \"key\": \"threshold\", \"node\": {\"type\": \"Argmin\", \"source\": {\"type\": \"NodesOfType\", \"node_type\": \"SufficiencyPolicy\"}, \"var_name\": \"p\", \"value\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"p\"}, \"key\": \"priority\"}, \"default\": null}}}, \"then\": {\"type\": \"Lit\", \"value\": 1.0}, \"other\": {\"type\": \"Lit\", \"value\": 0.0}}"
+      }
+    }
+  ]
+}

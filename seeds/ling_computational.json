@@ -1,0 +1,57 @@
+{
+  "microtheory": {
+    "name": "computational_linguistics",
+    "definition": "Computational + statistical approaches to language. Parsing, tagging, machine translation, information extraction, semantic representation, modern NLP (transformers, embeddings, LLMs). Bridges formal linguistics + computer science. Substrate analogue: the algorithmic substrate processing the substrate's linguistic inputs.",
+    "category": "linguistics_domain",
+    "parent": "linguistics_foundation"
+  },
+  "concepts": [
+    {"name": "part_of_speech_tagging", "definition": "Assign POS tag (noun, verb, etc.) to each word. Often first step in NLP pipeline. HMM, CRF, BERT. Substrate analogue: substrate's lexical-category assignment.", "category": "tagging"},
+    {"name": "named_entity_recognition", "definition": "NER. Identify + classify entities (person, location, organization, date). Substrate analogue: substrate's entity-Concept identification.", "category": "tagging"},
+    {"name": "dependency_parsing", "definition": "Determine head-dependent relations in a sentence. Stanford parser, spaCy. Substrate analogue: substrate's relational structure extraction.", "category": "parsing"},
+    {"name": "constituency_parsing", "definition": "Recover phrase-structure tree. CKY, Earley, neural. Substrate analogue: substrate's compositional tree-extraction.", "category": "parsing"},
+    {"name": "chart_parsing", "definition": "Dynamic programming for ambiguous CFG parsing. CKY algorithm. Substrate analogue: substrate's table-based search.", "category": "parsing"},
+
+    {"name": "ngram_model", "definition": "Probability of word given previous N-1 words. Markov assumption. Foundational pre-neural LM. Substrate analogue: substrate's local-context probability.", "category": "lm"},
+    {"name": "language_model", "definition": "Probability distribution over sequences. Used for generation, scoring, completion. Substrate analogue: substrate's predictive distribution over Messages.", "category": "lm"},
+    {"name": "smoothing", "definition": "Handle zero-probability events in n-gram models. Laplace, Good-Turing, Kneser-Ney. Substrate analogue: substrate's prior over unseen events.", "category": "lm"},
+    {"name": "perplexity", "definition": "Standard LM evaluation metric. 2^(-log-likelihood-per-word). Lower = better. Substrate analogue: substrate's prediction-quality metric.", "category": "lm"},
+
+    {"name": "word2vec", "definition": "Mikolov 2013. Skip-gram + CBOW. Words as dense vectors. Captures distributional + analogical patterns. Substrate analogue: substrate's Concept-as-vector embedding.", "category": "embeddings"},
+    {"name": "glove", "definition": "Pennington 2014. Embeddings from global co-occurrence statistics. Substrate analogue: substrate's co-occurrence-derived Concept space.", "category": "embeddings"},
+    {"name": "fasttext", "definition": "Bojanowski 2017. Subword embeddings — handles OOV words via character n-grams. Substrate analogue: substrate's morpheme-level Concept representation.", "category": "embeddings"},
+    {"name": "contextual_embeddings", "definition": "ELMo, BERT. Word representations depend on context. Polysemy disambiguated. Substrate analogue: substrate's context-conditioned Concept activation.", "category": "embeddings"},
+
+    {"name": "transformer", "definition": "Vaswani 2017. Self-attention based architecture. Foundation of modern NLP. Substrate analogue: substrate's parallel-context attention mechanism.", "category": "neural"},
+    {"name": "self_attention", "definition": "Each token attends to all others in sequence. Query × Key × Value. Substrate analogue: substrate's all-to-all Concept interaction within Mt.", "category": "neural"},
+    {"name": "bert", "definition": "Devlin 2018. Bidirectional transformer pre-trained with masked LM + next-sentence prediction. Substrate analogue: substrate's masked-completion learning.", "category": "neural"},
+    {"name": "gpt", "definition": "Radford 2018+. Decoder-only autoregressive transformer. GPT-2/3/4 = scale. Substrate analogue: substrate's left-to-right generative model.", "category": "neural"},
+    {"name": "large_language_model", "definition": "LLM. Trained on massive text. Emergent capabilities — in-context learning, chain-of-thought, instruction following. Substrate analogue: substrate's compressed-knowledge accumulation.", "category": "neural"},
+
+    {"name": "machine_translation", "definition": "Translate between languages automatically. Rule-based → statistical → neural. Substrate analogue: substrate's cross-Mt translation.", "category": "applications"},
+    {"name": "neural_machine_translation", "definition": "Seq2seq with attention; now transformer-based. Substrate analogue: substrate's encoder-decoder Mt mapping.", "category": "applications"},
+    {"name": "question_answering", "definition": "Extract or generate answers from text. Extractive (SQuAD) vs generative. Substrate analogue: substrate's query-resolution from Mt.", "category": "applications"},
+    {"name": "summarization", "definition": "Compress text to shorter version preserving content. Extractive vs abstractive. Substrate analogue: substrate's compression-objective applied to text.", "category": "applications"},
+    {"name": "information_extraction", "definition": "Pull structured facts from unstructured text. Relations, events. Substrate analogue: substrate's text-to-graph translation.", "category": "applications"},
+    {"name": "sentiment_analysis", "definition": "Classify text by emotional valence/intent. Substrate analogue: substrate's affect-attribute extraction from Message.", "category": "applications"},
+
+    {"name": "tokenization", "definition": "Split text into units (words, subwords, characters). BPE, WordPiece, SentencePiece. Substrate analogue: substrate's Message-to-lexical-unit segmentation.", "category": "preprocessing"},
+    {"name": "subword_tokenization", "definition": "BPE merges frequent character pairs; balances vocabulary size with OOV handling. Substrate analogue: substrate's morpheme-level lexical units.", "category": "preprocessing"},
+    {"name": "byte_pair_encoding", "definition": "BPE. Sennrich 2016. Substrate analogue: substrate's frequency-driven lexical chunking.", "category": "preprocessing"},
+
+    {"name": "attention_mechanism", "definition": "Weighted combination of source items based on relevance to query. Bahdanau 2014. Substrate analogue: substrate's context-weighted Concept selection.", "category": "mechanisms"},
+    {"name": "cross_attention", "definition": "Attention between two sequences. Used in encoder-decoder. Substrate analogue: substrate's cross-Mt attention.", "category": "mechanisms"},
+    {"name": "positional_encoding", "definition": "Inject sequence position into transformer (which is permutation-invariant otherwise). Substrate analogue: substrate's temporal-position encoding.", "category": "mechanisms"},
+
+    {"name": "few_shot_learning", "definition": "Learn from very few examples. LLMs do this in-context. Substrate analogue: substrate's analogical_transfer for rapid generalization.", "category": "emergent"},
+    {"name": "chain_of_thought", "definition": "LLMs reason better when prompted to think step-by-step. Wei 2022. Substrate analogue: substrate's derivation_mechanism explicit walks.", "category": "emergent"},
+    {"name": "rlhf", "definition": "Reinforcement Learning from Human Feedback. Aligns LLM outputs with human preferences. Substrate analogue: substrate's correction-driven ActionSpec refinement.", "category": "alignment"}
+  ],
+  "rules": [
+    {"name": "ngram_models_capture_local_structure", "head": "the substrate models word sequences with limited context", "body": "n-gram language models capture local but not long-range structure. Substrate's per-step prediction has the same limitation."},
+    {"name": "distributional_embeddings_capture_meaning", "head": "the substrate trains embeddings on co-occurrence", "body": "the resulting vectors capture both similarity (close meanings) + analogy (vector arithmetic). Mikolov 2013. Substrate's distributional Concept-space."},
+    {"name": "contextual_embeddings_disambiguate_polysemy", "head": "the substrate processes a polysemous word", "body": "context-dependent embeddings (BERT, etc.) yield different representations for different senses. Substrate's context-conditioned Concept activation."},
+    {"name": "attention_enables_long_range_dependencies", "head": "the substrate processes long sequences with dependencies between distant elements", "body": "attention mechanism connects them directly without intervening computation. Substrate's direct all-to-all access."},
+    {"name": "chain_of_thought_improves_reasoning", "head": "the substrate is asked a complex reasoning question", "body": "explicitly walking through intermediate steps improves accuracy. Wei 2022. Substrate's derivation_mechanism explicit traversal."}
+  ]
+}

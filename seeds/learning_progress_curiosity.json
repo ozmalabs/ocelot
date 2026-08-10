@@ -1,0 +1,403 @@
+{
+ "id": "learning_progress_curiosity",
+ "version": "1.0.0",
+ "self_load_only": true,
+ "depends_on": [],
+ "area": "retina",
+ "description": "LEARNING-PROGRESS-GATED DECAY + THE COMMIT-NET (block 202000). Curiosity/attention gated by learning progress -- the RATE of surprise-reduction on a held item (Schmidhuber compression-progress / Oudeyer IAC) -- NOT by raw surprise. Re-derives on the SAME 196000 staleness_decay atom: learning_progress = residual_prev - residual (the integer backward-difference of the held-surface temporal surprise), and interest is the identical scale2 freshness = Ashr(interest_c0, IDiv(now - last_boost, half_life)) with half_life + clock keyed on PROGRESS instead of surprise. HOLD only the surprising-AND-progressing: resolved decays (progress->0, nothing left), intractable/noisy decays (progress->0, nothing gettable), progressing is held. The raw-surprise FALSIFIER (mode=surprise) keys half_life+clock on the residual itself -> keeps the surprising -> TRAPS on the noisy TV (the classic ICM/prediction-error failure). The COMMIT-NET is an order-0 reflex (cn_commit): the marginal value of deliberation is the SAME diminishing-returns atom value = V_max - Ashr(V_max, step) so marginal = Ashr(V_max, step) halves each step; the net CUTS (committed=1) when marginal < commit_cost -- the regress-breaker (decide-now-or-more cannot itself be deliberated). OFF by default: all rules guard on a HeldCuriosityParams.enabled the measure adapter creates only on opt-in; absent it every path is byte-identical. NO Rust, NO new Term (Abs/Minus/Plus/Times/IDiv/Ashr/Max/Min/IfThenElse/Lt/Gt/Eq/And all exist).",
+ "microtheory": {
+  "name": "learning_progress_curiosity",
+  "description": "Attention gated by learning progress (derivative of surprise-reduction), not raw surprise; the same integer decay atom as perception/memory/emotion, fed a derivative. The commit is an order-0 reflex net that cuts deliberation when its marginal value (the same diminishing-returns atom) drops below cost."
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [
+  {
+   "provenance": "seed:learning_progress_curiosity:hub-params",
+   "src": {"type": "CuriosityHub", "var": "hub"},
+   "edge_type": "has_curiosity_params",
+   "tgt": {"type": "HeldCuriosityParams", "var": "cp"}
+  },
+  {
+   "provenance": "seed:learning_progress_curiosity:hub-item",
+   "src": {"type": "CuriosityHub", "var": "hub"},
+   "edge_type": "has_attention_item",
+   "tgt": {"type": "AttentionItem", "var": "item"}
+  },
+  {
+   "provenance": "seed:learning_progress_curiosity:hub-deliberation",
+   "src": {"type": "CuriosityHub", "var": "hub"},
+   "edge_type": "has_deliberation",
+   "tgt": {"type": "Deliberation", "var": "delib"}
+  }
+ ],
+ "rules": [
+  {
+   "name": "lp_residual",
+   "area": "retina",
+   "order": 0,
+   "latency_class": "hard_realtime",
+   "match": [
+    ["hub", "has_curiosity_params", "cp"],
+    ["hub", "has_attention_item", "item"]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "cp"}, "key": "enabled"}, "b": {"type": "Lit", "value": 1.0}},
+     {"type": "Gt", "a": {"type": "Attr", "node": {"type": "Var", "name": "item"}, "key": "input_epoch"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "item"}, "key": "epoch"}}
+    ]
+   },
+   "effects": [
+    ["set_attr", "item", "residual",
+     {"__term__": {
+       "type": "Abs",
+       "arg": {"type": "Minus",
+         "a": {"type": "IDiv", "a": {"type": "Attr", "node": {"type": "Var", "name": "item"}, "key": "obs"}, "b": {"type": "Lit", "value": 1.0}},
+         "b": {"type": "IDiv", "a": {"type": "Attr", "node": {"type": "Var", "name": "item"}, "key": "held"}, "b": {"type": "Lit", "value": 1.0}}
+       }
+     }}
+    ]
+   ]
+  },
+  {
+   "name": "lp_fast",
+   "area": "retina",
+   "order": 1,
+   "latency_class": "hard_realtime",
+   "comment": "Fast integer EMA of the residual (short window): fast_res += IDiv(residual - fast_res, fast_div). Tracks the RECENT surprise level.",
+   "match": [
+    ["hub", "has_curiosity_params", "cp"],
+    ["hub", "has_attention_item", "item"]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "cp"}, "key": "enabled"}, "b": {"type": "Lit", "value": 1.0}},
+     {"type": "Gt", "a": {"type": "Attr", "node": {"type": "Var", "name": "item"}, "key": "input_epoch"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "item"}, "key": "epoch"}}
+    ]
+   },
+   "effects": [
+    ["set_attr", "item", "fast_res",
+     {"__term__": {
+       "type": "Plus",
+       "items": [
+        {"type": "Attr", "node": {"type": "Var", "name": "item"}, "key": "fast_res"},
+        {"type": "IDiv",
+          "a": {"type": "Minus", "a": {"type": "Attr", "node": {"type": "Var", "name": "item"}, "key": "residual"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "item"}, "key": "fast_res"}},
+          "b": {"type": "Attr", "node": {"type": "Var", "name": "cp"}, "key": "fast_div"}
+        }
+       ]
+     }}
+    ]
+   ]
+  },
+  {
+   "name": "lp_slow",
+   "area": "retina",
+   "order": 1,
+   "latency_class": "hard_realtime",
+   "comment": "Slow integer EMA of the residual (long window): slow_res += IDiv(residual - slow_res, slow_div). Tracks the OLDER surprise level.",
+   "match": [
+    ["hub", "has_curiosity_params", "cp"],
+    ["hub", "has_attention_item", "item"]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "cp"}, "key": "enabled"}, "b": {"type": "Lit", "value": 1.0}},
+     {"type": "Gt", "a": {"type": "Attr", "node": {"type": "Var", "name": "item"}, "key": "input_epoch"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "item"}, "key": "epoch"}}
+    ]
+   },
+   "effects": [
+    ["set_attr", "item", "slow_res",
+     {"__term__": {
+       "type": "Plus",
+       "items": [
+        {"type": "Attr", "node": {"type": "Var", "name": "item"}, "key": "slow_res"},
+        {"type": "IDiv",
+          "a": {"type": "Minus", "a": {"type": "Attr", "node": {"type": "Var", "name": "item"}, "key": "residual"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "item"}, "key": "slow_res"}},
+          "b": {"type": "Attr", "node": {"type": "Var", "name": "cp"}, "key": "slow_div"}
+        }
+       ]
+     }}
+    ]
+   ]
+  },
+  {
+   "name": "lp_progress",
+   "area": "retina",
+   "order": 2,
+   "latency_class": "hard_realtime",
+   "comment": "Learning progress = the two-timescale surprise-reduction rate (IAC/Oudeyer windowed form; Schmidhuber dC/dt): slow_res - fast_res. POSITIVE when the recent residual is BELOW the older residual (surprise dropping => compressing). ~0 for a RESOLVED item (both EMAs converged) AND for STATIONARY NOISE (both EMAs track the same mean; the noise averages out) -- exactly the noisy-TV discriminator. smoothed_progress mirrors it for the gate/readout.",
+   "match": [
+    ["hub", "has_curiosity_params", "cp"],
+    ["hub", "has_attention_item", "item"]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "cp"}, "key": "enabled"}, "b": {"type": "Lit", "value": 1.0}},
+     {"type": "Gt", "a": {"type": "Attr", "node": {"type": "Var", "name": "item"}, "key": "input_epoch"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "item"}, "key": "epoch"}}
+    ]
+   },
+   "effects": [
+    ["set_attr", "item", "learning_progress",
+     {"__term__": {
+       "type": "Minus",
+       "a": {"type": "Attr", "node": {"type": "Var", "name": "item"}, "key": "slow_res"},
+       "b": {"type": "Attr", "node": {"type": "Var", "name": "item"}, "key": "fast_res"}
+     }}
+    ],
+    ["set_attr", "item", "smoothed_progress",
+     {"__term__": {
+       "type": "Minus",
+       "a": {"type": "Attr", "node": {"type": "Var", "name": "item"}, "key": "slow_res"},
+       "b": {"type": "Attr", "node": {"type": "Var", "name": "item"}, "key": "fast_res"}
+     }}
+    ]
+   ]
+  },
+  {
+   "name": "lp_gate",
+   "area": "retina",
+   "order": 3,
+   "latency_class": "hard_realtime",
+   "match": [
+    ["hub", "has_curiosity_params", "cp"],
+    ["hub", "has_attention_item", "item"]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "cp"}, "key": "enabled"}, "b": {"type": "Lit", "value": 1.0}},
+     {"type": "Gt", "a": {"type": "Attr", "node": {"type": "Var", "name": "item"}, "key": "input_epoch"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "item"}, "key": "epoch"}}
+    ]
+   },
+   "effects": [
+    ["set_attr", "item", "interest_half_life",
+     {"__term__": {
+       "type": "Max",
+       "items": [
+        {"type": "Attr", "node": {"type": "Var", "name": "cp"}, "key": "hl_min"},
+        {"type": "Plus", "items": [
+          {"type": "Attr", "node": {"type": "Var", "name": "cp"}, "key": "hl_min"},
+          {"type": "Times", "items": [
+            {"type": "Attr", "node": {"type": "Var", "name": "cp"}, "key": "hl_scale"},
+            {"type": "Max", "items": [
+              {"type": "Lit", "value": 0.0},
+              {"type": "IfThenElse",
+                "cond": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "cp"}, "key": "mode"}, "b": {"type": "Lit", "value": 1.0}},
+                "then": {"type": "Minus", "a": {"type": "Attr", "node": {"type": "Var", "name": "item"}, "key": "residual"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "cp"}, "key": "surprise_floor"}},
+                "other": {"type": "Minus", "a": {"type": "Attr", "node": {"type": "Var", "name": "item"}, "key": "smoothed_progress"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "cp"}, "key": "progress_floor"}}
+              }
+            ]}
+          ]}
+        ]}
+       ]
+     }}
+    ],
+    ["set_attr", "item", "last_boost_epoch",
+     {"__term__": {
+       "type": "IfThenElse",
+       "cond": {"type": "Gt",
+         "a": {"type": "IfThenElse",
+           "cond": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "cp"}, "key": "mode"}, "b": {"type": "Lit", "value": 1.0}},
+           "then": {"type": "Minus", "a": {"type": "Attr", "node": {"type": "Var", "name": "item"}, "key": "residual"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "cp"}, "key": "surprise_floor"}},
+           "other": {"type": "Minus", "a": {"type": "Attr", "node": {"type": "Var", "name": "item"}, "key": "smoothed_progress"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "cp"}, "key": "progress_floor"}}
+         },
+         "b": {"type": "Lit", "value": 0.0}
+       },
+       "then": {"type": "Attr", "node": {"type": "Var", "name": "item"}, "key": "input_epoch"},
+       "other": {"type": "Attr", "node": {"type": "Var", "name": "item"}, "key": "last_boost_epoch"}
+     }}
+    ]
+   ]
+  },
+  {
+   "name": "lp_interest",
+   "area": "retina",
+   "order": 4,
+   "latency_class": "hard_realtime",
+   "match": [
+    ["hub", "has_curiosity_params", "cp"],
+    ["hub", "has_attention_item", "item"]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "cp"}, "key": "enabled"}, "b": {"type": "Lit", "value": 1.0}},
+     {"type": "Gt", "a": {"type": "Attr", "node": {"type": "Var", "name": "item"}, "key": "input_epoch"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "item"}, "key": "epoch"}}
+    ]
+   },
+   "effects": [
+    ["set_attr", "item", "interest",
+     {"__term__": {
+       "type": "Ashr",
+       "a": {"type": "Attr", "node": {"type": "Var", "name": "cp"}, "key": "interest_c0"},
+       "b": {"type": "IDiv",
+         "a": {"type": "Minus", "a": {"type": "Attr", "node": {"type": "Var", "name": "item"}, "key": "input_epoch"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "item"}, "key": "last_boost_epoch"}},
+         "b": {"type": "Attr", "node": {"type": "Var", "name": "item"}, "key": "interest_half_life"}
+       }
+     }}
+    ]
+   ]
+  },
+  {
+   "name": "lp_attend",
+   "area": "retina",
+   "order": 5,
+   "latency_class": "hard_realtime",
+   "match": [
+    ["hub", "has_curiosity_params", "cp"],
+    ["hub", "has_attention_item", "item"]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "cp"}, "key": "enabled"}, "b": {"type": "Lit", "value": 1.0}},
+     {"type": "Gt", "a": {"type": "Attr", "node": {"type": "Var", "name": "item"}, "key": "input_epoch"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "item"}, "key": "epoch"}}
+    ]
+   },
+   "effects": [
+    ["set_attr", "item", "attended",
+     {"__term__": {
+       "type": "IfThenElse",
+       "cond": {"type": "Gte", "a": {"type": "Attr", "node": {"type": "Var", "name": "item"}, "key": "interest"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "cp"}, "key": "attend_thresh"}},
+       "then": {"type": "Lit", "value": 1.0},
+       "other": {"type": "Lit", "value": 0.0}
+     }}
+    ]
+   ]
+  },
+  {
+   "name": "lp_learn",
+   "area": "retina",
+   "order": 6,
+   "latency_class": "hard_realtime",
+   "comment": "The predictor learns: integer EMA of the held prediction toward the observation, held += IDiv(obs - held, blend_div). Runs AFTER residual is computed against the OLD held (predictive surprise), so the update only affects the NEXT tick. A structured target converges (residual drops -> positive progress); a noisy target is chased but the residual stays high (progress ~ 0). This is the same convergent held-belief update as staleness_decay's sd_blend, integer-only.",
+   "match": [
+    ["hub", "has_curiosity_params", "cp"],
+    ["hub", "has_attention_item", "item"]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "cp"}, "key": "enabled"}, "b": {"type": "Lit", "value": 1.0}},
+     {"type": "Gt", "a": {"type": "Attr", "node": {"type": "Var", "name": "item"}, "key": "input_epoch"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "item"}, "key": "epoch"}}
+    ]
+   },
+   "effects": [
+    ["set_attr", "item", "held",
+     {"__term__": {
+       "type": "Plus",
+       "items": [
+        {"type": "Attr", "node": {"type": "Var", "name": "item"}, "key": "held"},
+        {"type": "IDiv",
+          "a": {"type": "Minus", "a": {"type": "Attr", "node": {"type": "Var", "name": "item"}, "key": "obs"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "item"}, "key": "held"}},
+          "b": {"type": "Attr", "node": {"type": "Var", "name": "cp"}, "key": "blend_div"}
+        }
+       ]
+     }}
+    ]
+   ]
+  },
+  {
+   "name": "lp_advance",
+   "area": "retina",
+   "order": 7,
+   "latency_class": "hard_realtime",
+   "match": [
+    ["hub", "has_curiosity_params", "cp"],
+    ["hub", "has_attention_item", "item"]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "cp"}, "key": "enabled"}, "b": {"type": "Lit", "value": 1.0}},
+     {"type": "Gt", "a": {"type": "Attr", "node": {"type": "Var", "name": "item"}, "key": "input_epoch"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "item"}, "key": "epoch"}}
+    ]
+   },
+   "effects": [
+    ["set_attr", "item", "epoch", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "item"}, "key": "input_epoch"}}]
+   ]
+  },
+  {
+   "name": "cn_marginal",
+   "area": "retina",
+   "order": 0,
+   "latency_class": "hard_realtime",
+   "match": [
+    ["hub", "has_curiosity_params", "cp"],
+    ["hub", "has_deliberation", "delib"]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "cp"}, "key": "enabled"}, "b": {"type": "Lit", "value": 1.0}},
+     {"type": "Gt", "a": {"type": "Attr", "node": {"type": "Var", "name": "delib"}, "key": "step"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "delib"}, "key": "seen_step"}}
+    ]
+   },
+   "effects": [
+    ["set_attr", "delib", "value",
+     {"__term__": {
+       "type": "Minus",
+       "a": {"type": "Attr", "node": {"type": "Var", "name": "delib"}, "key": "v_max"},
+       "b": {"type": "Ashr", "a": {"type": "Attr", "node": {"type": "Var", "name": "delib"}, "key": "v_max"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "delib"}, "key": "step"}}
+     }}
+    ],
+    ["set_attr", "delib", "marginal_value",
+     {"__term__": {
+       "type": "Ashr",
+       "a": {"type": "Attr", "node": {"type": "Var", "name": "delib"}, "key": "v_max"},
+       "b": {"type": "Attr", "node": {"type": "Var", "name": "delib"}, "key": "step"}
+     }}
+    ]
+   ]
+  },
+  {
+   "name": "cn_commit",
+   "area": "retina",
+   "order": 1,
+   "latency_class": "hard_realtime",
+   "match": [
+    ["hub", "has_curiosity_params", "cp"],
+    ["hub", "has_deliberation", "delib"]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "cp"}, "key": "enabled"}, "b": {"type": "Lit", "value": 1.0}},
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "delib"}, "key": "commit_enabled"}, "b": {"type": "Lit", "value": 1.0}},
+     {"type": "Gt", "a": {"type": "Attr", "node": {"type": "Var", "name": "delib"}, "key": "step"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "delib"}, "key": "seen_step"}},
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "delib"}, "key": "committed"}, "b": {"type": "Lit", "value": 0.0}},
+     {"type": "Lt", "a": {"type": "Attr", "node": {"type": "Var", "name": "delib"}, "key": "marginal_value"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "delib"}, "key": "commit_cost"}}
+    ]
+   },
+   "effects": [
+    ["set_attr", "delib", "committed", {"__term__": {"type": "Lit", "value": 1.0}}],
+    ["set_attr", "delib", "commit_step", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "delib"}, "key": "step"}}]
+   ]
+  },
+  {
+   "name": "cn_advance",
+   "area": "retina",
+   "order": 2,
+   "latency_class": "hard_realtime",
+   "match": [
+    ["hub", "has_curiosity_params", "cp"],
+    ["hub", "has_deliberation", "delib"]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "cp"}, "key": "enabled"}, "b": {"type": "Lit", "value": 1.0}},
+     {"type": "Gt", "a": {"type": "Attr", "node": {"type": "Var", "name": "delib"}, "key": "step"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "delib"}, "key": "seen_step"}}
+    ]
+   },
+   "effects": [
+    ["set_attr", "delib", "seen_step", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "delib"}, "key": "step"}}]
+   ]
+  }
+ ]
+}

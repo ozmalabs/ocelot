@@ -1,0 +1,106 @@
+{
+  "id": "vvc_affine_motion_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "affine_motion",
+  "in_microtheory": "video_coding_theory",
+  "description": "VVC's affine motion model decomposed. Where translational MVs send a single (dx, dy) per block, affine sends 2-3 control-point MVs that define a 4-parameter or 6-parameter affine transformation applied to the block. This captures rotation, scaling, and shear — motion modes that translation simply cannot represent. Per sample, the affine MV is derived by linear interpolation from the control points.",
+  "sub_mechanisms": [
+    {
+      "name": "4_parameter_model",
+      "definition": "Affine motion defined by 2 control-point MVs (top-left, top-right of the block). Captures translation + uniform scaling + rotation; 4 parameters total.",
+      "why": "Most camera motion (panning + zooming) is well-modeled with 4 parameters: translation + zoom + rotation. Sending 2 MVs costs less than 3 while capturing the dominant motion modes of cinematic content.",
+      "category": "vvc_affine_mechanism"
+    },
+    {
+      "name": "6_parameter_model",
+      "definition": "Affine motion defined by 3 control-point MVs (top-left, top-right, bottom-left). Captures the full affine group: translation + scaling + rotation + shear; 6 parameters.",
+      "why": "Some motion (perspective projection on a tilted plane, shear from compound rotations) needs 6 parameters. Costs more bits than 4-parameter model but covers a larger family of true motions. R-D selection between 4 and 6 picks the right model per block.",
+      "category": "vvc_affine_mechanism"
+    },
+    {
+      "name": "control_point_MV_derivation",
+      "definition": "Per-sample MV at position (x, y) in the block is: mv_x = a*x + b*y + tx; mv_y = -b*x + a*y + ty (4-param) or mv_x = a*x + b*y + tx; mv_y = c*x + d*y + ty (6-param). The (a,b,c,d) are computed from the control-point MV differences.",
+      "why": "Linear interpolation across the block gives smooth per-sample motion. The affine matrix is determined by the control points; per-sample MVs are derived by integer-arithmetic linear interpolation (no division at decode time).",
+      "category": "vvc_affine_mechanism"
+    },
+    {
+      "name": "subblock_motion_compensation",
+      "definition": "Rather than computing per-sample MVs, the block is divided into 4x4 sub-blocks; each sub-block gets ONE MV (computed at its centre). All samples in a sub-block share that MV.",
+      "why": "Per-sample affine motion would require per-sample interpolation kernel calls — expensive. Per-4x4-sub-block MV is a piecewise approximation; the discontinuity at sub-block boundaries is smoothed by deblocking. ~20x faster than per-sample with negligible quality loss.",
+      "category": "vvc_affine_mechanism"
+    },
+    {
+      "name": "affine_merge_mode",
+      "definition": "Inherit affine parameters from a neighbour without signalling them: an affine_merge_idx selects which neighbour (left, above, etc.) to inherit from.",
+      "why": "If a moving object spans multiple blocks, its affine parameters are coherent across them. Inheritance saves the cost of re-signalling control-point MV differences (~12-20 bits) at the cost of 2-3 bits for the merge index.",
+      "category": "vvc_affine_mechanism"
+    },
+    {
+      "name": "affine_AMVP_mode",
+      "definition": "Explicitly signal control-point MVs using AMVP (Advanced MV Prediction) — each control-point MV is signalled as a difference from a predictor MV (which is itself derived from spatial/temporal neighbours).",
+      "why": "When affine_merge doesn't fit, AMVP signals the MV difference, which is typically small. Costs more than merge but always available.",
+      "category": "vvc_affine_mechanism"
+    },
+    {
+      "name": "affine_PROF",
+      "definition": "Prediction Refinement with Optical Flow: after sub-block motion compensation, samples are refined per-sample using the gradient of the predictor and the difference between the sub-block MV and the affine-computed per-sample MV.",
+      "why": "Sub-block MC has the per-sub-block discontinuity. PROF corrects this with a 1st-order optical-flow refinement — closing the gap between sub-block speed and per-sample accuracy at small extra cost.",
+      "category": "vvc_affine_mechanism"
+    },
+    {
+      "name": "warp_field_storage",
+      "definition": "VVC stores derived affine parameters in a 'history-based MV predictor' (HMVP) table so they can be reused by subsequent blocks even when not directly inherited.",
+      "why": "Affine motion from one object can be reused on later blocks in the same frame (e.g., the camera-pan parameters apply across many blocks). HMVP keeps recent affine candidates available as predictors.",
+      "category": "vvc_affine_mechanism"
+    },
+    {
+      "name": "affine_size_constraints",
+      "definition": "Affine mode is only allowed for blocks ≥ 8x8 (or 16x16 in some profiles). Smaller blocks use translational motion only.",
+      "why": "Affine parameters' signalling cost is fixed; for very small blocks the gain doesn't justify it. Larger blocks have enough samples that affine's flexibility translates to meaningful residual reduction.",
+      "category": "vvc_affine_mechanism"
+    },
+    {
+      "name": "ATMVP_subblock_temporal",
+      "definition": "Advanced Temporal MV Prediction at sub-block level: each 8x8 sub-block of a CU inherits MV from the collocated sub-block in a temporal reference, allowing non-rigid motion within the CU.",
+      "why": "Foliage, water, crowds: motion within one CU isn't uniform. ATMVP captures sub-block motion variability at zero MV signalling cost (the MVs are inherited from the reference frame). Affine handles uniform deformations; ATMVP handles non-rigid motion.",
+      "category": "vvc_affine_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "affine_captures_motion_translation_cannot",
+      "if": ["motion includes rotation, scaling, or shear"],
+      "then": ["affine model represents it; translation-only model cannot"],
+      "why": "Translation is a 2-parameter subset of affine's 4 or 6 parameters. Camera zooms, pans, rotations, perspective distortions all require non-translational components. Affine is the next natural model up the parameter ladder.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "subblock_MC_amortises_per_sample_cost",
+      "if": ["affine motion is applied via 4x4 sub-block MVs"],
+      "then": ["MC cost is ~20x lower than per-sample with negligible quality loss"],
+      "why": "Per-sample interpolation would call the 8-tap interpolation filter for every pixel. Per-sub-block calls it 1/16 as often (4x4 samples share one MV). The piecewise discontinuity is small (sub-pixel) and smoothed by subsequent in-loop filtering.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "affine_merge_saves_signalling_on_coherent_motion",
+      "if": ["adjacent blocks have similar affine parameters"],
+      "then": ["affine_merge inheritance saves ~15-20 bits per block"],
+      "why": "When a moving object spans multiple blocks, its affine parameters are coherent. Inheriting them costs 2-3 bits (merge index) vs ~20 bits (signalled control-point MV differences). Substantial saving on coherent motion.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "PROF_refines_subblock_to_persample_accuracy",
+      "if": ["affine MC uses sub-block granularity"],
+      "then": ["optical-flow refinement closes the per-sample accuracy gap"],
+      "why": "Sub-block MVs are piecewise approximations of the true affine field. PROF's 1st-order optical-flow correction captures the residual difference between sub-block MV and per-sample MV without re-running the interpolation filter — cheap, effective.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "atmvp_captures_nonrigid_motion",
+      "if": ["motion within a CU is non-rigid (foliage, water)"],
+      "then": ["sub-block temporal MV prediction captures it without extra signalling"],
+      "why": "Affine assumes uniform deformation. Non-rigid motion (each sub-block moves differently, not just rotated/scaled) breaks affine. ATMVP inherits MVs from the collocated reference frame's sub-blocks, capturing whatever motion the reference already had.",
+      "soundness_category": "extensional_equivalence"
+    }
+  ]
+}

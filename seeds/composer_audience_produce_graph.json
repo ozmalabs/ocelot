@@ -1,0 +1,468 @@
+{
+ "id": "composer_audience_produce_graph",
+ "version": "1.0.0",
+ "depends_on": [],
+ "description": "GRAPH-RESIDENT: the AUDIENCE-DRIVEN PRODUCTION decision (memory ozma_two_model_communication + domains/audience_driven_production.py's own 'FOR THE FOLLOW-ON' note) authored by the jabberwock via the composer (CLAUDE.md discipline: no hand-written agent rule). domains/audience_driven_production.py's audience_model/select_utterance stay the MECHANICAL machinery (a grounded SystemModel of an observed interlocutor via system_model.model_system's foreign_snapshot path, plus the joint-optimum Argmax-of-Plus render, unchanged, read-only here) -- domains/audience_production_dispatch.py's scan_and_speak_to_audience is the mechanical host hook that reads pending ProduceForAudienceRequest{status:requested} nodes, calls audience_model + select_utterance for each, and wires req -has_audience_model-> sm so the freshly-computed SystemModel (carrying the REAL grounded attr system_model.model_system already writes -- or, when the interlocutor was never observed, an honest placeholder SystemModel{grounded:false} the hook mints directly, the SAME node type/attr vocabulary the grounded case uses, since audience_model() intentionally builds NO SystemModel at all for an unobserved audience) is exposed to the rule engine as a matchable edge (the SAME idiom domains/system_model_dispatch.py's scan_and_model uses for has_system_model). THIS seed is the agent's OWN decision about WHAT TO DO with the model, mirroring composer_control_graph.json's default+override two-rule shape (default_no_response_<tag> / control_my_body_<tag>) for the load-bearing branch, plus a THIRD rule mirroring composer_communicate_graph.json's mint-a-subgoal-request shape for the request-minting step. Mints THREE rules from an agent -wants_audience_produce_rule-> ComposeRequest trigger (ground_concern's 'tailor' relation head, seeds/relation_vocabulary.json's new audience_produce cue + seeds/composer_dispatch.json's new ComposerCue, priority 23). (1) request_produce_for_audience_<tag> recognises a produce_utterance Goal that carries a for_audience edge (the world/test mechanically marking 'this utterance is meant for this interlocutor', the same kind of mechanical I/O domains/system_model_dispatch.py's mint_model_request performs for 'model this target') and mints the ProduceForAudienceRequest{status:requested} + for_goal/for_interlocutor edges -- the DECISION to model-the-audience-and-tailor, guarded by a requests_audience_produce fixpoint marker so a re-tick never re-requests. (2)+(3) are the LOAD-BEARING BRANCH, read directly off req -has_audience_model-> sm once the host hook has wired it: default_explicit_produce_<tag> DEFAULTS every request with no mode yet to 'explicit' (mirrors default_no_response_<tag>'s 'by default the environment does not respond' -- here, by default an unmodelled/ungrounded audience gets the safe explicit rendering); tailor_when_grounded_<tag> OVERRIDES to 'mode:tailor' iff sm.grounded==true (mirrors control_my_body_<tag>'s selective override) -- an ungrounded sm (grounded==false, whether a real SystemModel the host built or the honest unobserved placeholder) never matches this rule's where-guard at all, discriminative by construction, not by a second rule remembering to do nothing: the agent only tailors to an audience it actually grounded in observation, exactly the epistemic discipline domains/audience_driven_production.py's own module docstring names ('an unobserved audience contributes NOTHING to the shared-model credit, on purpose'). The mode attr the agent's own rule sets is then read back by the gate/tests alongside the host's mechanically-computed select_utterance result (terseness/grounded_used) to PIN that the two agree -- the agent's graph-resident decision and the host's mechanical rendering both key off the SAME underlying observed/grounded fact, never a host-side flag.",
+ "nodes": [
+  {
+   "local_id": 1,
+   "type": "Rule",
+   "attrs": {
+    "id": "compose_audience_produce_graph",
+    "match": [
+     [
+      "agent",
+      "wants_audience_produce_rule",
+      "cr"
+     ]
+    ],
+    "where": {
+     "type": "Lt",
+     "a": {
+      "type": "Plus",
+      "items": [
+       {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "cr"
+        },
+        "key": "composed"
+       },
+       {
+        "type": "Lit",
+        "value": 0.0
+       }
+      ]
+     },
+     "b": {
+      "type": "Lit",
+      "value": 0.5
+     }
+    },
+    "effect": [
+     [
+      "add_node",
+      "rn0",
+      "Rule",
+      {
+       "minted": 0.0
+      }
+     ],
+     [
+      "set_attr",
+      "rn0",
+      "id",
+      {
+       "__term__": {
+        "type": "StringConcat",
+        "parts": [
+         {
+          "type": "Lit",
+          "value": "request_produce_for_audience_"
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "cr"
+          },
+          "key": "tag"
+         }
+        ]
+       }
+      }
+     ],
+     [
+      "set_attr",
+      "rn0",
+      "match",
+      [
+       [
+        "g",
+        "has_subgoal",
+        "sg"
+       ],
+       [
+        "sg",
+        "for_audience",
+        "aud"
+       ]
+      ]
+     ],
+     [
+      "set_attr",
+      "rn0",
+      "where",
+      {
+       "type": "And",
+       "items": [
+        {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "sg"
+          },
+          "key": "kind"
+         },
+         "b": {
+          "type": "Lit",
+          "value": "produce_utterance"
+         }
+        },
+        {
+         "type": "Not",
+         "arg": {
+          "type": "Exists",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "sg"
+           },
+           "edge_type": "requests_audience_produce"
+          },
+          "var_name": "_i",
+          "predicate": {
+           "type": "Lit",
+           "value": true
+          }
+         }
+        }
+       ]
+      }
+     ],
+     [
+      "set_attr",
+      "rn0",
+      "effect",
+      [
+       [
+        "add_node",
+        "req",
+        "ProduceForAudienceRequest",
+        {
+         "status": "requested"
+        }
+       ],
+       [
+        "add_edge",
+        "sg",
+        "requests_audience_produce",
+        "req"
+       ],
+       [
+        "add_edge",
+        "req",
+        "for_goal",
+        "sg"
+       ],
+       [
+        "add_edge",
+        "req",
+        "for_interlocutor",
+        "aud"
+       ]
+      ]
+     ],
+     [
+      "set_rule_clause",
+      {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "rn0"
+        },
+        "key": "id"
+       }
+      },
+      "__mint__",
+      {
+       "__term__": {
+        "type": "Var",
+        "name": "rn0"
+       }
+      }
+     ],
+     [
+      "add_node",
+      "rn1",
+      "Rule",
+      {
+       "minted": 0.0
+      }
+     ],
+     [
+      "set_attr",
+      "rn1",
+      "id",
+      {
+       "__term__": {
+        "type": "StringConcat",
+        "parts": [
+         {
+          "type": "Lit",
+          "value": "default_explicit_produce_"
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "cr"
+          },
+          "key": "tag"
+         }
+        ]
+       }
+      }
+     ],
+     [
+      "set_attr",
+      "rn1",
+      "match",
+      [
+       [
+        "req",
+        "has_audience_model",
+        "sm"
+       ]
+      ]
+     ],
+     [
+      "set_attr",
+      "rn1",
+      "where",
+      {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "req"
+        },
+        "key": "mode"
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       }
+      }
+     ],
+     [
+      "set_attr",
+      "rn1",
+      "effect",
+      [
+       [
+        "set_attr",
+        "req",
+        "mode",
+        "explicit"
+       ]
+      ]
+     ],
+     [
+      "set_rule_clause",
+      {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "rn1"
+        },
+        "key": "id"
+       }
+      },
+      "__mint__",
+      {
+       "__term__": {
+        "type": "Var",
+        "name": "rn1"
+       }
+      }
+     ],
+     [
+      "add_node",
+      "rn2",
+      "Rule",
+      {
+       "minted": 0.0
+      }
+     ],
+     [
+      "set_attr",
+      "rn2",
+      "id",
+      {
+       "__term__": {
+        "type": "StringConcat",
+        "parts": [
+         {
+          "type": "Lit",
+          "value": "tailor_when_grounded_"
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "cr"
+          },
+          "key": "tag"
+         }
+        ]
+       }
+      }
+     ],
+     [
+      "set_attr",
+      "rn2",
+      "match",
+      [
+       [
+        "req",
+        "has_audience_model",
+        "sm"
+       ]
+      ]
+     ],
+     [
+      "set_attr",
+      "rn2",
+      "where",
+      {
+       "type": "And",
+       "items": [
+        {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "sm"
+          },
+          "key": "grounded"
+         },
+         "b": {
+          "type": "Lit",
+          "value": true
+         }
+        },
+        {
+         "type": "Not",
+         "arg": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "req"
+           },
+           "key": "mode"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "tailor"
+          }
+         }
+        }
+       ]
+      }
+     ],
+     [
+      "set_attr",
+      "rn2",
+      "effect",
+      [
+       [
+        "set_attr",
+        "req",
+        "mode",
+        "tailor"
+       ]
+      ]
+     ],
+     [
+      "set_rule_clause",
+      {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "rn2"
+        },
+        "key": "id"
+       }
+      },
+      "__mint__",
+      {
+       "__term__": {
+        "type": "Var",
+        "name": "rn2"
+       }
+      }
+     ],
+     [
+      "set_attr",
+      "cr",
+      "composed",
+      1.0
+     ]
+    ]
+   }
+  }
+ ],
+ "edges": [],
+ "productions": [
+  {
+   "provenance": "seed:composer_audience_produce_graph:requests_audience_produce",
+   "src": {
+    "type": "Goal",
+    "var": "s"
+   },
+   "edge_type": "requests_audience_produce",
+   "tgt": {
+    "type": "ProduceForAudienceRequest",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:composer_audience_produce_graph:for_goal",
+   "src": {
+    "type": "ProduceForAudienceRequest",
+    "var": "s"
+   },
+   "edge_type": "for_goal",
+   "tgt": {
+    "type": "Goal",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:composer_audience_produce_graph:for_interlocutor",
+   "src": {
+    "type": "ProduceForAudienceRequest",
+    "var": "s"
+   },
+   "edge_type": "for_interlocutor",
+   "tgt": {
+    "type": "Interlocutor",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:composer_audience_produce_graph:has_audience_model",
+   "src": {
+    "type": "ProduceForAudienceRequest",
+    "var": "s"
+   },
+   "edge_type": "has_audience_model",
+   "tgt": {
+    "type": "SystemModel",
+    "var": "t"
+   }
+  }
+ ]
+}

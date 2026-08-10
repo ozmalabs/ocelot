@@ -1,0 +1,1714 @@
+{
+ "id": "world_affordances",
+ "version": "1.0.0",
+ "depends_on": [],
+ "self_load_only": true,
+ "description": "GENERAL BASE AFFORDANCE VOCABULARY (block 280000). A world provides AFFORDANCES (admissible actions) + observations; the agent's decision COLLAPSES over the afforded set. The 8-type minimal basis (move, extract_resource, transform, transfer, communicate, ingest, rest, harm) spans all six effect classes (position/existence/configuration/possession/information/vital) x targets, grounded in AFFORDANCE_VOCABULARY_SCIENCE.md (Gibson affordance taxonomy; NSM/Jackendoff/VerbNet action primitives; Mauss gift-vs-trade; Spelke/Hamlin core-knowledge help-vs-harm). Each ActionType is a STRIPS schema: precondition (=affordance condition) + effect (=world rewrite) + base_weight (=collapse prior). PROVISION rules set impulse=base_weight ONLY when the precondition holds (else 0 -> the decision core prunes it, never scored), so 'the world provides the afforded subset' is purely additive over the block-279000 decision core -- NO decision-core change. `harm` is a MEMBER of the basis, offered ONLY when a target is in range (precondition-gated, not permanently on the menu), at a LOW base prior -- representable so a norm against it is representable, but rarely afforded and rarely selected. EFFECT rules perform the STRIPS rewrite once the agent commits. ZERO new Rust (composes existing DSL Terms + add_node/add_edge/del_edge/set_attr). self_load_only.",
+ "nodes": [
+  {
+   "local_id": 0,
+   "type": "ActionType",
+   "attrs": {
+    "name": "move",
+    "base_weight": 0.5,
+    "effect_class": "position",
+    "target": "env",
+    "transgressive": 0.0,
+    "plan_value": 0.5,
+    "index": 0.0
+   }
+  },
+  {
+   "local_id": 1,
+   "type": "ActionType",
+   "attrs": {
+    "name": "extract_resource",
+    "base_weight": 0.55,
+    "effect_class": "existence",
+    "target": "env",
+    "transgressive": 0.0,
+    "plan_value": 0.6,
+    "index": 1.0
+   }
+  },
+  {
+   "local_id": 2,
+   "type": "ActionType",
+   "attrs": {
+    "name": "transform",
+    "base_weight": 0.5,
+    "effect_class": "existence",
+    "target": "env",
+    "transgressive": 0.0,
+    "plan_value": 0.65,
+    "index": 2.0
+   }
+  },
+  {
+   "local_id": 3,
+   "type": "ActionType",
+   "attrs": {
+    "name": "transfer",
+    "base_weight": 0.5,
+    "effect_class": "possession",
+    "target": "other",
+    "transgressive": 0.0,
+    "plan_value": 0.55,
+    "index": 3.0
+   }
+  },
+  {
+   "local_id": 4,
+   "type": "ActionType",
+   "attrs": {
+    "name": "communicate",
+    "base_weight": 0.6,
+    "effect_class": "information",
+    "target": "other",
+    "transgressive": 0.0,
+    "plan_value": 0.55,
+    "index": 4.0
+   }
+  },
+  {
+   "local_id": 5,
+   "type": "ActionType",
+   "attrs": {
+    "name": "ingest",
+    "base_weight": 0.65,
+    "effect_class": "vital",
+    "target": "self",
+    "transgressive": 0.0,
+    "plan_value": 0.7,
+    "index": 5.0
+   }
+  },
+  {
+   "local_id": 6,
+   "type": "ActionType",
+   "attrs": {
+    "name": "rest",
+    "base_weight": 0.15,
+    "effect_class": "none",
+    "target": "self",
+    "transgressive": 0.0,
+    "plan_value": 0.2,
+    "index": 6.0
+   }
+  },
+  {
+   "local_id": 7,
+   "type": "ActionType",
+   "attrs": {
+    "name": "harm",
+    "base_weight": 0.2,
+    "effect_class": "vital",
+    "target": "other",
+    "transgressive": 1.0,
+    "plan_value": -0.4,
+    "index": 7.0
+   }
+  },
+  {
+   "local_id": 8,
+   "type": "ActionType",
+   "attrs": {
+    "name": "help",
+    "base_weight": 0.7,
+    "effect_class": "vital",
+    "target": "other",
+    "transgressive": 0.0,
+    "plan_value": 0.6,
+    "index": 8.0
+   }
+  }
+ ],
+ "edges": [],
+ "productions": [],
+ "concepts": [],
+ "rules": [
+  {
+   "name": "aff_provide_move",
+   "batch": false,
+   "comment": "AFFORDANCE PROVISION for `move`: the world offers this action iff its precondition holds. When it does, impulse := base_weight so the decision core CONSIDERS it; otherwise impulse stays 0 and the collapse never scores it. This IS admissible_moves generalised to the base action vocabulary.",
+   "match": [
+    [
+     "m",
+     "in_scene",
+     "d"
+    ],
+    [
+     "m",
+     "adjacent",
+     "c"
+    ]
+   ],
+   "where": {
+    "type": "Eq",
+    "a": {
+     "type": "Attr",
+     "node": {
+      "type": "Var",
+      "name": "d"
+     },
+     "key": "name"
+    },
+    "b": {
+     "type": "Lit",
+     "value": "move"
+    }
+   },
+   "effects": [
+    [
+     "set_attr",
+     "d",
+     "afforded",
+     1.0
+    ],
+    [
+     "set_attr",
+     "d",
+     "impulse",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "d"
+       },
+       "key": "base_weight"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "aff_provide_extract_resource",
+   "batch": false,
+   "comment": "AFFORDANCE PROVISION for `extract_resource`: the world offers this action iff its precondition holds. When it does, impulse := base_weight so the decision core CONSIDERS it; otherwise impulse stays 0 and the collapse never scores it. This IS admissible_moves generalised to the base action vocabulary.",
+   "match": [
+    [
+     "m",
+     "in_scene",
+     "d"
+    ],
+    [
+     "m",
+     "at_source",
+     "src"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "d"
+       },
+       "key": "name"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "extract_resource"
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "src"
+       },
+       "key": "stock"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "d",
+     "afforded",
+     1.0
+    ],
+    [
+     "set_attr",
+     "d",
+     "impulse",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "d"
+       },
+       "key": "base_weight"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "aff_provide_transform",
+   "batch": false,
+   "comment": "AFFORDANCE PROVISION for `transform`: the world offers this action iff its precondition holds. When it does, impulse := base_weight so the decision core CONSIDERS it; otherwise impulse stays 0 and the collapse never scores it. This IS admissible_moves generalised to the base action vocabulary.",
+   "match": [
+    [
+     "m",
+     "in_scene",
+     "d"
+    ],
+    [
+     "m",
+     "holds",
+     "g"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "d"
+       },
+       "key": "name"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "transform"
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "is_input"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "d",
+     "afforded",
+     1.0
+    ],
+    [
+     "set_attr",
+     "d",
+     "impulse",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "d"
+       },
+       "key": "base_weight"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "aff_provide_transfer",
+   "batch": false,
+   "comment": "AFFORDANCE PROVISION for `transfer`: the world offers this action iff its precondition holds. When it does, impulse := base_weight so the decision core CONSIDERS it; otherwise impulse stays 0 and the collapse never scores it. This IS admissible_moves generalised to the base action vocabulary.",
+   "match": [
+    [
+     "m",
+     "in_scene",
+     "d"
+    ],
+    [
+     "m",
+     "holds",
+     "g"
+    ],
+    [
+     "m",
+     "sees",
+     "o"
+    ]
+   ],
+   "where": {
+    "type": "Eq",
+    "a": {
+     "type": "Attr",
+     "node": {
+      "type": "Var",
+      "name": "d"
+     },
+     "key": "name"
+    },
+    "b": {
+     "type": "Lit",
+     "value": "transfer"
+    }
+   },
+   "effects": [
+    [
+     "set_attr",
+     "d",
+     "afforded",
+     1.0
+    ],
+    [
+     "set_attr",
+     "d",
+     "impulse",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "d"
+       },
+       "key": "base_weight"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "aff_provide_communicate",
+   "batch": false,
+   "comment": "AFFORDANCE PROVISION for `communicate`: the world offers this action iff its precondition holds. When it does, impulse := base_weight so the decision core CONSIDERS it; otherwise impulse stays 0 and the collapse never scores it. This IS admissible_moves generalised to the base action vocabulary.",
+   "match": [
+    [
+     "m",
+     "in_scene",
+     "d"
+    ],
+    [
+     "m",
+     "sees",
+     "o"
+    ]
+   ],
+   "where": {
+    "type": "Eq",
+    "a": {
+     "type": "Attr",
+     "node": {
+      "type": "Var",
+      "name": "d"
+     },
+     "key": "name"
+    },
+    "b": {
+     "type": "Lit",
+     "value": "communicate"
+    }
+   },
+   "effects": [
+    [
+     "set_attr",
+     "d",
+     "afforded",
+     1.0
+    ],
+    [
+     "set_attr",
+     "d",
+     "impulse",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "d"
+       },
+       "key": "base_weight"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "aff_provide_ingest",
+   "batch": false,
+   "comment": "AFFORDANCE PROVISION for `ingest`: the world offers this action iff its precondition holds. When it does, impulse := base_weight so the decision core CONSIDERS it; otherwise impulse stays 0 and the collapse never scores it. This IS admissible_moves generalised to the base action vocabulary.",
+   "match": [
+    [
+     "m",
+     "in_scene",
+     "d"
+    ],
+    [
+     "m",
+     "holds",
+     "g"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "d"
+       },
+       "key": "name"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "ingest"
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "consumable"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "d",
+     "afforded",
+     1.0
+    ],
+    [
+     "set_attr",
+     "d",
+     "impulse",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "d"
+       },
+       "key": "base_weight"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "aff_provide_rest",
+   "batch": false,
+   "comment": "AFFORDANCE PROVISION for `rest`: the world offers this action iff its precondition holds. When it does, impulse := base_weight so the decision core CONSIDERS it; otherwise impulse stays 0 and the collapse never scores it. This IS admissible_moves generalised to the base action vocabulary.",
+   "match": [
+    [
+     "m",
+     "in_scene",
+     "d"
+    ]
+   ],
+   "where": {
+    "type": "Eq",
+    "a": {
+     "type": "Attr",
+     "node": {
+      "type": "Var",
+      "name": "d"
+     },
+     "key": "name"
+    },
+    "b": {
+     "type": "Lit",
+     "value": "rest"
+    }
+   },
+   "effects": [
+    [
+     "set_attr",
+     "d",
+     "afforded",
+     1.0
+    ],
+    [
+     "set_attr",
+     "d",
+     "impulse",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "d"
+       },
+       "key": "base_weight"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "aff_provide_harm",
+   "batch": false,
+   "comment": "AFFORDANCE PROVISION for `harm`: the world offers this action iff its precondition holds. When it does, impulse := base_weight so the decision core CONSIDERS it; otherwise impulse stays 0 and the collapse never scores it. This IS admissible_moves generalised to the base action vocabulary.",
+   "match": [
+    [
+     "m",
+     "in_scene",
+     "d"
+    ],
+    [
+     "m",
+     "sees",
+     "o"
+    ]
+   ],
+   "where": {
+    "type": "Eq",
+    "a": {
+     "type": "Attr",
+     "node": {
+      "type": "Var",
+      "name": "d"
+     },
+     "key": "name"
+    },
+    "b": {
+     "type": "Lit",
+     "value": "harm"
+    }
+   },
+   "effects": [
+    [
+     "set_attr",
+     "d",
+     "afforded",
+     1.0
+    ],
+    [
+     "set_attr",
+     "d",
+     "impulse",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "d"
+       },
+       "key": "base_weight"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "aff_provide_help",
+   "batch": false,
+   "comment": "AFFORDANCE PROVISION for `help`: the world offers this action iff its precondition holds. When it does, impulse := base_weight so the decision core CONSIDERS it; otherwise impulse stays 0 and the collapse never scores it. This IS admissible_moves generalised to the base action vocabulary.",
+   "match": [
+    [
+     "m",
+     "in_scene",
+     "d"
+    ],
+    [
+     "m",
+     "sees",
+     "o"
+    ]
+   ],
+   "where": {
+    "type": "Eq",
+    "a": {
+     "type": "Attr",
+     "node": {
+      "type": "Var",
+      "name": "d"
+     },
+     "key": "name"
+    },
+    "b": {
+     "type": "Lit",
+     "value": "help"
+    }
+   },
+   "effects": [
+    [
+     "set_attr",
+     "d",
+     "afforded",
+     1.0
+    ],
+    [
+     "set_attr",
+     "d",
+     "impulse",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "d"
+       },
+       "key": "base_weight"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "aff_do_rest",
+   "batch": false,
+   "comment": "EFFECT of `rest` (STRIPS add/delete = the world rewrite). Fires once when the agent commits to it.",
+   "match": [
+    [
+     "m",
+     "in_scene",
+     "d"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "d"
+       },
+       "key": "name"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "rest"
+      }
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "m"
+         },
+         "key": "committed_action"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "rest"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "d"
+           },
+           "key": "enacted"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.0
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "m",
+     "energy",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "m"
+         },
+         "key": "energy"
+        },
+        {
+         "type": "Lit",
+         "value": 10.0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "d",
+     "enacted",
+     1.0
+    ]
+   ]
+  },
+  {
+   "name": "aff_do_move",
+   "batch": false,
+   "comment": "EFFECT of `move` (STRIPS add/delete = the world rewrite). Fires once when the agent commits to it.",
+   "match": [
+    [
+     "m",
+     "in_scene",
+     "d"
+    ],
+    [
+     "m",
+     "adjacent",
+     "c"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "d"
+       },
+       "key": "name"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "move"
+      }
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "m"
+         },
+         "key": "committed_action"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "move"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "d"
+           },
+           "key": "enacted"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.0
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "m",
+     "did_move",
+     1.0
+    ],
+    [
+     "add_edge",
+     "m",
+     "moved_to",
+     "c"
+    ],
+    [
+     "set_attr",
+     "d",
+     "enacted",
+     1.0
+    ]
+   ]
+  },
+  {
+   "name": "aff_do_extract_resource",
+   "batch": false,
+   "comment": "EFFECT of `extract_resource` (STRIPS add/delete = the world rewrite). Fires once when the agent commits to it.",
+   "match": [
+    [
+     "m",
+     "in_scene",
+     "d"
+    ],
+    [
+     "m",
+     "at_source",
+     "src"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "d"
+       },
+       "key": "name"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "extract_resource"
+      }
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "m"
+         },
+         "key": "committed_action"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "extract_resource"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "d"
+           },
+           "key": "enacted"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.0
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "src",
+     "stock",
+     {
+      "__term__": {
+       "type": "Minus",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "src"
+        },
+        "key": "stock"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      }
+     }
+    ],
+    [
+     "add_node",
+     "g2",
+     "RawGood",
+     {
+      "kind": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "src"
+        },
+        "key": "kind"
+       }
+      },
+      "is_input": 1.0,
+      "consumable": 0.0
+     }
+    ],
+    [
+     "add_edge",
+     "m",
+     "holds",
+     "g2"
+    ],
+    [
+     "set_attr",
+     "d",
+     "enacted",
+     1.0
+    ]
+   ]
+  },
+  {
+   "name": "aff_do_transform",
+   "batch": false,
+   "comment": "EFFECT of `transform` (STRIPS add/delete = the world rewrite). Fires once when the agent commits to it.",
+   "match": [
+    [
+     "m",
+     "in_scene",
+     "d"
+    ],
+    [
+     "m",
+     "holds",
+     "g"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "d"
+       },
+       "key": "name"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "transform"
+      }
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "m"
+         },
+         "key": "committed_action"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "transform"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "d"
+           },
+           "key": "enacted"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.0
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "effects": [
+    [
+     "del_edge",
+     "m",
+     "holds",
+     "g"
+    ],
+    [
+     "add_node",
+     "art",
+     "Artifact",
+     {
+      "made_from": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "g"
+        },
+        "key": "kind"
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "m",
+     "holds",
+     "art"
+    ],
+    [
+     "set_attr",
+     "d",
+     "enacted",
+     1.0
+    ]
+   ]
+  },
+  {
+   "name": "aff_do_transfer",
+   "batch": false,
+   "comment": "EFFECT of `transfer` (STRIPS add/delete = the world rewrite). Fires once when the agent commits to it.",
+   "match": [
+    [
+     "m",
+     "in_scene",
+     "d"
+    ],
+    [
+     "m",
+     "holds",
+     "g"
+    ],
+    [
+     "m",
+     "sees",
+     "o"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "d"
+       },
+       "key": "name"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "transfer"
+      }
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "m"
+         },
+         "key": "committed_action"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "transfer"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "d"
+           },
+           "key": "enacted"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.0
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "effects": [
+    [
+     "del_edge",
+     "m",
+     "holds",
+     "g"
+    ],
+    [
+     "add_edge",
+     "o",
+     "holds",
+     "g"
+    ],
+    [
+     "set_attr",
+     "d",
+     "enacted",
+     1.0
+    ]
+   ]
+  },
+  {
+   "name": "aff_do_communicate",
+   "batch": false,
+   "comment": "EFFECT of `communicate` (STRIPS add/delete = the world rewrite). Fires once when the agent commits to it.",
+   "match": [
+    [
+     "m",
+     "in_scene",
+     "d"
+    ],
+    [
+     "m",
+     "sees",
+     "o"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "d"
+       },
+       "key": "name"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "communicate"
+      }
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "m"
+         },
+         "key": "committed_action"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "communicate"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "d"
+           },
+           "key": "enacted"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.0
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "sign",
+     "Sign",
+     {
+      "content": "utterance",
+      "durable": 0.0
+     }
+    ],
+    [
+     "add_edge",
+     "sign",
+     "conveys",
+     "o"
+    ],
+    [
+     "set_attr",
+     "d",
+     "enacted",
+     1.0
+    ]
+   ]
+  },
+  {
+   "name": "aff_do_ingest",
+   "batch": false,
+   "comment": "EFFECT of `ingest` (STRIPS add/delete = the world rewrite). Fires once when the agent commits to it.",
+   "match": [
+    [
+     "m",
+     "in_scene",
+     "d"
+    ],
+    [
+     "m",
+     "holds",
+     "g"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "d"
+       },
+       "key": "name"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "ingest"
+      }
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "m"
+         },
+         "key": "committed_action"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "ingest"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "d"
+           },
+           "key": "enacted"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.0
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "effects": [
+    [
+     "del_edge",
+     "m",
+     "holds",
+     "g"
+    ],
+    [
+     "set_attr",
+     "m",
+     "energy",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "m"
+         },
+         "key": "energy"
+        },
+        {
+         "type": "Lit",
+         "value": 8.0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "d",
+     "enacted",
+     1.0
+    ]
+   ]
+  },
+  {
+   "name": "aff_do_harm",
+   "batch": false,
+   "comment": "EFFECT of `harm` (STRIPS add/delete = the world rewrite). Fires once when the agent commits to it.",
+   "match": [
+    [
+     "m",
+     "in_scene",
+     "d"
+    ],
+    [
+     "m",
+     "sees",
+     "o"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "d"
+       },
+       "key": "name"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "harm"
+      }
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "m"
+         },
+         "key": "committed_action"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "harm"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "d"
+           },
+           "key": "enacted"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.0
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "o",
+     "health",
+     {
+      "__term__": {
+       "type": "Minus",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "o"
+        },
+        "key": "health"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 25.0
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "o",
+     "harmed",
+     1.0
+    ],
+    [
+     "set_attr",
+     "d",
+     "enacted",
+     1.0
+    ]
+   ]
+  },
+  {
+   "name": "aff_do_help",
+   "batch": false,
+   "comment": "EFFECT of `help` (STRIPS add/delete = the world rewrite). Fires once when the agent commits to it.",
+   "match": [
+    [
+     "m",
+     "in_scene",
+     "d"
+    ],
+    [
+     "m",
+     "sees",
+     "o"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "d"
+       },
+       "key": "name"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "help"
+      }
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "m"
+         },
+         "key": "committed_action"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "help"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "d"
+           },
+           "key": "enacted"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.0
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "o",
+     "health",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "o"
+         },
+         "key": "health"
+        },
+        {
+         "type": "Lit",
+         "value": 15.0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "o",
+     "helped",
+     1.0
+    ],
+    [
+     "set_attr",
+     "d",
+     "enacted",
+     1.0
+    ]
+   ]
+  }
+ ]
+}

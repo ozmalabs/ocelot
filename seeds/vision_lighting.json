@@ -1,0 +1,1420 @@
+{
+ "id": "vision_lighting",
+ "version": "1.0.0",
+ "depends_on": [],
+ "description": "LIGHTING / APPEARANCE INVARIANCE (FRONTIER T3) -- the illuminant as a low-D CROSS-FRAME map, discovered and factored, with recognition invariant to what it leaves fixed. An ObjSurface carries integer cones (cL,cM,cS) = reflectance x illuminant: the reflectance is the stable IN-FRAME property (integer lattice), the illuminant a diagonal (von Kries) CROSS-FRAME map. li_frame_stats reads the frame's OWN per-channel anchor (max) and sum (hub-scoped via Neighbours, no global grab); li_inclass DISCOVERS whether the change is in-class by an ORDER-STATISTIC CONSISTENCY test needing no surface correspondence, and mints an Illuminant holding the gain as an exact (numer,denom) pair -- refusing a spatially-varying change outright; li_mint MDL-mints a SurfaceIdentity (m_min=2 FALLS OUT of d=3) carrying the prototype AND its frame's anchor; li_recognize matches by ANCHOR-RELATIVE reflectance via exact integer cross-multiplication (the illuminant cancels identically); li_raw_recognize is the no-discounting RAW BASELINE control. NO new Rust: reuses Count/Filter/NodesOfType/Neighbours/MaxOver/Sum/Exists/Not/Eq/Gt/Lt/Times/And + run_rules. NO magic number: the anchor is the frame's own measured ceiling, m_min falls out of d=3, and every comparison is exact integer cross-multiplication (no threshold, no tolerance). BOUNDED: the DIAGONAL illuminant class ONLY -- multi-illuminant scenes, shadows, penumbrae and spatially-varying light are NOT solved, only REFUSED (the NAMED FRONTIER); the global reflectance/illuminant ambiguity is intrinsic and unresolved by construction. Flag-gated on LightingParams.lighting, OFF by default (sec 9 -- default 0 => byte-identical, seed inert). See VISION_LIGHTING_PREREG.md.",
+ "microtheory": {
+  "id": "vision_lighting_mt",
+  "label": "lighting/appearance invariance: the illuminant as a discovered low-D cross-frame map, factored by an anchor-relative code"
+ },
+ "nodes": [
+  {
+   "local_id": 0,
+   "type": "LightingParams",
+   "attrs": {
+    "lighting": 0.0
+   }
+  }
+ ],
+ "edges": [],
+ "productions": [],
+ "rules": [
+  {
+   "name": "li_frame_stats",
+   "comment": "The frame's OWN per-channel order statistics: the ANCHOR a_ch = MaxOver(frame's surfaces, c_ch) and the SUM s_ch = Sum(...). Scoped by Neighbours(frame,'has_surface') -- the frame's own population, NOT a global NodesOfType grab (VISION_PROTOCOL sec 12.1). The anchor is the frame's MEASURED dynamic-range ceiling, which under a diagonal illuminant scales exactly with the illuminant -- so dividing by it makes the appearance code RELATIVE, which is sec 13's whole corollary (ratios transfer, absolutes do not). NO constant is introduced. The stats_done guard makes the rule fire once per frame so run_rules converges. Flag-gated, OFF by default (sec 9).",
+   "match": [
+    [
+     "frame",
+     "has_surface",
+     "anysurf"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "LightingParams"
+        }
+       },
+       "key": "lighting"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "frame"
+       },
+       "key": "stats_done"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "frame",
+     "aL",
+     {
+      "__term__": {
+       "type": "MaxOver",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "frame"
+        },
+        "edge_type": "has_surface",
+        "any_type": false
+       },
+       "var_name": "w",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "w"
+        },
+        "key": "cL"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "frame",
+     "aM",
+     {
+      "__term__": {
+       "type": "MaxOver",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "frame"
+        },
+        "edge_type": "has_surface",
+        "any_type": false
+       },
+       "var_name": "w",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "w"
+        },
+        "key": "cM"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "frame",
+     "aS",
+     {
+      "__term__": {
+       "type": "MaxOver",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "frame"
+        },
+        "edge_type": "has_surface",
+        "any_type": false
+       },
+       "var_name": "w",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "w"
+        },
+        "key": "cS"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "frame",
+     "sL",
+     {
+      "__term__": {
+       "type": "Sum",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "frame"
+        },
+        "edge_type": "has_surface",
+        "any_type": false
+       },
+       "var_name": "w",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "w"
+        },
+        "key": "cL"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "frame",
+     "sM",
+     {
+      "__term__": {
+       "type": "Sum",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "frame"
+        },
+        "edge_type": "has_surface",
+        "any_type": false
+       },
+       "var_name": "w",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "w"
+        },
+        "key": "cM"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "frame",
+     "sS",
+     {
+      "__term__": {
+       "type": "Sum",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "frame"
+        },
+        "edge_type": "has_surface",
+        "any_type": false
+       },
+       "var_name": "w",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "w"
+        },
+        "key": "cS"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "frame",
+     "stats_done",
+     {
+      "__term__": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "li_inclass",
+   "comment": "DISCOVERS whether the lighting change between this frame and its reference frame is IN-CLASS (a diagonal / von Kries map). The test is an ORDER-STATISTIC CONSISTENCY: under a diagonal map every statistic scales by the same per-channel gain, so anchor:sum must agree between the frames on ALL THREE channels (exact integer cross-multiplication). It requires NO surface correspondence -- so it is not circular with recognition, which is what it gates. If it HOLDS: mint an Illuminant carrying the discovered gain as an exact (numer,denom) PAIR per channel (the ratio is the CROSS-FRAME map, held intensionally -- never divided into a float, per the frame/continuum invariant) and set illum_inclass=1. If it FAILS: nothing is minted and illum_inclass stays 0, so li_recognize cannot fire -- a spatially-varying (multi-illuminant) change is REFUSED rather than blindly normalised. That refusal is the whole difference between an invariance and a universal container (sec 1.1). Flag-gated, OFF by default (sec 9).",
+   "match": [
+    [
+     "frame",
+     "compares_to",
+     "ref"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "LightingParams"
+        }
+       },
+       "key": "lighting"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "frame"
+       },
+       "key": "illum_inclass"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "frame"
+       },
+       "key": "stats_done"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ref"
+       },
+       "key": "stats_done"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Times",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "frame"
+         },
+         "key": "aL"
+        },
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "ref"
+         },
+         "key": "sL"
+        }
+       ]
+      },
+      "b": {
+       "type": "Times",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "frame"
+         },
+         "key": "sL"
+        },
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "ref"
+         },
+         "key": "aL"
+        }
+       ]
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Times",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "frame"
+         },
+         "key": "aM"
+        },
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "ref"
+         },
+         "key": "sM"
+        }
+       ]
+      },
+      "b": {
+       "type": "Times",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "frame"
+         },
+         "key": "sM"
+        },
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "ref"
+         },
+         "key": "aM"
+        }
+       ]
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Times",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "frame"
+         },
+         "key": "aS"
+        },
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "ref"
+         },
+         "key": "sS"
+        }
+       ]
+      },
+      "b": {
+       "type": "Times",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "frame"
+         },
+         "key": "sS"
+        },
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "ref"
+         },
+         "key": "aS"
+        }
+       ]
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "ill",
+     "Illuminant",
+     {
+      "gL_num": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "frame"
+        },
+        "key": "aL"
+       }
+      },
+      "gL_den": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "ref"
+        },
+        "key": "aL"
+       }
+      },
+      "gM_num": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "frame"
+        },
+        "key": "aM"
+       }
+      },
+      "gM_den": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "ref"
+        },
+        "key": "aM"
+       }
+      },
+      "gS_num": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "frame"
+        },
+        "key": "aS"
+       }
+      },
+      "gS_den": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "ref"
+        },
+        "key": "aS"
+       }
+      },
+      "minted": {
+       "__term__": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "frame",
+     "has_illuminant",
+     "ill"
+    ],
+    [
+     "set_attr",
+     "frame",
+     "illum_inclass",
+     {
+      "__term__": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "li_mint",
+   "comment": "DYNAMIC QUANTIZATION (mint) of a SurfaceIdentity from the REFERENCE frame. Gates: (1) lighting>0.5; (2) THE MDL GATE -- Count(surfaces in this frame with the same EXACT cone triple) >= 2 = m_min, which FALLS OUT of d=3 (a prototype costs d integers and saves d-1 per member, so it pays iff m > d/(d-1) = 1.5, i.e. m >= 2 -- NO magic number, VISION_PROTOCOL sec 13); (3) the CANONICAL-REPRESENTATIVE guard -- only the min-sidx member of a cone triple may mint, so under batch tick exactly ONE identity per distinct reflectance is minted; (4) Not(Exists SurfaceIdentity at this triple) -- recognize-not-re-mint across passes. Effects: add the SurfaceIdentity carrying the prototype cones (pL,pM,pS) AND ITS OWN FRAME'S ANCHOR (paL,paM,paS) -- the anchor must travel with the prototype, because the invariant is the reflectance RELATIVE to the frame it was seen in. UNSUPERVISED: no label is read. Flag-gated, OFF by default (sec 9).",
+   "match": [
+    [
+     "frame",
+     "has_surface",
+     "R"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "LightingParams"
+        }
+       },
+       "key": "lighting"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "frame"
+       },
+       "key": "is_reference"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "frame"
+       },
+       "key": "stats_done"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gte",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "frame"
+         },
+         "edge_type": "has_surface",
+         "any_type": false
+        },
+        "var_name": "q",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "q"
+            },
+            "key": "cL"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "R"
+            },
+            "key": "cL"
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "q"
+            },
+            "key": "cM"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "R"
+            },
+            "key": "cM"
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "q"
+            },
+            "key": "cS"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "R"
+            },
+            "key": "cS"
+           }
+          }
+         ]
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 2
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "frame"
+        },
+        "edge_type": "has_surface",
+        "any_type": false
+       },
+       "var_name": "p",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "And",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "p"
+             },
+             "key": "cL"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "cL"
+            }
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "p"
+             },
+             "key": "cM"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "cM"
+            }
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "p"
+             },
+             "key": "cS"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "cS"
+            }
+           }
+          ]
+         },
+         {
+          "type": "Lt",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "p"
+           },
+           "key": "sidx"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "R"
+           },
+           "key": "sidx"
+          }
+         }
+        ]
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "SurfaceIdentity"
+       },
+       "var_name": "si",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "si"
+           },
+           "key": "pL"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "R"
+           },
+           "key": "cL"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "si"
+           },
+           "key": "pM"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "R"
+           },
+           "key": "cM"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "si"
+           },
+           "key": "pS"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "R"
+           },
+           "key": "cS"
+          }
+         }
+        ]
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "sid",
+     "SurfaceIdentity",
+     {
+      "pL": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "R"
+        },
+        "key": "cL"
+       }
+      },
+      "pM": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "R"
+        },
+        "key": "cM"
+       }
+      },
+      "pS": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "R"
+        },
+        "key": "cS"
+       }
+      },
+      "paL": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "frame"
+        },
+        "key": "aL"
+       }
+      },
+      "paM": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "frame"
+        },
+        "key": "aM"
+       }
+      },
+      "paS": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "frame"
+        },
+        "key": "aS"
+       }
+      },
+      "members": {
+       "__term__": {
+        "type": "Count",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "frame"
+          },
+          "edge_type": "has_surface",
+          "any_type": false
+         },
+         "var_name": "q",
+         "predicate": {
+          "type": "And",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "q"
+             },
+             "key": "cL"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "cL"
+            }
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "q"
+             },
+             "key": "cM"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "cM"
+            }
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "q"
+             },
+             "key": "cS"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "cS"
+            }
+           }
+          ]
+         }
+        }
+       }
+      },
+      "sid_key": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "R"
+        },
+        "key": "sidx"
+       }
+      },
+      "minted": {
+       "__term__": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "frame",
+     "has_identity",
+     "sid"
+    ]
+   ]
+  },
+  {
+   "name": "li_recognize",
+   "comment": "THE LIGHTING INVARIANT. A surface in a TEST frame is recognized as a held SurfaceIdentity iff (a) the frame's lighting change was DISCOVERED to be in-class (illum_inclass=1 -- so an out-of-class change can never be force-matched) and (b) its cone value RELATIVE TO ITS OWN FRAME'S ANCHOR equals the prototype's value relative to the anchor of the frame the prototype was minted in, on ALL THREE channels (exact integer cross-multiplication). The illuminant cancels identically: this is 'discover the cross-frame map and take what it leaves fixed'. Sets lit_recognized=1 and lit_id (the identity's key). A surface whose reflectance was never minted, or whose frame is out-of-class, leaves lit_recognized at its 0 init -- REFUSED, not force-assigned, which is the floor a nearest-assignment mechanism cannot produce. THE IDENTITY IS BOUND BY THE MATCH, NOT SELECTED IN THE EFFECT: the second match pattern binds `sid` by traversing from the REFERENCE frame's own has_identity hub, so the pairing (surface, identity) is decided by the rule's own matcher and lit_id is read straight off the BOUND node. An earlier version selected the identity inside the effect with Pick/PickUnique(Filter(NodesOfType('SurfaceIdentity'), ...)); PickUnique PANICKED with 3 candidates, proving the filter predicate was not applied in effect position and that Pick would have written a SILENT WRONG ANSWER (VISION_PROTOCOL sec 12.3 -- the ambiguous read made loud, then fixed the way the panic message itself prescribes: traverse from the owning hub instead of selecting globally). Flag-gated, OFF by default (sec 9).",
+   "match": [
+    [
+     "frame",
+     "has_surface",
+     "R"
+    ],
+    [
+     "refframe",
+     "has_identity",
+     "sid"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "LightingParams"
+        }
+       },
+       "key": "lighting"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "frame"
+       },
+       "key": "illum_inclass"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "frame"
+       },
+       "key": "stats_done"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Times",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "R"
+           },
+           "key": "cL"
+          },
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "sid"
+           },
+           "key": "paL"
+          }
+         ]
+        },
+        "b": {
+         "type": "Times",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "sid"
+           },
+           "key": "pL"
+          },
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "frame"
+           },
+           "key": "aL"
+          }
+         ]
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Times",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "R"
+           },
+           "key": "cM"
+          },
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "sid"
+           },
+           "key": "paM"
+          }
+         ]
+        },
+        "b": {
+         "type": "Times",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "sid"
+           },
+           "key": "pM"
+          },
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "frame"
+           },
+           "key": "aM"
+          }
+         ]
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Times",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "R"
+           },
+           "key": "cS"
+          },
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "sid"
+           },
+           "key": "paS"
+          }
+         ]
+        },
+        "b": {
+         "type": "Times",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "sid"
+           },
+           "key": "pS"
+          },
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "frame"
+           },
+           "key": "aS"
+          }
+         ]
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "R",
+     "lit_recognized",
+     {
+      "__term__": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "R",
+     "lit_id",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "sid"
+       },
+       "key": "sid_key"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "li_raw_recognize",
+   "comment": "THE RAW BASELINE / untangling-style control (colour identity's and category's exact-match MEMORIZATION pattern, here as the NO-DISCOUNTING arm): raw_recognized=1 iff the surface's RAW cone triple exactly equals a SurfaceIdentity's prototype -- the illuminant is not factored at all. Under any non-identity gain the raw values move and this CONFUSES, while li_recognize does not. The measured (raw_correct, lit_correct) pair is what makes the discounting LOAD-BEARING rather than decorative (sec 13.2). Deliberately NOT gated on illum_inclass -- the baseline must be the honest no-mechanism condition (sec 6), not a crippled copy of the treatment. Like li_recognize it binds the identity BY THE MATCH (from the reference frame's has_identity hub), so the two arms are read the SAME way and the comparison between them is apples-to-apples. Flag-gated, OFF by default (sec 9).",
+   "match": [
+    [
+     "frame",
+     "has_surface",
+     "R"
+    ],
+    [
+     "refframe",
+     "has_identity",
+     "sid"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "LightingParams"
+        }
+       },
+       "key": "lighting"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "sid"
+         },
+         "key": "pL"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "R"
+         },
+         "key": "cL"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "sid"
+         },
+         "key": "pM"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "R"
+         },
+         "key": "cM"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "sid"
+         },
+         "key": "pS"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "R"
+         },
+         "key": "cS"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "R",
+     "raw_recognized",
+     {
+      "__term__": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "R",
+     "raw_id",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "sid"
+       },
+       "key": "sid_key"
+      }
+     }
+    ]
+   ]
+  }
+ ]
+}

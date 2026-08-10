@@ -1,0 +1,50 @@
+{
+  "microtheory": {
+    "name": "music_production",
+    "definition": "Recording, mixing, mastering, signal flow, gear. The craft of capturing + shaping sound for delivery. Microphones, preamps, EQ, compression, reverb, delay, automation. Substrate analogue: the substrate's audio output pipeline + the input-conditioning equivalents.",
+    "category": "audio_domain",
+    "parent": "audio_music_foundation"
+  },
+  "concepts": [
+    {"name": "microphone", "definition": "Transducer converting acoustic pressure to electrical signal. Dynamic, condenser, ribbon. Substrate analogue: substrate's input transducer.", "category": "recording"},
+    {"name": "dynamic_microphone", "definition": "Moving coil in magnetic field. Rugged, no power needed. Drums + loud sources. Substrate analogue: substrate's loud-source-tolerant input.", "category": "recording"},
+    {"name": "condenser_microphone", "definition": "Capacitive element. Sensitive, wide-bandwidth. Requires phantom power. Vocals + instruments. Substrate analogue: substrate's sensitive input.", "category": "recording"},
+    {"name": "polar_pattern", "definition": "Microphone directional response. Omnidirectional, cardioid, supercardioid, figure-8. Substrate analogue: substrate's input-direction filter.", "category": "recording"},
+    {"name": "proximity_effect", "definition": "Cardioid microphones boost low frequencies when close to source. Substrate analogue: substrate's distance-dependent spectral coloring.", "category": "recording"},
+    {"name": "stereo_pair", "definition": "Two microphones positioned for stereo image. ORTF, XY, AB, Blumlein. Substrate analogue: substrate's bilateral input.", "category": "recording"},
+
+    {"name": "signal_flow", "definition": "The path audio travels from source to output. Mic → preamp → A/D → DAW → D/A → monitors. Substrate analogue: substrate's audio pipeline graph.", "category": "signal_flow"},
+    {"name": "preamp", "definition": "Amplifies mic signal to line level. Coloring (tube, transformer) or transparent. Substrate analogue: substrate's input-gain stage.", "category": "signal_flow"},
+    {"name": "line_level", "definition": "Standard audio level. +4 dBu pro, -10 dBV consumer. Substrate analogue: substrate's normalized internal signal level.", "category": "signal_flow"},
+    {"name": "gain_staging", "definition": "Setting levels appropriately at each stage to maintain SNR + avoid clipping. Substrate analogue: substrate's per-stage signal normalization.", "category": "signal_flow"},
+    {"name": "headroom", "definition": "Margin between operating level + clipping. Allows transient peaks without distortion. Substrate analogue: substrate's dynamic range margin.", "category": "signal_flow"},
+
+    {"name": "equalization", "definition": "Frequency-selective gain. Cuts or boosts specific frequency bands. Substrate analogue: substrate's spectral shaping.", "category": "mixing"},
+    {"name": "parametric_eq", "definition": "EQ with controllable frequency, gain, Q. Most flexible. Substrate analogue: substrate's parameterized filter bank.", "category": "mixing"},
+    {"name": "compression_mixing", "definition": "Dynamics: reduce signal when above threshold by ratio. Threshold, ratio, attack, release, knee, makeup gain. Substrate analogue: substrate's gain-control with envelope.", "category": "mixing"},
+    {"name": "reverb_processing", "definition": "Adds simulated room sound. Convolution (real impulse responses) or algorithmic (plate, hall, spring). Substrate analogue: substrate's spatial-context emulation.", "category": "mixing"},
+    {"name": "delay_effect", "definition": "Single or repeating echoes. Substrate analogue: substrate's temporal-shift signal duplication.", "category": "mixing"},
+    {"name": "panning", "definition": "Stereo placement: how loud in left vs right. Substrate analogue: substrate's bilateral-channel signal distribution.", "category": "mixing"},
+    {"name": "automation", "definition": "Time-varying control of parameters. Volume rides, EQ sweeps. Substrate analogue: substrate's parameterized signal evolution.", "category": "mixing"},
+    {"name": "side_chain", "definition": "External signal triggering processing. Ducking — bass duck for kick. Substrate analogue: substrate's cross-signal modulation.", "category": "mixing"},
+
+    {"name": "mastering", "definition": "Final processing for delivery. Balances, EQ, compression, limiting, loudness, sequencing. Substrate analogue: substrate's output-finalization stage.", "category": "mastering"},
+    {"name": "loudness_war", "definition": "Industry trend of increasingly compressed + limited masters for perceived loudness. Reduces dynamic range. Substrate analogue: substrate's over-compression failure mode.", "category": "mastering"},
+    {"name": "lufs", "definition": "Loudness Units Full Scale — perceptual loudness measurement. Streaming targets ~-14 LUFS. Substrate analogue: substrate's perceptual-loudness output target.", "category": "mastering"},
+    {"name": "true_peak", "definition": "Inter-sample peak that can exceed digital sample peaks. Should not exceed -1 dBTP for streaming. Substrate analogue: substrate's safe output ceiling.", "category": "mastering"},
+
+    {"name": "monitor_speakers", "definition": "Reference speakers for accurate listening during production. Substrate analogue: substrate's calibrated output reference.", "category": "monitoring"},
+    {"name": "headphones_production", "definition": "Closed-back for tracking; open-back for mixing. Substrate analogue: substrate's near-field reference.", "category": "monitoring"},
+    {"name": "room_treatment", "definition": "Absorbers + diffusers + bass traps to make a room neutral. Substrate analogue: substrate's environment-correction for evaluation.", "category": "monitoring"},
+
+    {"name": "daw", "definition": "Digital Audio Workstation. Pro Tools, Logic, Ableton, Reaper. Software hub for production. Substrate analogue: substrate's audio-production interface.", "category": "tools"},
+    {"name": "vst_au_plugin", "definition": "Plugin formats: VST (cross-platform), AU (Mac), AAX (ProTools). Substrate analogue: substrate's audio-effect dispatch.", "category": "tools"}
+  ],
+  "rules": [
+    {"name": "gain_staging_prevents_noise_and_distortion", "head": "the substrate processes audio through multiple stages", "body": "each stage should operate near nominal level — too low loses SNR to noise floor, too high causes distortion. Substrate's per-stage normalization."},
+    {"name": "headroom_required_for_transients", "head": "the substrate records or processes dynamic audio", "body": "leave headroom (typically 6-12 dB) for transient peaks above the average level. Substrate's dynamic margin."},
+    {"name": "stereo_pair_choice_affects_image", "head": "the substrate captures stereo audio", "body": "the microphone arrangement (XY, ORTF, AB, etc.) trades off localization accuracy vs spaciousness. Substrate's bilateral capture choice."},
+    {"name": "compression_controls_dynamics", "head": "the substrate processes signals with wide dynamic range", "body": "compression reduces the range. Threshold + ratio + timing parameters shape the effect. Substrate's dynamic-range controller."},
+    {"name": "mastering_finalizes_for_target_medium", "head": "the substrate prepares audio for delivery", "body": "the master must meet the target medium's loudness + spectral + dynamic standards. Substrate's output adaptation."}
+  ]
+}

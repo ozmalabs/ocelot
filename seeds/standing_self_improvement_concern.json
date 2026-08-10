@@ -1,0 +1,27 @@
+{
+ "id": "standing_self_improvement_concern",
+ "version": "1.0.0",
+ "depends_on": [],
+ "description": "A STANDING self-improvement concern, as graph data — not a human typing text mid-session. scripts/jabberwock_improves_itself.py / jabberwock_varies_itself.py / jabberwock_varies_acting.py have always driven the self-experiment loop by hand-calling domains.reflective_faculty.induce_concern(agent, [[\"test\",...],[\"send\",...],[\"judge\",...],[\"gradient\",...],[\"adopt\",...]]) with this EXACT relation-cue vocabulary (the checked-in RelationCue lexicon in seeds/relation_vocabulary.json is what grounds these words; nothing here is novel vocabulary). This seed carries that same structured observation as a StandingConcern node so the daemon's mechanical _concern_tick hook (scripts/jabberwock_daemon.py) can feed it through induce_concern/ground_concern once per agent lifetime, with no human in the loop. Whether it MINTS a CapabilityAxis (Covers=False, a genuine residual on THIS agent's held term-shapes) or is RECOGNIZED (Covers=True, already covered by something the agent learned) is entirely the seeded shape_decode_loop rules' decision, not this file's; which composer it grounds to (composer_dispatch.json's Argmin-priority Program) and which mint/judge/adopt rules get authored from it is entirely ground_concern's + _compose_experiment_rule's decision. This file only supplies WHAT to observe, exactly once, as data — never WHAT to conclude.",
+ "nodes": [
+  {
+   "local_id": 0,
+   "type": "StandingConcern",
+   "attrs": {
+    "name": "standing_self_improvement",
+    "relations": [
+     ["test", "HYPOTHESIS", "about", "SELF"],
+     ["send", "VARIANT", "to", "WORLD"],
+     ["judge", "TRIAL", "by", "OUTCOME"],
+     ["gradient", "VARIANT", "of", "ACTING"],
+     ["adopt", "WINNER", "as", "SELF"]
+    ],
+    "status": "pending"
+   }
+  }
+ ],
+ "edges": [],
+ "productions": [],
+ "concepts": [],
+ "rules": []
+}

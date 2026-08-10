@@ -1,0 +1,118 @@
+{
+  "id": "modality_tom",
+  "version": "1.0.0",
+  "depends_on": [
+    "event_reasoning"
+  ],
+  "description": "Operator-over-proposition layer: MODALITY (graded truth gating entailment \u2014 only fact/necessary chain), NEGATION-SCOPE (which constituent the NOT dominates), ToM (a believes operator scoping a nested sub-model that can diverge from reality), GIVEN/NEW (definite=given/refer, indefinite=new/mint). Modality, negation and the belief operator are one wrapper at different scopes.",
+  "microtheory": {
+    "name": "modality_tom",
+    "description": "modality/negation operators + theory of mind + given/new"
+  },
+  "nodes": [
+    {
+      "local_id": 1,
+      "type": "Concept",
+      "attrs": {
+        "name": "modality",
+        "description": "An OPERATOR node over a proposition (structurally like the figurative wrapper and like NOT): it stamps the proposition truth-status as graded possibility/necessity/obligation (a Beta-style value, not flat assertion), so the inference engine refuses to forward-chain a \"might\" as fact. epistemic might/could = possible; must/will = necessary; deontic should/must = obligation. Only fact/necessary propositions are entailed."
+      }
+    },
+    {
+      "local_id": 2,
+      "type": "Concept",
+      "attrs": {
+        "name": "negation_scope",
+        "description": "NEGATION is an operator; its SCOPE is which subgraph the NOT dominates, resolved by the same constituent/c-command structure used to attach roles. \"I did not say he stole it\" lands the negation on a different constituent (say / he / stole / it) for each reading \u2014 the focus IS the meaning."
+      }
+    },
+    {
+      "local_id": 3,
+      "type": "Concept",
+      "attrs": {
+        "name": "theory_of_mind",
+        "description": "A NESTED situation model: a belief-frame attributed to another agent under a believes operator \u2014 the sibling of modality, an operator scoping a whole sub-model rather than one proposition. The attributed belief can DIVERGE from world-state (false belief): you answer from the agent belief-model, not reality (Sally-Anne)."
+      }
+    },
+    {
+      "local_id": 4,
+      "type": "Concept",
+      "attrs": {
+        "name": "given_new",
+        "description": "Purely the referent-resolution definiteness branch: definite \"the X\" refers_to an existing Concept (GIVEN), indefinite \"a X\" mints a new node (NEW) \u2014 the same get-or-create dedup as the slang canonical-concept wiring; drives article choice + anaphora."
+      }
+    }
+  ],
+  "edges": [],
+  "rules": [
+    {
+      "name": "modal_entailment_gate",
+      "match": [
+        [
+          "p",
+          "is_prop",
+          "p"
+        ]
+      ],
+      "where": {
+        "type": "Lit",
+        "value": true
+      },
+      "effects": [
+        [
+          "set_attr",
+          "p",
+          "entailed",
+          {
+            "__term__": {
+              "type": "IfThenElse",
+              "cond": {
+                "type": "Or",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "p"
+                      },
+                      "key": "modality"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "fact"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "p"
+                      },
+                      "key": "modality"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "necessary"
+                    }
+                  }
+                ]
+              },
+              "then": {
+                "type": "Lit",
+                "value": 1
+              },
+              "other": {
+                "type": "Lit",
+                "value": 0
+              }
+            }
+          }
+        ]
+      ]
+    }
+  ]
+}

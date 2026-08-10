@@ -1,0 +1,118 @@
+{
+  "id": "polymer_chemistry_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "polymerization_chain",
+  "in_microtheory": "materials_chemistry",
+  "description": "Polymer chemistry decomposed. Step-growth vs chain-growth polymerization, free radical + cationic + anionic + coordination, controlled radical (ATRP, RAFT), copolymers, crystallization, melt processing, conductive polymers, biodegradable polymers.",
+  "sub_mechanisms": [
+    {
+      "name": "step_growth_condensation",
+      "definition": "A-A + B-B → polymer. Each step: small molecule (water) released.",
+      "why": "Polyester (PET), nylon, polycarbonate. Slow MW build-up. Stoichiometric balance critical.",
+      "category": "polymer_chem_mechanism"
+    },
+    {
+      "name": "chain_growth_addition",
+      "definition": "Initiator → active site → adds monomers sequentially. No byproduct.",
+      "why": "Polyethylene, polystyrene, polypropylene. Fast MW growth. Different kinetics from step.",
+      "category": "polymer_chem_mechanism"
+    },
+    {
+      "name": "free_radical_polymerisation",
+      "definition": "Initiator → radical → propagation → termination. Most common industrial.",
+      "why": "PE, PVC, PS, PMMA. Tolerant of impurities. Cost: broad MWD, branching, hard to control.",
+      "category": "polymer_chem_mechanism"
+    },
+    {
+      "name": "anionic_polymerisation",
+      "definition": "Carbanion initiator. Living polymerisation (no termination).",
+      "why": "Narrow MWD, block copolymers. Used for engineering polymers. Sensitive to water + impurities.",
+      "category": "polymer_chem_mechanism"
+    },
+    {
+      "name": "Ziegler_Natta_coordination",
+      "definition": "Ti-based catalyst. Stereospecific. Linear PE, isotactic PP.",
+      "why": "Nobel 1963. HDPE + iPP industrial standard. Modern: metallocene catalysts (better control).",
+      "category": "polymer_chem_mechanism"
+    },
+    {
+      "name": "ATRP_controlled_radical",
+      "definition": "Atom Transfer Radical Polymerisation. Reversible activation via Cu catalyst.",
+      "why": "Narrow MWD, controlled architectures, functional polymers. Combines radical tolerance + control. Modern.",
+      "category": "polymer_chem_mechanism"
+    },
+    {
+      "name": "RAFT_polymerisation",
+      "definition": "Reversible Addition-Fragmentation chain Transfer. Chain transfer agent enables control.",
+      "why": "Wide monomer scope, water tolerant. Standard modern controlled polymerisation.",
+      "category": "polymer_chem_mechanism"
+    },
+    {
+      "name": "block_copolymers",
+      "definition": "Distinct polymer blocks connected. SBS, SEBS thermoplastic elastomers.",
+      "why": "Microphase separation gives unique properties. TPEs combine thermoplastic processing + rubber elasticity.",
+      "category": "polymer_chem_mechanism"
+    },
+    {
+      "name": "polymer_crystallisation",
+      "definition": "Chains fold into lamellae. Spherulitic growth. Tm + Tc distinct.",
+      "why": "Crystallinity determines properties. iPP semi-crystalline; aPP amorphous. Process control.",
+      "category": "polymer_chem_mechanism"
+    },
+    {
+      "name": "conductive_polymers",
+      "definition": "Polyacetylene, polyaniline, PEDOT. π-conjugated backbones. Conductivity from doping.",
+      "why": "Nobel 2000. OLEDs, sensors, antistatic coatings. Modern: PEDOT:PSS widely used.",
+      "category": "polymer_chem_mechanism"
+    },
+    {
+      "name": "biodegradable_polymers",
+      "definition": "PLA, PHA, PCL. Designed to hydrolyse/enzymatically degrade.",
+      "why": "Environmental drivers. PLA from corn (compostable). PHA bacteria-produced. Different end-of-life path.",
+      "category": "polymer_chem_mechanism"
+    },
+    {
+      "name": "polymer_melt_processing",
+      "definition": "Above Tm: viscous fluid. Injection mold, extrude, blow mold. Shear thinning.",
+      "why": "Standard plastic manufacturing. Rheology determines processability. Foundation of polymer engineering.",
+      "category": "polymer_chem_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "chain_growth_high_MW_early",
+      "if": ["polymerisation is chain-growth"],
+      "then": ["high MW polymer forms early in reaction"],
+      "why": "Each initiator: one polymer chain. Grows rapidly. Step-growth: only at high conversion. Standard kinetic distinction.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "controlled_radical_for_narrow_MWD",
+      "if": ["narrow molecular weight distribution required"],
+      "then": ["controlled radical (ATRP, RAFT) outperforms free radical"],
+      "why": "Free radical: PDI > 2. Controlled: PDI ~1.05-1.2. Critical for some applications + research. Modern toolkit.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "stereoregularity_determines_crystallinity",
+      "if": ["polymer is isotactic or syndiotactic"],
+      "then": ["crystallises; if atactic, amorphous"],
+      "why": "Regular structure packs into crystal lattice. iPP crystalline; aPP gummy + non-crystalline. Foundation polymer chemistry.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "block_copolymer_microphase_separation",
+      "if": ["blocks are immiscible"],
+      "then": ["nanostructure forms (spheres, cylinders, lamellae)"],
+      "why": "Thermodynamics: phase separate; chemistry: blocks tethered → microphase. Nanometer scale. Foundation of self-assembly.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "Ziegler_Natta_revolutionised_polyolefins",
+      "if": ["polyethylene + polypropylene need to be linear/stereoregular"],
+      "then": ["ZN/metallocene catalysis is the method"],
+      "why": "Pre-ZN: branched LDPE only. ZN: HDPE + iPP at scale. Now: half of all plastic. Nobel 1963.",
+      "soundness_category": "extensional_equivalence"
+    }
+  ]
+}

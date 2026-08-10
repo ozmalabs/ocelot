@@ -1,0 +1,950 @@
+{
+ "id": "effector_limbs",
+ "version": "1.3.0",
+ "depends_on": [
+  "effector_compensation"
+ ],
+ "productions": [
+  {
+   "provenance": "seed:effector_limbs:member-1",
+   "src": {
+    "type": "EmbodiedLimb",
+    "var": "s"
+   },
+   "edge_type": "has_limb_member",
+   "tgt": {
+    "type": "EmbodiedOpaqueActuatorAffordance",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:effector_limbs:carried-1",
+   "src": {
+    "type": "EmbodiedOpaqueActuatorAffordance",
+    "var": "s"
+   },
+   "edge_type": "carried_by",
+   "tgt": {
+    "type": "EmbodiedOpaqueActuatorAffordance",
+    "var": "t"
+   }
+  }
+ ],
+ "rules": [
+  {
+   "name": "elb_open_limb_at_carriage_root",
+   "area": "general_cognition",
+   "latency_class": "hard_realtime",
+   "batch": false,
+   "comment": "A maximal carriage chain, opened once per root GROUP. Nothing here decides what a limb is called or which joints are in one.",
+   "match": [
+    [
+     "body",
+     "has_opaque_embodied_actuator_affordance",
+     "affordance"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "affordance"
+        },
+        "edge_type": "carried_by"
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "InNeighbours",
+        "node": {
+         "type": "Var",
+         "name": "affordance"
+        },
+        "edge_type": "carried_by"
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "InNeighbours",
+        "node": {
+         "type": "Var",
+         "name": "affordance"
+        },
+        "edge_type": "has_limb_member"
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "EmbodiedLimb"
+       },
+       "var_name": "known",
+       "predicate": {
+        "type": "Eq",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "known"
+           },
+           "key": "root_group_ordinal"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        "b": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "affordance"
+           },
+           "key": "opaque_group_ordinal"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "limb",
+     "EmbodiedLimb",
+     {
+      "root_group_ordinal": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "affordance"
+          },
+          "key": "opaque_group_ordinal"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "grounded": 1,
+      "integer_native": 1,
+      "output_authority": 0
+     }
+    ],
+    [
+     "add_edge",
+     "limb",
+     "has_limb_member",
+     "affordance"
+    ],
+    [
+     "set_attr",
+     "affordance",
+     "limb_chain_depth",
+     0
+    ]
+   ]
+  },
+  {
+   "name": "elb_retire_duplicate_limb_for_one_chain",
+   "area": "general_cognition",
+   "latency_class": "hard_realtime",
+   "batch": false,
+   "comment": "A carriage chain is one limb however many command directions its root exposes.",
+   "match": [
+    [
+     "limb",
+     "has_limb_member",
+     "member"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "limb"
+        },
+        "key": "root_group_ordinal"
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Argmin",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "EmbodiedLimb"
+         },
+         "var_name": "peer",
+         "predicate": {
+          "type": "Eq",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "peer"
+             },
+             "key": "root_group_ordinal"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          },
+          "b": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "limb"
+             },
+             "key": "root_group_ordinal"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          }
+         }
+        },
+        "var_name": "chosen",
+        "value": {
+         "type": "Lit",
+         "value": 0
+        },
+        "default": {
+         "type": "Lit",
+         "value": null
+        }
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Var",
+        "name": "limb"
+       },
+       "b": {
+        "type": "Argmin",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "EmbodiedLimb"
+         },
+         "var_name": "peer",
+         "predicate": {
+          "type": "Eq",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "peer"
+             },
+             "key": "root_group_ordinal"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          },
+          "b": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "limb"
+             },
+             "key": "root_group_ordinal"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          }
+         }
+        },
+        "var_name": "chosen",
+        "value": {
+         "type": "Lit",
+         "value": 0
+        },
+        "default": {
+         "type": "Lit",
+         "value": null
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "del_node",
+     "limb"
+    ]
+   ]
+  },
+  {
+   "name": "elb_extend_limb_to_carried_member",
+   "area": "general_cognition",
+   "latency_class": "hard_realtime",
+   "batch": true,
+   "match": [
+    [
+     "limb",
+     "has_limb_member",
+     "carrier"
+    ],
+    [
+     "child",
+     "carried_by",
+     "carrier"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "carrier"
+        },
+        "key": "limb_chain_depth"
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       }
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "InNeighbours",
+        "node": {
+         "type": "Var",
+         "name": "child"
+        },
+        "edge_type": "has_limb_member"
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_edge",
+     "limb",
+     "has_limb_member",
+     "child"
+    ],
+    [
+     "set_attr",
+     "child",
+     "limb_chain_depth",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "carrier"
+           },
+           "key": "limb_chain_depth"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        {
+         "type": "Lit",
+         "value": 1
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "elb_seed_root_effective_authority",
+   "area": "general_cognition",
+   "latency_class": "hard_realtime",
+   "batch": true,
+   "match": [
+    [
+     "limb",
+     "has_limb_member",
+     "affordance"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "affordance"
+        },
+        "edge_type": "carried_by"
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "affordance"
+        },
+        "key": "declared_joint_force_units"
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Not",
+       "arg": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "affordance"
+         },
+         "key": "effective_authority_units"
+        },
+        "b": {
+         "type": "Lit",
+         "value": null
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "affordance",
+     "effective_authority_units",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "affordance"
+         },
+         "key": "declared_joint_force_units"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "elb_carrier_path_authority",
+   "area": "general_cognition",
+   "latency_class": "hard_realtime",
+   "batch": true,
+   "match": [
+    [
+     "child",
+     "carried_by",
+     "carrier"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "carrier"
+        },
+        "key": "effective_authority_units"
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "child"
+        },
+        "key": "declared_joint_force_units"
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Not",
+       "arg": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "child"
+         },
+         "key": "carrier_path_authority_units"
+        },
+        "b": {
+         "type": "Lit",
+         "value": null
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "child",
+     "carrier_path_authority_units",
+     {
+      "__term__": {
+       "type": "Min",
+       "items": [
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "child"
+           },
+           "key": "declared_joint_force_units"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "carrier"
+           },
+           "key": "effective_authority_units"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "elb_settle_effective_authority_over_reaction_paths",
+   "area": "general_cognition",
+   "latency_class": "hard_realtime",
+   "batch": true,
+   "comment": "Max over reaction paths: carrier, opposed effector, grounded contact, structural alignment. The carrier cap binds only when the carrier is the ONLY path.",
+   "match": [
+    [
+     "limb",
+     "has_limb_member",
+     "child"
+    ],
+    [
+     "child",
+     "carried_by",
+     "carrier"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "child"
+        },
+        "key": "carrier_path_authority_units"
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "child"
+        },
+        "key": "declared_joint_force_units"
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Not",
+       "arg": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "child"
+         },
+         "key": "effective_authority_units"
+        },
+        "b": {
+         "type": "Lit",
+         "value": null
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "child",
+     "effective_authority_units",
+     {
+      "__term__": {
+       "type": "Max",
+       "items": [
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "child"
+           },
+           "key": "carrier_path_authority_units"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Gt",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "child"
+             },
+             "key": "opposed_effector_engaged"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0
+          }
+         },
+         "then": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "child"
+            },
+            "key": "declared_joint_force_units"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         "other": {
+          "type": "Lit",
+          "value": 0
+         }
+        },
+        {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Gt",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "child"
+             },
+             "key": "grounded_contact_count"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0
+          }
+         },
+         "then": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "child"
+            },
+            "key": "declared_joint_force_units"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         "other": {
+          "type": "Lit",
+          "value": 0
+         }
+        },
+        {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Not",
+          "arg": {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "child"
+            },
+            "key": "loaded_structural_alignment_authority_units"
+           },
+           "b": {
+            "type": "Lit",
+            "value": null
+           }
+          }
+         },
+         "then": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "child"
+            },
+            "key": "loaded_structural_alignment_authority_units"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         "other": {
+          "type": "Lit",
+          "value": 0
+         }
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  }
+ ]
+}

@@ -1,0 +1,118 @@
+{
+  "id": "aws_services_deep_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "AWS_EC2",
+  "in_microtheory": "cloud_infrastructure",
+  "description": "AWS services decomposed at depth. EC2 instance families + Graviton, S3 consistency + storage classes, Lambda execution model + cold start, IAM policy evaluation + SCPs, VPC architecture decisions, ELB target groups + algorithms.",
+  "sub_mechanisms": [
+    {
+      "name": "EC2_instance_families",
+      "definition": "M (general), C (compute), R (memory), I (storage), G (GPU), P (ML), T (burstable), Graviton (ARM).",
+      "why": "Match workload to instance type for cost-effective performance. Graviton ARM ~20% cheaper than x86 equivalent. Important FinOps lever.",
+      "category": "aws_deep_mechanism"
+    },
+    {
+      "name": "EC2_burstable_T_instances",
+      "definition": "T3/T4g: baseline CPU + credits for bursts. Credits accumulate when idle; consumed during bursts.",
+      "why": "Cheap for spiky low-average workloads. CPU starvation if credits exhausted. Unlimited mode: pay for extra burst.",
+      "category": "aws_deep_mechanism"
+    },
+    {
+      "name": "S3_consistency_strong",
+      "definition": "Since Dec 2020: strong read-after-write for all operations. Previously: eventual for overwrites/deletes.",
+      "why": "Major architectural simplification. No more 'wait for consistency' patterns. Many cached / queued workarounds obsolete.",
+      "category": "aws_deep_mechanism"
+    },
+    {
+      "name": "S3_request_pricing",
+      "definition": "Per-request charges: GET cheap (~$0.0004/1K), PUT more (~$0.005/1K), LIST more.",
+      "why": "Surprising bill for chatty workloads. Many small files = high request cost. Aggregate (Parquet) reduces. Lifecycle policies + Intelligent-Tiering help.",
+      "category": "aws_deep_mechanism"
+    },
+    {
+      "name": "Lambda_cold_vs_warm",
+      "definition": "Cold: new container, runtime initialised. Warm: reused container.",
+      "why": "Cold start latency varies: Node ~100ms, Java ~500ms-2s, .NET ~1-3s. Provisioned Concurrency pre-warms; SnapStart for Java.",
+      "category": "aws_deep_mechanism"
+    },
+    {
+      "name": "Lambda_concurrency_limits",
+      "definition": "Account-level + per-function concurrency limits. Throttling on exceed.",
+      "why": "Default 1000 per region. Reserved concurrency guarantees floor. Important to monitor; throttle = 429 errors.",
+      "category": "aws_deep_mechanism"
+    },
+    {
+      "name": "Lambda_payload_size",
+      "definition": "Sync invocation: 6 MB request/response. Async: 256 KB.",
+      "why": "Hard limits. Larger payloads → S3 + reference. Common gotcha.",
+      "category": "aws_deep_mechanism"
+    },
+    {
+      "name": "IAM_policy_simulator",
+      "definition": "Tool to evaluate 'would this principal be allowed this action'?",
+      "why": "Complex policies → hard to reason. Simulator answers without testing. Essential for debugging access issues.",
+      "category": "aws_deep_mechanism"
+    },
+    {
+      "name": "Service_Control_Policy",
+      "definition": "AWS Organizations: SCP applies to all accounts in OU. Acts as deny-only filter.",
+      "why": "Org-wide guardrails. 'No public S3' enforced even from root account. Defense in depth; account-level IAM still applies.",
+      "category": "aws_deep_mechanism"
+    },
+    {
+      "name": "VPC_peering_vs_TGW",
+      "definition": "Peering: direct 1-to-1, non-transitive. Transit Gateway: hub, transitive.",
+      "why": "Few VPCs: peering cheaper. Many VPCs: TGW eliminates N×N mesh. Cost: TGW ~$36/mo + per-GB attachment.",
+      "category": "aws_deep_mechanism"
+    },
+    {
+      "name": "ALB_target_group",
+      "definition": "ALB routes to target group (instances, IPs, Lambda). Health checks per group.",
+      "why": "Decoupled: ALB rules → target group → targets. Blue/green by switching target group weight. Canary via weighted routing.",
+      "category": "aws_deep_mechanism"
+    },
+    {
+      "name": "NLB_for_TCP_UDP",
+      "definition": "Network Load Balancer: L4. Connection-based. Static IPs + cross-zone optional.",
+      "why": "When L7 features not needed. TCP / UDP. Lowest latency. Used for non-HTTP (e.g., gRPC streaming, custom protocols).",
+      "category": "aws_deep_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "Graviton_ARM_cost_savings",
+      "if": ["workload runs on Linux + non-x86-specific code"],
+      "then": ["Graviton (ARM) 20% cheaper than equivalent x86"],
+      "why": "Same performance ~20% less cost. Most workloads (Java, Python, Go) run unchanged. Native ARM builds + multi-arch images standard.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "S3_request_cost_dominates_for_small_files",
+      "if": ["S3 has many small files"],
+      "then": ["request cost dominates storage cost"],
+      "why": "Millions of objects = millions of GET requests. Often more than storage. Aggregate (Parquet, tar archives) reduces. Critical for cost.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "Lambda_provisioned_concurrency_eliminates_cold_starts",
+      "if": ["function has latency-sensitive workload"],
+      "then": ["Provisioned Concurrency keeps instances warm"],
+      "why": "Pre-warmed containers ready. No cold start. Cost: pay for provisioned even idle. Use case: APIs with strict latency SLOs.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "SCPs_create_organisation_wide_guardrails",
+      "if": ["organisation needs blanket restrictions"],
+      "then": ["SCP at root OU outperforms per-account IAM"],
+      "why": "Per-account IAM: error-prone, drift possible. SCP: deny applied to all sub-accounts. 'No CloudTrail disable' enforced everywhere. Standard org governance.",
+      "soundness_category": "referential_transparency"
+    },
+    {
+      "name": "TGW_for_many_VPC_connections",
+      "if": ["multiple VPCs need connectivity"],
+      "then": ["Transit Gateway scales better than peering"],
+      "why": "N VPCs need N(N-1)/2 peers. TGW: N attachments. Hub-spoke. Cost: TGW ongoing fee vs peering free; pays off at ~4+ VPCs.",
+      "soundness_category": "cost_equivalence"
+    }
+  ]
+}

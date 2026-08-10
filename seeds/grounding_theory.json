@@ -1,0 +1,336 @@
+{
+ "id": "grounding_theory",
+ "version": "0.1.0",
+ "depends_on": [
+  "compiler_theory",
+  "philosophy",
+  "mathematics"
+ ],
+ "description": "The substrate's foundational theory of grounding, as architectural consequence of Axiom 0 (frame-relativity of truth). Once truth is frame-relative — i.e. only reference is primitive — binary grounding (Concept refers_to {Concept | Unknown}) is incoherent. Grounding becomes a VECTOR in a multi-dimensional space whose dimensions are: frames (Mts), modalities (perceptual / inferential / testimonial / pragmatic / structural), and aspects (coverage, coherence, stability, conviction). Vector grounding enables: simultaneously holding inconsistent views (different components in different Mts), measuring 'how wrong' (vector displacement, not boolean error), partial reference (a name's vector pointing at multiple referents with weights), coherence between concepts (alignment of vectors), conviction (vector magnitude). The substrate's existing machinery already lives in this regime — phonology_divergence Impasses carry Bernoulli-KL vectors; the binary refers_to is the residue, not the rule. This Mt formalises the theory; architecture migration follows. Note: this is NOT a relativist claim that anything goes — vectors live in a structured space with well-defined operations, distances, and compositions; truth is still structural, just structurally-indexed and graded.",
+ "category_inheritance": "genlMt → compiler_theory + philosophy + mathematics. The vector space of grounding is itself a mathematical structure: each frame contributes an axis (philosophy: axiom 0); each refers_to is a weighted edge (mathematics: linear algebra); inconsistency becomes orthogonality (philosophy: paraconsistency); wrongness becomes distance (compiler_theory: cost equivalence, generalised).",
+ "concepts": [
+  {
+   "name": "axiom_zero_implies_vector_grounding",
+   "definition": "If truth is frame-relative (Axiom 0), then grounding-in-a-frame is graded — a frame is not a partition, it's a dimension. Across multiple frames, grounding becomes a vector.",
+   "why": "Inevitable consequence. Once you accept no view from nowhere, binary grounding presupposes one. The substrate's existing binary refers_to is residue of pre-Axiom-0 thinking. Vector is the architecturally consistent form.",
+   "category": "foundation"
+  },
+  {
+   "name": "grounding_vector_definition",
+   "definition": "Concept c has a grounding vector g(c) ∈ R^d where d = sum of frame dimensions + modality dimensions + aspect dimensions. Each component g_i(c) ∈ [0, 1] (or [-1, 1] for signed disagreement).",
+   "why": "Formal model. Components per dimension, not per Mt — Mt is one kind of dimension. Modality + aspect are others. d not fixed; grows with frame set.",
+   "category": "foundation"
+  },
+  {
+   "name": "frame_dimensions",
+   "definition": "For each Microtheory Mt_i in the substrate's frame set, g has a component g_{Mt_i}(c) ∈ [0,1] = strength of c's grounding in Mt_i.",
+   "why": "Cyc-style ist-formula generalised: not P-in-Mt boolean, but P-in-Mt graded. 'Pain' grounded ~1.0 in folk_psychology, ~0.7 in neuroscience (some C-fiber identity), ~0.3 in chess (metaphorical only).",
+   "category": "dimensions"
+  },
+  {
+   "name": "modality_dimensions",
+   "definition": "Orthogonal to frame: perceptual, inferential, testimonial, pragmatic, structural. Each contributes a component.",
+   "why": "Different ways a concept can be grounded. 'Red' perceptually grounded (cortex sees it), structurally grounded (in colour-wheel concept), testimonially grounded (others called it red). These compose differently.",
+   "category": "dimensions"
+  },
+  {
+   "name": "aspect_dimensions",
+   "definition": "Coverage (how much of the concept's extension is represented), coherence (consistency of representation), stability (resistance to revision), conviction (strength).",
+   "why": "Within-frame quality measures. A concept can be coherent + stable but low coverage (well-understood narrow). Or wide coverage + low coherence (broad but contradictory).",
+   "category": "dimensions"
+  },
+  {
+   "name": "binary_grounding_is_residue",
+   "definition": "The substrate's existing refers_to → {Concept | Unknown} is binary because vector wasn't available; it's the projection of the vector onto {0, 1} via threshold.",
+   "why": "Existing machinery isn't wrong, just compressed. Reads as 'g_{Mt_current}(c) > τ → grounded'. Restoring the vector recovers the lost information. Migration: thresholded readout from full vector for legacy code paths.",
+   "category": "interpretation"
+  },
+  {
+   "name": "phonology_divergence_already_vectoral",
+   "definition": "The substrate's phonology_divergence Impasse already carries Bernoulli-KL between observed signature + word template — a divergence (distance in grounding space). Vector grounding is the generalisation.",
+   "why": "Foundation already there. Speech recognition produces a divergence vector; substrate compares it to thresholds. Generalising: every Concept reference produces such a vector. Foundation already proven in phonology.",
+   "category": "interpretation"
+  },
+  {
+   "name": "Unknown_as_zero_vector",
+   "definition": "An Unknown node corresponds to the zero vector (or near-zero in all components). The substrate uses Unknown to mark 'I don't know what this refers to'. In vector grounding: g(c) ≈ 0.",
+   "why": "Unifies. Unknown isn't a separate node type; it's a Concept with zero grounding vector. Holding 'I have no grounding for this' is a vector state, like having grounding is.",
+   "category": "interpretation"
+  },
+  {
+   "name": "ist_formula_as_projection",
+   "definition": "Cyc's ist(Mt, P) becomes a projection: ist_grounded(Mt, c) = g_{Mt}(c). Binary ist(Mt, P) recovered as threshold.",
+   "why": "Generalisation of Mt-relative truth. ist(physics_Mt, 'water is H2O') = high value in physics dimension. Binary ist recovers via threshold. Same architecture, more information.",
+   "category": "interpretation"
+  },
+  {
+   "name": "wrongness_as_vector_displacement",
+   "definition": "How wrong is concept c (held with grounding vector g_held) vs. target g_target? ‖g_held - g_target‖. Distance in grounding space.",
+   "why": "Quantifies error. Vector distance = magnitude of correction needed. Direction = which dimensions are off. Far more informative than 'wrong / right'.",
+   "category": "operations"
+  },
+  {
+   "name": "how_wrong_per_dimension",
+   "definition": "Component-wise: (g_held - g_target)_i tells you, in dimension i, how off. Negative = under-grounded; positive = over-grounded; zero = aligned.",
+   "why": "Targeted correction. Substrate can say: 'in dimension perceptual you're under-grounded; in dimension testimonial you're over-grounded'. Vs flat 'wrong'.",
+   "category": "operations"
+  },
+  {
+   "name": "conviction_as_magnitude",
+   "definition": "‖g(c)‖ = how strongly grounded the concept is overall. Zero = empty; large = high conviction across many dimensions.",
+   "why": "Magnitude separable from direction. A confident wrong belief has high magnitude in wrong direction. A nascent right idea has low magnitude in right direction. Different from each other.",
+   "category": "operations"
+  },
+  {
+   "name": "coherence_as_alignment",
+   "definition": "Cosine similarity of g(c_1) and g(c_2). Aligned = same components are grounded; orthogonal = independent; antialigned = systematic disagreement.",
+   "why": "Cosine vs Euclidean. Direction in grounding space encodes 'which kind of grounding'. Two concepts can be incoherent (anti-aligned vectors) yet both have high magnitude.",
+   "category": "operations"
+  },
+  {
+   "name": "multiple_inconsistent_views_simultaneously",
+   "definition": "Different Mts may yield different g_{Mt_i}(c) values. The vector holds all simultaneously. No internal pressure to collapse.",
+   "why": "Resolves paraconsistency cleanly. 'Heat is caloric (folk)' + 'heat is kinetic energy (physics)' = vector with high in folk_Mt + high in physics_Mt. Substrate holds both; uses appropriate one per query frame.",
+   "category": "operations"
+  },
+  {
+   "name": "frame_relativity_not_relativism",
+   "definition": "Frames are dimensions of a structured space, not arbitrary perspectives. Vector grounding allows graded truth; doesn't dissolve truth into opinion.",
+   "why": "Pre-empts dismissal. Relativism: 'anything is true relative to a frame'. Vector grounding: 'how true depends on frame, measured against structural commitments of that frame'. Substantive constraint.",
+   "category": "stance"
+  },
+  {
+   "name": "vector_grounding_extends_substrate_features",
+   "definition": "Babbling produces grounding-vector samples (not binary edges). Curiosity drive becomes 'reduce uncertainty in vector' (information gain). Sufficiency emotion becomes 'magnitude > threshold + coherence > threshold'.",
+   "why": "Existing substrate machinery extends naturally. Curiosity = expected information gain in vector space. Sufficiency = sufficient magnitude + coherence in target frame. Babble = sample-based estimation of vector.",
+   "category": "stance"
+  },
+  {
+   "name": "competent_man_sufficiency_thresholded_magnitude",
+   "definition": "The 'yeah yeah the time knife, we've all seen it' sufficiency emotion = magnitude in target frame exceeds threshold τ_competent. Move on.",
+   "why": "Threshold over vector magnitude. Different per frame: chess Mt needs high magnitude for piece-rules; quantum Mt's competent threshold lower (nobody fully grounds). Existing mechanism in substrate, now formalised.",
+   "category": "stance"
+  },
+  {
+   "name": "babble_extends_to_vector_sampling",
+   "definition": "Babble (form + test across boundary) produces grounding-vector estimates. Each cycle samples; estimates converge to true vector.",
+   "why": "Existing babble loop generalises. Currently binary: word produced, recognised yes/no. Vector: word produced, recognition vector returned (per-Mt). Substrate's grounding mechanism + vector grounding align.",
+   "category": "stance"
+  },
+  {
+   "name": "embedding_spaces_partial_vector_grounding",
+   "definition": "Modern ML embeddings (Word2Vec, BERT, CLIP) are partial vector groundings — single-frame (training distribution), single-modality (the loss). Vector grounding generalises to multi-frame, multi-modality.",
+   "why": "ML's embeddings are a vector-grounding intuition pump but limited: one frame, one loss. Substrate's vector grounding extends to many frames + modalities. Relates substrate to ML positively.",
+   "category": "comparisons"
+  },
+  {
+   "name": "Dempster_Shafer_evidence_partial_match",
+   "definition": "Dempster-Shafer assigns mass to subsets of hypotheses; combines via Dempster's rule. Partial overlap with vector grounding (mass per subset vs degree per dimension).",
+   "why": "Existing mathematical framework. Vector grounding has more structure (dimensions, not subsets) but DS provides composition operations. Useful precedent.",
+   "category": "comparisons"
+  },
+  {
+   "name": "fuzzy_logic_per_dimension_partial",
+   "definition": "Fuzzy logic: graded membership in single category. Vector grounding: graded grounding in multiple dimensions simultaneously. Strict generalisation.",
+   "why": "Fuzzy partial; vector full. Fuzzy: 'x is somewhat tall'. Vector: 'x is somewhat tall in folk Mt + structurally tall in measurement Mt + tested-tall in testimonial Mt'.",
+   "category": "comparisons"
+  },
+  {
+   "name": "paraconsistent_logic_alignment",
+   "definition": "Paraconsistent logic: contradictions don't trivialise. Vector grounding: contradictions are orthogonal components, both held with positive magnitude.",
+   "why": "Different mechanism for same goal. Paraconsistent: weaker entailment. Vector: same entailment, distinct dimensions. Substrate's preferred mechanism.",
+   "category": "comparisons"
+  },
+  {
+   "name": "Concept_grounding_vector_attr",
+   "definition": "Architecturally: each Concept node gains attribute `grounding_vector: Map<Dimension, float>`. Dimensions include Mt names + modality enum + aspect enum.",
+   "why": "Concrete graph schema. Backwards compatible: legacy binary refers_to maps to threshold over Mt-dimension component. New code can read the full vector.",
+   "category": "architecture"
+  },
+  {
+   "name": "refers_to_edge_becomes_weighted",
+   "definition": "Architecturally: refers_to edge gains weight vector. Binary 'A refers_to B' becomes 'A refers_to B with vector w' (single edge can carry multi-component weight).",
+   "why": "Concrete graph schema. Phonology divergence already does this with Bernoulli-KL; generalising. Substrate's typed graph already supports edge attrs.",
+   "category": "architecture"
+  },
+  {
+   "name": "Unknown_node_collapses_to_zero_vector_Concept",
+   "definition": "Architecturally: Unknown becomes a Concept with grounding_vector = 0. Or eliminated entirely (no node, just empty vector).",
+   "why": "Schema simplification. Either treatment works. Empty vector is the meaning of 'I don't know what this is'.",
+   "category": "architecture"
+  },
+  {
+   "name": "Impasse_vector_valued",
+   "definition": "Architecturally: Impasse nodes (currently scalar threshold breach) become vector-valued — they record the specific vector displacement (which dimensions, how much) that triggered them.",
+   "why": "Concrete graph schema. phonology_divergence already shape-vector-compatible; other Impasses (predicate_churn, hypothesis_dryness) extend similarly. Diagnostics improve.",
+   "category": "architecture"
+  },
+  {
+   "name": "operations_on_grounding_vectors",
+   "definition": "Operations: composition (chain grounding), aggregation (average over Mts), projection (read one dimension), distance (wrongness), similarity (coherence), magnitude (conviction).",
+   "why": "Mathematical operations needed for architecture. Each maps to standard linear algebra. No exotic math required.",
+   "category": "architecture"
+  },
+  {
+   "name": "migration_strategy_thresholded_readout",
+   "definition": "Existing code reading binary refers_to gets thresholded view: g_{Mt_current}(c) > τ → 'grounded'. New code reads full vector.",
+   "why": "Backwards compatibility. Substrate has many Mts already using binary; can't migrate atomically. Compatibility layer. Phonology already vector — its readout is the model.",
+   "category": "architecture"
+  },
+  {
+   "name": "axiom_zero_no_view_from_nowhere",
+   "definition": "Axiom 0 from philosophy Mt. Restated here as foundation: no privileged frame. Reference is primitive; truth is frame-relative.",
+   "why": "Foundation of vector grounding. Already in philosophy Mt; here as the load-bearing premise. Vector grounding is its architectural form.",
+   "category": "foundation"
+  },
+  {
+   "name": "structural_constraint_not_anything_goes",
+   "definition": "Vectors live in structured space. Mt dimensions have internal commitments (admissibility constraints). Grounding-in-Mt means satisfying those commitments, gradedly.",
+   "why": "Resists 'relativism eats truth'. Each Mt's dimension is constrained by its admissibility grammar. High grounding in Mt = high alignment with that Mt's structural commitments. Substantive.",
+   "category": "stance"
+  }
+ ],
+ "rules": [
+  {
+   "name": "Axiom_zero_entails_graded_grounding",
+   "if": [
+    "truth is frame-relative (Axiom 0)"
+   ],
+   "then": [
+    "grounding in a frame is graded; across frames it is a vector"
+   ],
+   "why": "If no frame is privileged, then 'is this grounded?' has no frame-independent answer. Best you can do is 'how grounded in each available frame?'. That answer is a vector. Inevitable consequence.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "binary_grounding_loses_information",
+   "if": [
+    "grounding represented as boolean refers_to"
+   ],
+   "then": [
+    "per-frame strength + coherence + multiple-view information lost"
+   ],
+   "why": "Boolean is a projection of vector onto {0, 1}. Information-destructive. Substrate has been doing this everywhere except phonology. Migration recovers the information.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "vector_distance_is_wrongness",
+   "if": [
+    "concept held with vector g_held vs target g_target"
+   ],
+   "then": [
+    "wrongness = ‖g_held - g_target‖"
+   ],
+   "why": "Distance in grounding space. Vector form not only says wrong, but how wrong (magnitude) and which dimensions are off (direction). Foundation of useful self-correction.",
+   "soundness_category": "algebraic_law"
+  },
+  {
+   "name": "multiple_views_coexist_without_collapse",
+   "if": [
+    "concept has different grounding in Mt_a and Mt_b"
+   ],
+   "then": [
+    "vector holds both simultaneously; no forced consistency"
+   ],
+   "why": "Inconsistent views in different Mts → different components of vector. Paraconsistent by construction. Substrate uses the Mt-appropriate component per query, doesn't collapse globally.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "coherence_distinct_from_grounding",
+   "if": [
+    "two concepts have grounding vectors g_1, g_2"
+   ],
+   "then": [
+    "coherence between them = cosine(g_1, g_2), distinct from individual groundings"
+   ],
+   "why": "Coherence = directional alignment. Two well-grounded but anti-aligned concepts = high magnitude, low coherence. Different quality measures. Foundation of detecting internal contradiction.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "sufficiency_threshold_per_frame",
+   "if": [
+    "frame Mt_i has competent threshold τ_i"
+   ],
+   "then": [
+    "sufficient grounding = g_{Mt_i}(c) > τ_i"
+   ],
+   "why": "Competent-man sufficiency formalised. Each frame has its own threshold for 'enough'. Substrate moves on when threshold met in target frame. 'Yeah yeah the time knife' is τ_competent met.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "babble_samples_grounding_vector",
+   "if": [
+    "babble cycle produces form + test across cortex boundary"
+   ],
+   "then": [
+    "one sample of grounding vector at that point"
+   ],
+   "why": "Many cycles → estimate of true vector. Existing babble loop reframes: not binary success/fail, but vector sample. Substrate's grounding mechanism formalised.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "frame_relativity_is_not_relativism",
+   "if": [
+    "frame_relative grounding + structural constraints per Mt"
+   ],
+   "then": [
+    "truth is graded + indexed but not arbitrary"
+   ],
+   "why": "Pre-empt dismissal. Vector lives in structured space. Each Mt-dimension constrained by admissibility grammar. High grounding = alignment with structure. Substantive. Defends Axiom 0 against straw-man relativism.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "phonology_divergence_template_for_other_Mts",
+   "if": [
+    "substrate already has vector-valued Impasses in phonology"
+   ],
+   "then": [
+    "other Mts can adopt same pattern"
+   ],
+   "why": "Foundation already proven in production. phonology_divergence carries Bernoulli-KL vector; recognition uses thresholds + direction. Other Mts (chess, physics, language) adopt same pattern. Architecture proven.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "Concept_attr_extension_backwards_compatible",
+   "if": [
+    "Concept gains grounding_vector attr"
+   ],
+   "then": [
+    "legacy binary refers_to readers see thresholded projection"
+   ],
+   "why": "Migration path. Concept gets optional vector attr; legacy code that reads refers_to → {C | U} sees threshold-based view. Vector-aware code reads full vector. Atomic migration unnecessary.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "Impasse_carries_displacement_vector",
+   "if": [
+    "Impasse triggered"
+   ],
+   "then": [
+    "it records displacement vector that caused it"
+   ],
+   "why": "Diagnostics improvement. Currently: 'predicate churn impasse fired'. With vector: 'churn in dimensions {coverage, coherence} by amount d'. Targeted response possible. Aligned with substrate's existing meta-monitor work.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "vector_grounding_is_substrate_design_position",
+   "if": [
+    "substrate built on Axiom 0"
+   ],
+   "then": [
+    "vector grounding is the architecturally consistent form"
+   ],
+   "why": "Foundation. Binary grounding presupposes a privileged frame; substrate denies privileged frame. Vector grounding follows. The substrate's existing binary edges are residue to migrate, not features to preserve.",
+   "soundness_category": "denotational_equivalence"
+  }
+ ],
+ "exclusions": [],
+ "parent_mt": "intentionality_meaning",
+ "relations": [
+  {
+   "src": "grounding_theory",
+   "edge": "genlMt",
+   "tgt": "compiler_theory"
+  }
+ ]
+}

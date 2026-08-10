@@ -1,0 +1,158 @@
+{
+  "microtheory": {
+    "name": "computational_neuroscience",
+    "definition": "Mathematical models of neural computation. Spans neuron-level (leaky integrate-and-fire, Hodgkin-Huxley) to population-level (rate models, mean-field theory) to network-level (Hopfield, predictive coding). These are the formal tools that connect what neurons do to what brains compute. The substrate's CAN dynamics is rate-model + Ising-spin formalism; this Mt names that origin + the surrounding mathematical landscape.",
+    "category": "neuroscience_domain",
+    "parent": "neuroscience"
+  },
+  "concepts": [
+    {
+      "name": "hodgkin_huxley_model",
+      "definition": "The classical model of action potential generation. Four coupled differential equations describing Na+, K+ ion channel dynamics + membrane potential. 1952 — Nobel-Prize-winning quantification of the squid axon. Substrate analogue: the substrate's discrete update rule is an abstraction of this continuous voltage dynamics.",
+      "category": "neuron_model"
+    },
+    {
+      "name": "leaky_integrate_and_fire",
+      "definition": "LIF. The simplest spiking neuron model: V̇ = -(V - V_rest)/τ + I; spike when V crosses threshold, then reset. Computationally tractable for large networks. Substrate analogue: the substrate's per-step σ update with threshold-and-decay shape.",
+      "category": "neuron_model"
+    },
+    {
+      "name": "rate_model",
+      "definition": "Abstracts spikes to firing rates. Variables are continuous activations 0-1; dynamics by differential equations on rates. Substrate analogue: the substrate's CAN with σ values in [0,1] — direct rate model.",
+      "category": "neuron_model"
+    },
+    {
+      "name": "mean_field_theory",
+      "definition": "Approximation: treat the population's effect on each neuron as a mean field, neglecting fluctuations. Lets you derive macroscopic dynamics from microscopic interactions. Sompolinsky-Crisanti-Sommers. Substrate analogue: substrate's mean-field marginal computation via tanh self-consistency.",
+      "category": "framework"
+    },
+    {
+      "name": "ising_model",
+      "definition": "Statistical physics model: binary spins σ∈{-1,+1} with pairwise couplings J_ij + external fields h_i. Energy H(σ) = -Σ J_ij σ_i σ_j - Σ h_i σ_i. Substrate analogue: the substrate's CAN Hamiltonian.",
+      "category": "framework"
+    },
+    {
+      "name": "spin_glass_dynamics",
+      "definition": "Ising model with random or mixed-sign couplings. Many local minima coexist. Replica theory (Parisi 1979). Substrate analogue: CAN's mixed-sign J matrix produces multiple coexisting basins.",
+      "category": "framework"
+    },
+    {
+      "name": "hopfield_network",
+      "definition": "Hopfield 1982. Symmetric recurrent binary network with Hebbian-learned weights. Acts as content-addressable memory: stored patterns are local energy minima; partial cue triggers descent into the nearest stored pattern. Substrate analogue: substrate's CAN basins ARE Hopfield-style attractors.",
+      "category": "network_model"
+    },
+    {
+      "name": "boltzmann_machine",
+      "definition": "Probabilistic version of Hopfield. Each state has probability ∝ exp(-βE). Sampling via Gibbs sampling. Hinton + Sejnowski 1985. Substrate analogue: substrate's temperature β explicitly implements Boltzmann temperature.",
+      "category": "network_model"
+    },
+    {
+      "name": "restricted_boltzmann_machine",
+      "definition": "Bipartite Boltzmann machine (visible + hidden units, no within-layer connections). Trainable via contrastive divergence. Foundation of deep learning. Substrate analogue: Mt's concept-vs-pattern structure.",
+      "category": "network_model"
+    },
+    {
+      "name": "predictive_coding_network",
+      "definition": "Rao+Ballard 1999. Each level passes its prediction down + receives error back. Errors propagate up the hierarchy; only what's surprising. Substrate analogue: ΔF residual propagation in substrate's loop step.",
+      "category": "network_model"
+    },
+    {
+      "name": "deep_belief_network",
+      "definition": "Stack of RBMs. Each layer extracts increasingly abstract features. Hinton 2006. Showed cortex-like hierarchical feature extraction emerges from layer-wise unsupervised training. Substrate analogue: genlMt hierarchy + plasticity drives abstraction emergence.",
+      "category": "network_model"
+    },
+    {
+      "name": "marr_levels_of_analysis",
+      "definition": "David Marr's 1982 framework: computational (what problem is solved + why), algorithmic (what representations + procedures), implementational (how neural hardware realises it). All three levels needed for full understanding. Substrate analogue: the substrate operates explicitly at all three — its drives are computational, its DSL is algorithmic, its Rust runtime is implementational.",
+      "category": "methodology"
+    },
+    {
+      "name": "linking_hypothesis",
+      "definition": "A specific claim about which neural feature maps to which behavioural variable. Necessary to test computational theories with experiments. Substrate analogue: the substrate's seeded concept-to-mechanism mappings.",
+      "category": "methodology"
+    },
+    {
+      "name": "neural_manifold",
+      "definition": "Neural population activity lies on a low-dimensional manifold in the high-dimensional space of all possible patterns. Behaviour-relevant computation happens within manifold. Substrate analogue: substrate's Mt-state lies on a low-dimensional sub-manifold of all possible σ vectors.",
+      "category": "geometry"
+    },
+    {
+      "name": "fixed_point_attractor",
+      "definition": "A network state to which dynamics converge. Stable; perturbations decay. Substrate analogue: basin equilibrium in the substrate's CAN dynamics.",
+      "category": "geometry"
+    },
+    {
+      "name": "line_attractor",
+      "definition": "A continuous one-dimensional manifold of equilibria; lateral flow is stable but motion along it is neutral. Implements analog memory (eye position, value). Substrate analogue: continuous-valued belief states.",
+      "category": "geometry"
+    },
+    {
+      "name": "ring_attractor",
+      "definition": "A 1D circular attractor topology. Encodes circular variables (head direction, time of day). Substrate analogue: cyclic-state Mt patterns.",
+      "category": "geometry"
+    },
+    {
+      "name": "saddle_point",
+      "definition": "Unstable equilibrium. Repelling along some dimensions, attracting along others. Decision boundaries between attractor basins. Substrate analogue: high-entropy decision points where curiosity-drive activates.",
+      "category": "geometry"
+    },
+    {
+      "name": "backpropagation",
+      "definition": "Rumelhart + Hinton + Williams 1986. Gradient-descent learning algorithm for layered networks. The workhorse of modern deep learning. Biological plausibility debated. Substrate analogue: NOT what substrate does — substrate is structure-edit, not weight-gradient.",
+      "category": "learning_rule"
+    },
+    {
+      "name": "contrastive_hebbian_learning",
+      "definition": "Hebbian update gated by clamped vs free phases. More biologically plausible than backprop. Substrate analogue: substrate's J update is contrastive (post-state vs pre-state).",
+      "category": "learning_rule"
+    },
+    {
+      "name": "temporal_difference_learning_formal",
+      "definition": "Sutton 1988 formalisation. Update value estimate: V(s) += α[r + γV(s') - V(s)]. Convergence guarantees under Robbins-Monro conditions. The reward prediction error δ = r + γV(s') - V(s) is what dopamine encodes. Substrate analogue: substrate's frustration dynamics as TD updates.",
+      "category": "learning_rule"
+    },
+    {
+      "name": "compartmental_model",
+      "definition": "Neuron divided into spatial compartments (soma, dendrite segments, axon initial segment) each with its own Hodgkin-Huxley dynamics. Captures dendritic computation. NEURON simulator. Substrate analogue: a Concept's internal structure can be similarly decomposed.",
+      "category": "implementation"
+    },
+    {
+      "name": "population_decoding",
+      "definition": "Recover a continuous variable from population spike trains: maximum-likelihood, optimal linear estimation, vector-cosine. Reveals what the population represents. Substrate analogue: query-as-decoding over a Mt's σ values.",
+      "category": "implementation"
+    },
+    {
+      "name": "neural_oscillator_model",
+      "definition": "Models of how neurons + populations generate rhythms — relaxation oscillators, ring oscillators, network resonances. Substrate analogue: substrate's reflex-scheduler tick-rate dynamics.",
+      "category": "implementation"
+    }
+  ],
+  "rules": [
+    {
+      "name": "substrate_can_is_ising_in_disguise",
+      "head": "substrate's CAN dynamics",
+      "body": "ARE the Ising spin model with mean-field rate-model interpretation. The substrate's Hamiltonian, J matrix, σ values, and tanh self-consistency are direct instances of Sompolinsky + Hopfield's computational neuroscience formalism. Naming this lets analogical transfer mine spin-glass theory."
+    },
+    {
+      "name": "marr_three_levels_for_full_understanding",
+      "head": "the substrate is asked to explain its behaviour",
+      "body": "the explanation should cover Marr's three levels: computational (what problem is it solving), algorithmic (with what representations + procedures), implementational (in what runtime). Substrate's introspection should span all three."
+    },
+    {
+      "name": "mean_field_approximation_works_when_population_large",
+      "head": "a Mt has many concepts (population size large)",
+      "body": "mean-field theory's neglect of fluctuations is accurate. Substrate's tanh self-consistency works because Mts have enough concepts that fluctuations average out."
+    },
+    {
+      "name": "predictive_coding_minimizes_residual_through_hierarchy",
+      "head": "input enters substrate's perception hierarchy",
+      "body": "each level subtracts its prediction; only the residual propagates upward. The substrate's frustration metric is exactly this residual — what was unpredicted by current Mt structure."
+    },
+    {
+      "name": "neural_manifold_constrains_substrate_dynamics",
+      "head": "substrate's Mt operates over time",
+      "body": "its σ states explore only a low-dimensional manifold of the full state space, set by its J structure. Most σ patterns never occur. Substrate's behavioural repertoire = its manifold."
+    }
+  ],
+  "parent_mt": "neuroscience"
+}

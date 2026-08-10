@@ -1,0 +1,1734 @@
+{
+  "id": "allocentric_world_view",
+  "version": "1.0.0",
+  "depends_on": [
+    "optic_flow_spatial_grounding",
+    "transsaccadic_feature_memory"
+  ],
+  "description": "Default-off generic allocentric world-view memory using a persistent grow/update/decay pattern without any game mode, host grid, geometry-class, or occupancy assumptions. A mechanical ingress token may point only to already graph-admitted current-epoch OpticRangeEvidence. Graph rules associate that evidence with persistent AllocentricWorldViewCell nodes by uncertainty-supported nearest-neighbour selection using ArgminUnique, refusing exact distance ties. Novel support mints a cell; revisits update evidence count, confidence, uncertainty, and freshness; unobserved cells decay and become stale without deletion. A cell publishes explicit epoch-scoped surface_value photometry only from exactly one admissible source: current HeldPredictionResidual photometry on its own unique optic evidence is primary, while a unique current transsaccadic VisualTile is the longer-lived fallback. Constant-key ArgminUnique gates both routes, so zero or ambiguous sources never acquire an iteration-order value and stale publications are explicitly nulled/refused. The faculty represents uncertain visible-surface support, never committed occupancy, free space, walls, or task policy.",
+  "microtheory": {
+    "name": "allocentric_world_view",
+    "description": "uncertainty-supported persistent allocentric visible-surface memory"
+  },
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "AllocentricWorldViewParams",
+      "attrs": {
+        "enabled": 0.0,
+        "max_cell_age_epochs": 32
+      }
+    }
+  ],
+  "edges": [
+    {
+      "src": {"role": "agent_root"},
+      "type": "has_allocentric_world_view_params",
+      "tgt": {"local": 0},
+      "attrs": {}
+    }
+  ],
+  "productions": [
+    {
+      "provenance": "seed:allocentric_world_view:agent-params",
+      "src": {"type": "Agent", "var": "agent"},
+      "edge_type": "has_allocentric_world_view_params",
+      "tgt": {"type": "AllocentricWorldViewParams", "var": "params"}
+    },
+    {
+      "provenance": "seed:allocentric_world_view:agent-ingress",
+      "src": {"type": "Agent", "var": "agent"},
+      "edge_type": "has_world_view_ingress",
+      "tgt": {"type": "WorldViewIngress", "var": "ingress"}
+    },
+    {
+      "provenance": "seed:allocentric_world_view:ingress-evidence",
+      "src": {"type": "WorldViewIngress", "var": "ingress"},
+      "edge_type": "based_on_spatial_evidence",
+      "tgt": {"type": "OpticRangeEvidence", "var": "evidence"}
+    },
+    {
+      "provenance": "seed:allocentric_world_view:agent-cell",
+      "src": {"type": "Agent", "var": "agent"},
+      "edge_type": "holds_world_view_cell",
+      "tgt": {"type": "AllocentricWorldViewCell", "var": "cell"}
+    },
+    {
+      "provenance": "seed:allocentric_world_view:cell-evidence",
+      "src": {"type": "AllocentricWorldViewCell", "var": "cell"},
+      "edge_type": "grounded_by",
+      "tgt": {"type": "OpticRangeEvidence", "var": "evidence"}
+    },
+    {
+      "provenance": "seed:allocentric_world_view:agent-assessment",
+      "src": {"type": "Agent", "var": "agent"},
+      "edge_type": "assesses_world_view_ingress",
+      "tgt": {"type": "WorldViewAssessment", "var": "assessment"}
+    },
+    {
+      "provenance": "seed:allocentric_world_view:assessment-ingress",
+      "src": {"type": "WorldViewAssessment", "var": "assessment"},
+      "edge_type": "based_on_world_view_ingress",
+      "tgt": {"type": "WorldViewIngress", "var": "ingress"}
+    },
+    {
+      "provenance": "seed:allocentric_world_view:cell-visual-tile",
+      "src": {"type": "AllocentricWorldViewCell", "var": "cell"},
+      "edge_type": "enriched_by_visual_tile",
+      "tgt": {"type": "VisualTile", "var": "tile"}
+    },
+    {
+      "provenance": "seed:allocentric_world_view:cell-render-tile",
+      "src": {"type": "AllocentricWorldViewCell", "var": "cell"},
+      "edge_type": "surface_value_grounded_by",
+      "tgt": {"type": "VisualTile", "var": "tile"}
+    },
+    {
+      "provenance": "seed:allocentric_world_view:cell-render-evidence",
+      "src": {"type": "AllocentricWorldViewCell", "var": "cell"},
+      "edge_type": "surface_value_grounded_by_evidence",
+      "tgt": {"type": "OpticRangeEvidence", "var": "evidence"}
+    },
+    {
+      "provenance": "seed:allocentric_world_view:cell-render-held",
+      "src": {"type": "AllocentricWorldViewCell", "var": "cell"},
+      "edge_type": "surface_value_grounded_by_held",
+      "tgt": {"type": "HeldPredictionResidual", "var": "held"}
+    }
+  ],
+  "rules": [
+    {
+      "name": "world_view_retire_stale_ingress",
+      "area": "spatial",
+      "order": 40,
+      "latency_class": "soft_realtime",
+      "match": [
+        ["agent", "has_world_view_ingress", "ingress"]
+      ],
+      "where": {
+        "type": "Not",
+        "arg": {
+          "type": "Eq",
+          "a": {"type": "Attr", "node": {"type": "Var", "name": "ingress"}, "key": "sensor_epoch"},
+          "b": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "vision_settled_epoch"}
+        }
+      },
+      "effects": [
+        ["del_node", "ingress"]
+      ]
+    },
+    {
+      "name": "world_view_mint_novel_surface_support",
+      "area": "spatial",
+      "order": 41,
+      "latency_class": "soft_realtime",
+      "comment": "Novel means no stored cell's own uncertainty support overlaps the evidence. No host bin size, occupancy threshold, or world-specific grid is introduced.",
+      "match": [
+        ["agent", "has_allocentric_world_view_params", "params"],
+        ["agent", "has_world_view_ingress", "ingress"],
+        ["ingress", "based_on_spatial_evidence", "evidence"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "params"}, "key": "enabled"},
+            "b": {"type": "Lit", "value": 1.0}
+          },
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "ingress"}, "key": "sensor_epoch"},
+            "b": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "vision_settled_epoch"}
+          },
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "sensor_epoch"},
+            "b": {"type": "Attr", "node": {"type": "Var", "name": "ingress"}, "key": "sensor_epoch"}
+          },
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "topology_kind"},
+            "b": {"type": "Lit", "value": "visible_surface_support"}
+          },
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "occupancy_commit"},
+            "b": {"type": "Lit", "value": 0.0}
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {"type": "Var", "name": "agent"},
+                "edge_type": "holds_world_view_cell"
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Lte",
+                    "a": {
+                      "type": "Abs",
+                      "arg": {
+                        "type": "Minus",
+                        "a": {"type": "Attr", "node": {"type": "Var", "name": "old"}, "key": "world_x"},
+                        "b": {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "x_world"}
+                      }
+                    },
+                    "b": {
+                      "type": "Max",
+                      "items": [
+                        {"type": "Attr", "node": {"type": "Var", "name": "old"}, "key": "registration_uncertainty_world"},
+                        {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "range_sigma_world"}
+                      ]
+                    }
+                  },
+                  {
+                    "type": "Lte",
+                    "a": {
+                      "type": "Abs",
+                      "arg": {
+                        "type": "Minus",
+                        "a": {"type": "Attr", "node": {"type": "Var", "name": "old"}, "key": "world_y"},
+                        "b": {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "y_world"}
+                      }
+                    },
+                    "b": {
+                      "type": "Max",
+                      "items": [
+                        {"type": "Attr", "node": {"type": "Var", "name": "old"}, "key": "registration_uncertainty_world"},
+                        {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "range_sigma_world"}
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {"type": "Var", "name": "agent"},
+                "edge_type": "assesses_world_view_ingress"
+              },
+              "var_name": "old_assessment",
+              "predicate": {
+                "type": "Exists",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {"type": "Var", "name": "old_assessment"},
+                  "edge_type": "based_on_world_view_ingress"
+                },
+                "var_name": "old_ingress",
+                "predicate": {
+                  "type": "Eq",
+                  "a": {"type": "Var", "name": "old_ingress"},
+                  "b": {"type": "Var", "name": "ingress"}
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "cell",
+          "AllocentricWorldViewCell",
+          {
+            "world_x": {
+              "__term__": {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "x_world"}
+            },
+            "world_y": {
+              "__term__": {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "y_world"}
+            },
+            "range_world": {
+              "__term__": {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "range_world"}
+            },
+            "registration_uncertainty_world": {
+              "__term__": {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "range_sigma_world"}
+            },
+            "confidence": {
+              "__term__": {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "confidence"}
+            },
+            "first_observed_epoch": {
+              "__term__": {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "sensor_epoch"}
+            },
+            "last_observed_epoch": {
+              "__term__": {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "sensor_epoch"}
+            },
+            "observation_count": 1,
+            "freshness": 1.0,
+            "status": "fresh",
+            "topology_kind": "visible_surface_support",
+            "world_relative": 1.0,
+            "occupancy_commit": 0.0,
+            "oracle_free": 1.0
+          }
+        ],
+        [
+          "add_node",
+          "assessment",
+          "WorldViewAssessment",
+          {
+            "sensor_epoch": {
+              "__term__": {"type": "Attr", "node": {"type": "Var", "name": "ingress"}, "key": "sensor_epoch"}
+            },
+            "status": "supported",
+            "reason": "",
+            "result": "minted_novel_surface_support"
+          }
+        ],
+        ["add_edge", "agent", "holds_world_view_cell", "cell", {}],
+        ["add_edge", "cell", "grounded_by", "evidence", {}],
+        ["add_edge", "agent", "assesses_world_view_ingress", "assessment", {}],
+        ["add_edge", "assessment", "based_on_world_view_ingress", "ingress", {}]
+      ]
+    },
+    {
+      "name": "world_view_update_unique_supported_cell",
+      "area": "spatial",
+      "order": 42,
+      "latency_class": "soft_realtime",
+      "comment": "Association is the unique nearest cell among uncertainty-overlapping candidates. ArgminUnique refuses an exact distance tie; Python never bins, ranks, or selects.",
+      "match": [
+        ["agent", "has_allocentric_world_view_params", "params"],
+        ["agent", "has_world_view_ingress", "ingress"],
+        ["ingress", "based_on_spatial_evidence", "evidence"],
+        ["agent", "holds_world_view_cell", "cell"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "params"}, "key": "enabled"},
+            "b": {"type": "Lit", "value": 1.0}
+          },
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "ingress"}, "key": "sensor_epoch"},
+            "b": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "vision_settled_epoch"}
+          },
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "sensor_epoch"},
+            "b": {"type": "Attr", "node": {"type": "Var", "name": "ingress"}, "key": "sensor_epoch"}
+          },
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "topology_kind"},
+            "b": {"type": "Lit", "value": "visible_surface_support"}
+          },
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "occupancy_commit"},
+            "b": {"type": "Lit", "value": 0.0}
+          },
+          {
+            "type": "Eq",
+            "a": {"type": "Var", "name": "cell"},
+            "b": {
+              "type": "ArgminUnique",
+              "source": {
+                "type": "Filter",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {"type": "Var", "name": "agent"},
+                  "edge_type": "holds_world_view_cell"
+                },
+                "var_name": "candidate",
+                "predicate": {
+                  "type": "And",
+                  "items": [
+                    {
+                      "type": "Lte",
+                      "a": {
+                        "type": "Abs",
+                        "arg": {
+                          "type": "Minus",
+                          "a": {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "world_x"},
+                          "b": {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "x_world"}
+                        }
+                      },
+                      "b": {
+                        "type": "Max",
+                        "items": [
+                          {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "registration_uncertainty_world"},
+                          {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "range_sigma_world"}
+                        ]
+                      }
+                    },
+                    {
+                      "type": "Lte",
+                      "a": {
+                        "type": "Abs",
+                        "arg": {
+                          "type": "Minus",
+                          "a": {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "world_y"},
+                          "b": {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "y_world"}
+                        }
+                      },
+                      "b": {
+                        "type": "Max",
+                        "items": [
+                          {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "registration_uncertainty_world"},
+                          {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "range_sigma_world"}
+                        ]
+                      }
+                    }
+                  ]
+                }
+              },
+              "var_name": "candidate",
+              "value": {
+                "type": "Plus",
+                "items": [
+                  {
+                    "type": "Abs",
+                    "arg": {
+                      "type": "Minus",
+                      "a": {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "world_x"},
+                      "b": {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "x_world"}
+                    }
+                  },
+                  {
+                    "type": "Abs",
+                    "arg": {
+                      "type": "Minus",
+                      "a": {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "world_y"},
+                      "b": {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "y_world"}
+                    }
+                  }
+                ]
+              },
+              "default": null
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {"type": "Var", "name": "cell"},
+                "edge_type": "grounded_by"
+              },
+              "var_name": "old_evidence",
+              "predicate": {
+                "type": "Eq",
+                "a": {"type": "Var", "name": "old_evidence"},
+                "b": {"type": "Var", "name": "evidence"}
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {"type": "Var", "name": "agent"},
+                "edge_type": "assesses_world_view_ingress"
+              },
+              "var_name": "old_assessment",
+              "predicate": {
+                "type": "Exists",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {"type": "Var", "name": "old_assessment"},
+                  "edge_type": "based_on_world_view_ingress"
+                },
+                "var_name": "old_ingress",
+                "predicate": {
+                  "type": "Eq",
+                  "a": {"type": "Var", "name": "old_ingress"},
+                  "b": {"type": "Var", "name": "ingress"}
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr_if_different",
+          "cell",
+          "last_observed_epoch",
+          {
+            "__term__": {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "sensor_epoch"}
+          }
+        ],
+        [
+          "set_attr_if_different",
+          "cell",
+          "observation_count",
+          {
+            "__term__": {
+              "type": "Plus",
+              "items": [
+                {"type": "Attr", "node": {"type": "Var", "name": "cell"}, "key": "observation_count"},
+                {"type": "Lit", "value": 1}
+              ]
+            }
+          }
+        ],
+        [
+          "set_attr_if_different",
+          "cell",
+          "registration_uncertainty_world",
+          {
+            "__term__": {
+              "type": "Min",
+              "items": [
+                {"type": "Attr", "node": {"type": "Var", "name": "cell"}, "key": "registration_uncertainty_world"},
+                {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "range_sigma_world"}
+              ]
+            }
+          }
+        ],
+        [
+          "set_attr_if_different",
+          "cell",
+          "confidence",
+          {
+            "__term__": {
+              "type": "Max",
+              "items": [
+                {"type": "Attr", "node": {"type": "Var", "name": "cell"}, "key": "confidence"},
+                {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "confidence"}
+              ]
+            }
+          }
+        ],
+        [
+          "set_attr_if_different",
+          "cell",
+          "latest_world_x",
+          {
+            "__term__": {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "x_world"}
+          }
+        ],
+        [
+          "set_attr_if_different",
+          "cell",
+          "latest_world_y",
+          {
+            "__term__": {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "y_world"}
+          }
+        ],
+        ["set_attr_if_different", "cell", "freshness", 1.0],
+        ["set_attr_if_different", "cell", "status", "fresh"],
+        ["add_edge", "cell", "grounded_by", "evidence", {}],
+        [
+          "add_node",
+          "assessment",
+          "WorldViewAssessment",
+          {
+            "sensor_epoch": {
+              "__term__": {"type": "Attr", "node": {"type": "Var", "name": "ingress"}, "key": "sensor_epoch"}
+            },
+            "status": "supported",
+            "reason": "",
+            "result": "updated_unique_surface_support"
+          }
+        ],
+        ["add_edge", "agent", "assesses_world_view_ingress", "assessment", {}],
+        ["add_edge", "assessment", "based_on_world_view_ingress", "ingress", {}]
+      ]
+    },
+    {
+      "name": "world_view_refuse_ambiguous_association",
+      "area": "spatial",
+      "order": 43,
+      "latency_class": "soft_realtime",
+      "match": [
+        ["agent", "has_allocentric_world_view_params", "params"],
+        ["agent", "has_world_view_ingress", "ingress"],
+        ["ingress", "based_on_spatial_evidence", "evidence"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "params"}, "key": "enabled"},
+            "b": {"type": "Lit", "value": 1.0}
+          },
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "ingress"}, "key": "sensor_epoch"},
+            "b": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "vision_settled_epoch"}
+          },
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "topology_kind"},
+            "b": {"type": "Lit", "value": "visible_surface_support"}
+          },
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "occupancy_commit"},
+            "b": {"type": "Lit", "value": 0.0}
+          },
+          {
+            "type": "Exists",
+            "source": {
+              "type": "Neighbours",
+              "node": {"type": "Var", "name": "agent"},
+              "edge_type": "holds_world_view_cell"
+            },
+            "var_name": "overlap",
+            "predicate": {
+              "type": "And",
+              "items": [
+                {
+                  "type": "Lte",
+                  "a": {
+                    "type": "Abs",
+                    "arg": {
+                      "type": "Minus",
+                      "a": {"type": "Attr", "node": {"type": "Var", "name": "overlap"}, "key": "world_x"},
+                      "b": {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "x_world"}
+                    }
+                  },
+                  "b": {
+                    "type": "Max",
+                    "items": [
+                      {"type": "Attr", "node": {"type": "Var", "name": "overlap"}, "key": "registration_uncertainty_world"},
+                      {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "range_sigma_world"}
+                    ]
+                  }
+                },
+                {
+                  "type": "Lte",
+                  "a": {
+                    "type": "Abs",
+                    "arg": {
+                      "type": "Minus",
+                      "a": {"type": "Attr", "node": {"type": "Var", "name": "overlap"}, "key": "world_y"},
+                      "b": {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "y_world"}
+                    }
+                  },
+                  "b": {
+                    "type": "Max",
+                    "items": [
+                      {"type": "Attr", "node": {"type": "Var", "name": "overlap"}, "key": "registration_uncertainty_world"},
+                      {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "range_sigma_world"}
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "ArgminUnique",
+              "source": {
+                "type": "Filter",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {"type": "Var", "name": "agent"},
+                  "edge_type": "holds_world_view_cell"
+                },
+                "var_name": "candidate",
+                "predicate": {
+                  "type": "And",
+                  "items": [
+                    {
+                      "type": "Lte",
+                      "a": {
+                        "type": "Abs",
+                        "arg": {
+                          "type": "Minus",
+                          "a": {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "world_x"},
+                          "b": {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "x_world"}
+                        }
+                      },
+                      "b": {
+                        "type": "Max",
+                        "items": [
+                          {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "registration_uncertainty_world"},
+                          {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "range_sigma_world"}
+                        ]
+                      }
+                    },
+                    {
+                      "type": "Lte",
+                      "a": {
+                        "type": "Abs",
+                        "arg": {
+                          "type": "Minus",
+                          "a": {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "world_y"},
+                          "b": {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "y_world"}
+                        }
+                      },
+                      "b": {
+                        "type": "Max",
+                        "items": [
+                          {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "registration_uncertainty_world"},
+                          {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "range_sigma_world"}
+                        ]
+                      }
+                    }
+                  ]
+                }
+              },
+              "var_name": "candidate",
+              "value": {
+                "type": "Plus",
+                "items": [
+                  {
+                    "type": "Abs",
+                    "arg": {
+                      "type": "Minus",
+                      "a": {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "world_x"},
+                      "b": {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "x_world"}
+                    }
+                  },
+                  {
+                    "type": "Abs",
+                    "arg": {
+                      "type": "Minus",
+                      "a": {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "world_y"},
+                      "b": {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "y_world"}
+                    }
+                  }
+                ]
+              },
+              "default": null
+            },
+            "b": {"type": "Lit", "value": null}
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {"type": "Var", "name": "agent"},
+                "edge_type": "assesses_world_view_ingress"
+              },
+              "var_name": "old_assessment",
+              "predicate": {
+                "type": "Exists",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {"type": "Var", "name": "old_assessment"},
+                  "edge_type": "based_on_world_view_ingress"
+                },
+                "var_name": "old_ingress",
+                "predicate": {
+                  "type": "Eq",
+                  "a": {"type": "Var", "name": "old_ingress"},
+                  "b": {"type": "Var", "name": "ingress"}
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "assessment",
+          "WorldViewAssessment",
+          {
+            "sensor_epoch": {
+              "__term__": {"type": "Attr", "node": {"type": "Var", "name": "ingress"}, "key": "sensor_epoch"}
+            },
+            "status": "refused",
+            "reason": "ambiguous_world_cell_association",
+            "result": ""
+          }
+        ],
+        ["add_edge", "agent", "assesses_world_view_ingress", "assessment", {}],
+        ["add_edge", "assessment", "based_on_world_view_ingress", "ingress", {}]
+      ]
+    },
+    {
+      "name": "world_view_decay_unobserved_cell",
+      "area": "memory",
+      "order": 44,
+      "latency_class": "soft_realtime",
+      "match": [
+        ["agent", "has_allocentric_world_view_params", "params"],
+        ["agent", "holds_world_view_cell", "cell"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "params"}, "key": "enabled"},
+            "b": {"type": "Lit", "value": 1.0}
+          },
+          {
+            "type": "Gt",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "vision_settled_epoch"},
+            "b": {"type": "Attr", "node": {"type": "Var", "name": "cell"}, "key": "last_observed_epoch"}
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr_if_different",
+          "cell",
+          "freshness",
+          {
+            "__term__": {
+              "type": "Div",
+              "a": {"type": "Lit", "value": 1.0},
+              "b": {
+                "type": "Plus",
+                "items": [
+                  {"type": "Lit", "value": 1.0},
+                  {
+                    "type": "Minus",
+                    "a": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "vision_settled_epoch"},
+                    "b": {"type": "Attr", "node": {"type": "Var", "name": "cell"}, "key": "last_observed_epoch"}
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "world_view_mark_old_cell_stale",
+      "area": "memory",
+      "order": 45,
+      "latency_class": "soft_realtime",
+      "match": [
+        ["agent", "has_allocentric_world_view_params", "params"],
+        ["agent", "holds_world_view_cell", "cell"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "params"}, "key": "enabled"},
+            "b": {"type": "Lit", "value": 1.0}
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Minus",
+              "a": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "vision_settled_epoch"},
+              "b": {"type": "Attr", "node": {"type": "Var", "name": "cell"}, "key": "last_observed_epoch"}
+            },
+            "b": {"type": "Attr", "node": {"type": "Var", "name": "params"}, "key": "max_cell_age_epochs"}
+          }
+        ]
+      },
+      "effects": [
+        ["set_attr_if_different", "cell", "status", "stale"]
+      ]
+    },
+    {
+      "name": "world_view_link_transsaccadic_feature",
+      "area": "memory",
+      "order": 46,
+      "latency_class": "soft_realtime",
+      "match": [
+        ["agent", "holds_world_view_cell", "cell"],
+        ["agent", "holds_visual_tile", "tile"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Lte",
+            "a": {
+              "type": "Abs",
+              "arg": {
+                "type": "Minus",
+                "a": {"type": "Attr", "node": {"type": "Var", "name": "cell"}, "key": "world_x"},
+                "b": {"type": "Attr", "node": {"type": "Var", "name": "tile"}, "key": "world_x"}
+              }
+            },
+            "b": {
+              "type": "Max",
+              "items": [
+                {"type": "Attr", "node": {"type": "Var", "name": "cell"}, "key": "registration_uncertainty_world"},
+                {"type": "Attr", "node": {"type": "Var", "name": "tile"}, "key": "registration_uncertainty_world"}
+              ]
+            }
+          },
+          {
+            "type": "Lte",
+            "a": {
+              "type": "Abs",
+              "arg": {
+                "type": "Minus",
+                "a": {"type": "Attr", "node": {"type": "Var", "name": "cell"}, "key": "world_y"},
+                "b": {"type": "Attr", "node": {"type": "Var", "name": "tile"}, "key": "world_y"}
+              }
+            },
+            "b": {
+              "type": "Max",
+              "items": [
+                {"type": "Attr", "node": {"type": "Var", "name": "cell"}, "key": "registration_uncertainty_world"},
+                {"type": "Attr", "node": {"type": "Var", "name": "tile"}, "key": "registration_uncertainty_world"}
+              ]
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {"type": "Var", "name": "cell"},
+                "edge_type": "enriched_by_visual_tile"
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "Eq",
+                "a": {"type": "Var", "name": "old"},
+                "b": {"type": "Var", "name": "tile"}
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        ["add_edge", "cell", "enriched_by_visual_tile", "tile", {}]
+      ]
+    },
+    {
+      "name": "world_view_publish_unique_current_held_surface_value",
+      "area": "memory",
+      "order": 47,
+      "latency_class": "soft_realtime",
+      "comment": "Fresh photometry attached directly to this cell's own optic evidence is primary. Constant-key ArgminUnique gates both hops: exactly one current grounded evidence carrying photometry and exactly one current HeldPredictionResidual on it. Ambiguity at either hop publishes nothing.",
+      "match": [
+        ["agent", "has_allocentric_world_view_params", "params"],
+        ["agent", "holds_world_view_cell", "cell"],
+        ["cell", "grounded_by", "evidence"],
+        ["evidence", "supported_by_photometry", "held"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "params"}, "key": "enabled"},
+            "b": {"type": "Lit", "value": 1.0}
+          },
+          {
+            "type": "Eq",
+            "a": {"type": "Var", "name": "evidence"},
+            "b": {
+              "type": "ArgminUnique",
+              "source": {
+                "type": "Filter",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {"type": "Var", "name": "cell"},
+                  "edge_type": "grounded_by"
+                },
+                "var_name": "candidate_evidence",
+                "predicate": {
+                  "type": "And",
+                  "items": [
+                    {
+                      "type": "Eq",
+                      "a": {"type": "Attr", "node": {"type": "Var", "name": "candidate_evidence"}, "key": "sensor_epoch"},
+                      "b": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "vision_settled_epoch"}
+                    },
+                    {
+                      "type": "Not",
+                      "arg": {
+                        "type": "Eq",
+                        "a": {"type": "Attr", "node": {"type": "Var", "name": "candidate_evidence"}, "key": "photometry_unit"},
+                        "b": {"type": "Lit", "value": null}
+                      }
+                    },
+                    {
+                      "type": "Exists",
+                      "source": {
+                        "type": "Neighbours",
+                        "node": {"type": "Var", "name": "candidate_evidence"},
+                        "edge_type": "supported_by_photometry"
+                      },
+                      "var_name": "candidate_held",
+                      "predicate": {
+                        "type": "And",
+                        "items": [
+                          {
+                            "type": "Eq",
+                            "a": {"type": "Attr", "node": {"type": "Var", "name": "candidate_held"}, "key": "sensor_epoch"},
+                            "b": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "vision_settled_epoch"}
+                          },
+                          {
+                            "type": "Not",
+                            "arg": {
+                              "type": "Eq",
+                              "a": {"type": "Attr", "node": {"type": "Var", "name": "candidate_held"}, "key": "observed_quanta"},
+                              "b": {"type": "Lit", "value": null}
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              },
+              "var_name": "candidate_evidence",
+              "value": {"type": "Lit", "value": 0.0},
+              "default": null
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {"type": "Var", "name": "held"},
+            "b": {
+              "type": "ArgminUnique",
+              "source": {
+                "type": "Filter",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {"type": "Var", "name": "evidence"},
+                  "edge_type": "supported_by_photometry"
+                },
+                "var_name": "candidate_held",
+                "predicate": {
+                  "type": "And",
+                  "items": [
+                    {
+                      "type": "Eq",
+                      "a": {"type": "Attr", "node": {"type": "Var", "name": "candidate_held"}, "key": "sensor_epoch"},
+                      "b": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "vision_settled_epoch"}
+                    },
+                    {
+                      "type": "Not",
+                      "arg": {
+                        "type": "Eq",
+                        "a": {"type": "Attr", "node": {"type": "Var", "name": "candidate_held"}, "key": "observed_quanta"},
+                        "b": {"type": "Lit", "value": null}
+                      }
+                    }
+                  ]
+                }
+              },
+              "var_name": "candidate_held",
+              "value": {"type": "Lit", "value": 0.0},
+              "default": null
+            }
+          },
+          {
+            "type": "Or",
+            "items": [
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {"type": "Attr", "node": {"type": "Var", "name": "cell"}, "key": "surface_value_status"},
+                  "b": {"type": "Lit", "value": "supported"}
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {"type": "Attr", "node": {"type": "Var", "name": "cell"}, "key": "surface_value_source"},
+                  "b": {"type": "Lit", "value": "unique_current_held_photometry"}
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {"type": "Attr", "node": {"type": "Var", "name": "cell"}, "key": "surface_value_epoch"},
+                  "b": {"type": "Attr", "node": {"type": "Var", "name": "held"}, "key": "sensor_epoch"}
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr_if_different",
+          "cell",
+          "surface_value",
+          {
+            "__term__": {"type": "Attr", "node": {"type": "Var", "name": "held"}, "key": "observed_quanta"}
+          }
+        ],
+        [
+          "set_attr_if_different",
+          "cell",
+          "surface_value_unit",
+          {
+            "__term__": {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "photometry_unit"}
+          }
+        ],
+        [
+          "set_attr_if_different",
+          "cell",
+          "surface_value_epoch",
+          {
+            "__term__": {"type": "Attr", "node": {"type": "Var", "name": "held"}, "key": "sensor_epoch"}
+          }
+        ],
+        ["set_attr_if_different", "cell", "surface_value_status", "supported"],
+        [
+          "set_attr_if_different",
+          "cell",
+          "surface_value_source",
+          "unique_current_held_photometry"
+        ],
+        ["add_edge", "cell", "surface_value_grounded_by_evidence", "evidence", {}],
+        ["add_edge", "cell", "surface_value_grounded_by_held", "held", {}]
+      ]
+    },
+    {
+      "name": "world_view_publish_unique_current_surface_value",
+      "area": "memory",
+      "order": 47,
+      "latency_class": "soft_realtime",
+      "comment": "A constant-key ArgminUnique is an exact-one gate: one admissible current spatially-enriching VisualTile returns that tile; zero returns null; two or more tie exactly and return null. The graph therefore publishes photometry without iteration-order choice.",
+      "match": [
+        ["agent", "has_allocentric_world_view_params", "params"],
+        ["agent", "holds_world_view_cell", "cell"],
+        ["agent", "holds_visual_tile", "tile"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "params"}, "key": "enabled"},
+            "b": {"type": "Lit", "value": 1.0}
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {"type": "Var", "name": "cell"},
+                "edge_type": "grounded_by"
+              },
+              "var_name": "current_evidence",
+              "predicate": {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {"type": "Attr", "node": {"type": "Var", "name": "current_evidence"}, "key": "sensor_epoch"},
+                    "b": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "vision_settled_epoch"}
+                  },
+                  {
+                    "type": "Not",
+                    "arg": {
+                      "type": "Eq",
+                      "a": {"type": "Attr", "node": {"type": "Var", "name": "current_evidence"}, "key": "photometry_unit"},
+                      "b": {"type": "Lit", "value": null}
+                    }
+                  },
+                  {
+                    "type": "Exists",
+                    "source": {
+                      "type": "Neighbours",
+                      "node": {"type": "Var", "name": "current_evidence"},
+                      "edge_type": "supported_by_photometry"
+                    },
+                    "var_name": "current_held",
+                    "predicate": {
+                      "type": "And",
+                      "items": [
+                        {
+                          "type": "Eq",
+                          "a": {"type": "Attr", "node": {"type": "Var", "name": "current_held"}, "key": "sensor_epoch"},
+                          "b": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "vision_settled_epoch"}
+                        },
+                        {
+                          "type": "Not",
+                          "arg": {
+                            "type": "Eq",
+                            "a": {"type": "Attr", "node": {"type": "Var", "name": "current_held"}, "key": "observed_quanta"},
+                            "b": {"type": "Lit", "value": null}
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {"type": "Var", "name": "tile"},
+            "b": {
+              "type": "ArgminUnique",
+              "source": {
+                "type": "Filter",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {"type": "Var", "name": "agent"},
+                  "edge_type": "holds_visual_tile"
+                },
+                "var_name": "candidate",
+                "predicate": {
+                  "type": "And",
+                  "items": [
+                    {
+                      "type": "Eq",
+                      "a": {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "last_observed_epoch"},
+                      "b": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "vision_settled_epoch"}
+                    },
+                    {
+                      "type": "Not",
+                      "arg": {
+                        "type": "Eq",
+                        "a": {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "observed_quanta"},
+                        "b": {"type": "Lit", "value": null}
+                      }
+                    },
+                    {
+                      "type": "Not",
+                      "arg": {
+                        "type": "Eq",
+                        "a": {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "feature_unit"},
+                        "b": {"type": "Lit", "value": null}
+                      }
+                    },
+                    {
+                      "type": "Eq",
+                      "a": {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "world_relative"},
+                      "b": {"type": "Lit", "value": 1.0}
+                    },
+                    {
+                      "type": "Eq",
+                      "a": {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "occupancy_commit"},
+                      "b": {"type": "Lit", "value": 0.0}
+                    },
+                    {
+                      "type": "Lte",
+                      "a": {
+                        "type": "Abs",
+                        "arg": {
+                          "type": "Minus",
+                          "a": {"type": "Attr", "node": {"type": "Var", "name": "cell"}, "key": "world_x"},
+                          "b": {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "world_x"}
+                        }
+                      },
+                      "b": {
+                        "type": "Max",
+                        "items": [
+                          {"type": "Attr", "node": {"type": "Var", "name": "cell"}, "key": "registration_uncertainty_world"},
+                          {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "registration_uncertainty_world"}
+                        ]
+                      }
+                    },
+                    {
+                      "type": "Lte",
+                      "a": {
+                        "type": "Abs",
+                        "arg": {
+                          "type": "Minus",
+                          "a": {"type": "Attr", "node": {"type": "Var", "name": "cell"}, "key": "world_y"},
+                          "b": {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "world_y"}
+                        }
+                      },
+                      "b": {
+                        "type": "Max",
+                        "items": [
+                          {"type": "Attr", "node": {"type": "Var", "name": "cell"}, "key": "registration_uncertainty_world"},
+                          {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "registration_uncertainty_world"}
+                        ]
+                      }
+                    }
+                  ]
+                }
+              },
+              "var_name": "candidate",
+              "value": {"type": "Lit", "value": 0.0},
+              "default": null
+            }
+          },
+          {
+            "type": "Or",
+            "items": [
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {"type": "Attr", "node": {"type": "Var", "name": "cell"}, "key": "surface_value_status"},
+                  "b": {"type": "Lit", "value": "supported"}
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {"type": "Attr", "node": {"type": "Var", "name": "cell"}, "key": "surface_value_epoch"},
+                  "b": {"type": "Attr", "node": {"type": "Var", "name": "tile"}, "key": "last_observed_epoch"}
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr_if_different",
+          "cell",
+          "surface_value",
+          {
+            "__term__": {"type": "Attr", "node": {"type": "Var", "name": "tile"}, "key": "observed_quanta"}
+          }
+        ],
+        [
+          "set_attr_if_different",
+          "cell",
+          "surface_value_unit",
+          {
+            "__term__": {"type": "Attr", "node": {"type": "Var", "name": "tile"}, "key": "feature_unit"}
+          }
+        ],
+        [
+          "set_attr_if_different",
+          "cell",
+          "surface_value_epoch",
+          {
+            "__term__": {"type": "Attr", "node": {"type": "Var", "name": "tile"}, "key": "last_observed_epoch"}
+          }
+        ],
+        ["set_attr_if_different", "cell", "surface_value_status", "supported"],
+        [
+          "set_attr_if_different",
+          "cell",
+          "surface_value_source",
+          "unique_current_visual_tile"
+        ],
+        ["add_edge", "cell", "enriched_by_visual_tile", "tile", {}],
+        ["add_edge", "cell", "surface_value_grounded_by", "tile", {}]
+      ]
+    },
+    {
+      "name": "world_view_refuse_stale_held_surface_value",
+      "area": "memory",
+      "order": 48,
+      "latency_class": "soft_realtime",
+      "match": [
+        ["agent", "has_allocentric_world_view_params", "params"],
+        ["agent", "holds_world_view_cell", "cell"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "params"}, "key": "enabled"},
+            "b": {"type": "Lit", "value": 1.0}
+          },
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "cell"}, "key": "surface_value_status"},
+            "b": {"type": "Lit", "value": "supported"}
+          },
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "cell"}, "key": "surface_value_source"},
+            "b": {"type": "Lit", "value": "unique_current_held_photometry"}
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {"type": "Attr", "node": {"type": "Var", "name": "cell"}, "key": "surface_value_epoch"},
+              "b": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "vision_settled_epoch"}
+            }
+          }
+        ]
+      },
+      "effects": [
+        ["set_attr_if_different", "cell", "surface_value", null],
+        ["set_attr_if_different", "cell", "surface_value_unit", null],
+        ["set_attr_if_different", "cell", "surface_value_epoch", -1],
+        [
+          "set_attr_if_different",
+          "cell",
+          "surface_value_status",
+          "refused_no_unique_current_held_photometry"
+        ],
+        ["set_attr_if_different", "cell", "surface_value_source", ""]
+      ]
+    },
+    {
+      "name": "world_view_refuse_ambiguous_held_surface_value",
+      "area": "memory",
+      "order": 48,
+      "latency_class": "soft_realtime",
+      "match": [
+        ["agent", "has_allocentric_world_view_params", "params"],
+        ["agent", "holds_world_view_cell", "cell"],
+        ["cell", "surface_value_grounded_by_evidence", "evidence"],
+        ["cell", "surface_value_grounded_by_held", "held"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "params"}, "key": "enabled"},
+            "b": {"type": "Lit", "value": 1.0}
+          },
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "cell"}, "key": "surface_value_status"},
+            "b": {"type": "Lit", "value": "supported"}
+          },
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "cell"}, "key": "surface_value_source"},
+            "b": {"type": "Lit", "value": "unique_current_held_photometry"}
+          },
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "cell"}, "key": "surface_value_epoch"},
+            "b": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "vision_settled_epoch"}
+          },
+          {
+            "type": "Or",
+            "items": [
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Count",
+                    "source": {
+                      "type": "Filter",
+                      "source": {
+                        "type": "Neighbours",
+                        "node": {"type": "Var", "name": "cell"},
+                        "edge_type": "grounded_by"
+                      },
+                      "var_name": "candidate_evidence",
+                      "predicate": {
+                        "type": "And",
+                        "items": [
+                          {
+                            "type": "Eq",
+                            "a": {"type": "Attr", "node": {"type": "Var", "name": "candidate_evidence"}, "key": "sensor_epoch"},
+                            "b": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "vision_settled_epoch"}
+                          },
+                          {
+                            "type": "Not",
+                            "arg": {
+                              "type": "Eq",
+                              "a": {"type": "Attr", "node": {"type": "Var", "name": "candidate_evidence"}, "key": "photometry_unit"},
+                              "b": {"type": "Lit", "value": null}
+                            }
+                          },
+                          {
+                            "type": "Exists",
+                            "source": {
+                              "type": "Neighbours",
+                              "node": {"type": "Var", "name": "candidate_evidence"},
+                              "edge_type": "supported_by_photometry"
+                            },
+                            "var_name": "candidate_held",
+                            "predicate": {
+                              "type": "And",
+                              "items": [
+                                {
+                                  "type": "Eq",
+                                  "a": {"type": "Attr", "node": {"type": "Var", "name": "candidate_held"}, "key": "sensor_epoch"},
+                                  "b": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "vision_settled_epoch"}
+                                },
+                                {
+                                  "type": "Not",
+                                  "arg": {
+                                    "type": "Eq",
+                                    "a": {"type": "Attr", "node": {"type": "Var", "name": "candidate_held"}, "key": "observed_quanta"},
+                                    "b": {"type": "Lit", "value": null}
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  "b": {"type": "Lit", "value": 1}
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Count",
+                    "source": {
+                      "type": "Filter",
+                      "source": {
+                        "type": "Neighbours",
+                        "node": {"type": "Var", "name": "evidence"},
+                        "edge_type": "supported_by_photometry"
+                      },
+                      "var_name": "candidate_held",
+                      "predicate": {
+                        "type": "And",
+                        "items": [
+                          {
+                            "type": "Eq",
+                            "a": {"type": "Attr", "node": {"type": "Var", "name": "candidate_held"}, "key": "sensor_epoch"},
+                            "b": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "vision_settled_epoch"}
+                          },
+                          {
+                            "type": "Not",
+                            "arg": {
+                              "type": "Eq",
+                              "a": {"type": "Attr", "node": {"type": "Var", "name": "candidate_held"}, "key": "observed_quanta"},
+                              "b": {"type": "Lit", "value": null}
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  "b": {"type": "Lit", "value": 1}
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "effects": [
+        ["set_attr_if_different", "cell", "surface_value", null],
+        ["set_attr_if_different", "cell", "surface_value_unit", null],
+        ["set_attr_if_different", "cell", "surface_value_epoch", -1],
+        [
+          "set_attr_if_different",
+          "cell",
+          "surface_value_status",
+          "refused_no_unique_current_held_photometry"
+        ],
+        ["set_attr_if_different", "cell", "surface_value_source", ""]
+      ]
+    },
+    {
+      "name": "world_view_refuse_nonunique_or_stale_surface_value",
+      "area": "memory",
+      "order": 48,
+      "latency_class": "soft_realtime",
+      "comment": "There is no unset-attribute effect. A cell that has never had exactly one current tile keeps surface_value absent. A previously published value is explicitly nulled and refused when its epoch passes or the current admissible set is no longer exactly one.",
+      "match": [
+        ["agent", "has_allocentric_world_view_params", "params"],
+        ["agent", "holds_world_view_cell", "cell"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "params"}, "key": "enabled"},
+            "b": {"type": "Lit", "value": 1.0}
+          },
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "cell"}, "key": "surface_value_status"},
+            "b": {"type": "Lit", "value": "supported"}
+          },
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "cell"}, "key": "surface_value_source"},
+            "b": {"type": "Lit", "value": "unique_current_visual_tile"}
+          },
+          {
+            "type": "Or",
+            "items": [
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {"type": "Attr", "node": {"type": "Var", "name": "cell"}, "key": "surface_value_epoch"},
+                  "b": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "vision_settled_epoch"}
+                }
+              },
+              {
+                "type": "Exists",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {"type": "Var", "name": "cell"},
+                  "edge_type": "grounded_by"
+                },
+                "var_name": "current_evidence",
+                "predicate": {
+                  "type": "And",
+                  "items": [
+                    {
+                      "type": "Eq",
+                      "a": {"type": "Attr", "node": {"type": "Var", "name": "current_evidence"}, "key": "sensor_epoch"},
+                      "b": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "vision_settled_epoch"}
+                    },
+                    {
+                      "type": "Not",
+                      "arg": {
+                        "type": "Eq",
+                        "a": {"type": "Attr", "node": {"type": "Var", "name": "current_evidence"}, "key": "photometry_unit"},
+                        "b": {"type": "Lit", "value": null}
+                      }
+                    },
+                    {
+                      "type": "Exists",
+                      "source": {
+                        "type": "Neighbours",
+                        "node": {"type": "Var", "name": "current_evidence"},
+                        "edge_type": "supported_by_photometry"
+                      },
+                      "var_name": "current_held",
+                      "predicate": {
+                        "type": "And",
+                        "items": [
+                          {
+                            "type": "Eq",
+                            "a": {"type": "Attr", "node": {"type": "Var", "name": "current_held"}, "key": "sensor_epoch"},
+                            "b": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "vision_settled_epoch"}
+                          },
+                          {
+                            "type": "Not",
+                            "arg": {
+                              "type": "Eq",
+                              "a": {"type": "Attr", "node": {"type": "Var", "name": "current_held"}, "key": "observed_quanta"},
+                              "b": {"type": "Lit", "value": null}
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Count",
+                    "source": {
+                      "type": "Filter",
+                      "source": {
+                        "type": "Neighbours",
+                        "node": {"type": "Var", "name": "agent"},
+                        "edge_type": "holds_visual_tile"
+                      },
+                      "var_name": "candidate",
+                      "predicate": {
+                        "type": "And",
+                        "items": [
+                          {
+                            "type": "Eq",
+                            "a": {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "last_observed_epoch"},
+                            "b": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "vision_settled_epoch"}
+                          },
+                          {
+                            "type": "Not",
+                            "arg": {
+                              "type": "Eq",
+                              "a": {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "observed_quanta"},
+                              "b": {"type": "Lit", "value": null}
+                            }
+                          },
+                          {
+                            "type": "Not",
+                            "arg": {
+                              "type": "Eq",
+                              "a": {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "feature_unit"},
+                              "b": {"type": "Lit", "value": null}
+                            }
+                          },
+                          {
+                            "type": "Eq",
+                            "a": {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "world_relative"},
+                            "b": {"type": "Lit", "value": 1.0}
+                          },
+                          {
+                            "type": "Eq",
+                            "a": {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "occupancy_commit"},
+                            "b": {"type": "Lit", "value": 0.0}
+                          },
+                          {
+                            "type": "Lte",
+                            "a": {
+                              "type": "Abs",
+                              "arg": {
+                                "type": "Minus",
+                                "a": {"type": "Attr", "node": {"type": "Var", "name": "cell"}, "key": "world_x"},
+                                "b": {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "world_x"}
+                              }
+                            },
+                            "b": {
+                              "type": "Max",
+                              "items": [
+                                {"type": "Attr", "node": {"type": "Var", "name": "cell"}, "key": "registration_uncertainty_world"},
+                                {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "registration_uncertainty_world"}
+                              ]
+                            }
+                          },
+                          {
+                            "type": "Lte",
+                            "a": {
+                              "type": "Abs",
+                              "arg": {
+                                "type": "Minus",
+                                "a": {"type": "Attr", "node": {"type": "Var", "name": "cell"}, "key": "world_y"},
+                                "b": {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "world_y"}
+                              }
+                            },
+                            "b": {
+                              "type": "Max",
+                              "items": [
+                                {"type": "Attr", "node": {"type": "Var", "name": "cell"}, "key": "registration_uncertainty_world"},
+                                {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "registration_uncertainty_world"}
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  "b": {"type": "Lit", "value": 1}
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "effects": [
+        ["set_attr_if_different", "cell", "surface_value", null],
+        ["set_attr_if_different", "cell", "surface_value_unit", null],
+        ["set_attr_if_different", "cell", "surface_value_epoch", -1],
+        [
+          "set_attr_if_different",
+          "cell",
+          "surface_value_status",
+          "refused_no_unique_current_visual_tile"
+        ],
+        [
+          "set_attr_if_different",
+          "cell",
+          "surface_value_source",
+          ""
+        ]
+      ]
+    }
+  ]
+}

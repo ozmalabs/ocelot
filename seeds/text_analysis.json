@@ -1,0 +1,68 @@
+{
+  "id": "text_analysis",
+  "version": "1.0.0",
+  "depends_on": [
+    "figurative_abstraction"
+  ],
+  "description": "The jabberwock defined ANALYSIS as the order-N operation above figure-detection: group the detected figures into threads by shared referent, sum their displacement vectors (trust-weighted) within each thread, align threads to find the principal trajectory + counter-current, and emit one trajectory Reading accounting for all figures, with coherence and tension scores.",
+  "microtheory": {
+    "name": "text_analysis",
+    "description": "order-N analysis of a whole passage"
+  },
+  "nodes": [
+    {
+      "local_id": 1,
+      "type": "Concept",
+      "attrs": {
+        "name": "analysis",
+        "description": "The order-N operation above figure-detection: treat the whole set of detected displacements as a FIELD and find the single intended TRAJECTORY they are collectively a measurement of. It produces the RELATIONS among figures (alignment, composition, principal axis + counter-current) that a flat list cannot \u2014 the opposition between threads IS the passage argument."
+      }
+    },
+    {
+      "local_id": 2,
+      "type": "Concept",
+      "attrs": {
+        "name": "trajectory_reading",
+        "description": "The output of analysis: one Reading node = the intended trajectory of the whole passage, with accounts_for edges back to every figure it explains, a coherence score (how tightly the displacements align) and a tension score (magnitude of the surviving opposition)."
+      }
+    },
+    {
+      "local_id": 3,
+      "type": "Principle",
+      "attrs": {
+        "name": "analysis_accounts_for_all",
+        "head": "good analysis",
+        "body": "a good analysis explains ALL the figures, not a convenient subset; an orphan displacement is evidence the reading is wrong"
+      }
+    },
+    {
+      "local_id": 4,
+      "type": "Principle",
+      "attrs": {
+        "name": "analysis_stable_under_discount",
+        "head": "good analysis",
+        "body": "re-weighting figures by suspect-witness trust must not flip the trajectory; if it does, the reading rested on a discredited witness"
+      }
+    },
+    {
+      "local_id": 5,
+      "type": "Principle",
+      "attrs": {
+        "name": "analysis_is_predictive",
+        "head": "good analysis",
+        "body": "a newly detected figure in the same passage should resolve CONSISTENTLY with the trajectory, not against it"
+      }
+    },
+    {
+      "local_id": 6,
+      "type": "Principle",
+      "attrs": {
+        "name": "analysis_is_falsifiable",
+        "head": "good analysis",
+        "body": "a competing trajectory Reading must score measurably lower coherence over the same figure-set"
+      }
+    }
+  ],
+  "edges": [],
+  "rules": []
+}

@@ -1,0 +1,104 @@
+{
+  "id": "conversation_capability_route",
+  "version": "1.0.0",
+  "depends_on": ["conversation_topic_route"],
+  "description": "Graph-native POLAR CAPABILITY routing. The adapter writes mechanical parse facts onto the inbound Message (comp_relation_focus=polar, comp_verb, comp_object_np, comp_hypothetical) — never a routing decision. THESE rules DECIDE whether a turn is about the agent's own capability (mint Goal{kind:answer_capability} or Goal{kind:answer_imagine}) vs an external topic (conversation_topic_route's route_question_to_topic, which is gated to defer when these rules fire). Examples: 'can you navigate 3D spaces?' -> answer_capability{verb:navigate, context:3d spaces}; 'could you dance if you had a body?' -> answer_imagine{verb:dance, assumption:body}; 'can you play chess?' -> NOT here (verb 'play' is not a held capability verb) -> topic route handles chess. Mint-once guarded by capability_routed=1.0 / imagine_routed=1.0 on the Message.",
+  "nodes": [],
+  "edges": [],
+  "productions": [],
+  "rules": [
+    {
+      "name": "route_imagine_capability",
+      "match": [
+        ["agent", "received", "m"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "comp_kind"}, "b": {"type": "Lit", "value": "question"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "comp_relation_focus"}, "b": {"type": "Lit", "value": "polar"}},
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "comp_hypothetical"}, "b": {"type": "Lit", "value": null}}},
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "imagine_routed"}, "b": {"type": "Lit", "value": 1.0}}},
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "comprehended"}, "b": {"type": "Lit", "value": 1.0}}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "m", "imagine_routed", 1.0],
+        ["set_attr", "m", "comprehended", 1.0],
+        ["add_node", "g", "Goal", {
+          "kind": "answer_imagine",
+          "status": "active",
+          "source": "conversation",
+          "verb": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "comp_verb"}},
+          "assumption": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "comp_hypothetical"}}
+        }],
+        ["add_edge", "agent", "has_goal", "g"],
+        ["add_edge", "g", "comprehends", "m"],
+        ["add_edge", "m", "comprehended_by", "g"]
+      ]
+    },
+    {
+      "name": "route_polar_capability_domain",
+      "match": [
+        ["agent", "received", "m"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "comp_kind"}, "b": {"type": "Lit", "value": "question"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "comp_relation_focus"}, "b": {"type": "Lit", "value": "polar"}},
+          {"type": "In", "member": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "comp_verb"}, "container": {"type": "Lit", "value": ["navigate", "move", "walk", "run", "swim", "fly", "traverse", "explore", "see", "hear", "touch", "grasp", "lift", "carry", "throw", "catch", "climb", "jump", "reach", "operate", "drive", "steer", "pilot", "infer", "deduce", "reason", "reconstruct", "interpret", "derive"]}},
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "comp_object_np"}, "b": {"type": "Lit", "value": null}}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "comp_hypothetical"}, "b": {"type": "Lit", "value": null}},
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "capability_routed"}, "b": {"type": "Lit", "value": 1.0}}},
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "comprehended"}, "b": {"type": "Lit", "value": 1.0}}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "m", "capability_routed", 1.0],
+        ["set_attr", "m", "comprehended", 1.0],
+        ["add_node", "g", "Goal", {
+          "kind": "answer_capability",
+          "status": "active",
+          "source": "conversation",
+          "verb": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "comp_verb"}},
+          "context": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "comp_object_np"}}
+        }],
+        ["add_edge", "agent", "has_goal", "g"],
+        ["add_edge", "g", "comprehends", "m"],
+        ["add_edge", "m", "comprehended_by", "g"]
+      ]
+    },
+    {
+      "name": "route_polar_capability_plain",
+      "match": [
+        ["agent", "received", "m"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "comp_kind"}, "b": {"type": "Lit", "value": "question"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "comp_relation_focus"}, "b": {"type": "Lit", "value": "polar"}},
+          {"type": "In", "member": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "comp_verb"}, "container": {"type": "Lit", "value": ["navigate", "move", "walk", "run", "swim", "fly", "traverse", "explore", "see", "hear", "touch", "grasp", "lift", "carry", "throw", "catch", "climb", "jump", "reach", "operate", "drive", "steer", "pilot", "dance", "infer", "deduce", "reason", "reconstruct", "interpret", "derive"]}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "comp_object_np"}, "b": {"type": "Lit", "value": null}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "comp_hypothetical"}, "b": {"type": "Lit", "value": null}},
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "capability_routed"}, "b": {"type": "Lit", "value": 1.0}}},
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "comprehended"}, "b": {"type": "Lit", "value": 1.0}}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "m", "capability_routed", 1.0],
+        ["set_attr", "m", "comprehended", 1.0],
+        ["add_node", "g", "Goal", {
+          "kind": "answer_capability",
+          "status": "active",
+          "source": "conversation",
+          "verb": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "comp_verb"}}
+        }],
+        ["add_edge", "agent", "has_goal", "g"],
+        ["add_edge", "g", "comprehends", "m"],
+        ["add_edge", "m", "comprehended_by", "g"]
+      ]
+    }
+  ]
+}

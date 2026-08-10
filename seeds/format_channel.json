@@ -1,0 +1,80 @@
+{
+  "id": "format_channel",
+  "version": "1.0.0",
+  "depends_on": [],
+  "description": "FORMAT AS A GENERIC SIGNAL CHANNEL = COLLAPSE OVER A FORMAT-FUNCTION CODEBOOK (graph data). The LAYOUT of a text (how its lines break, wrap, indent) is a signal channel PARALLEL to the content: it says nothing about the story but something true about the FILE. Formatting is ONE GENERIC FUNCTION at every scale (order-N): PROSODY (line breaks = rhythm, format-AS-content), MEDIUM (a hard-wrap filling a display column = a file laid out for a terminal, format-ABOUT-the-file), STRUCTURE (indentation = code/nesting), REGISTER (a plain block = a letter/note). The reader perceives the layout into a FUNCTIONAL feature vector -- wrap_pressure (are the line breaks FORCED by a width limit: would the next word have fit? -- COLUMN-AGNOSTIC, uses the text's own widest line as the implicit column), local_rhyme (do the line endings track a regular couplet/alternating rhyme scheme, spectral-rime clustering), indent (do lines carry leading whitespace) -- and DECODES it against this codebook via reflective_faculty.compose_design_for_goal = the Rust ShapeDecode Term. The format function whose canonical signature best fits (max shape_fit, position-aligned) WINS -- the FORMAT is the ShapeDecode verdict, not a Python format table, not an LLM. is_prosody rides the verdict: only PROSODY keeps its line breaks as content (the meter faculty); MEDIUM/REGISTER newlines are SOFT (reflow to flowing prose for comprehension, keep blank-line paragraph breaks); STRUCTURE keeps indentation as content. The prosody/medium/structure/register split is the SAME collapse math as reading_collapse (construction codebook), ink_decode (stroke codebook) and prosodic_meter (foot codebook): one decode, one domain over -- into LAYOUT. A novel layout function no seeded signature covers has residual -> the sd loop mints a quantum (a new ShapeSignatureFormat) -> re-decode recognizes it: the codebook of format FUNCTIONS is itself dynamic.",
+  "microtheory": {
+    "name": "format_channel",
+    "description": "format is ShapeDecode over a layout-function codebook, parallel to content; prosody is one member of a generic faculty, not the only format the reader has. The decode is GROUNDED in held meta-knowledge of the display MEDIUM (the canonical 80x24/25 terminal; human line length is foveation-bounded) -- which is WHY a ~72-80 char wrap reads as formatting, and which LICENSES the faithful reconstruction (invert the wrap + line-end hyphenation + smart-punctuation encoding) so comprehension receives the pre-formatted content. Signal also runs ACROSS lines (down the page: acrostic / column / table / vertical alignment) -- a channel invisible to a process that merely strips newlines -- so the 2D layout SHAPE is held and read, not discarded."
+  },
+  "nodes": [
+    {
+      "local_id": 10,
+      "type": "DisplayMedium",
+      "attrs": {
+        "name": "terminal_80x24",
+        "columns": 80.0,
+        "rows": 24.0,
+        "columns_min": 64.0,
+        "columns_max": 100.0,
+        "note": "THE CANONICAL DISPLAY MEDIUM the agent HOLDS as world-knowledge: the 80x24 (or 25) character terminal -- still the DEFAULT even where modern terminals are larger. This is the meta-knowledge that lets the reader instantly know WHY a ~72-80 char wrapped line is almost certainly FORMATTING (the file was laid out to sit nicely in an 80-column display), and its width band [64,100] (foveation-bounded: human comfortable line length tops out where the fovea can track) is the range within which an observed wrap-column confirms the MEDIUM reading and LICENSES reconstruction (rejoin the wrapped lines, invert line-end hyphenation)."
+      }
+    },
+    {
+      "local_id": 11,
+      "type": "Microtheory",
+      "attrs": {
+        "name": "foveation_line_length",
+        "description": "Human reading line-length is variable but HARD-LIMITED by foveation (the eye tracks a bounded span before a saccade), so comfortable/legible layout columns cluster in a bounded band (~50-100 chars, canonically 80). A line far below this band that breaks VOLUNTARILY is doing so for a non-display reason (prosody/structure); a line filling the band and breaking at word boundaries is display MEDIUM wrapping. This is the perceptual ground of the wrap-vs-prosody distinction."
+      }
+    },
+    {
+      "local_id": 1,
+      "type": "ShapeSignatureFormat",
+      "attrs": {
+        "name": "medium",
+        "format": "medium",
+        "is_prosody": 0.0,
+        "reflow": 1.0,
+        "signature": "[[\"wrap_forced\"],[\"rhyme_none\"],[\"indent_no\"]]",
+        "note": "MEDIUM: line breaks are FORCED by a display column (the next word would not have fit on the line) and there is no regular rhyme scheme -- a file laid out for an ~80-column terminal. The wrap is TRUE SIGNAL about the file (its display medium), not about the prose; the newlines are SOFT -> reflow into flowing prose for comprehension. The Grimm hard-wrap is this case: it must NOT be read as verse."
+      }
+    },
+    {
+      "local_id": 2,
+      "type": "ShapeSignatureFormat",
+      "attrs": {
+        "name": "prosody",
+        "format": "prosody",
+        "is_prosody": 1.0,
+        "reflow": 0.0,
+        "signature": "[[\"wrap_free\"],[\"rhyme_reg\"],[\"indent_no\"]]",
+        "note": "PROSODY: line breaks fall SHORT of the available width (the next word would have fit -- the break is voluntary) AND the endings track a regular couplet/alternating rhyme scheme -- verse. Here the line break is format-AS-CONTENT: it carries the rhythm, so it is KEPT for the meter faculty. This is the ONE format the reader already had (prosodic_meter); it is now one member of a generic faculty."
+      }
+    },
+    {
+      "local_id": 3,
+      "type": "ShapeSignatureFormat",
+      "attrs": {
+        "name": "structure",
+        "format": "structure",
+        "is_prosody": 0.0,
+        "reflow": 0.0,
+        "signature": "[[\"wrap_free\"],[\"rhyme_none\"],[\"indent_yes\"]]",
+        "note": "STRUCTURE: leading whitespace carries the layout -- indentation = nesting (code, an outline). The indentation is CONTENT (it encodes the tree), so newlines and leading space are KEPT. This is the bridge to code: a coder's indentation/brace-style is their handwriting."
+      }
+    },
+    {
+      "local_id": 4,
+      "type": "ShapeSignatureFormat",
+      "attrs": {
+        "name": "register",
+        "format": "register",
+        "is_prosody": 0.0,
+        "reflow": 1.0,
+        "signature": "[[\"wrap_free\"],[\"rhyme_none\"],[\"indent_no\"]]",
+        "note": "REGISTER: a plain block laid out for reading -- short free-broken lines, no forced wrap, no rhyme, no indentation (a letter, a note, a paragraphed document). The block layout (greeting / body / signature; paragraph breaks) is a discourse/register signal; the within-block newlines are SOFT -> reflow, keep blank-line breaks. The residual, non-forced, non-prosodic, non-code layout."
+      }
+    }
+  ]
+}

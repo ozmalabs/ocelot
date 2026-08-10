@@ -1,0 +1,737 @@
+{
+ "_doc": "THE TARGET-OP LEXICON (graph data) for the comprehension front (domains/comprehend_question.py). Each entry maps a comprehended QUESTION FRAME (the held construction grammar's {event=relation-phrase, patient=object-phrase}) to a FORMAL TARGET OP the elevator ascends + the object's PARAMETERS bound from the prose. This is the question-side analogue of seeds/constructions.json: a named, extensible surface->concept map. `match` = relation-phrase fragments that must all appear; `object_must` = object-phrase fragments that must all appear (when present); `params` binds each param from the first object-fragment rule that matches; `degree_from_relation` reads a degree/dimension off the relation phrase. A relation-phrase / object-shape NO entry covers is the comprehension FRONTIER (the front returns grounded=False + the precise gap; never a faked target). Adding a question shape's target = adding an entry here, not code.",
+ "_meta_doc": "THE META-TARGET LEXICON (graph data) \u2014 the question-side analogue of `targets`, but for SELF/META questions (a question ABOUT THE AGENT ITSELF, not about the world/math). A SELF question ('how do you want to retrieve information?', 'where is your frontier?', 'what do you need to compute X?') asks the agent to REFLECT, so it routes NOT to the elevator (the world faculty) but to the agent's REFLECTIVE faculty: the epistemic-access self-assessment (retrieval design), the gap-synthesis (frontier), the elevator's diagnose_wall (needed input). Each entry: `match` = surface fragments that ALL must appear in the question for the meta-target to fire (the `self_cue` \u2014 a 'you'/'your' self-reference \u2014 is checked separately so a meta question is only ever recognized when it is ABOUT the agent); `meta_target` = the reflective target name; `faculty` = the held reflective faculty the driver routes to; `arg_after` (optional) = a phrase whose tail is captured as the meta-arg (e.g. the X in 'what do you need to compute X' -> the world op the needed-input is diagnosed over). A self/meta question NO entry covers is the comprehension FRONTIER (honest grounded=False), exactly as a world question's. Adding a meta question shape = adding an entry here, not code.",
+ "meta_targets": [
+  {
+   "meta_target": "math_bridge",
+   "faculty": "math_bridge",
+   "match": [
+    "fractal"
+   ]
+  },
+  {
+   "meta_target": "math_bridge",
+   "faculty": "math_bridge",
+   "match": [
+    "fractals"
+   ]
+  },
+  {
+   "meta_target": "math_bridge",
+   "faculty": "math_bridge",
+   "match": [
+    "self",
+    "similarity"
+   ]
+  },
+  {
+   "meta_target": "math_bridge",
+   "faculty": "math_bridge",
+   "match": [
+    "self",
+    "similar"
+   ]
+  },
+  {
+   "meta_target": "math_bridge",
+   "faculty": "math_bridge",
+   "match": [
+    "math"
+   ],
+   "arg_after": [
+    "use"
+   ]
+  },
+  {
+   "meta_target": "math_bridge",
+   "faculty": "math_bridge",
+   "match": [
+    "mathematics"
+   ],
+   "arg_after": [
+    "use"
+   ]
+  },
+  {
+   "meta_target": "math_bridge",
+   "faculty": "math_bridge",
+   "match": [
+    "apply"
+   ],
+   "any": [
+    [
+     "fractal",
+     "fractals",
+     "symmetry",
+     "curvature",
+     "topology",
+     "recursion",
+     "math"
+    ]
+   ],
+   "arg_after": [
+    "apply"
+   ]
+  },
+  {
+   "meta_target": "math_bridge",
+   "faculty": "math_bridge",
+   "match": [
+    "use",
+    "symmetry"
+   ],
+   "arg_after": [
+    "use"
+   ]
+  },
+  {
+   "meta_target": "math_bridge",
+   "faculty": "math_bridge",
+   "match": [
+    "use",
+    "curvature"
+   ],
+   "arg_after": [
+    "use"
+   ]
+  },
+  {
+   "meta_target": "math_bridge",
+   "faculty": "math_bridge",
+   "match": [
+    "use",
+    "topology"
+   ],
+   "arg_after": [
+    "use"
+   ]
+  },
+  {
+   "meta_target": "recover_shape_law",
+   "faculty": "recover_shape_law",
+   "match": [
+    "recover"
+   ],
+   "arg_after": [
+    "recover"
+   ]
+  },
+  {
+   "meta_target": "recover_shape_law",
+   "faculty": "recover_shape_law",
+   "match": [
+    "residual"
+   ],
+   "arg_after": [
+    "residual"
+   ]
+  },
+  {
+   "meta_target": "recover_shape_law",
+   "faculty": "recover_shape_law",
+   "match": [
+    "what",
+    "generates"
+   ],
+   "arg_after": [
+    "generates"
+   ]
+  },
+  {
+   "meta_target": "generate_shape",
+   "faculty": "generate_shape",
+   "match": [
+    "generate"
+   ],
+   "arg_after": [
+    "generate"
+   ]
+  },
+  {
+   "meta_target": "generate_shape",
+   "faculty": "generate_shape",
+   "match": [
+    "make"
+   ],
+   "any": [
+    [
+     "shape",
+     "shapes",
+     "circle",
+     "spiral",
+     "line"
+    ]
+   ],
+   "arg_after": [
+    "make"
+   ]
+  },
+  {
+   "meta_target": "generate_shape",
+   "faculty": "generate_shape",
+   "match": [
+    "draw"
+   ],
+   "arg_after": [
+    "draw"
+   ]
+  },
+  {
+   "meta_target": "self_design",
+   "faculty": "self_design",
+   "match": [
+    "perceptual"
+   ],
+   "goal_from_question": true
+  },
+  {
+   "meta_target": "self_design",
+   "faculty": "self_design",
+   "match": [
+    "perceive"
+   ],
+   "goal_from_question": true
+  },
+  {
+   "meta_target": "self_design",
+   "faculty": "self_design",
+   "match": [
+    "feature"
+   ],
+   "goal_from_question": true
+  },
+  {
+   "meta_target": "self_design",
+   "faculty": "self_design",
+   "match": [
+    "design"
+   ],
+   "goal_from_question": true
+  },
+  {
+   "meta_target": "self_shape",
+   "faculty": "self_shape",
+   "match": [
+    "shape"
+   ]
+  },
+  {
+   "meta_target": "retrieval_design",
+   "faculty": "epistemic_access",
+   "match": [
+    "retrieve"
+   ],
+   "any": [
+    [
+     "how"
+    ],
+    [
+     "want"
+    ]
+   ]
+  },
+  {
+   "meta_target": "retrieval_design",
+   "faculty": "epistemic_access",
+   "match": [
+    "how",
+    "get",
+    "information"
+   ]
+  },
+  {
+   "meta_target": "frontier",
+   "faculty": "order_n_postulates",
+   "match": [
+    "frontier"
+   ]
+  },
+  {
+   "meta_target": "frontier",
+   "faculty": "order_n_postulates",
+   "match": [
+    "where",
+    "stuck"
+   ]
+  },
+  {
+   "meta_target": "needed_input",
+   "faculty": "diagnose_wall",
+   "match": [
+    "need"
+   ],
+   "arg_after": [
+    "to",
+    "compute"
+   ]
+  },
+  {
+   "meta_target": "needed_input",
+   "faculty": "diagnose_wall",
+   "match": [
+    "need",
+    "compute"
+   ],
+   "arg_after": [
+    "compute"
+   ]
+  },
+  {
+   "meta_target": "sorting_principle",
+   "faculty": "sorting_principle",
+   "match": [
+    "sort"
+   ]
+  },
+  {
+   "meta_target": "sorting_principle",
+   "faculty": "sorting_principle",
+   "match": [
+    "principle"
+   ]
+  },
+  {
+   "meta_target": "self_identity",
+   "faculty": "self_identity",
+   "match": [
+    "name"
+   ]
+  },
+  {
+   "meta_target": "self_identity",
+   "faculty": "self_identity",
+   "match": [
+    "called"
+   ]
+  },
+  {
+   "meta_target": "self_identity",
+   "faculty": "self_identity",
+   "match": [
+    "who"
+   ]
+  },
+  {
+   "meta_target": "self_organisation",
+   "faculty": "self_organisation",
+   "match": [
+    "organised"
+   ]
+  },
+  {
+   "meta_target": "self_organisation",
+   "faculty": "self_organisation",
+   "match": [
+    "organized"
+   ]
+  },
+  {
+   "meta_target": "self_organisation",
+   "faculty": "self_organisation",
+   "match": [
+    "categories"
+   ]
+  },
+  {
+   "meta_target": "self_organisation",
+   "faculty": "self_organisation",
+   "match": [
+    "kinds"
+   ]
+  },
+  {
+   "meta_target": "self_organisation",
+   "faculty": "self_organisation",
+   "match": [
+    "categorise"
+   ]
+  },
+  {
+   "meta_target": "self_organisation",
+   "faculty": "self_organisation",
+   "match": [
+    "categorize"
+   ]
+  },
+  {
+   "meta_target": "self_organisation",
+   "faculty": "self_organisation",
+   "match": [
+    "organise"
+   ]
+  },
+  {
+   "meta_target": "self_organisation",
+   "faculty": "self_organisation",
+   "match": [
+    "organize"
+   ]
+  },
+  {
+   "meta_target": "law_vs_cache",
+   "faculty": "law_vs_cache",
+   "match": [
+    "law",
+    "cache"
+   ]
+  },
+  {
+   "meta_target": "growth_decision",
+   "faculty": "growth_decision",
+   "match": [
+    "mint"
+   ]
+  },
+  {
+   "meta_target": "growth_decision",
+   "faculty": "growth_decision",
+   "match": [
+    "new",
+    "primitive"
+   ]
+  },
+  {
+   "meta_target": "growth_decision",
+   "faculty": "growth_decision",
+   "match": [
+    "grow"
+   ]
+  },
+  {
+   "meta_target": "program_teaching",
+   "faculty": "program_teaching",
+   "match": [
+    "teach"
+   ]
+  },
+  {
+   "meta_target": "program_teaching",
+   "faculty": "program_teaching",
+   "match": [
+    "pass",
+    "on"
+   ]
+  },
+  {
+   "meta_target": "program_extraction",
+   "faculty": "program_extraction",
+   "match": [
+    "extract"
+   ]
+  },
+  {
+   "meta_target": "program_extraction",
+   "faculty": "program_extraction",
+   "match": [
+    "program",
+    "run"
+   ]
+  },
+  {
+   "meta_target": "escalation",
+   "faculty": "escalation",
+   "match": [
+    "escalate"
+   ]
+  },
+  {
+   "meta_target": "escalation",
+   "faculty": "escalation",
+   "match": [
+    "unsure"
+   ]
+  },
+  {
+   "meta_target": "escalation",
+   "faculty": "escalation",
+   "match": [
+    "uncertain"
+   ]
+  },
+  {
+   "meta_target": "escalation",
+   "faculty": "escalation",
+   "match": [
+    "not",
+    "confident"
+   ]
+  },
+  {
+   "meta_target": "capability_understanding",
+   "faculty": "capability_understanding",
+   "match": [
+    "capability",
+    "understanding"
+   ]
+  },
+  {
+   "meta_target": "capability_understanding",
+   "faculty": "capability_understanding",
+   "match": [
+    "savant"
+   ]
+  },
+  {
+   "meta_target": "capability_understanding",
+   "faculty": "capability_understanding",
+   "match": [
+    "mastery"
+   ]
+  },
+  {
+   "meta_target": "self_gaps",
+   "faculty": "self_gaps",
+   "match": [
+    "gaps"
+   ]
+  },
+  {
+   "meta_target": "self_gaps",
+   "faculty": "self_gaps",
+   "match": [
+    "gap"
+   ]
+  },
+  {
+   "meta_target": "self_gaps",
+   "faculty": "self_gaps",
+   "match": [
+    "limitations"
+   ]
+  },
+  {
+   "meta_target": "self_gaps",
+   "faculty": "self_gaps",
+   "match": [
+    "limitation"
+   ]
+  },
+  {
+   "meta_target": "self_gaps",
+   "faculty": "self_gaps",
+   "match": [
+    "weaknesses"
+   ]
+  },
+  {
+   "meta_target": "self_gaps",
+   "faculty": "self_gaps",
+   "match": [
+    "shortcomings"
+   ]
+  },
+  {
+   "meta_target": "self_gaps",
+   "faculty": "self_gaps",
+   "match": [
+    "what",
+    "can",
+    "not",
+    "do"
+   ]
+  },
+  {
+   "meta_target": "self_gaps",
+   "faculty": "self_gaps",
+   "match": [
+    "what",
+    "cannot",
+    "do"
+   ]
+  },
+  {
+   "meta_target": "self_gaps",
+   "faculty": "self_gaps",
+   "match": [
+    "what",
+    "cant",
+    "do"
+   ]
+  },
+  {
+   "meta_target": "self_improvement_status",
+   "faculty": "self_improvement_status",
+   "match": [
+    "working"
+   ]
+  },
+  {
+   "meta_target": "self_improvement_status",
+   "faculty": "self_improvement_status",
+   "match": [
+    "improving"
+   ]
+  },
+  {
+   "meta_target": "self_improvement_status",
+   "faculty": "self_improvement_status",
+   "match": [
+    "experiments"
+   ]
+  },
+  {
+   "meta_target": "self_improvement_status",
+   "faculty": "self_improvement_status",
+   "match": [
+    "experiment"
+   ]
+  },
+  {
+   "meta_target": "self_adoptions",
+   "faculty": "self_adoptions",
+   "match": [
+    "changed",
+    "yourself"
+   ]
+  },
+  {
+   "meta_target": "self_adoptions",
+   "faculty": "self_adoptions",
+   "match": [
+    "adopted"
+   ]
+  },
+  {
+   "meta_target": "self_adoptions",
+   "faculty": "self_adoptions",
+   "match": [
+    "adoptions"
+   ]
+  },
+  {
+   "meta_target": "self_adoptions",
+   "faculty": "self_adoptions",
+   "match": [
+    "what",
+    "did",
+    "improve"
+   ]
+  },
+  {
+   "meta_target": "interlocutor_model",
+   "faculty": "interlocutor_model",
+   "match": [
+    "know",
+    "about",
+    "me"
+   ]
+  },
+  {
+   "meta_target": "interlocutor_model",
+   "faculty": "interlocutor_model",
+   "match": [
+    "told",
+    "me"
+   ]
+  },
+  {
+   "meta_target": "interlocutor_model",
+   "faculty": "interlocutor_model",
+   "match": [
+    "trust",
+    "me"
+   ]
+  },
+  {
+   "meta_target": "code_capabilities",
+   "faculty": "code_capabilities",
+   "match": [
+    "do",
+    "code"
+   ]
+  },
+  {
+   "meta_target": "code_capabilities",
+   "faculty": "code_capabilities",
+   "match": [
+    "code",
+    "capabilities"
+   ]
+  },
+  {
+   "meta_target": "emitter_roadmap",
+   "faculty": "emitter_roadmap",
+   "match": [
+    "blocks",
+    "learning"
+   ]
+  },
+  {
+   "meta_target": "emitter_roadmap",
+   "faculty": "emitter_roadmap",
+   "match": [
+    "what",
+    "blocks"
+   ]
+  }
+ ],
+ "targets": [
+  {
+   "op": "largest_noncyclic_torsion_order",
+   "match": [
+    "largest",
+    "order"
+   ],
+   "object_must": [
+    "torsion",
+    "elliptic"
+   ],
+   "params": {
+    "field": [
+     {
+      "object_has": [
+       "sqrt",
+       "3"
+      ],
+      "value": "Q(sqrt(-3))"
+     }
+    ]
+   }
+  },
+  {
+   "op": "reduced_spin_bordism",
+   "match": [
+    "spin",
+    "bordism"
+   ],
+   "object_must": [
+    "classifying",
+    "g2"
+   ],
+   "degree_from_relation": true,
+   "params": {
+    "space": [
+     {
+      "object_has": [
+       "g2"
+      ],
+      "value": "BG2"
+     }
+    ]
+   }
+  },
+  {
+   "op": "first_homology",
+   "match": [
+    "h",
+    "1"
+   ],
+   "params": {
+    "space": [
+     {
+      "object_has": [
+       "lattice"
+      ],
+      "value": "moduli_lattices_unit_area"
+     },
+     {
+      "object_has": [
+       "x"
+      ],
+      "value": "X"
+     }
+    ]
+   }
+  }
+ ]
+}

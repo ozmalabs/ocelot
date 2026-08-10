@@ -1,0 +1,682 @@
+{
+  "id": "vision_mccollough",
+  "version": "1.0.0",
+  "depends_on": [],
+  "description": "McCOLLOUGH CONTINGENT AFTEREFFECT -- the DECISIVE predictive-coding gate. After adapting to colour-orientation pairings (red-vertical, green-horizontal), an ACHROMATIC vertical grating is perceived greenish and a horizontal one pinkish: an orientation-CONTINGENT, OPPONENT, persistent, error-driven colour aftereffect. Mechanism (VISION_VENTRAL_GROUNDING.md): the aftereffect is the negative residual of an over-fit contingency prior -- the system learns the joint E[colour|orientation] and the percept is the render-from-prior + opponent-residual (observed - predicted). THE CRUX (\u00a71.1): the PREDICTIVE readout produces the aftereffect; a FEEDFORWARD control (direct colour read, no render-from-prior) does NOT -- both are seeded, a flag selects (ablation = graph data, \u00a70). COMPOSITION, NO NEW RUST: reuses vision_colour's opponent coordinates (rg=L-M, by=S-(L+M)) and vision_lateral's predict-then-residual shape, with the ORIENTATION prior as predictor. The prior is the running MEAN colour given orientation (Div(sum,Max(n,1))) -- ZERO magic number (\u00a713); the aftereffect SIGN is fixed by the adapting-colour sign, scale-invariant. Flag-gated on MccoughParams.mcc_enabled, OFF by default (\u00a79). VALIDATION gate for predictive/opponent joint colour-orientation coding, NOT a recognition capability; orientation is supplied as a stimulus feature, not grown (grown orientation maps are the diagnosed Hebbian dead-end). See VISION_MCCOLLOUGH_PREREG.md.",
+  "microtheory": "vision",
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "MccoughParams",
+      "attrs": {
+        "name": "default",
+        "mcc_enabled": 0.0,
+        "mcc_mode": 0.0,
+        "mcc_phase": 0.0,
+        "frame": 0.0,
+        "comment": "ALL knobs are GRAPH DATA (PROTOCOL \u00a70). mcc_enabled: 0 DEFAULT = seed INERT, every committed result reproduces byte-identically (\u00a79); >0.5 arms it. mcc_mode: 0 = PREDICTIVE readout (percept = observed - render-from-prior, the opponent residual that IS the contingent aftereffect); 1 = FEEDFORWARD control (percept = observed colour directly, NO render-from-prior) which by construction produces NO aftereffect on achromatic input -- THE CRUX, \u00a71.1. mcc_phase: 0 = adapt (mcc_learn accumulates the joint statistic); 1 = test (a percept rule fires). frame: the adapter increments it per adapting frame so mcc_learn fires exactly once per frame (astep<frame guard, vision_theta's rbar_step<step idiom). The prior is the running MEAN colour given orientation (Div(sum,Max(n,1))) -- NO learning rate, NO magic number (\u00a713); the aftereffect SIGN is fixed by the sign of the adapting colour and is invariant to any scale."
+      }
+    }
+  ],
+  "edges": [],
+  "productions": [],
+  "rules": [
+    {
+      "name": "mcc_learn",
+      "comment": "ADAPTATION -- learn E[colour|orientation]. Match an adapting Region R (is_adapt>0.5) and, via its single incoming `tunes` edge, its orientation prior K (vision_onoff's oo_bipolar_burst incoming-edge join; each R has exactly ONE incoming `tunes`, avoiding the two-incoming-edges matcher gotcha). Once per frame (astep<frame): accumulate the opponent colour rg=L-M, by=S-(L+M) onto K's running sum and increment n. The prior sum/n is the joint colour-orientation statistic; it is STORED (persists across ticks -> not fatigue) and ERROR-DRIVEN (its magnitude is the learned adapting-colour mean). Gated on mcc_enabled>0.5 AND mcc_phase<0.5 (adapt). NO learning rate (\u00a713).",
+      "match": [
+        [
+          "scene",
+          "has_region",
+          "R"
+        ],
+        [
+          "K",
+          "tunes",
+          "R"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "PickUnique",
+                "source": {
+                  "type": "NodesOfType",
+                  "node_type": "MccoughParams"
+                }
+              },
+              "key": "mcc_enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0.5
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "PickUnique",
+                "source": {
+                  "type": "NodesOfType",
+                  "node_type": "MccoughParams"
+                }
+              },
+              "key": "mcc_phase"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0.5
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "R"
+              },
+              "key": "is_adapt"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0.5
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "R"
+              },
+              "key": "astep"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "PickUnique",
+                "source": {
+                  "type": "NodesOfType",
+                  "node_type": "MccoughParams"
+                }
+              },
+              "key": "frame"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "K",
+          "sum_rg",
+          {
+            "__term__": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "K"
+                  },
+                  "key": "sum_rg"
+                },
+                {
+                  "type": "Minus",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "R"
+                    },
+                    "key": "cL"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "R"
+                    },
+                    "key": "cM"
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "K",
+          "sum_by",
+          {
+            "__term__": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "K"
+                  },
+                  "key": "sum_by"
+                },
+                {
+                  "type": "Minus",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "R"
+                    },
+                    "key": "cS"
+                  },
+                  "b": {
+                    "type": "Plus",
+                    "items": [
+                      {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "R"
+                        },
+                        "key": "cL"
+                      },
+                      {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "R"
+                        },
+                        "key": "cM"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "K",
+          "n",
+          {
+            "__term__": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "K"
+                  },
+                  "key": "n"
+                },
+                {
+                  "type": "Lit",
+                  "value": 1.0
+                }
+              ]
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "R",
+          "astep",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "PickUnique",
+                "source": {
+                  "type": "NodesOfType",
+                  "node_type": "MccoughParams"
+                }
+              },
+              "key": "frame"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "mcc_percept_pred",
+      "comment": "PREDICTIVE-CODING percept (mcc_mode<0.5). percept = OBSERVED opponent colour MINUS the render-from-prior for this region's orientation (prior = K.sum/Max(K.n,1), the learned mean). This is vision_lateral's lat_residual shape -- predict, transmit the residual -- with the ORIENTATION prior as the predictor instead of the spatial surround. On an ACHROMATIC test (observed rg=by=0) the percept is -prior: opposite the adapted colour, contingent on orientation (swap orientation -> different K -> flipped aftereffect). With no adaptation K.n=0 -> prior=0/1=0 -> percept=observed (NO aftereffect). Test regions only (is_adapt<0.5), once (pdone guard), gated on mcc_enabled>0.5 AND mcc_phase>0.5 (test).",
+      "match": [
+        [
+          "scene",
+          "has_region",
+          "R"
+        ],
+        [
+          "K",
+          "tunes",
+          "R"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "PickUnique",
+                "source": {
+                  "type": "NodesOfType",
+                  "node_type": "MccoughParams"
+                }
+              },
+              "key": "mcc_enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0.5
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "PickUnique",
+                "source": {
+                  "type": "NodesOfType",
+                  "node_type": "MccoughParams"
+                }
+              },
+              "key": "mcc_phase"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0.5
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "PickUnique",
+                "source": {
+                  "type": "NodesOfType",
+                  "node_type": "MccoughParams"
+                }
+              },
+              "key": "mcc_mode"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0.5
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "R"
+              },
+              "key": "is_adapt"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0.5
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "R"
+              },
+              "key": "pdone"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0.5
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "R",
+          "percept_rg",
+          {
+            "__term__": {
+              "type": "Minus",
+              "a": {
+                "type": "Minus",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "R"
+                  },
+                  "key": "cL"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "R"
+                  },
+                  "key": "cM"
+                }
+              },
+              "b": {
+                "type": "Div",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "K"
+                  },
+                  "key": "sum_rg"
+                },
+                "b": {
+                  "type": "Max",
+                  "items": [
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "K"
+                      },
+                      "key": "n"
+                    },
+                    {
+                      "type": "Lit",
+                      "value": 1.0
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "R",
+          "percept_by",
+          {
+            "__term__": {
+              "type": "Minus",
+              "a": {
+                "type": "Minus",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "R"
+                  },
+                  "key": "cS"
+                },
+                "b": {
+                  "type": "Plus",
+                  "items": [
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "R"
+                      },
+                      "key": "cL"
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "R"
+                      },
+                      "key": "cM"
+                    }
+                  ]
+                }
+              },
+              "b": {
+                "type": "Div",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "K"
+                  },
+                  "key": "sum_by"
+                },
+                "b": {
+                  "type": "Max",
+                  "items": [
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "K"
+                      },
+                      "key": "n"
+                    },
+                    {
+                      "type": "Lit",
+                      "value": 1.0
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "R",
+          "pdone",
+          {
+            "__term__": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "mcc_percept_ff",
+      "comment": "FEEDFORWARD control (mcc_mode>0.5) -- THE CRUX, \u00a71.1. percept = the OBSERVED opponent colour, read directly. The orientation prior K is matched (identical information is available) but is NOT rendered or subtracted -- there is no predictive loop. On an achromatic test the percept is exactly 0: NO contingent aftereffect, for EITHER orientation -- a feedforward classifier cannot fake McCollough. ALIVE / positive-controlled: on a genuinely coloured test this same arm reports the real colour (percept = observed != 0), so its achromatic null is a real null, not a dead arm scoring a perfect floor. Test regions only, once, gated on mcc_enabled>0.5 AND mcc_phase>0.5.",
+      "match": [
+        [
+          "scene",
+          "has_region",
+          "R"
+        ],
+        [
+          "K",
+          "tunes",
+          "R"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "PickUnique",
+                "source": {
+                  "type": "NodesOfType",
+                  "node_type": "MccoughParams"
+                }
+              },
+              "key": "mcc_enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0.5
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "PickUnique",
+                "source": {
+                  "type": "NodesOfType",
+                  "node_type": "MccoughParams"
+                }
+              },
+              "key": "mcc_phase"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0.5
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "PickUnique",
+                "source": {
+                  "type": "NodesOfType",
+                  "node_type": "MccoughParams"
+                }
+              },
+              "key": "mcc_mode"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0.5
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "R"
+              },
+              "key": "is_adapt"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0.5
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "R"
+              },
+              "key": "pdone"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0.5
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "R",
+          "percept_rg",
+          {
+            "__term__": {
+              "type": "Minus",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "R"
+                },
+                "key": "cL"
+              },
+              "b": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "R"
+                },
+                "key": "cM"
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "R",
+          "percept_by",
+          {
+            "__term__": {
+              "type": "Minus",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "R"
+                },
+                "key": "cS"
+              },
+              "b": {
+                "type": "Plus",
+                "items": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "R"
+                    },
+                    "key": "cL"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "R"
+                    },
+                    "key": "cM"
+                  }
+                ]
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "R",
+          "pdone",
+          {
+            "__term__": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          }
+        ]
+      ]
+    }
+  ]
+}

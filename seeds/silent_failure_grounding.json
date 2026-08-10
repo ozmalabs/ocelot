@@ -1,0 +1,11 @@
+{
+  "id": "silent_failure_grounding",
+  "version": "1.0.0",
+  "depends_on": ["self_check_hat", "generative_skeptic"],
+  "grounding_root": {
+    "stakes_floor": 0.70,
+    "tol": 0.15,
+    "_doc_stakes_floor": "fire the grounding check on STAKES ALONE above this (regardless of surprise) — the channel the internal weight=uncertainty*stakes cannot reach on a silent failure",
+    "_doc_tol": "relative tolerance |measured-claimed|/|claimed| above which the WORLD measurement CONTRADICTS the claim -> REOPEN"
+  }
+}

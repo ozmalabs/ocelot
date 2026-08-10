@@ -1,0 +1,157 @@
+{
+  "id": "vision_complex",
+  "version": "1.0.0",
+  "depends_on": ["vision_waves"],
+  "description": "RUNG 5 — COMPLEX CELLS. A CUnit population that POOLS simple Units, with TEMPORAL SLOWNESS (Foldiak 1991 trace learning) on an Oja-normalised weight update. complex=0 default => byte-identical to every committed result.",
+  "microtheory": "vision_development",
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "ComplexParams",
+      "attrs": {
+        "name": "default",
+        "complex": 0.0,
+        "trace_delta": 1.0,
+        "cx_eta": 0.0005,
+        "comment": "RUNG 5 knobs as GRAPH DATA (PROTOCOL 0 — the ablation is the agent's own configuration, never a Python code path). complex: 0.0 (default) = the CUnit rules are inert, so every result committed before rung 5 reproduces byte-identically; 1.0 = the pooling layer runs. trace_delta: the Foldiak trace's update fraction, the MECHANISM knob. 1.0 (default) = trace ≡ cact exactly, i.e. NO temporal memory — the ABLATED arm, plain instantaneous Oja pooling. delta<1 (e.g. 0.2) = the post-synaptic trace averages over ~1/delta steps, which is the SLOWNESS mechanism: a feature that PERSISTS across adjacent moments shares identity, and under a drifting grating PHASE varies fast while ORIENTATION varies slowly, so learning on the trace pools over phase and keeps orientation. WHY A TRACE IS THE MECHANISM: simple cells at the same orientation but different phases are ANTI-correlated at zero lag (when the phase-0 cell is on, the phase-180 cell is off), so an INSTANTANEOUS covariance cannot bind them — only a time-LAGGED one can, and the trace is what makes Oja's attractor the time-smoothed covariance rather than the instantaneous one. cx_eta: the Oja rate on the pooling weights; 5e-4 is the regime measured stable for oja_learn (2e-3 diverges to NaN there). NOTE ON THE RUNG-3 INVERSION: Oja's attractor being the TIME-AVERAGE is what FORBADE direction selectivity (the average of an isotropic distribution has no direction). Averaging over PHASE is precisely what a complex cell IS, so the same property that killed rung 3 should GRANT rung 5. That reasoning is recorded here because it motivated the design; it is NOT what the measurement found (see VISION_RUNG5_PREREG.md OUTCOME — the rung fails one level lower, at the precondition, so the inversion is UNTESTED, not confirmed)."
+      }
+    }
+  ],
+  "edges": [],
+  "productions": [
+    {
+      "src": {"type": "Unit", "var": "u"},
+      "edge_type": "cpre",
+      "tgt": {"type": "CSynapse", "var": "s"},
+      "provenance": "seed:vision_complex:cpre"
+    },
+    {
+      "src": {"type": "CSynapse", "var": "s"},
+      "edge_type": "cpost",
+      "tgt": {"type": "CUnit", "var": "cu"},
+      "provenance": "seed:vision_complex:cpost"
+    },
+    {
+      "src": {"type": "Retina", "var": "r"},
+      "edge_type": "has_cunit",
+      "tgt": {"type": "CUnit", "var": "cu"},
+      "provenance": "seed:vision_complex:has_cunit"
+    }
+  ],
+  "rules": [
+    {
+      "name": "cx_activate",
+      "comment": "STAGE 1 of the pooling fixpoint. cact = SUM over pooled Units of cweight * RECTIFIED pre-unit act. The rectification (IfThenElse act>0) is the physiology: a firing RATE is nonnegative, and it is ALSO what makes pooling able to produce invariance at all — a linear sum of LINEAR simple cells is itself a linear filter and is necessarily phase-MODULATED; only pooling RECTIFIED outputs can be phase-invariant (this is the Hubel-Wiesel/energy-model insight). Guarded on cact_step < step so it fires once per CUnit per step, the same idiom wv_unit_activate uses. Gated on ComplexParams.complex==1 so the whole layer is inert by default.",
+      "match_type": "CUnit",
+      "match": [["r", "has_cunit", "cu"]],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq",
+           "a": {"type": "Attr", "node": {"type": "PickUnique", "source": {"type": "NodesOfType", "node_type": "ComplexParams"}}, "key": "complex"},
+           "b": {"type": "Lit", "value": 1.0}},
+          {"type": "Lt",
+           "a": {"type": "Attr", "node": {"type": "Var", "name": "cu"}, "key": "cact_step"},
+           "b": {"type": "Attr", "node": {"type": "Var", "name": "r"}, "key": "step"}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "cu", "cact", {"__term__": {
+          "type": "Fold",
+          "source": {"type": "InNeighbours", "node": {"type": "Var", "name": "cu"}, "edge_type": "cpost", "any_type": false},
+          "var_name": "cs", "acc_name": "acc",
+          "init": {"type": "Lit", "value": 0.0},
+          "body": {"type": "Plus", "items": [
+            {"type": "Var", "name": "acc"},
+            {"type": "Times", "items": [
+              {"type": "Attr", "node": {"type": "Var", "name": "cs"}, "key": "cweight"},
+              {"type": "IfThenElse",
+               "cond": {"type": "Gt",
+                        "a": {"type": "Attr", "node": {"type": "Pick", "source": {"type": "InNeighbours", "node": {"type": "Var", "name": "cs"}, "edge_type": "cpre", "any_type": false}}, "key": "act"},
+                        "b": {"type": "Lit", "value": 0.0}},
+               "then": {"type": "Attr", "node": {"type": "Pick", "source": {"type": "InNeighbours", "node": {"type": "Var", "name": "cs"}, "edge_type": "cpre", "any_type": false}}, "key": "act"},
+               "other": {"type": "Lit", "value": 0.0}}
+            ]}
+          ]}
+        }}],
+        ["set_attr", "cu", "cact_step", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "r"}, "key": "step"}}]
+      ]
+    },
+    {
+      "name": "cx_trace",
+      "comment": "STAGE 2 — THE SLOWNESS MECHANISM (Foldiak 1991). trace <- (1-delta)*trace + delta*cact: a leaky running average of the CUnit's OWN post-synaptic activity. Staged on cact_step==step (stage 1 has run) and guarded by trace_step<step (fires once per step), so it can never race the rule that reads it — the same staged-step-marker idiom oja_learn uses (act_step==step), and the same reason wave_world writes prev_burst in the adapter rather than in a rule. At trace_delta=1.0 this sets trace = cact exactly, which is the ABLATION: no temporal memory at all.",
+      "match_type": "CUnit",
+      "match": [["r", "has_cunit", "cu"]],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq",
+           "a": {"type": "Attr", "node": {"type": "PickUnique", "source": {"type": "NodesOfType", "node_type": "ComplexParams"}}, "key": "complex"},
+           "b": {"type": "Lit", "value": 1.0}},
+          {"type": "Lt",
+           "a": {"type": "Attr", "node": {"type": "Var", "name": "cu"}, "key": "trace_step"},
+           "b": {"type": "Attr", "node": {"type": "Var", "name": "r"}, "key": "step"}},
+          {"type": "Eq",
+           "a": {"type": "Attr", "node": {"type": "Var", "name": "cu"}, "key": "cact_step"},
+           "b": {"type": "Attr", "node": {"type": "Var", "name": "r"}, "key": "step"}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "cu", "trace", {"__term__": {"type": "Plus", "items": [
+          {"type": "Times", "items": [
+            {"type": "Minus", "a": {"type": "Lit", "value": 1.0},
+             "b": {"type": "Attr", "node": {"type": "PickUnique", "source": {"type": "NodesOfType", "node_type": "ComplexParams"}}, "key": "trace_delta"}},
+            {"type": "Attr", "node": {"type": "Var", "name": "cu"}, "key": "trace"}
+          ]},
+          {"type": "Times", "items": [
+            {"type": "Attr", "node": {"type": "PickUnique", "source": {"type": "NodesOfType", "node_type": "ComplexParams"}}, "key": "trace_delta"},
+            {"type": "Attr", "node": {"type": "Var", "name": "cu"}, "key": "cact"}
+          ]}
+        ]}}],
+        ["set_attr", "cu", "trace_step", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "r"}, "key": "step"}}]
+      ]
+    },
+    {
+      "name": "cx_learn",
+      "comment": "STAGE 3 — OJA ON THE TRACE. cweight <- cweight*(1 - eta*trace^2) + eta*trace*x, x = the pooled Unit's RECTIFIED act. This is the SAME contraction oja_learn applies to the simple layer, but the post-synaptic term is the TRACE rather than the instantaneous drive, so the fixed point is the leading principal component of the TIME-SMOOTHED input covariance instead of the instantaneous one. That is the entire hypothesis: same-orientation different-phase simple cells are anti-correlated at zero lag but positively correlated within a trace window, so the traced covariance binds them and the instantaneous one cannot. Staged on trace_step==step and guarded by ctouched<step (once per synapse per step).",
+      "match_type": "CSynapse",
+      "match": [["u", "cpre", "cs"], ["cs", "cpost", "cu"], ["r", "has_cunit", "cu"]],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq",
+           "a": {"type": "Attr", "node": {"type": "PickUnique", "source": {"type": "NodesOfType", "node_type": "ComplexParams"}}, "key": "complex"},
+           "b": {"type": "Lit", "value": 1.0}},
+          {"type": "Lt",
+           "a": {"type": "Attr", "node": {"type": "Var", "name": "cs"}, "key": "ctouched"},
+           "b": {"type": "Attr", "node": {"type": "Var", "name": "r"}, "key": "step"}},
+          {"type": "Eq",
+           "a": {"type": "Attr", "node": {"type": "Var", "name": "cu"}, "key": "trace_step"},
+           "b": {"type": "Attr", "node": {"type": "Var", "name": "r"}, "key": "step"}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "cs", "cweight", {"__term__": {"type": "Plus", "items": [
+          {"type": "Times", "items": [
+            {"type": "Attr", "node": {"type": "Var", "name": "cs"}, "key": "cweight"},
+            {"type": "Minus", "a": {"type": "Lit", "value": 1.0},
+             "b": {"type": "Times", "items": [
+               {"type": "Attr", "node": {"type": "PickUnique", "source": {"type": "NodesOfType", "node_type": "ComplexParams"}}, "key": "cx_eta"},
+               {"type": "Attr", "node": {"type": "Var", "name": "cu"}, "key": "trace"},
+               {"type": "Attr", "node": {"type": "Var", "name": "cu"}, "key": "trace"}
+             ]}}
+          ]},
+          {"type": "Times", "items": [
+            {"type": "Attr", "node": {"type": "PickUnique", "source": {"type": "NodesOfType", "node_type": "ComplexParams"}}, "key": "cx_eta"},
+            {"type": "Attr", "node": {"type": "Var", "name": "cu"}, "key": "trace"},
+            {"type": "IfThenElse",
+             "cond": {"type": "Gt", "a": {"type": "Attr", "node": {"type": "Var", "name": "u"}, "key": "act"}, "b": {"type": "Lit", "value": 0.0}},
+             "then": {"type": "Attr", "node": {"type": "Var", "name": "u"}, "key": "act"},
+             "other": {"type": "Lit", "value": 0.0}}
+          ]}
+        ]}}],
+        ["set_attr", "cs", "ctouched", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "r"}, "key": "step"}}]
+      ]
+    }
+  ]
+}

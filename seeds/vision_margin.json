@@ -1,0 +1,934 @@
+{
+ "id": "vision_margin",
+ "version": "1.0.0",
+ "depends_on": [
+  "continuous_pose"
+ ],
+ "description": "RUNG L1c -- THE DERIVED ADMISSION BOUND. T1's sqrt(2)/2 is the WORST-CASE PER-POINT rounding displacement and is near-vacuous (>=2 candidates inside it in 63/63 of T1's headline). eta_c -- the codebook's OWN self-rounding residual, computed from codebook x lattice x cp_angles alone -- is the bound that FALLS OUT, and inside it L1b's count predicate transfers unchanged. NO margin bound exists: all six margin candidates are rejected by measurement in VISION_MARGIN_PREREG.md / VISION_MARGIN_RESULTS.md. Pure composition over held Terms; NO new Rust, NO new constant, NO Times. eta_c <= sqrt(2)/2 by construction, so this can only SHRINK the admission set -- a refusal instrument, never a widening (sec 8). Additive: no committed seed is edited, not boot-loaded, flag ships OFF (sec 9).",
+ "microtheory": "vision_margin",
+ "nodes": [
+  {
+   "local_id": 0,
+   "type": "MarginParams",
+   "attrs": {
+    "margin": 0.0
+   }
+  }
+ ],
+ "edges": [],
+ "productions": [
+  {
+   "provenance": "seed:vision_margin:has_codebook",
+   "src": {
+    "type": "Agent",
+    "var": "s"
+   },
+   "edge_type": "has_codebook",
+   "tgt": {
+    "type": "ShapeSignature",
+    "var": "t"
+   }
+  }
+ ],
+ "rules": [
+  {
+   "name": "mg_eta",
+   "comment": "THE DERIVATION (PART A), computed IN THE GRAPH. eta_c = MAX over the codebook member's own ROUNDED SELF-RENDERS (mg_self, blind-written by the adapter exactly as it writes any stimulus) of the SAME per-candidate residual `cp_recognize` scores, minimised over the agent's OWN held angle grid cp_angles. It is the LARGEST residual a TRUE instance of c can produce given the lattice -- the actual MHD rounding induces, where sqrt(2)/2 is the loose WORST-CASE PER-POINT over-bound. Depends on the codebook, the lattice and cp_angles ALONE: never on the test observations, never on which answer is right. NO NEW CONSTANT (the probe grid IS cp_angles). Fires ONCE per member: the guard Not(Gte(mg_eta, 0.0)) is TRUE only while the attribute is ABSENT, so the effect value is constant thereafter and the run_rules fixpoint terminates (sec 2.1).",
+   "match_type": "ShapeSignature",
+   "match": [
+    [
+     "ag",
+     "has_codebook",
+     "c"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "MaxOver",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "MarginParams"
+       },
+       "var_name": "mp",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "mp"
+        },
+        "key": "margin"
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Gte",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "c"
+        },
+        "key": "mg_eta"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "c",
+     "mg_eta",
+     {
+      "__term__": {
+       "type": "MaxOver",
+       "source": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "c"
+        },
+        "key": "mg_self"
+       },
+       "var_name": "v",
+       "value": {
+        "type": "MinOver",
+        "source": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "ag"
+         },
+         "key": "cp_angles"
+        },
+        "var_name": "t",
+        "value": {
+         "type": "PointSetDist",
+         "a": {
+          "type": "MapList",
+          "source": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "c"
+           },
+           "key": "points"
+          },
+          "var_name": "p",
+          "value": {
+           "type": "Rotate",
+           "vec": {
+            "type": "Var",
+            "name": "p"
+           },
+           "angle": {
+            "type": "Var",
+            "name": "t"
+           }
+          }
+         },
+         "b": {
+          "type": "Var",
+          "name": "v"
+         }
+        },
+        "default": null
+       },
+       "default": null
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "mg_admit",
+   "comment": "ADMIT branch (flag margin>0.5, OFF by default). T1 claimed this observation AND EXACTLY ONE codebook member falls within ITS OWN derived eta. The identity is `cp_recognize`'s own Argmin winner, term-for-term, so an admitted row is BYTE-IDENTICAL to T1's answer: the instrument SUBTRACTS ambiguous claims and adds nothing. Writes only mg_* -- never cp_*/status/covered_by -- so both verdicts are readable from ONE graph and every effect value is constant once set.",
+   "match_type": "Observation",
+   "match": [
+    [
+     "ag",
+     "observed",
+     "obs"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "MaxOver",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "MarginParams"
+       },
+       "var_name": "mp",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "mp"
+        },
+        "key": "margin"
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "recognized_continuous"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "ShapeSignature"
+        },
+        "var_name": "c",
+        "predicate": {
+         "type": "Lte",
+         "a": {
+          "type": "MinOver",
+          "source": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "ag"
+           },
+           "key": "cp_angles"
+          },
+          "var_name": "t",
+          "value": {
+           "type": "PointSetDist",
+           "a": {
+            "type": "MapList",
+            "source": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "c"
+             },
+             "key": "points"
+            },
+            "var_name": "p",
+            "value": {
+             "type": "Rotate",
+             "vec": {
+              "type": "Var",
+              "name": "p"
+             },
+             "angle": {
+              "type": "Var",
+              "name": "t"
+             }
+            }
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "obs"
+            },
+            "key": "points"
+           }
+          },
+          "default": null
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "c"
+          },
+          "key": "mg_eta"
+         }
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "obs",
+     "mg_recognized",
+     {
+      "__term__": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "mg_covered_by",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Argmin",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "ShapeSignature"
+        },
+        "var_name": "c",
+        "value": {
+         "type": "MinOver",
+         "source": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "ag"
+          },
+          "key": "cp_angles"
+         },
+         "var_name": "t",
+         "value": {
+          "type": "PointSetDist",
+          "a": {
+           "type": "MapList",
+           "source": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "c"
+            },
+            "key": "points"
+           },
+           "var_name": "p",
+           "value": {
+            "type": "Rotate",
+            "vec": {
+             "type": "Var",
+             "name": "p"
+            },
+            "angle": {
+             "type": "Var",
+             "name": "t"
+            }
+           }
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "obs"
+           },
+           "key": "points"
+          }
+         },
+         "default": null
+        },
+        "default": null
+       },
+       "key": "name"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "mg_status",
+     {
+      "__term__": {
+       "type": "Lit",
+       "value": "mg_admitted"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "mg_ncand",
+     {
+      "__term__": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "ShapeSignature"
+        },
+        "var_name": "c",
+        "predicate": {
+         "type": "Lte",
+         "a": {
+          "type": "MinOver",
+          "source": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "ag"
+           },
+           "key": "cp_angles"
+          },
+          "var_name": "t",
+          "value": {
+           "type": "PointSetDist",
+           "a": {
+            "type": "MapList",
+            "source": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "c"
+             },
+             "key": "points"
+            },
+            "var_name": "p",
+            "value": {
+             "type": "Rotate",
+             "vec": {
+              "type": "Var",
+              "name": "p"
+             },
+             "angle": {
+              "type": "Var",
+              "name": "t"
+             }
+            }
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "obs"
+            },
+            "key": "points"
+           }
+          },
+          "default": null
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "c"
+          },
+          "key": "mg_eta"
+         }
+        }
+       }
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "mg_ambiguous",
+   "comment": "AMBIGUOUS branch -- THE RUNG'S REASON TO EXIST. TWO OR MORE candidates lie within their own eta, so the observation does not DETERMINE which held identity it is; T1's Argmin resolves that silently and, below the resolution floor, returns a CONFIDENT WRONG IDENTITY (measured: 22/63 at s=1). This REFUSES instead, and records HOW MANY candidates were in contention (mg_ncand) so the refusal is a POSITIVE DATUM and not an absence (sec 1.1's dead-arm lesson); mg_recognized is written EXPLICITLY to 0.0 for the same reason.",
+   "match_type": "Observation",
+   "match": [
+    [
+     "ag",
+     "observed",
+     "obs"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "MaxOver",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "MarginParams"
+       },
+       "var_name": "mp",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "mp"
+        },
+        "key": "margin"
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "recognized_continuous"
+      }
+     },
+     {
+      "type": "Gte",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "ShapeSignature"
+        },
+        "var_name": "c",
+        "predicate": {
+         "type": "Lte",
+         "a": {
+          "type": "MinOver",
+          "source": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "ag"
+           },
+           "key": "cp_angles"
+          },
+          "var_name": "t",
+          "value": {
+           "type": "PointSetDist",
+           "a": {
+            "type": "MapList",
+            "source": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "c"
+             },
+             "key": "points"
+            },
+            "var_name": "p",
+            "value": {
+             "type": "Rotate",
+             "vec": {
+              "type": "Var",
+              "name": "p"
+             },
+             "angle": {
+              "type": "Var",
+              "name": "t"
+             }
+            }
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "obs"
+            },
+            "key": "points"
+           }
+          },
+          "default": null
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "c"
+          },
+          "key": "mg_eta"
+         }
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 2.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "obs",
+     "mg_recognized",
+     {
+      "__term__": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "mg_status",
+     {
+      "__term__": {
+       "type": "Lit",
+       "value": "mg_ambiguous"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "mg_ncand",
+     {
+      "__term__": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "ShapeSignature"
+        },
+        "var_name": "c",
+        "predicate": {
+         "type": "Lte",
+         "a": {
+          "type": "MinOver",
+          "source": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "ag"
+           },
+           "key": "cp_angles"
+          },
+          "var_name": "t",
+          "value": {
+           "type": "PointSetDist",
+           "a": {
+            "type": "MapList",
+            "source": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "c"
+             },
+             "key": "points"
+            },
+            "var_name": "p",
+            "value": {
+             "type": "Rotate",
+             "vec": {
+              "type": "Var",
+              "name": "p"
+             },
+             "angle": {
+              "type": "Var",
+              "name": "t"
+             }
+            }
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "obs"
+            },
+            "key": "points"
+           }
+          },
+          "default": null
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "c"
+          },
+          "key": "mg_eta"
+         }
+        }
+       }
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "mg_none",
+   "comment": "NONE branch: T1 claimed this observation but NO codebook member falls within its own eta -- T1's looser sqrt(2)/2 admitted a winner that the derived bound rejects outright. The honest verdict is that nothing held explains the observation. Completes the 3-way partition (k==1 / k>=2 / k==0) over exactly the observations T1 claimed, so every claimed row receives exactly one mg_status and the rules cannot both fire.",
+   "match_type": "Observation",
+   "match": [
+    [
+     "ag",
+     "observed",
+     "obs"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "MaxOver",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "MarginParams"
+       },
+       "var_name": "mp",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "mp"
+        },
+        "key": "margin"
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "recognized_continuous"
+      }
+     },
+     {
+      "type": "Lte",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "ShapeSignature"
+        },
+        "var_name": "c",
+        "predicate": {
+         "type": "Lte",
+         "a": {
+          "type": "MinOver",
+          "source": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "ag"
+           },
+           "key": "cp_angles"
+          },
+          "var_name": "t",
+          "value": {
+           "type": "PointSetDist",
+           "a": {
+            "type": "MapList",
+            "source": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "c"
+             },
+             "key": "points"
+            },
+            "var_name": "p",
+            "value": {
+             "type": "Rotate",
+             "vec": {
+              "type": "Var",
+              "name": "p"
+             },
+             "angle": {
+              "type": "Var",
+              "name": "t"
+             }
+            }
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "obs"
+            },
+            "key": "points"
+           }
+          },
+          "default": null
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "c"
+          },
+          "key": "mg_eta"
+         }
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "obs",
+     "mg_recognized",
+     {
+      "__term__": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "mg_status",
+     {
+      "__term__": {
+       "type": "Lit",
+       "value": "mg_none"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "mg_ncand",
+     {
+      "__term__": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "ShapeSignature"
+        },
+        "var_name": "c",
+        "predicate": {
+         "type": "Lte",
+         "a": {
+          "type": "MinOver",
+          "source": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "ag"
+           },
+           "key": "cp_angles"
+          },
+          "var_name": "t",
+          "value": {
+           "type": "PointSetDist",
+           "a": {
+            "type": "MapList",
+            "source": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "c"
+             },
+             "key": "points"
+            },
+            "var_name": "p",
+            "value": {
+             "type": "Rotate",
+             "vec": {
+              "type": "Var",
+              "name": "p"
+             },
+             "angle": {
+              "type": "Var",
+              "name": "t"
+             }
+            }
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "obs"
+            },
+            "key": "points"
+           }
+          },
+          "default": null
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "c"
+          },
+          "key": "mg_eta"
+         }
+        }
+       }
+      }
+     }
+    ]
+   ]
+  }
+ ]
+}

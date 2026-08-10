@@ -1,0 +1,19 @@
+{
+ "id": "reading_faculties",
+ "version": "1.0.0",
+ "depends_on": [],
+ "description": "The reading faculties the agent's writing arc concluded it LACKS (grounded against human cognitive models: BPL, associative agnosia, dyslexia) and is now BUILDING. Each holds WHAT it is + the agent's own shape verdict (HOW it is structured) + the dissociation that names it. Seeded as build-targets (is_held 0, status under_construction); the agent decides HOW by shape, the build implements it graph-native.",
+ "microtheory": {"name": "reading_faculties", "description": "missing reading faculties under construction"},
+ "nodes": [
+  {"local_id": 0, "type": "Concept", "attrs": {
+    "name": "generative_program_faculty", "is_held": 0.0, "status": "under_construction",
+    "shape": "hierarchical_invariance_buildup", "grounded_by_deficit": "BPL one-shot ceiling (78 vs 96.7)",
+    "definition": "INFER a probabilistic generative PROGRAM (a hierarchical PARSE of the character into strokes/sub-strokes plus relations) that explains one example, then PREDICT / re-render it with deformation and compare to the observation. Build first piece: per-character PARSE INFERENCE (description-length-minimal parse, domains/canonical_parse.infer_parse) — marginalise over parse granularities, keep the most parsimonious explanation, vs a single global threshold."}},
+  {"local_id": 1, "type": "Concept", "attrs": {
+    "name": "semantics_meaning_faculty", "is_held": 0.0, "status": "under_construction",
+    "shape": "associative_recall", "grounded_by_deficit": "associative agnosia / hyperlexia (percept without meaning)",
+    "definition": "BIND the recognised form to its MEANING; ASSOCIATE and RECALL the stored concept the form denotes; an autoassociative attractor that COMPLETES form to concept. Build first piece: form->concept associative BINDING (domains/semantic_binding) — the recognised mark denotes a meaning concept; every instance of a character recalls the SAME concept; meaning can carry relations, not just a label."}}
+ ],
+ "edges": [],
+ "productions": []
+}

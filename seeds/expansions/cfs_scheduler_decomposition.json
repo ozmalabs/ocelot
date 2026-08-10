@@ -1,0 +1,118 @@
+{
+  "id": "cfs_scheduler_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "CFS_completely_fair_scheduler",
+  "in_microtheory": "operating_systems",
+  "description": "Linux's CFS scheduler decomposed. vruntime, red-black tree, nice-weighted timeshare, granularity tuning, group scheduling, wakeup preemption. The mechanism by which Linux gives every task fair CPU time without explicit time slices.",
+  "sub_mechanisms": [
+    {
+      "name": "vruntime",
+      "definition": "Per-task counter: time spent on CPU divided by task's weight. Higher-weight tasks accumulate vruntime slower.",
+      "why": "The core invariant. Scheduler picks lowest-vruntime task. This naturally gives proportional CPU share. Weight comes from nice value: w = 1024 * 1.25^(-nice).",
+      "category": "cfs_mechanism"
+    },
+    {
+      "name": "red_black_tree_runqueue",
+      "definition": "Per-CPU red-black tree keyed on vruntime. Leftmost node has the smallest vruntime = next task to run.",
+      "why": "O(log n) insertion + leftmost lookup. Cache-friendly (small tree of typical workloads). Each CPU has its own runqueue → no global contention.",
+      "category": "cfs_mechanism"
+    },
+    {
+      "name": "nice_to_weight",
+      "definition": "Nice value [-20, 19] maps to weight via table. Nice 0 = weight 1024. Each nice step is ~25% weight change. Lower nice = higher priority = higher weight.",
+      "why": "Nice's geometric weight (~1.25^-n) means consistent proportional effect regardless of starting nice. Going from 0 to 5 is the same ratio as 5 to 10.",
+      "category": "cfs_mechanism"
+    },
+    {
+      "name": "sched_period",
+      "definition": "Target time for all runnable tasks to get scheduled once. Default 6 ms scaled by number of tasks. Each task's slice = period × (weight / total_weight).",
+      "why": "Bounds wait time before next CPU. Too short: thrashing context switches. Too long: poor responsiveness. CFS dynamically scales to keep period reasonable as task count grows.",
+      "category": "cfs_mechanism"
+    },
+    {
+      "name": "sched_min_granularity",
+      "definition": "Minimum time a task runs before preemption. Default ~750 µs. Prevents excessive context switching when many tasks present.",
+      "why": "Without it, sched_period / N tasks would give micro-slices that thrash. min_granularity acts as a floor; many tasks just stretch the period instead.",
+      "category": "cfs_mechanism"
+    },
+    {
+      "name": "wakeup_preemption",
+      "definition": "When a sleeping task wakes (e.g., I/O completes), it can preempt the current task if its vruntime is sufficiently lower.",
+      "why": "Interactive tasks (waiting on input) wake up with low vruntime. Preempting CPU-bound running task gives them fast response. Threshold (wakeup_granularity) prevents thrashing.",
+      "category": "cfs_mechanism"
+    },
+    {
+      "name": "vruntime_normalisation",
+      "definition": "When task sleeps, its vruntime is preserved relative to runqueue's min_vruntime. On wakeup, vruntime = max(task's vruntime, min_vruntime - sched_latency/2).",
+      "why": "Prevents long-sleeping task from monopolising CPU when it wakes (would have very low vruntime). Cap puts it slightly behind currently-running tasks. Maintains fairness across sleep durations.",
+      "category": "cfs_mechanism"
+    },
+    {
+      "name": "group_scheduling",
+      "definition": "Tasks grouped (typically per-cgroup or per-user). Schedule between groups proportionally first, then within group.",
+      "why": "Prevents fork bombs from monopolising CPU. systemd's per-user/per-service cgroups give each user/service equal share. Container CPU quotas implemented via group scheduling.",
+      "category": "cfs_mechanism"
+    },
+    {
+      "name": "load_tracking",
+      "definition": "Per-task: tracks running average of CPU + runnable time. Exponential moving average decays load over ~32 ms windows.",
+      "why": "Per-task 'load' estimate. Used by load balancer to decide migration. Captures recent intensity (vs cumulative which would lag).",
+      "category": "cfs_mechanism"
+    },
+    {
+      "name": "CPU_load_balancing",
+      "definition": "Periodic balance: scheduler checks if some CPUs are over/underloaded; migrates tasks to balance. Domain-aware: prefers within socket/core before across.",
+      "why": "Idle CPU while another's queued tasks waiting = throughput loss. Load balancer respects topology (try to stay in same L3 cache, then same socket). Cost: migration loses cache.",
+      "category": "cfs_mechanism"
+    },
+    {
+      "name": "isolcpus",
+      "definition": "Boot parameter excluding specified CPUs from the scheduler's general pool. They run only tasks explicitly affinitized.",
+      "why": "Reserve cores for latency-critical work (DPDK, real-time audio). Scheduler can't migrate tasks onto isolated CPUs. Effectively partitions the system into general + dedicated cores.",
+      "category": "cfs_mechanism"
+    },
+    {
+      "name": "schedutil_governor",
+      "definition": "CPU frequency governor that adjusts based on scheduler load. Replaces ondemand/conservative in modern kernels.",
+      "why": "Tighter coupling between scheduler + frequency scaling. Lower latency when load increases (no need to wait for separate governor to ramp up). Default on most distros since ~5.x.",
+      "category": "cfs_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "CFS_fair_via_vruntime_minimum",
+      "if": ["scheduler always picks the lowest-vruntime task"],
+      "then": ["over time, each task accumulates CPU proportional to its weight"],
+      "why": "Lowest vruntime = least CPU per weight unit. Picking it gives it CPU until another task becomes lowest. Long-run: each task's CPU = weight / sum × total. Mathematical fairness from O(log n) priority queue operations.",
+      "soundness_category": "algebraic_law"
+    },
+    {
+      "name": "sched_period_bounds_max_wait",
+      "if": ["sched_period is set to T"],
+      "then": ["no runnable task waits more than ~T for CPU"],
+      "why": "All runnable tasks get scheduled within sched_period. Max wait is bounded above by period. Larger period → less context-switch overhead but more wait. CFS's tuning knob for responsiveness vs throughput.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "wakeup_preemption_responds_to_interactive_tasks",
+      "if": ["a waking task has substantially lower vruntime than running task"],
+      "then": ["the wakening task preempts immediately"],
+      "why": "Interactive tasks (sleeping for I/O) wake up rarely → low vruntime accumulation. CPU-bound tasks accumulate vruntime continuously. Preemption favors interactive responsiveness without explicit priority.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "group_scheduling_enforces_per_group_quota",
+      "if": ["tasks are organised into scheduling groups"],
+      "then": ["each group gets CPU share independent of task count"],
+      "why": "Without group scheduling, 100 forked tasks would dominate CPU vs 1 task in another group. Group scheduling distributes between groups first. Foundation of container CPU limits.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "isolcpus_provides_real_time_guarantees",
+      "if": ["a CPU is isolcpus'd and dedicated tasks run there"],
+      "then": ["latency on that CPU is bounded by hardware + driver, not scheduler decisions"],
+      "why": "Scheduler doesn't migrate other tasks onto isolated CPUs. Dedicated tasks run uninterrupted (except hardware interrupts). Used for HFT, real-time audio, robotics where latency tail matters.",
+      "soundness_category": "cost_equivalence"
+    }
+  ]
+}

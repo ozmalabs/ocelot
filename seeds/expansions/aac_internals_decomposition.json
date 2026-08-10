@@ -1,0 +1,118 @@
+{
+  "id": "aac_internals_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "AAC",
+  "in_microtheory": "audio_coding_theory",
+  "description": "AAC's internals decomposed. AAC (Advanced Audio Coding, MPEG-2 Part 7 / MPEG-4 Part 3) was MP3's successor, designed in 1997 with the benefit of MP3 experience. Pure MDCT (no polyphase), more flexible windowing, TNS, improved psychoacoustics, better Huffman tables. Typically ~30% better compression than MP3 at equivalent quality. Default codec for iTunes, YouTube, satellite radio.",
+  "sub_mechanisms": [
+    {
+      "name": "aac_profile_lc",
+      "definition": "Low Complexity profile: AAC core algorithm without prediction tools. The most widely-deployed AAC profile.",
+      "why": "Removes the optional long-term predictor (LTP) for simpler decoders. Reduces compute ~15% with minor compression cost. Universal for streaming + portable devices.",
+      "category": "aac_mechanism"
+    },
+    {
+      "name": "aac_profile_main",
+      "definition": "Main profile: AAC-LC + Long-Term Prediction (LTP) for additional inter-frame redundancy reduction.",
+      "why": "LTP catches periodic signals (sustained notes) that single-frame MDCT misses. Marginal compression gain at higher complexity. Rarely used in practice — most encoders just use LC.",
+      "category": "aac_mechanism"
+    },
+    {
+      "name": "aac_window_2048_256",
+      "definition": "AAC uses 2048-input/1024-coefficient long blocks and 256-input/128-coefficient short blocks (8 packed into one 'short-block frame').",
+      "why": "Twice MP3's window size (1024 vs 576 coefficients) → finer frequency resolution → better masking-based bit allocation. The 8-short-block grouping keeps frame structure consistent at any block configuration.",
+      "category": "aac_mechanism"
+    },
+    {
+      "name": "aac_window_switching",
+      "definition": "Four window types: ONLY_LONG, LONG_START (long→short transition), EIGHT_SHORT, LONG_STOP (short→long transition). Encoder picks per frame based on transient detection.",
+      "why": "Start/stop windows preserve TDAC across block-size changes (where naive switching would break perfect reconstruction). Per-frame switching matches the transform window to the signal's characteristics.",
+      "category": "aac_mechanism"
+    },
+    {
+      "name": "aac_tns_inverse_filter",
+      "definition": "Temporal Noise Shaping: applies an inverse linear-prediction filter across MDCT coefficients (within one block), shifting quantisation noise toward times where it's masked.",
+      "why": "MDCT spreads quantisation noise uniformly across the block's time extent. TNS reshapes this noise distribution to follow the signal's temporal envelope — putting noise where signal is loud (and noise is masked) instead of in quiet portions. Particularly effective on speech-like signals in music.",
+      "category": "aac_mechanism"
+    },
+    {
+      "name": "aac_scale_factor_bands",
+      "definition": "Spectrum divided into ~49 scale factor bands (for long block, 14 for short block) aligned with critical bands. Per-band scale factors + Huffman-coded coefficients.",
+      "why": "Critical-band-aligned partitioning matches perceptual structure better than MP3's uniform partitioning. Fewer bands than MP3 (~21 effective in MP3's hybrid structure) at higher per-band resolution.",
+      "category": "aac_mechanism"
+    },
+    {
+      "name": "aac_huffman_codebooks",
+      "definition": "11 Huffman codebooks for quantised coefficients (vs MP3's 32). Each codebook handles different coefficient ranges.",
+      "why": "Fewer codebooks needed because AAC's quantiser gives more consistent statistics across bands. Encoder picks the optimal codebook per scale factor band.",
+      "category": "aac_mechanism"
+    },
+    {
+      "name": "aac_intensity_stereo",
+      "definition": "Per-band intensity stereo: above a per-band threshold (often 6 kHz), encoder switches to intensity stereo mode for that band.",
+      "why": "Same insight as MP3's intensity stereo but applied per scale factor band rather than uniformly. Finer granularity matches the per-band perception model.",
+      "category": "aac_mechanism"
+    },
+    {
+      "name": "aac_mid_side_stereo",
+      "definition": "Per-band M/S stereo. Encoder signals per-band whether to code as L/R or M/S.",
+      "why": "Different bands have different L/R correlation. Per-band M/S exploits where it helps without forcing it where it doesn't. ~5-10% better than always-M/S or never-M/S.",
+      "category": "aac_mechanism"
+    },
+    {
+      "name": "aac_noise_substitution_pns",
+      "definition": "Perceptual Noise Substitution: encoder marks a band as 'noisy' and sends only its energy. Decoder substitutes pseudorandom noise scaled to that energy.",
+      "why": "Noise-like content has no perceptual structure to preserve. Sending energy + 'use noise' is much cheaper than coding the coefficients. Saves significant bits on noise-dominated bands without audible loss.",
+      "category": "aac_mechanism"
+    },
+    {
+      "name": "aac_main_data_no_bit_reservoir",
+      "definition": "Unlike MP3, AAC frames don't use a bit reservoir; each frame's data is self-contained.",
+      "why": "Simpler bitstream structure. Tighter rate control per frame but loses MP3's averaging benefit. AAC's better psychoacoustic model + intra-frame tools compensate; AAC at constant bitrate matches or beats MP3 with reservoir.",
+      "category": "aac_mechanism"
+    },
+    {
+      "name": "aac_dependent_coupling",
+      "definition": "Multi-channel coding: dependent channels can be coded as a 'dependently coupled' band, sharing scale factors and coefficients with the primary channel.",
+      "why": "5.1+ surround systems have correlated channels (LFE rarely active, surrounds quiet during dialog). Dependent coupling avoids redundant coding of correlated bands. Particularly effective on Dolby Pro Logic-style content.",
+      "category": "aac_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "pure_mdct_simpler_than_hybrid",
+      "if": ["a codec uses pure MDCT instead of polyphase + MDCT"],
+      "then": ["bitstream and decoder are simpler at same compression"],
+      "why": "MP3's hybrid had compatibility reasons; AAC's clean redesign chose pure MDCT for simplicity. Same energy compaction, lower implementation complexity. Direct lineage from MP3 experience.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "tns_reshapes_noise_to_match_envelope",
+      "if": ["a signal has temporal envelope variation within a block"],
+      "then": ["TNS-shaped quantisation noise is less audible than uniform noise"],
+      "why": "Quantisation noise that follows the signal's envelope is masked by the signal itself. Flat noise distribution is unmasked during quiet portions of the block, causing audible artifacts. TNS shapes the noise — same total energy, distributed where the signal hides it.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "noise_substitution_for_perceptually_noisy_content",
+      "if": ["a band's content is perceptually noise-like"],
+      "then": ["sending energy + 'use noise' beats coding the coefficients"],
+      "why": "Noise content has no structure to preserve. The decoder's synthesised noise is perceptually indistinguishable from the original at fraction of the bit cost. Common on cymbal hits, breath sounds, applause.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "per_band_stereo_mode_selection",
+      "if": ["different bands have different L/R correlation"],
+      "then": ["per-band M/S vs L/R selection beats uniform stereo coding"],
+      "why": "Low frequencies often have high L/R correlation (centred mix); high frequencies have less. Per-band selection captures this. Fixed M/S would waste bits on uncorrelated high bands; fixed L/R would miss savings on correlated low bands.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "aac_improves_over_mp3_via_compounding",
+      "if": ["a successor codec applies multiple incremental refinements"],
+      "then": ["the combined gain is ~30% bitrate reduction at same quality"],
+      "why": "Pure MDCT + finer block sizes + TNS + better windowing + better Huffman + better psychoacoustic model + noise substitution + per-band stereo. No single feature dominates; the accumulated improvements compound. Same template as H.265 over H.264.",
+      "soundness_category": "cost_equivalence"
+    }
+  ]
+}

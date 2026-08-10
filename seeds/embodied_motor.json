@@ -1,0 +1,57 @@
+{
+  "microtheory": {
+    "name": "motor_control",
+    "definition": "How nervous system generates + controls movement. Motor cortex, cerebellum, basal ganglia, spinal cord, muscle. Forward + inverse models, optimal control, motor learning, reaching, locomotion. Substrate analogue: substrate's action-execution pipeline.",
+    "category": "embodied_domain",
+    "parent": "embodied_cognition_foundation"
+  },
+  "concepts": [
+    {"name": "motor_cortex", "definition": "Precentral gyrus. Somatotopic map of body. Sends commands to spinal cord + brainstem motor neurons. Substrate analogue: substrate's action-generation cortex.", "category": "neural"},
+    {"name": "primary_motor_cortex_m1", "definition": "M1. Direct connections to spinal motor neurons. Encodes movement parameters. Substrate analogue: substrate's primary action-output.", "category": "neural"},
+    {"name": "premotor_cortex", "definition": "Pre-M1. Action planning, movement preparation, sensory guidance. Substrate analogue: substrate's action-planning cortex.", "category": "neural"},
+    {"name": "supplementary_motor_area", "definition": "SMA. Sequence learning, complex actions, internally-generated movement. Substrate analogue: substrate's compositional action structure.", "category": "neural"},
+    {"name": "corticospinal_tract", "definition": "Direct pathway from M1 to spinal motor neurons. Substrate analogue: substrate's direct-action pathway.", "category": "neural"},
+    {"name": "alpha_motor_neuron", "definition": "Spinal cord neuron innervating muscle fibers. Final common path. Substrate analogue: substrate's action effector.", "category": "neural"},
+    {"name": "motor_unit", "definition": "Single alpha motor neuron + all muscle fibers it innervates. Substrate analogue: substrate's atomic action.", "category": "neural"},
+
+    {"name": "spinal_reflex", "definition": "Stereotyped response circuit at spinal level. Stretch reflex, withdrawal reflex. Substrate analogue: substrate's reflex-level response.", "category": "circuits"},
+    {"name": "central_pattern_generator", "definition": "CPG. Spinal/brainstem circuit producing rhythmic movement (walking, breathing). Substrate analogue: substrate's autonomous-rhythm circuit.", "category": "circuits"},
+    {"name": "muscle_synergy", "definition": "Coordinated muscle activation pattern. Building block of movement. d'Avella + Bizzi. Substrate analogue: substrate's composite-action pattern.", "category": "circuits"},
+    {"name": "stretch_reflex", "definition": "Muscle stretching triggers contraction. Knee-jerk. Substrate analogue: substrate's automatic response.", "category": "circuits"},
+
+    {"name": "forward_model_motor", "definition": "Predicts sensory consequence of motor command. Wolpert. Cerebellum. Substrate analogue: substrate's anticipation handler.", "category": "models"},
+    {"name": "inverse_model_motor", "definition": "Computes motor command for desired outcome. Substrate analogue: substrate's goal-to-action mapping.", "category": "models"},
+    {"name": "efference_copy", "definition": "Copy of motor command sent to perception, allowing distinction between self-caused + external sensation. Substrate analogue: substrate's self-action tagging.", "category": "models"},
+    {"name": "corollary_discharge", "definition": "Internal feedback of motor command. Substrate analogue: substrate's action-monitoring signal.", "category": "models"},
+
+    {"name": "optimal_control_motor", "definition": "Movement minimizes cost function (energy, jerk, end-point variance). Todorov + Jordan. Substrate analogue: substrate's drive-minimization in action.", "category": "computation"},
+    {"name": "minimum_jerk_model", "definition": "Reaching minimizes integrated squared jerk. Flash + Hogan 1985. Substrate analogue: substrate's smooth-action principle.", "category": "computation"},
+    {"name": "minimum_variance_principle", "definition": "Harris + Wolpert. Movement minimizes end-point variance given signal-dependent noise. Substrate analogue: substrate's reliable-outcome action.", "category": "computation"},
+    {"name": "fitts_law", "definition": "Fitts 1954. Movement time = a + b log2(D/W + 1). Trade-off speed-accuracy. Substrate analogue: substrate's precision-speed trade-off.", "category": "computation"},
+
+    {"name": "motor_learning", "definition": "Skill acquisition. Cerebellum + basal ganglia + cortex roles. Substrate analogue: substrate's ActionSpec refinement.", "category": "learning"},
+    {"name": "internal_model_learning", "definition": "Acquiring forward/inverse models through practice. Substrate analogue: substrate's anticipation-handler training.", "category": "learning"},
+    {"name": "savings_motor", "definition": "Faster relearning after extinction. Implies preserved trace. Substrate analogue: substrate's residual-Mt persistence.", "category": "learning"},
+    {"name": "consolidation_motor", "definition": "Newly-learned skills stabilize over hours-days. Sleep enhances. Substrate analogue: substrate's offline-consolidation.", "category": "learning"},
+    {"name": "interference_motor", "definition": "Learning skill A then B can interfere with A. Distinct memory systems. Substrate analogue: substrate's conflicting-Mt interaction.", "category": "learning"},
+
+    {"name": "reaching_movement", "definition": "Hand-to-target. Bell-shaped velocity profile. Multi-joint coordination. Substrate analogue: substrate's directed-action pattern.", "category": "actions"},
+    {"name": "grasping", "definition": "Hand shape + force scaled to object. Anticipatory preshaping. Substrate analogue: substrate's object-adapted action.", "category": "actions"},
+    {"name": "locomotion", "definition": "Walking + running. CPGs + cortical modulation. Substrate analogue: substrate's continuous-action loops.", "category": "actions"},
+    {"name": "balance_postural_control", "definition": "Maintaining stable posture. Multi-sensory integration. Substrate analogue: substrate's homeostatic self-maintenance.", "category": "actions"},
+
+    {"name": "ataxia", "definition": "Loss of coordination from cerebellar damage. Substrate analogue: substrate's anticipation-failure pattern.", "category": "pathology"},
+    {"name": "apraxia", "definition": "Loss of skilled action despite intact muscle + sensation. Cortical. Substrate analogue: substrate's action-Mt failure.", "category": "pathology"},
+    {"name": "parkinsonism_motor", "definition": "Basal ganglia. Bradykinesia, rigidity, tremor. Action initiation impaired. Substrate analogue: substrate's action-selection failure.", "category": "pathology"},
+
+    {"name": "embodied_motor_planning", "definition": "Movement plans grounded in body capabilities + environment. Not abstract. Substrate analogue: substrate's embodied-action grounding.", "category": "embodied"},
+    {"name": "joint_action", "definition": "Coordinating with others. Joint attention + intention. Substrate analogue: substrate-substrate cooperation in action.", "category": "embodied"}
+  ],
+  "rules": [
+    {"name": "forward_model_predicts_consequence", "head": "the substrate sends an action command", "body": "a forward model predicts the consequence in parallel. Mismatch drives learning. Wolpert. Substrate's anticipation pipeline."},
+    {"name": "efference_copy_distinguishes_self_caused_sensation", "head": "the substrate causes a sensory event by own action", "body": "efference copy lets it know the sensation is self-caused. No surprise. Substrate's action-attribution."},
+    {"name": "optimal_control_minimizes_cost", "head": "the substrate produces movement", "body": "the movement minimizes cost (energy, jerk, variance). Todorov + Jordan. Substrate's optimization in action."},
+    {"name": "motor_learning_via_error_correction", "head": "the substrate practices a skill", "body": "discrepancies between predicted + actual outcomes drive internal-model refinement. Substrate's ActionSpec error-driven update."},
+    {"name": "morphological_constraints_shape_movement", "head": "the substrate has specific body structure", "body": "available movements + their efficiency depend on morphology. Substrate's structure-constrained action."}
+  ]
+}

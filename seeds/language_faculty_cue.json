@@ -1,0 +1,91 @@
+{
+ "id": "language_faculty_cue",
+ "version": "1.0.0",
+ "depends_on": [],
+ "description": "LANGUAGE-FACULTY compose path vocabulary (graph data). Two RelationCue nodes map a LANGUAGE-FILTER/SELECT concern's residual predicates to structural relations, and one ComposerCue routes the 'filter' relation head to the NEW 'language_faculty' composer (domains/reflective_faculty._compose_language_faculty). Checked: NO held RelationCue in relation_vocabulary.json (53 cues) carried 'filter' or 'nominal', and NO held ComposerCue in composer_dispatch.json carried relation_head 'filter' before this change -- a genuine WALL (the composer could not reach a 'keep only nominal spans' concern), the same shape 'watch'/'escalate'/'worth'/'tailor' were. This seed is NOT part of the minimal region_grouping/relation_vocabulary fixture the wall demo boots with, so the wall is reproducible at runtime (concern grounds to nothing without this seed); load_all_seeds picks it up alongside the curated seeds, adding the cues + composer with no collision (priority 24, head 'filter' collides with nothing prior). The nominal_head cue names the language-leaf op the composer chains under the filter: a span's HEAD POS decides nominal-vs-clause (the DECISION is a graph-resident Term the composer authors; the raw POS LOOKUP is the held-faculty call boundary -- domains/language_faculty_ops.py).",
+ "microtheory": {
+  "name": "language_faculty_cue",
+  "description": "which composer builds a LANGUAGE-FILTER faculty (filter -> language_faculty), and the nominal-head leaf it chains."
+ },
+ "nodes": [
+  {
+   "local_id": 0,
+   "type": "RelationCue",
+   "attrs": {
+    "name": "nominal_span_filter",
+    "keywords": [
+     "filter",
+     "filtering",
+     "keep only",
+     "drop fragment",
+     "drop clause"
+    ],
+    "relation": "[\"filter\", \"SPANS\", \"by\", \"NOMINAL\"]"
+   }
+  },
+  {
+   "local_id": 1,
+   "type": "RelationCue",
+   "attrs": {
+    "name": "nominal_head",
+    "keywords": [
+     "nominal",
+     "noun phrase",
+     "noun-phrase",
+     "nominal head"
+    ],
+    "relation": "[\"nominal\", \"SPAN\", \"is\", \"HEAD\"]"
+   }
+  },
+  {
+   "local_id": 2,
+   "type": "ComposerCue",
+   "attrs": {
+    "relation_head": "filter",
+    "composer": "language_faculty",
+    "priority": 24
+   }
+  },
+  {
+   "local_id": 3,
+   "type": "RelationCue",
+   "attrs": {
+    "name": "sense_disambiguate",
+    "keywords": [
+     "disambiguate",
+     "pick sense",
+     "word sense",
+     "which sense",
+     "sense fit"
+    ],
+    "relation": "[\"disambiguate\", \"SENSE\", \"by\", \"CONTEXT\"]"
+   }
+  },
+  {
+   "local_id": 4,
+   "type": "RelationCue",
+   "attrs": {
+    "name": "sense_fit",
+    "keywords": [
+     "sense",
+     "polysemous",
+     "gloss",
+     "meaning fit"
+    ],
+    "relation": "[\"sense\", \"WORD\", \"by\", \"FIT\"]"
+   }
+  },
+  {
+   "local_id": 5,
+   "type": "ComposerCue",
+   "attrs": {
+    "relation_head": "disambiguate",
+    "composer": "language_faculty",
+    "priority": 25
+   }
+  }
+ ],
+ "edges": [],
+ "productions": [],
+ "rules": []
+}

@@ -1,0 +1,4899 @@
+{
+ "id": "vision_eye",
+ "version": "1.2.0",
+ "depends_on": [
+  "vision_waves"
+ ],
+ "description": "THE EYE'S CALIBRATION FRONT END. A log receptor (Weber-Fechner), an adaptive reference theta placed GCAL-style on the activation function (outside the learning rule, where it cannot flip dw's sign), and Engbert's self-avoiding-walk fixational drift. The eye is the layer that establishes the REFERENCE the rest of the substrate is defined against: in log space centre-minus-reference is a RATIO, so the response is invariant to illumination. eye=0 default.",
+ "microtheory": "vision_eye",
+ "nodes": [
+  {
+   "local_id": 0,
+   "type": "EyeParams",
+   "attrs": {
+    "name": "default",
+    "eye": 0.0,
+    "eye_open": 0.0,
+    "phase0": 0.0,
+    "ph0_eta": 0.0005,
+    "logr": 1.0,
+    "i0": 1.0,
+    "homeo": 1.0,
+    "beta": 0.991,
+    "lam": 0.01,
+    "mu": 0.024,
+    "rmax": 1.0,
+    "theta_mode": 0.0,
+    "eta": 0.0005,
+    "frozen": 0.0,
+    "saw": 1.0,
+    "saw_eps": 0.001,
+    "saw_lam": 1.0,
+    "temp": 1.0,
+    "comment": "Every arm in this seed is DATA on this node, never a Python code path (PROTOCOL 0). `eye=0` is the master default-off.",
+    "world_sample": 0.0,
+    "calib": 0.0,
+    "mu_mode": 0.0
+   }
+  }
+ ],
+ "edges": [],
+ "productions": [
+  {
+   "src": {
+    "type": "Eye",
+    "var": "a"
+   },
+   "edge_type": "has_eyecell",
+   "tgt": {
+    "type": "EyeCell",
+    "var": "b"
+   },
+   "provenance": "seed:vision_eye:has_eyecell"
+  },
+  {
+   "src": {
+    "type": "Eye",
+    "var": "a"
+   },
+   "edge_type": "has_wunit",
+   "tgt": {
+    "type": "WUnit",
+    "var": "b"
+   },
+   "provenance": "seed:vision_eye:has_wunit"
+  },
+  {
+   "src": {
+    "type": "Retina",
+    "var": "a"
+   },
+   "edge_type": "has_wclock",
+   "tgt": {
+    "type": "Eye",
+    "var": "b"
+   },
+   "provenance": "seed:vision_eye:has_wclock"
+  },
+  {
+   "src": {
+    "type": "RetinaCell",
+    "var": "a"
+   },
+   "edge_type": "w_pre",
+   "tgt": {
+    "type": "WSynapse",
+    "var": "b"
+   },
+   "provenance": "seed:vision_eye:w_pre"
+  },
+  {
+   "src": {
+    "type": "WSynapse",
+    "var": "a"
+   },
+   "edge_type": "w_post",
+   "tgt": {
+    "type": "WUnit",
+    "var": "b"
+   },
+   "provenance": "seed:vision_eye:w_post"
+  },
+  {
+   "src": {
+    "type": "Eye",
+    "var": "a"
+   },
+   "edge_type": "has_eyeunit",
+   "tgt": {
+    "type": "EyeUnit",
+    "var": "b"
+   },
+   "provenance": "seed:vision_eye:has_eyeunit"
+  },
+  {
+   "src": {
+    "type": "EyeCell",
+    "var": "a"
+   },
+   "edge_type": "ey_pre",
+   "tgt": {
+    "type": "EySynapse",
+    "var": "b"
+   },
+   "provenance": "seed:vision_eye:ey_pre"
+  },
+  {
+   "src": {
+    "type": "EySynapse",
+    "var": "a"
+   },
+   "edge_type": "ey_post",
+   "tgt": {
+    "type": "EyeUnit",
+    "var": "b"
+   },
+   "provenance": "seed:vision_eye:ey_post"
+  },
+  {
+   "src": {
+    "type": "Gaze",
+    "var": "a"
+   },
+   "edge_type": "has_gazecell",
+   "tgt": {
+    "type": "GazeCell",
+    "var": "b"
+   },
+   "provenance": "seed:vision_eye:has_gazecell"
+  },
+  {
+   "src": {
+    "type": "Gaze",
+    "var": "a"
+   },
+   "edge_type": "gaze_at",
+   "tgt": {
+    "type": "GazeCell",
+    "var": "b"
+   },
+   "provenance": "seed:vision_eye:gaze_at"
+  },
+  {
+   "src": {
+    "type": "GazeCell",
+    "var": "a"
+   },
+   "edge_type": "gaze_neighbour",
+   "tgt": {
+    "type": "GazeCell",
+    "var": "b"
+   },
+   "provenance": "seed:vision_eye:gaze_neighbour"
+  },
+  {
+   "src": {
+    "type": "Eye",
+    "var": "a"
+   },
+   "edge_type": "has_gaze",
+   "tgt": {
+    "type": "Gaze",
+    "var": "b"
+   },
+   "provenance": "seed:vision_eye"
+  },
+  {
+   "src": {
+    "type": "World",
+    "var": "a"
+   },
+   "edge_type": "has_worldcell",
+   "tgt": {
+    "type": "WorldCell",
+    "var": "b"
+   },
+   "provenance": "seed:vision_eye"
+  },
+  {
+   "src": {
+    "type": "RetinaCell",
+    "var": "a"
+   },
+   "edge_type": "endo_drives",
+   "tgt": {
+    "type": "EyeCell",
+    "var": "b"
+   },
+   "provenance": "seed:vision_eye"
+  }
+ ],
+ "rules": [
+  {
+   "name": "ey_sample_at_gaze",
+   "comment": "THE DRIFT MOVES THE IMAGE. Each receptor's `lum` is the luminance of the WorldCell it currently overlies, and the gaze position is what decides which one that is: world(row,col) = gaze(row,col) + receptor(row,col). So the gaze is the top-left corner of the retinal window in world coordinates -- no centring constant is needed or used. THIS IS THE SAMPLING DECISION AND IT IS THE GRAPH'S: the adapter states the photon count at each world location (photons exist at places -- physics, legitimately given, exactly as the retina's adjacency is in PreVisualWorld's docstring), and never says which receptor sees which photon. FM-0 measured the previous arrangement VACUOUS: `present()` wrote frame[r,c] and never called gaze_pos(), so D == 0.0 EXACTLY on lum/x/theta/resp -- the walk's only consumer was the ruler that measured it. Gated `world_sample`, default 0 (PROTOCOL 9). NOT gated by `saw`: freezing the walk must leave the sampling intact and simply stop moving it, or the ablation would confound 'no drift' with 'no image' -- which is the Troxler arm's whole point.",
+   "match_type": "EyeCell",
+   "match": [
+    [
+     "e",
+     "has_eyecell",
+     "c"
+    ],
+    [
+     "e",
+     "has_gaze",
+     "g"
+    ],
+    [
+     "g",
+     "gaze_at",
+     "gc"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "EyeParams"
+        }
+       },
+       "key": "eye"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "EyeParams"
+        }
+       },
+       "key": "world_sample"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "lum_step"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "e"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "c",
+     "lum",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "WorldCell"
+         },
+         "var_name": "w",
+         "predicate": {
+          "type": "And",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "w"
+             },
+             "key": "row"
+            },
+            "b": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "gc"
+               },
+               "key": "row"
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "c"
+               },
+               "key": "row"
+              }
+             ]
+            }
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "w"
+             },
+             "key": "col"
+            },
+            "b": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "gc"
+               },
+               "key": "col"
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "c"
+               },
+               "key": "col"
+              }
+             ]
+            }
+           }
+          ]
+         }
+        }
+       },
+       "key": "lum"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "c",
+     "lum_step",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "e"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "ey_receptor_log",
+   "comment": "WEBER-FECHNER: the photoreceptor responds to log(I). This is why vision spans ~10 orders of magnitude of illumination, and it is the FRAME FIX for this ladder: in log space an illumination change x k is the ADDITIVE constant log k, so the reference-subtraction downstream removes it exactly. `i0` is the dark light (Weber's I0) and is load-bearing for more than biology: the engine's Log returns -inf at 0, and a retina must have a finite response to a black pixel.",
+   "match_type": "EyeCell",
+   "match": [
+    [
+     "e",
+     "has_eyecell",
+     "c"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "EyeParams"
+        }
+       },
+       "key": "eye"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "EyeParams"
+        }
+       },
+       "key": "logr"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "x_step"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "e"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "c",
+     "x",
+     {
+      "__term__": {
+       "type": "Log",
+       "arg": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "c"
+          },
+          "key": "lum"
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "PickUnique",
+           "source": {
+            "type": "NodesOfType",
+            "node_type": "EyeParams"
+           }
+          },
+          "key": "i0"
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "c",
+     "x_step",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "e"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "ey_receptor_lin",
+   "comment": "The LINEAR arm \u2014 the control for the illumination-invariance gate, and the regime every earlier rung ran in. Same datum, same downstream theta, same rectification; only the receptor nonlinearity differs, selected by `logr` as data. Prediction: this arm's response MOVES with illumination, because an adaptive reference can subtract an additive constant but cannot undo a multiplicative gain.",
+   "match_type": "EyeCell",
+   "match": [
+    [
+     "e",
+     "has_eyecell",
+     "c"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "EyeParams"
+        }
+       },
+       "key": "eye"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "EyeParams"
+        }
+       },
+       "key": "logr"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "x_step"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "e"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "c",
+     "x",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "lum"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "c",
+     "x_step",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "e"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "ey_endo_resp",
+   "comment": "THE PRE-VISUAL PHASE: the cell's output IS its own spontaneous burst. Before eye-opening there is no light, and the retina is not silent -- it generates waves. `resp := bursting` of the RetinaCell at this receptor's OWN location. DELIBERATELY NOT ROUTED THROUGH `lum`: a wave is not light, and laundering it through the log receptor would model the amacrine network as a photon source. `wave_world.drive` states the biology this follows -- two pathways (waves via the inner retina, light via the photoreceptors) converging on one RGC output. Gated `calib`, default 0 (PROTOCOL \u00a79).",
+   "match_type": "EyeCell",
+   "match": [
+    [
+     "e",
+     "has_eyecell",
+     "c"
+    ],
+    [
+     "rc",
+     "endo_drives",
+     "c"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "EyeParams"
+        }
+       },
+       "key": "eye"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "EyeParams"
+        }
+       },
+       "key": "calib"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "resp_step"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "e"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "c",
+     "resp",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "rc"
+       },
+       "key": "bursting"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "c",
+     "resp_step",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "e"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "ey_xbar",
+   "comment": "The cell's own trailing mean OUTPUT (GCAL Eq. 7, beta=0.991): xbar = beta*xbar + (1-beta)*resp. IT IS THE OUTPUT, NOT THE DRIVE, AND THAT IS THE WHOLE CONTROLLER. Measured the wrong way round first: EMA-ing the DRIVE makes theta a one-way ratchet \u2014 theta rises whenever x > mu, nothing it does to resp ever feeds back, and it climbs until every response is pinned at 0 (measured: mean resp exactly 0.000000 at every illumination, in BOTH the log and linear arms \u2014 a null instrument that would have passed the invariance gate for the most trivial possible reason, 0 == 0). EMA-ing the OUTPUT closes the loop: theta rises only while the cell is firing ABOVE target and stops exactly when its mean output sits at mu. Gated on resp_step==step so it reads an output this step has already computed, and on `frozen` because adaptation IS plasticity: a probe must never let the reference chase the probe (rung 5 learned this the hard way \u2014 `oja=0` was not a freeze and moved weights by 47.9 per probe).",
+   "match_type": "EyeCell",
+   "match": [
+    [
+     "e",
+     "has_eyecell",
+     "c"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "EyeParams"
+        }
+       },
+       "key": "eye"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "EyeParams"
+        }
+       },
+       "key": "frozen"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "EyeParams"
+        }
+       },
+       "key": "homeo"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "xbar_step"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "e"
+       },
+       "key": "step"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "resp_step"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "e"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "c",
+     "xbar",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Times",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "PickUnique",
+            "source": {
+             "type": "NodesOfType",
+             "node_type": "EyeParams"
+            }
+           },
+           "key": "beta"
+          },
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "c"
+           },
+           "key": "xbar"
+          }
+         ]
+        },
+        {
+         "type": "Times",
+         "items": [
+          {
+           "type": "Minus",
+           "a": {
+            "type": "Lit",
+            "value": 1.0
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "PickUnique",
+             "source": {
+              "type": "NodesOfType",
+              "node_type": "EyeParams"
+             }
+            },
+            "key": "beta"
+           }
+          },
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "c"
+           },
+           "key": "resp"
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "c",
+     "xbar_step",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "e"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "ey_endo_latch",
+   "comment": "THE SETPOINT FALLS OUT, AND IT IS A CUMULATIVE MEAN, NOT AN EMA: mu_endo_n = mu_endo_{n-1} + (resp - mu_endo_{n-1})/n, i.e. the running average of every endogenous output the cell has ever produced. MEASURED FIRST, THEN FIXED (PROTOCOL \u00a72). The first cut latched `xbar` -- the cell's existing EMA (beta=0.991) -- and \u00a72 caught it: an EMA is a TRACKING FILTER, not an estimator. Its variance does not decay (steady-state SD ~ sqrt(p(1-p)(1-beta)/(1+beta)) ~ 0.024 at p=0.146), so it fluctuates forever and HAS NO STABLE FIXED POINT -- exactly the condition \u00a72 says cannot model development, where prolonged exposure to formative statistics STABILISES a representation. Measured: the EMA tracked the input's mean correctly (0.1437 vs 0.1462) but its L2 drift sat at ~0.078 and never approached 0. A cumulative mean's variance falls as 1/n, so it CONVERGES to E[resp] -- the endogenous rate -- and the drift genuinely goes to zero. IT ALSO REMOVES THE LAST IMPORTED CONSTANT FROM THE SETPOINT PATH: beta=0.991 is GCAL's too, and the setpoint no longer touches it. What `mu_endo` falls out of is now ONLY the cell's own spontaneous output and the number of steps it has lived -- no constant of anyone's. When `calib` goes to 0 the rule stops firing and `mu_endo` HOLDS: the setpoint the system established for itself before it ever saw anything. Both effects read the PRE-state `mu_n`, so the update is correct under either simultaneous or sequential effect semantics.",
+   "match_type": "EyeCell",
+   "match": [
+    [
+     "e",
+     "has_eyecell",
+     "c"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "EyeParams"
+        }
+       },
+       "key": "eye"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "EyeParams"
+        }
+       },
+       "key": "calib"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "mu_endo_step"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "e"
+       },
+       "key": "step"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "resp_step"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "e"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "c",
+     "mu_endo",
+     {
+      "__term__": {
+       "type": "Div",
+       "a": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Times",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "c"
+            },
+            "key": "mu_endo"
+           },
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "c"
+            },
+            "key": "mu_n"
+           }
+          ]
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "c"
+          },
+          "key": "resp"
+         }
+        ]
+       },
+       "b": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "c"
+          },
+          "key": "mu_n"
+         },
+         {
+          "type": "Lit",
+          "value": 1.0
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "c",
+     "mu_n",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "c"
+         },
+         "key": "mu_n"
+        },
+        {
+         "type": "Lit",
+         "value": 1.0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "c",
+     "mu_endo_step",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "e"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "ey_adapt_theta",
+   "comment": "GCAL Eq. 8: theta drifts to hold the cell's mean drive at the target rate mu. THE REFERENCE POINT, and it is the creator's claim made mechanical \u2014 there is no absolute zero, only a reference, and the eye is what establishes it. Placed OUTSIDE the learning rule (VISION_PRIOR_ART.md 2.3): it shifts the activation function and cannot flip the sign of dw. `theta_mode<0.5` selects this placement; the BCM arm below is the same variable in the opposite place.",
+   "match_type": "EyeCell",
+   "match": [
+    [
+     "e",
+     "has_eyecell",
+     "c"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "EyeParams"
+        }
+       },
+       "key": "eye"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "EyeParams"
+        }
+       },
+       "key": "frozen"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "EyeParams"
+        }
+       },
+       "key": "homeo"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "EyeParams"
+        }
+       },
+       "key": "theta_mode"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "theta_step"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "e"
+       },
+       "key": "step"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "xbar_step"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "e"
+       },
+       "key": "step"
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "EyeParams"
+        }
+       },
+       "key": "calib"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "EyeParams"
+        }
+       },
+       "key": "mu_mode"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "c",
+     "theta",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "c"
+         },
+         "key": "theta"
+        },
+        {
+         "type": "Times",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "PickUnique",
+            "source": {
+             "type": "NodesOfType",
+             "node_type": "EyeParams"
+            }
+           },
+           "key": "lam"
+          },
+          {
+           "type": "Minus",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "c"
+            },
+            "key": "xbar"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "PickUnique",
+             "source": {
+              "type": "NodesOfType",
+              "node_type": "EyeParams"
+             }
+            },
+            "key": "mu"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "c",
+     "theta_step",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "e"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "ey_adapt_theta_endo",
+   "comment": "GCAL Eq. 8 with the imported constant REMOVED: theta drifts to hold the cell's mean output at the setpoint THE CELL MEASURED IN ITSELF (`mu_endo`), not at a number from someone else's frame. Structurally identical to `ey_adapt_theta` in every other respect -- same lam, same placement outside the learning rule, same step gates -- so the ONLY difference between the arms is where the setpoint came from. That is what makes this a controlled comparison rather than two models. Gated `mu_mode>0.5`, default 0 (PROTOCOL \u00a79); the imported-constant rule carries the complementary `mu_mode<0.5` guard, which is TRUE at the default, so every committed result reproduces byte-identically.",
+   "match_type": "EyeCell",
+   "match": [
+    [
+     "e",
+     "has_eyecell",
+     "c"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "EyeParams"
+        }
+       },
+       "key": "eye"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "EyeParams"
+        }
+       },
+       "key": "frozen"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "EyeParams"
+        }
+       },
+       "key": "homeo"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "EyeParams"
+        }
+       },
+       "key": "calib"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "EyeParams"
+        }
+       },
+       "key": "mu_mode"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "EyeParams"
+        }
+       },
+       "key": "theta_mode"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "theta_step"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "e"
+       },
+       "key": "step"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "xbar_step"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "e"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "c",
+     "theta",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "c"
+         },
+         "key": "theta"
+        },
+        {
+         "type": "Times",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "PickUnique",
+            "source": {
+             "type": "NodesOfType",
+             "node_type": "EyeParams"
+            }
+           },
+           "key": "lam"
+          },
+          {
+           "type": "Minus",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "c"
+            },
+            "key": "xbar"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "c"
+            },
+            "key": "mu_endo"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "c",
+     "theta_step",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "e"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "ey_response",
+   "comment": "THE CALIBRATED OUTPUT: resp = max(x - theta, 0). In log mode this is log(I) - theta = log(I/exp(theta)) \u2014 A RATIO against the cell's own adapted reference, and therefore invariant to illumination. That identity is the creator's claim in one line: log(a) - log(b) = log(a/b), so there is no absolute zero here, only a reference, and theta IS the reference. ORDERING: this fires as soon as the drive exists, using the theta the PREVIOUS step left. resp -> xbar -> theta -> (next step) resp is a feedback loop, and the one-step delay is what keeps it a loop rather than a race inside one fixpoint. Deliberately NOT gated by `frozen`: a frozen cell must still respond, or the probe measures silence (rung 6's lesson).",
+   "match_type": "EyeCell",
+   "match": [
+    [
+     "e",
+     "has_eyecell",
+     "c"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "EyeParams"
+        }
+       },
+       "key": "eye"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "resp_step"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "e"
+       },
+       "key": "step"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "x_step"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "e"
+       },
+       "key": "step"
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "EyeParams"
+        }
+       },
+       "key": "calib"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "c",
+     "resp",
+     {
+      "__term__": {
+       "type": "Min",
+       "items": [
+        {
+         "type": "Max",
+         "items": [
+          {
+           "type": "Minus",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "c"
+            },
+            "key": "x"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "c"
+            },
+            "key": "theta"
+           }
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        },
+        {
+         "type": "Attr",
+         "node": {
+          "type": "PickUnique",
+          "source": {
+           "type": "NodesOfType",
+           "node_type": "EyeParams"
+          }
+         },
+         "key": "rmax"
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "c",
+     "resp_step",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "e"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "ey_saw_potential",
+   "comment": "u(i,j) = lam*L*[((i-i0)/i0)^2 + ((j-j0)/j0)^2], Engbert's quadratic centering potential, VERBATIM including the L factor. The L is NOT decoration and was measured: h increments by exactly 1.0 per visit, so without L the potential maxes out at lam=1 at the lattice edge and the trail overwhelms it after a single visit \u2014 the walk then never turns around, and the long-lag ANTIpersistence (the half of Engbert's signature the potential is solely responsible for) is absent (measured: alpha_long 1.164, i.e. still superdiffusive, where the paper reports 0.71). L puts the potential on the same scale as the trail it competes with. `L` is the lattice's own size, which the adapter states as geometry exactly as it states who neighbours whom; lam stays the published constant 1.0. Fires once per cell (u_set guard), being time-invariant.",
+   "match_type": "GazeCell",
+   "match": [
+    [
+     "g",
+     "has_gazecell",
+     "c"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "EyeParams"
+        }
+       },
+       "key": "eye"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "u_set"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "c",
+     "u",
+     {
+      "__term__": {
+       "type": "Times",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "PickUnique",
+          "source": {
+           "type": "NodesOfType",
+           "node_type": "EyeParams"
+          }
+         },
+         "key": "saw_lam"
+        },
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "L"
+        },
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Pow",
+           "a": {
+            "type": "Div",
+            "a": {
+             "type": "Minus",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "c"
+              },
+              "key": "row"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "g"
+              },
+              "key": "cy"
+             }
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "g"
+             },
+             "key": "cy"
+            }
+           },
+           "b": {
+            "type": "Lit",
+            "value": 2.0
+           }
+          },
+          {
+           "type": "Pow",
+           "a": {
+            "type": "Div",
+            "a": {
+             "type": "Minus",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "c"
+              },
+              "key": "col"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "g"
+              },
+              "key": "cx"
+             }
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "g"
+             },
+             "key": "cx"
+            }
+           },
+           "b": {
+            "type": "Lit",
+            "value": 2.0
+           }
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "c",
+     "u_set",
+     {
+      "__term__": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "ey_saw_relax",
+   "comment": "h -> (1-eps)*h at EVERY site. eps=1e-3: the relaxation is SLOW, and 3.2 is explicit that this is what makes the walk persistent \u2014 the trail has to outlive the walker for self-avoidance to bend the path.",
+   "match_type": "GazeCell",
+   "match": [
+    [
+     "g",
+     "has_gazecell",
+     "c"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "EyeParams"
+        }
+       },
+       "key": "eye"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "EyeParams"
+        }
+       },
+       "key": "saw"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "h_step"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "c",
+     "h",
+     {
+      "__term__": {
+       "type": "Times",
+       "items": [
+        {
+         "type": "Minus",
+         "a": {
+          "type": "Lit",
+          "value": 1.0
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "PickUnique",
+           "source": {
+            "type": "NodesOfType",
+            "node_type": "EyeParams"
+           }
+          },
+          "key": "saw_eps"
+         }
+        },
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "c"
+         },
+         "key": "h"
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "c",
+     "h_step",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "ey_saw_deposit",
+   "comment": "h -> h + 1 at the OCCUPIED site: the walk lays its own trail, and the trail is what it then avoids. Guarded on h_step==step so the deposit lands AFTER this step's relaxation and is never itself decayed in the same pass.",
+   "match_type": "GazeCell",
+   "match": [
+    [
+     "g",
+     "gaze_at",
+     "c"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "EyeParams"
+        }
+       },
+       "key": "eye"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "EyeParams"
+        }
+       },
+       "key": "saw"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "h_step"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "step"
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "dep_step"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "c",
+     "h",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "c"
+         },
+         "key": "h"
+        },
+        {
+         "type": "Lit",
+         "value": 1.0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "c",
+     "dep_step",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "ey_saw_move",
+   "comment": "THE WALK: step to the neighbour minimising { h + u - temp*gum }. Self-avoidance (h) pushes it off its own trail \u2014 locally directional, which is the whole point: `gaze_walk` is ballistic-then-MEMORYLESS, so it has no direction correlation ACROSS epochs, and the signal it does carry within an epoch is averaged away. The potential (u) pulls it back to centre. The Gumbel term makes the selection a Boltzmann sample (see the module docstring) rather than the cardinal-axis-artifacted deterministic argmin. NO DIRECTION IS EVER TOLD TO THE MODEL: the walk is locally directional from its own trail and globally rotation-symmetric \u2014 3.2's crux. STRUCTURE: `add_edge`'s target must be a MATCH VAR, not a computed Term, so the candidate `k` is matched over `c`'s neighbours and the winner is picked by identity-Eq against the Argmin \u2014 `Eq` compares Value::Node by id, the same idiom `retire_duplicate_gap` uses to choose one survivor from a fixed snapshot within a pass (CLAUDE.md).",
+   "match_type": "GazeCell",
+   "match": [
+    [
+     "g",
+     "gaze_at",
+     "c"
+    ],
+    [
+     "c",
+     "gaze_neighbour",
+     "k"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "EyeParams"
+        }
+       },
+       "key": "eye"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "EyeParams"
+        }
+       },
+       "key": "saw"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "dep_step"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "step"
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "move_step"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "step"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Var",
+       "name": "k"
+      },
+      "b": {
+       "type": "Argmin",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "c"
+        },
+        "edge_type": "gaze_neighbour",
+        "any_type": false
+       },
+       "var_name": "z",
+       "value": {
+        "type": "Minus",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "z"
+           },
+           "key": "h"
+          },
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "z"
+           },
+           "key": "u"
+          }
+         ]
+        },
+        "b": {
+         "type": "Times",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "PickUnique",
+            "source": {
+             "type": "NodesOfType",
+             "node_type": "EyeParams"
+            }
+           },
+           "key": "temp"
+          },
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "z"
+           },
+           "key": "gum"
+          }
+         ]
+        }
+       },
+       "default": null
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "del_edge",
+     "g",
+     "gaze_at",
+     "c"
+    ],
+    [
+     "add_edge",
+     "g",
+     "gaze_at",
+     "k"
+    ],
+    [
+     "set_attr",
+     "g",
+     "move_step",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "ey_unit_act",
+   "comment": "The unit's drive: sum of weight * presynaptic resp.",
+   "match_type": "EyeUnit",
+   "match": [
+    [
+     "e",
+     "has_eyeunit",
+     "u"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "EyeParams"
+        }
+       },
+       "key": "eye"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "act_step"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "e"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "u",
+     "act",
+     {
+      "__term__": {
+       "type": "Fold",
+       "source": {
+        "type": "InNeighbours",
+        "node": {
+         "type": "Var",
+         "name": "u"
+        },
+        "edge_type": "ey_post",
+        "any_type": false
+       },
+       "var_name": "sy",
+       "acc_name": "acc",
+       "init": {
+        "type": "Lit",
+        "value": 0.0
+       },
+       "body": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Var",
+          "name": "acc"
+         },
+         {
+          "type": "Times",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "sy"
+            },
+            "key": "weight"
+           },
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Pick",
+             "source": {
+              "type": "InNeighbours",
+              "node": {
+               "type": "Var",
+               "name": "sy"
+              },
+              "edge_type": "ey_pre",
+              "any_type": false
+             }
+            },
+            "key": "resp"
+           }
+          ]
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "u",
+     "act_step",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "e"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "ey_unit_rate_outside",
+   "comment": "THETA OUTSIDE (GCAL): the threshold is on the ACTIVATION FUNCTION \u2014 rate = max(act - utheta, 0). It shifts the f-I curve, and dw below reads `rate`, never `utheta`. There is no path by which this theta can change the SIGN of dw.",
+   "match_type": "EyeUnit",
+   "match": [
+    [
+     "e",
+     "has_eyeunit",
+     "u"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "EyeParams"
+        }
+       },
+       "key": "eye"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "EyeParams"
+        }
+       },
+       "key": "theta_mode"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "rate_step"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "e"
+       },
+       "key": "step"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "act_step"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "e"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "u",
+     "rate",
+     {
+      "__term__": {
+       "type": "Min",
+       "items": [
+        {
+         "type": "Max",
+         "items": [
+          {
+           "type": "Minus",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "u"
+            },
+            "key": "act"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "u"
+            },
+            "key": "utheta"
+           }
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        },
+        {
+         "type": "Attr",
+         "node": {
+          "type": "PickUnique",
+          "source": {
+           "type": "NodesOfType",
+           "node_type": "EyeParams"
+          }
+         },
+         "key": "rmax"
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "u",
+     "rate_step",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "e"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "ey_unit_rate_inside",
+   "comment": "THETA INSIDE (BCM): the activation function carries NO ADAPTIVE threshold \u2014 rate is the rectified, saturated drive with theta ABSENT, and theta appears instead inside dw, where it gates the sign. IDENTICAL TRANSFER FUNCTION, at a FIXED threshold of 0: the same rectification and the same rmax saturation as the outside arm. That is load-bearing for the comparison \u2014 if only one arm saturated, the contrast would confound theta's PLACEMENT (the thing under test) with the presence of a bound (a thing that is not). The arms differ in exactly one respect: WHERE theta sits.",
+   "match_type": "EyeUnit",
+   "match": [
+    [
+     "e",
+     "has_eyeunit",
+     "u"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "EyeParams"
+        }
+       },
+       "key": "eye"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "EyeParams"
+        }
+       },
+       "key": "theta_mode"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "rate_step"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "e"
+       },
+       "key": "step"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "act_step"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "e"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "u",
+     "rate",
+     {
+      "__term__": {
+       "type": "Min",
+       "items": [
+        {
+         "type": "Max",
+         "items": [
+          {
+           "type": "Minus",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "u"
+            },
+            "key": "act"
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0.0
+           }
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        },
+        {
+         "type": "Attr",
+         "node": {
+          "type": "PickUnique",
+          "source": {
+           "type": "NodesOfType",
+           "node_type": "EyeParams"
+          }
+         },
+         "key": "rmax"
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "u",
+     "rate_step",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "e"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "ey_unit_actbar",
+   "comment": "The unit's trailing mean rate (GCAL Eq. 7 at the unit grain).",
+   "match_type": "EyeUnit",
+   "match": [
+    [
+     "e",
+     "has_eyeunit",
+     "u"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "EyeParams"
+        }
+       },
+       "key": "eye"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "EyeParams"
+        }
+       },
+       "key": "frozen"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "EyeParams"
+        }
+       },
+       "key": "homeo"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "actbar_step"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "e"
+       },
+       "key": "step"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "rate_step"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "e"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "u",
+     "actbar",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Times",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "PickUnique",
+            "source": {
+             "type": "NodesOfType",
+             "node_type": "EyeParams"
+            }
+           },
+           "key": "beta"
+          },
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "u"
+           },
+           "key": "actbar"
+          }
+         ]
+        },
+        {
+         "type": "Times",
+         "items": [
+          {
+           "type": "Minus",
+           "a": {
+            "type": "Lit",
+            "value": 1.0
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "PickUnique",
+             "source": {
+              "type": "NodesOfType",
+              "node_type": "EyeParams"
+             }
+            },
+            "key": "beta"
+           }
+          },
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "u"
+           },
+           "key": "rate"
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "u",
+     "actbar_step",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "e"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "ey_unit_adapt_utheta",
+   "comment": "GCAL Eq. 8 at the unit: utheta += lam*(actbar - mu). The OUTSIDE placement's homeostat.",
+   "match_type": "EyeUnit",
+   "match": [
+    [
+     "e",
+     "has_eyeunit",
+     "u"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "EyeParams"
+        }
+       },
+       "key": "eye"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "EyeParams"
+        }
+       },
+       "key": "frozen"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "EyeParams"
+        }
+       },
+       "key": "homeo"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "EyeParams"
+        }
+       },
+       "key": "theta_mode"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "utheta_step"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "e"
+       },
+       "key": "step"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "actbar_step"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "e"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "u",
+     "utheta",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "u"
+         },
+         "key": "utheta"
+        },
+        {
+         "type": "Times",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "PickUnique",
+            "source": {
+             "type": "NodesOfType",
+             "node_type": "EyeParams"
+            }
+           },
+           "key": "lam"
+          },
+          {
+           "type": "Minus",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "u"
+            },
+            "key": "actbar"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "PickUnique",
+             "source": {
+              "type": "NodesOfType",
+              "node_type": "EyeParams"
+             }
+            },
+            "key": "mu"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "u",
+     "utheta_step",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "e"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "ey_bcm_theta",
+   "comment": "BCM's SLIDING THRESHOLD: btheta = EMA(rate^2)/mu. The classic Bienenstock-Cooper-Munro homeostat \u2014 and note it tracks the SQUARE of the rate, so it accelerates away from a rising cell far faster than GCAL's linear tracker. When it outruns activity, every synapse depresses.",
+   "match_type": "EyeUnit",
+   "match": [
+    [
+     "e",
+     "has_eyeunit",
+     "u"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "EyeParams"
+        }
+       },
+       "key": "eye"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "EyeParams"
+        }
+       },
+       "key": "frozen"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "EyeParams"
+        }
+       },
+       "key": "theta_mode"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "btheta_step"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "e"
+       },
+       "key": "step"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "rate_step"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "e"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "u",
+     "btheta",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Times",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "PickUnique",
+            "source": {
+             "type": "NodesOfType",
+             "node_type": "EyeParams"
+            }
+           },
+           "key": "beta"
+          },
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "u"
+           },
+           "key": "btheta"
+          }
+         ]
+        },
+        {
+         "type": "Times",
+         "items": [
+          {
+           "type": "Minus",
+           "a": {
+            "type": "Lit",
+            "value": 1.0
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "PickUnique",
+             "source": {
+              "type": "NodesOfType",
+              "node_type": "EyeParams"
+             }
+            },
+            "key": "beta"
+           }
+          },
+          {
+           "type": "Div",
+           "a": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "u"
+              },
+              "key": "rate"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "u"
+              },
+              "key": "rate"
+             }
+            ]
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "PickUnique",
+             "source": {
+              "type": "NodesOfType",
+              "node_type": "EyeParams"
+             }
+            },
+            "key": "mu"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "u",
+     "btheta_step",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "e"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "ey_learn_outside",
+   "comment": "THE OUTSIDE ARM'S LEARNING RULE: Oja. dw = eta*rate*(x - rate*w). Sign-fixed Hebbian plus the multiplicative decay that bounds it \u2014 which VISION_PRIOR_ART.md 2.4 establishes is GCAL's own divisive normalisation to first order (they use L1, this is L2; this tree's rung 2 rediscovered the field's standard stabiliser, and it should be cited as such, not claimed). `utheta` does NOT appear here. That is the entire architectural claim.",
+   "match_type": "EySynapse",
+   "match": [
+    [
+     "p",
+     "ey_pre",
+     "sy"
+    ],
+    [
+     "sy",
+     "ey_post",
+     "u"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "EyeParams"
+        }
+       },
+       "key": "eye"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "EyeParams"
+        }
+       },
+       "key": "frozen"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "EyeParams"
+        }
+       },
+       "key": "theta_mode"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "sy"
+       },
+       "key": "touched"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "rate_step"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "sy",
+     "weight",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "sy"
+         },
+         "key": "weight"
+        },
+        {
+         "type": "Times",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "PickUnique",
+            "source": {
+             "type": "NodesOfType",
+             "node_type": "EyeParams"
+            }
+           },
+           "key": "eta"
+          },
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "u"
+           },
+           "key": "rate"
+          },
+          {
+           "type": "Minus",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "p"
+            },
+            "key": "resp"
+           },
+           "b": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "u"
+              },
+              "key": "rate"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "sy"
+              },
+              "key": "weight"
+             }
+            ]
+           }
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "sy",
+     "touched",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "rate_step"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "ey_learn_bcm",
+   "comment": "THE INSIDE ARM'S LEARNING RULE: dw = eta*rate*(rate - btheta)*x. `btheta` is INSIDE the rule and multiplies dw \u2014 when btheta > rate the term goes NEGATIVE and every synapse depresses. Same variable as the outside arm's utheta, opposite architecture; VISION_PRIOR_ART.md 2.3's prediction is that this placement is the one that can annihilate, and this tree already measured it doing so (0.004).",
+   "match_type": "EySynapse",
+   "match": [
+    [
+     "p",
+     "ey_pre",
+     "sy"
+    ],
+    [
+     "sy",
+     "ey_post",
+     "u"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "EyeParams"
+        }
+       },
+       "key": "eye"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "EyeParams"
+        }
+       },
+       "key": "frozen"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "EyeParams"
+        }
+       },
+       "key": "theta_mode"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "sy"
+       },
+       "key": "touched"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "rate_step"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "sy",
+     "weight",
+     {
+      "__term__": {
+       "type": "Max",
+       "items": [
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "sy"
+           },
+           "key": "weight"
+          },
+          {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "PickUnique",
+              "source": {
+               "type": "NodesOfType",
+               "node_type": "EyeParams"
+              }
+             },
+             "key": "eta"
+            },
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "u"
+             },
+             "key": "rate"
+            },
+            {
+             "type": "Minus",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "u"
+              },
+              "key": "rate"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "u"
+              },
+              "key": "btheta"
+             }
+            },
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "p"
+             },
+             "key": "resp"
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "sy",
+     "touched",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "rate_step"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "ph0_wunit_act",
+   "comment": "The pre-visual unit's drive: sum of weight * the presynaptic retinal cell's BURST. `bursting` is ENDOGENOUS activity \u2014 a wave, not a photon \u2014 so this rule involves no phototransduction and is deliberately NOT gated on eye_open. This is what a unit can know before the eye opens.",
+   "match_type": "WUnit",
+   "match": [
+    [
+     "e",
+     "has_wunit",
+     "u"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "EyeParams"
+        }
+       },
+       "key": "eye"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "EyeParams"
+        }
+       },
+       "key": "phase0"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "act_step"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "e"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "u",
+     "act",
+     {
+      "__term__": {
+       "type": "Fold",
+       "source": {
+        "type": "InNeighbours",
+        "node": {
+         "type": "Var",
+         "name": "u"
+        },
+        "edge_type": "w_post",
+        "any_type": false
+       },
+       "var_name": "sy",
+       "acc_name": "acc",
+       "init": {
+        "type": "Lit",
+        "value": 0.0
+       },
+       "body": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Var",
+          "name": "acc"
+         },
+         {
+          "type": "Times",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "sy"
+            },
+            "key": "weight"
+           },
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Pick",
+             "source": {
+              "type": "InNeighbours",
+              "node": {
+               "type": "Var",
+               "name": "sy"
+              },
+              "edge_type": "w_pre",
+              "any_type": false
+             }
+            },
+            "key": "bursting"
+           }
+          ]
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "u",
+     "act_step",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "e"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "ph0_wunit_rate",
+   "comment": "The same bounded transfer function as phase 1, at a fixed threshold of 0: rectify and saturate at rmax. No adaptive theta here \u2014 theta is a PHOTOMETRIC gain and there is no light yet.",
+   "match_type": "WUnit",
+   "match": [
+    [
+     "e",
+     "has_wunit",
+     "u"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "EyeParams"
+        }
+       },
+       "key": "eye"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "EyeParams"
+        }
+       },
+       "key": "phase0"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "rate_step"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "e"
+       },
+       "key": "step"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "act_step"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "e"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "u",
+     "rate",
+     {
+      "__term__": {
+       "type": "Min",
+       "items": [
+        {
+         "type": "Max",
+         "items": [
+          {
+           "type": "Minus",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "u"
+            },
+            "key": "act"
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0.0
+           }
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        },
+        {
+         "type": "Attr",
+         "node": {
+          "type": "PickUnique",
+          "source": {
+           "type": "NodesOfType",
+           "node_type": "EyeParams"
+          }
+         },
+         "key": "rmax"
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "u",
+     "rate_step",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "e"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "ph0_wunit_winner",
+   "comment": "WINNER-TAKE-ALL \u2014 and this rung MEASURED why it is not optional. Without competition every unit sees the same wave, and Oja drives all of them to the same fixed point: the mean wave, which over an isotropic ensemble of wave locations is UNIFORM over the sheet. Measured exactly that \u2014 all six units at spread 6.52 against a diffuse floor of 6.52, i.e. no refinement, while the rule was demonstrably live (units active, max|dw| 1.8e-2). That is rung 5's result recurring at a third layer ('a contraction to the mean of an isotropic distribution is the mean'), and rung 1's own wv_unit_burst_winner already says so in its comment: 'without it every unit sees the same wave and the burst rule drives them all to the same receptive field'. So competition is the mechanism that makes a POPULATION differentiate \u2014 it breaks the symmetry between units, and each unit then specialises on the region it happens to win. NOTE WHAT THIS DOES AND DOES NOT HAND OVER: WTA supplies COMPETITION, not TOPOLOGY. No unit is told where to look; which region each one captures, and hence the whole map, still has to be grown out of the waves' own statistics. Same Argmax-over-`act` + identity-Eq idiom as rung 1 (Eq compares Value::Node by id). act>0 required, so a silent step crowns no winner.",
+   "match_type": "WUnit",
+   "match": [
+    [
+     "e",
+     "has_wunit",
+     "u"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "EyeParams"
+        }
+       },
+       "key": "eye"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "EyeParams"
+        }
+       },
+       "key": "phase0"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "win_step"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "e"
+       },
+       "key": "step"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "rate_step"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "e"
+       },
+       "key": "step"
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "act"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Var",
+       "name": "u"
+      },
+      "b": {
+       "type": "Argmax",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "e"
+        },
+        "edge_type": "has_wunit",
+        "any_type": false
+       },
+       "var_name": "z",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "z"
+        },
+        "key": "act"
+       },
+       "default": null
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "u",
+     "winner",
+     {
+      "__term__": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "u",
+     "win_step",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "e"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "ph0_learn_retinotopy",
+   "comment": "RETINOTOPIC REFINEMENT \u2014 the rung's headline, and the one thing here that rung 4 was handed instead of growing. Oja on the wave burst: dw = eta*rate*(x - rate*w), the same contraction rung 2 established and the same one GCAL uses in its L1 form (VISION_PRIOR_ART.md \u00a72.4 \u2014 a rediscovery, cited, not claimed). The unit begins connected to EVERY retinal cell with random weight \u2014 no retinotopy, no spatial prior \u2014 and Oja's fixed point is the leading PC of the input covariance. Under WAVES that covariance is spatially correlated, so the leading PC is a LOCALISED BLOB and the RF contracts onto a patch: the map is grown. Under rung 1's `propagate=0` NOISE control the covariance is white, every direction is degenerate, and there is nothing to contract onto \u2014 which is precisely the 'contraction to the mean of an isotropic distribution is the mean' result that killed rungs 3 and 5, here used as the CONTROL rather than met as a surprise.",
+   "match_type": "WSynapse",
+   "match": [
+    [
+     "p",
+     "w_pre",
+     "sy"
+    ],
+    [
+     "sy",
+     "w_post",
+     "u"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "EyeParams"
+        }
+       },
+       "key": "eye"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "EyeParams"
+        }
+       },
+       "key": "phase0"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "EyeParams"
+        }
+       },
+       "key": "frozen"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "win_step"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "rate_step"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "winner"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "sy"
+       },
+       "key": "touched"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "rate_step"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "sy",
+     "weight",
+     {
+      "__term__": {
+       "type": "Max",
+       "items": [
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "sy"
+           },
+           "key": "weight"
+          },
+          {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "PickUnique",
+              "source": {
+               "type": "NodesOfType",
+               "node_type": "EyeParams"
+              }
+             },
+             "key": "ph0_eta"
+            },
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "u"
+             },
+             "key": "rate"
+            },
+            {
+             "type": "Minus",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "p"
+              },
+              "key": "bursting"
+             },
+             "b": {
+              "type": "Times",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "u"
+                },
+                "key": "rate"
+               },
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "sy"
+                },
+                "key": "weight"
+               }
+              ]
+             }
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "sy",
+     "touched",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "rate_step"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "ph0_wsum",
+   "comment": "The winner's total afferent weight, for the L1 normalisation below. Guarded on there being NO synapse of this unit still un-learned this step (the same 'every presynaptic has already fired' idiom oo_sunit_activate uses), so the sum is taken AFTER learning and the fixpoint cannot race it.",
+   "match_type": "WUnit",
+   "match": [
+    [
+     "e",
+     "has_wunit",
+     "u"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "EyeParams"
+        }
+       },
+       "key": "eye"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "EyeParams"
+        }
+       },
+       "key": "phase0"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "winner"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "win_step"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "e"
+       },
+       "key": "step"
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "wsum_step"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "e"
+       },
+       "key": "step"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "InNeighbours",
+        "node": {
+         "type": "Var",
+         "name": "u"
+        },
+        "edge_type": "w_post",
+        "any_type": false
+       },
+       "var_name": "sy",
+       "predicate": {
+        "type": "Lt",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "sy"
+         },
+         "key": "touched"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "u"
+         },
+         "key": "rate_step"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "u",
+     "wsum",
+     {
+      "__term__": {
+       "type": "Fold",
+       "source": {
+        "type": "InNeighbours",
+        "node": {
+         "type": "Var",
+         "name": "u"
+        },
+        "edge_type": "w_post",
+        "any_type": false
+       },
+       "var_name": "sy",
+       "acc_name": "acc",
+       "init": {
+        "type": "Lit",
+        "value": 0.0
+       },
+       "body": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Var",
+          "name": "acc"
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "sy"
+          },
+          "key": "weight"
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "u",
+     "wsum_step",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "e"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "ph0_normalize",
+   "comment": "GCAL'S OWN NORMALISATION, VERBATIM: Sum_i w_ij = 1.0 enforced after every learning step (VISION_PRIOR_ART.md \u00a72.4, their Eqs. 9-10). It is L1 where rung 2's Oja is L2 \u2014 'the same contraction under a different norm', and \u00a72.5 records that normalisation is in ALL FOUR of their models including the baseline. Not an addition to GCAL; a part of it this seed had omitted.\nMEASURED, and this is why it is not optional. WITHOUT it the units compete on TOTAL WEIGHT instead of on MATCH: act = Sum w_i x_i is dominated by whichever unit happens to hold the most weight, so that unit wins everywhere regardless of WHERE the wave is (measured: 79 of 200 wins to the unit with the largest act, and win rate uncorrelated with wave location), and every RF stayed at the diffuse floor (6.52 vs a floor of 6.52). It is rich-get-richer on magnitude, and there is no spatial signal in it to specialise on. WITH Sum w = 1 the drive is a weighted AVERAGE of the bursting cells, so a unit can only win by its weight PATTERN matching the wave's LOCATION \u2014 which is the positive feedback that makes a map.\nIt also removes the saturation for free: with Sum w = 1 and burst in {0,1}, act <= 1 = rmax by construction, so f never clips and the response is graded again. A mechanism that fixes two measured failures at once is usually the right one.",
+   "match_type": "WSynapse",
+   "match": [
+    [
+     "p",
+     "w_pre",
+     "sy"
+    ],
+    [
+     "sy",
+     "w_post",
+     "u"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "EyeParams"
+        }
+       },
+       "key": "eye"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "EyeParams"
+        }
+       },
+       "key": "phase0"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "EyeParams"
+        }
+       },
+       "key": "frozen"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "wsum_step"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "rate_step"
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "sy"
+       },
+       "key": "normed"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "rate_step"
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "wsum"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "sy",
+     "weight",
+     {
+      "__term__": {
+       "type": "Div",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "sy"
+        },
+        "key": "weight"
+       },
+       "b": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "u"
+        },
+        "key": "wsum"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "sy",
+     "normed",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "rate_step"
+      }
+     }
+    ]
+   ]
+  }
+ ]
+}

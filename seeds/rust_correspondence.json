@@ -1,0 +1,541 @@
+{
+ "id": "rust_correspondence",
+ "version": "1.0.0",
+ "depends_on": [],
+ "description": "P2 (PROGRAM_SYNTHESIS_PLAN.md section 4): the rust-frame CST -> hub Program-IR correspondence as INSPECTABLE SEED DATA (the ast_term_rules.CORRESPONDENCE spirit). Each CorrespondenceRow maps a tree-sitter cst_kind (+ optional operator guard) to a Prog*/DSL Term via a uniform field plan, or names a mechanical shape handler in domains/prog_ir_rust.py. domains/ts_ingest.TableWalker applies the table; unmapped constructs are honest residuals (blockers), never a silent partial emit.",
+ "nodes": [
+  {
+   "local_id": 1,
+   "type": "CorrespondenceRow",
+   "attrs": {
+    "lang": "rust",
+    "cst_kind": "binary_expression",
+    "op": "+",
+    "emit": "term",
+    "term": "Plus",
+    "handler": "",
+    "plan": "{\"arity\": \"items\", \"fields\": [\"left\", \"right\"]}",
+    "note": "integer add; DSL Plus"
+   }
+  },
+  {
+   "local_id": 2,
+   "type": "CorrespondenceRow",
+   "attrs": {
+    "lang": "rust",
+    "cst_kind": "binary_expression",
+    "op": "-",
+    "emit": "term",
+    "term": "Minus",
+    "handler": "",
+    "plan": "{\"arity\": \"fields\", \"map\": [[\"left\", \"a\"], [\"right\", \"b\"]]}",
+    "note": ""
+   }
+  },
+  {
+   "local_id": 3,
+   "type": "CorrespondenceRow",
+   "attrs": {
+    "lang": "rust",
+    "cst_kind": "binary_expression",
+    "op": "*",
+    "emit": "term",
+    "term": "Times",
+    "handler": "",
+    "plan": "{\"arity\": \"items\", \"fields\": [\"left\", \"right\"]}",
+    "note": ""
+   }
+  },
+  {
+   "local_id": 4,
+   "type": "CorrespondenceRow",
+   "attrs": {
+    "lang": "rust",
+    "cst_kind": "binary_expression",
+    "op": "/",
+    "emit": "term",
+    "term": "IDiv",
+    "handler": "",
+    "plan": "{\"arity\": \"fields\", \"map\": [[\"left\", \"a\"], [\"right\", \"b\"]]}",
+    "note": "rust integer `/` truncates toward zero; DSL IDiv truncates too -- EXACT for i64. Float division is NOT this map (ledger: the doc's divergence table); fixtures are integer-only."
+   }
+  },
+  {
+   "local_id": 5,
+   "type": "CorrespondenceRow",
+   "attrs": {
+    "lang": "rust",
+    "cst_kind": "binary_expression",
+    "op": "%",
+    "emit": "term",
+    "term": "Mod",
+    "handler": "",
+    "plan": "{\"arity\": \"fields\", \"map\": [[\"left\", \"a\"], [\"right\", \"b\"]]}",
+    "note": "DIVERGENCE on negatives: rust % is remainder (trunc, -7%2=-1); DSL Mod is floor-style (-7%2=1). Fixtures avoid negative operands."
+   }
+  },
+  {
+   "local_id": 6,
+   "type": "CorrespondenceRow",
+   "attrs": {
+    "lang": "rust",
+    "cst_kind": "binary_expression",
+    "op": "==",
+    "emit": "term",
+    "term": "Eq",
+    "handler": "",
+    "plan": "{\"arity\": \"fields\", \"map\": [[\"left\", \"a\"], [\"right\", \"b\"]]}",
+    "note": ""
+   }
+  },
+  {
+   "local_id": 7,
+   "type": "CorrespondenceRow",
+   "attrs": {
+    "lang": "rust",
+    "cst_kind": "binary_expression",
+    "op": "!=",
+    "emit": "term",
+    "term": "Eq",
+    "handler": "",
+    "plan": "{\"arity\": \"fields\", \"map\": [[\"left\", \"a\"], [\"right\", \"b\"]], \"wrap\": \"not\"}",
+    "note": "!= is Not(Eq)"
+   }
+  },
+  {
+   "local_id": 8,
+   "type": "CorrespondenceRow",
+   "attrs": {
+    "lang": "rust",
+    "cst_kind": "binary_expression",
+    "op": "<",
+    "emit": "term",
+    "term": "Lt",
+    "handler": "",
+    "plan": "{\"arity\": \"fields\", \"map\": [[\"left\", \"a\"], [\"right\", \"b\"]]}",
+    "note": ""
+   }
+  },
+  {
+   "local_id": 9,
+   "type": "CorrespondenceRow",
+   "attrs": {
+    "lang": "rust",
+    "cst_kind": "binary_expression",
+    "op": "<=",
+    "emit": "term",
+    "term": "Lte",
+    "handler": "",
+    "plan": "{\"arity\": \"fields\", \"map\": [[\"left\", \"a\"], [\"right\", \"b\"]]}",
+    "note": ""
+   }
+  },
+  {
+   "local_id": 10,
+   "type": "CorrespondenceRow",
+   "attrs": {
+    "lang": "rust",
+    "cst_kind": "binary_expression",
+    "op": ">",
+    "emit": "term",
+    "term": "Gt",
+    "handler": "",
+    "plan": "{\"arity\": \"fields\", \"map\": [[\"left\", \"a\"], [\"right\", \"b\"]]}",
+    "note": ""
+   }
+  },
+  {
+   "local_id": 11,
+   "type": "CorrespondenceRow",
+   "attrs": {
+    "lang": "rust",
+    "cst_kind": "binary_expression",
+    "op": ">=",
+    "emit": "term",
+    "term": "Gte",
+    "handler": "",
+    "plan": "{\"arity\": \"fields\", \"map\": [[\"left\", \"a\"], [\"right\", \"b\"]]}",
+    "note": ""
+   }
+  },
+  {
+   "local_id": 12,
+   "type": "CorrespondenceRow",
+   "attrs": {
+    "lang": "rust",
+    "cst_kind": "binary_expression",
+    "op": "&&",
+    "emit": "term",
+    "term": "And",
+    "handler": "",
+    "plan": "{\"arity\": \"items\", \"fields\": [\"left\", \"right\"]}",
+    "note": "short-circuit holds in ProgEval (P1 gate)"
+   }
+  },
+  {
+   "local_id": 13,
+   "type": "CorrespondenceRow",
+   "attrs": {
+    "lang": "rust",
+    "cst_kind": "binary_expression",
+    "op": "||",
+    "emit": "term",
+    "term": "Or",
+    "handler": "",
+    "plan": "{\"arity\": \"items\", \"fields\": [\"left\", \"right\"]}",
+    "note": ""
+   }
+  },
+  {
+   "local_id": 14,
+   "type": "CorrespondenceRow",
+   "attrs": {
+    "lang": "rust",
+    "cst_kind": "integer_literal",
+    "op": "",
+    "emit": "term",
+    "term": "Lit",
+    "handler": "",
+    "plan": "{\"arity\": \"leaf\", \"value\": \"int_text\"}",
+    "note": ""
+   }
+  },
+  {
+   "local_id": 15,
+   "type": "CorrespondenceRow",
+   "attrs": {
+    "lang": "rust",
+    "cst_kind": "float_literal",
+    "op": "",
+    "emit": "term",
+    "term": "Lit",
+    "handler": "",
+    "plan": "{\"arity\": \"leaf\", \"value\": \"num_text\"}",
+    "note": ""
+   }
+  },
+  {
+   "local_id": 16,
+   "type": "CorrespondenceRow",
+   "attrs": {
+    "lang": "rust",
+    "cst_kind": "boolean_literal",
+    "op": "",
+    "emit": "term",
+    "term": "Lit",
+    "handler": "",
+    "plan": "{\"arity\": \"leaf\", \"value\": \"bool_text\"}",
+    "note": ""
+   }
+  },
+  {
+   "local_id": 17,
+   "type": "CorrespondenceRow",
+   "attrs": {
+    "lang": "rust",
+    "cst_kind": "identifier",
+    "op": "",
+    "emit": "term",
+    "term": "Var",
+    "handler": "",
+    "plan": "{\"arity\": \"leaf\", \"value\": \"name\"}",
+    "note": ""
+   }
+  },
+  {
+   "local_id": 18,
+   "type": "CorrespondenceRow",
+   "attrs": {
+    "lang": "rust",
+    "cst_kind": "string_literal",
+    "op": "",
+    "emit": "term",
+    "term": "Lit",
+    "handler": "",
+    "plan": "{\"arity\": \"leaf\", \"value\": \"string\"}",
+    "note": ""
+   }
+  },
+  {
+   "local_id": 19,
+   "type": "CorrespondenceRow",
+   "attrs": {
+    "lang": "rust",
+    "cst_kind": "unary_expression",
+    "op": "",
+    "emit": "handler",
+    "term": "",
+    "handler": "rs_unary",
+    "plan": "",
+    "note": "- -> Neg; ! -> Not; * (deref) is a blocker"
+   }
+  },
+  {
+   "local_id": 20,
+   "type": "CorrespondenceRow",
+   "attrs": {
+    "lang": "rust",
+    "cst_kind": "parenthesized_expression",
+    "op": "",
+    "emit": "handler",
+    "term": "",
+    "handler": "rs_unwrap_paren",
+    "plan": "",
+    "note": ""
+   }
+  },
+  {
+   "local_id": 21,
+   "type": "CorrespondenceRow",
+   "attrs": {
+    "lang": "rust",
+    "cst_kind": "expression_statement",
+    "op": "",
+    "emit": "handler",
+    "term": "",
+    "handler": "rs_unwrap_first",
+    "plan": "",
+    "note": ""
+   }
+  },
+  {
+   "local_id": 22,
+   "type": "CorrespondenceRow",
+   "attrs": {
+    "lang": "rust",
+    "cst_kind": "let_declaration",
+    "op": "",
+    "emit": "handler",
+    "term": "",
+    "handler": "rs_let",
+    "plan": "",
+    "note": "let / let mut NAME = value -> ProgAssignVar; `mut` is a frame fact the untyped IR does not carry (doc ledger); a non-identifier pattern is a blocker"
+   }
+  },
+  {
+   "local_id": 23,
+   "type": "CorrespondenceRow",
+   "attrs": {
+    "lang": "rust",
+    "cst_kind": "assignment_expression",
+    "op": "",
+    "emit": "handler",
+    "term": "",
+    "handler": "rs_assign",
+    "plan": "",
+    "note": "NAME = v -> ProgAssignVar; xs[i] = v -> ProgSubscriptSet"
+   }
+  },
+  {
+   "local_id": 24,
+   "type": "CorrespondenceRow",
+   "attrs": {
+    "lang": "rust",
+    "cst_kind": "compound_assignment_expr",
+    "op": "",
+    "emit": "handler",
+    "term": "",
+    "handler": "rs_compound_assign",
+    "plan": "",
+    "note": "+= add, -= sub, *= mult, /= floordiv (IDiv: trunc, EXACT for i64), %= mod (negative-operand divergence as %)"
+   }
+  },
+  {
+   "local_id": 25,
+   "type": "CorrespondenceRow",
+   "attrs": {
+    "lang": "rust",
+    "cst_kind": "if_expression",
+    "op": "",
+    "emit": "handler",
+    "term": "",
+    "handler": "rs_if",
+    "plan": "",
+    "note": "tail-only branches (pure) -> IfThenElse expression; statement branches -> ProgIfStmt; a branch mixing statements AND a tail value is a blocker"
+   }
+  },
+  {
+   "local_id": 26,
+   "type": "CorrespondenceRow",
+   "attrs": {
+    "lang": "rust",
+    "cst_kind": "while_expression",
+    "op": "",
+    "emit": "handler",
+    "term": "",
+    "handler": "rs_while",
+    "plan": "",
+    "note": ""
+   }
+  },
+  {
+   "local_id": 27,
+   "type": "CorrespondenceRow",
+   "attrs": {
+    "lang": "rust",
+    "cst_kind": "loop_expression",
+    "op": "",
+    "emit": "handler",
+    "term": "",
+    "handler": "rs_loop",
+    "plan": "",
+    "note": "loop {} -> ProgWhile(Lit true, body)"
+   }
+  },
+  {
+   "local_id": 28,
+   "type": "CorrespondenceRow",
+   "attrs": {
+    "lang": "rust",
+    "cst_kind": "for_expression",
+    "op": "",
+    "emit": "handler",
+    "term": "",
+    "handler": "rs_for",
+    "plan": "",
+    "note": "for x in a..b -> ProgForEach over the declared `range` oracle (..= adds 1 to the stop); for x in expr -> ForEach over the value directly"
+   }
+  },
+  {
+   "local_id": 29,
+   "type": "CorrespondenceRow",
+   "attrs": {
+    "lang": "rust",
+    "cst_kind": "break_expression",
+    "op": "",
+    "emit": "handler",
+    "term": "",
+    "handler": "rs_break",
+    "plan": "",
+    "note": ""
+   }
+  },
+  {
+   "local_id": 30,
+   "type": "CorrespondenceRow",
+   "attrs": {
+    "lang": "rust",
+    "cst_kind": "continue_expression",
+    "op": "",
+    "emit": "handler",
+    "term": "",
+    "handler": "rs_continue",
+    "plan": "",
+    "note": ""
+   }
+  },
+  {
+   "local_id": 31,
+   "type": "CorrespondenceRow",
+   "attrs": {
+    "lang": "rust",
+    "cst_kind": "return_expression",
+    "op": "",
+    "emit": "handler",
+    "term": "",
+    "handler": "rs_return",
+    "plan": "",
+    "note": ""
+   }
+  },
+  {
+   "local_id": 32,
+   "type": "CorrespondenceRow",
+   "attrs": {
+    "lang": "rust",
+    "cst_kind": "call_expression",
+    "op": "",
+    "emit": "handler",
+    "term": "",
+    "handler": "rs_call",
+    "plan": "",
+    "note": "f(x) -> ProgCallExtern name verbatim; T::f(x) -> dotted assoc name verbatim; x.f(y) -> ProgCallExtern{name: f, recv: x} (method calls trap at ProgEval unless declared -- the P1 recv contract)"
+   }
+  },
+  {
+   "local_id": 33,
+   "type": "CorrespondenceRow",
+   "attrs": {
+    "lang": "rust",
+    "cst_kind": "macro_invocation",
+    "op": "",
+    "emit": "handler",
+    "term": "",
+    "handler": "rs_macro",
+    "plan": "",
+    "note": "vec![a, b, ...] -> ProgContainerLit(list); vec![x; n] and any other macro are blockers"
+   }
+  },
+  {
+   "local_id": 34,
+   "type": "CorrespondenceRow",
+   "attrs": {
+    "lang": "rust",
+    "cst_kind": "array_expression",
+    "op": "",
+    "emit": "handler",
+    "term": "",
+    "handler": "rs_array",
+    "plan": "",
+    "note": "[a, b] -> ProgContainerLit(list)"
+   }
+  },
+  {
+   "local_id": 35,
+   "type": "CorrespondenceRow",
+   "attrs": {
+    "lang": "rust",
+    "cst_kind": "index_expression",
+    "op": "",
+    "emit": "handler",
+    "term": "",
+    "handler": "rs_index",
+    "plan": "",
+    "note": "xs[i] -> ProgSubscript (rust is 0-based like the hub -- no index shift)"
+   }
+  },
+  {
+   "local_id": 36,
+   "type": "CorrespondenceRow",
+   "attrs": {
+    "lang": "rust",
+    "cst_kind": "range_expression",
+    "op": "",
+    "emit": "handler",
+    "term": "",
+    "handler": "rs_range",
+    "plan": "",
+    "note": "a..b -> range-oracle call (expression position)"
+   }
+  },
+  {
+   "local_id": 37,
+   "type": "CorrespondenceRow",
+   "attrs": {
+    "lang": "rust",
+    "cst_kind": "function_item",
+    "op": "",
+    "emit": "handler",
+    "term": "",
+    "handler": "rs_fn_item",
+    "plan": "",
+    "note": "body block -> ProgSeq; a tail expression desugars to ProgReturn (rust implicit return). Param types are recorded in the read-out record (the IR is untyped at P2); a non-identifier param pattern is a blocker"
+   }
+  },
+  {
+   "local_id": 38,
+   "type": "CorrespondenceRow",
+   "attrs": {
+    "lang": "rust",
+    "cst_kind": "unit_expression",
+    "op": "",
+    "emit": "term",
+    "term": "Lit",
+    "handler": "",
+    "plan": "{\"arity\": \"leaf\", \"const\": null, \"value\": \"const\"}",
+    "note": "() -> Lit None"
+   }
+  }
+ ],
+ "edges": []
+}

@@ -1,0 +1,297 @@
+{
+  "id": "latex",
+  "version": "0.1.0",
+  "description": "The agent's vocabulary for LaTeX — the mathematical typesetting system. Commands, environments, math mode, equation forms, citation forms, sectioning. The substrate needs this to read mathematical research text where the content is in LaTeX source.",
+  "depends_on": [
+    "scientific_writing"
+  ],
+  "concepts": [
+    {
+      "name": "latex_command",
+      "definition": "A LaTeX directive starting with backslash, e.g. \\section, \\cite, \\sqrt. Takes zero or more arguments in curly braces and zero or more optional arguments in square brackets. The substrate's primary structural marker in LaTeX source.",
+      "category": "syntax"
+    },
+    {
+      "name": "latex_environment",
+      "definition": "A LaTeX construct delimited by \\begin{name} ... \\end{name}. Carries semantics (equation, theorem, proof, itemize). The substrate's primary block-structure unit.",
+      "category": "syntax"
+    },
+    {
+      "name": "latex_argument",
+      "definition": "An argument to a LaTeX command. Mandatory arguments in curly braces; optional in square brackets. \\section[short]{Long title} has one optional and one mandatory.",
+      "category": "syntax"
+    },
+    {
+      "name": "latex_group",
+      "definition": "A scope delimited by curly braces. Restricts the effect of font/style commands. {\\bf x} bolds only x.",
+      "category": "syntax"
+    },
+    {
+      "name": "latex_comment",
+      "definition": "Text starting with % to end of line. Ignored by the typesetter; useful provenance for the substrate's adapter (% AUTHOR: Smith).",
+      "category": "syntax"
+    },
+    {
+      "name": "math_mode",
+      "definition": "A LaTeX mode where math notation is set with conventional spacing, italic letters, and access to math commands. Entered via $, \\(, $$, \\[, or math environments.",
+      "category": "mode"
+    },
+    {
+      "name": "text_mode",
+      "definition": "Default LaTeX mode for prose. Outside any math delimiters. Different spacing rules and command set than math mode.",
+      "category": "mode"
+    },
+    {
+      "name": "inline_math",
+      "definition": "Math expression set within a sentence's line, delimited by $...$ or \\(...\\). Compact, part of the prose flow. The substrate's most common math-detection target.",
+      "category": "math_delimiter"
+    },
+    {
+      "name": "display_math",
+      "definition": "Math expression set on its own line(s), delimited by $$...$$, \\[...\\], or display environments. The substrate should weight these higher when matching answer text.",
+      "category": "math_delimiter"
+    },
+    {
+      "name": "equation_environment",
+      "definition": "LaTeX environment \\begin{equation} ... \\end{equation} producing numbered display math. The number serves as a cross-reference target.",
+      "category": "math_environment"
+    },
+    {
+      "name": "equation_star_environment",
+      "definition": "LaTeX environment \\begin{equation*} ... \\end{equation*} — like equation, but unnumbered.",
+      "category": "math_environment"
+    },
+    {
+      "name": "align_environment",
+      "definition": "LaTeX environment \\begin{align} ... \\end{align} for vertically aligned multi-line equations. Uses & for alignment columns and \\\\ for line breaks.",
+      "category": "math_environment"
+    },
+    {
+      "name": "gather_environment",
+      "definition": "LaTeX environment \\begin{gather} ... \\end{gather} for centered multi-line equations without alignment.",
+      "category": "math_environment"
+    },
+    {
+      "name": "matrix_environment",
+      "definition": "LaTeX matrix environments: matrix, pmatrix (parens), bmatrix (brackets), vmatrix (single bars), Vmatrix (double bars). Rows separated by \\\\.",
+      "category": "math_environment"
+    },
+    {
+      "name": "theorem_environment",
+      "definition": "User-defined LaTeX environment for theorem-like blocks (theorem, lemma, proposition, corollary). Conventionally set with bold label + italic body.",
+      "category": "structural_environment"
+    },
+    {
+      "name": "proof_environment",
+      "definition": "LaTeX environment \\begin{proof} ... \\end{proof} that marks a proof block. Typically ends with a QED symbol (open box).",
+      "category": "structural_environment"
+    },
+    {
+      "name": "itemize_environment",
+      "definition": "LaTeX environment for bulleted lists. Items marked by \\item.",
+      "category": "structural_environment"
+    },
+    {
+      "name": "enumerate_environment",
+      "definition": "LaTeX environment for numbered lists. Items marked by \\item; numbering is automatic.",
+      "category": "structural_environment"
+    },
+    {
+      "name": "math_operator",
+      "definition": "Math command rendering a named operator — \\sum, \\prod, \\int, \\lim, \\min, \\max, \\sup, \\inf. These take limits in subscripts and superscripts.",
+      "category": "math_command"
+    },
+    {
+      "name": "math_function",
+      "definition": "Math command rendering a named function — \\sin, \\cos, \\log, \\ln, \\exp, \\det, \\dim. Typeset upright (not italic).",
+      "category": "math_command"
+    },
+    {
+      "name": "math_symbol",
+      "definition": "Math command rendering a single symbol — \\alpha, \\beta, \\gamma, \\infty, \\partial, \\nabla, \\pm, \\mp, \\le, \\ge, \\subset, \\in.",
+      "category": "math_command"
+    },
+    {
+      "name": "subscript_superscript",
+      "definition": "Math syntax for sub/superscripts — x_i and x^i for single chars, x_{ij} and x^{abc} for groups. The standard mechanism for indexed quantities.",
+      "category": "math_syntax"
+    },
+    {
+      "name": "fraction_command",
+      "definition": "Math command \\frac{numerator}{denominator} rendering a fraction. The substrate's typical rendering of ratios in answer text.",
+      "category": "math_command"
+    },
+    {
+      "name": "square_root_command",
+      "definition": "Math command \\sqrt[n]{body} rendering an n-th root (n optional, defaults to square root).",
+      "category": "math_command"
+    },
+    {
+      "name": "sectioning_command",
+      "definition": "LaTeX commands \\section, \\subsection, \\subsubsection, \\paragraph, \\subparagraph that define document hierarchy. Mark IMRaD sections.",
+      "category": "structure_command"
+    },
+    {
+      "name": "cite_command",
+      "definition": "LaTeX command \\cite{key} producing an in-text citation. May take optional pre/post notes \\cite[chap.~3]{key}. The substrate's hook for citation extraction.",
+      "category": "reference_command"
+    },
+    {
+      "name": "ref_command",
+      "definition": "LaTeX command \\ref{label} producing a cross-reference to a numbered element (equation, theorem, figure). Resolves to the element's number.",
+      "category": "reference_command"
+    },
+    {
+      "name": "label_command",
+      "definition": "LaTeX command \\label{key} attaching a stable identifier to the preceding numbered element. Target of \\ref and \\eqref.",
+      "category": "reference_command"
+    },
+    {
+      "name": "eqref_command",
+      "definition": "LaTeX command \\eqref{label} producing a reference to an equation number, formatted with parentheses (e.g., '(3)').",
+      "category": "reference_command"
+    },
+    {
+      "name": "newcommand",
+      "definition": "LaTeX command \\newcommand{\\name}[args]{body} defining a new macro. Extends the command set; the substrate must expand macros to fully interpret the source.",
+      "category": "macro_command"
+    },
+    {
+      "name": "bibitem",
+      "definition": "Bibliography entry, often produced by BibTeX. Carries author, title, year, DOI, etc. Target of \\cite keys; ground for verifying citations.",
+      "category": "bibliography"
+    },
+    {
+      "name": "math_escape",
+      "definition": "Math-mode spacing commands — \\,, \\;, \\!, \\quad, \\qquad — controlling horizontal spacing in formulas. The substrate may skip these when extracting math content.",
+      "category": "math_syntax"
+    }
+  ],
+  "rules": [
+    {
+      "name": "math_mode_changes_the_meaning_of_letters_and_spacing",
+      "if": [
+        "text occurs within $...$, \\(...\\), $$...$$, \\[...\\], or a math environment"
+      ],
+      "then": [
+        "letters are typeset italic by default",
+        "spacing is mathematical (different from text)",
+        "the substrate's adapter must interpret the content as math, not prose"
+      ],
+      "why": "Mixing math and text interpretation is the most common LaTeX-extraction mistake."
+    },
+    {
+      "name": "an_equation_environment_produces_a_numbered_display_equation",
+      "if": [
+        "LaTeX source contains \\begin{equation} ... \\end{equation}"
+      ],
+      "then": [
+        "the content is rendered as a numbered display equation",
+        "the substrate may extract the content as an extracted_equation Concept with its number as cross-reference key"
+      ],
+      "why": "Numbered equations are the substrate's most stable cross-reference targets in mathematical writing."
+    },
+    {
+      "name": "an_align_environment_produces_aligned_multiline_equations",
+      "if": [
+        "LaTeX source contains \\begin{align} ... \\end{align}"
+      ],
+      "then": [
+        "each line is one equation aligned at the & columns",
+        "lines are separated by \\\\",
+        "each line may have its own number (suppressed by \\nonumber)"
+      ],
+      "why": "Multi-step derivations are common in proofs; align is the standard environment for them."
+    },
+    {
+      "name": "a_cite_command_extracts_to_a_citation_node",
+      "if": [
+        "LaTeX source contains \\cite{key} or \\cite[note]{key}"
+      ],
+      "then": [
+        "the substrate's adapter creates a citation reference with the given key",
+        "the key resolves to a bibitem if the bibliography is also ingested"
+      ],
+      "why": "Citation chains are the path the substrate follows to autonomously expand its knowledge from one paper to another."
+    },
+    {
+      "name": "a_ref_command_resolves_to_the_referenced_element_number",
+      "if": [
+        "LaTeX source contains \\ref{label}"
+      ],
+      "then": [
+        "the substrate's adapter must look up the label",
+        "if found, the reference resolves to the labeled element's number; if not, the reference is unresolved"
+      ],
+      "why": "Cross-references encode the document's internal structure; resolving them lets the substrate follow the author's argument."
+    },
+    {
+      "name": "a_theorem_environment_marks_a_substrate_grade_rule_candidate",
+      "if": [
+        "LaTeX source contains \\begin{theorem} ... \\end{theorem} or similar (lemma, proposition, corollary)"
+      ],
+      "then": [
+        "the body of the environment is a theorem_statement",
+        "the substrate may install the (hypothesis, conclusion) as a Rule node"
+      ],
+      "why": "Theorem environments are the cleanest source of formally-stated results in LaTeX research source."
+    },
+    {
+      "name": "a_proof_environment_contains_proof_steps",
+      "if": [
+        "LaTeX source contains \\begin{proof} ... \\end{proof}"
+      ],
+      "then": [
+        "the body is a sequence of proof_steps",
+        "the substrate may extract them as inference-chain nodes"
+      ],
+      "why": "Proof environments delimit the inference chain supporting a theorem; extracting the steps lets the substrate represent proof structure."
+    },
+    {
+      "name": "a_newcommand_must_be_expanded_to_interpret_uses",
+      "if": [
+        "LaTeX source contains \\newcommand{\\name}[args]{body}",
+        "the source later uses \\name"
+      ],
+      "then": [
+        "the substrate's adapter must expand \\name to body (with arguments substituted) before interpreting",
+        "without expansion, the use is an unknown command"
+      ],
+      "why": "Macros are the LaTeX equivalent of variable bindings; failing to expand them produces wrong extractions."
+    },
+    {
+      "name": "sectioning_commands_define_the_document_hierarchy",
+      "if": [
+        "LaTeX source contains sectioning commands (\\section, \\subsection, etc.)"
+      ],
+      "then": [
+        "the document's structural hierarchy is given by the sectioning command sequence",
+        "the substrate's adapter may create Section nodes from these commands"
+      ],
+      "why": "Section structure is what lets the substrate's adapter route content to the right IMRaD section concepts."
+    },
+    {
+      "name": "math_subscript_superscript_indexes_quantities",
+      "if": [
+        "math mode contains x_{...} or x^{...} or x_i x^i"
+      ],
+      "then": [
+        "the underscore is a subscript; the caret is a superscript",
+        "the indexed quantity is conventionally a sequence or a power"
+      ],
+      "why": "Indexed quantities are everywhere in research math; recognizing them is necessary to extract formulas the substrate can match against questions."
+    },
+    {
+      "name": "a_dollar_sign_in_text_likely_delimits_inline_math",
+      "if": [
+        "LaTeX text contains an unescaped $"
+      ],
+      "then": [
+        "the $ either opens or closes an inline math span (alternates between open and close)",
+        "the substrate's adapter should pair them sequentially"
+      ],
+      "why": "$..$ is the single most common math delimiter; the substrate's adapter must handle it correctly to extract math content from prose."
+    }
+  ],
+  "parent_mt": "scientific_writing"
+}

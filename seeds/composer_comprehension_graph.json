@@ -1,0 +1,484 @@
+{
+ "id": "composer_comprehension_graph",
+ "version": "1.0.0",
+ "depends_on": [],
+ "description": "PILOT: domains/reflective_faculty.py's _compose_comprehension_rule describe-branch expressed as PURE GRAPH DATA -- a single graph-resident Rule node (a meta-rule, not a Python function) that mints a NEW comprehension rule from a ComposeRequest{directive_word, goal_kind, rule_id} trigger. The directive word and goal kind are SPLICED from the trigger's own attrs into the minted rule's where/effect via MkDict + Append + Attr Term composition (not copy-pasted skeletons), then compiled live via set_rule_clause's __mint__ path. The composer's own match/where/effect are now graph data the agent can dump, inspect, and eventually vary -- not Python source it cannot see. Fires automatically via tick() (Substrate::tick runs run_graph_rules over every Rule-typed node each call; no add_rule() Python call is needed for this node).",
+ "nodes": [
+  {
+   "local_id": 1,
+   "type": "Rule",
+   "attrs": {
+    "id": "compose_comprehension_graph",
+    "match": [
+     [
+      "agent",
+      "wants_comprehension_rule",
+      "cr"
+     ]
+    ],
+    "where": {
+     "type": "Lt",
+     "a": {
+      "type": "Plus",
+      "items": [
+       {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "cr"
+        },
+        "key": "composed"
+       },
+       {
+        "type": "Lit",
+        "value": 0.0
+       }
+      ]
+     },
+     "b": {
+      "type": "Lit",
+      "value": 0.5
+     }
+    },
+    "effect": [
+     [
+      "add_node",
+      "rn",
+      "Rule",
+      {
+       "minted": 0.0
+      }
+     ],
+     [
+      "set_attr",
+      "rn",
+      "id",
+      {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "cr"
+        },
+        "key": "rule_id"
+       }
+      }
+     ],
+     [
+      "set_attr",
+      "rn",
+      "match",
+      [
+       [
+        "m",
+        "has_mention",
+        "mention"
+       ],
+       [
+        "m",
+        "about",
+        "scene"
+       ]
+      ]
+     ],
+     [
+      "set_attr",
+      "rn",
+      "where",
+      {
+       "__term__": {
+        "type": "MkDict",
+        "items": [
+         {
+          "type": "Lit",
+          "value": "type"
+         },
+         {
+          "type": "Lit",
+          "value": "And"
+         },
+         {
+          "type": "Lit",
+          "value": "items"
+         },
+         {
+          "type": "Append",
+          "seq": {
+           "type": "Append",
+           "seq": {
+            "type": "Lit",
+            "value": []
+           },
+           "item": {
+            "type": "MkDict",
+            "items": [
+             {
+              "type": "Lit",
+              "value": "type"
+             },
+             {
+              "type": "Lit",
+              "value": "Eq"
+             },
+             {
+              "type": "Lit",
+              "value": "a"
+             },
+             {
+              "type": "MkDict",
+              "items": [
+               {
+                "type": "Lit",
+                "value": "type"
+               },
+               {
+                "type": "Lit",
+                "value": "Attr"
+               },
+               {
+                "type": "Lit",
+                "value": "node"
+               },
+               {
+                "type": "MkDict",
+                "items": [
+                 {
+                  "type": "Lit",
+                  "value": "type"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": "Var"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": "name"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": "mention"
+                 }
+                ]
+               },
+               {
+                "type": "Lit",
+                "value": "key"
+               },
+               {
+                "type": "Lit",
+                "value": "text"
+               }
+              ]
+             },
+             {
+              "type": "Lit",
+              "value": "b"
+             },
+             {
+              "type": "MkDict",
+              "items": [
+               {
+                "type": "Lit",
+                "value": "type"
+               },
+               {
+                "type": "Lit",
+                "value": "Lit"
+               },
+               {
+                "type": "Lit",
+                "value": "value"
+               },
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "cr"
+                },
+                "key": "directive_word"
+               }
+              ]
+             }
+            ]
+           }
+          },
+          "item": {
+           "type": "MkDict",
+           "items": [
+            {
+             "type": "Lit",
+             "value": "type"
+            },
+            {
+             "type": "Lit",
+             "value": "Not"
+            },
+            {
+             "type": "Lit",
+             "value": "arg"
+            },
+            {
+             "type": "MkDict",
+             "items": [
+              {
+               "type": "Lit",
+               "value": "type"
+              },
+              {
+               "type": "Lit",
+               "value": "Exists"
+              },
+              {
+               "type": "Lit",
+               "value": "source"
+              },
+              {
+               "type": "MkDict",
+               "items": [
+                {
+                 "type": "Lit",
+                 "value": "type"
+                },
+                {
+                 "type": "Lit",
+                 "value": "Neighbours"
+                },
+                {
+                 "type": "Lit",
+                 "value": "node"
+                },
+                {
+                 "type": "MkDict",
+                 "items": [
+                  {
+                   "type": "Lit",
+                   "value": "type"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": "Var"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": "name"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": "scene"
+                  }
+                 ]
+                },
+                {
+                 "type": "Lit",
+                 "value": "edge_type"
+                },
+                {
+                 "type": "Lit",
+                 "value": "described_by"
+                }
+               ]
+              },
+              {
+               "type": "Lit",
+               "value": "var_name"
+              },
+              {
+               "type": "Lit",
+               "value": "_i"
+              },
+              {
+               "type": "Lit",
+               "value": "predicate"
+              },
+              {
+               "type": "MkDict",
+               "items": [
+                {
+                 "type": "Lit",
+                 "value": "type"
+                },
+                {
+                 "type": "Lit",
+                 "value": "Lit"
+                },
+                {
+                 "type": "Lit",
+                 "value": "value"
+                },
+                {
+                 "type": "Lit",
+                 "value": true
+                }
+               ]
+              }
+             ]
+            }
+           ]
+          }
+         }
+        ]
+       }
+      }
+     ],
+     [
+      "set_attr",
+      "rn",
+      "effect",
+      {
+       "__term__": {
+        "type": "Append",
+        "seq": {
+         "type": "Append",
+         "seq": {
+          "type": "Append",
+          "seq": {
+           "type": "Lit",
+           "value": []
+          },
+          "item": {
+           "type": "Append",
+           "seq": {
+            "type": "Append",
+            "seq": {
+             "type": "Append",
+             "seq": {
+              "type": "Append",
+              "seq": {
+               "type": "Lit",
+               "value": []
+              },
+              "item": {
+               "type": "Lit",
+               "value": "add_node"
+              }
+             },
+             "item": {
+              "type": "Lit",
+              "value": "g"
+             }
+            },
+            "item": {
+             "type": "Lit",
+             "value": "Goal"
+            }
+           },
+           "item": {
+            "type": "MkDict",
+            "items": [
+             {
+              "type": "Lit",
+              "value": "kind"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "cr"
+              },
+              "key": "goal_kind"
+             }
+            ]
+           }
+          }
+         },
+         "item": {
+          "type": "Append",
+          "seq": {
+           "type": "Append",
+           "seq": {
+            "type": "Append",
+            "seq": {
+             "type": "Append",
+             "seq": {
+              "type": "Lit",
+              "value": []
+             },
+             "item": {
+              "type": "Lit",
+              "value": "add_edge"
+             }
+            },
+            "item": {
+             "type": "Lit",
+             "value": "g"
+            }
+           },
+           "item": {
+            "type": "Lit",
+            "value": "describes"
+           }
+          },
+          "item": {
+           "type": "Lit",
+           "value": "scene"
+          }
+         }
+        },
+        "item": {
+         "type": "Append",
+         "seq": {
+          "type": "Append",
+          "seq": {
+           "type": "Append",
+           "seq": {
+            "type": "Append",
+            "seq": {
+             "type": "Lit",
+             "value": []
+            },
+            "item": {
+             "type": "Lit",
+             "value": "add_edge"
+            }
+           },
+           "item": {
+            "type": "Lit",
+            "value": "scene"
+           }
+          },
+          "item": {
+           "type": "Lit",
+           "value": "described_by"
+          }
+         },
+         "item": {
+          "type": "Lit",
+          "value": "g"
+         }
+        }
+       }
+      }
+     ],
+     [
+      "set_rule_clause",
+      {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "rn"
+        },
+        "key": "id"
+       }
+      },
+      "__mint__",
+      {
+       "__term__": {
+        "type": "Var",
+        "name": "rn"
+       }
+      }
+     ],
+     [
+      "set_attr",
+      "cr",
+      "composed",
+      1.0
+     ]
+    ]
+   }
+  }
+ ],
+ "edges": [],
+ "productions": []
+}

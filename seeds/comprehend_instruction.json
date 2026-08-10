@@ -1,0 +1,702 @@
+{
+ "id": "comprehend_instruction",
+ "version": "2.0.0",
+ "depends_on": [
+  "intent"
+ ],
+ "capability_keys": [
+  "route_instruction",
+  "instruction_verbs"
+ ],
+ "_verbs_as_data_note": "v2.0.0: the instruction-verb inventories are GRAPH DATA, not rule-body literals. Each covered verb is a held Concept{name:<verb>, instruction_route:<route>} seeded below; the rules match a Message's predicate Mention resolving (seeds/intent.json's rule_mention_resolves_to_concept, wired by _backfill_knows_concept at ingest) to a Concept whose instruction_route names the faculty -- the note_reported_gap deficiency-concept pattern, applied to verbs. Duplicate same-name Concepts from other seeds (learned_lexicon etc.) are harmless: the referent rule wires the Mention to EVERY same-named held Concept (batch match), and the Exists here finds the route-carrying one. EXTENSIBLE AT RUNTIME: teach(agent, 'Concept', {'name': 'dance', 'instruction_route': 'world_action'}) makes a previously-unhandled verb route through the same rules with NO rule edit -- verb coverage is data the agent can be taught.",
+ "description": "Graph-native conversation migration (plan: 'comprehend -> mint goal -> reply, no Python ladder'): instruction cases moved off the Python decision ladder (domains/conversation_action.act_on_instruction) onto graph rules. The adapter WRITES the mechanical parse of an inbound utterance onto its Message as graph data (comp_kind, comp_predicate, comp_content -- substrate/world_adapter.py::_write_comprehension_to_graph, which also mints the agent -received-> Message edge these rules match on, the sd 'agent observed obs' pattern -- NEVER ['agent','is_a','Agent'], whose type triple expands to many bindings and over-fires); these rules DECIDE. PHASE 1 (comprehend_read_instruction): a 'read'/'comprehend' instruction whose content is already modeled internally (its tokens are Mention nodes minted at ingest -- reading inline text needs no external world, the comprehension IS the internal model) mints a Goal{kind:comprehend_text} + a comprehends/comprehended_by link + a StringConcat reply over the extracted content, so converse() surfaces a graph-produced reply instead of act_on_instruction's 'no attached world/faculty' floor. PHASE 2 (instruction_world_action_floor): a physical/world-action instruction verb (open/run/move/... -- the Concept inventory below, deliberately DISJOINT from the self-report verbs, so no regression) with no world attached mints a Goal{kind:instruction} + the honest action-space-limit reply -- the SAME honest floor act_on_instruction produced, now graph-produced. Modeled on seeds/composer_comprehension_graph.json (Message -> Goal) + seeds/conversation_reply.json (outbound reply Message). The comprehended attr is the fixpoint-safety guard (mint once per Message), the idiom shape_decode_loop's status guards use. Text realization is deliberately MINIMAL (single StringConcat); routing substantive comprehension/self-report replies through the full production faculty is the remaining Phase 2 work.",
+ "nodes": [
+  {
+   "local_id": 1,
+   "type": "Concept",
+   "attrs": {
+    "name": "read",
+    "instruction_route": "comprehend_text",
+    "description": "instruction verb: read/model inline text internally"
+   }
+  },
+  {
+   "local_id": 2,
+   "type": "Concept",
+   "attrs": {
+    "name": "comprehend",
+    "instruction_route": "comprehend_text",
+    "description": "instruction verb: read/model inline text internally"
+   }
+  },
+  {
+   "local_id": 3,
+   "type": "Concept",
+   "attrs": {
+    "name": "open",
+    "instruction_route": "world_action",
+    "description": "instruction verb: world action (needs an attached world)"
+   }
+  },
+  {
+   "local_id": 4,
+   "type": "Concept",
+   "attrs": {
+    "name": "run",
+    "instruction_route": "world_action",
+    "description": "instruction verb: world action (needs an attached world)"
+   }
+  },
+  {
+   "local_id": 5,
+   "type": "Concept",
+   "attrs": {
+    "name": "execute",
+    "instruction_route": "world_action",
+    "description": "instruction verb: world action (needs an attached world)"
+   }
+  },
+  {
+   "local_id": 6,
+   "type": "Concept",
+   "attrs": {
+    "name": "close",
+    "instruction_route": "world_action",
+    "description": "instruction verb: world action (needs an attached world)"
+   }
+  },
+  {
+   "local_id": 7,
+   "type": "Concept",
+   "attrs": {
+    "name": "move",
+    "instruction_route": "world_action",
+    "description": "instruction verb: world action (needs an attached world)"
+   }
+  },
+  {
+   "local_id": 8,
+   "type": "Concept",
+   "attrs": {
+    "name": "go",
+    "instruction_route": "world_action",
+    "description": "instruction verb: world action (needs an attached world)"
+   }
+  },
+  {
+   "local_id": 9,
+   "type": "Concept",
+   "attrs": {
+    "name": "navigate",
+    "instruction_route": "world_action",
+    "description": "instruction verb: world action (needs an attached world)"
+   }
+  },
+  {
+   "local_id": 10,
+   "type": "Concept",
+   "attrs": {
+    "name": "turn",
+    "instruction_route": "world_action",
+    "description": "instruction verb: world action (needs an attached world)"
+   }
+  },
+  {
+   "local_id": 11,
+   "type": "Concept",
+   "attrs": {
+    "name": "press",
+    "instruction_route": "world_action",
+    "description": "instruction verb: world action (needs an attached world)"
+   }
+  },
+  {
+   "local_id": 12,
+   "type": "Concept",
+   "attrs": {
+    "name": "click",
+    "instruction_route": "world_action",
+    "description": "instruction verb: world action (needs an attached world)"
+   }
+  },
+  {
+   "local_id": 13,
+   "type": "Concept",
+   "attrs": {
+    "name": "walk",
+    "instruction_route": "world_action",
+    "description": "instruction verb: world action (needs an attached world)"
+   }
+  },
+  {
+   "local_id": 14,
+   "type": "Concept",
+   "attrs": {
+    "name": "look",
+    "instruction_route": "world_action",
+    "description": "instruction verb: world action (needs an attached world)"
+   }
+  },
+  {
+   "local_id": 15,
+   "type": "Concept",
+   "attrs": {
+    "name": "fetch",
+    "instruction_route": "world_action",
+    "description": "instruction verb: world action (needs an attached world)"
+   }
+  },
+  {
+   "local_id": 16,
+   "type": "Concept",
+   "attrs": {
+    "name": "download",
+    "instruction_route": "world_action",
+    "description": "instruction verb: world action (needs an attached world)"
+   }
+  },
+  {
+   "local_id": 17,
+   "type": "Concept",
+   "attrs": {
+    "name": "play",
+    "instruction_route": "world_action",
+    "description": "instruction verb: world action (needs an attached world)"
+   }
+  },
+  {
+   "local_id": 18,
+   "type": "Concept",
+   "attrs": {
+    "name": "draw",
+    "instruction_route": "world_action",
+    "description": "instruction verb: world action (needs an attached world)"
+   }
+  },
+  {
+   "local_id": 19,
+   "type": "Concept",
+   "attrs": {
+    "name": "build",
+    "instruction_route": "world_action",
+    "description": "instruction verb: world action (needs an attached world)"
+   }
+  },
+  {
+   "local_id": 20,
+   "type": "Concept",
+   "attrs": {
+    "name": "step",
+    "instruction_route": "world_action",
+    "description": "instruction verb: world action (needs an attached world)"
+   }
+  },
+  {
+   "local_id": 21,
+   "type": "Concept",
+   "attrs": {
+    "name": "jump",
+    "instruction_route": "world_action",
+    "description": "instruction verb: world action (needs an attached world)"
+   }
+  },
+  {
+   "local_id": 22,
+   "type": "Concept",
+   "attrs": {
+    "name": "grab",
+    "instruction_route": "world_action",
+    "description": "instruction verb: world action (needs an attached world)"
+   }
+  }
+ ],
+ "edges": [],
+ "productions": [],
+ "rules": [
+  {
+   "name": "comprehend_read_instruction",
+   "match": [
+    [
+     "agent",
+     "received",
+     "m"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "m"
+       },
+       "key": "comp_kind"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "instruction"
+      }
+     },
+     {
+      "type": "Exists",
+      "source": {
+       "type": "Neighbours",
+       "node": {
+        "type": "Var",
+        "name": "m"
+       },
+       "edge_type": "has_mention"
+      },
+      "var_name": "vm",
+      "predicate": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "vm"
+        },
+        "edge_type": "refers_to"
+       },
+       "var_name": "vc",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "TypeOf",
+           "node": {
+            "type": "Var",
+            "name": "vc"
+           }
+          },
+          "b": {
+           "type": "Lit",
+           "value": "Concept"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "vc"
+           },
+           "key": "name"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "m"
+           },
+           "key": "comp_predicate"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "vc"
+           },
+           "key": "instruction_route"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "comprehend_text"
+          }
+         }
+        ]
+       }
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "m"
+       },
+       "key": "from"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "interlocutor"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "m"
+        },
+        "key": "comprehended"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "m",
+     "comprehended",
+     1.0
+    ],
+    [
+     "add_node",
+     "g",
+     "Goal",
+     {
+      "kind": "comprehend_text",
+      "status": "active",
+      "source": "conversation",
+      "predicate": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "m"
+        },
+        "key": "comp_predicate"
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "agent",
+     "has_goal",
+     "g"
+    ],
+    [
+     "add_edge",
+     "g",
+     "comprehends",
+     "m"
+    ],
+    [
+     "add_edge",
+     "m",
+     "comprehended_by",
+     "g"
+    ],
+    [
+     "add_node",
+     "reply",
+     "Message",
+     {
+      "from": "agent",
+      "text": {
+       "__term__": {
+        "type": "StringConcat",
+        "parts": [
+         {
+          "type": "Lit",
+          "value": "I read it and modeled it internally. It says: "
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "m"
+          },
+          "key": "comp_content"
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "reply",
+     "responds_to",
+     "m"
+    ],
+    [
+     "add_edge",
+     "agent",
+     "sent",
+     "reply"
+    ]
+   ]
+  },
+  {
+   "name": "instruction_world_action_floor",
+   "match": [
+    [
+     "agent",
+     "received",
+     "m"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "m"
+       },
+       "key": "comp_kind"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "instruction"
+      }
+     },
+     {
+      "type": "Exists",
+      "source": {
+       "type": "Neighbours",
+       "node": {
+        "type": "Var",
+        "name": "m"
+       },
+       "edge_type": "has_mention"
+      },
+      "var_name": "vm",
+      "predicate": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "vm"
+        },
+        "edge_type": "refers_to"
+       },
+       "var_name": "vc",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "TypeOf",
+           "node": {
+            "type": "Var",
+            "name": "vc"
+           }
+          },
+          "b": {
+           "type": "Lit",
+           "value": "Concept"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "vc"
+           },
+           "key": "name"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "m"
+           },
+           "key": "comp_predicate"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "vc"
+           },
+           "key": "instruction_route"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "world_action"
+          }
+         }
+        ]
+       }
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "m"
+       },
+       "key": "from"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "interlocutor"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "agent"
+        },
+        "edge_type": "has_embodied_development_episode"
+       },
+       "var_name": "embodied_episode",
+       "predicate": {
+        "type": "Exists",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "embodied_episode"
+         },
+         "edge_type": "has_embodied_learning_world"
+        },
+        "var_name": "embodied_world",
+        "predicate": {
+         "type": "Lit",
+         "value": true
+        }
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "m"
+        },
+        "key": "comprehended"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "m",
+     "comprehended",
+     1.0
+    ],
+    [
+     "add_node",
+     "g",
+     "Goal",
+     {
+      "kind": "instruction",
+      "status": "active",
+      "source": "conversation",
+      "predicate": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "m"
+        },
+        "key": "comp_predicate"
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "agent",
+     "has_goal",
+     "g"
+    ],
+    [
+     "add_edge",
+     "g",
+     "comprehends",
+     "m"
+    ],
+    [
+     "add_edge",
+     "m",
+     "comprehended_by",
+     "g"
+    ],
+    [
+     "add_node",
+     "reply",
+     "Message",
+     {
+      "from": "agent",
+      "text": {
+       "__term__": {
+        "type": "StringConcat",
+        "parts": [
+         {
+          "type": "Lit",
+          "value": "I took on the goal to "
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "m"
+          },
+          "key": "comp_predicate"
+         },
+         {
+          "type": "Lit",
+          "value": ", but I have no world or faculty attached to carry it out here."
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "reply",
+     "responds_to",
+     "m"
+    ],
+    [
+     "add_edge",
+     "agent",
+     "sent",
+     "reply"
+    ]
+   ]
+  }
+ ]
+}

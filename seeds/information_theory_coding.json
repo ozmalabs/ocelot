@@ -1,0 +1,208 @@
+{
+  "microtheory": {
+    "name": "information_theory_coding",
+    "definition": "Shannon's information theory + coding theory. The mathematical framework for measuring + transmitting + compressing information. Entropy, mutual information, channel capacity, source coding, channel coding, rate-distortion, lossy/lossless compression, error correction, codec design. Directly grounds Paper 1's Axiom 2 (Serialisation adequacy): the claim that codec pairs (W_j, W_j^{-1}) preserve task-relevant content up to ε is exactly the rate-distortion question. The substrate's W_j is a source code; its ε is the rate-distortion bound; codec adequacy = operating point on the rate-distortion curve.",
+    "category": "foundation"
+  },
+  "concepts": [
+    {
+      "name": "information_shannon",
+      "definition": "Shannon 1948. Quantified information as -log p(x). Founding of the field. Substrate analogue: Jabberwock's substrate operates over information so quantified.",
+      "category": "foundation"
+    },
+    {
+      "name": "entropy_shannon",
+      "definition": "H(X) = -Σ p(x) log p(x). Average information content. Lower = more predictable. Bits when log base 2. Substrate analogue: substrate's compression objective's target.",
+      "category": "foundation"
+    },
+    {
+      "name": "self_information",
+      "definition": "Rare events carry more information. I(x) = -log p(x). Surprising events have high self-information. Substrate analogue: substrate's surprise / ΔF.",
+      "category": "foundation"
+    },
+    {
+      "name": "joint_entropy",
+      "definition": "H(X,Y) = -Σ p(x,y) log p(x,y). Information in pair. Substrate analogue: substrate's compound state.",
+      "category": "foundation"
+    },
+    {
+      "name": "conditional_entropy",
+      "definition": "H(Y|X) = H(X,Y) - H(X). Information in Y given X. Substrate analogue: substrate's conditional uncertainty.",
+      "category": "foundation"
+    },
+    {
+      "name": "mutual_information",
+      "definition": "I(X;Y) = H(X) + H(Y) - H(X,Y). Information X contains about Y. Symmetric. Substrate analogue: substrate's cross-Mt informational coupling.",
+      "category": "foundation"
+    },
+    {
+      "name": "kl_divergence",
+      "definition": "D_KL(P||Q) = Σ p log(p/q). Information lost when Q approximates P. Asymmetric. Substrate analogue: substrate's belief-update cost.",
+      "category": "foundation"
+    },
+    {
+      "name": "cross_entropy",
+      "definition": "H(P,Q) = -Σ p log q. Used in ML losses. = H(P) + D_KL(P||Q). Substrate analogue: substrate's prediction error.",
+      "category": "foundation"
+    },
+    {
+      "name": "source_coding",
+      "definition": "Shannon's source coding theorem. Compressible to H(X) bits per symbol on average. Substrate analogue: substrate's representational compression.",
+      "category": "source_coding"
+    },
+    {
+      "name": "huffman_coding",
+      "definition": "Optimal prefix code for known symbol distribution. Variable length. Substrate analogue: substrate's frequency-adapted symbol encoding.",
+      "category": "source_coding"
+    },
+    {
+      "name": "arithmetic_coding",
+      "definition": "Encodes whole message as single number in [0,1). Beats Huffman's per-symbol overhead. Substrate analogue: substrate's continuous compression.",
+      "category": "source_coding"
+    },
+    {
+      "name": "lossless_compression",
+      "definition": "Exact reconstruction. Limited by entropy. ZIP, gzip, FLAC. Substrate analogue: substrate's exact-recovery storage.",
+      "category": "source_coding"
+    },
+    {
+      "name": "minimum_description_length",
+      "definition": "MDL. Rissanen. Best model is shortest combined description of model + data given model. Substrate analogue: substrate's parsimony drive.",
+      "category": "source_coding"
+    },
+    {
+      "name": "channel_capacity",
+      "definition": "Shannon's channel coding theorem. Maximum rate of reliable transmission. C = max_p I(X;Y). Substrate analogue: substrate's per-channel info bandwidth.",
+      "term": {
+        "type": "Eq",
+        "a": {
+          "type": "Lit",
+          "value": "C"
+        },
+        "b": {
+          "type": "Lit",
+          "value": "max I(X"
+        }
+      },
+      "category": "channel"
+    },
+    {
+      "name": "noisy_channel_theorem",
+      "definition": "Below capacity: arbitrarily low error rate achievable. Above: error rate bounded away from zero. Substrate analogue: substrate's reliability vs throughput tradeoff.",
+      "category": "channel"
+    },
+    {
+      "name": "error_correction_code",
+      "definition": "Adds redundancy enabling error detection + correction. Hamming, Reed-Solomon, LDPC, Turbo, Polar. Substrate analogue: substrate's redundancy-for-reliability.",
+      "category": "channel"
+    },
+    {
+      "name": "hamming_distance",
+      "definition": "Number of positions where two codewords differ. d_min sets correction capability. Substrate analogue: substrate's discrimination metric.",
+      "category": "channel"
+    },
+    {
+      "name": "rate_distortion_theory",
+      "definition": "Berger 1971. R(D) = min I(X; X̂) subject to E[d(X,X̂)] ≤ D. Quantifies optimal lossy compression. THE FRAMEWORK FOR PAPER 1'S AXIOM 2: codec pair (W_j, W_j^{-1}) preserves content up to ε IS the rate-distortion question. Substrate analogue: substrate's task-relevant-content preservation under serialisation.",
+      "category": "lossy"
+    },
+    {
+      "name": "rate_distortion_function",
+      "definition": "R(D) — minimum rate to achieve distortion D. Convex, decreasing. R(0) = H(X) (lossless); R(∞) = 0. Substrate analogue: substrate's ε-vs-bitrate tradeoff curve.",
+      "category": "lossy"
+    },
+    {
+      "name": "distortion_measure",
+      "definition": "d(x, x̂) — cost of representing x as x̂. Squared error, Hamming, perceptual. Substrate analogue: substrate's task-relevance distortion.",
+      "category": "lossy"
+    },
+    {
+      "name": "lossy_compression",
+      "definition": "Discards information to achieve lower rate. JPEG, MP3, h.264. Operates on rate-distortion curve. Substrate analogue: substrate's perceptual-relevant retention.",
+      "category": "lossy"
+    },
+    {
+      "name": "perceptual_coding",
+      "definition": "Exploits limits of human perception (masking, JND) to discard inaudible/invisible info. MP3, AAC, Opus. Substrate analogue: substrate's perceptual-validity coding.",
+      "category": "lossy"
+    },
+    {
+      "name": "codec_definition",
+      "definition": "Coder + decoder pair. CODer-DECoder. Substrate analogue: substrate's W_j + W_j^{-1} pair (Paper 1 Axiom 2).",
+      "category": "codec"
+    },
+    {
+      "name": "codec_pair_adequacy",
+      "definition": "A codec pair is adequate for a content class iff it preserves task-relevant content up to ε across that class. EXACTLY Paper 1's Axiom 2 framing. Substrate analogue: substrate's codec adequacy test.",
+      "category": "codec"
+    },
+    {
+      "name": "epsilon_distortion_bound",
+      "definition": "The ε in 'preserves up to ε'. Task-relevant content distortion bound. Depends on content class + codec choice + intended use. Substrate analogue: substrate's tolerance parameter.",
+      "category": "codec"
+    },
+    {
+      "name": "lossy_round_trip",
+      "definition": "X → W(X) → W^{-1}(W(X)) ≠ X in general. Loss = d(X, W^{-1}(W(X))). Adequacy: loss ≤ ε. Substrate analogue: substrate's serialise-then-deserialise distortion.",
+      "category": "codec"
+    },
+    {
+      "name": "sampling_theorem",
+      "definition": "Shannon-Whittaker-Nyquist. Bandlimited signal recoverable from samples at 2× max frequency. Substrate analogue: substrate's sampling adequacy.",
+      "category": "sampling"
+    },
+    {
+      "name": "nyquist_shannon",
+      "definition": "Sample rate ≥ 2 × bandwidth → perfect reconstruction. Substrate analogue: substrate's discretization bound.",
+      "category": "sampling"
+    },
+    {
+      "name": "quantization_noise",
+      "definition": "Loss from amplitude discretization. ~Δ²/12 variance for uniform quantizer. Substrate analogue: substrate's discretization error.",
+      "category": "sampling"
+    },
+    {
+      "name": "channel_coding_separation",
+      "definition": "Shannon. Source coding + channel coding can be designed independently with no rate penalty. Substrate analogue: substrate's compression + reliability separability.",
+      "category": "principles"
+    },
+    {
+      "name": "data_processing_inequality",
+      "definition": "Processing cannot increase information. I(X; f(Y)) ≤ I(X; Y). Substrate analogue: substrate's downstream-cannot-recover-lost-info.",
+      "category": "principles"
+    },
+    {
+      "name": "fanos_inequality",
+      "definition": "Lower bound on error probability given conditional entropy. Substrate analogue: substrate's reconstruction error lower bound.",
+      "category": "principles"
+    }
+  ],
+  "rules": [
+    {
+      "name": "serialisation_adequacy_is_rate_distortion",
+      "head": "Jabberwock encounters Paper 1's Axiom 2 (Serialisation adequacy)",
+      "body": "the axiom IS the rate-distortion framing: codec pair preserves content up to ε corresponds to operating at distortion ε on the rate-distortion curve. Information theory provides the formal grounding."
+    },
+    {
+      "name": "lossy_round_trip_bounds_loss_not_eliminates_it",
+      "head": "Jabberwock processes input X via serialisation + deserialisation",
+      "body": "the round-trip is not exact (Shannon source coding for lossy compression). Loss is bounded by ε, not eliminated. Paper 1's Axiom 2 echoes this: 'serialisation is lossy; the claim is that well-chosen codecs bound the loss, not that an exact inverse exists'."
+    },
+    {
+      "name": "data_processing_inequality_limits_recovery",
+      "head": "Jabberwock processes information downstream of a serialisation",
+      "body": "no downstream processing can recover information lost in the codec. Data processing inequality. Substrate's downstream limit."
+    },
+    {
+      "name": "kl_divergence_measures_belief_update_cost",
+      "head": "Jabberwock updates beliefs from P to Q",
+      "body": "the information cost is D_KL(P||Q) bits. Substrate's belief-update efficiency metric."
+    },
+    {
+      "name": "mdl_grounds_parsimony_drive",
+      "head": "Jabberwock's parsimony drive selects compressed representations",
+      "body": "Rissanen's MDL principle formalises this: best model is shortest description of model + data given model. Substrate's parsimony drive = MDL."
+    }
+  ],
+  "parent_mt": "mathematics"
+}

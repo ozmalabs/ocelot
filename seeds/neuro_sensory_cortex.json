@@ -1,0 +1,198 @@
+{
+  "microtheory": {
+    "name": "sensory_cortex",
+    "definition": "How the cortex extracts structure from raw sensory input — feature hierarchies, modality-specific organization, invariance build-up. Maps directly to substrate's existing perception cortices (auditory, cochlear, vision). Each modality has its own canonical pipeline: receptors → subcortical relay → primary cortical area → progressively more abstract / invariant representations along a hierarchy.",
+    "category": "neuroscience_domain",
+    "parent": "neuroscience"
+  },
+  "concepts": [
+    {
+      "name": "v1_primary_visual_cortex",
+      "definition": "First cortical visual area, occipital lobe. Maintains retinotopic map; neurons tuned to oriented edges at specific spatial frequencies + positions. Hubel + Wiesel 1962. Simple cells = edge detectors; complex cells = position-invariant edges. Substrate analogue: a primary cortex that extracts the lowest-level features from a Mt's inputs.",
+      "category": "visual"
+    },
+    {
+      "name": "ventral_visual_stream",
+      "definition": "The 'what' pathway: V1 → V2 → V4 → IT (inferotemporal). Builds invariant object representations through progressive abstraction. Specialised areas: FFA (faces), PPA (places), VWFA (visual words). Substrate analogue: the genlMt hierarchy from concrete-percepts to abstract-concepts.",
+      "category": "visual"
+    },
+    {
+      "name": "dorsal_visual_stream",
+      "definition": "The 'where/how' pathway: V1 → V2 → V3 → MT/V5 → parietal. Processes motion, spatial location, action-relevant features. Substrate analogue: motor-coupled perception in the substrate's babble loop.",
+      "category": "visual"
+    },
+    {
+      "name": "retinotopy",
+      "definition": "V1's organization preserves visual-field topology: neighbouring retinal positions map to neighbouring V1 positions. Foveal cortical magnification is huge — central 2° gets ~50% of V1. Substrate analogue: input-space-preserving Mt organization.",
+      "category": "visual"
+    },
+    {
+      "name": "orientation_selectivity",
+      "definition": "V1 simple cells respond preferentially to edges of specific orientations. Pinwheel patterns of orientation columns tile V1. Emerges from sparse coding of natural images. Substrate analogue: feature-selective concepts in primary sensory Mts.",
+      "category": "visual"
+    },
+    {
+      "name": "complex_cell",
+      "definition": "V1 cell responding to a specific orientation regardless of exact position within RF. Built by pooling simple-cell outputs. First invariance step in the visual hierarchy. Substrate analogue: pooling concepts that aggregate over translation.",
+      "category": "visual"
+    },
+    {
+      "name": "binocular_disparity_neuron",
+      "definition": "Detects depth from the two eyes' slightly different views. V1 + V2 + MT. Substrate analogue: cross-input-channel comparison concepts.",
+      "category": "visual"
+    },
+    {
+      "name": "motion_selective_neuron",
+      "definition": "MT/V5 neurons tuned to specific directions of visual motion. Lesion = motion blindness (akinetopsia). Substrate analogue: temporal-difference concepts in the anticipation pipeline.",
+      "category": "visual"
+    },
+    {
+      "name": "face_selective_neuron",
+      "definition": "Inferotemporal cortex contains face-patches with extreme selectivity for faces vs non-faces; Tsao + Livingstone identified 6 specific face patches in macaque. Doris Tsao's code (~50 dimensions). Substrate analogue: highly-selective Mt for a single concept class with low-dimensional code.",
+      "category": "visual"
+    },
+    {
+      "name": "a1_primary_auditory_cortex",
+      "definition": "Primary auditory cortex, transverse temporal gyrus. Maintains tonotopic map (frequency-organized). Spectro-temporal receptive fields. Substrate's auditory_cortex.py is its analogue.",
+      "category": "auditory"
+    },
+    {
+      "name": "tonotopy",
+      "definition": "A1's organization: neighbouring neurons respond to neighbouring frequencies. Preserved from cochlea through brainstem to cortex. Substrate analogue: gammatone filterbank's frequency-ordered output.",
+      "category": "auditory"
+    },
+    {
+      "name": "spectrotemporal_receptive_field",
+      "definition": "An A1 neuron's STRF: which time-frequency patterns it responds to. Some neurons prefer rising sweeps; others falling; others narrow tones. Substrate analogue: A1 patch in substrate's auditory pipeline.",
+      "category": "auditory"
+    },
+    {
+      "name": "cochlea",
+      "definition": "Inner ear. Basilar membrane physically separates frequencies (high at base, low at apex); inner hair cells transduce to spikes; outer hair cells amplify. Substrate analogue: the gammatone filterbank.",
+      "category": "auditory"
+    },
+    {
+      "name": "cochlear_nucleus",
+      "definition": "First brainstem auditory station. Multiple cell types extracting different features: bushy cells (precise timing), stellate cells (level), octopus cells (onset). Substrate's cochlear_nucleus.py is its analogue.",
+      "category": "auditory"
+    },
+    {
+      "name": "inferior_colliculus",
+      "definition": "Midbrain auditory station. Integrates from both ears for localization; convergence for ascending pathways. Substrate analogue: cross-channel auditory integration.",
+      "category": "auditory"
+    },
+    {
+      "name": "medial_geniculate_nucleus",
+      "definition": "Auditory thalamic relay to A1. Pre-cortical bottleneck where attention can gate auditory input. Substrate analogue: attention-modulated auditory input gating.",
+      "category": "auditory"
+    },
+    {
+      "name": "phonemic_perception_area",
+      "definition": "Superior temporal gyrus regions (especially planum temporale) that respond categorically to phonemes. Substrate analogue: word/sign-recognition concepts in the substrate's phonology Mt.",
+      "category": "auditory"
+    },
+    {
+      "name": "s1_primary_somatosensory_cortex",
+      "definition": "Postcentral gyrus. Body-mapped (homunculus). 4 sub-areas (3a/3b/1/2) extract different tactile features: vibration, edges, motion. Substrate analogue: somatosensory primary cortex for an embodied substrate.",
+      "category": "somatosensory"
+    },
+    {
+      "name": "somatotopy",
+      "definition": "S1's body-map: neighbouring body parts → neighbouring S1 areas, with cortical magnification proportional to behavioural importance (hands + face huge). Penfield 1937. Substrate analogue: input-channel-importance-weighted Mt allocation.",
+      "category": "somatosensory"
+    },
+    {
+      "name": "proprioception_neuron",
+      "definition": "Neurons encoding joint position + muscle stretch — the body's sense of itself in space. Crucial for motor control. Substrate analogue: self-state-monitoring concepts.",
+      "category": "somatosensory"
+    },
+    {
+      "name": "olfactory_bulb",
+      "definition": "Receives olfactory receptor input. Glomeruli — one per receptor type. ~1000 glomeruli in mouse, ~400 in human. Sparse combinatorial code over glomeruli encodes odors. Substrate analogue: sparse-coding Mt with combinatorial feature concepts.",
+      "category": "olfaction"
+    },
+    {
+      "name": "piriform_cortex",
+      "definition": "Primary olfactory cortex. Only sense that bypasses thalamus. Distributed, non-topographic — odors are coded combinatorially over the entire piriform population. Substrate analogue: distributed-representation Mt without topographic order.",
+      "category": "olfaction"
+    },
+    {
+      "name": "thalamic_relay_nucleus",
+      "definition": "Specific thalamic nucleus that relays one modality to its cortical primary area: LGN → V1 (vision), MGN → A1 (audition), VPM/VPL → S1 (somatosensory). Substrate analogue: input-gating layer between world adapter and cortex.",
+      "category": "subcortical"
+    },
+    {
+      "name": "thalamic_reticular_nucleus",
+      "definition": "Thin inhibitory sheet around the thalamus. Gates which thalamic relays activate; substrate of attention gating. Substrate analogue: runtime_discovery's policy_filter mechanism.",
+      "category": "subcortical"
+    },
+    {
+      "name": "pulvinar",
+      "definition": "Largest thalamic nucleus. Coordinates between cortical visual areas; implements high-level attention. Substrate analogue: cross-cortex coherence coordination.",
+      "category": "subcortical"
+    },
+    {
+      "name": "superior_colliculus",
+      "definition": "Midbrain. Visuomotor: orients eyes + head to salient locations. Substrate analogue: substrate's salience-driven attention shifts.",
+      "category": "subcortical"
+    },
+    {
+      "name": "hierarchical_invariance",
+      "definition": "Across all sensory hierarchies: receptive fields grow larger, features become more abstract, representations become more invariant to nuisance variables (position, scale, view) at higher levels. Substrate analogue: genlMt chain accumulates invariance.",
+      "category": "principle"
+    },
+    {
+      "name": "cortical_magnification",
+      "definition": "Behaviourally important regions of input space get disproportionately more cortex. Fovea has ~50% of V1; fingertips have ~10% of S1. Substrate analogue: high-attention Mts get more concepts allocated to them.",
+      "category": "principle"
+    },
+    {
+      "name": "labeled_lines",
+      "definition": "Different receptor populations code for different perceptual qualities — sweet vs sour, red vs green, warm vs cold — and feed labeled lines into cortex. Substrate analogue: typed edges carrying different qualia.",
+      "category": "principle"
+    },
+    {
+      "name": "population_coding",
+      "definition": "A perceptual variable is represented by the joint activity of many neurons, not any single one. Decoding via vector averaging. Robust to noise + damage. Substrate analogue: distributed σ pattern across a Mt encodes the Mt's state.",
+      "category": "principle"
+    },
+    {
+      "name": "predictive_remapping",
+      "definition": "Before a saccade, neurons start responding to the future position. Cortex predicts the consequences of action on perception. Substrate analogue: anticipation of state change before action completes.",
+      "category": "principle"
+    }
+  ],
+  "rules": [
+    {
+      "name": "primary_cortex_extracts_local_features",
+      "head": "raw sensory input arrives at a primary cortical area",
+      "body": "the cortex extracts low-level, locally-selective features (edges in V1, frequencies in A1, vibration in S1). Substrate's primary cortices follow this pattern: feature extractors close to input."
+    },
+    {
+      "name": "feature_hierarchy_builds_invariance",
+      "head": "feedforward connections from primary to higher cortical areas",
+      "body": "progressively pool over nuisance variables (position, view, exact frequency), creating invariance. Substrate analogue: genlMt chains build invariance through abstraction."
+    },
+    {
+      "name": "sparse_coding_in_primary_cortex",
+      "head": "the primary cortex's receptive fields",
+      "body": "self-organize via sparse coding of natural inputs (Olshausen + Field 1996). V1 emerges from natural image statistics; A1 emerges from natural sound statistics. Substrate's compression objective is sparse coding."
+    },
+    {
+      "name": "attention_gates_at_thalamus",
+      "head": "the thalamic relay between world adapter and cortex",
+      "body": "is the substrate of attention. Cortical feedback to TRN gates which inputs propagate. Substrate analogue: policy_filter in runtime_discovery selects which inputs reach handlers."
+    },
+    {
+      "name": "predictive_coding_top_down_feedback",
+      "head": "higher cortical areas predict lower areas' activity",
+      "body": "anatomically feedforward + feedback connections are equal in number. Most cortical communication is top-down expectation rather than bottom-up evidence. Substrate's frustration is the residual after subtracting expectation."
+    },
+    {
+      "name": "cortical_magnification_follows_attention",
+      "head": "input regions that matter behaviourally",
+      "body": "get disproportionate cortical area + processing resources. The fovea has 50% of V1. Substrate analogue: drive-relevant Mts accumulate more concepts + handlers."
+    }
+  ],
+  "parent_mt": "neuroscience"
+}

@@ -1,0 +1,57 @@
+{
+  "microtheory": {
+    "name": "logic_foundation",
+    "definition": "Formal logic as the substrate's reasoning foundation. Propositional + predicate + modal + nonclassical logics. Inference rules, proof, soundness, completeness, decidability. The substrate has math (which includes some logic) but lacks dedicated logic vocabulary at the level needed for its derivation_mechanism. Substrate analogue: the substrate's reasoning IS logical inference over its Concept graph.",
+    "category": "foundation"
+  },
+  "concepts": [
+    {"name": "proposition", "definition": "Truth-bearer. Either true or false. Substrate analogue: substrate's truth-assignable structure.", "category": "foundation"},
+    {"name": "argument_logical", "definition": "Sequence of propositions: premises + conclusion. Substrate analogue: substrate's derivation chain.", "category": "foundation"},
+    {"name": "validity_argument", "definition": "Argument structurally guaranteeing conclusion if premises true. Substrate analogue: substrate's structurally-sound inference.", "category": "foundation"},
+    {"name": "soundness_argument", "definition": "Valid + premises actually true. Conclusion must be true. Substrate analogue: substrate's grounded valid inference.", "category": "foundation"},
+    {"name": "inference_rule", "definition": "Pattern for deriving conclusion from premises. Modus ponens, modus tollens, etc. Substrate analogue: substrate's Rule pattern.", "category": "foundation"},
+
+    {"name": "deductive_reasoning", "definition": "Premises guarantee conclusion. From general to specific. Substrate analogue: substrate's necessary inference.", "category": "reasoning_types"},
+    {"name": "inductive_reasoning", "definition": "Premises probabilify conclusion. From specific to general. Substrate analogue: substrate's empirical generalization.", "category": "reasoning_types"},
+    {"name": "abductive_reasoning", "definition": "Peirce. Inference to best explanation. From data to most plausible hypothesis. Substrate analogue: substrate's best-fit-hypothesis selection.", "category": "reasoning_types"},
+    {"name": "analogical_reasoning", "definition": "Mapping structure between domains. Substrate analogue: substrate's analogical_transfer faculty.", "category": "reasoning_types"},
+
+    {"name": "truth_value", "definition": "True or false. Classical logic: bivalent. Substrate analogue: substrate's σ-binary version.", "category": "values"},
+    {"name": "bivalence_principle", "definition": "Every proposition is either true or false. Excluded middle. Substrate analogue: substrate's binary commitment principle.", "category": "values"},
+    {"name": "many_valued_logic", "definition": "More than two truth values. Łukasiewicz. Substrate analogue: substrate's continuous σ values.", "category": "values"},
+
+    {"name": "logical_connective", "definition": "Operators combining propositions: AND, OR, NOT, IF-THEN, IFF. Substrate analogue: substrate's Boolean Term-tree primitives.", "category": "connectives"},
+    {"name": "conjunction_logic", "definition": "AND. True iff both true. Substrate analogue: substrate's And Term.", "category": "connectives"},
+    {"name": "disjunction_logic", "definition": "OR. True iff at least one true. Inclusive vs exclusive. Substrate analogue: substrate's Or Term.", "category": "connectives"},
+    {"name": "negation_logic", "definition": "NOT. Flips truth value. Substrate analogue: substrate's Not Term.", "category": "connectives"},
+    {"name": "implication_logic", "definition": "IF-THEN. False only when antecedent true + consequent false. Material vs strict. Substrate analogue: substrate's rule head→body.", "category": "connectives"},
+    {"name": "biconditional_logic", "definition": "IFF. True when both have same truth value. Substrate analogue: substrate's equivalence relation.", "category": "connectives"},
+
+    {"name": "quantifier", "definition": "FORALL (∀) or EXISTS (∃). Bind variables ranging over domain. Substrate analogue: substrate's Mt-traversal scope.", "category": "quantifiers"},
+    {"name": "universal_quantifier", "definition": "∀x P(x). For all x, P holds. Substrate analogue: substrate's all-Mts iteration.", "category": "quantifiers"},
+    {"name": "existential_quantifier", "definition": "∃x P(x). Some x makes P hold. Substrate analogue: substrate's some-Mt finder.", "category": "quantifiers"},
+
+    {"name": "tautology", "definition": "Proposition true in all interpretations. P ∨ ¬P. Substrate analogue: substrate's necessary truth.", "category": "kinds"},
+    {"name": "contradiction_logic", "definition": "Always false. P ∧ ¬P. Substrate analogue: substrate's necessary falsehood.", "category": "kinds"},
+    {"name": "contingency", "definition": "Sometimes true, sometimes false. Substrate analogue: substrate's empirical claim.", "category": "kinds"},
+
+    {"name": "logical_equivalence", "definition": "Two propositions with same truth value in all interpretations. P ↔ Q tautological. Substrate analogue: substrate's structural-equivalence.", "category": "relations"},
+    {"name": "logical_consequence", "definition": "Q follows from P iff every model of P is model of Q. Substrate analogue: substrate's derivation relation.", "category": "relations"},
+    {"name": "consistency", "definition": "Set of propositions with simultaneous model. Substrate analogue: substrate's coherent Mt set.", "category": "relations"},
+
+    {"name": "proof", "definition": "Sequence of steps from premises to conclusion via inference rules. Substrate analogue: substrate's derivation chain.", "category": "proof"},
+    {"name": "axiom", "definition": "Proposition accepted without proof. Foundation of system. Substrate analogue: substrate's seeded Rule.", "category": "proof"},
+    {"name": "theorem", "definition": "Proposition provable from axioms. Substrate analogue: substrate's derived Mt-content.", "category": "proof"},
+
+    {"name": "informal_logic", "definition": "Reasoning in natural language. Argumentation theory. Substrate analogue: substrate's everyday inference.", "category": "kinds_logic"},
+    {"name": "formal_logic", "definition": "Reasoning with formal language + precise rules. Substrate analogue: substrate's typed inference.", "category": "kinds_logic"},
+    {"name": "symbolic_logic", "definition": "Formal logic with symbolic notation. Substrate analogue: substrate's Term-tree representation.", "category": "kinds_logic"}
+  ],
+  "rules": [
+    {"name": "modus_ponens", "head": "the substrate has P and P→Q", "body": "it can conclude Q. Foundational deductive rule. Substrate's rule-firing pattern."},
+    {"name": "modus_tollens", "head": "the substrate has P→Q and ¬Q", "body": "it can conclude ¬P. Contrapositive form. Substrate's denial-by-consequent."},
+    {"name": "valid_argument_preserves_truth", "head": "the substrate has a valid argument with true premises", "body": "the conclusion must be true. Validity = truth-preservation. Substrate's sound inference."},
+    {"name": "consistency_required_for_meaningful_inference", "head": "the substrate's premise set is inconsistent", "body": "anything follows (ex falso quodlibet). Inference becomes trivial. Substrate's coherence requirement."},
+    {"name": "inductive_strength_depends_on_evidence", "head": "the substrate generalizes from instances", "body": "the inductive strength depends on sample size + representativeness. Inductive logic. Substrate's empirical confidence."}
+  ]
+}

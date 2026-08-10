@@ -1,0 +1,118 @@
+{
+  "id": "inr_codec_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "implicit_neural_representation",
+  "in_microtheory": "video_coding_theory",
+  "description": "Implicit Neural Representation (INR) video codec architecture decomposed. Where feature-bitstream codecs (DCVC) compress features extracted from frames, INR codecs represent the video itself AS a neural network. A small MLP takes (x, y, t) coordinates as input and outputs pixel values. Compression = training the network on the video, then storing the quantised weights. Decoding = a single forward pass per pixel. Highly compact for long-form smooth content; doesn't scale to very large/diverse content.",
+  "sub_mechanisms": [
+    {
+      "name": "coordinate_input_encoding",
+      "definition": "Sample positions (x, y, t) are first transformed by a positional-encoding function — typically random Fourier features or sinusoidal embeddings up to many frequencies.",
+      "why": "MLPs can't directly learn high-frequency variation from low-dimensional inputs (spectral bias). Positional encoding lifts the input to a higher-dimensional space where high frequencies are explicit. Without it, INRs produce blurry outputs; with it, sharp detail is achievable.",
+      "category": "inr_mechanism"
+    },
+    {
+      "name": "MLP_pixel_predictor",
+      "definition": "A multilayer perceptron (typically 8-16 layers, 256 hidden units each) that maps positional-encoded coordinates to RGB pixel values.",
+      "why": "MLPs are universal function approximators. Given enough capacity, an MLP can fit any video. The architectural choices (depth, width, activation) trade reconstruction quality against memory.",
+      "category": "inr_mechanism"
+    },
+    {
+      "name": "training_as_compression",
+      "definition": "The INR is trained to minimise reconstruction MSE (or perceptual loss) over the source video. The trained weights ARE the compressed representation.",
+      "why": "Compression by overfitting. Where conventional codecs find a transform-quantise-entropy pipeline, INRs find weights that reproduce the specific source. The 'compression ratio' is source size / trained-network size.",
+      "category": "inr_mechanism"
+    },
+    {
+      "name": "weight_quantisation",
+      "definition": "Trained weights are quantised (typically 8-16 bit) before storage. Quantisation-aware training adjusts weights to be robust to this quantisation.",
+      "why": "Reduces stored size by 2-4x vs float32 weights. Quantisation-aware training (QAT) preserves quality at lower bit depths; vanilla post-training quantisation works less well. QAT IS the per-frame fine-tuning of conventional codecs, applied at network-weight level.",
+      "category": "inr_mechanism"
+    },
+    {
+      "name": "weight_entropy_coding",
+      "definition": "After quantisation, weight values are entropy-coded (e.g., arithmetic coded using their distribution) for further compression of the stored representation.",
+      "why": "Weight distributions are non-uniform — many small values, few large ones. Entropy coding exploits this for ~30-50% additional size reduction. The total INR size is weights ENTROPY × bits-per-weight.",
+      "category": "inr_mechanism"
+    },
+    {
+      "name": "spatial_temporal_separation",
+      "definition": "Some INR designs separate spatial and temporal processing: a spatial MLP processes (x, y) features, a temporal MLP processes the t dimension.",
+      "why": "Spatial and temporal patterns have different statistics. Separating them lets each be sized appropriately — spatial may be larger (capturing image detail), temporal smaller (smooth motion). Cleaner trade-off vs a joint MLP.",
+      "category": "inr_mechanism"
+    },
+    {
+      "name": "hierarchical_positional_encoding",
+      "definition": "HiNeRV-style: positional encoding uses multiple spatial scales, with each scale's contribution gated by learnable parameters.",
+      "why": "Multi-scale positional encoding gives the network multi-resolution spatial-temporal awareness. Critical for sharp edges and fine motion. Without it, INRs systematically blur high-frequency details.",
+      "category": "inr_mechanism"
+    },
+    {
+      "name": "fully_parallel_decoding",
+      "definition": "Each output pixel is computed by an independent MLP forward pass. All pixels can be computed simultaneously on GPU.",
+      "why": "Massive parallelism: an entire 4K frame's 8M pixels can be computed by 8M independent forward passes on a wide GPU. Latency is one MLP-depth deep, not per-pixel sequential. Throughput is enormous for the trade.",
+      "category": "inr_mechanism"
+    },
+    {
+      "name": "lack_of_random_access",
+      "definition": "Decoding the network for time t requires evaluating the MLP at t. Different t values can be evaluated independently. But the network weights are required for ANY decoding.",
+      "why": "Conventional codecs have IDR / keyframes for random access; INRs require the full network. Streaming requires sending the entire INR before any frame can be displayed. Inappropriate for live/streaming; appropriate for offline content (cinematic releases, archived footage).",
+      "category": "inr_mechanism"
+    },
+    {
+      "name": "per_video_training_overhead",
+      "definition": "Each video requires its own INR training (~5-30 minutes on a single GPU for 1080p content).",
+      "why": "Training is the encoding step; it's expensive. For offline encoding, this is acceptable. For real-time encoding, it's a non-starter. INRs are an asymmetric codec — expensive encode, cheap decode.",
+      "category": "inr_mechanism"
+    },
+    {
+      "name": "rate_distortion_via_network_size",
+      "definition": "Larger INRs (more layers, more units) achieve lower reconstruction error but cost more bits. The 'rate' is the total weight count after quantisation + entropy coding.",
+      "why": "The rate-distortion knob is the network architecture itself. Smaller networks compress more aggressively but reconstruct more loosely. Same content can be encoded as multiple INRs at different rates by choosing network sizes.",
+      "category": "inr_mechanism"
+    },
+    {
+      "name": "diffusion_aware_INR",
+      "definition": "GIViC and similar 2025 variants: INRs trained jointly with a diffusion prior. The INR provides the framework; the diffusion prior fills in plausible details at low bitrates.",
+      "why": "INRs alone blur at extreme low bitrates. Diffusion priors fill in plausible details consistent with the source distribution. At <50 kbps for 1080p, this hybrid outperforms both pure INRs and pure neural codecs.",
+      "category": "inr_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "spectral_bias_requires_positional_encoding",
+      "if": ["an MLP must learn high-frequency variation"],
+      "then": ["raw coordinate input fails; positional encoding is required"],
+      "why": "Neural networks have spectral bias — they fit low-frequency targets faster than high-frequency. Random Fourier features lift the input to a high-dimensional space where high frequencies become explicit, removing this bias. Critical to INR sharpness.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "weight_quantisation_trades_precision_for_size",
+      "if": ["weights are quantised from float32 to int8"],
+      "then": ["storage size drops 4x; reconstruction quality drops modestly"],
+      "why": "Quantisation introduces noise per weight. Networks are remarkably robust to per-weight perturbation when quantisation-aware training is used. Quality loss is typically <0.5 dB PSNR; size saving is large.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "asymmetric_encode_decode_suits_offline_workflows",
+      "if": ["encoding cost is paid once but decoding happens many times"],
+      "then": ["asymmetric codecs (INR) are appropriate"],
+      "why": "Cinematic content is encoded once, decoded millions of times. INR's per-video training cost is amortised. Live content doesn't have this amortisation; INRs don't fit. The asymmetry matches deployment economics.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "lack_of_random_access_excludes_streaming",
+      "if": ["a codec requires the full representation before decoding"],
+      "then": ["it cannot be used for live or seeking streaming"],
+      "why": "Streaming needs to start playback before the full file is downloaded. INRs require all weights. Conventional codecs allow byte-position seeking and partial download. This structural difference excludes INRs from streaming until a chunking mechanism is added.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "diffusion_priors_extend_low_bitrate_envelope",
+      "if": ["a codec is combined with a generative prior"],
+      "then": ["it can synthesise plausible details that pure compression cannot"],
+      "why": "At very low bitrates, conventional and pure-INR codecs fall off cliffs. Diffusion priors hallucinate detail consistent with the source's distribution. The bitstream becomes a 'sketch' that the prior fills in. Quality is preserved at much lower bitrates than pure compression allows.",
+      "soundness_category": "denotational_equivalence"
+    }
+  ]
+}

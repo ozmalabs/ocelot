@@ -1,0 +1,118 @@
+{
+  "id": "wcet_schedulability_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "worst_case_execution_time",
+  "in_microtheory": "embedded_iot_realtime",
+  "description": "WCET analysis + schedulability decomposed. Static vs measurement-based WCET, response time analysis (RTA), utilisation bounds, sensitivity analysis, cache behavior on RT, branch prediction effects. The math that proves a real-time system meets deadlines.",
+  "sub_mechanisms": [
+    {
+      "name": "static_WCET_analysis",
+      "definition": "Analyse binary; bound longest path. Considers cache misses, branch prediction, pipeline.",
+      "why": "Provable upper bound. Tool-based (aiT, RapiTime, Bound-T). Required for DO-178C, ASIL D. Conservative but sound.",
+      "category": "wcet_mechanism"
+    },
+    {
+      "name": "measurement_based_WCET",
+      "definition": "Run code with many inputs; observe times; bound worst case.",
+      "why": "Practical for non-critical RT. Cannot guarantee unobserved paths. Combined with stress testing + safety margin.",
+      "category": "wcet_mechanism"
+    },
+    {
+      "name": "response_time_analysis_RTA",
+      "definition": "Iteratively compute worst-case response time per task considering higher-priority interference.",
+      "why": "Exact schedulability test (vs UB conservative). R_i = C_i + Σ ⌈R_i/T_j⌉ × C_j for higher-priority tasks. Standard RT analysis.",
+      "category": "wcet_mechanism"
+    },
+    {
+      "name": "utilisation_bound_test",
+      "definition": "U ≤ U_max(n). For RMS: U_max = n(2^(1/n)-1).",
+      "why": "Quick check; sufficient but not necessary. If passes, schedulable. If fails, run RTA. Cheaper than RTA.",
+      "category": "wcet_mechanism"
+    },
+    {
+      "name": "blocking_time_priority_inversion",
+      "definition": "Worst-case time a task waits for lower-priority task holding shared resource.",
+      "why": "Even with priority inheritance, blocking exists. Added to RTA. Critical path for shared resources. Bounded by longest critical section.",
+      "category": "wcet_mechanism"
+    },
+    {
+      "name": "cache_effects_on_WCET",
+      "definition": "Cache hits/misses affect timing. Conservative WCET assumes all misses; tight analysis tracks state.",
+      "why": "Modern CPUs: huge cache impact. Static analysis tracks cache state at each program point. Cost: complexity.",
+      "category": "wcet_mechanism"
+    },
+    {
+      "name": "interrupt_blocking_RTA",
+      "definition": "Interrupts disabled extends WCET. Critical sections add to worst case.",
+      "why": "RT-friendly code minimises interrupt-disable time. RTAs include this. Bounded by longest critical section in the system.",
+      "category": "wcet_mechanism"
+    },
+    {
+      "name": "deadline_monotonic_analysis",
+      "definition": "DM: priority by deadline. RTA with deadlines that may be < period.",
+      "why": "Generalises RMS. When deadlines tighter than periods, DM optimal among fixed-priority. Standard analysis.",
+      "category": "wcet_mechanism"
+    },
+    {
+      "name": "EDF_schedulability_test",
+      "definition": "EDF: schedulable iff U ≤ 1 (for implicit deadlines).",
+      "why": "Optimal scheduler, simplest test. With deadline < period, density test: Σ C_i/D_i ≤ 1.",
+      "category": "wcet_mechanism"
+    },
+    {
+      "name": "sensitivity_analysis_slack",
+      "definition": "How much can WCETs grow before missing deadlines? Slack between actual response time + deadline.",
+      "why": "Robustness measure. Useful for code changes: 'will adding feature break schedule?' Pre-compute slack; check after change.",
+      "category": "wcet_mechanism"
+    },
+    {
+      "name": "release_jitter",
+      "definition": "Variation in task release times. Even periodic tasks may have jitter (clock drift, interrupt latency).",
+      "why": "Added to interference calculation in RTA. Conservative analysis assumes maximum jitter.",
+      "category": "wcet_mechanism"
+    },
+    {
+      "name": "task_dependencies_RTA",
+      "definition": "Tasks may release each other (data flow). Latency = max chain through tasks.",
+      "why": "End-to-end timing analysis. Single-task RTA insufficient for distributed pipelines. Standard for control loops.",
+      "category": "wcet_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "WCET_tight_bound_enables_efficient_schedule",
+      "if": ["WCET estimate is conservative (large overestimate)"],
+      "then": ["schedule reserves more CPU than needed"],
+      "why": "Conservative WCET → conservative schedulability → wasted CPU. Tight WCET → tight schedule → more workload possible. WCET tool quality matters.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "RTA_exact_UB_conservative",
+      "if": ["a task set fails utilisation bound test"],
+      "then": ["RTA may still find it schedulable"],
+      "why": "UB sufficient: if passes, schedulable. UB necessary: only for trivial cases. RTA exact: pass iff schedulable. Use UB for quick check, RTA for tight analysis.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "blocking_time_bounded_by_longest_critical_section",
+      "if": ["priority inheritance is used"],
+      "then": ["blocking time ≤ longest critical section using shared resource"],
+      "why": "Without PI: unbounded blocking. With PI: worst case = one critical section. Schedulability analysis can include + bound. Mars Pathfinder lesson.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "cache_aware_WCET_tighter",
+      "if": ["WCET tool tracks cache state"],
+      "then": ["bounds are tighter than worst-case-miss"],
+      "why": "Naive: assume all cache misses → loose bound. Cache-aware: track hit/miss per access → much tighter. aiT, Bound-T do this. Trade-off: tool complexity.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "end_to_end_latency_chains_through_tasks",
+      "if": ["control loop spans sensor → processor → actuator tasks"],
+      "then": ["end-to-end latency is sum of per-task response times"],
+      "why": "Each task contributes. End-to-end matters for control stability. Single-task RT analysis insufficient. Standard for distributed RT systems.",
+      "soundness_category": "algebraic_law"
+    }
+  ]
+}

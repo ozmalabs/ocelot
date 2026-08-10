@@ -1,0 +1,72 @@
+{
+  "id": "prosodic_meter",
+  "version": "1.0.0",
+  "depends_on": [],
+  "description": "RHYTHM + METER = COLLAPSE OVER A FOOT CODEBOOK (graph data). A line of verse is perceived into a STRESS PATTERN (a sequence of weak 'w' / strong 'S' syllables) by the held phonology (CMUdict ARPABET stress digits; OOV/nonsense words by an English default-stress heuristic). The pattern is DECODED against this FOOT codebook (each ShapeSignatureMeter carries a foot's base_pattern; the adapter tiles it to the line length into a ShapeSignature{kind:'foot_tiled'} decode-part, foot-agnostically) via reflective_faculty.compose_design_for_goal = the Rust ShapeDecode Term. The foot whose tiling best fits (max shape_fit, position-aligned over the whole line) WINS — the FOOT is the ShapeDecode verdict, not a Python scan. The LINE meter = the winning foot x the foot count (syllables // foot length; greek numeral). A stress pattern no seeded foot tiles to cover well (best fit < line length) has residual rhythm -> the sd loop (seeds/shape_decode_loop.json) mints a quantum -> domains/metrical_reading.py installs the pattern's minimal repeating unit as a NEW ShapeSignatureMeter foot + bumps codebook_epoch -> re-decode recognizes the learned meter. The prosodic twin of reading_collapse's construction codebook and ink_decode's stroke codebook: one collapse, one domain over into RHYTHM.",
+  "microtheory": {
+    "name": "prosodic_meter",
+    "description": "rhythm/meter is ShapeDecode over a foot codebook; a novel meter is minted, not hand-scanned"
+  },
+  "nodes": [
+    {
+      "local_id": 1,
+      "type": "ShapeSignatureMeter",
+      "attrs": {
+        "name": "iamb",
+        "kind": "foot",
+        "adjective": "iambic",
+        "base_pattern": "[[\"w\"],[\"S\"]]",
+        "syllables": 2,
+        "note": "weak-STRONG (da-DUM). The default English metrical foot; iambic pentameter/tetrameter are the workhorse verse meters."
+      }
+    },
+    {
+      "local_id": 2,
+      "type": "ShapeSignatureMeter",
+      "attrs": {
+        "name": "trochee",
+        "kind": "foot",
+        "adjective": "trochaic",
+        "base_pattern": "[[\"S\"],[\"w\"]]",
+        "syllables": 2,
+        "note": "STRONG-weak (DUM-da). Blake's 'Tyger tyger burning bright' is trochaic tetrameter (catalectic)."
+      }
+    },
+    {
+      "local_id": 3,
+      "type": "ShapeSignatureMeter",
+      "attrs": {
+        "name": "anapest",
+        "kind": "foot",
+        "adjective": "anapestic",
+        "base_pattern": "[[\"w\"],[\"w\"],[\"S\"]]",
+        "syllables": 3,
+        "note": "weak-weak-STRONG (da-da-DUM). The galloping foot ('The Assyrian came down...')."
+      }
+    },
+    {
+      "local_id": 4,
+      "type": "ShapeSignatureMeter",
+      "attrs": {
+        "name": "dactyl",
+        "kind": "foot",
+        "adjective": "dactylic",
+        "base_pattern": "[[\"S\"],[\"w\"],[\"w\"]]",
+        "syllables": 3,
+        "note": "STRONG-weak-weak (DUM-da-da). Longfellow's Evangeline is dactylic hexameter."
+      }
+    },
+    {
+      "local_id": 5,
+      "type": "ShapeSignatureMeter",
+      "attrs": {
+        "name": "amphibrach",
+        "kind": "foot",
+        "adjective": "amphibrachic",
+        "base_pattern": "[[\"w\"],[\"S\"],[\"w\"]]",
+        "syllables": 3,
+        "note": "weak-STRONG-weak (da-DUM-da). The limerick foot."
+      }
+    }
+  ]
+}

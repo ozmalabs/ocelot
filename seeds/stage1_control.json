@@ -1,0 +1,31 @@
+{
+  "id": "stage1_control",
+  "version": "1.0.0",
+  "depends_on": ["stage0_prediction"],
+  "description": "Stage 1 of the jabberwock's own curriculum (docs/jabberwock_game_play_design.md): 'I exist; what I control.' Builds on Stage 0's predictor. Control is discovered as in the design: the region the agent CONTROLS is the one whose behaviour is predictable from its action when it is not predictable without it — natively, respond_votes. The new learning is the action_delta MAP: for the controlled region, each action affordance learns the displacement it causes (its dcy/dcx), as an EMA toward the observed motion, written in-fixpoint and FOLDED at the clock edge (the closed loop — the same mechanism as everything). Once learned, the action-conditioned prediction (cy + action_delta[action]) beats the passive constant-velocity prediction whenever the agent changes action. Success (the agent's own): action-conditioned one-step error < passive error for the controlled region.",
+  "microtheory": {"name": "stage1_control", "description": "control = the region that responds to me; learn action_delta (each action's displacement) by folding the residual; action-conditioned prediction then beats passive."},
+  "nodes": [],
+  "edges": [],
+  "productions": [],
+  "rules": [
+    {
+      "name": "learn_action_delta",
+      "comment": "For the controlled region (respond_votes>=2) and the action affordance that was just taken (act.name == game.last_action), learn that action's displacement: EMA its dcy/dcx toward the controlled region's observed motion (drow/dcol). Written as next_dcy/next_dcx (combinational) + clocked=1, so the engine's clock-edge fold commits next_*->* — the closed loop learning the map. dcy/dcx default 0 (Plus[Attr,0]). This is control + the action_delta map under the ONE fold mechanism, no per-event handler.",
+      "match": [["game", "has_action", "act"], ["game", "has_region", "c"]],
+      "where": {"type": "And", "items": [
+        {"type": "Gte", "a": {"type": "Plus", "items": [{"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "respond_votes"}, {"type": "Lit", "value": 0}]}, "b": {"type": "Lit", "value": 2}},
+        {"type": "Eq", "a": {"type": "Plus", "items": [{"type": "Attr", "node": {"type": "Var", "name": "act"}, "key": "interaction"}, {"type": "Lit", "value": 0}]}, "b": {"type": "Lit", "value": 1.0}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "act"}, "key": "name"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "game"}, "key": "last_action"}}
+      ]},
+      "effects": [
+        ["set_attr", "act", "clocked", 1.0],
+        ["set_attr", "act", "next_dcy", {"__term__": {"type": "Plus", "items": [
+          {"type": "Plus", "items": [{"type": "Attr", "node": {"type": "Var", "name": "act"}, "key": "dcy"}, {"type": "Lit", "value": 0.0}]},
+          {"type": "Times", "items": [{"type": "Lit", "value": 0.5}, {"type": "Minus", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "drow"}, "b": {"type": "Plus", "items": [{"type": "Attr", "node": {"type": "Var", "name": "act"}, "key": "dcy"}, {"type": "Lit", "value": 0.0}]}}]}]}}],
+        ["set_attr", "act", "next_dcx", {"__term__": {"type": "Plus", "items": [
+          {"type": "Plus", "items": [{"type": "Attr", "node": {"type": "Var", "name": "act"}, "key": "dcx"}, {"type": "Lit", "value": 0.0}]},
+          {"type": "Times", "items": [{"type": "Lit", "value": 0.5}, {"type": "Minus", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "dcol"}, "b": {"type": "Plus", "items": [{"type": "Attr", "node": {"type": "Var", "name": "act"}, "key": "dcx"}, {"type": "Lit", "value": 0.0}]}}]}]}}]
+      ]
+    }
+  ]
+}

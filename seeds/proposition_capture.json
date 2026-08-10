@@ -1,0 +1,47 @@
+{
+  "id": "proposition_capture",
+  "version": "1.0.0",
+  "depends_on": [],
+  "description": "BLIND-SPOT CLOSURE R9 (proposition-grain belief content, 2026-07-12). domains/character_tom.py's `_nested_entity`/`_ground_attitude_complement` mechanically stamp the reader's OWN complement-clause parse (the full [rel, a0, a1] predication, plus its verbatim span) onto every Level-2 belief/goal node (`SmEntity{nested:1}` for belief/knowledge, `SmEvent{verb:'want'}` for desire) as `proposition`/`proposition_span` -- unconditionally, the SAME mechanical mint discipline `situation_model_reader.ingest_predication` already uses for every other node attr. This ONE rule is the DECISION surface: a Level-2 node carrying a `proposition_span` (and not yet marked) is ELIGIBLE for full-proposition rendering, marked via `proposition_capture=1`. `reflective_faculty._run_interlocutor_model` reads `proposition_capture` before preferring `proposition_span` over the old head-grain `referent`/`idx_intentionality` -- so ablating this rule (remove_rule) reverts every render to the pre-closure head-grain text ('believing new_scheduler') even though the richer data is still sitting on the node, proving the closure's DECISION genuinely lives in the rule, not in the mechanical mint. Matched via a fresh `is_attitude_level2` self-edge (the SAME single-node self-match idiom `situation_model_reader._entity`'s `is_entity` / `reading_drive`'s `is_sentence_parse` already use), stamped on BOTH the belief/knowledge SmEntity and the desire SmEvent at mint time -- one rule covers both flavors.",
+  "microtheory": {
+    "name": "proposition_capture",
+    "description": "the ablatable eligibility flag for full-proposition (not head-grain) rendering of a modeled Level-2 belief/goal."
+  },
+  "nodes": [],
+  "edges": [],
+  "productions": [],
+  "rules": [
+    {
+      "name": "mark_attitude_proposition_capture",
+      "comment": "A Level-2 belief/goal node (matched via its own `is_attitude_level2` self-edge) that carries a verbatim `proposition_span` and is not yet marked is flagged `proposition_capture=1` -- the DECISION that this node's full proposition (not just its head-grain `referent`/`idx_intentionality`) is eligible for rendering. Mint-once (the `Not(proposition_capture==1)` guard).",
+      "match": [
+        ["l2", "is_attitude_level2", "l2"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {"type": "Attr", "node": {"type": "Var", "name": "l2"}, "key": "proposition_span"},
+              "b": {"type": "Lit", "value": null}
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {"type": "Attr", "node": {"type": "Var", "name": "l2"}, "key": "proposition_capture"},
+              "b": {"type": "Lit", "value": 1.0}
+            }
+          }
+        ]
+      },
+      "effects": [
+        ["set_attr", "l2", "proposition_capture", 1.0]
+      ]
+    }
+  ],
+  "reflexes": []
+}

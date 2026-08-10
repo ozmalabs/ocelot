@@ -1,0 +1,37 @@
+{
+  "protocol": "aerial_three_rotor_direct_recovery_v1",
+  "status": "development_demonstration",
+  "simulator": "gym-pybullet-drones",
+  "vehicle": "Crazyflie 2.x",
+  "seed": 21,
+  "goal": [
+    0.75,
+    0.75,
+    1.0
+  ],
+  "babble_samples_per_actuator": 2,
+  "normal_action_duration_seconds": 0.25,
+  "recovery_observation_seconds": 15.0,
+  "enable_yaw_actuators": true,
+  "enable_direct_motor_actuators": true,
+  "angular_stability_weight": 0.1,
+  "damage": {
+    "kind": "complete_propeller_loss",
+    "onset_action": 70,
+    "failed_propeller_ordinal": 1,
+    "thrust_retention": [
+      1.0,
+      0.0,
+      1.0,
+      1.0
+    ],
+    "torque_retention": [
+      1.0,
+      0.0,
+      1.0,
+      1.0
+    ]
+  },
+  "normal_failure_baseline": "results/aerial_complete_prop_failure_v1.json",
+  "recovery": "physics-rate evidence accumulation followed by graph-authored reduced-attitude RPM allocation with yaw relaxed"
+}

@@ -1,0 +1,282 @@
+{
+  "id": "shape_library",
+  "version": "1.0.0",
+  "depends_on": [
+    "shape_sense"
+  ],
+  "description": "Named canonical shape prototypes (name + shape_descriptor vector, as descriptor_vec). A ShapeLibrary node holds them via has_prototype; the generic shape_recognition rules link a perceived figure --geometric_shape--> the nearest prototype. Extensible: add a prototype node.",
+  "nodes": [
+    {
+      "local_id": 1,
+      "type": "ShapeLibrary",
+      "attrs": {
+        "name": "shape_library"
+      }
+    },
+    {
+      "local_id": 100,
+      "type": "ShapePrototype",
+      "attrs": {
+        "name": "line",
+        "descriptor": "[1.0, 2.0, 3.2, 0.0, 1.0]",
+        "descriptor_vec": [
+          1.0,
+          2.0,
+          3.2,
+          0.0,
+          1.0
+        ],
+        "label": "line"
+      }
+    },
+    {
+      "local_id": 101,
+      "type": "ShapePrototype",
+      "attrs": {
+        "name": "square",
+        "descriptor": "[1.0, 0.7407, 0.0, 0.0, 1.0]",
+        "descriptor_vec": [
+          1.0,
+          0.7407,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "label": "square"
+      }
+    },
+    {
+      "local_id": 102,
+      "type": "ShapePrototype",
+      "attrs": {
+        "name": "rectangle",
+        "descriptor": "[1.0, 1.125, 0.6125, 0.0, 1.0]",
+        "descriptor_vec": [
+          1.0,
+          1.125,
+          0.6125,
+          0.0,
+          1.0
+        ],
+        "label": "rectangle"
+      }
+    },
+    {
+      "local_id": 103,
+      "type": "ShapePrototype",
+      "attrs": {
+        "name": "triangle",
+        "descriptor": "[0.625, 1.0, 0.2, 0.0, 1.75]",
+        "descriptor_vec": [
+          0.625,
+          1.0,
+          0.2,
+          0.0,
+          1.75
+        ],
+        "label": "triangle"
+      }
+    },
+    {
+      "local_id": 104,
+      "type": "ShapePrototype",
+      "attrs": {
+        "name": "diamond",
+        "descriptor": "[0.52, 0.8284, 0.0, 0.0, 3.0]",
+        "descriptor_vec": [
+          0.52,
+          0.8284,
+          0.0,
+          0.0,
+          3.0
+        ],
+        "label": "diamond"
+      }
+    },
+    {
+      "local_id": 105,
+      "type": "ShapePrototype",
+      "attrs": {
+        "name": "disk",
+        "descriptor": "[0.52, 0.8284, 0.0, 0.0, 3.0]",
+        "descriptor_vec": [
+          0.52,
+          0.8284,
+          0.0,
+          0.0,
+          3.0
+        ],
+        "label": "disk"
+      }
+    },
+    {
+      "local_id": 106,
+      "type": "ShapePrototype",
+      "attrs": {
+        "name": "cross",
+        "descriptor": "[0.5556, 0.8, 0.0, 0.0, 2.0]",
+        "descriptor_vec": [
+          0.5556,
+          0.8,
+          0.0,
+          0.0,
+          2.0
+        ],
+        "label": "cross"
+      }
+    },
+    {
+      "local_id": 107,
+      "type": "ShapePrototype",
+      "attrs": {
+        "name": "L_shape",
+        "descriptor": "[0.5556, 1.28, 0.4147, 0.0, 1.25]",
+        "descriptor_vec": [
+          0.5556,
+          1.28,
+          0.4147,
+          0.0,
+          1.25
+        ],
+        "label": "L"
+      }
+    },
+    {
+      "local_id": 108,
+      "type": "ShapePrototype",
+      "attrs": {
+        "name": "T_shape",
+        "descriptor": "[0.5556, 1.04, 0.0461, 0.0, 1.5]",
+        "descriptor_vec": [
+          0.5556,
+          1.04,
+          0.0461,
+          0.0,
+          1.5
+        ],
+        "label": "T"
+      }
+    },
+    {
+      "local_id": 109,
+      "type": "ShapePrototype",
+      "attrs": {
+        "name": "ring",
+        "descriptor": "[0.8889, 0.9375, 0.0, 0.5, 1.0]",
+        "descriptor_vec": [
+          0.8889,
+          0.9375,
+          0.0,
+          0.5,
+          1.0
+        ],
+        "label": "ring"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "src": {
+        "local": 1
+      },
+      "type": "has_prototype",
+      "tgt": {
+        "local": 100
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 1
+      },
+      "type": "has_prototype",
+      "tgt": {
+        "local": 101
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 1
+      },
+      "type": "has_prototype",
+      "tgt": {
+        "local": 102
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 1
+      },
+      "type": "has_prototype",
+      "tgt": {
+        "local": 103
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 1
+      },
+      "type": "has_prototype",
+      "tgt": {
+        "local": 104
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 1
+      },
+      "type": "has_prototype",
+      "tgt": {
+        "local": 105
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 1
+      },
+      "type": "has_prototype",
+      "tgt": {
+        "local": 106
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 1
+      },
+      "type": "has_prototype",
+      "tgt": {
+        "local": 107
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 1
+      },
+      "type": "has_prototype",
+      "tgt": {
+        "local": 108
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 1
+      },
+      "type": "has_prototype",
+      "tgt": {
+        "local": 109
+      },
+      "attrs": {}
+    }
+  ],
+  "productions": [],
+  "concepts": [],
+  "match_radius": 0.0
+}

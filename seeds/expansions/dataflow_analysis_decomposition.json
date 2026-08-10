@@ -1,0 +1,118 @@
+{
+  "id": "dataflow_analysis_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "dataflow_analysis",
+  "in_microtheory": "compilers",
+  "description": "Dataflow analysis decomposed. The framework: lattice + transfer function + meet operator + iteration to fixed point. Reaching definitions, live variables, available expressions, constant propagation, points-to analysis. Forward vs backward. May vs must. The mathematical foundation of compiler analysis.",
+  "sub_mechanisms": [
+    {
+      "name": "lattice",
+      "definition": "Partially-ordered set with meets (greatest lower bound). Dataflow values live in a lattice; analysis computes the appropriate element per program point.",
+      "why": "Mathematical framework. Bottom = no information; top = no constraints; meet combines information from different paths. Lattice properties ensure convergence.",
+      "category": "dataflow_mechanism"
+    },
+    {
+      "name": "transfer_function",
+      "definition": "Per-statement function: how does this statement transform dataflow information? e.g., 'x = 5' kills any prior definition of x + generates the new one.",
+      "why": "Per-statement effects. Composing transfer functions along a path gives the path's overall effect. Statement-by-statement is how analysis advances.",
+      "category": "dataflow_mechanism"
+    },
+    {
+      "name": "meet_operator",
+      "definition": "Combines dataflow information from different control-flow paths. For 'live variables' (may analysis): union. For 'available expressions' (must analysis): intersection.",
+      "why": "Control-flow joins require combining incoming information. Choice of meet (union vs intersection) distinguishes may from must analyses. Determines what 'reaches' a program point.",
+      "category": "dataflow_mechanism"
+    },
+    {
+      "name": "may_analysis",
+      "definition": "Information from ANY path. Live variables: variable might be used on some future path. Reaching definitions: definition might reach this point.",
+      "why": "Conservative for optimisations that need 'is it safe?': if no path uses x, we can kill it. Union as meet operator. Standard for liveness, pointer analysis.",
+      "category": "dataflow_mechanism"
+    },
+    {
+      "name": "must_analysis",
+      "definition": "Information from ALL paths. Available expressions: expression must be computed on every path. Constants: value must be the same on all paths.",
+      "why": "Conservative for optimisations that need 'is it always true?': if x must be constant, replace it. Intersection as meet operator. Standard for available expressions, constant propagation.",
+      "category": "dataflow_mechanism"
+    },
+    {
+      "name": "forward_analysis",
+      "definition": "Information flows from program start toward end. Information at point P depends on predecessors.",
+      "why": "Natural for: 'what definitions reach here?' (reaching definitions), 'what expressions are available?'. Iterate by walking forward through CFG.",
+      "category": "dataflow_mechanism"
+    },
+    {
+      "name": "backward_analysis",
+      "definition": "Information flows from program end toward start. Information at point P depends on successors.",
+      "why": "Natural for: 'what will be used in the future?' (live variables), 'what does this point dominate?'. Iterate by walking backward through CFG.",
+      "category": "dataflow_mechanism"
+    },
+    {
+      "name": "iterative_fixed_point",
+      "definition": "Initialise dataflow values; iterate transfer functions + meet operator until values stop changing. Result is a fixed point.",
+      "why": "Lattice's finite descending chain condition guarantees termination. The fixed point IS the analysis result. Standard implementation: worklist algorithm prioritising blocks whose inputs changed.",
+      "category": "dataflow_mechanism"
+    },
+    {
+      "name": "monotone_framework",
+      "definition": "If lattice is finite + transfer functions are monotone (more input information → more output information), iterative analysis converges.",
+      "why": "Kildall's theorem (1973). Monotonicity + finite lattice = guaranteed termination at unique fixed point. Underlies all classical dataflow analyses.",
+      "category": "dataflow_mechanism"
+    },
+    {
+      "name": "reaching_definitions",
+      "definition": "At each program point, which definitions could provide the current value of each variable? Forward, may analysis.",
+      "why": "Powers def-use chains, constant propagation, dead code elimination. Standard textbook analysis. Generalises to SSA's φ functions: each variable has one definition reaching each point.",
+      "category": "dataflow_mechanism"
+    },
+    {
+      "name": "live_variable_analysis",
+      "definition": "At each program point, which variables will be used before being redefined? Backward, may analysis.",
+      "why": "Required for register allocation (interference graph), dead store elimination. Foundational backward dataflow. live_out[B] = ∪ live_in[succ]; live_in[B] = use[B] ∪ (live_out[B] - def[B]).",
+      "category": "dataflow_mechanism"
+    },
+    {
+      "name": "available_expressions",
+      "definition": "At each program point, which expressions have been computed and not invalidated? Forward, must analysis.",
+      "why": "Powers common subexpression elimination. If expression e is available at P, the computation can be replaced with the saved value. Intersection meet: must be available on all paths.",
+      "category": "dataflow_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "Kildall_theorem_iterative_convergence",
+      "if": ["lattice is finite and transfer functions are monotone"],
+      "then": ["iterative analysis converges to the maximum fixed point"],
+      "why": "Foundational result. Monotonicity ensures information doesn't oscillate; finiteness ensures finite chain of improvements. The result is the most precise solution consistent with the analysis framework.",
+      "soundness_category": "algebraic_law"
+    },
+    {
+      "name": "meet_operator_distinguishes_may_must",
+      "if": ["meet is union"],
+      "then": ["analysis is 'may' (information from any path)"],
+      "why": "Union accumulates: any source contributes. Intersection requires consensus: all sources must agree. The meet operator's identity IS the distinction between may and must analyses. Determines what 'arrives' at a control-flow join.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "forward_analysis_natural_for_origin_tracking",
+      "if": ["analysis tracks where information came from"],
+      "then": ["forward direction is natural"],
+      "why": "Reaching definitions, available expressions both track 'what produced this value/expression'. Information flows from production toward use. Forward iteration matches the dataflow direction.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "backward_analysis_natural_for_future_use",
+      "if": ["analysis tracks what will use information"],
+      "then": ["backward direction is natural"],
+      "why": "Live variables, very busy expressions track 'what future code needs'. Information flows from use back toward production. Backward iteration matches the demand direction.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "live_variable_analysis_powers_register_allocation",
+      "if": ["liveness is known at each program point"],
+      "then": ["interference graph for register allocation can be built"],
+      "why": "Two variables interfere iff both live at some point. Liveness gives the live ranges; intersections give interferences. Register allocation directly depends on liveness analysis quality.",
+      "soundness_category": "extensional_equivalence"
+    }
+  ]
+}

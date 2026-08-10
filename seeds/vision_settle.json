@@ -1,0 +1,548 @@
+{
+ "id": "vision_settle",
+ "version": "1.0.0",
+ "depends_on": [
+  "vision_waves"
+ ],
+ "description": "THE CORTICAL SETTLING LOOP \u2014 the layer the whole vision arc has been missing. Nine rungs of Hebbian variants produced no orientation selectivity, and the wave-isotropy rung found why: the leading eigenvector of E[xx^T] is a DC BLOB (leading_OI 0.0855; lambda1/lambda2 = 3.52), and removing the DC leaves a NEARLY DEGENERATE oriented pair (lambda2/lambda3 = 1.09) \u2014 so Oja converges to a blob, and whitening hands the oriented modes over as a coin flip. GCAL (Stevens, Law, Antolik & Bednar 2013, PMC6618482) escapes this, and NOT via its stimulus (verified from the primary: 'noisy disk-shaped patterns' \u2014 MORE isotropic than our waves) and NOT via its learning rule (verified: Hebbian + divisive normalisation to 1.0, which Taylor-expands to Oja). It escapes via the SETTLING STEPS that run WITHIN a pattern presentation, BEFORE the Hebbian step: 'Once all 16 settling steps are complete, the settled V1 activation pattern is deemed to be the V1 response to the presented pattern. At this point we use the V1 response to update ... the afferent and lateral inhibitory weights via Hebbian learning.' The settled bubble selects a SUBSET of the pattern; Hebbian then learns THAT, not the ensemble average. This seed is that mechanism, and NOTHING of GCAL's constants (PROTOCOL 13 \u2014 'import a paper's MECHANISM, never its CONSTANTS'). Ships INERT (settle=0), so every committed result reproduces byte-identically (PROTOCOL 9).",
+ "microtheory": {
+  "name": "cortical_settling",
+  "description": "A cortical response is not the afferent drive; it is the FIXED POINT the sheet relaxes to under local excitation and global competition, reached BEFORE anything is learned. Local excitation is the MEAN of a unit's `sunit_neighbour`s (the sheet's own committed adjacency, normalised by THE DEGREE THE GRAPH SUPPLIES); competition is the sheet's OWN MEAN activity (a relative threshold \u2014 PROTOCOL 13's corollary: 'an absolute constant IS a view from nowhere; ratios transfer, absolutes do not'); and the number of settling steps is NOT a constant at all \u2014 `run_rules` IS a fixpoint loop, terminating exactly when activity stops changing, which is GCAL's OWN stated criterion for its 16. We take the criterion; GCAL took a count that fell out of it. THE DEGREE NORMALISATION IS NOT COSMETIC AND WAS NOT ASSUMED: summing the neighbours instead (the seemingly 'constant-free' choice \u2014 count each edge once) DIVERGED to act ~ 2.5e224, measured. A sum over a degree-4 adjacency IS a 4x gain, and no positive-feedback loop survives it. The mean makes the sweep's linear part M = (1/deg)A - (1/N)J a CONTRACTION (spectral radius 0 on the uniform mode, < 1 on all others), so stability is DERIVED from the topology rather than tuned into it \u2014 which is what GCAL's gamma_E/gamma_I buy with a number instead.",
+  "comment": "WHAT IS NOT CLAIMED: that the settled bubble is ORIENTED. The bubble is a locally-coherent active cluster; whether it is oriented depends ENTIRELY on the input, and GCAL produces orientation from ISOTROPIC disks, so 'orientation appeared' does NOT by itself discriminate a working mechanism from a forced one (PROTOCOL 13.1). No rule here is solely responsible for an oriented outcome: the same rules on a disk stimulus make an isotropic bubble, which is the control that can fail."
+ },
+ "nodes": [
+  {
+   "local_id": 0,
+   "type": "SettleParams",
+   "attrs": {
+    "name": "default",
+    "settle": 0.0,
+    "bubble": 0.0,
+    "comment": "EVERY knob is GRAPH DATA (PROTOCOL 0) \u2014 the ablation is the agent's own configuration, never a Python code path. settle: 0.0 (DEFAULT) = the settling loop is INERT and the layer is exactly the committed afferent -> hard-WTA -> Hebbian pathway, so every result committed before this seed reproduces byte-identically (PROTOCOL 9). 1.0 = the sheet RELAXES TO A FIXED POINT before readout. bubble: 0.0 (DEFAULT) = only the global Argmax winner bursts (the committed hard WTA). 1.0 = every survivor of the settled bubble bursts, so the Hebbian step (oo_learn_sub / oo_learn_oja, both gated on `bursting`) learns the SETTLED response \u2014 which is GCAL's 'we use the V1 response to update the weights'. NOTE the two are SEPARATE knobs on purpose: settle=1,bubble=0 is the VACUITY CONTROL \u2014 the settling runs and provably changes `act`, but the Argmax winner is unchanged by construction (the sheet maximum is always above the sheet mean, so it always survives), so NOTHING downstream moves. That arm is what PROTOCOL 1 clause 5 demands be measured rather than assumed, and it is the arm that says whether settling is DECORATIVE."
+   }
+  }
+ ],
+ "edges": [],
+ "productions": [
+  {
+   "src": {
+    "type": "SUnit",
+    "var": "a"
+   },
+   "edge_type": "sunit_neighbour",
+   "tgt": {
+    "type": "SUnit",
+    "var": "b"
+   },
+   "provenance": "seed:vision_settle:sunit_neighbour"
+  }
+ ],
+ "rules": [
+  {
+   "name": "st_latch_aff",
+   "comment": "PHASE 1 of 3 \u2014 LATCH THE AFFERENT DRIVE. `oo_sunit_activate` writes the afferent drive into `act` once per step (its `act_step < step` guard). The settling loop then OVERWRITES `act` repeatedly, so the afferent drive \u2014 the fixed inhomogeneous term of the relaxation \u2014 must be preserved or the fixpoint has nothing to relax around. This rule copies it to `aff` exactly once per step. PHASE GUARD, and it is load-bearing exactly as `wv_propagate`'s is: the guard is `aff_step < step` AND `act_step == step`, so it fires strictly AFTER the afferent drive is complete and strictly ONCE \u2014 the settling rule's own guard is `aff_step == step`, which this rule establishes, so the two phases are disjoint and the fixpoint cannot race them. Gated on settle==1 so the ablation is DATA. It ALSO initialises the double buffer (`act_next` = `act`), so the first synchronous sweep commits a value that already exists rather than a zero.",
+   "match_type": "SUnit",
+   "match": [
+    [
+     "r",
+     "has_sunit",
+     "u"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "SettleParams"
+        }
+       },
+       "key": "settle"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "act_step"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "aff_step"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "u",
+     "aff",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "act"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "u",
+     "act_next",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "act"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "u",
+     "aff_step",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "st_settle",
+   "comment": "PHASE 2a of 4 \u2014 THE SETTLING HALF-STEP (COMPUTE). act_next_j <- max(aff_j + mean_{nb} act_k - mean_sheet(act), 0), reading ONLY `act` and writing ONLY `act_next`. Paired with `st_commit` (act <- act_next) this is a SYNCHRONOUS (Jacobi) sweep: both rules are `batch`, and `run_rules` runs every batch rule each pass (`continue`, not `break`), so ONE PASS IS ONE SYNCHRONOUS SWEEP of the whole sheet. **THE FIRST CUT UPDATED `act` IN PLACE (GAUSS-SEIDEL) AND DID NOT CONVERGE \u2014 MEASURED: the fixpoint burned its ENTIRE 200,000-application cap, values finite but still changing, i.e. a LIMIT CYCLE.** The diagnosis is the deviation, not the mechanism: reading a GLOBALLY-COUPLED `mean_sheet(act)` that is itself being rewritten mid-sweep means successive units relax against DIFFERENT operators, so the rectifier's active set toggles and never settles. The contraction argument below applies to the SYNCHRONOUS map, which is also the one GCAL actually runs \u2014 so the fix is to STOP DEVIATING, not to tune. THE THREE TERMS, and what each falls out of: (1) `aff_j` \u2014 the afferent drive, latched in phase 1, the inhomogeneous term. (2) `mean_{nb} act_k` over `sunit_neighbour` \u2014 LOCAL EXCITATION, the MEAN of the neighbours, i.e. the sum divided by THE DEGREE THE GRAPH ITSELF SUPPLIES. Summing instead (the seemingly 'constant-free' choice \u2014 count each edge once) DIVERGED to act ~ 2.5e224, measured: a sum over a degree-4 adjacency IS a 4x gain, and no positive-feedback loop survives it. The mean makes the sweep's linear part M = (1/deg)A - (1/N)J a CONTRACTION (spectral radius exactly 0 on the uniform mode, < 1 on every other, since |lambda_i(A)| < deg off the uniform mode), and the rectifier is non-expansive, so the synchronous sweep converges. NO radius constant (the adjacency is the retina's own 4-neighbourhood, read off the grid) and NO strength constant: GCAL's gamma_E=1.7 / gamma_I=-1.4 \u2014 which its OWN paper says were 'set to provide a balance between excitation and inhibition' \u2014 are exactly the stability this derivation supplies for free, and are NOT imported. (3) `mean_sheet(act)` \u2014 GLOBAL COMPETITION, needing NO strength and NO radius: 'everything that is not a local neighbour is a competitor' is what the committed hard-WTA Argmax ALREADY is (the infinite-inhibition limit), so this rule SOFTENS a competition that already exists rather than importing a new one, and subtracting the sheet's OWN mean makes the threshold RELATIVE (PROTOCOL 13's corollary: 'ratios transfer, absolutes do not'). The Max(Count,1) denominator is TOTAL, not a guarded lookup (PROTOCOL 1.1): on a degree-0 unit the Fold is 0 and 0/1 = 0 is the correct 'no excitation'. The step COUNT is not a constant at all: `run_rules` terminates on the `progressed` flag and a SetAttr landing the same value does not progress, which IS GCAL's own stated criterion for its 16 ('a fixed number sufficient to ensure that cortical activity is no longer changing significantly').",
+   "batch": true,
+   "match_type": "SUnit",
+   "match": [
+    [
+     "r",
+     "has_sunit",
+     "u"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "SettleParams"
+        }
+       },
+       "key": "settle"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "aff_step"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "u",
+     "act_next",
+     {
+      "__term__": {
+       "type": "Max",
+       "items": [
+        {
+         "type": "Minus",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "u"
+            },
+            "key": "aff"
+           },
+           {
+            "type": "Div",
+            "a": {
+             "type": "Fold",
+             "source": {
+              "type": "Neighbours",
+              "node": {
+               "type": "Var",
+               "name": "u"
+              },
+              "edge_type": "sunit_neighbour",
+              "any_type": false
+             },
+             "var_name": "nb",
+             "acc_name": "acc",
+             "init": {
+              "type": "Lit",
+              "value": 0.0
+             },
+             "body": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Var",
+                "name": "acc"
+               },
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "nb"
+                },
+                "key": "act"
+               }
+              ]
+             }
+            },
+            "b": {
+             "type": "Max",
+             "items": [
+              {
+               "type": "Count",
+               "source": {
+                "type": "Neighbours",
+                "node": {
+                 "type": "Var",
+                 "name": "u"
+                },
+                "edge_type": "sunit_neighbour",
+                "any_type": false
+               }
+              },
+              {
+               "type": "Lit",
+               "value": 1.0
+              }
+             ]
+            }
+           }
+          ]
+         },
+         "b": {
+          "type": "Div",
+          "a": {
+           "type": "Fold",
+           "source": {
+            "type": "NodesOfType",
+            "node_type": "SUnit"
+           },
+           "var_name": "v",
+           "acc_name": "acc",
+           "init": {
+            "type": "Lit",
+            "value": 0.0
+           },
+           "body": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Var",
+              "name": "acc"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "v"
+              },
+              "key": "act"
+             }
+            ]
+           }
+          },
+          "b": {
+           "type": "Count",
+           "source": {
+            "type": "NodesOfType",
+            "node_type": "SUnit"
+           }
+          }
+         }
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "st_commit",
+   "comment": "PHASE 2b of 4 \u2014 THE SETTLING HALF-STEP (COMMIT). act <- act_next, the second half of the SYNCHRONOUS sweep, and the rule that makes the loop terminate at all. It is the SAME double-buffering `wave_world.step` already does for the waves in the adapter ('the commit is mechanical double-buffering ... so a wave advances one hop per step instead of the fixpoint racing it across the whole grid in one go') \u2014 here it must live in a RULE, because settling needs MANY sweeps per world step and the adapter only gets one. `run_rules` fires every `batch` rule each pass, so compute-then-commit in rule order IS one Jacobi sweep per pass. TERMINATION: this rule's SetAttr stops progressing the instant act_next == act, i.e. exactly when the sheet has stopped changing \u2014 the settling criterion, held rather than counted.",
+   "batch": true,
+   "match_type": "SUnit",
+   "match": [
+    [
+     "r",
+     "has_sunit",
+     "u"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "SettleParams"
+        }
+       },
+       "key": "settle"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "aff_step"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "u",
+     "act",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "act_next"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "st_burst_bubble",
+   "comment": "PHASE 3 of 3 \u2014 THE SETTLED BUBBLE IS WHAT LEARNS. This is the rule that makes the settling LOAD-BEARING rather than decorative (PROTOCOL 1 clause 5), and without it the whole seed is provably vacuous: `oo_sunit_burst_winner` takes the Argmax over `rate`, and the sheet MAXIMUM is always above the sheet MEAN, so it survives every settling sweep BY CONSTRUCTION \u2014 settle alone changes `act` and changes NOTHING downstream. This rule bursts every SUnit that SURVIVED the settled bubble (rate > 0 after settling), so `oo_learn_sub` / `oo_learn_oja` \u2014 both gated on `bursting == 1` \u2014 fire for the whole bubble, each unit learning with ITS OWN settled drive as y. That is exactly GCAL's 'we use the [settled] V1 response to update the afferent weights'. It ADDS to the burst set and never removes, so bubble=0 is byte-identically the committed hard WTA (PROTOCOL 9), and it re-uses `oo_sunit_burst_winner`'s own effect shape (bursting/burst_step/last_burst) so the downstream reads nothing new. The `burst_step < step` guard makes it fire at most once per Unit per step, the same idiom `vm_burst_lateral` and `wv_unit_burst_sustain` rely on.",
+   "match_type": "SUnit",
+   "match": [
+    [
+     "r",
+     "has_sunit",
+     "u"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "SettleParams"
+        }
+       },
+       "key": "bubble"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "burst_step"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "rate_step"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "rate"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "u",
+     "bursting",
+     1.0
+    ],
+    [
+     "set_attr",
+     "u",
+     "burst_step",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "u",
+     "last_burst",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   ]
+  }
+ ]
+}

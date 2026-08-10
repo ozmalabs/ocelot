@@ -1,0 +1,62 @@
+{
+  "id": "mechanism_index",
+  "version": "1.0.0",
+  "depends_on": ["seven_meta_shape_subsystems"],
+  "description": "THE SHAPE->MECHANISM INDEX (the missing link the rule-indexing build cc98b4eb diagnosed). categorise_by_shape RECOGNIZES a concern's meta-shape and grow_part_library holds mechanisms, but the two were DISCONNECTED: on recognizing 'this is selective_gating', nothing retrieved the held selective_gating MECHANISM (spatial foveation) to TRANSFER into the new domain. Each Mechanism node here indexes ONE held cross-domain mechanism BY its meta_shape, carrying its abstract slot-roles (FIELD/UNIT/FOCUS style, each with a cue that anchors the target-domain filler in a goal's own structure) and its plan STEPS templated over those roles. retrieve_and_transfer_mechanism reads this index on a recognized shape and re-instantiates the mechanism's steps with the GOAL's fillers (space->rules, quanta->event-type, focus->focus) -- real analogical transfer, not a lookup: the output plan is the goal domain's, structurally isomorphic to the source. The slot binding is DERIVED from the goal's own predicate/argument structure via the cues; the mechanism holds the ABSTRACT procedure, never the target fillers.",
+  "microtheory": {
+    "name": "mechanism_index",
+    "description": "held cross-domain mechanisms indexed by the seven meta-shapes, for analogical transfer into the composer"
+  },
+  "nodes": [
+    {
+      "local_id": 3,
+      "type": "CodebookRegistry",
+      "attrs": {
+        "role": "mechanism_transfer",
+        "node_type": "Mechanism"
+      }
+    },
+    {
+      "local_id": 1,
+      "type": "Mechanism",
+      "attrs": {
+        "name": "spatial_foveation",
+        "meta_shape": "selective_gating",
+        "domain": "space",
+        "origin": "space_quantize / decode-only-in-focus / index-by-quanta (quanta_navigation.json)",
+        "slots": [
+          {"role": "FIELD", "cue": "scan", "cue_kind": "verb", "source": "space", "gloss": "the domain that is scanned/gated"},
+          {"role": "FOCUS", "cue": "to", "cue_kind": "prep", "source": "focus", "gloss": "the selector the flow is gated to"},
+          {"role": "UNIT", "cue": "by", "cue_kind": "prep", "source": "quanta", "gloss": "the granule the field is quantized and indexed by"}
+        ],
+        "steps": [
+          ["quantize", "FIELD", "into", "UNIT"],
+          ["decode", "only", "FIELD", "in", "FOCUS"],
+          ["index", "FIELD", "by", "UNIT"]
+        ]
+      }
+    },
+    {
+      "local_id": 2,
+      "type": "Mechanism",
+      "attrs": {
+        "name": "homeostatic_regulation",
+        "meta_shape": "feedback_control",
+        "domain": "thermoregulation",
+        "origin": "measure -> compare-to-setpoint -> correct (self_improvement_dynamics feedback loop)",
+        "slots": [
+          {"role": "MEASURED", "cue": "measure", "cue_kind": "verb", "source": "temperature", "gloss": "the sensed variable"},
+          {"role": "SETPOINT", "cue": "to", "cue_kind": "prep", "source": "target", "gloss": "the reference the measured is compared against"},
+          {"role": "ACTUATOR", "cue": "correct", "cue_kind": "verb", "source": "heater", "gloss": "the output driven to close the error"}
+        ],
+        "steps": [
+          ["measure", "MEASURED"],
+          ["compare", "MEASURED", "to", "SETPOINT"],
+          ["correct", "ACTUATOR", "toward", "SETPOINT"]
+        ]
+      }
+    }
+  ],
+  "edges": [],
+  "productions": []
+}

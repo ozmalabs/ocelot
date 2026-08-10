@@ -1,0 +1,286 @@
+{
+ "id": "doom_active_exploration",
+ "version": "1.0.0",
+ "depends_on": [
+  "quanta_navigation",
+  "learning_progress_curiosity"
+ ],
+ "area": "retina",
+ "description": "ACTIVE curiosity-driven exploration (block 205000): learning-progress frontier prioritisation + commit-net, layered on quanta_navigation's frontier flood. ae_frontier_goal commits the MAX-f_interest reachable frontier (the 202000 lp_* interest on a pose-keyed AttentionItem, moved onto the frontier by the mechanical adapter) instead of the nearest; the 202000 commit-net (cn_*) gates re-selection via its `committed` flag (commit -> hold/dwell; no-commit -> thrash). All guarded on game.active_explore==1: default-OFF and BYTE-IDENTICAL to the existing nearest-frontier quanta nav (qf_frontier_goal fires unchanged when the flag is absent). No Rust, no new Term.",
+ "microtheory": {
+  "name": "doom_active_exploration",
+  "description": "Curiosity (learning progress) picks WHICH frontier; the commit-net decides WHEN to stop re-deciding; quanta-nav routes there. Every where-to-go decision is a rule/net."
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [
+  {
+   "provenance": "seed:doom_active_exploration:hub",
+   "src": {
+    "type": "WorldInstance",
+    "var": "game"
+   },
+   "edge_type": "has_curiosity_hub",
+   "tgt": {
+    "type": "CuriosityHub",
+    "var": "hub"
+   }
+  }
+ ],
+ "rules": [
+  {
+   "name": "ae_frontier_goal",
+   "comment": "LP-CURIOSITY frontier selection (205000): commit the reachable frontier with MAX f_interest (the 202000 learning-progress interest the lp_* rules compute on the frontier's pose-keyed AttentionItem, moved onto the frontier by the mechanical adapter). Same reachability guards as qf_frontier_goal; the selection key is Argmax(f_interest) not Argmin(qdist). Gated on active_explore==1 so it is inert by default.",
+   "match": [
+    [
+     "F",
+     "in_space",
+     "game"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "game"
+       },
+       "key": "active_explore"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "game"
+       },
+       "key": "nav_repr"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "quanta"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "game"
+        },
+        "edge_type": "committed_goal",
+        "any_type": false
+       },
+       "var_name": "_g",
+       "predicate": {
+        "type": "Lit",
+        "value": true
+       }
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "F"
+       },
+       "key": "kind"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "frontier"
+      }
+     },
+     {
+      "type": "Gte",
+      "a": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "F"
+         },
+         "key": "qdist_epoch"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "game"
+         },
+         "key": "flood_epoch"
+        }
+       },
+       "then": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "F"
+        },
+        "key": "qdist"
+       },
+       "other": {
+        "type": "Lit",
+        "value": -1.0
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Var",
+       "name": "F"
+      },
+      "b": {
+       "type": "Argmax",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "InNeighbours",
+         "node": {
+          "type": "Var",
+          "name": "game"
+         },
+         "edge_type": "in_space",
+         "any_type": false
+        },
+        "var_name": "C",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "C"
+            },
+            "key": "kind"
+           },
+           "b": {
+            "type": "Lit",
+            "value": "frontier"
+           }
+          },
+          {
+           "type": "Gte",
+           "a": {
+            "type": "IfThenElse",
+            "cond": {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "C"
+              },
+              "key": "qdist_epoch"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "game"
+              },
+              "key": "flood_epoch"
+             }
+            },
+            "then": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "C"
+             },
+             "key": "qdist"
+            },
+            "other": {
+             "type": "Lit",
+             "value": -1.0
+            }
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0.0
+           }
+          }
+         ]
+        }
+       },
+       "var_name": "C",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "C"
+        },
+        "key": "f_interest"
+       },
+       "default": null
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "G2",
+     "Goal",
+     {
+      "pose": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "F"
+        },
+        "key": "lo"
+       }
+      },
+      "committed": 1.0,
+      "exploration": 1.0,
+      "commit_epoch": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "game"
+        },
+        "key": "flood_epoch"
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "game",
+     "committed_goal",
+     "G2",
+     {}
+    ]
+   ]
+  }
+ ]
+}

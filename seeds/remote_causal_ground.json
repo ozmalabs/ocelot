@@ -1,0 +1,868 @@
+{
+ "id": "remote_causal_ground",
+ "version": "1.0.0",
+ "depends_on": [],
+ "area": "retina",
+ "description": "OBSERVE-AND-GROUND remote causality (block 229000): the 228 correction. Ground causes(cross,rotation) from the REAL observed before->after (perception), NOT a simulated counterfactual. Per real step the adapter mints an Observation{interact, remote_changed, cause_id, effect_kind} (all OBSERVED) \u2014 the stream IS the natural timeline. rcg_ground mints a persistent CausalFact{cause,effect,status:grounded, source:observation} + `causes` edge iff a real interact->distal-change is observed AND no Observation shows a change without interaction (the natural-timeline no-op) AND no fact exists yet. rcg_knows_and_acts reads the grounded fact and seeks the cause to operate it; rcg_pass passes. Controls: no_natural_timeline (ignores the no-op -> confabulates on coincidence), blind (never observes the effect -> never grounds). Domain-agnostic (effect kind carried from the OBSERVED attr; no cross/rotation constant). Guarded on game.ground_on==1 (default-OFF, byte-identical) + game.arm. Integer-native; no Rust; reuses 216/217 perception + 227 posit + 210 operate + 220 nav.",
+ "microtheory": {
+  "name": "remote_causal_ground",
+  "description": "A remote-causal link is GROUNDED FROM OBSERVATION: the agent interacts for real, OBSERVES the actual before->after remote change, and mints a persistent grounded causes(cause,effect) fact \u2014 refusing when the natural timeline shows the remote thing changing on its own. The grounded fact persists and the agent acts on knowing it. Every decision is a rule; grounding is perception -> graph write."
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [],
+ "rules": [
+  {
+   "name": "rcg_ground",
+   "comment": "GROUND (headline): a REAL observed interact->distal-change + a clean natural timeline (no spontaneous change observed) -> mint a persistent grounded causes(cause,effect) fact FROM the observed effect. Not simulated.",
+   "match": [
+    [
+     "g",
+     "has_obs",
+     "obs"
+    ],
+    [
+     "g",
+     "has_object",
+     "o"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "ground_on"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       {
+        "type": "Or",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "g"
+           },
+           "key": "arm"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "observe"
+          }
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "interact"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "remote_changed"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "o"
+       },
+       "key": "obj_id"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "cause_id"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "g"
+        },
+        "edge_type": "has_obs",
+        "any_type": false
+       },
+       "var_name": "o2",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "o2"
+           },
+           "key": "interact"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0.0
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "o2"
+           },
+           "key": "remote_changed"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 1.0
+          }
+         }
+        ]
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "g"
+        },
+        "edge_type": "has_causal_fact",
+        "any_type": false
+       },
+       "var_name": "cf2",
+       "predicate": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "cf2"
+         },
+         "key": "cause"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "cause_id"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "cf",
+     "CausalFact",
+     {
+      "cause": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "cause_id"
+       }
+      },
+      "effect": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "effect_kind"
+       }
+      },
+      "status": {
+       "__term__": {
+        "type": "Lit",
+        "value": "grounded"
+       }
+      },
+      "source": {
+       "__term__": {
+        "type": "Lit",
+        "value": "observation"
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "g",
+     "has_causal_fact",
+     "cf"
+    ],
+    [
+     "add_edge",
+     "o",
+     "causes",
+     "cf"
+    ],
+    [
+     "set_attr",
+     "g",
+     "grounded",
+     1.0
+    ],
+    [
+     "set_attr",
+     "g",
+     "grounded_cause",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "cause_id"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "g",
+     "grounded_effect",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "effect_kind"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "rcg_ground_no_timeline",
+   "comment": "CONTROL (no_natural_timeline): ground on ANY co-observed interact->change, IGNORING the natural-timeline no-op -> confabulates on coincidence (Family B).",
+   "match": [
+    [
+     "g",
+     "has_obs",
+     "obs"
+    ],
+    [
+     "g",
+     "has_object",
+     "o"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "ground_on"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "arm"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "no_natural_timeline"
+        }
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "interact"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "remote_changed"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "o"
+       },
+       "key": "obj_id"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "cause_id"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "g"
+        },
+        "edge_type": "has_causal_fact",
+        "any_type": false
+       },
+       "var_name": "cf2",
+       "predicate": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "cf2"
+         },
+         "key": "cause"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "cause_id"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "cf",
+     "CausalFact",
+     {
+      "cause": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "cause_id"
+       }
+      },
+      "effect": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "effect_kind"
+       }
+      },
+      "status": {
+       "__term__": {
+        "type": "Lit",
+        "value": "grounded"
+       }
+      },
+      "source": {
+       "__term__": {
+        "type": "Lit",
+        "value": "observation"
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "g",
+     "has_causal_fact",
+     "cf"
+    ],
+    [
+     "add_edge",
+     "o",
+     "causes",
+     "cf"
+    ],
+    [
+     "set_attr",
+     "g",
+     "grounded",
+     1.0
+    ],
+    [
+     "set_attr",
+     "g",
+     "grounded_cause",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "cause_id"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "g",
+     "grounded_effect",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "effect_kind"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "rcg_knows_and_acts",
+   "comment": "KNOWS-AND-ACTS: a grounded causes(cause,effect) fact + not matching -> read it and seek the cause object to operate it (act on knowing).",
+   "match": [
+    [
+     "g",
+     "has_causal_fact",
+     "cf"
+    ],
+    [
+     "g",
+     "has_object",
+     "o"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "ground_on"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       {
+        "type": "Or",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "g"
+           },
+           "key": "arm"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "observe"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "g"
+           },
+           "key": "arm"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "no_natural_timeline"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "g"
+           },
+           "key": "arm"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "blind"
+          }
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "cf"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "grounded"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "cf"
+       },
+       "key": "cause"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "o"
+       },
+       "key": "obj_id"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "symbol_matches_goal"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "g",
+     "waypoint",
+     "object"
+    ],
+    [
+     "set_attr",
+     "g",
+     "wp_r",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "o"
+       },
+       "key": "r"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "g",
+     "wp_c",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "o"
+       },
+       "key": "c"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "g",
+     "seek_obj",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "o"
+       },
+       "key": "obj_id"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "g",
+     "act_on_grounded",
+     1.0
+    ]
+   ]
+  },
+  {
+   "name": "rcg_pass",
+   "comment": "PASS: the carried thing matches the requirement -> route to the block and pass.",
+   "match": [
+    [
+     "g",
+     "has_ping",
+     "p"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "ground_on"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       {
+        "type": "Or",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "g"
+           },
+           "key": "arm"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "observe"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "g"
+           },
+           "key": "arm"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "no_natural_timeline"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "g"
+           },
+           "key": "arm"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "blind"
+          }
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "symbol_matches_goal"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "g",
+     "waypoint",
+     "goal"
+    ],
+    [
+     "set_attr",
+     "g",
+     "wp_r",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "goal_r"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "g",
+     "wp_c",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "goal_c"
+      }
+     }
+    ]
+   ]
+  }
+ ]
+}

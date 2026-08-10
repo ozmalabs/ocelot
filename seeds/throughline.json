@@ -1,0 +1,46 @@
+{
+  "id": "throughline",
+  "version": "1.0.0",
+  "depends_on": [],
+  "description": "THROUGHLINE = COLLAPSE OVER A CROSS-UNIT THREAD CODEBOOK, one level up from nested_reading's SPANNING THEME. Where a spanning theme is a SINGLE cross-episode relation between TWO sibling StoryUnits (the reciprocity of 'The Lion and the Mouse': episode 2 reverses episode 1), a THROUGHLINE is a PERSISTENT thread woven through N (3+) arcs of a multi-arc story: the recurring protagonist, the recurring beat, the causal payoff. The composer (domains/throughlines.recognize_throughlines) turns each candidate thread into a SINGLE-TOKEN skeleton by a mechanical graph read over the children's own minted UnitAction nodes -- does a NAME appear as an actor across >=2 sibling units (RECURRING_CHARACTER)? does a (rel,patient) BEAT recur across >=2 sibling units (RECURRING_BEAT)? is an OBJECT introduced (patient) in an earlier unit referenced/used in a strictly LATER unit (CAUSAL_PAYOFF)? -- and that ONE token is decoded against this codebook exactly the way nested_reading.decode_span decodes a cross-unit token against ShapeSignatureSpanningTheme and story_tree.decode_seam decodes a seam token against ShapeSignatureStoryBoundary. The KIND VERDICT is always the winning ShapeSignatureThroughline's own `kind` attr, never a Python if/else naming the throughline. A candidate token no schema covers mints NOTHING -- the discriminative null (a name in one unit alone, or an object never re-used, is not a throughline).",
+  "microtheory": {
+    "name": "throughline",
+    "description": "A persistent thread woven through N (3+) arcs of a multi-arc story -- the recurring protagonist, the recurring beat, the causal payoff -- recognised by ShapeDecode over a dedicated ShapeSignatureThroughline codebook of cross-unit thread tokens, one level up from the spanning theme (a single cross-episode relation between two units)."
+  },
+  "nodes": [
+    {
+      "local_id": 1,
+      "type": "ShapeSignatureThroughline",
+      "attrs": {
+        "name": "recurring_character",
+        "kind": "character",
+        "signature": "[[\"RECURRING_CHARACTER\"]]",
+        "line": "A recurring protagonist -- the same character acts across every arc of the story. Unit-scoping made the per-arc occurrences DISTINCT graph nodes; the throughline re-links them into one thread. The primary throughline: it is the character whose returning presence makes the separate arcs one story.",
+        "note": "The cross-unit token RECURRING_CHARACTER: a NAME (an entity name or coref-reference) that is the ACTOR of a UnitAction in >=2 distinct sibling StoryUnits -- the recurring-protagonist thread. Read off the children's own minted UnitAction nodes (a mechanical existence check building the token; the KIND is this schema's verdict, not a Python assignment). A name confined to one unit never resembles this token -- no throughline."
+      }
+    },
+    {
+      "local_id": 2,
+      "type": "ShapeSignatureThroughline",
+      "attrs": {
+        "name": "recurring_beat",
+        "kind": "pattern",
+        "signature": "[[\"RECURRING_BEAT\"]]",
+        "line": "A recurring beat -- the arcs share a repeating structure. The same act, done again and again across the arcs, is the pattern that threads them: a shape invisible in any single arc, recognised only from the arcs together.",
+        "note": "The cross-unit token RECURRING_BEAT: a (rel, patient) pair that recurs as a UnitAction across >=2 distinct sibling StoryUnits -- the repeating structural beat (here the help->thank beat: a helper THANKS the protagonist, arc after arc). Read off the children's own minted UnitAction nodes. A one-off action never resembles this token -- no throughline."
+      }
+    },
+    {
+      "local_id": 3,
+      "type": "ShapeSignatureThroughline",
+      "attrs": {
+        "name": "causal_payoff",
+        "kind": "payoff",
+        "signature": "[[\"CAUSAL_PAYOFF\"]]",
+        "line": "A causal payoff -- an element introduced in an early arc is used in a later arc, closing the loop. What was set up pays off; the earlier arcs plant what the later arc reaps. The thread runs forward in story time from introduction to use.",
+        "note": "The cross-unit token CAUSAL_PAYOFF: an OBJECT (a non-protagonist, non-pronoun name) that is a patient in an EARLIER sibling StoryUnit and is referenced/used (patient or agent) in a strictly LATER sibling StoryUnit -- the setup->payoff thread. Read off the children's own minted UnitAction nodes with their unit span order. An object never re-used across units never resembles this token -- no throughline."
+      }
+    }
+  ],
+  "edges": []
+}

@@ -1,0 +1,172 @@
+{
+  "id": "net_economy",
+  "version": "1.0.0",
+  "depends_on": ["reflex_net"],
+  "description": "THE NET ECONOMY as graph data — the agent's OWN worth law applied to its own reflexes. A reflex net earns its footprint iff worth = residual - cost > 0, where the residual is the cognition it COMPRESSES (the speedup it buys on in-basin hits, the agent's held quality measure 'explore the under-compressed') and the cost is its footprint (storage rent) plus the corrections it forces (each confidently-wrong-outside-basin miss costs the full slow path plus the wasted reflex serve). This is not an invented policy: the agent already names the law (RelationCue cost_worth_escalate -> [\"worth\",\"REFINEMENT\",\"by\",\"RESIDUAL_MINUS_COST\"]; Concept cost_salience: salience = residual - cost), and its own self-shape classifier files a net ledger under feedback_control (the self_budget shape: no fixed cap, kept alive only by the payoff of the compression it buys). The adoption half was already held (reflex_net_judge_is_faster_and_regression_free); the RETIREMENT half is the concern the agent's design faculty MINTED (net_retirement_concern, closest_held_shape residual_salience) rather than fabricating — this seed realizes it. A ledger is four attrs on the net (net_residual, net_cost, footprint, n_ledger_trials) plus a tweakable NetEconomyPolicy singleton; admission and retirement are two Rules on the EXISTING reflex-net adopt/ablate spine (set enabled 1/0), no new executor. The knobs are graph edits: editing the policy retires or spares nets with zero code.",
+  "microtheory": {
+    "name": "net_economy",
+    "definition": "The primal layer regulated as a feedback controller. Nets are the cheap default path (instincts/reflexes); cognition is the slow deliberate path. A net is worth its storage/compute iff it compresses cognition faster than it forces corrections. worth = residual - cost is the set-point error; the reflex-net enable knob is the actuator; the ledger is the sensor. The agent keeps only nets that pay and retires the rest — its curiosity/compression drive turned inward on its own reflexes.",
+    "category": "foundation"
+  },
+  "concepts": [
+    {
+      "name": "net_worth_is_residual_minus_cost",
+      "definition": "A net's worth = residual - cost. The residual is the cognition it COMPRESSES: the accumulated speedup (slow_ms - reflex_ms) over the in-basin hits it serves regression-free — the agent's own quality measure ('salience = residual = surprise; explore the under-compressed') read as value bought. The cost is its footprint (storage rent = footprint_weight x param-count) plus the corrections it forces (each refuted trial = a confidently-wrong-outside-basin miss costing miss_penalty_weight x (reflex_ms + slow_ms)). This is the agent's already-held law (cost_worth_escalate: worth = residual - cost; cost_salience: salience = residual feedback - cost) applied to a net's own footprint, not a new invention.",
+      "category": "invariant"
+    },
+    {
+      "name": "net_economy_is_feedback_control",
+      "definition": "The ledger is a feedback controller — the agent's own feedback_control meta-shape (its self-shape classifier files a net ledger under feedback_control, on the homeostasis+regulate principles). It is the self_budget of a net: no clock, no fixed cap, kept alive only by the payoff of the compression it buys, retired the moment that payoff turns negative. The reflex-net adopt/ablate spine (enabled 1/0) is the actuator; worth is the set-point error; the four ledger attrs are the sensor.",
+      "category": "invariant"
+    },
+    {
+      "name": "net_retirement_realizes_minted_concern",
+      "definition": "Retirement is the symmetric complement of the held adoption law (reflex_net_judge_is_faster_and_regression_free: adopted iff faster AND regression-free). The agent's design faculty MINTED retirement as an open concern (CapabilityAxis net_retirement_concern, residual_predicate 'retire', closest_held_shape residual_salience) rather than fabricating an answer — this seed's net_retire_when_worth_negative Rule realizes it: an enabled net whose worth has fallen below retire_floor over the ledger window is disabled (enabled 0), the ablate half of the primal layer. The layer keeps only nets that pay.",
+      "category": "invariant"
+    }
+  ],
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "NetEconomyPolicy",
+      "attrs": {
+        "kind": "net_economy_policy",
+        "admit_margin": 0.0,
+        "retire_floor": 0.0,
+        "miss_penalty_weight": 1.0,
+        "footprint_weight": 0.0001,
+        "ledger_window": 3,
+        "description": "Tweakable knobs for the net worth law. admit_margin: worth must exceed this to turn a proposed net on. retire_floor: an enabled net whose worth falls below this is retired. miss_penalty_weight: how dearly a correction (confidently-wrong-outside-basin miss) is charged relative to a hit's speedup. footprint_weight: storage rent charged per parameter (small — cognition-ms dwarfs storage). ledger_window: minimum trials folded into the ledger before an admit/retire decision (don't decide on one sample — power the gate). Editing this singleton changes the economy for all nets with zero code."
+      }
+    }
+  ],
+  "edges": [],
+  "productions": [],
+  "rules": [
+    {
+      "name": "net_ledger_credit_hit",
+      "comment": "CREDIT. A judged trial whose verdict is SUPPORTED (regression-free AND faster — the held adoption judge already decided) credits the net with the cognition it compressed: net_residual += (slow_ms - reflex_ms), the speedup it bought on this in-basin hit. Increments n_ledger_trials and marks the trial ledgered (Plus[Attr, Lit 0] coerces first-touch None to 0) so it folds in exactly once. The residual half of worth = residual - cost, accumulated from real judged hits.",
+      "match": [
+        ["ag", "judges", "trial"],
+        ["trial", "for_reflex", "rn"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "trial"}, "key": "verdict"}, "b": {"type": "Lit", "value": "supported"}},
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "trial"}, "key": "ledgered"}, "b": {"type": "Lit", "value": 1.0}}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "rn", "net_residual", {"__term__": {"type": "Plus", "items": [
+          {"type": "Plus", "items": [{"type": "Attr", "node": {"type": "Var", "name": "rn"}, "key": "net_residual"}, {"type": "Lit", "value": 0.0}]},
+          {"type": "Minus", "a": {"type": "Attr", "node": {"type": "Var", "name": "trial"}, "key": "slow_ms"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "trial"}, "key": "reflex_ms"}}
+        ]}}],
+        ["set_attr", "rn", "n_ledger_trials", {"__term__": {"type": "Plus", "items": [
+          {"type": "Plus", "items": [{"type": "Attr", "node": {"type": "Var", "name": "rn"}, "key": "n_ledger_trials"}, {"type": "Lit", "value": 0.0}]},
+          {"type": "Lit", "value": 1.0}
+        ]}}],
+        ["set_attr", "trial", "ledgered", 1.0]
+      ]
+    },
+    {
+      "name": "net_ledger_debit_miss",
+      "comment": "DEBIT. A judged trial whose verdict is REFUTED (a confidently-wrong-outside-basin miss cognition had to correct) charges the net the correction cost: net_cost += miss_penalty_weight x (reflex_ms + slow_ms) — the wasted reflex serve plus the full slow path the miss still forced. Increments n_ledger_trials and marks the trial ledgered (once). The cost half of worth = residual - cost; miss_penalty_weight is read from the tweakable NetEconomyPolicy singleton.",
+      "match": [
+        ["ag", "judges", "trial"],
+        ["trial", "for_reflex", "rn"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "trial"}, "key": "verdict"}, "b": {"type": "Lit", "value": "refuted"}},
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "trial"}, "key": "ledgered"}, "b": {"type": "Lit", "value": 1.0}}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "rn", "net_cost", {"__term__": {"type": "Plus", "items": [
+          {"type": "Plus", "items": [{"type": "Attr", "node": {"type": "Var", "name": "rn"}, "key": "net_cost"}, {"type": "Lit", "value": 0.0}]},
+          {"type": "Times", "items": [
+            {"type": "Attr", "node": {"type": "Pick", "source": {"type": "NodesOfType", "node_type": "NetEconomyPolicy"}}, "key": "miss_penalty_weight"},
+            {"type": "Plus", "items": [{"type": "Attr", "node": {"type": "Var", "name": "trial"}, "key": "reflex_ms"}, {"type": "Attr", "node": {"type": "Var", "name": "trial"}, "key": "slow_ms"}]}
+          ]}
+        ]}}],
+        ["set_attr", "rn", "n_ledger_trials", {"__term__": {"type": "Plus", "items": [
+          {"type": "Plus", "items": [{"type": "Attr", "node": {"type": "Var", "name": "rn"}, "key": "n_ledger_trials"}, {"type": "Lit", "value": 0.0}]},
+          {"type": "Lit", "value": 1.0}
+        ]}}],
+        ["set_attr", "trial", "ledgered", 1.0]
+      ]
+    },
+    {
+      "name": "net_admit_when_worth_positive",
+      "comment": "THE ADMISSION (adopt path, the agent's own decision). A proposed net (status 'proposed', OFF) whose worth = net_residual - net_cost - footprint_weight x footprint has proven positive (above admit_margin) over at least ledger_window trials turns ITSELF on: enabled 1.0, status 'adopted'. This is the economy taking over the enable decision that the reflex-net spine left to a human/adopt step — a net is kept iff it pays. Records admitted_worth. Fires once (status leaves 'proposed'). worth and the knobs come from held attrs + the tweakable policy; no Python decides it.",
+      "match": [
+        ["rn", "net_assemblage", "asm"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "rn"}, "key": "status"}, "b": {"type": "Lit", "value": "proposed"}},
+          {"type": "Gt", "a": {"type": "Attr", "node": {"type": "Var", "name": "rn"}, "key": "n_ledger_trials"}, "b": {"type": "Attr", "node": {"type": "Pick", "source": {"type": "NodesOfType", "node_type": "NetEconomyPolicy"}}, "key": "ledger_window"}},
+          {"type": "Gt",
+            "a": {"type": "Minus",
+              "a": {"type": "Minus", "a": {"type": "Attr", "node": {"type": "Var", "name": "rn"}, "key": "net_residual"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "rn"}, "key": "net_cost"}},
+              "b": {"type": "Times", "items": [
+                {"type": "Attr", "node": {"type": "Pick", "source": {"type": "NodesOfType", "node_type": "NetEconomyPolicy"}}, "key": "footprint_weight"},
+                {"type": "Attr", "node": {"type": "Var", "name": "rn"}, "key": "footprint"}
+              ]}
+            },
+            "b": {"type": "Attr", "node": {"type": "Pick", "source": {"type": "NodesOfType", "node_type": "NetEconomyPolicy"}}, "key": "admit_margin"}
+          }
+        ]
+      },
+      "effects": [
+        ["set_attr", "rn", "enabled", 1.0],
+        ["set_attr", "rn", "status", "adopted"],
+        ["set_attr", "rn", "admitted_worth", {"__term__": {"type": "Minus",
+          "a": {"type": "Minus", "a": {"type": "Attr", "node": {"type": "Var", "name": "rn"}, "key": "net_residual"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "rn"}, "key": "net_cost"}},
+          "b": {"type": "Times", "items": [
+            {"type": "Attr", "node": {"type": "Pick", "source": {"type": "NodesOfType", "node_type": "NetEconomyPolicy"}}, "key": "footprint_weight"},
+            {"type": "Attr", "node": {"type": "Var", "name": "rn"}, "key": "footprint"}
+          ]}
+        }}]
+      ]
+    },
+    {
+      "name": "net_retire_when_worth_negative",
+      "comment": "THE RETIREMENT (ablate path — realizes the agent's MINTED net_retirement_concern). An enabled net whose worth = net_residual - net_cost - footprint_weight x footprint has fallen below retire_floor over at least ledger_window trials turns ITSELF off: enabled 0.0, status 'retired'. This is the symmetric complement of the held adoption law the agent's design faculty flagged as an unheld capability. A net that stops compressing (its corrections now outweigh the cognition it saves, or its footprint was never amortized) is dropped — the primal layer keeps only nets that pay. Records retired_worth. Editing policy.retire_floor spares or culls nets with zero code (feedback_control knob).",
+      "match": [
+        ["rn", "net_assemblage", "asm"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "rn"}, "key": "enabled"}, "b": {"type": "Lit", "value": 1.0}},
+          {"type": "Gt", "a": {"type": "Attr", "node": {"type": "Var", "name": "rn"}, "key": "n_ledger_trials"}, "b": {"type": "Attr", "node": {"type": "Pick", "source": {"type": "NodesOfType", "node_type": "NetEconomyPolicy"}}, "key": "ledger_window"}},
+          {"type": "Lt",
+            "a": {"type": "Minus",
+              "a": {"type": "Minus", "a": {"type": "Attr", "node": {"type": "Var", "name": "rn"}, "key": "net_residual"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "rn"}, "key": "net_cost"}},
+              "b": {"type": "Times", "items": [
+                {"type": "Attr", "node": {"type": "Pick", "source": {"type": "NodesOfType", "node_type": "NetEconomyPolicy"}}, "key": "footprint_weight"},
+                {"type": "Attr", "node": {"type": "Var", "name": "rn"}, "key": "footprint"}
+              ]}
+            },
+            "b": {"type": "Attr", "node": {"type": "Pick", "source": {"type": "NodesOfType", "node_type": "NetEconomyPolicy"}}, "key": "retire_floor"}
+          }
+        ]
+      },
+      "effects": [
+        ["set_attr", "rn", "enabled", 0.0],
+        ["set_attr", "rn", "status", "retired"],
+        ["set_attr", "rn", "retired_worth", {"__term__": {"type": "Minus",
+          "a": {"type": "Minus", "a": {"type": "Attr", "node": {"type": "Var", "name": "rn"}, "key": "net_residual"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "rn"}, "key": "net_cost"}},
+          "b": {"type": "Times", "items": [
+            {"type": "Attr", "node": {"type": "Pick", "source": {"type": "NodesOfType", "node_type": "NetEconomyPolicy"}}, "key": "footprint_weight"},
+            {"type": "Attr", "node": {"type": "Var", "name": "rn"}, "key": "footprint"}
+          ]}
+        }}]
+      ]
+    }
+  ]
+}

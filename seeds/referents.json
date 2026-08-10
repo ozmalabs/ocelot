@@ -1,0 +1,79 @@
+{
+  "id": "referents",
+  "_doc": "The REFERENT CODEBOOK — data, a small seed like a shape codebook (CLAUDE.md: a codebook is DATA, not a classifier). Each entry maps a famous phrase to its {source, concept, gradient-position}. Reference detection = DECODE a turn against this codebook, CONDITIONED on the speaker's manifold (domains/sense_of_reference.py). Whether a string is a reference is NOT a property of the string but of the SPEAKER'S MANIFOLD: an 'allusion' fires only when its world is LIVE in this interlocutor's manifold; a 'concept' has GRADUATED from allusion to near-universal and lands in every manifold. This JSON carries no nodes/edges/rules, so the seed loader treats it as a no-op manifest — it is read directly as a codebook by the faculty.",
+  "referents": [
+    {
+      "phrase": "would you kindly",
+      "source": "BioShock",
+      "origin": "Irrational Games, 2007",
+      "concept": "a mind-control trigger phrase",
+      "trigger": "a man chooses; a slave obeys",
+      "gradient": "allusion",
+      "live_in": ["gamer"],
+      "tags": ["bioshock", "rapture", "andrew", "ryan", "fontaine"]
+    },
+    {
+      "phrase": "the cake is a lie",
+      "source": "Portal",
+      "origin": "Valve, 2007",
+      "concept": "a promised reward that never comes",
+      "gradient": "allusion",
+      "live_in": ["gamer"],
+      "tags": ["portal", "glados", "aperture"]
+    },
+    {
+      "phrase": "call me ishmael",
+      "source": "Moby-Dick",
+      "origin": "Herman Melville, 1851",
+      "concept": "a narrator's self-introduction / an epic opening",
+      "gradient": "allusion",
+      "live_in": ["literary"],
+      "tags": ["melville", "whale", "ahab", "novel"]
+    },
+    {
+      "phrase": "jabberwock",
+      "source": "Jabberwocky",
+      "origin": "Lewis Carroll, Through the Looking-Glass, 1871",
+      "concept": "Carroll's nonsense monster — a coinage from a nonsense poem",
+      "gradient": "allusion",
+      "live_in": ["literary", "carroll"],
+      "tags": ["carroll", "alice", "nonsense", "slithy", "toves", "vorpal"]
+    },
+    {
+      "phrase": "jabberwocky",
+      "source": "Jabberwocky",
+      "origin": "Lewis Carroll, Through the Looking-Glass, 1871",
+      "concept": "Carroll's nonsense poem — the source of the name",
+      "gradient": "allusion",
+      "live_in": ["literary", "carroll"],
+      "tags": ["carroll", "alice", "nonsense", "slithy", "toves", "vorpal"]
+    },
+    {
+      "phrase": "down the rabbit hole",
+      "source": "Alice's Adventures in Wonderland",
+      "origin": "Lewis Carroll, 1865",
+      "concept": "a descent into complexity or the surreal",
+      "gradient": "concept",
+      "live_in": [],
+      "tags": ["carroll", "alice", "wonderland"]
+    },
+    {
+      "phrase": "red queen",
+      "source": "Through the Looking-Glass",
+      "origin": "Lewis Carroll, 1871",
+      "concept": "running to stay in the same place — perpetual competition",
+      "gradient": "concept",
+      "live_in": [],
+      "tags": ["carroll", "alice", "evolution"]
+    },
+    {
+      "phrase": "not in kansas anymore",
+      "source": "The Wizard of Oz",
+      "origin": "1939 film / L. Frank Baum",
+      "concept": "a sudden departure from the familiar",
+      "gradient": "concept",
+      "live_in": [],
+      "tags": ["oz", "dorothy", "kansas"]
+    }
+  ]
+}

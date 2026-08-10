@@ -1,0 +1,118 @@
+{
+  "id": "iac_gitops_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "Terraform",
+  "in_microtheory": "cloud_infrastructure",
+  "description": "IaC + GitOps decomposed. Terraform state, providers, modules. Pulumi component model. ArgoCD + Flux reconciliation. Image automation, secret management in GitOps, multi-cluster.",
+  "sub_mechanisms": [
+    {
+      "name": "terraform_state",
+      "definition": "JSON file mapping resources in code to real cloud resources. Stored remote (S3 + DynamoDB lock).",
+      "why": "Tracks what TF manages. Lock prevents concurrent applies. State must be backed up + version-controlled separately.",
+      "category": "iac_mechanism"
+    },
+    {
+      "name": "terraform_provider",
+      "definition": "Plugin that talks to specific cloud API. AWS provider, GCP provider, K8s provider, etc.",
+      "why": "Decouples TF core from API specifics. Thousands of providers. Each provider versioned independently.",
+      "category": "iac_mechanism"
+    },
+    {
+      "name": "terraform_module",
+      "definition": "Reusable group of resources. Inputs + outputs. Published to Terraform Registry.",
+      "why": "DRY. Standard pattern for reusable infra (VPC module, EKS module). Tag-based versioning.",
+      "category": "iac_mechanism"
+    },
+    {
+      "name": "terraform_plan_apply_cycle",
+      "definition": "plan: dry-run, show diff. apply: execute. State updated after apply.",
+      "why": "Review before change. Plan in PR; apply on merge. Standard workflow. Prevents accidental destruction.",
+      "category": "iac_mechanism"
+    },
+    {
+      "name": "terraform_workspace",
+      "definition": "Multiple state files for same config. dev/staging/prod separate workspaces.",
+      "why": "Reuse config; separate state. Trade: workspace switching error-prone. Many teams use separate directories + Terragrunt instead.",
+      "category": "iac_mechanism"
+    },
+    {
+      "name": "pulumi_component_resource",
+      "definition": "Logical group of resources. First-class abstraction in Pulumi. Python/TS class.",
+      "why": "Higher-level than Terraform modules. Encapsulation + inheritance. Better abstraction; cost: imperative thinking.",
+      "category": "iac_mechanism"
+    },
+    {
+      "name": "ArgoCD_application",
+      "definition": "Argo CRD: source (Git URL + path) + destination (cluster + namespace). Controller syncs.",
+      "why": "GitOps unit. App-of-apps pattern: one Argo Application points to repo full of others. Organisational hierarchy.",
+      "category": "gitops_mechanism"
+    },
+    {
+      "name": "ArgoCD_sync_strategies",
+      "definition": "Manual sync (button-press), automated (continuous), with prune + self-heal options.",
+      "why": "Trade-off: control vs automation. Production: automated with manual override on critical paths. Dev: full automated.",
+      "category": "gitops_mechanism"
+    },
+    {
+      "name": "Flux_HelmRelease",
+      "definition": "Flux Helm-Controller: declarative Helm release as K8s resource. Source from Git or Helm repo.",
+      "why": "Helm + GitOps. Flux manages Helm lifecycle declaratively. Helm values from Git or Secret.",
+      "category": "gitops_mechanism"
+    },
+    {
+      "name": "image_automation_GitOps",
+      "definition": "Watch container registry; on new tag matching policy, commit update to Git.",
+      "why": "Automate image rollout without CI push. Flux Image Automation, ArgoCD Image Updater. GitOps without manual bumping.",
+      "category": "gitops_mechanism"
+    },
+    {
+      "name": "secret_management_GitOps",
+      "definition": "Secrets shouldn't be in Git. Patterns: SealedSecrets (encrypted), External Secrets Operator (sync from Vault/AWS SM).",
+      "why": "Plaintext secrets in Git = leak. SealedSecrets: encrypted, only cluster can decrypt. ESO: secret reference; actual fetch from cloud secret store at runtime.",
+      "category": "gitops_mechanism"
+    },
+    {
+      "name": "drift_detection_reconciliation",
+      "definition": "Controller detects difference between Git + cluster. Reconciles (overwrites cluster) or alerts.",
+      "why": "Manual cluster changes drift from Git. GitOps tools detect + correct (or warn). Foundation property: cluster always matches Git.",
+      "category": "gitops_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "terraform_state_must_be_backed_up",
+      "if": ["state file is lost"],
+      "then": ["TF doesn't know what it manages → imports needed"],
+      "why": "State is mapping code → real resources. Lost = TF sees empty world; recreates everything (or refuses). Remote backend + versioning + lock essential.",
+      "soundness_category": "referential_transparency"
+    },
+    {
+      "name": "GitOps_pull_better_than_push_CI",
+      "if": ["deploys via GitOps agent in cluster"],
+      "then": ["fewer credentials exposed, auto-reconciliation, drift detection"],
+      "why": "Push CI: CI has cluster credentials, deployment is one-shot. Pull: cluster pulls from Git, no creds outside cluster, continuously reconciled. Standard direction.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "drift_detection_prevents_silent_divergence",
+      "if": ["cluster diverges from Git"],
+      "then": ["GitOps tool detects + alerts (or auto-corrects)"],
+      "why": "Without: cluster reality grows away from declared. With: visible drift, source of truth maintained. ArgoCD/Flux fundamental capability.",
+      "soundness_category": "referential_transparency"
+    },
+    {
+      "name": "SealedSecrets_keeps_secrets_in_Git_safely",
+      "if": ["secrets stored as SealedSecret"],
+      "then": ["only target cluster can decrypt"],
+      "why": "Encrypted by cluster's controller pubkey. Git-safe. Bitnami's design. Alternative: ESO references external secret store.",
+      "soundness_category": "referential_transparency"
+    },
+    {
+      "name": "automated_image_updates_close_GitOps_loop",
+      "if": ["image automation watches registry + commits to Git"],
+      "then": ["GitOps deploys without CI involvement"],
+      "why": "Builder pushes image; image automation sees new tag; commits manifests update; GitOps pulls + deploys. End-to-end without push CI.",
+      "soundness_category": "extensional_equivalence"
+    }
+  ]
+}

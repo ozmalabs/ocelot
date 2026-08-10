@@ -1,0 +1,158 @@
+{
+  "microtheory": {
+    "name": "hippocampal_memory",
+    "definition": "Hippocampal formation as the brain's episodic memory + cognitive-map engine. Pattern separation in dentate, autoassociation in CA3, pattern completion + comparison in CA1, sequence binding via theta. The hippocampus is what makes events (this thing, here, now) into discrete, retrievable memories. Substrate analogue: the substrate's event nodes + their binding into Assessment + the derivation_mechanism's traversal-as-recall.",
+    "category": "neuroscience_domain",
+    "parent": "neuroscience"
+  },
+  "concepts": [
+    {
+      "name": "place_cell",
+      "definition": "Hippocampal pyramidal neuron firing only when the organism is in a specific spatial location. O'Keefe + Dostrovsky 1971. Each cell's place field tiles the environment. Population codes location. Substrate analogue: a concept that fires only in a specific Mt-state region.",
+      "category": "cell_type"
+    },
+    {
+      "name": "grid_cell",
+      "definition": "Entorhinal cortex neuron firing at vertices of a hexagonal grid covering the environment. Multiple grid scales tile the space at different resolutions. Hafting + Moser 2005. Foundation for the cognitive map. Substrate analogue: hierarchical-resolution Mt indexing.",
+      "category": "cell_type"
+    },
+    {
+      "name": "head_direction_cell",
+      "definition": "Fires when the animal's head points in a specific compass direction, independent of location. Substrate analogue: orientation-state concept independent of position.",
+      "category": "cell_type"
+    },
+    {
+      "name": "boundary_cell",
+      "definition": "Fires near boundaries of an environment. Together with grid + place cells, supports allocentric spatial coding. Substrate analogue: edge-detector for the boundary of a Mt's state space.",
+      "category": "cell_type"
+    },
+    {
+      "name": "time_cell",
+      "definition": "Hippocampal neuron firing at specific delays within a temporal interval (not spatial). Discovered after place cells — the hippocampus also maps time. MacDonald 2011. Substrate analogue: time-since-event concepts.",
+      "category": "cell_type"
+    },
+    {
+      "name": "concept_cell",
+      "definition": "Medial temporal lobe neurons with highly selective responses to specific concepts (the 'Jennifer Aniston cell'). Quiroga 2005. Multi-modal — fires for image, name, voice. Substrate analogue: a maximally-converged Concept node.",
+      "category": "cell_type"
+    },
+    {
+      "name": "dentate_gyrus",
+      "definition": "Hippocampal input region. Granule cells receive entorhinal input; sparse code (~3% active) implements pattern separation. New neurons are added throughout life (adult neurogenesis here is special). Substrate analogue: pattern-separation Mt for distinguishing similar events.",
+      "category": "subregion"
+    },
+    {
+      "name": "ca3_recurrent_network",
+      "definition": "Hippocampal CA3 region. Massive recurrent connections among pyramidal cells. Marr 1971 — operates as an autoassociative memory. Pattern completion from partial cues. Substrate analogue: CAN basin recall from partial σ pattern.",
+      "category": "subregion"
+    },
+    {
+      "name": "ca1_pyramidal_layer",
+      "definition": "Hippocampal CA1 region. Receives CA3 output + direct entorhinal input. Compares them; the difference is the novelty/familiarity signal. Output to cortex via subiculum. Substrate analogue: comparison concept between expectation + observation.",
+      "category": "subregion"
+    },
+    {
+      "name": "entorhinal_cortex",
+      "definition": "The hippocampus's primary input + output gateway with cortex. Layer II projects in (perforant path); deep layers project out. Houses grid cells. Substrate analogue: the runtime_discovery dispatch layer.",
+      "category": "subregion"
+    },
+    {
+      "name": "subiculum",
+      "definition": "Hippocampal output region. Projects to multiple cortical + subcortical targets. Carries learned context out to the rest of the brain. Substrate analogue: event output broadcast to other Mts.",
+      "category": "subregion"
+    },
+    {
+      "name": "pattern_separation",
+      "definition": "The dentate gyrus's primary function: take similar input patterns + produce maximally-different output codes. Prevents interference between similar memories. Substrate analogue: feature_invention process generating discriminative codes for similar Mts.",
+      "category": "function"
+    },
+    {
+      "name": "pattern_completion",
+      "definition": "CA3's primary function: from a partial input cue, recover the full stored pattern. Marr 1971 + Hopfield 1982. The mechanism behind 'remembering an event from a single detail.' Substrate analogue: CAN basin recall.",
+      "category": "function"
+    },
+    {
+      "name": "episodic_binding",
+      "definition": "Hippocampus binds the disparate elements of an experience (where + when + what + emotion) into a single retrievable memory. Substrate analogue: the substrate's Event nodes binding multiple concept references via edges.",
+      "category": "function"
+    },
+    {
+      "name": "cognitive_map",
+      "definition": "Tolman 1948; O'Keefe + Nadel 1978. The hippocampus represents the environment as a relational graph — not just where things ARE, but how they RELATE. The map is allocentric (not viewpoint-dependent). Substrate analogue: the substrate's Mt-as-cognitive-map for any conceptual domain.",
+      "category": "function"
+    },
+    {
+      "name": "sequence_memory",
+      "definition": "Hippocampus encodes temporal sequences via theta-phase coupling — events earlier in the sequence fire at earlier theta phases. Plays back compressed sequences during sleep. Substrate analogue: temporal-ordering concepts in event traversal.",
+      "category": "function"
+    },
+    {
+      "name": "theta_phase_precession",
+      "definition": "Place cells fire at progressively earlier phases of the theta cycle as the animal moves through the place field. O'Keefe + Recce 1993. Compresses real-time sequence into a single theta cycle. Substrate analogue: compressed-time replay during derivation_mechanism walks.",
+      "category": "dynamics"
+    },
+    {
+      "name": "sharp_wave_ripple",
+      "definition": "High-frequency oscillation events in CA1 during rest + sleep. Compressed replay of recent experience at 20x speed. Drives consolidation. Substrate analogue: the substrate's offline derivation_mechanism pass — walking + reasoning over stored events.",
+      "category": "dynamics"
+    },
+    {
+      "name": "memory_consolidation_loop",
+      "definition": "Initially, episodic memory depends on hippocampus. Over time, the cortex develops its own representation via repeated hippocampal replay during sleep. Eventually, hippocampus is no longer needed for that memory. Substrate analogue: event nodes promoted into Mt-resident graph data over time.",
+      "category": "dynamics"
+    },
+    {
+      "name": "replay_for_planning",
+      "definition": "Sharp-wave ripples don't just replay the past; they also FORWARD-replay imagined future sequences to evaluate paths. Pfeiffer + Foster 2013. Substrate analogue: substrate's curiosity-drive look-ahead via what-if probes.",
+      "category": "dynamics"
+    },
+    {
+      "name": "schema_assimilation",
+      "definition": "Tse 2007 — new information consistent with existing schema consolidates FAST (within 24h), inconsistent information slowly. The hippocampus assimilates compatible info quickly into cortical schema. Substrate analogue: the substrate's faster integration of concepts that fit an existing Mt.",
+      "category": "learning"
+    },
+    {
+      "name": "remote_versus_recent_memory",
+      "definition": "Recent memories depend on hippocampus; remote ones (>years) become cortical. Lesion produces temporally-graded amnesia. Substrate analogue: distinct retention curves for events vs Mt-integrated knowledge.",
+      "category": "learning"
+    },
+    {
+      "name": "spatial_remapping",
+      "definition": "When the environment changes, hippocampal place cells remap — different cells fire in different locations, generating a new map. Substrate analogue: Mt restructuring under genuine context change.",
+      "category": "learning"
+    }
+  ],
+  "rules": [
+    {
+      "name": "dentate_separates_ca3_completes",
+      "head": "an event's elements arrive at the hippocampal formation",
+      "body": "the dentate gyrus separates them into a sparse, distinct code; CA3 stores them associatively; later a partial cue triggers CA3 pattern completion. Substrate's event binding + recall follows this separation-then-completion pattern."
+    },
+    {
+      "name": "theta_phase_organizes_sequence",
+      "head": "events occur in temporal succession during exploration",
+      "body": "they fire at successively earlier phases of the hippocampal theta cycle, compressing the real-time sequence into a single theta cycle of within-circuit time. Substrate's derivation_mechanism walks compressed event histories similarly."
+    },
+    {
+      "name": "sharp_wave_replays_for_consolidation",
+      "head": "the substrate is offline (rest, sleep, or low-input)",
+      "body": "the hippocampus replays recent event sequences at compressed speed, driving cortical consolidation. Substrate's offline derivation pass implements this — review of accumulated events to promote them into Mt-resident structure."
+    },
+    {
+      "name": "novelty_drives_encoding",
+      "head": "an event differs from prediction",
+      "body": "CA1's comparison detects the mismatch and triggers strong encoding into hippocampal memory. Predicted events get weaker encoding. Substrate analogue: high-ΔF events get more attention + storage."
+    },
+    {
+      "name": "schema_assimilation_accelerates_consolidation",
+      "head": "new information arrives that is consistent with existing schema (Mt)",
+      "body": "it consolidates rapidly into cortex; inconsistent info requires slow hippocampal-to-cortical transfer. Substrate analogue: concepts that fit existing Mts integrate faster than those requiring new Mts."
+    },
+    {
+      "name": "forward_replay_supports_planning",
+      "head": "the substrate considers a possible future trajectory",
+      "body": "the hippocampus forward-replays the imagined sequence to evaluate paths before committing — Pfeiffer + Foster 2013. Substrate analogue: curiosity-drive's what-if probes simulate future Mt states."
+    }
+  ],
+  "parent_mt": "neuroscience"
+}

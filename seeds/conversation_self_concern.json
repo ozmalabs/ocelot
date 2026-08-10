@@ -1,0 +1,804 @@
+{
+ "id": "conversation_self_concern",
+ "version": "2.1.0",
+ "depends_on": [
+  "intent"
+ ],
+ "capability_keys": [
+  "self_improvement_concern",
+  "clarify_uncertain_instruction"
+ ],
+ "_verbs_as_data_note": "v2.1.0: the self-improvement verb inventory is GRAPH DATA -- Concept{name:<verb>, instruction_route:'self_improvement'} nodes seeded below -- and both rules match the predicate Mention resolving (intent's rule_mention_resolves_to_concept) to a route-carrying Concept, instead of an in-body verb list. Duplicate same-name Concepts from other seeds are harmless (the referent rule wires the Mention to every same-named Concept; the Exists finds the route-carrying one). EXTENSIBLE AT RUNTIME: teach(agent, 'Concept', {'name': 'recalibrate', 'instruction_route': 'self_improvement'}) extends coverage with no rule edit. NOTE both rules exclude ANY route-carrying instruction-verb Concept from counting as the grounded TARGET (instruction_route == null in the confidence Exists), so seeding the verb inventories does not fabricate confidence.",
+ "description": "PHASE 3 (safe, bounded seam) of the graph-native conversation migration: the CONNECTION POINT between a chat instruction and the agent's self-improvement spine, established graph-natively and gated by the agent's OWN COMPREHENSION CONFIDENCE. v2.0.0 (creator directive: 'it should check its parsing, the context, and then mint something if confident, and ask for clarification otherwise -- graph-native, not Python'): a self-directed instruction (predicate improve/fix/correct/learn/change/update/adjust/refine) is handled by TWO mutually-exclusive rules that key on the agent's own referent resolution (seeds/intent.json wires Mention -refers_to-> Concept when a mention matches a held Concept's name, and Intent -about_concept-> it). CONFIDENCE is graph-native: did a CONTENT mention resolve to a held Concept -- one that is NEITHER the predicate verb NOR a second-person word (you/your/yourself/...)? (The verb and 'your' are themselves held Concepts and always resolve, so they are excluded as data literals in the where; what remains is a genuinely-grounded TARGET.) mint_self_improvement_concern_confident: a grounded target resolved -> the agent understood WHAT to work on -> mint Goal{kind:self_improvement} + SelfConcern{status:'noted'} (the human-gated seam into the existing, denylist+human-approval-gated self-improvement pipeline; NEVER 'pending', so nothing auto-runs) + a confident reply. ask_clarification_self_improvement: NO grounded target resolved -> the agent is NOT confident it understands the request -> it asks for clarification and mints NOTHING (no goal, no concern) -- exactly the 'ask otherwise' behaviour. Both use the agent -received-> m single-anchor match (the sd 'agent observed obs' pattern, never ['agent','is_a','Agent'] which over-fires) + the comprehended fixpoint guard. The decision (confident vs clarify) is the graph's, from the graph's own comprehension state -- no Python classifier.",
+ "nodes": [
+  {
+   "local_id": 1,
+   "type": "Concept",
+   "attrs": {
+    "name": "improve",
+    "instruction_route": "self_improvement",
+    "description": "instruction verb: self-directed improvement request"
+   }
+  },
+  {
+   "local_id": 2,
+   "type": "Concept",
+   "attrs": {
+    "name": "fix",
+    "instruction_route": "self_improvement",
+    "description": "instruction verb: self-directed improvement request"
+   }
+  },
+  {
+   "local_id": 3,
+   "type": "Concept",
+   "attrs": {
+    "name": "correct",
+    "instruction_route": "self_improvement",
+    "description": "instruction verb: self-directed improvement request"
+   }
+  },
+  {
+   "local_id": 4,
+   "type": "Concept",
+   "attrs": {
+    "name": "learn",
+    "instruction_route": "self_improvement",
+    "description": "instruction verb: self-directed improvement request"
+   }
+  },
+  {
+   "local_id": 5,
+   "type": "Concept",
+   "attrs": {
+    "name": "change",
+    "instruction_route": "self_improvement",
+    "description": "instruction verb: self-directed improvement request"
+   }
+  },
+  {
+   "local_id": 6,
+   "type": "Concept",
+   "attrs": {
+    "name": "update",
+    "instruction_route": "self_improvement",
+    "description": "instruction verb: self-directed improvement request"
+   }
+  },
+  {
+   "local_id": 7,
+   "type": "Concept",
+   "attrs": {
+    "name": "adjust",
+    "instruction_route": "self_improvement",
+    "description": "instruction verb: self-directed improvement request"
+   }
+  },
+  {
+   "local_id": 8,
+   "type": "Concept",
+   "attrs": {
+    "name": "refine",
+    "instruction_route": "self_improvement",
+    "description": "instruction verb: self-directed improvement request"
+   }
+  }
+ ],
+ "edges": [],
+ "productions": [],
+ "rules": [
+  {
+   "name": "mint_self_improvement_concern_confident",
+   "match": [
+    [
+     "agent",
+     "received",
+     "m"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "m"
+       },
+       "key": "comp_kind"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "instruction"
+      }
+     },
+     {
+      "type": "Exists",
+      "source": {
+       "type": "Neighbours",
+       "node": {
+        "type": "Var",
+        "name": "m"
+       },
+       "edge_type": "has_mention"
+      },
+      "var_name": "vm",
+      "predicate": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "vm"
+        },
+        "edge_type": "refers_to"
+       },
+       "var_name": "vc",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "TypeOf",
+           "node": {
+            "type": "Var",
+            "name": "vc"
+           }
+          },
+          "b": {
+           "type": "Lit",
+           "value": "Concept"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "vc"
+           },
+           "key": "name"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "m"
+           },
+           "key": "comp_predicate"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "vc"
+           },
+           "key": "instruction_route"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "self_improvement"
+          }
+         }
+        ]
+       }
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "m"
+       },
+       "key": "from"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "interlocutor"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "m"
+        },
+        "key": "comprehended"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      }
+     },
+     {
+      "type": "Exists",
+      "source": {
+       "type": "Neighbours",
+       "node": {
+        "type": "Var",
+        "name": "m"
+       },
+       "edge_type": "has_mention"
+      },
+      "var_name": "mn",
+      "predicate": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "mn"
+        },
+        "edge_type": "refers_to"
+       },
+       "var_name": "cc",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "TypeOf",
+           "node": {
+            "type": "Var",
+            "name": "cc"
+           }
+          },
+          "b": {
+           "type": "Lit",
+           "value": "Concept"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "cc"
+           },
+           "key": "instruction_route"
+          },
+          "b": {
+           "type": "Lit",
+           "value": null
+          }
+         },
+         {
+          "type": "Not",
+          "arg": {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "cc"
+            },
+            "key": "name"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "m"
+            },
+            "key": "comp_predicate"
+           }
+          }
+         },
+         {
+          "type": "Not",
+          "arg": {
+           "type": "In",
+           "member": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "cc"
+            },
+            "key": "name"
+           },
+           "container": {
+            "type": "Lit",
+            "value": [
+             "your",
+             "you",
+             "yourself",
+             "yourselves",
+             "yours",
+             "me",
+             "my",
+             "it",
+             "this",
+             "that"
+            ]
+           }
+          }
+         }
+        ]
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "m",
+     "comprehended",
+     1.0
+    ],
+    [
+     "add_node",
+     "g",
+     "Goal",
+     {
+      "kind": "self_improvement",
+      "status": "active",
+      "source": "conversation",
+      "predicate": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "m"
+        },
+        "key": "comp_predicate"
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "agent",
+     "has_goal",
+     "g"
+    ],
+    [
+     "add_edge",
+     "g",
+     "comprehends",
+     "m"
+    ],
+    [
+     "add_edge",
+     "m",
+     "comprehended_by",
+     "g"
+    ],
+    [
+     "add_node",
+     "sc",
+     "SelfConcern",
+     {
+      "status": "noted",
+      "source": "conversation",
+      "kind": "self_improvement",
+      "predicate": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "m"
+        },
+        "key": "comp_predicate"
+       }
+      },
+      "content": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "m"
+        },
+        "key": "comp_content"
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "agent",
+     "has_self_concern",
+     "sc"
+    ],
+    [
+     "add_edge",
+     "sc",
+     "from_goal",
+     "g"
+    ],
+    [
+     "add_edge",
+     "sc",
+     "about_message",
+     "m"
+    ],
+    [
+     "add_node",
+     "reply",
+     "Message",
+     {
+      "from": "agent",
+      "text": {
+       "__term__": {
+        "type": "StringConcat",
+        "parts": [
+         {
+          "type": "Lit",
+          "value": "I understand -- you'd like me to "
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "m"
+          },
+          "key": "comp_predicate"
+         },
+         {
+          "type": "Lit",
+          "value": " '"
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "m"
+          },
+          "key": "comp_content"
+         },
+         {
+          "type": "Lit",
+          "value": "'. I've filed it as a self-concern to work on. I won't change myself without review."
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "reply",
+     "responds_to",
+     "m"
+    ],
+    [
+     "add_edge",
+     "agent",
+     "sent",
+     "reply"
+    ]
+   ]
+  },
+  {
+   "name": "ask_clarification_self_improvement",
+   "match": [
+    [
+     "agent",
+     "received",
+     "m"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "m"
+       },
+       "key": "comp_kind"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "instruction"
+      }
+     },
+     {
+      "type": "Exists",
+      "source": {
+       "type": "Neighbours",
+       "node": {
+        "type": "Var",
+        "name": "m"
+       },
+       "edge_type": "has_mention"
+      },
+      "var_name": "vm",
+      "predicate": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "vm"
+        },
+        "edge_type": "refers_to"
+       },
+       "var_name": "vc",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "TypeOf",
+           "node": {
+            "type": "Var",
+            "name": "vc"
+           }
+          },
+          "b": {
+           "type": "Lit",
+           "value": "Concept"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "vc"
+           },
+           "key": "name"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "m"
+           },
+           "key": "comp_predicate"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "vc"
+           },
+           "key": "instruction_route"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "self_improvement"
+          }
+         }
+        ]
+       }
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "m"
+       },
+       "key": "from"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "interlocutor"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "m"
+        },
+        "key": "comprehended"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "m"
+        },
+        "edge_type": "has_mention"
+       },
+       "var_name": "mn",
+       "predicate": {
+        "type": "Exists",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "mn"
+         },
+         "edge_type": "refers_to"
+        },
+        "var_name": "cc",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Eq",
+           "a": {
+            "type": "TypeOf",
+            "node": {
+             "type": "Var",
+             "name": "cc"
+            }
+           },
+           "b": {
+            "type": "Lit",
+            "value": "Concept"
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "cc"
+            },
+            "key": "instruction_route"
+           },
+           "b": {
+            "type": "Lit",
+            "value": null
+           }
+          },
+          {
+           "type": "Not",
+           "arg": {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "cc"
+             },
+             "key": "name"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "m"
+             },
+             "key": "comp_predicate"
+            }
+           }
+          },
+          {
+           "type": "Not",
+           "arg": {
+            "type": "In",
+            "member": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "cc"
+             },
+             "key": "name"
+            },
+            "container": {
+             "type": "Lit",
+             "value": [
+              "your",
+              "you",
+              "yourself",
+              "yourselves",
+              "yours",
+              "me",
+              "my",
+              "it",
+              "this",
+              "that"
+             ]
+            }
+           }
+          }
+         ]
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "m",
+     "comprehended",
+     1.0
+    ],
+    [
+     "add_node",
+     "reply",
+     "Message",
+     {
+      "from": "agent",
+      "text": {
+       "__term__": {
+        "type": "StringConcat",
+        "parts": [
+         {
+          "type": "Lit",
+          "value": "Before I change anything, I want to be sure I understand -- I don't yet hold '"
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "m"
+          },
+          "key": "comp_content"
+         },
+         {
+          "type": "Lit",
+          "value": "' as a concept I can act on. Which part of me did you mean, or can you say more about what to "
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "m"
+          },
+          "key": "comp_predicate"
+         },
+         {
+          "type": "Lit",
+          "value": "?"
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "reply",
+     "responds_to",
+     "m"
+    ],
+    [
+     "add_edge",
+     "agent",
+     "sent",
+     "reply"
+    ]
+   ]
+  }
+ ]
+}

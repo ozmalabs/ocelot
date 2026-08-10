@@ -1,0 +1,977 @@
+{
+ "id": "vision_category",
+ "version": "1.0.0",
+ "depends_on": [],
+ "description": "CATEGORY-LEVEL RECOGNITION (FRONTIER T2) -- a category as an MDL-minted AXIS-CODEBOOK REGION. Generalization to a KIND: a NEW instance never seen before is recognized as a member of a known category by its PROJECTION falling into a held category subspace (a chair you have never seen, known as a chair). Generalizes the colour-identity MDL mint from a POINT (an exact colour value) to a REGION (a MinOver/MaxOver box over object axes), the Chang-Tsao axis-code picture at the abstract-coordinate grain: an ObjItem is a projection onto axes split into a DISCRETE part-signature (d0,d1 -- the grouping key, shared exactly by a kind) and CONTINUOUS proportion axes (v0,v1 -- the within-category variation and generalization extent). cat_mint mints an ObjCategory where a kind's instances cluster (Count(same signature) >= 3 = m_min, FALLS OUT of d_disc=2) and MDL compresses, recording the signature, exemplar and REGION box; cat_recognize recognizes by signature-match AND box-containment (the generalization readout AND the floor); cat_memorize is the exact-exemplar MEMORIZATION control. NO new Rust: reuses Count/Filter/NodesOfType/MinOver/MaxOver/Exists/Not/Eq/Gt/Gte/Lte/And + run_rules. In-frame coordinate INTEGER; the continuous lives ONLY in the cross-frame containment comparison (the frame/continuum invariant). UNSUPERVISED (no label read). BOUNDED: axes GIVEN not learned from pixels; axis-aligned BOX region; interpolation within the box (extrapolation refused); discrete-similarity regime -- NOT lighting/deformation/style, NOT the learned axis-codebook at natural-image scale (the named frontiers). Flag-gated on CategoryParams.identity, OFF by default (sec 9 -- default 0 => byte-identical, seed inert). See VISION_CATEGORY_PREREG.md.",
+ "microtheory": {
+  "id": "vision_category_mt",
+  "label": "category-level recognition: a category as an MDL-minted axis-codebook region, generalization by projection-containment"
+ },
+ "nodes": [
+  {
+   "local_id": 0,
+   "type": "CategoryParams",
+   "attrs": {
+    "identity": 0.0
+   }
+  }
+ ],
+ "edges": [],
+ "productions": [],
+ "rules": [
+  {
+   "name": "cat_mint",
+   "comment": "DYNAMIC QUANTIZATION (colour's ci_mint_category, generalized from a POINT to a REGION): MINT an ObjCategory quantum for a kind where its instances CLUSTER in the object axis space and MDL COMPRESSES. Gates: (1) identity>0.5; (2) THE MDL GATE -- Count(same exact discrete signature) >= 3 = m_min, which FALLS OUT of d_disc=2 (a category pays iff m > d/(d-1) = 2, so m>=3 -- the shared signature is stored ONCE per category instead of once per member; NO magic number, VISION_PROTOCOL sec 13); (3) the CANONICAL-REPRESENTATIVE guard -- only the min-oidx member of a signature may mint, so under batch s.tick() (all bindings snapshotted before any effect) exactly ONE member per DISTINCT signature passes and mints exactly ONE category per kind (the ground rung's 'single unified rule' lesson, the colour rung's fix -- NOT a magic threshold); (4) Not(Exists ObjCategory at this signature) -- recognize-not-re-mint across passes / re-presentations. Effects: add the ObjCategory carrying the discrete signature (d0,d1), the member count, the canonical minter's EXEMPLAR (ex_v0,ex_v1 -- used by the memorization control), and the REGION BOX (v0lo/v0hi/v1lo/v1hi = MinOver/MaxOver of the members' v0,v1 -- the box extent FALLS OUT of the members' own spread, no magic radius), and link has_category. UNSUPERVISED: no label is read. Flag-gated on identity>0.5, OFF by default (sec 9).",
+   "match": [
+    [
+     "scene",
+     "has_obj",
+     "R"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "CategoryParams"
+        }
+       },
+       "key": "identity"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gte",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "ObjItem"
+        },
+        "var_name": "q",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "q"
+            },
+            "key": "d0"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "R"
+            },
+            "key": "d0"
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "q"
+            },
+            "key": "d1"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "R"
+            },
+            "key": "d1"
+           }
+          }
+         ]
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 3
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "ObjItem"
+       },
+       "var_name": "p",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "And",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "p"
+             },
+             "key": "d0"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "d0"
+            }
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "p"
+             },
+             "key": "d1"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "d1"
+            }
+           }
+          ]
+         },
+         {
+          "type": "Lt",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "p"
+           },
+           "key": "oidx"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "R"
+           },
+           "key": "oidx"
+          }
+         }
+        ]
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "ObjCategory"
+       },
+       "var_name": "cat",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "cat"
+           },
+           "key": "d0"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "R"
+           },
+           "key": "d0"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "cat"
+           },
+           "key": "d1"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "R"
+           },
+           "key": "d1"
+          }
+         }
+        ]
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "cat",
+     "ObjCategory",
+     {
+      "d0": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "R"
+        },
+        "key": "d0"
+       }
+      },
+      "d1": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "R"
+        },
+        "key": "d1"
+       }
+      },
+      "members": {
+       "__term__": {
+        "type": "Count",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "ObjItem"
+         },
+         "var_name": "q",
+         "predicate": {
+          "type": "And",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "q"
+             },
+             "key": "d0"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "d0"
+            }
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "q"
+             },
+             "key": "d1"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "d1"
+            }
+           }
+          ]
+         }
+        }
+       }
+      },
+      "ex_v0": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "R"
+        },
+        "key": "v0"
+       }
+      },
+      "ex_v1": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "R"
+        },
+        "key": "v1"
+       }
+      },
+      "v0lo": {
+       "__term__": {
+        "type": "MinOver",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "ObjItem"
+         },
+         "var_name": "q",
+         "predicate": {
+          "type": "And",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "q"
+             },
+             "key": "d0"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "d0"
+            }
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "q"
+             },
+             "key": "d1"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "d1"
+            }
+           }
+          ]
+         }
+        },
+        "var_name": "m",
+        "value": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "m"
+         },
+         "key": "v0"
+        }
+       }
+      },
+      "v0hi": {
+       "__term__": {
+        "type": "MaxOver",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "ObjItem"
+         },
+         "var_name": "q",
+         "predicate": {
+          "type": "And",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "q"
+             },
+             "key": "d0"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "d0"
+            }
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "q"
+             },
+             "key": "d1"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "d1"
+            }
+           }
+          ]
+         }
+        },
+        "var_name": "m",
+        "value": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "m"
+         },
+         "key": "v0"
+        }
+       }
+      },
+      "v1lo": {
+       "__term__": {
+        "type": "MinOver",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "ObjItem"
+         },
+         "var_name": "q",
+         "predicate": {
+          "type": "And",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "q"
+             },
+             "key": "d0"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "d0"
+            }
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "q"
+             },
+             "key": "d1"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "d1"
+            }
+           }
+          ]
+         }
+        },
+        "var_name": "m",
+        "value": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "m"
+         },
+         "key": "v1"
+        }
+       }
+      },
+      "v1hi": {
+       "__term__": {
+        "type": "MaxOver",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "ObjItem"
+         },
+         "var_name": "q",
+         "predicate": {
+          "type": "And",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "q"
+             },
+             "key": "d0"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "d0"
+            }
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "q"
+             },
+             "key": "d1"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "d1"
+            }
+           }
+          ]
+         }
+        },
+        "var_name": "m",
+        "value": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "m"
+         },
+         "key": "v1"
+        }
+       }
+      },
+      "minted": {
+       "__term__": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "scene",
+     "has_category",
+     "cat"
+    ]
+   ]
+  },
+  {
+   "name": "cat_recognize",
+   "comment": "RECOGNIZE an ObjItem as an ObjCategory iff its discrete signature matches AND its (v0,v1) is CONTAINED in the category's REGION box (v0lo<=v0<=v0hi AND v1lo<=v1<=v1hi -- Lte, the continuous cross-frame comparison; in-frame coords stay integer). This is the PROJECTION into the held axis subspace: a NEVER-SEEN interior coordinate is recognized (GENERALIZATION by interpolation), while an out-of-box or novel-signature instance leaves cat_recognized at its 0 init (REFUSED -- the FLOOR colour's nearest-assignment lacked, and the proof the box is LOAD-BEARING, sec 13.2). Sets cat_recognized=1 and the recognized signature cat_sig0/cat_sig1. Effect values are constant once set, so run_rules converges (no re-fire). Flag-gated on identity>0.5, OFF by default (sec 9).",
+   "match": [
+    [
+     "scene",
+     "has_obj",
+     "R"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "CategoryParams"
+        }
+       },
+       "key": "identity"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Exists",
+      "source": {
+       "type": "NodesOfType",
+       "node_type": "ObjCategory"
+      },
+      "var_name": "c",
+      "predicate": {
+       "type": "And",
+       "items": [
+        {
+         "type": "And",
+         "items": [
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "c"
+            },
+            "key": "d0"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "R"
+            },
+            "key": "d0"
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "c"
+            },
+            "key": "d1"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "R"
+            },
+            "key": "d1"
+           }
+          }
+         ]
+        },
+        {
+         "type": "Lte",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "c"
+          },
+          "key": "v0lo"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "R"
+          },
+          "key": "v0"
+         }
+        },
+        {
+         "type": "Lte",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "R"
+          },
+          "key": "v0"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "c"
+          },
+          "key": "v0hi"
+         }
+        },
+        {
+         "type": "Lte",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "c"
+          },
+          "key": "v1lo"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "R"
+          },
+          "key": "v1"
+         }
+        },
+        {
+         "type": "Lte",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "R"
+          },
+          "key": "v1"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "c"
+          },
+          "key": "v1hi"
+         }
+        }
+       ]
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "R",
+     "cat_recognized",
+     {
+      "__term__": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "R",
+     "cat_sig0",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "R"
+       },
+       "key": "d0"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "R",
+     "cat_sig1",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "R"
+       },
+       "key": "d1"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "cat_memorize",
+   "comment": "The MEMORIZATION CONTROL (colour's exact-match, in-seed): mem_recognized=1 iff the ObjItem's (v0,v1) EXACTLY equals some ObjCategory's stored EXEMPLAR (ex_v0,ex_v1) with a matching signature. A memorizer recognizes ONLY exact stored exemplars, so a held-out interior instance (coords never trained) gets mem_recognized=0 while cat_recognize gives 1 -- the DiCarlo-style control that proves the region GENERALIZES what exact-match MEMORIZES. Flag-gated on identity>0.5, OFF by default (sec 9).",
+   "match": [
+    [
+     "scene",
+     "has_obj",
+     "R"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "CategoryParams"
+        }
+       },
+       "key": "identity"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Exists",
+      "source": {
+       "type": "NodesOfType",
+       "node_type": "ObjCategory"
+      },
+      "var_name": "c",
+      "predicate": {
+       "type": "And",
+       "items": [
+        {
+         "type": "And",
+         "items": [
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "c"
+            },
+            "key": "d0"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "R"
+            },
+            "key": "d0"
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "c"
+            },
+            "key": "d1"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "R"
+            },
+            "key": "d1"
+           }
+          }
+         ]
+        },
+        {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "c"
+          },
+          "key": "ex_v0"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "R"
+          },
+          "key": "v0"
+         }
+        },
+        {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "c"
+          },
+          "key": "ex_v1"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "R"
+          },
+          "key": "v1"
+         }
+        }
+       ]
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "R",
+     "mem_recognized",
+     {
+      "__term__": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ]
+   ]
+  }
+ ]
+}

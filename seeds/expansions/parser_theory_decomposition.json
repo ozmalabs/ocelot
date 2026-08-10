@@ -1,0 +1,118 @@
+{
+  "id": "parser_theory_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "parser",
+  "in_microtheory": "compilers",
+  "description": "Parser theory decomposed. LL(k) vs LR(k) vs LALR vs SLR vs GLR vs PEG. Predictive parsing, shift-reduce, conflict resolution, error recovery. The grammar transformations (left-recursion elimination, left-factoring) that bridge human-readable grammars to parsable ones. Pratt parsing for operator precedence.",
+  "sub_mechanisms": [
+    {
+      "name": "FIRST_set",
+      "definition": "For grammar symbol α: set of terminals that can start a string derived from α. Used in LL parsing.",
+      "why": "Lets the predictive parser pick the right production with k tokens of lookahead. FIRST(α) ∩ FIRST(β) = ∅ for two productions A → α | β means LL(1) parsing is unambiguous.",
+      "category": "parser_mechanism"
+    },
+    {
+      "name": "FOLLOW_set",
+      "definition": "For non-terminal A: set of terminals that can appear immediately after A in some derivation. Used in LL parsing for ε-productions.",
+      "why": "When A can derive ε, parser uses FOLLOW(A) to decide whether to expand A or skip it. Compatibility condition: FIRST(α) ∩ FOLLOW(A) = ∅ for A → α | ε.",
+      "category": "parser_mechanism"
+    },
+    {
+      "name": "LL1_parsing_table",
+      "definition": "Two-dimensional table M[non-terminal][terminal] = production to use. Indexed by current non-terminal + next input token.",
+      "why": "O(1) per parse step. Compact (sparse) for typical grammars. The mechanical core of LL(1) parsing — table-driven parser is essentially a stack + table lookup.",
+      "category": "parser_mechanism"
+    },
+    {
+      "name": "left_recursion_elimination",
+      "definition": "Transform A → A α | β (left-recursive) into A → β A'; A' → α A' | ε (right-recursive). Required for LL parsing.",
+      "why": "LL parsers infinite-loop on direct left recursion. Standard transformation; preserves recognised language. Tools (ANTLR) do this automatically; hand-written parsers may or may not.",
+      "category": "parser_mechanism"
+    },
+    {
+      "name": "left_factoring",
+      "definition": "Transform A → α β | α γ into A → α (β | γ). Required for LL(1) when productions share a prefix.",
+      "why": "LL(1) needs the first token to uniquely identify the production. Shared prefixes prevent this. Factoring out the common prefix lets the parser commit AFTER reading α.",
+      "category": "parser_mechanism"
+    },
+    {
+      "name": "LR_item",
+      "definition": "Grammar production with a marker indicating how much has been parsed. A → α • β means α has been read, β is yet to come.",
+      "why": "State in LR parser tracks 'which items are possible'. Item sets become DFA states. Computing them = the LR(0) automaton construction.",
+      "category": "parser_mechanism"
+    },
+    {
+      "name": "LR0_automaton",
+      "definition": "DFA whose states are sets of LR items. Transitions on grammar symbols. Used as the LR parser's state machine.",
+      "why": "Item-set transitions encode 'after reading this symbol, what items are possible'. The DFA's states are the parser's states. Used to derive parsing tables.",
+      "category": "parser_mechanism"
+    },
+    {
+      "name": "SLR_LALR_LR1",
+      "definition": "Variants of LR with increasing precision: SLR uses FOLLOW sets; LALR merges equivalent states (yacc default); LR(1) keeps separate states for precise lookahead.",
+      "why": "Trade-off table size vs grammar coverage. LR(1) is most precise but huge tables (~thousands of states). LALR is the common compromise — handles real grammars + reasonable table size.",
+      "category": "parser_mechanism"
+    },
+    {
+      "name": "GLR_parser",
+      "definition": "Generalised LR. Handles arbitrary CFGs (including ambiguous) by maintaining multiple parse stacks simultaneously when shift-reduce conflicts arise.",
+      "why": "Lets grammars be written naturally without LR(1)-friendly transformations. Used in Bison's GLR mode, SDF, ASF+SDF. Worst case O(n³) (Earley/Tomita); linear for unambiguous grammars.",
+      "category": "parser_mechanism"
+    },
+    {
+      "name": "operator_precedence_parsing",
+      "definition": "Special-case parser for expressions. Each operator has precedence + associativity. Pratt parsing uses recursive functions per precedence level.",
+      "why": "Expression grammars have many levels of precedence (1+2*3 = 1+(2*3)). General CFG parsing handles this but verbosely; precedence parsing is direct. Used in hand-written parsers for expression sub-grammar.",
+      "category": "parser_mechanism"
+    },
+    {
+      "name": "pratt_parser",
+      "definition": "Top-down operator precedence parser. Each operator has 'binding power' (left + right). Recursion handles precedence; left/right binding powers handle associativity.",
+      "why": "Elegant for expression languages. Used in many hand-written compilers (TypeScript's parser, GCC's C++ frontend). Cleanly handles complex operator semantics; easy to extend.",
+      "category": "parser_mechanism"
+    },
+    {
+      "name": "error_synchronisation",
+      "definition": "On parse error, skip input until reaching a recovery point (often a statement terminator like ; or }), then resume parsing.",
+      "why": "Allows reporting multiple errors per run. Quality depends on sync-point selection. Hand-tuned per language; recursive-descent parsers (Clang, Rust) have very good recovery via per-context sync sets.",
+      "category": "parser_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "LL1_requires_FIRST_FOLLOW_disjoint",
+      "if": ["grammar is LL(1)"],
+      "then": ["for every non-terminal A with productions A → α | β, FIRST(α) ∩ FIRST(β) = ∅, and if α can derive ε then FIRST(β) ∩ FOLLOW(A) = ∅"],
+      "why": "These conditions ensure the parser can pick the right production with 1 token of lookahead. Violation = conflict in the LL(1) table. Standard test for LL(1) grammars.",
+      "soundness_category": "algebraic_law"
+    },
+    {
+      "name": "LR_handles_left_recursion_naturally",
+      "if": ["a grammar is left-recursive"],
+      "then": ["LR parsing handles it but LL requires elimination"],
+      "why": "LR's shift-reduce builds left-recursive structures bottom-up. LL would infinite-loop trying to expand A → Aα. The structural reason yacc-style LR parsers are preferred for natural-looking grammars.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "shift_reduce_conflict_indicates_ambiguity",
+      "if": ["LR table has shift-reduce conflicts"],
+      "then": ["the grammar is ambiguous or LR-difficult"],
+      "why": "Two valid parser actions at the same state means grammar permits multiple parses. Resolution: precedence rules, grammar rewriting, or default-to-shift. Ignoring conflicts produces wrong parse on ambiguous input.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "GLR_handles_ambiguity_at_runtime_cost",
+      "if": ["a grammar is ambiguous"],
+      "then": ["GLR's multiple stacks find all parses; cost is O(n³) worst-case"],
+      "why": "Each conflict spawns a parallel stack. Most stacks die quickly; only valid parses survive. Linear time for unambiguous grammars; polynomial for ambiguous. Standard parser for natural language + grammars too complex for LALR.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "pratt_parser_natural_for_expressions",
+      "if": ["a language has rich operator precedence"],
+      "then": ["Pratt parser's binding power scheme handles it naturally"],
+      "why": "Operator's left + right binding power expresses precedence + associativity in two integers. Recursion is per-precedence-level. Less verbose than CFG with explicit precedence cascading. Used in TypeScript, V8, many production parsers.",
+      "soundness_category": "extensional_equivalence"
+    }
+  ]
+}

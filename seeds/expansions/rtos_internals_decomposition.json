@@ -1,0 +1,118 @@
+{
+  "id": "rtos_internals_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "FreeRTOS",
+  "in_microtheory": "embedded_iot_realtime",
+  "description": "RTOS internals decomposed. Task control blocks, ready queues, context switching, IPC primitives (queue, semaphore, mutex, event group), tickless idle, FreeRTOS specifics. The mechanisms by which a few KB of code provides preemptive multitasking on tiny MCUs.",
+  "sub_mechanisms": [
+    {
+      "name": "task_control_block",
+      "definition": "TCB: per-task data structure. Stack pointer, priority, state, registers (on context switch), wait reason.",
+      "why": "Heart of RTOS. Each task is a TCB + stack. Scheduler manages list of TCBs. Compact (few hundred bytes).",
+      "category": "rtos_internal_mechanism"
+    },
+    {
+      "name": "ready_queue_per_priority",
+      "definition": "FreeRTOS: array of lists, indexed by priority. Bitmask of which priorities have ready tasks.",
+      "why": "O(1) highest-priority task selection. Bitmask + count-leading-zeros instruction = fast scheduler. Cortex-M has CLZ.",
+      "category": "rtos_internal_mechanism"
+    },
+    {
+      "name": "context_switch_RT",
+      "definition": "Save current task registers to its stack; restore next task's registers from its stack; jump to next task's PC.",
+      "why": "Inversely proportional to context switch overhead = how short critical sections can be. Cortex-M PendSV handler typical implementation.",
+      "category": "rtos_internal_mechanism"
+    },
+    {
+      "name": "PendSV_context_switch",
+      "definition": "Cortex-M PendSV exception. Software-triggered, lowest priority. Used for RTOS context switches.",
+      "why": "RTOS triggers PendSV from higher-priority context; PendSV fires when no interrupts pending. Clean context switch mechanism.",
+      "category": "rtos_internal_mechanism"
+    },
+    {
+      "name": "FreeRTOS_queue",
+      "definition": "FIFO + circular buffer. Thread-safe push/pop. Blocking with timeout.",
+      "why": "Primary IPC. Task → ISR communication. xQueueSendFromISR variants for interrupt context. Foundation of FreeRTOS designs.",
+      "category": "rtos_internal_mechanism"
+    },
+    {
+      "name": "FreeRTOS_semaphore",
+      "definition": "Binary or counting. Acquire/release. Block on empty acquire.",
+      "why": "Resource pool counting (counting), simple signal (binary). Often replaced by direct task notifications for performance.",
+      "category": "rtos_internal_mechanism"
+    },
+    {
+      "name": "FreeRTOS_mutex_priority_inheritance",
+      "definition": "Mutex with priority inheritance. Owner-tracked. Recursive mutex variant.",
+      "why": "Standard for protecting shared resources. Inheritance bounds priority inversion. Don't use semaphores for mutual exclusion.",
+      "category": "rtos_internal_mechanism"
+    },
+    {
+      "name": "direct_to_task_notifications",
+      "definition": "Per-task 32-bit notification value. Lighter than semaphore (no queue object).",
+      "why": "FreeRTOS optimization. ~45% faster than semaphore, less RAM. Use when single task is signalled.",
+      "category": "rtos_internal_mechanism"
+    },
+    {
+      "name": "event_group_bitset",
+      "definition": "32-bit bitset. Tasks wait for combinations of bits. AND or OR semantics.",
+      "why": "Multiple-condition synchronisation. Wait for 'config loaded AND network ready'. More expressive than single semaphores.",
+      "category": "rtos_internal_mechanism"
+    },
+    {
+      "name": "tickless_idle",
+      "definition": "Skip tick interrupts when no work due. MCU sleeps until next scheduled event.",
+      "why": "Major power saving. 1 kHz tick = ~30 μA constant; tickless lets MCU truly sleep. Standard for battery devices.",
+      "category": "rtos_internal_mechanism"
+    },
+    {
+      "name": "software_timer",
+      "definition": "Timer in RTOS, callback executed in timer daemon task.",
+      "why": "Many timers from one hardware timer. Periodic + one-shot. Callback runs in task context (not ISR) → less restricted.",
+      "category": "rtos_internal_mechanism"
+    },
+    {
+      "name": "FreeRTOS_heap_implementations",
+      "definition": "5 heap schemes. heap_1 (simple), heap_2 (basic free), heap_3 (malloc), heap_4 (best-fit + coalesce), heap_5 (multi-region).",
+      "why": "Trade-offs: simplicity, performance, fragmentation. heap_4 most common. heap_1 for hard RT (no free). Choose deliberately.",
+      "category": "rtos_internal_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "bitmask_priority_O_1_selection",
+      "if": ["ready queue is bitmask-indexed"],
+      "then": ["highest-priority task selected in O(1)"],
+      "why": "32-bit priority bitmask + count-leading-zeros = one instruction. Linear search through priorities defeats RT predictability. Standard RTOS pattern.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "context_switch_overhead_bounds_critical_section_granularity",
+      "if": ["context switch costs N cycles"],
+      "then": ["critical sections shorter than N have no benefit from preemption"],
+      "why": "If preemption itself takes longer than the work, don't preempt. Tasks should yield voluntarily for fine-grained work. Architectural decision.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "direct_notifications_faster_than_semaphores",
+      "if": ["only one task waits on a signal"],
+      "then": ["direct task notification outperforms semaphore"],
+      "why": "Semaphore: queue object, list traversal. Notification: per-task bits, direct write. ~45% faster. Less RAM. FreeRTOS-specific optimization.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "tickless_idle_major_battery_savings",
+      "if": ["device is battery-powered + sleeps majority of time"],
+      "then": ["tickless idle saves ~10x power"],
+      "why": "1ms tick = wake every ms = no real sleep. Tickless: MCU truly sleeps, wakes on real event. nRF: 30μA → 3μA average. Critical for years-on-battery devices.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "heap_choice_balances_simplicity_features",
+      "if": ["embedded application has specific memory needs"],
+      "then": ["heap implementation choice matters"],
+      "why": "heap_1 (no free): hard RT, no fragmentation. heap_4 (general): coalesces frees. heap_5 (multi-region): non-contiguous RAM. Default heap_4 for most.",
+      "soundness_category": "cost_equivalence"
+    }
+  ]
+}

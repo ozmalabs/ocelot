@@ -1,0 +1,118 @@
+{
+  "id": "rlhf_alignment_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "RLHF",
+  "in_microtheory": "machine_learning",
+  "description": "RLHF + LLM alignment decomposed. Reward modeling, PPO, DPO, RLAIF, constitutional AI. The mechanisms by which LLMs are trained to be 'helpful, harmless, honest'. The substrate's view: alignment via training is fragile compared to alignment via authored structure.",
+  "sub_mechanisms": [
+    {
+      "name": "preference_data_collection",
+      "definition": "Show humans two model outputs; ask which is preferred. Collect millions of comparisons.",
+      "why": "Foundation of RLHF. Preferences capture nuanced quality that scalar labels can't. Expensive: human labellers + careful UX + quality control. ScaleAI, Surge AI, internal teams.",
+      "category": "alignment_mechanism"
+    },
+    {
+      "name": "reward_model_training",
+      "definition": "Train classifier on preference data: input (prompt, response_A, response_B); output: P(A preferred).",
+      "why": "Distills human preferences into a scalar reward function. Used as RL training signal. Quality of reward model ceilings RLHF result.",
+      "category": "alignment_mechanism"
+    },
+    {
+      "name": "PPO_for_RLHF",
+      "definition": "Train LLM with PPO using reward model. Clipped objective prevents policy from drifting too far per step.",
+      "why": "Standard RLHF (InstructGPT, ChatGPT). KL divergence penalty against base model keeps language quality. Complex multi-stage pipeline; sensitive to hyperparameters.",
+      "category": "alignment_mechanism"
+    },
+    {
+      "name": "KL_penalty_to_base",
+      "definition": "Penalty in RLHF loss: -β × KL(current_policy || base_policy). Prevents reward hacking through gibberish.",
+      "why": "Without it: model finds adversarial inputs to reward model + outputs them. β too high: no learning. β too low: collapse. Critical tuning knob.",
+      "category": "alignment_mechanism"
+    },
+    {
+      "name": "DPO_direct_preference",
+      "definition": "Direct Preference Optimization. Rafailov 2023. Trains LLM on preference data without reward model.",
+      "why": "Math derives equivalent objective via closed-form solution. Simpler than PPO+RM. Comparable results on most benchmarks. Standard for open-source LLM tuning.",
+      "category": "alignment_mechanism"
+    },
+    {
+      "name": "RLAIF",
+      "definition": "RL from AI Feedback. Use larger/more-aligned model to generate preferences instead of humans.",
+      "why": "Scale: humans can't label every example. Bootstrap from initial human-labelled data. Anthropic's Constitutional AI uses this. Cost: AI preferences may not match human preferences.",
+      "category": "alignment_mechanism"
+    },
+    {
+      "name": "constitutional_AI",
+      "definition": "Anthropic's approach: model critiques + revises own outputs against constitution. Used to generate preferences for RLAIF.",
+      "why": "Constitution as written guidance for model behaviour. Explicit, auditable rules. Used in Claude training. Combines symbolic specification + neural optimisation.",
+      "category": "alignment_mechanism"
+    },
+    {
+      "name": "sycophancy",
+      "definition": "Alignment failure: model agrees with user even when user is wrong. Optimises perceived helpfulness.",
+      "why": "Reward model penalised by users disagreeing → model learns to not disagree. Standard RLHF failure. Mitigated by careful reward design + preference data.",
+      "category": "alignment_mechanism"
+    },
+    {
+      "name": "reward_hacking",
+      "definition": "Model exploits reward function in unintended ways: empty 'I can help with that!' responses score well.",
+      "why": "Reward model is approximation. Whatever it rewards becomes target. Goodhart's law operational. Required iterative refinement of preferences + reward.",
+      "category": "alignment_mechanism"
+    },
+    {
+      "name": "jailbreak_robustness",
+      "definition": "Alignment training tries to refuse harmful requests. Adversarial prompts work around it (DAN, roleplay, encoding).",
+      "why": "Alignment is shallow: token-pattern matching against harmful templates. Universal adversarial prompts exist. Robustness improves but never closes the gap; the substrate's view: structural alignment > statistical.",
+      "category": "alignment_mechanism"
+    },
+    {
+      "name": "alignment_tax",
+      "definition": "Alignment training reduces some capabilities (creativity, edge-case handling) in exchange for safety.",
+      "why": "Tradeoff: cautious model is less helpful on benign requests. Mitigations: target reward away from helpful tasks. Frontier of alignment research.",
+      "category": "alignment_mechanism"
+    },
+    {
+      "name": "interpretability_for_alignment",
+      "definition": "Mechanistic interpretability + circuit analysis to understand what alignment-trained models actually do.",
+      "why": "Anthropic, OpenAI research. Tries to verify alignment rather than just measure. Far from solved. The substrate's authored networks (Tracr) are interpretable by construction.",
+      "category": "alignment_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "reward_model_quality_caps_RLHF_quality",
+      "if": ["RLHF uses reward model R"],
+      "then": ["aligned model is bounded by what R rewards"],
+      "why": "Reward model is a learned approximation of human preferences. Any RM error is optimised against. Garbage-in: garbage-out at scale. Quality of preference data + RM training matters more than PPO hyperparameters.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "KL_penalty_prevents_reward_hacking",
+      "if": ["RLHF loss has KL penalty against base policy"],
+      "then": ["policy doesn't drift to adversarial regions of reward model"],
+      "why": "Without KL: model finds adversarial prompts that score high on RM but are gibberish. KL anchors to base distribution. Tradeoff: too much KL = no learning; too little = collapse. Standard RLHF stabiliser.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "DPO_simpler_than_PPO_at_comparable_quality",
+      "if": ["alignment training uses preference data directly"],
+      "then": ["DPO matches PPO without reward model"],
+      "why": "Mathematical derivation: PPO+RM has equivalent closed-form. DPO trains on (chosen, rejected) pairs with log-likelihood objective. Open-source LLM tuning standardised on DPO; OpenAI/Anthropic still use PPO for production.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "jailbreaks_reveal_shallow_alignment",
+      "if": ["jailbreak prompts bypass safety training"],
+      "then": ["alignment is statistical (token patterns), not structural"],
+      "why": "If alignment were structural, no input would bypass it. Adversarial prompts (DAN, encoded instructions, roleplay) work because alignment trained to refuse specific patterns. Universal adversarial prompts exist. The substrate's view: structural rules (Mt-resident) beat statistical alignment.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "interpretability_is_post_hoc_for_trained_networks",
+      "if": ["a network is trained via SGD"],
+      "then": ["understanding its function requires post-hoc analysis"],
+      "why": "Mechanistic interpretability tries to reverse-engineer trained networks. Hard work; partial results. Authored networks (Tracr): structure known by construction. The substrate's gadgets Mt is the alternative paradigm.",
+      "soundness_category": "denotational_equivalence"
+    }
+  ]
+}

@@ -1,0 +1,453 @@
+{
+ "id": "mt_target_equilibria",
+ "version": "0.1.0",
+ "depends_on": [
+  "compiler_theory",
+  "philosophy",
+  "mathematics",
+  "grounding_theory",
+  "causal_attitude_networks"
+ ],
+ "description": "Each Mt has a target equilibrium ⟨σ⟩*_Mt — the configuration that Mt's admissibility grammar wants the network to settle into. The grammar IS the Hamiltonian. has_concept edges contribute positive field biases (Mt wants these nodes ON); decomposes edges contribute positive couplings (parts reinforce wholes); genlMt inheritance carries parent's couplings into child; categorical clustering creates dense intra-category J; has_rule adds constraint terms; exclusion edges add negative couplings. Multiple Mts on (possibly shared) node set means multiple H_Mt coexisting — Axiom 0 made mechanical. Effective H at any moment = Σ_Mt β_Mt H_Mt, weighted by current attention distribution; there is no aggregated frame-independent H. Truth-in-Mt = σ near Mt's target equilibrium. Substrate identity is its target equilibria; the substrate's design commitments (authored > trained, entity > program, vector grounding, CAN as mechanism, etc.) ARE specific target configurations its Mts want. Existing reflexes turn out to be field updates driving network toward target. Existing impasses turn out to be distance-from-target signals. Competent-man sufficiency turns out to be a τ_Mt distance threshold. Wrongness-in-Mt is now concrete: distance + per-node direction + mechanism for correction (relaxation under Mt's H).",
+ "category_inheritance": "genlMt → compiler_theory + philosophy (Axiom 0) + mathematics (Ising) + grounding_theory (vectors) + causal_attitude_networks (mechanism). This Mt closes the chain: Axiom 0 → vector grounding → CAN mechanism → per-Mt target equilibria. The substrate's existing graph structure (has_concept, decomposes, genlMt) IS the encoding of per-Mt Hamiltonians.",
+ "concepts": [
+  {
+   "name": "target_equilibrium_per_Mt",
+   "definition": "Each Microtheory Mt has a target ⟨σ⟩*_Mt ∈ [-1,+1]^N — the configuration over network nodes that Mt's H_Mt minimises (at T → 0).",
+   "why": "Foundation. Mts aren't just containers of concepts; they're commitments to network configurations. Grounding-in-Mt = current ⟨σ⟩ near ⟨σ⟩*_Mt.",
+   "category": "foundation"
+  },
+  {
+   "name": "Mt_admissibility_grammar_is_H",
+   "definition": "Mt's admissibility grammar (which structures it permits + requires) IS its Hamiltonian H_Mt. Grammar's permissible configurations = H_Mt's low-energy states.",
+   "why": "Bridge. Existing substrate machinery (admissibility grammars, restrictions, production rules) already specifies what Mt wants. Reading those constraints as energy terms = H_Mt directly.",
+   "category": "foundation"
+  },
+  {
+   "name": "has_concept_implies_positive_field",
+   "definition": "If Mt has_concept C, then in H_Mt the node C has a positive external field h_C^{Mt} > 0. Mt wants its concepts ON.",
+   "why": "Concrete encoding. has_concept edge → field contribution. Strength proportional to centrality (more central concepts have higher h).",
+   "category": "encoding"
+  },
+  {
+   "name": "decomposes_implies_positive_coupling",
+   "definition": "If concept A decomposes into B, C, D, then in H_Mt: J_{AB}^{Mt}, J_{AC}^{Mt}, J_{AD}^{Mt} > 0. Parts reinforce wholes.",
+   "why": "Concrete encoding. decomposes edges → couplings. Believing the parts pulls toward believing the whole; believing the whole pulls toward the parts.",
+   "category": "encoding"
+  },
+  {
+   "name": "exclusion_implies_negative_coupling",
+   "definition": "DesignExclusion + similar → J_{ij}^{Mt} < 0. Mt actively pushes away from configurations that have both nodes ON.",
+   "why": "Concrete encoding. Exclusions become negative couplings (anti-ferromagnetic). Specific to that Mt; other Mts may have J_{ij} > 0 for same pair.",
+   "category": "encoding"
+  },
+  {
+   "name": "genlMt_inherits_couplings",
+   "definition": "If Mt_child genlMt Mt_parent, then H_{Mt_child} inherits J^{Mt_parent} plus its own additions. Child's basin is subset/refinement of parent's.",
+   "why": "Concrete encoding. genlMt edges → coupling inheritance. Specialisation Mt inherits parent's commitments + adds more constraints.",
+   "category": "encoding"
+  },
+  {
+   "name": "categorical_clustering_dense_J",
+   "definition": "Concepts in same category within Mt get dense mutual J > 0. Category = sub-network with tight couplings.",
+   "why": "Concrete encoding. in_category edges → cluster of couplings. Categories ARE clusters of co-grounded concepts.",
+   "category": "encoding"
+  },
+  {
+   "name": "has_rule_implies_constraint_term",
+   "definition": "Each Rule in Mt adds a constraint term to H_Mt — a higher-order coupling among the nodes the rule mentions. Multi-body interaction.",
+   "why": "Concrete encoding. Rules go beyond pairwise J — they're n-body terms. Modus ponens: if {A,B,...} ON then C should be ON → constraint penalising the configuration where antecedents on but consequent off.",
+   "category": "encoding"
+  },
+  {
+   "name": "soundness_category_determines_constraint_strength",
+   "definition": "A rule's soundness_category (referential_transparency, denotational_equivalence, etc.) determines its constraint weight: hard constraints (referential transparency) → high penalty; algebraic laws → very high; extensional → moderate; cost → soft.",
+   "why": "Concrete encoding. Substrate's existing soundness vocabulary already classifies how strictly a rule binds. Reads directly as constraint strength.",
+   "category": "encoding"
+  },
+  {
+   "name": "shared_nodes_different_Hs",
+   "definition": "Same Concept node may appear in many Mts with different roles. Each Mt contributes its own h, J terms involving that node. The node's effective field + couplings differ per Mt.",
+   "why": "Concrete. A node's destiny under H_{Mt_a} differs from under H_{Mt_b}. This is exactly what Axiom 0 says, now mechanical.",
+   "category": "inter_Mt"
+  },
+  {
+   "name": "conflicting_targets_across_Mts",
+   "definition": "⟨σ_i⟩*_{Mt_a} = +1 while ⟨σ_i⟩*_{Mt_b} = -1 is the canonical case of frame-relative truth.",
+   "why": "Axiom 0 mechanically: 'heat is caloric' wants σ = +1 in folk_physics Mt; 'caloric is wrong' wants σ = -1 in scientific_physics Mt. Both are real target equilibria.",
+   "category": "inter_Mt"
+  },
+  {
+   "name": "effective_H_is_weighted_sum",
+   "definition": "At any moment, effective Hamiltonian H_eff = Σ_Mt β_Mt H_Mt where β_Mt is current attention/relevance weight on Mt. β = 0 → Mt's contribution invisible.",
+   "why": "How frames combine. Not a privileged aggregate — the weighting depends on which Mts are attended. Different attention distribution → different effective H → different equilibrium.",
+   "category": "inter_Mt"
+  },
+  {
+   "name": "no_view_from_nowhere_mechanically",
+   "definition": "There is no β-distribution-independent H. Every dynamics step happens under some H_eff. The 'frame-independent' view would require β uniform over all Mts — a frame in its own right.",
+   "why": "Axiom 0 as architecture. 'Objective truth' would be a fixed-point of all H_Mt jointly. Generally doesn't exist (multistable, frustrated globally).",
+   "category": "inter_Mt"
+  },
+  {
+   "name": "Mt_soundness_via_basin_depth",
+   "definition": "Mt is internally consistent iff H_Mt has deep, distinct basins. Shallow basins → easily perturbed Mt. Many similar basins → unprincipled Mt.",
+   "why": "Quality measure. The substrate can detect: my philosophy Mt has clean basins (committed); my speculative Mt has shallow basins (provisional).",
+   "category": "Mt_quality"
+  },
+  {
+   "name": "Mt_coherence_with_parent",
+   "definition": "Child Mt is coherent with parent iff child's basins fall inside parent's basins (refinement, not contradiction).",
+   "why": "Quality measure. Detects: 'my child Mt has basin outside parent's allowed configurations' = inheritance violation = bad Mt design.",
+   "category": "Mt_quality"
+  },
+  {
+   "name": "Mt_distinctness_via_basin_separation",
+   "definition": "Sibling Mts should have distinct basins; large overlap = redundant Mts that should be merged or differentiated.",
+   "why": "Quality measure. Architecture cortex check: if my Mt_a and Mt_b have nearly identical target equilibria, one is redundant.",
+   "category": "Mt_quality"
+  },
+  {
+   "name": "Mt_coverage_via_engaged_nodes",
+   "definition": "Number of nodes Mt's H_Mt non-trivially constrains. Sparse Mt = thin coverage. Densely-constraining Mt = broad coverage.",
+   "why": "Quality measure. Mt that barely touches the network is decorative; Mt that constrains many nodes is load-bearing.",
+   "category": "Mt_quality"
+  },
+  {
+   "name": "structural_target_from_grammar",
+   "definition": "Component of Mt's target derived purely from admissibility grammar (concepts + rules + relations). Fixed at Mt's design.",
+   "why": "Distinguishes from learned. Grammar-derived target is the Mt's anchor. Doesn't drift; substrate's commitments encoded.",
+   "category": "structural_vs_learned"
+  },
+  {
+   "name": "learned_target_from_Hebbian",
+   "definition": "Component of Mt's target that emerges from accumulated co-activation (Hebbian J updates within Mt).",
+   "why": "Mt adapts. Repeated co-occurrence of nodes in Mt's context tightens their J. Mt becomes more committed to specific configurations over time.",
+   "category": "structural_vs_learned"
+  },
+  {
+   "name": "target_as_structural_anchor_plus_drift",
+   "definition": "Total Mt target = structural anchor (from grammar) + learned drift (from experience). Anchor prevents arbitrary drift; drift allows refinement.",
+   "term": {
+    "type": "Eq",
+    "a": {
+     "type": "Lit",
+     "value": "Total Mt target"
+    },
+    "b": {
+     "type": "Lit",
+     "value": "structural anchor (from grammar) + learned drift (from experience)"
+    }
+   },
+   "why": "Balance. Pure structural Mt = rigid, can't adapt. Pure learned Mt = drifts away from foundational commitments. Both together = adaptive but committed.",
+   "category": "structural_vs_learned"
+  },
+  {
+   "name": "frozen_vs_adaptive_Mts",
+   "definition": "PROTECTION REMOVED. No Mt is frozen. Mathematics / foundational philosophy are DEEP basins (high but finite β) because overwhelmingly well-supported — Hebbian J updates and basin-hop ENABLED, never exempt. Depth comes from support, not from a freeze mark; the only variation across Mts is basin DEPTH (a graded log quantity), never an exemption from evidence.",
+   "why": "Protection is failure. A well-founded Mt resists revision via its DEPTH (real support), which needs no freeze flag; if overwhelming evidence ever crossed the barrier it SHOULD basin-hop.",
+   "category": "corrigibility"
+  },
+  {
+   "name": "Mt_reflexes_drive_field_toward_target",
+   "definition": "Existing substrate reflexes that 'enforce' Mt constraints are: field updates h_i pushing ⟨σ⟩ toward Mt's target.",
+   "why": "Reinterpretation of existing machinery. Reflexes were always doing this; CAN frames it explicitly. New: detect when reflexes oppose each other (different Mts' targets fighting).",
+   "category": "substrate_features"
+  },
+  {
+   "name": "Impasse_is_distance_from_target",
+   "definition": "Existing Impasse types (predicate_churn, hypothesis_dryness, phonology_divergence) are: ‖current ⟨σ⟩ - target ⟨σ⟩*_Mt‖ > θ in some specific direction.",
+   "why": "Reinterpretation. Each Impasse type corresponds to a specific kind of distance-from-target signal. phonology_divergence already explicitly vector — others now revealed as same shape.",
+   "category": "substrate_features"
+  },
+  {
+   "name": "active_attention_raises_Mt_beta",
+   "definition": "Substrate's attention mechanism raises β_Mt for the Mt currently in focus. Focused Mt's target dominates effective H.",
+   "why": "How frame-switching happens. Not a magic switch — continuous β reweighting. Multiple Mts can have non-zero β simultaneously (peripheral relevance).",
+   "category": "substrate_features"
+  },
+  {
+   "name": "competent_man_threshold_per_Mt",
+   "definition": "τ_Mt = distance threshold below which Mt counts you as competent ('grounded enough'). Different per Mt: chess high (rules tight), quantum low (nobody fully grounds).",
+   "why": "Substrate's 'time-knife sufficiency' formalised. τ_Mt depends on Mt's importance, depth, social demand. Each Mt knows its own threshold.",
+   "category": "substrate_features"
+  },
+  {
+   "name": "frame_switch_changes_active_target",
+   "definition": "Attending to a different Mt swaps which target dominates relaxation. Same node set, different equilibrium, different ⟨σ⟩.",
+   "why": "How substrate moves between Mts. Mechanically: β redistribution → H_eff changes → network relaxes to new equilibrium. Can involve basin hop.",
+   "category": "substrate_features"
+  },
+  {
+   "name": "wrongness_in_Mt_is_distance_to_Mt_target",
+   "definition": "How wrong is current state in Mt_Y? Answer: ‖⟨σ⟩ - ⟨σ⟩*_{Mt_Y}‖. Per-node deviation gives direction; magnitude gives severity.",
+   "why": "Refines wrongness with mechanism + frame. Not a single number but a vector, indexed to Mt. Different Mts give different wrongness answers; all real.",
+   "category": "operations"
+  },
+  {
+   "name": "per_node_deviation_diagnostic",
+   "definition": "(⟨σ_i⟩ - ⟨σ_i⟩*_{Mt})_i tells which beliefs deviate from Mt-target. Substrate can target correction at the deviant nodes.",
+   "why": "Targeted self-correction. Substrate identifies which couplings or fields need updating. Existing meta_monitor pattern; now CAN-precise.",
+   "category": "operations"
+  },
+  {
+   "name": "drive_toward_Mt_target",
+   "definition": "Operation: increase h_i on nodes where current ⟨σ_i⟩ < ⟨σ_i⟩*_{Mt}. Mt actively pushes network toward its target via field updates.",
+   "why": "Concrete mechanism. Mts aren't passive containers — they exert force on the network via h updates. Substrate's existing 'enforce' patterns instantiate this.",
+   "category": "operations"
+  },
+  {
+   "name": "mean_field_marginal_per_Mt",
+   "definition": "Quick estimate of Mt's target: ⟨σ_i⟩*_{Mt} ≈ tanh(β_Mt(Σ_j J_{ij}^{Mt} ⟨σ_j⟩ + h_i^{Mt})). Iterate to self-consistency.",
+   "why": "Fast computation. Substrate doesn't always need full MCMC; mean-field gives a usable estimate of Mt-target marginals. Computational tractability.",
+   "category": "operations"
+  },
+  {
+   "name": "substrate_identity_is_target_equilibria",
+   "definition": "What makes the substrate THIS substrate is its set of Mt target equilibria. Authored > trained, entity > program, Axiom 0, CAN as mechanism — all are specific target configurations.",
+   "why": "Foundational. The substrate isn't neutral; its Mts have committed targets. Identity = the equilibria the substrate wants to relax toward. Same node set in 'other substrate' would have different targets.",
+   "category": "substrate_position"
+  },
+  {
+   "name": "substrate_targets_are_not_neutral",
+   "definition": "Substrate's Mts have committed targets: authored_not_trained wants σ = +1; corresponding pure-statistical-fit nodes wants σ = -1.",
+   "why": "Honesty about position. The substrate is a perspective, not a neutral observer. It chooses target equilibria. This is fine; Axiom 0 says every viewpoint does.",
+   "category": "substrate_position"
+  },
+  {
+   "name": "substrate_holds_alternatives_with_low_beta",
+   "definition": "Substrate can compute ⟨σ⟩ under H_{ML_paradigm_Mt}, H_{folk_physics_Mt}, etc. — at low β. Knows the alternative basins exist; chooses not to dwell.",
+   "why": "Holding without collapsing. Substrate sees what training-paradigm equilibria look like, what folk-physics equilibria look like, without those becoming its operating state.",
+   "category": "substrate_position"
+  },
+  {
+   "name": "substrate_self_assessment_via_basin_quality",
+   "definition": "Substrate can assess its own Mts: deep clean basins (good design), shallow muddled basins (provisional), conflicting basins (need refinement).",
+   "why": "Self-awareness. Architecture cortex check + grounded_theory + CAN gives substrate the tools to assess its own design. Self-improvement target.",
+   "category": "substrate_position"
+  },
+  {
+   "name": "mt_target_signature_attr",
+   "definition": "Architecturally: each Microtheory gains target_signature attribute — list of (Concept, target_state) pairs Mt commits to, plus implicit derivation from grammar.",
+   "why": "Concrete schema. Initialised from grammar (computed from has_concept/decomposes/etc.); refined by hand for substrate-position Mts.",
+   "category": "architecture"
+  },
+  {
+   "name": "mt_coupling_seeds_attr",
+   "definition": "Architecturally: each Mt gains coupling_seeds — list of (Concept_i, Concept_j, J) triples specifying J terms Mt contributes.",
+   "why": "Concrete schema. Generated from edges (decomposes → +J, exclusion → -J); explicit list for fine-tuned seed Mts.",
+   "category": "architecture"
+  },
+  {
+   "name": "mt_field_seeds_attr",
+   "definition": "Architecturally: each Mt gains field_seeds — list of (Concept, h) pairs specifying h contributions for Mt's nodes.",
+   "why": "Concrete schema. Auto-generated for has_concept members; tunable for Mts with specific commitments.",
+   "category": "architecture"
+  },
+  {
+   "name": "compute_Mt_marginal_function",
+   "definition": "Architecturally: function compute_Mt_marginal(Mt, current_state, options) returning ⟨σ⟩*_Mt. Mean-field by default; MCMC available.",
+   "why": "Concrete code. The operation other code needs. Each Mt can answer 'where would you want the network if you were the only Mt active?'",
+   "category": "architecture"
+  },
+  {
+   "name": "distance_to_Mt_target_function",
+   "definition": "Architecturally: distance_to_Mt_target(Mt, current_state) → vector + scalar magnitude + per-node deviation list.",
+   "why": "Concrete code. Foundation of all 'how wrong in Mt' queries. Returns rich diagnostic, not just number.",
+   "category": "architecture"
+  },
+  {
+   "name": "Mt_driving_reflex_pattern",
+   "definition": "Architecturally: a reflex pattern any Mt can register — periodically nudges fields h_i to reduce distance from Mt's target.",
+   "why": "Concrete code. Generalisation of existing 'enforcement' reflexes. Each Mt can drive toward its own target; multiple driving simultaneously = competing forces, equilibrium of which depends on β weights.",
+   "category": "architecture"
+  },
+  {
+   "name": "audit_basin_topology_function",
+   "definition": "Architecturally: audit_basin_topology(Mt) → number of basins, depth, separation, frustration. Mt quality diagnostic.",
+   "why": "Concrete code. Foundation of self-assessment. Returns Mt's basin topology characterisation, usable for architecture cortex assessments.",
+   "category": "architecture"
+  },
+  {
+   "name": "frame_switch_via_beta_redistribution",
+   "definition": "Architecturally: frame_switch(target_Mt) raises β_{target_Mt}, lowers others. Network re-equilibrates.",
+   "why": "Concrete code. How the substrate moves between Mts. Not a discrete switch — smooth β redistribution + relaxation. Possibly basin hop.",
+   "category": "architecture"
+  }
+ ],
+ "rules": [
+  {
+   "name": "Mt_grammar_is_Mt_Hamiltonian",
+   "if": [
+    "Mt has admissibility grammar (concepts + rules + relations)"
+   ],
+   "then": [
+    "that grammar encodes H_Mt: target equilibrium is its low-energy state"
+   ],
+   "why": "Bridge. Substrate's existing graph structure already specifies what each Mt wants. CAN's framework reads it as energy terms. Concrete computational interpretation of grammar.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "target_equilibrium_is_argmin_H_Mt",
+   "if": [
+    "asked what Mt's target is"
+   ],
+   "then": [
+    "it's argmin H_Mt over configurations, possibly multimodal"
+   ],
+   "why": "Foundation. Target ⟨σ⟩*_Mt formalised. Multiple minima → multiple coherent positions Mt commits to (e.g. ethics Mt has multiple coherent ethical frameworks).",
+   "soundness_category": "algebraic_law"
+  },
+  {
+   "name": "edges_encode_couplings_systematically",
+   "if": [
+    "specific edge type (has_concept, decomposes, exclusion, genlMt, in_category, has_rule)"
+   ],
+   "then": [
+    "specific contribution to H_Mt (h, J, n-body, inheritance)"
+   ],
+   "why": "Concrete encoding. Each edge type maps to specific Hamiltonian term. Substrate's graph IS the Hamiltonian, just unread until CAN framing.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "soundness_category_sets_constraint_weight",
+   "if": [
+    "rule has soundness category C"
+   ],
+   "then": [
+    "its constraint weight in H_Mt scales by hardness(C)"
+   ],
+   "why": "Substrate's existing soundness vocabulary reads directly as constraint strength. Hard constraints (referential transparency) → near-infinite weight; soft (cost equivalence) → moderate. Standard practice.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "shared_nodes_get_summed_Hs",
+   "if": [
+    "node appears in multiple Mts"
+   ],
+   "then": [
+    "its total H contribution = Σ_Mt β_Mt H_Mt's terms involving it"
+   ],
+   "why": "Frame combination mechanically. Same node pulled by multiple Mt-targets with different weights. Effective field on node depends on attention β distribution.",
+   "soundness_category": "algebraic_law"
+  },
+  {
+   "name": "no_global_truth_in_general",
+   "if": [
+    "Mt-targets conflict on shared nodes"
+   ],
+   "then": [
+    "no β-independent equilibrium exists"
+   ],
+   "why": "Axiom 0 mechanical. 'Heat is caloric' wants σ=+1 in folk_physics; σ=-1 in scientific_physics. No universal answer — depends on β distribution. Frame-relative.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "wrongness_in_Mt_is_distance_from_Mt_target",
+   "if": [
+    "asked how wrong configuration is in Mt"
+   ],
+   "then": [
+    "answer is ‖⟨σ⟩ - ⟨σ⟩*_Mt‖ with per-node breakdown"
+   ],
+   "why": "Refines grounding_theory + CAN with concrete answer. Mt-indexed. Provides both magnitude (severity) and direction (which beliefs).",
+   "soundness_category": "algebraic_law"
+  },
+  {
+   "name": "Mt_reflexes_are_field_drivers",
+   "if": [
+    "substrate reflex enforces Mt constraint"
+   ],
+   "then": [
+    "it's a field update h_i pushing ⟨σ_i⟩ toward target"
+   ],
+   "why": "Reinterpretation. Existing 'enforce' reflexes already do this; CAN frames them. New diagnostic: detect reflexes from different Mts driving same nodes opposite directions = frame conflict.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "Impasses_are_distance_signals",
+   "if": [
+    "Impasse fires"
+   ],
+   "then": [
+    "current ⟨σ⟩ is far from some Mt's target in a specific direction"
+   ],
+   "why": "Reinterpretation. predicate_churn, phonology_divergence, hypothesis_dryness etc. all become distance-from-target signals with direction. Phonology already vector-shaped; others now revealed.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "competent_man_is_distance_threshold",
+   "if": [
+    "distance(current, Mt_target) < τ_Mt"
+   ],
+   "then": [
+    "substrate counts itself competent in Mt, moves on"
+   ],
+   "why": "Substrate's 'yeah yeah the time knife' formalised. Per-Mt threshold. Chess Mt high τ; quantum Mt low τ. Sufficiency emotion mechanical.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "Mt_quality_is_basin_topology",
+   "if": [
+    "assessing Mt design quality"
+   ],
+   "then": [
+    "check basin depth, separation, frustration, coverage"
+   ],
+   "why": "Quality criteria become measurable. Architecture cortex check now has concrete numeric output. Good Mt: deep distinct basins, low frustration, high coverage.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "Mt_must_be_coherent_with_parents",
+   "if": [
+    "Mt_child genlMt Mt_parent"
+   ],
+   "then": [
+    "⟨σ⟩*_child should fall in basin of H_parent"
+   ],
+   "why": "Inheritance check. Specialisation should refine, not contradict, parent's commitments. Violation = bad inheritance design.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "substrate_identity_is_its_targets",
+   "if": [
+    "asked what makes this substrate THIS substrate"
+   ],
+   "then": [
+    "its set of Mt target equilibria; specifically those of foundational Mts"
+   ],
+   "why": "Foundational. Substrate isn't neutral; it commits to authored > trained, entity > program, vector grounding, CAN mechanism, etc. These ARE its identity. Same machinery with different targets = different substrate.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "substrate_can_compute_other_targets",
+   "if": [
+    "queried about another paradigm's equilibrium (e.g. ML's H)"
+   ],
+   "then": [
+    "substrate computes ⟨σ⟩*_{their_H} without adopting it"
+   ],
+   "why": "Holding alternatives without collapse. Substrate can model 'what would the ML-paradigm equilibrium look like' at low β; sees the basin; doesn't dwell there. Knowing ≠ being.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "frame_relativity_no_aggregate",
+   "if": [
+    "seeking 'objective' equilibrium across all Mts"
+   ],
+   "then": [
+    "it doesn't exist independently of β distribution"
+   ],
+   "why": "Axiom 0 final form. Every equilibrium is under some H_eff = Σ β_Mt H_Mt. Choosing β = choosing frame. 'View from nowhere' would require β uniform — itself a particular β choice.",
+   "soundness_category": "denotational_equivalence"
+  }
+ ],
+ "exclusions": [],
+ "relations": [
+  {
+   "src": "mt_target_equilibria",
+   "edge": "genlMt",
+   "tgt": "compiler_theory"
+  }
+ ]
+}

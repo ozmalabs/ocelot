@@ -1,0 +1,106 @@
+{
+  "id": "hevc_intra_modes_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "intra_prediction",
+  "in_microtheory": "video_coding_theory",
+  "description": "HEVC's complete 35-mode intra prediction set decomposed. The H.265 standard defines 33 angular prediction modes plus DC and Planar — five times richer than H.264's 9 modes. The angular set covers diagonal-to-horizontal angles in fine increments, planar handles smooth gradients, and DC handles flat regions. Each mode is matched to specific content patterns and selected per block by R-D cost.",
+  "sub_mechanisms": [
+    {
+      "name": "intra_DC_mode",
+      "definition": "Mode 1 (after Planar). Predicts the block as a single constant value: the average of the available top and left neighbour samples.",
+      "why": "Flat regions (sky, walls, low-detail backgrounds) have minimal variation. A constant prediction captures them at near-zero residual cost. The cheapest mode to compute and signal.",
+      "category": "hevc_intra_mode"
+    },
+    {
+      "name": "intra_Planar_mode",
+      "definition": "Mode 0. Predicts each sample as the bilinear interpolation between top-right and bottom-left edges based on its (x, y) position within the block.",
+      "why": "Smooth gradients (sky transitions, soft-focus backgrounds) have linear or near-linear intensity variation. Planar prediction captures this in 4 corner values without sending the gradient itself, costing only the mode flag.",
+      "category": "hevc_intra_mode"
+    },
+    {
+      "name": "intra_angular_2_to_34",
+      "definition": "33 directional modes covering angles from 45° (mode 2) to 225° (mode 34) in roughly 11.25° steps, with finer steps near the cardinal directions.",
+      "why": "Directional edges are extremely common in natural images. Each angular mode picks samples from the reference rows/columns along its angle; the predicted block is essentially a 'copy' along that direction. Granularity is finer near vertical (modes 24-28) and horizontal (modes 8-12) because those directions are most common.",
+      "category": "hevc_intra_mode"
+    },
+    {
+      "name": "reference_sample_array",
+      "definition": "Constructed before prediction: the (4N+1) samples bordering the block — top row (2N+1 samples) + left column (2N) — fetched from already-decoded neighbours.",
+      "why": "Single 1D array indexable by angle. Whatever the angle, the prediction's source is some subset of this array — accessed by integer-offset for cardinal angles, interpolated for diagonals.",
+      "category": "hevc_intra_mode"
+    },
+    {
+      "name": "reference_sample_substitution",
+      "definition": "If a neighbour sample is unavailable (block at frame edge, neighbour not yet decoded), it's substituted with the nearest available value or with mid-grey (512 for 10-bit content).",
+      "why": "Decoder consistency: encoder and decoder must agree on the prediction inputs, so unavailable samples need a standardised substitution rule. Nearest-available preserves edge structure; mid-grey is the safe fallback.",
+      "category": "hevc_intra_mode"
+    },
+    {
+      "name": "reference_sample_smoothing",
+      "definition": "For some mode/block-size combinations, the reference samples are filtered with a [1, 2, 1]/4 low-pass filter before use.",
+      "why": "Sharp neighbour samples cause ringing in the prediction; smoothing reduces this. Applied conditionally based on block size (more smoothing for larger blocks) and mode (more for diagonal modes which have larger interpolation steps).",
+      "category": "hevc_intra_mode"
+    },
+    {
+      "name": "linear_interpolation_for_subsample_angles",
+      "definition": "For angular modes whose offset is not a whole sample, the predicted value is a linear interpolation between two reference samples weighted by the fractional offset.",
+      "why": "Sub-sample angular accuracy without storing extra reference data. The interpolation is 2-tap (cheap) and gives smooth angular prediction across the block.",
+      "category": "hevc_intra_mode"
+    },
+    {
+      "name": "most_probable_mode_signalling",
+      "definition": "Per block, the encoder signals one of 3 Most Probable Modes (derived from neighbour modes) with 1 bit per MPM + log2(3) for selection; or signals the full 5-6 bit mode index if none of the MPMs match.",
+      "why": "Spatial coherence: neighbours often pick similar modes. MPM signalling exploits this — most blocks' modes can be specified in 3-4 bits instead of 6, saving significant bits across millions of blocks.",
+      "category": "hevc_intra_mode"
+    },
+    {
+      "name": "chroma_intra_mode_derivation",
+      "definition": "Chroma can be DM (derived from luma), or one of {Planar, Vertical, Horizontal, DC} signalled directly.",
+      "why": "Chroma edges typically align with luma edges; deriving chroma mode from luma costs zero bits and works well. The 4-mode explicit alternative handles the rare case where chroma deviates.",
+      "category": "hevc_intra_mode"
+    },
+    {
+      "name": "post_prediction_filtering",
+      "definition": "After angular prediction, the first row/column of the block is filtered to smooth the transition from the reference samples. Applied for some mode/size combinations.",
+      "why": "Discontinuity at the block edge (between reference and prediction) causes visible artifacts. Light post-filtering smooths this, similar to the in-loop deblocking but at prediction time (in-prediction filter).",
+      "category": "hevc_intra_mode"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "directional_modes_match_natural_edges",
+      "if": ["natural images contain edges at all angles"],
+      "then": ["33 angular modes cover the dominant directions efficiently"],
+      "why": "H.264's 9 modes coarsely cover only major angles; HEVC's 33 modes get within ~11° of any real edge. Empirical R-D tests show diminishing returns beyond ~30 modes; HEVC chose 33 for its symmetric distribution around cardinal angles.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "MPM_signalling_exploits_neighbour_correlation",
+      "if": ["spatially adjacent blocks tend to pick similar intra modes"],
+      "then": ["MPM signalling drops per-block mode cost from 6 to ~3-4 bits"],
+      "why": "Mode statistics are spatially correlated (a hardware edge in one block likely continues into adjacent blocks). MPM derivation from neighbours captures this correlation; explicit signalling falls back when correlation breaks.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "reference_smoothing_trades_sharpness_for_ringing_reduction",
+      "if": ["angular interpolation can amplify reference sample noise into ringing"],
+      "then": ["pre-smoothing reduces ringing at the cost of slightly softer edges"],
+      "why": "The interpolation in angular modes treats reference samples as exact; small noise in those samples gets amplified across the block. Pre-filtering trades a tiny softness for substantial ringing reduction. The conditional application (only for certain modes/sizes) keeps the trade-off favourable.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "planar_distinct_from_DC_for_gradients",
+      "if": ["a block has smooth gradient content"],
+      "then": ["Planar mode beats DC by capturing the gradient direction"],
+      "why": "DC predicts constant; Planar predicts linearly varying. On gradient content, DC's residual carries the gradient (expensive); Planar's residual carries only the deviation from linearity (cheap). Distinct modes are required because DC's average can't represent a gradient.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "chroma_DM_exploits_yuv_correlation",
+      "if": ["chroma is intra-coded and luma's mode is available"],
+      "then": ["derived chroma mode (DM) saves the explicit signalling"],
+      "why": "YCbCr's luma and chroma edges align at content boundaries. Deriving chroma's mode from luma costs zero bits. Explicit chroma signalling exists for the rare cases where chroma deviates from luma's pattern (mostly impractical, but sometimes needed).",
+      "soundness_category": "cost_equivalence"
+    }
+  ]
+}

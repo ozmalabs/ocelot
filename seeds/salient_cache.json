@@ -1,0 +1,120 @@
+{
+  "id": "salient_cache",
+  "version": "1.0.0",
+  "depends_on": [],
+  "description": "THE SALIENT ORDER-N CONTEXT CACHE — a graph-resident WORKING MEMORY holding the salient entities at nested order-N levels (local vs story), as graph DATA whose salience RISE / DECAY / PROMOTE are graph RULES fired per tick via run_rules (NOT a Python loop). A SalienceCell node per (entity, cache) carries a local_salience that RISES on mention and DECAYS with distance, plus a story_salience that a persisting entity is PROMOTED to (recurrence across a wide span = order-N nesting: a protagonist threading the whole tale rises to STORY level; a one-scene bystander decays at the LOCAL level and never promotes). A singleton SalienceClock carries the current reading turn; each cell edges to it (on_clock) so a rule can read the turn, and to its SmEntity (scell_of) so the promote/mirror rule can write the story-level salience back onto the entity (coref_story_salience) where the coref Argmax and any other faculty read it. Every salience update is idempotent-per-turn (guarded by a per-cell *_turn stamp < clock.turn), so run_rules reaches fixpoint. GENERIC, not coref-specific: coref reads the mirrored story_salience; a prediction/context faculty reads salient_entities() straight off the cells. donkey=0, no import re, no LLM.",
+  "microtheory": {
+    "name": "salient_order_n_cache",
+    "description": "working memory = salient entities held at nested order-N levels; salience rises on mention, decays with distance, and promotes to a higher level on cross-span persistence. coref and prediction both read it. a flat recent-entities list lets a recurring bystander beat a threading protagonist; nesting fixes it."
+  },
+  "nodes": [
+    {
+      "local_id": 1,
+      "type": "Concept",
+      "attrs": {
+        "name": "salient_order_n_cache",
+        "domain": "reading",
+        "comment": "sentinel Concept: the salient order-N context cache is installed. Working memory holding salient entities at nested levels; salience rise/decay/promote are the rules below."
+      }
+    }
+  ],
+  "edges": [],
+  "productions": [],
+  "rules": [
+    {
+      "name": "scell_rise",
+      "match": [["c", "is_scell", "c"], ["c", "on_clock", "k"]],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq",
+           "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "touched_turn"},
+           "b": {"type": "Attr", "node": {"type": "Var", "name": "k"}, "key": "turn"}},
+          {"type": "Lt",
+           "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "rise_turn"},
+           "b": {"type": "Attr", "node": {"type": "Var", "name": "k"}, "key": "turn"}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "c", "local_salience",
+         {"__term__": {"type": "Plus", "items": [
+            {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "local_salience"},
+            {"type": "Lit", "value": 1.0}]}}],
+        ["set_attr", "c", "sc_mentions",
+         {"__term__": {"type": "Plus", "items": [
+            {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "sc_mentions"},
+            {"type": "Lit", "value": 1.0}]}}],
+        ["set_attr", "c", "last_turn",
+         {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "k"}, "key": "turn"}}],
+        ["set_attr", "c", "rise_turn",
+         {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "k"}, "key": "turn"}}]
+      ]
+    },
+    {
+      "name": "scell_decay",
+      "match": [["c", "is_scell", "c"], ["c", "on_clock", "k"]],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Not", "arg":
+            {"type": "Eq",
+             "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "touched_turn"},
+             "b": {"type": "Attr", "node": {"type": "Var", "name": "k"}, "key": "turn"}}},
+          {"type": "Lt",
+           "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "decay_turn"},
+           "b": {"type": "Attr", "node": {"type": "Var", "name": "k"}, "key": "turn"}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "c", "local_salience",
+         {"__term__": {"type": "Times", "items": [
+            {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "local_salience"},
+            {"type": "Lit", "value": 0.5}]}}],
+        ["set_attr", "c", "decay_turn",
+         {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "k"}, "key": "turn"}}]
+      ]
+    },
+    {
+      "name": "scell_promote",
+      "match": [["c", "is_scell", "c"], ["c", "on_clock", "k"]],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Not", "arg":
+            {"type": "Gte",
+             "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "promoted"},
+             "b": {"type": "Lit", "value": 1.0}}},
+          {"type": "Gte",
+           "a": {"type": "Minus",
+                 "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "last_turn"},
+                 "b": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "first_turn"}},
+           "b": {"type": "Lit", "value": 10.0}},
+          {"type": "Gte",
+           "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "sc_mentions"},
+           "b": {"type": "Lit", "value": 3.0}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "c", "promoted", 1.0],
+        ["set_attr", "c", "promote_turn",
+         {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "k"}, "key": "turn"}}]
+      ]
+    },
+    {
+      "name": "scell_mirror_story_salience",
+      "match": [["c", "is_scell", "c"], ["c", "scell_of", "e"]],
+      "where": {
+        "type": "Gte",
+        "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "promoted"},
+        "b": {"type": "Lit", "value": 1.0}
+      },
+      "effects": [
+        ["set_attr_if_different", "c", "story_salience",
+         {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "sc_mentions"}}],
+        ["set_attr_if_different", "e", "coref_story_salience",
+         {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "sc_mentions"}}],
+        ["set_attr_if_different", "e", "coref_story_salience_on", 1.0]
+      ]
+    }
+  ]
+}

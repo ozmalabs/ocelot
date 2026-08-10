@@ -1,0 +1,24 @@
+{
+  "id": "onset_prediction_universal",
+  "version": "1.0.0",
+  "depends_on": ["onset_prediction"],
+  "description": "The UNIVERSAL repetition-free route as its own modular seed (loaded only by the read-speech agent, so the song loop never carries it). One more CapabilityAxis the SAME investigation loop predicts: predict-onset-UNIVERSAL -- recall the nearest cadence arc in a HELD LIBRARY banked from OTHER speakers (cross-speaker, speaker-independent on z-normalised contours). Repetition-free by construction (the test speaker is not in the library). The operator attaches to the existing onset_prediction microtheory by cross-ref, so the agent that already operates_in it picks this axis alongside beat/cadence/dynamics with ZERO new wiring; the library is the world executor's mechanical bank (no decision). On a held-out read speaker the universal axis should SATURATE (the library reads a speaker it never banked) -- the agent's loop discovers a universal cadence transfers, not just the stream's own dynamics.",
+  "nodes": [
+    {"local_id": 0, "type": "Operator", "attrs": {"name": "cadence_universal", "runner": "predict_onset_universal",
+        "metric": "onset_universal_skill", "target": 0.3, "min_order": 3.0,
+        "comment": "the universal cadence: k-NN recall over a HELD library of OTHER speakers' arcs -- reads a held-out speaker, repetition-free and speaker-independent"}},
+    {"local_id": 1, "type": "CapabilityAxis", "attrs": {"is_axis": 1.0, "capability_keys": ["predict", "onset", "universal"],
+        "saturation": 0.0, "shortfall": 0.5, "min_order": 1.0, "investigated_count": 0, "mf_stall": 0}}
+  ],
+  "edges": [
+    {"src": {"local": 1}, "type": "investigated_by", "tgt": {"local": 0}},
+    {"src": {"local": 0}, "type": "applies_in", "tgt": {"type": "Microtheory", "name": "onset_prediction"}}
+  ],
+  "productions": [
+    {"provenance": "seed:onset_prediction_universal:investigated_by",
+     "src": {"type": "CapabilityAxis", "var": "a"}, "edge_type": "investigated_by", "tgt": {"type": "Operator", "var": "o"}},
+    {"provenance": "seed:onset_prediction_universal:applies_in",
+     "src": {"type": "Operator", "var": "o"}, "edge_type": "applies_in", "tgt": {"type": "Microtheory", "var": "m"}}
+  ],
+  "rules": []
+}

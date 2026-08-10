@@ -1,0 +1,65 @@
+{
+  "id": "composer_faculty_pipeline",
+  "version": "1.0.0",
+  "depends_on": [],
+  "description": "FACULTY-PIPELINE composer vocabulary + dispatch (graph data for SELF-IMPROVEMENT #4, substrate self-extension). A CapabilityGap whose residual predicates ground to the STAGE relations here (classify/route/finalize) is solvable by COMPOSITION of existing primitives: the composer authors a WHOLE FACULTY as a multi-rule CHAIN (a pipeline where each stage's output feeds the next), not a single rule. The RelationCue nodes map stage-naming keywords -> a stage relation-head; the ComposerCue routes the 'classify' head to the 'pipeline' composer (domains.reflective_faculty._compose_faculty_pipeline), which reads WHICH stage relations grounded and installs one rule per grounded stage. Priority 30 keeps it out of the way of the existing composer dispatch (the stage heads do not collide with any held ComposerCue head). This is the honest COMPOSE reach: the faculty is expressible as a composition of held match/where/effect primitives; it does not invent a primitive (that is the SPEC / PrimitiveRequest path).",
+  "nodes": [
+    {
+      "local_id": 1,
+      "type": "RelationCue",
+      "attrs": {
+        "name": "pipeline_classify_stage",
+        "keywords": [
+          "classify the item",
+          "classify the input",
+          "classify stage",
+          "label the input",
+          "categorize the input",
+          "categorise the input",
+          "recognise the incoming"
+        ],
+        "relation": "[\"classify\",\"ITEM\"]"
+      }
+    },
+    {
+      "local_id": 2,
+      "type": "RelationCue",
+      "attrs": {
+        "name": "pipeline_route_stage",
+        "keywords": [
+          "route to a handler",
+          "route the item",
+          "assign a handler",
+          "assign to a handler",
+          "hand off to a handler"
+        ],
+        "relation": "[\"route\",\"ITEM\"]"
+      }
+    },
+    {
+      "local_id": 3,
+      "type": "RelationCue",
+      "attrs": {
+        "name": "pipeline_finalize_stage",
+        "keywords": [
+          "mark handled",
+          "mark it handled",
+          "finalize the item",
+          "finalise the item",
+          "complete the item",
+          "emit the result"
+        ],
+        "relation": "[\"finalize\",\"ITEM\"]"
+      }
+    },
+    {
+      "local_id": 4,
+      "type": "ComposerCue",
+      "attrs": {
+        "relation_head": "classify",
+        "composer": "pipeline",
+        "priority": 30
+      }
+    }
+  ]
+}

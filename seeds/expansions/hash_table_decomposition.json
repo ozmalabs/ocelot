@@ -1,0 +1,112 @@
+{
+  "id": "hash_table_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "hash_table",
+  "in_microtheory": "data_structures_algorithms",
+  "description": "Hash tables decomposed. The universal associative container. Hash function quality + collision resolution + load factor management determine performance. Three main collision resolution strategies: separate chaining, open addressing (linear probing, quadratic, double hash), Robin Hood / Hopscotch / Cuckoo. Resizing, hash flooding attacks, and cache-friendly layouts.",
+  "sub_mechanisms": [
+    {
+      "name": "separate_chaining",
+      "definition": "Each bucket holds a linked list (or small array) of entries. Collisions append to the bucket's chain. Lookup: hash → bucket → linear scan of chain.",
+      "why": "Simple to implement; load factor can exceed 1. Each lookup chases pointers (cache-unfriendly). Performance degrades gracefully with load factor.",
+      "category": "hash_mechanism"
+    },
+    {
+      "name": "open_addressing",
+      "definition": "Single flat array of slots. On collision, probe to find an empty slot. Lookup probes until match or empty slot found.",
+      "why": "Better cache locality than chaining. Load factor capped at <1 (typically <0.7). Probing strategy matters — clustering can degrade performance.",
+      "category": "hash_mechanism"
+    },
+    {
+      "name": "linear_probing",
+      "definition": "Open addressing where probe sequence is index, index+1, index+2, ... (mod m).",
+      "why": "Cache-friendly: sequential probes hit the same cache line. Suffers from primary clustering: long runs of occupied slots compound. Still the most common scheme in production (Rust HashMap, Google's SwissTable).",
+      "category": "hash_mechanism"
+    },
+    {
+      "name": "quadratic_probing",
+      "definition": "Open addressing where probe sequence is index, index+1, index+4, index+9, ... (squared offsets).",
+      "why": "Mitigates primary clustering. But doesn't visit all slots unless table size is prime + load factor < 0.5. More complex than linear probing for marginal benefit.",
+      "category": "hash_mechanism"
+    },
+    {
+      "name": "double_hashing",
+      "definition": "Open addressing with probe sequence: index, index + h₂(key), index + 2·h₂(key), ... where h₂ is a second hash function.",
+      "why": "Different keys have different probe sequences — eliminates clustering. Costs computing a second hash. Less cache-friendly than linear probing.",
+      "category": "hash_mechanism"
+    },
+    {
+      "name": "robin_hood_hashing",
+      "definition": "Open addressing variant. On insert, if current slot's probe distance is shorter than the inserting key's, swap them.",
+      "why": "Reduces variance in probe distance — long probes get redistributed. Worst-case probe length is bounded. Used in Rust's HashMap (until SwissTable).",
+      "category": "hash_mechanism"
+    },
+    {
+      "name": "cuckoo_hashing",
+      "definition": "Each key has two possible positions (via h₁, h₂). On collision, kick out the existing key + place it in its other position. Resize on cycle.",
+      "why": "O(1) worst-case lookup (check at most 2 positions). Inserts can cascade evictions. Memory-overhead trade for tight worst-case bound.",
+      "category": "hash_mechanism"
+    },
+    {
+      "name": "swisstable_hashing",
+      "definition": "Google's SwissTable design. 64-byte cache-line-sized groups; per-slot 7-bit hash byte for SIMD scanning. Open addressing with quadratic probing.",
+      "why": "Modern cache-aware design. SIMD scans 16 slots per group in one instruction; 7-bit hashes filter false positives before full key comparison. Default in Abseil + Google's C++ codebase; adopted into Rust HashMap.",
+      "category": "hash_mechanism"
+    },
+    {
+      "name": "tombstone_deletion",
+      "definition": "Open addressing's delete: mark slot as 'tombstone' (deleted, not empty) so probes can continue past it.",
+      "why": "Naively emptying a slot breaks probe chains: later searches would stop at the new empty slot, missing matches. Tombstones preserve the chain. Accumulating tombstones forces eventual rehash.",
+      "category": "hash_mechanism"
+    },
+    {
+      "name": "resize_doubling",
+      "definition": "When load factor exceeds threshold, allocate a new table of double size + rehash all entries.",
+      "why": "Amortised O(1) per insert via doubling: total rehash cost is O(n) for n inserts. Rehashing is the expensive part — incremental resizing (Redis, Java) spreads the cost across operations.",
+      "category": "hash_mechanism"
+    },
+    {
+      "name": "hash_flooding_attack",
+      "definition": "Adversary chooses keys that all hash to the same bucket, forcing O(n) per operation. The hash table degrades to a linked list.",
+      "why": "Real attack on web servers (POST a million colliding form fields). Mitigation: randomly-seeded hash function per process (Python's PYTHONHASHSEED, Java's String.hashCode randomisation), or use a hash function the attacker can't reverse.",
+      "category": "hash_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "load_factor_controls_collision_rate",
+      "if": ["load factor is α"],
+      "then": ["expected collision count grows roughly as α / (1 - α)"],
+      "why": "At α = 0.5, expected probe is ~1.5; at α = 0.9, ~10. The non-linear growth motivates the typical 0.7 resize threshold — beyond that, performance degrades sharply.",
+      "soundness_category": "algebraic_law"
+    },
+    {
+      "name": "open_addressing_cache_friendlier_than_chaining",
+      "if": ["entries are in a flat array"],
+      "then": ["probes hit cache lines sequentially"],
+      "why": "Pointer chasing (chaining) is latency-bound. Sequential array probing benefits from cache prefetching. Modern hash tables (SwissTable, Boost's flat_hash) use open addressing for this reason.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "good_hash_function_required_for_O1_expectation",
+      "if": ["hash function distributes keys uniformly"],
+      "then": ["expected operation cost is O(1)"],
+      "why": "Uniform distribution means each bucket has expected O(1) entries. Bad hash (e.g., x mod 2 for even-mostly keys) concentrates entries — operations degrade to O(n). The hash function's quality IS the performance.",
+      "soundness_category": "algebraic_law"
+    },
+    {
+      "name": "salted_hash_prevents_flooding",
+      "if": ["hash function is seeded with per-process random salt"],
+      "then": ["attacker cannot precompute colliding keys"],
+      "why": "Different processes get different hash mappings. Attacker-known collisions in one process don't apply to another. Mandatory for production-grade hash table implementations.",
+      "soundness_category": "referential_transparency"
+    },
+    {
+      "name": "resize_amortises_via_doubling",
+      "if": ["table doubles on resize"],
+      "then": ["amortised insert cost is O(1)"],
+      "why": "Each entry copied O(log n) times across all resizes; total copies O(n log n / log n) = O(n) via geometric series. Per-insert amortised: O(1). Identical analysis as dynamic array doubling.",
+      "soundness_category": "cost_equivalence"
+    }
+  ]
+}

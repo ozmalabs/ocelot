@@ -1,0 +1,2024 @@
+{
+  "id": "embodied_body_ingest",
+  "version": "1.0.0",
+  "depends_on": [
+    "embodied_learning_session"
+  ],
+  "area": "general_cognition",
+  "latency_class": "hard_realtime",
+  "description": "Graph-native recognition of raw grounded PyBullet humanoid connection, morphology, opaque actuator and reset/pose/trial capability facts. Python only ingests these facts; no float, program, actuator selection, goal or reset choice crosses the boundary.",
+  "nodes": [],
+  "edges": [],
+  "productions": [
+    {
+      "provenance": "embodied_body_ingest:agent_connection",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_embodied_simulator_connection",
+      "tgt": {
+        "type": "EmbodiedSimulatorConnection",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "embodied_body_ingest:connection_raw_body",
+      "src": {
+        "type": "EmbodiedSimulatorConnection",
+        "var": "src"
+      },
+      "edge_type": "observes_embodied_raw_body",
+      "tgt": {
+        "type": "EmbodiedRawBodyObservation",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "embodied_body_ingest:connection_capability",
+      "src": {
+        "type": "EmbodiedSimulatorConnection",
+        "var": "src"
+      },
+      "edge_type": "has_embodied_world_capability",
+      "tgt": {
+        "type": "EmbodiedWorldCapability",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "embodied_body_ingest:connection_motor_interface",
+      "src": {
+        "type": "EmbodiedSimulatorConnection",
+        "var": "src"
+      },
+      "edge_type": "has_embodied_raw_motor_interface",
+      "tgt": {
+        "type": "EmbodiedRawMotorInterface",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "embodied_body_ingest:connection_raw_reset_fixture",
+      "src": {
+        "type": "EmbodiedSimulatorConnection",
+        "var": "src"
+      },
+      "edge_type": "has_embodied_raw_reset_fixture",
+      "tgt": {
+        "type": "EmbodiedRawResetFixture",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "embodied_body_ingest:raw_affordance",
+      "src": {
+        "type": "EmbodiedRawBodyObservation",
+        "var": "src"
+      },
+      "edge_type": "has_opaque_embodied_actuator_affordance",
+      "tgt": {
+        "type": "EmbodiedOpaqueActuatorAffordance",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "embodied_body_ingest:raw_effector_topology",
+      "src": {
+        "type": "EmbodiedRawBodyObservation",
+        "var": "src"
+      },
+      "edge_type": "has_embodied_raw_effector_topology_relation",
+      "tgt": {
+        "type": "EmbodiedRawEffectorTopologyRelation",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "embodied_body_ingest:raw_projection",
+      "src": {
+        "type": "EmbodiedRawMotorInterface",
+        "var": "src"
+      },
+      "edge_type": "has_embodied_raw_measurement_projection",
+      "tgt": {
+        "type": "EmbodiedRawMeasurementProjection",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "embodied_body_ingest:connection_body",
+      "src": {
+        "type": "EmbodiedSimulatorConnection",
+        "var": "src"
+      },
+      "edge_type": "materializes_embodied_body_schema",
+      "tgt": {
+        "type": "EmbodiedBodySchema",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "embodied_body_ingest:connection_world",
+      "src": {
+        "type": "EmbodiedSimulatorConnection",
+        "var": "src"
+      },
+      "edge_type": "materializes_embodied_learning_world",
+      "tgt": {
+        "type": "EmbodiedLearningWorld",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "embodied_body_ingest:body_raw",
+      "src": {
+        "type": "EmbodiedBodySchema",
+        "var": "src"
+      },
+      "edge_type": "grounded_in_embodied_raw_body",
+      "tgt": {
+        "type": "EmbodiedRawBodyObservation",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "embodied_body_ingest:body_affordance",
+      "src": {
+        "type": "EmbodiedBodySchema",
+        "var": "src"
+      },
+      "edge_type": "has_opaque_embodied_actuator_affordance",
+      "tgt": {
+        "type": "EmbodiedOpaqueActuatorAffordance",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "embodied_body_ingest:body_effector_topology",
+      "src": {
+        "type": "EmbodiedBodySchema",
+        "var": "src"
+      },
+      "edge_type": "has_opaque_embodied_effector_topology_relation",
+      "tgt": {
+        "type": "EmbodiedRawEffectorTopologyRelation",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "embodied_body_ingest:world_connection",
+      "src": {
+        "type": "EmbodiedLearningWorld",
+        "var": "src"
+      },
+      "edge_type": "grounded_in_embodied_simulator_connection",
+      "tgt": {
+        "type": "EmbodiedSimulatorConnection",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "embodied_body_ingest:world_reset",
+      "src": {
+        "type": "EmbodiedLearningWorld",
+        "var": "src"
+      },
+      "edge_type": "has_embodied_reset_capability",
+      "tgt": {
+        "type": "EmbodiedWorldCapability",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "embodied_body_ingest:world_pose_fixture",
+      "src": {
+        "type": "EmbodiedLearningWorld",
+        "var": "src"
+      },
+      "edge_type": "has_embodied_pose_fixture_capability",
+      "tgt": {
+        "type": "EmbodiedWorldCapability",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "embodied_body_ingest:world_trial",
+      "src": {
+        "type": "EmbodiedLearningWorld",
+        "var": "src"
+      },
+      "edge_type": "has_embodied_physical_trial_capability",
+      "tgt": {
+        "type": "EmbodiedWorldCapability",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "embodied_body_ingest:world_motor_contract",
+      "src": {
+        "type": "EmbodiedLearningWorld",
+        "var": "src"
+      },
+      "edge_type": "has_embodied_motor_bootstrap_contract",
+      "tgt": {
+        "type": "EmbodiedMotorBootstrapContract",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "embodied_body_ingest:contract_raw_motor_interface",
+      "src": {
+        "type": "EmbodiedMotorBootstrapContract",
+        "var": "src"
+      },
+      "edge_type": "grounded_in_embodied_raw_motor_interface",
+      "tgt": {
+        "type": "EmbodiedRawMotorInterface",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "embodied_body_ingest:contract_projection",
+      "src": {
+        "type": "EmbodiedMotorBootstrapContract",
+        "var": "src"
+      },
+      "edge_type": "has_embodied_measurement_projection",
+      "tgt": {
+        "type": "EmbodiedMeasurementProjectionAffordance",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "embodied_body_ingest:projection_raw",
+      "src": {
+        "type": "EmbodiedMeasurementProjectionAffordance",
+        "var": "src"
+      },
+      "edge_type": "grounded_in_embodied_raw_measurement_projection",
+      "tgt": {
+        "type": "EmbodiedRawMeasurementProjection",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "embodied_body_ingest:pose_capability",
+      "src": {
+        "type": "EmbodiedPoseAffordance",
+        "var": "src"
+      },
+      "edge_type": "grounded_in_embodied_world_capability",
+      "tgt": {
+        "type": "EmbodiedWorldCapability",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "embodied_body_ingest:connection_episode",
+      "src": {
+        "type": "EmbodiedSimulatorConnection",
+        "var": "src"
+      },
+      "edge_type": "materializes_embodied_development_episode",
+      "tgt": {
+        "type": "EmbodiedDevelopmentEpisode",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "embodied_body_ingest:connection_reset_scenario",
+      "src": {
+        "type": "EmbodiedSimulatorConnection",
+        "var": "src"
+      },
+      "edge_type": "materializes_embodied_reset_scenario",
+      "tgt": {
+        "type": "EmbodiedResetScenario",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "embodied_body_ingest:episode_reset_scenario",
+      "src": {
+        "type": "EmbodiedDevelopmentEpisode",
+        "var": "src"
+      },
+      "edge_type": "has_embodied_reset_scenario",
+      "tgt": {
+        "type": "EmbodiedResetScenario",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "embodied_body_ingest:scenario_raw_fixture",
+      "src": {
+        "type": "EmbodiedResetScenario",
+        "var": "src"
+      },
+      "edge_type": "grounded_in_embodied_raw_reset_fixture",
+      "tgt": {
+        "type": "EmbodiedRawResetFixture",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "embodied_body_ingest:episode_connection",
+      "src": {
+        "type": "EmbodiedDevelopmentEpisode",
+        "var": "src"
+      },
+      "edge_type": "grounded_in_embodied_simulator_connection",
+      "tgt": {
+        "type": "EmbodiedSimulatorConnection",
+        "var": "tgt"
+      }
+    }
+  ],
+  "rules": [
+    {
+      "name": "ebi_recognize_connected_pybullet_humanoid_as_situated_body_and_world",
+      "area": "general_cognition",
+      "latency_class": "hard_realtime",
+      "comment": "A raw connected body observation plus real reset, pose-fixture and trial capabilities is sufficient for the graph to recognize a situated learning environment. The adapter supplies facts; this rule supplies the category.",
+      "match": [
+        [
+          "agent",
+          "has_embodied_simulator_connection",
+          "connection"
+        ],
+        [
+          "connection",
+          "observes_embodied_raw_body",
+          "raw_body"
+        ],
+        [
+          "connection",
+          "has_embodied_world_capability",
+          "reset"
+        ],
+        [
+          "connection",
+          "has_embodied_world_capability",
+          "pose_fixture"
+        ],
+        [
+          "connection",
+          "has_embodied_world_capability",
+          "physical_trial"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "connection"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "connected"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "connection"
+              },
+              "key": "adapter_kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "pybullet_humanoid"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "raw_body"
+              },
+              "key": "observation_status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "observed"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "raw_body"
+              },
+              "key": "body_class"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "articulated_humanoid"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "reset"
+              },
+              "key": "capability_kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "reset_to_declared_fixture"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pose_fixture"
+              },
+              "key": "capability_kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "declared_pose_fixture"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "physical_trial"
+              },
+              "key": "capability_kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "grounded_physical_trial"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "reset"
+              },
+              "key": "available"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pose_fixture"
+              },
+              "key": "available"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "physical_trial"
+              },
+              "key": "available"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "connection"
+                },
+                "edge_type": "materializes_embodied_body_schema"
+              },
+              "var_name": "known",
+              "predicate": {
+                "type": "Lit",
+                "value": true
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "body",
+          "EmbodiedBodySchema",
+          {
+            "schema_status": "situated_observed",
+            "body_identity": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "raw_body"
+                },
+                "key": "body_identity"
+              }
+            },
+            "body_class": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "raw_body"
+                },
+                "key": "body_class"
+              }
+            },
+            "joint_count": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "raw_body"
+                },
+                "key": "joint_count"
+              }
+            },
+            "actuator_count": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "raw_body"
+                },
+                "key": "actuator_count"
+              }
+            },
+            "support_channel_count": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "raw_body"
+                },
+                "key": "support_channel_count"
+              }
+            },
+            "morphology_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "raw_body"
+                },
+                "key": "observation_event_ordinal"
+              }
+            },
+            "observation_event_ordinal": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "raw_body"
+                },
+                "key": "observation_event_ordinal"
+              }
+            },
+            "grounded": 1,
+            "integer_native": 1,
+            "output_authority": 0
+          }
+        ],
+        [
+          "add_node",
+          "world",
+          "EmbodiedLearningWorld",
+          {
+            "world_status": "situated_connected",
+            "world_identity": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "connection"
+                },
+                "key": "connection_identity"
+              }
+            },
+            "adapter_kind": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "connection"
+                },
+                "key": "adapter_kind"
+              }
+            },
+            "grounded": 1,
+            "integer_native": 1,
+            "output_authority": 0
+          }
+        ],
+        [
+          "add_edge",
+          "connection",
+          "materializes_embodied_body_schema",
+          "body"
+        ],
+        [
+          "add_edge",
+          "connection",
+          "materializes_embodied_learning_world",
+          "world"
+        ],
+        [
+          "add_edge",
+          "body",
+          "grounded_in_embodied_raw_body",
+          "raw_body"
+        ],
+        [
+          "add_edge",
+          "world",
+          "grounded_in_embodied_simulator_connection",
+          "connection"
+        ],
+        [
+          "add_edge",
+          "world",
+          "has_embodied_reset_capability",
+          "reset"
+        ],
+        [
+          "add_edge",
+          "world",
+          "has_embodied_pose_fixture_capability",
+          "pose_fixture"
+        ],
+        [
+          "add_edge",
+          "world",
+          "has_embodied_physical_trial_capability",
+          "physical_trial"
+        ]
+      ]
+    },
+    {
+      "name": "ebi_materialize_integer_motor_bootstrap_contract_from_raw_interface",
+      "area": "general_cognition",
+      "latency_class": "hard_realtime",
+      "comment": "The body boundary declares only integer actuator and measurement interface limits. The graph materializes a reusable contract; it intentionally contains no trial duration, axis, sign or preferred program.",
+      "match": [
+        [
+          "connection",
+          "materializes_embodied_learning_world",
+          "world"
+        ],
+        [
+          "connection",
+          "has_embodied_raw_motor_interface",
+          "raw_interface"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "raw_interface"
+              },
+              "key": "integer_native"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "world"
+                },
+                "edge_type": "has_embodied_motor_bootstrap_contract"
+              },
+              "var_name": "known",
+              "predicate": {
+                "type": "Lit",
+                "value": true
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "contract",
+          "EmbodiedMotorBootstrapContract",
+          {
+            "minimum_actuation_frames": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "raw_interface"
+                },
+                "key": "minimum_actuation_frames"
+              }
+            },
+            "maximum_observation_horizon_frames": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "raw_interface"
+                },
+                "key": "maximum_observation_horizon_frames"
+              }
+            },
+            "simulator_weight_scale_units": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "raw_interface"
+                },
+                "key": "simulator_weight_scale_units"
+              }
+            },
+            "minimum_nonzero_weight_units": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "raw_interface"
+                },
+                "key": "minimum_nonzero_weight_units"
+              }
+            },
+            "displacement_units_per_metre": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "raw_interface"
+                },
+                "key": "displacement_units_per_metre"
+              }
+            },
+            "energy_units_per_joule": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "raw_interface"
+                },
+                "key": "energy_units_per_joule"
+              }
+            },
+            "load_units_per_newton": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "raw_interface"
+                },
+                "key": "load_units_per_newton"
+              }
+            },
+            "maximum_joint_force_units": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "raw_interface"
+                },
+                "key": "maximum_joint_force_units"
+              }
+            },
+            "maximum_actuator_bundle_members": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "raw_interface"
+                },
+                "key": "maximum_actuator_bundle_members"
+              }
+            },
+            "grounded": 1,
+            "integer_native": 1,
+            "output_authority": 0
+          }
+        ],
+        [
+          "add_edge",
+          "world",
+          "has_embodied_motor_bootstrap_contract",
+          "contract"
+        ],
+        [
+          "add_edge",
+          "contract",
+          "grounded_in_embodied_raw_motor_interface",
+          "raw_interface"
+        ]
+      ]
+    },
+    {
+      "name": "ebi_materialize_cartesian_measurement_projection_affordances",
+      "area": "general_cognition",
+      "latency_class": "hard_realtime",
+      "comment": "Every declared Cartesian axis/sign projection becomes an equally available graph affordance. The rule carries no preference over direction or frame.",
+      "match": [
+        [
+          "contract",
+          "grounded_in_embodied_raw_motor_interface",
+          "raw_interface"
+        ],
+        [
+          "raw_interface",
+          "has_embodied_raw_measurement_projection",
+          "raw_projection"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "raw_projection"
+              },
+              "key": "projection_kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "cartesian_displacement"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "raw_projection"
+              },
+              "key": "available"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "contract"
+                },
+                "edge_type": "has_embodied_measurement_projection"
+              },
+              "var_name": "known_projection",
+              "predicate": {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "known_projection"
+                      },
+                      "key": "axis"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "raw_projection"
+                      },
+                      "key": "axis"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "known_projection"
+                      },
+                      "key": "sign"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "raw_projection"
+                      },
+                      "key": "sign"
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "projection",
+          "EmbodiedMeasurementProjectionAffordance",
+          {
+            "projection_kind": "cartesian_displacement",
+            "axis": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "raw_projection"
+                },
+                "key": "axis"
+              }
+            },
+            "sign": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "raw_projection"
+                },
+                "key": "sign"
+              }
+            },
+            "available": 1,
+            "grounded": 1,
+            "integer_native": 1,
+            "output_authority": 0
+          }
+        ],
+        [
+          "add_edge",
+          "contract",
+          "has_embodied_measurement_projection",
+          "projection"
+        ],
+        [
+          "add_edge",
+          "projection",
+          "grounded_in_embodied_raw_measurement_projection",
+          "raw_projection"
+        ]
+      ]
+    },
+    {
+      "name": "ebi_bind_observed_opaque_actuator_affordances_to_situated_body",
+      "area": "general_cognition",
+      "latency_class": "hard_realtime",
+      "comment": "Each body-side opaque actuator token is retained as an observed affordance. The rule does not rank, select or interpret any token.",
+      "match": [
+        [
+          "connection",
+          "materializes_embodied_body_schema",
+          "body"
+        ],
+        [
+          "connection",
+          "observes_embodied_raw_body",
+          "raw_body"
+        ],
+        [
+          "raw_body",
+          "has_opaque_embodied_actuator_affordance",
+          "affordance"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "affordance"
+              },
+              "key": "available"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "body"
+                },
+                "edge_type": "has_opaque_embodied_actuator_affordance"
+              },
+              "var_name": "known_affordance",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Var",
+                  "name": "known_affordance"
+                },
+                "b": {
+                  "type": "Var",
+                  "name": "affordance"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_edge",
+          "body",
+          "has_opaque_embodied_actuator_affordance",
+          "affordance"
+        ]
+      ]
+    },
+    {
+      "name": "ebi_bind_observed_direct_effector_topology_to_situated_body",
+      "area": "general_cognition",
+      "latency_class": "hard_realtime",
+      "comment": "A mechanically observed direct link adjacency is retained as a local composition constraint. It does not make a motor program or select a command; receipt-grounded motor synthesis decides whether it is useful.",
+      "match": [
+        [
+          "connection",
+          "materializes_embodied_body_schema",
+          "body"
+        ],
+        [
+          "connection",
+          "observes_embodied_raw_body",
+          "raw_body"
+        ],
+        [
+          "raw_body",
+          "has_embodied_raw_effector_topology_relation",
+          "relation"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "relation"
+              },
+              "key": "relation_kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "directed_mechanical_link_adjacency"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "relation"
+              },
+              "key": "mechanical_path_length"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "relation"
+              },
+              "key": "grounded"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "relation"
+              },
+              "key": "integer_native"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "body"
+                },
+                "edge_type": "has_opaque_embodied_effector_topology_relation"
+              },
+              "var_name": "known_relation",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Var",
+                  "name": "known_relation"
+                },
+                "b": {
+                  "type": "Var",
+                  "name": "relation"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_edge",
+          "body",
+          "has_opaque_embodied_effector_topology_relation",
+          "relation"
+        ]
+      ]
+    },
+    {
+      "name": "ebi_materialize_pose_affordance_from_observed_fixture_capability",
+      "area": "general_cognition",
+      "latency_class": "hard_realtime",
+      "comment": "A declared pose fixture is a capability fact, not a hidden home pose. It permits an enabled situated pose-affordance but does not choose a fixture or reset scenario.",
+      "match": [
+        [
+          "connection",
+          "materializes_embodied_learning_world",
+          "world"
+        ],
+        [
+          "connection",
+          "has_embodied_world_capability",
+          "pose_fixture"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pose_fixture"
+              },
+              "key": "capability_kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "declared_pose_fixture"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pose_fixture"
+              },
+              "key": "available"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "world"
+                },
+                "edge_type": "has_embodied_pose_affordance"
+              },
+              "var_name": "known",
+              "predicate": {
+                "type": "Lit",
+                "value": true
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "pose",
+          "EmbodiedPoseAffordance",
+          {
+            "enabled": 1,
+            "source": "observed_declared_pose_fixture",
+            "grounded": 1,
+            "integer_native": 1,
+            "output_authority": 0
+          }
+        ],
+        [
+          "add_edge",
+          "world",
+          "has_embodied_pose_affordance",
+          "pose"
+        ],
+        [
+          "add_edge",
+          "pose",
+          "grounded_in_embodied_world_capability",
+          "pose_fixture"
+        ]
+      ]
+    },
+    {
+      "name": "ebi_activate_developmental_learning_from_grounded_physical_trial_capability",
+      "area": "general_cognition",
+      "latency_class": "hard_realtime",
+      "comment": "A recognized world that can execute grounded physical trials is an available developmental learning process. This is graph state inferred from an observed capability, not a Python start command.",
+      "match": [
+        [
+          "episode",
+          "has_embodied_learning_world",
+          "world"
+        ],
+        [
+          "world",
+          "has_embodied_physical_trial_capability",
+          "physical_trial"
+        ],
+        [
+          "world",
+          "has_embodied_reset_capability",
+          "reset"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "physical_trial"
+              },
+              "key": "available"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "reset"
+              },
+              "key": "available"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "episode"
+                  },
+                  "key": "development_learning_active"
+                },
+                {
+                  "type": "Lit",
+                  "value": 0
+                }
+              ]
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "episode",
+          "development_learning_active",
+          1
+        ],
+        [
+          "set_attr",
+          "episode",
+          "embodiment_reset_available",
+          1
+        ]
+      ]
+    },
+    {
+      "name": "ebi_materialize_declared_initial_fixture_as_situated_reset_scenario",
+      "area": "general_cognition",
+      "latency_class": "hard_realtime",
+      "comment": "The configured initial fixture becomes one observed reset option. It is explicitly a situated option, not a canonical home configuration, and the graph remains free to select among later fixtures.",
+      "match": [
+        [
+          "connection",
+          "materializes_embodied_development_episode",
+          "episode"
+        ],
+        [
+          "connection",
+          "has_embodied_raw_reset_fixture",
+          "fixture"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "fixture"
+              },
+              "key": "fixture_kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "declared_initial_base_quarter_turns"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "fixture"
+              },
+              "key": "available"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "connection"
+                },
+                "edge_type": "materializes_embodied_reset_scenario"
+              },
+              "var_name": "known",
+              "predicate": {
+                "type": "Lit",
+                "value": true
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "scenario",
+          "EmbodiedResetScenario",
+          {
+            "name": "declared_initial_fixture",
+            "ordinal": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "fixture"
+                },
+                "key": "fixture_event_ordinal"
+              }
+            },
+            "target_goal": "any",
+            "enabled": 1,
+            "selection_count": 0,
+            "fixture_quarter_turn_x": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "fixture"
+                },
+                "key": "fixture_quarter_turn_x"
+              }
+            },
+            "fixture_quarter_turn_y": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "fixture"
+                },
+                "key": "fixture_quarter_turn_y"
+              }
+            },
+            "fixture_quarter_turn_z": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "fixture"
+                },
+                "key": "fixture_quarter_turn_z"
+              }
+            },
+            "grounded": 1,
+            "integer_native": 1,
+            "output_authority": 0
+          }
+        ],
+        [
+          "add_edge",
+          "connection",
+          "materializes_embodied_reset_scenario",
+          "scenario"
+        ],
+        [
+          "add_edge",
+          "episode",
+          "has_embodied_reset_scenario",
+          "scenario"
+        ],
+        [
+          "add_edge",
+          "scenario",
+          "grounded_in_embodied_raw_reset_fixture",
+          "fixture"
+        ]
+      ]
+    },
+    {
+      "name": "ebi_open_situated_humanoid_development_episode_from_recognized_environment",
+      "area": "general_cognition",
+      "latency_class": "hard_realtime",
+      "comment": "Opening an episode is a graph consequence of recognized situated resources. It creates no goal or motor command; downstream developmental cognition owns those choices.",
+      "match": [
+        [
+          "agent",
+          "has_embodied_simulator_connection",
+          "connection"
+        ],
+        [
+          "connection",
+          "materializes_embodied_body_schema",
+          "body"
+        ],
+        [
+          "connection",
+          "materializes_embodied_learning_world",
+          "world"
+        ],
+        [
+          "world",
+          "has_embodied_pose_affordance",
+          "pose"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pose"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "connection"
+                },
+                "edge_type": "materializes_embodied_development_episode"
+              },
+              "var_name": "known",
+              "predicate": {
+                "type": "Lit",
+                "value": true
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "episode",
+          "EmbodiedDevelopmentEpisode",
+          {
+            "status": "situated_ready",
+            "body_class": "articulated_humanoid",
+            "grounded": 1,
+            "integer_native": 1,
+            "output_authority": 0
+          }
+        ],
+        [
+          "add_edge",
+          "agent",
+          "has_embodied_development_episode",
+          "episode"
+        ],
+        [
+          "add_edge",
+          "connection",
+          "materializes_embodied_development_episode",
+          "episode"
+        ],
+        [
+          "add_edge",
+          "episode",
+          "has_embodied_body_schema",
+          "body"
+        ],
+        [
+          "add_edge",
+          "episode",
+          "has_embodied_learning_world",
+          "world"
+        ],
+        [
+          "add_edge",
+          "episode",
+          "grounded_in_embodied_simulator_connection",
+          "connection"
+        ]
+      ]
+    },
+    {
+      "name": "ebi_mark_only_embodied_attachment_as_current",
+      "area": "general_cognition",
+      "latency_class": "hard_realtime",
+      "comment": "A sole mechanically attached world is current by cardinality. Multiple equal legacy ordinals remain intentionally unselected until a strictly newer attachment arrives.",
+      "match": [
+        [
+          "agent",
+          "has_embodied_simulator_connection",
+          "connection"
+        ]
+      ],
+      "where": {
+        "type": "Eq",
+        "a": {
+          "type": "Count",
+          "source": {
+            "type": "Neighbours",
+            "node": {
+              "type": "Var",
+              "name": "agent"
+            },
+            "edge_type": "has_embodied_simulator_connection"
+          }
+        },
+        "b": {
+          "type": "Lit",
+          "value": 1
+        }
+      },
+      "effects": [
+        [
+          "set_attr",
+          "connection",
+          "current_attachment",
+          1
+        ]
+      ]
+    },
+    {
+      "name": "ebi_mark_strictly_newest_embodied_attachment_as_current",
+      "area": "general_cognition",
+      "latency_class": "hard_realtime",
+      "comment": "A strictly greater mechanically observed attachment ordinal makes the new connection current and retires older attachment authority. Equal legacy ordinals deliberately do not break ties.",
+      "match": [
+        [
+          "agent",
+          "has_embodied_simulator_connection",
+          "connection"
+        ],
+        [
+          "agent",
+          "has_embodied_simulator_connection",
+          "older"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "connection"
+              },
+              "key": "attachment_event_ordinal"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "older"
+              },
+              "key": "attachment_event_ordinal"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "agent"
+                },
+                "edge_type": "has_embodied_simulator_connection"
+              },
+              "var_name": "greater",
+              "predicate": {
+                "type": "Gt",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "greater"
+                  },
+                  "key": "attachment_event_ordinal"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "connection"
+                  },
+                  "key": "attachment_event_ordinal"
+                }
+              }
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Filter",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {
+                    "type": "Var",
+                    "name": "agent"
+                  },
+                  "edge_type": "has_embodied_simulator_connection"
+                },
+                "var_name": "same",
+                "predicate": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "same"
+                    },
+                    "key": "attachment_event_ordinal"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "connection"
+                    },
+                    "key": "attachment_event_ordinal"
+                  }
+                }
+              }
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "connection",
+          "current_attachment",
+          1
+        ]
+      ]
+    },
+    {
+      "name": "ebi_retire_embodied_attachment_with_strictly_newer_successor",
+      "area": "general_cognition",
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "agent",
+          "has_embodied_simulator_connection",
+          "connection"
+        ]
+      ],
+      "where": {
+        "type": "Exists",
+        "source": {
+          "type": "Neighbours",
+          "node": {
+            "type": "Var",
+            "name": "agent"
+          },
+          "edge_type": "has_embodied_simulator_connection"
+        },
+        "var_name": "greater",
+        "predicate": {
+          "type": "Gt",
+          "a": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "greater"
+            },
+            "key": "attachment_event_ordinal"
+          },
+          "b": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "connection"
+            },
+            "key": "attachment_event_ordinal"
+          }
+        }
+      },
+      "effects": [
+        [
+          "set_attr",
+          "connection",
+          "current_attachment",
+          0
+        ]
+      ]
+    },
+    {
+      "name": "ebi_request_graph_selected_initial_situated_reset_for_active_learning",
+      "area": "general_cognition",
+      "latency_class": "hard_realtime",
+      "comment": "Once the existing developmental plan has selected a live capability, it may request a reset without specifying a scenario. The development seed's ordinary least-used-scenario rule performs the selection.",
+      "match": [
+        [
+          "episode",
+          "has_self_directed_learning_plan",
+          "plan"
+        ],
+        [
+          "plan",
+          "has_selected_learning_plan_step",
+          "step"
+        ],
+        [
+          "episode",
+          "has_active_embodied_developmental_capability",
+          "capability"
+        ],
+        [
+          "episode",
+          "has_embodied_reset_scenario",
+          "scenario"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "step"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "active"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "capability"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "active"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "scenario"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "episode"
+                },
+                "edge_type": "has_active_embodied_reset_request"
+              },
+              "var_name": "known",
+              "predicate": {
+                "type": "Lit",
+                "value": true
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "request",
+          "EmbodiedResetRequest",
+          {
+            "status": "requested",
+            "cause": "initial_situated_experiment",
+            "integer_native": 1,
+            "output_authority": 0
+          }
+        ],
+        [
+          "add_edge",
+          "episode",
+          "has_embodied_reset_request",
+          "request"
+        ],
+        [
+          "add_edge",
+          "episode",
+          "has_active_embodied_reset_request",
+          "request"
+        ],
+        [
+          "add_edge",
+          "request",
+          "revises_learning_plan_step",
+          "step"
+        ]
+      ]
+    }
+  ]
+}

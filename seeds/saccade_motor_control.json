@@ -1,0 +1,891 @@
+{
+  "id": "saccade_motor_control",
+  "version": "1.0.0",
+  "depends_on": [
+    "retinal_focus_control"
+  ],
+  "description": "Default-off graph-native saccade motor apparatus. A current uniquely resolved attention verdict becomes a PresaccadicCandidate. ArgminUnique over negative candidate priority emits at most one EyeMotorCommand; empty and exact-tied candidate sets remain an explicit refusal. The command carries a SaccadeEfferenceCopy and creates a presaccadic Fixation only when the existing retinal-focus command agrees exactly. The fixation is confirmed only by a later settled sensor epoch using that same focus target. Requested commands whose source epoch has already passed are rejected. No host decision, raw pixels, task-specific vocabulary, or world mutation.",
+  "microtheory": {
+    "name": "saccade_motor_control",
+    "description": "presaccadic selection -> eye motor command + efference copy -> confirmed fixation"
+  },
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "SaccadeController",
+      "attrs": {
+        "enabled": 0.0,
+        "purpose": "graph_native_eye_motor_control",
+        "current_column": 0,
+        "current_row": 0,
+        "duration_tics": 1
+      }
+    }
+  ],
+  "edges": [
+    {
+      "src": {"role": "agent_root"},
+      "type": "has_saccade_controller",
+      "tgt": {"local": 0},
+      "attrs": {}
+    }
+  ],
+  "productions": [
+    {
+      "provenance": "seed:saccade_motor_control:agent-controller",
+      "src": {"type": "Agent", "var": "agent"},
+      "edge_type": "has_saccade_controller",
+      "tgt": {"type": "SaccadeController", "var": "controller"}
+    },
+    {
+      "provenance": "seed:saccade_motor_control:controller-candidate",
+      "src": {"type": "SaccadeController", "var": "controller"},
+      "edge_type": "has_presaccadic_candidate",
+      "tgt": {"type": "PresaccadicCandidate", "var": "candidate"}
+    },
+    {
+      "provenance": "seed:saccade_motor_control:controller-command",
+      "src": {"type": "SaccadeController", "var": "controller"},
+      "edge_type": "has_eye_motor_command",
+      "tgt": {"type": "EyeMotorCommand", "var": "command"}
+    },
+    {
+      "provenance": "seed:saccade_motor_control:controller-decision",
+      "src": {"type": "SaccadeController", "var": "controller"},
+      "edge_type": "has_saccade_decision",
+      "tgt": {"type": "SaccadeDecision", "var": "decision"}
+    },
+    {
+      "provenance": "seed:saccade_motor_control:controller-fixation",
+      "src": {"type": "SaccadeController", "var": "controller"},
+      "edge_type": "has_fixation",
+      "tgt": {"type": "Fixation", "var": "fixation"}
+    },
+    {
+      "provenance": "seed:saccade_motor_control:agent-fixation",
+      "src": {"type": "Agent", "var": "agent"},
+      "edge_type": "has_fixation",
+      "tgt": {"type": "Fixation", "var": "fixation"}
+    },
+    {
+      "provenance": "seed:saccade_motor_control:command-copy",
+      "src": {"type": "EyeMotorCommand", "var": "command"},
+      "edge_type": "has_efference_copy",
+      "tgt": {"type": "SaccadeEfferenceCopy", "var": "copy"}
+    },
+    {
+      "provenance": "seed:saccade_motor_control:command-candidate",
+      "src": {"type": "EyeMotorCommand", "var": "command"},
+      "edge_type": "selected_from",
+      "tgt": {"type": "PresaccadicCandidate", "var": "candidate"}
+    },
+    {
+      "provenance": "seed:saccade_motor_control:fixation-command",
+      "src": {"type": "Fixation", "var": "fixation"},
+      "edge_type": "anticipated_by",
+      "tgt": {"type": "EyeMotorCommand", "var": "command"}
+    }
+  ],
+  "rules": [
+    {
+      "name": "saccade_candidate_from_unique_attention",
+      "area": "attention",
+      "order": 20,
+      "latency_class": "soft_realtime",
+      "comment": "The upstream fovea resolver already refused exact attention ties. This rule only reifies its current unique verdict as a presaccadic motor candidate.",
+      "match": [
+        ["agent", "has_saccade_controller", "controller"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "controller"}, "key": "enabled"},
+            "b": {"type": "Lit", "value": 1.0}
+          },
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "attention_sensor_epoch"},
+            "b": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "vision_settled_epoch"}
+          },
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "attention_refused"},
+            "b": {"type": "Lit", "value": 0.0}
+          },
+          {
+            "type": "Gt",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "attention_salience"},
+            "b": {"type": "Lit", "value": 0.0}
+          },
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "retinal_focus_active"},
+            "b": {"type": "Lit", "value": 1.0}
+          },
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "retinal_focus_source_epoch"},
+            "b": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "attention_sensor_epoch"}
+          },
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "retinal_focus_column"},
+            "b": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "attention_column_index"}
+          },
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "retinal_focus_row"},
+            "b": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "attention_row_index"}
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {"type": "Var", "name": "controller"},
+                "edge_type": "has_presaccadic_candidate"
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {"type": "Attr", "node": {"type": "Var", "name": "old"}, "key": "source_epoch"},
+                    "b": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "attention_sensor_epoch"}
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {"type": "Attr", "node": {"type": "Var", "name": "old"}, "key": "target_column"},
+                    "b": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "attention_column_index"}
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {"type": "Attr", "node": {"type": "Var", "name": "old"}, "key": "target_row"},
+                    "b": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "attention_row_index"}
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "candidate",
+          "PresaccadicCandidate",
+          {
+            "source_epoch": {
+              "__term__": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "attention_sensor_epoch"}
+            },
+            "target_column": {
+              "__term__": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "attention_column_index"}
+            },
+            "target_row": {
+              "__term__": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "attention_row_index"}
+            },
+            "gaze_az": {
+              "__term__": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "attention_az"}
+            },
+            "gaze_el": {
+              "__term__": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "attention_el"}
+            },
+            "priority": {
+              "__term__": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "attention_salience"}
+            },
+            "valid": 1.0,
+            "source": "unique_attention_verdict"
+          }
+        ],
+        [
+          "add_node",
+          "command",
+          "EyeMotorCommand",
+          {
+            "source_epoch": {
+              "__term__": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "attention_sensor_epoch"}
+            },
+            "target_column": {
+              "__term__": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "attention_column_index"}
+            },
+            "target_row": {
+              "__term__": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "attention_row_index"}
+            },
+            "priority": {
+              "__term__": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "attention_salience"}
+            },
+            "target_az_deg": {
+              "__term__": {
+                "type": "Times",
+                "items": [
+                  {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "attention_az"},
+                  {"type": "Lit", "value": 57.29577951308232}
+                ]
+              }
+            },
+            "target_el_deg": {
+              "__term__": {
+                "type": "Times",
+                "items": [
+                  {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "attention_el"},
+                  {"type": "Lit", "value": 57.29577951308232}
+                ]
+              }
+            },
+            "duration_tics": {
+              "__term__": {"type": "Attr", "node": {"type": "Var", "name": "controller"}, "key": "duration_tics"}
+            },
+            "status": "emitted",
+            "kind": "saccade"
+          }
+        ],
+        [
+          "add_node",
+          "copy",
+          "SaccadeEfferenceCopy",
+          {
+            "source_epoch": {
+              "__term__": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "attention_sensor_epoch"}
+            },
+            "from_column": {
+              "__term__": {"type": "Attr", "node": {"type": "Var", "name": "controller"}, "key": "current_column"}
+            },
+            "from_row": {
+              "__term__": {"type": "Attr", "node": {"type": "Var", "name": "controller"}, "key": "current_row"}
+            },
+            "target_column": {
+              "__term__": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "attention_column_index"}
+            },
+            "target_row": {
+              "__term__": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "attention_row_index"}
+            },
+            "delta_column": {
+              "__term__": {
+                "type": "Minus",
+                "a": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "attention_column_index"},
+                "b": {"type": "Attr", "node": {"type": "Var", "name": "controller"}, "key": "current_column"}
+              }
+            },
+            "delta_row": {
+              "__term__": {
+                "type": "Minus",
+                "a": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "attention_row_index"},
+                "b": {"type": "Attr", "node": {"type": "Var", "name": "controller"}, "key": "current_row"}
+              }
+            }
+          }
+        ],
+        [
+          "add_node",
+          "fixation",
+          "Fixation",
+          {
+            "source_epoch": {
+              "__term__": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "attention_sensor_epoch"}
+            },
+            "target_column": {
+              "__term__": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "attention_column_index"}
+            },
+            "target_row": {
+              "__term__": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "attention_row_index"}
+            },
+            "status": "presaccadic",
+            "confirmed": 0.0
+          }
+        ],
+        ["add_edge", "controller", "has_presaccadic_candidate", "candidate", {}],
+        ["add_edge", "controller", "has_eye_motor_command", "command", {}],
+        ["add_edge", "command", "selected_from", "candidate", {}],
+        ["add_edge", "command", "has_efference_copy", "copy", {}],
+        ["add_edge", "controller", "has_fixation", "fixation", {}],
+        ["add_edge", "agent", "has_fixation", "fixation", {}],
+        ["add_edge", "fixation", "anticipated_by", "command", {}],
+        ["set_attr_if_different", "agent", "eye_motor_active", 1.0],
+        [
+          "set_attr_if_different",
+          "agent",
+          "eye_motor_source_epoch",
+          {
+            "__term__": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "attention_sensor_epoch"}
+          }
+        ],
+        [
+          "set_attr_if_different",
+          "agent",
+          "eye_motor_target_column",
+          {
+            "__term__": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "attention_column_index"}
+          }
+        ],
+        [
+          "set_attr_if_different",
+          "agent",
+          "eye_motor_target_row",
+          {
+            "__term__": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "attention_row_index"}
+          }
+        ],
+        [
+          "set_attr_if_different",
+          "agent",
+          "eye_motor_target_az_deg",
+          {
+            "__term__": {
+              "type": "Times",
+              "items": [
+                {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "attention_az"},
+                {"type": "Lit", "value": 57.29577951308232}
+              ]
+            }
+          }
+        ],
+        [
+          "set_attr_if_different",
+          "agent",
+          "eye_motor_target_el_deg",
+          {
+            "__term__": {
+              "type": "Times",
+              "items": [
+                {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "attention_el"},
+                {"type": "Lit", "value": 57.29577951308232}
+              ]
+            }
+          }
+        ],
+        [
+          "set_attr_if_different",
+          "agent",
+          "eye_motor_duration_tics",
+          {
+            "__term__": {"type": "Attr", "node": {"type": "Var", "name": "controller"}, "key": "duration_tics"}
+          }
+        ],
+        [
+          "set_attr_if_different",
+          "agent",
+          "eye_motor_fixation_epoch",
+          {
+            "__term__": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "attention_sensor_epoch"}
+          }
+        ],
+        ["set_attr_if_different", "agent", "eye_motor_status", "emitted"]
+      ]
+    },
+    {
+      "name": "saccade_retire_stale_candidate",
+      "area": "attention",
+      "order": 20,
+      "latency_class": "soft_realtime",
+      "match": [
+        ["agent", "has_saccade_controller", "controller"],
+        ["controller", "has_presaccadic_candidate", "candidate"]
+      ],
+      "where": {
+        "type": "Lt",
+        "a": {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "source_epoch"},
+        "b": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "vision_settled_epoch"}
+      },
+      "effects": [
+        ["del_node", "candidate"]
+      ]
+    },
+    {
+      "name": "saccade_begin_decision",
+      "area": "attention",
+      "order": 21,
+      "latency_class": "soft_realtime",
+      "match": [
+        ["agent", "has_saccade_controller", "controller"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "controller"}, "key": "enabled"},
+            "b": {"type": "Lit", "value": 1.0}
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {"type": "Attr", "node": {"type": "Var", "name": "controller"}, "key": "decision_epoch"},
+              "b": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "vision_settled_epoch"}
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {"type": "Var", "name": "controller"},
+                "edge_type": "has_eye_motor_command"
+              },
+              "var_name": "command",
+              "predicate": {
+                "type": "Eq",
+                "a": {"type": "Attr", "node": {"type": "Var", "name": "command"}, "key": "source_epoch"},
+                "b": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "vision_settled_epoch"}
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr_if_different",
+          "controller",
+          "decision_epoch",
+          {
+            "__term__": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "vision_settled_epoch"}
+          }
+        ],
+        ["set_attr_if_different", "agent", "eye_motor_active", 0.0],
+        [
+          "set_attr_if_different",
+          "agent",
+          "eye_motor_source_epoch",
+          {
+            "__term__": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "vision_settled_epoch"}
+          }
+        ],
+        ["set_attr_if_different", "agent", "eye_motor_target_column", -1],
+        ["set_attr_if_different", "agent", "eye_motor_target_row", -1],
+        ["set_attr_if_different", "agent", "eye_motor_target_az_deg", 0.0],
+        ["set_attr_if_different", "agent", "eye_motor_target_el_deg", 0.0],
+        ["set_attr_if_different", "agent", "eye_motor_fixation_epoch", -1],
+        ["set_attr_if_different", "agent", "eye_motor_duration_tics", 0],
+        ["set_attr_if_different", "agent", "eye_motor_status", "refused"]
+      ]
+    },
+    {
+      "name": "saccade_mint_unique_command",
+      "area": "attention",
+      "order": 22,
+      "latency_class": "soft_realtime",
+      "comment": "ArgminUnique(Neg(priority)) returns no node for an exact top tie. Therefore selection failure leaves the Agent's epoch-scoped refusal publication unchanged and emits no EyeMotorCommand.",
+      "match": [
+        ["agent", "has_saccade_controller", "controller"],
+        ["controller", "has_presaccadic_candidate", "candidate"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "controller"}, "key": "enabled"},
+            "b": {"type": "Lit", "value": 1.0}
+          },
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "source_epoch"},
+            "b": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "vision_settled_epoch"}
+          },
+          {
+            "type": "Eq",
+            "a": {"type": "Var", "name": "candidate"},
+            "b": {
+              "type": "ArgminUnique",
+              "source": {
+                "type": "Filter",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {"type": "Var", "name": "controller"},
+                  "edge_type": "has_presaccadic_candidate",
+                  "any_type": false
+                },
+                "var_name": "option",
+                "predicate": {
+                  "type": "And",
+                  "items": [
+                    {
+                      "type": "Eq",
+                      "a": {"type": "Attr", "node": {"type": "Var", "name": "option"}, "key": "source_epoch"},
+                      "b": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "vision_settled_epoch"}
+                    },
+                    {
+                      "type": "Eq",
+                      "a": {"type": "Attr", "node": {"type": "Var", "name": "option"}, "key": "valid"},
+                      "b": {"type": "Lit", "value": 1.0}
+                    }
+                  ]
+                }
+              },
+              "var_name": "option",
+              "value": {
+                "type": "Neg",
+                "arg": {"type": "Attr", "node": {"type": "Var", "name": "option"}, "key": "priority"}
+              },
+              "default": null
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {"type": "Var", "name": "controller"},
+                "edge_type": "has_eye_motor_command"
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "Eq",
+                "a": {"type": "Attr", "node": {"type": "Var", "name": "old"}, "key": "source_epoch"},
+                "b": {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "source_epoch"}
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "command",
+          "EyeMotorCommand",
+          {
+            "source_epoch": {
+              "__term__": {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "source_epoch"}
+            },
+            "target_column": {
+              "__term__": {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "target_column"}
+            },
+            "target_row": {
+              "__term__": {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "target_row"}
+            },
+            "priority": {
+              "__term__": {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "priority"}
+            },
+            "target_az_deg": {
+              "__term__": {
+                "type": "Times",
+                "items": [
+                  {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "gaze_az"},
+                  {"type": "Lit", "value": 57.29577951308232}
+                ]
+              }
+            },
+            "target_el_deg": {
+              "__term__": {
+                "type": "Times",
+                "items": [
+                  {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "gaze_el"},
+                  {"type": "Lit", "value": 57.29577951308232}
+                ]
+              }
+            },
+            "duration_tics": {
+              "__term__": {"type": "Attr", "node": {"type": "Var", "name": "controller"}, "key": "duration_tics"}
+            },
+            "status": "requested",
+            "kind": "saccade"
+          }
+        ],
+        ["add_edge", "controller", "has_eye_motor_command", "command", {}],
+        ["add_edge", "command", "selected_from", "candidate", {}]
+      ]
+    },
+    {
+      "name": "saccade_reject_stale_requested_command",
+      "area": "attention",
+      "order": 23,
+      "latency_class": "soft_realtime",
+      "match": [
+        ["agent", "has_saccade_controller", "controller"],
+        ["controller", "has_eye_motor_command", "command"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "command"}, "key": "status"},
+            "b": {"type": "Lit", "value": "requested"}
+          },
+          {
+            "type": "Lt",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "command"}, "key": "source_epoch"},
+            "b": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "vision_settled_epoch"}
+          }
+        ]
+      },
+      "effects": [
+        ["set_attr_if_different", "command", "status", "rejected"],
+        ["set_attr_if_different", "command", "reason", "stale_source_epoch"]
+      ]
+    },
+    {
+      "name": "saccade_emit_efference_and_presaccadic_fixation",
+      "area": "attention",
+      "order": 24,
+      "latency_class": "soft_realtime",
+      "comment": "The graph emits the command only when the independently existing focus publication exactly agrees. This is an efference copy and an anticipated fixation, not a claim that a new retinal sample has arrived.",
+      "match": [
+        ["agent", "has_saccade_controller", "controller"],
+        ["controller", "has_eye_motor_command", "command"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "command"}, "key": "status"},
+            "b": {"type": "Lit", "value": "requested"}
+          },
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "command"}, "key": "source_epoch"},
+            "b": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "vision_settled_epoch"}
+          },
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "retinal_focus_active"},
+            "b": {"type": "Lit", "value": 1.0}
+          },
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "retinal_focus_source_epoch"},
+            "b": {"type": "Attr", "node": {"type": "Var", "name": "command"}, "key": "source_epoch"}
+          },
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "retinal_focus_column"},
+            "b": {"type": "Attr", "node": {"type": "Var", "name": "command"}, "key": "target_column"}
+          },
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "retinal_focus_row"},
+            "b": {"type": "Attr", "node": {"type": "Var", "name": "command"}, "key": "target_row"}
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "copy",
+          "SaccadeEfferenceCopy",
+          {
+            "source_epoch": {
+              "__term__": {"type": "Attr", "node": {"type": "Var", "name": "command"}, "key": "source_epoch"}
+            },
+            "from_column": {
+              "__term__": {"type": "Attr", "node": {"type": "Var", "name": "controller"}, "key": "current_column"}
+            },
+            "from_row": {
+              "__term__": {"type": "Attr", "node": {"type": "Var", "name": "controller"}, "key": "current_row"}
+            },
+            "target_column": {
+              "__term__": {"type": "Attr", "node": {"type": "Var", "name": "command"}, "key": "target_column"}
+            },
+            "target_row": {
+              "__term__": {"type": "Attr", "node": {"type": "Var", "name": "command"}, "key": "target_row"}
+            },
+            "delta_column": {
+              "__term__": {
+                "type": "Minus",
+                "a": {"type": "Attr", "node": {"type": "Var", "name": "command"}, "key": "target_column"},
+                "b": {"type": "Attr", "node": {"type": "Var", "name": "controller"}, "key": "current_column"}
+              }
+            },
+            "delta_row": {
+              "__term__": {
+                "type": "Minus",
+                "a": {"type": "Attr", "node": {"type": "Var", "name": "command"}, "key": "target_row"},
+                "b": {"type": "Attr", "node": {"type": "Var", "name": "controller"}, "key": "current_row"}
+              }
+            }
+          }
+        ],
+        [
+          "add_node",
+          "fixation",
+          "Fixation",
+          {
+            "source_epoch": {
+              "__term__": {"type": "Attr", "node": {"type": "Var", "name": "command"}, "key": "source_epoch"}
+            },
+            "target_column": {
+              "__term__": {"type": "Attr", "node": {"type": "Var", "name": "command"}, "key": "target_column"}
+            },
+            "target_row": {
+              "__term__": {"type": "Attr", "node": {"type": "Var", "name": "command"}, "key": "target_row"}
+            },
+            "status": "presaccadic",
+            "confirmed": 0.0
+          }
+        ],
+        ["add_edge", "command", "has_efference_copy", "copy", {}],
+        ["add_edge", "controller", "has_fixation", "fixation", {}],
+        ["add_edge", "agent", "has_fixation", "fixation", {}],
+        ["add_edge", "fixation", "anticipated_by", "command", {}],
+        ["set_attr_if_different", "command", "status", "emitted"],
+        ["set_attr_if_different", "agent", "eye_motor_active", 1.0],
+        [
+          "set_attr_if_different",
+          "agent",
+          "eye_motor_source_epoch",
+          {
+            "__term__": {"type": "Attr", "node": {"type": "Var", "name": "command"}, "key": "source_epoch"}
+          }
+        ],
+        [
+          "set_attr_if_different",
+          "agent",
+          "eye_motor_target_column",
+          {
+            "__term__": {"type": "Attr", "node": {"type": "Var", "name": "command"}, "key": "target_column"}
+          }
+        ],
+        [
+          "set_attr_if_different",
+          "agent",
+          "eye_motor_target_row",
+          {
+            "__term__": {"type": "Attr", "node": {"type": "Var", "name": "command"}, "key": "target_row"}
+          }
+        ],
+        [
+          "set_attr_if_different",
+          "agent",
+          "eye_motor_target_az_deg",
+          {
+            "__term__": {"type": "Attr", "node": {"type": "Var", "name": "command"}, "key": "target_az_deg"}
+          }
+        ],
+        [
+          "set_attr_if_different",
+          "agent",
+          "eye_motor_target_el_deg",
+          {
+            "__term__": {"type": "Attr", "node": {"type": "Var", "name": "command"}, "key": "target_el_deg"}
+          }
+        ],
+        [
+          "set_attr_if_different",
+          "agent",
+          "eye_motor_duration_tics",
+          {
+            "__term__": {"type": "Attr", "node": {"type": "Var", "name": "command"}, "key": "duration_tics"}
+          }
+        ],
+        [
+          "set_attr_if_different",
+          "agent",
+          "eye_motor_fixation_epoch",
+          {
+            "__term__": {"type": "Attr", "node": {"type": "Var", "name": "command"}, "key": "source_epoch"}
+          }
+        ],
+        ["set_attr_if_different", "agent", "eye_motor_status", "emitted"]
+      ]
+    },
+    {
+      "name": "saccade_clear_stale_authoritative_command",
+      "area": "attention",
+      "order": 24,
+      "latency_class": "soft_realtime",
+      "comment": "The Agent attrs are the single authoritative adapter seam. If their source epoch falls behind the settled sensor clock, clear active explicitly; an adapter never scans or ranks historical EyeMotorCommand nodes.",
+      "match": [
+        ["agent", "has_saccade_controller", "controller"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "eye_motor_active"},
+            "b": {"type": "Lit", "value": 1.0}
+          },
+          {
+            "type": "Lt",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "eye_motor_source_epoch"},
+            "b": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "vision_settled_epoch"}
+          }
+        ]
+      },
+      "effects": [
+        ["set_attr_if_different", "agent", "eye_motor_active", 0.0],
+        ["set_attr_if_different", "agent", "eye_motor_duration_tics", 0],
+        ["set_attr_if_different", "agent", "eye_motor_status", "stale_rejected"]
+      ]
+    },
+    {
+      "name": "saccade_confirm_fixation_on_later_settlement",
+      "area": "attention",
+      "order": 25,
+      "latency_class": "soft_realtime",
+      "comment": "A fixation is confirmed only after the sensor clock advances beyond its presaccadic source while the focus apparatus still reports the commanded target.",
+      "match": [
+        ["agent", "has_saccade_controller", "controller"],
+        ["controller", "has_fixation", "fixation"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "fixation"}, "key": "confirmed"},
+            "b": {"type": "Lit", "value": 0.0}
+          },
+          {
+            "type": "Gt",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "vision_settled_epoch"},
+            "b": {"type": "Attr", "node": {"type": "Var", "name": "fixation"}, "key": "source_epoch"}
+          },
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "retinal_focus_active"},
+            "b": {"type": "Lit", "value": 1.0}
+          },
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "retinal_focus_column"},
+            "b": {"type": "Attr", "node": {"type": "Var", "name": "fixation"}, "key": "target_column"}
+          },
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "retinal_focus_row"},
+            "b": {"type": "Attr", "node": {"type": "Var", "name": "fixation"}, "key": "target_row"}
+          }
+        ]
+      },
+      "effects": [
+        ["set_attr_if_different", "fixation", "confirmed", 1.0],
+        ["set_attr_if_different", "fixation", "status", "confirmed"],
+        [
+          "set_attr_if_different",
+          "fixation",
+          "confirmed_epoch",
+          {
+            "__term__": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "vision_settled_epoch"}
+          }
+        ],
+        [
+          "set_attr_if_different",
+          "controller",
+          "current_column",
+          {
+            "__term__": {"type": "Attr", "node": {"type": "Var", "name": "fixation"}, "key": "target_column"}
+          }
+        ],
+        [
+          "set_attr_if_different",
+          "controller",
+          "current_row",
+          {
+            "__term__": {"type": "Attr", "node": {"type": "Var", "name": "fixation"}, "key": "target_row"}
+          }
+        ],
+        ["set_attr_if_different", "agent", "eye_motor_active", 0.0],
+        ["set_attr_if_different", "agent", "eye_motor_duration_tics", 0],
+        ["set_attr_if_different", "agent", "eye_motor_status", "fixation_confirmed"]
+      ]
+    }
+  ]
+}

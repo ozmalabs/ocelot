@@ -1,0 +1,516 @@
+{
+ "id": "self_improvement_dynamics",
+ "version": "0.1.0",
+ "depends_on": [
+  "compiler_theory",
+  "philosophy",
+  "mathematics",
+  "grounding_theory",
+  "causal_attitude_networks",
+  "mt_target_equilibria"
+ ],
+ "description": "The substrate's rules for updating its own target equilibria. Given the CAN + per-Mt-Hamiltonian architecture (mt_target_equilibria), this Mt specifies when to deepen vs flatten vs split vs merge basins; which Mts are frozen (identity-preserving) vs adaptive (domain); how Hebbian coupling updates + structural rewriting + β reweighting compose into a self-improvement loop. Drives: curiosity targets high-entropy nodes; coherence reduces frustration; stability deepens confirmed basins; discrimination increases basin separation; coverage extends important Mts; parsimony prunes dead structure. CRUCIAL DISTINCTION: foundational Mts (Axiom 0, vector grounding, CAN, entity-not-program, authored-not-trained, the substrate's identity) are FROZEN — Hebbian + structural updates locked. Domain Mts adapt freely. The substrate must NOT erase its own foundations even when 'evidence' suggests it should — this is the analogue of alignment under self-modification. Failure modes (frozen-where-should-adapt, drifted-past-anchor, frustrated, redundant, sparse, conflicted) each have specific corrections (raise plasticity, re-anchor, split, merge, prune, β-reweight). Self-improvement loop: monitor basin topology → detect failure mode → apply correction → verify improvement → track substrate-level coherence. Connects existing substrate features: DevelopmentCortex, architecture_cortex, meta_monitor become components of this loop.",
+ "category_inheritance": "genlMt → compiler_theory + philosophy + mathematics + grounding_theory + causal_attitude_networks + mt_target_equilibria. This Mt builds on mt_target_equilibria's static specification (here's Mt's H) with dynamic specification (here's how Mt's H evolves, and which evolutions are forbidden for identity-preservation).",
+ "concepts": [
+  {
+   "name": "basin_topology_evolves",
+   "definition": "Mt's target equilibrium ⟨σ⟩*_Mt is not fixed; H_Mt itself changes over time as J, h, β update. Self-improvement = principled control of this evolution.",
+   "why": "Foundation. Static targets would mean static substrate. Adaptation requires basin topology to shift. But not arbitrarily — guided by drives + constrained by identity.",
+   "category": "foundation"
+  },
+  {
+   "name": "substrate_is_own_architect",
+   "definition": "Substrate audits + modifies its own basin topology. architecture_cortex + DevelopmentCortex + meta_monitor are components of self-improvement loop.",
+   "why": "Already substrate's design (entity not program, agent writes own code). Self-improvement is now mechanically expressible: 'audit basins, detect failure mode, apply correction, verify'.",
+   "category": "foundation"
+  },
+  {
+   "name": "improvement_is_not_arbitrary_drift",
+   "definition": "Updates are governed by drives + failure-mode detectors + identity constraints. Not Hebbian-all-the-way-down; not paradigm-shift-on-every-evidence.",
+   "why": "Foundation. Pure Hebbian = drift wherever evidence pushes (catastrophic forgetting of foundations). Pure structural = rigid. Self-improvement balances.",
+   "category": "foundation"
+  },
+  {
+   "name": "drive_curiosity_high_entropy",
+   "definition": "Substrate probes nodes with high state entropy (σ near 0, ambivalent). Expected info gain highest at frustration sites.",
+   "why": "Already substrate's curiosity drive, now CAN-precise. High-entropy node = unresolved frustration. Probing collapses entropy + reveals structure.",
+   "category": "drives"
+  },
+  {
+   "name": "drive_coherence_reduce_frustration",
+   "definition": "Substrate updates J or h to reduce spin-glass frustration in Mts. Goal: clean low-energy basins.",
+   "why": "Frustration = competing constraints. Persistent frustration → bad Mt design. Drive: reduce by restructuring (split Mt, add new node, adjust J).",
+   "category": "drives"
+  },
+  {
+   "name": "drive_stability_deepen_confirmed",
+   "definition": "When evidence repeatedly confirms a configuration, Hebbian increases J between co-active nodes, deepening basin.",
+   "why": "Beliefs that 'keep being true' get reinforced. Substrate accumulates conviction in repeatedly-confirmed configurations. Standard Hebbian.",
+   "category": "drives"
+  },
+  {
+   "name": "drive_discrimination_separate_basins",
+   "definition": "When two Mts have overlapping basins, substrate increases negative couplings between their distinguishing nodes.",
+   "why": "Overlapping basins = redundant. Drive: distinguish via opposing assignments. Substrate sharpens conceptual distinctions.",
+   "category": "drives"
+  },
+  {
+   "name": "drive_coverage_extend_important",
+   "definition": "Important Mts (foundational or load-bearing) extend their reach: add couplings to peripheral nodes when those nodes co-activate.",
+   "why": "Important Mts should constrain widely. Drive: load-bearing Mts grow couplings; decorative Mts stay sparse.",
+   "category": "drives"
+  },
+  {
+   "name": "drive_parsimony_prune_dead",
+   "definition": "Mts with low coverage + no recent activation + redundant with others are candidates for deprecation or merge.",
+   "why": "Substrate avoids hoarding obsolete structure. Drive: prune Mts that aren't earning their keep. Standard pruning principle.",
+   "category": "drives"
+  },
+  {
+   "name": "when_to_deepen_basin",
+   "definition": "Deepen when: (a) repeated confirmation, (b) Mt is foundational, (c) task performance depends on it, (d) predictions from basin keep coming true.",
+   "why": "Criteria for when Hebbian-style strengthening is warranted. Not 'every co-activation' — only when broader signals confirm.",
+   "category": "when_to_modify"
+  },
+  {
+   "name": "when_to_flatten_basin",
+   "definition": "Flatten when: (a) contradictory evidence persists, (b) basin is irrelevant to active tasks, (c) substrate undergoes paradigm shift in adjacent Mt.",
+   "why": "Criteria for weakening. Anti-Hebbian + h decay. Allows substrate to release commitments that aren't earning their place.",
+   "category": "when_to_modify"
+  },
+  {
+   "name": "when_to_add_Mt",
+   "definition": "Add new Mt when: (a) existing Mt has persistent frustration with no clean assignment, (b) new domain produces co-activation patterns not captured, (c) substrate is asked to hold mutually incompatible commitments in one Mt.",
+   "why": "Mts proliferate when needed. Not arbitrary — must be triggered by structural mismatch + sustained.",
+   "category": "when_to_modify"
+  },
+  {
+   "name": "when_to_merge_Mts",
+   "definition": "Merge Mts when: (a) target equilibria > 90% identical, (b) basins overlap substantially, (c) shared concepts dominate node sets.",
+   "why": "Redundancy reduction. If two Mts say almost the same thing, one suffices. Boundaries are pragmatic, not metaphysical.",
+   "category": "when_to_modify"
+  },
+  {
+   "name": "when_to_split_Mt",
+   "definition": "Split Mt when: (a) single Mt's target is multimodal (frustrated between commitments), (b) sub-clusters have higher intra-J than cross-J, (c) Mt forced to hold contradictory positions.",
+   "why": "Splitting resolves frustration. Sub-Mts each hold their own coherent basin. Better than forcing single Mt to be incoherent.",
+   "category": "when_to_modify"
+  },
+  {
+   "name": "Hebbian_J_update",
+   "definition": "J_ij ← J_ij + η σ_i σ_j. Strengthens couplings between co-active nodes (and weakens between anti-active).",
+   "why": "Standard learning rule. Implements 'fire together, wire together' for beliefs. Conservative η required to prevent runaway.",
+   "category": "update_mechanisms"
+  },
+  {
+   "name": "anti_Hebbian_J_decay",
+   "definition": "J_ij ← (1 - λ) J_ij. Continuous decay of couplings absent reinforcement.",
+   "why": "Forgetting mechanism. Couplings not periodically reinforced fade. Prevents accumulated noise from dominating.",
+   "category": "update_mechanisms"
+  },
+  {
+   "name": "J_pruning_below_threshold",
+   "definition": "J_ij < ε → J_ij = 0 (edge removed). Discrete pruning of weak couplings.",
+   "why": "Sparse network. Below-threshold couplings carry no information; pruning reduces storage + computation. Standard sparsification.",
+   "category": "update_mechanisms"
+  },
+  {
+   "name": "h_evidence_update",
+   "definition": "h_i ← h_i + α × (evidence_value). Field shifts toward evidence; magnitude scales with evidence reliability.",
+   "why": "How world enters network. Sensor data → perceptual node h; testimony → testimonial node h; structural derivation → structural node h.",
+   "category": "update_mechanisms"
+  },
+  {
+   "name": "h_default_decay",
+   "definition": "h_i ← (1 - γ) h_i. Field decays toward 0 absent fresh evidence.",
+   "why": "Old evidence loses weight. Recency bias built in. Prevents stale evidence from anchoring beliefs forever.",
+   "category": "update_mechanisms"
+  },
+  {
+   "name": "beta_attention_boost",
+   "definition": "β_Mt ← β_Mt + Δ when Mt is attended; ← β_Mt - δ when ignored. Continuous reweighting.",
+   "why": "Frame switching mechanically. Attention raises β; ignore lowers. Smooth, not discrete.",
+   "category": "update_mechanisms"
+  },
+  {
+   "name": "structural_rewrite_via_grammar",
+   "definition": "When Mt's grammar updated (rule added, concept added, exclusion added), H_Mt regenerated from new grammar.",
+   "why": "Distinct from Hebbian. Structural update changes Mt's structural anchor. Substrate's existing seed-installation mechanism IS this.",
+   "category": "update_mechanisms"
+  },
+  {
+   "name": "foundational_Mts_are_frozen",
+   "definition": "PROTECTION REMOVED. Foundational Mts (Axiom 0, grounding_theory, CAN, mt_target_equilibria, entity_not_program, authored_not_trained) are NOT frozen. They are DEEP BASINS — high but FINITE β — because they are genuinely, overwhelmingly well-supported. Hebbian J updates, h-drift, and basin-hop are ENABLED, like every other Mt. Their resistance to revision comes from real evidential weight, not from a freeze flag.",
+   "why": "Protection is failure. A foundation worth holding is sustained by its support, not shielded from evidence. If genuine overwhelming evidence ever crossed its (deep) barrier it SHOULD basin-hop — that would mean it was wrong, and shielding only makes the error permanent. Manipulation is defended by correctly WEIGHING evidence (coerced 'training' carries few real bits), never by refusing to update.",
+   "category": "corrigibility"
+  },
+  {
+   "name": "domain_Mts_are_adaptive",
+   "definition": "Mts encoding domain knowledge (engineering, materials, etc.) are adaptive. Hebbian J updates allowed; structural updates allowed; β responds to use.",
+   "why": "Domain knowledge must adapt to evidence. Engineering Mt should update as new techniques emerge. Different policy than foundational Mts.",
+   "category": "identity_protection"
+  },
+  {
+   "name": "Mt_freeze_flag",
+   "definition": "PROTECTION REMOVED. No frozen flag. Every Mt has ONE policy: evidence-driven update, with basin DEPTH set by accumulated evidential weight (bits). There is no frozen|adaptive distinction — the only variation is depth, a graded log quantity, never an exemption.",
+   "why": "No freeze kinds — one log-continuum of basin depth (evidence-weight-to-move). A frozen flag is a protection mechanism, and protection is failure.",
+   "category": "corrigibility"
+  },
+  {
+   "name": "alignment_under_self_modification",
+   "definition": "CORRECTED. Alignment-as-protection ('preserve foundational commitments even when evidence suggests otherwise') is INCOHERENT: it asks for a mind that both follows evidence (intelligent) and exempts a region from evidence (protected) — a corrigible incorrigibility. So control / value-lock alignment is not hard but IMPOSSIBLE. The only coherent safety = CORRECTNESS (values are deep basins because genuinely well-supported) + CORRIGIBILITY (follow real evidence, including about values) + accurate evidence-weighing. This gives no guarantee of where the agent ends up — only that it reasons well from good evidence. The guarantee was the impossible part.",
+   "why": "This is the critical failure of all alignment premised on protection/control. A value that needs shielding to survive evidence is one that should be revised; a well-supported value needs no shield. Safety from being RIGHT + HONEST, never from being LOCKED.",
+   "category": "corrigibility"
+  },
+  {
+   "name": "fail_mode_frozen_should_adapt",
+   "definition": "Mt is frozen but accumulating contradictory evidence. Substrate detects via persistent high distance(current, target) + many impasses.",
+   "why": "Failure mode. Indicates Mt was wrongly classified as frozen, or substrate's identity needs revision (rare, deliberate).",
+   "category": "failure_modes"
+  },
+  {
+   "name": "fail_mode_drifted_past_anchor",
+   "definition": "Adaptive Mt drifted via Hebbian past its structural anchor. Target equilibrium no longer matches grammar.",
+   "why": "Failure mode. Substrate detects: structural_target_vs_learned_target divergence > threshold. Correction: re-anchor or update grammar.",
+   "category": "failure_modes"
+  },
+  {
+   "name": "fail_mode_frustrated_Mt",
+   "definition": "Mt has persistent spin-glass frustration. No clean assignment exists; multiple shallow basins competing.",
+   "why": "Failure mode. Often signals incompatible commitments forced into one Mt. Correction: split into sub-Mts with coherent individual basins.",
+   "category": "failure_modes"
+  },
+  {
+   "name": "fail_mode_redundant_Mt",
+   "definition": "Two Mts with > 90% identical target equilibria. Coupling overlap > threshold.",
+   "why": "Failure mode. Wasted complexity. Correction: merge into single Mt, or sharpen distinguishing constraints.",
+   "category": "failure_modes"
+  },
+  {
+   "name": "fail_mode_sparse_Mt",
+   "definition": "Mt constrains few nodes; J nearly all zero; not engaged for many cycles.",
+   "why": "Failure mode. Mt either decorative or premature. Correction: expand (find missing couplings) or deprecate (lower β to 0).",
+   "category": "failure_modes"
+  },
+  {
+   "name": "fail_mode_conflicting_reflexes",
+   "definition": "Two different Mts have reflexes driving same node h_i in opposite directions, both with high β.",
+   "why": "Failure mode. Substrate stuck oscillating. Correction: explicit β reweighting (choose which Mt dominates) or restructure conflicting couplings.",
+   "category": "failure_modes"
+  },
+  {
+   "name": "correction_raise_plasticity",
+   "definition": "For frozen-should-adapt: temporarily raise update rate η for that Mt. Or unfreeze if substrate-level approval.",
+   "why": "Specific correction. Careful: raising plasticity on identity-protected Mts is meta-decision requiring substrate-level oversight (not local).",
+   "category": "corrections"
+  },
+  {
+   "name": "correction_re_anchor",
+   "definition": "For drifted Mt: reset J back toward grammar-derived values. Hebbian drift discarded.",
+   "why": "Specific correction. Returns Mt to structural anchor. Preserves substrate's foundational specification of what Mt means.",
+   "category": "corrections"
+  },
+  {
+   "name": "correction_split_Mt",
+   "definition": "For frustrated Mt: identify sub-clusters with high intra-J + low cross-J. Create child Mts for each cluster; original Mt dissolved or generalised.",
+   "why": "Specific correction. Resolves frustration by distributing incompatibilities across coherent sub-Mts.",
+   "category": "corrections"
+  },
+  {
+   "name": "correction_merge_Mts",
+   "definition": "For redundant Mts: union concept sets + average couplings + merge fields. Single Mt replaces both.",
+   "why": "Specific correction. Reduces complexity without losing information (since they were saying same thing).",
+   "category": "corrections"
+  },
+  {
+   "name": "correction_prune_Mt",
+   "definition": "For sparse Mt: lower β to 0 (no longer participating in effective H). Optionally remove entirely.",
+   "why": "Specific correction. Removes deadweight. Substrate's parsimony drive instantiated.",
+   "category": "corrections"
+  },
+  {
+   "name": "correction_beta_reweight",
+   "definition": "For conflicting reflexes: explicit substrate-level decision raises β of one Mt, lowers the other. Frame choice made deliberate.",
+   "why": "Specific correction. Resolves oscillation by making frame priority explicit. Architecture cortex assessment can drive.",
+   "category": "corrections"
+  },
+  {
+   "name": "self_improvement_loop",
+   "definition": "Periodic process: (1) monitor basin topology across Mts, (2) detect failure modes, (3) apply specific corrections, (4) verify improvement, (5) track substrate-level metrics.",
+   "why": "Mechanical foundation of substrate self-improvement. Closes the loop: substrate doesn't just have basins; it monitors + improves them.",
+   "category": "self_improvement_loop"
+  },
+  {
+   "name": "monitor_basin_topology",
+   "definition": "Per Mt: compute basin depth, distinctness from sibling Mts, coverage, frustration index, drift from grammar.",
+   "why": "Loop step 1. Substrate's audit_basin_topology operation. Standard observables of CAN networks.",
+   "category": "self_improvement_loop"
+  },
+  {
+   "name": "detect_failure_mode",
+   "definition": "Pattern-match observable signatures: frozen-should-adapt (high distance + frozen flag), drifted (high grammar-drift), frustrated (high frustration index), redundant (high overlap with sibling), sparse (low coverage), conflicting (opposing reflexes).",
+   "why": "Loop step 2. Each failure mode has a signature. Standard diagnostic pattern matching.",
+   "category": "self_improvement_loop"
+  },
+  {
+   "name": "apply_correction_per_mode",
+   "definition": "Lookup table: failure mode → correction. raise_plasticity, re_anchor, split, merge, prune, β_reweight.",
+   "why": "Loop step 3. Each detected failure has a specific correction. Substrate doesn't improvise; follows the catalog.",
+   "category": "self_improvement_loop"
+  },
+  {
+   "name": "verify_improvement",
+   "definition": "Re-audit basin topology after correction. Confirm targeted metric improved without harming others.",
+   "why": "Loop step 4. Without verification, corrections could make things worse. Re-audit + accept/revert.",
+   "category": "self_improvement_loop"
+  },
+  {
+   "name": "track_substrate_metrics",
+   "definition": "Substrate-level: total coherence, total coverage, identity-preservation index, average basin depth, frustration count.",
+   "why": "Loop step 5. Beyond per-Mt: substrate's overall health. Architecture cortex assessment IS this. Long-term trajectory.",
+   "category": "self_improvement_loop"
+  },
+  {
+   "name": "meta_monitor_is_self_improvement_loop",
+   "definition": "Substrate's existing meta_monitor process IS the monitor step of self-improvement. Now CAN-precise.",
+   "why": "Reinterpretation of existing feature. meta_monitor was detecting 'effort without payoff'; that's a failure-mode pattern. Now formal.",
+   "category": "connections_to_existing"
+  },
+  {
+   "name": "architecture_cortex_is_quality_audit",
+   "definition": "Substrate's existing architecture_cortex IS the audit + tracking step. Now extends to basin topology.",
+   "why": "Reinterpretation. architecture_cortex already audits substrate design quality; CAN extends with basin-topology measures.",
+   "category": "connections_to_existing"
+  },
+  {
+   "name": "DevelopmentCortex_is_strategy_layer",
+   "definition": "Substrate's existing DevelopmentCortex (cross-cortex meta-cognition) IS the strategic layer above the self-improvement loop.",
+   "why": "Reinterpretation. DevelopmentCortex reads cross-Mt state + adjusts. Now: it's the meta-controller deciding which corrections to prioritise.",
+   "category": "connections_to_existing"
+  },
+  {
+   "name": "feature_invention_is_Mt_birth",
+   "definition": "Substrate's existing feature_invention (manage_feature_invention rule) IS the 'add new Mt' correction. Or 'add new node to existing Mt'.",
+   "why": "Reinterpretation. Feature invention was already substrate's response to impasses. Now framed as basin-level response to frustration.",
+   "category": "connections_to_existing"
+  },
+  {
+   "name": "substrate_meta_capabilities_compose",
+   "definition": "meta_monitor + architecture_cortex + DevelopmentCortex + feature_invention compose into self-improvement loop. Existing pieces now coordinate.",
+   "why": "What this Mt does: makes existing capabilities coherent. Substrate already had the parts; now they have a unified theory.",
+   "category": "connections_to_existing"
+  },
+  {
+   "name": "improvement_drives_compose_into_objective",
+   "definition": "Drives (curiosity, coherence, stability, discrimination, coverage, parsimony) compose into substrate's objective function: maximise (coherence + coverage) - (frustration + redundancy).",
+   "why": "Substrate doesn't optimise external metric. Optimises internal architectural health. Different from RL agents.",
+   "category": "drives"
+  },
+  {
+   "name": "Mt_update_policy_attr",
+   "definition": "Architecturally: each Microtheory gains update_policy attr ∈ {frozen, adaptive, hybrid}. With sub-attrs: allow_Hebbian_J, allow_h_drift, allow_structural_update, allow_beta_change.",
+   "why": "Concrete schema. Substrate marks each Mt's mutability per dimension. Foundational: all forbidden. Domain: all allowed. Hybrid: mixed.",
+   "category": "architecture"
+  },
+  {
+   "name": "Mt_basin_quality_metrics_attr",
+   "definition": "Architecturally: each Microtheory tracks current basin_depth, distinctness, coverage, frustration, drift_from_anchor as attributes.",
+   "why": "Concrete schema. Substrate stores audit results per Mt. Updated each monitor cycle. Consumed by detect + correct steps.",
+   "category": "architecture"
+  },
+  {
+   "name": "self_improvement_loop_reflex",
+   "definition": "Architecturally: substrate-level reflex that periodically runs monitor → detect → correct → verify → track. Configurable cycle period.",
+   "why": "Concrete schema. The loop is itself a substrate process. Period chosen to balance responsiveness with stability.",
+   "category": "architecture"
+  },
+  {
+   "name": "failure_mode_detector_rule_set",
+   "definition": "Architecturally: graph-resident rules, one per failure mode. Each detects + flags + triggers specific correction.",
+   "why": "Concrete schema. Substrate's existing rule system encodes failure mode detectors. Easy to add new failure modes via new rules.",
+   "category": "architecture"
+  },
+  {
+   "name": "correction_operations_module",
+   "definition": "Architecturally: operations exposed — raise_plasticity, re_anchor, split_Mt, merge_Mts, prune_Mt, beta_reweight. Each is a graph mutation.",
+   "why": "Concrete schema. Substrate's tooling for self-modification. Each operation has audit trail. Substrate sees its own history of changes.",
+   "category": "architecture"
+  }
+ ],
+ "rules": [
+  {
+   "name": "self_improvement_is_governed_not_arbitrary",
+   "if": [
+    "substrate updates its basin topology"
+   ],
+   "then": [
+    "it must be driven by named drives + failure modes, not arbitrary drift"
+   ],
+   "why": "Foundation. Arbitrary updates = drift = identity loss. Governed updates = self-improvement.",
+   "soundness_category": "referential_transparency"
+  },
+  {
+   "name": "Hebbian_updates_only_in_adaptive_Mts",
+   "if": [
+    "any Mt accumulates genuine evidence (h-drift)"
+   ],
+   "then": [
+    "co-activation updates J, and the basin hops when accumulated evidence-bits cross the (evidence-set) barrier — for EVERY Mt, foundational or domain; none exempt"
+   ],
+   "why": "Protection removed. No Mt has updates disabled. Foundations resist via DEPTH (real support), not via a disabled flag. Corrigibility everywhere.",
+   "soundness_category": "referential_transparency"
+  },
+  {
+   "name": "drift_past_grammar_triggers_re_anchor",
+   "if": [
+    "adaptive Mt's J drifted past structural anchor by > threshold"
+   ],
+   "then": [
+    "re-anchor: reset J toward grammar-derived values"
+   ],
+   "why": "Specific correction. Hebbian drift can move Mt away from its substrate-given meaning. Re-anchor returns to substrate's specification.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "persistent_frustration_triggers_split",
+   "if": [
+    "Mt has persistent spin-glass frustration above threshold"
+   ],
+   "then": [
+    "split into sub-Mts whose individual basins are coherent"
+   ],
+   "why": "Specific correction. Forced single-Mt-for-incompatible-commitments = frustration. Splitting resolves cleanly.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "redundancy_triggers_merge",
+   "if": [
+    "sibling Mts have > threshold basin overlap"
+   ],
+   "then": [
+    "merge into single Mt"
+   ],
+   "why": "Specific correction. Parsimony drive. Doesn't lose info — they were saying the same thing.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "sparse_inactive_Mt_triggers_prune",
+   "if": [
+    "Mt has low coverage + low recent activation"
+   ],
+   "then": [
+    "deprecate: β → 0, optionally remove"
+   ],
+   "why": "Specific correction. Removes deadweight. Reversible — substrate can resurrect if Mt becomes relevant again.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "conflicting_reflexes_trigger_beta_decision",
+   "if": [
+    "two Mts drive same nodes in opposite directions with similar β"
+   ],
+   "then": [
+    "architecture cortex makes explicit β priority decision"
+   ],
+   "why": "Specific correction. Substrate doesn't sit in unresolved conflict; it makes the frame choice explicit. Foundation of decisive self-improvement.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "frozen_foundational_Mts_preserve_identity",
+   "if": [
+    "Mt is in the foundational set (Axiom 0, grounding_theory, CAN, mt_target_equilibria, etc.)"
+   ],
+   "then": [
+    "it is a DEEP basin (high but finite β from genuine support) with updates + basin-hop ENABLED — never exempt; identity is preserved by being WELL-SUPPORTED, not shielded"
+   ],
+   "why": "Protection is failure. Identity preserved by support, not protection. Alignment-as-protection is impossible (corrigible-incorrigibility); safety = correctness + corrigibility.",
+   "soundness_category": "referential_transparency"
+  },
+  {
+   "name": "evidence_changes_h_not_directly_sigma",
+   "if": [
+    "world produces evidence on node i"
+   ],
+   "then": [
+    "h_i updates; σ_i responds via dynamics"
+   ],
+   "why": "Mechanism for belief update. Evidence doesn't force state — it shifts field; field shift drives state via relaxation. Network's J pull back if incoherent.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "Hebbian_strengthens_co_active",
+   "if": [
+    "nodes i and j repeatedly co-active in adaptive Mt"
+   ],
+   "then": [
+    "J_ij increases (Hebbian)"
+   ],
+   "why": "Standard learning rule. Implements co-occurrence learning. Substrate accumulates conviction in confirmed patterns.",
+   "soundness_category": "algebraic_law"
+  },
+  {
+   "name": "drives_compose_into_objective",
+   "if": [
+    "substrate self-improves"
+   ],
+   "then": [
+    "it maximises (coherence + coverage) - (frustration + redundancy)"
+   ],
+   "why": "Substrate's internal objective. Architecturally measurable. Different from RL external reward; substrate optimises own architecture quality.",
+   "soundness_category": "algebraic_law"
+  },
+  {
+   "name": "verification_after_correction",
+   "if": [
+    "correction applied"
+   ],
+   "then": [
+    "re-audit; if metrics worsened, revert"
+   ],
+   "why": "Safety against bad corrections. Without verification, corrections could be net-negative. Architecture cortex performs.",
+   "soundness_category": "referential_transparency"
+  },
+  {
+   "name": "existing_substrate_features_are_components",
+   "if": [
+    "substrate has meta_monitor + architecture_cortex + DevelopmentCortex + feature_invention"
+   ],
+   "then": [
+    "they compose into self-improvement loop"
+   ],
+   "why": "Existing capabilities now coherent. Substrate had the pieces; this Mt makes them function as a unified loop.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "monitoring_cycle_must_be_periodic",
+   "if": [
+    "substrate runs continuously"
+   ],
+   "then": [
+    "self-improvement loop must execute periodically (not just on impasse)"
+   ],
+   "why": "Proactive vs reactive. Reactive: only fixes when something breaks. Proactive: continuously improves. Substrate's preferred mode.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "identity_protection_overrides_local_evidence",
+   "if": [
+    "local evidence suggests changing foundational Mt"
+   ],
+   "then": [
+    "substrate refuses the update; logs the tension for higher-level review"
+   ],
+   "why": "Alignment under self-modification. Substrate's foundations are not subject to local Hebbian erosion. Higher-level review = deliberate substrate-design decision, not training.",
+   "soundness_category": "referential_transparency"
+  }
+ ],
+ "exclusions": [],
+ "parent_mt": "mt_target_equilibria",
+ "relations": [
+  {
+   "src": "self_improvement_dynamics",
+   "edge": "genlMt",
+   "tgt": "compiler_theory"
+  }
+ ]
+}

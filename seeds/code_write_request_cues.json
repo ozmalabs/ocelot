@@ -1,0 +1,33 @@
+{
+ "id": "code_write_request_cues",
+ "version": "1.1.0",
+ "depends_on": [],
+ "capability_keys": [
+  "code_write_request_recognition"
+ ],
+ "description": "CODE-4 item 3 (the instruction_route / gap_awareness cue precedent): code_writing.looks_like_write_request's closed Python word sets (_WRITE_VERBS / _FUNCTION_NOUNS) migrated to HELD Concept nodes, each carrying code_request_role='write_verb'|'function_noun'. The classifier stays the same thin mechanical I/O-boundary check (a write-verb word AND a function/code word present in the message -- CLAUDE.md's carve-out), but the WORD SETS are now graph data the agent can widen via teach() (teach(agent, 'Concept', {name:'author', code_request_role:'write_verb'}, category='code_write_request_cues')) -- a new request phrasing is LEARNED, never a Python edit. PARITY: this seed's initial vocabulary is byte-identical to the retired Python sets, and code_writing.looks_like_write_request falls back to those same closed sets when NO cue Concepts are held (a minimal CORE_SEEDS boot without this seed classifies identically). WHICH construction a recognised request wants remains ShapeDecode's decision, downstream, unchanged.\n\nWHOLE-CURRICULUM WAVE 2 (v1.1.0) -- IMPERATIVE-LEAD TIGHTENING. The bag-of-words co-occurrence check alone (a write-verb word AND a function/code word ANYWHERE in the message) floods on a real book's running prose: 'Functions can make a program smaller' or 'make sure the code is right' both trivially co-occur 'make' + 'code'/'function' with no imperative structure at all (measured on Think Python 2e: 63 of 124 filed code_write gaps were prose mentions, not exercises). The fix ADDS a structural gate (code_writing._has_imperative_write_lead), never removes the coarse pre-filter: a write-verb must HEAD its own clause -- either the very first word of the (bullet-stripped) message, or the first word reachable after a recognised exercise lead-in phrase (Concept{code_request_role:'imperative_lead_phrase'} below) -- with a function/method noun nearby. Two write-verb Concepts ('give','make') are marked `imperative_lead: 0.0` -- they remain valid for the coarse co-occurrence pre-filter and for _content_tokens' stopword-drop, but are EXCLUDED from heading a bare imperative (no genuine Think Python exercise ever leads with 'Make a function...'; 'make'/'give' mid-sentence is exactly the flood source). Every OTHER write-verb Concept (seeded or taught) defaults imperative-lead-eligible (attr absent == eligible) -- a newly taught verb (e.g. 'author') is eligible unless a teacher explicitly marks it otherwise, so the existing 'taught phrasing routes' parity (test_code_growth_migrated.py) is unaffected.",
+ "microtheory": {
+  "name": "code_write_request_cues",
+  "description": "the write-request boundary classifier's word sets as teachable held Concepts"
+ },
+ "nodes": [
+  {"local_id": 1, "type": "Concept", "attrs": {"name": "write", "code_request_role": "write_verb", "description": "code-write request cue: verb"}},
+  {"local_id": 2, "type": "Concept", "attrs": {"name": "create", "code_request_role": "write_verb", "description": "code-write request cue: verb"}},
+  {"local_id": 3, "type": "Concept", "attrs": {"name": "compose", "code_request_role": "write_verb", "description": "code-write request cue: verb"}},
+  {"local_id": 4, "type": "Concept", "attrs": {"name": "implement", "code_request_role": "write_verb", "description": "code-write request cue: verb"}},
+  {"local_id": 5, "type": "Concept", "attrs": {"name": "give", "code_request_role": "write_verb", "description": "code-write request cue: verb", "imperative_lead": 0.0}},
+  {"local_id": 6, "type": "Concept", "attrs": {"name": "make", "code_request_role": "write_verb", "description": "code-write request cue: verb", "imperative_lead": 0.0}},
+  {"local_id": 7, "type": "Concept", "attrs": {"name": "function", "code_request_role": "function_noun", "description": "code-write request cue: function/code noun"}},
+  {"local_id": 8, "type": "Concept", "attrs": {"name": "code", "code_request_role": "function_noun", "description": "code-write request cue: function/code noun"}},
+  {"local_id": 9, "type": "Concept", "attrs": {"name": "def", "code_request_role": "function_noun", "description": "code-write request cue: function/code noun"}},
+  {"local_id": 10, "type": "Concept", "attrs": {"name": "method", "code_request_role": "function_noun", "description": "code-write request cue: function/code noun"}},
+  {"local_id": 11, "type": "Concept", "attrs": {"name": "as an exercise,", "code_request_role": "imperative_lead_phrase", "description": "code-write request cue: exercise lead-in phrase"}},
+  {"local_id": 12, "type": "Concept", "attrs": {"name": "as another exercise,", "code_request_role": "imperative_lead_phrase", "description": "code-write request cue: exercise lead-in phrase"}},
+  {"local_id": 13, "type": "Concept", "attrs": {"name": "then", "code_request_role": "imperative_lead_phrase", "description": "code-write request cue: exercise lead-in phrase"}},
+  {"local_id": 14, "type": "Concept", "attrs": {"name": "you should", "code_request_role": "imperative_lead_phrase", "description": "code-write request cue: exercise lead-in phrase"}},
+  {"local_id": 15, "type": "Concept", "attrs": {"name": "you might want to", "code_request_role": "imperative_lead_phrase", "description": "code-write request cue: exercise lead-in phrase"}},
+  {"local_id": 16, "type": "Concept", "attrs": {"name": "you may want to", "code_request_role": "imperative_lead_phrase", "description": "code-write request cue: exercise lead-in phrase"}}
+ ],
+ "edges": [],
+ "productions": []
+}

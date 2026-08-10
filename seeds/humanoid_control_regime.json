@@ -1,0 +1,1156 @@
+{
+ "id": "humanoid_control_regime",
+ "version": "1.0.0",
+ "depends_on": [
+  "humanoid_adaptation",
+  "control_regime_escalation"
+ ],
+ "area": "humanoid_sensorimotor_adaptation",
+ "latency_class": "hard_realtime",
+ "description": "Humanoid support/progress evidence and gait-rung semantics for generic control-regime escalation.",
+ "nodes": [],
+ "edges": [],
+ "productions": [
+  {
+   "provenance": "humanoid_control_regime:episode_regime",
+   "src": {
+    "type": "HumanoidEpisode",
+    "var": "episode"
+   },
+   "edge_type": "has_humanoid_control_regime",
+   "tgt": {
+    "type": "EmbodiedMotorProgramEpisode",
+    "var": "regime"
+   }
+  }
+ ],
+ "rules": [
+  {
+   "name": "hcr_bridge_note_regime_evidence_absence",
+   "area": "humanoid_sensorimotor_adaptation",
+   "latency_class": "hard_realtime",
+   "order": -51,
+   "batch": false,
+   "match": [
+    [
+     "agent",
+     "has_humanoid_episode",
+     "episode"
+    ],
+    [
+     "episode",
+     "has_humanoid_control_regime",
+     "regime"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "regime"
+         },
+         "key": "regime_monitor_enabled"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "regime"
+         },
+         "key": "regime_ordinal"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "regime"
+         },
+         "key": "regime_max_ordinal"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Minus",
+       "a": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "regime"
+          },
+          "key": "regime_clock_seq"
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       },
+       "b": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "regime"
+          },
+          "key": "regime_evidence_seq"
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       }
+      },
+      "b": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "regime"
+         },
+         "key": "regime_evidence_horizon_actions"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Gt",
+       "a": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "regime"
+          },
+          "key": "regime_escalation_requested"
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       },
+       "b": {
+        "type": "Lit",
+        "value": 0.5
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "impasse",
+     "ControlRegimeImpasse",
+     {
+      "kind": "evidence_absence",
+      "at_clock_seq": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "regime"
+          },
+          "key": "regime_clock_seq"
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       }
+      },
+      "from_ordinal": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "regime"
+          },
+          "key": "regime_ordinal"
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       }
+      },
+      "evidence_gap_actions": {
+       "__term__": {
+        "type": "Minus",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "regime"
+           },
+           "key": "regime_clock_seq"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        },
+        "b": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "regime"
+           },
+           "key": "regime_evidence_seq"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        }
+       }
+      },
+      "resolved": 0.0
+     }
+    ],
+    [
+     "add_edge",
+     "agent",
+     "has_control_regime_impasse",
+     "impasse"
+    ],
+    [
+     "add_edge",
+     "impasse",
+     "about_control_regime",
+     "regime"
+    ],
+    [
+     "set_attr",
+     "regime",
+     "regime_escalation_requested",
+     1.0
+    ]
+   ]
+  },
+  {
+   "name": "hcr_bridge_escalate_regime",
+   "area": "humanoid_sensorimotor_adaptation",
+   "latency_class": "hard_realtime",
+   "order": -49,
+   "batch": false,
+   "match": [
+    [
+     "agent",
+     "has_humanoid_episode",
+     "episode"
+    ],
+    [
+     "episode",
+     "has_humanoid_control_regime",
+     "regime"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "regime"
+         },
+         "key": "regime_monitor_enabled"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "regime"
+         },
+         "key": "regime_escalation_requested"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "regime"
+         },
+         "key": "regime_ordinal"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "regime"
+         },
+         "key": "regime_max_ordinal"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "regime",
+     "regime_ordinal",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "regime"
+           },
+           "key": "regime_ordinal"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        },
+        {
+         "type": "Lit",
+         "value": 1.0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "regime",
+     "regime_escalation_count",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "regime"
+           },
+           "key": "regime_escalation_count"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        },
+        {
+         "type": "Lit",
+         "value": 1.0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "regime",
+     "regime_last_escalation_seq",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "regime"
+         },
+         "key": "regime_clock_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "regime",
+     "regime_evidence_seq",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "regime"
+         },
+         "key": "regime_clock_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "regime",
+     "regime_escalation_requested",
+     0.0
+    ]
+   ]
+  },
+  {
+   "name": "hcr_note_support_or_progress_regime_evidence",
+   "area": "humanoid_sensorimotor_adaptation",
+   "latency_class": "hard_realtime",
+   "order": -55,
+   "batch": false,
+   "match": [
+    [
+     "agent",
+     "has_humanoid_episode",
+     "episode"
+    ],
+    [
+     "episode",
+     "has_humanoid_control_regime",
+     "regime"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "episode"
+       },
+       "key": "phase"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "locomotion"
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "regime"
+         },
+         "key": "regime_monitor_enabled"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Gt",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "episode"
+           },
+           "key": "locomotor_cycle_count"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        },
+        "b": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "regime"
+           },
+           "key": "regime_last_cycle_count"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        }
+       },
+       {
+        "type": "Gt",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "episode"
+           },
+           "key": "maximum_directed_progress"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        },
+        "b": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "regime"
+           },
+           "key": "regime_best_progress"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "regime",
+     "regime_evidence_seq",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "regime"
+         },
+         "key": "regime_clock_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "regime",
+     "regime_last_cycle_count",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "episode"
+         },
+         "key": "locomotor_cycle_count"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "regime",
+     "regime_best_progress",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "episode"
+         },
+         "key": "maximum_directed_progress"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "hcr_adopt_walking_after_evidence_absence",
+   "area": "humanoid_sensorimotor_adaptation",
+   "latency_class": "hard_realtime",
+   "order": 1,
+   "batch": false,
+   "match": [
+    [
+     "agent",
+     "has_humanoid_policy",
+     "policy"
+    ],
+    [
+     "agent",
+     "has_humanoid_episode",
+     "episode"
+    ],
+    [
+     "episode",
+     "has_humanoid_control_regime",
+     "control"
+    ],
+    [
+     "episode",
+     "evaluates_humanoid_residual_regime",
+     "old"
+    ],
+    [
+     "policy",
+     "has_humanoid_residual_regime",
+     "walking"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "control"
+         },
+         "key": "regime_ordinal"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     },
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Lt",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "episode"
+           },
+           "key": "regime_applied_ordinal"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Eq",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "episode"
+            },
+            "key": "active_gait_attractor_ordinal"
+           },
+           {
+            "type": "Lit",
+            "value": 0.0
+           }
+          ]
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        }
+       },
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Eq",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "episode"
+            },
+            "key": "active_residual_regime_ordinal"
+           },
+           {
+            "type": "Lit",
+            "value": 0.0
+           }
+          ]
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        }
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "walking"
+         },
+         "key": "ordinal"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "del_edge",
+     "episode",
+     "evaluates_humanoid_residual_regime",
+     "old"
+    ],
+    [
+     "add_edge",
+     "episode",
+     "evaluates_humanoid_residual_regime",
+     "walking"
+    ],
+    [
+     "set_attr",
+     "episode",
+     "active_gait_attractor_ordinal",
+     0.0
+    ],
+    [
+     "set_attr",
+     "episode",
+     "active_residual_regime_ordinal",
+     0.0
+    ],
+    [
+     "set_attr",
+     "episode",
+     "residual_regime_window_sample_count",
+     0.0
+    ],
+    [
+     "set_attr",
+     "episode",
+     "residual_regime_window_complete",
+     0.0
+    ],
+    [
+     "set_attr",
+     "episode",
+     "render_first_suspended",
+     1.0
+    ],
+    [
+     "set_attr",
+     "episode",
+     "async_trust_epoch",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "control"
+         },
+         "key": "regime_clock_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "episode",
+     "regime_applied_ordinal",
+     1.0
+    ]
+   ]
+  },
+  {
+   "name": "hcr_bootstrap_rekick_after_walking_impasse",
+   "area": "humanoid_sensorimotor_adaptation",
+   "latency_class": "hard_realtime",
+   "order": 1,
+   "batch": false,
+   "match": [
+    [
+     "agent",
+     "has_humanoid_episode",
+     "episode"
+    ],
+    [
+     "episode",
+     "has_humanoid_control_regime",
+     "control"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "control"
+         },
+         "key": "regime_ordinal"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 2.0
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "episode"
+         },
+         "key": "regime_applied_ordinal"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 2.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "episode",
+     "recovery_mode",
+     1.0
+    ],
+    [
+     "set_attr",
+     "episode",
+     "online_phase_learning",
+     1.0
+    ],
+    [
+     "set_attr",
+     "episode",
+     "gait_surprise_streak",
+     0.0
+    ],
+    [
+     "set_attr",
+     "episode",
+     "locomotor_prior_reset_seq",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "episode"
+           },
+           "key": "locomotor_prior_reset_seq"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        },
+        {
+         "type": "Lit",
+         "value": 1.0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "episode",
+     "render_first_suspended",
+     1.0
+    ],
+    [
+     "set_attr",
+     "episode",
+     "async_trust_epoch",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "control"
+         },
+         "key": "regime_clock_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "episode",
+     "regime_applied_ordinal",
+     2.0
+    ]
+   ]
+  }
+ ]
+}

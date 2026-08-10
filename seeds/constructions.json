@@ -1,0 +1,40 @@
+{
+  "_doc": "TAUGHT form->meaning constructions (construction grammar). Each is graph DATA pairing a surface PATTERN (literal tokens + {slots}) with a MEANING template that binds the slots onto a seeded communication concept. A GENERAL matcher applies whichever constructions are present — adding a construction is adding data, not code. The first family is the COPULA / EQUATIVE mapping onto the seeded `relation` concept (the N of Y = X), realized in the existing {event,agent,patient} frame so the normal QA matches it: event=<relation>, agent=<value>, patient=<owner>. This is the language layer the concept seed was the target for.",
+  "constructions": [
+    {"name": "equative_question", "language": "en", "concept": "relation",
+     "pattern": ["what", "is", "the", "{relation}", "of", "{owner}"],
+     "meaning": {"event": "{relation}", "agent": "?WHAT", "patient": "{owner}",
+                 "speech_act": "question", "construction": "relation"}},
+    {"name": "equative_conj_value_first", "language": "en", "concept": "conjunction",
+     "pattern": ["{value}", "is", "the", "{rel1}", "and", "{rel2}", "of", "{owner}"],
+     "meaning": [
+       {"event": "{rel1}", "agent": "{value}", "patient": "{owner}", "tense": "present", "construction": "relation"},
+       {"event": "{rel2}", "agent": "{value}", "patient": "{owner}", "tense": "present", "construction": "relation"}]},
+    {"name": "equative_conj_relation_first", "language": "en", "concept": "conjunction",
+     "pattern": ["the", "{rel1}", "and", "{rel2}", "of", "{owner}", "is", "{value}"],
+     "meaning": [
+       {"event": "{rel1}", "agent": "{value}", "patient": "{owner}", "tense": "present", "construction": "relation"},
+       {"event": "{rel2}", "agent": "{value}", "patient": "{owner}", "tense": "present", "construction": "relation"}]},
+    {"name": "equative_value_first", "language": "en", "concept": "relation",
+     "pattern": ["{value}", "is", "the", "{relation}", "of", "{owner}"],
+     "meaning": {"event": "{relation}", "agent": "{value}", "patient": "{owner}",
+                 "tense": "present", "construction": "relation"}},
+    {"name": "equative_relation_first", "language": "en", "concept": "relation",
+     "pattern": ["the", "{relation}", "of", "{owner}", "is", "{value}"],
+     "meaning": {"event": "{relation}", "agent": "{value}", "patient": "{owner}",
+                 "tense": "present", "construction": "relation"}},
+
+    {"_doc": "QUESTION constructions for a research-math QUESTION BANK (HLE). A question asks for a TARGET OPERATION applied to an OBJECT (and its parameters): the IMPERATIVE 'Compute the <target> of <object>' / 'Compute <target>' research register, plus the interrogative 'What is the <relation> of <owner>' already above. They realize the SAME {event,agent,patient} relation frame the equative family uses (event=the target operation = the {relation}; patient=the object = the {owner}; agent=?WHAT the value asked for) so the comprehension front reads the target+object off the held frame uniformly. A thin target-op lexicon (domains/comprehend_question.py over graph data) then maps the comprehended relation-phrase -> the formal target op + the object -> its parameters. Adding a question SHAPE = adding a construction here, not code; a relation-phrase / object-shape the lexicon does not cover is the comprehension frontier (honest).",
+     "name_": "compute_imperative_of"},
+    {"name": "compute_target_of_object", "language": "en", "concept": "relation",
+     "pattern": ["compute", "the", "{relation}", "of", "{owner}"],
+     "meaning": {"event": "{relation}", "agent": "?WHAT", "patient": "{owner}",
+                 "speech_act": "question", "construction": "relation"}},
+    {"name": "compute_target", "language": "en", "concept": "relation",
+     "pattern": ["compute", "{relation}"],
+     "meaning": {"event": "{relation}", "agent": "?WHAT", "patient": "?BOUND",
+                 "speech_act": "question", "construction": "relation"}},
+
+    {"_doc": "DEFINITIONS are NO LONGER parsed by per-surface-form constructions. They are parsed by the agent's HELD genus-differentia STRUCTURE (the `definition` communication-concept in seeds/communication_concepts.json — a linguistic universal carried as graph data: definiendum / genus / differentia / preface + the markers). ONE general genus-extraction (domains/construction_grammar.extract_definition) REALIZES that structure over ANY definitional sentence — strip a leading PREFACE adjunct ('In <field>,', 'roughly speaking,', 'formally,'), find the copula 'is a/an/the', take the HEAD NOUN of the genus noun phrase up to a DIFFERENTIA marker (that/which/used/with/for/of/whose/where/,), return {term, genus, differentia, preface}. read_and_ground's COMPREHEND step calls that extraction (replacing the ~25 per-form definitional constructions that used to live here). A sentence with no extractable genus (no copula / a pronoun-only predicate) returns None — un-comprehended, the honest remaining limit. The EQUATIVE / RELATION constructions above ('what is the N of Y', 'X is the N of Y') stay: they map a QUESTION/assertion onto the `relation` concept's QA frame, a different job from definitional GROUNDING."}
+  ]
+}

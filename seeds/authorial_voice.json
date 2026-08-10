@@ -1,0 +1,59 @@
+{
+  "id": "authorial_voice",
+  "version": "1.0.0",
+  "depends_on": [
+    "text_analysis"
+  ],
+  "description": "The jabberwock defined VOICE as the operator that generates a speaker analysis-paths \u2014 the invariant left when you quotient out the passage. Built over many passages as a centroid+spread (figure-histogram, stance baseline, opposition-habit); an unsigned passage is attributed to the nearest voice, with separation (intra<inter) the test of a good model.",
+  "microtheory": {
+    "name": "authorial_voice",
+    "description": "order-N speaker/authorial voice"
+  },
+  "nodes": [
+    {
+      "local_id": 1,
+      "type": "Concept",
+      "attrs": {
+        "name": "authorial_voice",
+        "description": "The order-N operation ABOVE analysis: a figure is a displacement vector, an analysis is the path those vectors trace through one passage, and a VOICE is the OPERATOR that generates paths \u2014 the invariant transform a speaker applies to whatever topic they touch. It is one order higher because it is what remains when you QUOTIENT OUT the passage: factor out aboutness and the consistent manner of displacing is the voice. Analysis: where does this passage go; voice: how does this speaker always bend meaning, regardless of where they start."
+      }
+    },
+    {
+      "local_id": 2,
+      "type": "Concept",
+      "attrs": {
+        "name": "voice_signature",
+        "description": "The output: a Voice node = a CENTROID over many of a speaker analyses \u2014 figure-preference histogram, stance/valence baseline, register vector, displacement-shape signature (magnitude/curvature), and opposition-habit \u2014 kept with its SPREAD (a voice is partly its consistency: covariances not means), linked by voiced_by edges to its evidence passages."
+      }
+    },
+    {
+      "local_id": 3,
+      "type": "Principle",
+      "attrs": {
+        "name": "voice_attribution",
+        "head": "voice",
+        "body": "attribute an unsigned passage by running its analysis, projecting it into the same axes, and taking the nearest Voice centroid weighted by that voice spread (Mahalanobis); emit only if it beats the next-best by a margin, else mint a candidate new voice rather than force a fit"
+      }
+    },
+    {
+      "local_id": 4,
+      "type": "Principle",
+      "attrs": {
+        "name": "voice_predicts",
+        "head": "voice",
+        "body": "a good voice-model predicts: held-out passages by the same speaker land inside its spread (low intra-voice distance) while different speakers separate cleanly (high inter-voice distance)"
+      }
+    },
+    {
+      "local_id": 5,
+      "type": "Principle",
+      "attrs": {
+        "name": "voice_is_generative",
+        "head": "voice",
+        "body": "the sharper test is generative \u2014 a good voice lets you predict the figure a speaker will reach for on a new topic; parody is the proof: displace a neutral passage along the voice signature and it should read as that speaker"
+      }
+    }
+  ],
+  "edges": [],
+  "rules": []
+}

@@ -1,0 +1,171 @@
+{
+ "id": "conceptualizer",
+ "version": "1.0.0",
+ "depends_on": [],
+ "description": "PHASE 1 of the CONCEPTUALIZER (Levelt's conceptualizer->formulator; Searle's illocutionary force + perlocutionary effect; Grice/Relevance: meaning IS the recoverable intention; Clark: audience design over common ground) -- the formation-of-intent layer the jabberwock currently skips (it jumps comprehend->produce with no formed intent). This seed carries ONLY graph-resident DATA the jabberwock's own composer-authored rules (domains/reflective_faculty.py's _compose_conceptualize_rule, dispatched via ground_concern exactly like _compose_communicate_rule/_compose_control_rule) read at match time -- it mints no Rule nodes itself, per the established Python-composer tier (served_by:'python', the SAME tier _compose_communicate_rule/_compose_construction_rule/_compose_attention_rule already occupy; the heavier graph-resident meta-rule tier -- composer_audience_produce_graph.json's Rule-that-mints-Rules shape -- was judged too large for phase 1 and is left for a future migration, exactly as CLAUDE.md's own worked example permits: 'If full composer-authoring is too big for phase 1, author the rules as SEED DATA... but the force/goal/focus decisions live in the RULES, never in Python'). TWO NEW RelationCue entries (local_id 6 'form_communicative_intent' head 'form', local_id 7 'shape_message_by_residual' head 'shape') + TWO NEW ComposerCue entries (local_id 8/9, both -> composer 'conceptualize', priority 24) route a 'form INTENT before UTTERANCE' / 'shape MESSAGE by RESIDUAL' concern to the new composer -- checked against every existing RelationCue keyword and ComposerCue relation_head (none is 'form' or 'shape' or a substring of the two-word residual text 'form shape'): a genuine wall before this seed loads (tests/test_conceptualizer.py's test_wall_before_conceptualizer_seed proves it), not a re-label. THE FORCE CODEBOOK (local_id 0-5, a ForceCodebookHub + 5 ForceTemplate nodes: inform/answer/reassure/request/warn -> Searle force class {assertive,expressive,directive} + a perlocutionary_goal template) is the graph-resident vocabulary the jabberwock-authored form_intent_<tag> rule JOINS against (match hub-has_template->ft, where Eq(Goal.force_kind, ft.kind)) to SELECT which force/perlocutionary_goal a communicative Goal carries -- the SELECTION is a rule-engine Eq-join over held data, never a Python if/elif (domains/conceptualizer.py, the marshal-only host adapter, only ever wires a communicative Goal to the ONE hub node -- the same edge every time, no per-instance choice -- and reads the minted CommunicativeIntent/MessageShape back out). PHASE 2 (local_id 10-13) adds the SELF-MONITOR (Levelt's internal loop -- imagine the utterance's reception and reground before committing): TWO new RelationCue/ComposerCue entries ('monitor' head -> request_monitor_<tag>; 'commit' head -> commit_if_recoverable_<tag> + revise_if_not_recoverable_<tag>, all authored by the SAME '_compose_conceptualize_rule' composer builder, same tier, same idempotency discipline) route a 'monitor UTTERANCE before COMMIT' / 'commit UTTERANCE if RECOVERABLE' concern here -- checked against every existing RelationCue keyword and ComposerCue relation_head (none is 'monitor' or 'commit'): a genuine wall before this extension (tests/test_conceptualizer_monitor.py's wall test proves it). The verdict of WHETHER the formulated utterance's intended content is recoverable by the audience (imagined reception: decode the utterance via domains.language.comprehend -- the agent's OWN comprehension running on its OWN production, the textbook Levelt-monitor shape -- union a FRESHLY regrounded audience credit via audience_driven_production.audience_model/residual_vs_audience, called again against the Interlocutor node's CURRENT attrs so a stale/corrected belief is caught) is computed by domains/conceptualizer.py's scan_and_monitor (mechanical Python glue, the SAME justification tier as scan_and_conceptualize) and written onto a Verdict{recoverable, perlocutionary_goal, missing} node; the RULE ENGINE then branches on that precomputed boolean via a plain Eq-test (commit_if_recoverable_<tag> mints Committed{utterance,...} -- the commitment gate, nothing is read as 'the' utterance until this fires; revise_if_not_recoverable_<tag> mints a FRESH MessageShapeRequest for the same intent, which scan_and_conceptualize reprocesses against the now-current audience state, and request_monitor_<tag> re-fires on the new MessageShape, re-monitoring) -- the DECISION never lives in Python, only the set-algebra computation of the boolean does, exactly mirroring phase 1's split.",
+ "nodes": [
+  {
+   "local_id": 0,
+   "type": "ForceCodebookHub",
+   "attrs": {
+    "id": "searle_force_codebook"
+   }
+  },
+  {
+   "local_id": 1,
+   "type": "ForceTemplate",
+   "attrs": {
+    "kind": "inform",
+    "force": "assertive",
+    "perlocutionary_goal": "hearer_knows"
+   }
+  },
+  {
+   "local_id": 2,
+   "type": "ForceTemplate",
+   "attrs": {
+    "kind": "answer",
+    "force": "assertive",
+    "perlocutionary_goal": "hearer_knows"
+   }
+  },
+  {
+   "local_id": 3,
+   "type": "ForceTemplate",
+   "attrs": {
+    "kind": "reassure",
+    "force": "expressive",
+    "perlocutionary_goal": "hearer_reassured"
+   }
+  },
+  {
+   "local_id": 4,
+   "type": "ForceTemplate",
+   "attrs": {
+    "kind": "request",
+    "force": "directive",
+    "perlocutionary_goal": "hearer_does"
+   }
+  },
+  {
+   "local_id": 5,
+   "type": "ForceTemplate",
+   "attrs": {
+    "kind": "warn",
+    "force": "directive",
+    "perlocutionary_goal": "hearer_avoids"
+   }
+  },
+  {
+   "local_id": 6,
+   "type": "RelationCue",
+   "attrs": {
+    "name": "form_communicative_intent",
+    "keywords": [
+     "form",
+     "form a communicative intent",
+     "form an intent before speaking",
+     "form the intent",
+     "conceptualizer",
+     "illocutionary force",
+     "force and perlocutionary goal",
+     "formation of intent precedes the utterance"
+    ],
+    "relation": "[\"form\", \"INTENT\", \"before\", \"UTTERANCE\"]"
+   }
+  },
+  {
+   "local_id": 7,
+   "type": "RelationCue",
+   "attrs": {
+    "name": "shape_message_by_residual",
+    "keywords": [
+     "shape",
+     "shape the message",
+     "shape it for the audience",
+     "message shape",
+     "residual vs audience",
+     "focus and ground",
+     "shape it before formulating"
+    ],
+    "relation": "[\"shape\", \"MESSAGE\", \"by\", \"RESIDUAL\"]"
+   }
+  },
+  {
+   "local_id": 8,
+   "type": "ComposerCue",
+   "attrs": {
+    "relation_head": "form",
+    "composer": "conceptualize",
+    "priority": 24
+   }
+  },
+  {
+   "local_id": 9,
+   "type": "ComposerCue",
+   "attrs": {
+    "relation_head": "shape",
+    "composer": "conceptualize",
+    "priority": 24
+   }
+  },
+  {
+   "local_id": 10,
+   "type": "RelationCue",
+   "attrs": {
+    "name": "monitor_before_commit",
+    "keywords": [
+     "monitor",
+     "monitor before committing",
+     "monitor the utterance",
+     "imagine reception",
+     "self-monitor",
+     "Levelt monitor",
+     "monitor before speaking"
+    ],
+    "relation": "[\"monitor\", \"UTTERANCE\", \"before\", \"COMMIT\"]"
+   }
+  },
+  {
+   "local_id": 11,
+   "type": "RelationCue",
+   "attrs": {
+    "name": "commit_if_recoverable",
+    "keywords": [
+     "commit",
+     "commit if recoverable",
+     "commit the utterance",
+     "commitment gate",
+     "commit only when recoverable"
+    ],
+    "relation": "[\"commit\", \"UTTERANCE\", \"if\", \"RECOVERABLE\"]"
+   }
+  },
+  {
+   "local_id": 12,
+   "type": "ComposerCue",
+   "attrs": {
+    "relation_head": "monitor",
+    "composer": "conceptualize",
+    "priority": 24
+   }
+  },
+  {
+   "local_id": 13,
+   "type": "ComposerCue",
+   "attrs": {
+    "relation_head": "commit",
+    "composer": "conceptualize",
+    "priority": 24
+   }
+  }
+ ],
+ "edges": [
+  {"src": {"local": 0}, "tgt": {"local": 1}, "type": "has_template", "attrs": {}},
+  {"src": {"local": 0}, "tgt": {"local": 2}, "type": "has_template", "attrs": {}},
+  {"src": {"local": 0}, "tgt": {"local": 3}, "type": "has_template", "attrs": {}},
+  {"src": {"local": 0}, "tgt": {"local": 4}, "type": "has_template", "attrs": {}},
+  {"src": {"local": 0}, "tgt": {"local": 5}, "type": "has_template", "attrs": {}}
+ ],
+ "productions": []
+}

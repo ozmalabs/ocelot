@@ -1,0 +1,692 @@
+{
+ "id": "shape_vocabulary",
+ "version": "1.0.0",
+ "depends_on": [],
+ "description": "The agent's own shape-classifier VOCABULARY as graph data (was the Python FUNCTIONAL_ROLES/ABSTRACT_PRINCIPLES/META_SHAPES dicts). order-2 FunctionalRole, order-3 ShapePrinciple (keywords list), order-4 MetaShape with has_principle edges. classify_shape matches text->keyword->principle->shape via a graph Term run by Rust; this seed is the data it reads.",
+ "nodes": [
+  {
+   "local_id": 1,
+   "type": "FunctionalRole",
+   "attrs": {
+    "keywords": [
+     "dispatch",
+     "policy",
+     "priority",
+     "queue",
+     "schedule",
+     "scheduler",
+     "select"
+    ],
+    "name": "scheduler"
+   }
+  },
+  {
+   "local_id": 2,
+   "type": "FunctionalRole",
+   "attrs": {
+    "keywords": [
+     "buffer",
+     "cache",
+     "memory",
+     "page",
+     "register",
+     "storage",
+     "store"
+    ],
+    "name": "memory_store"
+   }
+  },
+  {
+   "local_id": 3,
+   "type": "FunctionalRole",
+   "attrs": {
+    "keywords": [
+     "address",
+     "fetch",
+     "lookup",
+     "recall",
+     "retrieve",
+     "search"
+    ],
+    "name": "memory_access"
+   }
+  },
+  {
+   "local_id": 4,
+   "type": "FunctionalRole",
+   "attrs": {
+    "keywords": [
+     "block",
+     "control",
+     "filter",
+     "gate",
+     "permit",
+     "regulate"
+    ],
+    "name": "gating"
+   }
+  },
+  {
+   "local_id": 5,
+   "type": "FunctionalRole",
+   "attrs": {
+    "keywords": [
+     "alarm",
+     "fire",
+     "interrupt",
+     "notify",
+     "signal",
+     "trigger"
+    ],
+    "name": "interrupt"
+   }
+  },
+  {
+   "local_id": 6,
+   "type": "FunctionalRole",
+   "attrs": {
+    "keywords": [
+     "barrier",
+     "lock",
+     "phase",
+     "rendezvous",
+     "sync",
+     "synchron"
+    ],
+    "name": "synchronize"
+   }
+  },
+  {
+   "local_id": 7,
+   "type": "FunctionalRole",
+   "attrs": {
+    "keywords": [
+     "channel",
+     "communicat",
+     "ipc",
+     "message",
+     "pipe",
+     "receive",
+     "send"
+    ],
+    "name": "communicate"
+   }
+  },
+  {
+   "local_id": 8,
+   "type": "FunctionalRole",
+   "attrs": {
+    "keywords": [
+     "boundary",
+     "container",
+     "encapsul",
+     "isolat",
+     "namespace",
+     "scope"
+    ],
+    "name": "isolate"
+   }
+  },
+  {
+   "local_id": 9,
+   "type": "FunctionalRole",
+   "attrs": {
+    "keywords": [
+     "execut",
+     "job",
+     "process",
+     "run",
+     "task",
+     "thread"
+    ],
+    "name": "execute"
+   }
+  },
+  {
+   "local_id": 10,
+   "type": "FunctionalRole",
+   "attrs": {
+    "keywords": [
+     "afferent",
+     "device",
+     "efferent",
+     "i/o",
+     "input",
+     "io",
+     "output",
+     "sensor"
+    ],
+    "name": "input_output"
+   }
+  },
+  {
+   "local_id": 11,
+   "type": "FunctionalRole",
+   "attrs": {
+    "keywords": [
+     "balance",
+     "control",
+     "feedback",
+     "homeo",
+     "regulat",
+     "set_point"
+    ],
+    "name": "regulate"
+   }
+  },
+  {
+   "local_id": 12,
+   "type": "FunctionalRole",
+   "attrs": {
+    "keywords": [
+     "anticipat",
+     "expectation",
+     "forecast",
+     "forward",
+     "predict",
+     "prior"
+    ],
+    "name": "predict"
+   }
+  },
+  {
+   "local_id": 13,
+   "type": "FunctionalRole",
+   "attrs": {
+    "keywords": [
+     "adapt",
+     "learn",
+     "modify",
+     "plasticit",
+     "train",
+     "update"
+    ],
+    "name": "learn"
+   }
+  },
+  {
+   "local_id": 14,
+   "type": "FunctionalRole",
+   "attrs": {
+    "keywords": [
+     "argmax",
+     "choose",
+     "competition",
+     "decide",
+     "select",
+     "winner"
+    ],
+    "name": "select"
+   }
+  },
+  {
+   "local_id": 15,
+   "type": "FunctionalRole",
+   "attrs": {
+    "keywords": [
+     "consolid",
+     "encod",
+     "persist",
+     "remember",
+     "replay",
+     "stabiliz"
+    ],
+    "name": "consolidate"
+   }
+  },
+  {
+   "local_id": 16,
+   "type": "FunctionalRole",
+   "attrs": {
+    "keywords": [
+     "aggregate",
+     "combin",
+     "fuse",
+     "integrat",
+     "merge",
+     "synthesi"
+    ],
+    "name": "integrate"
+   }
+  },
+  {
+   "local_id": 17,
+   "type": "FunctionalRole",
+   "attrs": {
+    "keywords": [
+     "convert",
+     "decode",
+     "encode",
+     "map",
+     "transform",
+     "translate"
+    ],
+    "name": "transform"
+   }
+  },
+  {
+   "local_id": 18,
+   "type": "ShapePrinciple",
+   "attrs": {
+    "keywords": [
+     "balance",
+     "homeostas",
+     "negative_feedback",
+     "regulate",
+     "set_point"
+    ],
+    "name": "homeostasis"
+   }
+  },
+  {
+   "local_id": 19,
+   "type": "ShapePrinciple",
+   "attrs": {
+    "keywords": [
+     "anticipat",
+     "expectation",
+     "forward",
+     "predict"
+    ],
+    "name": "prediction"
+   }
+  },
+  {
+   "local_id": 20,
+   "type": "ShapePrinciple",
+   "attrs": {
+    "keywords": [
+     "associative",
+     "attractor",
+     "autoassoc",
+     "completion",
+     "recall"
+    ],
+    "name": "pattern_completion"
+   }
+  },
+  {
+   "local_id": 21,
+   "type": "ShapePrinciple",
+   "attrs": {
+    "keywords": [
+     "decorrelat",
+     "discriminat",
+     "separation"
+    ],
+    "name": "pattern_separation"
+   }
+  },
+  {
+   "local_id": 22,
+   "type": "ShapePrinciple",
+   "attrs": {
+    "keywords": [
+     "argmax",
+     "competition",
+     "lateral_inhibit",
+     "select",
+     "winner"
+    ],
+    "name": "winner_take_all"
+   }
+  },
+  {
+   "local_id": 23,
+   "type": "ShapePrinciple",
+   "attrs": {
+    "keywords": [
+     "differentiat",
+     "domain_specific",
+     "module",
+     "specializ"
+    ],
+    "name": "modular_specialization"
+   }
+  },
+  {
+   "local_id": 24,
+   "type": "ShapePrinciple",
+   "attrs": {
+    "keywords": [
+     "abstract",
+     "feedforward",
+     "hierarch",
+     "layer",
+     "v1",
+     "ventral"
+    ],
+    "name": "hierarchical_abstraction"
+   }
+  },
+  {
+   "local_id": 25,
+   "type": "ShapePrinciple",
+   "attrs": {
+    "keywords": [
+     "broadcast",
+     "global",
+     "hormone",
+     "neuromodul",
+     "syscall"
+    ],
+    "name": "broadcast"
+   }
+  },
+  {
+   "local_id": 26,
+   "type": "ShapePrinciple",
+   "attrs": {
+    "keywords": [
+     "gate",
+     "permission",
+     "policy",
+     "thalam",
+     "tlb"
+    ],
+    "name": "gated_access"
+   }
+  },
+  {
+   "local_id": 27,
+   "type": "ShapePrinciple",
+   "attrs": {
+    "keywords": [
+     "consolid",
+     "long_term",
+     "replay",
+     "sleep"
+    ],
+    "name": "consolidation"
+   }
+  },
+  {
+   "local_id": 28,
+   "type": "ShapePrinciple",
+   "attrs": {
+    "keywords": [
+     "buffer",
+     "iconic",
+     "queue",
+     "working_memory"
+    ],
+    "name": "buffering"
+   }
+  },
+  {
+   "local_id": 29,
+   "type": "ShapePrinciple",
+   "attrs": {
+    "keywords": [
+     "abstracting the parts",
+     "align by role",
+     "anti-unif",
+     "anti_unif",
+     "common shape",
+     "generalization shared",
+     "least general",
+     "least-general",
+     "objects are renamed",
+     "relational structure",
+     "shared structure",
+     "structure-map",
+     "structure_map"
+    ],
+    "name": "structure_mapping"
+   }
+  },
+  {
+   "local_id": 30,
+   "type": "MetaShape",
+   "attrs": {
+    "name": "feedback_control"
+   }
+  },
+  {
+   "local_id": 31,
+   "type": "MetaShape",
+   "attrs": {
+    "name": "associative_recall"
+   }
+  },
+  {
+   "local_id": 32,
+   "type": "MetaShape",
+   "attrs": {
+    "name": "competitive_inhibition"
+   }
+  },
+  {
+   "local_id": 33,
+   "type": "MetaShape",
+   "attrs": {
+    "name": "prediction_minus_observation"
+   }
+  },
+  {
+   "local_id": 34,
+   "type": "MetaShape",
+   "attrs": {
+    "name": "hierarchical_invariance_buildup"
+   }
+  },
+  {
+   "local_id": 35,
+   "type": "MetaShape",
+   "attrs": {
+    "name": "global_message_passing"
+   }
+  },
+  {
+   "local_id": 36,
+   "type": "MetaShape",
+   "attrs": {
+    "name": "selective_gating"
+   }
+  },
+  {
+   "local_id": 37,
+   "type": "MetaShape",
+   "attrs": {
+    "name": "delayed_persistence"
+   }
+  },
+  {
+   "local_id": 38,
+   "type": "MetaShape",
+   "attrs": {
+    "name": "modular_isolation"
+   }
+  },
+  {
+   "local_id": 39,
+   "type": "MetaShape",
+   "attrs": {
+    "name": "relational_structure_match"
+   }
+  },
+  {
+   "local_id": 40,
+   "type": "ShapePrinciple",
+   "attrs": {
+    "name": "spatial_motion",
+    "keywords": [
+     "move",
+     "motion",
+     "posit",
+     "displac",
+     "slide",
+     "slid",
+     "translat",
+     "locomot",
+     "navigat",
+     "travel",
+     "spatial",
+     "locat",
+     "fixed",
+     "station",
+     "static"
+    ]
+   }
+  },
+  {
+   "local_id": 41,
+   "type": "MetaShape",
+   "attrs": {
+    "name": "spatial_dynamics"
+   }
+  }
+ ],
+ "edges": [
+  {
+   "src": {
+    "local": 30
+   },
+   "type": "has_principle",
+   "tgt": {
+    "local": 18
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 30
+   },
+   "type": "has_principle",
+   "tgt": {
+    "local": 11
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 31
+   },
+   "type": "has_principle",
+   "tgt": {
+    "local": 20
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 32
+   },
+   "type": "has_principle",
+   "tgt": {
+    "local": 21
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 32
+   },
+   "type": "has_principle",
+   "tgt": {
+    "local": 22
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 33
+   },
+   "type": "has_principle",
+   "tgt": {
+    "local": 19
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 34
+   },
+   "type": "has_principle",
+   "tgt": {
+    "local": 24
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 35
+   },
+   "type": "has_principle",
+   "tgt": {
+    "local": 25
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 36
+   },
+   "type": "has_principle",
+   "tgt": {
+    "local": 26
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 37
+   },
+   "type": "has_principle",
+   "tgt": {
+    "local": 28
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 37
+   },
+   "type": "has_principle",
+   "tgt": {
+    "local": 27
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 38
+   },
+   "type": "has_principle",
+   "tgt": {
+    "local": 23
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 39
+   },
+   "type": "has_principle",
+   "tgt": {
+    "local": 24
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 39
+   },
+   "type": "has_principle",
+   "tgt": {
+    "local": 29
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 41
+   },
+   "type": "has_principle",
+   "tgt": {
+    "local": 40
+   },
+   "attrs": {}
+  }
+ ]
+}

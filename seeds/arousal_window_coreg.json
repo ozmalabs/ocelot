@@ -1,0 +1,1284 @@
+{
+  "id": "arousal_window_coreg",
+  "version": "1.0.0",
+  "depends_on": [
+    "affective_state_core"
+  ],
+  "self_load_only": true,
+  "area": "retina",
+  "description": "AROUSAL / WINDOW-OF-TOLERANCE with CO-REGULATION (block 239000). Instantiates Siegel's window of tolerance, Porges' polyvagal band, and the altricial co-regulation bond (Harlow, block 233000) as graph rules riding the REAL affective_state_core AffectiveState.arousal. A stressor pushes arousal; outside the tolerated band [lo,hi] fires a dysregulated state (hyper > hi, hypo < lo). A REGULATED caregiver present couples (leaky sd_blend pull) the infant's arousal toward the caregiver's, returning it to the window faster than self-regulation alone; a dysregulated / absent caregiver does not. Successful co-regulation WIDENS the window and raises the safety prior (development/healing); dysregulation without co-regulation NARROWS it and lowers the safety prior (trauma). 'Kids do well if they can' (Greene): dysregulation is a STATE to be regulated, never a badness -- NO reward/punishment anywhere. self_load_only, default-OFF; NO Rust, NO new Term.",
+  "microtheory": {
+    "name": "window_of_tolerance_coregulation",
+    "description": "Arousal is tolerated within a band; outside it the agent is dysregulated. An external regulated caregiver entrains arousal back into the band (borrowed regulation); repeated co-regulation widens the band (internalisation); repeated unsupported stress narrows it."
+  },
+  "nodes": [],
+  "edges": [],
+  "productions": [
+    {
+      "provenance": "arousal_window_coreg:infant_window",
+      "src": {
+        "type": "Agent",
+        "var": "infant"
+      },
+      "edge_type": "has_window",
+      "tgt": {
+        "type": "WindowOfTolerance",
+        "var": "wot"
+      }
+    },
+    {
+      "provenance": "arousal_window_coreg:infant_stressor",
+      "src": {
+        "type": "Agent",
+        "var": "infant"
+      },
+      "edge_type": "has_stressor",
+      "tgt": {
+        "type": "Stressor",
+        "var": "sx"
+      }
+    },
+    {
+      "provenance": "arousal_window_coreg:attended_by",
+      "src": {
+        "type": "Agent",
+        "var": "infant"
+      },
+      "edge_type": "attended_by",
+      "tgt": {
+        "type": "Agent",
+        "var": "cg"
+      }
+    }
+  ],
+  "rules": [
+    {
+      "name": "arousal_stressor_push",
+      "area": "retina",
+      "order": 2,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "infant",
+          "has_affective_state",
+          "iaff"
+        ],
+        [
+          "infant",
+          "has_stressor",
+          "sx"
+        ]
+      ],
+      "where": {
+        "type": "Eq",
+        "a": {
+          "type": "Attr",
+          "node": {
+            "type": "Var",
+            "name": "sx"
+          },
+          "key": "armed"
+        },
+        "b": {
+          "type": "Lit",
+          "value": 1.0
+        }
+      },
+      "effects": [
+        [
+          "set_attr",
+          "iaff",
+          "arousal",
+          {
+            "__term__": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "iaff"
+                  },
+                  "key": "arousal"
+                },
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "sx"
+                  },
+                  "key": "magnitude"
+                }
+              ]
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "sx",
+          "armed",
+          0.0
+        ]
+      ]
+    },
+    {
+      "name": "dysreg_onset_hyper",
+      "area": "retina",
+      "order": 3,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "infant",
+          "has_affective_state",
+          "iaff"
+        ],
+        [
+          "infant",
+          "has_window",
+          "wot"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "iaff"
+              },
+              "key": "in_episode"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0.0
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "iaff"
+              },
+              "key": "arousal"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "wot"
+              },
+              "key": "hi"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "iaff",
+          "dysregulated",
+          1.0
+        ],
+        [
+          "set_attr",
+          "iaff",
+          "dysreg_kind",
+          1.0
+        ],
+        [
+          "set_attr",
+          "iaff",
+          "in_episode",
+          1.0
+        ],
+        [
+          "set_attr",
+          "iaff",
+          "got_coreg",
+          0.0
+        ]
+      ]
+    },
+    {
+      "name": "dysreg_onset_hypo",
+      "area": "retina",
+      "order": 3,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "infant",
+          "has_affective_state",
+          "iaff"
+        ],
+        [
+          "infant",
+          "has_window",
+          "wot"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "iaff"
+              },
+              "key": "in_episode"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0.0
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "iaff"
+              },
+              "key": "arousal"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "wot"
+              },
+              "key": "lo"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "iaff",
+          "dysregulated",
+          1.0
+        ],
+        [
+          "set_attr",
+          "iaff",
+          "dysreg_kind",
+          -1.0
+        ],
+        [
+          "set_attr",
+          "iaff",
+          "in_episode",
+          1.0
+        ],
+        [
+          "set_attr",
+          "iaff",
+          "got_coreg",
+          0.0
+        ]
+      ]
+    },
+    {
+      "name": "coreg_pull",
+      "area": "retina",
+      "order": 4,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "infant",
+          "has_affective_state",
+          "iaff"
+        ],
+        [
+          "infant",
+          "attended_by",
+          "cg"
+        ],
+        [
+          "cg",
+          "has_affective_state",
+          "caff"
+        ]
+      ],
+      "where": {
+        "type": "Lt",
+        "a": {
+          "type": "Attr",
+          "node": {
+            "type": "Var",
+            "name": "iaff"
+          },
+          "key": "cr_epoch"
+        },
+        "b": {
+          "type": "Attr",
+          "node": {
+            "type": "Var",
+            "name": "iaff"
+          },
+          "key": "tick_epoch"
+        }
+      },
+      "effects": [
+        [
+          "set_attr",
+          "iaff",
+          "arousal",
+          {
+            "__term__": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "iaff"
+                  },
+                  "key": "arousal"
+                },
+                {
+                  "type": "Times",
+                  "items": [
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "iaff"
+                      },
+                      "key": "k_co"
+                    },
+                    {
+                      "type": "Minus",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "caff"
+                        },
+                        "key": "arousal"
+                      },
+                      "b": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "iaff"
+                        },
+                        "key": "arousal"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "iaff",
+          "cr_epoch",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "iaff"
+              },
+              "key": "tick_epoch"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "selfreg_pull",
+      "area": "retina",
+      "order": 5,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "infant",
+          "has_affective_state",
+          "iaff"
+        ],
+        [
+          "infant",
+          "has_window",
+          "wot"
+        ]
+      ],
+      "where": {
+        "type": "Lt",
+        "a": {
+          "type": "Attr",
+          "node": {
+            "type": "Var",
+            "name": "iaff"
+          },
+          "key": "sr_epoch"
+        },
+        "b": {
+          "type": "Attr",
+          "node": {
+            "type": "Var",
+            "name": "iaff"
+          },
+          "key": "tick_epoch"
+        }
+      },
+      "effects": [
+        [
+          "set_attr",
+          "iaff",
+          "arousal",
+          {
+            "__term__": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "iaff"
+                  },
+                  "key": "arousal"
+                },
+                {
+                  "type": "Times",
+                  "items": [
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "iaff"
+                      },
+                      "key": "k_self"
+                    },
+                    {
+                      "type": "Minus",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "iaff"
+                        },
+                        "key": "setpoint"
+                      },
+                      "b": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "iaff"
+                        },
+                        "key": "arousal"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "iaff",
+          "sr_epoch",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "iaff"
+              },
+              "key": "tick_epoch"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "mark_coreg_support",
+      "area": "retina",
+      "order": 6,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "infant",
+          "has_affective_state",
+          "iaff"
+        ],
+        [
+          "infant",
+          "attended_by",
+          "cg"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "iaff"
+              },
+              "key": "in_episode"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "cg"
+              },
+              "key": "regulated"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "iaff",
+          "got_coreg",
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "dysreg_return_to_window",
+      "area": "retina",
+      "order": 6,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "infant",
+          "has_affective_state",
+          "iaff"
+        ],
+        [
+          "infant",
+          "has_window",
+          "wot"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "iaff"
+              },
+              "key": "in_episode"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "iaff"
+              },
+              "key": "dysregulated"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "And",
+            "items": [
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Gt",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "iaff"
+                    },
+                    "key": "arousal"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "wot"
+                    },
+                    "key": "hi"
+                  }
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Lt",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "iaff"
+                    },
+                    "key": "arousal"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "wot"
+                    },
+                    "key": "lo"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "iaff",
+          "dysregulated",
+          0.0
+        ],
+        [
+          "set_attr",
+          "iaff",
+          "dysreg_kind",
+          0.0
+        ]
+      ]
+    },
+    {
+      "name": "episode_resolve_widen",
+      "area": "retina",
+      "order": 7,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "infant",
+          "has_affective_state",
+          "iaff"
+        ],
+        [
+          "infant",
+          "has_window",
+          "wot"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "iaff"
+              },
+              "key": "in_episode"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "iaff"
+              },
+              "key": "got_coreg"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "And",
+            "items": [
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Gt",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "iaff"
+                    },
+                    "key": "arousal"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "wot"
+                    },
+                    "key": "min_half_width"
+                  }
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Lt",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "iaff"
+                    },
+                    "key": "arousal"
+                  },
+                  "b": {
+                    "type": "Minus",
+                    "a": {
+                      "type": "Lit",
+                      "value": 0.0
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "wot"
+                      },
+                      "key": "min_half_width"
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "iaff",
+          "dysregulated",
+          0.0
+        ],
+        [
+          "set_attr",
+          "iaff",
+          "dysreg_kind",
+          0.0
+        ],
+        [
+          "set_attr",
+          "iaff",
+          "in_episode",
+          0.0
+        ],
+        [
+          "set_attr",
+          "iaff",
+          "got_coreg",
+          0.0
+        ],
+        [
+          "set_attr",
+          "wot",
+          "half_width",
+          {
+            "__term__": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "wot"
+                  },
+                  "key": "half_width"
+                },
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "wot"
+                  },
+                  "key": "widen_delta"
+                }
+              ]
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "wot",
+          "hi",
+          {
+            "__term__": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "wot"
+                  },
+                  "key": "half_width"
+                },
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "wot"
+                  },
+                  "key": "widen_delta"
+                }
+              ]
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "wot",
+          "lo",
+          {
+            "__term__": {
+              "type": "Minus",
+              "a": {
+                "type": "Lit",
+                "value": 0.0
+              },
+              "b": {
+                "type": "Plus",
+                "items": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "wot"
+                    },
+                    "key": "half_width"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "wot"
+                    },
+                    "key": "widen_delta"
+                  }
+                ]
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "wot",
+          "safety_prior",
+          {
+            "__term__": {
+              "type": "Min",
+              "items": [
+                {
+                  "type": "Lit",
+                  "value": 1.0
+                },
+                {
+                  "type": "Plus",
+                  "items": [
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "wot"
+                      },
+                      "key": "safety_prior"
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "wot"
+                      },
+                      "key": "safety_step"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "wot",
+          "widen_count",
+          {
+            "__term__": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "wot"
+                  },
+                  "key": "widen_count"
+                },
+                {
+                  "type": "Lit",
+                  "value": 1.0
+                }
+              ]
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "episode_resolve_narrow",
+      "area": "retina",
+      "order": 7,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "infant",
+          "has_affective_state",
+          "iaff"
+        ],
+        [
+          "infant",
+          "has_window",
+          "wot"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "iaff"
+              },
+              "key": "in_episode"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "iaff"
+              },
+              "key": "got_coreg"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0.0
+            }
+          },
+          {
+            "type": "And",
+            "items": [
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Gt",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "iaff"
+                    },
+                    "key": "arousal"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "wot"
+                    },
+                    "key": "min_half_width"
+                  }
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Lt",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "iaff"
+                    },
+                    "key": "arousal"
+                  },
+                  "b": {
+                    "type": "Minus",
+                    "a": {
+                      "type": "Lit",
+                      "value": 0.0
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "wot"
+                      },
+                      "key": "min_half_width"
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "iaff",
+          "dysregulated",
+          0.0
+        ],
+        [
+          "set_attr",
+          "iaff",
+          "dysreg_kind",
+          0.0
+        ],
+        [
+          "set_attr",
+          "iaff",
+          "in_episode",
+          0.0
+        ],
+        [
+          "set_attr",
+          "wot",
+          "half_width",
+          {
+            "__term__": {
+              "type": "Max",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "wot"
+                  },
+                  "key": "min_half_width"
+                },
+                {
+                  "type": "Minus",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "wot"
+                    },
+                    "key": "half_width"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "wot"
+                    },
+                    "key": "narrow_delta"
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "wot",
+          "hi",
+          {
+            "__term__": {
+              "type": "Max",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "wot"
+                  },
+                  "key": "min_half_width"
+                },
+                {
+                  "type": "Minus",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "wot"
+                    },
+                    "key": "half_width"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "wot"
+                    },
+                    "key": "narrow_delta"
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "wot",
+          "lo",
+          {
+            "__term__": {
+              "type": "Minus",
+              "a": {
+                "type": "Lit",
+                "value": 0.0
+              },
+              "b": {
+                "type": "Max",
+                "items": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "wot"
+                    },
+                    "key": "min_half_width"
+                  },
+                  {
+                    "type": "Minus",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "wot"
+                      },
+                      "key": "half_width"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "wot"
+                      },
+                      "key": "narrow_delta"
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "wot",
+          "safety_prior",
+          {
+            "__term__": {
+              "type": "Max",
+              "items": [
+                {
+                  "type": "Lit",
+                  "value": 0.0
+                },
+                {
+                  "type": "Minus",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "wot"
+                    },
+                    "key": "safety_prior"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "wot"
+                    },
+                    "key": "safety_step"
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "wot",
+          "narrow_count",
+          {
+            "__term__": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "wot"
+                  },
+                  "key": "narrow_count"
+                },
+                {
+                  "type": "Lit",
+                  "value": 1.0
+                }
+              ]
+            }
+          }
+        ]
+      ]
+    }
+  ]
+}

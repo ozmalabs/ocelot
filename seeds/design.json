@@ -1,0 +1,97 @@
+{
+  "id": "design",
+  "version": "1.0.0",
+  "depends_on": [],
+  "description": "Design Mt + design_query_frame + propose_design capability.",
+  "nodes": [
+    {
+      "local_id": 597,
+      "type": "Microtheory",
+      "attrs": {
+        "description": "the agent's design-reasoning scope",
+        "name": "design"
+      }
+    },
+    {
+      "local_id": 598,
+      "type": "Concept",
+      "attrs": {
+        "description": "propose a design from current state",
+        "name": "propose_design"
+      }
+    },
+    {
+      "local_id": 599,
+      "type": "Frame",
+      "attrs": {
+        "binding_pattern": "function_of_subject",
+        "core_elements": {
+          "__tuple__": [
+            {
+              "slot": "of",
+              "type": "any"
+            }
+          ]
+        },
+        "evoked_by": {
+          "__tuple__": [
+            "how would you design",
+            "how do you design",
+            "design a",
+            "design an",
+            "design the",
+            "propose a design",
+            "would you design"
+          ]
+        },
+        "name": "design_query_frame",
+        "peripheral_elements": {
+          "__tuple__": []
+        }
+      }
+    }
+  ],
+  "edges": [
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "operates_in",
+      "tgt": {
+        "local": 597
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 598
+      },
+      "type": "holds_in",
+      "tgt": {
+        "local": 597
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 599
+      },
+      "type": "holds_in",
+      "tgt": {
+        "local": 597
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 599
+      },
+      "type": "realised_by",
+      "tgt": {
+        "local": 598
+      },
+      "attrs": {}
+    }
+  ],
+  "productions": []
+}

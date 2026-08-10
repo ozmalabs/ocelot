@@ -1,0 +1,853 @@
+{
+ "id": "security_and_cryptography",
+ "version": "0.1.0",
+ "depends_on": [
+  "compiler_theory"
+ ],
+ "description": "Security + cryptography as graph-resident theory. Cryptographic primitives (symmetric, asymmetric, hash, KDF). Protocols (TLS already covered in network_protocols; here: SSH, IPsec, WireGuard, OAuth 2.0, OIDC, JWT, SAML, Kerberos, PKI). Authentication (passwords, MFA, TOTP, WebAuthn, FIDO2, passkeys). Authorization (RBAC, ABAC, ReBAC, capabilities). Attacks (OWASP top 10, memory corruption, side channels, supply chain). Memory safety. Modern crypto (zero-knowledge proofs, homomorphic, MPC, differential privacy). Post-quantum. Confidential computing infrastructure (HSM, TPM, TEE). Software supply chain (SBOM, Sigstore, SLSA).",
+ "category_inheritance": "genlMt → compiler_theory. Cryptographic correctness arguments map directly to compiler_theory equivalence vocabulary: confidentiality is referential transparency (encrypted output reveals nothing about input); integrity is denotational equivalence (decoded output equals encoded input or fails); authentication is referential transparency over identity claims.",
+ "concepts": [
+  {
+   "name": "CIA_triad",
+   "definition": "Confidentiality (only authorised access), Integrity (data unchanged), Availability (service accessible). The foundational security goals.",
+   "why": "Every security control targets one or more. Encryption: confidentiality. Hash + signature: integrity. Redundancy + DDoS protection: availability. Framework for reasoning about threats.",
+   "category": "foundation"
+  },
+  {
+   "name": "threat_model",
+   "definition": "Document of who attacks the system, what assets they target, how they might attack, what's not in scope.",
+   "why": "Security depends on what you're defending against. Bank vs blog have different threat models. STRIDE methodology: Spoofing, Tampering, Repudiation, Information disclosure, DoS, Elevation of privilege.",
+   "category": "foundation"
+  },
+  {
+   "name": "STRIDE",
+   "definition": "Microsoft's threat categories. Spoofing identity, Tampering with data, Repudiation, Information disclosure, Denial of service, Elevation of privilege.",
+   "why": "Systematic threat enumeration. Each component of architecture analysed against each category. Industry-standard threat modeling framework.",
+   "category": "foundation"
+  },
+  {
+   "name": "defense_in_depth",
+   "definition": "Multiple layers of security controls. If one fails, others remain. Network firewall + endpoint detection + application security + monitoring.",
+   "why": "No single control is perfect. Compromise of one layer doesn't yield total compromise. Cost: complexity + alert fatigue. Best practice for any non-trivial system.",
+   "category": "foundation"
+  },
+  {
+   "name": "principle_of_least_privilege",
+   "definition": "Grant minimum permissions needed for the task. Service account for backup gets backup-only rights.",
+   "why": "Limits blast radius of compromise. Default-allow systems leak privileges; default-deny + grant minimum limits damage. Standard architectural principle.",
+   "category": "foundation"
+  },
+  {
+   "name": "zero_trust",
+   "definition": "Trust nothing implicitly: verify every request regardless of network location. mTLS between services, identity-aware proxies, per-request auth.",
+   "why": "Network perimeter compromised regularly. Internal traffic untrusted by default. Replaces 'inside firewall = trusted' with explicit authentication of each request.",
+   "category": "foundation"
+  },
+  {
+   "name": "secure_by_default",
+   "definition": "Defaults are secure: SSL on, public access off, weak ciphers disabled. Users must explicitly opt out of safety.",
+   "why": "Most users keep defaults. Insecure defaults = widespread vulnerability. Modern practice: ship secure config; require justification to weaken.",
+   "category": "foundation"
+  },
+  {
+   "name": "symmetric_encryption",
+   "definition": "Same key for encrypt + decrypt. AES, ChaCha20. Fast (~GB/s).",
+   "why": "High-throughput. Cost: key distribution problem (how do parties get the shared key?). Hybrid: asymmetric to exchange symmetric key (TLS, SSH).",
+   "category": "symmetric_crypto"
+  },
+  {
+   "name": "AES_block_cipher",
+   "definition": "Advanced Encryption Standard. NIST 2001. 128/192/256-bit keys. 128-bit blocks. Hardware-accelerated (AES-NI).",
+   "why": "Universal symmetric cipher. ~10 GB/s on modern CPU with AES-NI. Used in TLS, disk encryption, file encryption. The default symmetric primitive.",
+   "category": "symmetric_crypto"
+  },
+  {
+   "name": "AES_GCM",
+   "definition": "AES in Galois/Counter Mode. Authenticated encryption: encrypt + MAC in one operation. AEAD.",
+   "why": "Most common modern AES mode. Provides confidentiality + integrity together. Used in TLS 1.3, IPsec, SSH. Watch nonces: reuse breaks everything.",
+   "category": "symmetric_crypto"
+  },
+  {
+   "name": "AES_CBC",
+   "definition": "Cipher Block Chaining. Each block XORed with previous ciphertext. Requires IV.",
+   "why": "Classic mode. Vulnerable to padding oracle attacks if MAC missing or wrong order (encrypt-then-MAC vs MAC-then-encrypt matters). Replaced by GCM in TLS 1.3.",
+   "category": "symmetric_crypto"
+  },
+  {
+   "name": "AES_CTR",
+   "definition": "Counter Mode. Encrypt(counter) XOR plaintext. Stream cipher built on block cipher.",
+   "why": "Parallelisable encrypt + decrypt. No padding needed. CRITICAL: counter reuse breaks confidentiality entirely. Foundation of GCM.",
+   "category": "symmetric_crypto"
+  },
+  {
+   "name": "AES_ECB",
+   "definition": "Electronic Code Book. Encrypt each block independently. NEVER USE.",
+   "why": "Same plaintext block → same ciphertext block. Patterns visible (famous penguin image). Educational only.",
+   "category": "symmetric_crypto"
+  },
+  {
+   "name": "ChaCha20_Poly1305",
+   "definition": "ChaCha20 stream cipher + Poly1305 MAC. AEAD. Daniel Bernstein.",
+   "why": "Fast on systems without AES-NI (mobile, embedded). Used in TLS 1.3, WireGuard, OpenSSH. Patent-free alternative to AES-GCM. Often faster on ARM.",
+   "category": "symmetric_crypto"
+  },
+  {
+   "name": "asymmetric_encryption",
+   "definition": "Different keys for encrypt + decrypt. Public key shared; private kept secret. RSA, ECC.",
+   "why": "Solves key distribution: anyone can encrypt to recipient using their public key. Cost: ~1000x slower than symmetric. Used to exchange symmetric keys (KEX).",
+   "category": "asymmetric_crypto"
+  },
+  {
+   "name": "RSA",
+   "definition": "Rivest-Shamir-Adleman 1977. Based on factoring large integers being hard. 2048-bit minimum modern.",
+   "why": "Foundational asymmetric. Still widely deployed (TLS certificates, SSH). Slower than ECC. 2048-bit RSA ≈ 112-bit symmetric security. Increasingly replaced by ECC.",
+   "category": "asymmetric_crypto"
+  },
+  {
+   "name": "elliptic_curve_cryptography",
+   "definition": "ECC. Based on elliptic curve discrete log problem. Smaller keys for equivalent security (256-bit ECC ≈ 3072-bit RSA).",
+   "why": "Faster + smaller than RSA. P-256 (NIST), Curve25519, secp256k1 (Bitcoin). Standard for modern TLS + SSH + cryptocurrencies.",
+   "category": "asymmetric_crypto"
+  },
+  {
+   "name": "Curve25519",
+   "definition": "Bernstein's elliptic curve. Designed for ECDH key exchange. Avoids NIST-curve concerns. 128-bit security.",
+   "why": "Modern default. Used in TLS 1.3, WireGuard, Signal. Designed for safer implementation (constant-time, no special-case handling).",
+   "category": "asymmetric_crypto"
+  },
+  {
+   "name": "Ed25519",
+   "definition": "Edwards-curve signature scheme on Curve25519. Fast, deterministic, secure.",
+   "why": "Modern signature default. ~70K signatures/sec/core. Used in SSH, Git, Signal, Tor. Deterministic — no random per signature (RSA + DSA need random).",
+   "category": "asymmetric_crypto"
+  },
+  {
+   "name": "ECDH",
+   "definition": "Elliptic Curve Diffie-Hellman. Key agreement: two parties derive shared secret without transmitting it.",
+   "why": "Foundation of modern key exchange (TLS 1.3, Signal). With ephemeral keys (ECDHE) provides forward secrecy. Standard for any post-RSA system.",
+   "category": "asymmetric_crypto"
+  },
+  {
+   "name": "Diffie_Hellman_key_exchange",
+   "definition": "Classical DH 1976. Two parties exchange public values; each computes same shared secret.",
+   "why": "First key agreement protocol. Vulnerable without authentication (MITM). Modern: DHE (ephemeral) + signatures provide authenticated key exchange.",
+   "category": "asymmetric_crypto"
+  },
+  {
+   "name": "forward_secrecy",
+   "definition": "Past sessions remain confidential even if long-term private key is later compromised. Requires ephemeral keys.",
+   "why": "Standard property in modern protocols (TLS 1.3 mandates). Without it: stolen key decrypts past traffic. With ephemeral DH: each session has independent keys.",
+   "category": "asymmetric_crypto"
+  },
+  {
+   "name": "hash_function",
+   "definition": "Function mapping arbitrary input to fixed-length output. Properties: deterministic, fast, collision-resistant, preimage-resistant.",
+   "why": "Foundation. Integrity (compare hashes), commitment (publish hash, reveal later), digital signatures (sign hash). Properties define cryptographic vs general hash.",
+   "category": "hash_kdf"
+  },
+  {
+   "name": "SHA_2",
+   "definition": "SHA-256, SHA-384, SHA-512. NIST 2001. Merkle-Damgård construction. Widely deployed.",
+   "why": "Current standard for general hashing. SHA-256: 32-byte output, 128-bit collision resistance. Used in TLS certs, Bitcoin, Git, integrity checks.",
+   "category": "hash_kdf"
+  },
+  {
+   "name": "SHA_3",
+   "definition": "Keccak. NIST 2015. Different construction (sponge) than SHA-2. Backup if SHA-2 broken.",
+   "why": "Different mathematical foundation: structural failure of SHA-2 wouldn't affect SHA-3. Less deployed than SHA-2 but standardised. Important for diversity.",
+   "category": "hash_kdf"
+  },
+  {
+   "name": "BLAKE2_BLAKE3",
+   "definition": "BLAKE family of hashes. BLAKE2: SHA-2 alternative, faster. BLAKE3: parallel hashing, very fast.",
+   "why": "BLAKE3 fastest mainstream hash (~6 GB/s). Tree-based, parallelisable. Used in newer systems (rsync, Mojo's build system). Standardised + safe.",
+   "category": "hash_kdf"
+  },
+  {
+   "name": "MD5_SHA1",
+   "definition": "Legacy hash functions. MD5: broken since 2004 (chosen-prefix collisions). SHA-1: theoretical attacks since 2005, practical SHAttered 2017.",
+   "why": "Deprecated. Still in some legacy uses (Git uses SHA-1 — migrating to SHA-256). Do not use for new systems. Educational + compatibility only.",
+   "category": "hash_kdf"
+  },
+  {
+   "name": "HMAC",
+   "definition": "Hash-based Message Authentication Code. HMAC(key, message) = H(key XOR opad || H(key XOR ipad || message)).",
+   "why": "Provides integrity + authenticity. Used in JWT, OAuth, TLS. Standard MAC. Don't use raw hash as MAC (length-extension attacks on SHA-2).",
+   "category": "hash_kdf"
+  },
+  {
+   "name": "HKDF",
+   "definition": "HMAC-based Key Derivation Function. Extract-then-expand: derive multiple keys from single shared secret.",
+   "why": "Standard KDF in TLS 1.3, Signal. Derives different keys for different purposes (encryption, MAC) from one master secret. RFC 5869.",
+   "category": "hash_kdf"
+  },
+  {
+   "name": "Argon2",
+   "definition": "Winner of Password Hashing Competition 2015. Memory-hard: resists GPU/ASIC attacks.",
+   "why": "Modern password hashing default. Argon2id variant balances side-channel + GPU resistance. Configurable memory + time costs.",
+   "category": "hash_kdf"
+  },
+  {
+   "name": "bcrypt",
+   "definition": "Password hashing function. Adaptive: cost factor can increase with hardware advances.",
+   "why": "Long-standing default before Argon2. Still widely deployed. Bounded password length (72 bytes) is a quirk. Solid for legacy + new code.",
+   "category": "hash_kdf"
+  },
+  {
+   "name": "scrypt",
+   "definition": "Memory-hard password hash. Litecoin's proof-of-work foundation.",
+   "why": "Pre-Argon2 memory-hard option. Used for password hashing + cryptocurrency. Argon2 typically preferred for new applications now.",
+   "category": "hash_kdf"
+  },
+  {
+   "name": "PBKDF2",
+   "definition": "Password-Based Key Derivation Function 2. Iterates HMAC many times to slow brute force.",
+   "why": "NIST-standardised. Used in WPA2, LUKS. Not memory-hard — GPU/ASIC accelerates. Modern: Argon2 preferred. PBKDF2 sometimes required by compliance.",
+   "category": "hash_kdf"
+  },
+  {
+   "name": "PKI_public_key_infrastructure",
+   "definition": "System binding public keys to identities via Certificate Authorities. X.509 certificates, CRLs, OCSP.",
+   "why": "Foundation of web trust. Browsers ship trusted CA roots. CA signs server certs. Major weakness: any CA can issue for any domain (mitigated by Certificate Transparency).",
+   "category": "protocol"
+  },
+  {
+   "name": "X509_certificate_security",
+   "definition": "Standard public-key certificate format. Identity + public key + CA signature + validity period.",
+   "why": "Web's identity layer. Subject Alternative Names (SAN), CRL distribution points, OCSP responder URLs. Complex format with many extensions.",
+   "category": "protocol"
+  },
+  {
+   "name": "SSH",
+   "definition": "Secure Shell. Remote login + tunneling. Key-based or password auth. Encrypted channel.",
+   "why": "Universal remote admin tool. ED25519 keys preferred. SSH agent for key forwarding. Modern: ssh-ed25519 + chacha20-poly1305 + curve25519-sha256.",
+   "category": "protocol"
+  },
+  {
+   "name": "WireGuard",
+   "definition": "Modern VPN. Single file ~4000 LoC. ChaCha20 + Curve25519 + BLAKE2. State machine simpler than IPsec.",
+   "why": "Replaces IPsec for many use cases. Faster, simpler, more auditable. Used in Tailscale, Mullvad. Standard Linux kernel module since 5.6.",
+   "category": "protocol"
+  },
+  {
+   "name": "IPsec",
+   "definition": "IP-layer encryption. ESP (encryption) + AH (auth) headers. IKE for key exchange.",
+   "why": "Site-to-site VPNs. Complex configuration. Legacy. Often replaced by WireGuard or SSL VPNs for new deployments.",
+   "category": "protocol"
+  },
+  {
+   "name": "OAuth_2_0",
+   "definition": "Authorization framework. Resource owner authorises client to access protected resource via authorization server. Bearer tokens.",
+   "why": "Standard for API authorization. 'Sign in with Google'. NOT authentication on its own (OIDC fills that). Token-based; supports many flows (authorization code, client credentials, device).",
+   "category": "protocol"
+  },
+  {
+   "name": "OIDC",
+   "definition": "OpenID Connect. Authentication layer on OAuth 2.0. ID token (JWT) contains identity claims.",
+   "why": "Standard SSO. Used for 'Sign in with Google/Microsoft/Apple'. ID token tells you WHO; OAuth access token tells you WHAT you can do.",
+   "category": "protocol"
+  },
+  {
+   "name": "JWT",
+   "definition": "JSON Web Token. Compact signed JSON. Header.Payload.Signature, base64-url encoded.",
+   "why": "Stateless authentication tokens. Self-contained: server validates signature, trusts contents. Issues: revocation hard, common implementation bugs (alg=none, weak signing).",
+   "category": "protocol"
+  },
+  {
+   "name": "SAML",
+   "definition": "Security Assertion Markup Language. XML-based SSO. Older alternative to OIDC.",
+   "why": "Enterprise SSO standard. Verbose XML. Replaced by OIDC for new deployments; persists in enterprise + Microsoft ecosystem.",
+   "category": "protocol"
+  },
+  {
+   "name": "Kerberos",
+   "definition": "MIT 1980s. Symmetric-key authentication via tickets. Used in Windows Active Directory + many Unix environments.",
+   "why": "Time-tested. KDC issues tickets; mutual auth between client + server. Active Directory's core auth. Single point of failure (KDC); time-synced clocks required.",
+   "category": "protocol"
+  },
+  {
+   "name": "mTLS",
+   "definition": "Mutual TLS. Both client + server present certificates. Each authenticates the other.",
+   "why": "Service-to-service authentication. Standard in zero-trust + service mesh. SPIFFE/SPIRE for identity issuance. Replaces network-perimeter trust.",
+   "category": "protocol"
+  },
+  {
+   "name": "password_authentication",
+   "definition": "User proves identity with shared secret. Hashed + salted server-side.",
+   "why": "Universally understood. Common practice: bcrypt/Argon2 server-side, server never sees plaintext after auth flow. Weak: phishing, reuse, brute force.",
+   "category": "authentication"
+  },
+  {
+   "name": "multi_factor_authentication",
+   "definition": "MFA: combine factors (something you know, have, are). 2FA = 2 factors.",
+   "why": "Compensates for password weakness. Even compromised password isn't enough. Universal recommendation for any important account.",
+   "category": "authentication"
+  },
+  {
+   "name": "TOTP",
+   "definition": "Time-based One-Time Password. 6-digit code regenerates every 30s. Shared secret via QR code; HMAC-SHA1 of (secret, time).",
+   "why": "Standard MFA second factor. Google Authenticator, Authy. RFC 6238. Phishable (user can enter code on attacker's site).",
+   "category": "authentication"
+  },
+  {
+   "name": "WebAuthn",
+   "definition": "W3C standard for hardware authenticators. Public-key authentication via browser. FIDO2 underlies.",
+   "why": "Phishing-resistant: domain-bound credentials. Hardware-backed (TPM, security key, Touch ID). Foundation of passkeys.",
+   "category": "authentication"
+  },
+  {
+   "name": "FIDO2",
+   "definition": "Fast IDentity Online 2. Spec covering WebAuthn + CTAP (Client to Authenticator Protocol). YubiKeys, fingerprint readers.",
+   "why": "Industry-standard phishing-resistant auth. Hardware-backed private keys. Cannot be replayed. Modern security recommendation.",
+   "category": "authentication"
+  },
+  {
+   "name": "passkeys",
+   "definition": "Synced FIDO2 credentials. Backed up across devices via cloud (iCloud Keychain, Google Password Manager).",
+   "why": "Phishing-resistant + convenient (sync across devices). 2023+ deployment by Apple, Google, Microsoft. Replacement for passwords.",
+   "category": "authentication"
+  },
+  {
+   "name": "RBAC",
+   "definition": "Role-Based Access Control. Users assigned roles; roles have permissions. Decoupled from individuals.",
+   "why": "Standard authorization model. Easy to administer at modest scale. AWS IAM, Kubernetes, many enterprise apps. Limit: complex grant patterns hit role explosion.",
+   "category": "authorization"
+  },
+  {
+   "name": "ABAC",
+   "definition": "Attribute-Based Access Control. Decisions from user attributes + resource attributes + context (time, location).",
+   "why": "Fine-grained, expressive. Cost: complexity, harder to audit. Used where RBAC's coarseness is insufficient.",
+   "category": "authorization"
+  },
+  {
+   "name": "ReBAC",
+   "definition": "Relationship-Based Access Control. Permissions follow graph relationships. Google's Zanzibar paper.",
+   "why": "Natural fit for social/sharing apps (folder owner, file collaborators). Zanzibar inspired SpiceDB, OpenFGA. Modern fine-grained authz.",
+   "category": "authorization"
+  },
+  {
+   "name": "OAuth_scopes",
+   "definition": "Granular permissions within OAuth. 'read:profile', 'write:posts'. User consents at authorization.",
+   "why": "Per-action authorization. User informed consent. Standard in OAuth flows. Resource server enforces.",
+   "category": "authorization"
+  },
+  {
+   "name": "capabilities_security",
+   "definition": "Unforgeable token granting specific access. Possession = authorization. No identity check at use.",
+   "why": "Object-capability security. URL with secret token = capability. Used in Google Docs links, S3 presigned URLs. Different model from ACL-based.",
+   "category": "authorization"
+  },
+  {
+   "name": "SQL_injection",
+   "definition": "Attacker controls query via unparameterised input. Classic: ' OR '1'='1.",
+   "why": "OWASP #1 forever. Mitigation: parameterised queries (always, exclusively). ORMs help; raw SQL with concatenation is the bug.",
+   "category": "attack"
+  },
+  {
+   "name": "XSS_cross_site_scripting",
+   "definition": "Inject JavaScript into web page viewed by victims. Stored, reflected, DOM-based variants.",
+   "why": "Web security baseline. Mitigation: CSP, output encoding, framework escaping (React, Vue default-safe). Still common via raw HTML insertion.",
+   "category": "attack"
+  },
+  {
+   "name": "CSRF_cross_site_request_forgery",
+   "definition": "Trick logged-in user's browser into making request on attacker's behalf. Image tag triggers POST.",
+   "why": "Mitigations: SameSite cookies (default Lax in modern browsers), CSRF tokens, origin checks. SameSite + framework defaults solved most CSRF.",
+   "category": "attack"
+  },
+  {
+   "name": "SSRF",
+   "definition": "Server-Side Request Forgery. Make server fetch URLs of attacker's choosing. Often via uploaded URLs.",
+   "why": "Bypass network perimeter, access cloud metadata. Capital One breach exploited this. Mitigation: URL allowlists, IMDSv2 (cloud metadata token).",
+   "category": "attack"
+  },
+  {
+   "name": "command_injection",
+   "definition": "Attacker controls shell command via unsanitised input. system('ls ' + user_input).",
+   "why": "Equivalent to SQL injection for shell. Mitigation: never use shell interpolation; use exec arrays or shell-quote properly.",
+   "category": "attack"
+  },
+  {
+   "name": "race_condition_TOCTOU",
+   "definition": "Time of Check to Time of Use. Check property (file exists, permission valid) then use; gap exploitable.",
+   "why": "Classic Unix bug pattern. Atomic operations (openat with check + use combined). Race conditions everywhere — security-critical when across privilege boundary.",
+   "category": "attack"
+  },
+  {
+   "name": "padding_oracle_attack",
+   "definition": "Server reveals whether ciphertext padding is valid. Attacker iteratively decrypts.",
+   "why": "Broke many CBC + non-AEAD modes. POODLE, BEAST. Fix: AEAD (no separate MAC), MAC-then-encrypt or encrypt-then-MAC carefully. TLS 1.3 mandates AEAD.",
+   "category": "attack"
+  },
+  {
+   "name": "timing_side_channel",
+   "definition": "Information leaks via execution time. String compare exiting early on first mismatch reveals correct prefix.",
+   "why": "Constant-time crypto operations mandatory. == on secrets is a bug; use crypto_constant_time_eq. Cache + branch + memory timing all leak.",
+   "category": "attack"
+  },
+  {
+   "name": "MITM_attack",
+   "definition": "Man-in-the-Middle. Attacker positions between parties; decrypts + re-encrypts.",
+   "why": "Mitigation: certificates + signing + key pinning. HTTPS without verification = MITM-able. Coffee shop Wi-Fi is the classic MITM environment.",
+   "category": "attack"
+  },
+  {
+   "name": "replay_attack",
+   "definition": "Re-send captured legitimate message to repeat its effect. Captured 'transfer $100' replays.",
+   "why": "Mitigation: nonces, timestamps, sequence numbers. Modern: TLS protects via fresh keys per session. Some IoT protocols still vulnerable.",
+   "category": "attack"
+  },
+  {
+   "name": "phishing",
+   "definition": "Tricking user into entering credentials on attacker site. Spear-phishing targets specific individuals.",
+   "why": "Human factor. Most breaches start here. Mitigation: phishing-resistant MFA (WebAuthn binds to domain), training. The attack that defeats most security.",
+   "category": "attack"
+  },
+  {
+   "name": "supply_chain_attack",
+   "definition": "Compromise dependency to attack downstream. SolarWinds, log4j, npm package takeovers.",
+   "why": "Modern systems have hundreds of deps. Mitigations: SBOM, signed releases (Sigstore), reproducible builds, SLSA framework. The hardest attack class to defend against.",
+   "category": "attack"
+  },
+  {
+   "name": "buffer_overflow",
+   "definition": "Write beyond allocated buffer. Stack overflow overwrites return address; heap overflow corrupts adjacent data.",
+   "why": "Classic memory-safety bug. C/C++ vulnerable. Mitigations: stack canaries, ASLR, DEP, CFI. Memory-safe languages (Rust) eliminate at compile time.",
+   "category": "memory_safety"
+  },
+  {
+   "name": "use_after_free",
+   "definition": "Access freed memory. Pointer points to memory now owned by another allocation.",
+   "why": "Subtle + exploitable. Race-condition variants. Mitigations: smart pointers, RAII, Rust borrow checker. Memory-safe languages prevent at compile time.",
+   "category": "memory_safety"
+  },
+  {
+   "name": "heap_spraying",
+   "definition": "Allocate many objects to fill heap with attacker-controlled data. Increases UAF/overflow exploit reliability.",
+   "why": "Browser exploit technique. JavaScript arrays + objects spray heap. Mitigations: heap isolation (PartitionAlloc), heap layout randomisation.",
+   "category": "memory_safety"
+  },
+  {
+   "name": "stack_canary",
+   "definition": "Random value placed before return address. Check before return; if changed, stack overflow detected; abort.",
+   "why": "Compiler-inserted (-fstack-protector). Catches naïve stack overflows. Bypassed by leaking canary or precise overwrite. Standard mitigation.",
+   "category": "memory_safety"
+  },
+  {
+   "name": "ASLR",
+   "definition": "Address Space Layout Randomization. Randomise stack, heap, libraries position per process.",
+   "why": "Makes 'jump to specific address' exploits hard — attacker must leak addresses first. Standard since mid-2000s. PIE (Position Independent Executable) randomises text too.",
+   "category": "memory_safety"
+  },
+  {
+   "name": "DEP_NX_bit",
+   "definition": "Data Execution Prevention. Pages marked W^X (writable XOR executable). Code in data region can't execute.",
+   "why": "Prevents classic shellcode injection. Bypass: ROP (Return-Oriented Programming) uses existing code. Standard since 2003 (NX bit hardware support).",
+   "category": "memory_safety"
+  },
+  {
+   "name": "control_flow_integrity",
+   "definition": "CFI. Verify control flow follows valid paths (indirect call targets in allowed set).",
+   "why": "Defeats ROP. Compiler-enforced. Used in Windows + Linux. Cost: small runtime overhead. Effective against modern exploit techniques.",
+   "category": "memory_safety"
+  },
+  {
+   "name": "memory_safe_languages",
+   "definition": "Rust, Go, Java, Python. Memory safety enforced by compiler / runtime. No UAF, no buffer overflow.",
+   "why": "Eliminates ~70% of exploitable bugs in C/C++ code (Microsoft + Google data). Rust gets memory safety + performance. CHERI hardware approach.",
+   "category": "memory_safety"
+  },
+  {
+   "name": "zero_knowledge_proof",
+   "definition": "Prover convinces verifier statement is true without revealing why. Classic example: prove you know secret password without sending it.",
+   "why": "Privacy + scalability. zk-SNARKs in Zcash, zk-STARKs in StarkNet. ZK rollups scale Ethereum 100x+. Major area of modern crypto.",
+   "category": "modern_crypto"
+  },
+  {
+   "name": "zk_SNARK",
+   "definition": "Zero-Knowledge Succinct Non-interactive Argument of Knowledge. Constant-size proof regardless of statement complexity.",
+   "why": "Practical for blockchain (Zcash, zk-rollups). Trusted setup required (concern). Schemes: Groth16, PLONK, Marlin.",
+   "category": "modern_crypto"
+  },
+  {
+   "name": "zk_STARK",
+   "definition": "Scalable Transparent Argument of Knowledge. Larger proofs than SNARKs, no trusted setup, post-quantum.",
+   "why": "Transparent (no toxic-waste ceremony). StarkNet, Polygon Miden. Trade-off: larger proofs vs no trust assumption.",
+   "category": "modern_crypto"
+  },
+  {
+   "name": "homomorphic_encryption",
+   "definition": "Compute on encrypted data without decrypting. Operations on ciphertext produce encrypted result.",
+   "why": "Privacy-preserving compute. Fully Homomorphic Encryption (FHE) supports arbitrary computation but slow (~1M-1B× slowdown). Levelled HE for bounded depth.",
+   "category": "modern_crypto"
+  },
+  {
+   "name": "secure_multiparty_computation",
+   "definition": "MPC. Multiple parties jointly compute function over private inputs without revealing inputs.",
+   "why": "Distributed key signing (threshold MPC), private set intersection. Used in cryptocurrency custody (Fireblocks). Practical for specific computations.",
+   "category": "modern_crypto"
+  },
+  {
+   "name": "threshold_cryptography",
+   "definition": "Split key among N parties; M of N must cooperate to use. (M, N) threshold.",
+   "why": "No single point of compromise. Used in cryptocurrency wallets, signing services. Shamir Secret Sharing + threshold ECDSA.",
+   "category": "modern_crypto"
+  },
+  {
+   "name": "differential_privacy",
+   "definition": "Add calibrated noise so single-record presence/absence undetectable from output. ε-DP formal definition.",
+   "why": "Privacy-preserving statistics. Used by Apple (typing data), Google (Chrome telemetry), US Census 2020. Mathematically rigorous privacy guarantee.",
+   "category": "modern_crypto"
+  },
+  {
+   "name": "quantum_threat",
+   "definition": "Sufficiently large quantum computer breaks RSA, ECC via Shor's algorithm. AES-256 + SHA-256 weakened but viable.",
+   "why": "Existential threat to current asymmetric crypto. 'Harvest now, decrypt later': adversaries store encrypted data, decrypt when quantum available. NIST PQC standardising replacements.",
+   "category": "post_quantum"
+  },
+  {
+   "name": "Kyber_post_quantum_KEM",
+   "definition": "ML-KEM (formerly Kyber). NIST-standardised post-quantum key encapsulation. Lattice-based.",
+   "why": "Standard PQ replacement for ECDH. Cloudflare, Google deploying. Hybrid: combine with classical ECDH for transition. Stable + audited.",
+   "category": "post_quantum"
+  },
+  {
+   "name": "Dilithium_post_quantum_signature",
+   "definition": "ML-DSA (formerly Dilithium). NIST-standardised post-quantum signature scheme. Lattice-based.",
+   "why": "Standard PQ replacement for ECDSA/Ed25519. Larger keys + signatures than classical. NIST FIPS 204.",
+   "category": "post_quantum"
+  },
+  {
+   "name": "SPHINCS_hash_signature",
+   "definition": "SLH-DSA (formerly SPHINCS+). Hash-based post-quantum signature. NIST FIPS 205.",
+   "why": "Different mathematical foundation from lattice-based. Larger signatures (~8 KB). Used where lattice-based concerns persist; defence in depth via algorithm diversity.",
+   "category": "post_quantum"
+  },
+  {
+   "name": "harvest_now_decrypt_later",
+   "definition": "Adversary collects encrypted traffic today; decrypts when quantum computer available (10-20 years estimated).",
+   "why": "Drives PQ migration urgency. Long-term secrets (state secrets, medical records) need PQ protection NOW. Forward-secret modern protocols help; harvested handshakes still vulnerable.",
+   "category": "post_quantum"
+  },
+  {
+   "name": "HSM_hardware_security_module",
+   "definition": "Tamper-resistant hardware storing keys. Performs crypto operations; keys never extractable.",
+   "why": "CA root keys, code signing, financial transactions. Network-attached (CloudHSM) or PCIe cards. FIPS 140-3 certification levels indicate tamper resistance.",
+   "category": "infrastructure"
+  },
+  {
+   "name": "TPM_trusted_platform_module",
+   "definition": "Onboard chip storing platform-specific keys + measurements. Standard in modern PCs.",
+   "why": "Disk encryption (BitLocker), boot integrity (Secure Boot), key storage. Mandatory for Windows 11. Foundation of confidential computing.",
+   "category": "infrastructure"
+  },
+  {
+   "name": "TEE_trusted_execution_environment",
+   "definition": "CPU-enforced isolated execution. Intel SGX (process-level), AMD SEV (VM-level), ARM TrustZone (system).",
+   "why": "Run code where even host OS / cloud provider can't see. Confidential VMs (AWS Nitro Enclaves, Azure Confidential Computing, GCP Confidential Spaces). Side-channel vulnerable historically.",
+   "category": "infrastructure"
+  },
+  {
+   "name": "confidential_computing",
+   "definition": "Protect data in use (not just at rest + in transit). TEE-based VMs that encrypt memory from host.",
+   "why": "Cloud customers don't trust cloud provider with data. Confidential VMs run encrypted; provider sees ciphertext only. Major investment area: AWS, Azure, GCP all offer.",
+   "category": "infrastructure"
+  },
+  {
+   "name": "secrets_management",
+   "definition": "Secure storage + access of credentials, keys, certificates. HashiCorp Vault, AWS Secrets Manager, GCP Secret Manager.",
+   "why": "Secrets in code = leaked. Vault provides API + audit + rotation. Best practice: short-lived dynamic credentials, no static secrets.",
+   "category": "infrastructure"
+  },
+  {
+   "name": "SBOM",
+   "definition": "Software Bill of Materials. List of all components + versions in software. SPDX, CycloneDX formats.",
+   "why": "Inventory for vulnerability response. Log4Shell: who has vulnerable log4j? SBOM answers immediately. US executive order 2021 mandates for federal. Industry trend.",
+   "category": "supply_chain"
+  },
+  {
+   "name": "Sigstore_cosign",
+   "definition": "Open-source signing infrastructure. Sign container images, releases. Public transparency log (Rekor).",
+   "why": "Provenance + integrity. Verify what you deploy was published by the claimed party. Adopted in major container ecosystems (Kubernetes, npm).",
+   "category": "supply_chain"
+  },
+  {
+   "name": "SLSA_supply_chain_levels",
+   "definition": "Supply chain Levels for Software Artifacts. Levels 1-4 of increasing build integrity + provenance.",
+   "why": "Framework for supply chain security maturity. L1: build script; L4: hermetic, reproducible, two-party. Google + industry collaboration.",
+   "category": "supply_chain"
+  },
+  {
+   "name": "reproducible_builds",
+   "definition": "Same source → byte-identical binary, regardless of who/when/where built.",
+   "why": "Verify upstream binary matches source. Debian, Tor working on. Hard but achievable. Foundation of supply-chain trust.",
+   "category": "supply_chain"
+  },
+  {
+   "name": "content_security_policy",
+   "definition": "CSP. HTTP header restricting which scripts/styles/etc. browser may load.",
+   "why": "XSS mitigation. 'script-src self' prevents inline + external scripts. Hard to deploy on existing apps (refactoring required). New apps should adopt.",
+   "category": "web_security"
+  },
+  {
+   "name": "HSTS",
+   "definition": "HTTP Strict Transport Security. Header telling browser to use HTTPS only for this domain.",
+   "why": "Prevents protocol downgrade attacks (HTTP → HTTPS). Preload list ships with browsers. Standard web security baseline.",
+   "category": "web_security"
+  },
+  {
+   "name": "SRI_subresource_integrity",
+   "definition": "Subresource Integrity. Hash of expected script content in script tag. Browser verifies before executing.",
+   "why": "Prevents CDN compromise affecting your site. Standard for important external scripts. Cost: must update hash when CDN updates script.",
+   "category": "web_security"
+  },
+  {
+   "name": "CORS",
+   "definition": "Cross-Origin Resource Sharing. Browser policy controlling cross-origin requests via Access-Control headers.",
+   "why": "Same-origin policy is fundamental browser security. CORS allows controlled exceptions. Common dev pain point + occasional security bypass.",
+   "category": "web_security"
+  }
+ ],
+ "rules": [
+  {
+   "name": "encryption_provides_confidentiality_not_integrity",
+   "if": [
+    "data is encrypted without authentication"
+   ],
+   "then": [
+    "attacker can modify ciphertext (causing meaningful decryption changes)"
+   ],
+   "why": "Bit flip in CBC ciphertext flips same bit in plaintext block. CTR mode: any bit flip propagates directly. Need MAC (HMAC) or AEAD (GCM) for integrity. Common mistake.",
+   "soundness_category": "referential_transparency"
+  },
+  {
+   "name": "nonces_must_never_repeat",
+   "if": [
+    "AES-GCM uses same nonce twice with same key"
+   ],
+   "then": [
+    "both plaintexts are recovered + authentication key leaks"
+   ],
+   "why": "Catastrophic. GCM uses nonce in counter mode + GMAC; reuse breaks both. Generate nonces from secure RNG; large enough to make collision astronomically unlikely (96 bits + random).",
+   "soundness_category": "referential_transparency"
+  },
+  {
+   "name": "constant_time_required_for_secret_comparisons",
+   "if": [
+    "a comparison's runtime depends on secret content"
+   ],
+   "then": [
+    "timing attack reveals the secret"
+   ],
+   "why": "Early-exit string compare leaks correct prefix. memcmp leaks. Use crypto_constant_time_eq or equivalent. Critical for MAC verification, password check, etc.",
+   "soundness_category": "referential_transparency"
+  },
+  {
+   "name": "forward_secrecy_protects_past_sessions",
+   "if": [
+    "key exchange uses ephemeral keys"
+   ],
+   "then": [
+    "compromise of long-term key doesn't expose past sessions"
+   ],
+   "why": "Each session has its own DH key, discarded after. Adversary stealing long-term key tomorrow can't decrypt today's traffic. Required property in modern protocols.",
+   "soundness_category": "referential_transparency"
+  },
+  {
+   "name": "MFA_significantly_raises_attack_bar",
+   "if": [
+    "account requires MFA"
+   ],
+   "then": [
+    "compromise of one factor is insufficient"
+   ],
+   "why": "Stolen password alone useless; attacker needs second factor too. Microsoft data: MFA blocks 99.9% of automated attacks. Universal recommendation for important accounts.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "WebAuthn_resistant_to_phishing",
+   "if": [
+    "auth uses domain-bound WebAuthn credentials"
+   ],
+   "then": [
+    "phishing site can't extract or replay credentials"
+   ],
+   "why": "Credentials bound to origin. Attacker site can't produce valid response. TOTP, SMS — phishable. WebAuthn — not. The reason it's mandated for high-value accounts.",
+   "soundness_category": "referential_transparency"
+  },
+  {
+   "name": "memory_safety_eliminates_class_of_bugs",
+   "if": [
+    "code is in memory-safe language"
+   ],
+   "then": [
+    "~70% of historically-exploitable bugs are impossible"
+   ],
+   "why": "Microsoft + Google data: most CVEs in C/C++ are memory safety. Rust/Go/Java prevent at compile/runtime. Tradeoff: performance for some workloads, learning curve.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "parameterised_queries_eliminate_SQL_injection",
+   "if": [
+    "all SQL queries use parameter binding"
+   ],
+   "then": [
+    "SQL injection is impossible"
+   ],
+   "why": "Parameters never interpreted as SQL. Mitigation is complete + simple. Failures: developer forgets, uses string concat, ORM exposes raw SQL. Pure mechanical fix.",
+   "soundness_category": "referential_transparency"
+  },
+  {
+   "name": "principle_of_least_privilege_limits_blast_radius",
+   "if": [
+    "service has only permissions needed for its task"
+   ],
+   "then": [
+    "compromise yields limited access"
+   ],
+   "why": "Default-allow systems give compromised service everything. Default-deny + minimum grant limits damage. Compromised backup service can only read what it backs up, not write to other systems.",
+   "soundness_category": "referential_transparency"
+  },
+  {
+   "name": "ECC_smaller_than_RSA_for_equivalent_security",
+   "if": [
+    "target security level is 128-bit"
+   ],
+   "then": [
+    "ECC needs 256-bit keys vs RSA's 3072-bit"
+   ],
+   "why": "Elliptic curve discrete log is harder than factoring at equivalent size. ECC: smaller keys + faster operations. Modern protocols favour ECC (TLS 1.3 default).",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "Argon2_memory_hard_resists_GPU",
+   "if": [
+    "password hash uses Argon2 with sufficient memory cost"
+   ],
+   "then": [
+    "GPU/ASIC attacks much less effective than against PBKDF2/bcrypt"
+   ],
+   "why": "Memory-hard functions force attacker to use slow GPU memory. Each guess costs memory + time. Argon2: 64+ MB memory + 1+ seconds per guess. Cost: server pays similar.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "AEAD_eliminates_padding_oracle",
+   "if": [
+    "encryption uses AEAD (GCM, ChaCha20-Poly1305)"
+   ],
+   "then": [
+    "padding oracle attacks don't apply"
+   ],
+   "why": "AEAD's MAC-on-everything model integrates auth into encryption. No separate padding to leak. POODLE, BEAST all targeted MAC-then-encrypt + CBC padding. AEAD by design avoids.",
+   "soundness_category": "referential_transparency"
+  },
+  {
+   "name": "post_quantum_migration_required_now",
+   "if": [
+    "data must remain secret for 20+ years"
+   ],
+   "then": [
+    "post-quantum migration is required today"
+   ],
+   "why": "Harvest-now-decrypt-later: adversary saves traffic today, decrypts when quantum computer arrives (10-20 years). Forward secrecy doesn't help if handshake captured. Long-term secrets need PQ now.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "trusted_third_parties_create_attack_surface",
+   "if": [
+    "a system depends on trusted intermediary"
+   ],
+   "then": [
+    "compromise of intermediary breaks security"
+   ],
+   "why": "CA compromise: any cert signs. Identity provider: SSO breaks. Cloud provider: confidential computing tries to mitigate. Minimise trusted parties; verify independently when possible.",
+   "soundness_category": "referential_transparency"
+  },
+  {
+   "name": "supply_chain_only_as_strong_as_weakest_dep",
+   "if": [
+    "a system depends on many libraries"
+   ],
+   "then": [
+    "compromise of any can compromise the system"
+   ],
+   "why": "log4shell, SolarWinds, npm package takeovers. Hard problem. Mitigations: SBOM (inventory), Sigstore (verification), pinning + auditing, minimising dependencies. The hardest defence.",
+   "soundness_category": "referential_transparency"
+  },
+  {
+   "name": "defense_in_depth_compensates_for_inevitable_failures",
+   "if": [
+    "security relies on a single control"
+   ],
+   "then": [
+    "its failure means total compromise"
+   ],
+   "why": "No control is perfect. Multiple layers: network filtering + endpoint protection + application security + monitoring + response. Compromise of one detected/limited by others. Standard architectural principle.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "zero_trust_replaces_perimeter_trust",
+   "if": [
+    "network is no longer the trust boundary"
+   ],
+   "then": [
+    "every request must be authenticated regardless of source"
+   ],
+   "why": "Perimeter breached regularly. mTLS between services, identity-aware proxies, per-request auth. Standard in modern cloud-native + distributed systems.",
+   "soundness_category": "referential_transparency"
+  },
+  {
+   "name": "phishing_resistant_MFA_required_for_high_value",
+   "if": [
+    "account has high blast radius"
+   ],
+   "then": [
+    "WebAuthn/FIDO2 should be required, not TOTP"
+   ],
+   "why": "TOTP phishable: user enters code on attacker site. WebAuthn domain-bound. Major orgs (Google, Cloudflare) mandate FIDO2 for staff. Industry direction.",
+   "soundness_category": "referential_transparency"
+  },
+  {
+   "name": "zero_knowledge_proves_without_revealing",
+   "if": [
+    "a ZK proof is verified"
+   ],
+   "then": [
+    "verifier learns nothing beyond the statement's truth"
+   ],
+   "why": "Mathematical guarantee. Used for privacy (Zcash hides transactions) + scaling (zk-rollups). Proofs are succinct + non-interactive. Major area of modern crypto.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "human_factor_dominates_security_failures",
+   "if": [
+    "a system protects against perfect attackers but not realistic users"
+   ],
+   "then": [
+    "security fails via user error"
+   ],
+   "why": "Most breaches start with phishing or weak passwords. Technical controls (WebAuthn, secure defaults, prompt-based confirmation) compensate. Verizon DBIR: human factor in 74% of breaches.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "secure_by_default_protects_naive_users",
+   "if": [
+    "system defaults are secure"
+   ],
+   "then": [
+    "the average user gets protection without action"
+   ],
+   "why": "Most users keep defaults. Insecure defaults = widespread vulnerability. Modern frameworks (React escapes by default, browsers default to HTTPS) embed this principle.",
+   "soundness_category": "referential_transparency"
+  }
+ ],
+ "exclusions": [],
+ "parent_mt": "computer_architecture",
+ "relations": [
+  {
+   "src": "security_and_cryptography",
+   "edge": "genlMt",
+   "tgt": "compiler_theory"
+  }
+ ]
+}

@@ -1,0 +1,288 @@
+{
+  "id": "enact",
+  "version": "1.0.0",
+  "depends_on": [],
+  "description": "The UNIVERSAL prose->action faculty (the jabberwock's own design): turn ANY grounded prose-procedure into an executable plan in ANY world. The boundary: MECHANISM IS SEEDED, MEANING IS READ, BINDING IS AN EDGE. Seeded ONCE here (domain-blind): the generic OperationPrimitives (what an action achieves: postcondition + role-signature), the thematic roles + the selectional-match role binder, the plan algebra (Act/Seq/Fix/While/Branch) + the execute-on-tick reflex + the satisfaction fold (Fix reuses relax_to_fixpoint), and the operator-selection JOIN. Grounded PER-DOMAIN by reading (never coded): the verb-primitives, the role/noun concepts, the world OPERATORS (a world seed lays Operator--implements-->primitive--applies_in-->Microtheory), and the entities (ingested as nodes). A verb with no enact-able primitive raises an Impasse -> the author-a-new-primitive loop (the taxonomy grows). The navigation game is ONE binding: move->change_location, theme=avatar, goal=goal_cell, arc3_game lays four edges.",
+  "microtheory": {
+    "name": "enact",
+    "description": "Comprehension-to-action: a grounded procedure is a PLAN TREE (Act/Seq/Fix/While/Branch) over OperationPrimitives whose role-slots are BOUND to entities of the loaded world by selectional match, whose concrete operator is SELECTED by a graph join on implements/applies_in, and whose goal is the satisfaction FOLD over the tree. Executed on tick(); RESET makes hypothesis-testing penalty-free. The decision lives in the edge set, never in the adapter."
+  },
+  "concepts": [
+    {
+      "name": "agent",
+      "domain": "role",
+      "comment": "thematic role: the doer / who acts (the player). theme-role slot."
+    },
+    {
+      "name": "patient",
+      "domain": "role",
+      "comment": "thematic role: the entity acted upon / changed."
+    },
+    {
+      "name": "theme",
+      "domain": "role",
+      "comment": "thematic role: the entity moved / placed / the figure of the act."
+    },
+    {
+      "name": "co_theme",
+      "domain": "role",
+      "comment": "thematic role: the second entity in a binary act (swap/combine with)."
+    },
+    {
+      "name": "instrument",
+      "domain": "role",
+      "comment": "thematic role: the tool/means by which the act is done."
+    },
+    {
+      "name": "source",
+      "domain": "role",
+      "comment": "thematic role: the from-location/state."
+    },
+    {
+      "name": "goal",
+      "domain": "role",
+      "comment": "thematic role: the to-location/target the act drives toward."
+    },
+    {
+      "name": "manner",
+      "domain": "role",
+      "comment": "thematic role: how (the verb's modifiers specialise the primitive)."
+    },
+    {
+      "name": "operation_primitive",
+      "domain": "enact",
+      "comment": "GENUS: a generic action-meaning carrying a POSTCONDITION (the state it produces, a Bool Term over the bound roles) + a ROLE-SIGNATURE. Concrete HOW (the enact operator) is supplied per-world by an implements edge, not here. A verb grounds (genus chain) to one of these."
+    },
+    {
+      "name": "plan_act",
+      "domain": "plan",
+      "comment": "plan algebra leaf: Act(primitive, bindings) -> emit the bound operator; satisfaction = the primitive's postcondition."
+    },
+    {
+      "name": "plan_seq",
+      "domain": "plan",
+      "comment": "plan algebra: Seq([p1,p2,...]) from 'then'/','; satisfaction = sat(last) under frame persistence."
+    },
+    {
+      "name": "plan_fix",
+      "domain": "plan",
+      "comment": "plan algebra: Fix(guard, body) from 'repeatedly B until P' / 'until none remain' -> re-fire body to FIXPOINT; satisfaction = guard. Reuses the relax_to_fixpoint Rust primitive."
+    },
+    {
+      "name": "plan_while",
+      "domain": "plan",
+      "comment": "plan algebra: While(cond, body) = Fix(NOT cond, body) from 'while P, B'."
+    },
+    {
+      "name": "plan_branch",
+      "domain": "plan",
+      "comment": "plan algebra: Branch(P, X, Y) from 'if P then X else Y'; satisfaction = sat(taken branch)."
+    },
+    {
+      "name": "satisfaction_fold",
+      "domain": "plan",
+      "comment": "the goal of a plan = a STRUCTURAL fold over its tree (sat(Seq)=sat(last), sat(Fix)=guard, sat(Branch)=sat(taken), sat(Act)=postcondition). Domain-blind: reads only the SHAPE of the composition, never which world the leaves touch."
+    }
+  ],
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "OperationPrimitive",
+      "attrs": {
+        "name": "change_location",
+        "roles": "theme,goal",
+        "postcondition": "{\"type\":\"Eq\",\"a\":{\"type\":\"Attr\",\"node\":{\"type\":\"Var\",\"name\":\"theme\"},\"key\":\"at\"},\"b\":{\"type\":\"Var\",\"name\":\"goal\"}}",
+        "verbs": "move,go,travel,walk,reach,navigate",
+        "gloss": "the theme comes to be AT the goal (move/travel/navigate). HOW: a world operator (router / pick-and-place / ...)."
+      }
+    },
+    {
+      "local_id": 1,
+      "type": "OperationPrimitive",
+      "attrs": {
+        "name": "transform_attribute",
+        "roles": "patient,attribute,target",
+        "postcondition": "{\"type\":\"Eq\",\"a\":{\"type\":\"AttrByName\",\"node\":{\"type\":\"Var\",\"name\":\"patient\"},\"key\":{\"type\":\"Var\",\"name\":\"attribute\"}},\"b\":{\"type\":\"Var\",\"name\":\"target\"}}",
+        "verbs": "cook,fry,heat,paint,colour,toggle,change,set",
+        "gloss": "the patient's <attribute> becomes <target> (fry: state raw->golden; toggle: colour flips)."
+      }
+    },
+    {
+      "local_id": 2,
+      "type": "OperationPrimitive",
+      "attrs": {
+        "name": "exchange",
+        "roles": "theme,co_theme",
+        "postcondition": "swapped(theme,co_theme)",
+        "verbs": "swap,exchange,trade",
+        "gloss": "theme and co_theme exchange their positions/values (the sort inner step)."
+      }
+    },
+    {
+      "local_id": 3,
+      "type": "OperationPrimitive",
+      "attrs": {
+        "name": "put",
+        "roles": "theme,goal,relation",
+        "postcondition": "{\"type\":\"Exists\",\"source\":{\"type\":\"Neighbours\",\"node\":{\"type\":\"Var\",\"name\":\"theme\"},\"edge_type\":\"on\"},\"var_name\":\"x\",\"predicate\":{\"type\":\"Eq\",\"a\":{\"type\":\"Var\",\"name\":\"x\"},\"b\":{\"type\":\"Var\",\"name\":\"goal\"}}}",
+        "verbs": "put,place,stack,arrange,set",
+        "gloss": "theme stands in <relation> (on/in) to goal (stack red on blue)."
+      }
+    },
+    {
+      "local_id": 4,
+      "type": "OperationPrimitive",
+      "attrs": {
+        "name": "separate",
+        "roles": "patient,instrument",
+        "postcondition": "divided(patient)",
+        "verbs": "cut,dice,split,divide,chop,slice",
+        "gloss": "the patient is divided (with the instrument)."
+      }
+    },
+    {
+      "local_id": 5,
+      "type": "OperationPrimitive",
+      "attrs": {
+        "name": "combine",
+        "roles": "theme,co_theme",
+        "postcondition": "combined(theme,co_theme)",
+        "verbs": "combine,join,mix,merge,add",
+        "gloss": "theme and co_theme become one."
+      }
+    },
+    {
+      "local_id": 6,
+      "type": "OperationPrimitive",
+      "attrs": {
+        "name": "create",
+        "roles": "theme",
+        "postcondition": "{\"type\":\"Gte\",\"a\":{\"type\":\"Count\",\"source\":{\"type\":\"Var\",\"name\":\"theme\"}},\"b\":{\"type\":\"Lit\",\"value\":1}}",
+        "verbs": "make,build,create,spawn,draw",
+        "gloss": "the theme comes to exist."
+      }
+    },
+    {
+      "local_id": 7,
+      "type": "OperationPrimitive",
+      "attrs": {
+        "name": "destroy",
+        "roles": "patient",
+        "postcondition": "{\"type\":\"Eq\",\"a\":{\"type\":\"Count\",\"source\":{\"type\":\"Var\",\"name\":\"patient\"}},\"b\":{\"type\":\"Lit\",\"value\":0}}",
+        "verbs": "remove,clear,delete,destroy,disappear,eliminate",
+        "gloss": "the patient ceases to exist (clear the lines / remove matched tiles)."
+      }
+    },
+    {
+      "local_id": 8,
+      "type": "OperationPrimitive",
+      "attrs": {
+        "name": "select",
+        "roles": "theme",
+        "postcondition": "{\"type\":\"Eq\",\"a\":{\"type\":\"Attr\",\"node\":{\"type\":\"Var\",\"name\":\"theme\"},\"key\":\"selected\"},\"b\":{\"type\":\"Lit\",\"value\":true}}",
+        "verbs": "pick,choose,select,collect,take,grab",
+        "gloss": "the theme becomes selected/collected."
+      }
+    },
+    {
+      "local_id": 9,
+      "type": "OperationPrimitive",
+      "attrs": {
+        "name": "signal",
+        "roles": "theme",
+        "postcondition": "emitted(theme)",
+        "verbs": "say,signal,press,act,fire,activate",
+        "gloss": "an act-in-place / point-act (press a button, fire). HOW: the world's act-at-a-point operator."
+      }
+    }
+  ],
+  "edges": [],
+  "productions": [
+    {
+      "provenance": "seed:enact:act-uses-primitive",
+      "src": {
+        "type": "PlanAct",
+        "var": "a"
+      },
+      "edge_type": "uses_primitive",
+      "tgt": {
+        "type": "OperationPrimitive",
+        "var": "p"
+      }
+    },
+    {
+      "provenance": "seed:enact:operator-implements-primitive",
+      "src": {
+        "type": "Operator",
+        "var": "o"
+      },
+      "edge_type": "implements",
+      "tgt": {
+        "type": "OperationPrimitive",
+        "var": "p"
+      }
+    },
+    {
+      "provenance": "seed:enact:operator-applies-in-world",
+      "src": {
+        "type": "Operator",
+        "var": "o"
+      },
+      "edge_type": "applies_in",
+      "tgt": {
+        "type": "Microtheory",
+        "var": "w"
+      }
+    },
+    {
+      "provenance": "seed:enact:act-enact-operator",
+      "src": {
+        "type": "PlanAct",
+        "var": "a"
+      },
+      "edge_type": "enact",
+      "tgt": {
+        "type": "Operator",
+        "var": "o"
+      }
+    }
+  ],
+  "rules": [
+    {
+      "name": "select_operator",
+      "comment": "THE OPERATOR-SELECTION JOIN \u2014 bind each Act to the concrete operator that implements its primitive AND applies in the world the agent is currently in. A graph JOIN (the shared var w), never a Python if. Same verb 'move' -> spatial_router in arc3_game, pick_and_place in blocks_world, purely by which edges the world seed laid.",
+      "match": [
+        [
+          "a",
+          "uses_primitive",
+          "p"
+        ],
+        [
+          "o",
+          "implements",
+          "p"
+        ],
+        [
+          "o",
+          "applies_in",
+          "w"
+        ],
+        [
+          "ag",
+          "operates_in",
+          "w"
+        ]
+      ],
+      "where": null,
+      "effects": [
+        [
+          "add_edge",
+          "a",
+          "enact",
+          "o"
+        ]
+      ]
+    }
+  ],
+  "goals": []
+}

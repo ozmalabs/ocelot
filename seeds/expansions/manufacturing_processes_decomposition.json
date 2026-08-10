@@ -1,0 +1,118 @@
+{
+  "id": "manufacturing_processes_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "GD_T",
+  "in_microtheory": "engineering",
+  "description": "Manufacturing processes decomposed. Machining variants (turning, milling, drilling, grinding, EDM), additive (FDM, SLA, SLS, DMLS, MJF), forming (forging, stamping, sheet metal), joining (welding variants, brazing, adhesives), GD&T datum reference frames + material conditions.",
+  "sub_mechanisms": [
+    {
+      "name": "CNC_turning_lathe",
+      "definition": "Rotating workpiece; single-point cutting tool. Z (axial) + X (radial) axes. Live tooling adds Y.",
+      "why": "Cylindrical parts. Shafts, bushings, fittings. Modern CNC: complex profiles, threading, parting. Standard process.",
+      "category": "mfg_process_mechanism"
+    },
+    {
+      "name": "CNC_milling_axes",
+      "definition": "3-axis: linear X/Y/Z. 5-axis: + rotational A/B. Continuous 5-axis for complex surfaces.",
+      "why": "Complex 3D. Aerospace parts, mold tooling. 5-axis enables single setup for complex geometries. Industry standard.",
+      "category": "mfg_process_mechanism"
+    },
+    {
+      "name": "grinding_precision",
+      "definition": "Abrasive wheel removes material. μm precision. Cylindrical, surface, centerless.",
+      "why": "Tight tolerance + smooth finish. Bearing races, gauges, dies. Slower than turning/milling; precision unmatched.",
+      "category": "mfg_process_mechanism"
+    },
+    {
+      "name": "EDM_electrical_discharge",
+      "definition": "Spark erodes material. Wire EDM cuts, sinker EDM forms cavities.",
+      "why": "Hard materials, complex shapes. Die-making, aerospace. No cutting forces — fine features possible. Slow but precise.",
+      "category": "mfg_process_mechanism"
+    },
+    {
+      "name": "FDM_filament",
+      "definition": "Fused Deposition Modeling. Heated nozzle extrudes thermoplastic filament.",
+      "why": "Most common additive. Cheap, accessible. PLA, ABS, PETG, nylon, TPU. Hobby + functional prototypes.",
+      "category": "mfg_process_mechanism"
+    },
+    {
+      "name": "SLA_DLP_resin",
+      "definition": "Stereolithography. UV-cured liquid resin. Layer-by-layer. Very fine resolution.",
+      "why": "High detail. Dental, jewelry, miniatures. Photopolymer chemistry. Brittle vs FDM.",
+      "category": "mfg_process_mechanism"
+    },
+    {
+      "name": "SLS_powder",
+      "definition": "Selective Laser Sintering. Laser fuses nylon powder.",
+      "why": "Functional plastic parts. No supports needed (powder bed). Stronger than FDM. Industrial process.",
+      "category": "mfg_process_mechanism"
+    },
+    {
+      "name": "DMLS_metal_AM",
+      "definition": "Direct Metal Laser Sintering. Laser melts metal powder.",
+      "why": "Production metal parts. Titanium, Inconel, aluminum. Aerospace + medical. Topology-optimised brackets, jet nozzles.",
+      "category": "mfg_process_mechanism"
+    },
+    {
+      "name": "forging_hot_cold",
+      "definition": "Hot: above recrystallisation, less force, complex shapes. Cold: stronger, tight tolerances.",
+      "why": "Critical parts (crankshafts, connecting rods, blades). Grain flow follows shape → strength. Standard for high-stress.",
+      "category": "mfg_process_mechanism"
+    },
+    {
+      "name": "sheet_metal_forming",
+      "definition": "Bending, drawing, stamping, hydroforming. From flat sheet to 3D shape.",
+      "why": "Automotive bodies, appliances, enclosures. Stamping high-volume; press brake low-volume. Foundation of mass production.",
+      "category": "mfg_process_mechanism"
+    },
+    {
+      "name": "welding_processes_variants",
+      "definition": "SMAW (stick), GMAW (MIG), GTAW (TIG), FCAW (flux core), SAW (submerged arc), laser, friction stir.",
+      "why": "Different materials, joint types, productivity. MIG: high deposition; TIG: thin/precise; FSW: aluminium without melting.",
+      "category": "mfg_process_mechanism"
+    },
+    {
+      "name": "GDT_datum_reference_frame",
+      "definition": "Primary, secondary, tertiary datums. Establish coordinate system for measurement.",
+      "why": "Consistent inspection. Datum features physically constrain part. Without DRF, GD&T tolerances meaningless. ASME Y14.5.",
+      "category": "mfg_process_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "5_axis_eliminates_setups",
+      "if": ["part has complex geometry on multiple faces"],
+      "then": ["5-axis reduces setups → less error accumulation"],
+      "why": "3-axis: re-fixture for each face = stack-up tolerance error. 5-axis: one setup. Reduces error. Higher capital cost; lower per-part cost.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "DFM_design_for_manufacturing",
+      "if": ["part designed without considering manufacturing"],
+      "then": ["cost increases substantially or part is unmanufacturable"],
+      "why": "DFM: minimum draft, uniform wall, accessible features. Without: expensive workarounds. Standard collaboration: design + manufacturing engineering.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "additive_enables_internal_features",
+      "if": ["part requires internal complexity"],
+      "then": ["additive manufacturing enables what subtractive can't"],
+      "why": "Internal lattices, cooling channels, organic shapes. SpaceX, GE LEAP nozzle, medical implants. Topology optimisation maximises.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "forging_grain_flow_strength",
+      "if": ["part is forged"],
+      "then": ["grain follows part shape → higher fatigue strength"],
+      "why": "Random grain in cast = weak. Aligned grain in forged = strong along grain. Crankshafts always forged, never cast. Standard for high-stress.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "GDT_DRF_required_for_meaningful_inspection",
+      "if": ["part has GD&T tolerances"],
+      "then": ["datum reference frame establishes measurement context"],
+      "why": "Without DRF: 'within 0.1 mm of where?'. With DRF: precise reference. Standard practice. ASME Y14.5 enforces datum hierarchy.",
+      "soundness_category": "referential_transparency"
+    }
+  ]
+}

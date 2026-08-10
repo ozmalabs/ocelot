@@ -1,0 +1,46 @@
+{
+  "id": "adoption_safety",
+  "version": "1.0.0",
+  "depends_on": [],
+  "capability_keys": [
+    "adoption_safety",
+    "regression_veto"
+  ],
+  "description": "THE AGENT-SIDE ADOPTION SAFETY GATE (Wave 6). The conversation experiment world's judge nets its score (flagged_changed - regressions), so a variant that fixes the flagged turn but breaks one other previously-working turn can still judge 'supported' (+2-1=+1) and reach mark_adopt_ready. This seed closes that hole AS GRAPH DATA the agent can inspect and repair: the dispatched child already reports `regressions` in result.json, the dispatch ingest (domains/experiment_dispatch.py::_ingest_result) mechanically carries it onto the Experiment node, and the rule below VETOES adoption of any Experiment whose own child reported regressions > 0 -- it sets `adopt_denied` (which perform_adoptions honours unconditionally: a denied Experiment is never folded back) plus an honest `adopt_denied_reason` the self_improvement_status reader surfaces over NL ('what are you working on?'). Chosen over a stricter mark_adopt_ready where-clause deliberately: the authored mark_adopt_ready_* bodies stay byte-identical (graph-meta oracle parity with seeds/composer_experiment_graph.json's wants_experiment_adopt_rule is preserved untouched), the veto applies uniformly to every experiment family that reports regressions (today: conversation replay), and an ARC child reports no `regressions` key at all, so the attr is never written there and this rule can never bind an ARC experiment. The veto fires in the same run_rules fixpoint as the judge/mark_adopt_ready rules (the regressions attr is written at ingest, before that tick), so perform_adoptions -- host I/O that only runs between ticks -- always sees the denial before it could adopt.",
+  "microtheory": {
+    "name": "adoption_safety",
+    "description": "a supported-but-regressing variant is never adopted: regressions == 0 is a hard adopt-readiness requirement, held as an inspectable seed rule."
+  },
+  "nodes": [],
+  "edges": [],
+  "productions": [],
+  "rules": [
+    {
+      "name": "adopt_denied_on_regression",
+      "match": [["exp", "has_delta", "delta"]],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Gt",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "exp"}, "key": "regressions"},
+            "b": {"type": "Lit", "value": 0}
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {"type": "Attr", "node": {"type": "Var", "name": "exp"}, "key": "adopt_denied"},
+              "b": {"type": "Lit", "value": true}
+            }
+          }
+        ]
+      },
+      "effects": [
+        ["set_attr", "exp", "adopt_denied", true],
+        ["set_attr", "exp", "adopt_denied_reason",
+         "the dispatched child reported regressions > 0: a variant that breaks a previously-working turn is never adopted, even when its net score judges supported"]
+      ]
+    }
+  ]
+}

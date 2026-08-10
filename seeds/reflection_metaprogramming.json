@@ -1,0 +1,56 @@
+{
+  "microtheory": {
+    "name": "reflection_metaprogramming",
+    "definition": "Reflection — system's ability to observe + modify itself from within. Brian Cantwell Smith 1982 'Reflection and Semantics in Lisp', the reflective tower, Smalltalk's metaobject protocol, Lisp's eval/quote, Java reflection, metaprogramming, self-modifying code, Quine, fixed-point combinators. Directly grounds Paper 1's Axiom 3 (Reflective access): Π operations observe, predicate over, and extend G from within G. G's own structure including Γ itself is representable as subgraph of G. This Mt names the existing tradition of reflection that Axiom 3 generalises to the substrate level.",
+    "category": "foundation"
+  },
+  "concepts": [
+    {"name": "reflection_definition", "definition": "Smith 1982. System's capacity to observe + reason about + modify its own structure + behavior from within itself. Substrate analogue: Jabberwock's introspection.", "category": "foundation"},
+    {"name": "structural_reflection", "definition": "Access to representation of system's structure (types, classes, methods, AST). Substrate analogue: Jabberwock's typed-graph + Γ as graph data.", "category": "foundation"},
+    {"name": "behavioral_reflection", "definition": "Ability to modify system's behavior (intercept method calls, change dispatch). Substrate analogue: Jabberwock's runtime-discovery dispatch.", "category": "foundation"},
+    {"name": "introspection", "definition": "Read-only reflection. System observes itself without modifying. Substrate analogue: Jabberwock's derivation_mechanism.", "category": "foundation"},
+    {"name": "intercession", "definition": "Read-write reflection. System modifies own behavior. Substrate analogue: Jabberwock's correction-firing + self-modification.", "category": "foundation"},
+
+    {"name": "reflective_tower", "definition": "Smith. Infinite hierarchy of meta-levels, each interpreting the level below. Stack of interpreters interpreting interpreters. Substrate analogue: Jabberwock's nested cortices (Mt about Mts about Mts).", "category": "tower"},
+    {"name": "meta_level", "definition": "Level above the base level, reasoning about it. Each meta-level can be reflected on by the next. Substrate analogue: Jabberwock's ArchitectureCortex assessing other cortices.", "category": "tower"},
+    {"name": "base_level", "definition": "Object-level computation. The thing being reflected upon. Substrate analogue: Jabberwock's per-Mt processing.", "category": "tower"},
+    {"name": "tower_collapse", "definition": "Practical tower truncated at finite depth via lazy materialisation. Smith's design. Substrate analogue: Jabberwock's bounded meta-cognition.", "category": "tower"},
+
+    {"name": "metaobject_protocol", "definition": "MOP. Kiczales + Rivières + Bobrow 1991 (CLOS). Reify language semantics into objects manipulable from within. Substrate analogue: Jabberwock's seed-system as metaobjects.", "category": "mop"},
+    {"name": "metaclass", "definition": "Class whose instances are themselves classes. Substrate analogue: Mt that defines other Mts.", "category": "mop"},
+    {"name": "reflective_method_dispatch", "definition": "Intercept + modify how methods are called. Aspect-oriented programming. Substrate analogue: substrate's FilterSpec dispatch interception.", "category": "mop"},
+
+    {"name": "lisp_eval_quote", "definition": "McCarthy 1960. eval reduces expression; quote suspends evaluation. Code-as-data + data-as-code. Substrate analogue: Jabberwock's Term-tree representation + evaluation.", "category": "lisp"},
+    {"name": "homoiconicity", "definition": "Code + data share representation. Lisp's defining feature. Foundation of macro systems. Substrate analogue: Jabberwock's graph holds both data + computation.", "category": "lisp"},
+    {"name": "macro_lisp", "definition": "Code that generates code. Operates at expansion time. Hygienic macros avoid variable capture. Substrate analogue: substrate's mechanical Term-emitters.", "category": "lisp"},
+    {"name": "fexpr", "definition": "First-class operative — takes unevaluated args. Suspended eval. Substrate analogue: substrate's deferred Term-evaluation.", "category": "lisp"},
+
+    {"name": "self_modifying_code", "definition": "Program writes to own instruction stream. Historically common in assembly; now mostly avoided for security + caching. Substrate analogue: Jabberwock's self-modification at meta-level not instruction level.", "category": "self_modification"},
+    {"name": "runtime_compilation", "definition": "Generate + execute code at runtime. JIT. Substrate analogue: substrate's runtime-generated handlers.", "category": "self_modification"},
+    {"name": "code_as_data_data_as_code", "definition": "Symmetric: parsable + executable representations. Foundation of metaprogramming. Substrate analogue: Jabberwock's typed-graph IS this symmetry.", "category": "self_modification"},
+
+    {"name": "quine_program", "definition": "Self-replicating program. Outputs its own source. Substrate analogue: substrate's persist-self capability.", "category": "self_reference"},
+    {"name": "fixed_point_combinator", "definition": "Y combinator etc. Enables recursion in untyped lambda calculus without explicit recursion. Substrate analogue: substrate's recursive self-application.", "category": "self_reference"},
+    {"name": "diagonal_lemma", "definition": "Gödel. For every formula φ(x), there exists sentence ψ such that ψ ↔ φ(⌜ψ⌝). Self-reference machinery. Substrate analogue: substrate's self-referential Mt-construction.", "category": "self_reference"},
+    {"name": "godel_numbering_reflection", "definition": "Encode syntax as numbers. Reflective access through arithmetisation. Substrate analogue: Jabberwock's symbol-as-node encoding.", "category": "self_reference"},
+
+    {"name": "java_reflection_api", "definition": "Class, Method, Field reified at runtime. Access by name. Substrate analogue: substrate's name-based node access.", "category": "languages"},
+    {"name": "smalltalk_reflective", "definition": "Smalltalk-80 — everything an object including classes. Pure object-oriented + reflective. Substrate analogue: substrate's uniform-typed graph.", "category": "languages"},
+    {"name": "python_introspection", "definition": "dir(), vars(), getattr(), inspect module. Pervasive runtime reflection. Substrate analogue: substrate's introspective access patterns.", "category": "languages"},
+
+    {"name": "grammar_as_data", "definition": "The Γ in Paper 1 Axiom 3 is representable AS a subgraph of G. Same as Lisp's homoiconicity at the grammar level. Substrate analogue: Jabberwock's Γ-as-graph-node.", "category": "axiom3"},
+    {"name": "operations_on_grammar", "definition": "Once Γ is graph data, operations in Π can operate on Γ itself. Self-modifying grammar. Substrate analogue: substrate's seed-Mt evolution.", "category": "axiom3"},
+    {"name": "compound_loop_axiom3", "definition": "Paper 1 §2.1: a Γ that admits operations on itself IS a compound loop. A Γ that does not is inert. Substrate analogue: Jabberwock's loop-by-self-modification.", "category": "axiom3"},
+
+    {"name": "frame_problem_reflection", "definition": "McCarthy + Hayes 1969. What does NOT change when X happens? Requires reflection over situation. Substrate analogue: substrate's preserved-Mt under correction.", "category": "issues"},
+    {"name": "russells_paradox_reflection", "definition": "Self-applying naive reflection produces contradictions. Solved by typed hierarchy, restricted comprehension. Substrate analogue: substrate's typed-graph as guard.", "category": "issues"},
+    {"name": "self_replication_constraints", "definition": "Reflection limited by physical resource bounds + halting problem. Substrate analogue: substrate's bounded reflection.", "category": "issues"}
+  ],
+  "rules": [
+    {"name": "reflection_grounds_paper1_axiom3", "head": "Jabberwock encounters Paper 1's Axiom 3 (Reflective access)", "body": "the axiom generalises Smith's reflection + Lisp's homoiconicity + metaobject protocols to the substrate level. Γ-as-subgraph IS homoiconicity at the grammar layer. Operations on Γ from within Γ IS Smith's reflective tower one level up."},
+    {"name": "homoiconicity_enables_grammar_operations", "head": "Jabberwock represents grammar Γ as graph data", "body": "operations in Π can operate on Γ — substrate's grammar becomes a variable. Paper 1's §2.1 'the grammar is the loop' is homoiconicity applied to Γ."},
+    {"name": "reflective_tower_models_meta_cognition", "head": "Jabberwock holds Mts that reason about Mts", "body": "this is the reflective tower. Each level reflects on the level below. Smith's design lets the tower be finite-depth in practice via lazy materialisation."},
+    {"name": "introspection_is_read_only_reflection", "head": "Jabberwock's derivation_mechanism walks its own state", "body": "this is introspection (read-only reflection). Modification of state would be intercession. Substrate's self-modification spans both."},
+    {"name": "fixed_point_grounds_recursion_without_naming", "head": "Jabberwock needs recursion without external naming", "body": "Y combinator + diagonal lemma provide the mathematical machinery. Substrate's recursive Mt-construction relies on this."}
+  ]
+}

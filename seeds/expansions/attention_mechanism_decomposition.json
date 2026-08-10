@@ -1,0 +1,118 @@
+{
+  "id": "attention_mechanism_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "self_attention",
+  "in_microtheory": "machine_learning",
+  "description": "Attention mechanism decomposed. Q, K, V projections. Scaled dot-product attention. Softmax normalization. Multi-head splitting + concatenation. Flash attention's tiled computation. Efficient variants: linear attention, sparse attention, ring attention.",
+  "sub_mechanisms": [
+    {
+      "name": "query_key_value_projection",
+      "definition": "Q = X @ W_q, K = X @ W_k, V = X @ W_v. Three learnable linear projections of input.",
+      "why": "Q: 'what am I looking for'. K: 'what do I have'. V: 'what do I contribute'. Separable roles per head. Foundational decomposition.",
+      "category": "attention_mechanism"
+    },
+    {
+      "name": "scaled_dot_product",
+      "definition": "scores = Q @ K^T / √d_k. Each query's similarity to each key, scaled by √dim.",
+      "why": "Dot product = unscaled similarity. Without √d_k division, dot products grow with d_k → softmax saturates → vanishing gradient. The scaling is critical.",
+      "category": "attention_mechanism"
+    },
+    {
+      "name": "attention_softmax",
+      "definition": "Apply softmax over keys: each row sums to 1. Soft selection mechanism.",
+      "why": "Convert scores to probabilities. Differentiable selection. Cost: softmax dominates attention numerics (exponentials, normalisation). Numerical care needed.",
+      "category": "attention_mechanism"
+    },
+    {
+      "name": "attention_output",
+      "definition": "out = attention_weights @ V. Each query gets weighted sum of values.",
+      "why": "Weighted retrieval: attend to important keys, get their values. Per-query aggregation across context.",
+      "category": "attention_mechanism"
+    },
+    {
+      "name": "multi_head_split",
+      "definition": "Split Q, K, V into H heads along feature dim. Compute attention per head. Concatenate.",
+      "why": "Different heads specialise (induction, copying, positional). Empirically gives more expressive attention than single head with same total dim.",
+      "category": "attention_mechanism"
+    },
+    {
+      "name": "attention_quadratic_complexity",
+      "definition": "Compute QK^T over N tokens: N² × d operations. Memory: N² attention matrix.",
+      "why": "Fundamental cost. 100K context: 10^10 attention operations + 10^10 memory. The bottleneck for long context.",
+      "category": "attention_mechanism"
+    },
+    {
+      "name": "flash_attention_tiling",
+      "definition": "Tile Q, K, V into blocks. Compute partial attention per tile; update online softmax.",
+      "why": "Standard attention materialises N×N matrix (huge for large N). Flash never materialises it — computes attention output tile-by-tile. 2-3x faster + much less memory.",
+      "category": "attention_mechanism"
+    },
+    {
+      "name": "online_softmax",
+      "definition": "Compute softmax over batches with running max + sum. Mathematically equivalent to global softmax.",
+      "why": "Key trick in Flash. Per-tile softmax + correction when seeing larger values. Without it, you'd need full attention matrix to normalise correctly.",
+      "category": "attention_mechanism"
+    },
+    {
+      "name": "sparse_attention",
+      "definition": "Attend to only a subset of positions: sliding window, strided, local + global.",
+      "why": "Reduces N² to N×K for K-position sparsity pattern. Used in Longformer, BigBird, GPT-3 (some heads). Trade-off: information may not flow across sparse boundaries.",
+      "category": "attention_mechanism"
+    },
+    {
+      "name": "linear_attention",
+      "definition": "Replace softmax with kernel feature map. Attention becomes φ(Q) @ (φ(K)^T @ V). O(N) per token.",
+      "why": "Linear in sequence length. Mamba, Linear Attention, Performer. Quality often below softmax attention but improving. Active research for long context.",
+      "category": "attention_mechanism"
+    },
+    {
+      "name": "ring_attention",
+      "definition": "Distributed long-context attention: each device holds tile of K, V; rotates through ring; computes partial attention.",
+      "why": "Scale context beyond single-device memory. Used in Gemini, Claude long context. Each device sees all K, V over the ring rotation. Communication-bound.",
+      "category": "attention_mechanism"
+    },
+    {
+      "name": "attention_score_interpretation",
+      "definition": "Visualise softmax weights: which tokens attend to which. Used for interpretability research.",
+      "why": "Hopeful but limited. Patterns emerge (induction heads, copying heads) but attention isn't directly = computation. The substrate's Tracr-authored networks have attention computing exact operations.",
+      "category": "attention_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "scaled_attention_prevents_softmax_saturation",
+      "if": ["dot products are not scaled by √d_k"],
+      "then": ["large d_k leads to softmax saturation and vanishing gradients"],
+      "why": "Dot product of random vectors grows as √d. Unscaled scores get large → softmax peaks → gradient ~0. √d_k scaling keeps scores in manageable range. Mathematical necessity.",
+      "soundness_category": "algebraic_law"
+    },
+    {
+      "name": "flash_attention_avoids_materialising_N_squared_matrix",
+      "if": ["attention computed via Flash tiling"],
+      "then": ["memory cost is O(N) instead of O(N²)"],
+      "why": "Naive attention stores N×N attention scores. Flash never stores them — works tile-by-tile. For N=100K: 40 GB → 800 KB. Enables long-context that was impossible before.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "multi_head_more_expressive_than_single_head",
+      "if": ["attention is split into H heads with same total dim"],
+      "then": ["expressivity is greater than single head"],
+      "why": "Different heads can learn different relationships (syntactic, semantic, position). Empirically: better than single attention with same parameter count. Inductive bias toward decomposable attention.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "softmax_quadratic_is_long_context_bottleneck",
+      "if": ["model uses standard softmax attention"],
+      "then": ["compute + memory scale O(N²) with context"],
+      "why": "Foundational. 100K context: 10 GFLOPs per token at typical d. Long context requires either Flash (constant factor wins) or efficient attention (asymptotic wins).",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "linear_attention_recovers_O_N_at_quality_cost",
+      "if": ["softmax replaced by kernel feature map"],
+      "then": ["attention is O(N) per token but quality typically drops"],
+      "why": "Linear attention loses some softmax properties (sharpness, copy ability). Active research closing the gap. Mamba-style state-space models show promise as full softmax alternative.",
+      "soundness_category": "cost_equivalence"
+    }
+  ]
+}

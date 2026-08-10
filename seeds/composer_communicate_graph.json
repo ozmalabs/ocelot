@@ -1,0 +1,194 @@
+{
+ "id": "composer_communicate_graph",
+ "version": "1.0.0",
+ "depends_on": [],
+ "description": "GRAPH-RESIDENT: _compose_communicate_rule's FULL combo (source+decompose+communicate all grounded -- the documented 'communicate_what_i_see' production shape) as a meta-rule. Mints communicate_what_i_see_<tag> from a wants_communicate_rule trigger. RESIDUAL: the other 5 non-degenerate rp combos (decompose-without-communicate, source-only, etc.) are NOT separately encoded -- an easy mechanical extension (same pattern, different literal match/effects per combo), not a dialect gap, left for a follow-on pass.",
+ "nodes": [
+  {
+   "local_id": 1,
+   "type": "Rule",
+   "attrs": {
+    "id": "compose_communicate_graph",
+    "match": [
+     [
+      "agent",
+      "wants_communicate_rule",
+      "cr"
+     ]
+    ],
+    "where": {
+     "type": "Lt",
+     "a": {
+      "type": "Plus",
+      "items": [
+       {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "cr"
+        },
+        "key": "composed"
+       },
+       {
+        "type": "Lit",
+        "value": 0.0
+       }
+      ]
+     },
+     "b": {
+      "type": "Lit",
+      "value": 0.5
+     }
+    },
+    "effect": [
+     [
+      "add_node",
+      "rn0",
+      "Rule",
+      {
+       "minted": 0.0
+      }
+     ],
+     [
+      "set_attr",
+      "rn0",
+      "id",
+      {
+       "__term__": {
+        "type": "StringConcat",
+        "parts": [
+         {
+          "type": "Lit",
+          "value": "communicate_what_i_see_"
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "cr"
+          },
+          "key": "tag"
+         }
+        ]
+       }
+      }
+     ],
+     [
+      "set_attr",
+      "rn0",
+      "match",
+      [
+       [
+        "g",
+        "describes",
+        "scene"
+       ],
+       [
+        "scene",
+        "has_percept",
+        "p"
+       ],
+       [
+        "p",
+        "is_a",
+        "con"
+       ]
+      ]
+     ],
+     [
+      "set_attr",
+      "rn0",
+      "where",
+      {
+       "type": "Not",
+       "arg": {
+        "type": "Exists",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "p"
+         },
+         "edge_type": "uttered"
+        },
+        "var_name": "_i",
+        "predicate": {
+         "type": "Lit",
+         "value": true
+        }
+       }
+      }
+     ],
+     [
+      "set_attr",
+      "rn0",
+      "effect",
+      [
+       [
+        "add_node",
+        "sg",
+        "Goal",
+        {
+         "kind": "produce_utterance",
+         "action": "produce_utterance"
+        }
+       ],
+       [
+        "add_edge",
+        "g",
+        "has_subgoal",
+        "sg"
+       ],
+       [
+        "add_edge",
+        "sg",
+        "about",
+        "con"
+       ],
+       [
+        "add_edge",
+        "sg",
+        "of_percept",
+        "p"
+       ],
+       [
+        "add_edge",
+        "p",
+        "uttered",
+        "con"
+       ]
+      ]
+     ],
+     [
+      "set_rule_clause",
+      {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "rn0"
+        },
+        "key": "id"
+       }
+      },
+      "__mint__",
+      {
+       "__term__": {
+        "type": "Var",
+        "name": "rn0"
+       }
+      }
+     ],
+     [
+      "set_attr",
+      "cr",
+      "composed",
+      1.0
+     ]
+    ]
+   }
+  }
+ ],
+ "edges": [],
+ "productions": []
+}

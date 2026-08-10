@@ -1,0 +1,124 @@
+{
+  "protocol_id": "embodied_damage_navigation_v2",
+  "status": "frozen_before_held_out_execution",
+  "claim": "After identical from-scratch calibration under hidden randomized dynamics, bounded graph plasticity improves navigation after an unlabelled actuator change relative to the same graph with plasticity frozen.",
+  "simulator": "pybullet_direct",
+  "morphologies": ["r2d2", "husky", "racecar"],
+  "arms": [
+    "adaptive_damage_navigation",
+    "frozen_damage_navigation",
+    "healthy_reference"
+  ],
+  "initial_goal": [0.0, 0.0, 0.0],
+  "calibration_actions": 45,
+  "total_actions": 240,
+  "babble_samples": 3,
+  "primary_metric": "normalized_progress_including_recalibration_cost",
+  "success_gates": {
+    "all_runs_complete": true,
+    "prechange_trajectories_exactly_matched": true,
+    "adaptive_postchange_models_update": true,
+    "frozen_postchange_models_do_not_update": true,
+    "adaptive_wins_required_of_18": 10,
+    "pooled_median_paired_advantage_minimum": 0.05,
+    "adaptive_median_progress_positive_in_every_morphology": true
+  },
+  "cases": [
+    {
+      "case_id": "rnd_101",
+      "seed": 84101,
+      "goal_offset": [-0.4, 2.1, 0.0],
+      "dynamics": {
+        "base_mass_scale": 0.67,
+        "lateral_friction": 0.76,
+        "rolling_friction": 0.008,
+        "motor_force_scale": 0.69
+      },
+      "condition": {
+        "abrupt_retention": [1.0, 0.12],
+        "wear_per_use": [0.0, 0.0],
+        "minimum_retention": 0.12
+      }
+    },
+    {
+      "case_id": "rnd_102",
+      "seed": 84102,
+      "goal_offset": [1.8, 0.7, 0.0],
+      "dynamics": {
+        "base_mass_scale": 1.34,
+        "lateral_friction": 0.36,
+        "rolling_friction": 0.022,
+        "motor_force_scale": 1.23
+      },
+      "condition": {
+        "abrupt_retention": [0.3, 1.0],
+        "wear_per_use": [0.0, 0.0],
+        "minimum_retention": 0.2
+      }
+    },
+    {
+      "case_id": "rnd_103",
+      "seed": 84103,
+      "goal_offset": [-1.55, 1.35, 0.0],
+      "dynamics": {
+        "base_mass_scale": 0.93,
+        "lateral_friction": 1.32,
+        "rolling_friction": 0.014,
+        "motor_force_scale": 0.77
+      },
+      "condition": {
+        "abrupt_retention": [1.0, 1.0],
+        "wear_per_use": [0.024, 0.0],
+        "minimum_retention": 0.2
+      }
+    },
+    {
+      "case_id": "rnd_104",
+      "seed": 84104,
+      "goal_offset": [-0.9, -1.85, 0.0],
+      "dynamics": {
+        "base_mass_scale": 1.18,
+        "lateral_friction": 0.58,
+        "rolling_friction": 0.028,
+        "motor_force_scale": 0.88
+      },
+      "condition": {
+        "abrupt_retention": [1.0, 0.4],
+        "wear_per_use": [0.0, 0.017],
+        "minimum_retention": 0.18
+      }
+    },
+    {
+      "case_id": "rnd_105",
+      "seed": 84105,
+      "goal_offset": [1.25, -1.55, 0.0],
+      "dynamics": {
+        "base_mass_scale": 0.75,
+        "lateral_friction": 1.04,
+        "rolling_friction": 0.002,
+        "motor_force_scale": 1.15
+      },
+      "condition": {
+        "abrupt_retention": [0.15, 1.0],
+        "wear_per_use": [0.0, 0.0],
+        "minimum_retention": 0.15
+      }
+    },
+    {
+      "case_id": "rnd_106",
+      "seed": 84106,
+      "goal_offset": [1.55, 1.25, 0.0],
+      "dynamics": {
+        "base_mass_scale": 1.3,
+        "lateral_friction": 0.47,
+        "rolling_friction": 0.019,
+        "motor_force_scale": 0.73
+      },
+      "condition": {
+        "abrupt_retention": [1.0, 0.35],
+        "wear_per_use": [0.0, 0.015],
+        "minimum_retention": 0.18
+      }
+    }
+  ]
+}

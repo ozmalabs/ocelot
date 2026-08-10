@@ -1,0 +1,1113 @@
+{
+ "id": "vision_dorsal",
+ "version": "1.1.1",
+ "depends_on": [
+  "vision_waves"
+ ],
+ "description": "RUNG 3 \u2014 THE DORSAL/MOTION STREAM: DIRECTION SELECTIVITY. A population of DUnits reads the SAME retina as rung 1's ventral Units, in PARALLEL (the verified 105-agent research established 3-0 that the dorsal stream is EARLY and parallel \u2014 V1 and MT co-earliest, marmoset layer-4 CB+ dense in both at E130 prenatal, a retina->inferior-pulvinar->MT route BYPASSING V1, and neonatal MT ablation permanently degrading reach-to-grasp for MOVING targets, Atapour & Bourne 2021 \u2014 NOT a rung stacked above V1). The mechanism is a DELAY-LINE COINCIDENCE DETECTOR: each DSynapse carries its own conduction delay and contributes only when its pre cell fired exactly that many steps ago, so inputs that were SEQUENTIAL at the retina arrive SIMULTANEOUSLY at the unit iff the sequence matches the delay gradient. The ventral rule cannot do this: its window is SHARED across a unit's synapses, so a->b and b->a deliver the identical in-window burst set and no weight assignment can prefer one. THE DIFFERENTIAL PREDICTION THIS SEED EXISTS TO TEST: the research explicitly warns 'do NOT generalise from orientation to DIRECTION selectivity \u2014 direction is absent at eye opening and DOES require experience (Li 2006) \u2014 the opposite case'. Orientation (rung 1/2) emerges from waves alone and is refined by experience; direction should be ~ABSENT after waves alone and should REQUIRE moving visual experience. The delays are UNIFORM RANDOM entropy from the adapter, never a tuned gradient, so any direction preference is grown by dv_oja_learn, not planted. Gated OFF by DorsalParams.dorsal=0.",
+ "microtheory": {
+  "name": "vision_dorsal",
+  "description": "direction selectivity as a delay-line coincidence detector learned by Oja's rule: random per-synapse conduction delays + winner-take-all competition; the leading principal component of a delay-line input under consistently-moving stimuli IS a direction, and under direction-isotropic input it is not. Parallel to, not downstream of, the ventral wave scaffold."
+ },
+ "nodes": [
+  {
+   "local_id": 0,
+   "type": "DorsalParams",
+   "attrs": {
+    "name": "default",
+    "dorsal": 0.0,
+    "delay_tol": 0.0,
+    "oja_eta": 0.0005,
+    "comment": "RUNG 3 knobs as GRAPH DATA. dorsal: 0.0 = OFF (the DEFAULT \u2014 every rule in this seed is gated on it, so a booted agent that does not ask for the dorsal stream runs byte-identically to the committed rung-1/rung-2 substrate, and every committed result reproduces). 1.0 = the dorsal/motion population runs. delay_tol: the width of a DSynapse's ARRIVAL WINDOW [delay, delay+delay_tol]; 0.0 = exact coincidence. This is the dorsal counterpart of WaveParams.window_steps, and the reason it must be a SEPARATE knob is the whole point of the rung: the ventral window is SHARED across a unit's synapses (order-blind by construction), while the dorsal window is PER-SYNAPSE and offset by that synapse's own conduction delay (order-sensitive by construction). oja_eta: Oja's learning rate; 5e-4 is the MEASURED stable regime from the convergence work (2e-3 diverges to NaN \u2014 Oja is stable only while eta*y^2 < 1), NOT a tuned optimum. WHY OJA AND NOT THE BUTTS BURST RULE: the convergence measurement established that fixed-sign Butts has no fixed point at all (drift 0.49-0.75, decays THROUGH the random floor) and BCM converges to zero structure \u2014 nine pre-registered experience attempts failed because they compared arms on a transient. Oja's decay term is a contraction toward the input's leading principal component: a stable, non-zero fixed point by construction. WHAT THIS SEED DELIBERATELY DOES NOT CONTAIN: any direction gradient, any preferred direction, any motion-energy filter, any hand-built delay structure. The delays are uniform random entropy from the adapter; every direction is symmetric a priori. If direction selectivity appears it was grown by dv_oja_learn from the input's motion statistics, and if it does not appear that is the result. RUNG 3B ADDS TWO KNOBS, BOTH 0.0 BY DEFAULT (= the committed rung-3 rule, byte-identically: the bistable term is multiplied by `bistable`, so at 0.0 it contributes exactly +0.0 and every rung-3 number reproduces). bistable: 1.0 arms the HYSTERETIC/BISTABLE plasticity term in dv_oja_learn. bi_eta: its rate. WHY THIS EXISTS \u2014 the rung-3 confirmatory run (n=100, seeds 4000-4099) measured, not inferred, that NEITHER waves NOR moving experience build direction selectivity here, and named the cause: OJA'S FIXED POINT IS THE LEADING PRINCIPAL COMPONENT OF THE TIME-AVERAGED INPUT COVARIANCE, and natural motion is direction-ISOTROPIC on average, so a contraction to the mean of an isotropic distribution IS the mean and the mean has no direction. No parameter of the rung-3 rule can fix that (eta, P2, max_delay, delay_tol are frozen and stay frozen); the REQUIRED property is symmetry-breaking faster than the averaging timescale. bi_eta is set by a positive control ONLY, exactly as rung 3 fixed eta=2e-3 \u2014 a control that contains no arm and no hypothesis.",
+    "bistable": 0.0,
+    "bi_eta": 0.0
+   }
+  }
+ ],
+ "edges": [],
+ "productions": [
+  {
+   "src": {
+    "type": "RetinaCell",
+    "var": "a"
+   },
+   "edge_type": "dpre",
+   "tgt": {
+    "type": "DSynapse",
+    "var": "b"
+   },
+   "provenance": "seed:vision_dorsal:dpre"
+  },
+  {
+   "src": {
+    "type": "DSynapse",
+    "var": "a"
+   },
+   "edge_type": "dpost",
+   "tgt": {
+    "type": "DUnit",
+    "var": "b"
+   },
+   "provenance": "seed:vision_dorsal:dpost"
+  },
+  {
+   "src": {
+    "type": "Retina",
+    "var": "a"
+   },
+   "edge_type": "has_dunit",
+   "tgt": {
+    "type": "DUnit",
+    "var": "b"
+   },
+   "provenance": "seed:vision_dorsal:has_dunit"
+  }
+ ],
+ "rules": [
+  {
+   "name": "dv_transient",
+   "comment": "THE TRANSIENT (MAGNOCELLULAR) CHANNEL \u2014 a cell's dorsal output fires on the ONSET of its burst, not on its level: dlast_burst records the step at which the cell STARTED bursting after not bursting on the previous step. This is asserted biology, not convenience: the dorsal stream is fed by transient M/Y-type retinal ganglion cells, which respond to CHANGE and adapt away static input, while the ventral stream's sustained P/X cells carry level. The rules therefore read DIFFERENT retinal channels off the same cells, which is exactly the parallel anatomy the research established.\n\nIT IS ALSO FORCED BY A MEASURED PATHOLOGY, and finding it before the run is why the rung is testable at all. The committed drive() median-splits each frame, so on real video a bright pixel stays bright: measured duty cycle 0.500, of which 0.481 is SUSTAINED and only 0.019 is onset. `last_burst` is overwritten on every step a cell is on, so a sustained cell's latency is PERMANENTLY 0 and only delay=0 synapses can ever match. On the sustained channel the delay line is STRUCTURALLY BLIND to video \u2014 the `normal` arm could not have produced direction selectivity for an instrumental reason, and the null would have been read as 'direction needs more than experience' when it actually meant 'the instrument had no temporal edges to read'. That is the wrong-arm failure PROTOCOL section 6 is about, caught by measuring the drive before running the arms rather than after.\n\nTHE SPLIT IS PRESERVED: the ADAPTER records only FACTS (last_burst = when this cell burst; prev_burst = what last_burst was before this step's update \u2014 bookkeeping, for the same reason wave_world already writes last_burst in the adapter: a rule writing it would race the rules reading it inside one fixpoint). This RULE makes the DECISION of what counts as a transient. Waves are unaffected by the change \u2014 a wave cell is active for exactly one step before refracting, so every wave burst already IS an onset and the dark arm reads the same events either way.",
+   "match_type": "RetinaCell",
+   "match": [
+    [
+     "r",
+     "has_cell",
+     "c"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "DorsalParams"
+        }
+       },
+       "key": "dorsal"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "last_burst"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "prev_burst"
+      },
+      "b": {
+       "type": "Minus",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "r"
+        },
+        "key": "step"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "c",
+     "dlast_burst",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "dv_unit_activate",
+   "comment": "THE DIRECTION MECHANISM \u2014 a DELAY-LINE COINCIDENCE DETECTOR. A DUnit's drive = sum over its DSynapses of weight x [the pre cell burst EXACTLY `delay` steps ago]. This is the one structural difference from the ventral wv_unit_activate, which counts ANY pre-burst inside a shared [0, window_steps] box and is therefore blind to ORDER by construction: a->b and b->a deliver the identical set of in-window bursts, so no weight assignment on that rule can ever prefer one. Here each synapse carries its OWN conduction delay, so inputs that were SEQUENTIAL at the retina arrive SIMULTANEOUSLY at the unit iff the sequence matches the delay gradient (delay + position-along-motion = const). That is the classical asymmetric-conduction-delay account of direction selectivity, and it makes ORDER a first-class thing the rule can read. CRITICALLY, the delays are NOT a hand-built direction gradient: the adapter draws them UNIFORMLY AT RANDOM (unstructured entropy, exactly like the weight jitter and the wave ignition), and WHICH delay/position combinations cohere is what dv_oja_learn has to discover from the input's own motion statistics. Handing the agent a tuned delay gradient would be the `preprocess_patches` bolt-on error at the motion grain. PARALLEL, NOT LATER: DUnit/DSynapse/has_dunit are a separate population reading the SAME retina, because the verified research established 3-0 that the dorsal stream is EARLY and parallel (marmoset layer-4 CB+ dense in V1 AND MT/MST/FST at E130, prenatal; PV peaks PD14 dorsal vs PD28 ventral; a retina->inferior-pulvinar->MT route BYPASSES V1) \u2014 not a rung stacked on top of V1. It also keeps vision_waves.json byte-untouched, so every committed rung-1/rung-2 result reproduces.",
+   "match_type": "DUnit",
+   "match": [
+    [
+     "r",
+     "has_dunit",
+     "u"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "DorsalParams"
+        }
+       },
+       "key": "dorsal"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "dact_step"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "u",
+     "dact",
+     {
+      "__term__": {
+       "type": "Fold",
+       "source": {
+        "type": "InNeighbours",
+        "node": {
+         "type": "Var",
+         "name": "u"
+        },
+        "edge_type": "dpost",
+        "any_type": false
+       },
+       "var_name": "sy",
+       "acc_name": "acc",
+       "init": {
+        "type": "Lit",
+        "value": 0.0
+       },
+       "body": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Var",
+          "name": "acc"
+         },
+         {
+          "type": "Times",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "sy"
+            },
+            "key": "weight"
+           },
+           {
+            "type": "IfThenElse",
+            "cond": {
+             "type": "And",
+             "items": [
+              {
+               "type": "Gte",
+               "a": {
+                "type": "Minus",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "r"
+                 },
+                 "key": "step"
+                },
+                "b": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Pick",
+                  "source": {
+                   "type": "InNeighbours",
+                   "node": {
+                    "type": "Var",
+                    "name": "sy"
+                   },
+                   "edge_type": "dpre",
+                   "any_type": false
+                  }
+                 },
+                 "key": "dlast_burst"
+                }
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "sy"
+                },
+                "key": "delay"
+               }
+              },
+              {
+               "type": "Lte",
+               "a": {
+                "type": "Minus",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "r"
+                 },
+                 "key": "step"
+                },
+                "b": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Pick",
+                  "source": {
+                   "type": "InNeighbours",
+                   "node": {
+                    "type": "Var",
+                    "name": "sy"
+                   },
+                   "edge_type": "dpre",
+                   "any_type": false
+                  }
+                 },
+                 "key": "dlast_burst"
+                }
+               },
+               "b": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "sy"
+                  },
+                  "key": "delay"
+                 },
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "PickUnique",
+                   "source": {
+                    "type": "NodesOfType",
+                    "node_type": "DorsalParams"
+                   }
+                  },
+                  "key": "delay_tol"
+                 }
+                ]
+               }
+              }
+             ]
+            },
+            "then": {
+             "type": "Lit",
+             "value": 1.0
+            },
+            "other": {
+             "type": "Lit",
+             "value": 0.0
+            }
+           }
+          ]
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "u",
+     "dact_step",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "dv_burst_winner",
+   "comment": "WINNER-TAKE-ALL among the DUnits, by the same Argmax idiom wv_unit_burst_winner uses (Eq compares Value::Node by id, so exactly one unit survives per pass). Competition is what makes the dorsal population DIFFERENTIATE \u2014 without it every DUnit chases the same leading component and the population learns one direction. Scoped to the retina's has_dunit neighbours, so it never races the ventral population's has_unit Argmax: the two streams compete only within themselves, which is what `parallel` means.",
+   "match_type": "DUnit",
+   "match": [
+    [
+     "r",
+     "has_dunit",
+     "u"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "DorsalParams"
+        }
+       },
+       "key": "dorsal"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "burst_step"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "dact_step"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "dact"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Var",
+       "name": "u"
+      },
+      "b": {
+       "type": "Argmax",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "r"
+        },
+        "edge_type": "has_dunit",
+        "any_type": false
+       },
+       "var_name": "u2",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "u2"
+        },
+        "key": "dact"
+       },
+       "default": null
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "u",
+     "bursting",
+     1.0
+    ],
+    [
+     "set_attr",
+     "u",
+     "burst_step",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "u",
+     "last_burst",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "dv_oja_learn",
+   "comment": "OJA'S RULE on the dorsal population: w <- w*(1 - eta*y^2) + eta*y*x, with y = the DUnit's own delay-line drive (dact) and x = 1 iff this synapse's pre-burst ARRIVED this step (the same delay window dv_unit_activate reads). Oja because the convergence measurement (VISION_RUNG2_PREREG.md) established it is the only rule in this tree with a stable non-zero fixed point on its own input distribution \u2014 fixed-sign Butts never converges and decays through the random floor, BCM converges to annihilation \u2014 and nine experience attempts failed purely because they were measured on a transient. A rung-3 arm comparison is meaningless on a scaffold that is not a STATE, so the convergence check is run before any arm. eta=5e-4 is the MEASURED stable regime (eta=2e-3 diverges to NaN: Oja is stable only while eta*y^2 < 1). Purely local: the rule reads only the synapse, its own pre cell and its own post unit. Winner-take-all is retained (u.bursting==1) so the population differentiates. WHAT MAKES THIS LEARN DIRECTION: x is now delay-gated, so the correlation Oja accumulates is between the unit's drive and ARRIVAL, not between the drive and mere presence-in-a-box. The leading principal component of a delay-line input under consistently-moving stimuli IS a direction; under direction-isotropic input it is not. That is the whole differential prediction, and it is the rule that has to deliver it.\n\nRUNG 3B \u2014 THE BISTABLE/HYSTERETIC TERM (gated on DorsalParams.bistable, 0.0 by default, so at 0.0 it is exactly +0.0 and this rule is byte-identically the committed rung-3 Oja rule).\n\nTHE DEFECT IT ATTACKS, measured not inferred (VISION_RUNG3_PREREG.md OUTCOME, n=100, fresh seeds 4000-4099): Oja's rule is LINEAR in x with a UNIQUE attractor \u2014 the leading principal component of the TIME-AVERAGED input covariance. Natural motion is direction-isotropic ON AVERAGE, so that average has no direction, and the rule converges to it however much coherent motion each individual epoch contains. `normal` beat the untrained floor by +0.0061 (1.2% of the 0.489 dynamic range) and `dark` by +0.0096. The stability that rescued rung 2 from nine transient-measured failures is exactly what forbids rung 3: A CONTRACTION TO THE MEAN OF AN ISOTROPIC DISTRIBUTION IS THE MEAN.\n\nTHE TERM, and it is one sentence: bi_eta * (w - m)(2m - w)w / (2m)^2, where m is the MEAN weight over this unit's own synapses (a Fold over its dpost neighbours \u2014 the unit's own aggregate, nothing global). Its zeros are w=0, w=m and w=2m; it is NEGATIVE for 0<w<m and POSITIVE for m<w<2m. So m \u2014 THE MEAN \u2014 IS AN UNSTABLE FIXED POINT, A REPELLER, and the stable ones are 0 and 2m. That is the most direct possible negation of the measured diagnosis: Oja's attractor is the mean; this makes the mean the one place a weight cannot stay. A synapse that is transiently above its unit's mean is LATCHED up rather than averaged back down, so a locally-consistent direction \u2014 the ~20-step drift epoch, the wave sweep \u2014 is committed to before the isotropic average can erase it. Once latched, the unit responds best to that direction, therefore WINS the winner-take-all on that direction, therefore learns it further: the positive feedback the diagnosis asked for ('a neuron must lock onto a LOCALLY consistent direction and keep it').\n\nIT IS SCALE-FREE ON PURPOSE, and that is why it adds ONE knob and not four. A textbook bistable rule needs an absolute threshold and an absolute ceiling (w_min, theta_b, w_max), and all three would be free parameters begging to be swept \u2014 which is the parameter search this rung is forbidden. Here the threshold IS the unit's own mean and the ceiling IS twice it, both recomputed every update from the unit's own state, so the term has no absolute scale and cannot be tuned by choosing one. It also self-corrects: weights above 2m are pushed back DOWN toward 2m, so the term is bounded and cannot run away.\n\nASSERTED BIOLOGY, not convenience. Single synapses express LTP in an ALL-OR-NONE, bistable fashion rather than by graded averaging (Petersen, Malenka, Nicoll & Hopfield 1998), and bistable/hysteretic synaptic switches are the standard account of how a synapse retains a transient correlation against ongoing noise (Lisman 1985's CaMKII switch; Fusi's cascade). A purely graded synapse is the one that cannot hold a memory of a passing event, which is precisely what rung 3 measured.\n\nWHY BISTABILITY AND NOT THE ANTI-HEBBIAN LATERAL (the other named candidate; rung 4's vm_burst_lateral is a precedent for lateral interactions in this tree). THE REASON IS MATHEMATICAL, AND IT IS THE ONLY REASON: any rule LINEAR in x has an AVERAGING attractor. Lateral decorrelation changes WHICH average a unit converges to (which principal component); it does not make an average directional. The local Foldiak form w <- w(1 - eta*y_v^2) - eta*y_v*x has fixed point w = -xbar/ybar -- MINUS the mean, still the mean. Bistability is NONLINEAR IN w, which is the property the measured diagnosis actually demands: it makes the mean a REPELLER rather than converging to a different one.\n\n WHAT IS *NOT* A REASON, AND WAS WRONGLY GIVEN AS ONE (retracted 2026-07-17): an earlier version of this comment also rejected Sanger's deflation as 'not local' (a synapse must read the WINNER's weight vector) and Rubner-Tavan's as racing dv_burst_winner's Argmax over the same dact inside the fixpoint. Both are true statements about TODAY'S ENGINE and NEITHER is grounds to discard a mechanism. The standing directive is that any biologically plausible mechanism is allowed and the ENGINE IS EXTENDED TO FIT THE BIOLOGY -- this tree's own rule is 'primitive in Rust, composition in graph': when the DSL genuinely cannot express something, you add a Rust Term or change the evaluation semantics (CLAUDE.md, 'When a new primitive is needed -> Rust'). A missing primitive is a BUILD TASK, never a veto on the science. Letting the engine's current shape decide which biology is admissible is exactly backwards, and it is how a model quietly becomes a model of its own implementation.\n\n THE HONEST STATUS OF THE ALTERNATIVES, THEREFORE: the anti-Hebbian lateral family is UNBUILT AND UNREFUTED. It is set aside on the linearity argument above -- which bites the local Foldiak form squarely, and which a genuine deflation (Sanger/Rubner-Tavan onto a LOWER principal component) may well escape, because eviction from the DC mode lands a unit in what is plausibly a DEGENERATE direction-carrying multiplet under isotropy, where the tie is broken by the unit's own random delays rather than by the average. That is a real candidate mechanism and it is recorded as such, not dismissed. What it would cost the engine is nameable and is a first-class deliverable in its own right: a Rust Term for a non-local read (a synapse reaching the winner's corresponding weight), or two-phase evaluation so a lateral term can modify an output BEFORE the competition Argmax reads it, or an outer-product primitive.",
+   "match_type": "DSynapse",
+   "match": [
+    [
+     "c",
+     "dpre",
+     "s"
+    ],
+    [
+     "s",
+     "dpost",
+     "u"
+    ],
+    [
+     "r",
+     "has_cell",
+     "c"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "DorsalParams"
+        }
+       },
+       "key": "dorsal"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "s"
+       },
+       "key": "touched"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "dact_step"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "bursting"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "s",
+     "weight",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Times",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "s"
+           },
+           "key": "weight"
+          },
+          {
+           "type": "Minus",
+           "a": {
+            "type": "Lit",
+            "value": 1.0
+           },
+           "b": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "PickUnique",
+               "source": {
+                "type": "NodesOfType",
+                "node_type": "DorsalParams"
+               }
+              },
+              "key": "oja_eta"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "u"
+              },
+              "key": "dact"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "u"
+              },
+              "key": "dact"
+             }
+            ]
+           }
+          }
+         ]
+        },
+        {
+         "type": "Times",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "PickUnique",
+            "source": {
+             "type": "NodesOfType",
+             "node_type": "DorsalParams"
+            }
+           },
+           "key": "oja_eta"
+          },
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "u"
+           },
+           "key": "dact"
+          },
+          {
+           "type": "IfThenElse",
+           "cond": {
+            "type": "And",
+            "items": [
+             {
+              "type": "Gte",
+              "a": {
+               "type": "Minus",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "r"
+                },
+                "key": "step"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "c"
+                },
+                "key": "dlast_burst"
+               }
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "s"
+               },
+               "key": "delay"
+              }
+             },
+             {
+              "type": "Lte",
+              "a": {
+               "type": "Minus",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "r"
+                },
+                "key": "step"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "c"
+                },
+                "key": "dlast_burst"
+               }
+              },
+              "b": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "s"
+                 },
+                 "key": "delay"
+                },
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "PickUnique",
+                  "source": {
+                   "type": "NodesOfType",
+                   "node_type": "DorsalParams"
+                  }
+                 },
+                 "key": "delay_tol"
+                }
+               ]
+              }
+             }
+            ]
+           },
+           "then": {
+            "type": "Lit",
+            "value": 1.0
+           },
+           "other": {
+            "type": "Lit",
+            "value": 0.0
+           }
+          }
+         ]
+        },
+        {
+         "type": "Times",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "PickUnique",
+            "source": {
+             "type": "NodesOfType",
+             "node_type": "DorsalParams"
+            }
+           },
+           "key": "bistable"
+          },
+          {
+           "type": "Attr",
+           "node": {
+            "type": "PickUnique",
+            "source": {
+             "type": "NodesOfType",
+             "node_type": "DorsalParams"
+            }
+           },
+           "key": "bi_eta"
+          },
+          {
+           "type": "Div",
+           "a": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Minus",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "s"
+               },
+               "key": "weight"
+              },
+              "b": {
+               "type": "Div",
+               "a": {
+                "type": "Sum",
+                "source": {
+                 "type": "InNeighbours",
+                 "node": {
+                  "type": "Var",
+                  "name": "u"
+                 },
+                 "edge_type": "dpost",
+                 "any_type": false
+                },
+                "var_name": "sy2",
+                "value": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "sy2"
+                 },
+                 "key": "weight"
+                }
+               },
+               "b": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Count",
+                  "source": {
+                   "type": "InNeighbours",
+                   "node": {
+                    "type": "Var",
+                    "name": "u"
+                   },
+                   "edge_type": "dpost",
+                   "any_type": false
+                  }
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 1e-09
+                 }
+                ]
+               }
+              }
+             },
+             {
+              "type": "Minus",
+              "a": {
+               "type": "Times",
+               "items": [
+                {
+                 "type": "Lit",
+                 "value": 2.0
+                },
+                {
+                 "type": "Div",
+                 "a": {
+                  "type": "Sum",
+                  "source": {
+                   "type": "InNeighbours",
+                   "node": {
+                    "type": "Var",
+                    "name": "u"
+                   },
+                   "edge_type": "dpost",
+                   "any_type": false
+                  },
+                  "var_name": "sy2",
+                  "value": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "sy2"
+                   },
+                   "key": "weight"
+                  }
+                 },
+                 "b": {
+                  "type": "Plus",
+                  "items": [
+                   {
+                    "type": "Count",
+                    "source": {
+                     "type": "InNeighbours",
+                     "node": {
+                      "type": "Var",
+                      "name": "u"
+                     },
+                     "edge_type": "dpost",
+                     "any_type": false
+                    }
+                   },
+                   {
+                    "type": "Lit",
+                    "value": 1e-09
+                   }
+                  ]
+                 }
+                }
+               ]
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "s"
+               },
+               "key": "weight"
+              }
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "s"
+              },
+              "key": "weight"
+             }
+            ]
+           },
+           "b": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Times",
+              "items": [
+               {
+                "type": "Lit",
+                "value": 4.0
+               },
+               {
+                "type": "Div",
+                "a": {
+                 "type": "Sum",
+                 "source": {
+                  "type": "InNeighbours",
+                  "node": {
+                   "type": "Var",
+                   "name": "u"
+                  },
+                  "edge_type": "dpost",
+                  "any_type": false
+                 },
+                 "var_name": "sy2",
+                 "value": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "sy2"
+                  },
+                  "key": "weight"
+                 }
+                },
+                "b": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Count",
+                   "source": {
+                    "type": "InNeighbours",
+                    "node": {
+                     "type": "Var",
+                     "name": "u"
+                    },
+                    "edge_type": "dpost",
+                    "any_type": false
+                   }
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 1e-09
+                  }
+                 ]
+                }
+               },
+               {
+                "type": "Div",
+                "a": {
+                 "type": "Sum",
+                 "source": {
+                  "type": "InNeighbours",
+                  "node": {
+                   "type": "Var",
+                   "name": "u"
+                  },
+                  "edge_type": "dpost",
+                  "any_type": false
+                 },
+                 "var_name": "sy2",
+                 "value": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "sy2"
+                  },
+                  "key": "weight"
+                 }
+                },
+                "b": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Count",
+                   "source": {
+                    "type": "InNeighbours",
+                    "node": {
+                     "type": "Var",
+                     "name": "u"
+                    },
+                    "edge_type": "dpost",
+                    "any_type": false
+                   }
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 1e-09
+                  }
+                 ]
+                }
+               }
+              ]
+             },
+             {
+              "type": "Lit",
+              "value": 1e-12
+             }
+            ]
+           }
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "s",
+     "touched",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   ]
+  }
+ ]
+}

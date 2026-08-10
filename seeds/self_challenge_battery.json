@@ -1,0 +1,48 @@
+{
+  "id": "self_challenge_battery",
+  "version": "1.0.0",
+  "description": "A challenge battery for SELF-GAP PERCEPTION: inputs the agent processes through its real conversation faculties, whose OUTCOME is observable as a substantive result or a known-failure surface (silence / bare social-ack / repair ask-back). The failures feed the self-capability collapse plug; the residual localizes a CapabilityGap to the failing faculty. Every challenge is something the agent is EXPECTED to handle (the battery is its competence self-claim made concrete), so a failure on one is a genuine surprise. A `weak_stub` challenge exercises a deliberately-weak/absent faculty (the synthetic stubbed-to-fail case the current agent needs to have a guaranteed gap, since it handles most real inputs).",
+  "challenges": [
+    {
+      "id": "answer_self_organisation",
+      "faculty": "answer_question",
+      "text": "How are you organised?",
+      "speech_act": "question",
+      "expect": "substantive",
+      "note": "the agent's self-organisation reflect faculty -> substantive prose (handled)"
+    },
+    {
+      "id": "answer_world_rule",
+      "faculty": "answer_world_rule",
+      "text": "Tell me about the rule hop_descend_gradient.",
+      "speech_act": "question",
+      "expect": "substantive",
+      "note": "the self-model rule lookup -> substantive prose (handled)"
+    },
+    {
+      "id": "act_report_organisation",
+      "faculty": "act_on_instruction",
+      "text": "report your organisation",
+      "speech_act": "statement",
+      "expect": "substantive",
+      "note": "an instruction mints a Goal and self-reports -> substantive (handled)"
+    },
+    {
+      "id": "greet",
+      "faculty": "greeting",
+      "text": "hello",
+      "speech_act": "greeting",
+      "expect": "substantive",
+      "note": "greeting round-trip -> 'hello' (handled)"
+    },
+    {
+      "id": "planning_account",
+      "faculty": "explain_planning_failure",
+      "text": "Explain why your last plan failed and what you would change.",
+      "speech_act": "question",
+      "expect": "substantive",
+      "weak_stub": "bare_ack",
+      "note": "a DELIBERATELY-WEAK faculty the agent claims but cannot satisfy: it deflects to a bare social-ack instead of a substantive account -> the residual localizes a CapabilityGap here (the external-dev Vane-conversation gap, made a battery item)."
+    }
+  ]
+}

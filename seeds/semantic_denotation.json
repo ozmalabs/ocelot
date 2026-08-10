@@ -1,0 +1,28 @@
+{
+ "id": "semantic_denotation",
+ "version": "1.0.0",
+ "depends_on": ["semantic_binding"],
+ "description": "The SEMANTICS faculty's DENOTATION piece (graph-native): the sign -> its REFERENT (what the symbol stands for in the world). Established by OSTENSION — a teaching mark is co-presented with a referent, and the Rule lifts that onto the mark's MEANING (the shared concept), so denotation is acquired once and GENERALISES to every future reading of the symbol across writers (the shared meaning attractor). read_denotation then RECALLS it: any recognised mark reads off what its meaning refers to — form -> meaning -> referent, which is reading. Both are Rules over the meaning net; the host only stages the ostensive co_present event and reads the graph back.",
+ "microtheory": {"name": "semantic_denotation", "description": "the sign denotes its referent; recognised forms read it off"},
+ "nodes": [], "edges": [], "productions": [],
+ "rules": [
+  {
+   "name": "establish_denotation",
+   "match": [["m", "denotes", "meaning"], ["m", "co_present", "ref"]],
+   "where": {"type": "Eq",
+     "a": {"type": "Count", "source": {"type": "Neighbours",
+            "node": {"type": "Var", "name": "meaning"}, "edge_type": "refers_to", "any_type": false}},
+     "b": {"type": "Lit", "value": 0}},
+   "effects": [["add_edge", "meaning", "refers_to", "ref"]]
+  },
+  {
+   "name": "read_denotation",
+   "match": [["m", "denotes", "meaning"], ["meaning", "refers_to", "ref"]],
+   "where": {"type": "Eq",
+     "a": {"type": "Count", "source": {"type": "Neighbours",
+            "node": {"type": "Var", "name": "m"}, "edge_type": "reads", "any_type": false}},
+     "b": {"type": "Lit", "value": 0}},
+   "effects": [["add_edge", "m", "reads", "ref"]]
+  }
+ ]
+}

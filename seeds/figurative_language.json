@@ -1,0 +1,964 @@
+{
+  "id": "figurative_language",
+  "version": "1.0.0",
+  "depends_on": [
+    "relations"
+  ],
+  "description": "The agent read the figures of speech and ADJUSTED its meaning-vector machinery to suit. detect_figure draws figure_of itself; classify_figure is one discriminator covering TEN figures, each by the agent-designed test: SIMILE (like/as comparator part), OXYMORON (two conjoined parts carry an opposes edge - INTERNAL pair-layer), IRONY (literal reading opposes the CONTEXT - EXTERNAL pair-layer, guarded: no context no irony), HYPERBOLE (magnitude far above plausible - scalar up), UNDERSTATEMENT (magnitude far below the real situation - scalar down), IDIOM (non-compositional + stored whole), METONYMY (same-domain association), PERSONIFICATION (inanimate subject + human predicate - type mismatch), METAPHOR (cross-domain resemblance). detect_allegory = structure-mapping over a narrative. Oxymoron/irony share one tension primitive (internal vs external); hyperbole/understatement share one scalar test (up vs down). Graph-native; structural tests checked first.",
+  "microtheory": {
+    "name": "figurative_language",
+    "description": "figures of speech + detection/classification"
+  },
+  "nodes": [
+    {
+      "local_id": 1,
+      "type": "Concept",
+      "attrs": {
+        "name": "metaphor",
+        "is_figure": 1
+      }
+    },
+    {
+      "local_id": 2,
+      "type": "Concept",
+      "attrs": {
+        "name": "metonymy",
+        "is_figure": 1
+      }
+    },
+    {
+      "local_id": 3,
+      "type": "Concept",
+      "attrs": {
+        "name": "idiom",
+        "is_figure": 1
+      }
+    },
+    {
+      "local_id": 4,
+      "type": "Concept",
+      "attrs": {
+        "name": "allegory",
+        "is_figure": 1
+      }
+    },
+    {
+      "local_id": 5,
+      "type": "Concept",
+      "attrs": {
+        "name": "figure of speech",
+        "is_figure": 1
+      }
+    }
+  ],
+  "edges": [],
+  "rules": [
+    {
+      "name": "detect_figure",
+      "match": [
+        [
+          "fig",
+          "claimed_by",
+          "ws"
+        ],
+        [
+          "lit",
+          "claimed_by",
+          "ds"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "fig"
+              },
+              "key": "word"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "lit"
+              },
+              "key": "word"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "fig"
+              },
+              "key": "kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "figurative"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "lit"
+              },
+              "key": "kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "literal"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "fig"
+                },
+                "edge_type": "figure_of"
+              }
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_edge",
+          "fig",
+          "figure_of",
+          "lit"
+        ],
+        [
+          "set_attr",
+          "fig",
+          "figure_detected",
+          1
+        ]
+      ]
+    },
+    {
+      "name": "classify_figure",
+      "match": [
+        [
+          "fig",
+          "figure_of",
+          "lit"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "fig"
+              },
+              "key": "figure_detected"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "fig"
+              },
+              "key": "scored"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "fig"
+                },
+                "edge_type": "kinded"
+              }
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "fig",
+          "figure_kind",
+          {
+            "__term__": {
+              "type": "IfThenElse",
+              "cond": {
+                "type": "Gte",
+                "a": {
+                  "type": "Count",
+                  "source": {
+                    "type": "Filter",
+                    "source": {
+                      "type": "Neighbours",
+                      "node": {
+                        "type": "Var",
+                        "name": "fig"
+                      },
+                      "edge_type": "has_part"
+                    },
+                    "var_name": "p",
+                    "predicate": {
+                      "type": "Or",
+                      "items": [
+                        {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "p"
+                            },
+                            "key": "text"
+                          },
+                          "b": {
+                            "type": "Lit",
+                            "value": "like"
+                          }
+                        },
+                        {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "p"
+                            },
+                            "key": "text"
+                          },
+                          "b": {
+                            "type": "Lit",
+                            "value": "as"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 1
+                }
+              },
+              "then": {
+                "type": "Lit",
+                "value": "simile"
+              },
+              "other": {
+                "type": "IfThenElse",
+                "cond": {
+                  "type": "Gte",
+                  "a": {
+                    "type": "Count",
+                    "source": {
+                      "type": "Filter",
+                      "source": {
+                        "type": "Neighbours",
+                        "node": {
+                          "type": "Var",
+                          "name": "fig"
+                        },
+                        "edge_type": "has_part"
+                      },
+                      "var_name": "p",
+                      "predicate": {
+                        "type": "Gte",
+                        "a": {
+                          "type": "Count",
+                          "source": {
+                            "type": "Neighbours",
+                            "node": {
+                              "type": "Var",
+                              "name": "p"
+                            },
+                            "edge_type": "opposes"
+                          }
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": 1
+                        }
+                      }
+                    }
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": 1
+                  }
+                },
+                "then": {
+                  "type": "Lit",
+                  "value": "oxymoron"
+                },
+                "other": {
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "And",
+                    "items": [
+                      {
+                        "type": "Gte",
+                        "a": {
+                          "type": "Count",
+                          "source": {
+                            "type": "Neighbours",
+                            "node": {
+                              "type": "Var",
+                              "name": "lit"
+                            },
+                            "edge_type": "opposes"
+                          }
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": 1
+                        }
+                      },
+                      {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "fig"
+                          },
+                          "key": "scalar_spike"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": 1
+                        }
+                      }
+                    ]
+                  },
+                  "then": {
+                    "type": "Lit",
+                    "value": "sarcasm"
+                  },
+                  "other": {
+                    "type": "IfThenElse",
+                    "cond": {
+                      "type": "Gte",
+                      "a": {
+                        "type": "Count",
+                        "source": {
+                          "type": "Neighbours",
+                          "node": {
+                            "type": "Var",
+                            "name": "lit"
+                          },
+                          "edge_type": "opposes"
+                        }
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 1
+                      }
+                    },
+                    "then": {
+                      "type": "Lit",
+                      "value": "irony"
+                    },
+                    "other": {
+                      "type": "IfThenElse",
+                      "cond": {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "fig"
+                          },
+                          "key": "personifies"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": 1
+                        }
+                      },
+                      "then": {
+                        "type": "Lit",
+                        "value": "personification"
+                      },
+                      "other": {
+                        "type": "IfThenElse",
+                        "cond": {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "fig"
+                            },
+                            "key": "scalar_violation"
+                          },
+                          "b": {
+                            "type": "Lit",
+                            "value": 1
+                          }
+                        },
+                        "then": {
+                          "type": "Lit",
+                          "value": "hyperbole"
+                        },
+                        "other": {
+                          "type": "IfThenElse",
+                          "cond": {
+                            "type": "And",
+                            "items": [
+                              {
+                                "type": "Eq",
+                                "a": {
+                                  "type": "Attr",
+                                  "node": {
+                                    "type": "Var",
+                                    "name": "fig"
+                                  },
+                                  "key": "understates"
+                                },
+                                "b": {
+                                  "type": "Lit",
+                                  "value": 1
+                                }
+                              },
+                              {
+                                "type": "Gte",
+                                "a": {
+                                  "type": "Count",
+                                  "source": {
+                                    "type": "Filter",
+                                    "source": {
+                                      "type": "Neighbours",
+                                      "node": {
+                                        "type": "Var",
+                                        "name": "fig"
+                                      },
+                                      "edge_type": "has_part"
+                                    },
+                                    "var_name": "p",
+                                    "predicate": {
+                                      "type": "Or",
+                                      "items": [
+                                        {
+                                          "type": "Eq",
+                                          "a": {
+                                            "type": "Attr",
+                                            "node": {
+                                              "type": "Var",
+                                              "name": "p"
+                                            },
+                                            "key": "text"
+                                          },
+                                          "b": {
+                                            "type": "Lit",
+                                            "value": "not"
+                                          }
+                                        },
+                                        {
+                                          "type": "Eq",
+                                          "a": {
+                                            "type": "Attr",
+                                            "node": {
+                                              "type": "Var",
+                                              "name": "p"
+                                            },
+                                            "key": "text"
+                                          },
+                                          "b": {
+                                            "type": "Lit",
+                                            "value": "no"
+                                          }
+                                        },
+                                        {
+                                          "type": "Eq",
+                                          "a": {
+                                            "type": "Attr",
+                                            "node": {
+                                              "type": "Var",
+                                              "name": "p"
+                                            },
+                                            "key": "text"
+                                          },
+                                          "b": {
+                                            "type": "Lit",
+                                            "value": "never"
+                                          }
+                                        },
+                                        {
+                                          "type": "Eq",
+                                          "a": {
+                                            "type": "Attr",
+                                            "node": {
+                                              "type": "Var",
+                                              "name": "p"
+                                            },
+                                            "key": "text"
+                                          },
+                                          "b": {
+                                            "type": "Lit",
+                                            "value": "n't"
+                                          }
+                                        },
+                                        {
+                                          "type": "Eq",
+                                          "a": {
+                                            "type": "Attr",
+                                            "node": {
+                                              "type": "Var",
+                                              "name": "p"
+                                            },
+                                            "key": "text"
+                                          },
+                                          "b": {
+                                            "type": "Lit",
+                                            "value": "nothing"
+                                          }
+                                        }
+                                      ]
+                                    }
+                                  }
+                                },
+                                "b": {
+                                  "type": "Lit",
+                                  "value": 1
+                                }
+                              }
+                            ]
+                          },
+                          "then": {
+                            "type": "Lit",
+                            "value": "litotes"
+                          },
+                          "other": {
+                            "type": "IfThenElse",
+                            "cond": {
+                              "type": "Eq",
+                              "a": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "fig"
+                                },
+                                "key": "understates"
+                              },
+                              "b": {
+                                "type": "Lit",
+                                "value": 1
+                              }
+                            },
+                            "then": {
+                              "type": "Lit",
+                              "value": "understatement"
+                            },
+                            "other": {
+                              "type": "IfThenElse",
+                              "cond": {
+                                "type": "And",
+                                "items": [
+                                  {
+                                    "type": "Eq",
+                                    "a": {
+                                      "type": "Attr",
+                                      "node": {
+                                        "type": "Var",
+                                        "name": "fig"
+                                      },
+                                      "key": "noncompositional"
+                                    },
+                                    "b": {
+                                      "type": "Lit",
+                                      "value": 1
+                                    }
+                                  },
+                                  {
+                                    "type": "Eq",
+                                    "a": {
+                                      "type": "Count",
+                                      "source": {
+                                        "type": "Filter",
+                                        "source": {
+                                          "type": "Neighbours",
+                                          "node": {
+                                            "type": "Var",
+                                            "name": "fig"
+                                          },
+                                          "edge_type": "has_part"
+                                        },
+                                        "var_name": "p",
+                                        "predicate": {
+                                          "type": "Gte",
+                                          "a": {
+                                            "type": "Count",
+                                            "source": {
+                                              "type": "Neighbours",
+                                              "node": {
+                                                "type": "Var",
+                                                "name": "p"
+                                              },
+                                              "edge_type": "figure_of"
+                                            }
+                                          },
+                                          "b": {
+                                            "type": "Lit",
+                                            "value": 1
+                                          }
+                                        }
+                                      }
+                                    },
+                                    "b": {
+                                      "type": "Lit",
+                                      "value": 0
+                                    }
+                                  }
+                                ]
+                              },
+                              "then": {
+                                "type": "Lit",
+                                "value": "idiom"
+                              },
+                              "other": {
+                                "type": "IfThenElse",
+                                "cond": {
+                                  "type": "And",
+                                  "items": [
+                                    {
+                                      "type": "Eq",
+                                      "a": {
+                                        "type": "Attr",
+                                        "node": {
+                                          "type": "Var",
+                                          "name": "fig"
+                                        },
+                                        "key": "contiguity"
+                                      },
+                                      "b": {
+                                        "type": "Lit",
+                                        "value": 1
+                                      }
+                                    },
+                                    {
+                                      "type": "Eq",
+                                      "a": {
+                                        "type": "Attr",
+                                        "node": {
+                                          "type": "Var",
+                                          "name": "fig"
+                                        },
+                                        "key": "part_whole"
+                                      },
+                                      "b": {
+                                        "type": "Lit",
+                                        "value": 1
+                                      }
+                                    }
+                                  ]
+                                },
+                                "then": {
+                                  "type": "Lit",
+                                  "value": "synecdoche"
+                                },
+                                "other": {
+                                  "type": "IfThenElse",
+                                  "cond": {
+                                    "type": "Eq",
+                                    "a": {
+                                      "type": "Attr",
+                                      "node": {
+                                        "type": "Var",
+                                        "name": "fig"
+                                      },
+                                      "key": "contiguity"
+                                    },
+                                    "b": {
+                                      "type": "Lit",
+                                      "value": 1
+                                    }
+                                  },
+                                  "then": {
+                                    "type": "Lit",
+                                    "value": "metonymy"
+                                  },
+                                  "other": {
+                                    "type": "IfThenElse",
+                                    "cond": {
+                                      "type": "Eq",
+                                      "a": {
+                                        "type": "Attr",
+                                        "node": {
+                                          "type": "Var",
+                                          "name": "fig"
+                                        },
+                                        "key": "zeugma_mismatch"
+                                      },
+                                      "b": {
+                                        "type": "Lit",
+                                        "value": 1
+                                      }
+                                    },
+                                    "then": {
+                                      "type": "Lit",
+                                      "value": "zeugma"
+                                    },
+                                    "other": {
+                                      "type": "IfThenElse",
+                                      "cond": {
+                                        "type": "And",
+                                        "items": [
+                                          {
+                                            "type": "Eq",
+                                            "a": {
+                                              "type": "Attr",
+                                              "node": {
+                                                "type": "Var",
+                                                "name": "fig"
+                                              },
+                                              "key": "resemblance"
+                                            },
+                                            "b": {
+                                              "type": "Lit",
+                                              "value": 1
+                                            }
+                                          },
+                                          {
+                                            "type": "Eq",
+                                            "a": {
+                                              "type": "Attr",
+                                              "node": {
+                                                "type": "Var",
+                                                "name": "fig"
+                                              },
+                                              "key": "no_literal_term"
+                                            },
+                                            "b": {
+                                              "type": "Lit",
+                                              "value": 1
+                                            }
+                                          }
+                                        ]
+                                      },
+                                      "then": {
+                                        "type": "Lit",
+                                        "value": "catachresis"
+                                      },
+                                      "other": {
+                                        "type": "IfThenElse",
+                                        "cond": {
+                                          "type": "Eq",
+                                          "a": {
+                                            "type": "Attr",
+                                            "node": {
+                                              "type": "Var",
+                                              "name": "fig"
+                                            },
+                                            "key": "resemblance"
+                                          },
+                                          "b": {
+                                            "type": "Lit",
+                                            "value": 1
+                                          }
+                                        },
+                                        "then": {
+                                          "type": "Lit",
+                                          "value": "metaphor"
+                                        },
+                                        "other": {
+                                          "type": "Lit",
+                                          "value": "idiom"
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "fig",
+          "idiom_confirmed",
+          {
+            "__term__": {
+              "type": "IfThenElse",
+              "cond": {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "fig"
+                      },
+                      "key": "noncompositional"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": 1
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Count",
+                      "source": {
+                        "type": "Filter",
+                        "source": {
+                          "type": "Neighbours",
+                          "node": {
+                            "type": "Var",
+                            "name": "fig"
+                          },
+                          "edge_type": "has_part"
+                        },
+                        "var_name": "p",
+                        "predicate": {
+                          "type": "Gte",
+                          "a": {
+                            "type": "Count",
+                            "source": {
+                              "type": "Neighbours",
+                              "node": {
+                                "type": "Var",
+                                "name": "p"
+                              },
+                              "edge_type": "figure_of"
+                            }
+                          },
+                          "b": {
+                            "type": "Lit",
+                            "value": 1
+                          }
+                        }
+                      }
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": 0
+                    }
+                  }
+                ]
+              },
+              "then": {
+                "type": "Lit",
+                "value": 1
+              },
+              "other": {
+                "type": "Lit",
+                "value": 0
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "fig",
+          "kinded",
+          "lit"
+        ]
+      ]
+    },
+    {
+      "name": "detect_allegory",
+      "match": [
+        [
+          "narr",
+          "contains",
+          "p1"
+        ],
+        [
+          "narr",
+          "contains",
+          "p2"
+        ],
+        [
+          "p1",
+          "acts_on",
+          "p2"
+        ],
+        [
+          "p1",
+          "figure_of",
+          "t1"
+        ],
+        [
+          "p2",
+          "figure_of",
+          "t2"
+        ],
+        [
+          "t1",
+          "acts_on",
+          "t2"
+        ]
+      ],
+      "where": {
+        "type": "Lit",
+        "value": true
+      },
+      "effects": [
+        [
+          "set_attr",
+          "narr",
+          "figure_kind",
+          "allegory"
+        ],
+        [
+          "set_attr",
+          "narr",
+          "is_allegory",
+          1
+        ]
+      ]
+    }
+  ]
+}

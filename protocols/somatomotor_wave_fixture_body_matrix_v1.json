@@ -1,0 +1,36 @@
+{
+  "protocol": "somatomotor_wave_fixture_body_matrix_v1",
+  "base_protocol": "protocols/humanoid_developmental_smoke_v1.json",
+  "claim": "Counterbalance the wave/no-wave intervention over opposed supported-floor fixtures and nominal/reduced actuator authority, then test exact-shape retained capability re-demonstration.",
+  "only_cognitive_manipulation": "curriculum.somatomotor_waves",
+  "conditions": [
+    {
+      "name": "nominal_supine",
+      "fixture_quarter_turns": [1, 0, 0],
+      "maximum_joint_force_scale": {"numerator": 1, "denominator": 1},
+      "arm_order": ["wave_enabled", "wave_ablated"],
+      "retention_source": true
+    },
+    {
+      "name": "nominal_prone",
+      "fixture_quarter_turns": [-1, 0, 0],
+      "maximum_joint_force_scale": {"numerator": 1, "denominator": 1},
+      "arm_order": ["wave_ablated", "wave_enabled"],
+      "retention_source": false
+    },
+    {
+      "name": "reduced_authority_supine",
+      "fixture_quarter_turns": [1, 0, 0],
+      "maximum_joint_force_scale": {"numerator": 3, "denominator": 4},
+      "arm_order": ["wave_ablated", "wave_enabled"],
+      "retention_source": false
+    },
+    {
+      "name": "reduced_authority_prone",
+      "fixture_quarter_turns": [-1, 0, 0],
+      "maximum_joint_force_scale": {"numerator": 3, "denominator": 4},
+      "arm_order": ["wave_enabled", "wave_ablated"],
+      "retention_source": false
+    }
+  ]
+}

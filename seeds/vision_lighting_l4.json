@@ -1,0 +1,8871 @@
+{
+ "id": "vision_lighting_l4",
+ "version": "1.0.0",
+ "depends_on": [],
+ "description": "ADVANCED LIGHTING RUNG L4 -- SHADOW vs REFLECTANCE EDGES. L2 measured that a shadow EDGE is NOT refused by a LOCAL mechanism (10/12 correct, 0 false, only the two straddling locales refused: a discontinuity is out-of-class for a GLOBAL mechanism and IN-class for a LOCAL one) -- but that identities are recovered on both sides WITHOUT THE SYSTEM EVER KNOWING AN EDGE EXISTS. L4 closes exactly that gap: it ATTRIBUTES the edge. An ILLUMINANT edge scales every channel by ONE factor and so PRESERVES chromatic ratios; a REFLECTANCE edge changes the ratios themselves. THE PREDICATE IS L2'S OWN _slowvar_clause WITH THE QUANTIFIER MOVED FROM SPACE TO WAVELENGTH -- the same cross-multiplied ratio-agreement test with the index pair (locale,locale) replaced by (channel,channel), so no ratio is ever divided into a float. l4_classify_illuminant / _reflectance PARTITION the real edges; l4_flat makes 'not an edge' a POSITIVE datum so a silent classifier cannot score a flawless floor; l4_flood is bo_label's min-flood with Eq(val,val) replaced by the ratio-preserving predicate, so cells joined through illuminant edges share a component and cells across a material boundary do not -- which is how a SHADOW BOUNDARY IS PREVENTED FROM BECOMING AN OBJECT BOUNDARY in the UNMODIFIED vision_border_ownership seed. L4's ASSUMPTIONS ARE STRICTLY WEAKER THAN L2's AND L3's: no reference frame, no compares_to, no SurfaceIdentity codebook, no locale pairing, no spatial registration, no per-locale gain and no pooled scene estimate. It sits BESIDE them, not on top. NO new Rust, NO new constant -- literal set {0.0, 0.5, 1.0}, a STRICT SUBSET of L2's and L3's; the envelope is the four half-step roundings the four observations entering the cross-product carry, and the edge threshold is L1's own falls-out ONE LATTICE STEP. BOUNDED: SINGLE-ILLUMINANT, NEUTRAL-SHADOW attribution. CHROMATIC shadows are NOT handled and PROPORTIONAL materials are IRREDUCIBLY ambiguous -- both are MEASURED as predicted failures, not hidden. MULTI-ILLUMINANT scenes unsolved; L3's 'anchor of the anchor' untouched (L4 uses no anchor); reflectance GIVEN at the cone-triple grain; adjacency GIVEN not grown; the ratio-preserving relation is NOT transitive and l4_flood takes its transitive closure. L4 CLASSIFIES EDGES; IT DOES NOT RECOVER REFLECTANCE -- no L2/L3 arm consumes an L4 attribute. Flag-gated on LightingL4Params.lighting_l4, OFF by default (sec 9 -- default 0 => byte-identical, seed inert), read ABSENCE-TOLERANTLY via MaxOver(default 0), never PickUnique. See VISION_LIGHTING_L4_PREREG.md.",
+ "microtheory": {
+  "id": "vision_lighting_l4_mt",
+  "label": "shadow vs reflectance: an illuminant edge preserves chromatic ratios, so it is a discontinuity that is NOT an object boundary"
+ },
+ "nodes": [
+  {
+   "local_id": 0,
+   "type": "LightingL4Params",
+   "attrs": {
+    "lighting_l4": 0.0
+   }
+  }
+ ],
+ "edges": [],
+ "productions": [],
+ "rules": [
+  {
+   "name": "l4_classify_illuminant",
+   "comment": "THE HEADLINE DECISION. A real edge (the observation changes by more than one lattice step on some channel) across which ONE GAIN EXPLAINS ALL THREE CHANNEL-PAIRS is an ILLUMINANT discontinuity -- a cast shadow, not a material boundary. L2 measured that a LOCAL mechanism recovers identities on both sides of such an edge WITHOUT KNOWING IT IS THERE; this rule is the graph knowing. The envelope is NOT a threshold anyone chose: it is the sum of the four half-step roundings the four observations entering the cross-product carry, plus the second-order term the true->observed substitution costs. Cross-multiplied so no ratio is divided into a float. l4_margin RECORDS the bound's occupancy so its discriminativeness is reported rather than assumed (rung L1b's lesson). Flag-gated, OFF by default (sec 9).",
+   "match": [
+    [
+     "fld",
+     "has_l4cell",
+     "R"
+    ],
+    [
+     "R",
+     "l4_neighbour",
+     "Q"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "MaxOver",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "LightingL4Params"
+       },
+       "var_name": "lp",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "lp"
+        },
+        "key": "lighting_l4"
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "R"
+       },
+       "key": "l4_kind_done"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "R"
+       },
+       "key": "crow"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "Q"
+       },
+       "key": "crow"
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "R"
+       },
+       "key": "ccol"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "Q"
+       },
+       "key": "ccol"
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Max",
+       "items": [
+        {
+         "type": "Abs",
+         "arg": {
+          "type": "Minus",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "Q"
+           },
+           "key": "cL"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "R"
+           },
+           "key": "cL"
+          }
+         }
+        },
+        {
+         "type": "Abs",
+         "arg": {
+          "type": "Minus",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "Q"
+           },
+           "key": "cM"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "R"
+           },
+           "key": "cM"
+          }
+         }
+        },
+        {
+         "type": "Abs",
+         "arg": {
+          "type": "Minus",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "Q"
+           },
+           "key": "cS"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "R"
+           },
+           "key": "cS"
+          }
+         }
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Lte",
+        "a": {
+         "type": "Abs",
+         "arg": {
+          "type": "Minus",
+          "a": {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "Q"
+             },
+             "key": "cL"
+            },
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "cM"
+            }
+           ]
+          },
+          "b": {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "cL"
+            },
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "Q"
+             },
+             "key": "cM"
+            }
+           ]
+          }
+         }
+        },
+        "b": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Lit",
+             "value": 0.5
+            },
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "Q"
+             },
+             "key": "cL"
+            }
+           ]
+          },
+          {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Lit",
+             "value": 0.5
+            },
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "cM"
+            }
+           ]
+          },
+          {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Lit",
+             "value": 0.5
+            },
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "cL"
+            }
+           ]
+          },
+          {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Lit",
+             "value": 0.5
+            },
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "Q"
+             },
+             "key": "cM"
+            }
+           ]
+          },
+          {
+           "type": "Lit",
+           "value": 1.0
+          },
+          {
+           "type": "Lit",
+           "value": 0.5
+          }
+         ]
+        }
+       },
+       {
+        "type": "Lte",
+        "a": {
+         "type": "Abs",
+         "arg": {
+          "type": "Minus",
+          "a": {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "Q"
+             },
+             "key": "cL"
+            },
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "cS"
+            }
+           ]
+          },
+          "b": {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "cL"
+            },
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "Q"
+             },
+             "key": "cS"
+            }
+           ]
+          }
+         }
+        },
+        "b": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Lit",
+             "value": 0.5
+            },
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "Q"
+             },
+             "key": "cL"
+            }
+           ]
+          },
+          {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Lit",
+             "value": 0.5
+            },
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "cS"
+            }
+           ]
+          },
+          {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Lit",
+             "value": 0.5
+            },
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "cL"
+            }
+           ]
+          },
+          {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Lit",
+             "value": 0.5
+            },
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "Q"
+             },
+             "key": "cS"
+            }
+           ]
+          },
+          {
+           "type": "Lit",
+           "value": 1.0
+          },
+          {
+           "type": "Lit",
+           "value": 0.5
+          }
+         ]
+        }
+       },
+       {
+        "type": "Lte",
+        "a": {
+         "type": "Abs",
+         "arg": {
+          "type": "Minus",
+          "a": {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "Q"
+             },
+             "key": "cM"
+            },
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "cS"
+            }
+           ]
+          },
+          "b": {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "cM"
+            },
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "Q"
+             },
+             "key": "cS"
+            }
+           ]
+          }
+         }
+        },
+        "b": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Lit",
+             "value": 0.5
+            },
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "Q"
+             },
+             "key": "cM"
+            }
+           ]
+          },
+          {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Lit",
+             "value": 0.5
+            },
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "cS"
+            }
+           ]
+          },
+          {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Lit",
+             "value": 0.5
+            },
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "cM"
+            }
+           ]
+          },
+          {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Lit",
+             "value": 0.5
+            },
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "Q"
+             },
+             "key": "cS"
+            }
+           ]
+          },
+          {
+           "type": "Lit",
+           "value": 1.0
+          },
+          {
+           "type": "Lit",
+           "value": 0.5
+          }
+         ]
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "R",
+     "l4_kind",
+     {
+      "__term__": {
+       "type": "Lit",
+       "value": "l4_illuminant"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "R",
+     "l4_kind_done",
+     {
+      "__term__": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "R",
+     "l4_margin",
+     {
+      "__term__": {
+       "type": "Max",
+       "items": [
+        {
+         "type": "Div",
+         "a": {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cL"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cM"
+             }
+            ]
+           },
+           "b": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cL"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cM"
+             }
+            ]
+           }
+          }
+         },
+         "b": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cL"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cM"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cL"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cM"
+             }
+            ]
+           },
+           {
+            "type": "Lit",
+            "value": 1.0
+           },
+           {
+            "type": "Lit",
+            "value": 0.5
+           }
+          ]
+         }
+        },
+        {
+         "type": "Div",
+         "a": {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cL"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cS"
+             }
+            ]
+           },
+           "b": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cL"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cS"
+             }
+            ]
+           }
+          }
+         },
+         "b": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cL"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cS"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cL"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cS"
+             }
+            ]
+           },
+           {
+            "type": "Lit",
+            "value": 1.0
+           },
+           {
+            "type": "Lit",
+            "value": 0.5
+           }
+          ]
+         }
+        },
+        {
+         "type": "Div",
+         "a": {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cM"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cS"
+             }
+            ]
+           },
+           "b": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cM"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cS"
+             }
+            ]
+           }
+          }
+         },
+         "b": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cM"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cS"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cM"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cS"
+             }
+            ]
+           },
+           {
+            "type": "Lit",
+            "value": 1.0
+           },
+           {
+            "type": "Lit",
+            "value": 0.5
+           }
+          ]
+         }
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "R",
+     "l4_npairs",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Lte",
+          "a": {
+           "type": "Abs",
+           "arg": {
+            "type": "Minus",
+            "a": {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "cL"
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "cM"
+              }
+             ]
+            },
+            "b": {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "cL"
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "cM"
+              }
+             ]
+            }
+           }
+          },
+          "b": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.5
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "cL"
+              }
+             ]
+            },
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.5
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "cM"
+              }
+             ]
+            },
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.5
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "cL"
+              }
+             ]
+            },
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.5
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "cM"
+              }
+             ]
+            },
+            {
+             "type": "Lit",
+             "value": 1.0
+            },
+            {
+             "type": "Lit",
+             "value": 0.5
+            }
+           ]
+          }
+         },
+         "then": {
+          "type": "Lit",
+          "value": 1.0
+         },
+         "other": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        },
+        {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Lte",
+          "a": {
+           "type": "Abs",
+           "arg": {
+            "type": "Minus",
+            "a": {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "cL"
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "cS"
+              }
+             ]
+            },
+            "b": {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "cL"
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "cS"
+              }
+             ]
+            }
+           }
+          },
+          "b": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.5
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "cL"
+              }
+             ]
+            },
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.5
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "cS"
+              }
+             ]
+            },
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.5
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "cL"
+              }
+             ]
+            },
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.5
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "cS"
+              }
+             ]
+            },
+            {
+             "type": "Lit",
+             "value": 1.0
+            },
+            {
+             "type": "Lit",
+             "value": 0.5
+            }
+           ]
+          }
+         },
+         "then": {
+          "type": "Lit",
+          "value": 1.0
+         },
+         "other": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        },
+        {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Lte",
+          "a": {
+           "type": "Abs",
+           "arg": {
+            "type": "Minus",
+            "a": {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "cM"
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "cS"
+              }
+             ]
+            },
+            "b": {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "cM"
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "cS"
+              }
+             ]
+            }
+           }
+          },
+          "b": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.5
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "cM"
+              }
+             ]
+            },
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.5
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "cS"
+              }
+             ]
+            },
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.5
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "cM"
+              }
+             ]
+            },
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.5
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "cS"
+              }
+             ]
+            },
+            {
+             "type": "Lit",
+             "value": 1.0
+            },
+            {
+             "type": "Lit",
+             "value": 0.5
+            }
+           ]
+          }
+         },
+         "then": {
+          "type": "Lit",
+          "value": 1.0
+         },
+         "other": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "l4_classify_reflectance",
+   "comment": "THE DISCRIMINATION THAT MAKES THE HEADLINE NON-TRIVIAL. A real edge across which NO single gain explains all three channel-pairs is a MATERIAL boundary. Without this rule the seed could call everything a shadow and score a perfect headline -- which is the refuse-everything disease in its mirror form, and is exactly what the pre-registered Times empty-product positive control injects. It is the EXACT complement of l4_classify_illuminant's predicate, so the two rules PARTITION the real edges. Flag-gated, OFF by default (sec 9).",
+   "match": [
+    [
+     "fld",
+     "has_l4cell",
+     "R"
+    ],
+    [
+     "R",
+     "l4_neighbour",
+     "Q"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "MaxOver",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "LightingL4Params"
+       },
+       "var_name": "lp",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "lp"
+        },
+        "key": "lighting_l4"
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "R"
+       },
+       "key": "l4_kind_done"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "R"
+       },
+       "key": "crow"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "Q"
+       },
+       "key": "crow"
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "R"
+       },
+       "key": "ccol"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "Q"
+       },
+       "key": "ccol"
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Max",
+       "items": [
+        {
+         "type": "Abs",
+         "arg": {
+          "type": "Minus",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "Q"
+           },
+           "key": "cL"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "R"
+           },
+           "key": "cL"
+          }
+         }
+        },
+        {
+         "type": "Abs",
+         "arg": {
+          "type": "Minus",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "Q"
+           },
+           "key": "cM"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "R"
+           },
+           "key": "cM"
+          }
+         }
+        },
+        {
+         "type": "Abs",
+         "arg": {
+          "type": "Minus",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "Q"
+           },
+           "key": "cS"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "R"
+           },
+           "key": "cS"
+          }
+         }
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "And",
+       "items": [
+        {
+         "type": "Lte",
+         "a": {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cL"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cM"
+             }
+            ]
+           },
+           "b": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cL"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cM"
+             }
+            ]
+           }
+          }
+         },
+         "b": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cL"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cM"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cL"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cM"
+             }
+            ]
+           },
+           {
+            "type": "Lit",
+            "value": 1.0
+           },
+           {
+            "type": "Lit",
+            "value": 0.5
+           }
+          ]
+         }
+        },
+        {
+         "type": "Lte",
+         "a": {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cL"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cS"
+             }
+            ]
+           },
+           "b": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cL"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cS"
+             }
+            ]
+           }
+          }
+         },
+         "b": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cL"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cS"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cL"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cS"
+             }
+            ]
+           },
+           {
+            "type": "Lit",
+            "value": 1.0
+           },
+           {
+            "type": "Lit",
+            "value": 0.5
+           }
+          ]
+         }
+        },
+        {
+         "type": "Lte",
+         "a": {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cM"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cS"
+             }
+            ]
+           },
+           "b": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cM"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cS"
+             }
+            ]
+           }
+          }
+         },
+         "b": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cM"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cS"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cM"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cS"
+             }
+            ]
+           },
+           {
+            "type": "Lit",
+            "value": 1.0
+           },
+           {
+            "type": "Lit",
+            "value": 0.5
+           }
+          ]
+         }
+        }
+       ]
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "R",
+     "l4_kind",
+     {
+      "__term__": {
+       "type": "Lit",
+       "value": "l4_reflectance"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "R",
+     "l4_kind_done",
+     {
+      "__term__": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "R",
+     "l4_margin",
+     {
+      "__term__": {
+       "type": "Max",
+       "items": [
+        {
+         "type": "Div",
+         "a": {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cL"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cM"
+             }
+            ]
+           },
+           "b": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cL"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cM"
+             }
+            ]
+           }
+          }
+         },
+         "b": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cL"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cM"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cL"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cM"
+             }
+            ]
+           },
+           {
+            "type": "Lit",
+            "value": 1.0
+           },
+           {
+            "type": "Lit",
+            "value": 0.5
+           }
+          ]
+         }
+        },
+        {
+         "type": "Div",
+         "a": {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cL"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cS"
+             }
+            ]
+           },
+           "b": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cL"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cS"
+             }
+            ]
+           }
+          }
+         },
+         "b": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cL"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cS"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cL"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cS"
+             }
+            ]
+           },
+           {
+            "type": "Lit",
+            "value": 1.0
+           },
+           {
+            "type": "Lit",
+            "value": 0.5
+           }
+          ]
+         }
+        },
+        {
+         "type": "Div",
+         "a": {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cM"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cS"
+             }
+            ]
+           },
+           "b": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cM"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cS"
+             }
+            ]
+           }
+          }
+         },
+         "b": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cM"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cS"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cM"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cS"
+             }
+            ]
+           },
+           {
+            "type": "Lit",
+            "value": 1.0
+           },
+           {
+            "type": "Lit",
+            "value": 0.5
+           }
+          ]
+         }
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "R",
+     "l4_npairs",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Lte",
+          "a": {
+           "type": "Abs",
+           "arg": {
+            "type": "Minus",
+            "a": {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "cL"
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "cM"
+              }
+             ]
+            },
+            "b": {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "cL"
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "cM"
+              }
+             ]
+            }
+           }
+          },
+          "b": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.5
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "cL"
+              }
+             ]
+            },
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.5
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "cM"
+              }
+             ]
+            },
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.5
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "cL"
+              }
+             ]
+            },
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.5
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "cM"
+              }
+             ]
+            },
+            {
+             "type": "Lit",
+             "value": 1.0
+            },
+            {
+             "type": "Lit",
+             "value": 0.5
+            }
+           ]
+          }
+         },
+         "then": {
+          "type": "Lit",
+          "value": 1.0
+         },
+         "other": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        },
+        {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Lte",
+          "a": {
+           "type": "Abs",
+           "arg": {
+            "type": "Minus",
+            "a": {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "cL"
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "cS"
+              }
+             ]
+            },
+            "b": {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "cL"
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "cS"
+              }
+             ]
+            }
+           }
+          },
+          "b": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.5
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "cL"
+              }
+             ]
+            },
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.5
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "cS"
+              }
+             ]
+            },
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.5
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "cL"
+              }
+             ]
+            },
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.5
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "cS"
+              }
+             ]
+            },
+            {
+             "type": "Lit",
+             "value": 1.0
+            },
+            {
+             "type": "Lit",
+             "value": 0.5
+            }
+           ]
+          }
+         },
+         "then": {
+          "type": "Lit",
+          "value": 1.0
+         },
+         "other": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        },
+        {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Lte",
+          "a": {
+           "type": "Abs",
+           "arg": {
+            "type": "Minus",
+            "a": {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "cM"
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "cS"
+              }
+             ]
+            },
+            "b": {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "cM"
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "cS"
+              }
+             ]
+            }
+           }
+          },
+          "b": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.5
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "cM"
+              }
+             ]
+            },
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.5
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "cS"
+              }
+             ]
+            },
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.5
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "cM"
+              }
+             ]
+            },
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.5
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "cS"
+              }
+             ]
+            },
+            {
+             "type": "Lit",
+             "value": 1.0
+            },
+            {
+             "type": "Lit",
+             "value": 0.5
+            }
+           ]
+          }
+         },
+         "then": {
+          "type": "Lit",
+          "value": 1.0
+         },
+         "other": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "l4_flat",
+   "comment": "NOT AN EDGE -- as a POSITIVE datum (sec 1.1 clause 4). A change within one lattice step is indistinguishable from rounding. Without this rule an unclassified adjacency would be indistinguishable from a rule that never fired, and a silent classifier scores a FLAWLESS noise floor while measuring nothing. With it, the floor arm can report how many adjacencies got ANY classification and so demonstrate the arm is ALIVE. Flag-gated, OFF by default (sec 9).",
+   "match": [
+    [
+     "fld",
+     "has_l4cell",
+     "R"
+    ],
+    [
+     "R",
+     "l4_neighbour",
+     "Q"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "MaxOver",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "LightingL4Params"
+       },
+       "var_name": "lp",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "lp"
+        },
+        "key": "lighting_l4"
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "R"
+       },
+       "key": "l4_kind_done"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "R"
+       },
+       "key": "crow"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "Q"
+       },
+       "key": "crow"
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "R"
+       },
+       "key": "ccol"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "Q"
+       },
+       "key": "ccol"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Gt",
+       "a": {
+        "type": "Max",
+        "items": [
+         {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "cL"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "R"
+            },
+            "key": "cL"
+           }
+          }
+         },
+         {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "cM"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "R"
+            },
+            "key": "cM"
+           }
+          }
+         },
+         {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "cS"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "R"
+            },
+            "key": "cS"
+           }
+          }
+         }
+        ]
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "R",
+     "l4_kind",
+     {
+      "__term__": {
+       "type": "Lit",
+       "value": "l4_flat"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "R",
+     "l4_kind_done",
+     {
+      "__term__": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "R",
+     "l4_margin",
+     {
+      "__term__": {
+       "type": "Max",
+       "items": [
+        {
+         "type": "Div",
+         "a": {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cL"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cM"
+             }
+            ]
+           },
+           "b": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cL"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cM"
+             }
+            ]
+           }
+          }
+         },
+         "b": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cL"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cM"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cL"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cM"
+             }
+            ]
+           },
+           {
+            "type": "Lit",
+            "value": 1.0
+           },
+           {
+            "type": "Lit",
+            "value": 0.5
+           }
+          ]
+         }
+        },
+        {
+         "type": "Div",
+         "a": {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cL"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cS"
+             }
+            ]
+           },
+           "b": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cL"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cS"
+             }
+            ]
+           }
+          }
+         },
+         "b": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cL"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cS"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cL"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cS"
+             }
+            ]
+           },
+           {
+            "type": "Lit",
+            "value": 1.0
+           },
+           {
+            "type": "Lit",
+            "value": 0.5
+           }
+          ]
+         }
+        },
+        {
+         "type": "Div",
+         "a": {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cM"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cS"
+             }
+            ]
+           },
+           "b": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cM"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cS"
+             }
+            ]
+           }
+          }
+         },
+         "b": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cM"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cS"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cM"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cS"
+             }
+            ]
+           },
+           {
+            "type": "Lit",
+            "value": 1.0
+           },
+           {
+            "type": "Lit",
+            "value": 0.5
+           }
+          ]
+         }
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "R",
+     "l4_npairs",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Lte",
+          "a": {
+           "type": "Abs",
+           "arg": {
+            "type": "Minus",
+            "a": {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "cL"
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "cM"
+              }
+             ]
+            },
+            "b": {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "cL"
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "cM"
+              }
+             ]
+            }
+           }
+          },
+          "b": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.5
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "cL"
+              }
+             ]
+            },
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.5
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "cM"
+              }
+             ]
+            },
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.5
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "cL"
+              }
+             ]
+            },
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.5
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "cM"
+              }
+             ]
+            },
+            {
+             "type": "Lit",
+             "value": 1.0
+            },
+            {
+             "type": "Lit",
+             "value": 0.5
+            }
+           ]
+          }
+         },
+         "then": {
+          "type": "Lit",
+          "value": 1.0
+         },
+         "other": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        },
+        {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Lte",
+          "a": {
+           "type": "Abs",
+           "arg": {
+            "type": "Minus",
+            "a": {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "cL"
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "cS"
+              }
+             ]
+            },
+            "b": {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "cL"
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "cS"
+              }
+             ]
+            }
+           }
+          },
+          "b": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.5
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "cL"
+              }
+             ]
+            },
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.5
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "cS"
+              }
+             ]
+            },
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.5
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "cL"
+              }
+             ]
+            },
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.5
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "cS"
+              }
+             ]
+            },
+            {
+             "type": "Lit",
+             "value": 1.0
+            },
+            {
+             "type": "Lit",
+             "value": 0.5
+            }
+           ]
+          }
+         },
+         "then": {
+          "type": "Lit",
+          "value": 1.0
+         },
+         "other": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        },
+        {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Lte",
+          "a": {
+           "type": "Abs",
+           "arg": {
+            "type": "Minus",
+            "a": {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "cM"
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "cS"
+              }
+             ]
+            },
+            "b": {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "cM"
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "cS"
+              }
+             ]
+            }
+           }
+          },
+          "b": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.5
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "cM"
+              }
+             ]
+            },
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.5
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "cS"
+              }
+             ]
+            },
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.5
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "cM"
+              }
+             ]
+            },
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.5
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "cS"
+              }
+             ]
+            },
+            {
+             "type": "Lit",
+             "value": 1.0
+            },
+            {
+             "type": "Lit",
+             "value": 0.5
+            }
+           ]
+          }
+         },
+         "then": {
+          "type": "Lit",
+          "value": 1.0
+         },
+         "other": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "l4_classify_illuminant_v",
+   "comment": "l4_classify_illuminant on the VERTICAL adjacency (verdict on the UPPER cell). Present so a 2-D shadow boundary is classified all the way round, not only on its left and right sides.",
+   "match": [
+    [
+     "fld",
+     "has_l4cell",
+     "R"
+    ],
+    [
+     "R",
+     "l4_neighbour",
+     "Q"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "MaxOver",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "LightingL4Params"
+       },
+       "var_name": "lp",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "lp"
+        },
+        "key": "lighting_l4"
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "R"
+       },
+       "key": "l4_kindv_done"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "R"
+       },
+       "key": "ccol"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "Q"
+       },
+       "key": "ccol"
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "R"
+       },
+       "key": "crow"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "Q"
+       },
+       "key": "crow"
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Max",
+       "items": [
+        {
+         "type": "Abs",
+         "arg": {
+          "type": "Minus",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "Q"
+           },
+           "key": "cL"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "R"
+           },
+           "key": "cL"
+          }
+         }
+        },
+        {
+         "type": "Abs",
+         "arg": {
+          "type": "Minus",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "Q"
+           },
+           "key": "cM"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "R"
+           },
+           "key": "cM"
+          }
+         }
+        },
+        {
+         "type": "Abs",
+         "arg": {
+          "type": "Minus",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "Q"
+           },
+           "key": "cS"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "R"
+           },
+           "key": "cS"
+          }
+         }
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Lte",
+        "a": {
+         "type": "Abs",
+         "arg": {
+          "type": "Minus",
+          "a": {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "Q"
+             },
+             "key": "cL"
+            },
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "cM"
+            }
+           ]
+          },
+          "b": {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "cL"
+            },
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "Q"
+             },
+             "key": "cM"
+            }
+           ]
+          }
+         }
+        },
+        "b": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Lit",
+             "value": 0.5
+            },
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "Q"
+             },
+             "key": "cL"
+            }
+           ]
+          },
+          {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Lit",
+             "value": 0.5
+            },
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "cM"
+            }
+           ]
+          },
+          {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Lit",
+             "value": 0.5
+            },
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "cL"
+            }
+           ]
+          },
+          {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Lit",
+             "value": 0.5
+            },
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "Q"
+             },
+             "key": "cM"
+            }
+           ]
+          },
+          {
+           "type": "Lit",
+           "value": 1.0
+          },
+          {
+           "type": "Lit",
+           "value": 0.5
+          }
+         ]
+        }
+       },
+       {
+        "type": "Lte",
+        "a": {
+         "type": "Abs",
+         "arg": {
+          "type": "Minus",
+          "a": {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "Q"
+             },
+             "key": "cL"
+            },
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "cS"
+            }
+           ]
+          },
+          "b": {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "cL"
+            },
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "Q"
+             },
+             "key": "cS"
+            }
+           ]
+          }
+         }
+        },
+        "b": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Lit",
+             "value": 0.5
+            },
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "Q"
+             },
+             "key": "cL"
+            }
+           ]
+          },
+          {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Lit",
+             "value": 0.5
+            },
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "cS"
+            }
+           ]
+          },
+          {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Lit",
+             "value": 0.5
+            },
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "cL"
+            }
+           ]
+          },
+          {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Lit",
+             "value": 0.5
+            },
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "Q"
+             },
+             "key": "cS"
+            }
+           ]
+          },
+          {
+           "type": "Lit",
+           "value": 1.0
+          },
+          {
+           "type": "Lit",
+           "value": 0.5
+          }
+         ]
+        }
+       },
+       {
+        "type": "Lte",
+        "a": {
+         "type": "Abs",
+         "arg": {
+          "type": "Minus",
+          "a": {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "Q"
+             },
+             "key": "cM"
+            },
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "cS"
+            }
+           ]
+          },
+          "b": {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "cM"
+            },
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "Q"
+             },
+             "key": "cS"
+            }
+           ]
+          }
+         }
+        },
+        "b": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Lit",
+             "value": 0.5
+            },
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "Q"
+             },
+             "key": "cM"
+            }
+           ]
+          },
+          {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Lit",
+             "value": 0.5
+            },
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "cS"
+            }
+           ]
+          },
+          {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Lit",
+             "value": 0.5
+            },
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "cM"
+            }
+           ]
+          },
+          {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Lit",
+             "value": 0.5
+            },
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "Q"
+             },
+             "key": "cS"
+            }
+           ]
+          },
+          {
+           "type": "Lit",
+           "value": 1.0
+          },
+          {
+           "type": "Lit",
+           "value": 0.5
+          }
+         ]
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "R",
+     "l4_kindv",
+     {
+      "__term__": {
+       "type": "Lit",
+       "value": "l4_illuminant"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "R",
+     "l4_kindv_done",
+     {
+      "__term__": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "R",
+     "l4_marginv",
+     {
+      "__term__": {
+       "type": "Max",
+       "items": [
+        {
+         "type": "Div",
+         "a": {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cL"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cM"
+             }
+            ]
+           },
+           "b": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cL"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cM"
+             }
+            ]
+           }
+          }
+         },
+         "b": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cL"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cM"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cL"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cM"
+             }
+            ]
+           },
+           {
+            "type": "Lit",
+            "value": 1.0
+           },
+           {
+            "type": "Lit",
+            "value": 0.5
+           }
+          ]
+         }
+        },
+        {
+         "type": "Div",
+         "a": {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cL"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cS"
+             }
+            ]
+           },
+           "b": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cL"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cS"
+             }
+            ]
+           }
+          }
+         },
+         "b": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cL"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cS"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cL"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cS"
+             }
+            ]
+           },
+           {
+            "type": "Lit",
+            "value": 1.0
+           },
+           {
+            "type": "Lit",
+            "value": 0.5
+           }
+          ]
+         }
+        },
+        {
+         "type": "Div",
+         "a": {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cM"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cS"
+             }
+            ]
+           },
+           "b": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cM"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cS"
+             }
+            ]
+           }
+          }
+         },
+         "b": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cM"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cS"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cM"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cS"
+             }
+            ]
+           },
+           {
+            "type": "Lit",
+            "value": 1.0
+           },
+           {
+            "type": "Lit",
+            "value": 0.5
+           }
+          ]
+         }
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "R",
+     "l4_npairsv",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Lte",
+          "a": {
+           "type": "Abs",
+           "arg": {
+            "type": "Minus",
+            "a": {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "cL"
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "cM"
+              }
+             ]
+            },
+            "b": {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "cL"
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "cM"
+              }
+             ]
+            }
+           }
+          },
+          "b": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.5
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "cL"
+              }
+             ]
+            },
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.5
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "cM"
+              }
+             ]
+            },
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.5
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "cL"
+              }
+             ]
+            },
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.5
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "cM"
+              }
+             ]
+            },
+            {
+             "type": "Lit",
+             "value": 1.0
+            },
+            {
+             "type": "Lit",
+             "value": 0.5
+            }
+           ]
+          }
+         },
+         "then": {
+          "type": "Lit",
+          "value": 1.0
+         },
+         "other": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        },
+        {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Lte",
+          "a": {
+           "type": "Abs",
+           "arg": {
+            "type": "Minus",
+            "a": {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "cL"
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "cS"
+              }
+             ]
+            },
+            "b": {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "cL"
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "cS"
+              }
+             ]
+            }
+           }
+          },
+          "b": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.5
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "cL"
+              }
+             ]
+            },
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.5
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "cS"
+              }
+             ]
+            },
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.5
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "cL"
+              }
+             ]
+            },
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.5
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "cS"
+              }
+             ]
+            },
+            {
+             "type": "Lit",
+             "value": 1.0
+            },
+            {
+             "type": "Lit",
+             "value": 0.5
+            }
+           ]
+          }
+         },
+         "then": {
+          "type": "Lit",
+          "value": 1.0
+         },
+         "other": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        },
+        {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Lte",
+          "a": {
+           "type": "Abs",
+           "arg": {
+            "type": "Minus",
+            "a": {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "cM"
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "cS"
+              }
+             ]
+            },
+            "b": {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "cM"
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "cS"
+              }
+             ]
+            }
+           }
+          },
+          "b": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.5
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "cM"
+              }
+             ]
+            },
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.5
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "cS"
+              }
+             ]
+            },
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.5
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "cM"
+              }
+             ]
+            },
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.5
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "cS"
+              }
+             ]
+            },
+            {
+             "type": "Lit",
+             "value": 1.0
+            },
+            {
+             "type": "Lit",
+             "value": 0.5
+            }
+           ]
+          }
+         },
+         "then": {
+          "type": "Lit",
+          "value": 1.0
+         },
+         "other": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "l4_classify_reflectance_v",
+   "comment": "l4_classify_reflectance on the VERTICAL adjacency (verdict on the UPPER cell).",
+   "match": [
+    [
+     "fld",
+     "has_l4cell",
+     "R"
+    ],
+    [
+     "R",
+     "l4_neighbour",
+     "Q"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "MaxOver",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "LightingL4Params"
+       },
+       "var_name": "lp",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "lp"
+        },
+        "key": "lighting_l4"
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "R"
+       },
+       "key": "l4_kindv_done"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "R"
+       },
+       "key": "ccol"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "Q"
+       },
+       "key": "ccol"
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "R"
+       },
+       "key": "crow"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "Q"
+       },
+       "key": "crow"
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Max",
+       "items": [
+        {
+         "type": "Abs",
+         "arg": {
+          "type": "Minus",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "Q"
+           },
+           "key": "cL"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "R"
+           },
+           "key": "cL"
+          }
+         }
+        },
+        {
+         "type": "Abs",
+         "arg": {
+          "type": "Minus",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "Q"
+           },
+           "key": "cM"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "R"
+           },
+           "key": "cM"
+          }
+         }
+        },
+        {
+         "type": "Abs",
+         "arg": {
+          "type": "Minus",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "Q"
+           },
+           "key": "cS"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "R"
+           },
+           "key": "cS"
+          }
+         }
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "And",
+       "items": [
+        {
+         "type": "Lte",
+         "a": {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cL"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cM"
+             }
+            ]
+           },
+           "b": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cL"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cM"
+             }
+            ]
+           }
+          }
+         },
+         "b": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cL"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cM"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cL"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cM"
+             }
+            ]
+           },
+           {
+            "type": "Lit",
+            "value": 1.0
+           },
+           {
+            "type": "Lit",
+            "value": 0.5
+           }
+          ]
+         }
+        },
+        {
+         "type": "Lte",
+         "a": {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cL"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cS"
+             }
+            ]
+           },
+           "b": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cL"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cS"
+             }
+            ]
+           }
+          }
+         },
+         "b": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cL"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cS"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cL"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cS"
+             }
+            ]
+           },
+           {
+            "type": "Lit",
+            "value": 1.0
+           },
+           {
+            "type": "Lit",
+            "value": 0.5
+           }
+          ]
+         }
+        },
+        {
+         "type": "Lte",
+         "a": {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cM"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cS"
+             }
+            ]
+           },
+           "b": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cM"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cS"
+             }
+            ]
+           }
+          }
+         },
+         "b": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cM"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cS"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cM"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cS"
+             }
+            ]
+           },
+           {
+            "type": "Lit",
+            "value": 1.0
+           },
+           {
+            "type": "Lit",
+            "value": 0.5
+           }
+          ]
+         }
+        }
+       ]
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "R",
+     "l4_kindv",
+     {
+      "__term__": {
+       "type": "Lit",
+       "value": "l4_reflectance"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "R",
+     "l4_kindv_done",
+     {
+      "__term__": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "R",
+     "l4_marginv",
+     {
+      "__term__": {
+       "type": "Max",
+       "items": [
+        {
+         "type": "Div",
+         "a": {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cL"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cM"
+             }
+            ]
+           },
+           "b": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cL"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cM"
+             }
+            ]
+           }
+          }
+         },
+         "b": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cL"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cM"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cL"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cM"
+             }
+            ]
+           },
+           {
+            "type": "Lit",
+            "value": 1.0
+           },
+           {
+            "type": "Lit",
+            "value": 0.5
+           }
+          ]
+         }
+        },
+        {
+         "type": "Div",
+         "a": {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cL"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cS"
+             }
+            ]
+           },
+           "b": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cL"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cS"
+             }
+            ]
+           }
+          }
+         },
+         "b": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cL"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cS"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cL"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cS"
+             }
+            ]
+           },
+           {
+            "type": "Lit",
+            "value": 1.0
+           },
+           {
+            "type": "Lit",
+            "value": 0.5
+           }
+          ]
+         }
+        },
+        {
+         "type": "Div",
+         "a": {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cM"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cS"
+             }
+            ]
+           },
+           "b": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cM"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cS"
+             }
+            ]
+           }
+          }
+         },
+         "b": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cM"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cS"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cM"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cS"
+             }
+            ]
+           },
+           {
+            "type": "Lit",
+            "value": 1.0
+           },
+           {
+            "type": "Lit",
+            "value": 0.5
+           }
+          ]
+         }
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "R",
+     "l4_npairsv",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Lte",
+          "a": {
+           "type": "Abs",
+           "arg": {
+            "type": "Minus",
+            "a": {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "cL"
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "cM"
+              }
+             ]
+            },
+            "b": {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "cL"
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "cM"
+              }
+             ]
+            }
+           }
+          },
+          "b": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.5
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "cL"
+              }
+             ]
+            },
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.5
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "cM"
+              }
+             ]
+            },
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.5
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "cL"
+              }
+             ]
+            },
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.5
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "cM"
+              }
+             ]
+            },
+            {
+             "type": "Lit",
+             "value": 1.0
+            },
+            {
+             "type": "Lit",
+             "value": 0.5
+            }
+           ]
+          }
+         },
+         "then": {
+          "type": "Lit",
+          "value": 1.0
+         },
+         "other": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        },
+        {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Lte",
+          "a": {
+           "type": "Abs",
+           "arg": {
+            "type": "Minus",
+            "a": {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "cL"
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "cS"
+              }
+             ]
+            },
+            "b": {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "cL"
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "cS"
+              }
+             ]
+            }
+           }
+          },
+          "b": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.5
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "cL"
+              }
+             ]
+            },
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.5
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "cS"
+              }
+             ]
+            },
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.5
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "cL"
+              }
+             ]
+            },
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.5
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "cS"
+              }
+             ]
+            },
+            {
+             "type": "Lit",
+             "value": 1.0
+            },
+            {
+             "type": "Lit",
+             "value": 0.5
+            }
+           ]
+          }
+         },
+         "then": {
+          "type": "Lit",
+          "value": 1.0
+         },
+         "other": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        },
+        {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Lte",
+          "a": {
+           "type": "Abs",
+           "arg": {
+            "type": "Minus",
+            "a": {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "cM"
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "cS"
+              }
+             ]
+            },
+            "b": {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "cM"
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "cS"
+              }
+             ]
+            }
+           }
+          },
+          "b": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.5
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "cM"
+              }
+             ]
+            },
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.5
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "cS"
+              }
+             ]
+            },
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.5
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "cM"
+              }
+             ]
+            },
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.5
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "cS"
+              }
+             ]
+            },
+            {
+             "type": "Lit",
+             "value": 1.0
+            },
+            {
+             "type": "Lit",
+             "value": 0.5
+            }
+           ]
+          }
+         },
+         "then": {
+          "type": "Lit",
+          "value": 1.0
+         },
+         "other": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "l4_flat_v",
+   "comment": "l4_flat on the VERTICAL adjacency (verdict on the UPPER cell).",
+   "match": [
+    [
+     "fld",
+     "has_l4cell",
+     "R"
+    ],
+    [
+     "R",
+     "l4_neighbour",
+     "Q"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "MaxOver",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "LightingL4Params"
+       },
+       "var_name": "lp",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "lp"
+        },
+        "key": "lighting_l4"
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "R"
+       },
+       "key": "l4_kindv_done"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "R"
+       },
+       "key": "ccol"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "Q"
+       },
+       "key": "ccol"
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "R"
+       },
+       "key": "crow"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "Q"
+       },
+       "key": "crow"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Gt",
+       "a": {
+        "type": "Max",
+        "items": [
+         {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "cL"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "R"
+            },
+            "key": "cL"
+           }
+          }
+         },
+         {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "cM"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "R"
+            },
+            "key": "cM"
+           }
+          }
+         },
+         {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "cS"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "R"
+            },
+            "key": "cS"
+           }
+          }
+         }
+        ]
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "R",
+     "l4_kindv",
+     {
+      "__term__": {
+       "type": "Lit",
+       "value": "l4_flat"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "R",
+     "l4_kindv_done",
+     {
+      "__term__": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "R",
+     "l4_marginv",
+     {
+      "__term__": {
+       "type": "Max",
+       "items": [
+        {
+         "type": "Div",
+         "a": {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cL"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cM"
+             }
+            ]
+           },
+           "b": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cL"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cM"
+             }
+            ]
+           }
+          }
+         },
+         "b": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cL"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cM"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cL"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cM"
+             }
+            ]
+           },
+           {
+            "type": "Lit",
+            "value": 1.0
+           },
+           {
+            "type": "Lit",
+            "value": 0.5
+           }
+          ]
+         }
+        },
+        {
+         "type": "Div",
+         "a": {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cL"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cS"
+             }
+            ]
+           },
+           "b": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cL"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cS"
+             }
+            ]
+           }
+          }
+         },
+         "b": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cL"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cS"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cL"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cS"
+             }
+            ]
+           },
+           {
+            "type": "Lit",
+            "value": 1.0
+           },
+           {
+            "type": "Lit",
+            "value": 0.5
+           }
+          ]
+         }
+        },
+        {
+         "type": "Div",
+         "a": {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cM"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cS"
+             }
+            ]
+           },
+           "b": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cM"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cS"
+             }
+            ]
+           }
+          }
+         },
+         "b": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cM"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cS"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cM"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 0.5
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "cS"
+             }
+            ]
+           },
+           {
+            "type": "Lit",
+            "value": 1.0
+           },
+           {
+            "type": "Lit",
+            "value": 0.5
+           }
+          ]
+         }
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "R",
+     "l4_npairsv",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Lte",
+          "a": {
+           "type": "Abs",
+           "arg": {
+            "type": "Minus",
+            "a": {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "cL"
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "cM"
+              }
+             ]
+            },
+            "b": {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "cL"
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "cM"
+              }
+             ]
+            }
+           }
+          },
+          "b": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.5
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "cL"
+              }
+             ]
+            },
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.5
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "cM"
+              }
+             ]
+            },
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.5
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "cL"
+              }
+             ]
+            },
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.5
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "cM"
+              }
+             ]
+            },
+            {
+             "type": "Lit",
+             "value": 1.0
+            },
+            {
+             "type": "Lit",
+             "value": 0.5
+            }
+           ]
+          }
+         },
+         "then": {
+          "type": "Lit",
+          "value": 1.0
+         },
+         "other": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        },
+        {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Lte",
+          "a": {
+           "type": "Abs",
+           "arg": {
+            "type": "Minus",
+            "a": {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "cL"
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "cS"
+              }
+             ]
+            },
+            "b": {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "cL"
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "cS"
+              }
+             ]
+            }
+           }
+          },
+          "b": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.5
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "cL"
+              }
+             ]
+            },
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.5
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "cS"
+              }
+             ]
+            },
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.5
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "cL"
+              }
+             ]
+            },
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.5
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "cS"
+              }
+             ]
+            },
+            {
+             "type": "Lit",
+             "value": 1.0
+            },
+            {
+             "type": "Lit",
+             "value": 0.5
+            }
+           ]
+          }
+         },
+         "then": {
+          "type": "Lit",
+          "value": 1.0
+         },
+         "other": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        },
+        {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Lte",
+          "a": {
+           "type": "Abs",
+           "arg": {
+            "type": "Minus",
+            "a": {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "cM"
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "cS"
+              }
+             ]
+            },
+            "b": {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "cM"
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "cS"
+              }
+             ]
+            }
+           }
+          },
+          "b": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.5
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "cM"
+              }
+             ]
+            },
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.5
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "cS"
+              }
+             ]
+            },
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.5
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "cM"
+              }
+             ]
+            },
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.5
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Q"
+               },
+               "key": "cS"
+              }
+             ]
+            },
+            {
+             "type": "Lit",
+             "value": 1.0
+            },
+            {
+             "type": "Lit",
+             "value": 0.5
+            }
+           ]
+          }
+         },
+         "then": {
+          "type": "Lit",
+          "value": 1.0
+         },
+         "other": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "l4_flood",
+   "comment": "THE MERGE, AND THE WHOLE POINT OF THE RUNG: a SHADOW boundary must not become an OBJECT boundary, while a MATERIAL boundary must. l4_val := the minimum l4_val among this cell's RATIO-PRESERVING 4-neighbours (init cid). Fires only when such a neighbour has a STRICTLY SMALLER l4_val, so l4_val decreases monotonically and the flood terminates; at the run_rules fixpoint every ratio-preserving connected component shares its root's cid. THIS IS bo_label's CONSTRUCTION (tools/build_vision_border_ownership.py :176) WITH Eq(val,val) REPLACED BY THE RATIO-PRESERVING PREDICATE -- the same min-flood-to-fixpoint idiom, proven O(N) per sweep under the run_rules drive. Cells joined through ILLUMINANT edges and FLAT adjacencies end up in ONE component; cells across a REFLECTANCE edge do not. Border-ownership, UNMODIFIED, then mints a ProtoObject for the material patch and NONE for the cast shadow -- because the shadow is no longer a component boundary for it to enclose. DECLARED (sec 8): the ratio-preserving relation is NOT transitive, and this flood takes its TRANSITIVE CLOSURE. A chain of individually admissible steps can merge two materials that are not ratio-preserving with each other. NOT tested here; NAMED. Flag-gated, OFF by default (sec 9).",
+   "match": [
+    [
+     "fld",
+     "has_l4cell",
+     "R"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "MaxOver",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "LightingL4Params"
+       },
+       "var_name": "lp",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "lp"
+        },
+        "key": "lighting_l4"
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Exists",
+      "source": {
+       "type": "Neighbours",
+       "node": {
+        "type": "Var",
+        "name": "R"
+       },
+       "edge_type": "l4_neighbour",
+       "any_type": false
+      },
+      "var_name": "m",
+      "predicate": {
+       "type": "And",
+       "items": [
+        {
+         "type": "Lt",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "m"
+          },
+          "key": "l4_val"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "R"
+          },
+          "key": "l4_val"
+         }
+        },
+        {
+         "type": "And",
+         "items": [
+          {
+           "type": "Lte",
+           "a": {
+            "type": "Abs",
+            "arg": {
+             "type": "Minus",
+             "a": {
+              "type": "Times",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "m"
+                },
+                "key": "cL"
+               },
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "R"
+                },
+                "key": "cM"
+               }
+              ]
+             },
+             "b": {
+              "type": "Times",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "R"
+                },
+                "key": "cL"
+               },
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "m"
+                },
+                "key": "cM"
+               }
+              ]
+             }
+            }
+           },
+           "b": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Times",
+              "items": [
+               {
+                "type": "Lit",
+                "value": 0.5
+               },
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "m"
+                },
+                "key": "cL"
+               }
+              ]
+             },
+             {
+              "type": "Times",
+              "items": [
+               {
+                "type": "Lit",
+                "value": 0.5
+               },
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "R"
+                },
+                "key": "cM"
+               }
+              ]
+             },
+             {
+              "type": "Times",
+              "items": [
+               {
+                "type": "Lit",
+                "value": 0.5
+               },
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "R"
+                },
+                "key": "cL"
+               }
+              ]
+             },
+             {
+              "type": "Times",
+              "items": [
+               {
+                "type": "Lit",
+                "value": 0.5
+               },
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "m"
+                },
+                "key": "cM"
+               }
+              ]
+             },
+             {
+              "type": "Lit",
+              "value": 1.0
+             },
+             {
+              "type": "Lit",
+              "value": 0.5
+             }
+            ]
+           }
+          },
+          {
+           "type": "Lte",
+           "a": {
+            "type": "Abs",
+            "arg": {
+             "type": "Minus",
+             "a": {
+              "type": "Times",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "m"
+                },
+                "key": "cL"
+               },
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "R"
+                },
+                "key": "cS"
+               }
+              ]
+             },
+             "b": {
+              "type": "Times",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "R"
+                },
+                "key": "cL"
+               },
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "m"
+                },
+                "key": "cS"
+               }
+              ]
+             }
+            }
+           },
+           "b": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Times",
+              "items": [
+               {
+                "type": "Lit",
+                "value": 0.5
+               },
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "m"
+                },
+                "key": "cL"
+               }
+              ]
+             },
+             {
+              "type": "Times",
+              "items": [
+               {
+                "type": "Lit",
+                "value": 0.5
+               },
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "R"
+                },
+                "key": "cS"
+               }
+              ]
+             },
+             {
+              "type": "Times",
+              "items": [
+               {
+                "type": "Lit",
+                "value": 0.5
+               },
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "R"
+                },
+                "key": "cL"
+               }
+              ]
+             },
+             {
+              "type": "Times",
+              "items": [
+               {
+                "type": "Lit",
+                "value": 0.5
+               },
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "m"
+                },
+                "key": "cS"
+               }
+              ]
+             },
+             {
+              "type": "Lit",
+              "value": 1.0
+             },
+             {
+              "type": "Lit",
+              "value": 0.5
+             }
+            ]
+           }
+          },
+          {
+           "type": "Lte",
+           "a": {
+            "type": "Abs",
+            "arg": {
+             "type": "Minus",
+             "a": {
+              "type": "Times",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "m"
+                },
+                "key": "cM"
+               },
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "R"
+                },
+                "key": "cS"
+               }
+              ]
+             },
+             "b": {
+              "type": "Times",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "R"
+                },
+                "key": "cM"
+               },
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "m"
+                },
+                "key": "cS"
+               }
+              ]
+             }
+            }
+           },
+           "b": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Times",
+              "items": [
+               {
+                "type": "Lit",
+                "value": 0.5
+               },
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "m"
+                },
+                "key": "cM"
+               }
+              ]
+             },
+             {
+              "type": "Times",
+              "items": [
+               {
+                "type": "Lit",
+                "value": 0.5
+               },
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "R"
+                },
+                "key": "cS"
+               }
+              ]
+             },
+             {
+              "type": "Times",
+              "items": [
+               {
+                "type": "Lit",
+                "value": 0.5
+               },
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "R"
+                },
+                "key": "cM"
+               }
+              ]
+             },
+             {
+              "type": "Times",
+              "items": [
+               {
+                "type": "Lit",
+                "value": 0.5
+               },
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "m"
+                },
+                "key": "cS"
+               }
+              ]
+             },
+             {
+              "type": "Lit",
+              "value": 1.0
+             },
+             {
+              "type": "Lit",
+              "value": 0.5
+             }
+            ]
+           }
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "R",
+     "l4_val",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Argmin",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "R"
+          },
+          "edge_type": "l4_neighbour",
+          "any_type": false
+         },
+         "var_name": "m",
+         "predicate": {
+          "type": "And",
+          "items": [
+           {
+            "type": "Lte",
+            "a": {
+             "type": "Abs",
+             "arg": {
+              "type": "Minus",
+              "a": {
+               "type": "Times",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "m"
+                 },
+                 "key": "cL"
+                },
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "R"
+                 },
+                 "key": "cM"
+                }
+               ]
+              },
+              "b": {
+               "type": "Times",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "R"
+                 },
+                 "key": "cL"
+                },
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "m"
+                 },
+                 "key": "cM"
+                }
+               ]
+              }
+             }
+            },
+            "b": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Times",
+               "items": [
+                {
+                 "type": "Lit",
+                 "value": 0.5
+                },
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "m"
+                 },
+                 "key": "cL"
+                }
+               ]
+              },
+              {
+               "type": "Times",
+               "items": [
+                {
+                 "type": "Lit",
+                 "value": 0.5
+                },
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "R"
+                 },
+                 "key": "cM"
+                }
+               ]
+              },
+              {
+               "type": "Times",
+               "items": [
+                {
+                 "type": "Lit",
+                 "value": 0.5
+                },
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "R"
+                 },
+                 "key": "cL"
+                }
+               ]
+              },
+              {
+               "type": "Times",
+               "items": [
+                {
+                 "type": "Lit",
+                 "value": 0.5
+                },
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "m"
+                 },
+                 "key": "cM"
+                }
+               ]
+              },
+              {
+               "type": "Lit",
+               "value": 1.0
+              },
+              {
+               "type": "Lit",
+               "value": 0.5
+              }
+             ]
+            }
+           },
+           {
+            "type": "Lte",
+            "a": {
+             "type": "Abs",
+             "arg": {
+              "type": "Minus",
+              "a": {
+               "type": "Times",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "m"
+                 },
+                 "key": "cL"
+                },
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "R"
+                 },
+                 "key": "cS"
+                }
+               ]
+              },
+              "b": {
+               "type": "Times",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "R"
+                 },
+                 "key": "cL"
+                },
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "m"
+                 },
+                 "key": "cS"
+                }
+               ]
+              }
+             }
+            },
+            "b": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Times",
+               "items": [
+                {
+                 "type": "Lit",
+                 "value": 0.5
+                },
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "m"
+                 },
+                 "key": "cL"
+                }
+               ]
+              },
+              {
+               "type": "Times",
+               "items": [
+                {
+                 "type": "Lit",
+                 "value": 0.5
+                },
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "R"
+                 },
+                 "key": "cS"
+                }
+               ]
+              },
+              {
+               "type": "Times",
+               "items": [
+                {
+                 "type": "Lit",
+                 "value": 0.5
+                },
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "R"
+                 },
+                 "key": "cL"
+                }
+               ]
+              },
+              {
+               "type": "Times",
+               "items": [
+                {
+                 "type": "Lit",
+                 "value": 0.5
+                },
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "m"
+                 },
+                 "key": "cS"
+                }
+               ]
+              },
+              {
+               "type": "Lit",
+               "value": 1.0
+              },
+              {
+               "type": "Lit",
+               "value": 0.5
+              }
+             ]
+            }
+           },
+           {
+            "type": "Lte",
+            "a": {
+             "type": "Abs",
+             "arg": {
+              "type": "Minus",
+              "a": {
+               "type": "Times",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "m"
+                 },
+                 "key": "cM"
+                },
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "R"
+                 },
+                 "key": "cS"
+                }
+               ]
+              },
+              "b": {
+               "type": "Times",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "R"
+                 },
+                 "key": "cM"
+                },
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "m"
+                 },
+                 "key": "cS"
+                }
+               ]
+              }
+             }
+            },
+            "b": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Times",
+               "items": [
+                {
+                 "type": "Lit",
+                 "value": 0.5
+                },
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "m"
+                 },
+                 "key": "cM"
+                }
+               ]
+              },
+              {
+               "type": "Times",
+               "items": [
+                {
+                 "type": "Lit",
+                 "value": 0.5
+                },
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "R"
+                 },
+                 "key": "cS"
+                }
+               ]
+              },
+              {
+               "type": "Times",
+               "items": [
+                {
+                 "type": "Lit",
+                 "value": 0.5
+                },
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "R"
+                 },
+                 "key": "cM"
+                }
+               ]
+              },
+              {
+               "type": "Times",
+               "items": [
+                {
+                 "type": "Lit",
+                 "value": 0.5
+                },
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "m"
+                 },
+                 "key": "cS"
+                }
+               ]
+              },
+              {
+               "type": "Lit",
+               "value": 1.0
+              },
+              {
+               "type": "Lit",
+               "value": 0.5
+              }
+             ]
+            }
+           }
+          ]
+         }
+        },
+        "var_name": "m",
+        "value": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "m"
+         },
+         "key": "l4_val"
+        }
+       },
+       "key": "l4_val"
+      }
+     }
+    ]
+   ]
+  }
+ ]
+}

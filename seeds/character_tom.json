@@ -1,0 +1,45 @@
+{
+  "id": "character_tom",
+  "version": "1.0.0",
+  "depends_on": [],
+  "description": "CHARACTER THEORY OF MIND = a propositional-attitude CONSTRUCTION over the ATTITUDE marker-class, decoded the SAME way reading_collapse decodes definitional/causal/designation/possession (ShapeDecode over the held construction codebook). A clause 'SUBJ ATTITUDE-VERB COMPLEMENT' (Sally thinks/wants/knows ...) is recognised by the ONE class-construction `propositional_attitude` (signature [[\"ATTITUDE\"]], mirroring designation/possession's single-marker-class shape). ATTITUDE membership (believe/think/know/want/hope/fear/wish/doubt, seed forms) is consulted OUTSIDE the reading-time skeleton -- mirroring the COS class in seeds/reading_constructions.json exactly (`adjacency_anchor`/`adjacency_threshold`, join-by-adjacency via the SAME WordNet path-similarity signal, NOT wired into reading_collapse's own `_SKELETON` set) so an ordinary clause's construction-decode is never perturbed by an attitude verb sitting in its main-verb slot; domains/character_tom.py performs its OWN marker scan (mirroring situation_model_reader.cos_membership) before handing the clause to reading_collapse. Each member's `flavor` (belief/desire/knowledge) selects which psychology.py Concept (belief/desire/knowledge, installed by the `psychology` seed) the grounded attitude is linked to via an `is_a` edge -- REUSING psychology's node types, not forking a new taxonomy. BELIEF/KNOWLEDGE grounds a NESTED SmEntity/proposition (the complement, read by the UNCHANGED reading_collapse.read_clause) under a `belief_world` edge from the character's own (real, shared) SmEntity -- DISTINCT from the actual-world SmEntity of the same name, so a false belief and reality can coexist without collision. DESIRE grounds the character's GOAL: an SmEvent{verb:'want'} carrying `idx_protagonist`/`idx_intentionality` (the Zwaan & Radvansky intentionality index situation_model_reader's five-index scheme leaves as a residual today) plus a direct `goal` attr on the character's SmEntity for simple querying.",
+  "microtheory": {
+    "name": "character_tom",
+    "description": "character theory of mind: propositional-attitude construction + nested belief-world / goal grounding"
+  },
+  "nodes": [
+    {
+      "type": "MarkerClass",
+      "attrs": {
+        "cls": "ATTITUDE",
+        "forms": ["believe", "think", "know", "want", "hope", "fear", "wish", "doubt"],
+        "flavor": {
+          "believe": "belief",
+          "think": "belief",
+          "know": "knowledge",
+          "want": "desire",
+          "hope": "desire",
+          "wish": "desire",
+          "fear": "belief",
+          "doubt": "belief"
+        },
+        "adjacency_anchor": ["believe", "think", "know", "want"],
+        "adjacency_threshold": 0.5,
+        "note": "PROPOSITIONAL-ATTITUDE marker-class (mirrors seeds/reading_constructions.json's COS class exactly): a verb that introduces a CHARACTER's mental relation to a COMPLEMENT. `forms` are SEED lemmas; `flavor` maps each to belief/desire/knowledge (which psychology.py Concept the grounded attitude links to). A NEW surface verb (suspects/presumes/...) JOINS by ADJACENCY (domains/character_tom.py reuses reading_collapse._wordnet_nearness, the SAME WordNet path-similarity signal COS/DESIGNATE/POSSESS use, to `adjacency_anchor` >= `adjacency_threshold`), inheriting its nearest anchor's flavor -- NOT a hardcoded Python verb list. HONEST LIMIT (the same coarse-WordNet admission POSSESS documents): path_similarity is a shallow metric -- 'suspect'/'feel'/'conclude'/'speculate' clear 0.5 (the seeded anchors' own synonyms cluster there), a middle synonym tail ('presume'/'assume'/'deem' ~0.33) does not and is covered only if seeded, and an occasional unrelated verb may clear 0.5 by lexical accident (documented, not hidden). NOT in reading_collapse's reading-time `_SKELETON` set on purpose: consulted by character_tom's own scan over recognised words BEFORE handing a clause to reading_collapse, so an ordinary clause's construction-decode is never perturbed by an attitude verb sitting in its main-verb slot (the identical design reason seeds/reading_constructions.json's COS class documents for itself)."
+      }
+    },
+    {
+      "type": "ShapeSignature",
+      "attrs": {
+        "name": "propositional_attitude",
+        "kind": "construction",
+        "predication": "attitude",
+        "class_marker": "ATTITUDE",
+        "signature": "[[\"ATTITUDE\"]]",
+        "ground_template": "{\"pred\": \"attitude\", \"mode\": \"pair\"}",
+        "note": "SUBJ ATTITUDE-VERB COMPLEMENT. ONE class-construction over the ATTITUDE marker-class -- mirrors designation ([[\"COP\"],[\"DESIGNATE\"]]) and possession ([[\"POSSESS\"]]): every member (believes/thinks/knows/wants/hopes/fears/wishes/doubts/suspects/...) decodes to this SAME construction via reading_collapse's held ShapeDecode Term (reflective_faculty.compose_design_for_goal); the DECODE picks it (best shape_fit, zero residual against the [[\"ATTITUDE\"]] skeleton), never a Python if/else on the verb surface. domains/character_tom.py reads the winning construction off the decode, then grounds the COMPLEMENT as a NESTED situation-model proposition (belief/knowledge flavor) or the character's GOAL/intentionality index (desire flavor) -- never onto the ACTUAL world state directly, which is what makes a false belief representable."
+      }
+    }
+  ],
+  "edges": []
+}

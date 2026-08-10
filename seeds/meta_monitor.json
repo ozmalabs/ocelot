@@ -1,0 +1,27 @@
+{
+  "id": "meta_monitor",
+  "version": "0.2.0",
+  "depends_on": [],
+  "description": "Configuration for the meta-monitor + its investigation. A process is registered with an EFFORT signal (work it produces) and a PAYOFF signal (the target). window/effort_min_rise/payoff_flat_band/payoff_improve_band govern the spinning flag (effort climbing while payoff stays flat). When flagged, the agent does not ASSUME the cause — it INVESTIGATES with a do-contrast declared HERE, per process: `intervention` names a graph attr to toggle (toggle_type/toggle_attr) between with_value and without_value, so the agent can measure the payoff WITH its effort's output active vs WITHOUT. If toggling barely moves the payoff (|with - without| <= connection_band) the effort can't reach the payoff -> disconnected_lever; the lever is the wrong one. All of it is data here, not Python.",
+  "meta_monitor_root": {
+    "window": 5,
+    "effort_min_rise": 20.0,
+    "payoff_flat_band": 2.0,
+    "payoff_improve_band": 3.0
+  },
+  "processes": {
+    "discriminative_invention": {
+      "connection_band": 1.0,
+      "intervention": {
+        "toggle_type": "RecognitionRoot",
+        "toggle_attr": "phonology_weight",
+        "with_value": 1.0,
+        "without_value": 0.0
+      }
+    },
+    "unit_segmentation": {
+      "connection_band": 0.2,
+      "_note": "effort = distinct units coined (lexicon size); payoff = next-unit predictability over chance. Watches PERCEPTION, not recognition: if the agent keeps coining more units while its own units stay unpredictable, the segmentation lever is spinning."
+    }
+  }
+}

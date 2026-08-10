@@ -1,0 +1,55 @@
+{
+  "id": "reading_dwell",
+  "version": "1.0.0",
+  "depends_on": [],
+  "description": "VARIABLE-APERTURE DWELL as a cognitive_tick-driven graph fixpoint. EFFORT FOLLOWS THE RESIDUAL: after the AbS compare splits a sentence into CONFIRMED (predicted, cheap glide) and SURPRISE (the residual = the news), a DwellStage carrying the residual-derived budget is minted; dw_dispatch dispatches it, and the dwell_advance Reflex consumes ONE unit of the budget per tick (predictive_reading._advance_dwell_stage) -- minting one DeepProcess node (the deep, order-N work) per residual word and marking the stage done when the budget drains. The aperture opens exactly as wide as the residual: a fully-predicted sentence (budget 0) glides in one tick; a high-residual sentence dwells one deep-process tick per surprise word. There is NO Python dwell loop and NO run_rules/fire_reflexes hand-pump -- the reflex advances ONE unit per firing and cognitive_tick drives it. This is the omniglot variable-K dwell scheduler (RUN 11) lifted from stroke shortlists to sentence residuals: attention allocated to unpredictability.",
+  "microtheory": {
+    "name": "reading_dwell",
+    "description": "Reading effort is not uniform: the reader GLIDES (cheap confirm) where its model predicts and DWELLS (deep order-N processing) where the residual spikes. The per-sentence dwell budget is the ShapeDecode residual (the surprise), consumed one deep-process step per tick -- so deep-processing effort concentrates on the high-residual sentences (the news), never uniformly."
+  },
+  "nodes": [],
+  "edges": [],
+  "productions": [
+    {
+      "provenance": "seed:reading_dwell:has_dwell_stage-0",
+      "src": {"type": "Agent", "var": "s"},
+      "edge_type": "has_dwell_stage",
+      "tgt": {"type": "DwellStage", "var": "t"}
+    },
+    {
+      "provenance": "seed:reading_dwell:deep_processed-1",
+      "src": {"type": "DwellStage", "var": "s"},
+      "edge_type": "deep_processed",
+      "tgt": {"type": "DeepProcess", "var": "t"}
+    }
+  ],
+  "rules": [
+    {
+      "name": "dw_dispatch",
+      "comment": "Dispatch a DwellStage the moment it is pending (the residual budget is already on it). run_rules dispatches; cognitive_tick's reflex then consumes the budget one unit per tick.",
+      "match_type": "DwellStage",
+      "match": [["ag", "has_dwell_stage", "stage"]],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "stage"}, "key": "name"}, "b": {"type": "Lit", "value": "dwell_process"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "stage"}, "key": "status"}, "b": {"type": "Lit", "value": "pending"}}
+        ]
+      },
+      "effects": [["set_attr", "stage", "status", "dispatched"]]
+    }
+  ],
+  "reflexes": [
+    {
+      "name": "dwell_advance",
+      "stimulus": {
+        "type": "Gte",
+        "a": {"type": "Count", "source": {"type": "Filter", "source": {"type": "NodesOfType", "node_type": "DwellStage"},
+              "var_name": "x", "predicate": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "x"}, "key": "status"}, "b": {"type": "Lit", "value": "dispatched"}}}},
+        "b": {"type": "Lit", "value": 1}
+      },
+      "response": "dwell_advance",
+      "refractory_ticks": 0
+    }
+  ]
+}

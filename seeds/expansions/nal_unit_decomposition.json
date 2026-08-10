@@ -1,0 +1,111 @@
+{
+  "id": "nal_unit_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "H264",
+  "in_microtheory": "video_coding_theory",
+  "description": "The H.26x bitstream Network Abstraction Layer (NAL) structure decomposed. The bitstream is a sequence of NAL units (NALUs), each a self-delimited blob of bytes with a 1-byte header identifying its type. The 'RBSP' (Raw Byte Sequence Payload) is the actual encoded data inside each NALU; emulation prevention bytes are inserted to avoid false start-code matches. Above this layer, sequence parameter sets (SPS), picture parameter sets (PPS), and slice headers carry frame-level metadata; below it, the actual macroblock/CTU data lives.",
+  "sub_mechanisms": [
+    {
+      "name": "start_code_prefix",
+      "definition": "Each NAL unit in Annex-B bitstreams starts with a 3- or 4-byte start code: 0x000001 or 0x00000001. The decoder scans for these to find NALU boundaries.",
+      "why": "Self-delimiting at the byte level. No external length field needed; the start code serves as a synchronisation pattern. Allows resync after corruption.",
+      "category": "nal_mechanism"
+    },
+    {
+      "name": "nal_header_byte",
+      "definition": "First byte after start code: forbidden_zero_bit (1) + nal_ref_idc (2 bits, importance for ref pic management) + nal_unit_type (5 bits, identifying NALU kind).",
+      "why": "Compact: one byte identifies the NALU type and its role. nal_ref_idc lets non-ref slices (B frames) be discarded for bandwidth adaptation without breaking decoder state.",
+      "category": "nal_mechanism"
+    },
+    {
+      "name": "rbsp_payload",
+      "definition": "Raw Byte Sequence Payload: the actual encoded data inside a NAL unit, after the header.",
+      "why": "Separation of bitstream structure (NALU + header) from content (RBSP). Decoder parses NALU structure to find slices, then dispatches RBSP to the appropriate parsing logic per nal_unit_type.",
+      "category": "nal_mechanism"
+    },
+    {
+      "name": "emulation_prevention_byte",
+      "definition": "Within RBSP, the sequence 0x000000, 0x000001, 0x000002, 0x000003 gets a 0x03 byte inserted after the 0x00 0x00 to prevent the bytes from being misinterpreted as a start code or other reserved pattern.",
+      "why": "Without emulation prevention, encoded data could randomly contain start-code patterns, corrupting decoder synchronisation. The 0x03 byte is decoder-removable: the parser scans for 0x00 0x00 0x03 and drops the 0x03.",
+      "category": "nal_mechanism"
+    },
+    {
+      "name": "trailing_bits",
+      "definition": "RBSP ends with rbsp_trailing_bits: a 1-bit followed by zero or more 0-bits to byte-align the payload.",
+      "why": "Bitstream data within RBSP is bit-packed; the trailing 1+0s mark the end and align to a byte boundary for the next NALU's start code. Decoder finds it by reading backward from the next NALU.",
+      "category": "nal_mechanism"
+    },
+    {
+      "name": "sequence_parameter_set",
+      "definition": "NAL unit type 7 (H.264) / 33 (H.265): SPS carries sequence-level parameters — profile, level, picture dimensions, chroma format, bit depth, frame rate hints. Sent rarely (once per sequence or stream).",
+      "why": "These parameters are constant for a sequence; sending them per frame would waste bits. Centralising them in SPS lets each slice header reference the SPS by ID, saving per-slice overhead.",
+      "category": "nal_mechanism"
+    },
+    {
+      "name": "picture_parameter_set",
+      "definition": "NAL unit type 8 (H.264) / 34 (H.265): PPS carries picture-level parameters that may change less often than per-frame — quantisation parameter base, weighted prediction flags, deblocking enable/disable.",
+      "why": "Mid-level between SPS (per-sequence) and slice headers (per-slice). Allows the encoder to swap PPSs to change settings (e.g., disable deblocking for high-motion sections) without resending the full SPS.",
+      "category": "nal_mechanism"
+    },
+    {
+      "name": "video_parameter_set",
+      "definition": "H.265-only (HEVC NAL type 32): VPS sits above SPS and carries scalability/temporal-ID information shared across SPS instances.",
+      "why": "Scalable video coding has multiple sequences (resolutions/qualities) sharing the same stream; VPS provides shared metadata above the per-sequence SPS. H.264 didn't have this layer because its scalability extension came later.",
+      "category": "nal_mechanism"
+    },
+    {
+      "name": "slice_header",
+      "definition": "First bytes of an encoded slice's RBSP: slice type (I/P/B), reference frame indices, MV scaling parameters, QP delta from PPS, deblocking offsets, slice-level entry points.",
+      "why": "Per-slice settings that vary frequently. The slice header is the binding between the abstract picture/sequence parameters (SPS/PPS) and the concrete encoded data that follows.",
+      "category": "nal_mechanism"
+    },
+    {
+      "name": "sei_supplemental_enhancement_information",
+      "definition": "NAL unit type 6 (H.264/H.265): SEI carries metadata that the decoder may use or ignore — buffering period, picture timing, HDR metadata, film grain characteristics, user data.",
+      "why": "Optional information that's not required for decoding but may be used by playback systems. The 'may ignore' aspect means SEI can be extended without breaking older decoders.",
+      "category": "nal_mechanism"
+    },
+    {
+      "name": "access_unit_delimiter",
+      "definition": "NAL unit type 9: AUD marks the boundary between access units (typically frames). Optional but useful for some applications.",
+      "why": "Frame-boundary marker for systems that need to count frames without parsing slice headers. Particularly useful in error-resilient streaming.",
+      "category": "nal_mechanism"
+    },
+    {
+      "name": "filler_data",
+      "definition": "NAL unit type 12: a NALU containing only filler bytes (0xFF) that has no semantic content; used to pad the bitstream to a target bitrate.",
+      "why": "Constant-bitrate streaming sometimes needs to pad short frames to maintain bitrate. Filler NALUs let the encoder add bytes without affecting decoded content.",
+      "category": "nal_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "parameter_set_hierarchy_amortises_metadata",
+      "if": ["metadata changes at different rates (sequence, picture, slice)"],
+      "then": ["a 3-layer hierarchy (SPS, PPS, slice header) minimises total bitstream overhead"],
+      "why": "Per-slice signalling of sequence-level data would waste bits across thousands of slices. SPS sends it once; PPS catches picture-level changes; slice headers catch per-slice changes. Each layer pays the cost only when its data changes.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "emulation_prevention_preserves_resync",
+      "if": ["RBSP could contain byte patterns matching start codes"],
+      "then": ["emulation prevention bytes are inserted to disambiguate"],
+      "why": "Without it, decoder resync after corruption would find false NALU boundaries inside encoded data. The 0x03 insertion rule prevents this at the cost of ~0.1% bitstream overhead.",
+      "soundness_category": "referential_transparency"
+    },
+    {
+      "name": "self_delimiting_NALUs_enable_streaming",
+      "if": ["NAL units begin with start codes"],
+      "then": ["decoders can find NALU boundaries without external length info"],
+      "why": "Streaming protocols (RTP, MPEG-TS) don't necessarily preserve frame boundaries. Self-delimiting NALUs let the decoder resync after packet loss or partial reception. Annex-B format's start codes are the binding mechanism.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "sei_optional_metadata_enables_extensibility",
+      "if": ["SEI is 'may ignore' for decoders"],
+      "then": ["new SEI types can be added without breaking older decoders"],
+      "why": "Standards evolve; SEI is the mechanism for adding new metadata (HDR, film grain, picture timing). 'May ignore' semantics mean older decoders just skip unknown SEI types instead of failing. This is what let HDR retrofit onto pre-2015 H.264/H.265 decoders.",
+      "soundness_category": "extensional_equivalence"
+    }
+  ]
+}

@@ -1,0 +1,118 @@
+{
+  "id": "complexity_theory_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "NP_complete",
+  "in_microtheory": "data_structures_algorithms",
+  "description": "Complexity classes + reductions decomposed. P, NP, NP-complete, NP-hard, co-NP, PSPACE, EXP. Reductions as the tool for showing relative hardness. Famous problems + their classifications. P vs NP as the central open question.",
+  "sub_mechanisms": [
+    {
+      "name": "P_polynomial_time",
+      "definition": "Decision problems solvable by a deterministic Turing machine in time O(n^k) for some constant k.",
+      "why": "Captures 'efficiently solvable in theory'. Sorting, primality (AKS), shortest paths, max-flow all in P. Boundary between tractable and intractable in standard CS theory.",
+      "category": "complexity_mechanism"
+    },
+    {
+      "name": "NP_polynomial_verifiable",
+      "definition": "Decision problems where a YES instance admits a polynomial-time-checkable certificate. Equivalent: solvable by nondeterministic Turing machine in polynomial time.",
+      "why": "P ⊆ NP (anything solvable is verifiable: solve it). Whether the reverse holds is the open P vs NP question. Most 'interesting' hard problems live in NP.",
+      "category": "complexity_mechanism"
+    },
+    {
+      "name": "polynomial_reduction",
+      "definition": "Problem A reduces to B (A ≤_p B) if there's a polynomial-time function transforming A-instances to B-instances preserving YES/NO.",
+      "why": "If B is in P and A ≤_p B, then A is in P. Reductions transfer tractability + hardness. The relation underlies all complexity-class definitions.",
+      "category": "complexity_mechanism"
+    },
+    {
+      "name": "NP_complete_definition",
+      "definition": "L is NP-complete iff (1) L ∈ NP and (2) every L' ∈ NP polynomially reduces to L. The 'hardest' problems in NP.",
+      "why": "If any NP-complete problem is in P, then P = NP. They're all equivalent in difficulty. The famous Karp 21 problems established the class's breadth.",
+      "category": "complexity_mechanism"
+    },
+    {
+      "name": "Cook_Levin_theorem",
+      "definition": "SAT is NP-complete (Cook 1971, Levin 1973 independently). Every NP problem reduces to SAT.",
+      "why": "Foundational: gives the first NP-complete problem. All other NP-completeness proofs reduce from SAT (or from problems known to be reducible from SAT). Without Cook-Levin, NP-completeness theory wouldn't exist.",
+      "category": "complexity_mechanism"
+    },
+    {
+      "name": "3_SAT_NP_complete",
+      "definition": "Boolean satisfiability with clauses restricted to 3 literals each. Reduced from general SAT in polynomial time.",
+      "why": "The 'simplest' NP-complete problem. Many reductions start from 3-SAT because clause structure is regular. Used to prove NP-completeness of graph problems, scheduling, etc.",
+      "category": "complexity_mechanism"
+    },
+    {
+      "name": "NP_hard_definition",
+      "definition": "L is NP-hard if every NP problem reduces to L. L need not be in NP itself (could be even harder, e.g., undecidable).",
+      "why": "NP-complete = NP-hard + in NP. Many optimisation problems are NP-hard but not in NP (because they're not decision problems). 'NP-hard' is the weaker / more general statement.",
+      "category": "complexity_mechanism"
+    },
+    {
+      "name": "coNP_class",
+      "definition": "Decision problems where a NO instance admits a polynomial-time-checkable certificate. The complement of NP.",
+      "why": "TAUT (Boolean tautology) is coNP-complete. Whether NP = coNP is another open question (consequence: P = NP iff NP = coNP if either holds). Captures asymmetry in verification: easy to verify YES vs easy to verify NO.",
+      "category": "complexity_mechanism"
+    },
+    {
+      "name": "PSPACE_class",
+      "definition": "Problems solvable using polynomial space (any amount of time). PSPACE ⊇ NP ∪ coNP.",
+      "why": "Game-playing problems (chess, go on n×n board), quantified Boolean formula. PSPACE-complete is even harder than NP-complete (PSPACE ⊇ NP). The space hierarchy theorem makes class separation precise.",
+      "category": "complexity_mechanism"
+    },
+    {
+      "name": "approximation_algorithm",
+      "definition": "Polynomial-time algorithm producing a solution within factor α of optimal. For TSP metric: 1.5-approximation (Christofides).",
+      "why": "When exact NP-hard solutions are intractable, approximations are. Approximation ratio is the worst-case ratio (algorithm value / optimal value). PCP theorem characterises which problems are approximable.",
+      "category": "complexity_mechanism"
+    },
+    {
+      "name": "P_vs_NP_open_question",
+      "definition": "Is P = NP? Open since 1971. Most theoretical computer scientists believe P ≠ NP.",
+      "why": "Central question of theoretical CS. P = NP would mean all NP problems efficiently solvable; would break cryptography. Would also mean P = NP-complete, so any NP-complete algorithm gives all of them.",
+      "category": "complexity_mechanism"
+    },
+    {
+      "name": "FPT_fixed_parameter_tractable",
+      "definition": "Problem is FPT if solvable in O(f(k) · n^c) where k is some parameter, c is constant, f is arbitrary (e.g., exponential).",
+      "why": "Some NP-hard problems are tractable when a parameter is small. Vertex cover is FPT in cover size; TSP is FPT in treewidth. Parameterised complexity is a finer-grained classification within NP-hardness.",
+      "category": "complexity_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "polynomial_reductions_compose",
+      "if": ["A ≤_p B and B ≤_p C"],
+      "then": ["A ≤_p C"],
+      "why": "Polynomial × polynomial = polynomial. Reductions chain transitively. This is what makes NP-completeness proofs by chaining work: once you have one NP-complete problem, you reduce it to others.",
+      "soundness_category": "algebraic_law"
+    },
+    {
+      "name": "any_NP_complete_in_P_implies_P_equals_NP",
+      "if": ["any NP-complete problem is in P"],
+      "then": ["P = NP"],
+      "why": "If L is NP-complete in P, then for any L' in NP: L' ≤_p L. L solvable in polynomial time means L' is. Therefore NP ⊆ P. Combined with P ⊆ NP: P = NP. The single-problem path to a resolution.",
+      "soundness_category": "algebraic_law"
+    },
+    {
+      "name": "Cook_Levin_grounds_NP_completeness",
+      "if": ["we want to prove problem L is NP-complete"],
+      "then": ["the standard approach is to show L ∈ NP and some NP-complete problem reduces to L"],
+      "why": "Without Cook-Levin's seed (SAT is NP-complete), we'd have no starting problem. The standard proof technique reduces FROM a known NP-complete problem (typically 3-SAT or vertex cover) TO the target. Karp's 21 problems established the rich web of reductions.",
+      "soundness_category": "algebraic_law"
+    },
+    {
+      "name": "NP_hard_problems_admit_approximation_or_FPT",
+      "if": ["a problem is NP-hard"],
+      "then": ["practical approaches are approximation, heuristic, or parameterised algorithms"],
+      "why": "Exact polynomial algorithm probably doesn't exist (P ≠ NP). Practical paths: approximation (within α of optimal), heuristics (no guarantee but good in practice), FPT (polynomial when a parameter is small). Choice depends on problem structure.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "PCP_theorem_inapproximability",
+      "if": ["PCP theorem holds"],
+      "then": ["some NP-hard problems are NP-hard to approximate within any constant factor"],
+      "why": "PCP (Probabilistically Checkable Proofs) gives a robust characterisation of NP that translates to inapproximability. MAX-3SAT is NP-hard to approximate within 7/8 + ε. Without PCP, we'd have no general theory of approximation hardness.",
+      "soundness_category": "algebraic_law"
+    }
+  ]
+}

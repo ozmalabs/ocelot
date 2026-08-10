@@ -1,0 +1,283 @@
+{
+  "id": "dialogue_intertext",
+  "version": "1.0.0",
+  "depends_on": [
+    "authorial_voice"
+  ],
+  "description": "The jabberwock lifted the displacement primitive two more rungs: DIALOGUE = the relation between two passages trajectories (over analyses); INTERTEXT = a trajectory imported from another text and transformed (over voices). Both gated by the one accretion rule \u2014 keep the edge iff it lowers prediction error.",
+  "microtheory": {
+    "name": "dialogue_intertext",
+    "description": "order-N relations between voices/texts"
+  },
+  "nodes": [
+    {
+      "local_id": 1,
+      "type": "Concept",
+      "attrs": {
+        "name": "dialogue",
+        "description": "The order above voice: the DISPLACEMENT between two trajectory Readings that share a referent (no shared referent = two monologues). Classified by a four-tuple (stance-alignment, counter-current residual, figure-overlap, stance-sign) into regions: agreement (parallel), rebuttal (anti-parallel), concession (aligned but a live counter-current), ironising (reuses the other figures with inverted stance). Right iff symmetric under swap and it predicts the next move."
+      }
+    },
+    {
+      "local_id": 2,
+      "type": "Concept",
+      "attrs": {
+        "name": "intertext",
+        "description": "A Reading IMPORTED not generated: passage B invokes text A and B trajectory = a transform T of A imported trajectory/Voice. allusion (thin reference to A centroid), quotation (identity), homage (import-and-amplify same-sign), subversion (import-then-negate stance), PARODY (import the Voice OPERATOR and apply it OFF-DOMAIN \u2014 the operator-substrate incongruity IS the parody, which is why it sits at the voice order). Right by reconstruction: T(A) reproduces B at low residual, else the invokes-edge is spurious and pruned."
+      }
+    }
+  ],
+  "edges": [],
+  "rules": [
+    {
+      "name": "classify_dialogue",
+      "match": [
+        [
+          "d",
+          "from_a",
+          "A"
+        ]
+      ],
+      "where": {
+        "type": "Lit",
+        "value": true
+      },
+      "effects": [
+        [
+          "set_attr",
+          "d",
+          "move",
+          {
+            "__term__": {
+              "type": "IfThenElse",
+              "cond": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "d"
+                  },
+                  "key": "shared"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 0
+                }
+              },
+              "then": {
+                "type": "Lit",
+                "value": "none (no shared referent)"
+              },
+              "other": {
+                "type": "IfThenElse",
+                "cond": {
+                  "type": "And",
+                  "items": [
+                    {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "d"
+                        },
+                        "key": "overlap_hi"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 1
+                      }
+                    },
+                    {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "d"
+                        },
+                        "key": "aligned"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 0
+                      }
+                    }
+                  ]
+                },
+                "then": {
+                  "type": "Lit",
+                  "value": "ironising"
+                },
+                "other": {
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "d"
+                      },
+                      "key": "aligned"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": 0
+                    }
+                  },
+                  "then": {
+                    "type": "Lit",
+                    "value": "rebuttal"
+                  },
+                  "other": {
+                    "type": "IfThenElse",
+                    "cond": {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "d"
+                        },
+                        "key": "b_counter"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 1
+                      }
+                    },
+                    "then": {
+                      "type": "Lit",
+                      "value": "concession"
+                    },
+                    "other": {
+                      "type": "Lit",
+                      "value": "agreement"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "classify_intertext",
+      "match": [
+        [
+          "x",
+          "invokes",
+          "A"
+        ]
+      ],
+      "where": {
+        "type": "Lit",
+        "value": true
+      },
+      "effects": [
+        [
+          "set_attr",
+          "x",
+          "transform",
+          {
+            "__term__": {
+              "type": "IfThenElse",
+              "cond": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "x"
+                  },
+                  "key": "off_domain"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 1
+                }
+              },
+              "then": {
+                "type": "Lit",
+                "value": "parody"
+              },
+              "other": {
+                "type": "IfThenElse",
+                "cond": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "x"
+                    },
+                    "key": "stance_opposite"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": 1
+                  }
+                },
+                "then": {
+                  "type": "Lit",
+                  "value": "subversion"
+                },
+                "other": {
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "x"
+                      },
+                      "key": "import_low"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": 1
+                    }
+                  },
+                  "then": {
+                    "type": "Lit",
+                    "value": "allusion"
+                  },
+                  "other": {
+                    "type": "IfThenElse",
+                    "cond": {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "x"
+                        },
+                        "key": "amplified"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 1
+                      }
+                    },
+                    "then": {
+                      "type": "Lit",
+                      "value": "homage"
+                    },
+                    "other": {
+                      "type": "Lit",
+                      "value": "quotation"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      ]
+    }
+  ]
+}

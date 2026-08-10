@@ -1,0 +1,34 @@
+{
+ "id": "cross_modal",
+ "version": "1.0.0",
+ "depends_on": [],
+ "description": "Cross-modal GRAPHEME<->PHONEME association (graph-native): reading aloud. Both modalities are recognised by the shared AbS spine (argmax over -Distance); a grapheme is a written symbol (vision), a phoneme is a spoken digit identity (audio, reached from a recognised audio template via of_phoneme). bind_grapheme_phoneme ties the recognised grapheme concept to the recognised phoneme identity when a grapheme-mark and a phoneme-mark are CO-PRESENTED (co_modal) -- cross-modal ostension, symmetric (sounds_like / written_as). read_aloud then recalls the sound of a recognised grapheme (gm --speaks--> phoneme); listen_write recalls the symbol of a recognised phoneme (pm --writes--> grapheme). The association is the Rules; recall generalises across writers and speakers via the shared concept. The host only recognises in each modality, stamps recognised_as + co_modal, and reads back.",
+ "microtheory": {"name": "cross_modal", "description": "bind grapheme to phoneme by co-presentation; read aloud and take dictation"},
+ "nodes": [], "edges": [], "productions": [],
+ "rules": [
+  {
+   "name": "bind_grapheme_phoneme",
+   "match": [["gm", "recognised_as", "G"], ["pm", "recognised_as", "T"], ["T", "of_phoneme", "P"], ["gm", "co_modal", "pm"]],
+   "where": {"type": "Eq",
+     "a": {"type": "Count", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "G"}, "edge_type": "sounds_like", "any_type": false}},
+     "b": {"type": "Lit", "value": 0}},
+   "effects": [["add_edge", "G", "sounds_like", "P"], ["add_edge", "P", "written_as", "G"]]
+  },
+  {
+   "name": "read_aloud",
+   "match": [["gm", "recognised_as", "G"], ["G", "sounds_like", "P"]],
+   "where": {"type": "Eq",
+     "a": {"type": "Count", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "gm"}, "edge_type": "speaks", "any_type": false}},
+     "b": {"type": "Lit", "value": 0}},
+   "effects": [["add_edge", "gm", "speaks", "P"]]
+  },
+  {
+   "name": "listen_write",
+   "match": [["pm", "recognised_as", "T"], ["T", "of_phoneme", "P"], ["P", "written_as", "G"]],
+   "where": {"type": "Eq",
+     "a": {"type": "Count", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "pm"}, "edge_type": "writes", "any_type": false}},
+     "b": {"type": "Lit", "value": 0}},
+   "effects": [["add_edge", "pm", "writes", "G"]]
+  }
+ ]
+}

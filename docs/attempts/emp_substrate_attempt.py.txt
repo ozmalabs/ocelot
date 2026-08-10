@@ -1,0 +1,3071 @@
+"""Generate shared graph-native, factorized embodied motor programs.
+
+The seed owns analysis-by-synthesis over independent opaque effector groups.
+It contains no morphology, joint, wheel, wing, or rotor vocabulary. A domain
+supplies receipt-learned primitive consequences and a desired consequence;
+the graph constructs an arbitrary-width simultaneous program, passes that
+program through the shared motor collapse, and publishes its exact members.
+"""
+from __future__ import annotations
+
+import json
+from pathlib import Path
+
+try:
+    from scripts.gen_embodied_structural_limits_seed import STRUCTURAL_LOADS
+except ModuleNotFoundError:  # Direct ``python scripts/...`` execution.
+    from gen_embodied_structural_limits_seed import STRUCTURAL_LOADS
+
+
+ROOT = Path(__file__).resolve().parents[1]
+COMPONENTS = (
+    "forward",
+    "lateral",
+    "vertical",
+    "roll",
+    "pitch",
+    "turn",
+    "normal_load",
+)
+FLOW_FEATURES = (
+    "flow_forward",
+    "flow_lateral",
+    "flow_vertical",
+    "power_state",
+)
+ALL_CONSEQUENCES = tuple(dict.fromkeys(
+    (*COMPONENTS, "drag", "energy", *STRUCTURAL_LOADS)
+))
+
+
+def V(name):
+    return {"type": "Var", "name": name}
+
+
+def L(value):
+    return {"type": "Lit", "value": value}
+
+
+def A(var, key):
+    return {"type": "Attr", "node": V(var), "key": key}
+
+
+def AO(node, key):
+    return {"type": "Attr", "node": node, "key": key}
+
+
+def P0(var, key):
+    return {"type": "Plus", "items": [A(var, key), L(0.0)]}
+
+
+def Plus(*items):
+    return {"type": "Plus", "items": list(items)}
+
+
+def Minus(a, b):
+    return {"type": "Minus", "a": a, "b": b}
+
+
+def Times(*items):
+    return {"type": "Times", "items": list(items)}
+
+
+def Div(a, b):
+    return {"type": "Div", "a": a, "b": b}
+
+
+def Abs(arg):
+    return {"type": "Abs", "arg": arg}
+
+
+def Max(*items):
+    return {"type": "Max", "items": list(items)}
+
+
+def Min(*items):
+    return {"type": "Min", "items": list(items)}
+
+
+def Sin(arg):
+    return {"type": "Sin", "arg": arg}
+
+
+def Cos(arg):
+    return {"type": "Cos", "arg": arg}
+
+
+def Atan2(y, x):
+    return {"type": "Atan2", "y": y, "x": x}
+
+
+def Eq(a, b):
+    return {"type": "Eq", "a": a, "b": b}
+
+
+def Lt(a, b):
+    return {"type": "Lt", "a": a, "b": b}
+
+
+def Gt(a, b):
+    return {"type": "Gt", "a": a, "b": b}
+
+
+def Log(arg):
+    return {"type": "Log", "arg": arg}
+
+
+def Exp(arg):
+    return {"type": "Exp", "arg": arg}
+
+
+def Neg(arg):
+    return {"type": "Neg", "arg": arg}
+
+
+def And(*items):
+    return {"type": "And", "items": list(items)}
+
+
+def Or(*items):
+    return {"type": "Or", "items": list(items)}
+
+
+def Not(arg):
+    return {"type": "Not", "arg": arg}
+
+
+def If(cond, then, other):
+    return {"type": "IfThenElse", "cond": cond, "then": then, "other": other}
+
+
+def Clamp(value, lower, upper):
+    """Bound a scalar using graph-native comparisons."""
+    return If(
+        Lt(value, lower),
+        lower,
+        If(Gt(value, upper), upper, value),
+    )
+
+
+def Neighbours(var, edge_type):
+    return {"type": "Neighbours", "node": V(var), "edge_type": edge_type}
+
+
+def Filter(source, var_name, predicate):
+    return {
+        "type": "Filter",
+        "source": source,
+        "var_name": var_name,
+        "predicate": predicate,
+    }
+
+
+def Count(source):
+    return {"type": "Count", "source": source}
+
+
+def Exists(source, var_name, predicate):
+    return {
+        "type": "Exists",
+        "source": source,
+        "var_name": var_name,
+        "predicate": predicate,
+    }
+
+
+def Sum(source, var_name, value):
+    return {
+        "type": "Sum",
+        "source": source,
+        "var_name": var_name,
+        "value": value,
+    }
+
+
+def Argmin(source, var_name, value, default):
+    return {
+        "type": "Argmin",
+        "source": source,
+        "var_name": var_name,
+        "value": value,
+        "default": default,
+    }
+
+
+def Argmax(source, var_name, value, default):
+    return {
+        "type": "Argmax",
+        "source": source,
+        "var_name": var_name,
+        "value": value,
+        "default": default,
+    }
+
+
+def T(term):
+    return {"__term__": term}
+
+
+MODELS = Neighbours("episode", "has_embodied_effector_model")
+
+
+def yaw(var, prefix):
+    qx = P0(var, f"{prefix}_qx")
+    qy = P0(var, f"{prefix}_qy")
+    qz = P0(var, f"{prefix}_qz")
+    qw = P0(var, f"{prefix}_qw")
+    return Atan2(
+        Times(L(2.0), Plus(Times(qw, qz), Times(qx, qy))),
+        Minus(
+            L(1.0),
+            Times(L(2.0), Plus(Times(qy, qy), Times(qz, qz))),
+        ),
+    )
+
+
+def pre_flow_speed_squared(var="outcome"):
+    return Plus(
+        Times(P0(var, "pre_vx"), P0(var, "pre_vx")),
+        Times(P0(var, "pre_vy"), P0(var, "pre_vy")),
+        Times(P0(var, "pre_vz"), P0(var, "pre_vz")),
+    )
+
+
+def six_axis_receipts():
+    return Eq(P0("episode", "six_axis_receipts"), L(1.0))
+
+
+def pre_flow_feature(key, var="outcome"):
+    return P0(var, f"pre_{key}")
+
+
+def outcome_observation(key, var="outcome"):
+    dx = Minus(P0(var, "post_x"), P0(var, "pre_x"))
+    dy = Minus(P0(var, "post_y"), P0(var, "pre_y"))
+    heading = yaw(var, "pre")
+    if key == "forward":
+        return If(
+            six_axis_receipts(),
+            Minus(P0(var, "post_body_vx"), P0(var, "pre_body_vx")),
+            Plus(Times(Cos(heading), dx), Times(Sin(heading), dy)),
+        )
+    if key == "lateral":
+        return If(
+            six_axis_receipts(),
+            Minus(P0(var, "post_body_vy"), P0(var, "pre_body_vy")),
+            Plus(
+                Times(Minus(L(0.0), Sin(heading)), dx),
+                Times(Cos(heading), dy),
+            ),
+        )
+    if key == "vertical":
+        return If(
+            six_axis_receipts(),
+            Minus(P0(var, "post_body_vz"), P0(var, "pre_body_vz")),
+            L(0.0),
+        )
+    if key == "roll":
+        return If(
+            six_axis_receipts(),
+            Minus(P0(var, "post_body_wx"), P0(var, "pre_body_wx")),
+            L(0.0),
+        )
+    if key == "pitch":
+        return If(
+            six_axis_receipts(),
+            Minus(P0(var, "post_body_wy"), P0(var, "pre_body_wy")),
+            L(0.0),
+        )
+    if key == "turn":
+        delta = Minus(yaw(var, "post"), heading)
+        return If(
+            six_axis_receipts(),
+            Minus(P0(var, "post_body_wz"), P0(var, "pre_body_wz")),
+            Atan2(Sin(delta), Cos(delta)),
+        )
+    if key == "normal_load":
+        return If(
+            six_axis_receipts(),
+            P0(var, "normal_load_factor"),
+            Div(
+                P0(var, "external_normal_force_newtons"),
+                P0(var, "body_weight_newtons"),
+            ),
+        )
+    if key == "drag":
+        return P0(var, "aerodynamic_dissipation_joules")
+    if key == "energy":
+        return P0(var, "input_energy_joules")
+    if key in STRUCTURAL_LOADS:
+        return P0(var, f"observed_{key}")
+    raise ValueError(f"unknown motor consequence {key!r}")
+
+
+def model_prediction(var, key):
+    """Receipt-learned local prediction over vector flow and power state."""
+    learned_prediction = Plus(
+        P0(var, f"mean_{key}"),
+        If(
+            Gt(
+                P0("policy", "contextual_effector_prediction_enabled"),
+                L(0.5),
+            ),
+            Plus(
+                Times(
+                    P0(var, f"flow_gain_{key}"),
+                    Minus(
+                        P0("episode", "state_flow_speed_squared"),
+                        P0(var, "mean_flow_speed_squared"),
+                    ),
+                ),
+                *(
+                    Times(
+                        P0(var, f"{feature}_gain_{key}"),
+                        Minus(
+                            P0("episode", f"state_{feature}"),
+                            P0(var, f"mean_{feature}"),
+                        ),
+                    )
+                    for feature in FLOW_FEATURES
+                ),
+            ),
+            L(0.0),
+        ),
+    )
+    position_error = Minus(
+        P0(var, "specified_command_level"),
+        P0(var, "state_effector_position"),
+    )
+    maximum_position_change = P0(
+        var, "specified_maximum_position_change_per_action"
+    )
+    bounded_position_change = If(
+        Gt(Abs(position_error), maximum_position_change),
+        If(
+            Gt(position_error, L(0.0)),
+            maximum_position_change,
+            Times(L(-1.0), maximum_position_change),
+        ),
+        position_error,
+    )
+    predicted_position = Plus(
+        P0(var, "state_effector_position"),
+        bounded_position_change,
+    )
+    specification_prediction = Plus(
+        P0(var, f"specified_passive_mean_{key}"),
+        Times(
+            P0(var, f"specified_position_gain_{key}"),
+            predicted_position,
+        ),
+    )
+    return If(
+        And(
+            Gt(P0(var, "specified_actuator_dynamics_enabled"), L(0.5)),
+            Gt(P0(var, "specified_effect_prior_confidence"), L(0.5)),
+            Gt(maximum_position_change, L(0.0)),
+        ),
+        specification_prediction,
+        learned_prediction,
+    )
+
+
+def structural_model_prediction(var, key):
+    return If(
+        Gt(P0(var, "structural_certified_default"), L(0.5)),
+        Abs(P0(var, f"specified_{key}")),
+        If(
+            Gt(P0(var, "experience_count"), L(0.0)),
+            Max(
+                Abs(model_prediction(var, key)),
+                Abs(P0(var, f"specified_{key}")),
+            ),
+            Abs(P0(var, f"specified_{key}")),
+        ),
+    )
+
+
+def structural_limits_enabled():
+    return Gt(P0("episode", "structural_limits_enabled"), L(0.5))
+
+
+def structural_current_load(key):
+    return Abs(P0("episode", f"state_current_{key}"))
+
+
+def structural_increment_is_zero(var):
+    return And(*(
+        Not(Gt(structural_model_prediction(var, key), L(0.0)))
+        for key in STRUCTURAL_LOADS
+    ))
+
+
+def structural_model_admissible(var):
+    return Or(
+        Not(structural_limits_enabled()),
+        Or(
+            And(*(
+                And(
+                    Gt(P0("episode", f"state_safe_{key}"), L(0.0)),
+                    Not(Gt(
+                        Plus(
+                            structural_current_load(key),
+                            structural_model_prediction(var, key),
+                        ),
+                        P0("episode", f"state_safe_{key}"),
+                    )),
+                )
+                for key in STRUCTURAL_LOADS
+            )),
+            And(
+                Gt(P0("episode", "structural_interrupt_required"), L(0.5)),
+                structural_increment_is_zero(var),
+            ),
+        ),
+    )
+
+
+def members(plan="plan"):
+    return Neighbours(plan, "includes_embodied_effector_model")
+
+
+def baseline_prediction(key):
+    references = Filter(
+        MODELS,
+        "reference",
+        And(
+            Lt(P0("reference", "activation_magnitude"), L(0.5)),
+            Gt(P0("reference", "experience_count"), L(0.5)),
+        ),
+    )
+    return If(
+        Gt(Count(references), L(0.0)),
+        Div(
+            Sum(
+                references,
+                "reference",
+                model_prediction("reference", key),
+            ),
+            Count(references),
+        ),
+        L(0.0),
+    )
+
+
+def prediction(source, key, addition=None):
+    baseline = baseline_prediction(key)
+    value = Plus(
+        baseline,
+        Sum(
+            members(source),
+            "member",
+            Minus(model_prediction("member", key), baseline),
+        ),
+    )
+    if addition is not None:
+        value = Plus(
+            value,
+            Minus(model_prediction(addition, key), baseline),
+        )
+    return value
+
+
+def structural_program_admissible(source, addition=None):
+    def predicted(key):
+        value = Plus(
+            structural_current_load(key),
+            Sum(
+                members(source),
+                "structural_member",
+                structural_model_prediction("structural_member", key),
+            ),
+        )
+        if addition is not None:
+            value = Plus(
+                value,
+                structural_model_prediction(addition, key),
+            )
+        return value
+
+    return Or(
+        Not(structural_limits_enabled()),
+        # Envelope limits are soft during an authority-escape state.  The
+        # world adapter raises this flag only when preserving flight requires
+        # accepting a bounded risk excursion.
+        Gt(P0("episode", "authority_escape_mode"), L(0.5)),
+        And(*(
+            And(
+                Gt(P0("episode", f"state_safe_{key}"), L(0.0)),
+                Not(Gt(
+                    predicted(key),
+                    P0("episode", f"state_safe_{key}"),
+                )),
+            )
+            for key in STRUCTURAL_LOADS
+        )),
+    )
+
+
+def program_cost(source, addition=None):
+    terms = []
+    for key in COMPONENTS:
+        residual = Minus(
+            P0("episode", f"target_{key}"),
+            prediction(source, key, addition),
+        )
+        terms.append(
+            Times(
+                P0("policy", f"{key}_weight"),
+                residual,
+                residual,
+            )
+        )
+    for key in ("drag", "energy"):
+        amount = prediction(source, key, addition)
+        terms.append(Times(P0("policy", f"{key}_weight"), amount))
+    activation = Sum(
+        members(source),
+        "member",
+        P0("member", "activation_magnitude"),
+    )
+    if addition is not None:
+        activation = Plus(
+            activation,
+            P0(addition, "activation_magnitude"),
+        )
+    terms.append(Times(P0("policy", "activation_weight"), activation))
+    terms.append(
+        Times(
+            P0("policy", "activation_weight"),
+            Sum(members(source), "member", Neg(P0("member", "log_authority"))),
+        )
+    )
+    if addition is not None:
+        terms.append(
+            Times(
+                P0("policy", "activation_weight"),
+                Neg(P0(addition, "log_authority")),
+            )
+        )
+    return Plus(*terms)
+
+
+def singleton_cost(candidate):
+    terms = []
+    for key in COMPONENTS:
+        residual = Minus(
+            P0("episode", f"target_{key}"),
+            model_prediction(candidate, key),
+        )
+        terms.append(
+            Times(P0("policy", f"{key}_weight"), residual, residual)
+        )
+    for key in ("drag", "energy"):
+        terms.append(
+            Times(
+                P0("policy", f"{key}_weight"),
+                model_prediction(candidate, key),
+            )
+        )
+    terms.append(
+        Times(
+            P0("policy", "activation_weight"),
+            P0(candidate, "activation_magnitude"),
+        )
+    )
+    terms.append(
+        Times(
+            P0("policy", "activation_weight"),
+            Neg(P0(candidate, "log_authority")),
+        )
+    )
+    return Plus(*terms)
+
+
+def available_models(plan="plan"):
+    return Filter(
+        MODELS,
+        "candidate",
+        And(
+            Gt(P0("candidate", "experience_count"), L(0.5)),
+            Gt(P0("candidate", "available"), L(0.5)),
+            # A never-commanded contributor is not ELIGIBLE to be selected.
+            # This has to be inside the candidate set, not appended to the
+            # rule's `where`: selection is an Argmin, so a rule requires its
+            # bound model to BE the argmin -- and rejecting the winner
+            # afterwards matches nothing at all rather than falling through to
+            # the next-best.  Measured: guarding after the fact stalled
+            # synthesis with no active plan at request 691.
+            Not(Gt(P0("candidate", "never_commanded"), L(0.5))),
+            structural_program_admissible(plan, "candidate"),
+            Not(Exists(
+                members(plan),
+                "existing",
+                Eq(
+                    P0("existing", "actuator_group"),
+                    P0("candidate", "actuator_group"),
+                ),
+            )),
+        ),
+    )
+
+
+def retire_old_options_rule():
+    return {
+        "name": "emp_retire_previous_program_options",
+        "area": "embodied_motor_program",
+        "latency_class": "hard_realtime",
+        "match": [
+            ["agent", "has_embodied_motor_program_episode", "episode"],
+            ["episode", "has_motor_decision_option", "program"],
+        ],
+        "where": And(
+            Gt(
+                P0("episode", "program_request_seq"),
+                P0("program", "request_seq"),
+            ),
+            Eq(P0("program", "available"), L(1.0)),
+        ),
+        "effects": [
+            ["set_attr", "program", "available", 0.0],
+            [
+                "del_edge",
+                "episode",
+                "has_motor_decision_option",
+                "program",
+            ],
+        ],
+    }
+
+
+_RESIDUAL_CONSEQUENCES = (
+    ("forward", "pre_body_vx", "post_body_vx"),
+    ("lateral", "pre_body_vy", "post_body_vy"),
+    ("vertical", "pre_body_vz", "post_body_vz"),
+    ("roll", "pre_body_wx", "post_body_wx"),
+    ("pitch", "pre_body_wy", "post_body_wy"),
+    ("turn", "pre_body_wz", "post_body_wz"),
+)
+
+
+def learn_uncommanded_contributor_rule():
+    """Learn a NEVER-COMMANDED contributor from what it does while others act.
+
+    Such a contributor is never sampled, so the calibration path can teach it
+    nothing -- commanding is how that path learns, and it is excluded from the
+    frontier for exactly that reason.  But it acts every action, and what it
+    does is what the commanded members do NOT account for:
+
+        residual = observed change - sum of the commanded members' predictions
+
+    Averaged incrementally, that gives it the same `mean_*` columns every other
+    effector carries, learned from ordinary flight rather than from exercise.
+    Once populated, the probe, authority and containment machinery reads this
+    contributor exactly as it reads a surface -- none of them change.
+
+    This is the attribution a body plan makes possible: with no node the same
+    residual is unattributable and can only be reported as "the plant moved";
+    with one it is a column in a model.
+
+    Domain-free -- body-frame rates and velocities, no effector, axis or
+    vehicle named.
+    """
+    count = Plus(P0("model", "experience_count"), L(1.0))
+    effects = [
+        ["set_attr", "model", "experience_count", T(count)],
+        ["set_attr", "model", "last_learning_seq", T(
+            P0("outcome", "request_seq")
+        )],
+    ]
+    for name, pre, post in _RESIDUAL_CONSEQUENCES:
+        observed = Minus(P0("outcome", post), P0("outcome", pre))
+        predicted = Sum(
+            Filter(
+                Neighbours("trial", "commands_embodied_effector_model"),
+                "peer",
+                Not(Gt(P0("peer", "never_commanded"), L(0.5))),
+            ),
+            "peer",
+            P0("peer", f"mean_{name}"),
+        )
+        residual = Minus(observed, predicted)
+        mean = P0("model", f"mean_{name}")
+        effects.append([
+            "set_attr", "model", f"mean_{name}",
+            T(Plus(mean, Div(Minus(residual, mean), count))),
+        ])
+    return {
+        "name": "emp_learn_uncommanded_contributor_from_residual",
+        "area": "embodied_motor_program_plasticity",
+        "latency_class": "soft_realtime",
+        "order": -44,
+        "batch": False,
+        "match": [
+            ["agent", "has_embodied_motor_program_episode", "episode"],
+            ["episode", "has_embodied_motor_program_trial", "trial"],
+            ["trial", "has_embodied_motor_program_outcome", "outcome"],
+            ["trial", "commands_embodied_effector_model", "model"],
+        ],
+        "where": And(
+            Gt(P0("model", "never_commanded"), L(0.5)),
+            Eq(P0("outcome", "processed"), L(1.0)),
+            Gt(P0("outcome", "request_seq"),
+               P0("model", "last_learning_seq")),
+        ),
+        "effects": effects,
+    }
+
+
+def calibration_frontier():
+    """Models still owed calibration samples.
+
+    `never_commanded` contributors are excluded, and the reason is the second
+    half of the effector contract: calibration samples a model BY COMMANDING
+    IT, so a contributor that is never commanded can never be sampled, never
+    accumulates experience, and never leaves this frontier -- which stalls the
+    pass permanently.  Measured: adding a plant contributor without this
+    exclusion deadlocked the loop on its first request with a non-progressing
+    calibration state.
+
+    Such a contributor is still LEARNED, from what it does while the commanded
+    effectors act; it is simply never the thing being exercised.
+    """
+    unsampled = Filter(
+        MODELS,
+        "candidate",
+        And(
+            Not(Gt(P0("candidate", "never_commanded"), L(0.5))),
+            Or(
+                Lt(
+                    P0("candidate", "experience_count"),
+                    P0("policy", "calibration_samples"),
+                ),
+                Gt(P0("candidate", "recalibration_required"), L(0.5)),
+            ),
+            structural_model_admissible("candidate"),
+        ),
+    )
+    least_sampled = Argmin(
+        unsampled,
+        "candidate",
+        P0("candidate", "experience_count"),
+        V("episode"),
+    )
+    return Filter(
+        unsampled,
+        "candidate",
+        Eq(
+            P0("candidate", "experience_count"),
+            AO(least_sampled, "experience_count"),
+        ),
+    )
+
+
+def calibration_target():
+    return Argmin(
+        calibration_frontier(),
+        "candidate",
+        P0("candidate", "ordinal"),
+        V("episode"),
+    )
+
+
+def calibration_program_effects(primary, source):
+    return [
+        ["add_node", "program", "EmbodiedMotorProgram", {
+            "request_seq": T(P0("episode", "program_request_seq")),
+            "ordinal": T(P0("episode", "program_request_seq")),
+            "token": T(A(primary, "token")),
+            "status": "ready",
+            "source": source,
+            "member_count": 1.0,
+            "available": 1.0,
+            "grounded_value": 0.0,
+            "default_value": 0.0,
+            "learned_value": 0.0,
+            "decision_experience_count": 0.0,
+            "internalized_epoch": -1.0,
+            "experience_count": 0.0,
+            **{f"mean_{key}": 0.0 for key in ALL_CONSEQUENCES},
+            **{f"flow_gain_{key}": 0.0 for key in ALL_CONSEQUENCES},
+            "mean_flow_speed_squared": 0.0,
+            **{f"mean_{feature}": 0.0 for feature in FLOW_FEATURES},
+            "last_learning_seq": 0.0,
+        }],
+        [
+            "add_edge",
+            "episode",
+            "has_embodied_motor_program",
+            "program",
+        ],
+        [
+            "add_edge",
+            "program",
+            "includes_embodied_effector_model",
+            primary,
+        ],
+        [
+            "add_edge",
+            "episode",
+            "has_motor_decision_option",
+            "program",
+        ],
+        ["set_attr", "episode", "program_decision_seq", T(
+            P0("episode", "program_request_seq")
+        )],
+        ["set_attr", "episode", "decision_request_epoch", T(
+            P0("episode", "program_request_seq")
+        )],
+        ["set_attr", "episode", "decision_armed", 1.0],
+    ]
+
+
+def open_flow_excitation_program_rule():
+    target = calibration_target()
+    learned = Filter(
+        MODELS,
+        "candidate",
+        Gt(P0("candidate", "experience_count"), L(0.5)),
+    )
+    accelerator = Argmax(
+        learned,
+        "candidate",
+        model_prediction("candidate", "forward"),
+        V("episode"),
+    )
+    return {
+        "name": "emp_open_flow_excitation_program",
+        "area": "embodied_motor_program",
+        "latency_class": "hard_realtime",
+        "match": [
+            ["agent", "has_embodied_motor_program_policy", "policy"],
+            ["agent", "has_embodied_motor_program_episode", "episode"],
+            ["episode", "has_embodied_effector_model", "primary"],
+        ],
+        "where": And(
+            Eq(A("episode", "program_mode"), L("calibration")),
+            Eq(P0("episode", "action_ready"), L(0.0)),
+            Gt(
+                P0("episode", "program_request_seq"),
+                P0("episode", "program_decision_seq"),
+            ),
+            Gt(Count(calibration_frontier()), L(0.0)),
+            Gt(AO(target, "experience_count"), L(0.5)),
+            Lt(
+                P0("episode", "state_flow_speed_squared"),
+                P0("policy", "minimum_calibration_flow_speed_squared"),
+            ),
+            Gt(AO(accelerator, "mean_forward"), L(0.0)),
+            Eq(P0("primary", "ordinal"), AO(accelerator, "ordinal")),
+        ),
+        "effects": calibration_program_effects(
+            "primary",
+            "graph_requested_flow_excitation",
+        ),
+    }
+
+
+def open_calibration_program_rule():
+    target = calibration_target()
+    return {
+        "name": "emp_open_factorized_calibration_program",
+        "area": "embodied_motor_program",
+        "latency_class": "hard_realtime",
+        "match": [
+            ["agent", "has_embodied_motor_program_policy", "policy"],
+            ["agent", "has_embodied_motor_program_episode", "episode"],
+            ["episode", "has_embodied_effector_model", "primary"],
+        ],
+        "where": And(
+            Eq(A("episode", "program_mode"), L("calibration")),
+            Eq(P0("episode", "action_ready"), L(0.0)),
+            Gt(
+                P0("episode", "program_request_seq"),
+                P0("episode", "program_decision_seq"),
+            ),
+            Gt(Count(calibration_frontier()), L(0.0)),
+            Or(
+                Eq(AO(target, "experience_count"), L(0.0)),
+                Gt(
+                    P0("episode", "state_flow_speed_squared"),
+                    P0("policy", "minimum_calibration_flow_speed_squared"),
+                ),
+                Not(Gt(
+                    AO(Argmax(
+                        Filter(
+                            MODELS,
+                            "learned",
+                            Gt(P0("learned", "experience_count"), L(0.5)),
+                        ),
+                        "learned",
+                        model_prediction("learned", "forward"),
+                        V("episode"),
+                    ), "mean_forward"),
+                    L(0.0),
+                )),
+            ),
+            Eq(P0("primary", "ordinal"), AO(target, "ordinal")),
+        ),
+        "effects": calibration_program_effects(
+            "primary",
+            "factorized_calibration",
+        ),
+    }
+
+
+def complete_calibration_rule():
+    return {
+        "name": "emp_complete_receipt_grounded_effector_calibration",
+        "area": "embodied_motor_program_plasticity",
+        "latency_class": "soft_realtime",
+        "batch": False,
+        "match": [
+            ["agent", "has_embodied_motor_program_policy", "policy"],
+            ["agent", "has_embodied_motor_program_episode", "episode"],
+            ["episode", "has_embodied_motor_program_trial", "trial"],
+            ["trial", "has_embodied_motor_program_outcome", "outcome"],
+        ],
+        "where": And(
+            Eq(A("episode", "program_mode"), L("calibration")),
+            Eq(P0("episode", "action_ready"), L(0.0)),
+            Eq(P0("outcome", "processed"), L(1.0)),
+            Eq(
+                P0("outcome", "request_seq"),
+                P0("episode", "program_request_seq"),
+            ),
+            Eq(
+                P0("episode", "receipt_boundary_seq"),
+                P0("outcome", "request_seq"),
+            ),
+            Eq(Count(calibration_frontier()), L(0.0)),
+        ),
+        "effects": [
+            ["set_attr", "episode", "program_mode", "synthesis"],
+            ["set_attr", "episode", "calibration_complete", 1.0],
+        ],
+    }
+
+
+def complete_specification_prior_initialization_rule():
+    """Enter synthesis when trusted body specifications cover every effector."""
+    return {
+        "name": "emp_complete_specification_grounded_prior_initialization",
+        "area": "embodied_motor_program_plasticity",
+        "latency_class": "soft_realtime",
+        "order": -45,
+        "batch": False,
+        "match": [
+            ["agent", "has_embodied_motor_program_policy", "policy"],
+            ["agent", "has_embodied_motor_program_episode", "episode"],
+        ],
+        "where": And(
+            Eq(A("episode", "program_mode"), L("calibration")),
+            Eq(P0("episode", "action_ready"), L(0.0)),
+            Eq(Count(calibration_frontier()), L(0.0)),
+        ),
+        "effects": [
+            ["set_attr", "episode", "program_mode", "synthesis"],
+            ["set_attr", "episode", "calibration_complete", 1.0],
+        ],
+    }
+
+
+def derive_active_rate_stabilization_targets_rule():
+    """Turn vestibular body rates into a per-request damping objective."""
+    action_duration = P0("episode", "control_action_duration_seconds")
+    damping_fraction = Div(
+        action_duration,
+        P0("episode", "rate_damping_time_constant_seconds"),
+    )
+
+    def attitude_correction(axis):
+        difference = Minus(
+            P0("episode", f"target_{axis}_angle"),
+            P0("episode", f"state_{axis}_angle"),
+        )
+        angular_error = (
+            difference
+            if axis == "pitch"
+            else Atan2(Sin(difference), Cos(difference))
+        )
+        return If(
+            And(
+                Gt(P0("episode", "active_attitude_stabilization"), L(0.5)),
+                Or(
+                    Not(Gt(
+                        P0(
+                            "episode",
+                            "attitude_axis_gating_enabled",
+                        ),
+                        L(0.5),
+                    )),
+                    Gt(
+                        P0(
+                            "episode",
+                            f"active_{axis}_attitude_stabilization",
+                        ),
+                        L(0.5),
+                    ),
+                ),
+                Gt(
+                    P0("episode", "attitude_time_constant_seconds"),
+                    L(0.0),
+                ),
+            ),
+            Times(
+                angular_error,
+                action_duration,
+                Div(
+                    L(1.0),
+                    Times(
+                        P0(
+                            "episode",
+                            "attitude_time_constant_seconds",
+                        ),
+                        P0(
+                            "episode",
+                            "rate_damping_time_constant_seconds",
+                        ),
+                    ),
+                ),
+            ),
+            L(0.0),
+        )
+
+    angle_of_attack_correction = If(
+        And(
+            Gt(
+                P0("episode", "active_angle_of_attack_recovery"),
+                L(0.5),
+            ),
+            Gt(
+                P0("episode", "aerodynamic_departure_active"),
+                L(0.5),
+            ),
+            Gt(
+                P0("episode", "angle_of_attack_time_constant_seconds"),
+                L(0.0),
+            ),
+        ),
+        Times(
+            Minus(
+                P0("episode", "target_recovery_alpha_radians"),
+                P0("episode", "state_angle_of_attack"),
+            ),
+            action_duration,
+            Div(
+                L(1.0),
+                Times(
+                    P0(
+                        "episode",
+                        "angle_of_attack_time_constant_seconds",
+                    ),
+                    P0(
+                        "episode",
+                        "rate_damping_time_constant_seconds",
+                    ),
+                ),
+            ),
+        ),
+        L(0.0),
+    )
+
+    return {
+        "name": "emp_derive_active_rate_stabilization_targets",
+        "area": "embodied_motor_program",
+        "latency_class": "hard_realtime",
+        "order": -50,
+        "batch": False,
+        "match": [
+            ["agent", "has_embodied_motor_program_episode", "episode"],
+        ],
+        "where": And(
+            Gt(P0("episode", "active_rate_stabilization"), L(0.5)),
+            Gt(P0("episode", "control_action_duration_seconds"), L(0.0)),
+            Gt(P0("episode", "rate_damping_time_constant_seconds"), L(0.0)),
+            Gt(
+                P0("episode", "program_request_seq"),
+                P0("episode", "rate_target_request_seq"),
+            ),
+        ),
+        "effects": [
+            ["set_attr", "episode", "target_roll", T(Plus(
+                Times(
+                    L(-1.0),
+                    P0("episode", "state_body_wx"),
+                    damping_fraction,
+                ),
+                attitude_correction("roll"),
+            ))],
+            ["set_attr", "episode", "target_pitch", T(Plus(
+                Times(
+                    L(-1.0),
+                    P0("episode", "state_body_wy"),
+                    damping_fraction,
+                ),
+                attitude_correction("pitch"),
+                angle_of_attack_correction,
+            ))],
+            ["set_attr", "episode", "target_turn", T(Plus(
+                Times(
+                    L(-1.0),
+                    P0("episode", "state_body_wz"),
+                    damping_fraction,
+                ),
+                attitude_correction("yaw"),
+            ))],
+            ["set_attr", "episode", "rate_target_request_seq", T(
+                P0("episode", "program_request_seq")
+            )],
+        ],
+    }
+
+
+def derive_flight_path_control_targets_rule():
+    """Map altitude, heading and true-airspeed references into motor goals.
+
+    This is the graph-resident outer loop used by the F-16 paper replication.
+    The world adapter supplies only measured state and externally scheduled
+    references.  The graph derives bank/pitch targets and four-axis consequence
+    requests before the existing rate-stabilisation and motor-collapse rules
+    run.
+    """
+    action_duration = P0("episode", "control_action_duration_seconds")
+    altitude_error = Minus(
+        P0("episode", "reference_altitude_m"),
+        P0("episode", "state_altitude_m"),
+    )
+    heading_difference = Minus(
+        P0("episode", "reference_heading_rad"),
+        P0("episode", "state_yaw_angle"),
+    )
+    heading_error = Atan2(Sin(heading_difference), Cos(heading_difference))
+    airspeed_error = Minus(
+        P0("episode", "reference_true_airspeed_m_s"),
+        P0("episode", "state_true_airspeed_m_s"),
+    )
+    desired_vertical_speed = Clamp(
+        Div(altitude_error, P0("episode", "altitude_time_constant_seconds")),
+        Times(L(-1.0), P0("episode", "maximum_vertical_speed_m_s")),
+        P0("episode", "maximum_vertical_speed_m_s"),
+    )
+    vertical_speed_error = Minus(
+        desired_vertical_speed,
+        P0("episode", "state_vz"),
+    )
+    desired_flight_path_angle = Clamp(
+        Atan2(
+            vertical_speed_error,
+            Max(Abs(P0("episode", "state_true_airspeed_m_s")), L(1.0)),
+        ),
+        Times(L(-1.0), P0("episode", "maximum_flight_path_angle_rad")),
+        P0("episode", "maximum_flight_path_angle_rad"),
+    )
+    desired_heading_rate = Clamp(
+        Div(heading_error, P0("episode", "heading_time_constant_seconds")),
+        Times(L(-1.0), P0("episode", "maximum_heading_rate_rad_s")),
+        P0("episode", "maximum_heading_rate_rad_s"),
+    )
+    desired_bank_angle = Clamp(
+        Atan2(
+            Times(
+                P0("episode", "state_true_airspeed_m_s"),
+                desired_heading_rate,
+            ),
+            P0("episode", "gravity_m_s2"),
+        ),
+        Times(L(-1.0), P0("episode", "maximum_bank_angle_rad")),
+        P0("episode", "maximum_bank_angle_rad"),
+    )
+    desired_pitch_angle = Clamp(
+        Plus(
+            desired_flight_path_angle,
+            P0("episode", "state_angle_of_attack"),
+        ),
+        Times(L(-1.0), P0("episode", "maximum_pitch_angle_rad")),
+        P0("episode", "maximum_pitch_angle_rad"),
+    )
+    forward_delta = Clamp(
+        Times(
+            airspeed_error,
+            Div(
+                action_duration,
+                P0("episode", "airspeed_time_constant_seconds"),
+            ),
+        ),
+        Times(L(-1.0), P0("episode", "maximum_forward_delta_m_s")),
+        P0("episode", "maximum_forward_delta_m_s"),
+    )
+    lateral_delta = Times(
+        L(-1.0),
+        P0("episode", "state_body_vy"),
+        Div(
+            action_duration,
+            P0("episode", "sideslip_time_constant_seconds"),
+        ),
+    )
+    return {
+        "name": "emp_derive_flight_path_control_targets",
+        "area": "embodied_motor_program",
+        "latency_class": "hard_realtime",
+        "order": -60,
+        "batch": False,
+        "match": [
+            ["agent", "has_embodied_motor_program_episode", "episode"],
+        ],
+        "where": And(
+            Gt(P0("episode", "active_flight_path_control"), L(0.5)),
+            Gt(P0("episode", "control_action_duration_seconds"), L(0.0)),
+            Gt(P0("episode", "altitude_time_constant_seconds"), L(0.0)),
+            Gt(P0("episode", "heading_time_constant_seconds"), L(0.0)),
+            Gt(P0("episode", "airspeed_time_constant_seconds"), L(0.0)),
+            Gt(P0("episode", "sideslip_time_constant_seconds"), L(0.0)),
+            Gt(
+                P0("episode", "program_request_seq"),
+                P0("episode", "flight_path_target_request_seq"),
+            ),
+        ),
+        "effects": [
+            ["set_attr", "episode", "target_roll_angle", T(
+                desired_bank_angle
+            )],
+            ["set_attr", "episode", "target_pitch_angle", T(
+                desired_pitch_angle
+            )],
+            ["set_attr", "episode", "target_yaw_angle", T(
+                P0("episode", "reference_heading_rad")
+            )],
+            ["set_attr", "episode", "target_forward", T(forward_delta)],
+            ["set_attr", "episode", "target_lateral", T(lateral_delta)],
+            ["set_attr", "episode", "target_vertical", 0.0],
+            ["set_attr", "episode", "target_normal_load", 0.0],
+            ["set_attr", "episode", "flight_path_altitude_error_m", T(
+                altitude_error
+            )],
+            ["set_attr", "episode", "flight_path_heading_error_rad", T(
+                heading_error
+            )],
+            ["set_attr", "episode", "flight_path_airspeed_error_m_s", T(
+                airspeed_error
+            )],
+            ["set_attr", "episode", "flight_path_target_request_seq", T(
+                P0("episode", "program_request_seq")
+            )],
+        ],
+    }
+
+
+def gate_distal_goals_during_aerodynamic_departure_rule():
+    currently_active = Gt(
+        P0("episode", "aerodynamic_departure_active"),
+        L(0.5),
+    )
+    entry_condition = Or(
+        Gt(
+            Abs(P0("episode", "state_angle_of_attack")),
+            P0("episode", "departure_entry_alpha_radians"),
+        ),
+        Gt(
+            Abs(P0("episode", "state_body_wz")),
+            P0("episode", "departure_entry_yaw_rate_rad_s"),
+        ),
+    )
+    remain_condition = Or(
+        Gt(
+            Abs(P0("episode", "state_angle_of_attack")),
+            P0("episode", "departure_exit_alpha_radians"),
+        ),
+        Gt(
+            Abs(P0("episode", "state_body_wz")),
+            P0("episode", "departure_exit_yaw_rate_rad_s"),
+        ),
+    )
+    next_active = If(
+        currently_active,
+        If(remain_condition, L(1.0), L(0.0)),
+        If(entry_condition, L(1.0), L(0.0)),
+    )
+    distal_goal_enabled = Minus(L(1.0), next_active)
+    return {
+        "name": "emp_gate_distal_goals_during_aerodynamic_departure",
+        "area": "embodied_motor_program",
+        "latency_class": "hard_realtime",
+        "order": -55,
+        "batch": False,
+        "match": [
+            ["agent", "has_embodied_motor_program_episode", "episode"],
+        ],
+        "where": And(
+            Gt(
+                P0("episode", "aerodynamic_departure_gating_enabled"),
+                L(0.5),
+            ),
+            Gt(
+                P0("episode", "program_request_seq"),
+                P0("episode", "departure_gate_request_seq"),
+            ),
+        ),
+        "effects": [
+            ["set_attr", "episode", "aerodynamic_departure_active", T(
+                next_active
+            )],
+            ["set_attr", "episode", "active_roll_attitude_stabilization", T(
+                distal_goal_enabled
+            )],
+            ["set_attr", "episode", "active_yaw_attitude_stabilization", T(
+                distal_goal_enabled
+            )],
+            ["set_attr", "episode", "active_pitch_attitude_stabilization", 1.0],
+            ["set_attr", "episode", "departure_gate_request_seq", T(
+                P0("episode", "program_request_seq")
+            )],
+        ],
+    }
+
+
+def reuse_internalized_program_rule():
+    return {
+        "name": "emp_release_internalized_program_default",
+        "area": "embodied_motor_program",
+        "latency_class": "hard_realtime",
+        "batch": False,
+        "match": [
+            ["agent", "has_embodied_motor_program_policy", "policy"],
+            ["agent", "has_embodied_motor_program_episode", "episode"],
+            [
+                "episode",
+                "has_default_embodied_motor_program",
+                "program",
+            ],
+        ],
+        "where": And(
+            Eq(A("episode", "program_mode"), L("synthesis")),
+            Eq(P0("episode", "action_ready"), L(0.0)),
+            Gt(
+                P0("episode", "program_request_seq"),
+                P0("episode", "program_decision_seq"),
+            ),
+            Lt(
+                P0("episode", "default_program_reuse_count"),
+                P0("policy", "maximum_default_program_reuse_cycles"),
+            ),
+            Gt(P0("program", "experience_count"), L(0.0)),
+            structural_program_admissible("program"),
+        ),
+        "effects": [
+            ["set_attr", "program", "request_seq", T(
+                P0("episode", "program_request_seq")
+            )],
+            ["set_attr", "program", "available", 1.0],
+            [
+                "del_edge",
+                "episode",
+                "has_archived_embodied_motor_program",
+                "program",
+            ],
+            [
+                "add_edge",
+                "episode",
+                "has_embodied_motor_program",
+                "program",
+            ],
+            [
+                "add_edge",
+                "episode",
+                "has_motor_decision_option",
+                "program",
+            ],
+            ["set_attr", "episode", "program_decision_seq", T(
+                P0("episode", "program_request_seq")
+            )],
+            ["set_attr", "episode", "decision_request_epoch", T(
+                P0("episode", "program_request_seq")
+            )],
+            ["set_attr", "episode", "decision_armed", 1.0],
+            ["set_attr", "episode", "default_program_reuse_count", T(
+                Plus(P0("episode", "default_program_reuse_count"), L(1.0))
+            )],
+        ],
+    }
+
+
+def async_synthesis_enabled():
+    """Opt-in flag for asynchronous System-2 publication (item 2 of the
+    F-16 improvement order): System 1 serves the action at rate from the
+    trusted default while System 2 builds across requests and publishes a
+    replacement by atomic default swap."""
+    return Gt(P0("policy", "asynchronous_synthesis_enabled"), L(0.5))
+
+
+def async_release_trusted_default_rule():
+    """System 1 at rate: re-arm the trusted default regardless of reuse caps.
+
+    Trust is epoch-gated (async_trust_epoch, consumer-set): a default
+    internalized before a declared plant change (e.g. the F-16 fault onset)
+    is NOT trusted, so the first post-change build still runs synchronously.
+    Ordered before the synchronous open rule so a trusted default preempts a
+    blocking build.  Inactive whenever the render-first proposer is active —
+    a 27 ms fresh-target render beats serving a stale program.
+    """
+    return {
+        "name": "emp_async_release_trusted_default",
+        "area": "embodied_motor_program",
+        "latency_class": "hard_realtime",
+        "order": -5,
+        "batch": False,
+        "match": [
+            ["agent", "has_embodied_motor_program_policy", "policy"],
+            ["agent", "has_embodied_motor_program_episode", "episode"],
+            [
+                "episode",
+                "has_default_embodied_motor_program",
+                "program",
+            ],
+        ],
+        "where": And(
+            async_synthesis_enabled(),
+            Not(render_first_enabled()),
+            Eq(A("episode", "program_mode"), L("synthesis")),
+            Eq(P0("episode", "action_ready"), L(0.0)),
+            Gt(
+                P0("episode", "program_request_seq"),
+                P0("episode", "program_decision_seq"),
+            ),
+            # Receipt-verified, OR freshly published by the async close —
+            # an async-published program is served unverified exactly the
+            # way a synchronously built one is trialed unverified.
+            Or(
+                Gt(P0("program", "experience_count"), L(0.0)),
+                Gt(P0("program", "async_published"), L(0.5)),
+            ),
+            Not(Lt(
+                P0("program", "internalized_epoch"),
+                P0("episode", "async_trust_epoch"),
+            )),
+            structural_program_admissible("program"),
+        ),
+        "effects": [
+            ["set_attr", "program", "request_seq", T(
+                P0("episode", "program_request_seq")
+            )],
+            ["set_attr", "program", "available", 1.0],
+            [
+                "del_edge",
+                "episode",
+                "has_archived_embodied_motor_program",
+                "program",
+            ],
+            [
+                "add_edge",
+                "episode",
+                "has_embodied_motor_program",
+                "program",
+            ],
+            [
+                "add_edge",
+                "episode",
+                "has_motor_decision_option",
+                "program",
+            ],
+            ["set_attr", "episode", "program_decision_seq", T(
+                P0("episode", "program_request_seq")
+            )],
+            ["set_attr", "episode", "decision_request_epoch", T(
+                P0("episode", "program_request_seq")
+            )],
+            ["set_attr", "episode", "decision_armed", 1.0],
+            ["set_attr", "episode", "default_program_reuse_count", T(
+                Plus(P0("episode", "default_program_reuse_count"), L(1.0))
+            )],
+        ],
+    }
+
+
+def async_close_background_plan_rule():
+    """Atomic publication: a background build that completes becomes the new
+    default (superseding the old one) without arming a decision — the action
+    for this request was already served by System 1.  The program earns
+    receipts the first time the release rule serves it; internalized_epoch
+    is stamped now so the trust gate and the internalize rule both see it.
+    """
+    available = available_models()
+    return {
+        "name": "emp_async_close_background_plan",
+        "area": "embodied_motor_program",
+        "latency_class": "hard_realtime",
+        "order": 3,
+        "batch": False,
+        "match": [
+            ["agent", "has_embodied_motor_program_policy", "policy"],
+            ["agent", "has_embodied_motor_program_episode", "episode"],
+            ["episode", "has_active_embodied_motor_program", "plan"],
+            ["episode", "resumes_embodied_motor_program", "plan"],
+        ],
+        "where": And(
+            async_synthesis_enabled(),
+            Eq(A("plan", "status"), L("building")),
+            Eq(P0("plan", "synthesis_yield_required"), L(0.0)),
+            # The action was already served this request; publish quietly.
+            Eq(
+                P0("episode", "program_decision_seq"),
+                P0("episode", "program_request_seq"),
+            ),
+            Not(Exists(
+                available,
+                "candidate",
+                Lt(
+                    Plus(
+                        program_cost("plan", "candidate"),
+                        P0("policy", "minimum_composition_improvement"),
+                    ),
+                    program_cost("plan"),
+                ),
+            )),
+        ),
+        "effects": [
+            ["set_attr", "plan", "status", "ready"],
+            ["set_attr", "plan", "available", 0.0],
+            ["set_attr", "plan", "async_published", 1.0],
+            ["set_attr", "plan", "grounded_value", T(
+                Minus(L(0.0), program_cost("plan"))
+            )],
+            ["set_attr", "plan", "default_value", T(
+                Minus(L(0.0), program_cost("plan"))
+            )],
+            ["set_attr", "plan", "learned_value", T(
+                Minus(L(0.0), program_cost("plan"))
+            )],
+            ["set_attr", "plan", "internalized_epoch", T(
+                P0("episode", "program_request_seq")
+            )],
+            [
+                "del_edge",
+                "episode",
+                "has_active_embodied_motor_program",
+                "plan",
+            ],
+            [
+                "del_edge",
+                "episode",
+                "resumes_embodied_motor_program",
+                "plan",
+            ],
+            [
+                "add_edge",
+                "episode",
+                "has_default_embodied_motor_program",
+                "plan",
+            ],
+            ["set_attr", "episode", "default_program_reuse_count", 0.0],
+        ],
+    }
+
+
+def internalize_synthesized_program_rule():
+    return {
+        "name": "emp_internalize_receipt_grounded_program_default",
+        "area": "embodied_motor_program_plasticity",
+        "latency_class": "soft_realtime",
+        "batch": False,
+        "match": [
+            ["episode", "has_embodied_motor_program_trial", "trial"],
+            ["trial", "enacts_embodied_motor_program", "program"],
+            ["trial", "has_embodied_motor_program_outcome", "outcome"],
+        ],
+        "where": And(
+            Eq(A("program", "source"), L("analysis_by_synthesis")),
+            Eq(A("trial", "status"), L("learned")),
+            Lt(P0("program", "internalized_epoch"), L(0.0)),
+            Eq(
+                P0("program", "last_learning_seq"),
+                P0("outcome", "request_seq"),
+            ),
+        ),
+        "effects": [
+            ["set_attr", "program", "internalized_epoch", T(
+                P0("outcome", "request_seq")
+            )],
+            [
+                "add_edge",
+                "episode",
+                "has_default_embodied_motor_program",
+                "program",
+            ],
+            ["set_attr", "episode", "default_program_reuse_count", 0.0],
+        ],
+    }
+
+
+def retire_superseded_program_default_rule():
+    return {
+        "name": "emp_retire_superseded_program_default",
+        "area": "embodied_motor_program_plasticity",
+        "latency_class": "soft_realtime",
+        "batch": True,
+        "match": [
+            [
+                "episode",
+                "has_default_embodied_motor_program",
+                "old",
+            ],
+            [
+                "episode",
+                "has_default_embodied_motor_program",
+                "fresh",
+            ],
+        ],
+        "where": And(
+            Not(Eq(V("old"), V("fresh"))),
+            Lt(
+                P0("old", "internalized_epoch"),
+                P0("fresh", "internalized_epoch"),
+            ),
+        ),
+        "effects": [[
+            "del_edge",
+            "episode",
+            "has_default_embodied_motor_program",
+            "old",
+        ]],
+    }
+
+
+def native_composition_enabled():
+    """Opt-in flag for the native MotorCompose search (absent -> term-tree).
+
+    The Rust term (runners/dsl/src/motor_compose.rs) IS the search
+    composer's selection — same open/expand/close semantics, precomputed
+    prediction matrix, native arithmetic — so unlike render-first it is
+    full search fidelity and needs no regime suspension.
+    """
+    return Gt(P0("policy", "native_composition_enabled"), L(0.5))
+
+
+def motor_compose_member(episode="episode", policy="policy",
+                         candidate="candidate"):
+    """The native membership term: 1 iff candidate is in the composed
+    program for (episode, policy)."""
+    return {
+        "type": "MotorCompose",
+        "episode": V(episode),
+        "policy": V(policy),
+        "candidate": V(candidate),
+    }
+
+
+def render_first_enabled():
+    """Opt-in flag for the render-first System-2 path (absent -> search).
+
+    A consumer regime can SUSPEND rendering per episode
+    (render_first_suspended attr): render proposes only while its linear
+    model of the plant is trusted; a fault/escalated regime falls back to
+    the search composer, whose plan-aware costs handle cross-group
+    coupling (measured: render-composed programs under the rudder-jam
+    regime lost the v4 altitude margin — min altitude 2,025 ft -> 4 ft).
+    """
+    return And(
+        Gt(P0("policy", "render_first_composition_enabled"), L(0.5)),
+        Not(Gt(P0("episode", "render_first_suspended"), L(0.5))),
+    )
+
+
+def open_synthesized_program_rule():
+    eligible = Filter(
+        MODELS,
+        "candidate",
+        And(
+            Gt(P0("candidate", "experience_count"), L(0.5)),
+            Gt(P0("candidate", "available"), L(0.5)),
+            # A never-commanded contributor is not ELIGIBLE to be selected.
+            # This has to be inside the candidate set, not appended to the
+            # rule's `where`: selection is an Argmin, so a rule requires its
+            # bound model to BE the argmin -- and rejecting the winner
+            # afterwards matches nothing at all rather than falling through to
+            # the next-best.  Measured: guarding after the fact stalled
+            # synthesis with no active plan at request 691.
+            Not(Gt(P0("candidate", "never_commanded"), L(0.5))),
+            structural_model_admissible("candidate"),
+        ),
+    )
+    best = Argmin(
+        eligible,
+        "candidate",
+        singleton_cost("candidate"),
+        V("episode"),
+    )
+    return {
+        "name": "emp_abs_open_embodied_motor_program",
+        "area": "embodied_motor_program",
+        "latency_class": "hard_realtime",
+        "match": [
+            ["agent", "has_embodied_motor_program_policy", "policy"],
+            ["agent", "has_embodied_motor_program_episode", "episode"],
+            ["episode", "has_embodied_effector_model", "primary"],
+        ],
+        "where": And(
+            Not(render_first_enabled()),
+            Not(native_composition_enabled()),
+            Eq(A("episode", "program_mode"), L("synthesis")),
+            # One plan in flight at a time (a no-op for the synchronous path,
+            # load-bearing for asynchronous background builds).
+            Not(Gt(
+                Count(Neighbours(
+                    "episode", "has_active_embodied_motor_program"
+                )),
+                L(0.0),
+            )),
+            Or(
+                # Synchronous: this request still needs a program.
+                And(
+                    Eq(P0("episode", "action_ready"), L(0.0)),
+                    Gt(
+                        P0("episode", "program_request_seq"),
+                        P0("episode", "program_decision_seq"),
+                    ),
+                ),
+                # Asynchronous background: the action was already served by
+                # the trusted default; start (at most) one build per request.
+                And(
+                    async_synthesis_enabled(),
+                    Eq(
+                        P0("episode", "program_decision_seq"),
+                        P0("episode", "program_request_seq"),
+                    ),
+                    Gt(
+                        P0("episode", "program_request_seq"),
+                        P0("episode", "synthesis_open_seq"),
+                    ),
+                ),
+            ),
+            Gt(Count(eligible), L(0.0)),
+            Eq(P0("primary", "ordinal"), AO(best, "ordinal")),
+        ),
+        "effects": [
+            ["add_node", "program", "EmbodiedMotorProgram", {
+                "request_seq": T(P0("episode", "program_request_seq")),
+                "ordinal": T(P0("episode", "program_request_seq")),
+                "token": T(A("primary", "token")),
+                "status": "building",
+                "source": "analysis_by_synthesis",
+                "member_count": 1.0,
+                "synthesis_yield_required": 0.0,
+                "available": 0.0,
+                "grounded_value": 0.0,
+                "default_value": 0.0,
+                "learned_value": 0.0,
+                "decision_experience_count": 0.0,
+                "internalized_epoch": -1.0,
+                "experience_count": 0.0,
+                **{f"mean_{key}": 0.0 for key in ALL_CONSEQUENCES},
+                **{f"flow_gain_{key}": 0.0 for key in ALL_CONSEQUENCES},
+                "mean_flow_speed_squared": 0.0,
+                **{f"mean_{feature}": 0.0 for feature in FLOW_FEATURES},
+                "last_learning_seq": 0.0,
+            }],
+            [
+                "add_edge",
+                "episode",
+                "has_embodied_motor_program",
+                "program",
+            ],
+            [
+                "add_edge",
+                "episode",
+                "has_active_embodied_motor_program",
+                "program",
+            ],
+            [
+                "add_edge",
+                "episode",
+                "resumes_embodied_motor_program",
+                "program",
+            ],
+            [
+                "add_edge",
+                "program",
+                "includes_embodied_effector_model",
+                "primary",
+            ],
+            ["set_attr", "episode", "program_decision_seq", T(
+                P0("episode", "program_request_seq")
+            )],
+            ["set_attr", "episode", "synthesis_open_seq", T(
+                P0("episode", "program_request_seq")
+            )],
+        ],
+    }
+
+
+def expand_program_rule():
+    available = available_models()
+    best = Argmin(
+        available,
+        "candidate",
+        program_cost("plan", "candidate"),
+        V("plan"),
+    )
+    return {
+        "name": "emp_abs_expand_embodied_motor_program",
+        "area": "embodied_motor_program",
+        "latency_class": "hard_realtime",
+        "batch": False,
+        "match": [
+            ["agent", "has_embodied_motor_program_policy", "policy"],
+            ["agent", "has_embodied_motor_program_episode", "episode"],
+            ["episode", "has_active_embodied_motor_program", "plan"],
+            ["episode", "resumes_embodied_motor_program", "plan"],
+            ["episode", "has_embodied_effector_model", "candidate"],
+        ],
+        "where": And(
+            Not(Gt(
+                P0("policy", "parallel_factorized_composition_enabled"),
+                L(0.5),
+            )),
+            Eq(A("plan", "status"), L("building")),
+            Eq(P0("plan", "synthesis_yield_required"), L(0.0)),
+            Or(
+                Not(Gt(P0("episode", "maximum_program_width"), L(0.0))),
+                Lt(
+                    P0("plan", "member_count"),
+                    P0("episode", "maximum_program_width"),
+                ),
+            ),
+            Eq(P0("candidate", "ordinal"), AO(best, "ordinal")),
+            Lt(
+                Plus(
+                    program_cost("plan", "candidate"),
+                    P0("policy", "minimum_composition_improvement"),
+                ),
+                program_cost("plan"),
+            ),
+        ),
+        "effects": [
+            ["set_attr", "plan", "synthesis_yield_required", 1.0],
+            [
+                "del_edge",
+                "episode",
+                "resumes_embodied_motor_program",
+                "plan",
+            ],
+            [
+                "add_edge",
+                "plan",
+                "includes_embodied_effector_model",
+                "candidate",
+            ],
+            ["set_attr", "plan", "member_count", T(
+                Plus(P0("plan", "member_count"), L(1.0))
+            )],
+        ],
+    }
+
+
+def expand_factorized_groups_in_parallel_rule():
+    """Add each independently useful actuator-group member in one graph pass."""
+    available = available_models()
+    same_group = Filter(
+        available,
+        "peer",
+        Eq(
+            P0("peer", "actuator_group"),
+            P0("candidate", "actuator_group"),
+        ),
+    )
+    best_in_group = Argmin(
+        same_group,
+        "peer",
+        program_cost("plan", "peer"),
+        V("plan"),
+    )
+    return {
+        "name": "emp_abs_expand_factorized_groups_in_parallel",
+        "area": "embodied_motor_program",
+        "latency_class": "hard_realtime",
+        "order": 1,
+        "batch": True,
+        "match": [
+            ["agent", "has_embodied_motor_program_policy", "policy"],
+            ["agent", "has_embodied_motor_program_episode", "episode"],
+            ["episode", "has_active_embodied_motor_program", "plan"],
+            ["episode", "resumes_embodied_motor_program", "plan"],
+            ["episode", "has_embodied_effector_model", "candidate"],
+        ],
+        "where": And(
+            Gt(
+                P0("policy", "parallel_factorized_composition_enabled"),
+                L(0.5),
+            ),
+            Eq(A("plan", "status"), L("building")),
+            Eq(P0("plan", "synthesis_yield_required"), L(0.0)),
+            Gt(Count(same_group), L(0.0)),
+            Eq(P0("candidate", "ordinal"), AO(best_in_group, "ordinal")),
+            Lt(
+                Plus(
+                    program_cost("plan", "candidate"),
+                    P0("policy", "minimum_composition_improvement"),
+                ),
+                program_cost("plan"),
+            ),
+        ),
+        "effects": [
+            ["set_attr", "plan", "synthesis_yield_required", 1.0],
+            [
+                "del_edge",
+                "episode",
+                "resumes_embodied_motor_program",
+                "plan",
+            ],
+            [
+                "add_edge",
+                "plan",
+                "includes_embodied_effector_model",
+                "candidate",
+            ],
+        ],
+    }
+
+
+def reconcile_program_width_rule():
+    actual_width = Count(members("plan"))
+    return {
+        "name": "emp_reconcile_materialized_program_width",
+        "area": "embodied_motor_program",
+        "latency_class": "hard_realtime",
+        "order": 2,
+        "batch": False,
+        "match": [
+            ["episode", "has_active_embodied_motor_program", "plan"],
+        ],
+        "where": Not(Eq(P0("plan", "member_count"), actual_width)),
+        "effects": [[
+            "set_attr",
+            "plan",
+            "member_count",
+            T(actual_width),
+        ]],
+    }
+
+
+def resume_program_rule():
+    return {
+        "name": "emp_resume_yielded_embodied_motor_program",
+        "area": "embodied_motor_program",
+        "latency_class": "hard_realtime",
+        "match": [
+            ["episode", "has_active_embodied_motor_program", "plan"],
+            ["episode", "resumes_embodied_motor_program", "plan"],
+        ],
+        "where": And(
+            Eq(A("plan", "status"), L("building")),
+            Eq(P0("plan", "synthesis_yield_required"), L(1.0)),
+        ),
+        "effects": [[
+            "set_attr",
+            "plan",
+            "synthesis_yield_required",
+            0.0,
+        ]],
+    }
+
+
+def close_program_rule():
+    available = available_models()
+    return {
+        "name": "emp_abs_close_embodied_motor_program",
+        "area": "embodied_motor_program",
+        "latency_class": "hard_realtime",
+        "batch": False,
+        "match": [
+            ["agent", "has_embodied_motor_program_policy", "policy"],
+            ["agent", "has_embodied_motor_program_episode", "episode"],
+            ["episode", "has_active_embodied_motor_program", "plan"],
+            ["episode", "resumes_embodied_motor_program", "plan"],
+        ],
+        "where": And(
+            Eq(A("plan", "status"), L("building")),
+            Eq(P0("plan", "synthesis_yield_required"), L(0.0)),
+            # Under asynchronous synthesis, a build completing after the
+            # action was served publishes via the async close rule instead
+            # of arming a (already-consumed) decision.
+            Or(
+                Not(async_synthesis_enabled()),
+                Gt(
+                    P0("episode", "program_request_seq"),
+                    P0("episode", "program_decision_seq"),
+                ),
+            ),
+            Not(Exists(
+                available,
+                "candidate",
+                Lt(
+                    Plus(
+                        program_cost("plan", "candidate"),
+                        P0("policy", "minimum_composition_improvement"),
+                    ),
+                    program_cost("plan"),
+                ),
+            )),
+        ),
+        "effects": [
+            ["set_attr", "plan", "status", "ready"],
+            ["set_attr", "plan", "available", 1.0],
+            # A build that spanned requests (async background) arms with the
+            # CURRENT request stamped, else the same-tick option retirement
+            # deletes it and leaves an armed decision with no options
+            # (measured deadlock at request 177 of the jam probe).  A no-op
+            # for single-request synchronous builds.
+            ["set_attr", "plan", "request_seq", T(
+                P0("episode", "program_request_seq")
+            )],
+            ["set_attr", "plan", "default_value", T(
+                Minus(L(0.0), program_cost("plan"))
+            )],
+            ["set_attr", "plan", "learned_value", T(
+                Minus(L(0.0), program_cost("plan"))
+            )],
+            [
+                "del_edge",
+                "episode",
+                "has_active_embodied_motor_program",
+                "plan",
+            ],
+            [
+                "del_edge",
+                "episode",
+                "resumes_embodied_motor_program",
+                "plan",
+            ],
+            [
+                "add_edge",
+                "episode",
+                "has_motor_decision_option",
+                "plan",
+            ],
+            ["set_attr", "episode", "decision_request_epoch", T(
+                P0("episode", "program_request_seq")
+            )],
+            ["set_attr", "episode", "decision_armed", 1.0],
+        ],
+    }
+
+
+def native_mark_composition_choice_rule():
+    """Native System 2: mark every member of the natively composed program.
+
+    One MotorCompose evaluation per (episode, candidate) binding — each is
+    a full native composition (~us) — feeding the same mark -> open ->
+    attach -> close assembly pipeline the render path built.
+    """
+    return {
+        "name": "emp_native_mark_composition_choice",
+        "area": "embodied_motor_program",
+        "latency_class": "hard_realtime",
+        "order": -4,
+        "batch": True,
+        "match": [
+            ["agent", "has_embodied_motor_program_policy", "policy"],
+            ["agent", "has_embodied_motor_program_episode", "episode"],
+            ["episode", "has_embodied_effector_model", "candidate"],
+        ],
+        "where": And(
+            native_composition_enabled(),
+            Eq(A("episode", "program_mode"), L("synthesis")),
+            Eq(P0("episode", "action_ready"), L(0.0)),
+            Gt(
+                P0("episode", "program_request_seq"),
+                P0("episode", "program_decision_seq"),
+            ),
+            Eq(motor_compose_member(), L(1)),
+            Not(Eq(
+                P0("candidate", "render_choice_seq"),
+                P0("episode", "program_request_seq"),
+            )),
+        ),
+        "effects": [
+            ["set_attr", "candidate", "render_choice_seq", T(
+                P0("episode", "program_request_seq")
+            )],
+        ],
+    }
+
+
+def render_mark_group_choice_rule():
+    """Render-first System 2, step 1: per-group choice by LOCAL cost.
+
+    The search path's latency is quadratic in the candidate alphabet: every
+    (episode, candidate) binding re-evaluates a global Argmin whose
+    program_cost is itself O(models) via baseline_prediction (measured:
+    System-2 p99 294/82/44 ms at 8/4/2 quantization intervals).  The arc5
+    exact-first move at the motor grain is to PROPOSE the program from the
+    held linear effector models instead of searching compositions: each
+    actuator group independently selects the command level whose own
+    receipt-learned consequence best matches the target (singleton_cost is
+    O(1) — no baseline sum), and the program is assembled in one fixpoint
+    pass.  Selection semantics match the factorized-parallel expansion's
+    one-shot greedy (cross-group coupling ignored by both); behaviour is
+    gated by the fixed-wing benches, the nominal run and the jam probe, not
+    assumed.
+    """
+    same_group = Filter(
+        MODELS,
+        "peer",
+        And(
+            Gt(P0("peer", "experience_count"), L(0.5)),
+            Gt(P0("peer", "available"), L(0.5)),
+            structural_model_admissible("peer"),
+            Eq(
+                P0("peer", "actuator_group"),
+                P0("candidate", "actuator_group"),
+            ),
+        ),
+    )
+    best_in_group = Argmin(
+        same_group,
+        "peer",
+        singleton_cost("peer"),
+        V("episode"),
+    )
+    return {
+        "name": "emp_render_mark_factorized_group_choice",
+        "area": "embodied_motor_program",
+        "latency_class": "hard_realtime",
+        "order": -3,
+        "batch": True,
+        "match": [
+            ["agent", "has_embodied_motor_program_policy", "policy"],
+            ["agent", "has_embodied_motor_program_episode", "episode"],
+            ["episode", "has_embodied_effector_model", "candidate"],
+        ],
+        "where": And(
+            render_first_enabled(),
+            Not(native_composition_enabled()),
+            Eq(A("episode", "program_mode"), L("synthesis")),
+            Eq(P0("episode", "action_ready"), L(0.0)),
+            Gt(
+                P0("episode", "program_request_seq"),
+                P0("episode", "program_decision_seq"),
+            ),
+            Gt(P0("candidate", "experience_count"), L(0.5)),
+            Gt(P0("candidate", "available"), L(0.5)),
+            # A never-commanded contributor is not ELIGIBLE to be selected.
+            # This has to be inside the candidate set, not appended to the
+            # rule's `where`: selection is an Argmin, so a rule requires its
+            # bound model to BE the argmin -- and rejecting the winner
+            # afterwards matches nothing at all rather than falling through to
+            # the next-best.  Measured: guarding after the fact stalled
+            # synthesis with no active plan at request 691.
+            Not(Gt(P0("candidate", "never_commanded"), L(0.5))),
+            structural_model_admissible("candidate"),
+            Eq(P0("candidate", "ordinal"), AO(best_in_group, "ordinal")),
+            Not(Eq(
+                P0("candidate", "render_choice_seq"),
+                P0("episode", "program_request_seq"),
+            )),
+        ),
+        "effects": [
+            ["set_attr", "candidate", "render_choice_seq", T(
+                P0("episode", "program_request_seq")
+            )],
+        ],
+    }
+
+
+def render_open_program_rule():
+    """Render-first step 2: open the composite once any group has chosen."""
+    marked = Filter(
+        MODELS,
+        "chosen",
+        Eq(
+            P0("chosen", "render_choice_seq"),
+            P0("episode", "program_request_seq"),
+        ),
+    )
+    return {
+        "name": "emp_render_open_embodied_motor_program",
+        "area": "embodied_motor_program",
+        "latency_class": "hard_realtime",
+        "order": -2,
+        "batch": False,
+        "match": [
+            ["agent", "has_embodied_motor_program_policy", "policy"],
+            ["agent", "has_embodied_motor_program_episode", "episode"],
+        ],
+        "where": And(
+            Or(render_first_enabled(), native_composition_enabled()),
+            Eq(A("episode", "program_mode"), L("synthesis")),
+            Eq(P0("episode", "action_ready"), L(0.0)),
+            Gt(
+                P0("episode", "program_request_seq"),
+                P0("episode", "program_decision_seq"),
+            ),
+            Gt(Count(marked), L(0.0)),
+        ),
+        "effects": [
+            ["add_node", "program", "EmbodiedMotorProgram", {
+                "request_seq": T(P0("episode", "program_request_seq")),
+                "ordinal": T(P0("episode", "program_request_seq")),
+                "token": "render_composite",
+                "status": "render_building",
+                "source": "analysis_by_synthesis",
+                "render_first": 1.0,
+                "member_count": 0.0,
+                "synthesis_yield_required": 0.0,
+                "available": 0.0,
+                "grounded_value": 0.0,
+                "default_value": 0.0,
+                "learned_value": 0.0,
+                "decision_experience_count": 0.0,
+                "internalized_epoch": -1.0,
+                "experience_count": 0.0,
+                **{f"mean_{key}": 0.0 for key in ALL_CONSEQUENCES},
+                **{f"flow_gain_{key}": 0.0 for key in ALL_CONSEQUENCES},
+                "mean_flow_speed_squared": 0.0,
+                **{f"mean_{feature}": 0.0 for feature in FLOW_FEATURES},
+                "last_learning_seq": 0.0,
+            }],
+            [
+                "add_edge",
+                "episode",
+                "has_embodied_motor_program",
+                "program",
+            ],
+            ["set_attr", "episode", "program_decision_seq", T(
+                P0("episode", "program_request_seq")
+            )],
+        ],
+    }
+
+
+def render_attach_member_rule():
+    """Render-first step 3: attach every chosen model to the open composite."""
+    return {
+        "name": "emp_render_attach_chosen_members",
+        "area": "embodied_motor_program",
+        "latency_class": "hard_realtime",
+        "order": -1,
+        "batch": True,
+        "match": [
+            ["agent", "has_embodied_motor_program_episode", "episode"],
+            ["episode", "has_embodied_motor_program", "plan"],
+            ["episode", "has_embodied_effector_model", "candidate"],
+        ],
+        "where": And(
+            Eq(A("plan", "status"), L("render_building")),
+            Eq(
+                P0("plan", "request_seq"),
+                P0("episode", "program_request_seq"),
+            ),
+            Eq(
+                P0("candidate", "render_choice_seq"),
+                P0("plan", "request_seq"),
+            ),
+            Not(Exists(
+                members("plan"),
+                "existing",
+                Eq(
+                    P0("existing", "ordinal"),
+                    P0("candidate", "ordinal"),
+                ),
+            )),
+        ),
+        "effects": [
+            [
+                "add_edge",
+                "plan",
+                "includes_embodied_effector_model",
+                "candidate",
+            ],
+        ],
+    }
+
+
+def render_close_program_rule():
+    """Render-first step 4: arm the decision once every choice is attached."""
+    marked = Filter(
+        MODELS,
+        "chosen",
+        Eq(
+            P0("chosen", "render_choice_seq"),
+            P0("plan", "request_seq"),
+        ),
+    )
+    unattached = Exists(
+        marked,
+        "chosen",
+        Not(Exists(
+            members("plan"),
+            "attached",
+            Eq(
+                P0("attached", "ordinal"),
+                P0("chosen", "ordinal"),
+            ),
+        )),
+    )
+    return {
+        "name": "emp_render_close_embodied_motor_program",
+        "area": "embodied_motor_program",
+        "latency_class": "hard_realtime",
+        "order": 0,
+        "batch": False,
+        "match": [
+            ["agent", "has_embodied_motor_program_policy", "policy"],
+            ["agent", "has_embodied_motor_program_episode", "episode"],
+            ["episode", "has_embodied_motor_program", "plan"],
+        ],
+        "where": And(
+            Eq(A("plan", "status"), L("render_building")),
+            Eq(
+                P0("plan", "request_seq"),
+                P0("episode", "program_request_seq"),
+            ),
+            Gt(Count(members("plan")), L(0.0)),
+            Not(unattached),
+        ),
+        "effects": [
+            ["set_attr", "plan", "status", "ready"],
+            ["set_attr", "plan", "available", 1.0],
+            ["set_attr", "plan", "member_count", T(Count(members("plan")))],
+            ["set_attr", "plan", "grounded_value", T(
+                Minus(L(0.0), program_cost("plan"))
+            )],
+            ["set_attr", "plan", "default_value", T(
+                Minus(L(0.0), program_cost("plan"))
+            )],
+            ["set_attr", "plan", "learned_value", T(
+                Minus(L(0.0), program_cost("plan"))
+            )],
+            [
+                "add_edge",
+                "episode",
+                "has_motor_decision_option",
+                "plan",
+            ],
+            ["set_attr", "episode", "decision_request_epoch", T(
+                P0("episode", "program_request_seq")
+            )],
+            ["set_attr", "episode", "decision_armed", 1.0],
+        ],
+    }
+
+
+def open_program_trial_rule():
+    return {
+        "name": "emp_open_selected_motor_program_trial",
+        "area": "embodied_motor_program",
+        "latency_class": "hard_realtime",
+        "batch": False,
+        "match": [
+            ["agent", "has_embodied_motor_program_episode", "episode"],
+            ["episode", "has_embodied_motor_program", "program"],
+        ],
+        "where": And(
+            Eq(A("episode", "decision_status"), L("published")),
+            Eq(A("episode", "selected_option_ref"), V("program")),
+            Gt(
+                P0("episode", "selected_decision_epoch"),
+                P0("episode", "last_program_trial_epoch"),
+            ),
+        ),
+        "effects": [
+            ["add_node", "trial", "EmbodiedMotorProgramTrial", {
+                "request_seq": T(P0("episode", "selected_decision_epoch")),
+                "status": "assembling",
+                "expected_member_count": T(P0("program", "member_count")),
+                "receipt_verified": 0.0,
+            }],
+            [
+                "add_edge",
+                "episode",
+                "has_embodied_motor_program_trial",
+                "trial",
+            ],
+            ["add_edge", "trial", "enacts_embodied_motor_program", "program"],
+            ["set_attr", "program", "available", 0.0],
+            [
+                "del_edge",
+                "episode",
+                "has_motor_decision_option",
+                "program",
+            ],
+            ["set_attr", "episode", "last_program_trial_epoch", T(
+                P0("episode", "selected_decision_epoch")
+            )],
+        ],
+    }
+
+
+def copy_trial_members_rule():
+    """Copy a program's members onto the trial that will enact it.
+
+    **`never_commanded` is part of the effector contract here.**  An effector
+    model may be OBSERVED and LEARNED without ever being commanded: it is a
+    contributor whose command was issued elsewhere, or once, and never varies.
+    The body itself is the standing example — an airframe or a chassis was
+    commanded at construction to have a particular response and has been
+    executing that command ever since — and a deviation from it is a deviation
+    from command in exactly the sense every other effector already uses.
+
+    Without this, an effector model is commandable BY CONSTRUCTION and
+    "observed but never commanded" has no representation at all. Measured: a
+    plant contributor added to the graph was selected by the composer and its
+    token issued to the world, which raised `unknown token: 'plant'` — the loop
+    tried to fly the airframe as if it were a surface, and marking it
+    unavailable did not stop it, because availability gates candidacy and not
+    the command path.
+
+    **Absence means commandable.** The flag is `never_commanded`, not
+    `commandable`, precisely so that an absent attribute reads as zero and
+    every body plan that has never heard of this is byte-identical. Every body
+    plan has an invariant that is not actually invariant; the ones that truly
+    do not simply carry a zero here and lose nothing.
+    """
+    copied = Neighbours("trial", "commands_embodied_effector_model")
+    return {
+        "name": "emp_copy_program_members_to_trial",
+        "area": "embodied_motor_program",
+        "latency_class": "hard_realtime",
+        "batch": True,
+        "match": [
+            ["episode", "has_embodied_motor_program_trial", "trial"],
+            ["trial", "enacts_embodied_motor_program", "program"],
+            ["program", "includes_embodied_effector_model", "member"],
+        ],
+        # NOTE: never-commanded members are NOT excluded here.  A motor
+        # program operates FROM the body -- the plant is where it acts, not an
+        # optional participant -- so it belongs on the trial like any other
+        # member.  What must not happen is a COMMAND being issued to it, and
+        # that is a property of the command path, not of membership.  The
+        # earlier version gated here and produced exactly the confusion it
+        # should have avoided: a trial with four tokens against five members.
+        "where": Not(Exists(
+            copied,
+            "existing",
+            Eq(V("existing"), V("member")),
+        )),
+        "effects": [
+            [
+                "add_edge",
+                "trial",
+                "commands_embodied_effector_model",
+                "member",
+            ],
+            ["set_attr", "trial", "status", "issued"],
+            ["set_attr", "episode", "action_ready", 1.0],
+        ],
+    }
+
+
+def learn_primitive_rule():
+    count = Plus(P0("model", "experience_count"), L(1.0))
+    recalibrating = Gt(P0("model", "recalibration_required"), L(0.5))
+    learning_rate = If(recalibrating, L(1.0), Div(L(1.0), count))
+    flow_delta = Minus(
+        pre_flow_speed_squared(),
+        P0("model", "mean_flow_speed_squared"),
+    )
+    next_flow_mean = If(
+        recalibrating,
+        pre_flow_speed_squared(),
+        Plus(
+            P0("model", "mean_flow_speed_squared"),
+            Div(flow_delta, count),
+        ),
+    )
+    next_flow_variance = If(
+        recalibrating,
+        L(0.0),
+        Plus(
+            P0("model", "flow_variance_sum"),
+            Times(
+                flow_delta,
+                Minus(
+                    pre_flow_speed_squared(),
+                    next_flow_mean,
+                ),
+            ),
+        ),
+    )
+    feature_updates = {}
+    for feature in FLOW_FEATURES:
+        feature_delta = Minus(
+            pre_flow_feature(feature),
+            P0("model", f"mean_{feature}"),
+        )
+        next_feature_mean = If(
+            recalibrating,
+            pre_flow_feature(feature),
+            Plus(
+                P0("model", f"mean_{feature}"),
+                Div(feature_delta, count),
+            ),
+        )
+        next_feature_variance = If(
+            recalibrating,
+            L(0.0),
+            Plus(
+                P0("model", f"{feature}_variance_sum"),
+                Times(
+                    feature_delta,
+                    Minus(
+                        pre_flow_feature(feature),
+                        next_feature_mean,
+                    ),
+                ),
+            ),
+        )
+        feature_updates[feature] = (
+            feature_delta,
+            next_feature_mean,
+            next_feature_variance,
+        )
+    effects = []
+    for key in ALL_CONSEQUENCES:
+        observation = outcome_observation(key)
+        next_mean = Plus(
+            P0("model", f"mean_{key}"),
+            Times(
+                learning_rate,
+                Minus(observation, P0("model", f"mean_{key}")),
+            ),
+        )
+        next_covariance = If(
+            recalibrating,
+            L(0.0),
+            Plus(
+                P0("model", f"flow_covariance_{key}"),
+                Times(
+                    flow_delta,
+                    Minus(observation, next_mean),
+                ),
+            ),
+        )
+        effects.extend([
+            ["set_attr", "model", f"mean_{key}", T(next_mean)],
+            ["set_attr", "model", f"flow_covariance_{key}", T(next_covariance)],
+            ["set_attr", "model", f"flow_gain_{key}", T(If(
+                Gt(next_flow_variance, L(0.0)),
+                Div(next_covariance, next_flow_variance),
+                L(0.0),
+            ))],
+        ])
+        for feature, (
+            feature_delta,
+            _next_feature_mean,
+            next_feature_variance,
+        ) in feature_updates.items():
+            next_feature_covariance = If(
+                recalibrating,
+                L(0.0),
+                Plus(
+                    P0("model", f"{feature}_covariance_{key}"),
+                    Times(
+                        feature_delta,
+                        Minus(observation, next_mean),
+                    ),
+                ),
+            )
+            effects.extend([
+                [
+                    "set_attr",
+                    "model",
+                    f"{feature}_covariance_{key}",
+                    T(next_feature_covariance),
+                ],
+                [
+                    "set_attr",
+                    "model",
+                    f"{feature}_gain_{key}",
+                    T(If(
+                        Gt(next_feature_variance, L(0.0)),
+                        Div(
+                            next_feature_covariance,
+                            next_feature_variance,
+                        ),
+                        L(0.0),
+                    )),
+                ],
+            ])
+    for feature, (
+        _feature_delta,
+        next_feature_mean,
+        next_feature_variance,
+    ) in feature_updates.items():
+        effects.extend([
+            [
+                "set_attr",
+                "model",
+                f"mean_{feature}",
+                T(next_feature_mean),
+            ],
+            [
+                "set_attr",
+                "model",
+                f"{feature}_variance_sum",
+                T(next_feature_variance),
+            ],
+        ])
+    return {
+        "name": "emp_learn_factorized_effector_from_exact_receipt",
+        "area": "embodied_motor_program_plasticity",
+        "latency_class": "soft_realtime",
+        "match": [
+            ["episode", "has_embodied_motor_program_trial", "trial"],
+            ["trial", "commands_embodied_effector_model", "model"],
+            ["trial", "has_embodied_motor_program_outcome", "outcome"],
+        ],
+        "where": And(
+            Eq(P0("trial", "expected_member_count"), L(1.0)),
+            Eq(P0("outcome", "receipt_verified"), L(1.0)),
+            Eq(P0("outcome", "processed"), L(0.0)),
+            Gt(
+                P0("outcome", "request_seq"),
+                P0("model", "last_learning_seq"),
+            ),
+        ),
+        "effects": [
+            *effects,
+            ["set_attr", "model", "mean_flow_speed_squared", T(next_flow_mean)],
+            ["set_attr", "model", "flow_variance_sum", T(next_flow_variance)],
+            ["set_attr", "model", "experience_count", T(count)],
+            ["set_attr", "model", "recalibration_required", 0.0],
+            ["set_attr", "model", "last_learning_seq", T(
+                P0("outcome", "request_seq")
+            )],
+        ],
+    }
+
+
+def learn_program_rule():
+    count = Plus(P0("program", "experience_count"), L(1.0))
+    error_terms = []
+    effects = []
+    for key in ALL_CONSEQUENCES:
+        observation = outcome_observation(key)
+        additive = prediction("program", key)
+        residual = Minus(observation, additive)
+        error_terms.append(Times(
+            P0("policy", f"{key}_weight"),
+            residual,
+            residual,
+        ))
+        effects.extend([
+            ["set_attr", "program", f"mean_{key}", T(Plus(
+                P0("program", f"mean_{key}"),
+                Div(
+                    Minus(observation, P0("program", f"mean_{key}")),
+                    count,
+                ),
+            ))],
+            ["set_attr", "program", f"interaction_residual_{key}", T(
+                residual
+            )],
+        ])
+    predicted_normal_load = prediction("program", "normal_load")
+    normal_load_residual = Minus(
+        outcome_observation("normal_load"),
+        predicted_normal_load,
+    )
+    return {
+        "name": "emp_learn_compound_program_interaction_residual",
+        "area": "embodied_motor_program_plasticity",
+        "latency_class": "soft_realtime",
+        "match": [
+            ["agent", "has_embodied_motor_program_policy", "policy"],
+            ["agent", "has_embodied_motor_program_episode", "episode"],
+            ["episode", "has_embodied_motor_program_trial", "trial"],
+            ["trial", "enacts_embodied_motor_program", "program"],
+            ["trial", "has_embodied_motor_program_outcome", "outcome"],
+        ],
+        "where": And(
+            Eq(P0("outcome", "receipt_verified"), L(1.0)),
+            Eq(P0("outcome", "processed"), L(0.0)),
+            Gt(
+                P0("outcome", "request_seq"),
+                P0("program", "last_learning_seq"),
+            ),
+        ),
+        "effects": [
+            *effects,
+            ["set_attr", "program", "prediction_error_energy", T(
+                Plus(*error_terms)
+            )],
+            ["set_attr", "program", "predicted_normal_load", T(
+                predicted_normal_load
+            )],
+            ["set_attr", "program", "relative_normal_load_error", T(
+                Div(
+                    Abs(normal_load_residual),
+                    Plus(Abs(predicted_normal_load), L(0.000001)),
+                )
+            )],
+            ["set_attr", "program", "experience_count", T(count)],
+            ["set_attr", "program", "last_learning_seq", T(
+                P0("outcome", "request_seq")
+            )],
+        ],
+    }
+
+
+def reopen_calibration_on_surprise_rule():
+    return {
+        "name": "emp_reopen_factorized_calibration_on_compound_surprise",
+        "area": "embodied_motor_program_plasticity",
+        "latency_class": "soft_realtime",
+        "batch": False,
+        "match": [
+            ["agent", "has_embodied_motor_program_policy", "policy"],
+            ["agent", "has_embodied_motor_program_episode", "episode"],
+            ["episode", "has_embodied_motor_program_trial", "trial"],
+            ["trial", "enacts_embodied_motor_program", "program"],
+            ["trial", "has_embodied_motor_program_outcome", "outcome"],
+        ],
+        "where": And(
+            Eq(A("episode", "program_mode"), L("synthesis")),
+            Eq(
+                P0("outcome", "request_seq"),
+                P0("episode", "receipt_boundary_seq"),
+            ),
+            Lt(
+                P0("episode", "recalibration_count"),
+                P0("policy", "maximum_recalibration_cycles"),
+            ),
+            Or(
+                Not(Gt(
+                    P0("policy", "maximum_default_program_reuse_cycles"),
+                    L(0.0),
+                )),
+                Gt(P0("program", "experience_count"), L(2.0)),
+            ),
+            Or(
+                Gt(
+                    P0("program", "prediction_error_energy"),
+                    P0("policy", "compound_surprise_threshold"),
+                ),
+                And(
+                    Gt(
+                        Abs(P0("program", "predicted_normal_load")),
+                        P0("policy", "minimum_expected_normal_load"),
+                    ),
+                    Gt(
+                        P0("program", "relative_normal_load_error"),
+                        P0("policy", "relative_normal_load_surprise"),
+                    ),
+                ),
+            ),
+            Eq(P0("outcome", "surprise_processed"), L(0.0)),
+        ),
+        "effects": [
+            ["set_attr", "episode", "program_mode", "recalibration_marking"],
+            ["set_attr", "episode", "calibration_complete", 0.0],
+            ["set_attr", "episode", "recalibration_count", T(
+                Plus(P0("episode", "recalibration_count"), L(1.0))
+            )],
+            ["set_attr", "outcome", "surprise_processed", 1.0],
+        ],
+    }
+
+
+def mark_models_for_recalibration_rule():
+    return {
+        "name": "emp_mark_factorized_models_for_recalibration",
+        "area": "embodied_motor_program_plasticity",
+        "latency_class": "soft_realtime",
+        "batch": True,
+        "match": [
+            ["agent", "has_embodied_motor_program_episode", "episode"],
+            ["episode", "has_embodied_effector_model", "model"],
+        ],
+        "where": Eq(
+            A("episode", "program_mode"),
+            L("recalibration_marking"),
+        ),
+        "effects": [
+            ["set_attr", "model", "recalibration_required", 1.0],
+            ["set_attr", "episode", "program_mode", "calibration"],
+        ],
+    }
+
+
+def close_receipt_rule():
+    return {
+        "name": "emp_close_exact_program_receipt",
+        "area": "embodied_motor_program_plasticity",
+        "latency_class": "soft_realtime",
+        "batch": False,
+        "match": [
+            ["episode", "has_embodied_motor_program_trial", "trial"],
+            ["trial", "enacts_embodied_motor_program", "program"],
+            ["trial", "has_embodied_motor_program_outcome", "outcome"],
+        ],
+        "where": And(
+            Eq(P0("outcome", "receipt_verified"), L(1.0)),
+            Eq(P0("outcome", "processed"), L(0.0)),
+            Eq(
+                P0("program", "last_learning_seq"),
+                P0("outcome", "request_seq"),
+            ),
+        ),
+        "effects": [
+            ["set_attr", "outcome", "processed", 1.0],
+            ["set_attr", "trial", "status", "learned"],
+            [
+                "del_edge",
+                "episode",
+                "has_embodied_motor_program",
+                "program",
+            ],
+            [
+                "add_edge",
+                "episode",
+                "has_archived_embodied_motor_program",
+                "program",
+            ],
+        ],
+    }
+
+
+# A never-commanded contributor may be a MEMBER of a program -- it is what the
+# program acts through -- but may never be SELECTED as one.  Selecting it
+# produces a program with nothing to command, and a motor program that issues
+# no command is not a program (the world rejects it outright).
+#
+# FOUR sites, enumerated (docs/decision_making_spike.md §63) and then corrected
+# by measurement.  The two openers drawing from `calibration_frontier` already
+# inherit the exclusion.  `emp_render_open_embodied_motor_program` looked like a
+# fifth site because it adds a membership edge to `primary` -- but it CREATES
+# that node in its effects rather than matching a model, so `primary` is not
+# bound when the guard is evaluated.  Guarding it silently stopped the rule
+# matching, the render path opened no program at all, and synthesis stalled with
+# no active plans at action 691.  A guard on an unbound variable does not
+# refuse a selection; it deletes a rule.
+_SUBSTRATE_UNSELECTABLE_IN = {
+    # Only sites that do NOT select by Argmin.  Where selection is an Argmin
+    # the exclusion belongs in the eligible set (see the candidate filters
+    # above); appending it to the rule's `where` makes the rule match nothing
+    # whenever the substrate wins the Argmin, instead of letting the next-best
+    # model win.
+    "emp_render_attach_chosen_members": "candidate",
+}
+
+
+def _refuse_substrate_selection(rules):
+    """Apply the one predicate at every site that SELECTS an existing model.
+
+    A uniform post-pass rather than four separate edits, so the list of sites is
+    stated once and a renamed site fails loudly instead of silently losing its
+    guard.  The guard variable is asserted to be bound by the rule's own match --
+    the failure that cost an episode-long stall.
+    """
+    missing = set(_SUBSTRATE_UNSELECTABLE_IN)
+    for rule in rules:
+        var = _SUBSTRATE_UNSELECTABLE_IN.get(rule["name"])
+        if var is None:
+            continue
+        bound = {m[0] for m in rule["match"]} | {m[2] for m in rule["match"]}
+        if var not in bound:
+            raise AssertionError(
+                f"{rule['name']}: guard variable {var!r} is not bound by the "
+                f"rule's match {sorted(bound)}; guarding it would delete the "
+                f"rule rather than constrain it"
+            )
+        missing.discard(rule["name"])
+        rule["where"] = And(
+            rule["where"],
+            Not(Gt(P0(var, "never_commanded"), L(0.5))),
+        )
+    if missing:
+        raise AssertionError(f"selection sites not found: {sorted(missing)}")
+    return rules
+
+
+def include_substrate_in_program_rule():
+    """A PROGRAM ACTS THROUGH ITS SUBSTRATE.
+
+    Membership is otherwise granted only by paths that select a model to
+    exercise, and a never-commanded contributor is unselectable at all of them
+    -- correctly, since selecting it would produce a program with nothing to
+    command.  So the body, the thing every program acts through, belonged to no
+    program and was invisible to everything reading program membership,
+    including the rule that learns what it contributes.
+
+    It waits for the program to command something.  Refusing selection stops
+    the substrate BECOMING a program's member by selection; it does not stop
+    this rule populating a program that has no members yet, and
+    `emp_render_open_embodied_motor_program` creates a program before attaching
+    any.  Adding the substrate in that window makes the program substrate-only,
+    which the world rejects.  A program acts through its substrate, and until
+    there is an act there is nothing to act through.
+    """
+    existing = Neighbours("program", "includes_embodied_effector_model")
+    return {
+        "name": "emp_include_substrate_in_program",
+        "area": "embodied_motor_program",
+        "latency_class": "soft_realtime",
+        "order": -44.5,
+        "batch": False,
+        "match": [
+            ["agent", "has_embodied_motor_program_episode", "episode"],
+            ["episode", "has_embodied_motor_program", "program"],
+            ["episode", "has_embodied_effector_model", "model"],
+        ],
+        "where": And(
+            Gt(P0("model", "never_commanded"), L(0.5)),
+            Not(Exists(existing, "member", Eq(V("member"), V("model")))),
+            Exists(
+                existing,
+                "member",
+                Not(Gt(P0("member", "never_commanded"), L(0.5))),
+            ),
+        ),
+        "effects": [
+            ["add_edge", "program", "includes_embodied_effector_model",
+             "model"],
+        ],
+    }
+
+
+def manifest():
+    return {
+        "id": "embodied_motor_program",
+        "version": "1.12.0",
+        "depends_on": [
+            "embodied_pareto_profile",
+            "motor_decision_collapse",
+            "embodied_structural_limits",
+        ],
+        "area": "embodied_motor_program",
+        "latency_class": "hard_realtime",
+        "description": "Morphology-neutral analysis-by-synthesis over "
+        "factorized opaque effectors. The graph constructs arbitrary-width "
+        "simultaneous programs, sends the exact program through shared motor "
+        "collapse, and learns six-axis consequences conditioned on "
+        "body-relative vector flow and delayed power state from receipts. "
+        "Specification-grounded structural limits exclude unsafe primitive "
+        "calibration and compound programs before release.",
+        "nodes": [{
+            "local_id": 1,
+            "type": "EmbodiedMotorProgramPolicy",
+            "attrs": {
+                "calibration_samples": 2.0,
+                "minimum_calibration_flow_speed_squared": 0.5,
+                "compound_surprise_threshold": 2.0,
+                "minimum_expected_normal_load": 0.005,
+                "relative_normal_load_surprise": 0.6,
+                "maximum_recalibration_cycles": 1.0,
+                "maximum_default_program_reuse_cycles": 0.0,
+                "contextual_effector_prediction_enabled": 1.0,
+                "parallel_factorized_composition_enabled": 0.0,
+                "minimum_composition_improvement": 0.000001,
+                "forward_weight": 1.0,
+                "lateral_weight": 1.0,
+                "turn_weight": 1.0,
+                "normal_load_weight": 0.01,
+                "drag_weight": 0.01,
+                "energy_weight": 0.001,
+                "activation_weight": 0.02,
+            },
+        }],
+        "edges": [{
+            "src": {"role": "agent_root"},
+            "type": "has_embodied_motor_program_policy",
+            "tgt": {"local": 1},
+            "attrs": {},
+        }],
+        "productions": [
+            {
+                "provenance": "embodied_motor_program:episode",
+                "src": {"type": "Agent", "var": "agent"},
+                "edge_type": "has_embodied_motor_program_episode",
+                "tgt": {"type": "EmbodiedMotorProgramEpisode", "var": "episode"},
+            },
+            {
+                "provenance": "embodied_motor_program:model",
+                "src": {"type": "EmbodiedMotorProgramEpisode", "var": "episode"},
+                "edge_type": "has_embodied_effector_model",
+                "tgt": {"type": "EmbodiedEffectorModel", "var": "model"},
+            },
+            {
+                "provenance": "embodied_motor_program:program",
+                "src": {"type": "EmbodiedMotorProgramEpisode", "var": "episode"},
+                "edge_type": "has_embodied_motor_program",
+                "tgt": {"type": "EmbodiedMotorProgram", "var": "program"},
+            },
+            {
+                "provenance": "embodied_motor_program:program_archive",
+                "src": {"type": "EmbodiedMotorProgramEpisode", "var": "episode"},
+                "edge_type": "has_archived_embodied_motor_program",
+                "tgt": {"type": "EmbodiedMotorProgram", "var": "program"},
+            },
+            {
+                "provenance": "embodied_motor_program:program_default",
+                "src": {"type": "EmbodiedMotorProgramEpisode", "var": "episode"},
+                "edge_type": "has_default_embodied_motor_program",
+                "tgt": {"type": "EmbodiedMotorProgram", "var": "program"},
+            },
+            {
+                "provenance": "embodied_motor_program:member",
+                "src": {"type": "EmbodiedMotorProgram", "var": "program"},
+                "edge_type": "includes_embodied_effector_model",
+                "tgt": {"type": "EmbodiedEffectorModel", "var": "model"},
+            },
+            {
+                "provenance": "embodied_motor_program:resume",
+                "src": {"type": "EmbodiedMotorProgramEpisode", "var": "episode"},
+                "edge_type": "resumes_embodied_motor_program",
+                "tgt": {"type": "EmbodiedMotorProgram", "var": "program"},
+            },
+            {
+                "provenance": "embodied_motor_program:trial",
+                "src": {"type": "EmbodiedMotorProgramEpisode", "var": "episode"},
+                "edge_type": "has_embodied_motor_program_trial",
+                "tgt": {"type": "EmbodiedMotorProgramTrial", "var": "trial"},
+            },
+        ],
+        "rules": _refuse_substrate_selection([
+            gate_distal_goals_during_aerodynamic_departure_rule(),
+            derive_active_rate_stabilization_targets_rule(),
+            complete_specification_prior_initialization_rule(),
+            retire_old_options_rule(),
+            open_flow_excitation_program_rule(),
+            open_calibration_program_rule(),
+            complete_calibration_rule(),
+            reuse_internalized_program_rule(),
+            async_release_trusted_default_rule(),
+            async_close_background_plan_rule(),
+            open_synthesized_program_rule(),
+            native_mark_composition_choice_rule(),
+            render_mark_group_choice_rule(),
+            render_open_program_rule(),
+            render_attach_member_rule(),
+            render_close_program_rule(),
+            expand_factorized_groups_in_parallel_rule(),
+            expand_program_rule(),
+            reconcile_program_width_rule(),
+            resume_program_rule(),
+            close_program_rule(),
+            open_program_trial_rule(),
+            copy_trial_members_rule(),
+            include_substrate_in_program_rule(),
+            learn_uncommanded_contributor_rule(),
+            learn_primitive_rule(),
+            learn_program_rule(),
+            reopen_calibration_on_surprise_rule(),
+            mark_models_for_recalibration_rule(),
+            close_receipt_rule(),
+            internalize_synthesized_program_rule(),
+            retire_superseded_program_default_rule(),
+        ]),
+    }
+
+
+def main() -> int:
+    out = ROOT / "seeds" / "embodied_motor_program.json"
+    payload = manifest()
+    out.write_text(json.dumps(payload, indent=1) + "\n", encoding="utf-8")
+    json.loads(out.read_text(encoding="utf-8"))
+    print(f"wrote {out.relative_to(ROOT)} ({len(payload['rules'])} rules)")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

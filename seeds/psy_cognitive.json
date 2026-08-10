@@ -1,0 +1,48 @@
+{
+  "microtheory": {
+    "name": "cognitive_psychology",
+    "definition": "Cognitive psychology — the empirical study of internal mental processes: perception, attention, memory, language, reasoning, problem-solving, decision-making. The 'cognitive revolution' replaced behaviourism's reluctance to discuss internal states. Major figures: Neisser, Miller, Newell + Simon, Tversky + Kahneman, Anderson. Substrate analogue: most of the substrate's cortex + cortices implement cognitive psychology constructs directly.",
+    "category": "psychology_domain",
+    "parent": "psychology_foundation"
+  },
+  "concepts": [
+    {"name": "working_memory_psychological", "definition": "Baddeley + Hitch 1974. Central executive + phonological loop + visuospatial sketchpad + (later) episodic buffer. Capacity 4±1 chunks (Cowan 2001) — revised from Miller's 7±2. Substrate analogue: substrate's persistent σ across tick cycles.", "category": "memory"},
+    {"name": "long_term_memory_systems", "definition": "Tulving 1985: episodic (events), semantic (facts), procedural (skills), priming (implicit). Each has different brain substrates + retention curves. Substrate analogue: substrate's events vs concepts vs FilterSpec dispatch vs covered-by-* attrs.", "category": "memory"},
+    {"name": "encoding_specificity", "definition": "Tulving + Thomson 1973. Retrieval is best when context matches encoding context. State-dependent memory. Substrate analogue: substrate's σ pattern at recall must match the σ pattern at encoding.", "category": "memory"},
+    {"name": "levels_of_processing", "definition": "Craik + Lockhart 1972. Deeper (semantic) processing → better retention than shallow (surface). Substrate analogue: substrate's concept integration into existing Mt scaffolds vs orphan event nodes.", "category": "memory"},
+    {"name": "false_memory", "definition": "Roediger + McDermott 1995. Memories of events that didn't occur, reconstructed from gist + schema-based inference. Substrate analogue: substrate's pattern-completion in CA3-analogue producing plausible-but-false retrievals.", "category": "memory"},
+
+    {"name": "selective_attention", "definition": "Cherry 1953 cocktail party effect. Attention to one channel suppresses others. Broadbent's filter, Treisman's attenuation, Lavie's load theory. Substrate analogue: substrate's policy_filter selection.", "category": "attention"},
+    {"name": "divided_attention", "definition": "Trying to process multiple streams. Generally degrades performance. Strayer + Drews 2007 distracted driving. Substrate analogue: substrate's simultaneous Mt activations interfere unless they don't share concepts.", "category": "attention"},
+    {"name": "attentional_blink", "definition": "Raymond 1992. ~500ms after attending to T1, you miss T2. Attention has a temporal refractory period. Substrate analogue: substrate's tick-cycle limit on consecutive high-attention events.", "category": "attention"},
+    {"name": "change_blindness", "definition": "Failure to notice large changes when attention isn't focused on them. Simons + Levin 1998 door-swap. Substrate analogue: substrate's Mt-state stable across ticks unless attended.", "category": "attention"},
+    {"name": "inattentional_blindness", "definition": "Failure to perceive unexpected stimuli when attention is engaged elsewhere. Simons + Chabris 1999 gorilla. Substrate analogue: substrate's runtime_discovery firing only configured handlers.", "category": "attention"},
+
+    {"name": "feature_integration_theory", "definition": "Treisman 1980. Separate features (color, shape, motion) are detected pre-attentively; binding into objects requires attention. Substrate analogue: substrate's gamma-band synchronisation analogue binds feature concepts into Assessment nodes.", "category": "perception"},
+    {"name": "gestalt_principles", "definition": "Wertheimer 1923. Proximity, similarity, closure, continuity, common fate, figure-ground. Perception organises features into wholes. Substrate analogue: substrate's compositional concept emergence via shared neighbours.", "category": "perception"},
+    {"name": "top_down_perception", "definition": "Higher cortical predictions bias perception of ambiguous input. Helmholtz's unconscious inference, Gregory's hypothesis testing. Substrate analogue: substrate's identity field biasing basin selection in low-information input.", "category": "perception"},
+    {"name": "bayesian_perception", "definition": "Posterior P(world | input) ∝ P(input | world) × P(world). Knill + Pouget 2004. Cortex computes posterior over hypotheses. Substrate analogue: substrate's identity_field × external_field → posterior σ.", "category": "perception"},
+
+    {"name": "categorisation", "definition": "Sorting stimuli into classes. Rosch 1973: prototype theory + basic-level categories. Murphy 2002. Substrate analogue: substrate's concept-vs-Mt structure.", "category": "language_thought"},
+    {"name": "concept_formation", "definition": "Acquiring a new mental category. Empirical exemplars + abstraction. Substrate analogue: substrate's feature_invention process building new Concept nodes.", "category": "language_thought"},
+    {"name": "mental_imagery", "definition": "Internal representation of visual information without sensory input. Kosslyn 1980. Activates visual cortex similarly to perception. Substrate analogue: substrate's runtime simulation via Term-tree evaluation without input events.", "category": "language_thought"},
+
+    {"name": "system_1_system_2", "definition": "Kahneman 2011. System 1: fast, automatic, intuitive, heuristic. System 2: slow, effortful, analytic, rule-based. Substrate analogue: System 1 = FilterSpec dispatch via runtime_discovery; System 2 = ArchitectureCortex deliberate assessment.", "category": "decision"},
+    {"name": "heuristic", "definition": "Mental shortcut. Availability, representativeness, anchoring (Tversky + Kahneman 1974). Fast but biased. Substrate analogue: substrate's covers_correction shortcut bypassing full re-derivation.", "category": "decision"},
+    {"name": "cognitive_bias", "definition": "Systematic departures from rational norm. Confirmation bias, hindsight bias, availability heuristic. Kahneman + Tversky catalogued ~200. Substrate analogue: substrate's known failure modes in unchecked dynamics.", "category": "decision"},
+    {"name": "prospect_theory", "definition": "Kahneman + Tversky 1979. Decision-making under risk: loss aversion, reference-dependence, diminishing sensitivity, probability weighting. Won Nobel Prize. Substrate analogue: substrate's asymmetric weight on positive vs negative ΔF.", "category": "decision"},
+
+    {"name": "expertise", "definition": "Anderson + Schunn 2000. ~10 years deliberate practice. Domain-specific perceptual chunks (de Groot's chess masters). Substrate analogue: substrate's accumulated Mt structure in a domain — many fine-grained concepts.", "category": "learning"},
+    {"name": "transfer_of_learning", "definition": "Applying knowledge learned in one context to another. Near vs far transfer. Substrate analogue: substrate's analogical_transfer faculty + cross-Mt genlMt connections.", "category": "learning"},
+    {"name": "metacognition_psychological", "definition": "Flavell 1979. Thinking about thinking. Includes metamemory + metacomprehension. Substrate analogue: substrate's ArchitectureCortex assessing other cortices.", "category": "learning"},
+    {"name": "feeling_of_knowing", "definition": "Subjective awareness that you DO know something, even before retrieval. Hart 1965. Substrate analogue: substrate's predicted-success estimate before running ActionSpec.", "category": "learning"}
+  ],
+  "rules": [
+    {"name": "working_memory_capacity_constrains_processing", "head": "the substrate must hold multiple items active at once", "body": "performance degrades when the count exceeds ~4. Substrate's persistent-σ capacity has the same constraint."},
+    {"name": "encoding_specificity_principle", "head": "the substrate must retrieve a stored memory", "body": "retrieval is best when the current σ pattern matches the σ pattern at encoding. Tulving 1973 — substrate's recall accuracy = match between current basin + stored basin."},
+    {"name": "depth_of_processing_predicts_retention", "head": "the substrate encodes a new concept", "body": "deep integration into existing Mt structure produces better long-term retention than surface event-only encoding. Craik + Lockhart 1972."},
+    {"name": "system_1_versus_system_2_dispatch", "head": "the substrate decides how to handle an event", "body": "if a relevant FilterSpec/ActionSpec exists (System 1), dispatch automatically; else escalate to ArchitectureCortex deliberation (System 2). Kahneman 2011."},
+    {"name": "prospect_theory_asymmetric_weighting", "head": "the substrate evaluates a gain vs loss of equal magnitude", "body": "the loss feels ~2x more impactful. Substrate's negative ΔF triggers correction more strongly than equivalent positive ΔF triggers consolidation."},
+    {"name": "expertise_through_chunking", "head": "the substrate accumulates experience in a domain", "body": "it develops domain-specific concept chunks that compress recurring patterns. de Groot 1946. Substrate's Mt enrichment over time."}
+  ]
+}

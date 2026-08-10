@@ -1,0 +1,100 @@
+{
+  "id": "vvc_mts_lfnst_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "multiple_transform_selection",
+  "in_microtheory": "video_coding_theory",
+  "description": "VVC's Multiple Transform Selection (MTS) + Low-Frequency Non-Separable Transform (LFNST) decomposed. MTS lets the encoder pick from DCT-2, DST-7, DCT-8 per axis; LFNST applies a small non-separable secondary transform to the top-left low-frequency coefficients. Together they handle residual energy distributions the fixed DCT can't decorrelate well: ramped residuals (DST-7), flipped-ramp residuals (DCT-8), and diagonal/non-axis-aligned residuals (LFNST).",
+  "sub_mechanisms": [
+    {
+      "name": "DCT_2_basis",
+      "definition": "The classical DCT (basis: cos((2k+1)nπ/(2N))). Approximates the optimal KL transform for AR(1) signals with high correlation. The default transform.",
+      "why": "Optimal for residuals from many intra/inter prediction modes. The 'safe choice' that always works; MTS uses it when other transforms wouldn't help.",
+      "category": "vvc_mts_mechanism"
+    },
+    {
+      "name": "DST_7_basis",
+      "definition": "Discrete Sine Transform type 7 (basis: sin((2k+1)(2n+1)π/(4N+2))). Has basis vectors that ramp from zero at one boundary toward maximum at the other.",
+      "why": "Intra-prediction residuals often ramp toward the boundary with the predictor (where prediction is best, residual is smallest). DST-7's ramped basis matches this shape — concentrating energy in fewer coefficients than DCT-2 would.",
+      "category": "vvc_mts_mechanism"
+    },
+    {
+      "name": "DCT_8_basis",
+      "definition": "Discrete Cosine Transform type 8 (basis: cos((2k+1)(2n+1)π/(4N+2))). Mirror of DST-7: ramps toward the boundary opposite to where the predictor is.",
+      "why": "Some intra prediction modes (e.g., horizontal prediction with bottom-left reference) leave residuals ramping AWAY from the predictor. DCT-8 catches this flipped case. Together with DST-7 it covers the asymmetric residual family.",
+      "category": "vvc_mts_mechanism"
+    },
+    {
+      "name": "per_axis_transform_selection",
+      "definition": "Each block independently picks a horizontal transform AND a vertical transform from {DCT-2, DST-7, DCT-8}. Signalled per block.",
+      "why": "Residual asymmetry can be in one axis but not the other (e.g., horizontal prediction asymmetric vertically but symmetric horizontally). Per-axis selection captures these mixed cases. 3x3 = 9 combinations, signalled in 2-4 bits.",
+      "category": "vvc_mts_mechanism"
+    },
+    {
+      "name": "MTS_signal_skipping",
+      "definition": "MTS is signalled only when the block has more than a threshold number of non-zero coefficients. Small-residual blocks default to DCT-2.",
+      "why": "For tiny residuals, the few-coefficient gain from optimal MTS choice is dwarfed by the signalling cost. Skipping MTS for those blocks avoids unnecessary overhead.",
+      "category": "vvc_mts_mechanism"
+    },
+    {
+      "name": "LFNST_top_left_4x4_or_8x8",
+      "definition": "LFNST applies a small (4x4 or 8x8) non-separable secondary transform to the top-left low-frequency coefficients after the primary MTS transform.",
+      "why": "Primary transforms are separable: row-pass then column-pass. They can't decorrelate residual structure that doesn't align with the axes (diagonal edges). LFNST is non-separable; its basis vectors can capture diagonal energy that separable transforms miss.",
+      "category": "vvc_mts_mechanism"
+    },
+    {
+      "name": "LFNST_kernel_selection",
+      "definition": "LFNST has 4 kernel sets, each containing 2 kernels (8 total). The kernel set is derived from the intra prediction mode; the kernel index (0 or 1, or 'no LFNST' = 2) is signalled per block.",
+      "why": "Different intra modes leave different residual orientations. The kernel set is implicitly determined by the mode (no signalling cost); only the 1-bit kernel choice + LFNST-enable is signalled.",
+      "category": "vvc_mts_mechanism"
+    },
+    {
+      "name": "LFNST_size_constraints",
+      "definition": "LFNST is only applied for blocks of size 4x4 to 32x32 with non-trivial residual. The kernel size is 4x4 for small blocks, 8x8 for larger ones (applied to the 8x8 top-left region).",
+      "why": "Larger LFNST kernels catch more residual structure but cost more compute. Block-size-adaptive kernel size matches the granularity of expected residual asymmetry — smaller block = smaller residual structure = smaller kernel.",
+      "category": "vvc_mts_mechanism"
+    },
+    {
+      "name": "LFNST_after_MTS",
+      "definition": "LFNST runs AFTER the MTS-selected primary transform. The primary transform decorrelates as much as it can; LFNST cleans up the residual energy in the low-frequency corner.",
+      "why": "Cascaded transforms work best when the first does the gross decorrelation and the second handles the residue. MTS+LFNST in series gives a more complete decorrelation than either alone.",
+      "category": "vvc_mts_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "transform_matches_residual_ramp_shape",
+      "if": ["intra prediction residual ramps toward the predictor"],
+      "then": ["DST-7 outperforms DCT-2 on that axis"],
+      "why": "DST-7's basis ramps in the same direction as the residual energy, concentrating it in fewer coefficients. Mathematically: DST-7 is the KL-optimal transform for residuals modeled as a half-sine ramp.",
+      "soundness_category": "algebraic_law"
+    },
+    {
+      "name": "non_separable_handles_diagonal_residual",
+      "if": ["residual energy is along a diagonal (not axis-aligned)"],
+      "then": ["non-separable LFNST decorrelates it; separable primary transforms cannot"],
+      "why": "Separable transforms are constrained to row-then-column or column-then-row operations; their basis vectors are axis-aligned tensor products. Diagonal residual energy requires basis vectors that span both axes simultaneously — exactly what non-separable transforms provide.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "per_axis_selection_handles_asymmetric_residuals",
+      "if": ["residual is asymmetric in horizontal but not vertical (or vice versa)"],
+      "then": ["per-axis transform selection captures the asymmetry at low cost"],
+      "why": "Forcing both axes to use the same transform would waste one axis. Per-axis selection has 9 combinations vs 3 for unified selection; the extra 4-2 bits of signalling are dwarfed by the residual savings.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "cascade_transforms_for_compound_residual",
+      "if": ["residual has multiple decorrelation structures (ramp + diagonal)"],
+      "then": ["MTS then LFNST handle them in sequence"],
+      "why": "Primary MTS catches ramp; LFNST catches diagonal residue. Each transform handles what the other can't, and the cascade exploits their orthogonality (LFNST's input is the MTS output, not the original residual).",
+      "soundness_category": "algebraic_law"
+    },
+    {
+      "name": "implicit_kernel_set_saves_signalling",
+      "if": ["residual orientation correlates with intra prediction mode"],
+      "then": ["deriving the LFNST kernel set from intra mode saves explicit signalling"],
+      "why": "Vertical intra prediction produces vertically-asymmetric residuals; horizontal prediction produces horizontally-asymmetric ones. Kernel set selection can be derived from this mapping; only the 1-bit choice within the set needs explicit signalling.",
+      "soundness_category": "cost_equivalence"
+    }
+  ]
+}

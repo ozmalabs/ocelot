@@ -1,0 +1,118 @@
+{
+  "id": "biochemistry_metabolism_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "enzymes",
+  "in_microtheory": "materials_chemistry",
+  "description": "Biochemistry + metabolism decomposed. Enzyme kinetics (Michaelis-Menten), allosteric regulation, glycolysis, TCA cycle, electron transport chain, oxidative phosphorylation, photosynthesis, protein structure (Anfinsen, AlphaFold), DNA replication + transcription + translation.",
+  "sub_mechanisms": [
+    {
+      "name": "Michaelis_Menten_kinetics",
+      "definition": "v = V_max·[S] / (K_M + [S]). Rate vs substrate concentration.",
+      "why": "Foundation of enzyme kinetics. K_M = substrate affinity. V_max = max rate. Standard analysis.",
+      "category": "biochem_mechanism"
+    },
+    {
+      "name": "competitive_inhibition",
+      "definition": "Inhibitor binds active site, competes with substrate. K_M apparent increases; V_max unchanged.",
+      "why": "Many drugs work this way. Statins compete for HMG-CoA reductase. Standard enzyme inhibition.",
+      "category": "biochem_mechanism"
+    },
+    {
+      "name": "allosteric_regulation",
+      "definition": "Enzyme has regulatory site distinct from active. Cooperative binding, sigmoidal kinetics.",
+      "why": "Hemoglobin, phosphofructokinase. Feedback control of metabolism. Foundation of regulation.",
+      "category": "biochem_mechanism"
+    },
+    {
+      "name": "glycolysis_pathway",
+      "definition": "Glucose → 2 pyruvate. 10 enzymatic steps. Net: 2 ATP + 2 NADH.",
+      "why": "Universal sugar catabolism. Cytoplasm. Anaerobic conditions: end product changes (lactate fermentation).",
+      "category": "biochem_mechanism"
+    },
+    {
+      "name": "TCA_Krebs_cycle",
+      "definition": "Pyruvate → acetyl-CoA → CO2. 8 enzymes. Net per acetyl-CoA: 3 NADH + 1 FADH2 + 1 GTP.",
+      "why": "Central metabolism. Connects carb + fat + protein catabolism. Mitochondrial matrix.",
+      "category": "biochem_mechanism"
+    },
+    {
+      "name": "electron_transport_chain",
+      "definition": "NADH/FADH2 electrons → O2. Complexes I-IV in inner mitochondrial membrane.",
+      "why": "Generates proton gradient across membrane. Foundation of ATP synthesis. Mitochondrial.",
+      "category": "biochem_mechanism"
+    },
+    {
+      "name": "ATP_synthase",
+      "definition": "F0F1 ATP synthase. Proton gradient drives ATP synthesis via rotational catalysis.",
+      "why": "~32-34 ATP per glucose total. Nobel 1997 (Walker, Boyer). Foundation of bioenergetics.",
+      "category": "biochem_mechanism"
+    },
+    {
+      "name": "photosynthesis_light_reactions",
+      "definition": "Chlorophyll absorbs light. PSII + PSI split water; reduce NADP+ to NADPH; pump H+.",
+      "why": "Energy capture from sunlight. ATP + NADPH for Calvin cycle. Foundation of life on Earth.",
+      "category": "biochem_mechanism"
+    },
+    {
+      "name": "Calvin_cycle",
+      "definition": "Dark reactions. CO2 fixed by Rubisco; reduced to sugar. Requires ATP + NADPH.",
+      "why": "Carbon fixation. Rubisco most abundant protein on Earth. Slow + inefficient — limits crops.",
+      "category": "biochem_mechanism"
+    },
+    {
+      "name": "DNA_replication",
+      "definition": "Semi-conservative. Helicase + polymerase + ligase. Leading + lagging strand.",
+      "why": "Faithful copy of genome. DNA polymerase proofreads (3'→5' exonuclease). Errors → mutations.",
+      "category": "biochem_mechanism"
+    },
+    {
+      "name": "transcription_translation",
+      "definition": "DNA → mRNA (transcription, RNA pol). mRNA → protein (translation, ribosome + tRNA).",
+      "why": "Central dogma. Genetic code: 64 codons → 20 amino acids (redundant). Foundation of molecular biology.",
+      "category": "biochem_mechanism"
+    },
+    {
+      "name": "protein_folding_Anfinsen",
+      "definition": "Sequence determines structure. Native state minimum free energy.",
+      "why": "Anfinsen's principle. AlphaFold validates computationally. Foundation of structural biology. Drug design.",
+      "category": "biochem_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "MM_kinetics_assume_steady_state",
+      "if": ["substrate concentration is constant"],
+      "then": ["ES complex concentration is constant"],
+      "why": "Briggs-Haldane derivation. Foundation of enzyme kinetics. Most enzymes follow MM. Pre-equilibrium assumption alternative.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "ATP_yield_per_glucose",
+      "if": ["glucose fully catabolised aerobically"],
+      "then": ["~32-34 ATP produced"],
+      "why": "Glycolysis: 2 ATP + 2 NADH. TCA: 6 NADH + 2 FADH2 + 2 ATP (per glucose). ETC + ATP synthase: ~2.5 ATP/NADH, 1.5 ATP/FADH2. Standard.",
+      "soundness_category": "algebraic_law"
+    },
+    {
+      "name": "chemiosmotic_gradient_drives_ATP",
+      "if": ["proton gradient across membrane"],
+      "then": ["ATP synthase produces ATP"],
+      "why": "Mitchell's chemiosmotic theory. Protons flow through F0; rotates F1; ATP synthesis. Universal mechanism. Nobel 1978.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "AlphaFold_solved_protein_folding",
+      "if": ["amino acid sequence known"],
+      "then": ["AlphaFold predicts 3D structure with high accuracy"],
+      "why": "DeepMind 2020-2021. 50-year challenge largely solved. Biology research transformed. Validates Anfinsen. Nobel 2024.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "allosteric_enables_metabolic_regulation",
+      "if": ["pathway has allosteric enzyme"],
+      "then": ["product feedback inhibits early steps"],
+      "why": "End product binds allosteric site, slows pathway. PFK in glycolysis inhibited by ATP. Standard metabolic control.",
+      "soundness_category": "extensional_equivalence"
+    }
+  ]
+}

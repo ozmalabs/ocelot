@@ -1,0 +1,34 @@
+{
+  "id": "tunable_parameter",
+  "version": "1.0.0",
+  "depends_on": [],
+  "description": "Graph-resident introspection of agent-tunable knobs. TunableParameter nodes record attr_name + min/max/step + owner; the agent walks has_tunable to discover what it can tune. Tuning Rules are per-knob (specific metric + attr) but read bounds + step from the TP node \u2014 so the agent can edit its own learning rates as graph data.",
+  "nodes": [],
+  "edges": [],
+  "productions": [
+    {
+      "src": {
+        "type": "AcousticLexicon",
+        "var": "src"
+      },
+      "edge_type": "has_tunable",
+      "tgt": {
+        "type": "TunableParameter",
+        "var": "tgt"
+      },
+      "provenance": "tunable_parameter:lex_has_tunable"
+    },
+    {
+      "src": {
+        "type": "Operation",
+        "var": "src"
+      },
+      "edge_type": "has_tunable",
+      "tgt": {
+        "type": "TunableParameter",
+        "var": "tgt"
+      },
+      "provenance": "tunable_parameter:op_has_tunable"
+    }
+  ]
+}

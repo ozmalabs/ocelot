@@ -1,0 +1,172 @@
+{
+ "id": "disorder_glassbox",
+ "version": "1.0.0",
+ "self_load_only": true,
+ "depends_on": [
+  "staleness_decay",
+  "demotion_hierarchy"
+ ],
+ "area": "retina",
+ "description": "THE DISORDER GLASS-BOX (block 199000) on top of 196000 staleness_decay + 198000 demotion_hierarchy. A faulty decay/demotion system IS a class of mental illness -- a PARAMETRIC fault on the landed machinery, an explicit graph-resident knob. TWO disorders, both DEMOTION FAILURES: (1) OBSESSION/RUMINATION = a SELF-REFRESHING LOOP -- the pathological attention->refresh coupling is LITERALLY an edge, retina -ruminates_on-> HierTrace; dis_ruminate (order 0, before dh_freshness) resets last_refresh_epoch = now_epoch every tick, so dh_freshness reads dEpoch=0 -> freshness=C0 -> the trace stays FRESH and NEVER demotes (positive feedback, dwelling keeps it fresh, crowds capacity). Snip the ruminates_on edge -> the rule cannot match -> surprise-gated decay resumes -> it demotes -> resolves. (2) PTSD/non-extinction = a held THREAT-SURFACE that WON'T DEMOTE -- a mis-set LARGE half_life makes IDiv(dEpoch,half_life)=0 -> freshness=C0 -> stays FRESH; dis_present_readout (order 5, after dh_tier/dh_demote) exposes experienced_as_present = (freshness>=t_present ? 1 : 0), the graph's own present-vs-past decision, so a stuck-FRESH threat reads 'present' (re-experienced, extinction failing). Restore a normal half_life -> demotes to gist -> reads 'past' -> resolves. Both are PURE knobs (the ruminates_on edge / the half_life attribute; nothing else changes). Understanding not judgment: the machinery does exactly what its knob says -- the aberrant-precision/aberrant-salience account (Kapur; Friston/Corlett; extinction-failure PTSD), precision=freshness in the Kalman-decay. Integer-native (Ashr/IDiv/IfThenElse/Gte/Eq only). OFF by default: rules need a HeldDisorderParams node the adapter creates only on opt-in; absent it every existing path is byte-identical. NO Rust, NO new Term.",
+ "microtheory": {
+  "name": "disorder_glassbox",
+  "description": "A faulty decay/demotion system is a class of symptom. Obsession = a self-refreshing loop (attention refreshes the trace, it never demotes, crowds capacity); PTSD = a long-half_life threat surface that won't demote to gist so it is re-experienced as present. Both are explicit graph-resident knobs; turning the knob restores health. Understanding the mechanism, not judging the person."
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [
+  {
+   "provenance": "seed:disorder_glassbox:retina-disorder-params",
+   "src": {
+    "type": "Retina",
+    "var": "retina"
+   },
+   "edge_type": "has_disorder_params",
+   "tgt": {
+    "type": "HeldDisorderParams",
+    "var": "dp"
+   }
+  },
+  {
+   "provenance": "seed:disorder_glassbox:retina-ruminates-on",
+   "src": {
+    "type": "Retina",
+    "var": "retina"
+   },
+   "edge_type": "ruminates_on",
+   "tgt": {
+    "type": "HierTrace",
+    "var": "tr"
+   }
+  }
+ ],
+ "rules": [
+  {
+   "name": "dis_ruminate",
+   "area": "retina",
+   "order": 0,
+   "latency_class": "hard_realtime",
+   "match": [
+    [
+     "retina",
+     "has_disorder_params",
+     "dp"
+    ],
+    [
+     "retina",
+     "ruminates_on",
+     "tr"
+    ],
+    [
+     "retina",
+     "has_hier_trace",
+     "tr"
+    ]
+   ],
+   "where": {
+    "type": "Eq",
+    "a": {
+     "type": "Attr",
+     "node": {
+      "type": "Var",
+      "name": "dp"
+     },
+     "key": "enabled"
+    },
+    "b": {
+     "type": "Lit",
+     "value": 1.0
+    }
+   },
+   "effects": [
+    [
+     "set_attr",
+     "tr",
+     "last_refresh_epoch",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "tr"
+       },
+       "key": "now_epoch"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "dis_present_readout",
+   "area": "retina",
+   "order": 5,
+   "latency_class": "hard_realtime",
+   "match": [
+    [
+     "retina",
+     "has_disorder_params",
+     "dp"
+    ],
+    [
+     "retina",
+     "has_hier_trace",
+     "tr"
+    ]
+   ],
+   "where": {
+    "type": "Eq",
+    "a": {
+     "type": "Attr",
+     "node": {
+      "type": "Var",
+      "name": "dp"
+     },
+     "key": "enabled"
+    },
+    "b": {
+     "type": "Lit",
+     "value": 1.0
+    }
+   },
+   "effects": [
+    [
+     "set_attr",
+     "tr",
+     "experienced_as_present",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gte",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "tr"
+         },
+         "key": "freshness"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "dp"
+         },
+         "key": "t_present"
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": 1.0
+       },
+       "other": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      }
+     }
+    ]
+   ]
+  }
+ ]
+}

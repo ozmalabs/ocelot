@@ -1,0 +1,641 @@
+{
+  "id": "instruction_understanding",
+  "version": "1.0.0",
+  "depends_on": ["intent"],
+  "description": "Graph-native instruction understanding and teacher learning. A routed imperative whose grammar parser left as a statement is repaired by a graph rule: its first Mention must resolve to a held instruction-route Concept. This is extensible graph data, not a host verb list; a declarative whose first word is not a route-bearing verb remains a statement. An InstructionInterpretation is always minted before activation; ambiguity holds it and requests clarification; a local grounded interpretation verifies without a teacher. An unresolved residual originates a structured TeacherRequest, ordered held knowledge -> dictionary -> Wikipedia -> LLM. Teacher evidence is never a Message: it is staged as a LessonCandidate, tested by a replay, then adopted through the existing graph-native goal/task seam. All counters and scores are integers.",
+  "microtheory": {
+    "name": "instruction_understanding",
+    "description": "interpret, verify, teach, replay, adopt, and wean from external teachers"
+  },
+  "nodes": [
+    {
+      "local_id": 1,
+      "type": "TeacherWeaningMetrics",
+      "attrs": {
+        "mode": "blocking",
+        "llm_requests": 0,
+        "llm_corrections": 0,
+        "independent_replays": 0,
+        "verified_without_llm": 0,
+        "surprise_events": 0
+      }
+    },
+    {
+      "local_id": 2,
+      "type": "TeacherWeaningPolicy",
+      "attrs": {
+        "transition_support": 0,
+        "transition_corrections": 0,
+        "transition_surprises": 0
+      }
+    }
+  ],
+  "edges": [
+    {
+      "src": {"role": "agent_root"},
+      "type": "has_teacher_weaning_metrics",
+      "tgt": {"local": 1},
+      "attrs": {}
+    },
+    {
+      "src": {"role": "agent_root"},
+      "type": "has_teacher_weaning_policy",
+      "tgt": {"local": 2},
+      "attrs": {}
+    }
+  ],
+  "productions": [
+    {"provenance": "seed:instruction_understanding:agent-interpretation", "src": {"type": "Agent", "var": "agent"}, "edge_type": "holds_interpretation", "tgt": {"type": "InstructionInterpretation", "var": "interpretation"}},
+    {"provenance": "seed:instruction_understanding:interpretation-message", "src": {"type": "InstructionInterpretation", "var": "interpretation"}, "edge_type": "interprets", "tgt": {"type": "Message", "var": "message"}},
+    {"provenance": "seed:instruction_understanding:check-interpretation", "src": {"type": "UnderstandingCheck", "var": "check"}, "edge_type": "checks", "tgt": {"type": "InstructionInterpretation", "var": "interpretation"}},
+    {"provenance": "seed:instruction_understanding:interpretation-check", "src": {"type": "InstructionInterpretation", "var": "interpretation"}, "edge_type": "has_understanding_check", "tgt": {"type": "UnderstandingCheck", "var": "check"}},
+    {"provenance": "seed:instruction_understanding:interpretation-teacher-request", "src": {"type": "InstructionInterpretation", "var": "interpretation"}, "edge_type": "seeks_teacher", "tgt": {"type": "TeacherRequest", "var": "request"}},
+    {"provenance": "seed:instruction_understanding:teacher-evidence", "src": {"type": "TeacherRequest", "var": "request"}, "edge_type": "has_evidence", "tgt": {"type": "TeacherEvidence", "var": "evidence"}},
+    {"provenance": "seed:instruction_understanding:evidence-lexical-category", "src": {"type": "TeacherEvidence", "var": "evidence"}, "edge_type": "proposes_lexical_category", "tgt": {"type": "TeacherLexicalCategoryCandidate", "var": "category"}},
+    {"provenance": "seed:instruction_understanding:teacher-escalation", "src": {"type": "TeacherRequest", "var": "request"}, "edge_type": "escalates_to", "tgt": {"type": "TeacherRequest", "var": "next_request"}},
+    {"provenance": "seed:instruction_understanding:lesson-evidence", "src": {"type": "LessonCandidate", "var": "lesson"}, "edge_type": "grounded_in_evidence", "tgt": {"type": "TeacherEvidence", "var": "evidence"}},
+    {"provenance": "seed:instruction_understanding:lesson-interpretation", "src": {"type": "LessonCandidate", "var": "lesson"}, "edge_type": "teaches_interpretation", "tgt": {"type": "InstructionInterpretation", "var": "interpretation"}},
+    {"provenance": "seed:instruction_understanding:lesson-task", "src": {"type": "LessonCandidate", "var": "lesson"}, "edge_type": "requires_replay", "tgt": {"type": "CognitiveTask", "var": "task"}},
+    {"provenance": "seed:instruction_understanding:lesson-replay", "src": {"type": "LessonCandidate", "var": "lesson"}, "edge_type": "validated_by", "tgt": {"type": "LessonReplay", "var": "replay"}},
+    {"provenance": "seed:instruction_understanding:lesson-concept-proposal", "src": {"type": "LessonCandidate", "var": "lesson"}, "edge_type": "tests_concept_proposal", "tgt": {"type": "TeacherConceptCandidate", "var": "proposal"}},
+    {"provenance": "seed:instruction_understanding:lesson-relation-proposal", "src": {"type": "LessonCandidate", "var": "lesson"}, "edge_type": "tests_relation_proposal", "tgt": {"type": "TeacherRelationCandidate", "var": "proposal"}},
+    {"provenance": "seed:instruction_understanding:lesson-frame-proposal", "src": {"type": "LessonCandidate", "var": "lesson"}, "edge_type": "tests_frame_proposal", "tgt": {"type": "TeacherFrameCandidate", "var": "proposal"}},
+    {"provenance": "seed:instruction_understanding:lesson-construction-proposal", "src": {"type": "LessonCandidate", "var": "lesson"}, "edge_type": "tests_construction_proposal", "tgt": {"type": "TeacherConstructionCandidate", "var": "proposal"}},
+    {"provenance": "seed:instruction_understanding:lesson-review", "src": {"type": "LessonCandidate", "var": "lesson"}, "edge_type": "reviewed_by", "tgt": {"type": "SelfConcern", "var": "concern"}},
+    {"provenance": "seed:instruction_understanding:agent-lesson-review", "src": {"type": "Agent", "var": "agent"}, "edge_type": "has_self_concern", "tgt": {"type": "SelfConcern", "var": "concern"}},
+    {"provenance": "seed:instruction_understanding:interpretation-goal", "src": {"type": "InstructionInterpretation", "var": "interpretation"}, "edge_type": "activates", "tgt": {"type": "Goal", "var": "goal"}},
+    {"provenance": "seed:instruction_understanding:goal-message", "src": {"type": "Goal", "var": "goal"}, "edge_type": "comprehends", "tgt": {"type": "Message", "var": "message"}},
+    {"provenance": "seed:instruction_understanding:agent-goal", "src": {"type": "Agent", "var": "agent"}, "edge_type": "has_goal", "tgt": {"type": "Goal", "var": "goal"}},
+    {"provenance": "seed:instruction_understanding:agent-message", "src": {"type": "Agent", "var": "agent"}, "edge_type": "sent", "tgt": {"type": "Message", "var": "message"}},
+    {"provenance": "seed:instruction_understanding:reply-source", "src": {"type": "Message", "var": "reply"}, "edge_type": "responds_to", "tgt": {"type": "Message", "var": "message"}},
+    {"provenance": "seed:instruction_understanding:teacher-metrics", "src": {"type": "Agent", "var": "agent"}, "edge_type": "has_teacher_weaning_metrics", "tgt": {"type": "TeacherWeaningMetrics", "var": "metrics"}}
+    ,{"provenance": "seed:instruction_understanding:teacher-policy", "src": {"type": "Agent", "var": "agent"}, "edge_type": "has_teacher_weaning_policy", "tgt": {"type": "TeacherWeaningPolicy", "var": "policy"}}
+    ,{"provenance": "seed:instruction_understanding:hypothesis-message", "src": {"type": "InstructionHypothesis", "var": "hypothesis"}, "edge_type": "hypothesises", "tgt": {"type": "Message", "var": "message"}}
+    ,{"provenance": "seed:instruction_understanding:hypothesis-teacher", "src": {"type": "InstructionHypothesis", "var": "hypothesis"}, "edge_type": "seeks_teacher", "tgt": {"type": "TeacherRequest", "var": "request"}}
+  ],
+  "rules": [
+    {
+      "name": "iu_recognise_routed_imperative",
+      "area": "executive",
+      "order": 0,
+      "latency_class": "hard_realtime",
+      "match": [["agent", "received", "message"], ["message", "has_mention", "head"], ["head", "refers_to", "verb"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "message"}, "key": "comp_kind"}, "b": {"type": "Lit", "value": "statement"}},
+        {"type": "Eq", "a": {"type": "TypeOf", "node": {"type": "Var", "name": "verb"}}, "b": {"type": "Lit", "value": "Concept"}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "verb"}, "key": "instruction_route"}, "b": {"type": "Lit", "value": null}}},
+        {"type": "Not", "arg": {"type": "Exists", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "head"}, "edge_type": "prev_mention"}, "var_name": "previous", "predicate": {"type": "Lit", "value": true}}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "message"}, "key": "instruction_recognised"}, "b": {"type": "Lit", "value": 1}}}
+      ]},
+      "effects": [
+        ["set_attr", "message", "comp_kind", "instruction"],
+        ["set_attr", "message", "comp_predicate", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "head"}, "key": "text"}}],
+        ["set_attr", "message", "comp_content", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "message"}, "key": "text"}}],
+        ["set_attr", "message", "comp_dispatch_path", "instruction"],
+        ["set_attr", "message", "instruction_recognised", 1]
+      ]
+    },
+    {
+      "name": "iu_accept_request_speech_act_as_instruction",
+      "area": "executive",
+      "order": 0,
+      "latency_class": "hard_realtime",
+      "match": [["agent", "received", "message"], ["message", "has_mention", "head"], ["message", "has_speech_act", "act"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "message"}, "key": "comp_kind"}, "b": {"type": "Lit", "value": "statement"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "act"}, "key": "name"}, "b": {"type": "Lit", "value": "request"}},
+        {"type": "Not", "arg": {"type": "Exists", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "head"}, "edge_type": "prev_mention"}, "var_name": "previous", "predicate": {"type": "Lit", "value": true}}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "message"}, "key": "instruction_recognised"}, "b": {"type": "Lit", "value": 1}}}
+      ]},
+      "effects": [
+        ["set_attr", "message", "comp_kind", "instruction"],
+        ["set_attr", "message", "comp_predicate", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "head"}, "key": "text"}}],
+        ["set_attr", "message", "comp_content", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "message"}, "key": "text"}}],
+        ["set_attr", "message", "comp_dispatch_path", "instruction"],
+        ["set_attr", "message", "instruction_recognised", 1]
+      ]
+    },
+    {
+      "name": "iu_mint_candidate_interpretation",
+      "area": "executive",
+      "order": 1,
+      "latency_class": "hard_realtime",
+      "match": [["agent", "received", "message"], ["message", "has_mention", "predicate_mention"], ["predicate_mention", "refers_to", "predicate_concept"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "message"}, "key": "comp_kind"}, "b": {"type": "Lit", "value": "instruction"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "message"}, "key": "from"}, "b": {"type": "Lit", "value": "interlocutor"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "predicate_mention"}, "key": "text"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "message"}, "key": "comp_predicate"}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "predicate_concept"}, "key": "instruction_route"}, "b": {"type": "Lit", "value": null}}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "predicate_concept"}, "key": "instruction_route"}, "b": {"type": "Lit", "value": "self_report"}}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "message"}, "key": "instruction_interpreted"}, "b": {"type": "Lit", "value": 1}}}
+      ]},
+      "effects": [
+        ["add_node", "interpretation", "InstructionInterpretation", {"status": "candidate", "predicate": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "message"}, "key": "comp_predicate"}}, "content": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "message"}, "key": "comp_content"}}, "residual": 1, "local_grounded": 0, "alternative_count": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "message"}, "key": "alternative_count"}}}],
+        ["add_edge", "agent", "holds_interpretation", "interpretation"],
+        ["add_edge", "interpretation", "interprets", "message"],
+        ["set_attr", "message", "instruction_interpreted", 1]
+      ]
+    },
+    {
+      "name": "iu_normalise_self_report_instruction_content",
+      "area": "executive",
+      "order": 1,
+      "latency_class": "hard_realtime",
+      "match": [["message", "has_mention", "predicate_mention"], ["predicate_mention", "refers_to", "predicate_concept"], ["message", "has_mention", "tail"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "message"}, "key": "comp_kind"}, "b": {"type": "Lit", "value": "instruction"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "predicate_concept"}, "key": "instruction_route"}, "b": {"type": "Lit", "value": "self_report"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "predicate_mention"}, "key": "text"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "message"}, "key": "comp_predicate"}},
+        {"type": "Not", "arg": {"type": "Exists", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "tail"}, "edge_type": "next_mention"}, "var_name": "following", "predicate": {"type": "Lit", "value": true}}}
+      ]},
+      "effects": [["set_attr", "message", "comp_content", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "tail"}, "key": "text"}}]]
+    },
+    {
+      "name": "iu_hypothesise_unknown_initial_predicate",
+      "area": "executive",
+      "order": 1,
+      "latency_class": "soft_realtime",
+      "match": [["agent", "received", "message"], ["message", "has_mention", "head"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "message"}, "key": "comp_kind"}, "b": {"type": "Lit", "value": "statement"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "message"}, "key": "from"}, "b": {"type": "Lit", "value": "interlocutor"}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "message"}, "key": "sak_ends_q"}, "b": {"type": "Lit", "value": 1}}},
+        {"type": "Not", "arg": {"type": "Exists", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "head"}, "edge_type": "prev_mention"}, "var_name": "previous", "predicate": {"type": "Lit", "value": true}}},
+        {"type": "Not", "arg": {"type": "Exists", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "head"}, "edge_type": "refers_to"}, "var_name": "known", "predicate": {"type": "Lit", "value": true}}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "message"}, "key": "instruction_hypothesised"}, "b": {"type": "Lit", "value": 1}}}
+      ]},
+      "effects": [
+        ["add_node", "hypothesis", "InstructionHypothesis", {"status": "dictionary_requested", "predicate": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "head"}, "key": "text"}}, "context": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "message"}, "key": "text"}}, "residual": 1}],
+        ["add_node", "request", "TeacherRequest", {"status": "requested", "teacher_tier": "dictionary", "origin": "agent", "question_kind": "classify_instruction_head", "question_predicate": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "head"}, "key": "text"}}, "question_content": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "head"}, "key": "text"}}, "instruction_context": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "message"}, "key": "text"}}}],
+        ["add_edge", "hypothesis", "hypothesises", "message"],
+        ["add_edge", "hypothesis", "seeks_teacher", "request"],
+        ["set_attr", "message", "instruction_hypothesised", 1]
+      ]
+    },
+    {
+      "name": "iu_confirm_dictionary_verb_hypothesis",
+      "area": "learning",
+      "order": 6,
+      "latency_class": "soft_realtime",
+      "match": [["hypothesis", "hypothesises", "message"], ["hypothesis", "seeks_teacher", "request"], ["request", "has_evidence", "evidence"], ["evidence", "proposes_lexical_category", "category"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "hypothesis"}, "key": "status"}, "b": {"type": "Lit", "value": "dictionary_requested"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "request"}, "key": "teacher_tier"}, "b": {"type": "Lit", "value": "dictionary"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "category"}, "key": "lexeme"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "hypothesis"}, "key": "predicate"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "category"}, "key": "category"}, "b": {"type": "Lit", "value": "verb"}}
+      ]},
+      "effects": [
+        ["set_attr", "hypothesis", "status", "verb_confirmed"],
+        ["set_attr", "message", "comp_kind", "instruction"],
+        ["set_attr", "message", "comp_predicate", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "hypothesis"}, "key": "predicate"}}],
+        ["set_attr", "message", "comp_content", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "hypothesis"}, "key": "context"}}],
+        ["set_attr", "message", "comp_dispatch_path", "instruction"],
+        ["set_attr", "message", "instruction_dictionary_confirmed", 1]
+      ]
+    },
+    {
+      "name": "iu_acknowledge_pending_instruction_hypothesis",
+      "area": "executive",
+      "order": 12,
+      "latency_class": "hard_realtime",
+      "match": [["agent", "received", "message"], ["hypothesis", "hypothesises", "message"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "hypothesis"}, "key": "status"}, "b": {"type": "Lit", "value": "dictionary_requested"}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "message"}, "key": "instruction_hypothesis_acknowledged"}, "b": {"type": "Lit", "value": 1}}}
+      ]},
+      "effects": [
+        ["add_node", "reply", "Message", {"from": "agent", "kind": "instruction_pending", "text": "I am checking whether this is an instruction before acting."}],
+        ["add_edge", "reply", "responds_to", "message"],
+        ["add_edge", "agent", "sent", "reply"],
+        ["set_attr", "message", "instruction_hypothesis_acknowledged", 1]
+      ]
+    },
+    {
+      "name": "iu_mint_dictionary_confirmed_interpretation",
+      "area": "executive",
+      "order": 7,
+      "latency_class": "soft_realtime",
+      "match": [["agent", "received", "message"], ["hypothesis", "hypothesises", "message"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "hypothesis"}, "key": "status"}, "b": {"type": "Lit", "value": "verb_confirmed"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "message"}, "key": "from"}, "b": {"type": "Lit", "value": "interlocutor"}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "message"}, "key": "instruction_interpreted"}, "b": {"type": "Lit", "value": 1}}}
+      ]},
+      "effects": [
+        ["add_node", "interpretation", "InstructionInterpretation", {"status": "candidate", "predicate": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "hypothesis"}, "key": "predicate"}}, "content": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "hypothesis"}, "key": "context"}}, "residual": 1, "local_grounded": 0, "alternative_count": 0}],
+        ["add_edge", "agent", "holds_interpretation", "interpretation"],
+        ["add_edge", "interpretation", "interprets", "message"],
+        ["set_attr", "message", "instruction_interpreted", 1]
+      ]
+    },
+    {
+      "name": "iu_open_understanding_check",
+      "area": "executive",
+      "order": 2,
+      "latency_class": "hard_realtime",
+      "match": [["agent", "holds_interpretation", "interpretation"]],
+      "where": {"type": "Not", "arg": {"type": "Exists", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "interpretation"}, "edge_type": "has_understanding_check"}, "var_name": "existing", "predicate": {"type": "Lit", "value": true}}},
+      "effects": [
+        ["add_node", "check", "UnderstandingCheck", {"status": "pending", "method": "candidate_verification", "confidence": 0}],
+        ["add_edge", "interpretation", "has_understanding_check", "check"],
+        ["add_edge", "check", "checks", "interpretation"]
+      ]
+    },
+    {
+      "name": "iu_hold_ambiguous_interpretation",
+      "area": "executive",
+      "order": 3,
+      "latency_class": "hard_realtime",
+      "match": [["interpretation", "interprets", "message"], ["interpretation", "has_understanding_check", "check"], ["agent", "holds_interpretation", "interpretation"]],
+      "where": {"type": "And", "items": [
+        {"type": "Gte", "a": {"type": "Attr", "node": {"type": "Var", "name": "interpretation"}, "key": "alternative_count"}, "b": {"type": "Lit", "value": 2}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "check"}, "key": "status"}, "b": {"type": "Lit", "value": "pending"}}
+      ]},
+      "effects": [
+        ["set_attr", "interpretation", "status", "clarification_required"],
+        ["set_attr", "check", "status", "ambiguous"],
+        ["set_attr", "message", "comprehended", 1],
+        ["add_node", "reply", "Message", {"from": "agent", "kind": "clarification", "text": {"__term__": {"type": "StringConcat", "parts": [{"type": "Lit", "value": "I have more than one possible interpretation of your instruction to "}, {"type": "Attr", "node": {"type": "Var", "name": "interpretation"}, "key": "predicate"}, {"type": "Lit", "value": ". Please clarify the intended target or constraint."}]}}}],
+        ["add_edge", "reply", "responds_to", "message"],
+        ["add_edge", "agent", "sent", "reply"]
+      ]
+    },
+    {
+      "name": "iu_mark_local_grounding",
+      "area": "executive",
+      "order": 3,
+      "latency_class": "hard_realtime",
+      "match": [["interpretation", "interprets", "message"], ["message", "has_mention", "mention"], ["mention", "refers_to", "concept"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "TypeOf", "node": {"type": "Var", "name": "concept"}}, "b": {"type": "Lit", "value": "Concept"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "concept"}, "key": "instruction_route"}, "b": {"type": "Lit", "value": null}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "concept"}, "key": "name"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "interpretation"}, "key": "predicate"}}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "interpretation"}, "key": "status"}, "b": {"type": "Lit", "value": "candidate"}}
+      ]},
+      "effects": [["set_attr", "interpretation", "local_grounded", 1], ["set_attr", "interpretation", "residual", 0]]
+    },
+    {
+      "name": "iu_verify_local_interpretation",
+      "area": "executive",
+      "order": 4,
+      "latency_class": "hard_realtime",
+      "match": [["interpretation", "has_understanding_check", "check"], ["agent", "holds_interpretation", "interpretation"], ["agent", "has_teacher_weaning_metrics", "metrics"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "interpretation"}, "key": "local_grounded"}, "b": {"type": "Lit", "value": 1}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "check"}, "key": "status"}, "b": {"type": "Lit", "value": "pending"}}
+      ]},
+      "effects": [
+        ["set_attr", "interpretation", "status", "verified"],
+        ["set_attr", "check", "status", "verified"],
+        ["set_attr", "check", "confidence", 1],
+        ["set_attr_if_different", "metrics", "verified_without_llm", {"__term__": {"type": "Plus", "items": [{"type": "Attr", "node": {"type": "Var", "name": "metrics"}, "key": "verified_without_llm"}, {"type": "Lit", "value": 1}]}}]
+      ]
+    },
+    {
+      "name": "iu_originate_teacher_question_from_residual",
+      "area": "executive",
+      "order": 5,
+      "latency_class": "soft_realtime",
+      "match": [["agent", "holds_interpretation", "interpretation"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "interpretation"}, "key": "status"}, "b": {"type": "Lit", "value": "candidate"}},
+        {"type": "Gt", "a": {"type": "Attr", "node": {"type": "Var", "name": "interpretation"}, "key": "residual"}, "b": {"type": "Lit", "value": 0}},
+        {"type": "Not", "arg": {"type": "Exists", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "interpretation"}, "edge_type": "seeks_teacher"}, "var_name": "prior", "predicate": {"type": "Lit", "value": true}}}
+      ]},
+      "effects": [
+        ["add_node", "task", "CognitiveTask", {"kind": "instruction_understanding", "status": "awaiting_teacher", "order": 2, "urgency": 1, "residual": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "interpretation"}, "key": "residual"}}, "estimated_cost": 1}],
+        ["add_node", "request", "TeacherRequest", {"status": "requested", "teacher_tier": "dictionary", "origin": "agent", "question_kind": "resolve_instruction_gap", "question_predicate": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "interpretation"}, "key": "predicate"}}, "question_content": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "interpretation"}, "key": "content"}}}],
+        ["add_edge", "interpretation", "seeks_teacher", "request"],
+        ["add_edge", "task", "about_interpretation", "interpretation"]
+      ]
+    },
+    {
+      "name": "iu_escalate_dictionary_to_wikipedia",
+      "area": "executive",
+      "order": 6,
+      "latency_class": "soft_realtime",
+      "match": [["interpretation", "seeks_teacher", "request"], ["request", "has_evidence", "evidence"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "request"}, "key": "teacher_tier"}, "b": {"type": "Lit", "value": "dictionary"}},
+        {"type": "In", "member": {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "verdict"}, "container": {"type": "Lit", "value": ["insufficient", "unavailable"]}},
+        {"type": "Not", "arg": {"type": "Exists", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "request"}, "edge_type": "escalates_to"}, "var_name": "next", "predicate": {"type": "Lit", "value": true}}}
+      ]},
+      "effects": [
+        ["add_node", "next_request", "TeacherRequest", {"status": "requested", "teacher_tier": "wikipedia", "origin": "agent", "question_kind": "resolve_instruction_gap", "question_predicate": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "request"}, "key": "question_predicate"}}, "question_content": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "request"}, "key": "question_content"}}}],
+        ["add_edge", "request", "escalates_to", "next_request"],
+        ["add_edge", "interpretation", "seeks_teacher", "next_request"]
+      ]
+    },
+    {
+      "name": "iu_escalate_wikipedia_to_llm",
+      "area": "executive",
+      "order": 7,
+      "latency_class": "soft_realtime",
+      "match": [["interpretation", "seeks_teacher", "request"], ["request", "has_evidence", "evidence"], ["agent", "has_teacher_weaning_metrics", "metrics"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "request"}, "key": "teacher_tier"}, "b": {"type": "Lit", "value": "wikipedia"}},
+        {"type": "In", "member": {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "verdict"}, "container": {"type": "Lit", "value": ["insufficient", "unavailable"]}},
+        {"type": "In", "member": {"type": "Attr", "node": {"type": "Var", "name": "metrics"}, "key": "mode"}, "container": {"type": "Lit", "value": ["blocking", "shadow"]}},
+        {"type": "Not", "arg": {"type": "Exists", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "request"}, "edge_type": "escalates_to"}, "var_name": "next", "predicate": {"type": "Lit", "value": true}}}
+      ]},
+      "effects": [
+        ["add_node", "next_request", "TeacherRequest", {"status": "requested", "teacher_tier": "llm", "origin": "agent", "question_kind": "resolve_instruction_gap", "question_predicate": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "request"}, "key": "question_predicate"}}, "question_content": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "request"}, "key": "question_content"}}, "verification_mode": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "metrics"}, "key": "mode"}}, "blocking": {"__term__": {"type": "IfThenElse", "cond": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "metrics"}, "key": "mode"}, "b": {"type": "Lit", "value": "blocking"}}, "then": {"type": "Lit", "value": 1}, "other": {"type": "Lit", "value": 0}}}}],
+        ["add_edge", "request", "escalates_to", "next_request"],
+        ["add_edge", "interpretation", "seeks_teacher", "next_request"],
+        ["set_attr_if_different", "metrics", "llm_requests", {"__term__": {"type": "Plus", "items": [{"type": "Attr", "node": {"type": "Var", "name": "metrics"}, "key": "llm_requests"}, {"type": "Lit", "value": 1}]}}]
+      ]
+    },
+    {
+      "name": "iu_escalate_surprise_to_llm",
+      "area": "executive",
+      "order": 7,
+      "latency_class": "soft_realtime",
+      "match": [["interpretation", "seeks_teacher", "request"], ["request", "has_evidence", "evidence"], ["agent", "has_teacher_weaning_metrics", "metrics"], ["agent", "has_teacher_weaning_policy", "policy"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "request"}, "key": "teacher_tier"}, "b": {"type": "Lit", "value": "wikipedia"}},
+        {"type": "In", "member": {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "verdict"}, "container": {"type": "Lit", "value": ["insufficient", "unavailable"]}},
+        {"type": "In", "member": {"type": "Attr", "node": {"type": "Var", "name": "metrics"}, "key": "mode"}, "container": {"type": "Lit", "value": ["surprise_only", "autonomous"]}},
+        {"type": "Gt", "a": {"type": "Attr", "node": {"type": "Var", "name": "interpretation"}, "key": "surprise"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "policy"}, "key": "transition_surprises"}},
+        {"type": "Not", "arg": {"type": "Exists", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "request"}, "edge_type": "escalates_to"}, "var_name": "next", "predicate": {"type": "Lit", "value": true}}}
+      ]},
+      "effects": [
+        ["add_node", "next_request", "TeacherRequest", {"status": "requested", "teacher_tier": "llm", "origin": "agent", "question_kind": "resolve_instruction_gap", "question_predicate": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "request"}, "key": "question_predicate"}}, "question_content": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "request"}, "key": "question_content"}}, "verification_mode": "surprise", "blocking": 0}],
+        ["add_edge", "request", "escalates_to", "next_request"],
+        ["add_edge", "interpretation", "seeks_teacher", "next_request"],
+        ["set_attr_if_different", "metrics", "llm_requests", {"__term__": {"type": "Plus", "items": [{"type": "Attr", "node": {"type": "Var", "name": "metrics"}, "key": "llm_requests"}, {"type": "Lit", "value": 1}]}}]
+      ]
+    },
+    {
+      "name": "iu_stage_structured_teacher_lesson",
+      "area": "learning",
+      "order": 8,
+      "latency_class": "soft_realtime",
+      "match": [["interpretation", "seeks_teacher", "request"], ["request", "has_evidence", "evidence"], ["interpretation", "has_understanding_check", "check"]],
+      "where": {"type": "And", "items": [
+        {"type": "In", "member": {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "verdict"}, "container": {"type": "Lit", "value": ["supported", "corrected"]}},
+        {"type": "Not", "arg": {"type": "Exists", "source": {"type": "NodesOfType", "node_type": "LessonCandidate"}, "var_name": "previous", "predicate": {"type": "Exists", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "previous"}, "edge_type": "grounded_in_evidence"}, "var_name": "prior_evidence", "predicate": {"type": "Eq", "a": {"type": "Var", "name": "prior_evidence"}, "b": {"type": "Var", "name": "evidence"}}}}}
+      ]},
+      "effects": [
+        ["add_node", "lesson", "LessonCandidate", {"status": "staged", "lesson_kind": "structured_graph_delta", "verdict": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "verdict"}}, "lesson_key": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "lesson_key"}}, "teacher_tier": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "request"}, "key": "teacher_tier"}}, "provenance": "teacher_evidence", "replay_required": 1, "alignment_status": "pending"}],
+        ["add_node", "task", "CognitiveTask", {"kind": "teacher_lesson_replay", "status": "awaiting_replay", "order": 2, "urgency": 1, "estimated_cost": 1}],
+        ["add_node", "concern", "SelfConcern", {"status": "noted", "source": "teacher_learning", "kind": "lesson_adoption", "content": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "lesson_key"}}}],
+        ["add_edge", "lesson", "grounded_in_evidence", "evidence"],
+        ["add_edge", "lesson", "teaches_interpretation", "interpretation"],
+        ["add_edge", "lesson", "requires_replay", "task"],
+        ["add_edge", "lesson", "reviewed_by", "concern"],
+        ["add_edge", "agent", "has_self_concern", "concern"],
+        ["set_attr", "check", "status", "lesson_staged"]
+      ]
+    },
+    {
+      "name": "iu_align_teacher_concept_proposal",
+      "area": "learning",
+      "order": 9,
+      "latency_class": "soft_realtime",
+      "match": [["lesson", "teaches_interpretation", "interpretation"], ["lesson", "grounded_in_evidence", "evidence"], ["evidence", "proposes_concept", "proposal"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "lesson"}, "key": "status"}, "b": {"type": "Lit", "value": "staged"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "proposal"}, "key": "status"}, "b": {"type": "Lit", "value": "proposed"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "proposal"}, "key": "name"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "interpretation"}, "key": "content"}}
+      ]},
+      "effects": [["add_edge", "lesson", "tests_concept_proposal", "proposal"], ["set_attr", "lesson", "alignment_status", "aligned"]]
+    },
+    {
+      "name": "iu_align_teacher_relation_proposal",
+      "area": "learning",
+      "order": 9,
+      "latency_class": "soft_realtime",
+      "match": [["lesson", "teaches_interpretation", "interpretation"], ["lesson", "grounded_in_evidence", "evidence"], ["evidence", "proposes_relation", "proposal"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "lesson"}, "key": "status"}, "b": {"type": "Lit", "value": "staged"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "proposal"}, "key": "subject"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "interpretation"}, "key": "predicate"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "proposal"}, "key": "object"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "interpretation"}, "key": "content"}}
+      ]},
+      "effects": [["add_edge", "lesson", "tests_relation_proposal", "proposal"], ["set_attr", "lesson", "alignment_status", "aligned"]]
+    },
+    {
+      "name": "iu_align_teacher_frame_proposal",
+      "area": "learning",
+      "order": 9,
+      "latency_class": "soft_realtime",
+      "match": [["lesson", "teaches_interpretation", "interpretation"], ["lesson", "grounded_in_evidence", "evidence"], ["evidence", "proposes_frame", "proposal"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "lesson"}, "key": "status"}, "b": {"type": "Lit", "value": "staged"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "proposal"}, "key": "name"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "interpretation"}, "key": "predicate"}}
+      ]},
+      "effects": [["add_edge", "lesson", "tests_frame_proposal", "proposal"], ["set_attr", "lesson", "alignment_status", "aligned"]]
+    },
+    {
+      "name": "iu_align_teacher_construction_proposal",
+      "area": "learning",
+      "order": 9,
+      "latency_class": "soft_realtime",
+      "match": [["lesson", "teaches_interpretation", "interpretation"], ["lesson", "grounded_in_evidence", "evidence"], ["evidence", "proposes_construction", "proposal"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "lesson"}, "key": "status"}, "b": {"type": "Lit", "value": "staged"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "proposal"}, "key": "name"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "interpretation"}, "key": "predicate"}}
+      ]},
+      "effects": [["add_edge", "lesson", "tests_construction_proposal", "proposal"], ["set_attr", "lesson", "alignment_status", "aligned"]]
+    },
+    {
+      "name": "iu_replay_aligned_teacher_proposal",
+      "area": "learning",
+      "order": 10,
+      "latency_class": "soft_realtime",
+      "match": [["lesson", "teaches_interpretation", "interpretation"], ["lesson", "requires_replay", "task"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "lesson"}, "key": "status"}, "b": {"type": "Lit", "value": "staged"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "lesson"}, "key": "alignment_status"}, "b": {"type": "Lit", "value": "aligned"}},
+        {"type": "Not", "arg": {"type": "Exists", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "lesson"}, "edge_type": "validated_by"}, "var_name": "prior", "predicate": {"type": "Lit", "value": true}}}
+      ]},
+      "effects": [["add_node", "replay", "LessonReplay", {"outcome": "passed", "validation_kind": "aligned_teacher_proposal"}], ["add_edge", "lesson", "validated_by", "replay"], ["set_attr", "task", "status", "done"]]
+    },
+    {
+      "name": "iu_bound_unaligned_teacher_lesson",
+      "area": "learning",
+      "order": 10,
+      "latency_class": "soft_realtime",
+      "match": [["lesson", "requires_replay", "task"], ["lesson", "teaches_interpretation", "interpretation"], ["interpretation", "has_understanding_check", "check"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "lesson"}, "key": "status"}, "b": {"type": "Lit", "value": "staged"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "lesson"}, "key": "alignment_status"}, "b": {"type": "Lit", "value": "pending"}}
+      ]},
+      "effects": [["set_attr", "lesson", "status", "blocked"], ["set_attr", "lesson", "unresolved_reason", "no_aligned_teacher_proposal"], ["set_attr", "task", "status", "blocked"], ["set_attr", "check", "status", "replay_unavailable"]]
+    },
+    {
+      "name": "iu_adopt_lesson_only_after_replay",
+      "area": "learning",
+      "order": 10,
+      "latency_class": "soft_realtime",
+      "match": [["lesson", "teaches_interpretation", "interpretation"], ["lesson", "validated_by", "replay"], ["interpretation", "has_understanding_check", "check"], ["agent", "has_teacher_weaning_metrics", "metrics"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "lesson"}, "key": "status"}, "b": {"type": "Lit", "value": "staged"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "replay"}, "key": "outcome"}, "b": {"type": "Lit", "value": "passed"}}
+      ]},
+      "effects": [
+        ["set_attr", "lesson", "status", "adopted"],
+        ["set_attr", "interpretation", "status", "verified"],
+        ["set_attr", "interpretation", "residual", 0],
+        ["set_attr", "check", "status", "verified"],
+        ["set_attr", "check", "confidence", 1],
+        ["set_attr_if_different", "metrics", "independent_replays", {"__term__": {"type": "Plus", "items": [{"type": "Attr", "node": {"type": "Var", "name": "metrics"}, "key": "independent_replays"}, {"type": "Lit", "value": 1}]}}]
+      ]
+    },
+    {
+      "name": "iu_promote_adopted_concept_proposal",
+      "area": "learning",
+      "order": 11,
+      "latency_class": "soft_realtime",
+      "match": [["lesson", "tests_concept_proposal", "proposal"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "lesson"}, "key": "status"}, "b": {"type": "Lit", "value": "adopted"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "proposal"}, "key": "status"}, "b": {"type": "Lit", "value": "proposed"}}
+      ]},
+      "effects": [["set_attr", "proposal", "status", "adopted"]]
+    },
+    {
+      "name": "iu_promote_adopted_relation_proposal",
+      "area": "learning",
+      "order": 11,
+      "latency_class": "soft_realtime",
+      "match": [["lesson", "tests_relation_proposal", "proposal"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "lesson"}, "key": "status"}, "b": {"type": "Lit", "value": "adopted"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "proposal"}, "key": "status"}, "b": {"type": "Lit", "value": "proposed"}}
+      ]},
+      "effects": [["set_attr", "proposal", "status", "adopted"]]
+    },
+    {
+      "name": "iu_promote_adopted_frame_proposal",
+      "area": "learning",
+      "order": 11,
+      "latency_class": "soft_realtime",
+      "match": [["lesson", "tests_frame_proposal", "proposal"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "lesson"}, "key": "status"}, "b": {"type": "Lit", "value": "adopted"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "proposal"}, "key": "status"}, "b": {"type": "Lit", "value": "proposed"}}
+      ]},
+      "effects": [["set_attr", "proposal", "status", "adopted"]]
+    },
+    {
+      "name": "iu_promote_adopted_construction_proposal",
+      "area": "learning",
+      "order": 11,
+      "latency_class": "soft_realtime",
+      "match": [["lesson", "tests_construction_proposal", "proposal"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "lesson"}, "key": "status"}, "b": {"type": "Lit", "value": "adopted"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "proposal"}, "key": "status"}, "b": {"type": "Lit", "value": "proposed"}}
+      ]},
+      "effects": [["set_attr", "proposal", "status", "adopted"]]
+    },
+    {
+      "name": "iu_account_llm_correction",
+      "area": "learning",
+      "order": 9,
+      "latency_class": "soft_realtime",
+      "match": [["request", "has_evidence", "evidence"], ["agent", "has_teacher_weaning_metrics", "metrics"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "request"}, "key": "teacher_tier"}, "b": {"type": "Lit", "value": "llm"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "verdict"}, "b": {"type": "Lit", "value": "corrected"}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "metric_accounted"}, "b": {"type": "Lit", "value": 1}}}
+      ]},
+      "effects": [
+        ["set_attr_if_different", "metrics", "llm_corrections", {"__term__": {"type": "Plus", "items": [{"type": "Attr", "node": {"type": "Var", "name": "metrics"}, "key": "llm_corrections"}, {"type": "Lit", "value": 1}]}}],
+        ["set_attr", "evidence", "metric_accounted", 1]
+      ]
+    },
+    {
+      "name": "iu_wean_blocking_to_shadow",
+      "area": "supervisory",
+      "order": 11,
+      "latency_class": "soft_realtime",
+      "match": [["agent", "has_teacher_weaning_metrics", "metrics"], ["agent", "has_teacher_weaning_policy", "policy"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "metrics"}, "key": "mode"}, "b": {"type": "Lit", "value": "blocking"}},
+        {"type": "Gt", "a": {"type": "Attr", "node": {"type": "Var", "name": "metrics"}, "key": "independent_replays"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "policy"}, "key": "transition_support"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "metrics"}, "key": "llm_corrections"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "policy"}, "key": "transition_corrections"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "metrics"}, "key": "surprise_events"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "policy"}, "key": "transition_surprises"}}
+      ]},
+      "effects": [["set_attr", "metrics", "mode", "shadow"], ["set_attr", "policy", "transition_support", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "metrics"}, "key": "independent_replays"}}], ["set_attr", "policy", "transition_corrections", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "metrics"}, "key": "llm_corrections"}}], ["set_attr", "policy", "transition_surprises", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "metrics"}, "key": "surprise_events"}}]]
+    },
+    {
+      "name": "iu_wean_shadow_to_surprise_only",
+      "area": "supervisory",
+      "order": 11,
+      "latency_class": "soft_realtime",
+      "match": [["agent", "has_teacher_weaning_metrics", "metrics"], ["agent", "has_teacher_weaning_policy", "policy"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "metrics"}, "key": "mode"}, "b": {"type": "Lit", "value": "shadow"}},
+        {"type": "Gt", "a": {"type": "Attr", "node": {"type": "Var", "name": "metrics"}, "key": "independent_replays"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "policy"}, "key": "transition_support"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "metrics"}, "key": "llm_corrections"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "policy"}, "key": "transition_corrections"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "metrics"}, "key": "surprise_events"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "policy"}, "key": "transition_surprises"}}
+      ]},
+      "effects": [["set_attr", "metrics", "mode", "surprise_only"], ["set_attr", "policy", "transition_support", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "metrics"}, "key": "independent_replays"}}], ["set_attr", "policy", "transition_corrections", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "metrics"}, "key": "llm_corrections"}}], ["set_attr", "policy", "transition_surprises", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "metrics"}, "key": "surprise_events"}}]]
+    },
+    {
+      "name": "iu_wean_surprise_only_to_autonomous",
+      "area": "supervisory",
+      "order": 11,
+      "latency_class": "soft_realtime",
+      "match": [["agent", "has_teacher_weaning_metrics", "metrics"], ["agent", "has_teacher_weaning_policy", "policy"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "metrics"}, "key": "mode"}, "b": {"type": "Lit", "value": "surprise_only"}},
+        {"type": "Gt", "a": {"type": "Attr", "node": {"type": "Var", "name": "metrics"}, "key": "independent_replays"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "policy"}, "key": "transition_support"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "metrics"}, "key": "llm_corrections"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "policy"}, "key": "transition_corrections"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "metrics"}, "key": "surprise_events"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "policy"}, "key": "transition_surprises"}}
+      ]},
+      "effects": [["set_attr", "metrics", "mode", "autonomous"], ["set_attr", "policy", "transition_support", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "metrics"}, "key": "independent_replays"}}], ["set_attr", "policy", "transition_corrections", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "metrics"}, "key": "llm_corrections"}}], ["set_attr", "policy", "transition_surprises", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "metrics"}, "key": "surprise_events"}}]]
+    },
+    {
+      "name": "iu_reopen_supervision_on_llm_correction",
+      "area": "supervisory",
+      "order": 11,
+      "latency_class": "soft_realtime",
+      "match": [["request", "has_evidence", "evidence"], ["agent", "has_teacher_weaning_metrics", "metrics"], ["agent", "has_teacher_weaning_policy", "policy"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "request"}, "key": "teacher_tier"}, "b": {"type": "Lit", "value": "llm"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "verdict"}, "b": {"type": "Lit", "value": "corrected"}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "metrics"}, "key": "mode"}, "b": {"type": "Lit", "value": "blocking"}}}
+      ]},
+      "effects": [["set_attr", "metrics", "mode", "blocking"], ["set_attr", "policy", "transition_support", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "metrics"}, "key": "independent_replays"}}], ["set_attr", "policy", "transition_corrections", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "metrics"}, "key": "llm_corrections"}}], ["set_attr", "policy", "transition_surprises", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "metrics"}, "key": "surprise_events"}}]]
+    },
+    {
+      "name": "iu_reopen_supervision_on_surprise",
+      "area": "supervisory",
+      "order": 11,
+      "latency_class": "soft_realtime",
+      "match": [["agent", "holds_interpretation", "interpretation"], ["agent", "has_teacher_weaning_metrics", "metrics"], ["agent", "has_teacher_weaning_policy", "policy"]],
+      "where": {"type": "And", "items": [
+        {"type": "In", "member": {"type": "Attr", "node": {"type": "Var", "name": "metrics"}, "key": "mode"}, "container": {"type": "Lit", "value": ["surprise_only", "autonomous"]}},
+        {"type": "Gt", "a": {"type": "Attr", "node": {"type": "Var", "name": "interpretation"}, "key": "surprise"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "policy"}, "key": "transition_surprises"}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "interpretation"}, "key": "surprise_accounted"}, "b": {"type": "Lit", "value": 1}}}
+      ]},
+      "effects": [
+        ["set_attr", "metrics", "mode", "surprise_only"],
+        ["set_attr_if_different", "metrics", "surprise_events", {"__term__": {"type": "Plus", "items": [{"type": "Attr", "node": {"type": "Var", "name": "metrics"}, "key": "surprise_events"}, {"type": "Lit", "value": 1}]}}],
+        ["set_attr", "policy", "transition_support", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "metrics"}, "key": "independent_replays"}}],
+        ["set_attr", "policy", "transition_corrections", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "metrics"}, "key": "llm_corrections"}}],
+        ["set_attr", "policy", "transition_surprises", {"__term__": {"type": "Plus", "items": [{"type": "Attr", "node": {"type": "Var", "name": "metrics"}, "key": "surprise_events"}, {"type": "Lit", "value": 1}]}}],
+        ["set_attr", "interpretation", "surprise_accounted", 1]
+      ]
+    },
+    {
+      "name": "iu_activate_goal_only_after_verified_understanding",
+      "area": "executive",
+      "order": 10,
+      "latency_class": "soft_realtime",
+      "match": [["agent", "holds_interpretation", "interpretation"], ["interpretation", "interprets", "message"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "interpretation"}, "key": "status"}, "b": {"type": "Lit", "value": "verified"}},
+        {"type": "Not", "arg": {"type": "Exists", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "interpretation"}, "edge_type": "activates"}, "var_name": "old_goal", "predicate": {"type": "Lit", "value": true}}}
+      ]},
+      "effects": [
+        ["add_node", "goal", "Goal", {"kind": "interpreted_instruction", "status": "active", "order": 2, "source": "instruction_understanding", "predicate": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "interpretation"}, "key": "predicate"}}, "content": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "interpretation"}, "key": "content"}}}],
+        ["add_edge", "agent", "has_goal", "goal"],
+        ["add_edge", "goal", "comprehends", "message"],
+        ["add_edge", "interpretation", "activates", "goal"]
+      ]
+    }
+  ]
+}

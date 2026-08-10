@@ -1,0 +1,106 @@
+{
+  "id": "vmaf_internals_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "VMAF",
+  "in_microtheory": "video_coding_theory",
+  "description": "VMAF (Video Multi-method Assessment Fusion) decomposed. Developed by Netflix in 2016, VMAF is a full-reference perceptual quality metric that fuses three elementary metrics — VIF (Visual Information Fidelity), DLM (Detail Loss Metric), and TI (motion-based Temporal Information) — via a support-vector regressor trained on subjective scores. The trained model maps from elementary feature scores to a 0-100 quality estimate that correlates ~0.93 with viewer mean opinion scores.",
+  "sub_mechanisms": [
+    {
+      "name": "VIF_visual_information_fidelity",
+      "definition": "Computes the mutual information shared between source and reconstructed image at each scale of a steerable pyramid decomposition, normalised by source self-information. Score: ratio of preserved information to total source information.",
+      "why": "Information-theoretic basis: distortion that destroys image information is more harmful than distortion that just shifts pixel values. VIF captures this — blurring (information loss) hurts more than slight shifts (no info loss). Works well for compression artifacts where information is genuinely destroyed by quantisation.",
+      "category": "vmaf_feature"
+    },
+    {
+      "name": "DLM_detail_loss_metric",
+      "definition": "Decomposes both source and reconstructed images into 'additive impairment' (smooth distortion like blur) and 'subtractive impairment' (detail loss like edge degradation). DLM measures the subtractive component.",
+      "why": "Blurring and detail loss are perceptually different. DLM separates them so the regressor can weight them differently. Detail loss is often more annoying than smooth blur — DLM lets VMAF capture this asymmetry.",
+      "category": "vmaf_feature"
+    },
+    {
+      "name": "TI_temporal_information",
+      "definition": "Captures the temporal complexity of the source: the average magnitude of frame-to-frame difference. Used to weight other features (high-motion content hides spatial artifacts).",
+      "why": "Viewer attention is captured by motion; spatial artifacts in fast-moving regions are less noticed than in still ones. TI provides the regressor with content-difficulty context, letting it scale the other features' importance per scene.",
+      "category": "vmaf_feature"
+    },
+    {
+      "name": "multi_scale_decomposition",
+      "definition": "VIF is computed at multiple spatial scales (typically 4 octaves). Each scale captures different artifact frequencies.",
+      "why": "Multi-scale matches the HVS's multi-resolution processing. Low-scale captures coarse blur; high-scale captures fine-detail loss. Per-scale scores feed the regressor independently.",
+      "category": "vmaf_feature"
+    },
+    {
+      "name": "support_vector_regressor",
+      "definition": "VMAF's fusion stage: an SVR trained on subjective MOS scores from public databases (NFLX-Public, VQEG-HD, etc.). Input: per-frame VIF + DLM + TI feature vectors. Output: 0-100 quality.",
+      "why": "The relationship between elementary features and viewer scores is non-linear and content-dependent. SVR learns the mapping from data, capturing what no closed-form combination would. The model file (a few KB) is the difference between 'features' and 'quality estimate'.",
+      "category": "vmaf_feature"
+    },
+    {
+      "name": "pooling_method",
+      "definition": "Per-frame VMAF scores are pooled into a single video-level score via mean, harmonic mean, or percentile (the spec uses arithmetic mean by default).",
+      "why": "Different pooling methods correlate differently with viewer ratings. Harmonic mean emphasises worst frames (typical artifacts); arithmetic mean averages. Choice depends on application — Netflix uses harmonic for streaming QoE because viewers remember the worst moments.",
+      "category": "vmaf_feature"
+    },
+    {
+      "name": "phone_model_variant",
+      "definition": "VMAF-NEG (no enhancement gain): a variant that doesn't reward super-resolution/enhancement above the source. Used when output quality should be source-fidelity, not 'looks better than source'.",
+      "why": "Some encoders apply mild sharpening that can score higher than the reference on VMAF. NEG variants penalise this, ensuring VMAF measures FIDELITY rather than enhancement.",
+      "category": "vmaf_feature"
+    },
+    {
+      "name": "subjective_score_training_set",
+      "definition": "VMAF's regressor is trained on databases of (source, distorted, MOS) triples — typically ~1000 video pairs with viewer ratings.",
+      "why": "The model is only as good as its training data. Netflix's NFLX-Public set is biased toward streaming content; VMAF is most accurate for that. Off-corpus content (animation, screen capture) gets less reliable scores.",
+      "category": "vmaf_feature"
+    },
+    {
+      "name": "VMAF_4K_variant",
+      "definition": "VMAF-4K is trained on 4K subjective data and tuned for that resolution. Generic VMAF can be applied to 4K but the 4K variant is more accurate for that case.",
+      "why": "Viewer perception scales non-linearly with resolution; a model trained at 1080p doesn't transfer perfectly to 4K. Per-resolution variants capture the resolution-specific quality functions.",
+      "category": "vmaf_feature"
+    },
+    {
+      "name": "open_source_implementation",
+      "definition": "Netflix released libvmaf as open source in 2016, with reference implementation and model files. Available on every major platform.",
+      "why": "Open-source release is what made VMAF the industry default. Closed perceptual metrics (e.g., proprietary PSY-OPT in some encoders) couldn't be cross-compared; open VMAF let competitive ABR ladders be designed with a common metric.",
+      "category": "vmaf_feature"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "metric_fusion_via_regression_beats_closed_form",
+      "if": ["multiple elementary metrics each capture part of perceptual quality"],
+      "then": ["a regressor trained on subjective scores fuses them more accurately than a hand-tuned combination"],
+      "why": "Hand-tuned weights are guesses; the data-driven SVR learns the optimal combination. VMAF's correlation with MOS (~0.93) is significantly higher than any single-metric or hand-weighted-combination approach.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "information_theoretic_basis_predicts_quality",
+      "if": ["a distortion destroys source information (vs just shifting it)"],
+      "then": ["VIF predicts this is perceptually worse"],
+      "why": "Compression artifacts genuinely destroy information through quantisation. VIF's information-theoretic framework correctly identifies blur and detail loss as more harmful than dithering or noise. This is why VMAF outperforms PSNR — PSNR doesn't distinguish information loss from value shift.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "temporal_information_modulates_spatial_quality",
+      "if": ["a scene has high motion"],
+      "then": ["spatial artifacts are perceptually less impactful"],
+      "why": "Viewer attention is captured by motion; static spatial artifacts in fast-moving regions go unnoticed. TI lets VMAF reduce spatial-feature weights for high-motion content, matching viewer judgments.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "open_source_enables_industry_default",
+      "if": ["a perceptual metric is open source with public model files"],
+      "then": ["it becomes the industry default for streaming QoE"],
+      "why": "ABR ladder optimisation requires a shared metric across encoders, CDNs, and decoders. Open VMAF made this possible — every party in the streaming pipeline can compute it. Proprietary metrics fragment the industry.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "training_data_determines_generalisation_quality",
+      "if": ["a metric's regressor is trained on a particular content distribution"],
+      "then": ["accuracy on that distribution is high; off-distribution is lower"],
+      "why": "Streaming content (Netflix's training corpus) is well-covered. Animation, screen capture, low-fps content are less well-covered. Per-domain variants (VMAF-4K, VMAF-NEG) address this within their scope.",
+      "soundness_category": "denotational_equivalence"
+    }
+  ]
+}

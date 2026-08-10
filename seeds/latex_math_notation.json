@@ -1,0 +1,123 @@
+{
+  "_doc": "LATEX MATH NOTATION -> meaning/operator-tree (graph data, the agent's grammar). LaTeX math is a NOTATION SYSTEM; notation is LEARNABLE the SAME way as the agent's other notations (notation-is-learnable). This seed MIRRORS seeds/math_prose_constructions.json: the LaTeX constructions PARSE into the SAME operator-tree the prose grammar composes (op(args) nested, bottoming at HELD atoms). The agent READS a LaTeX string -> the operator-tree via these constructions + comprehend_structure's recursion. Where the operation is HELD (\\partial -> boundary_operator ∂, acquired in acquire_boundary_operator) it grounds/computes; where un-held (\\ker / \\im / quotient) it is the NAMED acquirable residual already named in math_prose_constructions. These are the CORE math constructions (super/subscript, frac, named operators, homology/cohomology, blackboard/Greek, set-builder) — CONSTRUCTIONS (general), NOT per-formula rules. Coverage grows by adding entries (graph data, not code). The HONEST residual = the LaTeX LONG TAIL (every macro/package/\\newcommand) + the un-held operations (kernel/image), each acquirable by READING the next instance.",
+
+  "_doc_macros": "NAMED-OPERATOR macros: a LaTeX control sequence -> the operator/atom name the prose grammar holds. `held`/`held_runnable` mirror math_prose_constructions: ∂ (boundary_operator) is HELD (the recursion bottoms out at it); kernel/image/quotient are UN-HELD (the acquirable residual). `arity` says how many bracketed/space-delimited arguments the macro consumes (prefix operators). The op/atom NAME is the SAME token the prose constructions use, so a LaTeX-parsed tree and a prose-parsed tree are the SAME structure.",
+  "operator_macros": [
+    {"latex": "\\partial",          "name": "boundary_operator", "kind": "atom",     "held": true,  "_doc": "∂ — the boundary operator, HELD (acquire_boundary_operator, ∂∂=0). A subscripted ∂_n is the boundary operator in degree n; the recursion bottoms out here."},
+    {"latex": "\\ker",              "name": "kernel",            "kind": "operator", "arity": 1, "held_runnable": false, "_doc": "\\ker X -> kernel(X): inputs the map X sends to zero. Un-held (acquirable by reading its meta-def — same residual as math_prose_constructions kernel_of)."},
+    {"latex": "\\operatorname{ker}","name": "kernel",            "kind": "operator", "arity": 1, "held_runnable": false},
+    {"latex": "\\operatorname{im}", "name": "image",             "kind": "operator", "arity": 1, "held_runnable": false, "_doc": "\\operatorname{im} X -> image(X): outputs of the map X. Un-held."},
+    {"latex": "\\im",               "name": "image",             "kind": "operator", "arity": 1, "held_runnable": false},
+    {"latex": "\\operatorname{coker}","name": "cokernel",        "kind": "operator", "arity": 1, "held_runnable": false},
+    {"latex": "\\dim",              "name": "dimension",         "kind": "operator", "arity": 1, "held_runnable": false},
+    {"latex": "\\deg",              "name": "degree",            "kind": "operator", "arity": 1, "held_runnable": false},
+    {"latex": "\\operatorname{rank}","name": "rank",             "kind": "operator", "arity": 1, "held_runnable": false},
+    {"latex": "\\rank",             "name": "rank",              "kind": "operator", "arity": 1, "held_runnable": false, "_doc": "\\rank X / \\rank(X) -> rank(X): the GENERAL unary-function construction (a named operator macro applied to its recursively-parsed argument), the SAME as \\dim/\\deg. Un-held LEAF unless a held rank tool is bound (parse-general; eval depends on the held leaf)."},
+    {"latex": "\\torsion",          "name": "torsion",           "kind": "operator", "arity": 1, "held_runnable": false, "_doc": "\\torsion H_k -> torsion(H_k): the order of the TORSION subgroup of the integral homology in degree k (|torsion H_k|). The SAME GENERAL unary-function construction as \\dim/\\rank. Held LEAF when a torsion tool is bound (the SNF-over-Z invariant-factor product, reason._smith_normal_form_factors); |torsion H_1(RP^2)| = |Z/2| = 2."}
+  ],
+
+  "_doc_structure": "STRUCTURE macros: LaTeX that builds an operator-tree NODE from its arguments (a fraction, a sub/superscript application, a quotient). The OP name again MIRRORS the prose grammar (\\frac and the '/' quotient both map to `modulo` — A/B as a quotient group, the un-held operation the homology formula needs).",
+  "structure_macros": [
+    {"latex": "\\frac",  "op": "div", "args": 2, "braced": true, "held_runnable": true, "_doc": "\\frac{A}{B} -> div(A, B): the GENERAL fraction construction (any \\frac of two recursively-parsed operands). `braced` says the macro takes its two args as separate { } groups (the tokenizer no longer slurps the first brace). Held-runnable: the DSL Div Term computes A/B (the SET/GROUP quotient ker/im is written with the infix '/', which still maps to the un-held `modulo`)."},
+    {"latex": "\\dfrac", "op": "div", "args": 2, "braced": true, "held_runnable": true},
+    {"latex": "\\binom", "op": "binomial", "args": 2, "braced": true, "held_runnable": false, "_doc": "\\binom{n}{k} -> binomial(n, k): the GENERAL binomial-coefficient construction (n choose k). `braced` two-arg. UN-HELD: there is no held binomial LEAF/Term yet (the named residual) — the construction PARSES general but the eval STALLS until a binomial tool is held (honest: parse-general, un-held-leaf)."},
+    {"latex": "/",       "op": "modulo", "args": 2, "held_runnable": false, "_doc": "the infix '/' between two operator-tree operands is the QUOTIENT (ker ∂_n / im ∂_{n+1}) — the same `modulo` op."},
+    {"latex": "+",       "op": "plus",  "args": 2, "infix_arith": true, "held_runnable": true, "_doc": "the infix '+' is ADDITION between two operands (a + b). A GENERAL arithmetic operator (NOT per-formula) — the SAME construction parses any sum-of-terms (b_0 + b_2, a_1 + a_2). Held-runnable: the DSL Plus Term computes it."},
+    {"latex": "-",       "op": "minus", "args": 2, "infix_arith": true, "held_runnable": true, "_doc": "the infix '-' is SUBTRACTION/DIFFERENCE between two operands (a - b). A GENERAL arithmetic operator (NOT per-formula); chains left-associatively with '+' so b_0 - b_1 + b_2 - b_3 reads as ((b_0 - b_1) + b_2) - b_3. Held-runnable: the DSL Minus Term computes it."},
+    {"latex": "*",       "op": "times", "args": 2, "infix_arith": true, "held_runnable": true, "_doc": "the infix '*' is MULTIPLICATION between two operands (a * b). A GENERAL arithmetic operator (NOT per-formula); binds tighter than +/- so (-1)^k * b_k groups as a product. Held-runnable: the DSL Times Term computes it."},
+    {"latex": "\\cup",   "op": "cup_product", "args": 2, "held_runnable": false, "_doc": "x \\cup y -> cup_product(x, y): the cup product on cohomology classes (Alexander-Whitney, reason._cup_product). The GENERAL binary cohomology-product construction (any x, y), keyed on the \\cup SYNTAX. UN-HELD as a SCALAR LEAF: the held cup product takes COCHAIN VECTORS (p,q,alpha,beta), not two scalar leaves, so the construction PARSES general but the scalar eval STALLS (the named residual — held as a cochain op, not a scalar-binary leaf)."},
+    {"latex": "\\smile", "op": "cup_product", "args": 2, "held_runnable": false, "_doc": "x \\smile y -> cup_product(x, y): the \\smile spelling of the cup product. Same op as \\cup."},
+    {"latex": "\\otimes","op": "tensor",      "args": 2, "held_runnable": false, "_doc": "A \\otimes B -> tensor(A, B). Un-held."},
+    {"latex": "\\oplus", "op": "direct_sum",  "args": 2, "held_runnable": false, "_doc": "A \\oplus B -> direct_sum(A, B). Un-held."},
+    {"latex": "\\times", "op": "product",     "args": 2, "held_runnable": false},
+    {"latex": "\\cong",  "op": "isomorphic",  "args": 2, "held_runnable": false, "_doc": "A \\cong B -> isomorphic(A, B): A is isomorphic to B."},
+    {"latex": "\\to",        "op": "map", "args": 2, "held_runnable": false, "_doc": "A \\to B -> map(A, B): a morphism from A to B."},
+    {"latex": "\\rightarrow", "op": "map", "args": 2, "held_runnable": false},
+    {"latex": "\\longrightarrow", "op": "map", "args": 2, "held_runnable": false}
+  ],
+
+  "_doc_indexed": "SUB/SUPERSCRIPT: `X_{...}` (subscript = index/degree) and `X^{...}` (superscript = degree/power). On a named operator ∂_n the subscript is the DEGREE (∂ in degree n); on a homology head H_n / H^n it selects homology/cohomology of that degree. The parse keeps the index as an `index` on the node so ∂_n and ∂_{n+1} are DISTINGUISHED (the homology formula needs both).",
+  "_doc_arg_slots": "ARG SLOTS — a head's parenthesised argument is a COMPOUND OBJECT with a TYPED ARGUMENT STRUCTURE, not a single expression. `arg_slots` NAMES the roles a comma/semicolon-separated argument list fills, in order. H^n(G, M) and H^n(X; A) are two-argument functors: the FIRST slot is the SPACE/GROUP the (co)homology is OF, the SECOND is the COEFFICIENT module/ring. A bare H_n(X) fills only the first slot (default Z coefficients). The reader splits the top-level (depth-0) commas (and the LaTeX `;` coefficient separator) into one arg per slot, typed by role, INSTEAD of collapsing them into a `times` product. This is the GENERAL typing of any homological-functor compound object (group cohomology H^n(G,M), Ext^n(A,B), Tor_n(A,B)), graph-data-driven (the slots are seed DATA, not a per-formula rule). With one argument the extra slots are absent (honest partial typing).",
+  "indexed_heads": [
+    {"latex": "H",       "name": "homology",   "sub_role": "degree", "held_runnable": false, "arg_slots": ["space", "coefficients"], "_doc": "H_n(X) -> homology(X) in degree n (subscript). H_n(X; A) -> homology of X with coefficients A. math_prose_constructions has the homology STRUCTURE the agent already COMPUTES in compute_homology."},
+    {"latex": "H",       "name": "cohomology", "super_role": "degree", "held_runnable": false, "arg_slots": ["space", "coefficients"], "_doc": "H^n(X) -> cohomology(X) in degree n (superscript). H^n(G, M) -> GROUP cohomology of G with coefficients in the module M (the first slot is the group/space, the second the coefficient module) — typed as a two-argument functor, NOT a product of G and M."},
+    {"latex": "\\pi",    "name": "homotopy",   "sub_role": "degree", "held_runnable": false, "arg_slots": ["space"], "_doc": "\\pi_n(X) -> the n-th homotopy group."},
+    {"latex": "\\Omega", "name": "bordism",    "super_role": "structure", "held_runnable": false, "_doc": "\\Omega^{Spin}_n -> Spin bordism in degree n (the HLE-tier rung — un-held, named in compute_homology's not-reached rungs)."},
+    {"latex": "\\mathrm{Ext}", "name": "ext", "super_role": "degree", "held_runnable": false, "arg_slots": ["first", "second"], "_doc": "\\mathrm{Ext}^n(A, B) -> the n-th Ext functor of the pair (A, B): a TWO-ARGUMENT homological functor (the SAME compound-object typing as H^n(G,M)), keyed on the head + the comma-separated argument list. Un-held."},
+    {"latex": "\\operatorname{Ext}", "name": "ext", "super_role": "degree", "held_runnable": false, "arg_slots": ["first", "second"]},
+    {"latex": "\\mathrm{Tor}", "name": "tor", "sub_role": "degree", "held_runnable": false, "arg_slots": ["first", "second"], "_doc": "\\mathrm{Tor}_n(A, B) -> the n-th Tor functor of (A, B): a TWO-ARGUMENT homological functor. Un-held."},
+    {"latex": "\\operatorname{Tor}", "name": "tor", "sub_role": "degree", "held_runnable": false, "arg_slots": ["first", "second"]}
+  ],
+
+  "_doc_quantifier": "QUANTIFIER / big-operator macros: \\sum / \\prod / \\int with sub/superscript bounds; \\bigoplus / \\bigotimes / \\bigcup / \\bigcap. They map to the aggregator op name; the bound (subscript) + limit (superscript) are kept as args.",
+  "quantifier_macros": [
+    {"latex": "\\sum",        "op": "sum",          "held_runnable": true, "_doc": "\\sum_{k} <body> -> the SUM fold binding k over the family, the recursively-parsed body the summand. GENERAL big-operator (any binder/range/body). Held-runnable: the DSL Sum fold Term computes it (cmsg165-167)."},
+    {"latex": "\\prod",       "op": "product",      "held_runnable": true, "_doc": "\\prod_{k} <body> -> the PRODUCT fold binding k over the family, the recursively-parsed body the factor. GENERAL big-operator (the SAME binder construction as \\sum, op=product). Held-runnable: the DSL Prod fold Term computes it."},
+    {"latex": "\\min",        "op": "min_over",     "held_runnable": true, "_doc": "\\min_{k} <body> -> the MIN-over-family fold binding k, the recursively-parsed body the quantity minimised. GENERAL operator-over-a-family (ground_definition/order_n's held Fold). Held-runnable: the DSL MinOver fold Term."},
+    {"latex": "\\max",        "op": "max_over",     "held_runnable": true, "_doc": "\\max_{k} <body> -> the MAX-over-family fold binding k. GENERAL operator-over-a-family. Held-runnable: the DSL MaxOver fold Term."},
+    {"latex": "\\sup",        "op": "max_over",     "held_runnable": true, "_doc": "\\sup_{k} <body> -> the supremum, a MAX-over-family fold (the held finite-family realisation). Held-runnable: MaxOver."},
+    {"latex": "\\inf",        "op": "min_over",     "held_runnable": true, "_doc": "\\inf_{k} <body> -> the infimum, a MIN-over-family fold. Held-runnable: MinOver."},
+    {"latex": "\\int",        "op": "integral",     "held_runnable": false},
+    {"latex": "\\bigoplus",   "op": "direct_sum",   "held_runnable": false},
+    {"latex": "\\bigotimes",  "op": "tensor",       "held_runnable": false},
+    {"latex": "\\bigcup",     "op": "union",        "held_runnable": false},
+    {"latex": "\\bigcap",     "op": "intersection", "held_runnable": false}
+  ],
+
+  "_doc_relations": "RELATION / SET macros: membership and inclusion. They render to a readable WORD so the genus-differentia prose grammar reads them (\\in -> 'in', \\subseteq -> 'a subset of') — the symbol-carried definition survives into comprehension.",
+  "relation_macros": [
+    {"latex": "\\in",        "word": "in",            "_doc": "x \\in S -> 'x in S' — membership."},
+    {"latex": "\\notin",     "word": "not in"},
+    {"latex": "\\subset",    "word": "a subset of"},
+    {"latex": "\\subseteq",  "word": "a subset of"},
+    {"latex": "\\supset",    "word": "a superset of"},
+    {"latex": "\\supseteq",  "word": "a superset of"},
+    {"latex": "\\leq",       "word": "at most"},
+    {"latex": "\\le",        "word": "at most"},
+    {"latex": "\\geq",       "word": "at least"},
+    {"latex": "\\ge",        "word": "at least"},
+    {"latex": "\\neq",       "word": "not equal to"},
+    {"latex": "\\equiv",     "word": "congruent to"},
+    {"latex": "\\mapsto",    "word": "maps to"},
+    {"latex": "\\infty",     "word": "infinity"},
+    {"latex": "\\emptyset",  "word": "the empty set"},
+    {"latex": "\\forall",    "word": "for all"},
+    {"latex": "\\exists",    "word": "there exists"},
+    {"latex": "\\trianglelefteq", "word": "normal in", "_doc": "K \\trianglelefteq G -> 'K normal in G': K is a normal subgroup of G. An aside predication on the subject (the asked invariant is the rank, not the normal-subgroup relation); the held reader renders it to a readable relation word the comprehension window excises as a clause aside."},
+    {"latex": "\\trianglerighteq", "word": "normal in"}
+  ],
+
+  "_doc_named_symbols": "NAMED-OPERATOR SYMBOL renderings: a notation symbol (a function-named operator or a standard named map) -> the readable PROSE NAME the prose grammar's atoms/operators cover, so the SAME held LaTeX reader that reads every formula resolves the symbolic shorthand structurally — NOT a bespoke re.sub in a calling module. Each is graph DATA the reader consumes (the agent extends its held reader by adding an entry). `\\operatorname{Ker}` / `Ker` (the capitalised function-name spelling of the kernel) -> 'kernel' (the SAME word \\ker / \\operatorname{ker} render to). `h_*` / `h_{*}` (the standard symbol for the Hurewicz homomorphism h_*: pi_1 -> H_1) -> 'the hurewicz map' (the SAME atom the prose 'the hurewicz map' types to). The render is longest-symbol-first; these run BEFORE the generic font-wrapper unwrap (which would otherwise strip \\operatorname{Ker} to the bare token 'Ker').",
+  "named_symbols": [
+    {"symbol": "\\operatorname{Ker}", "word": "kernel"},
+    {"symbol": "Ker", "word": "kernel"},
+    {"symbol": "h_{*}", "word": "the hurewicz map"},
+    {"symbol": "h_*", "word": "the hurewicz map"}
+  ],
+
+  "_doc_symbol_render": "SYMBOL RENDERING: macros that render to a SHORT readable token so the LaTeX-bearing prose SURVIVES the strip into comprehension (instead of being DROPPED to nothing). \\mathbb{Z} -> 'Z' (the integers), Greek \\alpha -> 'alpha', \\mathcal{C} -> 'C'. The point: '$M$ is finite if $M$ is finite as an $R$-module' renders to 'M is finite if M is finite as an R-module' — the subject SURVIVES (vs the lossy strip 'finite if is finite as an -module').",
+  "blackboard": {
+    "\\mathbb{Z}": "Z", "\\mathbb{R}": "R", "\\mathbb{Q}": "Q", "\\mathbb{C}": "C",
+    "\\mathbb{N}": "N", "\\mathbb{Z}_{\\geq 0}": "Z", "\\mathbb{F}": "F",
+    "\\mathbb{A}": "A", "\\mathbb{P}": "P", "\\mathbb{H}": "H"
+  },
+  "_doc_greek": "Greek macros -> their name (a readable token). Used both for rendering ($\\alpha$ -> 'alpha') and as indexed-head/atom names where applicable.",
+  "greek": {
+    "\\alpha": "alpha", "\\beta": "beta", "\\gamma": "gamma", "\\delta": "delta",
+    "\\epsilon": "epsilon", "\\varepsilon": "epsilon", "\\zeta": "zeta",
+    "\\eta": "eta", "\\theta": "theta", "\\iota": "iota", "\\kappa": "kappa",
+    "\\lambda": "lambda", "\\mu": "mu", "\\nu": "nu", "\\xi": "xi", "\\pi": "pi",
+    "\\rho": "rho", "\\sigma": "sigma", "\\tau": "tau", "\\upsilon": "upsilon",
+    "\\phi": "phi", "\\varphi": "phi", "\\chi": "chi", "\\psi": "psi",
+    "\\omega": "omega",
+    "\\Gamma": "Gamma", "\\Delta": "Delta", "\\Theta": "Theta",
+    "\\Lambda": "Lambda", "\\Xi": "Xi", "\\Pi": "Pi", "\\Sigma": "Sigma",
+    "\\Phi": "Phi", "\\Psi": "Psi", "\\Omega": "Omega"
+  },
+  "_doc_wrappers": "FONT / GROUPING wrappers rendered to their bare content (the term survives): \\mathcal{C} -> 'C', \\mathrm{Spin} -> 'Spin', \\text{...} -> the text, \\operatorname{Spec} -> 'Spec'. The argument's content is what carries meaning.",
+  "font_wrappers": ["\\mathcal", "\\mathrm", "\\mathbf", "\\mathit", "\\mathsf",
+                    "\\mathfrak", "\\mathtt", "\\text", "\\textrm", "\\textit",
+                    "\\textbf", "\\boldsymbol", "\\operatorname", "\\mathbb"],
+
+  "_doc_setbuilder": "SET-BUILDER: \\{ x \\mid P(x) \\} / \\{ x : P(x) \\} -> the set of x such that P(x). Rendered to readable prose ('the set of x such that ...') so the genus grammar can read a set-builder-defined object."
+}

@@ -1,0 +1,130 @@
+{
+  "id": "namespaces_cgroups_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "linux_namespace",
+  "in_microtheory": "operating_systems",
+  "description": "Linux namespaces + cgroups decomposed. The 8 namespace types. cgroup v1 vs v2 differences. unshare, clone(CLONE_NEW*), setns. The 'isolated view' (namespaces) + 'resource budget' (cgroups) combination that constitutes a container. How runc / containerd build containers from these primitives.",
+  "sub_mechanisms": [
+    {
+      "name": "PID_namespace",
+      "definition": "Isolates process ID space. PID 1 inside namespace is the namespace's init; outside it's a normal PID.",
+      "why": "Container's processes can't see (or signal) host processes. Container's PID 1 reaps orphans within the namespace. Standard containers have their own PID 1.",
+      "category": "namespace_mechanism"
+    },
+    {
+      "name": "mount_namespace",
+      "definition": "Isolates the mount table. Each namespace has its own /proc, /sys, root filesystem etc.",
+      "why": "Container has its own filesystem layout. mount inside container doesn't affect host (with private propagation). chroot's modern descendant.",
+      "category": "namespace_mechanism"
+    },
+    {
+      "name": "network_namespace",
+      "definition": "Isolates network stack: interfaces, routing tables, firewall rules, /proc/net.",
+      "why": "Container has its own loopback + virtual interfaces. veth pairs bridge container to host. Container's network configuration is independent. The mechanism enabling Docker, Kubernetes networking.",
+      "category": "namespace_mechanism"
+    },
+    {
+      "name": "user_namespace",
+      "definition": "Maps UIDs inside namespace to different UIDs outside. Lets unprivileged user 'be root' inside their own namespace.",
+      "why": "Rootless containers: container's UID 0 is mapped to host's UID 1000. Container can't actually exercise root privileges on the host. Foundation of unprivileged Docker / Podman.",
+      "category": "namespace_mechanism"
+    },
+    {
+      "name": "UTS_namespace",
+      "definition": "Isolates hostname + domain name. uname() returns the namespace's values.",
+      "why": "Each container can have its own hostname. Trivial isolation but useful for service discovery + logging.",
+      "category": "namespace_mechanism"
+    },
+    {
+      "name": "IPC_namespace",
+      "definition": "Isolates System V IPC + POSIX message queues. Resources created in one namespace not visible in another.",
+      "why": "Legacy IPC isolation. Containers shouldn't see host's shared memory segments etc. Mostly important for older apps using SysV IPC.",
+      "category": "namespace_mechanism"
+    },
+    {
+      "name": "cgroup_namespace",
+      "definition": "Isolates cgroup hierarchy view. Container sees its own cgroup as root.",
+      "why": "Containers manipulating cgroups shouldn't see host's. Enables cgroup-aware tooling inside containers. Added in kernel 4.6.",
+      "category": "namespace_mechanism"
+    },
+    {
+      "name": "time_namespace",
+      "definition": "Isolates clock_gettime(CLOCK_MONOTONIC + CLOCK_BOOTTIME). Container can have its own monotonic clock offset.",
+      "why": "Live migration / snapshot restore: container resumed at a different real time can preserve internal time monotonicity. Added in kernel 5.6.",
+      "category": "namespace_mechanism"
+    },
+    {
+      "name": "cgroup_v1_hierarchy",
+      "definition": "Each resource controller (cpu, memory, io, etc.) has its own hierarchy. Processes can be in different cgroups in different hierarchies.",
+      "why": "Legacy design from early cgroup development. Flexibility at cost of complexity + potential inconsistency. Most distros migrating to v2.",
+      "category": "cgroup_mechanism"
+    },
+    {
+      "name": "cgroup_v2_unified",
+      "definition": "Single hierarchy: process is in one cgroup, period. All controllers (cpu, memory, io) attach to the same hierarchy.",
+      "why": "Simpler model. Required for some modern features (PSI pressure stalls, io.cost weight-based fair scheduling). Default on most distros since systemd v246+.",
+      "category": "cgroup_mechanism"
+    },
+    {
+      "name": "cgroup_cpu_controller",
+      "definition": "Limits + accounts CPU time. cpu.weight (proportional sharing) or cpu.max (hard quota: 50000 100000 = 50ms per 100ms).",
+      "why": "Container CPU limits. Hard caps for predictable behaviour; weights for fair sharing. CFS integrates with this for proportional scheduling.",
+      "category": "cgroup_mechanism"
+    },
+    {
+      "name": "cgroup_memory_controller",
+      "definition": "Limits + accounts RAM. memory.max (hard limit), memory.high (soft, reclaim pressure), memory.low (protected).",
+      "why": "Container memory budgets. memory.max breach triggers OOM-kill within the cgroup. memory.high enables more graceful degradation under pressure.",
+      "category": "cgroup_mechanism"
+    },
+    {
+      "name": "clone_CLONE_NEW_flags",
+      "definition": "clone() / unshare() with CLONE_NEWPID, CLONE_NEWNET, etc. flags create or detach the calling process into new namespaces.",
+      "why": "The syscall interface to namespace creation. Container runtimes (runc) call clone with appropriate flags to create the container's namespaces atomically with the child process.",
+      "category": "namespace_mechanism"
+    },
+    {
+      "name": "setns_join_namespace",
+      "definition": "setns(fd, type) syscall: join an existing namespace (referenced by fd from /proc/PID/ns/*).",
+      "why": "Tools entering existing namespaces (nsenter, docker exec). The fd-based interface lets you reference a namespace even if no process is in it.",
+      "category": "namespace_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "containers_are_namespaces_plus_cgroups",
+      "if": ["a process has its own PID/mount/net namespaces AND is in a resource-limited cgroup"],
+      "then": ["it's effectively a container"],
+      "why": "Container ≡ isolated view + resource budget. No magic 'container' kernel object — it's the combination of these primitives. runc / podman / docker assemble these into the container abstraction.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "user_namespace_enables_rootless_containers",
+      "if": ["root in a container is mapped to a normal UID on host"],
+      "then": ["container can't exercise root privileges on host"],
+      "why": "Container's UID 0 is host's UID 100000 (e.g.). Container believes it's root; kernel checks capabilities against host UID. Foundation of rootless Docker, Podman, lightweight container security.",
+      "soundness_category": "referential_transparency"
+    },
+    {
+      "name": "cgroup_v2_single_hierarchy_simpler",
+      "if": ["controllers attach to a unified hierarchy"],
+      "then": ["resource limits are consistent across resources"],
+      "why": "v1 process could be in different cgroups per controller — inconsistent semantics. v2: one cgroup, all controllers see same membership. Required for modern features (PSI, weighted IO).",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "container_overhead_proportional_to_namespaces_used",
+      "if": ["a container uses only some namespaces (e.g., PID + mount but shares network)"],
+      "then": ["overhead is only for the used namespaces"],
+      "why": "Containers compose primitives. Shared network = sees host's network. Use the minimum namespaces needed for isolation. Kubernetes pods share network namespace among containers — they're 'partial containers' with shared net.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "cgroup_limits_strictly_enforced",
+      "if": ["a cgroup has memory.max = N"],
+      "then": ["processes in the cgroup cannot allocate beyond N total"],
+      "why": "Kernel checks at allocation time. Exceeding triggers OOM-killer within the cgroup. The strict enforcement is what makes containers safe — host can run many containers without one consuming all resources.",
+      "soundness_category": "referential_transparency"
+    }
+  ]
+}

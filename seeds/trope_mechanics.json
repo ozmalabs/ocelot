@@ -1,0 +1,144 @@
+{
+  "id": "trope_mechanics",
+  "version": "1.0.0",
+  "depends_on": [
+    "work_understanding"
+  ],
+  "description": "Recodes tropes from shallow definitions to MECHANISMS: each trope = a constitutive primitive (a faculty) + a structural signature + why it works. Enables detecting tropes by mechanism in unseen text, explaining their effect, generating/subverting them via production, and reclustering the catalogue by primitive (Chekhov=fabula-plant, dramatic irony=ToM-divergence, unreliable narrator=low narrator-trust, flashback=fabula!=sjuzhet, twist=belief-flip, red herring=false inference).",
+  "microtheory": {
+    "name": "trope_mechanics",
+    "description": "tropes as configurations of the understanding stack"
+  },
+  "nodes": [
+    {
+      "local_id": 1,
+      "type": "Concept",
+      "attrs": {
+        "name": "trope_as_configuration",
+        "description": "A trope is NOT a stored label but a recurring CONFIGURATION of the comprehension machinery: a constitutive primitive (fabula / ToM / perspective / modality / figure / structure / voice) plus a characteristic pattern over it. The old grounding held the name + gloss but none of the structure the name points at; the deep view maps a trope to its primitive, DETECTS it structurally by running that faculty over an example (mechanism not name), and explains its EFFECT from the structure (why it works, not just that it does). Recluster the catalogue by primitive and many \"different\" tropes are the same operation in different surface dress."
+      }
+    },
+    {
+      "local_id": 2,
+      "type": "TropeMechanism",
+      "attrs": {
+        "trope": "chekhovs gun",
+        "primitive": "event_reasoning/fabula",
+        "signature": "an entity introduced early with a dangling causal role that resolves late (a causal PLANT)",
+        "effect": "the late effect retroactively justifies the early puzzle, rewarding the inference"
+      }
+    },
+    {
+      "local_id": 3,
+      "type": "TropeMechanism",
+      "attrs": {
+        "trope": "foreshadowing",
+        "primitive": "event_reasoning/fabula",
+        "signature": "an early element causally/thematically points to a later one (a soft plant / leitmotif)",
+        "effect": "primes an expectation the payoff satisfies"
+      }
+    },
+    {
+      "local_id": 4,
+      "type": "TropeMechanism",
+      "attrs": {
+        "trope": "dramatic irony",
+        "primitive": "modality_tom/ToM",
+        "signature": "the audience belief-model and a character belief-model DIVERGE on a shared proposition",
+        "effect": "tension: every character action is read against the audience superior knowledge"
+      }
+    },
+    {
+      "local_id": 5,
+      "type": "TropeMechanism",
+      "attrs": {
+        "trope": "unreliable narrator",
+        "primitive": "perspective/reliability",
+        "signature": "low narrator-trust: the gap between narrated claims and corroborating evidence",
+        "effect": "forces the reader to re-derive the truth against the narration (suspect witness)"
+      }
+    },
+    {
+      "local_id": 6,
+      "type": "TropeMechanism",
+      "attrs": {
+        "trope": "flashback",
+        "primitive": "event_reasoning/fabula",
+        "signature": "fabula != sjuzhet: story-order diverges from telling-order",
+        "effect": "recontextualises the present by revealing a prior cause"
+      }
+    },
+    {
+      "local_id": 7,
+      "type": "TropeMechanism",
+      "attrs": {
+        "trope": "in medias res",
+        "primitive": "event_reasoning/fabula",
+        "signature": "telling begins mid-fabula; earlier events delivered out of order",
+        "effect": "hooks with effect before cause, then fills the gap"
+      }
+    },
+    {
+      "local_id": 8,
+      "type": "TropeMechanism",
+      "attrs": {
+        "trope": "the reveal",
+        "primitive": "modality_tom/modality",
+        "signature": "a proposition held as actual is negated or re-modalised (a belief FLIP)",
+        "effect": "retroactively rewrites every prior scene under the corrected model"
+      }
+    },
+    {
+      "local_id": 9,
+      "type": "TropeMechanism",
+      "attrs": {
+        "trope": "red herring",
+        "primitive": "event_reasoning/inference",
+        "signature": "a clue deliberately planted to license a FALSE inference the engine draws then retracts",
+        "effect": "misdirects the reader inference, making the true solution a surprise"
+      }
+    },
+    {
+      "local_id": 10,
+      "type": "TropeMechanism",
+      "attrs": {
+        "trope": "tragic hero",
+        "primitive": "work_understanding/structure",
+        "signature": "a falling stance-arc + a doomed worldview the protagonist cannot escape",
+        "effect": "catharsis from watching a coherent fall the worldview made inevitable"
+      }
+    },
+    {
+      "local_id": 11,
+      "type": "TropeMechanism",
+      "attrs": {
+        "trope": "idiot plot",
+        "primitive": "discourse_argument/argument",
+        "signature": "the plot only holds if a character commits an obvious fallacy / fails an inference",
+        "effect": "collapses if anyone reasons soundly \u2014 a fallacy load-bearing for the story"
+      }
+    },
+    {
+      "local_id": 12,
+      "type": "TropeMechanism",
+      "attrs": {
+        "trope": "the cavalry",
+        "primitive": "event_reasoning/fabula",
+        "signature": "a late causal rescue event resolves a bleak state (metonymy of rescuer-for-rescue)",
+        "effect": "relief: a primed despair is reversed by an external cause"
+      }
+    },
+    {
+      "local_id": 13,
+      "type": "TropeMechanism",
+      "attrs": {
+        "trope": "purple prose",
+        "primitive": "authorial_voice",
+        "signature": "a voice whose figure-histogram over-weights metaphor/hyperbole",
+        "effect": "signals register/excess; the manner overwhelms the matter"
+      }
+    }
+  ],
+  "edges": [],
+  "rules": []
+}

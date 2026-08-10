@@ -1,0 +1,118 @@
+{
+  "id": "backprop_autograd_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "backpropagation",
+  "in_microtheory": "machine_learning",
+  "description": "Backprop + autograd decomposed. Chain rule application through computational graph. Reverse-mode autodiff. PyTorch dynamic graphs vs JAX functional autograd. Gradient accumulation, gradient checkpointing for memory, mixed-precision training. The mathematical mechanism that makes training tractable.",
+  "sub_mechanisms": [
+    {
+      "name": "computational_graph",
+      "definition": "DAG of operations: leaves are inputs + parameters; internal nodes are operations; root is loss.",
+      "why": "Forward pass: traverse forward, compute values. Backward: traverse reverse, compute gradients via chain rule. The graph IS the program.",
+      "category": "autograd_mechanism"
+    },
+    {
+      "name": "chain_rule_application",
+      "definition": "df/dx = (df/dy) × (dy/dx). Compose gradients along the graph in reverse.",
+      "why": "Foundation of backprop. Each operation knows its local Jacobian; chain rule composes them across the whole graph. Reverse mode = compose from root to leaves.",
+      "category": "autograd_mechanism"
+    },
+    {
+      "name": "forward_pass",
+      "definition": "Compute output values from input through the network. Stores intermediate values for backward.",
+      "why": "Intermediate values needed during backward (e.g., ReLU derivative needs input sign). Activation checkpointing trades recomputation for memory savings.",
+      "category": "autograd_mechanism"
+    },
+    {
+      "name": "backward_pass",
+      "definition": "Apply chain rule in reverse to compute gradient of loss w.r.t. every parameter. Same compute as forward pass.",
+      "why": "Each op contributes its local gradient. Accumulate via chain rule. O(forward cost) — what makes training cheap relative to model evaluation.",
+      "category": "autograd_mechanism"
+    },
+    {
+      "name": "reverse_mode_autodiff",
+      "definition": "Compute gradient w.r.t. all parameters in one backward pass per output. Cost proportional to forward pass.",
+      "why": "Most efficient when (params >> outputs). For ML: many params, one scalar loss → reverse mode wins. PyTorch, TensorFlow, JAX all default to reverse mode.",
+      "category": "autograd_mechanism"
+    },
+    {
+      "name": "forward_mode_autodiff",
+      "definition": "Compute gradient w.r.t. one input by 'tagging' it + propagating forward. Cost proportional to forward × num_inputs.",
+      "why": "Best when (params << outputs). For Jacobian of multi-output function w.r.t. one parameter. Hessian computation. Niche but important.",
+      "category": "autograd_mechanism"
+    },
+    {
+      "name": "dynamic_graph_pytorch",
+      "definition": "Graph built during forward execution. Each forward call can create different graph (different control flow).",
+      "why": "Imperative + Pythonic. Easy debugging. Cost: graph not optimisable across calls. Standard since PyTorch 1.0.",
+      "category": "autograd_mechanism"
+    },
+    {
+      "name": "static_graph_jax",
+      "definition": "Graph traced once via @jit; subsequent calls reuse compiled graph.",
+      "why": "Aggressive optimisation possible (XLA). Fast steady-state. Cost: shape-dependent recompilation; control flow more rigid. JAX's bet on functional + compiled.",
+      "category": "autograd_mechanism"
+    },
+    {
+      "name": "gradient_accumulation",
+      "definition": "Compute gradients on micro-batches; sum before update. Effective batch = num_micro × micro_batch.",
+      "why": "Train with larger effective batch than fits in memory. Critical for LLM pretraining at million-token batches.",
+      "category": "autograd_mechanism"
+    },
+    {
+      "name": "gradient_checkpointing",
+      "definition": "Don't store intermediate activations; recompute during backward. Trades compute for memory.",
+      "why": "LLM activations would exhaust memory. Checkpoint every N layers; recompute the rest on backward. ~33% extra compute; ~5x memory savings. Standard for large model training.",
+      "category": "autograd_mechanism"
+    },
+    {
+      "name": "mixed_precision_training",
+      "definition": "Forward pass + most weights in float16/bfloat16; loss + some accumulations in float32.",
+      "why": "Memory + speed: 2x smaller activations, 2x faster matmul on Tensor Cores. Cost: numerical care (loss scaling). Standard for LLM training; ~2x speedup.",
+      "category": "autograd_mechanism"
+    },
+    {
+      "name": "VJP_JVP",
+      "definition": "Vector-Jacobian Product (reverse), Jacobian-Vector Product (forward). The autograd primitives.",
+      "why": "JAX exposes these as first-class. Compose to get gradients, hessians, etc. Mathematical foundation; PyTorch's autograd implements VJP under the hood.",
+      "category": "autograd_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "backprop_O_forward_cost",
+      "if": ["network forward pass costs C operations"],
+      "then": ["backward pass also costs ~C operations"],
+      "why": "Each operation's backward is roughly same cost as forward. Total training step ~3x forward (forward + backward + update). This is why training is tractable.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "reverse_mode_for_many_params_few_outputs",
+      "if": ["model has many parameters and few outputs (one scalar loss)"],
+      "then": ["reverse-mode autodiff is asymptotically optimal"],
+      "why": "Reverse mode: cost ~ forward × num_outputs. Forward mode: cost ~ forward × num_inputs. ML: outputs=1, inputs=millions. Reverse wins by N millions.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "gradient_checkpointing_trades_compute_for_memory",
+      "if": ["activations don't fit in memory"],
+      "then": ["recomputing them during backward saves memory at compute cost"],
+      "why": "Standard activation memory: O(layers × batch × seq × hidden). Checkpointing: O(sqrt(layers)) × same. ~33% extra forward time for ~5x memory savings. Required for large model training.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "mixed_precision_doubles_throughput",
+      "if": ["forward pass uses fp16/bf16 + Tensor Cores"],
+      "then": ["training throughput doubles vs fp32"],
+      "why": "GPU Tensor Cores accelerate fp16/bf16 matmul. Cost: care with numerical stability (loss scaling, master fp32 weights). Net: ~2x training speed; standard for modern LLMs.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "dynamic_vs_static_graph_tradeoffs",
+      "if": ["model has data-dependent control flow"],
+      "then": ["dynamic graphs (PyTorch) outperform static (JAX/TF1)"],
+      "why": "Static graph recompiles on shape change. Dynamic re-executes Python each step. PyTorch's dominance partly due to dynamic graphs being easier for research. JAX's @jit recovers some via tracing.",
+      "soundness_category": "extensional_equivalence"
+    }
+  ]
+}

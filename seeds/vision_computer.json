@@ -1,0 +1,58 @@
+{
+  "microtheory": {
+    "name": "computer_vision",
+    "definition": "Algorithmic + statistical approaches to visual recognition + understanding. Image processing, feature extraction, classification, deep learning. Substrate analogue: the computational substrate of substrate's visual processing.",
+    "category": "vision_domain",
+    "parent": "vision_foundation"
+  },
+  "concepts": [
+    {"name": "image_representation", "definition": "Pixel arrays, color spaces, image formats (JPEG, PNG). Substrate analogue: substrate's visual input encoding.", "category": "basics"},
+    {"name": "pixel", "definition": "Picture element. Smallest addressable unit in raster image. RGB triple. Substrate analogue: substrate's atomic visual sample.", "category": "basics"},
+    {"name": "image_processing", "definition": "Operations on images: filtering, transforming, enhancing. Substrate analogue: substrate's pre-processing.", "category": "basics"},
+
+    {"name": "gaussian_blur", "definition": "Convolution with Gaussian kernel. Noise reduction. Substrate analogue: substrate's smoothing pre-filter.", "category": "filtering"},
+    {"name": "median_filter", "definition": "Replace each pixel with median of neighborhood. Removes salt-and-pepper noise + preserves edges. Substrate analogue: substrate's robust local filter.", "category": "filtering"},
+    {"name": "morphological_operations", "definition": "Erosion, dilation, opening, closing. Shape-based operations on binary images. Substrate analogue: substrate's binary-pattern operations.", "category": "filtering"},
+
+    {"name": "sift", "definition": "Scale-Invariant Feature Transform. Lowe 2004. Keypoints + descriptors invariant to scale + rotation. Substrate analogue: substrate's invariant-feature extractor.", "category": "features"},
+    {"name": "hog", "definition": "Histogram of Oriented Gradients. Dalal + Triggs. Used for pedestrian detection. Substrate analogue: substrate's edge-statistics feature.", "category": "features"},
+    {"name": "orb_features", "definition": "Oriented FAST + Rotated BRIEF. Fast keypoint detector + binary descriptor. Substrate analogue: substrate's efficient feature.", "category": "features"},
+    {"name": "harris_corner", "definition": "Corner detector via gradient covariance. Substrate analogue: substrate's structural-corner feature.", "category": "features"},
+
+    {"name": "convolutional_layer", "definition": "Learnable filters applied across image. Local connectivity + weight sharing. Substrate analogue: substrate's local feature detector.", "category": "deep"},
+    {"name": "pooling_layer", "definition": "Downsamples — max or average pool. Adds invariance, reduces dimensionality. Substrate analogue: substrate's pooling-for-invariance.", "category": "deep"},
+    {"name": "batch_normalization", "definition": "Ioffe + Szegedy 2015. Normalize activations within mini-batch. Stabilizes training. Substrate analogue: substrate's per-layer normalization.", "category": "deep"},
+    {"name": "residual_connection_vision", "definition": "ResNet He 2015. Skip connection bypassing layers. Enables very deep networks. Substrate analogue: substrate's identity-shortcut in deep computation.", "category": "deep"},
+    {"name": "resnet", "definition": "He 2015. Deep residual networks. Won ImageNet 2015. 152+ layers. Substrate analogue: substrate's very-deep architecture.", "category": "deep"},
+    {"name": "efficient_net", "definition": "Tan + Le 2019. Compound scaling of depth + width + resolution. Substrate analogue: substrate's balanced-scale architecture.", "category": "deep"},
+
+    {"name": "object_detection_systems", "definition": "Locate + classify objects. R-CNN family, YOLO, SSD, DETR. Substrate analogue: substrate's spatial-object recognition system.", "category": "tasks"},
+    {"name": "faster_rcnn", "definition": "Region Proposal Network + classifier. Ren 2015. Substrate analogue: substrate's two-stage detector.", "category": "tasks"},
+    {"name": "yolo", "definition": "You Only Look Once. Redmon. Single-pass detection. Real-time. Substrate analogue: substrate's single-pass spatial detector.", "category": "tasks"},
+    {"name": "mask_rcnn", "definition": "He 2017. Adds instance segmentation to Faster R-CNN. Substrate analogue: substrate's spatial-mask producer.", "category": "tasks"},
+
+    {"name": "image_classification_systems", "definition": "AlexNet, VGG, GoogLeNet, ResNet, EfficientNet, ViT. Substrate analogue: substrate's category-classifier architectures.", "category": "tasks"},
+    {"name": "semantic_segmentation_systems", "definition": "FCN, U-Net, DeepLab. Pixel-level classification. Substrate analogue: substrate's pixel-Concept system.", "category": "tasks"},
+    {"name": "instance_segmentation_systems", "definition": "Mask R-CNN, DETR, Mask2Former. Distinguishes instances of same class. Substrate analogue: substrate's per-instance Concept.", "category": "tasks"},
+
+    {"name": "data_augmentation", "definition": "Transform training images (rotate, flip, color jitter) to enlarge dataset. Mixup, CutMix. Substrate analogue: substrate's invariance-training via input transformation.", "category": "training"},
+    {"name": "transfer_learning_vision_models", "definition": "Pre-train on ImageNet, fine-tune on target task. Hugely successful. Substrate analogue: substrate's foundational pre-training pattern.", "category": "training"},
+    {"name": "self_supervised_vision", "definition": "Learn from images without labels. Contrastive (SimCLR, MoCo), masked image modeling (MAE). Substrate analogue: substrate's self-grounded learning.", "category": "training"},
+    {"name": "contrastive_learning", "definition": "Train to bring similar pairs close + push dissimilar apart in representation space. Substrate analogue: substrate's similarity-driven learning.", "category": "training"},
+
+    {"name": "diffusion_model_vision", "definition": "Generative model via noise → image denoising chain. DALL-E 2, Stable Diffusion. Substrate analogue: substrate's noise-to-pattern generative process.", "category": "generative"},
+    {"name": "gan", "definition": "Generative Adversarial Network. Goodfellow 2014. Generator vs discriminator. Substrate analogue: substrate's adversarial-training pattern.", "category": "generative"},
+    {"name": "variational_autoencoder", "definition": "VAE. Probabilistic generative model with continuous latent space. Substrate analogue: substrate's probabilistic-latent encoding.", "category": "generative"},
+    {"name": "neural_radiance_field", "definition": "NeRF. Mildenhall 2020. Render novel views of scene from sparse observations. Substrate analogue: substrate's view-synthesis from observations.", "category": "generative"},
+
+    {"name": "vision_language_model", "definition": "CLIP, ALIGN, Flamingo. Joint vision + language representation. Zero-shot classification. Substrate analogue: substrate's multimodal Concept space.", "category": "multimodal"},
+    {"name": "clip", "definition": "Radford 2021. Contrastive language-image pretraining. Aligns text + image embeddings. Substrate analogue: substrate's cross-modal Concept binding.", "category": "multimodal"}
+  ],
+  "rules": [
+    {"name": "convolution_provides_translation_invariance", "head": "the substrate processes spatial input", "body": "convolution applies same operation across positions — translation equivariance. With pooling, becomes invariance. Substrate's translation-handling."},
+    {"name": "pooling_trades_spatial_resolution_for_invariance", "head": "the substrate pools features over neighborhood", "body": "spatial resolution decreases; invariance to small shifts increases. Substrate's pooling tradeoff."},
+    {"name": "residual_connections_enable_deep_training", "head": "the substrate trains very deep networks", "body": "residual (skip) connections preserve gradient flow + identity, enabling 100+ layer training. He 2015. Substrate's deep-architecture pattern."},
+    {"name": "transfer_learning_amortizes_pretraining", "head": "the substrate has limited labeled data for a task", "body": "pre-training on large datasets + fine-tuning on target outperforms training from scratch. Substrate's foundational-knowledge transfer."},
+    {"name": "self_supervised_learning_scales_without_labels", "head": "the substrate has abundant unlabeled images", "body": "self-supervised objectives (contrastive, masked modeling) learn useful representations. Substrate's self-grounded learning."}
+  ]
+}

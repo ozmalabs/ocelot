@@ -1,0 +1,343 @@
+{
+ "id": "affordance_basis",
+ "version": "1.0.0",
+ "depends_on": [],
+ "description": "STEP 1 of N-dim frame understanding: learn each control's displacement vector from observation (the world declares controls as geometry-free Control nodes; the agent learns their effect). One affordance-generic learner replaces the four hardcoded resp_<dir> rules. The learned ControlResponse.(dr,dc) per (self-region,control) are the control basis-vectors nd_basis_discovery (step 2: principal_axes) will turn into the discovered frame's axes.",
+ "microtheory": {
+  "name": "affordance_basis",
+  "description": "learn control displacement vectors from observation; affordances are learned basis-displacements, not handed geometry"
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [],
+ "rules": [
+  {
+   "name": "mint_control_response",
+   "comment": "one ControlResponse per (region,control), minted once (control_confirm idiom). The control carries no geometry; this slot will hold the LEARNED displacement vector for that control on that region.",
+   "match": [
+    [
+     "game",
+     "has_region",
+     "r"
+    ],
+    [
+     "game",
+     "has_control",
+     "c"
+    ]
+   ],
+   "where": {
+    "type": "Lt",
+    "a": {
+     "type": "Count",
+     "source": {
+      "type": "Filter",
+      "source": {
+       "type": "Neighbours",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "edge_type": "responds_via",
+       "any_type": false
+      },
+      "var_name": "cr",
+      "predicate": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "cr"
+        },
+        "key": "cname"
+       },
+       "b": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "c"
+        },
+        "key": "name"
+       }
+      }
+     }
+    },
+    "b": {
+     "type": "Lit",
+     "value": 0.5
+    }
+   },
+   "effects": [
+    [
+     "add_node",
+     "cr",
+     "ControlResponse",
+     {
+      "dr": 0.0,
+      "dc": 0.0,
+      "n": 0.0
+     }
+    ],
+    [
+     "add_edge",
+     "r",
+     "responds_via",
+     "cr"
+    ],
+    [
+     "add_edge",
+     "cr",
+     "to_control",
+     "c"
+    ],
+    [
+     "set_attr",
+     "cr",
+     "cname",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "name"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "learn_control_delta",
+   "comment": "EMA each (region,control) response toward the region's observed (drow,dcol) on frames where that control was fired. An affordance's effect is LEARNED, never given.",
+   "match": [
+    [
+     "game",
+     "has_region",
+     "r"
+    ],
+    [
+     "r",
+     "responds_via",
+     "cr"
+    ],
+    [
+     "cr",
+     "to_control",
+     "c"
+    ]
+   ],
+   "where": {
+    "type": "Eq",
+    "a": {
+     "type": "Attr",
+     "node": {
+      "type": "Var",
+      "name": "game"
+     },
+     "key": "last_action"
+    },
+    "b": {
+     "type": "Attr",
+     "node": {
+      "type": "Var",
+      "name": "c"
+     },
+     "key": "name"
+    }
+   },
+   "effects": [
+    [
+     "set_attr",
+     "cr",
+     "clocked",
+     1.0
+    ],
+    [
+     "set_attr",
+     "cr",
+     "next_dr",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "cr"
+           },
+           "key": "dr"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        },
+        {
+         "type": "Times",
+         "items": [
+          {
+           "type": "Lit",
+           "value": 0.3
+          },
+          {
+           "type": "Minus",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "r"
+              },
+              "key": "drow"
+             },
+             {
+              "type": "Lit",
+              "value": 0.0
+             }
+            ]
+           },
+           "b": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "cr"
+              },
+              "key": "dr"
+             },
+             {
+              "type": "Lit",
+              "value": 0.0
+             }
+            ]
+           }
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "cr",
+     "next_dc",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "cr"
+           },
+           "key": "dc"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        },
+        {
+         "type": "Times",
+         "items": [
+          {
+           "type": "Lit",
+           "value": 0.3
+          },
+          {
+           "type": "Minus",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "r"
+              },
+              "key": "dcol"
+             },
+             {
+              "type": "Lit",
+              "value": 0.0
+             }
+            ]
+           },
+           "b": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "cr"
+              },
+              "key": "dc"
+             },
+             {
+              "type": "Lit",
+              "value": 0.0
+             }
+            ]
+           }
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "cr",
+     "next_n",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "cr"
+           },
+           "key": "n"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        },
+        {
+         "type": "Lit",
+         "value": 1.0
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  }
+ ]
+}

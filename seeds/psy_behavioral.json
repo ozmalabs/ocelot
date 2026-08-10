@@ -1,0 +1,47 @@
+{
+  "microtheory": {
+    "name": "behavioral_psychology",
+    "definition": "Behaviourism — Pavlov, Watson, Skinner. Focus on observable stimulus-response relationships. Internal mental states bracketed as 'black box'. Empirical strength: precise prediction of behaviour change. Limitations: under-explains language, problem-solving, internal experience. Substrate analogue: the substrate's stimulus → FilterSpec → ActionSpec → outcome loop IS behaviourism; the substrate's broader cortex architecture extends beyond it.",
+    "category": "psychology_domain",
+    "parent": "psychology_foundation"
+  },
+  "concepts": [
+    {"name": "classical_conditioning", "definition": "Pavlov 1897. Neutral stimulus paired with biologically-significant stimulus comes to elicit the same response. Bell + food → salivation to bell. Substrate analogue: substrate's covers_correction strengthening when Concept_A reliably co-occurs with Concept_B.", "category": "conditioning"},
+    {"name": "unconditioned_stimulus", "definition": "Pavlov. Stimulus naturally producing a response (food). Substrate analogue: substrate's seeded high-valence Concept.", "category": "conditioning"},
+    {"name": "conditioned_stimulus", "definition": "Pavlov. Previously-neutral stimulus that comes to elicit response after pairing. Substrate analogue: substrate's Concept that gains valence through co-firing with high-valence Concepts.", "category": "conditioning"},
+    {"name": "extinction_behavioural", "definition": "Conditioned response weakens when CS presented without US. NOT erasure — original learning preserved, new inhibition learned. Substrate analogue: substrate's covers_correction decay when correction stops firing.", "category": "conditioning"},
+    {"name": "spontaneous_recovery", "definition": "After extinction, conditioned response can return after a rest period. Shows extinction is inhibition, not erasure. Substrate analogue: substrate's Mt-state reversion to prior basin when current context fades.", "category": "conditioning"},
+    {"name": "stimulus_generalisation", "definition": "Conditioning to one stimulus transfers to similar stimuli. Substrate analogue: substrate's similar-concept activation via shared causal_influence edges.", "category": "conditioning"},
+    {"name": "stimulus_discrimination", "definition": "Conditioned response only to specific CS, not similar stimuli. Substrate analogue: substrate's discrimination-drive sharpening Mt boundaries.", "category": "conditioning"},
+    {"name": "rescorla_wagner_model", "definition": "1972. Conditioning strength changes proportional to prediction error: ΔV = α(λ - V). Foundation of all modern conditioning theory. Substrate analogue: substrate's J update rule — Hebbian × prediction error.", "category": "conditioning"},
+    {"name": "blocking", "definition": "Kamin 1969. Once a CS reliably predicts US, a new CS paired with the same US doesn't become associated. Refutes contiguity theories. Substrate analogue: substrate's existing covering FilterSpec prevents new ones from learning the same target.", "category": "conditioning"},
+
+    {"name": "operant_conditioning", "definition": "Skinner 1938. Behaviour modified by its consequences. Reinforcement increases; punishment decreases. Substrate analogue: substrate's ActionSpec coverage update based on event-outcome.", "category": "operant"},
+    {"name": "positive_reinforcement", "definition": "Adding desirable consequence → behaviour increases. Substrate analogue: positive RPE signal strengthening ActionSpec dispatch.", "category": "operant"},
+    {"name": "negative_reinforcement", "definition": "Removing aversive consequence → behaviour increases. Often confused with punishment. Substrate analogue: ActionSpec that reduces frustration gets reinforced.", "category": "operant"},
+    {"name": "positive_punishment", "definition": "Adding aversive consequence → behaviour decreases. Substrate analogue: high negative ΔF following ActionSpec dispatch.", "category": "operant"},
+    {"name": "negative_punishment", "definition": "Removing desirable consequence → behaviour decreases. 'Time out'. Substrate analogue: withholding reward signal after ActionSpec dispatch.", "category": "operant"},
+    {"name": "schedule_of_reinforcement", "definition": "Skinner. Pattern of reinforcement delivery: fixed ratio, variable ratio, fixed interval, variable interval. Each produces distinctive response pattern. Substrate analogue: substrate's reward-pattern shapes ActionSpec habit strength.", "category": "operant"},
+    {"name": "variable_ratio_schedule", "definition": "Reinforcement after unpredictable number of responses. Produces highest, most persistent response rate. Why gambling is addictive. Substrate analogue: high-variance-coverage ActionSpec — persistent dispatch.", "category": "operant"},
+
+    {"name": "shaping", "definition": "Skinner. Reinforce successive approximations to target behaviour. How animals learn complex tricks. Substrate analogue: substrate's correction-firing on increasingly-correct partial states.", "category": "operant"},
+    {"name": "chaining", "definition": "Linking simple behaviours into complex sequences. Each step's completion signals the next. Substrate analogue: substrate's FilterSpec → ActionSpec → next-FilterSpec dispatch chain.", "category": "operant"},
+    {"name": "premack_principle", "definition": "1965. High-frequency behaviour can reinforce low-frequency behaviour. 'Eat your vegetables, then you can have dessert.' Substrate analogue: substrate's preferred-Mt access used to reinforce engagement with less-preferred Mt.", "category": "operant"},
+
+    {"name": "observational_learning", "definition": "Bandura 1977. Learning by watching others, without direct reinforcement. Bobo doll. Substrate analogue: in multi-substrate contexts, learning ActionSpecs by observing other substrate's successful dispatches.", "category": "social_learning"},
+    {"name": "vicarious_reinforcement", "definition": "Bandura. Observing other being reinforced for behaviour increases own likelihood of same behaviour. Substrate analogue: substrate's covers_correction update from observed peer-substrate outcomes.", "category": "social_learning"},
+    {"name": "modeling", "definition": "Bandura. Demonstrating target behaviour. Effective when model is similar + competent + rewarded. Substrate analogue: substrate's import of FilterSpec from peer substrate.", "category": "social_learning"},
+
+    {"name": "habituation", "definition": "Simplest learning: repeated exposure → reduced response. Found in all nervous systems. Substrate analogue: substrate's σ damping for repeatedly-encountered Concept without ΔF.", "category": "non_associative"},
+    {"name": "sensitisation", "definition": "Repeated exposure → increased response. Often follows aversive stimulus. Substrate analogue: substrate's amplified ΔF response after negative event.", "category": "non_associative"},
+    {"name": "preparedness", "definition": "Seligman 1971. Easier to condition biologically-prepared associations (taste-illness) than arbitrary ones. Substrate analogue: substrate's seed-Mt structure biases what associations form easily.", "category": "constraints"}
+  ],
+  "rules": [
+    {"name": "rescorla_wagner_governs_associative_learning", "head": "two concepts co-occur in the substrate", "body": "their association strength updates proportional to prediction error (Rescorla + Wagner 1972). ΔV = α(λ - V) is exactly substrate's J update."},
+    {"name": "extinction_is_inhibition_not_erasure", "head": "the substrate stops reinforcing an ActionSpec", "body": "the original learning persists; new inhibitory learning competes with it. Spontaneous recovery in different context. Substrate's covers_correction doesn't actually go to zero."},
+    {"name": "blocking_prevents_redundant_learning", "head": "an existing FilterSpec already covers a failure mode", "body": "a new FilterSpec paired with the same mode doesn't acquire coverage — Kamin 1969. Substrate's derivation_mechanism + python_migration produce one tag per failure mode."},
+    {"name": "variable_ratio_schedules_produce_persistent_behaviour", "head": "the substrate's ActionSpec is reinforced unpredictably", "body": "dispatch becomes highly persistent — extinguishes slowly. Why gambling + many habits are sticky. Substrate's coverage_count metric ≠ recent_success_rate."},
+    {"name": "observational_learning_transfers_actions_across_substrates", "head": "one substrate observes another's successful ActionSpec dispatch", "body": "it can acquire the ActionSpec without direct trial. Bandura 1977. In collaborative contexts, FilterSpec/ActionSpec import."},
+    {"name": "preparedness_biases_which_associations_form", "head": "the substrate's foundational Mts include some seed concepts", "body": "associations consistent with seed structure form faster than arbitrary associations. Seligman 1971. Substrate's seed bias."}
+  ]
+}

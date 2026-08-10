@@ -1,0 +1,67 @@
+{
+  "id": "helicopter_autorotation_v1",
+  "version": "1.0.0",
+  "question": "Can a graph-native energy/viability controller discover and execute a safe landing after hidden engine torque loss?",
+  "plant": {
+    "kind": "single_main_rotor_longitudinal_helicopter",
+    "physics_rate_hz": 240,
+    "required_mechanisms": [
+      "finite_main_rotor_inertia",
+      "freewheel_clutch",
+      "signed_airflow_to_rotor_power_transfer",
+      "collective_lift_and_rotor_drag",
+      "cyclic_disc_tilt",
+      "fuselage_drag",
+      "ground_contact"
+    ]
+  },
+  "failure": {
+    "kind": "complete_engine_torque_loss",
+    "onset_seconds": 1.0,
+    "observable_to_agent": false
+  },
+  "controls": {
+    "kind": "opaque_cartesian_pilot_control_alphabet",
+    "semantics_observable_to_agent": false,
+    "forbidden_agent_actions": [
+      "autorotate",
+      "flare",
+      "lower_collective"
+    ]
+  },
+  "priors": [
+    "preserve_viable_internal_energy",
+    "reduce_contact_relative_kinetic_energy",
+    "time_to_contact_context",
+    "prefer verified local consequences"
+  ],
+  "learning": {
+    "bounded_interventions_per_local_context": 15,
+    "local_contexts": 3,
+    "gradient_descent": false,
+    "action_labels": false,
+    "failure_labels": false
+  },
+  "success": {
+    "maximum_vertical_speed_m_s": 2.5,
+    "maximum_horizontal_speed_m_s": 8.0,
+    "maximum_abs_pitch_radians": 0.3141592653589793,
+    "minimum_rotor_speed_fraction": 0.78,
+    "world_and_graph_assessments_must_agree": true
+  },
+  "transfer_axes": [
+    "initial_altitude",
+    "initial_forward_speed",
+    "gross_mass",
+    "rotor_inertia"
+  ],
+  "ablations": [
+    "no_bounded_intervention_memory",
+    "no_energy_reserve_term",
+    "no_contact_horizon_context",
+    "frozen_compact_action_model"
+  ],
+  "exclusions": {
+    "height_velocity_exclusion": "Initial conditions outside the plant's recoverable energy envelope are reported separately and are not controller failures."
+  }
+}

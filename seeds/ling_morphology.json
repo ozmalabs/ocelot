@@ -1,0 +1,163 @@
+{
+  "microtheory": {
+    "name": "morphology_linguistics",
+    "definition": "Word structure and formation. Morphemes, inflection vs derivation, compounding, productivity. How languages create new words and modify existing ones. Substrate analogue: substrate's compositional structure within lexical units — concepts can be decomposed + recomposed.",
+    "category": "linguistics_domain",
+    "parent": "linguistics_foundation"
+  },
+  "concepts": [
+    {
+      "name": "free_morpheme",
+      "definition": "Stand-alone meaningful unit. 'Run', 'house', 'happy'. Substrate analogue: substrate's atomic Concept.",
+      "category": "morpheme_type"
+    },
+    {
+      "name": "bound_morpheme",
+      "definition": "Cannot stand alone; attaches. -s, -ed, un-. Substrate analogue: substrate's modifier-only concept.",
+      "category": "morpheme_type"
+    },
+    {
+      "name": "stem",
+      "definition": "Core meaning-bearing part of a word, before affixes. Substrate analogue: substrate's root Concept.",
+      "category": "morpheme_type"
+    },
+    {
+      "name": "root",
+      "definition": "Smallest morpheme that bears core meaning. In 'unhappiness', 'happy' is root. Substrate analogue: substrate's primitive Concept.",
+      "category": "morpheme_type"
+    },
+    {
+      "name": "affix",
+      "definition": "Bound morpheme attaching to stem. Prefix, suffix, infix, circumfix. Substrate analogue: substrate's modifier edge.",
+      "category": "morpheme_type"
+    },
+    {
+      "name": "inflection",
+      "definition": "Morphology marking grammatical features (tense, number, case, agreement) on existing words. Doesn't change word class. Substrate analogue: substrate's grammatical-attribute marking.",
+      "category": "operation"
+    },
+    {
+      "name": "derivation",
+      "definition": "Morphology creating new words from existing ones. Often changes word class. 'Happy' → 'happiness' (Adj → N). Substrate analogue: substrate's Concept-formation.",
+      "category": "operation"
+    },
+    {
+      "name": "compounding",
+      "definition": "Combining two free morphemes. 'Blackboard', 'firefly'. Substrate analogue: substrate's Concept-pair as new Concept.",
+      "category": "operation"
+    },
+    {
+      "name": "reduplication",
+      "definition": "Repeating part or all of a word for meaning change. Tagalog 'bili' (buy) → 'bibili' (will buy). Substrate analogue: substrate's repetition-as-meaning operation.",
+      "category": "operation"
+    },
+    {
+      "name": "allomorph",
+      "definition": "Phonologically-conditioned variants of a morpheme. English plural -s: /s/ after voiceless, /z/ after voiced, /əz/ after sibilant. Substrate analogue: substrate's context-conditioned form variants.",
+      "category": "variation"
+    },
+    {
+      "name": "morphophonology",
+      "definition": "Interface between morphology + phonology. Sound changes at morpheme boundaries. Substrate analogue: substrate's compositional-phonological rules.",
+      "category": "variation"
+    },
+    {
+      "name": "suppletion",
+      "definition": "Irregular form replacing expected morphological derivation. 'Go/went', 'good/better'. Substrate analogue: substrate's exception-pattern.",
+      "category": "variation"
+    },
+    {
+      "name": "productive_morpheme",
+      "definition": "Can attach to new bases freely. '-ness' is productive; '-th' (warmth, length) is not. Substrate analogue: substrate's actively-generative pattern.",
+      "category": "productivity"
+    },
+    {
+      "name": "lexicalization",
+      "definition": "Derived form becomes its own lexical item with idiosyncratic meaning. 'Hospital' originally from 'hospes'. Substrate analogue: substrate's frozen compound Concept.",
+      "category": "productivity"
+    },
+    {
+      "name": "frequency_effects",
+      "definition": "More frequent forms processed faster + retained better. Higher-frequency irregulars resist regularization. Substrate analogue: substrate's usage-frequency affecting Concept stability.",
+      "category": "productivity"
+    },
+    {
+      "name": "morphological_typology",
+      "definition": "Languages classified by morphology: isolating (Chinese, few morphemes per word), agglutinative (Turkish, clear morpheme boundaries), fusional (Latin, multiple meanings per morpheme), polysynthetic (Inuktitut, sentences-as-words). Substrate analogue: substrate's per-language compositional density.",
+      "category": "typology"
+    },
+    {
+      "name": "isolating_language",
+      "definition": "One morpheme per word. Word order carries grammatical info. Chinese, Vietnamese. Substrate analogue: substrate's atomic-Concept-per-word lexicon.",
+      "category": "typology"
+    },
+    {
+      "name": "agglutinative_language",
+      "definition": "Words built from multiple distinct morphemes. Turkish 'evlerimizden' = ev-ler-imiz-den (house-PL-our-from). Substrate analogue: substrate's Term-tree with clear constituents.",
+      "category": "typology"
+    },
+    {
+      "name": "fusional_language",
+      "definition": "Single morpheme carries multiple meanings. Latin 'amō' = love+1SG+PRES+IND. Substrate analogue: substrate's polymorphic Concept attributes.",
+      "category": "typology"
+    },
+    {
+      "name": "polysynthetic_language",
+      "definition": "Single word = full sentence. Inuktitut 'qangatasuukkuvimmuuriaqalaaqtunga'. Substrate analogue: substrate's complex compositional Concept.",
+      "term": {
+        "type": "Eq",
+        "a": {
+          "type": "Lit",
+          "value": "Single word"
+        },
+        "b": {
+          "type": "Lit",
+          "value": "full sentence"
+        }
+      },
+      "category": "typology"
+    },
+    {
+      "name": "morphological_paradigm",
+      "definition": "Set of all inflected forms of a lexeme. Verb conjugation, noun declension. Substrate analogue: substrate's variant-set for a Concept.",
+      "category": "structure"
+    },
+    {
+      "name": "syncretism",
+      "definition": "Same form in different paradigm cells. Latin 'rosa' = nom/voc/abl singular. Substrate analogue: substrate's form-collision in Concept variants.",
+      "category": "structure"
+    },
+    {
+      "name": "zero_morpheme",
+      "definition": "Posited unmarked form contrasting with marked forms. English plural 'sheep' = 'sheep + ∅'. Substrate analogue: substrate's null-modifier concept.",
+      "category": "structure"
+    }
+  ],
+  "rules": [
+    {
+      "name": "morphological_complexity_varies_typologically",
+      "head": "the substrate processes a language",
+      "body": "the morphological type (isolating to polysynthetic) determines whether to parse small words combined by syntax or long words with internal structure. Substrate's per-language parsing strategy."
+    },
+    {
+      "name": "productive_patterns_generate_new_forms",
+      "head": "the substrate encounters a novel base",
+      "body": "productive morphological patterns (in English: -ness, -er, -ing) can attach freely. Non-productive ones (-th, -dom) cannot. Substrate's generative-pattern distinction."
+    },
+    {
+      "name": "frequency_protects_irregularity",
+      "head": "the substrate processes an irregular form",
+      "body": "high frequency resists regularization pressure. 'Went' survives; 'wend' does not. Substrate's frequency-protected exception."
+    },
+    {
+      "name": "morphophonological_rules_apply_at_boundaries",
+      "head": "the substrate composes morphemes",
+      "body": "phonological adjustments may occur at the boundary. English plural /s/ vs /z/ vs /əz/. Substrate's compositional phonological adaptation."
+    },
+    {
+      "name": "compounding_creates_units_with_specialized_meaning",
+      "head": "the substrate combines two free morphemes",
+      "body": "the resulting compound often has meaning beyond the parts. 'Blackboard' isn't just any black board. Substrate's compound-Concept specialization."
+    }
+  ]
+}

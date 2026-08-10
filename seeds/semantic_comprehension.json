@@ -1,0 +1,33 @@
+{
+ "id": "semantic_comprehension",
+ "version": "1.0.0",
+ "depends_on": ["semantic_binding"],
+ "description": "The SEMANTICS faculty's COMPREHENSION piece (associative_recall — pattern-completion to the semantic neighbourhood), graph-native. Binding gives the form a meaning node; comprehension USES it: the recognised form completes to its PLACE in the writing system (its script/alphabet) and its FAMILIARITY (a meaning recalled by >=2 marks is a known/repeated symbol — the attractor activated again). Two Rules over the meaning network; comprehension IS the Rules, no Python.",
+ "microtheory": {"name": "semantic_comprehension", "description": "comprehend the recognised symbol in its system"},
+ "nodes": [], "edges": [], "productions": [],
+ "rules": [
+  {
+   "name": "comprehend_alphabet",
+   "match": [["m", "denotes", "meaning"], ["m", "recognised_as", "cand"]],
+   "where": {"type": "Eq",
+     "a": {"type": "Count", "source": {"type": "Neighbours",
+            "node": {"type": "Var", "name": "meaning"}, "edge_type": "in_alphabet", "any_type": false}},
+     "b": {"type": "Lit", "value": 0}},
+   "effects": [
+     ["add_node_if_absent", "alpha", "Concept",
+       {"name": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "cand"}, "key": "alphabet"}},
+        "is_alphabet": 1.0}],
+     ["add_edge", "meaning", "in_alphabet", "alpha"]
+   ]
+  },
+  {
+   "name": "comprehend_familiar",
+   "match": [["m", "denotes", "meaning"]],
+   "where": {"type": "Gte",
+     "a": {"type": "Count", "source": {"type": "InNeighbours",
+            "node": {"type": "Var", "name": "meaning"}, "edge_type": "denotes", "any_type": false}},
+     "b": {"type": "Lit", "value": 2}},
+   "effects": [["set_attr", "meaning", "familiar", 1.0]]
+  }
+ ]
+}

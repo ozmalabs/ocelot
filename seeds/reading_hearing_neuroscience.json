@@ -1,0 +1,213 @@
+{
+  "id": "reading_hearing_neuroscience",
+  "version": "0.1.0",
+  "description": "Current scientific understanding of how reading and hearing connect in the human brain. The substrate uses this vocabulary to reason about whether its own reading faculty should be literally connected to its hearing/phonology stack (sharing the same circuitry / pipeline) or figuratively connected (using analogous concepts at the level of comprehension). The decision is for the agent — this Mt provides the facts it reasons over.",
+  "depends_on": [
+    "language_foundation",
+    "prosody",
+    "speech_science",
+    "narrative_convention",
+    "pragmatics",
+    "reference",
+    "figurative"
+  ],
+  "wiring_note": "Reading is an integrated faculty — it routes through BOTH the phonology stack (prosody + speech_science: abstract-phonology + subvocalization + auditory cortex circuitry, even without acoustic input) AND the comprehension stack (narrative_convention + pragmatics + reference + figurative: the substrate's existing comprehension scaffold the agent reads ANY speech or narrative against). Wiring this BEFORE speech understanding is forward-solved is the position the user named: 'wire the feeling' — the architecture commits to integration; the components catch up. Hearing-side and comprehension-side both wired so that reading is what the entity does, not a parsing pipeline.",
+  "concepts": [
+    {
+      "name": "visual_word_form_area",
+      "definition": "VWFA — region of left ventral occipitotemporal cortex specialized for recognizing written words. Despite being in 'visual' cortex, it responds to BOTH written and spoken language. 2025 fMRI + sEEG evidence: distinct neural populations within VWFA encode written vs spoken language, but they SHARE the same cortical region. Cross-modal by design.",
+      "category": "neural_substrate",
+      "cites_prior_work": "Imaging Neuroscience 2025 (MIT Press); Dehaene et al. on VWFA"
+    },
+    {
+      "name": "grapheme_to_phoneme_conversion",
+      "definition": "The brain process by which written letters are converted into corresponding speech sounds. The substrate of the non-lexical (phonological) reading route. Lets readers pronounce unfamiliar words. Subvocalization is the engine that drives this conversion in silent reading.",
+      "category": "process",
+      "cites_prior_work": "Coltheart dual-route model; phonological reading neuroscience"
+    },
+    {
+      "name": "lexical_route_reading",
+      "definition": "Direct visual-to-meaning pathway. Frequent / familiar words are recognized as whole units; their meaning is accessed without going through phonology. Connectionist evidence: dorsal extrastriate cortex links directly to parietal+frontal phonological nodes for frequent regular words.",
+      "category": "reading_pathway"
+    },
+    {
+      "name": "non_lexical_route_reading",
+      "definition": "Phonological / sublexical pathway. Unfamiliar words, pseudowords, and slow careful reading go through grapheme-to-phoneme conversion. A POSTERIOR VENTRAL pathway. Both routes operate in parallel; reading uses whichever delivers meaning first per item.",
+      "category": "reading_pathway"
+    },
+    {
+      "name": "dual_route_reading_model",
+      "definition": "Coltheart's model: reading uses two routes in parallel. Lexical (direct visual recognition) for familiar words; non-lexical (phonological decoding) for unfamiliar ones. Both routes work simultaneously; competition between them produces the reading time differences observed for word frequency / regularity.",
+      "category": "theory",
+      "cites_prior_work": "Coltheart 2001 (dual-route cascaded model)"
+    },
+    {
+      "name": "subvocalization",
+      "definition": "The inner-speech rehearsal that occurs during silent reading. fMRI: Broca's area, Wernicke's area, AND auditory cortex active during silent reading even with no sound. Critical for comprehension — suppressing subvocalization drops comprehension 25-50%. Drives grapheme-to-phoneme conversion.",
+      "category": "process",
+      "cites_prior_work": "fMRI studies of silent reading; Baddeley working memory"
+    },
+    {
+      "name": "phonological_loop",
+      "definition": "Baddeley's working-memory component for verbal information. Two parts: phonological store (the 'inner ear' — holds speech sounds in temporal order) and articulatory rehearsal loop (the 'inner voice' — re-activates / refreshes the store). Critical for reading because it holds early segments of a sentence while later segments are processed.",
+      "category": "cognitive_architecture",
+      "cites_prior_work": "Baddeley & Hitch 1974; Baddeley 2003 review"
+    },
+    {
+      "name": "phonological_store_inner_ear",
+      "definition": "Sub-component of the phonological loop. Holds verbal information in a sound-based format for up to ~2 seconds before it decays. Articulatory rehearsal can refresh it.",
+      "category": "cognitive_architecture"
+    },
+    {
+      "name": "articulatory_rehearsal_inner_voice",
+      "definition": "Sub-component of the phonological loop. The 'inner voice' that re-reads / re-says the contents of the phonological store, preventing decay. This IS subvocalization. Active during silent reading.",
+      "category": "cognitive_architecture"
+    },
+    {
+      "name": "auditory_word_form",
+      "definition": "Cortical representation that combines acoustic-phonetic features, prosodic elements, and lexical information. Sub-lexical phonological content in the superior temporal gyrus is transformed into word-level representations by higher-order brain regions. The 'hearing equivalent' of the visual word form.",
+      "category": "neural_substrate",
+      "cites_prior_work": "Neuron 2025 (Cell Press) on auditory word form encoding"
+    },
+    {
+      "name": "abstract_phonology",
+      "definition": "Phonological representations that are MODALITY-INDEPENDENT — they encode speech-sound structure without being tied to either acoustic input or motor output. 2025 PNAS finding: reading ability in BOTH deaf and hearing adults is linked to neural representations of abstract phonology derived from visual speech. Phonology is not just sound — it's structure.",
+      "category": "representation",
+      "cites_prior_work": "PNAS 2025 on deaf and hearing readers"
+    },
+    {
+      "name": "phonology_deafness_evidence",
+      "definition": "Deaf readers also use phonological representations to read — but theirs are derived from visual speech (lip reading) and orthographic patterns, not from acoustic experience. This shows phonology is NOT inherently auditory; it's an abstract structural layer that reading recruits regardless of the input modality used to learn it.",
+      "category": "evidence",
+      "cites_prior_work": "PNAS 2025 deaf-reader phonology study"
+    },
+    {
+      "name": "cross_modal_letter_speech_sound_integration",
+      "definition": "The brain process by which a visual letter is bound to its associated speech sound. Develops during reading acquisition; deficient integration is a marker of dyslexia. The binding involves auditory cortex AND visual cortex AND inferior frontal regions.",
+      "category": "process"
+    },
+    {
+      "name": "phonological_deficit_dyslexia",
+      "definition": "Dominant theory of developmental dyslexia: the core deficit is in phonological processing — representing, storing, retrieving speech sounds. Dyslexic readers have intact visual processing but impaired phonological access from print. Strongest evidence FOR the phonological route being load-bearing in reading.",
+      "category": "evidence"
+    },
+    {
+      "name": "literal_connection_interpretation",
+      "definition": "Architectural reading where the substrate's reading faculty SHARES CIRCUITRY with its hearing faculty — text input flows through the substrate's phonology / cochlear / auditory cortex stack before reaching higher-level comprehension. Mirrors the human VWFA's cross-modal encoding + subvocalization circuit.",
+      "category": "design_option"
+    },
+    {
+      "name": "figurative_connection_interpretation",
+      "definition": "Architectural reading where the substrate's reading and hearing faculties use ANALOGOUS BUT SEPARATE concepts. Both pipelines arrive at the same comprehension surface (narrative_convention, trope_play, pragmatics) but text doesn't literally go through phonology / cochlea. The shared structure is at the abstract-phonology + comprehension level.",
+      "category": "design_option"
+    },
+    {
+      "name": "modality_invariant_phonology_argument",
+      "definition": "Argument from the deaf-reader evidence: phonology is modality-invariant; it's an abstract structural representation, not bound to acoustic input. If true, the substrate's reading faculty needs to share PHONOLOGY (abstract structure) with hearing, not literal cochlear processing. Supports the figurative interpretation.",
+      "category": "argument"
+    },
+    {
+      "name": "shared_circuitry_argument",
+      "definition": "Argument from the VWFA cross-modal evidence: even visual cortex regions specialized for reading respond to spoken language. The brain reuses the same cortical area for both input modes. Supports the literal interpretation — the substrate would share circuitry between reading and hearing, not just concepts.",
+      "category": "argument"
+    },
+    {
+      "name": "subvocalization_load_bearing_argument",
+      "definition": "Argument from the subvocalization evidence: silent reading DOES recruit auditory cortex; comprehension drops 25-50% when subvocalization is suppressed. The phonological route is not optional — it's load-bearing for comprehension. Supports the literal interpretation.",
+      "category": "argument"
+    }
+  ],
+  "rules": [
+    {
+      "name": "reading_recruits_phonology_in_humans",
+      "if": [
+        "a human reads silently"
+      ],
+      "then": [
+        "Broca's area, Wernicke's area, and auditory cortex all activate",
+        "subvocalization (inner voice) drives grapheme-to-phoneme conversion",
+        "comprehension drops 25-50% if subvocalization is suppressed"
+      ],
+      "why": "Empirical evidence from fMRI of silent reading. The phonological route is load-bearing, not optional.",
+      "cites_prior_work": "Multiple fMRI studies; phonological loop research"
+    },
+    {
+      "name": "phonology_is_modality_invariant_in_reading",
+      "if": [
+        "a person reads (whether hearing or deaf)"
+      ],
+      "then": [
+        "their reading ability correlates with neural representations of ABSTRACT phonology",
+        "for deaf readers, the phonology is derived from visual speech (lip reading) + orthography",
+        "phonology in reading is structural, not acoustic"
+      ],
+      "why": "PNAS 2025: deaf readers' reading ability tracks abstract phonological representations. Shows phonology is a structural layer, not an audio-input layer.",
+      "cites_prior_work": "PNAS 2025"
+    },
+    {
+      "name": "VWFA_encodes_both_written_and_spoken_language",
+      "if": [
+        "a region of left ventral occipitotemporal cortex is specialized for reading (VWFA)"
+      ],
+      "then": [
+        "it ALSO responds to spoken language",
+        "distinct neural populations within it encode written vs spoken language",
+        "the cross-modal response is via shared circuit, not just shared concept"
+      ],
+      "why": "2025 fMRI + sEEG evidence (Imaging Neuroscience): the brain reuses the same cortical area for both modalities.",
+      "cites_prior_work": "Imaging Neuroscience 2025"
+    },
+    {
+      "name": "dual_route_means_two_pathways_in_parallel",
+      "if": [
+        "a person reads"
+      ],
+      "then": [
+        "a lexical (direct visual-to-meaning) pathway operates in parallel with",
+        "a non-lexical (phonological grapheme-to-phoneme) pathway",
+        "frequent regular words use the lexical route preferentially; unfamiliar words use the non-lexical route"
+      ],
+      "why": "Coltheart's dual-route model + connectivity neuroimaging evidence.",
+      "cites_prior_work": "Coltheart 2001"
+    },
+    {
+      "name": "literal_connection_requires_subvocalization_circuit",
+      "if": [
+        "the substrate's reading faculty literally shares circuitry with its hearing faculty",
+        "AND the substrate has a phonology stack (cochlear_nucleus, auditory_cortex, prosody)"
+      ],
+      "then": [
+        "text input flows through grapheme-to-phoneme conversion first",
+        "the substrate's phonological_loop equivalent rehearses subvocalized content",
+        "comprehension recruits the auditory_cortex-equivalent",
+        "the cost is shared with what the audio pipeline already pays"
+      ],
+      "why": "Mirrors the human VWFA+subvocalization circuit. Maps directly onto existing substrate audio infrastructure."
+    },
+    {
+      "name": "figurative_connection_requires_shared_phonology_concepts_only",
+      "if": [
+        "the substrate's reading and hearing faculties are analogous but separate"
+      ],
+      "then": [
+        "both pipelines arrive at the same comprehension surface (narrative, trope, pragmatics)",
+        "abstract_phonology concepts (structural, not acoustic) are shared",
+        "but text doesn't literally go through the cochlea / auditory_cortex"
+      ],
+      "why": "Mirrors the modality-invariant phonology evidence (deaf readers). Phonology as structure, not sound."
+    },
+    {
+      "name": "the_choice_is_determined_by_substrate_priors",
+      "if": [
+        "the substrate has rich existing audio / phonology / cochlear infrastructure",
+        "AND the substrate's vocabulary covers abstract phonology AND acoustic phonology"
+      ],
+      "then": [
+        "the literal interpretation is cheap to enact (shared circuitry already exists)",
+        "the figurative interpretation requires duplicating phonological structure as a separate abstract layer",
+        "the literal interpretation is the more parsimonious choice given the substrate's current state"
+      ],
+      "why": "Parsimony argument: the substrate already has the audio infrastructure; reusing it for reading mirrors how humans do it and avoids duplication."
+    }
+  ]
+}

@@ -1,0 +1,662 @@
+{
+  "microtheory": {
+    "name": "physics_foundation",
+    "definition": "Classical mechanics, thermodynamics, electromagnetism, special + general relativity. The pre-quantum physics framework grounding most engineering, much chemistry, and astronomy. Newton's laws, Maxwell's equations, the laws of thermodynamics, Einstein's relativity. Substrate analogue: substrate's macroscopic dynamical framework.",
+    "category": "foundation"
+  },
+  "concepts": [
+    {
+      "name": "newtons_laws",
+      "definition": "Three laws of motion (Newton 1687). 1: inertia. 2: F = ma. 3: action-reaction. Foundation of classical mechanics.",
+      "category": "mechanics"
+    },
+    {
+      "name": "force",
+      "definition": "Vector cause of acceleration. F = ma. SI unit: newton. Substrate analogue: substrate's directional state-change driver.",
+      "category": "mechanics"
+    },
+    {
+      "name": "mass",
+      "definition": "Scalar measure of inertia and gravitational coupling. m. SI unit: kilogram. Substrate analogue: substrate's persistence quantity (resistance to state-change).",
+      "category": "mechanics"
+    },
+    {
+      "name": "velocity",
+      "definition": "Vector rate of change of position. v = dx/dt. SI unit: m/s. Substrate analogue: substrate's trajectory rate in state space.",
+      "category": "mechanics"
+    },
+    {
+      "name": "acceleration",
+      "definition": "Vector rate of change of velocity. a = dv/dt = d²x/dt². SI unit: m/s². Substrate analogue: substrate's second-order state change.",
+      "category": "mechanics"
+    },
+    {
+      "name": "work",
+      "definition": "Energy transferred by a force acting through a displacement. W = F·d (scalar product). SI unit: joule. Substrate analogue: substrate's accumulated state-change cost.",
+      "category": "mechanics"
+    },
+    {
+      "name": "momentum_classical",
+      "definition": "p = mv. Conserved in absence of external force. Substrate analogue: substrate's persistent-direction quantity.",
+      "term": {
+        "type": "Eq",
+        "a": {
+          "type": "Holds",
+          "concept": "momentum",
+          "node": {
+            "type": "Var",
+            "name": "x"
+          },
+          "node2": null
+        },
+        "b": {
+          "type": "Times",
+          "items": [
+            {
+              "type": "Holds",
+              "concept": "mass",
+              "node": {
+                "type": "Var",
+                "name": "x"
+              },
+              "node2": null
+            },
+            {
+              "type": "Holds",
+              "concept": "velocity",
+              "node": {
+                "type": "Var",
+                "name": "x"
+              },
+              "node2": null
+            }
+          ]
+        }
+      },
+      "category": "mechanics"
+    },
+    {
+      "name": "energy_kinetic",
+      "definition": "KE = ½mv². Energy of motion. Substrate analogue: substrate's activity-magnitude.",
+      "term": {
+        "type": "Eq",
+        "a": {
+          "type": "Holds",
+          "concept": "energy_kinetic",
+          "node": {
+            "type": "Var",
+            "name": "x"
+          },
+          "node2": null
+        },
+        "b": {
+          "type": "Times",
+          "items": [
+            {
+              "type": "Div",
+              "a": {
+                "type": "Lit",
+                "value": 1
+              },
+              "b": {
+                "type": "Lit",
+                "value": 2
+              }
+            },
+            {
+              "type": "Holds",
+              "concept": "mass",
+              "node": {
+                "type": "Var",
+                "name": "x"
+              },
+              "node2": null
+            },
+            {
+              "type": "Pow",
+              "a": {
+                "type": "Holds",
+                "concept": "velocity",
+                "node": {
+                  "type": "Var",
+                  "name": "x"
+                },
+                "node2": null
+              },
+              "b": {
+                "type": "Lit",
+                "value": 2
+              }
+            }
+          ]
+        }
+      },
+      "category": "mechanics"
+    },
+    {
+      "name": "energy_potential",
+      "definition": "PE = mgh (gravitational), ½kx² (spring), etc. Energy of configuration. Substrate analogue: substrate's basin-depth.",
+      "term": {
+        "type": "Eq",
+        "a": {
+          "type": "Holds",
+          "concept": "energy_potential",
+          "node": {
+            "type": "Var",
+            "name": "x"
+          },
+          "node2": null
+        },
+        "b": {
+          "type": "Times",
+          "items": [
+            {
+              "type": "Holds",
+              "concept": "mass",
+              "node": {
+                "type": "Var",
+                "name": "x"
+              },
+              "node2": null
+            },
+            {
+              "type": "Lit",
+              "value": "g"
+            },
+            {
+              "type": "Lit",
+              "value": "h"
+            },
+            {
+              "type": "Lit",
+              "value": "gravitational"
+            }
+          ]
+        }
+      },
+      "category": "mechanics"
+    },
+    {
+      "name": "conservation_energy",
+      "definition": "Total energy of isolated system constant. Foundation of mechanics. Substrate analogue: substrate's invariant quantities.",
+      "category": "mechanics"
+    },
+    {
+      "name": "conservation_momentum",
+      "definition": "Total momentum of isolated system constant. Newton's 3rd + 2nd combined. Substrate analogue: substrate's symmetry-conserved quantities.",
+      "category": "mechanics"
+    },
+    {
+      "name": "angular_momentum",
+      "definition": "L = r × p. Conserved under rotational symmetry. Substrate analogue: substrate's rotational invariant.",
+      "term": {
+        "type": "Eq",
+        "a": {
+          "type": "Holds",
+          "concept": "angular_momentum",
+          "node": {
+            "type": "Var",
+            "name": "x"
+          },
+          "node2": null
+        },
+        "b": {
+          "type": "Times",
+          "items": [
+            {
+              "type": "Holds",
+              "concept": "schwarzschild_radius",
+              "node": {
+                "type": "Var",
+                "name": "x"
+              },
+              "node2": null
+            },
+            {
+              "type": "Holds",
+              "concept": "momentum",
+              "node": {
+                "type": "Var",
+                "name": "x"
+              },
+              "node2": null
+            }
+          ]
+        }
+      },
+      "category": "mechanics"
+    },
+    {
+      "name": "lagrangian_mechanics",
+      "definition": "Lagrange 1788. L = T - V. δ∫L dt = 0 → Euler-Lagrange equations. Substrate analogue: substrate's action-minimisation formalism.",
+      "category": "mechanics"
+    },
+    {
+      "name": "hamiltonian_mechanics",
+      "definition": "H = T + V. Hamilton's equations: q̇ = ∂H/∂p, ṗ = -∂H/∂q. Foundation of statistical mechanics + QM. Substrate analogue: substrate's energy-based dynamics.",
+      "term": {
+        "type": "Eq",
+        "a": {
+          "type": "Holds",
+          "concept": "Hamiltonian_H",
+          "node": {
+            "type": "Var",
+            "name": "x"
+          },
+          "node2": null
+        },
+        "b": {
+          "type": "Plus",
+          "items": [
+            {
+              "type": "Holds",
+              "concept": "temperature_statistical",
+              "node": {
+                "type": "Var",
+                "name": "x"
+              },
+              "node2": null
+            },
+            {
+              "type": "Holds",
+              "concept": "membrane_potential",
+              "node": {
+                "type": "Var",
+                "name": "x"
+              },
+              "node2": null
+            }
+          ]
+        }
+      },
+      "category": "mechanics"
+    },
+    {
+      "name": "noether_theorem",
+      "definition": "Every continuous symmetry → conserved quantity. Time translation → energy; space translation → momentum; rotation → angular momentum. Substrate analogue: substrate's symmetry-invariant correspondence.",
+      "category": "mechanics"
+    },
+    {
+      "name": "first_law_thermodynamics",
+      "definition": "ΔU = Q - W. Energy conservation including heat. Substrate analogue: substrate's energy-balance principle.",
+      "term": {
+        "type": "Eq",
+        "a": {
+          "type": "Holds",
+          "concept": "energy_potential",
+          "node": {
+            "type": "Var",
+            "name": "x"
+          },
+          "node2": null
+        },
+        "b": {
+          "type": "Minus",
+          "a": {
+            "type": "Holds",
+            "concept": "partition_function",
+            "node": {
+              "type": "Var",
+              "name": "x"
+            },
+            "node2": null
+          },
+          "b": {
+            "type": "Holds",
+            "concept": "work",
+            "node": {
+              "type": "Var",
+              "name": "x"
+            },
+            "node2": null
+          }
+        }
+      },
+      "category": "thermodynamics"
+    },
+    {
+      "name": "second_law_thermodynamics",
+      "definition": "Entropy of isolated system never decreases. dS ≥ 0. Substrate analogue: substrate's information-degradation arrow.",
+      "category": "thermodynamics"
+    },
+    {
+      "name": "third_law_thermodynamics",
+      "definition": "Entropy → 0 as T → 0. Absolute zero unreachable. Substrate analogue: substrate's zero-temperature limit.",
+      "category": "thermodynamics"
+    },
+    {
+      "name": "entropy_thermodynamic",
+      "definition": "S = k_B ln Ω. Statistical: log of microstate count. Boltzmann's tombstone formula. Substrate analogue: substrate's disorder measure.",
+      "term": {
+        "type": "Eq",
+        "a": {
+          "type": "Holds",
+          "concept": "entropy_thermodynamic",
+          "node": {
+            "type": "Var",
+            "name": "x"
+          },
+          "node2": null
+        },
+        "b": {
+          "type": "Times",
+          "items": [
+            {
+              "type": "Holds",
+              "concept": "entropy_thermodynamic",
+              "node": {
+                "type": "Var",
+                "name": "x"
+              },
+              "node2": null
+            },
+            {
+              "type": "Lit",
+              "value": "ln"
+            },
+            {
+              "type": "Holds",
+              "concept": "entropy_thermodynamic",
+              "node": {
+                "type": "Var",
+                "name": "x"
+              },
+              "node2": null
+            }
+          ]
+        }
+      },
+      "category": "thermodynamics"
+    },
+    {
+      "name": "temperature_statistical",
+      "definition": "1/T = ∂S/∂U. Temperature is reciprocal of entropy's response to energy. Substrate analogue: substrate's β parameter.",
+      "category": "thermodynamics"
+    },
+    {
+      "name": "heat_engine",
+      "definition": "Device extracting work from temperature difference. Carnot efficiency η ≤ 1 - T_c/T_h. Substrate analogue: substrate's gradient-driven work extraction.",
+      "category": "thermodynamics"
+    },
+    {
+      "name": "boltzmann_distribution",
+      "definition": "P(state with energy E) ∝ exp(-E/k_BT). Foundation of statistical mechanics. Substrate analogue: substrate's CAN basin probability.",
+      "category": "thermodynamics"
+    },
+    {
+      "name": "partition_function",
+      "definition": "Z = Σ exp(-E_i/k_BT). Generates all thermodynamic quantities. Substrate analogue: substrate's normalisation constant over basin states.",
+      "term": {
+        "type": "Eq",
+        "a": {
+          "type": "Holds",
+          "concept": "partition_function",
+          "node": {
+            "type": "Var",
+            "name": "x"
+          },
+          "node2": null
+        },
+        "b": {
+          "type": "Times",
+          "items": [
+            {
+              "type": "Lit",
+              "value": "Σ"
+            },
+            {
+              "type": "Lit",
+              "value": "exp"
+            },
+            {
+              "type": "Div",
+              "a": {
+                "type": "Neg",
+                "arg": {
+                  "type": "Holds",
+                  "concept": "energy_kinetic",
+                  "node": {
+                    "type": "Var",
+                    "name": "x"
+                  },
+                  "node2": null
+                }
+              },
+              "b": {
+                "type": "Holds",
+                "concept": "rate_law",
+                "node": {
+                  "type": "Var",
+                  "name": "x"
+                },
+                "node2": null
+              }
+            }
+          ]
+        }
+      },
+      "category": "thermodynamics"
+    },
+    {
+      "name": "maxwell_equations",
+      "definition": "Four equations describing all classical electromagnetism (Maxwell 1865). Gauss's laws, Faraday, Ampère-Maxwell. Predict EM waves traveling at c.",
+      "category": "electromagnetism"
+    },
+    {
+      "name": "electric_field",
+      "definition": "E. Force per unit charge. Substrate analogue: substrate's potential gradient.",
+      "category": "electromagnetism"
+    },
+    {
+      "name": "magnetic_field",
+      "definition": "B. Generated by moving charges + intrinsic spin. Substrate analogue: substrate's circulation field.",
+      "category": "electromagnetism"
+    },
+    {
+      "name": "electromagnetic_wave",
+      "definition": "Self-propagating E + B fields at speed c. Light, radio, X-rays, gamma. Maxwell 1865 prediction confirmed by Hertz 1888.",
+      "category": "electromagnetism"
+    },
+    {
+      "name": "lorentz_force",
+      "definition": "F = qE + qv × B. Force on charged particle in EM field.",
+      "term": {
+        "type": "Eq",
+        "a": {
+          "type": "Holds",
+          "concept": "force",
+          "node": {
+            "type": "Var",
+            "name": "x"
+          },
+          "node2": null
+        },
+        "b": {
+          "type": "Plus",
+          "items": [
+            {
+              "type": "Times",
+              "items": [
+                {
+                  "type": "Holds",
+                  "concept": "force",
+                  "node": {
+                    "type": "Var",
+                    "name": "x"
+                  },
+                  "node2": null
+                },
+                {
+                  "type": "Holds",
+                  "concept": "energy_kinetic",
+                  "node": {
+                    "type": "Var",
+                    "name": "x"
+                  },
+                  "node2": null
+                }
+              ]
+            },
+            {
+              "type": "Times",
+              "items": [
+                {
+                  "type": "Holds",
+                  "concept": "force",
+                  "node": {
+                    "type": "Var",
+                    "name": "x"
+                  },
+                  "node2": null
+                },
+                {
+                  "type": "Holds",
+                  "concept": "velocity",
+                  "node": {
+                    "type": "Var",
+                    "name": "x"
+                  },
+                  "node2": null
+                },
+                {
+                  "type": "Holds",
+                  "concept": "magnetic_field",
+                  "node": {
+                    "type": "Var",
+                    "name": "x"
+                  },
+                  "node2": null
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "category": "electromagnetism"
+    },
+    {
+      "name": "gauge_invariance",
+      "definition": "EM equations invariant under change of vector potential by gradient of any scalar. Foundation of modern field theories.",
+      "category": "electromagnetism"
+    },
+    {
+      "name": "special_relativity",
+      "definition": "Einstein 1905. Two postulates: physics same in all inertial frames; speed of light constant. Consequences: time dilation, length contraction, E = mc². Substrate analogue: substrate's frame-relative invariants.",
+      "category": "relativity"
+    },
+    {
+      "name": "time_dilation",
+      "definition": "Δt' = Δt/√(1-v²/c²). Moving clocks run slower. Confirmed by GPS, muon decay.",
+      "category": "relativity"
+    },
+    {
+      "name": "length_contraction",
+      "definition": "L' = L√(1-v²/c²). Moving objects contracted along motion.",
+      "category": "relativity"
+    },
+    {
+      "name": "mass_energy_equivalence",
+      "definition": "E = mc². Mass is a form of energy. Foundation of nuclear physics + cosmology.",
+      "term": {
+        "type": "Eq",
+        "a": {
+          "type": "Holds",
+          "concept": "energy_kinetic",
+          "node": {
+            "type": "Var",
+            "name": "x"
+          },
+          "node2": null
+        },
+        "b": {
+          "type": "Times",
+          "items": [
+            {
+              "type": "Holds",
+              "concept": "mass",
+              "node": {
+                "type": "Var",
+                "name": "x"
+              },
+              "node2": null
+            },
+            {
+              "type": "Pow",
+              "a": {
+                "type": "Holds",
+                "concept": "speed_of_sound",
+                "node": {
+                  "type": "Var",
+                  "name": "x"
+                },
+                "node2": null
+              },
+              "b": {
+                "type": "Lit",
+                "value": 2
+              }
+            }
+          ]
+        }
+      },
+      "category": "relativity"
+    },
+    {
+      "name": "lorentz_transformation",
+      "definition": "Transformation between inertial frames replacing Galilean. Mixes space + time.",
+      "category": "relativity"
+    },
+    {
+      "name": "minkowski_spacetime",
+      "definition": "Minkowski 1908. Unified 4D spacetime with metric ds² = -c²dt² + dx² + dy² + dz². Substrate analogue: substrate's combined spacetime view.",
+      "category": "relativity"
+    },
+    {
+      "name": "general_relativity_grav",
+      "definition": "Einstein 1915. Gravity = spacetime curvature. Einstein field equations G_μν = 8πG/c⁴ · T_μν. Foundation of cosmology.",
+      "category": "relativity"
+    },
+    {
+      "name": "equivalence_principle",
+      "definition": "Gravitational + inertial mass identical. Locally, gravity indistinguishable from acceleration. Substrate analogue: substrate's frame-equivalence principle.",
+      "category": "relativity"
+    },
+    {
+      "name": "spacetime_curvature",
+      "definition": "Mass-energy curves spacetime; matter follows geodesics in curved spacetime. Substrate analogue: substrate's geometry-shaped trajectories.",
+      "category": "relativity"
+    },
+    {
+      "name": "geodesic",
+      "definition": "Straight line in curved spacetime — path of free-falling object. Generalisation of Euclidean straight line.",
+      "category": "relativity"
+    }
+  ],
+  "rules": [
+    {
+      "name": "noether_links_symmetry_to_conservation",
+      "head": "Jabberwock observes a conservation law",
+      "body": "Noether: there's a corresponding continuous symmetry. Energy ↔ time-translation, momentum ↔ space-translation, charge ↔ gauge."
+    },
+    {
+      "name": "second_law_sets_arrow_of_time",
+      "head": "Jabberwock considers temporal asymmetry",
+      "body": "the second law (entropy increase) is the macroscopic arrow of time. Microscopic dynamics time-reversible; macroscopic not."
+    },
+    {
+      "name": "boltzmann_distribution_governs_equilibrium",
+      "head": "Jabberwock has system in thermal equilibrium",
+      "body": "state probabilities follow Boltzmann distribution P ∝ exp(-E/k_BT). Substrate's CAN at finite temperature."
+    },
+    {
+      "name": "speed_of_light_is_universal_limit",
+      "head": "Jabberwock considers signal propagation",
+      "body": "no signal exceeds c. Special relativity. Substrate's causal-cone constraint."
+    },
+    {
+      "name": "mass_energy_are_equivalent",
+      "head": "Jabberwock considers nuclear or cosmological process",
+      "body": "E = mc². Mass can convert to energy + vice versa. Foundation of nuclear power + Big Bang nucleosynthesis."
+    }
+  ]
+}

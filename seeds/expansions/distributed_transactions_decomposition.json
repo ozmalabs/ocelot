@@ -1,0 +1,118 @@
+{
+  "id": "distributed_transactions_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "two_phase_commit_2PC",
+  "in_microtheory": "distributed_systems",
+  "description": "Distributed transactions decomposed. 2PC + 3PC + TCC + Percolator + Calvin. The mechanisms by which atomicity is preserved across multiple nodes / services / databases. Trade-offs between availability, latency, and operational complexity.",
+  "sub_mechanisms": [
+    {
+      "name": "2PC_phase_prepare",
+      "definition": "Coordinator asks participants 'can you commit?'. Each writes prepare log + votes yes/no.",
+      "why": "All participants ready before any commit. Vote yes = locked in to commit when told. Cost: locks held until phase 2.",
+      "category": "dist_txn_mechanism"
+    },
+    {
+      "name": "2PC_phase_commit",
+      "definition": "If all voted yes: coordinator tells all 'commit'. Otherwise: 'abort'. Participants ack.",
+      "why": "Atomic decision. Either all commit or all abort. Coordinator persists decision before announcing.",
+      "category": "dist_txn_mechanism"
+    },
+    {
+      "name": "2PC_blocking_problem",
+      "definition": "If coordinator fails after participants prepared (vote yes), they're stuck holding locks until coordinator recovers.",
+      "why": "Fundamental 2PC weakness. Participants can't decide independently — only coordinator knew the outcome. Production 2PC = SPOF.",
+      "category": "dist_txn_mechanism"
+    },
+    {
+      "name": "XA_transactions",
+      "definition": "X/Open distributed transaction standard. Transaction manager + resource managers. JTA in Java.",
+      "why": "Classic enterprise 2PC. Used in J2EE servers, message brokers + DBs together. Modern: replaced by saga + idempotency in microservices.",
+      "category": "dist_txn_mechanism"
+    },
+    {
+      "name": "3PC_added_pre_commit",
+      "definition": "Three-phase: prepare → pre-commit → commit. Pre-commit removes blocking on coordinator failure.",
+      "why": "Theoretical fix for 2PC blocking. Cost: extra round. Network partitions still problematic. Rarely used in practice.",
+      "category": "dist_txn_mechanism"
+    },
+    {
+      "name": "TCC_try_phase",
+      "definition": "Try: reserve resources. Lock implied by reservation, not by holding transaction.",
+      "why": "Application-level reservation. E.g., reserve seat = entry in DB. No DB lock during reservation. Allows long-running.",
+      "category": "dist_txn_mechanism"
+    },
+    {
+      "name": "TCC_confirm_cancel",
+      "definition": "Confirm: convert reservations to committed state. Cancel: release reservations.",
+      "why": "Like saga but with explicit reservation. App handles 'reserved but not yet committed' state. Used in payment, booking.",
+      "category": "dist_txn_mechanism"
+    },
+    {
+      "name": "Percolator_distributed_transactions",
+      "definition": "Google's distributed transactions on BigTable. Uses timestamp ordering + 2PC over rows.",
+      "why": "Foundation of Google's indexing infra. Inspired TiDB, CockroachDB. Optimistic concurrency: transactions don't block; validate on commit.",
+      "category": "dist_txn_mechanism"
+    },
+    {
+      "name": "Calvin_deterministic_transactions",
+      "definition": "Pre-order all transactions globally. Each replica executes same sequence. Deterministic = no 2PC needed.",
+      "why": "Yale 2012 design. FaunaDB uses. Cost: throughput limited by global ordering. Trade: simpler protocol.",
+      "category": "dist_txn_mechanism"
+    },
+    {
+      "name": "SSI_serializable_snapshot",
+      "definition": "Already in databases_and_storage. Detects cycles in dependency graph; aborts to preserve serializability.",
+      "why": "Single-node MVCC variant. CockroachDB extends to distributed. Optimistic: don't lock; abort losers on conflict.",
+      "category": "dist_txn_mechanism"
+    },
+    {
+      "name": "saga_vs_distributed_transaction",
+      "definition": "Saga: per-step + compensations. Distributed transaction: atomic across services. Different semantics.",
+      "why": "Saga: eventual consistency, no blocking, application-level rollback. Distributed transaction: ACID, blocking, infrastructure rollback. Modern microservices: saga preferred.",
+      "category": "dist_txn_mechanism"
+    },
+    {
+      "name": "outbox_pattern_for_message_transactional",
+      "definition": "Already in saga pack. Add to DB transaction; publish from outbox table.",
+      "why": "Eventual-consistent alternative to 2PC over DB + broker. Standard pattern in event-driven architectures.",
+      "category": "dist_txn_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "2PC_provides_atomicity_at_blocking_cost",
+      "if": ["transactions span multiple resources"],
+      "then": ["2PC ensures atomicity but blocks on coordinator failure"],
+      "why": "All-or-nothing across resources. Cost: prepared participants hold locks until coordinator says commit/abort. Coordinator fail = stuck. Modern systems avoid.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "saga_replaces_2PC_for_long_running",
+      "if": ["business process spans services + cannot block"],
+      "then": ["saga outperforms 2PC"],
+      "why": "2PC blocks during prepare → commit window. Long processes can't hold for minutes/hours. Saga: per-step commits + compensations. Trade: eventual consistency + application-level rollback.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "Percolator_optimistic_concurrency",
+      "if": ["conflict rate is low"],
+      "then": ["optimistic concurrency outperforms locking"],
+      "why": "Locking: pay cost always. Optimistic: pay only on conflict. Low conflict = mostly free. High conflict = repeated retries waste work. Percolator + CockroachDB design.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "deterministic_execution_avoids_2PC",
+      "if": ["all replicas execute same sequence deterministically"],
+      "then": ["distributed atomicity is automatic"],
+      "why": "Calvin's insight. Pre-order transactions; each replica replays. No 2PC; no coordinator. Cost: ordering becomes bottleneck. Different design point.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "modern_microservices_prefer_sagas_over_distributed_transactions",
+      "if": ["a system is microservices-based"],
+      "then": ["sagas + idempotency outperform distributed transactions"],
+      "why": "Microservice teams autonomous; XA / 2PC creates coupling. Sagas: per-service + compensations + idempotency. Each service owns its data. Industry direction since ~2015.",
+      "soundness_category": "extensional_equivalence"
+    }
+  ]
+}

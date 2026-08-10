@@ -1,0 +1,79 @@
+{
+ "id": "invariant_representation",
+ "version": "1.0.0",
+ "depends_on": [],
+ "description": "captured from domains/invariant_representation.py",
+ "extra_nodes": [
+  {
+   "type": "Concept",
+   "name": "cross_ratio_relation",
+   "category": "projective_geometry",
+   "definition": "The cross-ratio of four collinear points is the canonical projective invariant: a single number computed from the RELATIVE arrangement of the four points that is preserved under every projective transformation, even though each point's absolute position changes.",
+   "origin": "invariant_representation",
+   "why": "A worked instance of the Erlangen principle: the cross-ratio is a RELATION AMONG the parts (the four points) that survives the transformation, whereas each part's absolute coordinate does not. The configuration is identified by the relation among its parts, not by the parts' absolute values."
+  },
+  {
+   "type": "Concept",
+   "name": "erlangen_program",
+   "category": "geometry",
+   "definition": "Felix Klein's 1872 method of characterizing a geometry by a transformation GROUP: a geometry is the study of the properties of figures that remain INVARIANT under all the transformations of its group. Different geometries (Euclidean, affine, projective) are classified by their symmetry groups rather than by their objects.",
+   "origin": "invariant_representation",
+   "why": "Reframes a figure not by its absolute coordinates but by what is preserved under the group. Euclidean transformations preserve lengths, angles and areas; projective transformations preserve only the incidence structure and the cross-ratio. The geometry IS the collection of relations among the parts that the group leaves fixed."
+  },
+  {
+   "type": "Concept",
+   "name": "invariant_under_a_group",
+   "category": "algebra",
+   "definition": "An invariant is a quantity or property of an object that does NOT change (is invariant) under the transformations from a given group acting on the object's coordinates. Invariant theory studies the polynomial functions of the coordinates that are unchanged under the group action.",
+   "origin": "invariant_representation",
+   "why": "The invariants characterize the object's essential structure independently of how its coordinate system is chosen or oriented: two configurations related by a transformation of the group share all their invariants, so the invariants identify the object up to the group — an identity that is invariant by construction, not read off the absolute coordinate values."
+  },
+  {
+   "type": "Concept",
+   "name": "structural_relational_description",
+   "category": "representation",
+   "definition": "A self-referential, structural description represents an object by the RELATIONS AMONG its parts — the relative arrangement / configuration / incidence structure of its elements — rather than by the absolute coordinates of each part. Such a description is invariant under the global transformations (translation, rotation, scaling) that change every part's absolute coordinates while leaving their mutual relations fixed.",
+   "origin": "invariant_representation",
+   "why": "Because the global nuisance transformation cancels out of every relation among the parts, a representation built FROM those relations is invariant under the transformation by construction. The object is characterized as a configuration / structure / graph of its parts, not as a list of absolute feature values — the relation among the parts is the same across all transformed instances."
+  },
+  {
+   "type": "Microtheory",
+   "name": "invariant_representation",
+   "description": "Invariant theory and Klein's Erlangen program: an object is characterized by the invariant relations among its parts, preserved under a transformation group, not by absolute coordinates.",
+   "origin": "invariant_representation"
+  },
+  {
+   "type": "Rule",
+   "name": "characterize_by_invariant_relations_among_parts",
+   "origin": "invariant_representation",
+   "why": "Klein's Erlangen program / invariant theory: the relations among the parts that the group leaves fixed (e.g. the cross-ratio, the incidence structure) characterize the object independently of the absolute coordinates the group changes. Sources: en.wikipedia.org/wiki/Erlangen_program, en.wikipedia.org/wiki/Invariant_theory."
+  }
+ ],
+ "relations": [
+  {
+   "src": "invariant_representation",
+   "edge": "has_concept",
+   "tgt": "cross_ratio_relation"
+  },
+  {
+   "src": "invariant_representation",
+   "edge": "has_concept",
+   "tgt": "erlangen_program"
+  },
+  {
+   "src": "invariant_representation",
+   "edge": "has_concept",
+   "tgt": "invariant_under_a_group"
+  },
+  {
+   "src": "invariant_representation",
+   "edge": "has_concept",
+   "tgt": "structural_relational_description"
+  },
+  {
+   "src": "invariant_representation",
+   "edge": "has_rule",
+   "tgt": "characterize_by_invariant_relations_among_parts"
+  }
+ ]
+}

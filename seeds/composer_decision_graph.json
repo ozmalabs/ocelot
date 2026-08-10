@@ -1,0 +1,559 @@
+{
+ "id": "composer_decision_graph",
+ "version": "1.0.0",
+ "depends_on": [],
+ "description": "GRAPH-RESIDENT: _compose_decision_rule as a meta-rule. Mints decide_under_uncertainty_<tag> (argmax-over-affordances-of-expected-utility) from a wants_decision_rule trigger.",
+ "nodes": [
+  {
+   "local_id": 1,
+   "type": "Rule",
+   "attrs": {
+    "id": "compose_decision_graph",
+    "match": [
+     [
+      "agent",
+      "wants_decision_rule",
+      "cr"
+     ]
+    ],
+    "where": {
+     "type": "Lt",
+     "a": {
+      "type": "Plus",
+      "items": [
+       {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "cr"
+        },
+        "key": "composed"
+       },
+       {
+        "type": "Lit",
+        "value": 0.0
+       }
+      ]
+     },
+     "b": {
+      "type": "Lit",
+      "value": 0.5
+     }
+    },
+    "effect": [
+     [
+      "add_node",
+      "rn0",
+      "Rule",
+      {
+       "minted": 0.0
+      }
+     ],
+     [
+      "set_attr",
+      "rn0",
+      "id",
+      {
+       "__term__": {
+        "type": "StringConcat",
+        "parts": [
+         {
+          "type": "Lit",
+          "value": "decide_under_uncertainty_"
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "cr"
+          },
+          "key": "tag"
+         }
+        ]
+       }
+      }
+     ],
+     [
+      "set_attr",
+      "rn0",
+      "match",
+      [
+       [
+        "game",
+        "has_goal",
+        "goal"
+       ]
+      ]
+     ],
+     [
+      "set_attr",
+      "rn0",
+      "where",
+      null
+     ],
+     [
+      "set_attr",
+      "rn0",
+      "effect",
+      [
+       [
+        "set_attr",
+        "game",
+        "chosen_action",
+        {
+         "__term__": {
+          "type": "Attr",
+          "node": {
+           "type": "Argmax",
+           "source": {
+            "type": "Neighbours",
+            "node": {
+             "type": "Var",
+             "name": "game"
+            },
+            "edge_type": "affordance"
+           },
+           "var_name": "act",
+           "value": {
+            "type": "Sum",
+            "source": {
+             "type": "Neighbours",
+             "node": {
+              "type": "Var",
+              "name": "game"
+             },
+             "edge_type": "avatar_candidate"
+            },
+            "var_name": "c",
+            "value": {
+             "type": "Minus",
+             "a": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "IfThenElse",
+                "cond": {
+                 "type": "Gte",
+                 "a": {
+                  "type": "Minus",
+                  "a": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "c"
+                   },
+                   "key": "cy"
+                  },
+                  "b": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "goal"
+                   },
+                   "key": "cy"
+                  }
+                 },
+                 "b": {
+                  "type": "Lit",
+                  "value": 0
+                 }
+                },
+                "then": {
+                 "type": "Minus",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "c"
+                  },
+                  "key": "cy"
+                 },
+                 "b": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "goal"
+                  },
+                  "key": "cy"
+                 }
+                },
+                "other": {
+                 "type": "Minus",
+                 "a": {
+                  "type": "Lit",
+                  "value": 0
+                 },
+                 "b": {
+                  "type": "Minus",
+                  "a": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "c"
+                   },
+                   "key": "cy"
+                  },
+                  "b": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "goal"
+                   },
+                   "key": "cy"
+                  }
+                 }
+                }
+               },
+               {
+                "type": "IfThenElse",
+                "cond": {
+                 "type": "Gte",
+                 "a": {
+                  "type": "Minus",
+                  "a": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "c"
+                   },
+                   "key": "cx"
+                  },
+                  "b": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "goal"
+                   },
+                   "key": "cx"
+                  }
+                 },
+                 "b": {
+                  "type": "Lit",
+                  "value": 0
+                 }
+                },
+                "then": {
+                 "type": "Minus",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "c"
+                  },
+                  "key": "cx"
+                 },
+                 "b": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "goal"
+                  },
+                  "key": "cx"
+                 }
+                },
+                "other": {
+                 "type": "Minus",
+                 "a": {
+                  "type": "Lit",
+                  "value": 0
+                 },
+                 "b": {
+                  "type": "Minus",
+                  "a": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "c"
+                   },
+                   "key": "cx"
+                  },
+                  "b": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "goal"
+                   },
+                   "key": "cx"
+                  }
+                 }
+                }
+               }
+              ]
+             },
+             "b": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "IfThenElse",
+                "cond": {
+                 "type": "Gte",
+                 "a": {
+                  "type": "Minus",
+                  "a": {
+                   "type": "Plus",
+                   "items": [
+                    {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "c"
+                     },
+                     "key": "cy"
+                    },
+                    {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "act"
+                     },
+                     "key": "drow"
+                    }
+                   ]
+                  },
+                  "b": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "goal"
+                   },
+                   "key": "cy"
+                  }
+                 },
+                 "b": {
+                  "type": "Lit",
+                  "value": 0
+                 }
+                },
+                "then": {
+                 "type": "Minus",
+                 "a": {
+                  "type": "Plus",
+                  "items": [
+                   {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "c"
+                    },
+                    "key": "cy"
+                   },
+                   {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "act"
+                    },
+                    "key": "drow"
+                   }
+                  ]
+                 },
+                 "b": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "goal"
+                  },
+                  "key": "cy"
+                 }
+                },
+                "other": {
+                 "type": "Minus",
+                 "a": {
+                  "type": "Lit",
+                  "value": 0
+                 },
+                 "b": {
+                  "type": "Minus",
+                  "a": {
+                   "type": "Plus",
+                   "items": [
+                    {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "c"
+                     },
+                     "key": "cy"
+                    },
+                    {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "act"
+                     },
+                     "key": "drow"
+                    }
+                   ]
+                  },
+                  "b": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "goal"
+                   },
+                   "key": "cy"
+                  }
+                 }
+                }
+               },
+               {
+                "type": "IfThenElse",
+                "cond": {
+                 "type": "Gte",
+                 "a": {
+                  "type": "Minus",
+                  "a": {
+                   "type": "Plus",
+                   "items": [
+                    {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "c"
+                     },
+                     "key": "cx"
+                    },
+                    {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "act"
+                     },
+                     "key": "dcol"
+                    }
+                   ]
+                  },
+                  "b": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "goal"
+                   },
+                   "key": "cx"
+                  }
+                 },
+                 "b": {
+                  "type": "Lit",
+                  "value": 0
+                 }
+                },
+                "then": {
+                 "type": "Minus",
+                 "a": {
+                  "type": "Plus",
+                  "items": [
+                   {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "c"
+                    },
+                    "key": "cx"
+                   },
+                   {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "act"
+                    },
+                    "key": "dcol"
+                   }
+                  ]
+                 },
+                 "b": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "goal"
+                  },
+                  "key": "cx"
+                 }
+                },
+                "other": {
+                 "type": "Minus",
+                 "a": {
+                  "type": "Lit",
+                  "value": 0
+                 },
+                 "b": {
+                  "type": "Minus",
+                  "a": {
+                   "type": "Plus",
+                   "items": [
+                    {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "c"
+                     },
+                     "key": "cx"
+                    },
+                    {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "act"
+                     },
+                     "key": "dcol"
+                    }
+                   ]
+                  },
+                  "b": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "goal"
+                   },
+                   "key": "cx"
+                  }
+                 }
+                }
+               }
+              ]
+             }
+            }
+           },
+           "default": {
+            "type": "Lit",
+            "value": 0
+           }
+          },
+          "key": "name"
+         }
+        }
+       ]
+      ]
+     ],
+     [
+      "set_rule_clause",
+      {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "rn0"
+        },
+        "key": "id"
+       }
+      },
+      "__mint__",
+      {
+       "__term__": {
+        "type": "Var",
+        "name": "rn0"
+       }
+      }
+     ],
+     [
+      "set_attr",
+      "cr",
+      "composed",
+      1.0
+     ]
+    ]
+   }
+  }
+ ],
+ "edges": [],
+ "productions": []
+}

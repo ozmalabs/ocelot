@@ -1,0 +1,32 @@
+{
+  "id": "topic_search",
+  "version": "1.0.0",
+  "depends_on": ["conversation_topic_route"],
+  "description": "AUTONOMOUS phrase-level topic grounding (the background twin of the synchronous domains/topic_grounding.ground_topic path). When the graph ROUTES a chat turn to an external topic it mints Goal{kind:answer_topic, concept:<phrase>} (route_question_to_topic, seeds/conversation_topic_route.json). This seed's rule search_request_from_answer_topic keys on that goal -- the cleanest ungrounded-topic marker the agent ALREADY mints -- and mints SearchRequest{query:<phrase>, status:requested}. The daemon's --search-every hook (scripts/jabberwock_daemon.py) then calls domains.fetch_dispatch.scan_and_search, which resolves the query -> Wikipedia title -> REST summary over HTTPS and PERSISTS it via learn_from_teacher (so answer_about(<phrase>) returns it offline thereafter). The DECISION to search is THIS graph rule; scan_and_search is mechanical I/O. HONEST LIMITATION: this keys on 'topic was routed', not strictly 'topic not held' -- the not-held signal is computed in world_adapter.answer_about (Python) and is NOT persisted as a graph marker; keying precisely on it would need a world_adapter change that is out of this seed's ownership. So the rule over-approximates (it may re-ground an already-held topic; scan_and_search's learn_from_teacher is idempotent enough for that to be harmless), and the synchronous ground_topic path is PRIMARY. Mint-once is guarded by the goal's searched=1.0 marker so run_rules reaches a fixpoint (never a fresh SearchRequest per tick).",
+  "nodes": [],
+  "edges": [],
+  "productions": [],
+  "rules": [
+    {
+      "name": "search_request_from_answer_topic",
+      "match": [
+        ["agent", "has_goal", "g"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "kind"}, "b": {"type": "Lit", "value": "answer_topic"}},
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "searched"}, "b": {"type": "Lit", "value": 1.0}}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "g", "searched", 1.0],
+        ["add_node", "sr", "SearchRequest", {
+          "status": "requested",
+          "source": "answer_topic",
+          "query": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "concept"}}
+        }]
+      ]
+    }
+  ]
+}

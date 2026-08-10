@@ -1,0 +1,340 @@
+{
+ "id": "continuous_pose",
+ "version": "1.0.0",
+ "depends_on": [
+  "shape_decode_loop"
+ ],
+ "description": "CONTINUOUS POSE (FRONTIER rung T1): real-angle rotation as a cross-frame generator (Rotate, continuous theta) rendered to the stepped integer lattice, recognition decided by the held continuous verdict PointSetDist over a discrete-codebook proposal (bins propose, continuous decides). Two rules cp_recognize / cp_refuse, gated on the NEW flag agent.cont_pose (OFF by default -> committed bench byte-identical). NO new Rust. The identifiability bound falls out of observational resolution (VISION_CONTINUOUS_POSE_RESULTS.md).",
+ "microtheory": "vision",
+ "nodes": [],
+ "edges": [],
+ "productions": [],
+ "rules": [
+  {
+   "name": "cp_recognize",
+   "comment": "CONTINUOUS POSE (flag cont_pose==1). bins-propose / continuous-decides: the discrete similarity codebook (ShapeSignature nodes, each carrying a centroid-centred dense point set in the 'points' attr) proposes the identity set; the continuous verdict RENDERS each candidate at continuous theta (Rotate -- the cross-frame generator carrying the real angle as a Float, NEVER an in-frame coordinate) over the angle grid 'cp_angles' and DECIDES by the held PointSetDist (Modified Hausdorff). covered_by = Argmin over candidates of MinOver over angles of PointSetDist(render, obs.points); recognized iff the winner residual <= sqrt(2)/2 -- the unit lattice's half-diagonal = the maximum possible rounding-MHD, a FALLS-OUT bound (not a tuned constant, VISION_PROTOCOL sec 13). Fires only on status==cp_decoded (a marker the world adapter sets), so with cont_pose absent NEITHER this nor cp_refuse fires and the sd loop is byte-identical. No new Rust: Rotate/PointSetDist/MapList/MinOver/Argmin/NodesOfType/Attr all pre-exist (VISION_CONTINUOUS_POSE_PREREG.md sec 0).",
+   "match_type": "Observation",
+   "match": [
+    [
+     "ag",
+     "observed",
+     "obs"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ag"
+       },
+       "key": "cont_pose"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "cp_decoded"
+      }
+     },
+     {
+      "type": "Lte",
+      "a": {
+       "type": "MinOver",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "ShapeSignature"
+       },
+       "var_name": "c",
+       "value": {
+        "type": "MinOver",
+        "source": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "ag"
+         },
+         "key": "cp_angles"
+        },
+        "var_name": "t",
+        "value": {
+         "type": "PointSetDist",
+         "a": {
+          "type": "MapList",
+          "source": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "c"
+           },
+           "key": "points"
+          },
+          "var_name": "p",
+          "value": {
+           "type": "Rotate",
+           "vec": {
+            "type": "Var",
+            "name": "p"
+           },
+           "angle": {
+            "type": "Var",
+            "name": "t"
+           }
+          }
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "obs"
+          },
+          "key": "points"
+         }
+        },
+        "default": null
+       },
+       "default": null
+      },
+      "b": {
+       "type": "Div",
+       "a": {
+        "type": "Sqrt",
+        "arg": {
+         "type": "Lit",
+         "value": 2
+        }
+       },
+       "b": {
+        "type": "Lit",
+        "value": 2
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "obs",
+     "covered_by",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Argmin",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "ShapeSignature"
+        },
+        "var_name": "c",
+        "value": {
+         "type": "MinOver",
+         "source": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "ag"
+          },
+          "key": "cp_angles"
+         },
+         "var_name": "t",
+         "value": {
+          "type": "PointSetDist",
+          "a": {
+           "type": "MapList",
+           "source": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "c"
+            },
+            "key": "points"
+           },
+           "var_name": "p",
+           "value": {
+            "type": "Rotate",
+            "vec": {
+             "type": "Var",
+             "name": "p"
+            },
+            "angle": {
+             "type": "Var",
+             "name": "t"
+            }
+           }
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "obs"
+           },
+           "key": "points"
+          }
+         },
+         "default": null
+        },
+        "default": null
+       },
+       "key": "name"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "status",
+     "recognized_continuous"
+    ]
+   ]
+  },
+  {
+   "name": "cp_refuse",
+   "comment": "The REFUSE branch of CONTINUOUS POSE (flag cont_pose==1). Fires when the winner residual EXCEEDS sqrt(2)/2 (the rounding floor) -- no candidate, at any theta in cp_angles, renders to within the lattice half-diagonal of the observation: it is a rotation of NO held object (noise / novel). Sets status=cp_refused (honest refuse), leaving covered_by ABSENT. Mutually exclusive with cp_recognize by the Lte / Not(Lte) split on the same min-residual term.",
+   "match_type": "Observation",
+   "match": [
+    [
+     "ag",
+     "observed",
+     "obs"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ag"
+       },
+       "key": "cont_pose"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "cp_decoded"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Lte",
+       "a": {
+        "type": "MinOver",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "ShapeSignature"
+        },
+        "var_name": "c",
+        "value": {
+         "type": "MinOver",
+         "source": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "ag"
+          },
+          "key": "cp_angles"
+         },
+         "var_name": "t",
+         "value": {
+          "type": "PointSetDist",
+          "a": {
+           "type": "MapList",
+           "source": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "c"
+            },
+            "key": "points"
+           },
+           "var_name": "p",
+           "value": {
+            "type": "Rotate",
+            "vec": {
+             "type": "Var",
+             "name": "p"
+            },
+            "angle": {
+             "type": "Var",
+             "name": "t"
+            }
+           }
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "obs"
+           },
+           "key": "points"
+          }
+         },
+         "default": null
+        },
+        "default": null
+       },
+       "b": {
+        "type": "Div",
+        "a": {
+         "type": "Sqrt",
+         "arg": {
+          "type": "Lit",
+          "value": 2
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 2
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "obs",
+     "status",
+     "cp_refused"
+    ]
+   ]
+  }
+ ]
+}

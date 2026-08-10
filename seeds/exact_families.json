@@ -1,0 +1,48 @@
+{
+ "id": "exact_families",
+ "version": "1.0.0",
+ "depends_on": [],
+ "capability_keys": ["exact_family_synthesis"],
+ "description": "PROGRAM_SYNTHESIS_ARC5_EXACT_FIRST.md -- the shape-first proposal rung's SHAPES, as graph-resident data (CLAUDE.md: 'a base IS a dimension'; families are held codebook data, never hand-coded per task). Each ExactFamily node names a parameter SCHEMA a bounded, deterministic Python search (domains/prog_exact.py) walks: which rational coefficients (k_numerators / k_denominators), which named CROSS-FRAME constants it may apply (constants_json -- name -> pre-computed double, applied once at the render boundary per CLAUDE.md's frame/continuum invariant: pi/sqrt2/sqrt3 are maps, never in-frame parameters), and how many integer per-argument exponents (max_exponent) it may compose. The recovered PARAMETERS themselves (k as an exact numerator/denominator pair, the exponent vector) are always integers -- only the NAMED constant's value is a float, and it sits in the map, not the frame.\n\nTwo families only, both measured (PROGRAM_SYNTHESIS_ARC5_THREE_MOVES.md, PROGRAM_SYNTHESIS_ARC5_SPECS_IMPLY_FLOATS.md) -- no speculative extras:\n\n  scaled_power_product (order 1): k * C^p * prod(arg_i ** e_i). Recovered 82/85/139/233/276/312/606/742 (sphere volume/surface, circle circumference, cylinder lateral/volume, cone volume, degrees->radians, tetrahedron area) -- 6-8 tasks from ONE shape + a 3-4 integer parameter vector, where direct syntax search was unreachable at any size (pi is not in a term-search const pool; putting it there is a category error the frame invariant already predicts).\n\n  sum_of_two_terms (order 2, tried only after scaled_power_product exhausts): t1 + t2, each a scaled_power_product SHARING the same (k, C) -- the one measured gap, task 574 (cylinder surface = 2*pi*r*h + 2*pi*r*r). Scoped to arity<=2 and a shared coefficient: the single measured case needs no more, and an independent-coefficient generalisation would multiply the search space and the coincidental-fit risk with no measured justification (named honestly as a residual in the design doc, not built speculatively).\n\nDenominators are the divisors of 360 (1,2,3,4,5,6,8,9,10,12,15,18,20,24,30,36,40,45,60,72,90,120,180,360) plus the small set below 8 already used by the arc-5 probe -- a bounded, principled set wide enough to recover 1/180 (degrees->radians) without an unbounded denominator search."
+ ,
+ "microtheory": {
+  "name": "exact_families",
+  "description": "shape-first exact-recovery families for the program-synthesis exact rung: parameter schema as data, search + render in domains/prog_exact.py"
+ },
+ "nodes": [
+  {
+   "local_id": 1,
+   "type": "ExactFamily",
+   "attrs": {
+    "name": "scaled_power_product",
+    "order": 1.0,
+    "min_arity": 1.0,
+    "max_arity": 3.0,
+    "k_numerators": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+    "k_denominators": [1, 2, 3, 4, 5, 6, 8, 9, 10, 12, 15, 18, 20, 24, 30, 36, 40, 45, 60, 72, 90, 120, 180, 360],
+    "constants_json": "{\"1\": 1.0, \"pi\": 3.141592653589793, \"sqrt2\": 1.4142135623730951, \"sqrt3\": 1.7320508075688772}",
+    "max_exponent": 3.0,
+    "default_tol": 0.0001,
+    "shared_kc": 0.0
+   }
+  },
+  {
+   "local_id": 2,
+   "type": "ExactFamily",
+   "attrs": {
+    "name": "sum_of_two_terms",
+    "order": 2.0,
+    "min_arity": 1.0,
+    "max_arity": 2.0,
+    "k_numerators": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+    "k_denominators": [1, 2, 3, 4, 5, 6, 8, 9, 10, 12, 15, 18, 20, 24, 30, 36, 40, 45, 60, 72, 90, 120, 180, 360],
+    "constants_json": "{\"1\": 1.0, \"pi\": 3.141592653589793, \"sqrt2\": 1.4142135623730951, \"sqrt3\": 1.7320508075688772}",
+    "max_exponent": 3.0,
+    "default_tol": 0.0001,
+    "shared_kc": 1.0
+   }
+  }
+ ],
+ "edges": [],
+ "productions": []
+}

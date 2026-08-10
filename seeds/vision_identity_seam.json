@@ -1,0 +1,1018 @@
+{
+ "id": "vision_identity_seam",
+ "version": "1.0.0",
+ "depends_on": [
+  "shape_decode_loop"
+ ],
+ "description": "THE PERCEPT->IDENTITY SEAM, arm B (VISION_IDENTITY_SEAM_PREREG.md, seeds 72000-72999). A region recognised in one frame is decided to be THE SAME HELD IDENTITY in the next -- or, if the graph cannot tell it from noise, it is minted as a new one and the codebook grows. Keeps the sd loop's topology and replaces only the recognition verdict: V3 normalized cross-correlation against a MEASURED noise floor, in place of `Count(residual)==0` over a compositional decode. SHIPS OFF (IdentitySeamParams.seam = 0.0) and is not in any default boot set, so every committed result reproduces byte-identically (section 9). No new Rust, no new Term, and NO NUMERIC THRESHOLD anywhere.",
+ "nodes": [
+  {
+   "local_id": 0,
+   "type": "IdentitySeamParams",
+   "attrs": {
+    "seam": 0.0
+   }
+  }
+ ],
+ "edges": [],
+ "productions": [
+  {
+   "subject_type": "Observation",
+   "edge_type": "is_minted",
+   "object_type": "ShapeSignature"
+  }
+ ],
+ "rules": [
+  {
+   "name": "is_recalib",
+   "comment": "RE-ARM THE FLOOR WHEN THE CODEBOOK GROWS. A floor measured against a codebook of 3 is not the floor for a codebook of 300: as K grows the best noise score drifts UP, and a frozen floor would silently stop refusing. Epoch-driven, exactly as `sd_redecode` re-arms decode.",
+   "match_type": "Observation",
+   "match": [
+    [
+     "ag",
+     "observed",
+     "obs"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "IdentitySeamParams"
+        },
+        "var_name": "sp",
+        "predicate": {
+         "type": "Gt",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "sp"
+          },
+          "key": "seam"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0.5
+         }
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "probe_kind"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "G2c"
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "calib_epoch"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ag"
+       },
+       "key": "codebook_epoch"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "obs",
+     "status",
+     "is_pending"
+    ],
+    [
+     "set_attr",
+     "obs",
+     "is_scored",
+     0
+    ],
+    [
+     "set_attr",
+     "obs",
+     "calib_epoch",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ag"
+       },
+       "key": "codebook_epoch"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "is_score",
+   "comment": "Score this observation against the held codebook. Fires for real observations AND for the G2c calibration probes -- the floor must be the same comparator on the same codebook, or it is not a floor.",
+   "match_type": "Observation",
+   "match": [
+    [
+     "ag",
+     "observed",
+     "obs"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "IdentitySeamParams"
+        },
+        "var_name": "sp",
+        "predicate": {
+         "type": "Gt",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "sp"
+          },
+          "key": "seam"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0.5
+         }
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "is_pending"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "is_scored"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "obs",
+     "is_max",
+     {
+      "__term__": {
+       "type": "MaxOver",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "ShapeSignature"
+        },
+        "var_name": "sig",
+        "predicate": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "sig"
+          },
+          "key": "seam_grown"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1.0
+         }
+        }
+       },
+       "var_name": "sig",
+       "value": {
+        "type": "Dot",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "nvals"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "sig"
+         },
+         "key": "nvals"
+        }
+       },
+       "default": {
+        "type": "Lit",
+        "value": -1e+18
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "is_scored",
+     1
+    ]
+   ]
+  },
+  {
+   "name": "is_calib_done",
+   "comment": "A scored calibration probe leaves `is_pending` so it never mints and never blocks `is_decide`'s ordering guard. G2c DEFINES the floor; it is not itself a thing to be identified.",
+   "match_type": "Observation",
+   "match": [
+    [
+     "ag",
+     "observed",
+     "obs"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "IdentitySeamParams"
+        },
+        "var_name": "sp",
+        "predicate": {
+         "type": "Gt",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "sp"
+          },
+          "key": "seam"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0.5
+         }
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "probe_kind"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "G2c"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "is_scored"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "is_pending"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "obs",
+     "status",
+     "is_calib"
+    ]
+   ]
+  },
+  {
+   "name": "is_decide",
+   "comment": "THE DECISION, and the whole rung turns on it. Held iff this observation's best score STRICTLY EXCEEDS the floor the same comparator achieves on noise against the same codebook. The ordering guard (no observation still pending-and-unscored) makes the floor complete before it is read -- the `vd_refuse` two-layer precedent, with the fixpoint doing the sequencing and the adapter doing none.",
+   "match_type": "Observation",
+   "match": [
+    [
+     "ag",
+     "observed",
+     "obs"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "IdentitySeamParams"
+        },
+        "var_name": "sp",
+        "predicate": {
+         "type": "Gt",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "sp"
+          },
+          "key": "seam"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0.5
+         }
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "is_pending"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "is_scored"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "probe_kind"
+       },
+       "b": {
+        "type": "Lit",
+        "value": "G2c"
+       }
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "ag"
+         },
+         "edge_type": "observed",
+         "any_type": false
+        },
+        "var_name": "g",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "g"
+            },
+            "key": "status"
+           },
+           "b": {
+            "type": "Lit",
+            "value": "is_pending"
+           }
+          },
+          {
+           "type": "Not",
+           "arg": {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "g"
+             },
+             "key": "is_scored"
+            },
+            "b": {
+             "type": "Lit",
+             "value": 1
+            }
+           }
+          }
+         ]
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "obs",
+     "is_floor",
+     {
+      "__term__": {
+       "type": "MaxOver",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "ag"
+         },
+         "edge_type": "observed",
+         "any_type": false
+        },
+        "var_name": "g",
+        "predicate": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "g"
+          },
+          "key": "probe_kind"
+         },
+         "b": {
+          "type": "Lit",
+          "value": "G2c"
+         }
+        }
+       },
+       "var_name": "g",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "g"
+        },
+        "key": "is_max"
+       },
+       "default": {
+        "type": "Lit",
+        "value": -1e+18
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "identified_as",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gt",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "is_max"
+        },
+        "b": {
+         "type": "MaxOver",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "ag"
+           },
+           "edge_type": "observed",
+           "any_type": false
+          },
+          "var_name": "g",
+          "predicate": {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "g"
+            },
+            "key": "probe_kind"
+           },
+           "b": {
+            "type": "Lit",
+            "value": "G2c"
+           }
+          }
+         },
+         "var_name": "g",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "g"
+          },
+          "key": "is_max"
+         },
+         "default": {
+          "type": "Lit",
+          "value": -1e+18
+         }
+        }
+       },
+       "then": {
+        "type": "Attr",
+        "node": {
+         "type": "Argmax",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "NodesOfType",
+           "node_type": "ShapeSignature"
+          },
+          "var_name": "sig",
+          "predicate": {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "sig"
+            },
+            "key": "seam_grown"
+           },
+           "b": {
+            "type": "Lit",
+            "value": 1.0
+           }
+          }
+         },
+         "var_name": "sig",
+         "value": {
+          "type": "Dot",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "obs"
+           },
+           "key": "nvals"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "sig"
+           },
+           "key": "nvals"
+          }
+         },
+         "default": null
+        },
+        "key": "name"
+       },
+       "other": {
+        "type": "Lit",
+        "value": "novel"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "status",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gt",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "is_max"
+        },
+        "b": {
+         "type": "MaxOver",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "ag"
+           },
+           "edge_type": "observed",
+           "any_type": false
+          },
+          "var_name": "g",
+          "predicate": {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "g"
+            },
+            "key": "probe_kind"
+           },
+           "b": {
+            "type": "Lit",
+            "value": "G2c"
+           }
+          }
+         },
+         "var_name": "g",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "g"
+          },
+          "key": "is_max"
+         },
+         "default": {
+          "type": "Lit",
+          "value": -1e+18
+         }
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": "is_held"
+       },
+       "other": {
+        "type": "Lit",
+        "value": "is_novel"
+       }
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "is_mint",
+   "comment": "GROW THE CODEBOOK. A percept the graph could not tell from noise becomes a held identity in its own right, and the epoch bump re-arms the floor against the codebook it just joined. The `vq_grow_quantum` pattern, plus `nvals` -- which `vq_grow_quantum` does not copy, and without which a grown signature would be invisible to the verdict.",
+   "match_type": "Observation",
+   "match": [
+    [
+     "ag",
+     "observed",
+     "obs"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "IdentitySeamParams"
+        },
+        "var_name": "sp",
+        "predicate": {
+         "type": "Gt",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "sp"
+          },
+          "key": "seam"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0.5
+         }
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "is_novel"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "edge_type": "is_minted",
+        "any_type": false
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "ss",
+     "ShapeSignature",
+     {
+      "name": {
+       "__term__": {
+        "type": "IndexAt",
+        "seq": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "key"
+        },
+        "index": {
+         "type": "Lit",
+         "value": 0
+        }
+       }
+      },
+      "faculty": {
+       "__term__": {
+        "type": "IndexAt",
+        "seq": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "key"
+        },
+        "index": {
+         "type": "Lit",
+         "value": 0
+        }
+       }
+      },
+      "signature": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "signature"
+       }
+      },
+      "dim_types": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "dim_types"
+       }
+      },
+      "nvals": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "nvals"
+       }
+      },
+      "kind": "faculty",
+      "seam_grown": {
+       "__term__": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "obs",
+     "is_minted",
+     "ss"
+    ],
+    [
+     "set_attr",
+     "obs",
+     "identified_as",
+     {
+      "__term__": {
+       "type": "IndexAt",
+       "seq": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "key"
+       },
+       "index": {
+        "type": "Lit",
+        "value": 0
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "status",
+     "is_minted"
+    ],
+    [
+     "set_attr",
+     "ag",
+     "codebook_epoch",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "ag"
+         },
+         "key": "codebook_epoch"
+        },
+        {
+         "type": "Lit",
+         "value": 1.0
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  }
+ ]
+}

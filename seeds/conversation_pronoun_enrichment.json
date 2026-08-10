@@ -1,0 +1,75 @@
+{
+  "id": "conversation_pronoun_enrichment",
+  "version": "1.0.0",
+  "depends_on": ["conversation_topic_route", "conversation_topic_tracking"],
+  "description": "Wave 4 (Deep-Reader unification), STRICT ENRICHMENT precedent (Wave 3): the conversation layer's OWN pronoun/anaphora path is `comp_anaphor` -> `resolve_anaphor_to_current_topic` (seeds/conversation_topic_tracking.json), which resolves a bare pronoun/possessive ONLY against the tracked `current_topic` and only ABSTAINS (mints nothing) when there is no tracked topic. Meanwhile every daemon turn's shadow read (Wave 2, `_shadow_read_turn`) runs the REAL deep-reader coref chain (SmMention -refers_to-> SmEntity, resonant across turns) and, when it resolved a pronoun this turn, records the winner mechanically as `shadow_referent` on the Message (substrate/world_adapter.py -- a plain readback, no decision). `resolve_pronoun_from_shadow` is the DECISION: it fires ONLY in the routed-nowhere case (nothing else has claimed the turn: not the explicit topic route, not the elliptical shift, and not -- explicitly excluded, never a race -- the old anaphor-to-current-topic route when THAT route's own preconditions hold), and ONLY when the shadow referent is SAFE to trust: it is the armed deictic-centre speaker/addressee (a graph-resident `DeicticCentre` node) OR its name matches a held `Concept` -- anything else stays unresolved (honest; no forced bind). On a match it mints the SAME `Goal{kind:answer_topic}` the conversation layer's own routes mint, so the EXISTING topic-answer machinery (reply_topic_from_held_answer / _answer_topic_reply / answer_about) renders it -- no new reply machinery. `note_pronoun_referent_divergence` is a pure DATUM (never consulted by any routing rule, exactly like `speech_act_divergence`, Wave 3): when the OLD anaphor-to-topic route's own preconditions held (comp_anaphor + a tracked current_topic) and its target NAME differs from the shadow referent, this records the disagreement for a future retirement decision -- it never changes the turn's reply (the old route already claimed the turn in that case; this rule doesn't touch `comprehended`). The conversation reference path is NOT retired this wave.",
+  "nodes": [],
+  "edges": [],
+  "productions": [],
+  "rules": [
+    {
+      "name": "resolve_pronoun_from_shadow",
+      "comment": "ROUTED-NOWHERE ONLY: fires when nothing else claimed the turn (comprehended unset) AND none of the sibling routes' own preconditions hold (explicit exclusion, never a fixpoint race -- the SAME discipline Wave 3's shadow-focus topic fill used) AND the shadow referent is SAFE (armed deictic speaker/addressee, or name-matches a held Concept).",
+      "match": [
+        ["agent", "received", "m"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "shadow_referent"}, "b": {"type": "Lit", "value": null}}},
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "comprehended"}, "b": {"type": "Lit", "value": 1.0}}},
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "topic_pending"}, "b": {"type": "Lit", "value": 1.0}}},
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "topic_followup"}, "b": {"type": "Lit", "value": 1.0}}},
+          {"type": "Not", "arg": {"type": "And", "items": [
+            {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "comp_anaphor"}, "b": {"type": "Lit", "value": 1.0}},
+            {"type": "Exists", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "agent"}, "edge_type": "current_topic"}, "var_name": "ct_probe",
+              "predicate": {"type": "Eq", "a": {"type": "Lit", "value": 1}, "b": {"type": "Lit", "value": 1}}}
+          ]}},
+          {"type": "Or", "items": [
+            {"type": "Exists", "source": {"type": "NodesOfType", "node_type": "Concept"}, "var_name": "c_safe",
+              "predicate": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c_safe"}, "key": "name"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "shadow_referent"}}},
+            {"type": "Exists", "source": {"type": "NodesOfType", "node_type": "DeicticCentre"}, "var_name": "dc_safe",
+              "predicate": {"type": "Or", "items": [
+                {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "dc_safe"}, "key": "speaker"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "shadow_referent"}},
+                {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "dc_safe"}, "key": "addressee"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "shadow_referent"}}
+              ]}}
+          ]}
+        ]
+      },
+      "effects": [
+        ["set_attr", "m", "comprehended", 1.0],
+        ["set_attr", "m", "pronoun_referent_source", "shadow_enrichment"],
+        ["add_node", "g", "Goal", {
+          "kind": "answer_topic",
+          "status": "active",
+          "source": "pronoun_shadow_enrichment",
+          "concept": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "shadow_referent"}}
+        }],
+        ["add_edge", "agent", "has_goal", "g"],
+        ["add_edge", "g", "comprehends", "m"],
+        ["add_edge", "m", "comprehended_by", "g"]
+      ]
+    },
+    {
+      "name": "note_pronoun_referent_divergence",
+      "comment": "DATUM ONLY (never consulted by any routing rule -- the speech_act_divergence precedent): the old anaphor-to-topic route's own preconditions held (comp_anaphor + a tracked current_topic) and its target differs from the shadow referent. Independent idempotence guard (does not touch `comprehended` -- this rule never claims the turn).",
+      "match": [
+        ["agent", "received", "m"],
+        ["agent", "current_topic", "ct"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "shadow_referent"}, "b": {"type": "Lit", "value": null}}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "comp_anaphor"}, "b": {"type": "Lit", "value": 1.0}},
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "shadow_referent"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "ct"}, "key": "name"}}},
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "pronoun_referent_divergence_noted"}, "b": {"type": "Lit", "value": 1.0}}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "m", "pronoun_referent_divergence", 1.0],
+        ["set_attr", "m", "pronoun_referent_divergence_noted", 1.0]
+      ]
+    }
+  ]
+}

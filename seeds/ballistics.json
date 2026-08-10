@@ -1,0 +1,4393 @@
+{
+ "id": "ballistics",
+ "version": "1.2.0",
+ "depends_on": [],
+ "description": "Projectile motion under gravity, graph-native. CENTRAL IDEA: a Launcher holds launch state (position x0,y0; muzzle speed v; gravity g); a Target holds where to hit (tx,ty, read RELATIVE as x=tx-x0,y=ty-y0). The INVERSE of the trajectory = THE FIRING SOLUTION: th = Atan2(v^2 +/- sqrt(D), g x) with D = v^4 - g(g x^2 + 2 y v^2). D>=0 <=> reachable; '-' = low/direct arc, '+' = high/lob arc; D<0 => out of range, no angle. Forward concepts (impact_y_low/high, hits_low/high) self-check by substituting th back. COMPOSES with projection: a Target's (tx,ty) can be the world (X,Y) a triangulated Feature recovers. Pure Sin/Cos/Atan2/Sqrt/Plus/Minus/Times/Div/Abs/Gte/Lt - no Rust, no new primitive. | v1.2.0 BOUNCING: reflect_vx/vy=v-(1+e)(v.n)n forward; BANK SHOT = mirror target T'=T-(1+1/e)d n across a Surface, feed T' to the EXISTING firing solution. Exact for walls whose normal is perpendicular to gravity; floor deferred (surface_bankable gates |ny|~0 AND e>0). Perceived wall (Region of Loci) -> Surface via region_plane_x/region_x_spread.",
+ "microtheory": {
+  "name": "ballistics",
+  "description": "What moves where: the projectile flies x(t)=x0+v cos th t, y(t)=y0+v sin th t - 1/2 g t^2. To HIT a known target I do not simulate forward - I invert: the angle making the arc pass through (x,y) is Atan2(v^2 +/- sqrt(v^4 - g(g x^2 + 2 y v^2)), g x). Two arcs reach a reachable target; they coincide at max range (D=0) and vanish beyond it (D<0). Verify by forward substitution: y_pred = x tan th - g x^2/(2 v^2 cos^2 th) must equal y."
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [
+  {
+   "provenance": "seed:ballistics:aims_at-0",
+   "src": {
+    "type": "Launcher",
+    "var": "s"
+   },
+   "edge_type": "aims_at",
+   "tgt": {
+    "type": "Target",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:ballistics:has_solution-1",
+   "src": {
+    "type": "Launcher",
+    "var": "s"
+   },
+   "edge_type": "has_solution",
+   "tgt": {
+    "type": "FiringSolution",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:ballistics:aims_at_locus-2",
+   "src": {
+    "type": "Launcher",
+    "var": "s"
+   },
+   "edge_type": "aims_at_locus",
+   "tgt": {
+    "type": "Locus",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:ballistics:banks_off-3",
+   "src": {
+    "type": "Launcher",
+    "var": "s"
+   },
+   "edge_type": "banks_off",
+   "tgt": {
+    "type": "Surface",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:ballistics:has_surface-4",
+   "src": {
+    "type": "WorldInstance",
+    "var": "s"
+   },
+   "edge_type": "has_surface",
+   "tgt": {
+    "type": "Surface",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:ballistics:from_region-5",
+   "src": {
+    "type": "Surface",
+    "var": "s"
+   },
+   "edge_type": "from_region",
+   "tgt": {
+    "type": "Region",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:ballistics:reflects-6",
+   "src": {
+    "type": "Surface",
+    "var": "s"
+   },
+   "edge_type": "reflects",
+   "tgt": {
+    "type": "Target",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:ballistics:mirror_of-7",
+   "src": {
+    "type": "Target",
+    "var": "s"
+   },
+   "edge_type": "mirror_of",
+   "tgt": {
+    "type": "Target",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:ballistics:has_bank_solution-8",
+   "src": {
+    "type": "Launcher",
+    "var": "s"
+   },
+   "edge_type": "has_bank_solution",
+   "tgt": {
+    "type": "BankSolution",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:ballistics:bank_via_surface-9",
+   "src": {
+    "type": "BankSolution",
+    "var": "s"
+   },
+   "edge_type": "via_surface",
+   "tgt": {
+    "type": "Surface",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:ballistics:bank_at_target-10",
+   "src": {
+    "type": "BankSolution",
+    "var": "s"
+   },
+   "edge_type": "at_target",
+   "tgt": {
+    "type": "Target",
+    "var": "t"
+   }
+  }
+ ],
+ "concepts": [
+  {
+   "name": "rel_x",
+   "domain": "ballistics",
+   "definition": {
+    "type": "Minus",
+    "a": {
+     "type": "Attr",
+     "node": {
+      "type": "Var",
+      "name": "y"
+     },
+     "key": "tx"
+    },
+    "b": {
+     "type": "Attr",
+     "node": {
+      "type": "Var",
+      "name": "x"
+     },
+     "key": "x0"
+    }
+   },
+   "comment": "horizontal distance launcher->target (x = tx - x0). x=launcher, y=target."
+  },
+  {
+   "name": "rel_y",
+   "domain": "ballistics",
+   "definition": {
+    "type": "Minus",
+    "a": {
+     "type": "Attr",
+     "node": {
+      "type": "Var",
+      "name": "y"
+     },
+     "key": "ty"
+    },
+    "b": {
+     "type": "Attr",
+     "node": {
+      "type": "Var",
+      "name": "x"
+     },
+     "key": "y0"
+    }
+   },
+   "comment": "vertical offset of the target (y = ty - y0)."
+  },
+  {
+   "name": "discriminant",
+   "domain": "ballistics",
+   "definition": {
+    "type": "Minus",
+    "a": {
+     "type": "Times",
+     "items": [
+      {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "x"
+       },
+       "key": "speed"
+      },
+      {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "x"
+       },
+       "key": "speed"
+      },
+      {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "x"
+       },
+       "key": "speed"
+      },
+      {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "x"
+       },
+       "key": "speed"
+      }
+     ]
+    },
+    "b": {
+     "type": "Times",
+     "items": [
+      {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "x"
+       },
+       "key": "gravity"
+      },
+      {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Times",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "x"
+           },
+           "key": "gravity"
+          },
+          {
+           "type": "Holds",
+           "concept": "rel_x",
+           "node": {
+            "type": "Var",
+            "name": "x"
+           },
+           "node2": {
+            "type": "Var",
+            "name": "y"
+           }
+          },
+          {
+           "type": "Holds",
+           "concept": "rel_x",
+           "node": {
+            "type": "Var",
+            "name": "x"
+           },
+           "node2": {
+            "type": "Var",
+            "name": "y"
+           }
+          }
+         ]
+        },
+        {
+         "type": "Times",
+         "items": [
+          {
+           "type": "Lit",
+           "value": 2.0
+          },
+          {
+           "type": "Holds",
+           "concept": "rel_y",
+           "node": {
+            "type": "Var",
+            "name": "x"
+           },
+           "node2": {
+            "type": "Var",
+            "name": "y"
+           }
+          },
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "x"
+           },
+           "key": "speed"
+          },
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "x"
+           },
+           "key": "speed"
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "comment": "D = v^4 - g(g x^2 + 2 y v^2). D>=0 <=> reachable; two solutions when D>0, grazing at D==0, none when D<0."
+  },
+  {
+   "name": "reachable",
+   "domain": "ballistics",
+   "definition": {
+    "type": "Gte",
+    "a": {
+     "type": "Holds",
+     "concept": "discriminant",
+     "node": {
+      "type": "Var",
+      "name": "x"
+     },
+     "node2": {
+      "type": "Var",
+      "name": "y"
+     }
+    },
+    "b": {
+     "type": "Lit",
+     "value": 0.0
+    }
+   },
+   "comment": "target in range <=> D >= 0."
+  },
+  {
+   "name": "firing_angle_low",
+   "domain": "ballistics",
+   "definition": {
+    "type": "Atan2",
+    "y": {
+     "type": "Minus",
+     "a": {
+      "type": "Times",
+      "items": [
+       {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "x"
+        },
+        "key": "speed"
+       },
+       {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "x"
+        },
+        "key": "speed"
+       }
+      ]
+     },
+     "b": {
+      "type": "Sqrt",
+      "arg": {
+       "type": "Holds",
+       "concept": "discriminant",
+       "node": {
+        "type": "Var",
+        "name": "x"
+       },
+       "node2": {
+        "type": "Var",
+        "name": "y"
+       }
+      }
+     }
+    },
+    "x": {
+     "type": "Times",
+     "items": [
+      {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "x"
+       },
+       "key": "gravity"
+      },
+      {
+       "type": "Holds",
+       "concept": "rel_x",
+       "node": {
+        "type": "Var",
+        "name": "x"
+       },
+       "node2": {
+        "type": "Var",
+        "name": "y"
+       }
+      }
+     ]
+    }
+   },
+   "comment": "LOW/direct arc = Atan2(v^2 - sqrt(D), g x). MUST be gated on `reachable`: Sqrt returns 0 for D<0, so reading this unreachable emits a bogus angle."
+  },
+  {
+   "name": "firing_angle_high",
+   "domain": "ballistics",
+   "definition": {
+    "type": "Atan2",
+    "y": {
+     "type": "Plus",
+     "items": [
+      {
+       "type": "Times",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "x"
+         },
+         "key": "speed"
+        },
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "x"
+         },
+         "key": "speed"
+        }
+       ]
+      },
+      {
+       "type": "Sqrt",
+       "arg": {
+        "type": "Holds",
+        "concept": "discriminant",
+        "node": {
+         "type": "Var",
+         "name": "x"
+        },
+        "node2": {
+         "type": "Var",
+         "name": "y"
+        }
+       }
+      }
+     ]
+    },
+    "x": {
+     "type": "Times",
+     "items": [
+      {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "x"
+       },
+       "key": "gravity"
+      },
+      {
+       "type": "Holds",
+       "concept": "rel_x",
+       "node": {
+        "type": "Var",
+        "name": "x"
+       },
+       "node2": {
+        "type": "Var",
+        "name": "y"
+       }
+      }
+     ]
+    }
+   },
+   "comment": "HIGH/lob arc = Atan2(v^2 + sqrt(D), g x). Same reachability gate."
+  },
+  {
+   "name": "impact_y_low",
+   "domain": "ballistics",
+   "definition": {
+    "type": "Minus",
+    "a": {
+     "type": "Times",
+     "items": [
+      {
+       "type": "Holds",
+       "concept": "rel_x",
+       "node": {
+        "type": "Var",
+        "name": "x"
+       },
+       "node2": {
+        "type": "Var",
+        "name": "y"
+       }
+      },
+      {
+       "type": "Div",
+       "a": {
+        "type": "Sin",
+        "arg": {
+         "type": "Holds",
+         "concept": "firing_angle_low",
+         "node": {
+          "type": "Var",
+          "name": "x"
+         },
+         "node2": {
+          "type": "Var",
+          "name": "y"
+         }
+        }
+       },
+       "b": {
+        "type": "Cos",
+        "arg": {
+         "type": "Holds",
+         "concept": "firing_angle_low",
+         "node": {
+          "type": "Var",
+          "name": "x"
+         },
+         "node2": {
+          "type": "Var",
+          "name": "y"
+         }
+        }
+       }
+      }
+     ]
+    },
+    "b": {
+     "type": "Div",
+     "a": {
+      "type": "Times",
+      "items": [
+       {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "x"
+        },
+        "key": "gravity"
+       },
+       {
+        "type": "Holds",
+        "concept": "rel_x",
+        "node": {
+         "type": "Var",
+         "name": "x"
+        },
+        "node2": {
+         "type": "Var",
+         "name": "y"
+        }
+       },
+       {
+        "type": "Holds",
+        "concept": "rel_x",
+        "node": {
+         "type": "Var",
+         "name": "x"
+        },
+        "node2": {
+         "type": "Var",
+         "name": "y"
+        }
+       }
+      ]
+     },
+     "b": {
+      "type": "Times",
+      "items": [
+       {
+        "type": "Lit",
+        "value": 2.0
+       },
+       {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "x"
+        },
+        "key": "speed"
+       },
+       {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "x"
+        },
+        "key": "speed"
+       },
+       {
+        "type": "Cos",
+        "arg": {
+         "type": "Holds",
+         "concept": "firing_angle_low",
+         "node": {
+          "type": "Var",
+          "name": "x"
+         },
+         "node2": {
+          "type": "Var",
+          "name": "y"
+         }
+        }
+       },
+       {
+        "type": "Cos",
+        "arg": {
+         "type": "Holds",
+         "concept": "firing_angle_low",
+         "node": {
+          "type": "Var",
+          "name": "x"
+         },
+         "node2": {
+          "type": "Var",
+          "name": "y"
+         }
+        }
+       }
+      ]
+     }
+    }
+   },
+   "comment": "FORWARD check of the low arc: y_pred = x tan th - g x^2/(2 v^2 cos^2 th), th=firing_angle_low. Correct iff y_pred ~= rel_y."
+  },
+  {
+   "name": "impact_y_high",
+   "domain": "ballistics",
+   "definition": {
+    "type": "Minus",
+    "a": {
+     "type": "Times",
+     "items": [
+      {
+       "type": "Holds",
+       "concept": "rel_x",
+       "node": {
+        "type": "Var",
+        "name": "x"
+       },
+       "node2": {
+        "type": "Var",
+        "name": "y"
+       }
+      },
+      {
+       "type": "Div",
+       "a": {
+        "type": "Sin",
+        "arg": {
+         "type": "Holds",
+         "concept": "firing_angle_high",
+         "node": {
+          "type": "Var",
+          "name": "x"
+         },
+         "node2": {
+          "type": "Var",
+          "name": "y"
+         }
+        }
+       },
+       "b": {
+        "type": "Cos",
+        "arg": {
+         "type": "Holds",
+         "concept": "firing_angle_high",
+         "node": {
+          "type": "Var",
+          "name": "x"
+         },
+         "node2": {
+          "type": "Var",
+          "name": "y"
+         }
+        }
+       }
+      }
+     ]
+    },
+    "b": {
+     "type": "Div",
+     "a": {
+      "type": "Times",
+      "items": [
+       {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "x"
+        },
+        "key": "gravity"
+       },
+       {
+        "type": "Holds",
+        "concept": "rel_x",
+        "node": {
+         "type": "Var",
+         "name": "x"
+        },
+        "node2": {
+         "type": "Var",
+         "name": "y"
+        }
+       },
+       {
+        "type": "Holds",
+        "concept": "rel_x",
+        "node": {
+         "type": "Var",
+         "name": "x"
+        },
+        "node2": {
+         "type": "Var",
+         "name": "y"
+        }
+       }
+      ]
+     },
+     "b": {
+      "type": "Times",
+      "items": [
+       {
+        "type": "Lit",
+        "value": 2.0
+       },
+       {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "x"
+        },
+        "key": "speed"
+       },
+       {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "x"
+        },
+        "key": "speed"
+       },
+       {
+        "type": "Cos",
+        "arg": {
+         "type": "Holds",
+         "concept": "firing_angle_high",
+         "node": {
+          "type": "Var",
+          "name": "x"
+         },
+         "node2": {
+          "type": "Var",
+          "name": "y"
+         }
+        }
+       },
+       {
+        "type": "Cos",
+        "arg": {
+         "type": "Holds",
+         "concept": "firing_angle_high",
+         "node": {
+          "type": "Var",
+          "name": "x"
+         },
+         "node2": {
+          "type": "Var",
+          "name": "y"
+         }
+        }
+       }
+      ]
+     }
+    }
+   },
+   "comment": "FORWARD check of the high arc (same formula, th=firing_angle_high)."
+  },
+  {
+   "name": "hits_low",
+   "domain": "ballistics",
+   "definition": {
+    "type": "Lt",
+    "a": {
+     "type": "Abs",
+     "arg": {
+      "type": "Minus",
+      "a": {
+       "type": "Holds",
+       "concept": "impact_y_low",
+       "node": {
+        "type": "Var",
+        "name": "x"
+       },
+       "node2": {
+        "type": "Var",
+        "name": "y"
+       }
+      },
+      "b": {
+       "type": "Holds",
+       "concept": "rel_y",
+       "node": {
+        "type": "Var",
+        "name": "x"
+       },
+       "node2": {
+        "type": "Var",
+        "name": "y"
+       }
+      }
+     }
+    },
+    "b": {
+     "type": "Lit",
+     "value": 0.01
+    }
+   },
+   "comment": "low arc lands on target: |impact_y_low - rel_y| < 1e-2."
+  },
+  {
+   "name": "hits_high",
+   "domain": "ballistics",
+   "definition": {
+    "type": "Lt",
+    "a": {
+     "type": "Abs",
+     "arg": {
+      "type": "Minus",
+      "a": {
+       "type": "Holds",
+       "concept": "impact_y_high",
+       "node": {
+        "type": "Var",
+        "name": "x"
+       },
+       "node2": {
+        "type": "Var",
+        "name": "y"
+       }
+      },
+      "b": {
+       "type": "Holds",
+       "concept": "rel_y",
+       "node": {
+        "type": "Var",
+        "name": "x"
+       },
+       "node2": {
+        "type": "Var",
+        "name": "y"
+       }
+      }
+     }
+    },
+    "b": {
+     "type": "Lit",
+     "value": 0.01
+    }
+   },
+   "comment": "high arc lands on target: |impact_y_high - rel_y| < 1e-2."
+  },
+  {
+   "name": "tof_low",
+   "domain": "ballistics",
+   "definition": {
+    "type": "Div",
+    "a": {
+     "type": "Holds",
+     "concept": "rel_x",
+     "node": {
+      "type": "Var",
+      "name": "x"
+     },
+     "node2": {
+      "type": "Var",
+      "name": "y"
+     }
+    },
+    "b": {
+     "type": "Times",
+     "items": [
+      {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "x"
+       },
+       "key": "speed"
+      },
+      {
+       "type": "Cos",
+       "arg": {
+        "type": "Holds",
+        "concept": "firing_angle_low",
+        "node": {
+         "type": "Var",
+         "name": "x"
+        },
+        "node2": {
+         "type": "Var",
+         "name": "y"
+        }
+       }
+      }
+     ]
+    }
+   },
+   "comment": "time-of-flight along the low arc = x / (v cos th). Used to LEAD a moving target."
+  },
+  {
+   "name": "lead_tx",
+   "domain": "ballistics",
+   "definition": {
+    "type": "Plus",
+    "items": [
+     {
+      "type": "Attr",
+      "node": {
+       "type": "Var",
+       "name": "y"
+      },
+      "key": "tx"
+     },
+     {
+      "type": "Times",
+      "items": [
+       {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "y"
+        },
+        "key": "tvx"
+       },
+       {
+        "type": "Holds",
+        "concept": "tof_low",
+        "node": {
+         "type": "Var",
+         "name": "x"
+        },
+        "node2": {
+         "type": "Var",
+         "name": "y"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "comment": "FIRST-ORDER intercept x of a moving target (tvx,tvy): where it will be after tof_low. Aim a fresh solution at (lead_tx,lead_ty) and iterate to refine."
+  },
+  {
+   "name": "lead_ty",
+   "domain": "ballistics",
+   "definition": {
+    "type": "Plus",
+    "items": [
+     {
+      "type": "Attr",
+      "node": {
+       "type": "Var",
+       "name": "y"
+      },
+      "key": "ty"
+     },
+     {
+      "type": "Times",
+      "items": [
+       {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "y"
+        },
+        "key": "tvy"
+       },
+       {
+        "type": "Holds",
+        "concept": "tof_low",
+        "node": {
+         "type": "Var",
+         "name": "x"
+        },
+        "node2": {
+         "type": "Var",
+         "name": "y"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "comment": "first-order intercept y of a moving target (see lead_tx)."
+  },
+  {
+   "name": "wind",
+   "domain": "ballistics",
+   "definition": {
+    "type": "Plus",
+    "items": [
+     {
+      "type": "Attr",
+      "node": {
+       "type": "Var",
+       "name": "x"
+      },
+      "key": "wind"
+     },
+     {
+      "type": "Lit",
+      "value": 0.0
+     }
+    ]
+   },
+   "comment": "horizontal wind acceleration w off the Launcher. ABSENT -> 0.0, so a grenade Launcher with no wind attr reads w=0 and every wind-aware concept collapses to the original no-wind path. x=launcher. [coerced Plus(Attr,0): absent wind reads None which is inconsistent in arithmetic (Times(None,None)=1), so every Attr(wind) is wrapped Plus(...,0.0) -> absent reads 0.0 and the w==0 branch fires byte-identically]"
+  },
+  {
+   "name": "g_eff",
+   "domain": "ballistics",
+   "definition": {
+    "type": "Sqrt",
+    "arg": {
+     "type": "Plus",
+     "items": [
+      {
+       "type": "Times",
+       "items": [
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "x"
+           },
+           "key": "wind"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        },
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "x"
+           },
+           "key": "wind"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "type": "Times",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "x"
+         },
+         "key": "gravity"
+        },
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "x"
+         },
+         "key": "gravity"
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "comment": "|a| = Sqrt(w^2 + g^2), the effective-gravity magnitude in the tilted (down-aligned) frame. w=0 -> Sqrt(g^2)=g (but never used as a result at w=0; the IfThenElse guards select the original concepts then)."
+  },
+  {
+   "name": "tilt_phi",
+   "domain": "ballistics",
+   "definition": {
+    "type": "Atan2",
+    "y": {
+     "type": "Plus",
+     "items": [
+      {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "x"
+       },
+       "key": "wind"
+      },
+      {
+       "type": "Lit",
+       "value": 0.0
+      }
+     ]
+    },
+    "x": {
+     "type": "Attr",
+     "node": {
+      "type": "Var",
+      "name": "x"
+     },
+     "key": "gravity"
+    }
+   },
+   "comment": "phi = Atan2(w, g): the angle by which a=(w,-g) tilts 'down' toward +x from vertical. R(-phi)*(w,-g) = (0,-g_eff). w=0 -> phi=0."
+  },
+  {
+   "name": "rel_x_t",
+   "domain": "ballistics",
+   "definition": {
+    "type": "Plus",
+    "items": [
+     {
+      "type": "Times",
+      "items": [
+       {
+        "type": "Holds",
+        "concept": "rel_x",
+        "node": {
+         "type": "Var",
+         "name": "x"
+        },
+        "node2": {
+         "type": "Var",
+         "name": "y"
+        }
+       },
+       {
+        "type": "Cos",
+        "arg": {
+         "type": "Holds",
+         "concept": "tilt_phi",
+         "node": {
+          "type": "Var",
+          "name": "x"
+         },
+         "node2": {
+          "type": "Var",
+          "name": "y"
+         }
+        }
+       }
+      ]
+     },
+     {
+      "type": "Times",
+      "items": [
+       {
+        "type": "Holds",
+        "concept": "rel_y",
+        "node": {
+         "type": "Var",
+         "name": "x"
+        },
+        "node2": {
+         "type": "Var",
+         "name": "y"
+        }
+       },
+       {
+        "type": "Sin",
+        "arg": {
+         "type": "Holds",
+         "concept": "tilt_phi",
+         "node": {
+          "type": "Var",
+          "name": "x"
+         },
+         "node2": {
+          "type": "Var",
+          "name": "y"
+         }
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "comment": "x' = rel_x*cos phi + rel_y*sin phi : target's horizontal coord in the down-aligned frame (R(-phi) applied). w=0 -> phi=0 -> x'=rel_x."
+  },
+  {
+   "name": "rel_y_t",
+   "domain": "ballistics",
+   "definition": {
+    "type": "Minus",
+    "a": {
+     "type": "Times",
+     "items": [
+      {
+       "type": "Holds",
+       "concept": "rel_y",
+       "node": {
+        "type": "Var",
+        "name": "x"
+       },
+       "node2": {
+        "type": "Var",
+        "name": "y"
+       }
+      },
+      {
+       "type": "Cos",
+       "arg": {
+        "type": "Holds",
+        "concept": "tilt_phi",
+        "node": {
+         "type": "Var",
+         "name": "x"
+        },
+        "node2": {
+         "type": "Var",
+         "name": "y"
+        }
+       }
+      }
+     ]
+    },
+    "b": {
+     "type": "Times",
+     "items": [
+      {
+       "type": "Holds",
+       "concept": "rel_x",
+       "node": {
+        "type": "Var",
+        "name": "x"
+       },
+       "node2": {
+        "type": "Var",
+        "name": "y"
+       }
+      },
+      {
+       "type": "Sin",
+       "arg": {
+        "type": "Holds",
+        "concept": "tilt_phi",
+        "node": {
+         "type": "Var",
+         "name": "x"
+        },
+        "node2": {
+         "type": "Var",
+         "name": "y"
+        }
+       }
+      }
+     ]
+    }
+   },
+   "comment": "y' = rel_y*cos phi - rel_x*sin phi : target's vertical coord in the down-aligned frame. w=0 -> phi=0 -> y'=rel_y."
+  },
+  {
+   "name": "discriminant_tilted",
+   "domain": "ballistics",
+   "definition": {
+    "type": "Minus",
+    "a": {
+     "type": "Times",
+     "items": [
+      {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "x"
+       },
+       "key": "speed"
+      },
+      {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "x"
+       },
+       "key": "speed"
+      },
+      {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "x"
+       },
+       "key": "speed"
+      },
+      {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "x"
+       },
+       "key": "speed"
+      }
+     ]
+    },
+    "b": {
+     "type": "Times",
+     "items": [
+      {
+       "type": "Holds",
+       "concept": "g_eff",
+       "node": {
+        "type": "Var",
+        "name": "x"
+       },
+       "node2": {
+        "type": "Var",
+        "name": "y"
+       }
+      },
+      {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Times",
+         "items": [
+          {
+           "type": "Holds",
+           "concept": "g_eff",
+           "node": {
+            "type": "Var",
+            "name": "x"
+           },
+           "node2": {
+            "type": "Var",
+            "name": "y"
+           }
+          },
+          {
+           "type": "Holds",
+           "concept": "rel_x_t",
+           "node": {
+            "type": "Var",
+            "name": "x"
+           },
+           "node2": {
+            "type": "Var",
+            "name": "y"
+           }
+          },
+          {
+           "type": "Holds",
+           "concept": "rel_x_t",
+           "node": {
+            "type": "Var",
+            "name": "x"
+           },
+           "node2": {
+            "type": "Var",
+            "name": "y"
+           }
+          }
+         ]
+        },
+        {
+         "type": "Times",
+         "items": [
+          {
+           "type": "Lit",
+           "value": 2.0
+          },
+          {
+           "type": "Holds",
+           "concept": "rel_y_t",
+           "node": {
+            "type": "Var",
+            "name": "x"
+           },
+           "node2": {
+            "type": "Var",
+            "name": "y"
+           }
+          },
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "x"
+           },
+           "key": "speed"
+          },
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "x"
+           },
+           "key": "speed"
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "comment": "D' = v^4 - g_eff*(g_eff*x'^2 + 2*y'*v^2): the EXISTING discriminant, evaluated in the tilted frame (g->g_eff, rel_x->x', rel_y->y'). Reachability of the wind problem is Gte(D',0)."
+  },
+  {
+   "name": "discriminant_w",
+   "domain": "ballistics",
+   "definition": {
+    "type": "IfThenElse",
+    "cond": {
+     "type": "Eq",
+     "a": {
+      "type": "Plus",
+      "items": [
+       {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "x"
+        },
+        "key": "wind"
+       },
+       {
+        "type": "Lit",
+        "value": 0.0
+       }
+      ]
+     },
+     "b": {
+      "type": "Lit",
+      "value": 0.0
+     }
+    },
+    "then": {
+     "type": "Holds",
+     "concept": "discriminant",
+     "node": {
+      "type": "Var",
+      "name": "x"
+     },
+     "node2": {
+      "type": "Var",
+      "name": "y"
+     }
+    },
+    "other": {
+     "type": "Holds",
+     "concept": "discriminant_tilted",
+     "node": {
+      "type": "Var",
+      "name": "x"
+     },
+     "node2": {
+      "type": "Var",
+      "name": "y"
+     }
+    }
+   },
+   "comment": "REGIME=DATA gate. w==0 -> the ORIGINAL discriminant byte-for-byte (grenade unchanged); w!=0 -> discriminant_tilted (gorillas). Drives reachable_w and firing_unreachable."
+  },
+  {
+   "name": "reachable_w",
+   "domain": "ballistics",
+   "definition": {
+    "type": "Gte",
+    "a": {
+     "type": "Holds",
+     "concept": "discriminant_w",
+     "node": {
+      "type": "Var",
+      "name": "x"
+     },
+     "node2": {
+      "type": "Var",
+      "name": "y"
+     }
+    },
+    "b": {
+     "type": "Lit",
+     "value": 0.0
+    }
+   },
+   "comment": "target in range (wind-aware) <=> D_w >= 0. w=0 -> identical to `reachable`. Gates firing_solution; disjoint from firing_unreachable (Lt vs Gte on the same D_w)."
+  },
+  {
+   "name": "firing_angle_low_w",
+   "domain": "ballistics",
+   "definition": {
+    "type": "IfThenElse",
+    "cond": {
+     "type": "Eq",
+     "a": {
+      "type": "Plus",
+      "items": [
+       {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "x"
+        },
+        "key": "wind"
+       },
+       {
+        "type": "Lit",
+        "value": 0.0
+       }
+      ]
+     },
+     "b": {
+      "type": "Lit",
+      "value": 0.0
+     }
+    },
+    "then": {
+     "type": "Holds",
+     "concept": "firing_angle_low",
+     "node": {
+      "type": "Var",
+      "name": "x"
+     },
+     "node2": {
+      "type": "Var",
+      "name": "y"
+     }
+    },
+    "other": {
+     "type": "Plus",
+     "items": [
+      {
+       "type": "Atan2",
+       "y": {
+        "type": "Minus",
+        "a": {
+         "type": "Times",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "x"
+           },
+           "key": "speed"
+          },
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "x"
+           },
+           "key": "speed"
+          }
+         ]
+        },
+        "b": {
+         "type": "Sqrt",
+         "arg": {
+          "type": "Holds",
+          "concept": "discriminant_tilted",
+          "node": {
+           "type": "Var",
+           "name": "x"
+          },
+          "node2": {
+           "type": "Var",
+           "name": "y"
+          }
+         }
+        }
+       },
+       "x": {
+        "type": "Times",
+        "items": [
+         {
+          "type": "Holds",
+          "concept": "g_eff",
+          "node": {
+           "type": "Var",
+           "name": "x"
+          },
+          "node2": {
+           "type": "Var",
+           "name": "y"
+          }
+         },
+         {
+          "type": "Holds",
+          "concept": "rel_x_t",
+          "node": {
+           "type": "Var",
+           "name": "x"
+          },
+          "node2": {
+           "type": "Var",
+           "name": "y"
+          }
+         }
+        ]
+       }
+      },
+      {
+       "type": "Holds",
+       "concept": "tilt_phi",
+       "node": {
+        "type": "Var",
+        "name": "x"
+       },
+       "node2": {
+        "type": "Var",
+        "name": "y"
+       }
+      }
+     ]
+    }
+   },
+   "comment": "LOW/direct arc, wind-aware = Atan2(v^2 - sqrt(D'), g_eff*x') + phi : solve the tilted no-wind low arc, rotate launch angle back by +phi. w==0 -> the ORIGINAL firing_angle_low byte-for-byte. MUST be gated on reachable_w (Sqrt(D'<0)=0 emits a bogus angle)."
+  },
+  {
+   "name": "firing_angle_high_w",
+   "domain": "ballistics",
+   "definition": {
+    "type": "IfThenElse",
+    "cond": {
+     "type": "Eq",
+     "a": {
+      "type": "Plus",
+      "items": [
+       {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "x"
+        },
+        "key": "wind"
+       },
+       {
+        "type": "Lit",
+        "value": 0.0
+       }
+      ]
+     },
+     "b": {
+      "type": "Lit",
+      "value": 0.0
+     }
+    },
+    "then": {
+     "type": "Holds",
+     "concept": "firing_angle_high",
+     "node": {
+      "type": "Var",
+      "name": "x"
+     },
+     "node2": {
+      "type": "Var",
+      "name": "y"
+     }
+    },
+    "other": {
+     "type": "Plus",
+     "items": [
+      {
+       "type": "Atan2",
+       "y": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Times",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "x"
+            },
+            "key": "speed"
+           },
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "x"
+            },
+            "key": "speed"
+           }
+          ]
+         },
+         {
+          "type": "Sqrt",
+          "arg": {
+           "type": "Holds",
+           "concept": "discriminant_tilted",
+           "node": {
+            "type": "Var",
+            "name": "x"
+           },
+           "node2": {
+            "type": "Var",
+            "name": "y"
+           }
+          }
+         }
+        ]
+       },
+       "x": {
+        "type": "Times",
+        "items": [
+         {
+          "type": "Holds",
+          "concept": "g_eff",
+          "node": {
+           "type": "Var",
+           "name": "x"
+          },
+          "node2": {
+           "type": "Var",
+           "name": "y"
+          }
+         },
+         {
+          "type": "Holds",
+          "concept": "rel_x_t",
+          "node": {
+           "type": "Var",
+           "name": "x"
+          },
+          "node2": {
+           "type": "Var",
+           "name": "y"
+          }
+         }
+        ]
+       }
+      },
+      {
+       "type": "Holds",
+       "concept": "tilt_phi",
+       "node": {
+        "type": "Var",
+        "name": "x"
+       },
+       "node2": {
+        "type": "Var",
+        "name": "y"
+       }
+      }
+     ]
+    }
+   },
+   "comment": "HIGH/lob arc, wind-aware = Atan2(v^2 + sqrt(D'), g_eff*x') + phi. w==0 -> the ORIGINAL firing_angle_high byte-for-byte. Same reachability gate."
+  },
+  {
+   "name": "tof_low_w",
+   "domain": "ballistics",
+   "definition": {
+    "type": "Div",
+    "a": {
+     "type": "Holds",
+     "concept": "rel_x_t",
+     "node": {
+      "type": "Var",
+      "name": "x"
+     },
+     "node2": {
+      "type": "Var",
+      "name": "y"
+     }
+    },
+    "b": {
+     "type": "Times",
+     "items": [
+      {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "x"
+       },
+       "key": "speed"
+      },
+      {
+       "type": "Cos",
+       "arg": {
+        "type": "Minus",
+        "a": {
+         "type": "Holds",
+         "concept": "firing_angle_low_w",
+         "node": {
+          "type": "Var",
+          "name": "x"
+         },
+         "node2": {
+          "type": "Var",
+          "name": "y"
+         }
+        },
+        "b": {
+         "type": "Holds",
+         "concept": "tilt_phi",
+         "node": {
+          "type": "Var",
+          "name": "x"
+         },
+         "node2": {
+          "type": "Var",
+          "name": "y"
+         }
+        }
+       }
+      }
+     ]
+    }
+   },
+   "comment": "time of flight = x' / (v*cos(th-phi)) : the tilted-horizontal tof, which equals the true flight time (rotation preserves time). th-phi = th' (tilted launch angle). w=0 -> rel_x/(v cos th) = original tof_low."
+  },
+  {
+   "name": "impact_x_low_w",
+   "domain": "ballistics",
+   "definition": {
+    "type": "Plus",
+    "items": [
+     {
+      "type": "Times",
+      "items": [
+       {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "x"
+        },
+        "key": "speed"
+       },
+       {
+        "type": "Cos",
+        "arg": {
+         "type": "Holds",
+         "concept": "firing_angle_low_w",
+         "node": {
+          "type": "Var",
+          "name": "x"
+         },
+         "node2": {
+          "type": "Var",
+          "name": "y"
+         }
+        }
+       },
+       {
+        "type": "Holds",
+        "concept": "tof_low_w",
+        "node": {
+         "type": "Var",
+         "name": "x"
+        },
+        "node2": {
+         "type": "Var",
+         "name": "y"
+        }
+       }
+      ]
+     },
+     {
+      "type": "Times",
+      "items": [
+       {
+        "type": "Lit",
+        "value": 0.5
+       },
+       {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "x"
+          },
+          "key": "wind"
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       },
+       {
+        "type": "Holds",
+        "concept": "tof_low_w",
+        "node": {
+         "type": "Var",
+         "name": "x"
+        },
+        "node2": {
+         "type": "Var",
+         "name": "y"
+        }
+       },
+       {
+        "type": "Holds",
+        "concept": "tof_low_w",
+        "node": {
+         "type": "Var",
+         "name": "x"
+        },
+        "node2": {
+         "type": "Var",
+         "name": "y"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "comment": "FORWARD x at impact WITH wind: x(t)=v cos th t + 0.5 w t^2, th=firing_angle_low_w, t=tof_low_w. Must equal rel_x. w=0 -> v cos th * (rel_x/(v cos th)) = rel_x trivially."
+  },
+  {
+   "name": "impact_y_low_w",
+   "domain": "ballistics",
+   "definition": {
+    "type": "Minus",
+    "a": {
+     "type": "Times",
+     "items": [
+      {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "x"
+       },
+       "key": "speed"
+      },
+      {
+       "type": "Sin",
+       "arg": {
+        "type": "Holds",
+        "concept": "firing_angle_low_w",
+        "node": {
+         "type": "Var",
+         "name": "x"
+        },
+        "node2": {
+         "type": "Var",
+         "name": "y"
+        }
+       }
+      },
+      {
+       "type": "Holds",
+       "concept": "tof_low_w",
+       "node": {
+        "type": "Var",
+        "name": "x"
+       },
+       "node2": {
+        "type": "Var",
+        "name": "y"
+       }
+      }
+     ]
+    },
+    "b": {
+     "type": "Times",
+     "items": [
+      {
+       "type": "Lit",
+       "value": 0.5
+      },
+      {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "x"
+       },
+       "key": "gravity"
+      },
+      {
+       "type": "Holds",
+       "concept": "tof_low_w",
+       "node": {
+        "type": "Var",
+        "name": "x"
+       },
+       "node2": {
+        "type": "Var",
+        "name": "y"
+       }
+      },
+      {
+       "type": "Holds",
+       "concept": "tof_low_w",
+       "node": {
+        "type": "Var",
+        "name": "x"
+       },
+       "node2": {
+        "type": "Var",
+        "name": "y"
+       }
+      }
+     ]
+    }
+   },
+   "comment": "FORWARD y at impact WITH wind: y(t)=v sin th t - 0.5 g t^2. Must equal rel_y. w=0 -> collapses to the original x tan th - g x^2/(2 v^2 cos^2 th)."
+  },
+  {
+   "name": "hits_low_w",
+   "domain": "ballistics",
+   "definition": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Abs",
+       "arg": {
+        "type": "Minus",
+        "a": {
+         "type": "Holds",
+         "concept": "impact_x_low_w",
+         "node": {
+          "type": "Var",
+          "name": "x"
+         },
+         "node2": {
+          "type": "Var",
+          "name": "y"
+         }
+        },
+        "b": {
+         "type": "Holds",
+         "concept": "rel_x",
+         "node": {
+          "type": "Var",
+          "name": "x"
+         },
+         "node2": {
+          "type": "Var",
+          "name": "y"
+         }
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.01
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Abs",
+       "arg": {
+        "type": "Minus",
+        "a": {
+         "type": "Holds",
+         "concept": "impact_y_low_w",
+         "node": {
+          "type": "Var",
+          "name": "x"
+         },
+         "node2": {
+          "type": "Var",
+          "name": "y"
+         }
+        },
+        "b": {
+         "type": "Holds",
+         "concept": "rel_y",
+         "node": {
+          "type": "Var",
+          "name": "x"
+         },
+         "node2": {
+          "type": "Var",
+          "name": "y"
+         }
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.01
+      }
+     }
+    ]
+   },
+   "comment": "low arc lands on target (wind-aware): |impact_x_low_w-rel_x|<1e-2 AND |impact_y_low_w-rel_y|<1e-2. Witnesses correctness in BOTH regimes; reduces to the original hits_low at w=0."
+  },
+  {
+   "name": "tof_high_w",
+   "domain": "ballistics",
+   "definition": {
+    "type": "Div",
+    "a": {
+     "type": "Holds",
+     "concept": "rel_x_t",
+     "node": {
+      "type": "Var",
+      "name": "x"
+     },
+     "node2": {
+      "type": "Var",
+      "name": "y"
+     }
+    },
+    "b": {
+     "type": "Times",
+     "items": [
+      {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "x"
+       },
+       "key": "speed"
+      },
+      {
+       "type": "Cos",
+       "arg": {
+        "type": "Minus",
+        "a": {
+         "type": "Holds",
+         "concept": "firing_angle_high_w",
+         "node": {
+          "type": "Var",
+          "name": "x"
+         },
+         "node2": {
+          "type": "Var",
+          "name": "y"
+         }
+        },
+        "b": {
+         "type": "Holds",
+         "concept": "tilt_phi",
+         "node": {
+          "type": "Var",
+          "name": "x"
+         },
+         "node2": {
+          "type": "Var",
+          "name": "y"
+         }
+        }
+       }
+      }
+     ]
+    }
+   },
+   "comment": "high-arc flight time = x'/(v cos(th_high-phi))."
+  },
+  {
+   "name": "impact_x_high_w",
+   "domain": "ballistics",
+   "definition": {
+    "type": "Plus",
+    "items": [
+     {
+      "type": "Times",
+      "items": [
+       {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "x"
+        },
+        "key": "speed"
+       },
+       {
+        "type": "Cos",
+        "arg": {
+         "type": "Holds",
+         "concept": "firing_angle_high_w",
+         "node": {
+          "type": "Var",
+          "name": "x"
+         },
+         "node2": {
+          "type": "Var",
+          "name": "y"
+         }
+        }
+       },
+       {
+        "type": "Holds",
+        "concept": "tof_high_w",
+        "node": {
+         "type": "Var",
+         "name": "x"
+        },
+        "node2": {
+         "type": "Var",
+         "name": "y"
+        }
+       }
+      ]
+     },
+     {
+      "type": "Times",
+      "items": [
+       {
+        "type": "Lit",
+        "value": 0.5
+       },
+       {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "x"
+          },
+          "key": "wind"
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       },
+       {
+        "type": "Holds",
+        "concept": "tof_high_w",
+        "node": {
+         "type": "Var",
+         "name": "x"
+        },
+        "node2": {
+         "type": "Var",
+         "name": "y"
+        }
+       },
+       {
+        "type": "Holds",
+        "concept": "tof_high_w",
+        "node": {
+         "type": "Var",
+         "name": "x"
+        },
+        "node2": {
+         "type": "Var",
+         "name": "y"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "comment": "FORWARD x at impact, high arc, with wind term."
+  },
+  {
+   "name": "impact_y_high_w",
+   "domain": "ballistics",
+   "definition": {
+    "type": "Minus",
+    "a": {
+     "type": "Times",
+     "items": [
+      {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "x"
+       },
+       "key": "speed"
+      },
+      {
+       "type": "Sin",
+       "arg": {
+        "type": "Holds",
+        "concept": "firing_angle_high_w",
+        "node": {
+         "type": "Var",
+         "name": "x"
+        },
+        "node2": {
+         "type": "Var",
+         "name": "y"
+        }
+       }
+      },
+      {
+       "type": "Holds",
+       "concept": "tof_high_w",
+       "node": {
+        "type": "Var",
+        "name": "x"
+       },
+       "node2": {
+        "type": "Var",
+        "name": "y"
+       }
+      }
+     ]
+    },
+    "b": {
+     "type": "Times",
+     "items": [
+      {
+       "type": "Lit",
+       "value": 0.5
+      },
+      {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "x"
+       },
+       "key": "gravity"
+      },
+      {
+       "type": "Holds",
+       "concept": "tof_high_w",
+       "node": {
+        "type": "Var",
+        "name": "x"
+       },
+       "node2": {
+        "type": "Var",
+        "name": "y"
+       }
+      },
+      {
+       "type": "Holds",
+       "concept": "tof_high_w",
+       "node": {
+        "type": "Var",
+        "name": "x"
+       },
+       "node2": {
+        "type": "Var",
+        "name": "y"
+       }
+      }
+     ]
+    }
+   },
+   "comment": "FORWARD y at impact, high arc, with wind term."
+  },
+  {
+   "name": "hits_high_w",
+   "domain": "ballistics",
+   "definition": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Abs",
+       "arg": {
+        "type": "Minus",
+        "a": {
+         "type": "Holds",
+         "concept": "impact_x_high_w",
+         "node": {
+          "type": "Var",
+          "name": "x"
+         },
+         "node2": {
+          "type": "Var",
+          "name": "y"
+         }
+        },
+        "b": {
+         "type": "Holds",
+         "concept": "rel_x",
+         "node": {
+          "type": "Var",
+          "name": "x"
+         },
+         "node2": {
+          "type": "Var",
+          "name": "y"
+         }
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.01
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Abs",
+       "arg": {
+        "type": "Minus",
+        "a": {
+         "type": "Holds",
+         "concept": "impact_y_high_w",
+         "node": {
+          "type": "Var",
+          "name": "x"
+         },
+         "node2": {
+          "type": "Var",
+          "name": "y"
+         }
+        },
+        "b": {
+         "type": "Holds",
+         "concept": "rel_y",
+         "node": {
+          "type": "Var",
+          "name": "x"
+         },
+         "node2": {
+          "type": "Var",
+          "name": "y"
+         }
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.01
+      }
+     }
+    ]
+   },
+   "comment": "high arc lands on target (wind-aware)."
+  },
+  {
+   "name": "locus_X",
+   "domain": "ballistics",
+   "definition": {
+    "type": "Sum",
+    "source": {
+     "type": "Neighbours",
+     "node": {
+      "type": "Var",
+      "name": "x"
+     },
+     "edge_type": "at"
+    },
+    "var_name": "c",
+    "value": {
+     "type": "Times",
+     "items": [
+      {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "value"
+      },
+      {
+       "type": "Eq",
+       "a": {
+        "type": "MaxOver",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "c"
+         },
+         "edge_type": "on"
+        },
+        "var_name": "a",
+        "value": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "a"
+         },
+         "key": "proj_role"
+        },
+        "default": {
+         "type": "Lit",
+         "value": -1
+        }
+       },
+       "b": {
+        "type": "Lit",
+        "value": 0
+       }
+      }
+     ]
+    }
+   },
+   "comment": "world X off a Locus = the value of its role-0 Coord. Same role-selecting fold as projection's screen_u: Sum over `at`-coords, each gated by (its axis proj_role == 0). Exactly one role-0 coord contributes; others zero out. x=locus (call via Holds(locus_X, loc, loc))."
+  },
+  {
+   "name": "locus_Y",
+   "domain": "ballistics",
+   "definition": {
+    "type": "Sum",
+    "source": {
+     "type": "Neighbours",
+     "node": {
+      "type": "Var",
+      "name": "x"
+     },
+     "edge_type": "at"
+    },
+    "var_name": "c",
+    "value": {
+     "type": "Times",
+     "items": [
+      {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "value"
+      },
+      {
+       "type": "Eq",
+       "a": {
+        "type": "MaxOver",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "c"
+         },
+         "edge_type": "on"
+        },
+        "var_name": "a",
+        "value": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "a"
+         },
+         "key": "proj_role"
+        },
+        "default": {
+         "type": "Lit",
+         "value": -1
+        }
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1
+       }
+      }
+     ]
+    }
+   },
+   "comment": "world Y off a Locus = the value of its role-1 Coord (raycast_triangulate puts X on latax role0, Y on otheraxis role1). Mirror of locus_X."
+  },
+  {
+   "name": "v_dot_n",
+   "domain": "ballistics",
+   "definition": {
+    "type": "Plus",
+    "items": [
+     {
+      "type": "Times",
+      "items": [
+       {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "x"
+        },
+        "key": "vx"
+       },
+       {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "y"
+        },
+        "key": "nx"
+       }
+      ]
+     },
+     {
+      "type": "Times",
+      "items": [
+       {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "x"
+        },
+        "key": "vy"
+       },
+       {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "y"
+        },
+        "key": "ny"
+       }
+      ]
+     }
+    ]
+   },
+   "comment": "v.n = vx*nx + vy*ny. x=incoming velocity (vx,vy), y=Surface (nx,ny). The scalar the reflection law projects out."
+  },
+  {
+   "name": "reflect_factor",
+   "domain": "ballistics",
+   "definition": {
+    "type": "Times",
+    "items": [
+     {
+      "type": "Plus",
+      "items": [
+       {
+        "type": "Lit",
+        "value": 1.0
+       },
+       {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "y"
+          },
+          "key": "e"
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "Holds",
+      "concept": "v_dot_n",
+      "node": {
+       "type": "Var",
+       "name": "x"
+      },
+      "node2": {
+       "type": "Var",
+       "name": "y"
+      }
+     }
+    ]
+   },
+   "comment": "(1+e)(v.n). e wrapped Plus(Attr(e),0.0): absent restitution reads 0 (dead stop). x=velocity, y=Surface."
+  },
+  {
+   "name": "reflect_vx",
+   "domain": "ballistics",
+   "definition": {
+    "type": "Minus",
+    "a": {
+     "type": "Attr",
+     "node": {
+      "type": "Var",
+      "name": "x"
+     },
+     "key": "vx"
+    },
+    "b": {
+     "type": "Times",
+     "items": [
+      {
+       "type": "Holds",
+       "concept": "reflect_factor",
+       "node": {
+        "type": "Var",
+        "name": "x"
+       },
+       "node2": {
+        "type": "Var",
+        "name": "y"
+       }
+      },
+      {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "y"
+       },
+       "key": "nx"
+      }
+     ]
+    }
+   },
+   "comment": "v'_x = vx - (1+e)(v.n) nx. THE bounce primitive (x-component). e=1 flips the normal component, e=0 kills it; tangential preserved. x=velocity, y=Surface."
+  },
+  {
+   "name": "reflect_vy",
+   "domain": "ballistics",
+   "definition": {
+    "type": "Minus",
+    "a": {
+     "type": "Attr",
+     "node": {
+      "type": "Var",
+      "name": "x"
+     },
+     "key": "vy"
+    },
+    "b": {
+     "type": "Times",
+     "items": [
+      {
+       "type": "Holds",
+       "concept": "reflect_factor",
+       "node": {
+        "type": "Var",
+        "name": "x"
+       },
+       "node2": {
+        "type": "Var",
+        "name": "y"
+       }
+      },
+      {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "y"
+       },
+       "key": "ny"
+      }
+     ]
+    }
+   },
+   "comment": "v'_y = vy - (1+e)(v.n) ny. The bounce primitive (y-component). x=velocity, y=Surface."
+  },
+  {
+   "name": "bank_perp_d",
+   "domain": "ballistics",
+   "definition": {
+    "type": "Plus",
+    "items": [
+     {
+      "type": "Times",
+      "items": [
+       {
+        "type": "Minus",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "x"
+         },
+         "key": "tx"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "y"
+         },
+         "key": "px"
+        }
+       },
+       {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "y"
+        },
+        "key": "nx"
+       }
+      ]
+     },
+     {
+      "type": "Times",
+      "items": [
+       {
+        "type": "Minus",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "x"
+         },
+         "key": "ty"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "y"
+         },
+         "key": "py"
+        }
+       },
+       {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "y"
+        },
+        "key": "ny"
+       }
+      ]
+     }
+    ]
+   },
+   "comment": "signed perpendicular distance target->plane: d = (T-P).n. x=Target, y=Surface."
+  },
+  {
+   "name": "bank_scale",
+   "domain": "ballistics",
+   "definition": {
+    "type": "Plus",
+    "items": [
+     {
+      "type": "Lit",
+      "value": 1.0
+     },
+     {
+      "type": "Div",
+      "a": {
+       "type": "Lit",
+       "value": 1.0
+      },
+      "b": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "x"
+         },
+         "key": "e"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     }
+    ]
+   },
+   "comment": "restitution mirror scale = 1 + 1/e. e=1 -> 2 (standard mirror T'=T-2 d n); e<1 stretches the return leg. e=0 -> div-by-zero (gated out by surface_bankable). EXACT when n perp gravity. x=Surface (call Holds(bank_scale,surf,surf))."
+  },
+  {
+   "name": "surface_bankable",
+   "domain": "ballistics",
+   "definition": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Abs",
+       "arg": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "x"
+        },
+        "key": "ny"
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1e-09
+      }
+     },
+     {
+      "type": "Gte",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "x"
+         },
+         "key": "e"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1e-09
+      }
+     }
+    ]
+   },
+   "comment": "bankable iff normal perpendicular to gravity (|ny|~0, gravity is +y) AND e>0. n perp g => the mirror unfolding is EXACT. Gravity-aligned surfaces (floor, |ny|~1) DEFERRED. x=Surface."
+  },
+  {
+   "name": "mirror_tx",
+   "domain": "ballistics",
+   "definition": {
+    "type": "Minus",
+    "a": {
+     "type": "Attr",
+     "node": {
+      "type": "Var",
+      "name": "x"
+     },
+     "key": "tx"
+    },
+    "b": {
+     "type": "Times",
+     "items": [
+      {
+       "type": "Holds",
+       "concept": "bank_scale",
+       "node": {
+        "type": "Var",
+        "name": "y"
+       },
+       "node2": {
+        "type": "Var",
+        "name": "y"
+       }
+      },
+      {
+       "type": "Holds",
+       "concept": "bank_perp_d",
+       "node": {
+        "type": "Var",
+        "name": "x"
+       },
+       "node2": {
+        "type": "Var",
+        "name": "y"
+       }
+      },
+      {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "y"
+       },
+       "key": "nx"
+      }
+     ]
+    }
+   },
+   "comment": "mirror target X: tx' = tx - (1+1/e) d nx. Feed (tx',ty') into the EXISTING firing solution -> bank angle. Vertical wall n=(+/-1,0),e=1: tx'=2xw-tx. x=Target, y=Surface."
+  },
+  {
+   "name": "mirror_ty",
+   "domain": "ballistics",
+   "definition": {
+    "type": "Minus",
+    "a": {
+     "type": "Attr",
+     "node": {
+      "type": "Var",
+      "name": "x"
+     },
+     "key": "ty"
+    },
+    "b": {
+     "type": "Times",
+     "items": [
+      {
+       "type": "Holds",
+       "concept": "bank_scale",
+       "node": {
+        "type": "Var",
+        "name": "y"
+       },
+       "node2": {
+        "type": "Var",
+        "name": "y"
+       }
+      },
+      {
+       "type": "Holds",
+       "concept": "bank_perp_d",
+       "node": {
+        "type": "Var",
+        "name": "x"
+       },
+       "node2": {
+        "type": "Var",
+        "name": "y"
+       }
+      },
+      {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "y"
+       },
+       "key": "ny"
+      }
+     ]
+    }
+   },
+   "comment": "mirror target Y: ty' = ty - (1+1/e) d ny. Vertical wall (ny=0): ty'=ty. x=Target, y=Surface."
+  },
+  {
+   "name": "region_plane_x",
+   "domain": "ballistics",
+   "definition": {
+    "type": "MinOver",
+    "source": {
+     "type": "Neighbours",
+     "node": {
+      "type": "Var",
+      "name": "x"
+     },
+     "edge_type": "comprises"
+    },
+    "var_name": "c",
+    "value": {
+     "type": "Holds",
+     "concept": "locus_X",
+     "node": {
+      "type": "Var",
+      "name": "c"
+     },
+     "node2": {
+      "type": "Var",
+      "name": "c"
+     }
+    },
+    "default": {
+     "type": "Lit",
+     "value": 0.0
+    }
+   },
+   "comment": "plane X of a wall Region = the shared world-X of its comprised Loci (Min==Max==plane for a vertical wall). Reuses locus_X. x=Region."
+  },
+  {
+   "name": "region_plane_y",
+   "domain": "ballistics",
+   "definition": {
+    "type": "MinOver",
+    "source": {
+     "type": "Neighbours",
+     "node": {
+      "type": "Var",
+      "name": "x"
+     },
+     "edge_type": "comprises"
+    },
+    "var_name": "c",
+    "value": {
+     "type": "Holds",
+     "concept": "locus_Y",
+     "node": {
+      "type": "Var",
+      "name": "c"
+     },
+     "node2": {
+      "type": "Var",
+      "name": "c"
+     }
+    },
+    "default": {
+     "type": "Lit",
+     "value": 0.0
+    }
+   },
+   "comment": "a point on the wall line = min world-Y of its Loci. x=Region."
+  },
+  {
+   "name": "region_x_spread",
+   "domain": "ballistics",
+   "definition": {
+    "type": "Minus",
+    "a": {
+     "type": "MaxOver",
+     "source": {
+      "type": "Neighbours",
+      "node": {
+       "type": "Var",
+       "name": "x"
+      },
+      "edge_type": "comprises"
+     },
+     "var_name": "c",
+     "value": {
+      "type": "Holds",
+      "concept": "locus_X",
+      "node": {
+       "type": "Var",
+       "name": "c"
+      },
+      "node2": {
+       "type": "Var",
+       "name": "c"
+      }
+     },
+     "default": {
+      "type": "Lit",
+      "value": 0.0
+     }
+    },
+    "b": {
+     "type": "MinOver",
+     "source": {
+      "type": "Neighbours",
+      "node": {
+       "type": "Var",
+       "name": "x"
+      },
+      "edge_type": "comprises"
+     },
+     "var_name": "c",
+     "value": {
+      "type": "Holds",
+      "concept": "locus_X",
+      "node": {
+       "type": "Var",
+       "name": "c"
+      },
+      "node2": {
+       "type": "Var",
+       "name": "c"
+      }
+     },
+     "default": {
+      "type": "Lit",
+      "value": 0.0
+     }
+    }
+   },
+   "comment": "X-spread of a Region's Loci. ~0 <=> vertical wall (axis-aligned, normal +x) -> bankable Surface. The honest perceptual test. x=Region."
+  }
+ ],
+ "rules": [
+  {
+   "name": "firing_solution",
+   "comment": "Launcher aimed at Target, REACHABLE (D>=0): mint FiringSolution with both arc angles (arc_low=direct, arc_high=lob) + discriminant, edged launcher -has_solution-> sol. sid=lid*1e6+tid dedups one solution per (launcher,target). Disjoint from firing_unreachable (Gte vs Lt on the same D). Self-terminating + fixpoint-idempotent.",
+   "match": [
+    [
+     "launcher",
+     "aims_at",
+     "target"
+    ]
+   ],
+   "where": {
+    "type": "Holds",
+    "concept": "reachable_w",
+    "node": {
+     "type": "Var",
+     "name": "launcher"
+    },
+    "node2": {
+     "type": "Var",
+     "name": "target"
+    }
+   },
+   "effects": [
+    [
+     "add_node_if_absent",
+     "sol",
+     "FiringSolution",
+     {
+      "sid": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Times",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "launcher"
+            },
+            "key": "lid"
+           },
+           {
+            "type": "Lit",
+            "value": 1000000.0
+           }
+          ]
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "target"
+          },
+          "key": "tid"
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "launcher",
+     "has_solution",
+     "sol"
+    ],
+    [
+     "set_attr",
+     "sol",
+     "reachable",
+     1.0
+    ],
+    [
+     "set_attr",
+     "sol",
+     "discriminant",
+     {
+      "__term__": {
+       "type": "Holds",
+       "concept": "discriminant_w",
+       "node": {
+        "type": "Var",
+        "name": "launcher"
+       },
+       "node2": {
+        "type": "Var",
+        "name": "target"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "sol",
+     "angle_low",
+     {
+      "__term__": {
+       "type": "Holds",
+       "concept": "firing_angle_low_w",
+       "node": {
+        "type": "Var",
+        "name": "launcher"
+       },
+       "node2": {
+        "type": "Var",
+        "name": "target"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "sol",
+     "angle_high",
+     {
+      "__term__": {
+       "type": "Holds",
+       "concept": "firing_angle_high_w",
+       "node": {
+        "type": "Var",
+        "name": "launcher"
+       },
+       "node2": {
+        "type": "Var",
+        "name": "target"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "sol",
+     "arc_low",
+     "direct"
+    ],
+    [
+     "set_attr",
+     "sol",
+     "arc_high",
+     "lob"
+    ],
+    [
+     "set_attr",
+     "sol",
+     "wind",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "launcher"
+         },
+         "key": "wind"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "sol",
+     "hits_low",
+     {
+      "__term__": {
+       "type": "Holds",
+       "concept": "hits_low_w",
+       "node": {
+        "type": "Var",
+        "name": "launcher"
+       },
+       "node2": {
+        "type": "Var",
+        "name": "target"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "sol",
+     "hits_high",
+     {
+      "__term__": {
+       "type": "Holds",
+       "concept": "hits_high_w",
+       "node": {
+        "type": "Var",
+        "name": "launcher"
+       },
+       "node2": {
+        "type": "Var",
+        "name": "target"
+       }
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "firing_unreachable",
+   "comment": "Target out of range (D<0): mint the FiringSolution but mark reachable=0 and emit NO angle (Sqrt(D)=0 there would feed a bogus Atan2). Disjoint from firing_solution via Lt(D,0). Idempotent.",
+   "match": [
+    [
+     "launcher",
+     "aims_at",
+     "target"
+    ]
+   ],
+   "where": {
+    "type": "Lt",
+    "a": {
+     "type": "Holds",
+     "concept": "discriminant_w",
+     "node": {
+      "type": "Var",
+      "name": "launcher"
+     },
+     "node2": {
+      "type": "Var",
+      "name": "target"
+     }
+    },
+    "b": {
+     "type": "Lit",
+     "value": 0.0
+    }
+   },
+   "effects": [
+    [
+     "add_node_if_absent",
+     "sol",
+     "FiringSolution",
+     {
+      "sid": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Times",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "launcher"
+            },
+            "key": "lid"
+           },
+           {
+            "type": "Lit",
+            "value": 1000000.0
+           }
+          ]
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "target"
+          },
+          "key": "tid"
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "launcher",
+     "has_solution",
+     "sol"
+    ],
+    [
+     "set_attr",
+     "sol",
+     "reachable",
+     0.0
+    ]
+   ]
+  },
+  {
+   "name": "target_from_locus",
+   "comment": "PERCEPTION->BALLISTICS JOIN. A Launcher -aims_at_locus-> Locus aims at a triangulated world point: read X off the Locus's role-0 Coord (locus_X) and Y off its role-1 Coord (locus_Y) -- the SAME role-fold projection's screen_u/screen_v use -- and mint/refresh a Target(tx=X,ty=Y) edged launcher -aims_at-> tgt. firing_solution then fires UNCHANGED on that Target, so (tx,ty) flows raycast_triangulate -> Locus.Coords -> Target -> rel_x/rel_y -> firing_angle_*_w with NO hand-glue. tid = lid_launcher*1e6 + loc.lid dedups one Target per (launcher,locus); add_node_if_absent/add_edge dedup and set_attr is a no-op at fixpoint -> idempotent + self-terminating. GUARD Gte(Count(at),2): fire only on a Locus that actually carries >=2 coords (a recovered world point), never a bare node. SELF-SUBSETTING: ballistics keeps depends_on []; this rule lies dormant until something mints a Locus + aims_at_locus (the FPS regime, where projection is co-loaded). A gorillas-only agent never mints them and aims via a directly-given Target.",
+   "match": [
+    [
+     "launcher",
+     "aims_at_locus",
+     "loc"
+    ]
+   ],
+   "where": {
+    "type": "Gte",
+    "a": {
+     "type": "Count",
+     "source": {
+      "type": "Neighbours",
+      "node": {
+       "type": "Var",
+       "name": "loc"
+      },
+      "edge_type": "at"
+     }
+    },
+    "b": {
+     "type": "Lit",
+     "value": 2
+    }
+   },
+   "effects": [
+    [
+     "add_node_if_absent",
+     "tgt",
+     "Target",
+     {
+      "tid": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Times",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "launcher"
+            },
+            "key": "lid"
+           },
+           {
+            "type": "Lit",
+            "value": 1000000.0
+           }
+          ]
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "loc"
+          },
+          "key": "lid"
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "launcher",
+     "aims_at",
+     "tgt"
+    ],
+    [
+     "set_attr",
+     "tgt",
+     "tx",
+     {
+      "__term__": {
+       "type": "Holds",
+       "concept": "locus_X",
+       "node": {
+        "type": "Var",
+        "name": "loc"
+       },
+       "node2": {
+        "type": "Var",
+        "name": "loc"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "tgt",
+     "ty",
+     {
+      "__term__": {
+       "type": "Holds",
+       "concept": "locus_Y",
+       "node": {
+        "type": "Var",
+        "name": "loc"
+       },
+       "node2": {
+        "type": "Var",
+        "name": "loc"
+       }
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "surface_from_region",
+   "comment": "PERCEPTION->BALLISTICS: a Region flagged is_wall whose Loci share an X (region_x_spread~0) is a VERTICAL WALL -> mint a Surface{px=region_plane_x, py=region_plane_y, nx=1, ny=0, e}. sfid=region.rid dedups one Surface per wall. e defaults to 1 (perfect bounce) when the region carries no restitution (absent reads 0 -> IfThenElse lifts to 1.0; a perceived wall's restitution isn't visually observable, so the rigid-wall prior is e=1). Dormant until a Region with comprises-Loci exists (FPS regime, projection co-loaded) -> ballistics keeps depends_on []. Idempotent + self-terminating.",
+   "match": [
+    [
+     "w",
+     "has_region",
+     "r"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "r"
+         },
+         "key": "is_wall"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Abs",
+       "arg": {
+        "type": "Holds",
+        "concept": "region_x_spread",
+        "node": {
+         "type": "Var",
+         "name": "r"
+        },
+        "node2": {
+         "type": "Var",
+         "name": "r"
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1e-09
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node_if_absent",
+     "sf",
+     "Surface",
+     {
+      "sfid": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "r"
+        },
+        "key": "rid"
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "w",
+     "has_surface",
+     "sf"
+    ],
+    [
+     "add_edge",
+     "sf",
+     "from_region",
+     "r"
+    ],
+    [
+     "set_attr",
+     "sf",
+     "px",
+     {
+      "__term__": {
+       "type": "Holds",
+       "concept": "region_plane_x",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "node2": {
+        "type": "Var",
+        "name": "r"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "sf",
+     "py",
+     {
+      "__term__": {
+       "type": "Holds",
+       "concept": "region_plane_y",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "node2": {
+        "type": "Var",
+        "name": "r"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "sf",
+     "nx",
+     1.0
+    ],
+    [
+     "set_attr",
+     "sf",
+     "ny",
+     0.0
+    ],
+    [
+     "set_attr",
+     "sf",
+     "e",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Eq",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "r"
+           },
+           "key": "restitution"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.0
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": 1.0
+       },
+       "other": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "r"
+        },
+        "key": "restitution"
+       }
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "bank_mirror_target",
+   "comment": "BANK SHOT (inverse), step 1: Launcher banks_off a BANKABLE Surface and aims_at a real Target -> mint the MIRROR Target T' = T-(1+1/e)d n (mirror_tx/mirror_ty), aim launcher -aims_at-> T'. The EXISTING firing_solution then fires on T' UNCHANGED, producing the bank angle + its forward witness (hits_*_w on T'). tid'=-(sfid*1e6+tid) (negative -> never collides with a real positive tid; one mirror per (surface,target), launcher-independent). Guard surface_bankable: normal perp gravity AND e>0. Excludes mirroring a mirror (is_mirror coerced). Idempotent + self-terminating.",
+   "match": [
+    [
+     "launcher",
+     "banks_off",
+     "surface"
+    ],
+    [
+     "launcher",
+     "aims_at",
+     "target"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Holds",
+      "concept": "surface_bankable",
+      "node": {
+       "type": "Var",
+       "name": "surface"
+      },
+      "node2": {
+       "type": "Var",
+       "name": "surface"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "target"
+          },
+          "key": "is_mirror"
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node_if_absent",
+     "mtgt",
+     "Target",
+     {
+      "tid": {
+       "__term__": {
+        "type": "Minus",
+        "a": {
+         "type": "Lit",
+         "value": 0.0
+        },
+        "b": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "surface"
+             },
+             "key": "sfid"
+            },
+            {
+             "type": "Lit",
+             "value": 1000000.0
+            }
+           ]
+          },
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "target"
+           },
+           "key": "tid"
+          }
+         ]
+        }
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "launcher",
+     "aims_at",
+     "mtgt"
+    ],
+    [
+     "add_edge",
+     "surface",
+     "reflects",
+     "mtgt"
+    ],
+    [
+     "add_edge",
+     "mtgt",
+     "mirror_of",
+     "target"
+    ],
+    [
+     "set_attr",
+     "mtgt",
+     "tx",
+     {
+      "__term__": {
+       "type": "Holds",
+       "concept": "mirror_tx",
+       "node": {
+        "type": "Var",
+        "name": "target"
+       },
+       "node2": {
+        "type": "Var",
+        "name": "surface"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "mtgt",
+     "ty",
+     {
+      "__term__": {
+       "type": "Holds",
+       "concept": "mirror_ty",
+       "node": {
+        "type": "Var",
+        "name": "target"
+       },
+       "node2": {
+        "type": "Var",
+        "name": "surface"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "mtgt",
+     "is_mirror",
+     1.0
+    ],
+    [
+     "set_attr",
+     "mtgt",
+     "via_surface",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "surface"
+       },
+       "key": "sfid"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "mtgt",
+     "mirror_of_tid",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "target"
+       },
+       "key": "tid"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "bank_solution",
+   "comment": "BANK SHOT, step 2 (reachable): the mirror Target T' is in range -> mint a first-class BankSolution edged launcher -has_bank_solution-> bs, reading the bank angle straight off the EXISTING wind-aware firing-angle concepts at T' (angle_bank_low/high = firing_angle_*_w(launcher,mtgt)). Forward witness = hits_*_w at T' (the unfolded direct shot reaches T' <=> the real bounced shot reaches T, since n perp gravity makes the vertical dynamics identical). bs at_target the REAL target (via mtgt mirror_of rtgt). bsid=lid*1e6+tid' dedups. Disjoint from bank_unreachable (reachable_w vs its negation). Idempotent.",
+   "match": [
+    [
+     "launcher",
+     "aims_at",
+     "mtgt"
+    ],
+    [
+     "launcher",
+     "banks_off",
+     "surface"
+    ],
+    [
+     "mtgt",
+     "mirror_of",
+     "rtgt"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "mtgt"
+         },
+         "key": "is_mirror"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "mtgt"
+       },
+       "key": "via_surface"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "surface"
+       },
+       "key": "sfid"
+      }
+     },
+     {
+      "type": "Holds",
+      "concept": "reachable_w",
+      "node": {
+       "type": "Var",
+       "name": "launcher"
+      },
+      "node2": {
+       "type": "Var",
+       "name": "mtgt"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node_if_absent",
+     "bs",
+     "BankSolution",
+     {
+      "bsid": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Times",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "launcher"
+            },
+            "key": "lid"
+           },
+           {
+            "type": "Lit",
+            "value": 1000000.0
+           }
+          ]
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "mtgt"
+          },
+          "key": "tid"
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "launcher",
+     "has_bank_solution",
+     "bs"
+    ],
+    [
+     "add_edge",
+     "bs",
+     "via_surface",
+     "surface"
+    ],
+    [
+     "add_edge",
+     "bs",
+     "at_target",
+     "rtgt"
+    ],
+    [
+     "set_attr",
+     "bs",
+     "reachable",
+     1.0
+    ],
+    [
+     "set_attr",
+     "bs",
+     "angle_bank_low",
+     {
+      "__term__": {
+       "type": "Holds",
+       "concept": "firing_angle_low_w",
+       "node": {
+        "type": "Var",
+        "name": "launcher"
+       },
+       "node2": {
+        "type": "Var",
+        "name": "mtgt"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "bs",
+     "angle_bank_high",
+     {
+      "__term__": {
+       "type": "Holds",
+       "concept": "firing_angle_high_w",
+       "node": {
+        "type": "Var",
+        "name": "launcher"
+       },
+       "node2": {
+        "type": "Var",
+        "name": "mtgt"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "bs",
+     "arc_low",
+     "direct"
+    ],
+    [
+     "set_attr",
+     "bs",
+     "arc_high",
+     "lob"
+    ],
+    [
+     "set_attr",
+     "bs",
+     "restitution",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "surface"
+         },
+         "key": "e"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "bs",
+     "mirror_tx",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "mtgt"
+       },
+       "key": "tx"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "bs",
+     "mirror_ty",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "mtgt"
+       },
+       "key": "ty"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "bs",
+     "hits_bank_low",
+     {
+      "__term__": {
+       "type": "Holds",
+       "concept": "hits_low_w",
+       "node": {
+        "type": "Var",
+        "name": "launcher"
+       },
+       "node2": {
+        "type": "Var",
+        "name": "mtgt"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "bs",
+     "hits_bank_high",
+     {
+      "__term__": {
+       "type": "Holds",
+       "concept": "hits_high_w",
+       "node": {
+        "type": "Var",
+        "name": "launcher"
+       },
+       "node2": {
+        "type": "Var",
+        "name": "mtgt"
+       }
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "bank_unreachable",
+   "comment": "BANK SHOT, step 2 (out of range): the mirror Target is unreachable (D_w<0 at T') -> mint the BankSolution with reachable=0 and NO angle (Sqrt(D'<0)=0 would feed a bogus Atan2). Disjoint from bank_solution via Lt(D_w,0) vs reachable_w. Idempotent.",
+   "match": [
+    [
+     "launcher",
+     "aims_at",
+     "mtgt"
+    ],
+    [
+     "launcher",
+     "banks_off",
+     "surface"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "mtgt"
+         },
+         "key": "is_mirror"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "mtgt"
+       },
+       "key": "via_surface"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "surface"
+       },
+       "key": "sfid"
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Holds",
+       "concept": "discriminant_w",
+       "node": {
+        "type": "Var",
+        "name": "launcher"
+       },
+       "node2": {
+        "type": "Var",
+        "name": "mtgt"
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node_if_absent",
+     "bs",
+     "BankSolution",
+     {
+      "bsid": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Times",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "launcher"
+            },
+            "key": "lid"
+           },
+           {
+            "type": "Lit",
+            "value": 1000000.0
+           }
+          ]
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "mtgt"
+          },
+          "key": "tid"
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "launcher",
+     "has_bank_solution",
+     "bs"
+    ],
+    [
+     "add_edge",
+     "bs",
+     "via_surface",
+     "surface"
+    ],
+    [
+     "set_attr",
+     "bs",
+     "reachable",
+     0.0
+    ]
+   ]
+  }
+ ]
+}

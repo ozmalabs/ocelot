@@ -1,0 +1,118 @@
+{
+  "id": "allocator_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "malloc",
+  "in_microtheory": "computer_architecture",
+  "description": "Heap allocators decomposed. The mechanisms inside malloc/jemalloc/tcmalloc/mimalloc: size classes, free lists, per-thread caches, central allocation paths, arena structures, fragmentation strategies, and the OS-level sbrk/mmap interaction. Allocator quality dominates application performance for malloc-heavy code.",
+  "sub_mechanisms": [
+    {
+      "name": "size_class_binning",
+      "definition": "Allocations are rounded up to one of N pre-defined size classes (e.g., 8, 16, 32, 48, ... bytes for small; 4 KB, 8 KB, 16 KB, ... for large).",
+      "why": "Eliminates fragmentation within the bin — all allocations of class S take exactly S bytes. Trade-off: rounding waste (typical ~15% overhead). Modern allocators (jemalloc) use ~50 size classes covering common sizes finely.",
+      "category": "allocator_mechanism"
+    },
+    {
+      "name": "free_list_per_size_class",
+      "definition": "Each size class has a free list of available blocks. Allocation: pop from list. Free: push back. O(1) for small allocations.",
+      "why": "LIFO ordering maximises temporal locality — the most-recently-freed block is the next one allocated, likely still in cache. Free lists are the workhorse of fast small-object allocation.",
+      "category": "allocator_mechanism"
+    },
+    {
+      "name": "per_thread_arena",
+      "definition": "Each thread has its own allocation arena: per-thread free lists, per-thread metadata. Avoids cross-thread locks for typical allocations.",
+      "why": "Contention is the enemy of scalability. Per-thread arenas eliminate the lock-acquisition cost on most paths. glibc malloc has 'arenas' but limited count; jemalloc and tcmalloc maintain truly per-thread arenas. Critical for highly-threaded workloads.",
+      "category": "allocator_mechanism"
+    },
+    {
+      "name": "central_allocation_path",
+      "definition": "When per-thread free list is empty, request a batch of blocks from a central (shared) pool. Batch size is typically 32-512 to amortise the lock cost.",
+      "why": "Threads need new memory periodically. Going to a central pool requires synchronisation; batching amortises that cost. The central pool is itself partitioned to reduce contention.",
+      "category": "allocator_mechanism"
+    },
+    {
+      "name": "slab_allocator",
+      "definition": "Pre-allocate large memory regions ('slabs') for one size class. Allocate sub-blocks from the slab using a bitmap or free list.",
+      "why": "Slab allocation eliminates per-allocation metadata for small objects. Bitmap or list within the slab tracks which sub-blocks are free. Common in kernel allocators (Linux's SLUB); also used by some user-space allocators.",
+      "category": "allocator_mechanism"
+    },
+    {
+      "name": "buddy_allocator",
+      "definition": "Manages power-of-2 sized blocks. To allocate size S, find the smallest free block of size >= S; if larger, split in half repeatedly until matching. Coalesce on free.",
+      "why": "Simple coalescing strategy. Free buddies merge back to form larger blocks, fighting fragmentation. Used in Linux kernel for page allocation. Internal fragmentation is worst when sizes are slightly over a power of 2.",
+      "category": "allocator_mechanism"
+    },
+    {
+      "name": "arena_split_small_medium_large",
+      "definition": "Modern allocators (jemalloc, tcmalloc) split allocations: small (<8 KB) use per-thread free lists; medium (8 KB-2 MB) use size-class slabs; large (>2 MB) directly mmap'd.",
+      "why": "Different size ranges have different overheads. Small allocations need to be fast; mmap-per-allocation would dominate. Large allocations need OS support for unmapping; size-class binning would waste TBs of memory. Three-tier split matches use cases.",
+      "category": "allocator_mechanism"
+    },
+    {
+      "name": "metadata_separation",
+      "definition": "Allocation metadata (size, prev/next pointers) lives separately from user data. Reduces touched cache lines on alloc/free.",
+      "why": "Storing metadata inline (glibc's classic header-prefixes-user-data) means free() must touch the metadata line. Separating them lets the user data stay cold during free. jemalloc's chunk-based metadata exemplifies this.",
+      "category": "allocator_mechanism"
+    },
+    {
+      "name": "fragmentation_external",
+      "definition": "Free memory exists but is split into too-small pieces to satisfy a larger allocation. Total free > requested size, but no single block large enough.",
+      "why": "Bane of long-running processes. Allocator design fights fragmentation via coalescing, compaction, size-class restriction. Long-running servers often grow over time despite stable allocation rates — fragmentation is usually the cause.",
+      "category": "allocator_mechanism"
+    },
+    {
+      "name": "fragmentation_internal",
+      "definition": "Each allocation gets more memory than requested (rounded up to size class). Sum of overheads is internal fragmentation.",
+      "why": "Trade-off with size class granularity. Fine size classes (many bins) reduce internal fragmentation but increase metadata. Modern allocators tune this balance — typical internal fragmentation: 10-25% overhead.",
+      "category": "allocator_mechanism"
+    },
+    {
+      "name": "mmap_for_large_allocations",
+      "definition": "Allocations >= mmap threshold (typically 128 KB-2 MB) directly call mmap to get a fresh virtual memory range. munmap on free returns memory to OS.",
+      "why": "Lets the OS reclaim large allocations cleanly. Without mmap, large blocks stay in the heap forever — even after free — because brk() can't shrink the heap below a high-water mark. mmap allocations return memory to the OS on free.",
+      "category": "allocator_mechanism"
+    },
+    {
+      "name": "decommit_unused_pages",
+      "definition": "Allocator may madvise(MADV_DONTNEED) on pages it isn't using, telling the OS to reclaim physical frames. Future access page-faults and zeroes the page.",
+      "why": "Holds virtual address space but returns physical memory. Useful for long-lived allocators with variable working sets. jemalloc does this aggressively; helps with long-running server memory pressure.",
+      "category": "allocator_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "per_thread_arenas_eliminate_lock_contention",
+      "if": ["each thread has its own arena"],
+      "then": ["common-path allocations don't contend on locks"],
+      "why": "Lock contention is per-operation latency that becomes per-thread serialisation. Per-thread arenas eliminate it for typical paths. jemalloc + tcmalloc both make this their core scaling strategy; glibc malloc's bottleneck on highly-threaded workloads comes from limited arena count.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "size_class_binning_trades_overhead_for_speed",
+      "if": ["allocations are routed to fixed size classes"],
+      "then": ["allocation/free becomes O(1) at the cost of internal fragmentation"],
+      "why": "Variable-size best-fit search is O(log N) at best. Size-class free lists give O(1). The wasted bytes per allocation (~15% typical) is the cost; the constant-time allocation is the benefit. Universal in modern allocators.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "small_alloc_fast_path_dominates",
+      "if": ["most allocations are small (<256 bytes)"],
+      "then": ["the small-alloc path determines overall allocator performance"],
+      "why": "Typical workloads: ~95% of allocations are small. Allocator throughput is dominated by the small-alloc path's CPU + cache footprint. jemalloc/tcmalloc/mimalloc all optimise this path heavily.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "free_list_lifo_preserves_temporal_locality",
+      "if": ["the free list pops the most-recently-freed block first"],
+      "then": ["allocations hit recently-touched cache lines"],
+      "why": "Freed memory's cache lines are still warm. LIFO pop returns a block whose lines are likely in L1. FIFO would return cold lines, missing on first access. Universal allocator optimisation.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "mmap_threshold_separates_short_long_lived",
+      "if": ["allocations above a threshold use mmap"],
+      "then": ["large freed allocations return memory to OS instead of holding it"],
+      "why": "Heap-based allocations grow but rarely shrink (high-water mark). Long-running processes with one-off large allocations would balloon. mmap'd allocations munmap on free, releasing the physical memory back to OS.",
+      "soundness_category": "cost_equivalence"
+    }
+  ]
+}

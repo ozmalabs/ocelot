@@ -1,0 +1,49 @@
+{
+  "microtheory": {
+    "name": "visual_cognition",
+    "definition": "Higher-level visual processing — attention, mental rotation, visual imagery, visual reasoning, change blindness. The interface between vision + cognition. Substrate analogue: substrate's high-level visual processing on top of feature extraction.",
+    "category": "vision_domain",
+    "parent": "vision_foundation"
+  },
+  "concepts": [
+    {"name": "selective_visual_attention", "definition": "Choosing what subset to process. Spatial vs feature vs object-based. Substrate analogue: substrate's drive-priority on visual concepts.", "category": "attention"},
+    {"name": "spatial_attention", "definition": "Attending to a spatial location. Posner 1980 cueing paradigm. Substrate analogue: substrate's location-conditioned activation.", "category": "attention"},
+    {"name": "feature_based_attention", "definition": "Attending to a specific feature (color, motion, orientation) wherever it appears. Substrate analogue: substrate's feature-conditioned activation.", "category": "attention"},
+    {"name": "object_based_attention", "definition": "Attending to an object as unit. Substrate analogue: substrate's Concept-conditioned activation.", "category": "attention"},
+    {"name": "covert_attention", "definition": "Attention without eye movement. Mental shift. Substrate analogue: substrate's σ-shift without input change.", "category": "attention"},
+
+    {"name": "inattentional_blindness", "definition": "Missing salient events outside attention. Simons + Chabris gorilla. Substrate analogue: substrate's attention-gated processing.", "category": "limits"},
+    {"name": "change_blindness", "definition": "Missing changes across views. Especially with intervening masks. Substrate analogue: substrate's change-without-attention failure.", "category": "limits"},
+    {"name": "attentional_blink", "definition": "Brief inability to detect 2nd target ~500ms after 1st. Refractory period of attention. Substrate analogue: substrate's attention-cycle limit.", "category": "limits"},
+    {"name": "repetition_blindness", "definition": "Missing 2nd instance of repeated stimulus. Substrate analogue: substrate's identity-suppression mechanism.", "category": "limits"},
+
+    {"name": "visual_imagery", "definition": "Internal visual representation. Activates similar brain regions to perception. Kosslyn 1980. Substrate analogue: substrate's runtime visual simulation.", "category": "imagery"},
+    {"name": "mental_rotation", "definition": "Rotating mental image. Time linear in angle. Shepard + Metzler 1971. Substrate analogue: substrate's geometric transformation.", "category": "imagery"},
+    {"name": "image_scanning", "definition": "Scanning mental image takes time proportional to distance. Substrate analogue: substrate's spatial-traversal cost.", "category": "imagery"},
+    {"name": "imagery_perception_neural_overlap", "definition": "fMRI shows imagery activates ventral visual cortex similarly to perception. Substrate analogue: substrate's shared imagery-perception mechanism.", "category": "imagery"},
+
+    {"name": "visual_working_memory", "definition": "Maintain visual info actively. Capacity ~4 objects, Luck + Vogel 1997. Substrate analogue: substrate's persistent σ for visual concepts.", "category": "memory"},
+    {"name": "iconic_memory", "definition": "Brief (<1s) sensory store of visual input. Sperling 1960. Substrate analogue: substrate's brief input buffer.", "category": "memory"},
+    {"name": "long_term_visual_memory", "definition": "Standing 1973 — humans recall 10000+ pictures with >90% accuracy. Substrate analogue: substrate's large visual Concept repertoire.", "category": "memory"},
+
+    {"name": "visual_search", "definition": "Finding target among distractors. Feature search (fast, parallel) vs conjunction search (slow, serial). Treisman. Substrate analogue: substrate's search-time as function of distractor count.", "category": "search"},
+    {"name": "pop_out", "definition": "Target with unique feature pops out regardless of distractor count. Substrate analogue: substrate's parallel feature-detection.", "category": "search"},
+    {"name": "salience_map", "definition": "Topographic map of attention-attracting strength. Itti + Koch 1998. Substrate analogue: substrate's spatial-attention prior.", "category": "search"},
+
+    {"name": "mental_models_visual", "definition": "Internal models supporting reasoning about spatial layouts. Johnson-Laird 1983. Substrate analogue: substrate's internal spatial Mt.", "category": "reasoning"},
+    {"name": "perspective_taking", "definition": "Imagining a different viewpoint. Substrate analogue: substrate's viewpoint-transformation.", "category": "reasoning"},
+    {"name": "visual_reasoning", "definition": "Solving problems using visual representations. Geometric proofs, mechanical thinking. Substrate analogue: substrate's spatial-Term evaluation.", "category": "reasoning"},
+
+    {"name": "visual_illusions", "definition": "Mismatches between physical stimulus + perception. Reveal underlying processes. Substrate analogue: substrate's failure-mode probes.", "category": "illusions"},
+    {"name": "muller_lyer_illusion", "definition": "Lines with outward arrows appear longer than with inward. Possibly size-constancy misapplied. Substrate analogue: substrate's misapplied prior.", "category": "illusions"},
+    {"name": "ames_room", "definition": "Distorted room appears rectangular from special viewpoint; figures appear different sizes. Substrate analogue: substrate's prior overriding sense data.", "category": "illusions"},
+    {"name": "ponzo_illusion", "definition": "Same lines appear different sizes against converging perspective lines. Substrate analogue: substrate's depth-cue-modulated size.", "category": "illusions"}
+  ],
+  "rules": [
+    {"name": "attention_gates_conscious_perception", "head": "the substrate processes a complex scene", "body": "only attended subset reaches conscious access. Unattended content can produce inattentional blindness. Substrate's attention-gated processing."},
+    {"name": "feature_search_is_parallel_conjunction_search_is_serial", "head": "the substrate searches for visual target", "body": "if target differs by single feature, search is parallel (pop-out). Conjunction targets require serial scan. Treisman."},
+    {"name": "mental_rotation_takes_linear_time_in_angle", "head": "the substrate rotates a mental image", "body": "the time is proportional to the angle of rotation. Shepard + Metzler 1971. Substrate's geometric-transformation cost."},
+    {"name": "visual_working_memory_limited_to_few_objects", "head": "the substrate maintains visual items actively", "body": "capacity is ~4 objects, regardless of features per object. Luck + Vogel 1997. Substrate's persistent-σ capacity."},
+    {"name": "illusions_reveal_underlying_processes", "head": "the substrate experiences a visual illusion", "body": "the failure reveals which processes are actively contributing — size constancy, depth cues, lateral inhibition. Substrate's mechanism-revealing failure modes."}
+  ]
+}

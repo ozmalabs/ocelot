@@ -1,0 +1,296 @@
+{
+ "id": "composer_escalation_gate_graph",
+ "version": "1.0.0",
+ "depends_on": [],
+ "description": "GRAPH-RESIDENT: the COST-WORTH-REFINING escalation arm, authored by the jabberwock via the composer (CLAUDE.md discipline: no hand-written agent rule) -- the OTHER half of the dual-process arbitration (the FIRST half, the ungrounded-confident arm, is seeds/composer_grounding_guard_graph.json, unmodified by this seed). Theory (creator's Graph Law review #2): the agent's cheap/fast MODEL-LAYER cognition (a basin-snap) is TRUSTED by default; it is worth abandoning for expensive ACTIVE cognition only when either (a) the snap is confidently wrong outside its grounding range (B1, composer_grounding_guard_graph's GroundingGap arm, untouched), OR (b) the snap is genuinely worth refining -- its residual*value exceeds the cost of refining it further (B2, seeds/residual_salience.json's cost_salience formula: salience(axis) = shortfall + (1-saturation) - cost; > 0 means refining pays for itself). This seed adds ONLY arm (b): mints ONE rule, escalate_cost_worth_<tag>, from an agent -wants_escalation_gate_rule-> ComposeRequest trigger (ground_concern's 'worth' relation head, seeds/relation_vocabulary.json's new cost_worth_escalate cue + seeds/composer_dispatch.json's new ComposerCue). The minted rule matches every agent -frontier_pick-> ax edge (the STANDING 'this is the cheap snap currently under consideration' signal seeds/autonomy.json's frontier-Argmax already writes -- reused, not reimplemented) where cost_salience's own per-axis value (shortfall + (1-saturation) - cost, read directly off the axis's OWN shortfall/saturation/cost attrs -- the SAME three attrs cost_salience's Argmax reads, seeds/residual_salience.json is never edited or re-evaluated as a Term here, only its formula's SHAPE is mirrored as a boolean per-axis gate) is POSITIVE and the axis has not already been cost-escalated (ax.cost_escalated is null) -- and, instead of trusting the cheap pick, mints an Impasse{kind:'cost_worth_refining'} and wires agent -surprised_by-> impasse (+ impasse -about_axis-> ax), REUSING the SAME standing surprised_by/Impasse escalation channel composer_grounding_guard_graph's arm uses (seeds/autonomy.json's mint_goal_from_surprise, already seeded, turns the surprised_by edge into a wanted Goal on its own -- this seed does not reimplement 'unexplained -> goal', it plugs a cost-worth-it verdict into that existing channel, exactly the shape the grounding-guard arm established). An axis whose cost_salience value is <= 0 (not worth refining) never gets escalated by this rule -- trust is the default; escalation is what a genuine cost/residual trade-off earns. Marks ax.cost_escalated so a re-run never re-escalates the same axis (fixpoint safety, the same guard idiom composer_grounding_guard_graph's gap.escalated flag and composer_control_graph's default_no_response use).",
+ "nodes": [
+  {
+   "local_id": 1,
+   "type": "Rule",
+   "attrs": {
+    "id": "compose_escalation_gate_graph",
+    "match": [
+     [
+      "agent",
+      "wants_escalation_gate_rule",
+      "cr"
+     ]
+    ],
+    "where": {
+     "type": "Lt",
+     "a": {
+      "type": "Plus",
+      "items": [
+       {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "cr"
+        },
+        "key": "composed"
+       },
+       {
+        "type": "Lit",
+        "value": 0.0
+       }
+      ]
+     },
+     "b": {
+      "type": "Lit",
+      "value": 0.5
+     }
+    },
+    "effect": [
+     [
+      "add_node",
+      "rn0",
+      "Rule",
+      {
+       "minted": 0.0
+      }
+     ],
+     [
+      "set_attr",
+      "rn0",
+      "id",
+      {
+       "__term__": {
+        "type": "StringConcat",
+        "parts": [
+         {
+          "type": "Lit",
+          "value": "escalate_cost_worth_"
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "cr"
+          },
+          "key": "tag"
+         }
+        ]
+       }
+      }
+     ],
+     [
+      "set_attr",
+      "rn0",
+      "match",
+      [
+       [
+        "ag",
+        "frontier_pick",
+        "ax"
+       ]
+      ]
+     ],
+     [
+      "set_attr",
+      "rn0",
+      "where",
+      {
+       "type": "And",
+       "items": [
+        {
+         "type": "Gt",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "ax"
+              },
+              "key": "shortfall"
+             },
+             {
+              "type": "Lit",
+              "value": 0.0
+             }
+            ]
+           },
+           {
+            "type": "Minus",
+            "a": {
+             "type": "Lit",
+             "value": 1.0
+            },
+            "b": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "ax"
+               },
+               "key": "saturation"
+              },
+              {
+               "type": "Lit",
+               "value": 0.0
+              }
+             ]
+            }
+           },
+           {
+            "type": "Minus",
+            "a": {
+             "type": "Lit",
+             "value": 0.0
+            },
+            "b": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "ax"
+               },
+               "key": "cost"
+              },
+              {
+               "type": "Lit",
+               "value": 0.0
+              }
+             ]
+            }
+           }
+          ]
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        },
+        {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "ax"
+          },
+          "key": "cost_escalated"
+         },
+         "b": {
+          "type": "Lit",
+          "value": null
+         }
+        }
+       ]
+      }
+     ],
+     [
+      "set_attr",
+      "rn0",
+      "effect",
+      [
+       [
+        "add_node",
+        "mi",
+        "Impasse",
+        {
+         "resolved": false,
+         "kind": "cost_worth_refining",
+         "order": 0,
+         "acted_order": 0,
+         "why": "the frontier pick's residual*value exceeds the cost of refining it further -- escalate to active cognition, do not trust the cheap snap"
+        }
+       ],
+       [
+        "add_edge",
+        "ag",
+        "surprised_by",
+        "mi"
+       ],
+       [
+        "add_edge",
+        "mi",
+        "about_axis",
+        "ax"
+       ],
+       [
+        "set_attr",
+        "ax",
+        "cost_escalated",
+        true
+       ]
+      ]
+     ],
+     [
+      "set_rule_clause",
+      {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "rn0"
+        },
+        "key": "id"
+       }
+      },
+      "__mint__",
+      {
+       "__term__": {
+        "type": "Var",
+        "name": "rn0"
+       }
+      }
+     ],
+     [
+      "set_attr",
+      "cr",
+      "composed",
+      1.0
+     ]
+    ]
+   }
+  }
+ ],
+ "edges": [],
+ "productions": [
+  {
+   "provenance": "seed:composer_escalation_gate_graph:frontier_pick",
+   "src": {
+    "type": "Agent",
+    "var": "s"
+   },
+   "edge_type": "frontier_pick",
+   "tgt": {
+    "type": "CapabilityAxis",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:composer_escalation_gate_graph:surprised_by",
+   "src": {
+    "type": "Agent",
+    "var": "s"
+   },
+   "edge_type": "surprised_by",
+   "tgt": {
+    "type": "Impasse",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:composer_escalation_gate_graph:about_axis",
+   "src": {
+    "type": "Impasse",
+    "var": "s"
+   },
+   "edge_type": "about_axis",
+   "tgt": {
+    "type": "CapabilityAxis",
+    "var": "t"
+   }
+  }
+ ]
+}

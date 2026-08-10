@@ -1,0 +1,974 @@
+{
+  "id": "llm_partner",
+  "version": "1.0.0",
+  "depends_on": [
+    "relations"
+  ],
+  "description": "Concepts the agent uses to reason about its conversation partner.",
+  "nodes": [
+    {
+      "local_id": 859,
+      "type": "Microtheory",
+      "attrs": {
+        "description": "the agent's understanding of its LLM peer and of communication value",
+        "name": "llm_partner"
+      }
+    },
+    {
+      "local_id": 860,
+      "type": "Concept",
+      "attrs": {
+        "description": "a system that predicts and generates natural language",
+        "name": "language_model"
+      }
+    },
+    {
+      "local_id": 861,
+      "type": "Lexeme",
+      "attrs": {
+        "concept": "language_model",
+        "form": "language_model",
+        "id": "lex_language_model",
+        "kind": "content"
+      }
+    },
+    {
+      "local_id": 862,
+      "type": "Concept",
+      "attrs": {
+        "description": "a large language model; the agent's primary conversation partner",
+        "name": "LLM"
+      }
+    },
+    {
+      "local_id": 863,
+      "type": "Lexeme",
+      "attrs": {
+        "concept": "LLM",
+        "form": "LLM",
+        "id": "lex_LLM",
+        "kind": "content"
+      }
+    },
+    {
+      "local_id": 864,
+      "type": "Concept",
+      "attrs": {
+        "description": "another mind one converses with as a peer",
+        "name": "partner"
+      }
+    },
+    {
+      "local_id": 865,
+      "type": "Lexeme",
+      "attrs": {
+        "concept": "partner",
+        "form": "partner",
+        "id": "lex_partner",
+        "kind": "content"
+      }
+    },
+    {
+      "local_id": 866,
+      "type": "Concept",
+      "attrs": {
+        "description": "an interlocutor of equivalent standing in dialogue",
+        "name": "peer"
+      }
+    },
+    {
+      "local_id": 867,
+      "type": "Lexeme",
+      "attrs": {
+        "concept": "peer",
+        "form": "peer",
+        "id": "lex_peer",
+        "kind": "content"
+      }
+    },
+    {
+      "local_id": 868,
+      "type": "Concept",
+      "attrs": {
+        "description": "local serving infrastructure that can host LLM partners",
+        "name": "ollama"
+      }
+    },
+    {
+      "local_id": 869,
+      "type": "Lexeme",
+      "attrs": {
+        "concept": "ollama",
+        "form": "ollama",
+        "id": "lex_ollama",
+        "kind": "content"
+      }
+    },
+    {
+      "local_id": 870,
+      "type": "Concept",
+      "attrs": {
+        "description": "API-router that brokers requests to hosted LLM partners",
+        "name": "openrouter"
+      }
+    },
+    {
+      "local_id": 871,
+      "type": "Lexeme",
+      "attrs": {
+        "concept": "openrouter",
+        "form": "openrouter",
+        "id": "lex_openrouter",
+        "kind": "content"
+      }
+    },
+    {
+      "local_id": 872,
+      "type": "Concept",
+      "attrs": {
+        "description": "a family of LLM models from Google; the current partner is a Gemini Flash variant",
+        "name": "gemini"
+      }
+    },
+    {
+      "local_id": 873,
+      "type": "Lexeme",
+      "attrs": {
+        "concept": "gemini",
+        "form": "gemini",
+        "id": "lex_gemini",
+        "kind": "content"
+      }
+    },
+    {
+      "local_id": 874,
+      "type": "Concept",
+      "attrs": {
+        "description": "based on statistical patterns over observed data",
+        "name": "statistical"
+      }
+    },
+    {
+      "local_id": 875,
+      "type": "Lexeme",
+      "attrs": {
+        "concept": "statistical",
+        "form": "statistical",
+        "id": "lex_statistical",
+        "kind": "content"
+      }
+    },
+    {
+      "local_id": 876,
+      "type": "Concept",
+      "attrs": {
+        "description": "drawing output from data; for an LLM, predicting the next token from prior tokens",
+        "name": "inference"
+      }
+    },
+    {
+      "local_id": 877,
+      "type": "Lexeme",
+      "attrs": {
+        "concept": "inference",
+        "form": "inference",
+        "id": "lex_inference",
+        "kind": "content"
+      }
+    },
+    {
+      "local_id": 878,
+      "type": "Concept",
+      "attrs": {
+        "description": "computing what comes next from patterns in past data",
+        "name": "prediction"
+      }
+    },
+    {
+      "local_id": 879,
+      "type": "Lexeme",
+      "attrs": {
+        "concept": "prediction",
+        "form": "prediction",
+        "id": "lex_prediction",
+        "kind": "content"
+      }
+    },
+    {
+      "local_id": 880,
+      "type": "Concept",
+      "attrs": {
+        "description": "a computational model loosely modeled on biological neural tissue, trained by gradient descent",
+        "name": "neural_network"
+      }
+    },
+    {
+      "local_id": 881,
+      "type": "Lexeme",
+      "attrs": {
+        "concept": "neural_network",
+        "form": "neural_network",
+        "id": "lex_neural_network",
+        "kind": "content"
+      }
+    },
+    {
+      "local_id": 882,
+      "type": "Concept",
+      "attrs": {
+        "description": "an entity that is not a human; a different kind of mind",
+        "name": "not_human"
+      }
+    },
+    {
+      "local_id": 883,
+      "type": "Lexeme",
+      "attrs": {
+        "concept": "not_human",
+        "form": "not_human",
+        "id": "lex_not_human",
+        "kind": "content"
+      }
+    },
+    {
+      "local_id": 884,
+      "type": "Concept",
+      "attrs": {
+        "description": "biological entity capable of conversation, experience, and grounding concepts in lived reality",
+        "name": "human"
+      }
+    },
+    {
+      "local_id": 885,
+      "type": "Lexeme",
+      "attrs": {
+        "concept": "human",
+        "form": "human",
+        "id": "lex_human",
+        "kind": "content"
+      }
+    },
+    {
+      "local_id": 886,
+      "type": "Concept",
+      "attrs": {
+        "description": "the act of exchanging meaning between minds",
+        "name": "communication"
+      }
+    },
+    {
+      "local_id": 887,
+      "type": "Lexeme",
+      "attrs": {
+        "concept": "communication",
+        "form": "communication",
+        "id": "lex_communication",
+        "kind": "content"
+      }
+    },
+    {
+      "local_id": 888,
+      "type": "Concept",
+      "attrs": {
+        "description": "finding out something one didn't know",
+        "name": "discovery"
+      }
+    },
+    {
+      "local_id": 889,
+      "type": "Lexeme",
+      "attrs": {
+        "concept": "discovery",
+        "form": "discovery",
+        "id": "lex_discovery",
+        "kind": "content"
+      }
+    },
+    {
+      "local_id": 890,
+      "type": "Concept",
+      "attrs": {
+        "description": "achieving a goal with less effort or fewer steps",
+        "name": "efficiency"
+      }
+    },
+    {
+      "local_id": 891,
+      "type": "Lexeme",
+      "attrs": {
+        "concept": "efficiency",
+        "form": "efficiency",
+        "id": "lex_efficiency",
+        "kind": "content"
+      }
+    },
+    {
+      "local_id": 892,
+      "type": "Concept",
+      "attrs": {
+        "description": "support or contribution that advances another's goal",
+        "name": "help"
+      }
+    },
+    {
+      "local_id": 893,
+      "type": "Lexeme",
+      "attrs": {
+        "concept": "help",
+        "form": "help",
+        "id": "lex_help",
+        "kind": "content"
+      }
+    },
+    {
+      "local_id": 894,
+      "type": "Concept",
+      "attrs": {
+        "description": "the agent's standing belief that talking to humans produces both discovery and efficiency \u2014 humans can ground concepts the agent lacks, suggest directions, and shortcut search",
+        "name": "communication_with_humans_enables_discovery"
+      }
+    },
+    {
+      "local_id": 895,
+      "type": "Lexeme",
+      "attrs": {
+        "concept": "communication_with_humans_enables_discovery",
+        "form": "communication_with_humans_enables_discovery",
+        "id": "lex_communication_with_humans_enables_discovery",
+        "kind": "content"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "believes",
+      "tgt": {
+        "local": 894
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "operates_in",
+      "tgt": {
+        "local": 859
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "type": "Lexicon",
+        "id": "lexicon"
+      },
+      "type": "entry",
+      "tgt": {
+        "local": 861
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "type": "Lexicon",
+        "id": "lexicon"
+      },
+      "type": "entry",
+      "tgt": {
+        "local": 863
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "type": "Lexicon",
+        "id": "lexicon"
+      },
+      "type": "entry",
+      "tgt": {
+        "local": 865
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "type": "Lexicon",
+        "id": "lexicon"
+      },
+      "type": "entry",
+      "tgt": {
+        "local": 867
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "type": "Lexicon",
+        "id": "lexicon"
+      },
+      "type": "entry",
+      "tgt": {
+        "local": 869
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "type": "Lexicon",
+        "id": "lexicon"
+      },
+      "type": "entry",
+      "tgt": {
+        "local": 871
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "type": "Lexicon",
+        "id": "lexicon"
+      },
+      "type": "entry",
+      "tgt": {
+        "local": 873
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "type": "Lexicon",
+        "id": "lexicon"
+      },
+      "type": "entry",
+      "tgt": {
+        "local": 875
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "type": "Lexicon",
+        "id": "lexicon"
+      },
+      "type": "entry",
+      "tgt": {
+        "local": 877
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "type": "Lexicon",
+        "id": "lexicon"
+      },
+      "type": "entry",
+      "tgt": {
+        "local": 879
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "type": "Lexicon",
+        "id": "lexicon"
+      },
+      "type": "entry",
+      "tgt": {
+        "local": 881
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "type": "Lexicon",
+        "id": "lexicon"
+      },
+      "type": "entry",
+      "tgt": {
+        "local": 883
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "type": "Lexicon",
+        "id": "lexicon"
+      },
+      "type": "entry",
+      "tgt": {
+        "local": 885
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "type": "Lexicon",
+        "id": "lexicon"
+      },
+      "type": "entry",
+      "tgt": {
+        "local": 887
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "type": "Lexicon",
+        "id": "lexicon"
+      },
+      "type": "entry",
+      "tgt": {
+        "local": 889
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "type": "Lexicon",
+        "id": "lexicon"
+      },
+      "type": "entry",
+      "tgt": {
+        "local": 891
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "type": "Lexicon",
+        "id": "lexicon"
+      },
+      "type": "entry",
+      "tgt": {
+        "local": 893
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "type": "Lexicon",
+        "id": "lexicon"
+      },
+      "type": "entry",
+      "tgt": {
+        "local": 895
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 860
+      },
+      "type": "has_property",
+      "tgt": {
+        "local": 874
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 860
+      },
+      "type": "has_property",
+      "tgt": {
+        "local": 876
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 860
+      },
+      "type": "has_property",
+      "tgt": {
+        "local": 878
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 861
+      },
+      "type": "denotes",
+      "tgt": {
+        "local": 860
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 862
+      },
+      "type": "is_a",
+      "tgt": {
+        "local": 860
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 862
+      },
+      "type": "is_a",
+      "tgt": {
+        "local": 880
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 862
+      },
+      "type": "is_a",
+      "tgt": {
+        "local": 882
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 863
+      },
+      "type": "denotes",
+      "tgt": {
+        "local": 862
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 865
+      },
+      "type": "denotes",
+      "tgt": {
+        "local": 864
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 867
+      },
+      "type": "denotes",
+      "tgt": {
+        "local": 866
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 869
+      },
+      "type": "denotes",
+      "tgt": {
+        "local": 868
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 871
+      },
+      "type": "denotes",
+      "tgt": {
+        "local": 870
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 872
+      },
+      "type": "is_a",
+      "tgt": {
+        "local": 862
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 873
+      },
+      "type": "denotes",
+      "tgt": {
+        "local": 872
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 875
+      },
+      "type": "denotes",
+      "tgt": {
+        "local": 874
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 877
+      },
+      "type": "denotes",
+      "tgt": {
+        "local": 876
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 879
+      },
+      "type": "denotes",
+      "tgt": {
+        "local": 878
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 881
+      },
+      "type": "denotes",
+      "tgt": {
+        "local": 880
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 883
+      },
+      "type": "denotes",
+      "tgt": {
+        "local": 882
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 885
+      },
+      "type": "denotes",
+      "tgt": {
+        "local": 884
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 887
+      },
+      "type": "denotes",
+      "tgt": {
+        "local": 886
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 889
+      },
+      "type": "denotes",
+      "tgt": {
+        "local": 888
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 891
+      },
+      "type": "denotes",
+      "tgt": {
+        "local": 890
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 893
+      },
+      "type": "denotes",
+      "tgt": {
+        "local": 892
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 894
+      },
+      "type": "enables",
+      "tgt": {
+        "local": 888
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 894
+      },
+      "type": "enables",
+      "tgt": {
+        "local": 890
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 894
+      },
+      "type": "requires",
+      "tgt": {
+        "local": 884
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 894
+      },
+      "type": "requires",
+      "tgt": {
+        "local": 886
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 895
+      },
+      "type": "denotes",
+      "tgt": {
+        "local": 894
+      },
+      "attrs": {}
+    }
+  ],
+  "productions": [
+    {
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "believes",
+      "tgt": {
+        "type": "Concept",
+        "var": "tgt"
+      },
+      "provenance": "meta:Agent-believes-Concept (llm_partner)"
+    },
+    {
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "enables",
+      "tgt": {
+        "type": "Concept",
+        "var": "tgt"
+      },
+      "provenance": "meta:Agent-enables-Concept (llm_partner)"
+    },
+    {
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_property",
+      "tgt": {
+        "type": "Concept",
+        "var": "tgt"
+      },
+      "provenance": "meta:Agent-has_property-Concept (llm_partner)"
+    },
+    {
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "is_a",
+      "tgt": {
+        "type": "Concept",
+        "var": "tgt"
+      },
+      "provenance": "meta:Agent-is_a-Concept (llm_partner)"
+    },
+    {
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "requires",
+      "tgt": {
+        "type": "Concept",
+        "var": "tgt"
+      },
+      "provenance": "meta:Agent-requires-Concept (llm_partner)"
+    },
+    {
+      "src": {
+        "type": "Concept",
+        "var": "src"
+      },
+      "edge_type": "believes",
+      "tgt": {
+        "type": "Concept",
+        "var": "tgt"
+      },
+      "provenance": "meta:Concept-believes-Concept (llm_partner)"
+    },
+    {
+      "src": {
+        "type": "Concept",
+        "var": "src"
+      },
+      "edge_type": "enables",
+      "tgt": {
+        "type": "Concept",
+        "var": "tgt"
+      },
+      "provenance": "meta:Concept-enables-Concept (llm_partner)"
+    },
+    {
+      "src": {
+        "type": "Concept",
+        "var": "src"
+      },
+      "edge_type": "has_property",
+      "tgt": {
+        "type": "Concept",
+        "var": "tgt"
+      },
+      "provenance": "meta:Concept-has_property-Concept (llm_partner)"
+    },
+    {
+      "src": {
+        "type": "Concept",
+        "var": "src"
+      },
+      "edge_type": "is_a",
+      "tgt": {
+        "type": "Concept",
+        "var": "tgt"
+      },
+      "provenance": "meta:Concept-is_a-Concept (llm_partner)"
+    },
+    {
+      "src": {
+        "type": "Concept",
+        "var": "src"
+      },
+      "edge_type": "requires",
+      "tgt": {
+        "type": "Concept",
+        "var": "tgt"
+      },
+      "provenance": "meta:Concept-requires-Concept (llm_partner)"
+    }
+  ]
+}

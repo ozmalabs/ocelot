@@ -1,0 +1,480 @@
+{
+ "id": "control_dynamic",
+ "version": "1.0.0",
+ "depends_on": [],
+ "description": "Dynamic, graph-native control-type formation: recognise from a grounded prior when possible, else MINT a new ControlKind from observation and ADJUST it as evidence accrues. No LLM \u2014 wiki prior + observation, all recognise/mint/refine as graph rules.",
+ "microtheory": {
+  "name": "control_dynamic",
+  "description": "control types are dynamic: grounded when known, self-minted from observation when novel, refined as observed \u2014 the agent authors its own taxonomy"
+ },
+ "nodes": [
+  {
+   "local_id": 0,
+   "type": "KindRegistry",
+   "attrs": {
+    "name": "control_kinds"
+   }
+  }
+ ],
+ "edges": [],
+ "productions": [],
+ "rules": [
+  {
+   "name": "recognise_kind",
+   "comment": "a control whose kind was grounded from wiki links to the matching ControlKind (recognise from the prior; no minting). c and ck both match-bound.",
+   "match": [
+    [
+     "game",
+     "has_control",
+     "c"
+    ],
+    [
+     "kreg",
+     "has_kind",
+     "ck"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "c"
+         },
+         "key": "wiki_grounded"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "c"
+        },
+        "edge_type": "is_kind",
+        "any_type": false
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "kind_name"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ck"
+       },
+       "key": "name"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_edge",
+     "c",
+     "is_kind",
+     "ck"
+    ]
+   ]
+  },
+  {
+   "name": "mint_own_kind",
+   "comment": "a control with NO grounded prior but an OBSERVED effect-signature mints a brand-new ControlKind from that observation (the agent authoring its own control type, dynamically, no wiki, no LLM).",
+   "match": [
+    [
+     "game",
+     "has_control",
+     "c"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "c"
+         },
+         "key": "wiki_grounded"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "c"
+         },
+         "key": "obs_set"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "c"
+        },
+        "edge_type": "is_kind",
+        "any_type": false
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "ck",
+     "ControlKind",
+     {
+      "source": "observation",
+      "learned": 1.0,
+      "family_set": 1.0
+     }
+    ],
+    [
+     "set_attr",
+     "ck",
+     "effect_family",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "obs_family"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "ck",
+     "name",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "name"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "ck",
+     "rep_param",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "c"
+         },
+         "key": "obs_param"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "ck",
+     "last_seq",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "c"
+         },
+         "key": "obs_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "c",
+     "is_kind",
+     "ck"
+    ],
+    [
+     "add_edge",
+     "kreg",
+     "has_kind",
+     "ck"
+    ]
+   ]
+  },
+  {
+   "name": "refine_own_kind",
+   "comment": "a self-minted kind adjusts: each new observation EMAs its rep_param toward what was seen. The type is not frozen \u2014 it tracks evidence.",
+   "match": [
+    [
+     "c",
+     "is_kind",
+     "ck"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "ck"
+         },
+         "key": "learned"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "c"
+          },
+          "key": "obs_seq"
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       },
+       "b": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "ck"
+          },
+          "key": "last_seq"
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "ck",
+     "rep_param",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "ck"
+           },
+           "key": "rep_param"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        },
+        {
+         "type": "Times",
+         "items": [
+          {
+           "type": "Lit",
+           "value": 0.5
+          },
+          {
+           "type": "Minus",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "c"
+              },
+              "key": "obs_param"
+             },
+             {
+              "type": "Lit",
+              "value": 0.0
+             }
+            ]
+           },
+           "b": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "ck"
+              },
+              "key": "rep_param"
+             },
+             {
+              "type": "Lit",
+              "value": 0.0
+             }
+            ]
+           }
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "ck",
+     "last_seq",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "c"
+         },
+         "key": "obs_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  }
+ ]
+}

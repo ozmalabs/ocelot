@@ -1,0 +1,115 @@
+{
+  "id": "optimization_pipelines",
+  "version": "0.1.0",
+  "depends_on": [
+    "compiler_theory"
+  ],
+  "description": "How the agent's optimization concepts COMPOSE. Two layers of pipeline knowledge: (1) `enables` relations between concepts — concept A creates conditions concept B can fire on; (2) named `Pipeline` orderings — canonical sequences a compiler runs to fixed point. The agent's reasoning about pass ordering becomes a graph traversal: which concept follows which, what does my pipeline cover, where would a new optimization fit. The substrate's own behavior already exhibits these cascades (reassoc→constfold→DCE collapses (x+1)+2 to x+3 in a single run_rules call after the engine fix), but the cascades are observation; this seed promotes them to declarative knowledge.",
+
+  "enables": [
+    {
+      "from": "algebraic_reassociation",
+      "to": "constant_folding",
+      "rationale": "Right-associating (a op b) op c → a op (b op c) when a is a variable and b, c are constants pulls the two constants into the inner instruction's operand pair — exactly the shape constfold matches. Tested live: (x + 1) + 2 collapses to x + 3."
+    },
+    {
+      "from": "constant_folding",
+      "to": "algebraic_identity_elimination",
+      "rationale": "Constfold may produce a constant whose value is the operator's identity (0 for add/or/xor, 1 for mul, -1 for and). The new constant then satisfies an identity rule's value-eq side-condition, exposing further elimination."
+    },
+    {
+      "from": "constant_folding",
+      "to": "select_constant_condition",
+      "rationale": "icmp constfold (a constant_folding member) produces an i1 constant. If that constant flows into a select instruction's condition operand, the select becomes statically determined and select_constant_condition fires — the canonical `compare-then-choose` cascade collapses entirely."
+    },
+    {
+      "from": "constant_folding",
+      "to": "control_flow_constant_folding",
+      "rationale": "The same i1 constant produced by icmp constfold can flow into a `br_cond` instruction's condition operand. The conditional branch then has a statically-known target and folds to an unconditional branch — the control-flow analogue of the icmp+select cascade. Subsequent dead-block elimination cleans up the unreachable branch."
+    },
+    {
+      "from": "control_flow_constant_folding",
+      "to": "dead_block_elimination",
+      "rationale": "Folding a br_cond to an unconditional br removes the branch's reference to the non-taken target. The non-taken basic block may now have no incoming references — a candidate for dead-block elimination."
+    },
+    {
+      "from": "select_constant_condition",
+      "to": "dead_code_elimination",
+      "rationale": "After the select is eliminated and its uses rewired, the un-chosen branch's producer may have lost its only consumer and become dead — DCE cleans it up."
+    },
+    {
+      "from": "select_equal_branches",
+      "to": "dead_code_elimination",
+      "rationale": "Similar to select_constant_condition: rewiring around the select may make its operands' producers dead."
+    },
+    {
+      "from": "constant_folding",
+      "to": "dead_code_elimination",
+      "rationale": "Constfold replaces every use of an old instruction's result with the constant, then deletes the instruction. Operands that were only feeding that instruction may now have zero uses, becoming dead."
+    },
+    {
+      "from": "algebraic_identity_elimination",
+      "to": "dead_code_elimination",
+      "rationale": "Identity rules rewire uses to the non-trivial operand and delete the instruction; the constant operand may then have zero uses and itself become dead."
+    },
+    {
+      "from": "common_subexpression_elimination",
+      "to": "dead_code_elimination",
+      "rationale": "CSE rewires uses of the duplicate to the canonical and deletes the duplicate. Operands that fed only the duplicate may have lost all their uses and become dead."
+    },
+    {
+      "from": "strength_reduction",
+      "to": "dead_code_elimination",
+      "rationale": "Strength reduction rewires the multiplier constant out and replaces it with the shift-amount constant. The old constant has lost its only use and becomes dead."
+    },
+    {
+      "from": "self_annihilation",
+      "to": "constant_folding",
+      "rationale": "sub(X, X) → 0 and xor(X, X) → 0 materialise zero constants whose uses then become candidates for constfold or identity rules in the consumer instructions."
+    },
+    {
+      "from": "common_subexpression_elimination",
+      "to": "common_subexpression_elimination",
+      "rationale": "Eliminating one duplicate may expose another — e.g. if (x + y) was duplicated and is itself a subexpression of another duplicated expression, the cleanup cascades."
+    },
+    {
+      "from": "dead_code_elimination",
+      "to": "dead_code_elimination",
+      "rationale": "Deleting an instruction may make its operands dead too — classic DCE-to-fixed-point cascade. The engine fix in this session makes this work in a single run_rules call by clearing eval_cache + bumping edge_delete_version after each delete-bearing rule fires."
+    }
+  ],
+
+  "pipelines": [
+    {
+      "name": "minimal_peephole",
+      "description": "The smallest useful pass set: fold constants, then clean dead code. Sufficient for trivial input programs but leaves algebraic structure unsimplified.",
+      "concepts": ["constant_folding", "dead_code_elimination"],
+      "iterate_to_fixed_point": true
+    },
+    {
+      "name": "local_peephole",
+      "description": "Full local-rewriting pipeline. Normalize first (reassociation pulls constants adjacent), then reduce (constfold + select simplification + control-flow constant folding), then eliminate (algebraic identities, CSE), strength-reduce, finally clean dead code. Run to fixed point — passes feed each other, e.g. icmp constfold → select_constant_condition or control_flow_constant_folding → DCE collapses compare-then-branch (and compare-then-choose) chains entirely.",
+      "concepts": [
+        "algebraic_reassociation",
+        "constant_folding",
+        "select_constant_condition",
+        "select_equal_branches",
+        "control_flow_constant_folding",
+        "dead_block_elimination",
+        "algebraic_identity_elimination",
+        "self_idempotence",
+        "self_annihilation",
+        "common_subexpression_elimination",
+        "strength_reduction",
+        "dead_code_elimination"
+      ],
+      "iterate_to_fixed_point": true
+    },
+    {
+      "name": "dce_only",
+      "description": "Just clean up dead code. Useful as a final cleanup pass after global transformations that may have orphaned local computations.",
+      "concepts": ["dead_code_elimination"],
+      "iterate_to_fixed_point": true
+    }
+  ]
+}

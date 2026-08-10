@@ -1,0 +1,618 @@
+{
+ "id": "audio_coding_theory",
+ "version": "0.1.0",
+ "depends_on": [
+  "compiler_theory"
+ ],
+ "description": "The agent's conceptual understanding of WHY audio codecs are shaped the way they are. Parsing an MP3 / AAC / Opus / FLAC bitstream is recognition; this Mt is the reasoning. Each concept carries a `why` field — the principle that makes the choice work. Audio coding shares ENTROPY-coding theory with video (CABAC, arithmetic coding, Huffman) but has fundamentally different signal characteristics: 1D (not 2D), perceptually weighted by the human auditory system (not visual), and decomposed into masking-driven critical bands (not spatial frequency). The substrate's video Mt covers transform/quantisation/entropy theory; this Mt covers the audio-specific axis — psychoacoustics, MDCT-based decomposition, linear prediction for speech, joint stereo coding, and the cutting edge of neural audio codecs.",
+ "category_inheritance": "genlMt → compiler_theory. Audio coding shares compiler-theory's denotational + algebraic + extensional equivalence vocabulary under a loss budget. Each rule's `soundness_category` field names the compiler-theory category it instantiates: psychoacoustic masking is denotational_equivalence at the perceptual layer; joint-stereo M/S coding is cost_equivalence (same content, fewer bits); pre-echo control is referential_transparency at the temporal boundary.",
+ "concepts": [
+  {
+   "name": "sampling_rate",
+   "definition": "The number of audio samples taken per second of analog signal. Standard rates: 8 kHz (telephony), 16 kHz (wideband speech), 22.05 kHz (radio), 44.1 kHz (CD), 48 kHz (broadcast/film), 96 kHz, 192 kHz (high-resolution).",
+   "why": "Higher sampling rate captures higher frequencies (up to Nyquist = sampling_rate/2). 44.1 kHz captures audio up to 22 kHz — above the typical 20 kHz limit of human hearing. Higher rates are mostly for capture/edit headroom; final delivery rarely needs more than 48 kHz.",
+   "category": "foundation"
+  },
+  {
+   "name": "nyquist_theorem",
+   "definition": "A bandlimited signal containing no frequencies above F can be perfectly reconstructed from samples taken at rate ≥ 2F (the Nyquist rate).",
+   "why": "Information-theoretic basis of digital audio: sampling at less than 2x the maximum frequency causes aliasing (high frequencies fold down into low frequencies). All audio sampling rates are chosen to be at least 2x the desired bandwidth. Determines what's recoverable from a digital signal.",
+   "category": "foundation"
+  },
+  {
+   "name": "aliasing",
+   "definition": "Distortion caused when a signal is sampled below the Nyquist rate. Frequencies above sampling_rate/2 appear as lower-frequency artifacts ('aliases') in the digital signal.",
+   "why": "Once aliased, the original signal is unrecoverable. Anti-aliasing filters before ADC prevent this. The fundamental reason audio codecs care about sampling rate — too low a rate means aliasing pollutes everything, regardless of bit depth or compression.",
+   "category": "foundation"
+  },
+  {
+   "name": "bit_depth_audio",
+   "definition": "The number of bits per audio sample. Common values: 8 (low-quality), 16 (CD), 24 (studio), 32-float (production).",
+   "why": "Determines the dynamic range and quantisation noise floor. 16 bits gives ~96 dB dynamic range; 24 bits gives ~144 dB. The noise floor scales as 6 dB per bit. Higher bit depths matter mainly for capture/edit; 16-bit is sufficient for most playback.",
+   "category": "foundation"
+  },
+  {
+   "name": "PCM_pulse_code_modulation",
+   "definition": "Linear PCM: the digital signal is just the sequence of sample values, unencoded. Bit rate = sampling_rate × bit_depth × channels.",
+   "why": "The simplest digital audio representation; everything else (compression, processing) operates on or produces PCM. WAV, AIFF, raw .pcm files all carry linear PCM. The 'uncompressed' baseline that compressed codecs target replacing.",
+   "category": "foundation"
+  },
+  {
+   "name": "quantisation_noise_audio",
+   "definition": "The error introduced by rounding continuous sample values to discrete bit values. Behaves as additive noise with uniform distribution; RMS noise = LSB/sqrt(12).",
+   "why": "Audio's analogue of video quantisation noise. Determines the noise floor of the digital signal. Dither (adding shaped noise before quantisation) prevents this noise from being correlated with the signal, making it perceptually less objectionable.",
+   "category": "foundation"
+  },
+  {
+   "name": "psychoacoustic_model",
+   "definition": "A computational model of human auditory perception that predicts which signal components are audible and which are masked by other components. The basis of all perceptual audio coders.",
+   "why": "Lets the encoder decide which bits to spend on perceptually-relevant content and which to discard. The smarter the model, the better the perceptual quality at a given bitrate. MP3, AAC, Opus all use different psychoacoustic models — the model IS the codec's perceptual intelligence.",
+   "category": "foundation"
+  },
+  {
+   "name": "critical_band",
+   "definition": "A frequency range within which sounds are processed together by the cochlea — masking, summation, and discrimination all happen within a single critical band. Approximately 1/3 octave wide; 24 critical bands cover 20 Hz–20 kHz.",
+   "why": "Auditory perception is band-limited. Masking effects are confined within a critical band; outside that band, sounds don't interact perceptually. Audio codecs decompose the signal into bands matching this structure (filter banks aligned with critical bands).",
+   "category": "psychoacoustic"
+  },
+  {
+   "name": "absolute_threshold_of_hearing",
+   "definition": "The minimum SPL (sound pressure level) detectable at each frequency, in absence of other sounds. The HVS-equivalent curve for hearing: U-shaped, with minimum sensitivity around 2-4 kHz.",
+   "why": "Sounds below the ATH are inaudible by definition — no need to code them. ATH is the first-order perceptual model: discard anything below threshold, allocate bits only to audible signal. ATH varies between humans but the standard curve approximates the average listener.",
+   "category": "psychoacoustic"
+  },
+  {
+   "name": "frequency_masking",
+   "definition": "A loud sound at frequency F1 raises the audibility threshold for sounds at nearby frequencies F2 (within the same critical band). The masker hides the maskee.",
+   "why": "The dominant perceptual coding mechanism. Most musical content has many simultaneous tones; the loudest ones mask the quieter ones in nearby bands. Encoders identify the masker, compute the elevated threshold, and quantise the masked content more coarsely (fewer bits) without audible loss.",
+   "category": "psychoacoustic"
+  },
+  {
+   "name": "temporal_masking",
+   "definition": "A loud sound at time T1 raises the audibility threshold for sounds at nearby times T2 (50-200 ms). Pre-masking (before T1) and post-masking (after T1) both exist.",
+   "why": "Lets encoders coarsely quantise the moments immediately around a transient (drum hit, plosive) without audible damage. Critical for handling pre-echo: the temporal smearing of pre-quantisation noise is masked by the upcoming transient.",
+   "category": "psychoacoustic"
+  },
+  {
+   "name": "JND_audio",
+   "definition": "Just-Noticeable Difference: the smallest change in amplitude, frequency, or duration a listener can detect. Highly frequency- and level-dependent.",
+   "why": "The compression target. A lossy codec aims to make all artifacts sub-JND — not zero distortion, just imperceptible. JND varies by 2 orders of magnitude across frequencies; the codec's bit allocation should reflect this.",
+   "category": "psychoacoustic"
+  },
+  {
+   "name": "spectral_redundancy_audio",
+   "definition": "Audio signals have non-uniform energy distribution across frequency. Most energy is in 20 Hz–4 kHz; little in 8 kHz–20 kHz.",
+   "why": "Lets encoders allocate more bits to perceptually-important bands and fewer to high-frequency bands where less energy exists and masking is more aggressive. The bit-allocation strategy is fundamentally about exploiting spectral non-uniformity.",
+   "category": "redundancy_kind"
+  },
+  {
+   "name": "temporal_redundancy_audio",
+   "definition": "Audio signals are temporally correlated — successive samples are predictable from past samples. Speech is heavily auto-correlated (vocal tract resonances).",
+   "why": "Linear prediction exploits this. The residual after predicting from past samples has much lower variance and can be coded cheaply. LPC-based speech codecs (CELP, AMR) achieve dramatic compression by sending only LPC coefficients + residual.",
+   "category": "redundancy_kind"
+  },
+  {
+   "name": "interchannel_redundancy",
+   "definition": "Stereo / multichannel audio's channels are highly correlated. The L and R channels of stereo music often differ only in subtle phase + amplitude.",
+   "why": "Joint stereo coding exploits this. Mid/Side coding sends (L+R)/2 and (L-R)/2 instead of L and R independently; the Side channel typically has much lower energy and can be coded with fewer bits. Same insight as YCbCr's luma/chroma decorrelation in video.",
+   "category": "redundancy_kind"
+  },
+  {
+   "name": "mu_law_companding",
+   "definition": "Logarithmic-style amplitude compression: μ-law (mu-law) compresses 14-bit linear PCM into 8 bits using a log-shaped curve. Standard for North American telephony (G.711).",
+   "why": "Speech has logarithmic loudness perception. Log-amplitude coding wastes fewer bits on quiet samples while preserving loud-sample dynamics. 8-bit μ-law sounds equivalent to ~13-bit linear PCM. Used everywhere telephone-grade audio is delivered.",
+   "category": "codec_mechanism"
+  },
+  {
+   "name": "a_law_companding",
+   "definition": "European telephony's companding: similar to μ-law but with slightly different curve. Used in G.711 internationally.",
+   "why": "Same insight as μ-law; designed around the same time with slightly different parameters. Two regional standards persist for historical reasons; both achieve ~13-bit-equivalent quality from 8-bit samples.",
+   "category": "codec_mechanism"
+  },
+  {
+   "name": "ADPCM",
+   "definition": "Adaptive Differential Pulse Code Modulation: encodes the DIFFERENCE between successive samples (or between sample and predictor) and uses an adaptive step size for the quantiser.",
+   "why": "Exploits temporal redundancy: difference signal has lower variance than samples. Adaptive step size scales the quantiser to current signal magnitude, maintaining SNR. G.722, G.726 use ADPCM for voice; achieves 2:1-4:1 compression at telephone quality.",
+   "category": "codec_mechanism"
+  },
+  {
+   "name": "linear_predictive_coding",
+   "definition": "LPC: model the audio sample at time t as a linear combination of past samples: s[t] ≈ sum a_k * s[t-k]. The coefficients a_k are sent; only the residual (prediction error) is coded.",
+   "why": "Speech has strong autocorrelation due to vocal tract resonances. LPC's all-pole model is mathematically optimal for the source-filter model of speech. The residual is whiter (closer to noise) than the original — easier to code. Foundational to CELP and modern speech codecs.",
+   "category": "codec_mechanism"
+  },
+  {
+   "name": "CELP",
+   "definition": "Code Excited Linear Prediction: speech codec using LPC for spectral envelope + an excitation signal selected from a 'codebook' of pre-defined waveforms. The codebook index + LPC coefficients are sent.",
+   "why": "LPC alone (vocoder) sounds buzzy. CELP adds back the excitation: instead of impulses/noise, the codebook captures realistic vocal source signals. Combined with LPC's spectral envelope, produces natural-sounding speech at very low bitrates (1-10 kbps).",
+   "category": "codec_mechanism"
+  },
+  {
+   "name": "ACELP",
+   "definition": "Algebraic CELP: replaces CELP's vector codebook with an algebraic structure (typically sparse pulse positions). Significantly reduces codebook search complexity.",
+   "why": "CELP's vector codebook is expensive to search (O(codebook_size × frame_length)). Algebraic structure lets the encoder use FFT-based fast search. Most modern speech codecs (AMR, AMR-WB, EVS, G.729, Opus's SILK) use ACELP-class techniques.",
+   "category": "codec_mechanism"
+  },
+  {
+   "name": "vector_quantisation",
+   "definition": "Quantise N-dimensional vectors to a codebook of K representative vectors; send the K-index instead of N values. Codebook is trained on representative signal corpus.",
+   "why": "Exploits correlation between vector dimensions: a 4-D vector with 4 correlated components can be VQ'd in fewer bits than 4 independent scalar quantisations. Used in CELP excitation, LPC coefficient quantisation, and many neural audio codecs (vector-quantised latents).",
+   "category": "codec_mechanism"
+  },
+  {
+   "name": "MDCT",
+   "definition": "Modified Discrete Cosine Transform: a DCT variant with 50% overlap between successive blocks. Used in MP3 (576-pt), AAC (1024-pt or 128-pt), Vorbis, Opus (CELT mode).",
+   "why": "Critical-band-aligned with 50% overlap (TDAC: Time-Domain Aliasing Cancellation). Better than overlapping DFT for audio coding because perfect reconstruction is possible at 50% overlap with windowing — no aliasing, no doubling. The default transform for perceptual audio coding.",
+   "category": "codec_mechanism"
+  },
+  {
+   "name": "polyphase_filterbank",
+   "definition": "A filter bank that decomposes the audio signal into N frequency subbands, each sampled at 1/N the original rate. MP3 uses a 32-band polyphase, then MDCT within each band.",
+   "why": "Cheaper than full-resolution transform when only N bands needed. Aligns with critical-band structure of hearing. MP3 uses hybrid filterbank (polyphase + MDCT) to achieve both efficient decomposition AND fine spectral resolution where needed.",
+   "category": "codec_mechanism"
+  },
+  {
+   "name": "subband_coding",
+   "definition": "Audio coding paradigm: split signal into frequency subbands via filter bank, quantise each band separately with bit allocation derived from psychoacoustic model.",
+   "why": "Lets per-band bit allocation match per-band perceptual importance. Bands with little energy or strong masking get fewer bits; bands with audible content get more. Used by all modern perceptual coders.",
+   "category": "codec_mechanism"
+  },
+  {
+   "name": "bit_allocation_audio",
+   "definition": "The encoder's per-band decision of how many bits to spend, driven by the psychoacoustic model's per-band signal-to-mask ratio.",
+   "why": "Where the perceptual model meets the bitstream. Bands where signal energy exceeds the masking threshold get bits (audible content); bands below threshold get zero bits. Bit allocation IS the perceptual decision-making.",
+   "category": "codec_mechanism"
+  },
+  {
+   "name": "joint_stereo_MS",
+   "definition": "Mid/Side stereo coding: instead of sending L and R, send (L+R)/2 (Mid) and (L-R)/2 (Side). Decoder reconstructs L = M+S, R = M-S.",
+   "why": "Most musical content has highly-correlated L and R; M is essentially mono content + position, S is the small inter-channel difference. S can be coded with much lower bit allocation than L or R independently. ~10-20% saving on stereo music.",
+   "category": "codec_mechanism"
+  },
+  {
+   "name": "intensity_stereo",
+   "definition": "Above some frequency, the encoder discards stereo phase information entirely and codes only the per-channel intensity (energy). Decoder reconstructs with arbitrary phase.",
+   "why": "The HVS uses inter-aural phase below ~2 kHz but mostly inter-aural intensity above. Above ~6 kHz, phase contributes nothing to localisation; sending only intensity halves the bitrate for those bands at zero perceptual cost.",
+   "category": "codec_mechanism"
+  },
+  {
+   "name": "temporal_noise_shaping",
+   "definition": "TNS: linear prediction across frequency within an MDCT block, instead of within time. Predicts each MDCT coefficient from neighbouring coefficients, codes the residual.",
+   "why": "MDCT is a frequency transform; predicting across frequency models the spectral envelope. Residual after TNS prediction is whiter, allowing fewer bits per coefficient. Particularly effective on speech-like signals within music (vocals).",
+   "category": "codec_mechanism"
+  },
+  {
+   "name": "spectral_band_replication",
+   "definition": "SBR: at the encoder, drop high-frequency content from the bitstream. At the decoder, regenerate it by replicating lower-frequency content shifted up + tuned by side-info.",
+   "why": "High frequencies are heavily masked by lower frequencies and contribute less to perception. Synthesising rather than coding them saves dramatically on bitrate (~50%) while preserving perceived bandwidth. HE-AAC adds SBR; Opus uses similar bandwidth-extension.",
+   "category": "codec_mechanism"
+  },
+  {
+   "name": "parametric_stereo",
+   "definition": "Codes a stereo signal as a downmixed mono signal + parametric side info (ILD inter-aural level difference, IPD inter-aural phase difference, ICC inter-aural coherence).",
+   "why": "Sends ~30 stereo parameters per frame instead of the full stereo signal. The downmix is coded with normal mono compression; parameters are tiny. Used in HE-AAC v2 for very low bitrate stereo (~32 kbps).",
+   "category": "codec_mechanism"
+  },
+  {
+   "name": "window_switching",
+   "definition": "Adaptive block size: long blocks (1024 samples) for steady-state signals, short blocks (128 samples × 8) for transients. Transitions handled by special start/stop windows.",
+   "why": "Long blocks give fine spectral resolution but smear pre-echo across the whole block. Short blocks limit pre-echo to a short time but lose spectral resolution. Adaptive selection captures both: long blocks for stable content, short blocks at attacks.",
+   "category": "codec_mechanism"
+  },
+  {
+   "name": "pre_echo_control",
+   "definition": "Quantisation noise spreads across the entire transform block in time. For a transient at the end of a long block, this manifests as 'pre-echo' before the transient — perceptually unmasked because there's no preceding loud sound.",
+   "why": "Pre-echo is the most audible artifact of long-block coding. Window switching addresses it by detecting transients and switching to short blocks. Bit-reservoir techniques (more bits on transient blocks) also help. The reason modern codecs use ADAPTIVE block size.",
+   "category": "codec_mechanism"
+  },
+  {
+   "name": "noise_substitution",
+   "definition": "For perceptually noise-like content (cymbals, hiss), replace coded coefficients with pseudorandom noise scaled to the original band's energy.",
+   "why": "Noise-like signals contain little structural information. Sending ENERGY + 'use noise here' is enough; the decoder synthesises plausible noise matching the energy. Saves significant bits on noisy passages with no audible difference.",
+   "category": "codec_mechanism"
+  },
+  {
+   "name": "huffman_coding_audio",
+   "definition": "MP3 and AAC use Huffman coding for quantised MDCT coefficients. Pre-defined per-codec Huffman tables; encoder picks the best table per region.",
+   "why": "Quantised coefficient distributions are skewed (many small values, few large ones). Huffman gives near-entropy compression for these distributions. Pre-defined tables avoid per-frame signalling of table content.",
+   "category": "codec_mechanism"
+  },
+  {
+   "name": "arithmetic_coding_audio",
+   "definition": "Used by some audio codecs (Vorbis residue coding, modern speech codecs) instead of Huffman for closer-to-entropy compression.",
+   "why": "Same advantage as in video: arithmetic coding gives fractional bits per symbol, beating Huffman on skewed distributions. The trade is more complex encoder/decoder but the bitrate saving compounds.",
+   "category": "codec_mechanism"
+  },
+  {
+   "name": "MP3",
+   "definition": "MPEG-1 Audio Layer III / MPEG-2 Audio Layer III. The first widely-adopted perceptual audio codec, released 1993. Hybrid polyphase + MDCT filterbank, psychoacoustic model 2, Huffman coding.",
+   "why": "Designed for ~128 kbps stereo CD-quality audio in the era of dial-up modems. Patents (now mostly expired) drove industry adoption. Despite its age, MP3 remains widely used because of universal decoder support and backward compatibility.",
+   "category": "standard"
+  },
+  {
+   "name": "AAC",
+   "definition": "Advanced Audio Coding (MPEG-2 Part 7, MPEG-4 Part 3). Successor to MP3: pure MDCT (no polyphase), more flexible window switching, TNS, more efficient Huffman tables. Typically ~30% better compression than MP3 at equivalent quality.",
+   "why": "Designed in late 1990s with the benefit of MP3 experience. Cleaner architecture (single transform stage), better psychoacoustic model, more configurability. Default codec for iTunes/Apple Music, YouTube, satellite radio.",
+   "category": "standard"
+  },
+  {
+   "name": "HE_AAC",
+   "definition": "High-Efficiency AAC: AAC + SBR. The high-frequency content is regenerated by SBR; AAC core only codes lower frequencies.",
+   "why": "Targets very low bitrates (32-64 kbps stereo) where AAC alone struggles. SBR gives 'effective' high-frequency content at a fraction of the bit cost. Trades sharpness/transient accuracy for bandwidth at low rates.",
+   "category": "standard"
+  },
+  {
+   "name": "HE_AAC_v2",
+   "definition": "HE-AAC + parametric stereo. Mono core + spatial parameters reconstruct stereo at the decoder.",
+   "why": "Pushes stereo audio down to ~24-32 kbps. The spatial parameters cost almost nothing; the mono core gets all the bits. Used in DAB+ radio and some streaming applications targeting very low bitrate stereo.",
+   "category": "standard"
+  },
+  {
+   "name": "xHE_AAC",
+   "definition": "Extended HE-AAC / USAC (Unified Speech and Audio Coding). Combines AAC + LPC-based speech coding + SBR + parametric stereo. Switches between speech and music coding modes per frame.",
+   "why": "Designed to handle ANY audio content (speech, music, mixed) at very low bitrates (8-32 kbps). Auto-detects content type and switches modes; benefits from BOTH transform coding (music) and LPC (speech) without compromising on either. The most efficient general-purpose audio codec ever standardised.",
+   "category": "standard"
+  },
+  {
+   "name": "Vorbis",
+   "definition": "Open-source perceptual audio codec by Xiph.org. MDCT-based; uses VQ-trained codebooks for residue coding instead of Huffman.",
+   "why": "Patent-free alternative to MP3/AAC. Generally comparable to AAC at moderate bitrates; the VQ-based codebooks are uniquely Vorbis. Adopted by Spotify (later switched to Ogg Opus), Wikimedia, games.",
+   "category": "standard"
+  },
+  {
+   "name": "Opus",
+   "definition": "IETF RFC 6716 (2012). Hybrid codec combining SILK (LPC-based, speech-optimised) and CELT (MDCT-based, music-optimised). Switches modes per frame.",
+   "why": "Designed for the full bitrate range from 6 kbps to 510 kbps + any content type + low latency. The first codec to genuinely solve the speech-vs-music dichotomy. Standard in WebRTC, default for Spotify streaming, used in Discord, YouTube live.",
+   "category": "standard"
+  },
+  {
+   "name": "AC3",
+   "definition": "Dolby Digital. 5.1-channel codec used in DVDs, Blu-ray, broadcast TV. MDCT + adaptive bit allocation.",
+   "why": "Designed in early 1990s for theatrical surround sound. Stable, hardware-cheap, universally supported. Compression ratio is modest (~10:1) by modern standards but the ecosystem dwarfs technical merit.",
+   "category": "standard"
+  },
+  {
+   "name": "E_AC3",
+   "definition": "Enhanced AC-3 / Dolby Digital Plus. Extension of AC-3 with up to 13.1 channels, higher bitrates, better efficiency.",
+   "why": "Streaming-era successor to AC-3. Same architecture, expanded for HD/UHD delivery, Dolby Atmos object-based audio. Used in streaming (Netflix, Amazon Prime) and 4K Blu-ray.",
+   "category": "standard"
+  },
+  {
+   "name": "DTS",
+   "definition": "DTS Coherent Acoustics: alternative surround codec to AC-3. Uses ADPCM + APCM (Adaptive PCM) without MDCT.",
+   "why": "Higher bitrate than AC-3 in DVD/Blu-ray spec (~1.5 Mbps vs ~448 kbps), generally perceived as higher quality. The non-MDCT design preserves transients differently from MDCT-based codecs.",
+   "category": "standard"
+  },
+  {
+   "name": "FLAC",
+   "definition": "Free Lossless Audio Codec. Uses LPC + entropy coding (Rice coding) to losslessly compress PCM by ~50%.",
+   "why": "Open-source, royalty-free, byte-exact reconstruction of source PCM. Widely used for music archiving, hi-res streaming (Tidal, Qobuz). Linear prediction + Rice-coded residuals give close-to-entropy lossless compression at decoder-friendly compute cost.",
+   "category": "standard"
+  },
+  {
+   "name": "ALAC",
+   "definition": "Apple Lossless Audio Codec. Similar to FLAC: LPC + entropy coding. Different bitstream format optimised for Apple's ecosystem.",
+   "why": "Apple's lossless format for iTunes/Apple Music. Comparable compression to FLAC. Open-sourced in 2011; differences from FLAC are mostly bitstream-format choices, not compression algorithm.",
+   "category": "standard"
+  },
+  {
+   "name": "LC3",
+   "definition": "Low Complexity Communication Codec (Bluetooth LE Audio, 2020). MDCT-based, designed for very low latency and compute, primarily for hearing aids and earbuds.",
+   "why": "Replaces SBC (Bluetooth's original audio codec) with much better quality at the same bitrate. Designed for power-constrained devices (~5 mW for stereo decode). Adopted as the default for Bluetooth LE Audio standard.",
+   "category": "standard"
+  },
+  {
+   "name": "LDAC",
+   "definition": "Sony's high-quality Bluetooth codec. Up to 990 kbps over Bluetooth, supporting 24-bit/96 kHz audio.",
+   "why": "Bypasses the SBC quality limit on Bluetooth by sending higher bitrate. Proprietary but licensed broadly. Used in high-end Bluetooth headphones for hi-res audio over wireless.",
+   "category": "standard"
+  },
+  {
+   "name": "aptX",
+   "definition": "Qualcomm's Bluetooth codec family (Classic, HD, Adaptive, Lossless). ADPCM-based, designed for low-latency wireless audio.",
+   "why": "Standard on Snapdragon-based phones + many headphones. The aptX Adaptive and Lossless variants compete with LDAC on quality while emphasising lower latency for gaming/conferencing.",
+   "category": "standard"
+  },
+  {
+   "name": "G_711",
+   "definition": "ITU-T G.711: μ-law and A-law companded PCM at 8 kHz / 8-bit / 64 kbps. The original digital telephony codec.",
+   "why": "Universally supported in phone networks. Quality is 'tinny' (limited bandwidth, 8-bit) but everywhere; legacy systems depend on it. Computationally trivial — decode is a single lookup table.",
+   "category": "standard"
+  },
+  {
+   "name": "G_722",
+   "definition": "ITU-T G.722: Wideband (50 Hz – 7 kHz) at 64 kbps. ADPCM with 2-band subband split.",
+   "why": "First major step beyond telephone-quality audio for telephony. 7 kHz bandwidth is dramatically more natural than 3.4 kHz (G.711). Used in VoIP, video conferencing where bandwidth permits.",
+   "category": "standard"
+  },
+  {
+   "name": "G_729",
+   "definition": "ITU-T G.729: Speech codec at 8 kbps. CS-ACELP (Conjugate Structure Algebraic CELP).",
+   "why": "Dominant low-bitrate speech codec for VoIP. 8 kbps gives understandable speech with ~5x compression vs G.711. Royalty-bearing (now mostly expired); has been the workhorse codec for IP telephony.",
+   "category": "standard"
+  },
+  {
+   "name": "AMR_NB",
+   "definition": "Adaptive Multi-Rate Narrowband (3GPP TS 26.071). 8 bitrate modes from 4.75 to 12.2 kbps for cellular voice.",
+   "why": "Standard speech codec for 2G/3G cellular voice. Multiple bitrates let the network adapt to channel conditions. ACELP-based; the foundation of cellular voice quality.",
+   "category": "standard"
+  },
+  {
+   "name": "AMR_WB",
+   "definition": "Wideband AMR (G.722.2). Speech codec at 6.6-23.85 kbps over wideband (50 Hz – 7 kHz).",
+   "why": "HD Voice: noticeably more natural-sounding than narrowband (50 Hz – 4 kHz). Standard for VoLTE (Voice over LTE) and modern cellular voice.",
+   "category": "standard"
+  },
+  {
+   "name": "EVS",
+   "definition": "Enhanced Voice Services (3GPP TS 26.441). Wideband / super-wideband / fullband speech + music codec for VoLTE and 5G voice.",
+   "why": "Speech AND music quality at low bitrates. The cellular industry's response to Opus — combining ACELP-based speech with MDCT-based music coding, with mode switching. Bitrates 5.9 to 128 kbps.",
+   "category": "standard"
+  },
+  {
+   "name": "SoundStream",
+   "definition": "Google's neural audio codec (2021). RVQ (Residual Vector Quantisation) bottleneck between an encoder and decoder CNN. Operates at 3-18 kbps with high quality.",
+   "why": "First widely-noted neural audio codec to match conventional codec quality at low bitrates. The RVQ bottleneck encodes audio in a sequence of vector-quantised residuals — efficient + amenable to LLM-style sequence modeling.",
+   "category": "neural_codec"
+  },
+  {
+   "name": "EnCodec",
+   "definition": "Meta's neural audio codec (2022). Streaming convolutional codec with adversarial training. Targets 1.5-24 kbps.",
+   "why": "Streaming architecture: causal convolutions let it operate in real-time on a stream. Adversarial training produces more natural-sounding low-bitrate audio than MSE-trained codecs. Open-source; foundational to Meta's audio LLMs.",
+   "category": "neural_codec"
+  },
+  {
+   "name": "Lyra",
+   "definition": "Google's neural speech codec for very low bitrates (3 kbps). LPC-based + neural vocoder.",
+   "why": "Targets specifically speech at very low rates where conventional codecs fail. Combines traditional LPC analysis with a neural vocoder synthesis — hybrid architecture that exploits both classical insight + neural reconstruction.",
+   "category": "neural_codec"
+  },
+  {
+   "name": "DAC_descript",
+   "definition": "Descript Audio Codec (2023). Open-source neural codec with focus on speech quality. Uses RVQ + adversarial training.",
+   "why": "Open-source community successor to SoundStream. Trained on diverse speech corpora. Used in audio AI tools (text-to-speech, voice cloning) where the encoder/decoder is the bottleneck for downstream models.",
+   "category": "neural_codec"
+  },
+  {
+   "name": "audio_diffusion_codec",
+   "definition": "Audio codec using a diffusion model as the decoder. Encoder produces a compressed latent; decoder iteratively denoises to reconstruct waveform.",
+   "why": "Generative priors fill in plausible audio details at very low bitrates. The encoder doesn't need to capture everything — the diffusion decoder hallucinates consistent texture/noise. Same insight as video diffusion codecs, applied to audio.",
+   "category": "neural_codec"
+  },
+  {
+   "name": "tonal_component",
+   "definition": "An audio signal component dominated by a strong tonal (periodic) structure — vocals, melodic instruments. High spectral concentration.",
+   "why": "Tonal components mask broader frequency ranges than noise components (broader masking spread). Encoders classify content into tonal vs noisy and apply different bit-allocation strategies.",
+   "category": "psychoacoustic"
+  },
+  {
+   "name": "noisy_component",
+   "definition": "An audio signal component dominated by stochastic structure — cymbals, breath sounds, friction. Low spectral concentration.",
+   "why": "Noisy components mask narrower frequency ranges. Their compression target is different: less precise quantisation needed because the noise's structure is fundamentally less perceivable. Noise substitution (synthesis from energy parameters) often works.",
+   "category": "psychoacoustic"
+  },
+  {
+   "name": "spatial_audio",
+   "definition": "Audio coded with 3D directional information — stereo, 5.1, 7.1, Atmos object-based, Ambisonics. Allows listener-position-dependent rendering.",
+   "why": "Cinematic and immersive audio. Multi-channel formats (5.1, 7.1) encode pre-mixed spatial position; object-based (Atmos) encodes individual audio objects with metadata, rendered per playback device. Atmos's per-object metadata is small overhead for much higher rendering flexibility.",
+   "category": "advanced"
+  },
+  {
+   "name": "ambisonics",
+   "definition": "Multi-channel format encoding a soundfield as spherical harmonic components. First-order: 4 channels (W + X + Y + Z). Higher orders capture finer spatial resolution.",
+   "why": "Listener-position-independent: the soundfield is fully encoded, then rendered to the specific output (headphones, 5.1, 7.1, etc.). Used in VR audio, 360° video soundtracks. Higher-order ambisonics scales the encoding cost but maintains the listener-independent advantage.",
+   "category": "advanced"
+  },
+  {
+   "name": "HRTF",
+   "definition": "Head-Related Transfer Function. Per-individual filter capturing how the listener's head and ears spatially filter incoming sound. Used to render binaural (stereo) audio that sounds positioned in 3D.",
+   "why": "Headphone-based spatial audio: without HRTF, all sounds appear inside the head. HRTF positions them in external 3D space. Per-listener HRTFs are most accurate but expensive to measure; generic HRTFs (e.g., from a dummy head) work reasonably for many users.",
+   "category": "advanced"
+  },
+  {
+   "name": "perceptual_entropy",
+   "definition": "The theoretical minimum bitrate to encode an audio signal at perceptual transparency (no audible difference from source).",
+   "why": "Audio's analogue of Shannon entropy, adjusted for perception. Most codecs achieve ~1.5x to 2x perceptual entropy at typical bitrates; the gap is the headroom for future codec improvements. Sets the theoretical ceiling.",
+   "category": "foundation"
+  },
+  {
+   "name": "codec_latency",
+   "definition": "End-to-end delay between input audio sample and output audio sample. Dominated by lookahead (encoder waits for future samples) + transform block size + algorithmic latency.",
+   "why": "Different applications have different latency budgets. Music streaming tolerates 100-200ms; live conferencing requires <50ms; live music requires <20ms. Codec choice is often latency-driven: Opus's low-delay modes vs MP3's ~150ms latency vs neural codecs' (which often have high latency).",
+   "category": "codec_constraint"
+  },
+  {
+   "name": "complexity_constraint",
+   "definition": "Compute budget for encoding/decoding. Real-time hardware decoders, battery-powered devices, neural-codec inference all impose constraints.",
+   "why": "Codec design trades quality for complexity. MP3's polyphase+MDCT was complex for 1993 hardware; AAC's pure MDCT was more complex but tractable for 1998 hardware. Neural codecs are pushing complexity orders of magnitude higher again — only viable as hardware catches up.",
+   "category": "codec_constraint"
+  }
+ ],
+ "rules": [
+  {
+   "name": "psychoacoustic_masking_enables_perceptual_compression",
+   "if": [
+    "a frequency component is masked by other components"
+   ],
+   "then": [
+    "it can be coarsely quantised or dropped without audible loss"
+   ],
+   "why": "Masking IS the perceptual coding theorem: if a sound isn't audible above its masking threshold, encoding it precisely wastes bits. Masking-driven bit allocation is the foundation of all perceptual audio codecs.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "nyquist_bounds_recoverable_frequency_range",
+   "if": [
+    "a signal is sampled at rate Fs"
+   ],
+   "then": [
+    "only frequencies below Fs/2 are recoverable"
+   ],
+   "why": "Sampling theorem: bandlimited signals are perfectly reconstructible from samples taken above 2x bandwidth. The Nyquist limit is hard — no codec can recover information above Fs/2 because the samples don't contain it.",
+   "soundness_category": "algebraic_law"
+  },
+  {
+   "name": "linear_prediction_models_speech_autocorrelation",
+   "if": [
+    "a signal has strong autocorrelation (e.g., speech)"
+   ],
+   "then": [
+    "LPC captures most of its energy in the prediction model"
+   ],
+   "why": "Speech's source-filter model maps directly to LPC's all-pole structure. The vocal tract IS an all-pole filter; LPC's mathematical form matches. Residual after LPC prediction is whiter than the original signal — easier to code.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "mdct_perfect_reconstruction_at_50_percent_overlap",
+   "if": [
+    "MDCT is applied with 50% block overlap + complementary windowing"
+   ],
+   "then": [
+    "perfect reconstruction is possible without aliasing (TDAC)"
+   ],
+   "why": "Time-Domain Aliasing Cancellation: the aliasing from the first block exactly cancels aliasing from the second when windows sum to 1. This property is what makes MDCT the right transform for audio coding (vs straight DCT, which would need full blocks without overlap).",
+   "soundness_category": "algebraic_law"
+  },
+  {
+   "name": "window_switching_handles_transients",
+   "if": [
+    "a block contains a transient (rapid attack)"
+   ],
+   "then": [
+    "a shorter block size avoids pre-echo across the transient"
+   ],
+   "why": "Quantisation noise spreads across the entire transform block in time. For a transient at the end of a long block, the noise pre-echoes BEFORE the transient — unmasked because no preceding loud sound. Short blocks limit this temporal spread.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "joint_stereo_exploits_channel_correlation",
+   "if": [
+    "stereo L and R channels are highly correlated"
+   ],
+   "then": [
+    "M/S coding saves ~10-20% bits at zero perceptual cost"
+   ],
+   "why": "Most musical content has L ≈ R; the side channel (L-R)/2 is small. Mid carries the dominant signal; Side carries only the slight differences. The side's lower energy maps to lower bit allocation under the same psychoacoustic model.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "intensity_stereo_at_high_frequencies",
+   "if": [
+    "frequency is above ~6 kHz"
+   ],
+   "then": [
+    "phase information contributes nothing to perceived localisation; only intensity matters"
+   ],
+   "why": "Auditory localisation above ~6 kHz uses inter-aural LEVEL differences, not phase. Encoding only intensity (not waveform phase) halves the high-frequency stereo bit cost at zero perceptual cost.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "sbr_synthesises_redundant_high_frequencies",
+   "if": [
+    "high-frequency content correlates with lower-frequency content"
+   ],
+   "then": [
+    "spectral band replication regenerates it from lower bands + side info"
+   ],
+   "why": "Musical instruments have characteristic harmonic structures; high frequencies are predictable from low frequencies + a small description of the timbre. SBR's side info captures this; the decoder synthesises high frequencies rather than receiving them.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "tns_predicts_across_frequency",
+   "if": [
+    "MDCT coefficients have inter-coefficient correlation"
+   ],
+   "then": [
+    "linear prediction across frequency reduces their entropy"
+   ],
+   "why": "Music has spectral envelopes — neighbouring MDCT coefficients are correlated. Predicting each coefficient from its neighbours produces a whiter residual that codes more efficiently. Particularly effective on speech-like signals in music.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "opus_unifies_speech_and_music_via_mode_switching",
+   "if": [
+    "audio content alternates between speech and music"
+   ],
+   "then": [
+    "per-frame mode switching beats single-purpose codecs"
+   ],
+   "why": "Speech codecs (CELP-based) sound bad on music; music codecs (MDCT-based) sound bad on speech. Opus's SILK + CELT hybrid auto-detects content type per frame and switches modes. The mode switch costs ~10 bits/frame; the quality difference is substantial.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "neural_codecs_extend_audio_to_very_low_bitrates",
+   "if": [
+    "bitrate is below 6 kbps"
+   ],
+   "then": [
+    "learned audio priors beat hand-designed codecs"
+   ],
+   "why": "At very low rates, conventional codecs collapse into buzzy/garbled audio. Neural codecs hallucinate plausible audio consistent with the source distribution. Same insight as video neural codecs but more critical because audio has narrower 'acceptable' bitrate window.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "latency_drives_codec_choice",
+   "if": [
+    "application has tight latency budget"
+   ],
+   "then": [
+    "codec architecture must avoid look-ahead and limit block size"
+   ],
+   "why": "Codec latency = look-ahead + block size + algorithmic delay. Block-based codecs have at minimum 1-block latency; look-ahead codecs (most music codecs) add more. Real-time audio needs causal or near-causal codecs with small blocks; Opus's low-delay mode is ~5ms, MP3 is ~150ms.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "speech_vs_music_codec_optimisation",
+   "if": [
+    "a codec is optimised for speech"
+   ],
+   "then": [
+    "it underperforms on music; and vice versa"
+   ],
+   "why": "Speech has strong autocorrelation, voiced/unvoiced segments, formant structure. Music has many simultaneous tones, varied transients, stereo imaging. Speech codecs use LPC + excitation models tuned for speech; music codecs use MDCT + masking tuned for music. The two domains have different optimal architectures.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "parametric_coding_beats_waveform_coding_at_extreme_low_rates",
+   "if": [
+    "bitrate is too low to code waveform details"
+   ],
+   "then": [
+    "parametric coding (HE-AAC v2, neural latents) outperforms waveform coding"
+   ],
+   "why": "Below ~32 kbps stereo, conventional waveform coding (MDCT + Huffman) cannot deliver acceptable quality. Parametric coding sends a model + parameters; the decoder reconstructs by running the model. Same insight as INR codecs in video.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "lossless_compression_ratio_limited_by_signal_entropy",
+   "if": [
+    "a codec is lossless"
+   ],
+   "then": [
+    "compression ratio is bounded by the signal's Shannon entropy"
+   ],
+   "why": "Information theory: lossless coding cannot beat entropy. FLAC/ALAC achieve ~50% compression because audio signals have ~50% redundancy after LPC + Rice coding. Beating this would require finding more structure in the signal — currently the limit.",
+   "soundness_category": "algebraic_law"
+  },
+  {
+   "name": "spatial_audio_decoupled_from_compression",
+   "if": [
+    "a stream carries spatial-audio metadata (Atmos, Ambisonics)"
+   ],
+   "then": [
+    "the underlying compression codec is independent of the spatial format"
+   ],
+   "why": "Object-based audio (Atmos) carries per-object metadata + compressed audio streams. The compression codec (AAC, AC-3, DTS) handles the audio; the spatial metadata is small. Different codecs can carry the same spatial format. Same architecture as HDR metadata + video codecs.",
+   "soundness_category": "referential_transparency"
+  }
+ ],
+ "exclusions": [],
+ "parent_mt": "digital_audio",
+ "relations": [
+  {
+   "src": "audio_coding_theory",
+   "edge": "genlMt",
+   "tgt": "compiler_theory"
+  }
+ ]
+}

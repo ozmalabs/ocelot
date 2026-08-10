@@ -1,0 +1,28 @@
+{
+  "id": "standing_motor_intent_concern",
+  "version": "1.0.0",
+  "depends_on": ["motor_intent_core"],
+  "description": "Standing self-improvement concern: build generic motor-intent recognition (plan + goal_kind separate from execution outcome). Fed once per agent lifetime through the daemon _concern_tick → induce_concern/ground_concern pipeline. The agent composes held primitives (StrokeQuantize invariant, StrokeRender canonical, DtwTo, Argmin) before proposing any new Rust Term.",
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "StandingConcern",
+      "attrs": {
+        "name": "standing_motor_intent",
+        "relations": [
+          ["observe", "EXECUTION", "as", "OUTCOME"],
+          ["infer", "MOTOR", "as", "PLAN"],
+          ["classify", "PLAN", "by", "GOAL"],
+          ["synthesize", "INTENT", "not", "OUTCOME"],
+          ["adopt", "WINNER", "as", "SELF"]
+        ],
+        "status": "pending",
+        "content": "Recognition must match motor intent (plan + goal_kind), not noisy execution outcome. Omniglot lift placement is execution noise, not shape difference."
+      }
+    }
+  ],
+  "edges": [],
+  "productions": [],
+  "concepts": [],
+  "rules": []
+}

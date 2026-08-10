@@ -1,0 +1,84 @@
+{
+  "id": "vision_maps",
+  "version": "1.0.0",
+  "depends_on": ["vision_waves"],
+  "description": "RUNG 4 — ORIENTATION MAP TOPOGRAPHY. The lateral interaction that lets a MAP form: cortical neighbours of the winner burst too, so they learn the same input and co-tune. lateral=0 default => the committed hard-global-WTA behaviour is byte-identical.",
+  "microtheory": "vision_development",
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "MapParams",
+      "attrs": {
+        "name": "default",
+        "lateral": 0.0,
+        "comment": "RUNG 4 knobs as GRAPH DATA. lateral: 0.0 (default) = the committed HARD GLOBAL WINNER-TAKE-ALL — exactly one Unit bursts per step (wv_unit_burst_winner's Argmax), so every result committed before rung 4 reproduces byte-identically. 1.0 = the LATERAL INTERACTION is switched on: vm_burst_lateral additionally bursts every Unit that is a `cortical_neighbour` of the winner. THE ABLATION IS DATA, NOT A PYTHON CODE PATH (PROTOCOL 0) — the two arms are the same graph running the same rules under a different configuration the agent holds. WHY THIS IS THE MECHANISM A MAP NEEDS: under hard global WTA only ONE unit learns per step, so cortically adjacent units never co-tune and NO map could form by any route — there is no mechanism by which nearby units could know about each other. Bursting the winner's cortical neighbourhood makes them learn from the SAME input on the SAME step, which is the Kohonen/SOM neighbourhood update, and is defensible as biology: short-range lateral EXCITATION (the `cortical_neighbour` edges, wired by the adapter as sheet geometry exactly like the retina's own 4-neighbourhood) plus the retained global Argmax competition (only the winner's neighbourhood learns; everything further away is suppressed) IS a Mexican hat — excitation local, inhibition beyond. WHAT THIS DOES NOT CLAIM: the neighbourhood kernel is a TOP HAT (binary, fixed radius), not a graded Gaussian, and it does not shrink over time as a textbook SOM's does. Both are simplifications, named."
+      }
+    }
+  ],
+  "edges": [],
+  "productions": [
+    {
+      "src": {"type": "Unit", "var": "a"},
+      "edge_type": "cortical_neighbour",
+      "tgt": {"type": "Unit", "var": "b"},
+      "provenance": "seed:vision_maps:cortical_neighbour"
+    }
+  ],
+  "rules": [
+    {
+      "name": "vm_burst_lateral",
+      "comment": "LATERAL EXCITATION / the SOM neighbourhood update. A Unit bursts if one of its `cortical_neighbour`s is the winner (the same Argmax-over-`act` idiom wv_unit_burst_winner uses, re-evaluated rather than read off a flag — so this rule does NOT depend on rule firing ORDER inside the fixpoint, which a `v.bursting==1` guard would). Effect is identical in kind to the winner rule's (bursting=1, last_burst=step), so `oja_learn` — whose guard is `u.bursting==1` AND `u.act_step==step` — now fires for the neighbourhood too, each unit learning with ITS OWN drive y=act. That is the entire mechanism: co-active neighbours learn the same input and their receptive fields converge on similar orientations, while distant units (never bursting) are free to differ. Fires at most once per Unit per step (the burst_step guard, the same idiom wv_unit_burst_sustain relies on) even though a Unit may match several `cortical_neighbour` edges to the winner. Gated on MapParams.lateral==1.0 so the ablation is DATA. The winner itself is bursted by wv_unit_burst_winner (unchanged, in vision_waves) — this rule only ADDS its neighbourhood, so lateral=0 is exactly the committed behaviour.",
+      "match_type": "Unit",
+      "match": [
+        ["r", "has_unit", "u"],
+        ["u", "cortical_neighbour", "v"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "PickUnique", "source": {"type": "NodesOfType", "node_type": "MapParams"}}, "key": "lateral"},
+            "b": {"type": "Lit", "value": 1.0}
+          },
+          {
+            "type": "Lt",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "u"}, "key": "burst_step"},
+            "b": {"type": "Attr", "node": {"type": "Var", "name": "r"}, "key": "step"}
+          },
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "u"}, "key": "act_step"},
+            "b": {"type": "Attr", "node": {"type": "Var", "name": "r"}, "key": "step"}
+          },
+          {
+            "type": "Gt",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "v"}, "key": "act"},
+            "b": {"type": "Lit", "value": 0.0}
+          },
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "v"}, "key": "act_step"},
+            "b": {"type": "Attr", "node": {"type": "Var", "name": "r"}, "key": "step"}
+          },
+          {
+            "type": "Eq",
+            "a": {"type": "Var", "name": "v"},
+            "b": {
+              "type": "Argmax",
+              "source": {"type": "Neighbours", "node": {"type": "Var", "name": "r"}, "edge_type": "has_unit", "any_type": false},
+              "var_name": "u2",
+              "value": {"type": "Attr", "node": {"type": "Var", "name": "u2"}, "key": "act"},
+              "default": null
+            }
+          }
+        ]
+      },
+      "effects": [
+        ["set_attr", "u", "bursting", 1.0],
+        ["set_attr", "u", "burst_step", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "r"}, "key": "step"}}],
+        ["set_attr", "u", "last_burst", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "r"}, "key": "step"}}]
+      ]
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+As an example, suppose you want to find the distance between two
+points, given by the coordinates (x1, y1) and (x2, y2), using the
+Pythagorean theorem that relates the two legs of a right triangle to
+the length of its hypotenuse in a great many practical applications.
+
+The first step is to consider what a distance function should look
+like in Python. In other words, what are the inputs (parameters) and
+what is the output (return value)? In this case, the inputs are two
+points, which you can represent using four numbers. The return value
+is the distance represented by a floating-point value. Immediately
+you can write an outline of the function:
+
+def distance(x1, y1, x2, y2):
+    return 0.0
+
+Obviously, this version does not compute distances; it always
+returns zero. But it is syntactically correct, and it runs, which
+means that you can test it before you make it more complicated. A
+reasonable next step is to find the differences x2 minus x1 and y2
+minus y1, so the next version stores those values in temporary
+variables and prints them so you can check the intermediate result:
+
+def distance(x1, y1, x2, y2):
+    dx = x2 - x1
+    dy = y2 - y1
+    print('dx is', dx)
+    print('dy is', dy)
+    return 0.0
+
+If the function is working, it should display dx is 3 and dy is 4
+for the sample arguments chosen earlier. Next we compute the sum of
+the squares of dx and dy, which is the quantity the Pythagorean
+theorem says relates directly to the square of the hypotenuse:
+
+def distance(x1, y1, x2, y2):
+    dx = x2 - x1
+    dy = y2 - y1
+    dsquared = dx**2 + dy**2
+    print('dsquared is: ', dsquared)
+    return 0.0
+
+Again you would run the program at this stage and check the output,
+which should be twenty five for the chosen sample arguments. Finally
+you can use the standard library square root function to compute
+and return the finished result of the whole calculation:
+
+def distance(x1, y1, x2, y2):
+    dx = x2 - x1
+    dy = y2 - y1
+    dsquared = dx**2 + dy**2
+    result = math.sqrt(dsquared)
+    return result
+
+If that works correctly, you are done, and the temporary print
+statements used only for debugging can be removed from the body of
+the finished function once you have confirmed it behaves correctly.
+
+As an exercise, use incremental development to write a function
+called hypotenuse that returns the length of the hypotenuse of a
+right triangle given the lengths of the other two legs as arguments.
+Record each stage of the development process carefully as you go.

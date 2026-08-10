@@ -1,0 +1,178 @@
+{
+  "microtheory": {
+    "name": "nonclassical_logic",
+    "definition": "Logics rejecting classical principles. Intuitionistic (no excluded middle), paraconsistent (tolerating contradiction), fuzzy (degrees of truth), relevance (true implication requires relevance), substructural (rejecting weakening + contraction). Substrate analogue: substrate's non-binary reasoning modes.",
+    "category": "logic_domain",
+    "parent": "logic_foundation"
+  },
+  "concepts": [
+    {
+      "name": "intuitionistic_logic",
+      "definition": "Brouwer + Heyting. Rejects excluded middle: ¬(P ∨ ¬P) consistent with intuitionism. Constructive proof required. Substrate analogue: substrate's constructive-evidence requirement.",
+      "category": "intuitionistic"
+    },
+    {
+      "name": "bhk_interpretation",
+      "definition": "Brouwer-Heyting-Kolmogorov. Proof of P ∧ Q = pair of proofs; proof of P → Q = function from proofs of P to proofs of Q. Substrate analogue: substrate's constructive proof structure.",
+      "category": "intuitionistic"
+    },
+    {
+      "name": "law_of_excluded_middle_rejection",
+      "definition": "Intuitionists reject P ∨ ¬P as universal. May lack proof of either. Substrate analogue: substrate's σ-near-zero state.",
+      "category": "intuitionistic"
+    },
+    {
+      "name": "constructive_existence",
+      "definition": "Intuitionistic ∃x P(x) requires constructible witness. Substrate analogue: substrate's instantiable-existence.",
+      "category": "intuitionistic"
+    },
+    {
+      "name": "curry_howard_correspondence",
+      "definition": "Propositions = types; proofs = programs. Intuitionistic logic = lambda calculus. Substrate analogue: substrate's proof-as-Term-tree.",
+      "term": {
+        "type": "Eq",
+        "a": {
+          "type": "Lit",
+          "value": "Propositions"
+        },
+        "b": {
+          "type": "Lit",
+          "value": "types"
+        }
+      },
+      "category": "intuitionistic"
+    },
+    {
+      "name": "paraconsistent_logic",
+      "definition": "Tolerates some contradictions without explosion. ex falso quodlibet rejected. Da Costa, Priest. Substrate analogue: substrate's local-contradiction tolerance.",
+      "category": "paraconsistent"
+    },
+    {
+      "name": "dialetheism",
+      "definition": "Priest. Some contradictions are true. Liar paradox case. Substrate analogue: substrate's both-true-and-false claims.",
+      "category": "paraconsistent"
+    },
+    {
+      "name": "explosion_principle",
+      "definition": "Ex falso quodlibet. From contradiction, anything follows. Classical logic. Rejected by paraconsistent. Substrate analogue: substrate's avoidance of inconsistency-cascade.",
+      "category": "paraconsistent"
+    },
+    {
+      "name": "fuzzy_logic",
+      "definition": "Zadeh 1965. Truth values in [0,1]. Continuous. Many-valued. Substrate analogue: substrate's σ-continuous truth.",
+      "category": "fuzzy"
+    },
+    {
+      "name": "fuzzy_set",
+      "definition": "Membership function valued in [0,1] rather than {0,1}. Substrate analogue: substrate's partial Concept membership.",
+      "category": "fuzzy"
+    },
+    {
+      "name": "linguistic_variable",
+      "definition": "Variable taking values like 'tall', 'somewhat tall', 'very tall'. Substrate analogue: substrate's gradient-Concept assignment.",
+      "category": "fuzzy"
+    },
+    {
+      "name": "fuzzy_inference",
+      "definition": "Rule-based reasoning with fuzzy premises + conclusions. Used in control systems. Substrate analogue: substrate's gradient inference.",
+      "category": "fuzzy"
+    },
+    {
+      "name": "relevance_logic",
+      "definition": "Anderson + Belnap. Implication requires relevance. P → Q only if P + Q share content. Substrate analogue: substrate's relevant-inference constraint.",
+      "category": "relevance"
+    },
+    {
+      "name": "ticket_entailment",
+      "definition": "Anderson + Belnap system T. Captures relevance. Substrate analogue: substrate's content-preserving inference.",
+      "category": "relevance"
+    },
+    {
+      "name": "paradoxes_of_material_implication",
+      "definition": "False antecedent makes implication trivially true. 'If 2+2=5, then I'm a monkey'. Relevance logic addresses. Substrate analogue: substrate's avoidance of vacuous truth.",
+      "category": "relevance"
+    },
+    {
+      "name": "linear_logic",
+      "definition": "Girard 1987. Resources consumed by use. Each premise used exactly once. Substrate analogue: substrate's resource-aware inference.",
+      "category": "substructural"
+    },
+    {
+      "name": "structural_rules",
+      "definition": "Weakening (add premise), contraction (combine duplicates), exchange (reorder). Various logics drop some. Substrate analogue: substrate's contextual inference rules.",
+      "category": "substructural"
+    },
+    {
+      "name": "lambek_calculus",
+      "definition": "Categorial grammar's logic. Substructural — no exchange. Substrate analogue: substrate's order-sensitive composition.",
+      "category": "substructural"
+    },
+    {
+      "name": "many_valued_logic_systems",
+      "definition": "Łukasiewicz, Kleene. 3-valued (true, false, unknown). Substrate analogue: substrate's known-status options.",
+      "category": "many_valued"
+    },
+    {
+      "name": "lukasiewicz_logic",
+      "definition": "Łukasiewicz 1920s. Continuous truth values, max-min operations. Substrate analogue: substrate's continuous logic.",
+      "category": "many_valued"
+    },
+    {
+      "name": "kleene_three_valued",
+      "definition": "Strong + weak three-valued logic. True, false, undefined. Substrate analogue: substrate's data-incomplete reasoning.",
+      "category": "many_valued"
+    },
+    {
+      "name": "probabilistic_logic",
+      "definition": "Truth values are probabilities. Reasoning under uncertainty. Substrate analogue: substrate's Bayesian inference.",
+      "category": "uncertainty"
+    },
+    {
+      "name": "default_logic",
+      "definition": "Reiter. Default rules. 'Birds normally fly'. Reasoning with assumptions. Substrate analogue: substrate's default-Concept activation.",
+      "category": "uncertainty"
+    },
+    {
+      "name": "nonmonotonic_logic",
+      "definition": "Adding premises can DEFEAT conclusions. Real-world reasoning is nonmonotonic. Substrate analogue: substrate's belief-revision capability.",
+      "category": "uncertainty"
+    },
+    {
+      "name": "belief_revision",
+      "definition": "AGM. Updating belief set with new info. Substrate analogue: substrate's Mt-update mechanism.",
+      "category": "uncertainty"
+    },
+    {
+      "name": "quantum_logic",
+      "definition": "Birkhoff + von Neumann 1936. Logic of quantum mechanics. Lattice not distributive. Substrate analogue: substrate's non-classical correlations.",
+      "category": "quantum"
+    }
+  ],
+  "rules": [
+    {
+      "name": "intuitionistic_requires_construction",
+      "head": "the substrate proves ∃x P(x) intuitionistically",
+      "body": "it must construct a specific witness. Mere non-existence-of-nonexistence insufficient. Substrate's constructive existence."
+    },
+    {
+      "name": "paraconsistent_localizes_contradiction",
+      "head": "the substrate detects local contradiction",
+      "body": "explosion is blocked — inference outside contradiction zone proceeds normally. Substrate's inconsistency containment."
+    },
+    {
+      "name": "fuzzy_logic_handles_vagueness",
+      "head": "the substrate reasons about vague predicates",
+      "body": "fuzzy logic assigns gradient membership. 'Tall' becomes degree, not binary. Substrate's gradient categorization."
+    },
+    {
+      "name": "relevance_blocks_vacuous_implications",
+      "head": "the substrate evaluates P → Q with unrelated content",
+      "body": "relevance logic blocks the implication. Material-implication paradoxes avoided. Substrate's content-sensitive inference."
+    },
+    {
+      "name": "nonmonotonic_reasoning_defeats_with_new_info",
+      "head": "the substrate has a default conclusion + new information defeats it",
+      "body": "the conclusion is withdrawn. Substrate's belief-revision capability."
+    }
+  ]
+}

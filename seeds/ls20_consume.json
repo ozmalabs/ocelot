@@ -1,0 +1,407 @@
+{
+ "id": "ls20_consume",
+ "version": "1.0.0",
+ "depends_on": [
+  "ls20_flash"
+ ],
+ "area": "retina",
+ "description": "ls20 FLASH-CONSUME MARKING (block 225000): folds 223000's flash onset localisation onto 224000's object-permanence tracker to close the trail/consume residual. The flash LOCATION is 223's fg_pick_flash (reused); this seed adds the graph-held CONSUME MODEL -- a ConsumeHypothesis carrying the DISCOVERED trail value T, minted/confirmed/revised by observation (cm_mint/cm_confirm/cm_revise) exactly as pc_* grow the shift Hypothesis. The consumed-cell SET = the flash localisation (fg_pick_flash) intersected with the tracker's VACATED footprint (224); the VALUE is this ConsumeHypothesis; the marking render is mechanical adapter I/O -- the same split 224 uses for the translate. NO consume table: value minted from observation, location from the flash. Guarded on consume_on==1 (default-OFF, byte-identical otherwise), the arm, and the consume_obs phase. No Rust; reuses the ls20_flash + ls20_percell machinery.",
+ "microtheory": {
+  "name": "ls20_consume",
+  "description": "A move drops/consumes cells (a trail); the flash localises WHERE, the discovered ConsumeHypothesis supplies WHAT, the tracker's vacated set supplies WHICH."
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [],
+ "rules": [
+  {
+   "name": "cm_mint_consume",
+   "comment": "RESIDUAL->MODEL: a consume was observed (obs_consume_value != 0) and there is no ConsumeHypothesis yet -> mint one carrying the DISCOVERED trail value T. add_node_if_absent guards a double-mint.",
+   "match": [
+    [
+     "g",
+     "has_consume_state",
+     "cs"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "consume_on"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "arm"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "percell"
+        }
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "phase"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "consume_obs"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "g"
+        },
+        "key": "obs_consume_value"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "g"
+        },
+        "edge_type": "has_consume",
+        "any_type": false
+       },
+       "var_name": "h",
+       "predicate": {
+        "type": "Lit",
+        "value": true
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node_if_absent",
+     "hyp",
+     "ConsumeHypothesis",
+     {
+      "value": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "g"
+        },
+        "key": "obs_consume_value"
+       }
+      },
+      "conf": 1.0,
+      "kind": "trail_value"
+     }
+    ],
+    [
+     "add_edge",
+     "g",
+     "has_consume",
+     "hyp"
+    ]
+   ]
+  },
+  {
+   "name": "cm_confirm_consume",
+   "comment": "RESIDUAL->COMPRESS: observed value == held T -> conf += 1.",
+   "match": [
+    [
+     "g",
+     "has_consume",
+     "h"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "consume_on"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "arm"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "percell"
+        }
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "phase"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "consume_obs"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "g"
+        },
+        "key": "obs_consume_value"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "h"
+       },
+       "key": "value"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "obs_consume_value"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "h",
+     "conf",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "h"
+         },
+         "key": "conf"
+        },
+        {
+         "type": "Lit",
+         "value": 1.0
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "cm_revise_consume",
+   "comment": "RESIDUAL->REVISE: observed value != held T -> revise T to the observed trail value (the trail colour can change; tracked).",
+   "match": [
+    [
+     "g",
+     "has_consume",
+     "h"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "consume_on"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "arm"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "percell"
+        }
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "phase"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "consume_obs"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "g"
+        },
+        "key": "obs_consume_value"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "h"
+        },
+        "key": "value"
+       },
+       "b": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "g"
+        },
+        "key": "obs_consume_value"
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "h",
+     "value",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "obs_consume_value"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "h",
+     "conf",
+     1.0
+    ]
+   ]
+  }
+ ]
+}

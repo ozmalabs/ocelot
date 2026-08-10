@@ -1,0 +1,19 @@
+{
+  "id": "procedural_classify_grammar",
+  "version": "1.0.0",
+  "depends_on": [],
+  "description": "HELD VOCABULARY extending procedural_grammar for the CLASSIFY-BY-CODEBOOK-JOIN rule shape (the recurring media_analysis/actor_goals slice: match a FACT collection to a CODEBOOK collection on a shared field, then mint a classification node). Two new grammatical classes, each a Concept carrying a proc_role: a `join_verb` (matches/match) marks the shared-field JOIN clause ('a signal's kind MATCHES a tag's kind'), and a `classify` effect_verb (classify/categorise/label) marks the MINT of the classification node ('classify a hit'). The procedural reader (domains/procedural_reader.py) recognises these off this held table exactly as it does the base grammar; drop a Concept to teach a synonym, no code change. Loaded on-demand by ensure_proc_grammar (guarded by a join_verb sentinel) so a normal agent boot does not carry it - the same on-demand discipline procedural_grammar.json itself uses.",
+  "microtheory": {
+    "name": "procedural_classify_grammar",
+    "description": "the join + classify clause grammar a classify-by-codebook-join method is parsed against"
+  },
+  "nodes": [
+    {"local_id": 1, "type": "Concept", "attrs": {"name": "matches", "proc_role": "join_verb"}},
+    {"local_id": 2, "type": "Concept", "attrs": {"name": "match", "proc_role": "join_verb"}},
+    {"local_id": 3, "type": "Concept", "attrs": {"name": "classify", "proc_role": "effect_verb", "proc_effect": "classify"}},
+    {"local_id": 4, "type": "Concept", "attrs": {"name": "categorise", "proc_role": "effect_verb", "proc_effect": "classify"}},
+    {"local_id": 5, "type": "Concept", "attrs": {"name": "categorize", "proc_role": "effect_verb", "proc_effect": "classify"}}
+  ],
+  "edges": [],
+  "rules": []
+}

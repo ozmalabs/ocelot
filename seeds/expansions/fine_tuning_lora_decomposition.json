@@ -1,0 +1,118 @@
+{
+  "id": "fine_tuning_lora_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "LoRA",
+  "in_microtheory": "machine_learning",
+  "description": "Fine-tuning + parameter-efficient methods decomposed. Full fine-tuning, LoRA, QLoRA, Adapters, Prefix tuning, P-tuning. The mechanisms by which large pretrained models are specialised to tasks at fraction of pretraining cost.",
+  "sub_mechanisms": [
+    {
+      "name": "full_fine_tuning",
+      "definition": "Continue training all weights on task-specific data. Smaller learning rate than pretraining.",
+      "why": "Strongest adaptation. Cost: all weights changed; storage of fine-tuned model = full base model size. Need lots of memory; not practical for 70B+ models on consumer GPUs.",
+      "category": "fine_tune_mechanism"
+    },
+    {
+      "name": "LoRA_decomposition",
+      "definition": "Add low-rank matrices: W_new = W_frozen + A @ B where A is (d, r) and B is (r, d), r small. Train only A, B.",
+      "why": "Hypothesis: task-specific change is low-rank. r=4-32 typical. Train ~0.1-1% of params. Result: full-quality fine-tune with tiny memory overhead.",
+      "category": "fine_tune_mechanism"
+    },
+    {
+      "name": "LoRA_rank_parameter",
+      "definition": "r controls capacity of adaptation. Too low: undercapacity. Too high: overfits + more memory.",
+      "why": "Empirical sweet spot for LLM tasks: r=8-32. Rank 4 sometimes works for instruction tuning. Higher ranks for very different tasks.",
+      "category": "fine_tune_mechanism"
+    },
+    {
+      "name": "LoRA_alpha_scaling",
+      "definition": "Effective change = (α/r) × A @ B. α decouples adaptation strength from rank.",
+      "why": "Lets rank + strength be tuned independently. α = r common default; α = 2r more aggressive. Subtle hyperparameter that matters.",
+      "category": "fine_tune_mechanism"
+    },
+    {
+      "name": "LoRA_target_modules",
+      "definition": "Apply LoRA to specific layer types: Q, K, V projections; sometimes MLP. All linear layers possible.",
+      "why": "Targeted LoRA on attention often beats spread-thin LoRA on everything. Standard: Q + V, or Q + K + V. Experimentation needed per task.",
+      "category": "fine_tune_mechanism"
+    },
+    {
+      "name": "LoRA_merging",
+      "definition": "After training: W_final = W_frozen + A @ B. Merge into weights for inference; no LoRA overhead.",
+      "why": "Inference uses standard linear layers. Cost: lose ability to swap LoRAs. Alternative: keep separate at inference to swap multiple adapters.",
+      "category": "fine_tune_mechanism"
+    },
+    {
+      "name": "QLoRA",
+      "definition": "LoRA on 4-bit quantised base model. Tim Dettmers 2023. Train 65B model on single 48GB GPU.",
+      "why": "Combines quantisation + LoRA. Base weights in 4-bit (frozen, but used in forward); LoRA in fp16 (trained). Massive memory savings. Standard for consumer-GPU fine-tuning.",
+      "category": "fine_tune_mechanism"
+    },
+    {
+      "name": "adapter_modules",
+      "definition": "Houlsby 2019. Insert small MLP blocks between transformer layers. Train only adapters.",
+      "why": "Pre-LoRA parameter-efficient method. Adds latency (extra layers). Largely superseded by LoRA which doesn't add inference cost.",
+      "category": "fine_tune_mechanism"
+    },
+    {
+      "name": "prefix_tuning",
+      "definition": "Learn prefix tokens prepended to input. Frozen model attends to them.",
+      "why": "Tunes attention behaviour without changing weights. Particularly small footprint. Quality lower than LoRA on hard tasks.",
+      "category": "fine_tune_mechanism"
+    },
+    {
+      "name": "catastrophic_forgetting_in_fine_tune",
+      "definition": "Fine-tuning teaches new task but model forgets pretraining knowledge.",
+      "why": "Standard problem. Mitigations: replay old examples, EWC (penalise weight changes), LoRA (only adapters change, base frozen). LoRA's structural prevention is part of its appeal.",
+      "category": "fine_tune_mechanism"
+    },
+    {
+      "name": "instruction_tuning_pipeline",
+      "definition": "Fine-tune base model on (instruction, response) pairs. Usually with LoRA. Often followed by DPO/RLHF.",
+      "why": "Bridges raw pretraining (next-token) to chat (instruction-following). Standard for shipping LLMs. Datasets: Alpaca, Dolly, OpenAssistant, ShareGPT.",
+      "category": "fine_tune_mechanism"
+    },
+    {
+      "name": "PEFT_library_huggingface",
+      "definition": "Parameter-Efficient Fine-Tuning library: LoRA, QLoRA, IA³, prefix tuning unified API.",
+      "why": "Standard tooling. Wrap base model + adapter config = trainable PEFT model. Adapter checkpoints small (~MB) — easy to share.",
+      "category": "fine_tune_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "task_adaptation_is_low_rank",
+      "if": ["fine-tuning task is similar to pretraining"],
+      "then": ["the weight change has low intrinsic rank"],
+      "why": "Empirical observation behind LoRA. Pretrained model already encodes general capabilities; task-specific tuning is a small perturbation. Rank 8-32 captures it for most LLM tasks.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "LoRA_memory_advantage",
+      "if": ["LoRA with rank r applied to (d, d) layer"],
+      "then": ["trainable params drop from d² to 2dr (typically 100-1000x reduction)"],
+      "why": "d² params in dense layer; 2dr in LoRA. d=4096, r=8: 16M params → 64K params. 250x reduction. Plus: optimiser state (Adam: 2x param) scales with trainable params. Total memory savings ~250x.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "QLoRA_enables_consumer_GPU_finetuning",
+      "if": ["base model in 4-bit + LoRA in fp16"],
+      "then": ["70B model fits on 48 GB GPU"],
+      "why": "70B fp32: 280 GB. 70B fp16: 140 GB. 70B int4: 35 GB. + LoRA + activations: ~45 GB. Tim Dettmers' QLoRA showed this is possible. Democratised LLM fine-tuning.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "LoRA_prevents_catastrophic_forgetting",
+      "if": ["base weights are frozen during fine-tuning"],
+      "then": ["pretraining knowledge is preserved"],
+      "why": "Full fine-tuning may overwrite useful patterns. LoRA's frozen base means general capabilities can't be forgotten; only the additive change captures task. Architectural prevention.",
+      "soundness_category": "referential_transparency"
+    },
+    {
+      "name": "merged_LoRA_no_inference_cost",
+      "if": ["LoRA matrices merged into base weights after training"],
+      "then": ["inference cost equals base model (no overhead)"],
+      "why": "W + AB is just a matrix; same shape as W. Inference uses single matmul. LoRA's deployment story: train tiny + merge or swap. Adapters add inference latency; LoRA doesn't.",
+      "soundness_category": "cost_equivalence"
+    }
+  ]
+}

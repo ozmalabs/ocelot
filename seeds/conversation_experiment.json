@@ -1,0 +1,33 @@
+{
+ "id": "conversation_experiment",
+ "version": "1.0.0",
+ "depends_on": [
+  "relation_vocabulary"
+ ],
+ "capability_keys": [
+  "conversation_replay_experiment",
+  "replay_corpus"
+ ],
+ "description": "The conversation experiment world's grounding vocabulary (Wave 3). One RelationCue: 'replay' \u2014 a promoted conversation concern (reply_fix / knowledge / instruction with experiment-signal content) carries a ['replay','TURN','in','CONVERSATION'] relation, and this cue is what lets ground_concern's held-lexicon pass ground that head so the experiment composer's conversation branch fires (mint rule pinned to the 'conversation' WorldInstance; SeedDelta carries a targeted reply-rule ablation instead of an ARC acting variant; the dispatched child is scripts/convo_child_run.py, which replays the recorded chat corpus and scores flagged-turn-fixed minus regressions). Kept out of the frozen relation_vocabulary seed: this is ablatable conversation-world vocabulary, not foundational grounding.",
+ "nodes": [
+  {
+   "local_id": 1,
+   "type": "RelationCue",
+   "attrs": {
+    "name": "replay_conversation",
+    "keywords": [
+     "replay",
+     "replay the conversation",
+     "replay the corpus",
+     "flagged turn",
+     "flagged reply",
+     "conversation corpus"
+    ],
+    "relation": "[\"replay\",\"TURN\",\"in\",\"CONVERSATION\"]"
+   }
+  }
+ ],
+ "edges": [],
+ "productions": [],
+ "rules": []
+}

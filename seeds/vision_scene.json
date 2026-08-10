@@ -1,0 +1,163 @@
+{
+  "microtheory": {
+    "name": "scene_understanding",
+    "definition": "Visual understanding of complex environments. Gist, layout, navigation, spatial cognition, scene categories, context effects. Where individual objects compose into meaningful scenes. Substrate analogue: substrate's compositional spatial Mt.",
+    "category": "vision_domain",
+    "parent": "vision_foundation"
+  },
+  "concepts": [
+    {
+      "name": "scene_gist",
+      "definition": "Rapid (~100ms) category recognition. Beach vs forest vs street. Pre-attentive. Substrate analogue: substrate's coarse-classification fast path.",
+      "category": "gist"
+    },
+    {
+      "name": "global_image_features",
+      "definition": "Statistical descriptors of whole image (spatial envelope, openness, naturalness). Oliva + Torralba. Substrate analogue: substrate's image-level feature.",
+      "category": "gist"
+    },
+    {
+      "name": "scene_categories",
+      "definition": "Indoor, outdoor, urban, natural, beach, forest, kitchen, etc. ~100-1000 categories meaningful. Substrate analogue: substrate's scene-Mt categories.",
+      "category": "gist"
+    },
+    {
+      "name": "spatial_layout",
+      "definition": "Arrangement of major surfaces in scene. Ground plane, walls, ceiling. Substrate analogue: substrate's geometric scene model.",
+      "category": "layout"
+    },
+    {
+      "name": "spatial_envelope",
+      "definition": "Oliva + Torralba 2001. Holistic representation: openness, depth, naturalness, roughness, expansion. Substrate analogue: substrate's scene-shape descriptor.",
+      "category": "layout"
+    },
+    {
+      "name": "scene_geometry",
+      "definition": "3D structure of environment. Walls, floors, support surfaces. Substrate analogue: substrate's 3D scene reconstruction.",
+      "category": "layout"
+    },
+    {
+      "name": "context_effects_on_object",
+      "definition": "Object recognition faster + more accurate in consistent scene context. Toaster in kitchen vs forest. Bar + Aminoff 2003. Substrate analogue: substrate's context-conditioned Concept activation.",
+      "category": "context"
+    },
+    {
+      "name": "scene_object_consistency",
+      "definition": "Objects + scenes mutually predict. Toaster predicts kitchen + vice versa. Substrate analogue: substrate's mutual-prediction between Mts.",
+      "category": "context"
+    },
+    {
+      "name": "scene_grammar",
+      "definition": "Vo + Wolfe. Implicit rules governing what objects appear where in scenes. Substrate analogue: substrate's spatial-co-occurrence pattern.",
+      "category": "context"
+    },
+    {
+      "name": "wayfinding",
+      "definition": "Navigating from one location to another. Cognitive maps + landmark-based. Substrate analogue: substrate's spatial-graph traversal.",
+      "category": "navigation"
+    },
+    {
+      "name": "landmark",
+      "definition": "Distinctive spatial reference point. Anchor for navigation. Substrate analogue: substrate's high-salience location Concept.",
+      "category": "navigation"
+    },
+    {
+      "name": "route_versus_survey_knowledge",
+      "definition": "Route = sequential navigation steps. Survey = bird's-eye map. Substrate analogue: substrate's egocentric vs allocentric representation.",
+      "term": {
+        "type": "Eq",
+        "a": {
+          "type": "Lit",
+          "value": "Route"
+        },
+        "b": {
+          "type": "Lit",
+          "value": "sequential navigation steps"
+        }
+      },
+      "category": "navigation"
+    },
+    {
+      "name": "spatial_orientation",
+      "definition": "Knowing where you are + facing. Vestibular + visual + proprioceptive integration. Substrate analogue: substrate's self-localization Mt.",
+      "category": "navigation"
+    },
+    {
+      "name": "cognitive_map",
+      "definition": "Tolman 1948. Mental representation of environment. Allocentric. Substrate analogue: substrate's spatial-Mt for environment.",
+      "category": "cognition"
+    },
+    {
+      "name": "egocentric_frame",
+      "definition": "Spatial relations relative to self (left, right, ahead). Substrate analogue: substrate's self-relative spatial encoding.",
+      "category": "cognition"
+    },
+    {
+      "name": "allocentric_frame",
+      "definition": "Spatial relations relative to world (north, east). Substrate analogue: substrate's world-relative spatial encoding.",
+      "category": "cognition"
+    },
+    {
+      "name": "scene_segmentation",
+      "definition": "Partitioning image into meaningful regions. Substrate analogue: substrate's spatial-Concept boundary detection.",
+      "category": "perception"
+    },
+    {
+      "name": "figure_ground_scene",
+      "definition": "Separating salient figure from background. Substrate analogue: substrate's salience-driven segmentation.",
+      "category": "perception"
+    },
+    {
+      "name": "visual_search",
+      "definition": "Finding target among distractors. Feature search (fast) vs conjunction search (slow). Substrate analogue: substrate's attention-search mechanism.",
+      "category": "perception"
+    },
+    {
+      "name": "indoor_outdoor_classification",
+      "definition": "Rapid distinction. Different statistical features. Substrate analogue: substrate's coarse-environment classifier.",
+      "category": "category"
+    },
+    {
+      "name": "natural_versus_manmade",
+      "definition": "Statistical distinction. Natural scenes have 1/f spectral statistics; manmade more horizontal/vertical structure. Substrate analogue: substrate's natural-vs-built distinction.",
+      "category": "category"
+    },
+    {
+      "name": "place_cells_scene",
+      "definition": "Hippocampal cells firing at specific locations in environment. Substrate of cognitive map. Substrate analogue: substrate's location-specific Concept.",
+      "category": "neural"
+    },
+    {
+      "name": "parahippocampal_place_area",
+      "definition": "PPA. Selectively responds to scenes + places, not objects or faces. Epstein + Kanwisher 1998. Substrate analogue: substrate's specialized scene-Mt.",
+      "category": "neural"
+    }
+  ],
+  "rules": [
+    {
+      "name": "scene_gist_extracted_rapidly",
+      "head": "the substrate is briefly exposed to a complex image",
+      "body": "scene category is identified within ~100ms — before individual objects. Substrate's coarse-fast classification path."
+    },
+    {
+      "name": "scene_context_biases_object_recognition",
+      "head": "the substrate sees an object in a consistent scene context",
+      "body": "context primes consistent categories + accelerates recognition. Bar 2003. Substrate's context-conditioned activation."
+    },
+    {
+      "name": "scene_grammar_predicts_object_locations",
+      "head": "the substrate has seen a scene category",
+      "body": "implicit scene grammar predicts where specific object types appear (sink near counter, painting on wall). Vo + Wolfe. Substrate's spatial co-occurrence model."
+    },
+    {
+      "name": "navigation_requires_landmarks_and_routes",
+      "head": "the substrate navigates an environment",
+      "body": "landmarks anchor location; routes connect them. Cognitive map integrates both. Substrate's spatial-graph traversal."
+    },
+    {
+      "name": "natural_scenes_have_distinct_statistics",
+      "head": "the substrate processes natural vs manmade scene",
+      "body": "spatial-frequency + orientation statistics differ. Natural ~1/f. Substrate's environmental statistics."
+    }
+  ]
+}

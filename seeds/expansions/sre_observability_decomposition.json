@@ -1,0 +1,118 @@
+{
+  "id": "sre_observability_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "SLO",
+  "in_microtheory": "distributed_systems",
+  "description": "SRE + observability decomposed. SLI selection, SLO budget math, alerting (multi-window multi-burn-rate), on-call practices, postmortems, toil reduction, RED + USE methods, golden signals. Google's SRE book operationalised.",
+  "sub_mechanisms": [
+    {
+      "name": "SLI_selection",
+      "definition": "Pick measurements: latency p99, error rate, throughput. Tied to user experience.",
+      "why": "What you measure becomes what you optimise. Bad SLI = wrong optimisation. Good: 'request error rate seen by users'. Bad: 'CPU usage'.",
+      "category": "sre_mechanism"
+    },
+    {
+      "name": "SLO_budget_calculation",
+      "definition": "Error budget = (1 - SLO) × time window. 99.9% / 30d = 43.2 min budget.",
+      "why": "Quantifies allowable unreliability. Spent = freeze risky changes. Unused = ship faster. Operational metric.",
+      "category": "sre_mechanism"
+    },
+    {
+      "name": "multi_burn_rate_alerts",
+      "definition": "Alert on multiple rates: 14.4x for 1h (fast burn = critical), 6x for 6h (slow burn = page during day).",
+      "why": "Single alert: too sensitive or too slow. Multi-window: fast for catastrophic, slow for trending. Google SRE workbook standard.",
+      "category": "sre_mechanism"
+    },
+    {
+      "name": "RED_method",
+      "definition": "Per-service: Rate (requests/sec), Errors (% failed), Duration (latency distribution).",
+      "why": "Tom Wilkie framework. Three numbers tell you service health. Standard dashboard. Combined with USE for full picture.",
+      "category": "sre_mechanism"
+    },
+    {
+      "name": "USE_method",
+      "definition": "Per-resource: Utilization (% busy), Saturation (queue depth), Errors (count).",
+      "why": "Brendan Gregg. Resource-centric (CPU, disk, network). Complementary to RED. Standard for systems performance.",
+      "category": "sre_mechanism"
+    },
+    {
+      "name": "four_golden_signals",
+      "definition": "Latency, traffic, errors, saturation. Google SRE book.",
+      "why": "Subset of RED + USE. If you monitor only four, these. Foundational dashboard.",
+      "category": "sre_mechanism"
+    },
+    {
+      "name": "toil_definition",
+      "definition": "Manual repetitive work without lasting value. SRE goal: < 50% time on toil.",
+      "why": "Toil grows with scale linearly; engineering eliminates. Automate toil → reclaim engineering time for system improvements. Google SRE principle.",
+      "category": "sre_mechanism"
+    },
+    {
+      "name": "blameless_postmortem_process",
+      "definition": "Document timeline, contributing factors, impact, action items. Focus on systems not individuals.",
+      "why": "Fear of blame = hidden info = no learning. Blameless = honesty = systemic fixes. Etsy + Google popularised. Standard mature practice.",
+      "category": "sre_mechanism"
+    },
+    {
+      "name": "incident_response_roles",
+      "definition": "Incident commander, comms lead, ops lead. Clear roles during incident.",
+      "why": "Chaos during incidents counterproductive. Structure helps. ICS (Incident Command System) inspired. Standard at scale.",
+      "category": "sre_mechanism"
+    },
+    {
+      "name": "production_readiness_review",
+      "definition": "Checklist before launching service: SLOs, monitoring, runbooks, capacity, rollback.",
+      "why": "Prevent launching with hidden issues. Standard pre-launch process. Modified for each org's needs.",
+      "category": "sre_mechanism"
+    },
+    {
+      "name": "chaos_engineering_principles",
+      "definition": "Define steady-state hypothesis. Vary real-world events. Run in production. Minimise blast radius.",
+      "why": "Netflix Chaos Monkey + Principles of Chaos. Discipline beyond just 'break things'. Real production failures discovered + fixed before customer-visible.",
+      "category": "sre_mechanism"
+    },
+    {
+      "name": "runbook_automation",
+      "definition": "Documented response procedures, increasingly automated. From wiki page → script → automated remediation.",
+      "why": "Common incidents auto-resolved before paging humans. PagerDuty, Rundeck, Ansible integration. Reduces MTTR + on-call burden.",
+      "category": "sre_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "user_visible_SLIs_beat_internal_metrics",
+      "if": ["SLI measures something users experience"],
+      "then": ["it's a better target than internal metrics"],
+      "why": "CPU at 100% may be fine (work getting done). Errors seen by users → directly UX. Pick SLIs that align with user happiness. Tempting trap: easy-to-measure internal metrics not tied to UX.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "error_budget_aligns_dev_SRE_incentives",
+      "if": ["dev + SRE share an error budget"],
+      "then": ["both teams have aligned incentive on reliability"],
+      "why": "Without: dev wants to ship (risk); SRE wants stability (block). With shared budget: budget exhausted = both team's problem. Reframes conflict as shared metric. Google SRE foundation.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "multi_burn_rate_balances_sensitivity_speed",
+      "if": ["a single burn rate alert is used"],
+      "then": ["it's too sensitive or too slow"],
+      "why": "1x burn = alert on any burn = noise. 100x burn = catastrophic-only = miss slow degradation. Multi-rate: 14.4x for 1h (page urgently), 6x for 6h (page during business hours). Operationally proven.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "blameless_postmortem_yields_better_lessons",
+      "if": ["incident analysis is blameless"],
+      "then": ["systemic issues surface that blame-focused analysis misses"],
+      "why": "Blame: people hide info, claim individual error. Blameless: 'how did system let this happen?' surfaces real causes (missing checks, unclear procedures, alert noise). Yields better fixes.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "toil_reduction_compounds_engineering_capacity",
+      "if": ["toil is automated away"],
+      "then": ["freed time goes to more system improvements"],
+      "why": "Toil grows linearly with scale; manual ops = engineering time disappearing. Automation = bounded recurring cost = engineering free for improvements that further reduce toil. Compounds.",
+      "soundness_category": "cost_equivalence"
+    }
+  ]
+}

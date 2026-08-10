@@ -1,0 +1,118 @@
+{
+  "id": "electrochemistry_batteries_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "battery_chemistry",
+  "in_microtheory": "materials_chemistry",
+  "description": "Electrochemistry + batteries decomposed. Lithium-ion variants (LFP, NMC, NCA), solid-state batteries, sodium-ion, flow batteries, fuel cells (PEM, SOFC), electrolysis (H2 production, chlor-alkali), supercapacitors, corrosion mechanisms.",
+  "sub_mechanisms": [
+    {
+      "name": "Li_ion_intercalation",
+      "definition": "Li⁺ shuttles between cathode (LiCoO2/NMC/LFP) + anode (graphite). Charge/discharge reversible.",
+      "why": "Foundation of all Li-ion. Anode + cathode host Li without structural change. Nobel 2019.",
+      "category": "electrochem_mechanism"
+    },
+    {
+      "name": "LFP_LiFePO4",
+      "definition": "Olivine cathode. Lower energy density but safer + longer cycle life.",
+      "why": "Thermal stability (no thermal runaway at high T). EV battery preferred for safety. Tesla LFP cars.",
+      "category": "electrochem_mechanism"
+    },
+    {
+      "name": "NMC_NCA_cathodes",
+      "definition": "LiNi_x Mn_y Co_z O2 (NMC) or LiNi_x Co_y Al_z O2 (NCA). Higher energy density than LFP.",
+      "why": "EV range. Higher voltage + capacity. Cost: cobalt + thermal stability concerns. Industry shifting Co content down.",
+      "category": "electrochem_mechanism"
+    },
+    {
+      "name": "solid_state_battery",
+      "definition": "Solid electrolyte (ceramic/polymer/sulfide) replaces liquid. Lithium metal anode possible.",
+      "why": "Higher energy density, safety, faster charge. Manufacturing challenges. Toyota, QuantumScape major players.",
+      "category": "electrochem_mechanism"
+    },
+    {
+      "name": "sodium_ion_battery",
+      "definition": "Na⁺ instead of Li⁺. Cheaper, abundant. Lower energy density.",
+      "why": "Stationary storage. CATL + BYD producing. Trade: 30-50% lower density vs Li-ion. Cost wins for grid.",
+      "category": "electrochem_mechanism"
+    },
+    {
+      "name": "flow_battery_redox",
+      "definition": "Electrolyte stored in external tanks. Vanadium most common. Power × energy decoupled.",
+      "why": "Long-duration grid storage. Cheap energy capacity (more tank); power separate. Long cycle life.",
+      "category": "electrochem_mechanism"
+    },
+    {
+      "name": "PEM_fuel_cell",
+      "definition": "Proton Exchange Membrane. Anode: H2 → 2H⁺ + 2e⁻. Cathode: O2 + 4H⁺ + 4e⁻ → 2H2O.",
+      "why": "Automotive (Toyota Mirai). Low T operation (~80°C). Pt catalyst expensive. Hydrogen infrastructure challenge.",
+      "category": "electrochem_mechanism"
+    },
+    {
+      "name": "SOFC_solid_oxide",
+      "definition": "Ceramic electrolyte (YSZ). Operates 800-1000°C. Stationary power.",
+      "why": "High efficiency, fuel flexible. Cost: expensive materials + slow start. Bloom Energy commercial.",
+      "category": "electrochem_mechanism"
+    },
+    {
+      "name": "water_electrolysis",
+      "definition": "2H2O → 2H2 + O2. Alkaline, PEM, SOEC (high-T). Hydrogen production.",
+      "why": "Green H2 from renewables. Foundation of hydrogen economy. Efficiency 60-80%. Scaling up rapidly.",
+      "category": "electrochem_mechanism"
+    },
+    {
+      "name": "chlor_alkali_process",
+      "definition": "Electrolyse NaCl brine. Produces Cl2, NaOH, H2. Largest industrial electrolysis.",
+      "why": "Foundation of chemical industry. Modern: membrane cells. Energy-intensive but essential.",
+      "category": "electrochem_mechanism"
+    },
+    {
+      "name": "supercapacitor",
+      "definition": "Electrochemical double-layer capacitor. Charge stored at electrode-electrolyte interface.",
+      "why": "Fast charge/discharge, long cycle life. Lower energy density than batteries. Hybrid systems: capacitor + battery.",
+      "category": "electrochem_mechanism"
+    },
+    {
+      "name": "cathodic_protection",
+      "definition": "Make protected metal cathode. Sacrificial anode (Zn, Mg) or impressed current.",
+      "why": "Standard corrosion protection. Ships, pipelines, water heaters. Anode corrodes sacrificially. Periodic replacement.",
+      "category": "electrochem_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "LFP_vs_NMC_safety_vs_density_tradeoff",
+      "if": ["EV battery selection"],
+      "then": ["LFP safer + cheaper; NMC higher range"],
+      "why": "LFP: thermal stability + abundant Fe; lower kWh/kg. NMC: higher kWh/kg; cobalt + Ni cost; thermal sensitivity. Application-driven choice.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "solid_state_enables_Li_metal_anode",
+      "if": ["solid electrolyte prevents dendrites"],
+      "then": ["Li metal anode becomes practical"],
+      "why": "Li metal: 10x capacity vs graphite. Dendrites short cells in liquid. Solid: mechanical barrier. Holy grail of batteries.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "fuel_cell_efficiency_beats_combustion",
+      "if": ["energy converted via fuel cell"],
+      "then": ["efficiency higher than combustion + heat engine"],
+      "why": "Direct electrochemical: no Carnot limit. 50-60% efficient. Cars: more efficient than gasoline + ICE. Hydrogen logistics challenge.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "flow_battery_decouples_power_energy",
+      "if": ["application needs long-duration storage"],
+      "then": ["flow battery scales economically"],
+      "why": "Energy capacity = tank volume (cheap). Power = stack size (more expensive). Long-duration: scale tanks. Grid storage applications.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "cathodic_protection_prevents_metal_loss",
+      "if": ["sacrificial anode connected"],
+      "then": ["protected metal stays intact while anode corrodes"],
+      "why": "Anode more anodic than protected metal. All corrosion current goes to anode. Replaced periodically. Standard corrosion engineering.",
+      "soundness_category": "referential_transparency"
+    }
+  ]
+}

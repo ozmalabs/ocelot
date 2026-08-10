@@ -1,0 +1,195 @@
+{
+ "id": "actor_goals",
+ "version": "1.0.0",
+ "depends_on": [],
+ "description": "ABDUCTIVE EXPLANATION of a THIRD-PARTY actor's behaviour (never the conversation partner -- that is interlocutor_model's business, untouched here). domains/actor_goals.py's Python side is PURE ANNOTATION: for every actor-bearing predication `read_clause` grounds it writes ONE `ActorAction{actor, verb, object, object_domain, actor_role}` fact -- unconditionally, whether or not any codebook row will ever match it. `actor_role` is the RAW STRUCTURAL read (subject-position argument, or a passive by-phrase agent); `verb` is always reduced through `reading_collapse._participle_lemma` (held WordNet morphy) so active-inflected and passive-lemmatised surfaces key one codebook row. `ActionGoal{verb, goal}` (fund/sponsor/donate/back/finance -> 'support') is the teachable SURFACE-GOAL codebook; `RecipientVerb{verb}` (receive) is the teachable codebook for verbs whose grammatical subject conventionally names the RECEIVING participant rather than the causer (Levin's experiencer/goal-subject class); `ActorProfile{actor, core_interest, opposes}` is the teachable LAYERED-GOAL codebook (a handful, illustrative: oil_company -> fossil_fuels vs renewable_energy; cigarette_company -> smoking vs quit-smoking -- coal_company is deliberately NOT pre-seeded here, reserved as the TEACH-EXTENDS demonstration in the test suite). Three rules make every decision, in Rust: `mint_actor_goal` JOINS an ActorAction (actor_role=='agent') to an ActionGoal by Eq(verb) and mints a REVISABLE `ActorGoal{actor, verb, agency:'author', surface_goal, object, serves_conflicting_meta_goal:0.0, revisable:1.0}` (object is the action's own OBJECT DOMAIN, a mechanical premodifier-keeping token-drop -- see `actor_goals._object_domain`'s docstring -- never a fabricated goal value); `mint_actor_goal_recipient` JOINS the SAME ActorAction to a RecipientVerb by Eq(verb) and mints `ActorGoal{agency:'recipient', surface_goal:''}` instead -- the codebook JOIN is what tells the rule this verb's grammatical subject is semantically a recipient, never a Python `if verb=='received'`. `flag_conflicting_meta_goal` JOINS an author-agency ActorGoal to an ActorProfile by Eq(actor), gated on Eq(profile.opposes, goal.object) (the actor's declared core interest conflicts with THIS action's own object domain) and Eq(goal.serves_conflicting_meta_goal, 0.0) (fire once), and SETS `serves_conflicting_meta_goal:1.0` + the raw conflict fields (`meta_goal_core_interest`, `meta_goal_opposes`) + `mechanism:'undetermined'` on the EXISTING ActorGoal node -- DETECT, DO NOT FILL: no rule anywhere asserts a fabricated hidden-goal VALUE, only the conflict basis, and no rule anywhere asserts DELIBERATENESS. SEMANTICS (read before using this flag): `serves_conflicting_meta_goal` does NOT mean the surface action is fake, and it never attributes anything to the funded object or its recipients/beneficiaries (no rule below ever sets an attribute on anything but the FUNDER's own ActorGoal node) -- the project's governing principle is that many things are true at the same time: a funded renewable-energy project can be entirely genuine and good, AND its funder can simultaneously hold a higher-level goal that conflicts with the project's own domain. Both are true; this flag asserts only the second, about the actor's OWN goal layer. The flag is also MECHANISM-AGNOSTIC: a surface-vs-interest conflict is consistent with at least two distinct mechanisms this single act cannot discriminate -- (a) the actor knows a divergent goal and does not state it, or (b) an introspection gap (Nisbett-Wilson confabulation): the actor sincerely believes the stated reason, but it is not the actual driver, with no deliberateness or bad faith involved. `mechanism:'undetermined'` records this honestly on every flagged node; no rule ever picks (a) or (b). HONEST RESIDUAL: a single funding act only makes the conflicting meta-goal a DEFEASIBLE POSSIBILITY (revisable:1.0) -- the stronger evidence, a PATTERN across actions over time (fund the design, then lobby against its adoption) and named schemas for that cross-action pattern (Trojan Horse, Guilt-Based Action), is an explicit LATER SLICE, out of scope here. `held_actor_goals` (domains/actor_goals.py) is the mechanical reader.",
+ "microtheory": {
+  "name": "actor_goals",
+  "description": "an actor's action mints a candidate surface goal via a teachable verb->goal codebook, graded author/recipient by a teachable verb-class codebook, and flagged (never asserted) as possibly serving a conflicting higher-level goal when the actor's own declared interest conflicts with the action's object domain -- graph-joined judgments, revisable, never a Python if/else, and never a claim about the funded object's sincerity"
+ },
+ "nodes": [
+  {"local_id": 1, "type": "ActionGoal", "attrs": {"verb": "fund", "goal": "support", "note": "funding something is canonically in service of supporting/promoting it."}},
+  {"local_id": 2, "type": "ActionGoal", "attrs": {"verb": "sponsor", "goal": "support", "note": "sponsorship is canonically in service of supporting/promoting the sponsored thing."}},
+  {"local_id": 3, "type": "ActionGoal", "attrs": {"verb": "donate", "goal": "support", "note": "donating is canonically in service of supporting the recipient/cause."}},
+  {"local_id": 4, "type": "ActionGoal", "attrs": {"verb": "back", "goal": "support", "note": "backing something is canonically in service of supporting/promoting it."}},
+  {"local_id": 5, "type": "ActionGoal", "attrs": {"verb": "finance", "goal": "support", "note": "financing is canonically in service of supporting/enabling the financed thing."}},
+  {"local_id": 6, "type": "RecipientVerb", "attrs": {"verb": "receive", "note": "'receive' is a goal-subject/experiencer verb -- the grammatical subject names the RECEIVING participant, not the causer (Levin's class), so its ActorGoal reads agency:'recipient', never 'author'."}},
+  {"local_id": 7, "type": "ActorProfile", "attrs": {"actor": "oil_company", "core_interest": "fossil_fuels", "opposes": "renewable_energy", "note": "illustrative: an oil company's declared core interest (fossil fuels) conflicts with a renewable-energy object domain -- the canonical layered-goal case; mechanism-agnostic (does not claim the funder consciously conceals anything, nor that the funded project is anything but genuine)."}},
+  {"local_id": 8, "type": "ActorProfile", "attrs": {"actor": "cigarette_company", "core_interest": "smoking", "opposes": "quit-smoking", "note": "illustrative: a cigarette company's declared core interest (smoking) conflicts with a quit-smoking object domain."}}
+ ],
+ "edges": [
+  {"src": {"role": "agent_root"}, "tgt": {"local": 1}, "attrs": {}, "type": "has_action_goal"},
+  {"src": {"role": "agent_root"}, "tgt": {"local": 2}, "attrs": {}, "type": "has_action_goal"},
+  {"src": {"role": "agent_root"}, "tgt": {"local": 3}, "attrs": {}, "type": "has_action_goal"},
+  {"src": {"role": "agent_root"}, "tgt": {"local": 4}, "attrs": {}, "type": "has_action_goal"},
+  {"src": {"role": "agent_root"}, "tgt": {"local": 5}, "attrs": {}, "type": "has_action_goal"},
+  {"src": {"role": "agent_root"}, "tgt": {"local": 6}, "attrs": {}, "type": "has_recipient_verb"},
+  {"src": {"role": "agent_root"}, "tgt": {"local": 7}, "attrs": {}, "type": "has_actor_profile"},
+  {"src": {"role": "agent_root"}, "tgt": {"local": 8}, "attrs": {}, "type": "has_actor_profile"}
+ ],
+ "productions": [
+  {"provenance": "seed:actor_goals:has_action_goal", "src": {"type": "Agent", "var": "s"}, "edge_type": "has_action_goal", "tgt": {"type": "ActionGoal", "var": "t"}},
+  {"provenance": "seed:actor_goals:has_recipient_verb", "src": {"type": "Agent", "var": "s"}, "edge_type": "has_recipient_verb", "tgt": {"type": "RecipientVerb", "var": "t"}},
+  {"provenance": "seed:actor_goals:has_actor_profile", "src": {"type": "Agent", "var": "s"}, "edge_type": "has_actor_profile", "tgt": {"type": "ActorProfile", "var": "t"}},
+  {"provenance": "seed:actor_goals:has_actor_action", "src": {"type": "Agent", "var": "s"}, "edge_type": "has_actor_action", "tgt": {"type": "ActorAction", "var": "t"}},
+  {"provenance": "seed:actor_goals:has_actor_goal", "src": {"type": "Agent", "var": "s"}, "edge_type": "has_actor_goal", "tgt": {"type": "ActorGoal", "var": "t"}}
+ ],
+ "rules": [
+  {
+   "name": "mint_actor_goal",
+   "batch": false,
+   "match": [
+    ["agent", "has_actor_action", "aa"],
+    ["agent", "has_action_goal", "ag"]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "aa"}, "key": "verb"},
+      "b": {"type": "Attr", "node": {"type": "Var", "name": "ag"}, "key": "verb"}
+     },
+     {
+      "type": "Eq",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "aa"}, "key": "actor_role"},
+      "b": {"type": "Lit", "value": "agent"}
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {"type": "NodesOfType", "node_type": "ActorGoal"},
+       "var_name": "g2",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {"type": "Attr", "node": {"type": "Var", "name": "g2"}, "key": "actor"},
+          "b": {"type": "Attr", "node": {"type": "Var", "name": "aa"}, "key": "actor"}
+         },
+         {
+          "type": "Eq",
+          "a": {"type": "Attr", "node": {"type": "Var", "name": "g2"}, "key": "verb"},
+          "b": {"type": "Attr", "node": {"type": "Var", "name": "aa"}, "key": "verb"}
+         }
+        ]
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    ["add_node", "goal", "ActorGoal", {
+      "actor": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "aa"}, "key": "actor"}},
+      "verb": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "aa"}, "key": "verb"}},
+      "agency": "author",
+      "surface_goal": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "ag"}, "key": "goal"}},
+      "object": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "aa"}, "key": "object_domain"}},
+      "serves_conflicting_meta_goal": 0.0,
+      "meta_goal_core_interest": "",
+      "meta_goal_opposes": "",
+      "revisable": 1.0,
+      "note": "candidate surface goal, abducted from a teachable verb->goal codebook -- a genuine reading of what the action canonically serves"
+    }],
+    ["add_edge", "agent", "has_actor_goal", "goal"]
+   ]
+  },
+  {
+   "name": "mint_actor_goal_recipient",
+   "batch": false,
+   "match": [
+    ["agent", "has_actor_action", "aa"],
+    ["agent", "has_recipient_verb", "rv"]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "aa"}, "key": "verb"},
+      "b": {"type": "Attr", "node": {"type": "Var", "name": "rv"}, "key": "verb"}
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {"type": "NodesOfType", "node_type": "ActorGoal"},
+       "var_name": "g2",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {"type": "Attr", "node": {"type": "Var", "name": "g2"}, "key": "actor"},
+          "b": {"type": "Attr", "node": {"type": "Var", "name": "aa"}, "key": "actor"}
+         },
+         {
+          "type": "Eq",
+          "a": {"type": "Attr", "node": {"type": "Var", "name": "g2"}, "key": "verb"},
+          "b": {"type": "Attr", "node": {"type": "Var", "name": "aa"}, "key": "verb"}
+         }
+        ]
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    ["add_node", "goal", "ActorGoal", {
+      "actor": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "aa"}, "key": "actor"}},
+      "verb": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "aa"}, "key": "verb"}},
+      "agency": "recipient",
+      "surface_goal": "",
+      "object": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "aa"}, "key": "object_domain"}},
+      "serves_conflicting_meta_goal": 0.0,
+      "meta_goal_core_interest": "",
+      "meta_goal_opposes": "",
+      "revisable": 1.0,
+      "note": "no authored goal -- the actor is grammatically the subject but semantically the RECIPIENT/beneficiary of this verb class, per the held RecipientVerb codebook, honestly no surface goal abducted"
+    }],
+    ["add_edge", "agent", "has_actor_goal", "goal"]
+   ]
+  },
+  {
+   "name": "flag_conflicting_meta_goal",
+   "batch": false,
+   "match": [
+    ["agent", "has_actor_goal", "g"],
+    ["agent", "has_actor_profile", "ap"]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "actor"},
+      "b": {"type": "Attr", "node": {"type": "Var", "name": "ap"}, "key": "actor"}
+     },
+     {
+      "type": "Eq",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "agency"},
+      "b": {"type": "Lit", "value": "author"}
+     },
+     {
+      "type": "Eq",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "ap"}, "key": "opposes"},
+      "b": {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "object"}
+     },
+     {
+      "type": "Eq",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "serves_conflicting_meta_goal"},
+      "b": {"type": "Lit", "value": 0.0}
+     }
+    ]
+   },
+   "effects": [
+    ["set_attr", "g", "serves_conflicting_meta_goal", 1.0],
+    ["set_attr", "g", "meta_goal_core_interest", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "ap"}, "key": "core_interest"}}],
+    ["set_attr", "g", "meta_goal_opposes", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "ap"}, "key": "opposes"}}],
+    ["set_attr", "g", "mechanism", "undetermined"]
+   ]
+  }
+ ]
+}

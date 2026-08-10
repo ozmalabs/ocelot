@@ -1,0 +1,140 @@
+{
+ "id": "retinal_salience_2d_focused",
+ "version": "1.0.0",
+ "self_load_only": true,
+ "depends_on": [
+  "retinal_onset_2d"
+ ],
+ "area": "retina",
+ "description": "Opt-in attention-settled twin of retinal_salience_2d. It uses the identical retinal_residual_salience_2d task output and RetinalSalience contract, but enumerates Retina -settles_column-> RetinalColumn rather than the whole has_column sheet. The graph-issued focus command maintains that relation as a bounded rectangle; an explicit attention refusal restores every column. No threshold or winner is introduced here: the existing residual kernel and fovea admissibility grammar remain authoritative.",
+ "microtheory": {
+  "name": "retinal_salience_2d_focused",
+  "description": "2-D residual of the (az,el) onset-event stream after the dominant common-fate motion -> per-cell RetinalSalience"
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [
+  {
+   "provenance": "seed:retinal_salience_2d_focused:retina-salience-params-2d",
+   "src": {"type": "Retina", "var": "retina"},
+   "edge_type": "has_salience_params_2d",
+   "tgt": {"type": "RetinaSalienceParams2d", "var": "sparams"}
+  },
+  {
+   "provenance": "seed:retinal_salience_2d_focused:retina-salience-task-2d",
+   "src": {"type": "Retina", "var": "retina"},
+   "edge_type": "has_salience_task_2d",
+   "tgt": {"type": "CognitiveTask", "var": "task"}
+  },
+  {
+   "provenance": "seed:retinal_salience_2d_focused:retina-retinal-salience-2d",
+   "src": {"type": "Retina", "var": "retina"},
+   "edge_type": "has_salience_2d",
+   "tgt": {"type": "RetinalSalience", "var": "sal"}
+  }
+ ],
+ "rules": [
+  {
+   "name": "retinal_mint_salience_2d_focused",
+   "area": "retina",
+   "order": 4,
+   "latency_class": "hard_realtime",
+   "match": [
+    ["retina", "has_salience_params_2d", "sparams"],
+    ["retina", "settles_column", "column"],
+    ["retina", "has_salience_task_2d", "task"]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "task"}, "key": "kind"},
+      "b": {"type": "Lit", "value": "retinal_residual_salience_2d"}
+     },
+     {
+      "type": "Eq",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "task"}, "key": "status"},
+      "b": {"type": "Lit", "value": "done"}
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {"type": "Attr", "node": {"type": "Var", "name": "column"}, "key": "salience2d_epoch"},
+       "b": {"type": "Attr", "node": {"type": "Var", "name": "task"}, "key": "input_epoch"}
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "IndexAt",
+       "seq": {"type": "Attr", "node": {"type": "Var", "name": "task"}, "key": "output"},
+       "index": {
+        "type": "Plus",
+        "items": [
+         {"type": "Times", "items": [
+          {"type": "Attr", "node": {"type": "Var", "name": "column"}, "key": "cell_index"},
+          {"type": "Lit", "value": 3}
+         ]},
+         {"type": "Lit", "value": 0}
+        ]
+       }
+      },
+      "b": {"type": "Lit", "value": 1.0}
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "sal",
+     "RetinalSalience",
+     {
+      "column_index": {"__term__": {
+       "type": "Attr", "node": {"type": "Var", "name": "column"}, "key": "col"
+      }},
+      "row_index": {"__term__": {
+       "type": "Attr", "node": {"type": "Var", "name": "column"}, "key": "row"
+      }},
+      "cell_index": {"__term__": {
+       "type": "Attr", "node": {"type": "Var", "name": "column"}, "key": "cell_index"
+      }},
+      "raw_salience": {"__term__": {
+       "type": "IndexAt",
+       "seq": {"type": "Attr", "node": {"type": "Var", "name": "task"}, "key": "output"},
+       "index": {"type": "Plus", "items": [
+        {"type": "Times", "items": [
+         {"type": "Attr", "node": {"type": "Var", "name": "column"}, "key": "cell_index"},
+         {"type": "Lit", "value": 3}
+        ]},
+        {"type": "Lit", "value": 1}
+       ]}
+      }},
+      "residual_salience": {"__term__": {
+       "type": "IndexAt",
+       "seq": {"type": "Attr", "node": {"type": "Var", "name": "task"}, "key": "output"},
+       "index": {"type": "Plus", "items": [
+        {"type": "Times", "items": [
+         {"type": "Attr", "node": {"type": "Var", "name": "column"}, "key": "cell_index"},
+         {"type": "Lit", "value": 3}
+        ]},
+        {"type": "Lit", "value": 2}
+       ]}
+      }},
+      "epoch": {"__term__": {
+       "type": "Attr", "node": {"type": "Var", "name": "task"}, "key": "input_epoch"
+      }}
+     }
+    ],
+    ["add_edge", "retina", "has_salience_2d", "sal"],
+    [
+     "set_attr",
+     "column",
+     "salience2d_epoch",
+     {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "task"}, "key": "input_epoch"}}
+    ]
+   ]
+  }
+ ]
+}

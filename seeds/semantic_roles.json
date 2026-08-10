@@ -1,0 +1,392 @@
+{
+  "id": "semantic_roles",
+  "version": "1.0.0",
+  "depends_on": [
+    "situation_model"
+  ],
+  "description": "Semantic-role extraction (who-did-what-to-whom): a structural pass assigns provisional roles from POSITION + PREPOSITION + VOICE (robust), then a verb-FRAME pass refines where those under-determine (to->recipient/goal, with->instrument, unaccusative subject->theme). assign_role is one graph rule over argument nodes; the parse (tokenise, find verb, group NPs, tag PPs/voice) is mechanical. Output = the role-tuples the situation model eats: raw text -> roles -> situation model.",
+  "microtheory": {
+    "name": "semantic_roles",
+    "description": "predicate-argument role labelling"
+  },
+  "nodes": [
+    {
+      "local_id": 1,
+      "type": "Concept",
+      "attrs": {
+        "name": "semantic_role",
+        "description": "The thematic role an argument plays in a predicate: agent (doer), theme/patient (undergoer), recipient, goal, instrument, source, location. Extracted as typed ROLE edges from a predicate node to its argument NPs \u2014 the same tuple the situation model eats."
+      }
+    },
+    {
+      "local_id": 2,
+      "type": "Concept",
+      "attrs": {
+        "name": "predicate_frame",
+        "description": "A small per-verb-lemma fragment listing which roles the verb licenses and how each surface slot binds: it refines the structural guess where position+preposition under-determine (to -> recipient for a transfer verb give/send vs goal for a motion verb walk/go; with -> instrument for cut vs accompaniment for dance; an unaccusative verb shatter/break/melt makes its SUBJECT the theme, not the agent). Unknown verb -> keep the structural guess (graceful)."
+      }
+    },
+    {
+      "local_id": 3,
+      "type": "Principle",
+      "attrs": {
+        "name": "roles_structural_first",
+        "head": "semantic roles",
+        "body": "the robust cues are structural and trusted without the verb: POSITION (NP before the verb = provisional agent, bare NP after = theme), PREPOSITION (each PP tagged by its function-word head to/with/from/in), and VOICE (be + past participle flips the subject to theme and the by-phrase carries the agent) \u2014 the same marker/adjacency machinery as the simile and perspective tests"
+      }
+    },
+    {
+      "local_id": 4,
+      "type": "Principle",
+      "attrs": {
+        "name": "roles_frame_refines",
+        "head": "semantic roles",
+        "body": "the verb FRAME overrides the provisional label only where it is more specific (to->recipient vs goal, with->instrument vs accompaniment, unaccusative subject->theme), leaving the structural guess in place for unknown verbs \u2014 graceful degradation, never a crash"
+      }
+    },
+    {
+      "local_id": 5,
+      "type": "Principle",
+      "attrs": {
+        "name": "roles_feed_situation_model",
+        "head": "semantic roles",
+        "body": "the output is the clean tuple the situation model consumes: one predicate with fully-labelled role edges, voice resolved (the agent is the agent regardless of surface order) and prepositions resolved to thematic roles rather than left as raw to/with"
+      }
+    }
+  ],
+  "edges": [],
+  "rules": [
+    {
+      "name": "assign_role",
+      "match": [
+        [
+          "arg",
+          "arg_of",
+          "cl"
+        ]
+      ],
+      "where": {
+        "type": "Lit",
+        "value": true
+      },
+      "effects": [
+        [
+          "set_attr",
+          "arg",
+          "role",
+          {
+            "__term__": {
+              "type": "IfThenElse",
+              "cond": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "arg"
+                  },
+                  "key": "position"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "subj"
+                }
+              },
+              "then": {
+                "type": "IfThenElse",
+                "cond": {
+                  "type": "Or",
+                  "items": [
+                    {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "arg"
+                        },
+                        "key": "voice"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": "passive"
+                      }
+                    },
+                    {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "arg"
+                        },
+                        "key": "verb_class"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": "unaccusative"
+                      }
+                    }
+                  ]
+                },
+                "then": {
+                  "type": "Lit",
+                  "value": "theme"
+                },
+                "other": {
+                  "type": "Lit",
+                  "value": "agent"
+                }
+              },
+              "other": {
+                "type": "IfThenElse",
+                "cond": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "arg"
+                    },
+                    "key": "position"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": "obj"
+                  }
+                },
+                "then": {
+                  "type": "Lit",
+                  "value": "theme"
+                },
+                "other": {
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "arg"
+                      },
+                      "key": "position"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "by"
+                    }
+                  },
+                  "then": {
+                    "type": "Lit",
+                    "value": "agent"
+                  },
+                  "other": {
+                    "type": "IfThenElse",
+                    "cond": {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "arg"
+                        },
+                        "key": "prep"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": "to"
+                      }
+                    },
+                    "then": {
+                      "type": "IfThenElse",
+                      "cond": {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "arg"
+                          },
+                          "key": "verb_class"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": "motion"
+                        }
+                      },
+                      "then": {
+                        "type": "Lit",
+                        "value": "goal"
+                      },
+                      "other": {
+                        "type": "Lit",
+                        "value": "recipient"
+                      }
+                    },
+                    "other": {
+                      "type": "IfThenElse",
+                      "cond": {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "arg"
+                          },
+                          "key": "prep"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": "with"
+                        }
+                      },
+                      "then": {
+                        "type": "IfThenElse",
+                        "cond": {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "arg"
+                            },
+                            "key": "verb_class"
+                          },
+                          "b": {
+                            "type": "Lit",
+                            "value": "instrument_verb"
+                          }
+                        },
+                        "then": {
+                          "type": "Lit",
+                          "value": "instrument"
+                        },
+                        "other": {
+                          "type": "Lit",
+                          "value": "accompaniment"
+                        }
+                      },
+                      "other": {
+                        "type": "IfThenElse",
+                        "cond": {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "arg"
+                            },
+                            "key": "prep"
+                          },
+                          "b": {
+                            "type": "Lit",
+                            "value": "from"
+                          }
+                        },
+                        "then": {
+                          "type": "Lit",
+                          "value": "source"
+                        },
+                        "other": {
+                          "type": "IfThenElse",
+                          "cond": {
+                            "type": "Or",
+                            "items": [
+                              {
+                                "type": "Eq",
+                                "a": {
+                                  "type": "Attr",
+                                  "node": {
+                                    "type": "Var",
+                                    "name": "arg"
+                                  },
+                                  "key": "prep"
+                                },
+                                "b": {
+                                  "type": "Lit",
+                                  "value": "in"
+                                }
+                              },
+                              {
+                                "type": "Eq",
+                                "a": {
+                                  "type": "Attr",
+                                  "node": {
+                                    "type": "Var",
+                                    "name": "arg"
+                                  },
+                                  "key": "prep"
+                                },
+                                "b": {
+                                  "type": "Lit",
+                                  "value": "at"
+                                }
+                              },
+                              {
+                                "type": "Eq",
+                                "a": {
+                                  "type": "Attr",
+                                  "node": {
+                                    "type": "Var",
+                                    "name": "arg"
+                                  },
+                                  "key": "prep"
+                                },
+                                "b": {
+                                  "type": "Lit",
+                                  "value": "on"
+                                }
+                              },
+                              {
+                                "type": "Eq",
+                                "a": {
+                                  "type": "Attr",
+                                  "node": {
+                                    "type": "Var",
+                                    "name": "arg"
+                                  },
+                                  "key": "prep"
+                                },
+                                "b": {
+                                  "type": "Lit",
+                                  "value": "into"
+                                }
+                              },
+                              {
+                                "type": "Eq",
+                                "a": {
+                                  "type": "Attr",
+                                  "node": {
+                                    "type": "Var",
+                                    "name": "arg"
+                                  },
+                                  "key": "prep"
+                                },
+                                "b": {
+                                  "type": "Lit",
+                                  "value": "onto"
+                                }
+                              }
+                            ]
+                          },
+                          "then": {
+                            "type": "Lit",
+                            "value": "location"
+                          },
+                          "other": {
+                            "type": "Lit",
+                            "value": "modifier"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      ]
+    }
+  ]
+}

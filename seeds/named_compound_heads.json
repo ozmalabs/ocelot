@@ -1,0 +1,16 @@
+{
+  "id": "named_compound_heads",
+  "version": "1.0.0",
+  "note": "The head-type roots a NAMED COMPOUND ('Nobel Prize', 'Fields Medal', 'Curie Institute', 'Boyle's Law', 'Pythagoras Theorem') composes to. NOT a name table and NOT a head-word table: each root is a WordNet ROOT SYNSET, and a head word is a member iff its noun senses descend from the root (award.n.02 covers prize/medal/award/trophy; organization.n.01/institution.n.01 cover university/institute/committee/academy/foundation/society; proposition.n.01 covers theorem; law.n.01 covers law). Extensible: drop another HeadTypeRoot node to admit a new head family. `animate 0` = the composed entity is an inanimate honour/institution/proposition. The acquisition-verb roots (AcquireVerbRoot) type the WIN/RECEIVE/EARN class the coherence-check uses for the role-mismatch signal (a person as the THEME of 'won' is incoherent) — again a WordNet root, not a verb list.",
+  "nodes": [
+    {"type": "HeadTypeRoot", "attrs": {"synset": "award.n.02", "category": "award", "animate": 0, "gloss": "a tangible symbol signifying approval or distinction"}},
+    {"type": "HeadTypeRoot", "attrs": {"synset": "trophy.n.02", "category": "award", "animate": 0, "gloss": "an award for success in war or hunting"}},
+    {"type": "HeadTypeRoot", "attrs": {"synset": "institution.n.01", "category": "institution", "animate": 0, "gloss": "an organization founded for a specific purpose"}},
+    {"type": "HeadTypeRoot", "attrs": {"synset": "organization.n.01", "category": "institution", "animate": 0, "gloss": "a group of people who work together"}},
+    {"type": "HeadTypeRoot", "attrs": {"synset": "proposition.n.01", "category": "proposition", "animate": 0, "gloss": "a statement that affirms or denies something"}},
+    {"type": "HeadTypeRoot", "attrs": {"synset": "law.n.01", "category": "law", "animate": 0, "gloss": "a rule or body of rules"}},
+    {"type": "AcquireVerbRoot", "attrs": {"synset": "get.v.01", "note": "acquire/receive/win/earn descend from get.v.01"}},
+    {"type": "AcquireVerbLex", "attrs": {"lexname": "verb.competition", "note": "win/beat/defeat"}},
+    {"type": "AcquireVerbLex", "attrs": {"lexname": "verb.possession", "note": "receive/award/earn/give"}}
+  ]
+}

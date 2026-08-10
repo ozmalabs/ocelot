@@ -1,0 +1,30 @@
+{
+ "id": "compositional_plan",
+ "version": "1.0.0",
+ "depends_on": [],
+ "description": "The agent AUTHORS the plan for the compositional program (the remaining gain ABOVE the now-at-parity generative leaf), deriving each piece's FORM from the LAW that governs it -- no teacher. A Piece --governed_by--> Principle; prescribe copies the principle's prescribed_action onto the piece and computes its expected_gain = the principle's measured payoff x the piece's applicability, and flags a piece still in a form its evidence REJECTS (current_form == the principle's failed_form). The decisions are Rules over the agent's own laws.",
+ "microtheory": {"name": "compositional_plan", "description": "derive the compositional-program plan from the agent's own laws"},
+ "nodes": [], "edges": [], "productions": [],
+ "rules": [
+  {
+   "name": "prescribe",
+   "match": [["piece", "governed_by", "law"]],
+   "where": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "piece"}, "key": "prescribed"}, "b": {"type": "Lit", "value": 0.0}},
+   "effects": [
+     ["set_attr", "piece", "prescribed_form", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "law"}, "key": "prescribed_action"}}],
+     ["set_attr", "piece", "expected_gain", {"__term__": {"type": "Times", "items": [
+        {"type": "Attr", "node": {"type": "Var", "name": "law"}, "key": "payoff"},
+        {"type": "Attr", "node": {"type": "Var", "name": "piece"}, "key": "applicability"}]}}],
+     ["set_attr", "piece", "prescribed", 1.0]
+   ]
+  },
+  {
+   "name": "flag_wrong_form",
+   "match": [["piece", "governed_by", "law"]],
+   "where": {"type": "And", "items": [
+     {"type": "Gt", "a": {"type": "Attr", "node": {"type": "Var", "name": "piece"}, "key": "current_is_failed"}, "b": {"type": "Lit", "value": 0.0}}
+   ]},
+   "effects": [["set_attr", "piece", "reframe_needed", 1.0]]
+  }
+ ]
+}

@@ -1,0 +1,38 @@
+{
+ "id": "recognition_design",
+ "version": "1.0.0",
+ "depends_on": [],
+ "description": "The agent DESIGNS + SCOPES how to make recognition better, from its OWN measured evidence — no teacher. Its arc established one principle that pays (MARGINALISE a genuinely-uncertain structural latent: parse +1.0) and several that do not (marginalising a DETERMINED latent hurts; an addable LEARNED cue fails, 6x; a simple learned prior plateaus). design_marginalise APPLIES the proven principle to NEW ground: for every structural latent the agent believes UNCERTAIN but has NOT yet marginalised, it mints a Direction 'marginalise <latent>' with expected_gain = its measured proven-lever payoff x the latent's uncertainty — the agent generating research directions from its own evidence. score_direction ranks every direction (designed + the ambitious/rejected ones the host stages) by expected_gain; recommend/reject is read off the sign. The DECISIONS are Rules over the agent's evidence.",
+ "microtheory": {"name": "recognition_design", "description": "design + scope recognition improvements from measured evidence"},
+ "nodes": [], "edges": [], "productions": [],
+ "rules": [
+  {
+   "name": "design_marginalise",
+   "match": [["ev", "has_latent", "lat"]],
+   "where": {"type": "And", "items": [
+     {"type": "Gt", "a": {"type": "Attr", "node": {"type": "Var", "name": "lat"}, "key": "uncertain"}, "b": {"type": "Lit", "value": 0.5}},
+     {"type": "Lt", "a": {"type": "Attr", "node": {"type": "Var", "name": "lat"}, "key": "marginalised"}, "b": {"type": "Lit", "value": 0.5}},
+     {"type": "Eq", "a": {"type": "Count", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "lat"}, "edge_type": "designed", "any_type": false}}, "b": {"type": "Lit", "value": 0}}
+   ]},
+   "effects": [
+     ["add_node", "dir", "Direction", {
+        "kind": "marginalise_uncertain", "cost": 1.0, "novel": 1.0,
+        "target": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "lat"}, "key": "name"}},
+        "expected_gain": {"__term__": {"type": "Times", "items": [
+            {"type": "Attr", "node": {"type": "Var", "name": "ev"}, "key": "proven_marginal_payoff"},
+            {"type": "Attr", "node": {"type": "Var", "name": "lat"}, "key": "uncertain"}]}}}],
+     ["add_edge", "ev", "has_direction", "dir"],
+     ["add_edge", "lat", "designed", "dir"]
+   ]
+  },
+  {
+   "name": "score_direction",
+   "match": [["ev", "has_direction", "dir"]],
+   "effects": [
+     ["set_attr", "dir", "recommend", {"__term__": {"type": "IfThenElse",
+        "cond": {"type": "Gt", "a": {"type": "Attr", "node": {"type": "Var", "name": "dir"}, "key": "expected_gain"}, "b": {"type": "Lit", "value": 0.3}},
+        "then": {"type": "Lit", "value": 1.0}, "other": {"type": "Lit", "value": 0.0}}}]
+   ]
+  }
+ ]
+}

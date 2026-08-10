@@ -1,0 +1,399 @@
+{
+ "id": "composer_browse_graph",
+ "version": "1.0.0",
+ "depends_on": [],
+ "description": "GRAPH-RESIDENT: _compose_browse_rule's plain (non-constrained) branch as a meta-rule. Mints choose_affordance_by_relevance_<tag> + browse_goal_satisfied_when_seen_<tag> from a wants_browse_rule trigger.",
+ "nodes": [
+  {
+   "local_id": 1,
+   "type": "Rule",
+   "attrs": {
+    "id": "compose_browse_graph",
+    "match": [
+     [
+      "agent",
+      "wants_browse_rule",
+      "cr"
+     ]
+    ],
+    "where": {
+     "type": "Lt",
+     "a": {
+      "type": "Plus",
+      "items": [
+       {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "cr"
+        },
+        "key": "composed"
+       },
+       {
+        "type": "Lit",
+        "value": 0.0
+       }
+      ]
+     },
+     "b": {
+      "type": "Lit",
+      "value": 0.5
+     }
+    },
+    "effect": [
+     [
+      "add_node",
+      "rn0",
+      "Rule",
+      {
+       "minted": 0.0
+      }
+     ],
+     [
+      "set_attr",
+      "rn0",
+      "id",
+      {
+       "__term__": {
+        "type": "StringConcat",
+        "parts": [
+         {
+          "type": "Lit",
+          "value": "choose_affordance_by_relevance_"
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "cr"
+          },
+          "key": "tag"
+         }
+        ]
+       }
+      }
+     ],
+     [
+      "set_attr",
+      "rn0",
+      "match",
+      [
+       [
+        "sess",
+        "has_goal",
+        "goal"
+       ]
+      ]
+     ],
+     [
+      "set_attr",
+      "rn0",
+      "where",
+      {
+       "type": "Not",
+       "arg": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "goal"
+         },
+         "key": "status"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "satisfied"
+        }
+       }
+      }
+     ],
+     [
+      "set_attr",
+      "rn0",
+      "effect",
+      [
+       [
+        "set_attr",
+        "sess",
+        "chosen_action",
+        {
+         "__term__": {
+          "type": "Attr",
+          "node": {
+           "type": "Argmax",
+           "source": {
+            "type": "Neighbours",
+            "node": {
+             "type": "Var",
+             "name": "sess"
+            },
+            "edge_type": "has_affordance"
+           },
+           "var_name": "aff",
+           "value": {
+            "type": "Sum",
+            "source": {
+             "type": "Neighbours",
+             "node": {
+              "type": "Var",
+              "name": "goal"
+             },
+             "edge_type": "wants"
+            },
+            "var_name": "wm",
+            "value": {
+             "type": "IfThenElse",
+             "cond": {
+              "type": "Gte",
+              "a": {
+               "type": "StringIndexOf",
+               "haystack": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "aff"
+                },
+                "key": "label_lc"
+               },
+               "needle": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "wm"
+                },
+                "key": "text"
+               }
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0
+              }
+             },
+             "then": {
+              "type": "Lit",
+              "value": 1
+             },
+             "other": {
+              "type": "Lit",
+              "value": 0
+             }
+            }
+           },
+           "default": {
+            "type": "Lit",
+            "value": 0
+           }
+          },
+          "key": "world_id"
+         }
+        }
+       ]
+      ]
+     ],
+     [
+      "set_rule_clause",
+      {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "rn0"
+        },
+        "key": "id"
+       }
+      },
+      "__mint__",
+      {
+       "__term__": {
+        "type": "Var",
+        "name": "rn0"
+       }
+      }
+     ],
+     [
+      "add_node",
+      "rn1",
+      "Rule",
+      {
+       "minted": 0.0
+      }
+     ],
+     [
+      "set_attr",
+      "rn1",
+      "id",
+      {
+       "__term__": {
+        "type": "StringConcat",
+        "parts": [
+         {
+          "type": "Lit",
+          "value": "browse_goal_satisfied_when_seen_"
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "cr"
+          },
+          "key": "tag"
+         }
+        ]
+       }
+      }
+     ],
+     [
+      "set_attr",
+      "rn1",
+      "match",
+      [
+       [
+        "sess",
+        "has_goal",
+        "goal"
+       ],
+       [
+        "sess",
+        "contains",
+        "el"
+       ]
+      ]
+     ],
+     [
+      "set_attr",
+      "rn1",
+      "where",
+      {
+       "type": "And",
+       "items": [
+        {
+         "type": "Not",
+         "arg": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "goal"
+           },
+           "key": "status"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "satisfied"
+          }
+         }
+        },
+        {
+         "type": "Not",
+         "arg": {
+          "type": "Exists",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "el"
+           },
+           "edge_type": "affords"
+          },
+          "var_name": "_k",
+          "predicate": {
+           "type": "Lit",
+           "value": true
+          }
+         }
+        },
+        {
+         "type": "Exists",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "goal"
+          },
+          "edge_type": "wants"
+         },
+         "var_name": "wm2",
+         "predicate": {
+          "type": "Gte",
+          "a": {
+           "type": "StringIndexOf",
+           "haystack": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "el"
+            },
+            "key": "text_lc"
+           },
+           "needle": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "wm2"
+            },
+            "key": "text"
+           }
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0
+          }
+         }
+        }
+       ]
+      }
+     ],
+     [
+      "set_attr",
+      "rn1",
+      "effect",
+      [
+       [
+        "set_attr",
+        "goal",
+        "status",
+        "satisfied"
+       ],
+       [
+        "set_attr",
+        "sess",
+        "chosen_action",
+        ""
+       ]
+      ]
+     ],
+     [
+      "set_rule_clause",
+      {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "rn1"
+        },
+        "key": "id"
+       }
+      },
+      "__mint__",
+      {
+       "__term__": {
+        "type": "Var",
+        "name": "rn1"
+       }
+      }
+     ],
+     [
+      "set_attr",
+      "cr",
+      "composed",
+      1.0
+     ]
+    ]
+   }
+  }
+ ],
+ "edges": [],
+ "productions": []
+}

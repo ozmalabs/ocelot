@@ -1,0 +1,118 @@
+{
+  "id": "ml_failure_modes_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "hallucination_LLM",
+  "in_microtheory": "machine_learning",
+  "description": "ML failure modes decomposed. The specific ways trained models fail, and why each failure is inherent to the training paradigm rather than a fixable bug. Hallucination, adversarial examples, distribution shift, calibration breakdown, catastrophic forgetting, mode collapse, dataset contamination, spurious correlations.",
+  "sub_mechanisms": [
+    {
+      "name": "hallucination_pattern_matching",
+      "definition": "LLM generates plausible-sounding falsehoods. Fabricated citations, made-up facts, wrong dates.",
+      "why": "Training optimises for plausibility (probability under model distribution), not truth. Plausible-sounding outputs are statistically what the model is for. Truth is not an objective in pretraining.",
+      "category": "failure_mechanism"
+    },
+    {
+      "name": "RAG_grounding",
+      "definition": "Retrieval-Augmented Generation: search relevant docs; provide to model; model cites.",
+      "why": "Mitigates hallucination by providing actual context. Cost: retrieval quality + cite-without-hallucinate is still hard. Doesn't fundamentally fix the issue — model can still mis-attribute or fabricate from context.",
+      "category": "failure_mechanism"
+    },
+    {
+      "name": "adversarial_perturbation_vision",
+      "definition": "Imperceptibly modified image causes wrong classification. Goodfellow 2014.",
+      "why": "Network decision boundary doesn't align with semantic boundary. Gradient direction reveals exact perturbation. Universal: works on every architecture. Network's 'understanding' differs from human's.",
+      "category": "failure_mechanism"
+    },
+    {
+      "name": "jailbreak_prompt_engineering",
+      "definition": "Adversarial prompts bypassing safety: DAN, Sydney, roleplay, encoded instructions, prefix injection.",
+      "why": "Safety training shallow: token-pattern matching. Prompts that don't match training patterns slip through. Each generation of safety training spawns new jailbreaks. Universal: jailbreaks work across models.",
+      "category": "failure_mechanism"
+    },
+    {
+      "name": "distribution_shift_calibration",
+      "definition": "Model trained on distribution A, deployed on distribution B. Accuracy + confidence calibration both break.",
+      "why": "Test set ≠ production. Common in production: data drift, new user populations, adversarial inputs. ML systems are brittle to OOD. The substrate's symbolic knowledge doesn't have this — facts don't shift.",
+      "category": "failure_mechanism"
+    },
+    {
+      "name": "calibration_breakdown",
+      "definition": "Model confident on wrong answers. P(correct | conf=0.9) ≠ 0.9 under shift.",
+      "why": "Trained calibration only holds in distribution. Out-of-distribution: confidences become misleading. Critical for decision systems. Mitigation: temperature scaling, conformal prediction.",
+      "category": "failure_mechanism"
+    },
+    {
+      "name": "catastrophic_forgetting_continual",
+      "definition": "Train on task A then B. Performance on A drops to near-random.",
+      "why": "Weights overwritten by gradient descent on task B. Network's representations restructured for new task. Inherent to SGD with shared weights. Mitigations: EWC, replay, LoRA (frozen base).",
+      "category": "failure_mechanism"
+    },
+    {
+      "name": "mode_collapse_GAN",
+      "definition": "Generative model produces narrow output distribution. GAN converges to small set of outputs.",
+      "why": "Training instability. Generator finds outputs that fool discriminator + repeats. Diffusion models more stable but exhibit lesser version. Quality vs diversity tradeoff in all generative.",
+      "category": "failure_mechanism"
+    },
+    {
+      "name": "dataset_contamination",
+      "definition": "Test set leaks into training data. Inflated metrics; misleading reports.",
+      "why": "Web-scale pretraining: hard to verify exclusion of standard benchmarks. GSM-8K, HumanEval may be in training data of various LLMs. Many published benchmark results suspect.",
+      "category": "failure_mechanism"
+    },
+    {
+      "name": "spurious_correlations",
+      "definition": "Model learns correlation that's not causally relevant. Cow on grass classified as 'cow'; on beach: 'dog' (in some image classifiers).",
+      "why": "Loss minimised by any working signal, including spurious. Without explicit causal structure, can't distinguish. Standard problem; affects deployment robustness.",
+      "category": "failure_mechanism"
+    },
+    {
+      "name": "data_leakage_in_training",
+      "definition": "Test labels leak into features during preprocessing. Or future information leaks back in time-series.",
+      "why": "Subtle: feature engineering can leak info. Standard cause of suspiciously-high training metrics that fail in production. Best practice: strict separation; even validation set must be untouched by feature engineering.",
+      "category": "failure_mechanism"
+    },
+    {
+      "name": "benchmark_overfitting",
+      "definition": "Industry optimises for visible benchmarks; benchmarks no longer measure real capability.",
+      "why": "Models tuned to MMLU, GSM-8K, HumanEval. Benchmark scores increase faster than 'real' capability. Goodhart's law at industry scale.",
+      "category": "failure_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "hallucination_inherent_to_probabilistic_generation",
+      "if": ["model is trained on plausibility"],
+      "then": ["it generates confident plausible falsehoods"],
+      "why": "Loss function rewards token-by-token plausibility. No truth signal. Model outputs what training distribution likes — which often is not what's true. RAG + structured knowledge (substrate's approach) provide alternatives.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "adversarial_examples_universal",
+      "if": ["network learned a function not equal to the human concept"],
+      "then": ["adversarial examples exist for it"],
+      "why": "Different function = different decision boundary. Gradient ascent on input reveals boundary location. Universal across architectures, datasets. Symptom of statistical fit vs symbolic understanding.",
+      "soundness_category": "algebraic_law"
+    },
+    {
+      "name": "distribution_shift_compounds_in_production",
+      "if": ["deployed model sees inputs from distribution different from training"],
+      "then": ["accuracy degrades + calibration breaks"],
+      "why": "ML systems are interpolators trained on a snapshot. Production data drifts: new users, new behaviours, new fraud patterns. Continuous retraining + monitoring is the operational practice. The substrate's symbolic knowledge doesn't drift.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "benchmark_contamination_invalidates_results",
+      "if": ["test data is in the model's training data"],
+      "then": ["benchmark scores measure memorisation, not capability"],
+      "why": "Web-scale pretraining likely includes published benchmarks. Reported gains may be from data leakage. Hard to verify; even self-reported tests suspect. The credibility crisis of current ML benchmarks.",
+      "soundness_category": "referential_transparency"
+    },
+    {
+      "name": "spurious_correlations_brittle_to_environment",
+      "if": ["model learned non-causal correlation"],
+      "then": ["it fails when correlation breaks in deployment"],
+      "why": "Cow-on-grass classifier fails on cow-on-beach. Without causal structure, model can't distinguish background-of-class from class-itself. The substrate's explicit knowledge has causal structure built in via rule chains.",
+      "soundness_category": "extensional_equivalence"
+    }
+  ]
+}

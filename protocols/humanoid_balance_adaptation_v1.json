@@ -1,0 +1,44 @@
+{
+  "protocol": "humanoid_balance_adaptation_v1",
+  "status": "development_demonstration",
+  "claim": "A fresh graph can learn the situated balance effects of a full articulated humanoid's opaque joint twitches from a stable calibration fixture, then reduce disturbance and improve height relative to holding the current sensed configuration.",
+  "simulator": "pybullet",
+  "asset": "mjcf/humanoid.xml",
+  "seed": 0,
+  "body": {
+    "time_step_seconds": 0.004166666666666667,
+    "gravity_acceleration": 9.81,
+    "action_frames": 2,
+    "initial_settling_frames": 480,
+    "calibration_recovery_frames": 36,
+    "joint_twitch_radians": 0.1,
+    "maximum_joint_force": 50.0,
+    "position_gain": 0.3,
+    "velocity_gain": 1.0
+  },
+  "calibration": {
+    "samples_per_non_tonic_actuator": 1,
+    "restore_stable_configuration_between_samples": true
+  },
+  "perturbation": {
+    "world_frame_force_body_weights": [
+      9.0,
+      2.25,
+      0.0
+    ],
+    "frames": 1
+  },
+  "recovery": {
+    "actions": 360,
+    "modes": [
+      "adaptive_graph",
+      "tonic_posture_control"
+    ]
+  },
+  "evaluation": {
+    "minimum_upright_height_fraction": 0.75,
+    "adaptive_must_remain_upright": true,
+    "tonic_control_must_fall": false,
+    "adaptive_tilt_integral_must_be_lower": true
+  }
+}

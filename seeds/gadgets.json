@@ -1,0 +1,1300 @@
+{
+ "id": "gadgets",
+ "version": "0.1.0",
+ "depends_on": [
+  "neural_networks",
+  "compiler_theory"
+ ],
+ "description": "Exact-construction ReLU gadgets — fixed-weight sub-nets that compute a KNOWN continuous-piecewise-linear (CPWL) function. The cortex picks one of these when a target is a known formula instead of an unknown statistical function; render_to_weights materialises the weight matrices directly from the gadget's attrs. NO TRAINING. Source: §2.1 of docs/net_construction_techniques.md (Arora-style ReLU = CPWL representation; Garcia-Alvarez et al. 2025 construction methodology).",
+ "category_inheritance": "genlMt → neural_networks (NN vocabulary) and → compiler_theory (continuity/soundness predicates — §2.6 of the doc).",
+ "concepts": [
+  {
+   "name": "cpwl_function",
+   "definition": "Continuous piecewise-linear function. Exactly representable by a finite ReLU network — Arora et al. (ICLR 2018). The constructible territory."
+  },
+  {
+   "name": "gadget",
+   "definition": "Fixed-weight ReLU sub-network computing a specific CPWL function. Constructed once from a formula, reused without retraining."
+  },
+  {
+   "name": "exact_construction",
+   "definition": "Rendering a held formula directly into weights. The opposite of gradient descent: starts from understanding, not from a random init seeking the end."
+  },
+  {
+   "name": "polarization",
+   "definition": "x·y = ½·((x+y)² − x² − y²). Reduces multiplication to squaring; the gateway from §2.1 primitives to §2.4 polynomials (lifted in a follow-up turn)."
+  },
+  {
+   "name": "fold_construction",
+   "definition": "Reuse one fold gadget at depth L to get 2^L linear pieces of x². The depth/precision trick from §2.3 (not implemented yet — referenced by net_construction_techniques.md)."
+  }
+ ],
+ "gadgets": [
+  {
+   "name": "identity_gadget",
+   "definition": "f(x) = x via x = ReLU(x) − ReLU(−x). Emulates a skip connection in a strictly-feedforward ReLU net.",
+   "applies_when": [
+    "cpwl_function",
+    "exact_construction",
+    "univariate",
+    "identity_op"
+   ],
+   "mechanism": "Layer 1 splits x into [ReLU(x), ReLU(−x)]; layer 2 takes the difference.",
+   "tradeoff": "Two hidden units for a pass-through — wasteful when residual connections are available. Useful as a building block when they aren't.",
+   "category": "cpwl_construction",
+   "expected_speedup": 1.0,
+   "dim_behavior": "preserves",
+   "dim_in": 1,
+   "dim_out": 1,
+   "hidden_dim": 2,
+   "gadget_kind": "cpwl_primitive",
+   "formula": "f(x) = x",
+   "weight_W1": [
+    [
+     1.0
+    ],
+    [
+     -1.0
+    ]
+   ],
+   "weight_b1": [
+    0.0,
+    0.0
+   ],
+   "weight_W2": [
+    [
+     1.0,
+     -1.0
+    ]
+   ],
+   "weight_b2": [
+    0.0
+   ]
+  },
+  {
+   "name": "abs_gadget",
+   "definition": "f(x) = |x| via |x| = ReLU(x) + ReLU(−x). The canonical one-layer ReLU construction.",
+   "applies_when": [
+    "cpwl_function",
+    "exact_construction",
+    "univariate",
+    "absolute_value"
+   ],
+   "mechanism": "Layer 1 splits x into [ReLU(x), ReLU(−x)]; layer 2 sums them.",
+   "tradeoff": "Discontinuous derivative at 0; for smooth abs use Huber or the soft-abs variant.",
+   "category": "cpwl_construction",
+   "expected_speedup": 1.0,
+   "dim_behavior": "preserves",
+   "dim_in": 1,
+   "dim_out": 1,
+   "hidden_dim": 2,
+   "gadget_kind": "cpwl_primitive",
+   "formula": "f(x) = |x|",
+   "weight_W1": [
+    [
+     1.0
+    ],
+    [
+     -1.0
+    ]
+   ],
+   "weight_b1": [
+    0.0,
+    0.0
+   ],
+   "weight_W2": [
+    [
+     1.0,
+     1.0
+    ]
+   ],
+   "weight_b2": [
+    0.0
+   ]
+  },
+  {
+   "name": "max_gadget",
+   "definition": "f(x, y) = max(x, y) via max(x, y) = ReLU(x − y) + y. One hidden layer with 3 units (one for ReLU(x−y), two to reconstruct y as ReLU(y) − ReLU(−y) so layer 2 can be a pure linear without depending on input bias).",
+   "applies_when": [
+    "cpwl_function",
+    "exact_construction",
+    "bivariate",
+    "max_op"
+   ],
+   "mechanism": "hidden = [ReLU(x − y), ReLU(y), ReLU(−y)]; output = hidden[0] + hidden[1] − hidden[2] = ReLU(x − y) + y.",
+   "tradeoff": "Three hidden units instead of two; the extra dim lets us avoid bias-depends-on-input.",
+   "category": "cpwl_construction",
+   "expected_speedup": 1.0,
+   "dim_behavior": "transforms",
+   "dim_in": 2,
+   "dim_out": 1,
+   "hidden_dim": 3,
+   "gadget_kind": "cpwl_primitive",
+   "formula": "f(x, y) = max(x, y)",
+   "weight_W1": [
+    [
+     1.0,
+     -1.0
+    ],
+    [
+     0.0,
+     1.0
+    ],
+    [
+     0.0,
+     -1.0
+    ]
+   ],
+   "weight_b1": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "weight_W2": [
+    [
+     1.0,
+     1.0,
+     -1.0
+    ]
+   ],
+   "weight_b2": [
+    0.0
+   ]
+  },
+  {
+   "name": "min_gadget",
+   "definition": "f(x, y) = min(x, y) via min(x, y) = −ReLU(y − x) + y. Mirror of max_gadget.",
+   "applies_when": [
+    "cpwl_function",
+    "exact_construction",
+    "bivariate",
+    "min_op"
+   ],
+   "mechanism": "hidden = [ReLU(y − x), ReLU(y), ReLU(−y)]; output = −hidden[0] + hidden[1] − hidden[2] = −ReLU(y − x) + y.",
+   "tradeoff": "Same width/depth as max_gadget; produced as a parallel pair when both min and max are needed.",
+   "category": "cpwl_construction",
+   "expected_speedup": 1.0,
+   "dim_behavior": "transforms",
+   "dim_in": 2,
+   "dim_out": 1,
+   "hidden_dim": 3,
+   "gadget_kind": "cpwl_primitive",
+   "formula": "f(x, y) = min(x, y)",
+   "weight_W1": [
+    [
+     -1.0,
+     1.0
+    ],
+    [
+     0.0,
+     1.0
+    ],
+    [
+     0.0,
+     -1.0
+    ]
+   ],
+   "weight_b1": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "weight_W2": [
+    [
+     -1.0,
+     1.0,
+     -1.0
+    ]
+   ],
+   "weight_b2": [
+    0.0
+   ]
+  },
+  {
+   "name": "abs_2d_gadget",
+   "definition": "Parallel application of |·| to each dim of a 2-vector: f([x, y]) = [|x|, |y|]. Two abs_gadgets composed laterally as width — §2.7 of the construction doc.",
+   "applies_when": [
+    "cpwl_function",
+    "exact_construction",
+    "bivariate",
+    "elementwise_abs"
+   ],
+   "mechanism": "hidden = [ReLU(x), ReLU(−x), ReLU(y), ReLU(−y)]; output = [hidden[0]+hidden[1], hidden[2]+hidden[3]] = [|x|, |y|]. Block-diagonal W1 + block-diagonal W2.",
+   "tradeoff": "Block-diagonal structure wastes parameters relative to a fused implementation; clarity wins.",
+   "category": "cpwl_construction",
+   "expected_speedup": 1.0,
+   "dim_behavior": "preserves",
+   "dim_in": 2,
+   "dim_out": 2,
+   "hidden_dim": 4,
+   "gadget_kind": "cpwl_primitive",
+   "formula": "f([x, y]) = [|x|, |y|]",
+   "weight_W1": [
+    [
+     1.0,
+     0.0
+    ],
+    [
+     -1.0,
+     0.0
+    ],
+    [
+     0.0,
+     1.0
+    ],
+    [
+     0.0,
+     -1.0
+    ]
+   ],
+   "weight_b1": [
+    0.0,
+    0.0,
+    0.0,
+    0.0
+   ],
+   "weight_W2": [
+    [
+     1.0,
+     1.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     1.0,
+     1.0
+    ]
+   ],
+   "weight_b2": [
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "name": "abs_3d_gadget",
+   "definition": "Parallel application of |·| to each dim of a 3-vector: f([a, b, c]) = [|a|, |b|, |c|]. Block-diagonal expansion of abs_gadget × 3 (§2.7 width composition). Renders to (6×3, 6, 3×6, 3) weights at construct time — declared structurally; not hand-coded.",
+   "applies_when": [
+    "cpwl_function",
+    "exact_construction",
+    "trivariate",
+    "elementwise_abs"
+   ],
+   "mechanism": "construct_weights reads parallel_of=abs_gadget, expands its W1/b1/W2/b2 block-diagonally to 3 copies, emits 4 WeightTensors.",
+   "tradeoff": "Block-diagonal structure makes the parallel application obvious in the weights; a fused implementation could save parameters at the cost of clarity.",
+   "category": "cpwl_construction",
+   "expected_speedup": 1.0,
+   "dim_behavior": "preserves",
+   "dim_in": 3,
+   "dim_out": 3,
+   "gadget_kind": "cpwl_parallel",
+   "parallel_of": "abs_gadget",
+   "parallel_count": 3,
+   "formula": "f([a, b, c]) = [|a|, |b|, |c|]"
+  },
+  {
+   "name": "square_pwl_10_3d_gadget",
+   "definition": "Parallel application of square_pwl_10_gadget to each dim of a 3-vector on [0, 1]³: f([a, b, c]) ≈ [a², b², c²]. Block-diagonal expansion of square_pwl_10 × 3. The block-diagonal expansion of a width-10 primitive gives a 30-hidden-unit layer.",
+   "applies_when": [
+    "cpwl_approximation",
+    "polynomial",
+    "trivariate",
+    "square_op_unit_interval"
+   ],
+   "mechanism": "construct_weights reads parallel_of=square_pwl_10_gadget, expands its W1/b1/W2/b2 block-diagonally to 3 copies, emits 4 WeightTensors.",
+   "tradeoff": "Same accuracy bound as the 1D version (error ≤ 0.25%); three times the parameters.",
+   "category": "cpwl_construction",
+   "expected_speedup": 1.0,
+   "dim_behavior": "preserves",
+   "dim_in": 3,
+   "dim_out": 3,
+   "gadget_kind": "cpwl_parallel",
+   "parallel_of": "square_pwl_10_gadget",
+   "parallel_count": 3,
+   "formula": "f([a, b, c]) ≈ [a², b², c²] for a, b, c ∈ [0, 1]"
+  },
+  {
+   "name": "square_pwl_10_gadget",
+   "definition": "Piecewise-linear approximation of f(x) = x² on [0, 1] with 10 breakpoints. One ReLU layer, width 10, error ≤ 1/(4·N²) = 0.25% at midpoints of segments, exact at every breakpoint k/10. The CPWL way to approximate any smooth function — Arora et al. (2018) plus a standard secant-line construction.",
+   "applies_when": [
+    "cpwl_approximation",
+    "polynomial",
+    "univariate",
+    "square_op_unit_interval"
+   ],
+   "mechanism": "y = Σ_k slope_change_k · ReLU(x − k/N). Slope_change is 1/N at the origin and 2/N at every subsequent break, since x² has constant second-derivative 2 and Δslope per Δx of 1/N gives 2/N.",
+   "tradeoff": "Width N for error O(1/N²) — linear cost in width, polynomial precision. The §2.3 fold construction trades width for depth (exponential pieces at linear depth).",
+   "category": "cpwl_construction",
+   "expected_speedup": 1.0,
+   "dim_behavior": "preserves",
+   "dim_in": 1,
+   "dim_out": 1,
+   "hidden_dim": 10,
+   "gadget_kind": "cpwl_primitive",
+   "formula": "f(x) ≈ x² for x ∈ [0, 1], width-10 PWL, error ≤ 0.25%",
+   "weight_W1": [
+    [
+     1.0
+    ],
+    [
+     1.0
+    ],
+    [
+     1.0
+    ],
+    [
+     1.0
+    ],
+    [
+     1.0
+    ],
+    [
+     1.0
+    ],
+    [
+     1.0
+    ],
+    [
+     1.0
+    ],
+    [
+     1.0
+    ],
+    [
+     1.0
+    ]
+   ],
+   "weight_b1": [
+    0.0,
+    -0.1,
+    -0.2,
+    -0.3,
+    -0.4,
+    -0.5,
+    -0.6,
+    -0.7,
+    -0.8,
+    -0.9
+   ],
+   "weight_W2": [
+    [
+     0.1,
+     0.2,
+     0.2,
+     0.2,
+     0.2,
+     0.2,
+     0.2,
+     0.2,
+     0.2,
+     0.2
+    ]
+   ],
+   "weight_b2": [
+    0.0
+   ]
+  },
+  {
+   "name": "square_pwl_signed_gadget",
+   "definition": "Approximation of f(x) = x² for x ∈ [−1, 1] via composition: |x| (abs_gadget) then PWL square (square_pwl_10_gadget). Since x² = |x|², the abs reduces signed input to [0, 1] where the PWL approximation applies. Two-step composed gadget, total ~12 hidden units.",
+   "applies_when": [
+    "cpwl_approximation",
+    "polynomial",
+    "univariate",
+    "square_op"
+   ],
+   "mechanism": "Stage 1: abs_gadget reduces signed x to |x| ∈ [0, 1]. Stage 2: square_pwl_10_gadget approximates |x|² = x².",
+   "tradeoff": "Adds one layer of depth to handle sign; alternative is symmetric construction with breakpoints at ±k/N (also workable, more parameters).",
+   "category": "cpwl_construction",
+   "expected_speedup": 1.0,
+   "dim_behavior": "preserves",
+   "dim_in": 1,
+   "dim_out": 1,
+   "gadget_kind": "cpwl_composed",
+   "formula": "f(x) ≈ x² for x ∈ [−1, 1], error ≤ 0.25%",
+   "gadget_chain": [
+    "abs_gadget",
+    "square_pwl_10_gadget"
+   ]
+  },
+  {
+   "name": "monomial_lift_step1_gadget",
+   "definition": "Fan-out step: [x] → [x, |x|]. Two LEAF gadgets (identity_gadget and abs_gadget) both see the full input x and write to consecutive output slots. The cpwl_broadcast kind: stack the W1s vertically (both rows of W1 read the same input column), block-diagonalize the W2s (each branch's output lands in its own slot).",
+   "applies_when": [
+    "cpwl_function",
+    "exact_construction",
+    "fanout",
+    "univariate_to_pair"
+   ],
+   "mechanism": "construct_weights stacks [identity.W1; abs.W1] vertically to share input; b1 stacked; W2 block-diagonal so outputs land at separate slots; b2 stacked. Result: hidden_dim=4, dim_out=2.",
+   "tradeoff": "Limited to leaf branches (cpwl_primitive/cpwl_linear); composed branches need their own step structure.",
+   "category": "cpwl_construction",
+   "expected_speedup": 1.0,
+   "dim_behavior": "transforms",
+   "dim_in": 1,
+   "dim_out": 2,
+   "gadget_kind": "cpwl_broadcast",
+   "subgadgets": [
+    "identity_gadget",
+    "abs_gadget"
+   ],
+   "formula": "f(x) = [x, |x|]"
+  },
+  {
+   "name": "monomial_lift_step2_gadget",
+   "definition": "Per-slot step: [x, |x|] → [x, x²]. Two LEAF gadgets (identity_gadget on slot 0, square_pwl_10_gadget on slot 1) each read their own input slice. The cpwl_heteroparallel kind: block-diagonal W1 (each branch reads its slice), b1 stacked, block-diagonal W2, b2 stacked. Generalises cpwl_parallel to different sub-gadgets at each block.",
+   "applies_when": [
+    "cpwl_approximation",
+    "polynomial",
+    "univariate_paired",
+    "lift_to_square"
+   ],
+   "mechanism": "construct_weights places identity.W1 (slot 0) and square_pwl_10.W1 (slot 1) on the diagonal blocks of W1; assembles W2 block-diagonally so each branch's output lands at its own slot.",
+   "tradeoff": "Same as cpwl_broadcast — leaf branches only.",
+   "category": "cpwl_construction",
+   "expected_speedup": 1.0,
+   "dim_behavior": "preserves",
+   "dim_in": 2,
+   "dim_out": 2,
+   "gadget_kind": "cpwl_heteroparallel",
+   "subgadgets": [
+    "identity_gadget",
+    "square_pwl_10_gadget"
+   ],
+   "formula": "f([x, |x|]) ≈ [x, x²] for |x| ∈ [0, 1]"
+  },
+  {
+   "name": "monomial_lift_x_x2_gadget",
+   "definition": "Lift x to the pair [x, x²]. Two-step composition: fan-out [x] → [x, |x|] then per-slot [x, |x|] → [x, x²]. Valid for x ∈ [−1, 1]; the abs reduces signed input to [0, 1] where square_pwl_10 is accurate. Used to feed downstream gadgets that need BOTH x and x² (e.g. polarization multiplication for cube).",
+   "applies_when": [
+    "cpwl_approximation",
+    "polynomial",
+    "univariate",
+    "lift_to_pair_with_square"
+   ],
+   "mechanism": "Stage 1: monomial_lift_step1_gadget (fan-out). Stage 2: monomial_lift_step2_gadget (per-slot).",
+   "tradeoff": "Two layers for the lift; depth scales with monomial degree if we want [x, x², x³, …].",
+   "category": "cpwl_construction",
+   "expected_speedup": 1.0,
+   "dim_behavior": "transforms",
+   "dim_in": 1,
+   "dim_out": 2,
+   "gadget_kind": "cpwl_composed",
+   "formula": "f(x) ≈ [x, x²] for x ∈ [−1, 1]",
+   "gadget_chain": [
+    "monomial_lift_step1_gadget",
+    "monomial_lift_step2_gadget"
+   ]
+  },
+  {
+   "name": "cube_gadget",
+   "definition": "f(x) ≈ x³ via the chain [monomial_lift_x_x2_gadget → polarization_multiply_gadget]. Lift x to [x, x²], then multiply via polarization to get x · x² = x³. Valid for x ∈ [−0.5, 0.5] so |x| + |x²| ≤ 0.75 ≤ 1 (polarization's domain).",
+   "applies_when": [
+    "polynomial",
+    "univariate",
+    "monomial",
+    "cube_op",
+    "smooth_approximation"
+   ],
+   "mechanism": "Stage 1: monomial_lift_x_x2_gadget lifts [x] to [x, x²]. Stage 2: polarization_multiply_gadget computes the product. Net depth = lift_depth + polarization_depth = 2 + 4 = 6 ReLU layers.",
+   "tradeoff": "Six layers for one cube. The follow-up is monomial_lift_x_x2_x3 = lift then [identity_passthrough || cube_gadget], unlocking x⁴ via polarization, and so on by recursion.",
+   "category": "cpwl_construction",
+   "expected_speedup": 1.0,
+   "dim_behavior": "transforms",
+   "dim_in": 1,
+   "dim_out": 1,
+   "gadget_kind": "cpwl_composed",
+   "formula": "f(x) ≈ x³ for x ∈ [−0.5, 0.5]",
+   "gadget_chain": [
+    "monomial_lift_x_x2_gadget",
+    "polarization_multiply_gadget"
+   ]
+  },
+  {
+   "name": "polarization_inputs_gadget",
+   "definition": "Affine map [x, y] → [x+y, x, y]. Three lanes of input to the polarization identity. Realised as cpwl_linear — the constructor expands W·x + b to a 2-layer ReLU using the identity-trick ReLU(W·x+b) − ReLU(−(W·x+b)).",
+   "applies_when": [
+    "cpwl_linear",
+    "affine",
+    "polarization_construction"
+   ],
+   "mechanism": "W = [[1,1],[1,0],[0,1]] sends [x,y] to [x+y,x,y]; expanded by construct_weights to a 6-hidden-unit ReLU layer.",
+   "tradeoff": "Identity-trick doubles hidden width relative to a true linear layer; pays for staying in the ReLU-MLP shape end-to-end.",
+   "category": "cpwl_construction",
+   "expected_speedup": 1.0,
+   "dim_behavior": "transforms",
+   "dim_in": 2,
+   "dim_out": 3,
+   "gadget_kind": "cpwl_linear",
+   "formula": "f([x, y]) = [x+y, x, y]",
+   "weight_W": [
+    [
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     0.0
+    ],
+    [
+     0.0,
+     1.0
+    ]
+   ],
+   "weight_b": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "name": "polarization_combine_gadget",
+   "definition": "Affine map [a, b, c] → ½(a − b − c). With [a, b, c] = [(x+y)², x², y²], the output is ½((x+y)² − x² − y²) = x·y — the polarization identity that converts three squares into a multiplication.",
+   "applies_when": [
+    "cpwl_linear",
+    "affine",
+    "polarization_construction"
+   ],
+   "mechanism": "W = [[0.5, −0.5, −0.5]]; expanded via the identity-trick to a 2-hidden-unit ReLU layer.",
+   "tradeoff": "None of substance — single linear projection.",
+   "category": "cpwl_construction",
+   "expected_speedup": 1.0,
+   "dim_behavior": "transforms",
+   "dim_in": 3,
+   "dim_out": 1,
+   "gadget_kind": "cpwl_linear",
+   "formula": "f([a, b, c]) = ½·(a − b − c)",
+   "weight_W": [
+    [
+     0.5,
+     -0.5,
+     -0.5
+    ]
+   ],
+   "weight_b": [
+    0.0
+   ]
+  },
+  {
+   "name": "polarization_multiply_gadget",
+   "definition": "Multiplication via the polarization identity (§2.4): x·y = ½·((x+y)² − x² − y²). Four-step chain: [polarization_inputs → abs_3d → square_pwl_10_3d → polarization_combine]. Valid for x, y ∈ [−0.5, 0.5] (so x+y ∈ [−1, 1]). Error inherited from square_pwl: ≤ 1/(4·N²) per square, halved by the polarization coefficient — empirically ≤ 0.004 on the test grid.",
+   "applies_when": [
+    "multiplication",
+    "polynomial",
+    "bivariate",
+    "smooth_approximation",
+    "polarization_construction"
+   ],
+   "mechanism": "Stage 1: linear map [x,y] → [x+y, x, y]. Stage 2: parallel abs gives [|x+y|, |x|, |y|]. Stage 3: parallel square approximates [(x+y)², x², y²]. Stage 4: linear combines ½(s₁ − s₂ − s₃) = xy.",
+   "tradeoff": "Three squares for one multiplication — uneconomical at runtime but the recipe is queryable and the weights are exact. Tracr/RASP-style.",
+   "category": "cpwl_construction",
+   "expected_speedup": 1.0,
+   "dim_behavior": "transforms",
+   "dim_in": 2,
+   "dim_out": 1,
+   "gadget_kind": "cpwl_composed",
+   "formula": "f([x, y]) ≈ x·y for x, y ∈ [−0.5, 0.5]",
+   "gadget_chain": [
+    "polarization_inputs_gadget",
+    "abs_3d_gadget",
+    "square_pwl_10_3d_gadget",
+    "polarization_combine_gadget"
+   ]
+  },
+  {
+   "name": "max_abs_2d_gadget",
+   "definition": "f([x, y]) = max(|x|, |y|). Two-step composition: abs_2d_gadget then max_gadget. Demonstrates §2.7 layer-stacking — function composition equals depth.",
+   "applies_when": [
+    "cpwl_function",
+    "exact_construction",
+    "bivariate",
+    "max_abs"
+   ],
+   "mechanism": "Stage 1: abs_2d_gadget produces [|x|, |y|] (2 hidden layers internally). Stage 2: max_gadget on [|x|, |y|] produces max(|x|, |y|). Layer-stacked, no shared weights.",
+   "tradeoff": "Two full sub-networks chained; an optimized fused form would have fewer parameters but the same depth.",
+   "category": "cpwl_construction",
+   "expected_speedup": 1.0,
+   "dim_behavior": "transforms",
+   "dim_in": 2,
+   "dim_out": 1,
+   "gadget_kind": "cpwl_composed",
+   "formula": "f([x, y]) = max(|x|, |y|)",
+   "gadget_chain": [
+    "abs_2d_gadget",
+    "max_gadget"
+   ]
+  }
+ ],
+ "exclusions": [
+  [
+   "cpwl_construction",
+   "non_cpwl_function"
+  ],
+  [
+   "exact_construction",
+   "needs_training"
+  ]
+ ],
+ "microtheory": "cpwl_construction",
+ "extra_nodes": [
+  {
+   "type": "DesignPattern",
+   "applies_when": [
+    "cpwl_function",
+    "exact_construction",
+    "univariate",
+    "identity_op"
+   ],
+   "category": "cpwl_construction",
+   "definition": "f(x) = x via x = ReLU(x) − ReLU(−x). Emulates a skip connection in a strictly-feedforward ReLU net.",
+   "dim_behavior": "preserves",
+   "dim_in": 1,
+   "dim_out": 1,
+   "expected_speedup": 1.0,
+   "formula": "f(x) = x",
+   "gadget_kind": "cpwl_primitive",
+   "hidden_dim": 2,
+   "mechanism": "Layer 1 splits x into [ReLU(x), ReLU(−x)]; layer 2 takes the difference.",
+   "name": "identity_gadget",
+   "origin": "gadgets",
+   "tradeoff": "Two hidden units for a pass-through — wasteful when residual connections are available. Useful as a building block when they aren't.",
+   "weight_W1": [
+    [
+     1.0
+    ],
+    [
+     -1.0
+    ]
+   ],
+   "weight_W2": [
+    [
+     1.0,
+     -1.0
+    ]
+   ],
+   "weight_b1": [
+    0.0,
+    0.0
+   ],
+   "weight_b2": [
+    0.0
+   ]
+  },
+  {
+   "type": "DesignPattern",
+   "applies_when": [
+    "cpwl_function",
+    "exact_construction",
+    "univariate",
+    "absolute_value"
+   ],
+   "category": "cpwl_construction",
+   "definition": "f(x) = |x| via |x| = ReLU(x) + ReLU(−x). The canonical one-layer ReLU construction.",
+   "dim_behavior": "preserves",
+   "dim_in": 1,
+   "dim_out": 1,
+   "expected_speedup": 1.0,
+   "formula": "f(x) = |x|",
+   "gadget_kind": "cpwl_primitive",
+   "hidden_dim": 2,
+   "mechanism": "Layer 1 splits x into [ReLU(x), ReLU(−x)]; layer 2 sums them.",
+   "name": "abs_gadget",
+   "origin": "gadgets",
+   "tradeoff": "Discontinuous derivative at 0; for smooth abs use Huber or the soft-abs variant.",
+   "weight_W1": [
+    [
+     1.0
+    ],
+    [
+     -1.0
+    ]
+   ],
+   "weight_W2": [
+    [
+     1.0,
+     1.0
+    ]
+   ],
+   "weight_b1": [
+    0.0,
+    0.0
+   ],
+   "weight_b2": [
+    0.0
+   ]
+  },
+  {
+   "type": "DesignPattern",
+   "applies_when": [
+    "cpwl_function",
+    "exact_construction",
+    "bivariate",
+    "max_op"
+   ],
+   "category": "cpwl_construction",
+   "definition": "f(x, y) = max(x, y) via max(x, y) = ReLU(x − y) + y. One hidden layer with 3 units (one for ReLU(x−y), two to reconstruct y as ReLU(y) − ReLU(−y) so layer 2 can be a pure linear without depending on input bias).",
+   "dim_behavior": "transforms",
+   "dim_in": 2,
+   "dim_out": 1,
+   "expected_speedup": 1.0,
+   "formula": "f(x, y) = max(x, y)",
+   "gadget_kind": "cpwl_primitive",
+   "hidden_dim": 3,
+   "mechanism": "hidden = [ReLU(x − y), ReLU(y), ReLU(−y)]; output = hidden[0] + hidden[1] − hidden[2] = ReLU(x − y) + y.",
+   "name": "max_gadget",
+   "origin": "gadgets",
+   "tradeoff": "Three hidden units instead of two; the extra dim lets us avoid bias-depends-on-input.",
+   "weight_W1": [
+    [
+     1.0,
+     -1.0
+    ],
+    [
+     0.0,
+     1.0
+    ],
+    [
+     0.0,
+     -1.0
+    ]
+   ],
+   "weight_W2": [
+    [
+     1.0,
+     1.0,
+     -1.0
+    ]
+   ],
+   "weight_b1": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "weight_b2": [
+    0.0
+   ]
+  },
+  {
+   "type": "DesignPattern",
+   "applies_when": [
+    "cpwl_function",
+    "exact_construction",
+    "bivariate",
+    "min_op"
+   ],
+   "category": "cpwl_construction",
+   "definition": "f(x, y) = min(x, y) via min(x, y) = −ReLU(y − x) + y. Mirror of max_gadget.",
+   "dim_behavior": "transforms",
+   "dim_in": 2,
+   "dim_out": 1,
+   "expected_speedup": 1.0,
+   "formula": "f(x, y) = min(x, y)",
+   "gadget_kind": "cpwl_primitive",
+   "hidden_dim": 3,
+   "mechanism": "hidden = [ReLU(y − x), ReLU(y), ReLU(−y)]; output = −hidden[0] + hidden[1] − hidden[2] = −ReLU(y − x) + y.",
+   "name": "min_gadget",
+   "origin": "gadgets",
+   "tradeoff": "Same width/depth as max_gadget; produced as a parallel pair when both min and max are needed.",
+   "weight_W1": [
+    [
+     -1.0,
+     1.0
+    ],
+    [
+     0.0,
+     1.0
+    ],
+    [
+     0.0,
+     -1.0
+    ]
+   ],
+   "weight_W2": [
+    [
+     -1.0,
+     1.0,
+     -1.0
+    ]
+   ],
+   "weight_b1": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "weight_b2": [
+    0.0
+   ]
+  },
+  {
+   "type": "DesignPattern",
+   "applies_when": [
+    "cpwl_function",
+    "exact_construction",
+    "bivariate",
+    "elementwise_abs"
+   ],
+   "category": "cpwl_construction",
+   "definition": "Parallel application of |·| to each dim of a 2-vector: f([x, y]) = [|x|, |y|]. Two abs_gadgets composed laterally as width — §2.7 of the construction doc.",
+   "dim_behavior": "preserves",
+   "dim_in": 2,
+   "dim_out": 2,
+   "expected_speedup": 1.0,
+   "formula": "f([x, y]) = [|x|, |y|]",
+   "gadget_kind": "cpwl_primitive",
+   "hidden_dim": 4,
+   "mechanism": "hidden = [ReLU(x), ReLU(−x), ReLU(y), ReLU(−y)]; output = [hidden[0]+hidden[1], hidden[2]+hidden[3]] = [|x|, |y|]. Block-diagonal W1 + block-diagonal W2.",
+   "name": "abs_2d_gadget",
+   "origin": "gadgets",
+   "tradeoff": "Block-diagonal structure wastes parameters relative to a fused implementation; clarity wins.",
+   "weight_W1": [
+    [
+     1.0,
+     0.0
+    ],
+    [
+     -1.0,
+     0.0
+    ],
+    [
+     0.0,
+     1.0
+    ],
+    [
+     0.0,
+     -1.0
+    ]
+   ],
+   "weight_W2": [
+    [
+     1.0,
+     1.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     1.0,
+     1.0
+    ]
+   ],
+   "weight_b1": [
+    0.0,
+    0.0,
+    0.0,
+    0.0
+   ],
+   "weight_b2": [
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "type": "DesignPattern",
+   "applies_when": [
+    "cpwl_function",
+    "exact_construction",
+    "trivariate",
+    "elementwise_abs"
+   ],
+   "category": "cpwl_construction",
+   "definition": "Parallel application of |·| to each dim of a 3-vector: f([a, b, c]) = [|a|, |b|, |c|]. Block-diagonal expansion of abs_gadget × 3 (§2.7 width composition). Renders to (6×3, 6, 3×6, 3) weights at construct time — declared structurally; not hand-coded.",
+   "dim_behavior": "preserves",
+   "dim_in": 3,
+   "dim_out": 3,
+   "expected_speedup": 1.0,
+   "formula": "f([a, b, c]) = [|a|, |b|, |c|]",
+   "gadget_kind": "cpwl_parallel",
+   "mechanism": "construct_weights reads parallel_of=abs_gadget, expands its W1/b1/W2/b2 block-diagonally to 3 copies, emits 4 WeightTensors.",
+   "name": "abs_3d_gadget",
+   "origin": "gadgets",
+   "parallel_count": 3,
+   "parallel_of": "abs_gadget",
+   "tradeoff": "Block-diagonal structure makes the parallel application obvious in the weights; a fused implementation could save parameters at the cost of clarity."
+  },
+  {
+   "type": "DesignPattern",
+   "applies_when": [
+    "cpwl_approximation",
+    "polynomial",
+    "trivariate",
+    "square_op_unit_interval"
+   ],
+   "category": "cpwl_construction",
+   "definition": "Parallel application of square_pwl_10_gadget to each dim of a 3-vector on [0, 1]³: f([a, b, c]) ≈ [a², b², c²]. Block-diagonal expansion of square_pwl_10 × 3. The block-diagonal expansion of a width-10 primitive gives a 30-hidden-unit layer.",
+   "dim_behavior": "preserves",
+   "dim_in": 3,
+   "dim_out": 3,
+   "expected_speedup": 1.0,
+   "formula": "f([a, b, c]) ≈ [a², b², c²] for a, b, c ∈ [0, 1]",
+   "gadget_kind": "cpwl_parallel",
+   "mechanism": "construct_weights reads parallel_of=square_pwl_10_gadget, expands its W1/b1/W2/b2 block-diagonally to 3 copies, emits 4 WeightTensors.",
+   "name": "square_pwl_10_3d_gadget",
+   "origin": "gadgets",
+   "parallel_count": 3,
+   "parallel_of": "square_pwl_10_gadget",
+   "tradeoff": "Same accuracy bound as the 1D version (error ≤ 0.25%); three times the parameters."
+  },
+  {
+   "type": "DesignPattern",
+   "applies_when": [
+    "cpwl_approximation",
+    "polynomial",
+    "univariate",
+    "square_op_unit_interval"
+   ],
+   "category": "cpwl_construction",
+   "definition": "Piecewise-linear approximation of f(x) = x² on [0, 1] with 10 breakpoints. One ReLU layer, width 10, error ≤ 1/(4·N²) = 0.25% at midpoints of segments, exact at every breakpoint k/10. The CPWL way to approximate any smooth function — Arora et al. (2018) plus a standard secant-line construction.",
+   "dim_behavior": "preserves",
+   "dim_in": 1,
+   "dim_out": 1,
+   "expected_speedup": 1.0,
+   "formula": "f(x) ≈ x² for x ∈ [0, 1], width-10 PWL, error ≤ 0.25%",
+   "gadget_kind": "cpwl_primitive",
+   "hidden_dim": 10,
+   "mechanism": "y = Σ_k slope_change_k · ReLU(x − k/N). Slope_change is 1/N at the origin and 2/N at every subsequent break, since x² has constant second-derivative 2 and Δslope per Δx of 1/N gives 2/N.",
+   "name": "square_pwl_10_gadget",
+   "origin": "gadgets",
+   "tradeoff": "Width N for error O(1/N²) — linear cost in width, polynomial precision. The §2.3 fold construction trades width for depth (exponential pieces at linear depth).",
+   "weight_W1": [
+    [
+     1.0
+    ],
+    [
+     1.0
+    ],
+    [
+     1.0
+    ],
+    [
+     1.0
+    ],
+    [
+     1.0
+    ],
+    [
+     1.0
+    ],
+    [
+     1.0
+    ],
+    [
+     1.0
+    ],
+    [
+     1.0
+    ],
+    [
+     1.0
+    ]
+   ],
+   "weight_W2": [
+    [
+     0.1,
+     0.2,
+     0.2,
+     0.2,
+     0.2,
+     0.2,
+     0.2,
+     0.2,
+     0.2,
+     0.2
+    ]
+   ],
+   "weight_b1": [
+    0.0,
+    -0.1,
+    -0.2,
+    -0.3,
+    -0.4,
+    -0.5,
+    -0.6,
+    -0.7,
+    -0.8,
+    -0.9
+   ],
+   "weight_b2": [
+    0.0
+   ]
+  },
+  {
+   "type": "DesignPattern",
+   "applies_when": [
+    "cpwl_approximation",
+    "polynomial",
+    "univariate",
+    "square_op"
+   ],
+   "category": "cpwl_construction",
+   "definition": "Approximation of f(x) = x² for x ∈ [−1, 1] via composition: |x| (abs_gadget) then PWL square (square_pwl_10_gadget). Since x² = |x|², the abs reduces signed input to [0, 1] where the PWL approximation applies. Two-step composed gadget, total ~12 hidden units.",
+   "dim_behavior": "preserves",
+   "dim_in": 1,
+   "dim_out": 1,
+   "expected_speedup": 1.0,
+   "formula": "f(x) ≈ x² for x ∈ [−1, 1], error ≤ 0.25%",
+   "gadget_chain": [
+    "abs_gadget",
+    "square_pwl_10_gadget"
+   ],
+   "gadget_kind": "cpwl_composed",
+   "mechanism": "Stage 1: abs_gadget reduces signed x to |x| ∈ [0, 1]. Stage 2: square_pwl_10_gadget approximates |x|² = x².",
+   "name": "square_pwl_signed_gadget",
+   "origin": "gadgets",
+   "tradeoff": "Adds one layer of depth to handle sign; alternative is symmetric construction with breakpoints at ±k/N (also workable, more parameters)."
+  },
+  {
+   "type": "DesignPattern",
+   "applies_when": [
+    "cpwl_function",
+    "exact_construction",
+    "fanout",
+    "univariate_to_pair"
+   ],
+   "category": "cpwl_construction",
+   "definition": "Fan-out step: [x] → [x, |x|]. Two LEAF gadgets (identity_gadget and abs_gadget) both see the full input x and write to consecutive output slots. The cpwl_broadcast kind: stack the W1s vertically (both rows of W1 read the same input column), block-diagonalize the W2s (each branch's output lands in its own slot).",
+   "dim_behavior": "transforms",
+   "dim_in": 1,
+   "dim_out": 2,
+   "expected_speedup": 1.0,
+   "formula": "f(x) = [x, |x|]",
+   "gadget_kind": "cpwl_broadcast",
+   "mechanism": "construct_weights stacks [identity.W1; abs.W1] vertically to share input; b1 stacked; W2 block-diagonal so outputs land at separate slots; b2 stacked. Result: hidden_dim=4, dim_out=2.",
+   "name": "monomial_lift_step1_gadget",
+   "origin": "gadgets",
+   "subgadgets": [
+    "identity_gadget",
+    "abs_gadget"
+   ],
+   "tradeoff": "Limited to leaf branches (cpwl_primitive/cpwl_linear); composed branches need their own step structure."
+  },
+  {
+   "type": "DesignPattern",
+   "applies_when": [
+    "cpwl_approximation",
+    "polynomial",
+    "univariate_paired",
+    "lift_to_square"
+   ],
+   "category": "cpwl_construction",
+   "definition": "Per-slot step: [x, |x|] → [x, x²]. Two LEAF gadgets (identity_gadget on slot 0, square_pwl_10_gadget on slot 1) each read their own input slice. The cpwl_heteroparallel kind: block-diagonal W1 (each branch reads its slice), b1 stacked, block-diagonal W2, b2 stacked. Generalises cpwl_parallel to different sub-gadgets at each block.",
+   "dim_behavior": "preserves",
+   "dim_in": 2,
+   "dim_out": 2,
+   "expected_speedup": 1.0,
+   "formula": "f([x, |x|]) ≈ [x, x²] for |x| ∈ [0, 1]",
+   "gadget_kind": "cpwl_heteroparallel",
+   "mechanism": "construct_weights places identity.W1 (slot 0) and square_pwl_10.W1 (slot 1) on the diagonal blocks of W1; assembles W2 block-diagonally so each branch's output lands at its own slot.",
+   "name": "monomial_lift_step2_gadget",
+   "origin": "gadgets",
+   "subgadgets": [
+    "identity_gadget",
+    "square_pwl_10_gadget"
+   ],
+   "tradeoff": "Same as cpwl_broadcast — leaf branches only."
+  },
+  {
+   "type": "DesignPattern",
+   "applies_when": [
+    "cpwl_approximation",
+    "polynomial",
+    "univariate",
+    "lift_to_pair_with_square"
+   ],
+   "category": "cpwl_construction",
+   "definition": "Lift x to the pair [x, x²]. Two-step composition: fan-out [x] → [x, |x|] then per-slot [x, |x|] → [x, x²]. Valid for x ∈ [−1, 1]; the abs reduces signed input to [0, 1] where square_pwl_10 is accurate. Used to feed downstream gadgets that need BOTH x and x² (e.g. polarization multiplication for cube).",
+   "dim_behavior": "transforms",
+   "dim_in": 1,
+   "dim_out": 2,
+   "expected_speedup": 1.0,
+   "formula": "f(x) ≈ [x, x²] for x ∈ [−1, 1]",
+   "gadget_chain": [
+    "monomial_lift_step1_gadget",
+    "monomial_lift_step2_gadget"
+   ],
+   "gadget_kind": "cpwl_composed",
+   "mechanism": "Stage 1: monomial_lift_step1_gadget (fan-out). Stage 2: monomial_lift_step2_gadget (per-slot).",
+   "name": "monomial_lift_x_x2_gadget",
+   "origin": "gadgets",
+   "tradeoff": "Two layers for the lift; depth scales with monomial degree if we want [x, x², x³, …]."
+  },
+  {
+   "type": "DesignPattern",
+   "applies_when": [
+    "polynomial",
+    "univariate",
+    "monomial",
+    "cube_op",
+    "smooth_approximation"
+   ],
+   "category": "cpwl_construction",
+   "definition": "f(x) ≈ x³ via the chain [monomial_lift_x_x2_gadget → polarization_multiply_gadget]. Lift x to [x, x²], then multiply via polarization to get x · x² = x³. Valid for x ∈ [−0.5, 0.5] so |x| + |x²| ≤ 0.75 ≤ 1 (polarization's domain).",
+   "dim_behavior": "transforms",
+   "dim_in": 1,
+   "dim_out": 1,
+   "expected_speedup": 1.0,
+   "formula": "f(x) ≈ x³ for x ∈ [−0.5, 0.5]",
+   "gadget_chain": [
+    "monomial_lift_x_x2_gadget",
+    "polarization_multiply_gadget"
+   ],
+   "gadget_kind": "cpwl_composed",
+   "mechanism": "Stage 1: monomial_lift_x_x2_gadget lifts [x] to [x, x²]. Stage 2: polarization_multiply_gadget computes the product. Net depth = lift_depth + polarization_depth = 2 + 4 = 6 ReLU layers.",
+   "name": "cube_gadget",
+   "origin": "gadgets",
+   "tradeoff": "Six layers for one cube. The follow-up is monomial_lift_x_x2_x3 = lift then [identity_passthrough || cube_gadget], unlocking x⁴ via polarization, and so on by recursion."
+  },
+  {
+   "type": "DesignPattern",
+   "applies_when": [
+    "cpwl_linear",
+    "affine",
+    "polarization_construction"
+   ],
+   "category": "cpwl_construction",
+   "definition": "Affine map [x, y] → [x+y, x, y]. Three lanes of input to the polarization identity. Realised as cpwl_linear — the constructor expands W·x + b to a 2-layer ReLU using the identity-trick ReLU(W·x+b) − ReLU(−(W·x+b)).",
+   "dim_behavior": "transforms",
+   "dim_in": 2,
+   "dim_out": 3,
+   "expected_speedup": 1.0,
+   "formula": "f([x, y]) = [x+y, x, y]",
+   "gadget_kind": "cpwl_linear",
+   "mechanism": "W = [[1,1],[1,0],[0,1]] sends [x,y] to [x+y,x,y]; expanded by construct_weights to a 6-hidden-unit ReLU layer.",
+   "name": "polarization_inputs_gadget",
+   "origin": "gadgets",
+   "tradeoff": "Identity-trick doubles hidden width relative to a true linear layer; pays for staying in the ReLU-MLP shape end-to-end.",
+   "weight_W": [
+    [
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     0.0
+    ],
+    [
+     0.0,
+     1.0
+    ]
+   ],
+   "weight_b": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "type": "DesignPattern",
+   "applies_when": [
+    "cpwl_linear",
+    "affine",
+    "polarization_construction"
+   ],
+   "category": "cpwl_construction",
+   "definition": "Affine map [a, b, c] → ½(a − b − c). With [a, b, c] = [(x+y)², x², y²], the output is ½((x+y)² − x² − y²) = x·y — the polarization identity that converts three squares into a multiplication.",
+   "dim_behavior": "transforms",
+   "dim_in": 3,
+   "dim_out": 1,
+   "expected_speedup": 1.0,
+   "formula": "f([a, b, c]) = ½·(a − b − c)",
+   "gadget_kind": "cpwl_linear",
+   "mechanism": "W = [[0.5, −0.5, −0.5]]; expanded via the identity-trick to a 2-hidden-unit ReLU layer.",
+   "name": "polarization_combine_gadget",
+   "origin": "gadgets",
+   "tradeoff": "None of substance — single linear projection.",
+   "weight_W": [
+    [
+     0.5,
+     -0.5,
+     -0.5
+    ]
+   ],
+   "weight_b": [
+    0.0
+   ]
+  },
+  {
+   "type": "DesignPattern",
+   "applies_when": [
+    "multiplication",
+    "polynomial",
+    "bivariate",
+    "smooth_approximation",
+    "polarization_construction"
+   ],
+   "category": "cpwl_construction",
+   "definition": "Multiplication via the polarization identity (§2.4): x·y = ½·((x+y)² − x² − y²). Four-step chain: [polarization_inputs → abs_3d → square_pwl_10_3d → polarization_combine]. Valid for x, y ∈ [−0.5, 0.5] (so x+y ∈ [−1, 1]). Error inherited from square_pwl: ≤ 1/(4·N²) per square, halved by the polarization coefficient — empirically ≤ 0.004 on the test grid.",
+   "dim_behavior": "transforms",
+   "dim_in": 2,
+   "dim_out": 1,
+   "expected_speedup": 1.0,
+   "formula": "f([x, y]) ≈ x·y for x, y ∈ [−0.5, 0.5]",
+   "gadget_chain": [
+    "polarization_inputs_gadget",
+    "abs_3d_gadget",
+    "square_pwl_10_3d_gadget",
+    "polarization_combine_gadget"
+   ],
+   "gadget_kind": "cpwl_composed",
+   "mechanism": "Stage 1: linear map [x,y] → [x+y, x, y]. Stage 2: parallel abs gives [|x+y|, |x|, |y|]. Stage 3: parallel square approximates [(x+y)², x², y²]. Stage 4: linear combines ½(s₁ − s₂ − s₃) = xy.",
+   "name": "polarization_multiply_gadget",
+   "origin": "gadgets",
+   "tradeoff": "Three squares for one multiplication — uneconomical at runtime but the recipe is queryable and the weights are exact. Tracr/RASP-style."
+  },
+  {
+   "type": "DesignPattern",
+   "applies_when": [
+    "cpwl_function",
+    "exact_construction",
+    "bivariate",
+    "max_abs"
+   ],
+   "category": "cpwl_construction",
+   "definition": "f([x, y]) = max(|x|, |y|). Two-step composition: abs_2d_gadget then max_gadget. Demonstrates §2.7 layer-stacking — function composition equals depth.",
+   "dim_behavior": "transforms",
+   "dim_in": 2,
+   "dim_out": 1,
+   "expected_speedup": 1.0,
+   "formula": "f([x, y]) = max(|x|, |y|)",
+   "gadget_chain": [
+    "abs_2d_gadget",
+    "max_gadget"
+   ],
+   "gadget_kind": "cpwl_composed",
+   "mechanism": "Stage 1: abs_2d_gadget produces [|x|, |y|] (2 hidden layers internally). Stage 2: max_gadget on [|x|, |y|] produces max(|x|, |y|). Layer-stacked, no shared weights.",
+   "name": "max_abs_2d_gadget",
+   "origin": "gadgets",
+   "tradeoff": "Two full sub-networks chained; an optimized fused form would have fewer parameters but the same depth."
+  },
+  {
+   "type": "DesignExclusion",
+   "origin": "gadgets",
+   "pattern_tag": "cpwl_construction",
+   "target_anti_tag": "non_cpwl_function"
+  },
+  {
+   "type": "DesignExclusion",
+   "origin": "gadgets",
+   "pattern_tag": "exact_construction",
+   "target_anti_tag": "needs_training"
+  }
+ ],
+ "relations": [
+  {
+   "src": "cpwl_construction",
+   "edge": "genlMt",
+   "tgt": "neural_networks"
+  },
+  {
+   "src": "cpwl_construction",
+   "edge": "genlMt",
+   "tgt": "compiler_theory"
+  },
+  {
+   "src": "cpwl_construction",
+   "edge": "genlMt",
+   "tgt": "function_shape"
+  }
+ ]
+}

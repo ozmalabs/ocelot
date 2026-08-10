@@ -1,0 +1,119 @@
+{
+  "id": "loop_optimisation_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "loop_invariant_code_motion",
+  "in_microtheory": "compilers",
+  "description": "Loop optimisations decomposed. LICM, unrolling, vectorisation, strength reduction, induction variable elimination, loop interchange, tiling, fusion, fission. Each transformation has preconditions; running them at the right time + right level is the optimiser's art.",
+  "sub_mechanisms": [
+    {
+      "name": "loop_invariant_detection",
+      "definition": "Identify expressions whose values don't change across iterations. Definition: only depends on loop-invariant values or constants.",
+      "why": "Required for LICM. Computation that doesn't change shouldn't repeat. Standard analysis: walk loop body, mark expressions where all operands are invariant.",
+      "category": "loop_opt_mechanism"
+    },
+    {
+      "name": "induction_variable",
+      "definition": "Variable whose value follows a recurrence: i = i + c. Basic induction variables (counter); derived (i*step + offset).",
+      "why": "Foundation for many loop optimisations. Strength reduction replaces derived IVs with cheaper increments. Loop unrolling needs to know the step.",
+      "category": "loop_opt_mechanism"
+    },
+    {
+      "name": "scalar_evolution_analysis",
+      "definition": "Determine how scalar values change across loop iterations. SCEV in LLVM. Computes closed-form expressions for IVs.",
+      "why": "Powers many loop optimisations: bounds checking elimination, strength reduction, vectorisation. SCEV's closed-form representations let the compiler reason about loop behaviour symbolically.",
+      "category": "loop_opt_mechanism"
+    },
+    {
+      "name": "loop_unrolling_factor",
+      "definition": "How many iterations to replicate. Full unrolling: known small trip count. Partial: K-fold replication + remainder.",
+      "why": "Trade-off: unrolling reduces overhead + enables SIMD but bloats code (icache pressure). Modern CPUs benefit less from unrolling (good branch prediction). Vector-aware unrolling (factor = SIMD width) still substantial.",
+      "category": "loop_opt_mechanism"
+    },
+    {
+      "name": "loop_vectoriser",
+      "definition": "Transform scalar loop into SIMD. Each iteration's work becomes one SIMD lane. Requires: no inter-iteration dependencies, contiguous memory access, sufficient trip count.",
+      "why": "Major performance win on data-parallel loops. LLVM's LoopVectorize. Auto-vectorisation succeeds when alias + dependence analysis can prove independence; failures are common in pointer-heavy code.",
+      "category": "loop_opt_mechanism"
+    },
+    {
+      "name": "SLP_vectoriser",
+      "definition": "Superword-Level Parallelism: not loop-based but adjacent scalar ops. Combine isomorphic scalar instructions into SIMD.",
+      "why": "Complements loop vectorisation. Code like 'a[0] += 1; a[1] += 1; a[2] += 1; a[3] += 1' becomes one SIMD add. LLVM SLP vectorizer handles this.",
+      "category": "loop_opt_mechanism"
+    },
+    {
+      "name": "induction_variable_elimination",
+      "definition": "Replace expensive derived IV computations with cheap increment. e.g., 'x = i * 4 + 8' computed each iteration becomes 'x += 4'.",
+      "why": "Classical optimisation. Especially valuable on architectures with cheap add but expensive multiply. Modern CPUs have cheap multiply but the transformation still reduces dependency chains.",
+      "category": "loop_opt_mechanism"
+    },
+    {
+      "name": "loop_interchange",
+      "definition": "Swap nested loop order. for(i) for(j) → for(j) for(i). Improves cache behaviour or enables vectorisation.",
+      "why": "Cache-friendly inner loops. Matrix traversal: row-major data + j-outer-i-inner is cache-friendly; i-outer-j-inner is not. Interchange when valid + beneficial.",
+      "category": "loop_opt_mechanism"
+    },
+    {
+      "name": "loop_tiling",
+      "definition": "Replace loop with nested loops over tiles of the iteration space. for(i=0;i<N;i++) → for(ii=0;ii<N;ii+=T) for(i=ii;i<min(ii+T,N);i++).",
+      "why": "Cache blocking: keep the working set in cache. Critical for matrix multiplication, stencil computations. T chosen to fit L1 or L2 cache.",
+      "category": "loop_opt_mechanism"
+    },
+    {
+      "name": "loop_fusion",
+      "definition": "Combine two adjacent loops over the same iteration space into one. for(i) A[i]=...; for(i) B[i]=...; → for(i) { A[i]=...; B[i]=...; }",
+      "why": "Reduces loop overhead + may enable cross-statement opts. Cache benefit: data loaded once for both stores. Must verify no inter-loop dependency violations.",
+      "category": "loop_opt_mechanism"
+    },
+    {
+      "name": "loop_fission",
+      "definition": "Inverse of fusion: split one loop into two. for(i) { A[i]=...; B[i]=...; } → for(i) A[i]=...; for(i) B[i]=...;",
+      "why": "Useful when the body's per-iteration register pressure is high. Splitting reduces pressure. Also enables vectorisation when only part of the body is vectorisable.",
+      "category": "loop_opt_mechanism"
+    },
+    {
+      "name": "polyhedral_compilation",
+      "definition": "Model affine loops as polyhedra; transformations are affine mappings on the iteration space. Provably optimal for the affine subset.",
+      "why": "GCC's Graphite, LLVM's Polly. Compose tiling + interchange + parallelisation in one framework. Powerful for HPC + ML; computationally expensive analysis.",
+      "category": "loop_opt_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "LICM_amortises_invariant_computation",
+      "if": ["a computation is loop-invariant"],
+      "then": ["hoisting it out makes total cost O(1) vs O(n) iterations"],
+      "why": "Per-iteration cost × N iterations vs one-time cost. Standard speedup. Limitation: hoisting must respect dependencies + may not be legal if computation has side effects.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "vectorisation_requires_no_dependencies",
+      "if": ["loop iterations are independent"],
+      "then": ["SIMD execution gives Nx speedup proportional to vector width"],
+      "why": "Lane-N's input must not depend on lane-1's output (etc.). Alias + dependence analysis must prove independence. When proof fails, no vectorisation. Major performance opportunity gated on analysis quality.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "tiling_keeps_working_set_in_cache",
+      "if": ["computation has temporal locality within a region of size T"],
+      "then": ["tiling with size ≤ cache size keeps that region cached"],
+      "why": "Matrix multiplication's working set scales with tile size. Choose tile = √(L1 size) for max reuse. Standard technique in BLAS implementations; auto-tiling in polyhedral compilers.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "interchange_for_cache_friendly_order",
+      "definition": "If the inner loop's memory access pattern matches the data layout (e.g., row-major data + column-inner loop), interchanging the loops improves cache behaviour.",
+      "if": ["inner loop's memory access pattern is cache-unfriendly"],
+      "then": ["loop interchange (when legal) gives cache-friendly traversal"],
+      "why": "Row-major arrays prefer i-outer-j-inner. Column-major (Fortran) prefers the opposite. Wrong order: cache miss per access. Right order: cache miss per cache line.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "unrolling_pays_off_only_when_overhead_dominates",
+      "if": ["loop body is tiny + branch prediction is poor"],
+      "then": ["unrolling improves performance"],
+      "why": "Modern CPUs with good branch prediction handle small loops fine. Unrolling helps when overhead per iteration (branch + increment) is significant relative to body work. SIMD unrolling (factor matches vector width) almost always pays off.",
+      "soundness_category": "cost_equivalence"
+    }
+  ]
+}

@@ -1,0 +1,118 @@
+{
+  "id": "nanomaterials_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "graphene",
+  "in_microtheory": "materials_chemistry",
+  "description": "Nanomaterials decomposed. Graphene synthesis + properties + applications, carbon nanotube types + production, MXenes, perovskite solar materials, plasmonic nanoparticles, quantum dot variants, self-assembly, nano-toxicology.",
+  "sub_mechanisms": [
+    {
+      "name": "graphene_synthesis",
+      "definition": "Mechanical exfoliation (Nobel), CVD (commercial), oxidation-reduction (graphene oxide).",
+      "why": "Each method: trade-off quality vs cost. CVD on copper foil scalable. GO chemistry route.",
+      "category": "nanomat_mechanism"
+    },
+    {
+      "name": "graphene_band_structure",
+      "definition": "Dirac cones at K points. Massless Dirac fermions. Zero bandgap.",
+      "why": "Unique electronic. Ballistic transport, high mobility. Bandgap engineering required for digital devices.",
+      "category": "nanomat_mechanism"
+    },
+    {
+      "name": "CNT_chirality_metallic_semi",
+      "definition": "(n,m) indices. (n-m) mod 3 = 0 → metallic; otherwise semiconducting.",
+      "why": "Production gives mix. Sorting + selective growth challenges. Foundation of CNT electronics.",
+      "category": "nanomat_mechanism"
+    },
+    {
+      "name": "CNT_production_arc_CVD",
+      "definition": "Arc discharge (SWCNT first), HiPCO, CoMoCAT. Catalytic CVD scalable.",
+      "why": "Production at kg-tonne scale. Quality + chirality control improving. Composite + battery applications.",
+      "category": "nanomat_mechanism"
+    },
+    {
+      "name": "MXenes_2D",
+      "definition": "Transition metal carbides/nitrides. Ti3C2 most studied. Etched from MAX phases.",
+      "why": "Conductive 2D family. Energy storage, EMI shielding, water purification. Active research.",
+      "category": "nanomat_mechanism"
+    },
+    {
+      "name": "perovskite_solar",
+      "definition": "ABX3 structure. MAPbI3 archetype. Solution-processable, tunable bandgap.",
+      "why": "Solar efficiency: 25%+ in cells, rival Si. Cheap to make. Stability + Pb toxicity issues. Active commercialization.",
+      "category": "nanomat_mechanism"
+    },
+    {
+      "name": "plasmonic_nanoparticles",
+      "definition": "Au, Ag NPs have localised surface plasmon resonance. Strong light absorption + scattering.",
+      "why": "Bio-imaging, sensing (SERS), photothermal therapy. Colour from size + shape (Lycurgus cup ancient example).",
+      "category": "nanomat_mechanism"
+    },
+    {
+      "name": "quantum_dot_synthesis",
+      "definition": "Solution synthesis: precursors + ligands at controlled T. CdSe, InP, perovskite QDs.",
+      "why": "Size control = colour control. Tunable from UV to NIR. Bawendi, Brus, Ekimov Nobel 2023.",
+      "category": "nanomat_mechanism"
+    },
+    {
+      "name": "nano_self_assembly",
+      "definition": "Particles organize into ordered structures via interparticle forces.",
+      "why": "Bottom-up nanostructure formation. Block copolymers, DNA origami, colloidal crystals. Foundation soft matter.",
+      "category": "nanomat_mechanism"
+    },
+    {
+      "name": "DNA_origami",
+      "definition": "DNA strands folded into shapes via base pairing. Nanometer precision.",
+      "why": "Rothemund 2006. Self-assembled custom shapes. Drug delivery vehicles, nanofabrication. Research → applications.",
+      "category": "nanomat_mechanism"
+    },
+    {
+      "name": "nano_toxicology",
+      "definition": "Nanoparticles can enter cells, cross blood-brain barrier. Toxicity size + shape + composition dependent.",
+      "why": "Safety concern. Asbestos analogy for fibers. Regulatory frameworks emerging. Research ongoing.",
+      "category": "nanomat_mechanism"
+    },
+    {
+      "name": "atomic_layer_deposition",
+      "definition": "ALD: sequential self-limiting surface reactions. Sub-nm thickness control.",
+      "why": "Modern semiconductor fabrication. High-K dielectrics, conformal coatings. Foundation of modern transistors.",
+      "category": "nanomat_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "graphene_ballistic_transport",
+      "if": ["mobility limited only by phonons"],
+      "then": ["graphene has ballistic transport at room T over μm"],
+      "why": "Massless Dirac fermions, weak phonon coupling. 200,000 cm²/Vs measured. Beyond Si (1400). Research target for high-speed devices.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "CNT_chirality_predicts_metallicity",
+      "if": ["CNT chirality (n,m) known"],
+      "then": ["(n-m) mod 3 = 0 metallic; else semiconducting"],
+      "why": "Mathematical from graphene Brillouin zone folding. 1/3 metallic, 2/3 semiconducting. Production must sort.",
+      "soundness_category": "algebraic_law"
+    },
+    {
+      "name": "QD_size_tunes_emission_wavelength",
+      "if": ["QD radius varied"],
+      "then": ["emission wavelength scales with size (quantum confinement)"],
+      "why": "Bandgap = bulk gap + confinement energy ∝ 1/L². CdSe 2 nm = green, 6 nm = red. Foundation of QLED displays.",
+      "soundness_category": "algebraic_law"
+    },
+    {
+      "name": "perovskite_efficient_solar",
+      "if": ["perovskite has direct bandgap + long carrier diffusion length"],
+      "then": ["solar cell efficiency rivals Si"],
+      "why": "Defect-tolerant, easy fabrication, tunable composition. 25%+ achieved. Path to cheaper solar. Active commercialisation.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "ALD_enables_atomic_precision",
+      "if": ["self-limiting surface chemistry"],
+      "then": ["sub-nm thickness control achievable"],
+      "why": "Each cycle: one monolayer max. Conformal over complex geometry. Foundation of FinFET + GAA transistors. Modern fab.",
+      "soundness_category": "denotational_equivalence"
+    }
+  ]
+}

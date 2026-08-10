@@ -1,0 +1,37 @@
+{
+  "id": "grounding",
+  "version": "1.0.0",
+  "description": "Opens the Γ productions that admit Concept->Concept structural-grounding edges (built_from / depends_on / grounds / genls) and the Microtheory->has_concept->Concept frame edge. Without these the read-and-ground faculty comprehends a definition's genus but its built_from mutation is INADMISSIBLE (Type-2: 'Concept' not in the edge vocabulary) and is silently dropped, so the concept never bottoms out at a seeded primitive. The old CuriousAgent opened these at construction (grounded_representation.open_grounding_productions); as a seed they install graph-natively at boot, so any seed-booted agent can ground concepts by reading. Productions, not rules — they widen the admissible-edge schema, they do not rewrite.",
+  "productions": [
+    {
+      "provenance": "seed:grounding:concept-built_from-concept",
+      "src": {"type": "Concept", "var": "a"},
+      "edge_type": "built_from",
+      "tgt": {"type": "Concept", "var": "b"}
+    },
+    {
+      "provenance": "seed:grounding:concept-depends_on-concept",
+      "src": {"type": "Concept", "var": "a"},
+      "edge_type": "depends_on",
+      "tgt": {"type": "Concept", "var": "b"}
+    },
+    {
+      "provenance": "seed:grounding:concept-grounds-concept",
+      "src": {"type": "Concept", "var": "a"},
+      "edge_type": "grounds",
+      "tgt": {"type": "Concept", "var": "b"}
+    },
+    {
+      "provenance": "seed:grounding:concept-genls-concept",
+      "src": {"type": "Concept", "var": "a"},
+      "edge_type": "genls",
+      "tgt": {"type": "Concept", "var": "b"}
+    },
+    {
+      "provenance": "seed:grounding:microtheory-has_concept-concept",
+      "src": {"type": "Microtheory", "var": "m"},
+      "edge_type": "has_concept",
+      "tgt": {"type": "Concept", "var": "c"}
+    }
+  ]
+}

@@ -1,0 +1,127 @@
+{
+  "protocol_id": "embodied_nonholonomic_control_v1",
+  "status": "frozen_before_execution",
+  "mechanism_version": "embodied_adaptation/1.5.0",
+  "primary_morphology": "racecar",
+  "morphologies": ["r2d2", "husky", "racecar"],
+  "arms": [
+    "adaptive_heading_escape",
+    "adaptive_legacy_control",
+    "healthy_heading_escape"
+  ],
+  "initial_goal": [3.0, 0.0, 0.0],
+  "babble_samples": 5,
+  "calibration_actions": 45,
+  "total_actions": 240,
+  "primary_metric": "normalized_progress_including_recalibration_cost",
+  "cases": [
+    {
+      "case_id": "nonhol_401",
+      "seed": 85301,
+      "goal_offset": [-1.8, 0.4, 0.0],
+      "dynamics": {
+        "base_mass_scale": 0.92,
+        "lateral_friction": 0.51,
+        "rolling_friction": 0.012,
+        "motor_force_scale": 0.94
+      },
+      "condition": {
+        "abrupt_retention": [1.0, 0.15],
+        "wear_per_use": [0.0, 0.0],
+        "minimum_retention": 0.15
+      }
+    },
+    {
+      "case_id": "nonhol_402",
+      "seed": 85302,
+      "goal_offset": [-1.2, 1.7, 0.0],
+      "dynamics": {
+        "base_mass_scale": 1.22,
+        "lateral_friction": 1.12,
+        "rolling_friction": 0.007,
+        "motor_force_scale": 0.76
+      },
+      "condition": {
+        "abrupt_retention": [0.28, 1.0],
+        "wear_per_use": [0.0, 0.0],
+        "minimum_retention": 0.28
+      }
+    },
+    {
+      "case_id": "nonhol_403",
+      "seed": 85303,
+      "goal_offset": [-1.55, -1.3, 0.0],
+      "dynamics": {
+        "base_mass_scale": 0.69,
+        "lateral_friction": 0.88,
+        "rolling_friction": 0.021,
+        "motor_force_scale": 1.18
+      },
+      "condition": {
+        "abrupt_retention": [1.0, 1.0],
+        "wear_per_use": [0.0, 0.022],
+        "minimum_retention": 0.2
+      }
+    },
+    {
+      "case_id": "nonhol_404",
+      "seed": 85304,
+      "goal_offset": [-0.25, 2.2, 0.0],
+      "dynamics": {
+        "base_mass_scale": 1.42,
+        "lateral_friction": 0.46,
+        "rolling_friction": 0.003,
+        "motor_force_scale": 0.71
+      },
+      "condition": {
+        "abrupt_retention": [1.0, 1.0],
+        "wear_per_use": [0.016, 0.0],
+        "minimum_retention": 0.2
+      }
+    },
+    {
+      "case_id": "nonhol_405",
+      "seed": 85305,
+      "goal_offset": [-2.1, -0.3, 0.0],
+      "dynamics": {
+        "base_mass_scale": 0.81,
+        "lateral_friction": 1.37,
+        "rolling_friction": 0.016,
+        "motor_force_scale": 1.08
+      },
+      "condition": {
+        "abrupt_retention": [0.18, 1.0],
+        "wear_per_use": [0.0, 0.0],
+        "minimum_retention": 0.18
+      }
+    },
+    {
+      "case_id": "nonhol_406",
+      "seed": 85306,
+      "goal_offset": [0.15, -2.0, 0.0],
+      "dynamics": {
+        "base_mass_scale": 1.1,
+        "lateral_friction": 0.68,
+        "rolling_friction": 0.025,
+        "motor_force_scale": 0.87
+      },
+      "condition": {
+        "abrupt_retention": [1.0, 0.32],
+        "wear_per_use": [0.0, 0.0],
+        "minimum_retention": 0.32
+      }
+    }
+  ],
+  "success_gates": {
+    "all_runs_complete": true,
+    "prechange_trajectories_exactly_matched": true,
+    "both_damage_arms_adapt": true,
+    "enhanced_heading_escape_exercised": true,
+    "legacy_heading_escape_disabled": true,
+    "racecar_wins_required": 4,
+    "racecar_median_paired_advantage_minimum": 0.05,
+    "racecar_enhanced_median_progress_positive": true,
+    "other_morphology_median_regression_floor": -0.1,
+    "healthy_median_progress_positive_every_morphology": true
+  }
+}

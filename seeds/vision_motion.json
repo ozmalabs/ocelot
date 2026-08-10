@@ -1,0 +1,45 @@
+{
+  "microtheory": {
+    "name": "motion_perception_visual",
+    "definition": "Perception of motion. Direction-selective cells, motion energy models, motion-induced illusions, biological motion, structure-from-motion. Substrate analogue: substrate's temporal-change visual processing.",
+    "category": "vision_domain",
+    "parent": "vision_foundation"
+  },
+  "concepts": [
+    {"name": "motion_selective_neuron_v1", "definition": "V1 + MT/V5 neurons preferentially responding to motion in specific direction. Substrate analogue: substrate's directional-temporal feature.", "category": "neural"},
+    {"name": "mt_v5", "definition": "Middle temporal area. Strongly motion-selective. Lesion → akinetopsia (motion blindness). Substrate analogue: substrate's specialized motion-processing Mt.", "category": "neural"},
+    {"name": "akinetopsia", "definition": "Motion blindness from MT damage. World appears as series of stills. Substrate analogue: substrate's motion-Mt failure mode.", "category": "neural"},
+    {"name": "directional_selectivity_visual", "definition": "Neuron responds preferentially to one motion direction. Tuned by leftward-rightward connections. Substrate analogue: substrate's direction-tuned concept.", "category": "neural"},
+
+    {"name": "apparent_motion", "definition": "Discrete stimuli at successive positions appear to move continuously. Phi phenomenon. Foundation of film + animation. Substrate analogue: substrate's interpolation-based motion.", "category": "phenomena"},
+    {"name": "aperture_problem", "definition": "Local motion detector can only see component perpendicular to edge. Ambiguous. Substrate analogue: substrate's local-vs-global motion ambiguity.", "category": "phenomena"},
+    {"name": "motion_aftereffect", "definition": "Adapt to motion → stationary appears to move opposite direction. Waterfall illusion. Substrate analogue: substrate's motion-channel adaptation.", "category": "phenomena"},
+    {"name": "induced_motion", "definition": "Stationary target appears to move when surround moves. Substrate analogue: substrate's reference-frame ambiguity.", "category": "phenomena"},
+    {"name": "global_motion_pooling", "definition": "Integrate local motion signals across area to estimate global direction. Substrate analogue: substrate's spatial-pooling for motion.", "category": "phenomena"},
+
+    {"name": "motion_energy_model", "definition": "Adelson + Bergen 1985. Motion detection via space-time oriented filters. Substrate analogue: substrate's space-time feature detector.", "category": "models"},
+    {"name": "reichardt_detector", "definition": "Classic motion detector — comparing delayed signal from one location with undelayed from another. Substrate analogue: substrate's delay-line motion detector.", "category": "models"},
+
+    {"name": "optic_flow", "definition": "Pattern of motion across visual field from observer's movement. Gibson 1950. Cue to heading, structure, depth. Substrate analogue: substrate's self-motion-induced visual flow.", "category": "self_motion"},
+    {"name": "focus_of_expansion", "definition": "Point in optic flow that doesn't move during forward locomotion. Indicates heading. Substrate analogue: substrate's heading estimator.", "category": "self_motion"},
+    {"name": "vection", "definition": "Illusion of self-motion induced by visual flow. Substrate analogue: substrate's flow-based motion attribution.", "category": "self_motion"},
+
+    {"name": "biological_motion", "definition": "Perception of moving humans + animals from sparse cues. Johansson's point-light walkers. Recognized rapidly. Substrate analogue: substrate's specialized biomotion recognition.", "category": "biological"},
+    {"name": "point_light_walker", "definition": "Johansson 1973. Body marked by ~12 dots; only motion visible. Recognizable as walking human in <1s. Substrate analogue: substrate's compressed-motion recognition.", "category": "biological"},
+    {"name": "biological_motion_area", "definition": "STS (superior temporal sulcus) specialized for biomotion. Substrate analogue: substrate's specialized motion-category Mt.", "category": "biological"},
+
+    {"name": "structure_from_motion", "definition": "Recover 3D structure from 2D motion sequence. Tomasi + Kanade factorization. Substrate analogue: substrate's 3D-from-temporal-input reconstruction.", "category": "structure"},
+    {"name": "rigidity_assumption", "definition": "Prior assumption that scenes consist of rigid objects. Drives SFM. Substrate analogue: substrate's structural prior.", "category": "structure"},
+
+    {"name": "smooth_pursuit_motion", "definition": "Slow eye movement to track moving target. Up to ~100 deg/s. Substrate analogue: substrate's continuous-tracking attention.", "category": "eye_movements"},
+    {"name": "optokinetic_nystagmus", "definition": "Reflex eye movement stabilizing image during head/world motion. Substrate analogue: substrate's image-stabilization reflex.", "category": "eye_movements"},
+    {"name": "vestibulo_ocular_reflex", "definition": "Eye movement counteracting head movement, keeping gaze stable. Substrate analogue: substrate's self-motion compensation.", "category": "eye_movements"}
+  ],
+  "rules": [
+    {"name": "aperture_problem_requires_global_pooling", "head": "the substrate detects motion locally", "body": "individual detectors are ambiguous (aperture problem); resolution requires pooling across spatial extent. Substrate's local-global motion integration."},
+    {"name": "optic_flow_signals_self_motion", "head": "the substrate moves through the world", "body": "optic flow pattern signals direction + speed + structure. Focus of expansion = heading. Substrate's self-motion signal."},
+    {"name": "biological_motion_recognized_from_sparse_cues", "head": "the substrate sees minimal motion cues from human or animal", "body": "specialized processing rapidly recognizes it as biological. Johansson 1973. Substrate's specialized biomotion."},
+    {"name": "motion_aftereffect_reveals_adaptation", "head": "the substrate adapts to sustained motion", "body": "direction-selective channels fatigue; stationary input now activates opposite-direction channels — motion aftereffect. Substrate's channel-adaptation."},
+    {"name": "rigidity_constrains_structure_from_motion", "head": "the substrate recovers 3D from temporal sequence", "body": "the rigidity assumption converts ambiguous 2D motion to unique 3D structure. Substrate's structural prior in SFM."}
+  ]
+}

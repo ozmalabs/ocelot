@@ -1,0 +1,789 @@
+{
+ "id": "cloud_infrastructure",
+ "version": "0.1.0",
+ "depends_on": [
+  "compiler_theory",
+  "operating_systems",
+  "distributed_systems",
+  "network_protocols"
+ ],
+ "description": "Cloud infrastructure + virtualisation as graph-resident theory. Beyond what operating_systems covered (containers/hypervisors/cgroups) and distributed_systems (microservices/service mesh): Kubernetes (Pods, Deployments, Services, Ingress, ConfigMaps, Secrets, RBAC, NetworkPolicy, CRDs, Operators, StatefulSets, DaemonSets, Jobs, HPA/VPA, Cluster Autoscaler), IaC (Terraform, Pulumi, CDK), GitOps (ArgoCD, Flux), Container runtime (containerd, runc, OCI image format), AWS/Azure/GCP services, serverless (Lambda, Cloud Run, Fargate), edge (Cloudflare Workers), cloud networking (VPC, subnets, NAT, IGW, peering, transit gateway, PrivateLink), storage tiers, IAM, container security, FinOps. The infrastructure layer modern systems actually run on.",
+ "category_inheritance": "genlMt → compiler_theory + operating_systems + distributed_systems + network_protocols. Container + cluster abstractions inherit OS concepts (namespaces, cgroups); orchestration inherits distributed-systems patterns (consensus, replication, failure detection); cloud networking inherits L3/L4/L7 from network protocols.",
+ "concepts": [
+  {
+   "name": "kubernetes_pod",
+   "definition": "Smallest deployable unit. One or more containers sharing network + storage namespaces. Scheduled as a unit.",
+   "why": "Containers in pod share localhost networking + volumes. Sidecar pattern via multi-container pods. Pods are ephemeral; treat as cattle, not pets.",
+   "category": "kubernetes"
+  },
+  {
+   "name": "kubernetes_deployment",
+   "definition": "Declares desired state for a set of pods (replicas, image, resources). Controller maintains state via ReplicaSets.",
+   "why": "Foundation of stateless workloads. Rolling updates, rollback, scaling. The most-used K8s resource.",
+   "category": "kubernetes"
+  },
+  {
+   "name": "kubernetes_statefulset",
+   "definition": "For stateful workloads. Stable network identity (pod-0, pod-1), persistent storage, ordered deployment.",
+   "why": "Databases, Kafka, ZooKeeper. Each pod has stable hostname + PVC. Ordered scale-up/down preserves cluster membership.",
+   "category": "kubernetes"
+  },
+  {
+   "name": "kubernetes_daemonset",
+   "definition": "Runs a pod on every (or selected) nodes. Used for node-level agents.",
+   "why": "Logging agents (Fluentd), monitoring (node-exporter), networking (CNI), security (Falco). One-per-node guarantee.",
+   "category": "kubernetes"
+  },
+  {
+   "name": "kubernetes_job_cronjob",
+   "definition": "Job: run pods to completion. CronJob: schedule periodic Jobs.",
+   "why": "Batch workloads, scheduled tasks. Job ensures completion (retries on failure); CronJob schedules.",
+   "category": "kubernetes"
+  },
+  {
+   "name": "kubernetes_service",
+   "definition": "Stable network endpoint for set of pods. ClusterIP (internal), NodePort, LoadBalancer.",
+   "why": "Pods are ephemeral; services are stable. Kube-proxy implements via iptables or IPVS. Foundation of K8s networking.",
+   "category": "kubernetes"
+  },
+  {
+   "name": "kubernetes_ingress",
+   "definition": "HTTP routing rules. Mapping external URL → service. Implemented by Ingress controller (Nginx, Traefik).",
+   "why": "L7 routing. TLS termination. Host-based routing. Standard pattern for HTTP entry. Gateway API is the modern successor.",
+   "category": "kubernetes"
+  },
+  {
+   "name": "kubernetes_gateway_API",
+   "definition": "Successor to Ingress. More expressive routing, role separation (GatewayClass, Gateway, HTTPRoute).",
+   "why": "Ingress limitations: vendor-specific annotations, weak HTTPS controls. Gateway API: standard, role-aware. Kubernetes 1.30+ stable.",
+   "category": "kubernetes"
+  },
+  {
+   "name": "kubernetes_configmap",
+   "definition": "Non-sensitive configuration data. Mounted as files or env vars in pods.",
+   "why": "Decouple config from images. Update without rebuild. Standard config pattern.",
+   "category": "kubernetes"
+  },
+  {
+   "name": "kubernetes_secret",
+   "definition": "Sensitive data (passwords, certs). Base64-encoded (not encrypted at rest by default).",
+   "why": "ConfigMap for sensitive data. Encryption at rest requires explicit config. External Secrets Operator integrates Vault/AWS SM.",
+   "category": "kubernetes"
+  },
+  {
+   "name": "kubernetes_RBAC",
+   "definition": "Role-Based Access Control. Roles (namespace-scoped) + ClusterRoles. RoleBindings link to users/groups.",
+   "why": "Standard K8s authz. Service accounts get RoleBindings. Auditable. Required for multi-tenant clusters.",
+   "category": "kubernetes"
+  },
+  {
+   "name": "kubernetes_namespace",
+   "definition": "Virtual cluster within a cluster. Resource isolation + RBAC boundary.",
+   "why": "Multi-team / multi-app organisation. Each team gets namespace; resource quotas + network policies enforced.",
+   "category": "kubernetes"
+  },
+  {
+   "name": "kubernetes_NetworkPolicy",
+   "definition": "Pod-level firewall rules. Ingress + egress. Default deny, allowlist explicit.",
+   "why": "Pods reach all pods by default. NetworkPolicy restricts. Requires CNI that supports (Calico, Cilium). Critical for security.",
+   "category": "kubernetes"
+  },
+  {
+   "name": "kubernetes_CRD",
+   "definition": "Custom Resource Definition. Extend K8s API with new resource types.",
+   "why": "Foundation of operators. Define schema; cluster API exposes new resource type. No code in apiserver. Enables platform extensions.",
+   "category": "kubernetes"
+  },
+  {
+   "name": "kubernetes_operator",
+   "definition": "Controller + CRDs. Encodes operational knowledge. Reconciles custom resource desired state to actual state.",
+   "why": "Prometheus operator manages Prometheus instances. Postgres operator manages clusters. Pattern: 'kubectl create' is the API for ops.",
+   "category": "kubernetes"
+  },
+  {
+   "name": "controller_pattern",
+   "definition": "Watch desired state; observe actual; reconcile difference. K8s native pattern.",
+   "why": "Foundation of K8s control plane. Declarative API; controllers do the work. Eventually-consistent reconciliation.",
+   "category": "kubernetes"
+  },
+  {
+   "name": "kubernetes_HPA",
+   "definition": "Horizontal Pod Autoscaler. Scale replicas based on metric (CPU, memory, custom).",
+   "why": "Auto-scale stateless workloads. Standard K8s feature. Min/max bounds + target metric. CPU-based common default.",
+   "category": "kubernetes"
+  },
+  {
+   "name": "kubernetes_VPA",
+   "definition": "Vertical Pod Autoscaler. Adjust pod resource requests based on usage.",
+   "why": "Right-sizing. Cost: pod restart on adjustment. Used alongside HPA for full elasticity.",
+   "category": "kubernetes"
+  },
+  {
+   "name": "kubernetes_cluster_autoscaler",
+   "definition": "Add/remove nodes from cluster based on pod scheduling demands.",
+   "why": "Cloud-native scaling. Unscheduled pods → add nodes. Underutilised nodes → remove. Karpenter is modern alternative (faster).",
+   "category": "kubernetes"
+  },
+  {
+   "name": "Helm",
+   "definition": "Kubernetes package manager. Charts: parameterised YAML templates.",
+   "why": "Reuse + parameterise. helm install prometheus prometheus-community/prometheus. Standard packaging. Alternatives: Kustomize (no templating).",
+   "category": "kubernetes"
+  },
+  {
+   "name": "Kustomize",
+   "definition": "Template-free YAML overlays. base + overlays/(dev|prod) patches.",
+   "why": "Built into kubectl since 1.14. Simpler than Helm for many use cases. No template debugging.",
+   "category": "kubernetes"
+  },
+  {
+   "name": "ArgoCD",
+   "definition": "GitOps continuous delivery. Watches Git; reconciles cluster state to repo.",
+   "why": "Pull-based deploys (vs push CI). Audit trail in Git. Self-healing. Multi-cluster support.",
+   "category": "gitops"
+  },
+  {
+   "name": "Flux",
+   "definition": "GitOps toolkit. Modular controllers. Helm + Kustomize support.",
+   "why": "CNCF-graduated alternative to Argo. More composable. Common in larger orgs.",
+   "category": "gitops"
+  },
+  {
+   "name": "GitOps_principles",
+   "definition": "Declarative + versioned + auto-pulled + continuously reconciled. Weaveworks principles.",
+   "why": "Git as source of truth. Rollback = git revert. Audit = git log. Standard modern delivery model.",
+   "category": "gitops"
+  },
+  {
+   "name": "Terraform",
+   "definition": "HashiCorp IaC. HCL declarative language. State file tracks managed resources.",
+   "why": "De facto IaC. Provider ecosystem (AWS, Azure, GCP, hundreds more). plan + apply workflow. Open-source license now BUSL.",
+   "category": "iac"
+  },
+  {
+   "name": "OpenTofu",
+   "definition": "Fork of Terraform 1.5.5. Linux Foundation. Open-source after Terraform license change.",
+   "why": "Community response to BUSL. Compatible with Terraform providers + modules. Adoption growing.",
+   "category": "iac"
+  },
+  {
+   "name": "Pulumi",
+   "definition": "IaC in general-purpose languages (Python, TypeScript, Go). Same providers as Terraform.",
+   "why": "Programming language vs DSL. Loops, conditionals, abstractions. Trade: less declarative; more flexibility.",
+   "category": "iac"
+  },
+  {
+   "name": "AWS_CDK",
+   "definition": "Cloud Development Kit. TypeScript/Python/Java/Go. Synthesises CloudFormation.",
+   "why": "AWS-native. Higher-level constructs than raw CFN. Good for AWS-only deployments. L1/L2/L3 construct levels.",
+   "category": "iac"
+  },
+  {
+   "name": "CloudFormation",
+   "definition": "AWS native IaC. YAML/JSON templates. Stacks group resources.",
+   "why": "AWS-specific. Foundation of CDK. Slow on large stacks. Often replaced by Terraform for portability.",
+   "category": "iac"
+  },
+  {
+   "name": "Terragrunt",
+   "definition": "Terraform wrapper for DRY config + remote state management.",
+   "why": "Solves Terraform's monorepo + multi-env pain. Adds DRY + dependency management. Common in enterprise Terraform.",
+   "category": "iac"
+  },
+  {
+   "name": "OCI_image_format",
+   "definition": "Open Container Initiative image spec. Layered tarballs + manifest + config.",
+   "why": "Standard since 2017. Docker, containerd, podman all support. Foundation of container ecosystem.",
+   "category": "container_runtime"
+  },
+  {
+   "name": "OCI_runtime_spec",
+   "definition": "Spec for runtime: how to start a container from bundle. Implemented by runc, crun, gVisor.",
+   "why": "Decouples 'what is a container' (image) from 'how to run' (runtime). Pluggable runtimes (sandboxed: gVisor, Kata).",
+   "category": "container_runtime"
+  },
+  {
+   "name": "containerd",
+   "definition": "Daemon managing container lifecycle. CRI interface to Kubernetes. Default in most modern K8s.",
+   "why": "Replaced Docker as K8s runtime in 1.24. Lighter than Docker. Used directly via ctr CLI; via nerdctl for Docker-like CLI.",
+   "category": "container_runtime"
+  },
+  {
+   "name": "runc",
+   "definition": "OCI runtime. Spawns + manages container processes via Linux primitives (namespaces, cgroups).",
+   "why": "Default runtime. Thin layer over kernel features. Donated to OCI by Docker. Heart of every container.",
+   "category": "container_runtime"
+  },
+  {
+   "name": "gVisor",
+   "definition": "User-space kernel for containers. Intercepts syscalls; runs in unprivileged process.",
+   "why": "Sandbox between container + host kernel. Google's choice for multi-tenant (Cloud Run, GKE Sandbox). Trade: ~10% perf overhead.",
+   "category": "container_runtime"
+  },
+  {
+   "name": "Kata_containers",
+   "definition": "Lightweight VM per container. Hypervisor + minimal kernel + container.",
+   "why": "Hardware-isolation for multi-tenant. Used in some serverless platforms. Stronger boundary than gVisor; more overhead.",
+   "category": "container_runtime"
+  },
+  {
+   "name": "image_layer_caching",
+   "definition": "Docker/OCI images are layered. Same layer in multiple images = stored once.",
+   "why": "Build + pull efficiency. base image (ubuntu) shared across many derivatives. Layer hash determines reuse.",
+   "category": "container_runtime"
+  },
+  {
+   "name": "multi_stage_build",
+   "definition": "Dockerfile with multiple FROM. Earlier stages build; later stages copy artifacts only.",
+   "why": "Tiny final images (just binary). Build tools (gcc, npm) not in runtime image. Standard practice.",
+   "category": "container_runtime"
+  },
+  {
+   "name": "distroless_images",
+   "definition": "Minimal images: only app + dependencies, no shell, no package manager.",
+   "why": "Smaller attack surface. Smaller size. Google's gcr.io/distroless. No interactive debugging — trade-off.",
+   "category": "container_runtime"
+  },
+  {
+   "name": "AWS_EC2",
+   "definition": "Virtual machines on AWS. Many instance types (general purpose, compute, memory, GPU).",
+   "why": "Foundation of AWS. Largest service. Reserved + spot pricing. Modern: usually behind managed services (EKS, ECS) rather than direct.",
+   "category": "aws"
+  },
+  {
+   "name": "AWS_S3",
+   "definition": "Object storage. Strong read-after-write consistency since 2020. 11 9s durability.",
+   "why": "Foundation of cloud storage. Hosts static websites, backups, data lakes, ML training data. Pricing: storage + requests + egress.",
+   "category": "aws"
+  },
+  {
+   "name": "AWS_Lambda",
+   "definition": "Serverless compute. Pay per execution. ~125ms cold start typical.",
+   "why": "Event-driven workloads. No infra management. Cost: cold starts, 15-min max execution, vendor lock-in.",
+   "category": "aws"
+  },
+  {
+   "name": "AWS_IAM",
+   "definition": "Identity + Access Management. Users, groups, roles, policies. Policies in JSON.",
+   "why": "Foundation of AWS security. Complexity is famous; principle: deny by default, explicit grant. Roles for cross-account + temp creds (STS).",
+   "category": "aws"
+  },
+  {
+   "name": "AWS_VPC",
+   "definition": "Virtual Private Cloud. Isolated network in AWS. Subnets, route tables, security groups.",
+   "why": "Network isolation. Each VPC has CIDR; subnets within. Multi-AZ for HA. Foundation of AWS networking.",
+   "category": "aws"
+  },
+  {
+   "name": "AWS_EKS",
+   "definition": "Managed Kubernetes. Control plane managed; workers your EC2/Fargate.",
+   "why": "Kubernetes without managing apiserver/etcd/scheduler. Worker nodes still your responsibility. EKS Auto Mode (2024) manages workers too.",
+   "category": "aws"
+  },
+  {
+   "name": "AWS_Fargate",
+   "definition": "Serverless containers. No VM management. Pay per pod-seconds.",
+   "why": "Run containers without managing instances. Used with ECS or EKS. Higher per-second cost vs EC2 but no idle.",
+   "category": "aws"
+  },
+  {
+   "name": "AWS_RDS",
+   "definition": "Managed relational databases. Postgres, MySQL, MariaDB, Oracle, SQL Server, Aurora.",
+   "why": "Backups, patching, replication automated. Cost: ~30-50% premium over self-hosted. Standard for non-trivial RDBMS deployment.",
+   "category": "aws"
+  },
+  {
+   "name": "AWS_Aurora",
+   "definition": "AWS-built Postgres/MySQL-compatible. Storage-compute separation. Up to 15 read replicas.",
+   "why": "Higher performance + availability than RDS Postgres/MySQL. Cost: more expensive. Aurora Serverless v2 scales to zero.",
+   "category": "aws"
+  },
+  {
+   "name": "AWS_DynamoDB",
+   "definition": "Already covered in databases_and_storage. NoSQL key-value/document with serverless model.",
+   "why": "Predictable latency at any scale. Used heavily in AWS-native architectures.",
+   "category": "aws"
+  },
+  {
+   "name": "AWS_CloudFront",
+   "definition": "AWS CDN. Edge locations globally. CloudFront Functions + Lambda@Edge for compute at edge.",
+   "why": "Static + dynamic edge delivery. Integrated with AWS services. Origin from S3, ALB, custom.",
+   "category": "aws"
+  },
+  {
+   "name": "AWS_Route53",
+   "definition": "Managed DNS. Health-check-aware routing. Latency-based, geolocation, weighted.",
+   "why": "Global service. DNS-based load balancing, failover. ANYCASTed for low latency. Foundation of multi-region.",
+   "category": "aws"
+  },
+  {
+   "name": "AWS_EBS",
+   "definition": "Elastic Block Store. Network-attached block storage for EC2. gp3, io2 most common.",
+   "why": "Persistent disk for EC2. Snapshots to S3. Provisioned IOPS for predictable performance. Encryption at rest standard.",
+   "category": "aws"
+  },
+  {
+   "name": "AWS_EFS",
+   "definition": "Elastic File System. NFS-compatible. Mounted by multiple EC2 instances.",
+   "why": "Shared filesystem across instances. Auto-scaling. Cost higher than EBS; throughput shared.",
+   "category": "aws"
+  },
+  {
+   "name": "Azure_AKS",
+   "definition": "Azure Kubernetes Service. Managed K8s.",
+   "why": "Microsoft cloud K8s. Integration with Entra ID (Azure AD), ACR (container registry).",
+   "category": "azure"
+  },
+  {
+   "name": "Azure_Functions",
+   "definition": "Serverless compute. Triggers from Azure services + HTTP.",
+   "why": "Microsoft equivalent of Lambda. Different cold start characteristics. Premium plan for always-warm.",
+   "category": "azure"
+  },
+  {
+   "name": "GCP_GKE",
+   "definition": "Google Kubernetes Engine. Most-mature managed K8s (K8s originated at Google).",
+   "why": "Autopilot mode manages workers. Best-of-breed K8s experience. GKE Workload Identity integrates GCP IAM.",
+   "category": "gcp"
+  },
+  {
+   "name": "GCP_Cloud_Run",
+   "definition": "Container-based serverless. Runs any container. Scale to zero.",
+   "why": "Hits sweet spot: container portability + serverless simplicity. Knative under the hood. Popular alternative to Lambda for HTTP services.",
+   "category": "gcp"
+  },
+  {
+   "name": "Cloudflare_Workers",
+   "definition": "Edge compute. V8 isolates (not containers). Sub-millisecond cold start.",
+   "why": "Different model than Lambda. Lighter (no Node.js runtime), edge-deployed (300+ cities). Limits: no syscalls; constrained execution time.",
+   "category": "edge_serverless"
+  },
+  {
+   "name": "Lambda_at_Edge",
+   "definition": "AWS Lambda functions running at CloudFront edge.",
+   "why": "Edge compute via Lambda. Limited (Node.js + Python only, smaller package). Cloudflare Workers more capable but AWS-integrated.",
+   "category": "edge_serverless"
+  },
+  {
+   "name": "Fastly_Compute",
+   "definition": "Edge compute on Fastly's CDN. WebAssembly-based.",
+   "why": "Wasm runtime = many languages + sandboxing. Fastly's bet on Wasm for edge.",
+   "category": "edge_serverless"
+  },
+  {
+   "name": "VPC_subnet",
+   "definition": "CIDR range within VPC. Public (route to internet gateway) or private (NAT for outbound only).",
+   "why": "Standard cloud network primitive. Per-AZ subnets for HA. Private for app servers; public for LBs.",
+   "category": "cloud_networking"
+  },
+  {
+   "name": "NAT_gateway",
+   "definition": "Allows outbound internet from private subnet. Source NAT only.",
+   "why": "Private resources need internet for updates, API calls. NAT GW translates. Cost: per-GB. Major cloud cost driver in some architectures.",
+   "category": "cloud_networking"
+  },
+  {
+   "name": "Internet_gateway",
+   "definition": "Allows bidirectional internet for public subnet. Just routes; doesn't NAT.",
+   "why": "Public-facing resources (ALBs) live behind. Free service. One per VPC.",
+   "category": "cloud_networking"
+  },
+  {
+   "name": "VPC_peering",
+   "definition": "Direct connection between two VPCs. Routing table entries on both sides.",
+   "why": "Private connectivity between VPCs without internet. Non-transitive: A↔B + B↔C doesn't give A↔C.",
+   "category": "cloud_networking"
+  },
+  {
+   "name": "Transit_Gateway",
+   "definition": "Hub for connecting many VPCs + on-premises. Transitive routing.",
+   "why": "Replaces N×N peering. Hub-spoke model. Standard for enterprise multi-VPC architectures.",
+   "category": "cloud_networking"
+  },
+  {
+   "name": "PrivateLink_VPC_endpoint",
+   "definition": "Access AWS services + 3rd parties without internet. Endpoint in your VPC.",
+   "why": "No NAT, no IGW, no public IP needed for service access. Better security + lower cost vs NAT. AWS standard for service-to-service.",
+   "category": "cloud_networking"
+  },
+  {
+   "name": "Security_group",
+   "definition": "Stateful firewall around EC2/ENI. Default deny; explicit allow.",
+   "why": "Standard AWS network security. Per-instance/ENI. Stateful: response traffic allowed automatically. Source can be SG ID (not just CIDR).",
+   "category": "cloud_networking"
+  },
+  {
+   "name": "Network_ACL",
+   "definition": "Subnet-level firewall. Stateless. Allow + explicit deny rules.",
+   "why": "Defense in depth. Stateless means response traffic also needs allow. Less used than security groups; SGs more flexible.",
+   "category": "cloud_networking"
+  },
+  {
+   "name": "object_storage_API",
+   "definition": "REST API: PUT, GET, DELETE, LIST. S3 is the de facto standard. GCS, Azure Blob, MinIO compatible.",
+   "why": "Foundation of cloud storage. Infinite scale, eventual consistency historically (now strong). Used for everything: backups, ML datasets, websites.",
+   "category": "cloud_storage"
+  },
+  {
+   "name": "object_storage_classes",
+   "definition": "Tiered: Standard (hot), IA (infrequent), Glacier (archive), Deep Archive. Different prices + retrieval latencies.",
+   "why": "Optimise cost vs access. Lifecycle policies auto-tier (after 30d → IA, 90d → Glacier). Major cost lever.",
+   "category": "cloud_storage"
+  },
+  {
+   "name": "block_storage_provisioned_IOPS",
+   "definition": "EBS gp3, io2. Provisioned IOPS independent of size. Predictable performance.",
+   "why": "Database workloads need consistent IOPS. gp2 was size-coupled; gp3 + io2 decouple. Production DB standard.",
+   "category": "cloud_storage"
+  },
+  {
+   "name": "file_storage_NFS_SMB",
+   "definition": "EFS (NFS), FSx (SMB, Lustre). Shared file system across instances.",
+   "why": "Use cases needing POSIX filesystem semantics. Cost: higher than object. Lustre for HPC.",
+   "category": "cloud_storage"
+  },
+  {
+   "name": "IAM_policy_evaluation",
+   "definition": "Explicit deny > explicit allow > implicit deny. Multiple policies combined.",
+   "why": "Foundation of IAM. Even one Deny anywhere blocks. Identity + resource policies evaluated together.",
+   "category": "cloud_iam"
+  },
+  {
+   "name": "IAM_role_vs_user",
+   "definition": "User: long-term credentials (access key). Role: assumed for temporary credentials (STS).",
+   "why": "Roles for services + cross-account. Best practice: no IAM users; use IAM Identity Center (SSO) + roles. Eliminates long-term keys.",
+   "category": "cloud_iam"
+  },
+  {
+   "name": "STS_temporary_credentials",
+   "definition": "Security Token Service. Issues time-limited credentials. Default 1h.",
+   "why": "Foundation of IAM roles. Assume role → STS issues creds → use for window. No long-term keys leaked.",
+   "category": "cloud_iam"
+  },
+  {
+   "name": "OIDC_federation_GitHub_actions",
+   "definition": "GitHub Actions → AWS via OIDC. No stored AWS creds in GitHub.",
+   "why": "Replaces stored IAM access keys. GitHub-issued JWT exchanged for STS creds. Standard for CI/CD into AWS.",
+   "category": "cloud_iam"
+  },
+  {
+   "name": "service_account_K8s",
+   "definition": "K8s SA tied to cloud IAM via workload identity (GKE, EKS IRSA, AKS Workload Identity).",
+   "why": "Pod gets cloud creds without storing static keys. Standard for K8s → cloud API access. Foundation of K8s security.",
+   "category": "cloud_iam"
+  },
+  {
+   "name": "PodSecurity_standards",
+   "definition": "K8s PSA replaces deprecated PSP. Three levels: privileged, baseline, restricted.",
+   "why": "Per-namespace policy. Restricted = no root, no host paths, etc. Default for new namespaces should be restricted.",
+   "category": "container_security"
+  },
+  {
+   "name": "OPA_gatekeeper",
+   "definition": "Policy engine for K8s. Rego policies enforce on admission.",
+   "why": "Block non-compliant resources (no privileged containers, must have labels). Standard policy enforcement. Kyverno is alternative.",
+   "category": "container_security"
+  },
+  {
+   "name": "Falco_runtime_security",
+   "definition": "Runtime threat detection. Watches syscalls via eBPF. Rules detect unusual behaviour.",
+   "why": "Catches: shell in container, sensitive file read, anomalous syscalls. CNCF graduated. Standard K8s runtime security.",
+   "category": "container_security"
+  },
+  {
+   "name": "container_image_scanning",
+   "definition": "Scan images for CVEs. Trivy, Snyk, Clair. Block deploy if critical CVEs present.",
+   "why": "Catches vulnerable dependencies before deploy. Standard in CI/CD. Continuous (registry scanning) + runtime.",
+   "category": "container_security"
+  },
+  {
+   "name": "FinOps",
+   "definition": "Cloud financial management. Visibility, allocation, optimisation. Foundation Cloud Financial Management.",
+   "why": "Cloud costs grow uncontrolled. FinOps practice: monitor, attribute, optimise. Driven by tags + cost allocation reports.",
+   "category": "operations"
+  },
+  {
+   "name": "reserved_instances_savings_plans",
+   "definition": "Commit to 1y or 3y for 30-72% discount vs on-demand.",
+   "why": "Predictable workloads = use commitments. Spot for non-critical (90% discount, can be terminated). Mix for optimal.",
+   "category": "operations"
+  },
+  {
+   "name": "spot_instances",
+   "definition": "Spare capacity at deep discount (~70-90%). Can be reclaimed on 2-min notice.",
+   "why": "Batch, fault-tolerant workloads. Big savings if app handles termination. Karpenter excellent at spot orchestration.",
+   "category": "operations"
+  },
+  {
+   "name": "Karpenter",
+   "definition": "Just-in-time node provisioning for K8s. Replaces Cluster Autoscaler in many cases. AWS-native.",
+   "why": "Faster scale-up (seconds vs minutes). Better bin packing. Native spot support. Standard EKS scaling tool.",
+   "category": "operations"
+  },
+  {
+   "name": "multi_cloud",
+   "definition": "Workloads across multiple cloud providers. AWS + Azure, etc.",
+   "why": "Negotiation leverage, vendor diversification, regional coverage. Cost: 2x ops complexity. Trade-off case-by-case.",
+   "category": "operations"
+  },
+  {
+   "name": "hybrid_cloud",
+   "definition": "Mix of cloud + on-premises. Connected via VPN or Direct Connect.",
+   "why": "Migration in progress, regulated data on-prem, capacity bursting. Standard enterprise pattern during cloud migration.",
+   "category": "operations"
+  }
+ ],
+ "rules": [
+  {
+   "name": "K8s_controllers_reconcile_state",
+   "if": [
+    "desired state differs from actual"
+   ],
+   "then": [
+    "controller acts to converge"
+   ],
+   "why": "Declarative API. Apply manifests = state declaration. Controllers reconcile continuously. Eventually consistent. Foundation of K8s.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "StatefulSet_for_stable_identity",
+   "if": [
+    "workload requires stable network identity + persistent storage"
+   ],
+   "then": [
+    "StatefulSet outperforms Deployment"
+   ],
+   "why": "Deployment: pods get random names + ephemeral storage. StatefulSet: pod-0, pod-1 stable + PVC stable. Cluster software (Kafka, ZK) depends on this.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "NetworkPolicy_required_for_pod_isolation",
+   "if": [
+    "multi-tenant cluster"
+   ],
+   "then": [
+    "NetworkPolicy required for namespace isolation"
+   ],
+   "why": "K8s default: all pods reach all pods. NetworkPolicy restricts. Without: compromised pod in namespace A can attack pods in namespace B. Critical security baseline.",
+   "soundness_category": "referential_transparency"
+  },
+  {
+   "name": "operator_pattern_extends_K8s_for_complex_workloads",
+   "if": [
+    "app has nontrivial operational lifecycle"
+   ],
+   "then": [
+    "operator + CRD pattern outperforms Helm chart alone"
+   ],
+   "why": "Helm: install + upgrade. Operator: handles failover, backup, scale, version upgrades programmatically. Prometheus, Postgres, Kafka operators all standard.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "IaC_provides_audit_trail_via_version_control",
+   "if": [
+    "infrastructure defined as code in Git"
+   ],
+   "then": [
+    "every change is auditable + reversible"
+   ],
+   "why": "Click-ops in console: who, why, when invisible. IaC: git log + PR review. Compliance + change management. Standard for any non-trivial cloud env.",
+   "soundness_category": "referential_transparency"
+  },
+  {
+   "name": "GitOps_replaces_imperative_deploys",
+   "if": [
+    "deploys are pull-based from Git"
+   ],
+   "then": [
+    "cluster state matches repo + can self-heal"
+   ],
+   "why": "CI push: credentials in CI, drift possible. GitOps: agent in cluster pulls; cluster always matches repo. Drift auto-corrected. ArgoCD, Flux.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "containerd_lighter_than_Docker_for_K8s",
+   "if": [
+    "K8s uses container runtime"
+   ],
+   "then": [
+    "containerd is the standard since 1.24"
+   ],
+   "why": "Docker had compatibility shim (dockershim) deprecated. containerd direct via CRI. Less overhead, fewer components, same images. Industry standard.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "distroless_minimises_attack_surface",
+   "if": [
+    "images are distroless"
+   ],
+   "then": [
+    "fewer CVEs + smaller size"
+   ],
+   "why": "No shell, no package manager, no debug tools. Vulnerabilities in those absent. ~10-50 MB vs hundreds. Trade: harder to debug; tooling matures.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "S3_strong_read_after_write_consistency",
+   "if": [
+    "data is written to S3"
+   ],
+   "then": [
+    "subsequent reads see the write"
+   ],
+   "why": "AWS made strongly consistent Dec 2020. Previously eventually consistent for overwrites. Major architectural simplification.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "Lambda_cold_start_critical_for_latency",
+   "if": [
+    "service has interactive users"
+   ],
+   "then": [
+    "Lambda cold start (~125ms) may matter"
+   ],
+   "why": "First invocation after idle: load runtime + code = latency. Mitigations: Provisioned Concurrency, Lambda SnapStart. Or use Cloud Run / Fargate for consistent latency.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "IAM_explicit_deny_wins",
+   "if": [
+    "any applicable policy has explicit deny"
+   ],
+   "then": [
+    "access is denied regardless of other allows"
+   ],
+   "why": "Policy evaluation: deny > allow > implicit deny. Even admin can't bypass explicit deny. Used for organisation-wide guardrails (SCPs).",
+   "soundness_category": "algebraic_law"
+  },
+  {
+   "name": "STS_eliminates_long_term_credentials",
+   "if": [
+    "workload uses IAM role"
+   ],
+   "then": [
+    "long-term access keys are not needed"
+   ],
+   "why": "STS issues short-lived creds per request. No keys leaked, no rotation. Best practice: zero IAM users; only roles + SSO. Industry direction.",
+   "soundness_category": "referential_transparency"
+  },
+  {
+   "name": "OIDC_federation_eliminates_stored_creds",
+   "if": [
+    "CI/CD uses OIDC federation"
+   ],
+   "then": [
+    "no AWS creds in CI environment"
+   ],
+   "why": "GitHub Actions: OIDC trust to AWS account; assume role; STS creds; use; expire. No secrets in Actions to leak. Standard CI/CD pattern.",
+   "soundness_category": "referential_transparency"
+  },
+  {
+   "name": "PrivateLink_eliminates_NAT_costs",
+   "if": [
+    "VPC accesses AWS services"
+   ],
+   "then": [
+    "VPC endpoints (PrivateLink) avoid NAT GW charges"
+   ],
+   "why": "Without: route through NAT GW, pay per-GB. With: direct via endpoint. Savings: $100s-1000s/mo for chatty services. Standard cost optimisation.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "S3_lifecycle_policies_reduce_storage_cost",
+   "if": [
+    "data ages predictably"
+   ],
+   "then": [
+    "lifecycle policies auto-tier to cheaper storage"
+   ],
+   "why": "Standard → IA after 30d (50% off) → Glacier after 90d (80% off). Set + forget. Save thousands on terabytes of cold data. Major FinOps practice.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "spot_instances_70_percent_discount",
+   "if": [
+    "workload tolerates termination"
+   ],
+   "then": [
+    "spot saves 70-90% vs on-demand"
+   ],
+   "why": "Spare capacity sold cheap; AWS reclaims with 2-min notice. Batch, ML training, CI runners ideal. Karpenter automates. Major cost lever for fault-tolerant workloads.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "managed_services_premium_pays_off",
+   "if": [
+    "team is small / inexperienced with ops"
+   ],
+   "then": [
+    "managed services worth their ~30% premium"
+   ],
+   "why": "RDS: AWS handles backups, patches, failover, replication. Equivalent self-hosted: dedicated DBA. Premium = avoided headcount + on-call. Crossover at scale.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "multi_AZ_required_for_high_availability",
+   "if": [
+    "service must survive AZ failure"
+   ],
+   "then": [
+    "multi-AZ deployment required"
+   ],
+   "why": "AZs are physically separate datacenters. AZ outages happen (US-EAST-1 multiple times). Multi-AZ: tolerant. Single-AZ: down with AZ. Standard architectural requirement.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "edge_compute_beats_central_for_latency_sensitive",
+   "if": [
+    "users are globally distributed and latency matters"
+   ],
+   "then": [
+    "edge compute (Cloudflare Workers, Lambda@Edge) outperforms central regions"
+   ],
+   "why": "Round-trip from Sydney to us-east-1: ~200ms. Edge: <50ms. For interactive UX, edge wins. Trade: programming constraints, smaller compute.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "Karpenter_replaces_Cluster_Autoscaler",
+   "if": [
+    "EKS cluster needs fast scaling"
+   ],
+   "then": [
+    "Karpenter outperforms Cluster Autoscaler"
+   ],
+   "why": "CA: minutes to scale, group-based. Karpenter: seconds, just-in-time, picks optimal instance type. Better bin packing. Native spot. AWS-native, replacing CA for EKS.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "FinOps_practice_caps_cost_growth",
+   "if": [
+    "cloud spend is tagged + monitored + attributed"
+   ],
+   "then": [
+    "cost growth is bounded"
+   ],
+   "why": "Without: untracked spend grows. With: each team sees its cost, optimisation possible. Tags → cost allocation reports → engineering action. Standard at scale.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "VPC_endpoints_keep_traffic_off_internet",
+   "if": [
+    "app accesses AWS services from VPC"
+   ],
+   "then": [
+    "VPC endpoints (PrivateLink) avoid internet routing"
+   ],
+   "why": "Default: VPC → NAT GW → internet → AWS. Endpoint: VPC → AWS service privately. No NAT cost, no internet exposure, lower latency. Security + cost win.",
+   "soundness_category": "cost_equivalence"
+  }
+ ],
+ "exclusions": [],
+ "parent_mt": "operating_systems",
+ "relations": [
+  {
+   "src": "cloud_infrastructure",
+   "edge": "genlMt",
+   "tgt": "compiler_theory"
+  }
+ ]
+}

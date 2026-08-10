@@ -1,0 +1,1134 @@
+{
+ "id": "materials_chemistry",
+ "version": "0.1.0",
+ "depends_on": [
+  "compiler_theory",
+  "engineering"
+ ],
+ "description": "Materials science + chemistry as graph-resident theory. Beyond what engineering covered (material selection, failure modes): atomic + molecular foundation. Chemistry: atomic structure, bonding, thermochemistry, kinetics, equilibrium, acids/bases, redox, electrochemistry, organic, biochemistry, analytical. Materials: crystal structures, defects (point, line, planar), diffusion, phase diagrams, strengthening mechanisms, heat treatment, polymers (chain structure, viscoelasticity, Tg), composites, ceramics, semiconductors (band theory), nanomaterials (graphene, nanotubes, quantum dots), biomaterials, characterization techniques (XRD, SEM/TEM, NMR, IR, MS), corrosion electrochemistry. The atomic + molecular layer beneath engineering.",
+ "category_inheritance": "genlMt → compiler_theory + engineering. Chemistry: composition determines properties (denotational equivalence); reactions follow conservation laws (algebraic law); thermodynamics constrains spontaneity (referential transparency under second law).",
+ "concepts": [
+  {
+   "name": "atomic_structure_orbitals",
+   "definition": "Electrons in orbitals: s (1), p (3), d (5), f (7). Quantum numbers n, l, ml, ms.",
+   "why": "Foundation. Orbitals determine bonding + spectroscopy + chemistry. Quantum mechanical solution to H atom.",
+   "category": "atomic_structure"
+  },
+  {
+   "name": "electron_configuration",
+   "definition": "Filling order: 1s, 2s, 2p, 3s, 3p, 4s, 3d, 4p... (Aufbau).",
+   "why": "Predicts periodic properties. Noble gases stable (full shells). Transition metals (partial d).",
+   "category": "atomic_structure"
+  },
+  {
+   "name": "periodic_trends",
+   "definition": "Atomic radius (decreases across, increases down), electronegativity, ionization energy.",
+   "why": "Mendeleev's organization. Properties periodic in atomic number. Predicts reactivity + bonding.",
+   "category": "atomic_structure"
+  },
+  {
+   "name": "ionic_bonding",
+   "definition": "Electron transfer. Metal + non-metal. Coulombic attraction between ions.",
+   "why": "Salts (NaCl, MgO). High melting, brittle, soluble in polar solvents. Lattice energy quantifies.",
+   "category": "bonding"
+  },
+  {
+   "name": "covalent_bonding",
+   "definition": "Electron sharing. Non-metals + non-metals. Directional.",
+   "why": "Molecules (H2O, CH4). Single, double, triple bonds. Polar (electronegativity difference) vs nonpolar.",
+   "category": "bonding"
+  },
+  {
+   "name": "metallic_bonding",
+   "definition": "Delocalized electron sea around positive metal cores.",
+   "why": "Conductive, malleable, ductile. Free electrons explain. Foundation of metal physics.",
+   "category": "bonding"
+  },
+  {
+   "name": "hydrogen_bonding",
+   "definition": "N-H, O-H, F-H to electronegative atom on another molecule. 5-30 kJ/mol.",
+   "why": "Water's anomalies, DNA structure, protein folding. Critical biological + materials role.",
+   "category": "bonding"
+  },
+  {
+   "name": "van_der_Waals",
+   "definition": "Weak intermolecular: dispersion (London), dipole-dipole, dipole-induced.",
+   "why": "Noble gases liquefy, alkanes attract. Foundation of intermolecular forces. Critical for polymers + biology.",
+   "category": "bonding"
+  },
+  {
+   "name": "VSEPR_geometry",
+   "definition": "Valence Shell Electron Pair Repulsion. Predicts molecular shape from electron pairs.",
+   "why": "H2O bent, CH4 tetrahedral, BF3 trigonal planar. Predicts polarity + reactivity. Foundation organic chem.",
+   "category": "bonding"
+  },
+  {
+   "name": "orbital_hybridization",
+   "definition": "sp, sp², sp³ hybrid orbitals. Mix s + p for directional bonds.",
+   "why": "Explains tetrahedral CH4, planar C2H4, linear C2H2. Foundation of carbon's versatility.",
+   "category": "bonding"
+  },
+  {
+   "name": "stoichiometry",
+   "definition": "Quantitative relationships in chemical equations. Moles, balanced equations, limiting reagents.",
+   "why": "Foundation of chemistry calculations. Reactants in correct ratios. Industrial chemistry depends on.",
+   "category": "stoichiometry"
+  },
+  {
+   "name": "Avogadros_number",
+   "definition": "6.022 × 10²³ entities per mole. Bridges atomic + macroscopic.",
+   "why": "Allows molecular calculations from mass. mol = mass / molar mass. Universal chemistry tool.",
+   "category": "stoichiometry"
+  },
+  {
+   "name": "enthalpy_reaction",
+   "definition": "ΔH = H_products - H_reactants. Negative = exothermic. Hess's law: enthalpy is state function.",
+   "term": {
+    "type": "Eq",
+    "a": {
+     "type": "Holds",
+     "concept": "enthalpy_reaction",
+     "node": {
+      "type": "Var",
+      "name": "x"
+     },
+     "node2": null
+    },
+    "b": {
+     "type": "Minus",
+     "a": {
+      "type": "Holds",
+      "concept": "Hamiltonian_H",
+      "node": {
+       "type": "Var",
+       "name": "x"
+      },
+      "node2": null
+     },
+     "b": {
+      "type": "Holds",
+      "concept": "Hamiltonian_H",
+      "node": {
+       "type": "Var",
+       "name": "x"
+      },
+      "node2": null
+     }
+    }
+   },
+   "why": "Heat released / absorbed. Bond enthalpies estimate. Foundation of thermochemistry. Standard enthalpies tabulated.",
+   "category": "thermochemistry"
+  },
+  {
+   "name": "entropy_chemistry",
+   "definition": "Disorder. ΔS = q_rev/T. Increases for gas formation, dissolution, mixing.",
+   "why": "Second-law direction. Spontaneous: ΔG < 0. Universal.",
+   "category": "thermochemistry"
+  },
+  {
+   "name": "Gibbs_free_energy",
+   "definition": "G = H - TS. ΔG < 0 spontaneous. Bridges enthalpy + entropy.",
+   "term": {
+    "type": "Eq",
+    "a": {
+     "type": "Holds",
+     "concept": "Gibbs_free_energy",
+     "node": {
+      "type": "Var",
+      "name": "x"
+     },
+     "node2": null
+    },
+    "b": {
+     "type": "Minus",
+     "a": {
+      "type": "Holds",
+      "concept": "Hamiltonian_H",
+      "node": {
+       "type": "Var",
+       "name": "x"
+      },
+      "node2": null
+     },
+     "b": {
+      "type": "Lit",
+      "value": "TS"
+     }
+    }
+   },
+   "why": "Predicts reaction direction + equilibrium. ΔG = -RT ln K relates to equilibrium constant. Foundation.",
+   "category": "thermochemistry"
+  },
+  {
+   "name": "rate_law",
+   "definition": "rate = k[A]^m[B]^n. Order m, n empirically determined.",
+   "term": {
+    "type": "Eq",
+    "a": {
+     "type": "Holds",
+     "concept": "rate_law",
+     "node": {
+      "type": "Var",
+      "name": "x"
+     },
+     "node2": null
+    },
+    "b": {
+     "type": "Times",
+     "items": [
+      {
+       "type": "Holds",
+       "concept": "rate_law",
+       "node": {
+        "type": "Var",
+        "name": "x"
+       },
+       "node2": null
+      },
+      {
+       "type": "Pow",
+       "a": {
+        "type": "Holds",
+        "concept": "amplitude",
+        "node": {
+         "type": "Var",
+         "name": "x"
+        },
+        "node2": null
+       },
+       "b": {
+        "type": "Holds",
+        "concept": "mass",
+        "node": {
+         "type": "Var",
+         "name": "x"
+        },
+        "node2": null
+       }
+      },
+      {
+       "type": "Pow",
+       "a": {
+        "type": "Holds",
+        "concept": "magnetic_field",
+        "node": {
+         "type": "Var",
+         "name": "x"
+        },
+        "node2": null
+       },
+       "b": {
+        "type": "Lit",
+        "value": "n"
+       }
+      }
+     ]
+    }
+   },
+   "why": "Foundation of kinetics. Doesn't depend on stoichiometry. Determined by mechanism. Standard.",
+   "category": "kinetics"
+  },
+  {
+   "name": "Arrhenius_equation",
+   "definition": "k = A·exp(-Ea/RT). Activation energy temperature dependence.",
+   "term": {
+    "type": "Eq",
+    "a": {
+     "type": "Holds",
+     "concept": "rate_law",
+     "node": {
+      "type": "Var",
+      "name": "x"
+     },
+     "node2": null
+    },
+    "b": {
+     "type": "Times",
+     "items": [
+      {
+       "type": "Holds",
+       "concept": "amplitude",
+       "node": {
+        "type": "Var",
+        "name": "x"
+       },
+       "node2": null
+      },
+      {
+       "type": "Lit",
+       "value": "exp"
+      },
+      {
+       "type": "Div",
+       "a": {
+        "type": "Times",
+        "items": [
+         {
+          "type": "Neg",
+          "arg": {
+           "type": "Holds",
+           "concept": "energy_kinetic",
+           "node": {
+            "type": "Var",
+            "name": "x"
+           },
+           "node2": null
+          }
+         },
+         {
+          "type": "Holds",
+          "concept": "acceleration",
+          "node": {
+           "type": "Var",
+           "name": "x"
+          },
+          "node2": null
+         }
+        ]
+       },
+       "b": {
+        "type": "Lit",
+        "value": "RT"
+       }
+      }
+     ]
+    }
+   },
+   "why": "Rate constant vs temperature. Ea from slope of ln k vs 1/T. Catalysis lowers Ea. Foundation.",
+   "category": "kinetics"
+  },
+  {
+   "name": "catalysis",
+   "definition": "Substance that increases rate without being consumed. Provides alternative path with lower Ea.",
+   "why": "Industrial chemistry + biology (enzymes). Heterogeneous (surface) + homogeneous + enzymatic. Nobel-worthy.",
+   "category": "kinetics"
+  },
+  {
+   "name": "reaction_mechanisms",
+   "definition": "Step-by-step pathway. Each step is elementary; intermediates form + consume.",
+   "why": "Rate-determining step controls overall rate. Foundation of mechanistic understanding. Critical for design.",
+   "category": "kinetics"
+  },
+  {
+   "name": "equilibrium_constant",
+   "definition": "K = Π[products]^ν / Π[reactants]^ν. At equilibrium, ratio constant at given T.",
+   "term": {
+    "type": "Eq",
+    "a": {
+     "type": "Holds",
+     "concept": "equilibrium_constant",
+     "node": {
+      "type": "Var",
+      "name": "x"
+     },
+     "node2": null
+    },
+    "b": {
+     "type": "Times",
+     "items": [
+      {
+       "type": "Div",
+       "a": {
+        "type": "Times",
+        "items": [
+         {
+          "type": "Lit",
+          "value": "Π"
+         },
+         {
+          "type": "Pow",
+          "a": {
+           "type": "Lit",
+           "value": "products"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "ν"
+          }
+         }
+        ]
+       },
+       "b": {
+        "type": "Lit",
+        "value": "Π"
+       }
+      },
+      {
+       "type": "Pow",
+       "a": {
+        "type": "Lit",
+        "value": "reactants"
+       },
+       "b": {
+        "type": "Lit",
+        "value": "ν"
+       }
+      }
+     ]
+    }
+   },
+   "why": "Foundation of equilibrium. Large K: favors products. Small K: favors reactants. ΔG = -RT ln K.",
+   "category": "equilibrium"
+  },
+  {
+   "name": "Le_Chatelier_principle",
+   "definition": "System at equilibrium responds to perturbation by shifting to relieve.",
+   "why": "Predicts equilibrium shifts: add reactant → shift to product. Heat exothermic → shift back. Industrial process control.",
+   "category": "equilibrium"
+  },
+  {
+   "name": "Ka_Kb_Ksp",
+   "definition": "Acid (Ka), base (Kb), solubility product (Ksp) equilibrium constants.",
+   "why": "Quantify acid strength, base strength, solubility. Standard tables. Foundation of solution chemistry.",
+   "category": "equilibrium"
+  },
+  {
+   "name": "pH_pOH",
+   "definition": "pH = -log[H+]. pOH = -log[OH-]. pH + pOH = 14 in water at 25°C.",
+   "term": {
+    "type": "Eq",
+    "a": {
+     "type": "Lit",
+     "value": "pH"
+    },
+    "b": {
+     "type": "Lit",
+     "value": "-log[H+]"
+    }
+   },
+   "why": "Foundation of acid-base chemistry. Universal measurement. Buffers, indicators, biology depend on.",
+   "category": "acids_bases"
+  },
+  {
+   "name": "Bronsted_acid_base",
+   "definition": "Acid: proton donor. Base: proton acceptor. Conjugate pairs.",
+   "why": "Standard acid-base definition for aqueous. Pairs ranked by strength. HCl strong, CH3COOH weak.",
+   "category": "acids_bases"
+  },
+  {
+   "name": "Lewis_acid_base",
+   "definition": "Lewis acid: electron pair acceptor. Base: donor. Broader than Bronsted.",
+   "why": "Includes non-proton (BF3 + NH3). Foundation of coordination chemistry + organic mechanisms.",
+   "category": "acids_bases"
+  },
+  {
+   "name": "buffer_solution",
+   "definition": "Weak acid + conjugate base. Resists pH change on added acid/base. Henderson-Hasselbalch.",
+   "why": "Biology (blood pH ~7.4), pharmaceuticals, industrial processes. Foundation of pH control.",
+   "category": "acids_bases"
+  },
+  {
+   "name": "oxidation_reduction",
+   "definition": "Redox: electron transfer. Oxidation = lose electrons; reduction = gain. Always paired.",
+   "why": "Combustion, corrosion, batteries, biology (metabolism). Foundation of electrochemistry.",
+   "category": "electrochemistry"
+  },
+  {
+   "name": "standard_reduction_potential",
+   "definition": "E° vs standard hydrogen electrode. Larger = more easily reduced.",
+   "why": "Predicts spontaneity of redox. ΔE° > 0 → spontaneous. Standard tables. Foundation of electrochemistry.",
+   "category": "electrochemistry"
+  },
+  {
+   "name": "Nernst_equation",
+   "definition": "E = E° - (RT/nF)·ln Q. Concentration dependence of cell potential.",
+   "term": {
+    "type": "Eq",
+    "a": {
+     "type": "Holds",
+     "concept": "energy_kinetic",
+     "node": {
+      "type": "Var",
+      "name": "x"
+     },
+     "node2": null
+    },
+    "b": {
+     "type": "Holds",
+     "concept": "energy_kinetic",
+     "node": {
+      "type": "Var",
+      "name": "x"
+     },
+     "node2": null
+    }
+   },
+   "why": "Real conditions (not standard). Battery voltage varies with state of charge. pH electrodes use.",
+   "category": "electrochemistry"
+  },
+  {
+   "name": "battery_chemistry",
+   "definition": "Galvanic cell. Anode oxidation, cathode reduction. Primary (non-rechargeable) vs secondary.",
+   "why": "Lithium-ion (LiCoO2, LiFePO4, NMC), lead-acid, NiMH. Foundation of energy storage. Critical for EV + grid.",
+   "category": "electrochemistry"
+  },
+  {
+   "name": "fuel_cell",
+   "definition": "H2 + O2 → H2O + electricity. PEM (proton exchange membrane), SOFC (solid oxide).",
+   "why": "Direct chemical-to-electric. Higher efficiency than combustion + Carnot. Hydrogen economy.",
+   "category": "electrochemistry"
+  },
+  {
+   "name": "corrosion_electrochemistry",
+   "definition": "Galvanic cell on metal surface. Iron + water + O2 → rust. Mitigation via cathodic protection.",
+   "why": "Already in engineering; here at atomic level. Anode oxidizes, cathode reduces (O2 + 2H2O + 4e → 4OH).",
+   "category": "electrochemistry"
+  },
+  {
+   "name": "functional_groups_organic",
+   "definition": "-OH (alcohol), -COOH (acid), -NH2 (amine), -C=O (carbonyl), C=C (alkene), C≡C (alkyne).",
+   "why": "Foundation of organic chemistry. Behaviour predictable from functional groups. Drug design, polymers, biology.",
+   "category": "organic"
+  },
+  {
+   "name": "alkanes_alkenes_alkynes",
+   "definition": "Saturated (single), unsaturated (double), triple-bonded carbons. C_nH_2n+2, C_nH_2n, C_nH_2n-2.",
+   "why": "Hydrocarbons. Foundation of petrochemistry. Reactivity: alkanes inert, alkenes/alkynes add.",
+   "category": "organic"
+  },
+  {
+   "name": "aromatic_compounds",
+   "definition": "Benzene ring + derivatives. Delocalized π electrons. Resonance.",
+   "why": "Pharmaceuticals, polymers, dyes. Hückel 4n+2 rule for aromaticity. Foundation of medicinal chemistry.",
+   "category": "organic"
+  },
+  {
+   "name": "stereochemistry",
+   "definition": "3D arrangement of atoms. Chirality (R/S), cis/trans, E/Z.",
+   "why": "Drugs often single enantiomer (thalidomide tragedy). Biology highly stereoselective. Critical pharmaceutical.",
+   "category": "organic"
+  },
+  {
+   "name": "SN1_SN2_substitution",
+   "definition": "Nucleophilic substitution. SN1: stepwise via carbocation. SN2: concerted, backside attack.",
+   "why": "Foundation organic mechanism. Predicts product + stereochemistry. Standard teaching example.",
+   "category": "organic"
+  },
+  {
+   "name": "polymerization_chain",
+   "definition": "Monomers join. Addition (chain growth) or condensation (step growth).",
+   "why": "Polyethylene, polystyrene, nylon, polyester. Foundation of polymer chemistry. Industrial scale.",
+   "category": "organic"
+  },
+  {
+   "name": "amino_acids_proteins",
+   "definition": "20 standard amino acids. -COOH + -NH2 + side chain. Peptide bonds form proteins.",
+   "why": "Foundation of biochemistry. Primary (sequence) → secondary (helix/sheet) → tertiary (3D) → quaternary.",
+   "category": "biochemistry"
+  },
+  {
+   "name": "DNA_RNA_structure",
+   "definition": "Double helix. Sugar-phosphate backbone + bases. Complementary pairing A-T (U), G-C.",
+   "why": "Genetic information. Replication, transcription, translation. Foundation of molecular biology.",
+   "category": "biochemistry"
+  },
+  {
+   "name": "lipids_membranes",
+   "definition": "Hydrophobic + hydrophilic regions. Phospholipid bilayer = cell membrane.",
+   "why": "Compartmentalization basis of life. Drug delivery (liposomes). Membrane biology.",
+   "category": "biochemistry"
+  },
+  {
+   "name": "enzymes",
+   "definition": "Protein catalysts. Active site binds substrate. Lower Ea.",
+   "why": "Biological catalysis. 10^6-10^17 rate enhancement. Specificity from active site geometry. Drug targets.",
+   "category": "biochemistry"
+  },
+  {
+   "name": "carbohydrates",
+   "definition": "(CH2O)n. Mono (glucose, fructose), di (sucrose, lactose), poly (starch, cellulose).",
+   "why": "Energy storage + structural (cellulose). Glycolysis + TCA cycle metabolism.",
+   "category": "biochemistry"
+  },
+  {
+   "name": "FCC_BCC_HCP_crystals",
+   "definition": "Face-Centered Cubic, Body-Centered Cubic, Hexagonal Close-Packed. Metal structures.",
+   "why": "FCC: Al, Cu, Au, Ag, Ni (ductile). BCC: Fe (α), Cr, W (less ductile, lower T). HCP: Mg, Zn, Ti (textured).",
+   "category": "crystal_structure"
+  },
+  {
+   "name": "Miller_indices",
+   "definition": "(hkl) for planes, [uvw] for directions. Crystallographic notation.",
+   "why": "Communicates crystal directions + planes. Foundation of crystallography. XRD interpretation.",
+   "category": "crystal_structure"
+  },
+  {
+   "name": "point_defects",
+   "definition": "Vacancies, interstitials, substitutional. Always present (entropy).",
+   "why": "Diffusion mechanism. Equilibrium concentration ∝ exp(-Ev/kT). Critical for semiconductor doping.",
+   "category": "defects"
+  },
+  {
+   "name": "line_defects_dislocations",
+   "definition": "Edge + screw dislocations. Slip vector (Burgers vector).",
+   "why": "Plastic deformation mechanism. Dislocations glide → metal deforms. Foundation of plasticity.",
+   "category": "defects"
+  },
+  {
+   "name": "grain_boundaries",
+   "definition": "Interfaces between crystal grains. Misorientation angle. High-angle (random) vs low-angle.",
+   "why": "Strengthening (Hall-Petch). Diffusion paths. Corrosion sites. Grain refinement → stronger.",
+   "category": "defects"
+  },
+  {
+   "name": "Ficks_diffusion_laws",
+   "definition": "Fick's 1st: J = -D ∂C/∂x (flux). 2nd: ∂C/∂t = D ∂²C/∂x² (time-dependent).",
+   "why": "Foundation of diffusion. Heat treatment kinetics, semiconductor doping, oxidation, transport. Universal.",
+   "category": "diffusion"
+  },
+  {
+   "name": "diffusion_Arrhenius",
+   "definition": "D = D_0 exp(-Q/RT). Strong temperature dependence.",
+   "term": {
+    "type": "Eq",
+    "a": {
+     "type": "Holds",
+     "concept": "diffusion_Arrhenius",
+     "node": {
+      "type": "Var",
+      "name": "x"
+     },
+     "node2": null
+    },
+    "b": {
+     "type": "Times",
+     "items": [
+      {
+       "type": "Holds",
+       "concept": "diffusion_Arrhenius",
+       "node": {
+        "type": "Var",
+        "name": "x"
+       },
+       "node2": null
+      },
+      {
+       "type": "Lit",
+       "value": "exp"
+      },
+      {
+       "type": "Div",
+       "a": {
+        "type": "Neg",
+        "arg": {
+         "type": "Holds",
+         "concept": "partition_function",
+         "node": {
+          "type": "Var",
+          "name": "x"
+         },
+         "node2": null
+        }
+       },
+       "b": {
+        "type": "Lit",
+        "value": "RT"
+       }
+      }
+     ]
+    }
+   },
+   "why": "Higher T = faster diffusion. Diffusion controls many materials processes. Critical for heat treatment.",
+   "category": "diffusion"
+  },
+  {
+   "name": "Fe_C_phase_diagram",
+   "definition": "Iron-carbon phase diagram. α (ferrite BCC), γ (austenite FCC), Fe3C (cementite), pearlite, martensite.",
+   "why": "Foundation of steel. Eutectoid at 0.77%C, 727°C. Heat treatment manipulates phases. Most studied phase diagram.",
+   "category": "phase_diagrams"
+  },
+  {
+   "name": "lever_rule",
+   "definition": "In two-phase region, mass fraction = (other phase composition - average) / (composition difference).",
+   "why": "Computes phase amounts from phase diagram. Standard calculation. Essential for material analysis.",
+   "category": "phase_diagrams"
+  },
+  {
+   "name": "TTT_CCT_diagrams",
+   "definition": "Time-Temperature-Transformation + Continuous Cooling Transformation. Steel transformations.",
+   "why": "Predicts microstructure from cooling rate. Pearlite, bainite, martensite. Foundation of steel heat treatment.",
+   "category": "phase_diagrams"
+  },
+  {
+   "name": "annealing_quenching_tempering",
+   "definition": "Annealing: slow cool (soft). Quenching: rapid (martensite). Tempering: reheat quenched (toughen).",
+   "why": "Already in engineering; here at mechanism level. Phase transformations drive properties. Standard steel processing.",
+   "category": "heat_treatment"
+  },
+  {
+   "name": "precipitation_hardening",
+   "definition": "Heat to dissolve, quench to supersaturate, age to precipitate. Coherent precipitates strengthen.",
+   "why": "Aluminium alloys (2024, 7075). Strength via precipitates impeding dislocations. Standard aerospace.",
+   "category": "heat_treatment"
+  },
+  {
+   "name": "work_hardening",
+   "definition": "Plastic deformation increases dislocation density → harder + stronger but less ductile.",
+   "why": "Cold rolling, drawing. Standard strengthening. Recovered by annealing. Foundation of metal forming.",
+   "category": "strengthening"
+  },
+  {
+   "name": "solid_solution_strengthening",
+   "definition": "Alloying atoms distort lattice → impede dislocation motion.",
+   "why": "Pure metals soft. Brass (Cu+Zn), bronze (Cu+Sn). Foundation of alloy strengthening.",
+   "category": "strengthening"
+  },
+  {
+   "name": "grain_refinement_Hall_Petch",
+   "definition": "σ_y = σ_0 + k·d^(-1/2). Smaller grains = stronger.",
+   "term": {
+    "type": "Eq",
+    "a": {
+     "type": "Holds",
+     "concept": "node_state_sigma",
+     "node": {
+      "type": "Var",
+      "name": "x"
+     },
+     "node2": null
+    },
+    "b": {
+     "type": "Plus",
+     "items": [
+      {
+       "type": "Holds",
+       "concept": "node_state_sigma",
+       "node": {
+        "type": "Var",
+        "name": "x"
+       },
+       "node2": null
+      },
+      {
+       "type": "Times",
+       "items": [
+        {
+         "type": "Holds",
+         "concept": "rate_law",
+         "node": {
+          "type": "Var",
+          "name": "x"
+         },
+         "node2": null
+        },
+        {
+         "type": "Pow",
+         "a": {
+          "type": "Lit",
+          "value": "d"
+         },
+         "b": {
+          "type": "Div",
+          "a": {
+           "type": "Neg",
+           "arg": {
+            "type": "Lit",
+            "value": 1
+           }
+          },
+          "b": {
+           "type": "Lit",
+           "value": 2
+          }
+         }
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "why": "Grain boundaries block dislocations. Strengthening + improved toughness + improved corrosion. Standard.",
+   "category": "strengthening"
+  },
+  {
+   "name": "polymer_glass_transition",
+   "definition": "Tg: temperature where polymer transitions from glassy to rubbery.",
+   "why": "Critical polymer property. Above Tg: flexible. Below: brittle. Tunable via plasticizers. Polymer design.",
+   "category": "polymers"
+  },
+  {
+   "name": "polymer_crystallinity",
+   "definition": "Polymers can be amorphous or partly crystalline. Crystallinity affects strength + transparency.",
+   "why": "HDPE crystalline, LDPE branched + amorphous. Strength + barrier from crystallinity. Foundation polymer properties.",
+   "category": "polymers"
+  },
+  {
+   "name": "polymer_viscoelasticity",
+   "definition": "Behaves elastically + viscously. Creep under sustained load. Frequency-dependent response.",
+   "why": "Polymers vs metals. Foundation of polymer mechanical design. Stress relaxation important.",
+   "category": "polymers"
+  },
+  {
+   "name": "molecular_weight_distribution",
+   "definition": "Mn (number average), Mw (weight average), PDI = Mw/Mn dispersity.",
+   "why": "Polymer properties depend on MW + distribution. Synthesis control. Narrow distribution = better.",
+   "category": "polymers"
+  },
+  {
+   "name": "composites_matrix_reinforcement",
+   "definition": "Matrix (polymer, metal, ceramic) + reinforcement (fibers, particles). Combine properties.",
+   "why": "Already in engineering; here at mechanism. Rule of mixtures predicts properties. Foundation.",
+   "category": "composites"
+  },
+  {
+   "name": "composite_lay_up",
+   "definition": "Stacking sequence of unidirectional plies. [0°/90°/±45°] common.",
+   "why": "Tailored properties. Carbon fibre orientation = strength direction. Aerospace design fundamental.",
+   "category": "composites"
+  },
+  {
+   "name": "ceramic_processing",
+   "definition": "Powder + binder → green body → sinter. Densification by atomic diffusion.",
+   "why": "Foundation of ceramic manufacturing. Different from metals (melting) or polymers (molding). Specialized.",
+   "category": "ceramics"
+  },
+  {
+   "name": "band_theory_semiconductors",
+   "definition": "Valence band + conduction band + bandgap. Metals: overlap. Insulators: wide gap. Semiconductors: small.",
+   "why": "Foundation of electronic materials. Si gap 1.1 eV; GaAs 1.4. Predicts conductivity + light absorption.",
+   "category": "semiconductors"
+  },
+  {
+   "name": "doping_p_n",
+   "definition": "Add impurities. p-type: less valence electron (B in Si). n-type: more (P in Si).",
+   "why": "Foundation of transistors + diodes. Controls Fermi level. Modern electronics.",
+   "category": "semiconductors"
+  },
+  {
+   "name": "pn_junction",
+   "definition": "p-type + n-type contact. Built-in voltage. Diode behaviour.",
+   "why": "Foundation of all semiconductor devices. Solar cells, LEDs, transistors. The element.",
+   "category": "semiconductors"
+  },
+  {
+   "name": "graphene",
+   "definition": "Single layer of carbon atoms in hexagonal lattice. ~200x stronger than steel.",
+   "why": "Nobel 2010. Electrical + mechanical + thermal extreme. Research → applications: composites, electronics.",
+   "category": "nanomaterials"
+  },
+  {
+   "name": "carbon_nanotubes",
+   "definition": "Rolled graphene sheets. Single-wall (SWCNT) or multi-wall. Metallic or semiconducting depending on chirality.",
+   "why": "Strong, conductive. Composites, electronics, biomedical. Production scaling.",
+   "category": "nanomaterials"
+  },
+  {
+   "name": "quantum_dots",
+   "definition": "Nanometer semiconductor crystals. Quantum confinement → tunable emission by size.",
+   "why": "Displays (Samsung QLED), bio-imaging, solar. Tunable by chemistry. Nobel 2023.",
+   "category": "nanomaterials"
+  },
+  {
+   "name": "nanoparticles_synthesis",
+   "definition": "Sub-100 nm. Top-down (milling) or bottom-up (solution, vapor).",
+   "why": "Catalysis, drug delivery, sensors. Surface-to-volume ratio drives unique properties.",
+   "category": "nanomaterials"
+  },
+  {
+   "name": "XRD_x_ray_diffraction",
+   "definition": "Bragg: nλ = 2d sin θ. X-rays diffract from crystal planes.",
+   "why": "Standard structural characterisation. Identify phases, lattice parameters, crystallinity. Foundation of crystallography.",
+   "category": "characterization"
+  },
+  {
+   "name": "SEM_TEM_imaging",
+   "definition": "Scanning Electron Microscopy: surface. Transmission EM: thin section, atomic resolution.",
+   "why": "Imaging nanostructures. SEM: nm-μm features. TEM: atomic resolution. Standard for materials characterization.",
+   "category": "characterization"
+  },
+  {
+   "name": "AFM_atomic_force",
+   "definition": "Atomic Force Microscopy. Probe scans surface; topography from deflection.",
+   "why": "Surface roughness, thin films, biology. Atomic resolution in vacuum. Versatile.",
+   "category": "characterization"
+  },
+  {
+   "name": "NMR_spectroscopy",
+   "definition": "Nuclear Magnetic Resonance. ¹H, ¹³C nuclei in magnetic field. Chemical shift identifies environment.",
+   "why": "Standard organic chemistry. Connectivity + structure determination. Foundation of structural analysis.",
+   "category": "characterization"
+  },
+  {
+   "name": "IR_spectroscopy",
+   "definition": "Infrared. Molecular vibrations absorb at characteristic frequencies. Functional group identification.",
+   "why": "Quick functional group ID. C=O at ~1700 cm⁻¹, O-H broad. Standard chemistry analytical.",
+   "category": "characterization"
+  },
+  {
+   "name": "mass_spectrometry",
+   "definition": "Ionise + separate by m/z. Identifies molecular weight + structure.",
+   "why": "Universal: drug discovery, environmental, forensics. Tandem MS for structure. Ultra-sensitive.",
+   "category": "characterization"
+  },
+  {
+   "name": "chromatography_HPLC_GC",
+   "definition": "Separate mixtures. HPLC (liquid), GC (gas). Stationary + mobile phase.",
+   "why": "Standard analytical. Purity, identification, quantification. Industrial + research.",
+   "category": "characterization"
+  }
+ ],
+ "rules": [
+  {
+   "name": "atomic_structure_determines_chemistry",
+   "if": [
+    "element has specific electron configuration"
+   ],
+   "then": [
+    "its chemistry is determined"
+   ],
+   "why": "Valence electrons = bonding. Periodic table organised by configuration. Mendeleev's insight: properties periodic. Foundation.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "bonding_type_determines_properties",
+   "if": [
+    "material has specific bonding type"
+   ],
+   "then": [
+    "properties follow predictable patterns"
+   ],
+   "why": "Ionic: high melt, brittle, polar-soluble. Covalent: variable. Metallic: conductive, ductile. Van der Waals: low melt. Universal.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "Gibbs_free_energy_predicts_spontaneity",
+   "if": [
+    "ΔG < 0 at given conditions"
+   ],
+   "then": [
+    "reaction is thermodynamically spontaneous"
+   ],
+   "why": "G = H - TS. Captures enthalpy + entropy. Kinetics may slow but doesn't change spontaneity. Foundation thermo.",
+   "soundness_category": "algebraic_law"
+  },
+  {
+   "name": "Arrhenius_doubling_per_10K",
+   "if": [
+    "temperature increases ~10 K near room temp"
+   ],
+   "then": [
+    "reaction rate roughly doubles"
+   ],
+   "why": "k = A exp(-Ea/RT). For Ea ~50 kJ/mol: 10K change → ~2x. Standard rule of thumb. Cool to slow, warm to speed.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "Le_Chatelier_predicts_shift_direction",
+   "if": [
+    "system at equilibrium perturbed"
+   ],
+   "then": [
+    "shifts to oppose perturbation"
+   ],
+   "why": "Add reactant: shift to products. Increase T (exothermic): shift back. Universal qualitative prediction.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "catalysts_lower_Ea",
+   "if": [
+    "catalyst is present"
+   ],
+   "then": [
+    "reaction rate increases without altering equilibrium"
+   ],
+   "why": "Alternative path with lower Ea. Both forward + reverse rates increase equally. Equilibrium unchanged. Foundation.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "redox_drives_electrochemistry",
+   "if": [
+    "redox reaction has positive ΔE°"
+   ],
+   "then": [
+    "spontaneous + can generate electricity"
+   ],
+   "why": "Galvanic cell. ΔG = -nFΔE. Battery foundation. Negative ΔE° = electrolysis required. Universal.",
+   "soundness_category": "algebraic_law"
+  },
+  {
+   "name": "chirality_critical_pharmaceuticals",
+   "if": [
+    "drug is chiral"
+   ],
+   "then": [
+    "enantiomers may have different biological effects"
+   ],
+   "why": "Thalidomide tragedy. Single enantiomer drugs (esomeprazole). FDA increasingly requires enantiopure. Foundation pharmaceutical.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "amino_acid_sequence_determines_protein_structure",
+   "if": [
+    "primary sequence known"
+   ],
+   "then": [
+    "secondary + tertiary structure largely determined"
+   ],
+   "why": "Anfinsen's dogma. AlphaFold validates with high accuracy. Foundation of structural biology. Drug design depends on.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "FCC_more_ductile_than_BCC",
+   "if": [
+    "metal has FCC crystal structure"
+   ],
+   "then": [
+    "typically more ductile than BCC at low temperatures"
+   ],
+   "why": "FCC has 12 slip systems active at any T. BCC: 12 systems but harder to activate at low T. Steel ductile-brittle transition.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "dislocations_carry_plastic_deformation",
+   "if": [
+    "metal deforms plastically"
+   ],
+   "then": [
+    "dislocation glide is the mechanism"
+   ],
+   "why": "Atomic bonds break + reform along dislocation. Far easier than rigid lattice shear. Foundation of plasticity since 1934.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "Hall_Petch_smaller_grains_stronger",
+   "if": [
+    "grain size is refined"
+   ],
+   "then": [
+    "yield strength increases per Hall-Petch"
+   ],
+   "why": "Grain boundaries impede dislocation motion. More boundaries (smaller grains) = stronger. Standard strengthening mechanism.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "diffusion_dominates_high_T_processes",
+   "if": [
+    "material is at high homologous temperature"
+   ],
+   "then": [
+    "diffusion-controlled processes (sintering, creep, oxidation) dominate"
+   ],
+   "why": "D = D_0 exp(-Q/RT). At T > 0.5 T_melt: diffusion rapid. Determines material processing + service life.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "quenching_traps_high_T_phase",
+   "if": [
+    "material cooled rapidly from high T"
+   ],
+   "then": [
+    "high-T phase or supersaturated solution retained"
+   ],
+   "why": "Diffusion needs time. Rapid cool: no time. Steel martensite, aluminium solid solution. Foundation of heat treatment.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "precipitation_hardening_via_coherent_precipitates",
+   "if": [
+    "aged after solution treatment"
+   ],
+   "then": [
+    "coherent precipitates form + strengthen"
+   ],
+   "why": "Al alloys, Ni superalloys. Precipitates impede dislocations. Aging time + T controls precipitate size. Standard.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "Tg_below_service_T_for_rubber",
+   "if": [
+    "polymer must be elastic at service T"
+   ],
+   "then": [
+    "service T > Tg"
+   ],
+   "why": "Below Tg: glassy + brittle. Above: rubbery. Tyres (NR/SBR): Tg ~-60°C. Plastic chairs (PS): Tg ~100°C, brittle at room.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "composite_properties_rule_of_mixtures",
+   "if": [
+    "composite has aligned fibres in matrix"
+   ],
+   "then": [
+    "properties along fibres ≈ volume-weighted average"
+   ],
+   "why": "E_c = V_f·E_f + V_m·E_m for stiffness along fibres. Standard composite design. Transverse: more complex (Halpin-Tsai).",
+   "soundness_category": "algebraic_law"
+  },
+  {
+   "name": "bandgap_determines_semiconductor_use",
+   "if": [
+    "semiconductor has bandgap Eg"
+   ],
+   "then": [
+    "application range determined"
+   ],
+   "why": "Si (1.1 eV): general electronics. GaN (3.4): power, blue LEDs. GaAs (1.4): solar, infrared. SiC (3.3): high power.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "doping_controls_carrier_concentration",
+   "if": [
+    "semiconductor doped at level N"
+   ],
+   "then": [
+    "carrier concentration ≈ N (at room T)"
+   ],
+   "why": "All dopants ionised. Foundation of transistor design. From 10¹⁵ (lightly doped) to 10²⁰/cm³ (heavily). Critical for devices.",
+   "soundness_category": "algebraic_law"
+  },
+  {
+   "name": "quantum_confinement_tunes_emission",
+   "if": [
+    "semiconductor crystal is < ~10 nm"
+   ],
+   "then": [
+    "bandgap increases as size decreases"
+   ],
+   "why": "Particle in box: E ∝ 1/L². Smaller QD = bluer emission. Foundation of QD display technology. Size-tunable colour.",
+   "soundness_category": "algebraic_law"
+  },
+  {
+   "name": "XRD_identifies_crystal_phases",
+   "if": [
+    "XRD peaks match reference pattern"
+   ],
+   "then": [
+    "phase identified"
+   ],
+   "why": "Each phase has fingerprint diffraction pattern. PDF database has 200K+. Standard phase ID. Foundation of materials analysis.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "NMR_identifies_organic_structure",
+   "if": [
+    "¹H + ¹³C NMR run on unknown compound"
+   ],
+   "then": [
+    "structure largely determined"
+   ],
+   "why": "Chemical shift, multiplicity, integration give H count + environment + connectivity. Standard structure determination. Foundation.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "mass_spec_gives_molecular_formula",
+   "if": [
+    "high-resolution mass spec run"
+   ],
+   "then": [
+    "molecular formula determined from exact mass"
+   ],
+   "why": "C, H, N, O, S have distinct exact masses. ppm accuracy → unique formula. Standard. Confirmed by isotope pattern.",
+   "soundness_category": "denotational_equivalence"
+  }
+ ],
+ "exclusions": [],
+ "parent_mt": "engineering",
+ "relations": [
+  {
+   "src": "materials_chemistry",
+   "edge": "genlMt",
+   "tgt": "compiler_theory"
+  }
+ ]
+}

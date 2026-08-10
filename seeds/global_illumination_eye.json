@@ -1,0 +1,447 @@
+{
+  "id": "global_illumination_eye",
+  "version": "1.0.0",
+  "depends_on": [
+    "allocentric_world_view"
+  ],
+  "description": "Default-off graph-native visual illumination inference for the split photon eye. A dense high-acuity foveal measurement can propose a rapid field-wide gain change while a sparse broad-field scout confirms that the change is global rather than local. The hypothesis is explicitly predicted and remains distinct from observed photon evidence. Confirmed gain reconditions every unobserved renderable AllocentricWorldViewCell without overwriting its observed surface_value or provenance. Per-exposure work is constant plus one bounded pass over held visible-surface cells; transient evidence and superseded hypotheses are retired.",
+  "microtheory": {
+    "name": "global_illumination_eye",
+    "description": "foveal lead, broad-field corroboration, and provenance-preserving whole-field appearance prediction"
+  },
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "GlobalIlluminationParams",
+      "attrs": {
+        "enabled": 0.0,
+        "foveal_weight": 0.7,
+        "global_weight": 0.3,
+        "minimum_relative_change": 0.08,
+        "maximum_pathway_gain_disagreement": 0.2,
+        "minimum_mean_quanta": 1.0
+      }
+    },
+    {
+      "local_id": 1,
+      "type": "IlluminationAdaptationState",
+      "attrs": {
+        "initialized": 0.0,
+        "foveal_baseline_quanta": 0.0,
+        "global_baseline_quanta": 0.0,
+        "absolute_illumination_level": 1.0,
+        "last_source_epoch": -1
+      }
+    }
+  ],
+  "edges": [
+    {
+      "src": {"role": "agent_root"},
+      "type": "has_global_illumination_params",
+      "tgt": {"local": 0},
+      "attrs": {}
+    },
+    {
+      "src": {"role": "agent_root"},
+      "type": "has_illumination_adaptation",
+      "tgt": {"local": 1},
+      "attrs": {}
+    }
+  ],
+  "productions": [
+    {
+      "provenance": "seed:global_illumination_eye:agent-params",
+      "src": {"type": "Agent", "var": "agent"},
+      "edge_type": "has_global_illumination_params",
+      "tgt": {"type": "GlobalIlluminationParams", "var": "params"}
+    },
+    {
+      "provenance": "seed:global_illumination_eye:agent-adaptation",
+      "src": {"type": "Agent", "var": "agent"},
+      "edge_type": "has_illumination_adaptation",
+      "tgt": {"type": "IlluminationAdaptationState", "var": "adaptation"}
+    },
+    {
+      "provenance": "seed:global_illumination_eye:agent-exposure",
+      "src": {"type": "Agent", "var": "agent"},
+      "edge_type": "has_visual_illumination_exposure",
+      "tgt": {"type": "VisualIlluminationExposure", "var": "exposure"}
+    },
+    {
+      "provenance": "seed:global_illumination_eye:exposure-fovea",
+      "src": {"type": "VisualIlluminationExposure", "var": "exposure"},
+      "edge_type": "has_foveal_luminance_evidence",
+      "tgt": {"type": "FovealLuminanceEvidence", "var": "foveal"}
+    },
+    {
+      "provenance": "seed:global_illumination_eye:exposure-global",
+      "src": {"type": "VisualIlluminationExposure", "var": "exposure"},
+      "edge_type": "has_global_luminance_evidence",
+      "tgt": {"type": "GlobalLuminanceEvidence", "var": "global"}
+    },
+    {
+      "provenance": "seed:global_illumination_eye:agent-hypothesis",
+      "src": {"type": "Agent", "var": "agent"},
+      "edge_type": "has_illumination_hypothesis",
+      "tgt": {"type": "GlobalIlluminationHypothesis", "var": "hypothesis"}
+    },
+    {
+      "provenance": "seed:global_illumination_eye:exposure-hypothesis",
+      "src": {"type": "VisualIlluminationExposure", "var": "exposure"},
+      "edge_type": "has_provisional_illumination_hypothesis",
+      "tgt": {"type": "GlobalIlluminationHypothesis", "var": "hypothesis"}
+    },
+    {
+      "provenance": "seed:global_illumination_eye:hypothesis-fovea",
+      "src": {"type": "GlobalIlluminationHypothesis", "var": "hypothesis"},
+      "edge_type": "supported_by_foveal_evidence",
+      "tgt": {"type": "FovealLuminanceEvidence", "var": "foveal"}
+    },
+    {
+      "provenance": "seed:global_illumination_eye:hypothesis-global",
+      "src": {"type": "GlobalIlluminationHypothesis", "var": "hypothesis"},
+      "edge_type": "supported_by_global_evidence",
+      "tgt": {"type": "GlobalLuminanceEvidence", "var": "global"}
+    },
+    {
+      "provenance": "seed:global_illumination_eye:cell-hypothesis",
+      "src": {"type": "AllocentricWorldViewCell", "var": "cell"},
+      "edge_type": "appearance_predicted_by",
+      "tgt": {"type": "GlobalIlluminationHypothesis", "var": "hypothesis"}
+    }
+  ],
+  "rules": [
+    {
+      "name": "illumination_establishes_observed_baseline",
+      "area": "vision",
+      "order": 52,
+      "latency_class": "hard_realtime",
+      "comment": "The first paired observation establishes adaptation, but makes no claim that a change occurred. Raw photon measurements remain observed; the minted unit-gain hypothesis is explicitly predicted.",
+      "match": [
+        ["agent", "has_global_illumination_params", "params"],
+        ["agent", "has_illumination_adaptation", "adaptation"],
+        ["agent", "has_visual_illumination_exposure", "exposure"],
+        ["exposure", "has_foveal_luminance_evidence", "foveal"],
+        ["exposure", "has_global_luminance_evidence", "global"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "params"}, "key": "enabled"}, "b": {"type": "Lit", "value": 1.0}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "adaptation"}, "key": "initialized"}, "b": {"type": "Lit", "value": 0.0}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "exposure"}, "key": "status"}, "b": {"type": "Lit", "value": "raw"}},
+          {"type": "Gte", "a": {"type": "Attr", "node": {"type": "Var", "name": "foveal"}, "key": "mean_quanta"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "params"}, "key": "minimum_mean_quanta"}},
+          {"type": "Gte", "a": {"type": "Attr", "node": {"type": "Var", "name": "global"}, "key": "mean_quanta"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "params"}, "key": "minimum_mean_quanta"}}
+        ]
+      },
+      "effects": [
+        ["add_node", "hypothesis", "GlobalIlluminationHypothesis", {
+          "source_epoch": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "exposure"}, "key": "source_epoch"}},
+          "phase": "baseline",
+          "gain_estimate": 1.0,
+          "absolute_illumination_level": 1.0,
+          "confidence": 0.0,
+          "field_scope": "whole_visual_field",
+          "provenance_kind": "predicted"
+        }],
+        ["add_edge", "agent", "has_illumination_hypothesis", "hypothesis", {}],
+        ["add_edge", "hypothesis", "supported_by_foveal_evidence", "foveal", {}],
+        ["add_edge", "hypothesis", "supported_by_global_evidence", "global", {}],
+        ["set_attr", "adaptation", "initialized", 1.0],
+        ["set_attr", "adaptation", "foveal_baseline_quanta", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "foveal"}, "key": "mean_quanta"}}],
+        ["set_attr", "adaptation", "global_baseline_quanta", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "global"}, "key": "mean_quanta"}}],
+        ["set_attr", "adaptation", "last_source_epoch", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "exposure"}, "key": "source_epoch"}}],
+        ["set_attr", "agent", "illumination_hypothesis_epoch", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "exposure"}, "key": "source_epoch"}}],
+        ["set_attr", "agent", "illumination_hypothesis_phase", "baseline"],
+        ["set_attr", "exposure", "status", "consumed_baseline"]
+      ]
+    },
+    {
+      "name": "illumination_fovea_proposes_rapid_global_gain",
+      "area": "vision",
+      "order": 53,
+      "latency_class": "hard_realtime",
+      "comment": "The fovea has an epistemic lead: it can author a provisional whole-field gain before broad-field corroboration. Projection is not authorized until the scout confirms.",
+      "match": [
+        ["agent", "has_global_illumination_params", "params"],
+        ["agent", "has_illumination_adaptation", "adaptation"],
+        ["agent", "has_visual_illumination_exposure", "exposure"],
+        ["exposure", "has_foveal_luminance_evidence", "foveal"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "params"}, "key": "enabled"}, "b": {"type": "Lit", "value": 1.0}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "adaptation"}, "key": "initialized"}, "b": {"type": "Lit", "value": 1.0}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "exposure"}, "key": "status"}, "b": {"type": "Lit", "value": "raw"}},
+          {"type": "Gt", "a": {"type": "Attr", "node": {"type": "Var", "name": "adaptation"}, "key": "foveal_baseline_quanta"}, "b": {"type": "Lit", "value": 0.0}},
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "exposure"}, "key": "source_epoch"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "adaptation"}, "key": "last_source_epoch"}}}
+        ]
+      },
+      "effects": [
+        ["add_node", "hypothesis", "GlobalIlluminationHypothesis", {
+          "source_epoch": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "exposure"}, "key": "source_epoch"}},
+          "phase": "provisional_foveal",
+          "foveal_gain": {"__term__": {"type": "Div", "a": {"type": "Attr", "node": {"type": "Var", "name": "foveal"}, "key": "mean_quanta"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "adaptation"}, "key": "foveal_baseline_quanta"}}},
+          "gain_estimate": {"__term__": {"type": "Div", "a": {"type": "Attr", "node": {"type": "Var", "name": "foveal"}, "key": "mean_quanta"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "adaptation"}, "key": "foveal_baseline_quanta"}}},
+          "absolute_illumination_level": {"__term__": {"type": "Times", "items": [
+            {"type": "Attr", "node": {"type": "Var", "name": "adaptation"}, "key": "absolute_illumination_level"},
+            {"type": "Div", "a": {"type": "Attr", "node": {"type": "Var", "name": "foveal"}, "key": "mean_quanta"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "adaptation"}, "key": "foveal_baseline_quanta"}}
+          ]}},
+          "confidence": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "foveal"}, "key": "confidence"}},
+          "field_scope": "proposed_whole_visual_field",
+          "provenance_kind": "predicted"
+        }],
+        ["add_edge", "agent", "has_illumination_hypothesis", "hypothesis", {}],
+        ["add_edge", "exposure", "has_provisional_illumination_hypothesis", "hypothesis", {}],
+        ["add_edge", "hypothesis", "supported_by_foveal_evidence", "foveal", {}],
+        ["set_attr", "exposure", "status", "foveal_proposed"]
+      ]
+    },
+    {
+      "name": "illumination_global_scout_confirms_shared_gain",
+      "area": "vision",
+      "order": 54,
+      "latency_class": "hard_realtime",
+      "match": [
+        ["agent", "has_global_illumination_params", "params"],
+        ["agent", "has_illumination_adaptation", "adaptation"],
+        ["agent", "has_visual_illumination_exposure", "exposure"],
+        ["exposure", "has_foveal_luminance_evidence", "foveal"],
+        ["exposure", "has_global_luminance_evidence", "global"],
+        ["exposure", "has_provisional_illumination_hypothesis", "hypothesis"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "exposure"}, "key": "status"}, "b": {"type": "Lit", "value": "foveal_proposed"}},
+          {"type": "Gt", "a": {"type": "Attr", "node": {"type": "Var", "name": "adaptation"}, "key": "global_baseline_quanta"}, "b": {"type": "Lit", "value": 0.0}},
+          {"type": "Lte", "a": {"type": "Abs", "arg": {"type": "Minus", "a": {"type": "Attr", "node": {"type": "Var", "name": "hypothesis"}, "key": "foveal_gain"}, "b": {"type": "Div", "a": {"type": "Attr", "node": {"type": "Var", "name": "global"}, "key": "mean_quanta"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "adaptation"}, "key": "global_baseline_quanta"}}}}, "b": {"type": "Attr", "node": {"type": "Var", "name": "params"}, "key": "maximum_pathway_gain_disagreement"}},
+          {"type": "Or", "items": [
+            {"type": "Gte", "a": {"type": "Abs", "arg": {"type": "Minus", "a": {"type": "Attr", "node": {"type": "Var", "name": "hypothesis"}, "key": "foveal_gain"}, "b": {"type": "Lit", "value": 1.0}}}, "b": {"type": "Attr", "node": {"type": "Var", "name": "params"}, "key": "minimum_relative_change"}},
+            {"type": "Gte", "a": {"type": "Abs", "arg": {"type": "Minus", "a": {"type": "Div", "a": {"type": "Attr", "node": {"type": "Var", "name": "global"}, "key": "mean_quanta"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "adaptation"}, "key": "global_baseline_quanta"}}, "b": {"type": "Lit", "value": 1.0}}}, "b": {"type": "Attr", "node": {"type": "Var", "name": "params"}, "key": "minimum_relative_change"}}
+          ]}
+        ]
+      },
+      "effects": [
+        ["set_attr", "hypothesis", "phase", "global_confirmed"],
+        ["set_attr", "hypothesis", "global_gain", {"__term__": {"type": "Div", "a": {"type": "Attr", "node": {"type": "Var", "name": "global"}, "key": "mean_quanta"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "adaptation"}, "key": "global_baseline_quanta"}}}],
+        ["set_attr", "hypothesis", "gain_estimate", {"__term__": {"type": "Plus", "items": [
+          {"type": "Times", "items": [
+            {"type": "Attr", "node": {"type": "Var", "name": "params"}, "key": "foveal_weight"},
+            {"type": "Attr", "node": {"type": "Var", "name": "hypothesis"}, "key": "foveal_gain"}
+          ]},
+          {"type": "Times", "items": [
+            {"type": "Attr", "node": {"type": "Var", "name": "params"}, "key": "global_weight"},
+            {"type": "Div", "a": {"type": "Attr", "node": {"type": "Var", "name": "global"}, "key": "mean_quanta"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "adaptation"}, "key": "global_baseline_quanta"}}
+          ]}
+        ]}}],
+        ["set_attr", "hypothesis", "absolute_illumination_level", {"__term__": {"type": "Times", "items": [
+          {"type": "Attr", "node": {"type": "Var", "name": "adaptation"}, "key": "absolute_illumination_level"},
+          {"type": "Plus", "items": [
+            {"type": "Times", "items": [
+              {"type": "Attr", "node": {"type": "Var", "name": "params"}, "key": "foveal_weight"},
+              {"type": "Attr", "node": {"type": "Var", "name": "hypothesis"}, "key": "foveal_gain"}
+            ]},
+            {"type": "Times", "items": [
+              {"type": "Attr", "node": {"type": "Var", "name": "params"}, "key": "global_weight"},
+              {"type": "Div", "a": {"type": "Attr", "node": {"type": "Var", "name": "global"}, "key": "mean_quanta"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "adaptation"}, "key": "global_baseline_quanta"}}
+            ]}
+          ]}
+        ]}}],
+        ["set_attr", "hypothesis", "confidence", {"__term__": {"type": "Plus", "items": [
+          {"type": "Times", "items": [
+            {"type": "Attr", "node": {"type": "Var", "name": "params"}, "key": "foveal_weight"},
+            {"type": "Attr", "node": {"type": "Var", "name": "foveal"}, "key": "confidence"}
+          ]},
+          {"type": "Times", "items": [
+            {"type": "Attr", "node": {"type": "Var", "name": "params"}, "key": "global_weight"},
+            {"type": "Attr", "node": {"type": "Var", "name": "global"}, "key": "confidence"}
+          ]}
+        ]}}],
+        ["set_attr", "hypothesis", "field_scope", "whole_visual_field"],
+        ["add_edge", "hypothesis", "supported_by_global_evidence", "global", {}],
+        ["set_attr", "adaptation", "absolute_illumination_level", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "hypothesis"}, "key": "absolute_illumination_level"}}],
+        ["set_attr", "adaptation", "foveal_baseline_quanta", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "foveal"}, "key": "mean_quanta"}}],
+        ["set_attr", "adaptation", "global_baseline_quanta", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "global"}, "key": "mean_quanta"}}],
+        ["set_attr", "adaptation", "last_source_epoch", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "exposure"}, "key": "source_epoch"}}],
+        ["set_attr", "agent", "illumination_hypothesis_epoch", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "exposure"}, "key": "source_epoch"}}],
+        ["set_attr", "agent", "illumination_hypothesis_phase", "global_confirmed"],
+        ["set_attr", "exposure", "status", "consumed_confirmed"]
+      ]
+    },
+    {
+      "name": "illumination_accepts_stable_field_without_reconditioning",
+      "area": "vision",
+      "order": 54,
+      "latency_class": "hard_realtime",
+      "match": [
+        ["agent", "has_global_illumination_params", "params"],
+        ["agent", "has_illumination_adaptation", "adaptation"],
+        ["agent", "has_visual_illumination_exposure", "exposure"],
+        ["exposure", "has_foveal_luminance_evidence", "foveal"],
+        ["exposure", "has_global_luminance_evidence", "global"],
+        ["exposure", "has_provisional_illumination_hypothesis", "hypothesis"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "exposure"}, "key": "status"}, "b": {"type": "Lit", "value": "foveal_proposed"}},
+          {"type": "Lt", "a": {"type": "Abs", "arg": {"type": "Minus", "a": {"type": "Attr", "node": {"type": "Var", "name": "hypothesis"}, "key": "foveal_gain"}, "b": {"type": "Lit", "value": 1.0}}}, "b": {"type": "Attr", "node": {"type": "Var", "name": "params"}, "key": "minimum_relative_change"}},
+          {"type": "Lt", "a": {"type": "Abs", "arg": {"type": "Minus", "a": {"type": "Div", "a": {"type": "Attr", "node": {"type": "Var", "name": "global"}, "key": "mean_quanta"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "adaptation"}, "key": "global_baseline_quanta"}}, "b": {"type": "Lit", "value": 1.0}}}, "b": {"type": "Attr", "node": {"type": "Var", "name": "params"}, "key": "minimum_relative_change"}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "hypothesis", "phase", "stable_field"],
+        ["set_attr", "hypothesis", "global_gain", {"__term__": {"type": "Div", "a": {"type": "Attr", "node": {"type": "Var", "name": "global"}, "key": "mean_quanta"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "adaptation"}, "key": "global_baseline_quanta"}}}],
+        ["set_attr", "hypothesis", "gain_estimate", 1.0],
+        ["set_attr", "hypothesis", "absolute_illumination_level", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "adaptation"}, "key": "absolute_illumination_level"}}],
+        ["add_edge", "hypothesis", "supported_by_global_evidence", "global", {}],
+        ["set_attr", "adaptation", "foveal_baseline_quanta", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "foveal"}, "key": "mean_quanta"}}],
+        ["set_attr", "adaptation", "global_baseline_quanta", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "global"}, "key": "mean_quanta"}}],
+        ["set_attr", "adaptation", "last_source_epoch", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "exposure"}, "key": "source_epoch"}}],
+        ["set_attr", "agent", "illumination_hypothesis_epoch", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "exposure"}, "key": "source_epoch"}}],
+        ["set_attr", "agent", "illumination_hypothesis_phase", "stable_field"],
+        ["set_attr", "exposure", "status", "consumed_stable"]
+      ]
+    },
+    {
+      "name": "illumination_refuses_nonuniform_or_local_change",
+      "area": "vision",
+      "order": 54,
+      "latency_class": "hard_realtime",
+      "comment": "A foveal-only change is not allowed to relight the world model. The explicit refusal preserves local-object evidence as local evidence.",
+      "match": [
+        ["agent", "has_global_illumination_params", "params"],
+        ["agent", "has_illumination_adaptation", "adaptation"],
+        ["agent", "has_visual_illumination_exposure", "exposure"],
+        ["exposure", "has_foveal_luminance_evidence", "foveal"],
+        ["exposure", "has_global_luminance_evidence", "global"],
+        ["exposure", "has_provisional_illumination_hypothesis", "hypothesis"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "exposure"}, "key": "status"}, "b": {"type": "Lit", "value": "foveal_proposed"}},
+          {"type": "Gt", "a": {"type": "Abs", "arg": {"type": "Minus", "a": {"type": "Attr", "node": {"type": "Var", "name": "hypothesis"}, "key": "foveal_gain"}, "b": {"type": "Div", "a": {"type": "Attr", "node": {"type": "Var", "name": "global"}, "key": "mean_quanta"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "adaptation"}, "key": "global_baseline_quanta"}}}}, "b": {"type": "Attr", "node": {"type": "Var", "name": "params"}, "key": "maximum_pathway_gain_disagreement"}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "hypothesis", "phase", "refused_nonuniform_change"],
+        ["set_attr", "hypothesis", "global_gain", {"__term__": {"type": "Div", "a": {"type": "Attr", "node": {"type": "Var", "name": "global"}, "key": "mean_quanta"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "adaptation"}, "key": "global_baseline_quanta"}}}],
+        ["set_attr", "hypothesis", "gain_estimate", 1.0],
+        ["set_attr", "hypothesis", "absolute_illumination_level", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "adaptation"}, "key": "absolute_illumination_level"}}],
+        ["set_attr", "hypothesis", "confidence", 0.0],
+        ["set_attr", "hypothesis", "field_scope", "refused_not_global"],
+        ["add_edge", "hypothesis", "supported_by_global_evidence", "global", {}],
+        ["set_attr", "adaptation", "foveal_baseline_quanta", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "foveal"}, "key": "mean_quanta"}}],
+        ["set_attr", "adaptation", "global_baseline_quanta", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "global"}, "key": "mean_quanta"}}],
+        ["set_attr", "adaptation", "last_source_epoch", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "exposure"}, "key": "source_epoch"}}],
+        ["set_attr", "agent", "illumination_hypothesis_epoch", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "exposure"}, "key": "source_epoch"}}],
+        ["set_attr", "agent", "illumination_hypothesis_phase", "refused_nonuniform_change"],
+        ["set_attr", "exposure", "status", "consumed_refused"]
+      ]
+    },
+    {
+      "name": "illumination_stamps_surface_photometric_context",
+      "area": "vision",
+      "order": 55,
+      "latency_class": "hard_realtime",
+      "comment": "A currently observed surface records the illumination under which its immutable surface_value was measured. This is provenance, not relighting.",
+      "match": [
+        ["agent", "has_illumination_hypothesis", "hypothesis"],
+        ["agent", "holds_world_view_cell", "cell"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "hypothesis"}, "key": "source_epoch"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "illumination_hypothesis_epoch"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "cell"}, "key": "surface_value_status"}, "b": {"type": "Lit", "value": "supported"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "cell"}, "key": "surface_value_epoch"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "hypothesis"}, "key": "source_epoch"}},
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "cell"}, "key": "surface_illumination_epoch"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "hypothesis"}, "key": "source_epoch"}}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "cell", "surface_illumination_level", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "hypothesis"}, "key": "absolute_illumination_level"}}],
+        ["set_attr", "cell", "surface_illumination_epoch", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "hypothesis"}, "key": "source_epoch"}}],
+        ["set_attr", "cell", "surface_photometry_provenance", "observed_under_inferred_illumination"]
+      ]
+    },
+    {
+      "name": "illumination_conditions_unobserved_world_view",
+      "area": "vision",
+      "order": 56,
+      "latency_class": "hard_realtime",
+      "comment": "Only a globally corroborated hypothesis predicts the current appearance of an older surface. The observed surface_value and its source edges are never overwritten.",
+      "match": [
+        ["agent", "has_illumination_hypothesis", "hypothesis"],
+        ["agent", "holds_world_view_cell", "cell"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "hypothesis"}, "key": "phase"}, "b": {"type": "Lit", "value": "global_confirmed"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "hypothesis"}, "key": "source_epoch"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "illumination_hypothesis_epoch"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "cell"}, "key": "surface_value_status"}, "b": {"type": "Lit", "value": "supported"}},
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "cell"}, "key": "surface_value_epoch"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "hypothesis"}, "key": "source_epoch"}}},
+          {"type": "Gt", "a": {"type": "Attr", "node": {"type": "Var", "name": "cell"}, "key": "surface_illumination_level"}, "b": {"type": "Lit", "value": 0.0}},
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "cell"}, "key": "illumination_prediction_epoch"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "hypothesis"}, "key": "source_epoch"}}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "cell", "illumination_conditioned_value", {"__term__": {"type": "Times", "items": [
+          {"type": "Attr", "node": {"type": "Var", "name": "cell"}, "key": "surface_value"},
+          {"type": "Div", "a": {"type": "Attr", "node": {"type": "Var", "name": "hypothesis"}, "key": "absolute_illumination_level"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "cell"}, "key": "surface_illumination_level"}}
+        ]}}],
+        ["set_attr", "cell", "illumination_prediction_epoch", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "hypothesis"}, "key": "source_epoch"}}],
+        ["set_attr", "cell", "illumination_prediction_confidence", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "hypothesis"}, "key": "confidence"}}],
+        ["set_attr", "cell", "illumination_prediction_provenance", "predicted_from_global_illumination_prior"],
+        ["add_edge", "cell", "appearance_predicted_by", "hypothesis", {}]
+      ]
+    },
+    {
+      "name": "illumination_assumes_enable_time_baseline_for_older_surfaces",
+      "area": "vision",
+      "order": 55,
+      "latency_class": "soft_realtime",
+      "comment": "When the apparatus is enabled after memory already exists, the first baseline explicitly records the conservative assumption that those held surfaces were observed under unit illumination.",
+      "match": [
+        ["agent", "has_illumination_hypothesis", "hypothesis"],
+        ["agent", "holds_world_view_cell", "cell"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "hypothesis"}, "key": "phase"}, "b": {"type": "Lit", "value": "baseline"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "hypothesis"}, "key": "source_epoch"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "illumination_hypothesis_epoch"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "cell"}, "key": "surface_value_status"}, "b": {"type": "Lit", "value": "supported"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "cell"}, "key": "surface_illumination_level"}, "b": {"type": "Lit", "value": null}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "cell", "surface_illumination_level", 1.0],
+        ["set_attr", "cell", "surface_illumination_epoch", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "cell"}, "key": "surface_value_epoch"}}],
+        ["set_attr", "cell", "surface_photometry_provenance", "observed_before_illumination_apparatus_baseline"]
+      ]
+    },
+    {
+      "name": "illumination_prunes_superseded_hypotheses",
+      "area": "vision",
+      "order": 59,
+      "latency_class": "soft_realtime",
+      "match": [
+        ["agent", "has_illumination_hypothesis", "hypothesis"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "hypothesis"}, "key": "phase"}, "b": {"type": "Lit", "value": "provisional_foveal"}}},
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "hypothesis"}, "key": "source_epoch"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "illumination_hypothesis_epoch"}}}
+        ]
+      },
+      "effects": [
+        ["del_node", "hypothesis"]
+      ]
+    }
+  ]
+}

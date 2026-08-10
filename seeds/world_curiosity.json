@@ -1,0 +1,79 @@
+{
+  "id": "world_curiosity",
+  "version": "1.0.0",
+  "depends_on": ["autonomy"],
+  "description": "RECOGNISE-AND-MINT: when the agent is placed in a world (a Game WorldInstance) it holds no understanding-capability for, it RECOGNISES that a new capability is required and MINTS a CapabilityAxis about that world -- graph-native, no Python decision. This is the missing coupling between the agent's standing curiosity (the `understand` Drive's frontier pick) and the world in front of it: its 22 boot axes are all speech/reading/general, so dropped into an ARC game (or snake/tetris/doom -- any Game world) nothing said 'understand THIS'. The minted axis carries a high shortfall, so the autonomy frontier pick reorients onto it; the existing investigate -> (no operator) -> escalation -> self_extend machinery then works it, minting further sub-capability axes as it discovers what understanding this world requires. Generic: the trigger is 'a world I cannot yet predict/understand', not anything maze- or score-specific. Understanding is the goal; the score is irrelevant.",
+  "microtheory": {
+    "name": "world_curiosity",
+    "description": "in a world I don't understand -> mint a CapabilityAxis about it -> my curiosity reorients to understanding it."
+  },
+  "nodes": [],
+  "edges": [],
+  "productions": [
+    {"provenance": "seed:world_curiosity:understood_by",
+     "src": {"type": "WorldInstance", "var": "s"}, "edge_type": "understood_by",
+     "tgt": {"type": "CapabilityAxis", "var": "t"}},
+    {"provenance": "seed:world_curiosity:about_world",
+     "src": {"type": "CapabilityAxis", "var": "s"}, "edge_type": "about_world",
+     "tgt": {"type": "WorldInstance", "var": "t"}},
+    {"provenance": "seed:world_curiosity:investigated_by",
+     "src": {"type": "CapabilityAxis", "var": "s"}, "edge_type": "investigated_by",
+     "tgt": {"type": "Operator", "var": "t"}},
+    {"provenance": "seed:world_curiosity:probes_world",
+     "src": {"type": "Operator", "var": "s"}, "edge_type": "probes_world",
+     "tgt": {"type": "WorldInstance", "var": "t"}}
+  ],
+  "rules": [
+    {
+      "name": "mint_world_understanding_axis",
+      "comment": "The recognition + mint, in one rule. Anchor on the SINGLETON edge body --inhabits--> game (exactly one body inhabits the world): 'I am embodied in a world'. Matching via this 1:1 edge fires ONCE per game -- anchoring the mint on a many-valued edge (has_region/has_cell) would mint one axis PER region in a single pass, since the back-edge guard only single-fires ACROSS fixpoint passes, not within one (the known 'mint via a many-valued match edge races -- bind a unique node' gotcha). GUARD: it is a Game (world_type==Game) AND no understanding axis is bound to it yet (Count(understood_by)==0). EFFECT: mint a CapabilityAxis ABOUT this world with a high shortfall (so the understand-Drive's frontier pick shifts onto it) and lay the understood_by back-edge -- which destroys this rule's own precondition, so it cannot re-fire on later frames either. A `probe_world` Operator is attached (investigated_by) -- the autonomy frontier pick term PENALISES an operator-less axis by -1e9 ('never pick a frontier you have no method to investigate'), so without a bound method the recognised need could never be picked. The probe is the agent's first method: act in the world and predict its response (prediction_minus_observation). When it stalls (mf_stall) the escalation ladder routes to self_extend, which INTRINSICALLY composes a BETTER method from the primitives the agent already holds (NOT a faculty handed to it from outside) -- exactly 'recognise a new capability is required -> mint the axis -> go build the capability from within'. min_order=1.0 puts the world axis in the SAME tier as the ambient (speech/reading) understanding frontiers: it COMPETES by default, it does not auto-win. The competition resolves on its own merits -- an ambient frontier that cannot make progress here STALLS and (once authoring is exhausted) is demoted by the pick term's gate from 1e9 to 0.05e9, so the live world axis surfaces. attention_override (default 0) is the deliberate, per-instance OVERRIDE: when the agent commits to a specific world it sets attention_override=1 and apply_world_attention_override drops min_order so that world dominates. capability_keys are generic ('understand','world'); about_world / probes_world tie the abstract axis + method to the concrete world so a per-world method can bind.",
+      "match": [["body", "inhabits", "game"]],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "game"}, "key": "world_type"}, "b": {"type": "Lit", "value": "Game"}},
+          {"type": "Eq", "a": {"type": "Count", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "game"}, "edge_type": "understood_by", "any_type": false}}, "b": {"type": "Lit", "value": 0}}
+        ]
+      },
+      "effects": [
+        ["add_node", "ax", "CapabilityAxis", {"is_axis": 1.0, "saturation": 0.0, "shortfall": 2.0, "sat_best": 0.0, "mf_stall": 0, "investigated_count": 0, "min_order": 1.0, "attention_override": 0.0, "needs_world_action": 1.0, "capability_keys": ["understand", "world"]}],
+        ["add_node", "op", "Operator", {"name": "probe_world", "runner": "probe_world", "metric": "world_prediction", "target": 0.8, "expected_payoff": 0.5, "approach": "act in the world and predict its response (prediction_minus_observation)"}],
+        ["add_edge", "game", "understood_by", "ax"],
+        ["add_edge", "ax", "about_world", "game"],
+        ["add_edge", "ax", "investigated_by", "op"],
+        ["add_edge", "op", "probes_world", "game"]
+      ]
+    },
+    {
+      "name": "apply_world_attention_override",
+      "comment": "The deliberate, per-instance OVERRIDE of competition. By default a world axis competes in the same tier as the ambient understanding frontiers (min_order=1.0). When the agent commits to a SPECIFIC world -- it sets attention_override=1 on that world's axis (its own decision, or a host directive for that instance) -- this rule drops the axis's min_order to 0.0, which the pick term reads as -min_order, so the committed world outranks the tier and DOMINATES the frontier pick. Single-fires per axis (min_order>0.5 guard destroyed by the effect). Intrinsic, reversible, per-instance: the agent overrides its own attention for the world it chooses, nothing is forced by default.",
+      "match": [["ax", "about_world", "game"]],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Gte", "a": {"type": "Attr", "node": {"type": "Var", "name": "ax"}, "key": "attention_override"}, "b": {"type": "Lit", "value": 1.0}},
+          {"type": "Gt", "a": {"type": "Attr", "node": {"type": "Var", "name": "ax"}, "key": "min_order"}, "b": {"type": "Lit", "value": 0.5}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "ax", "min_order", 0.0]
+      ]
+    },
+    {
+      "name": "enact_forced_action",
+      "comment": "The graph-native BRIDGE the jabberwock decided on (jabberwock_decides_intrinsic_action: a DECISION left in host Python failed by its own law 0/4; making it intrinsic helped 6/6). action_effect.babble_interaction (and pursue_lead) DECIDE a probing action and write game.forced_action + game.babble_stamp=frame; previously NOTHING in the graph consumed it -- only scripts/play.py's Python turned it into an action. This rule makes the decision intrinsic: when the agent babbled THIS frame (babble_stamp==frame), copy forced_action into chosen_action, which the host reads + applies. Anchored on the singleton body--inhabits-->game (fires once). The repertoire it babbles + the world_signal it reacts to are published by the ADAPTER (worlds/arc.py build_world) -- legitimate affordance/signal I/O. So curiosity reaches the world through the GRAPH, not the script.",
+      "match": [["body", "inhabits", "game"]],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "game"}, "key": "world_type"}, "b": {"type": "Lit", "value": "Game"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "game"}, "key": "babble_stamp"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "game"}, "key": "frame"}},
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Plus", "items": [{"type": "Attr", "node": {"type": "Var", "name": "game"}, "key": "control_known"}, {"type": "Lit", "value": 0}]}, "b": {"type": "Lit", "value": 1.0}}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "game", "chosen_action", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "game"}, "key": "forced_action"}}]
+      ]
+    }
+  ]
+}

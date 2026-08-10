@@ -1,0 +1,37 @@
+{
+  "id": "throughline_meta",
+  "version": "1.0.0",
+  "depends_on": [],
+  "description": "META-THEME = COLLAPSE OVER THE SET OF THROUGHLINES, one level up from the throughlines themselves. Where each throughline is one thread woven through the arcs (the recurring protagonist, the recurring beat, the causal payoff), the META-THEME is what those threads TOGETHER mean at whole-story scale. The composer (domains/throughlines.compose_meta_theme) turns the SET of minted Throughline kinds into a SINGLE-TOKEN skeleton by a mechanical graph read over the Throughline nodes -- which kinds are present? -- and that ONE token is decoded against this codebook exactly the way throughlines.decode_throughline decodes a thread token against ShapeSignatureThroughline. The THEME VERDICT is always the winning ShapeSignatureMetaTheme's own `theme` attr, never a Python if/else naming the theme. When the recurring protagonist enacts the recurring beat AND the payoff closes the loop, the whole-story theme is 'kindness returned'; when only the protagonist + beat thread (the payoff not recovered), the theme is 'recurring kindness'. A throughline set no schema covers (META_NONE) mints NOTHING.",
+  "microtheory": {
+    "name": "throughline_meta",
+    "description": "The whole-story meta-theme composed from the SET of throughlines threading the arcs, recognised by ShapeDecode over a dedicated ShapeSignatureMetaTheme codebook -- one level up from the individual throughlines, themselves one level up from the spanning theme."
+  },
+  "nodes": [
+    {
+      "local_id": 1,
+      "type": "ShapeSignatureMetaTheme",
+      "attrs": {
+        "name": "kindness_returned",
+        "kind": "meta_theme",
+        "theme": "kindness returned",
+        "signature": "[[\"CHAR_BEAT_PAYOFF\"]]",
+        "line": "A recurring protagonist enacts a recurring kindness across the arcs, and every kindness given returns to her in the final arc -- the gifts earned by the early arcs pay off at the climax. The whole-story theme, invisible in any single arc: kindness returned.",
+        "note": "The meta token CHAR_BEAT_PAYOFF: the character throughline (recurring protagonist) AND the pattern throughline (recurring kindness beat) AND the payoff throughline (early gift used late) are ALL present -- the three threads compose into the complete theme. Read off the minted Throughline nodes' `kind` attrs (a mechanical existence check building the token; the THEME is this schema's verdict)."
+      }
+    },
+    {
+      "local_id": 2,
+      "type": "ShapeSignatureMetaTheme",
+      "attrs": {
+        "name": "recurring_kindness",
+        "kind": "meta_theme",
+        "theme": "recurring kindness",
+        "signature": "[[\"CHAR_BEAT\"]]",
+        "line": "One protagonist enacts the same act of kindness across every arc -- the recurring-protagonist thread and the recurring help-and-thanks beat compose into a single whole-story theme threading the separate arcs into one story: kindness, repeated.",
+        "note": "The meta token CHAR_BEAT: the character throughline (recurring protagonist) AND the pattern throughline (recurring beat) are present, but the payoff throughline is NOT (the setup->payoff loop not recovered). The two threads still compose into a whole-story theme. Read off the minted Throughline nodes' `kind` attrs; the THEME is this schema's verdict."
+      }
+    }
+  ],
+  "edges": []
+}

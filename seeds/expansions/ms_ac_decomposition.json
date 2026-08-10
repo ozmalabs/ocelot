@@ -1,0 +1,112 @@
+{
+  "id": "ms_ac_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "multi_symbol_arithmetic_coder",
+  "in_microtheory": "video_coding_theory",
+  "description": "AV1's multi-symbol arithmetic coder (MS-AC) decomposed into its sub-mechanisms. Where CABAC bins everything to binary then runs many small contexts, MS-AC keeps the multi-symbol alphabet and uses cumulative-distribution-function (CDF) tables with 15-bit precision. The trade-offs come from: avoiding the binarisation step entirely, fewer context lookups per syntax element, and a simpler probability-update rule (recursive averaging).",
+  "sub_mechanisms": [
+    {
+      "name": "alphabet_of_up_to_16",
+      "definition": "The maximum symbol count in any single MS-AC coding step. Most syntax elements use 2-8 symbols; partition types and intra modes use up to 16.",
+      "why": "16-way alphabets let one CDF lookup encode a whole syntax element value. Binary would need log2(16) = 4 bins per value, each with its own context. MS-AC pays one expensive lookup instead of 4 cheap ones, and on hardware the trade-off favours fewer dependent operations.",
+      "category": "ms_ac_mechanism"
+    },
+    {
+      "name": "cumulative_distribution_function",
+      "definition": "Per-context probability model stored as the cumulative distribution F(k) = sum P(symbol = i) for i ≤ k, at 15-bit precision. F has N+1 entries for an N-symbol alphabet, with F(0) = 0 and F(N) = 2^15 = 32768.",
+      "why": "CDF is the natural representation for interval-narrowing arithmetic coding: encoding symbol k narrows range to [F(k-1)/F(N), F(k)/F(N)]. 15 bits of precision tracks rare symbols accurately (down to ~1/32768 probability) without floating-point arithmetic.",
+      "category": "ms_ac_mechanism"
+    },
+    {
+      "name": "CDF_table_array",
+      "definition": "AV1's per-context-class array of CDF tables. About 800 context classes; each table maintains its own CDF, indexed by syntax element + spatial/syntactic neighbours.",
+      "why": "Per-context CDFs let the coder exploit different statistics in different regions of the bitstream (intra vs inter, skip vs coded, top of MV-difference vs sign). Same insight as CABAC's per-context state, just expressed as a multi-symbol distribution.",
+      "category": "ms_ac_mechanism"
+    },
+    {
+      "name": "single_CDF_lookup_per_symbol",
+      "definition": "Encoding one syntax element value reads ONE entry from the relevant CDF table, narrows the range proportionally, and updates the CDF. No per-bin loop.",
+      "why": "CABAC's per-bin overhead (lookup + state update + renormalise) is amortised over bins; MS-AC pays it once per syntax element. Fewer dependent operations per element wins on modern hardware where memory latency dominates compute.",
+      "category": "ms_ac_mechanism"
+    },
+    {
+      "name": "recursive_averaging_update",
+      "definition": "After coding symbol k, the CDF is updated: F_new(i) = F_old(i) + (g - F_old(i)) >> rate, where g is 32768 if i ≥ k else 0, and rate ∈ [4, 8] controls adaptation speed.",
+      "why": "Equivalent to an exponential moving average over recent samples. Replaces CABAC's hand-tuned 64-state transition table with a single arithmetic expression — simpler to implement in hardware, simpler to verify, equally effective in practice.",
+      "category": "ms_ac_mechanism"
+    },
+    {
+      "name": "adaptation_rate",
+      "definition": "The rate parameter in the recursive averaging update, controlling how fast the CDF adapts to local statistics. Larger rate → slower adaptation → smoother probability tracking; smaller rate → faster adaptation → noisier but more responsive.",
+      "why": "Lets AV1 tune adaptation per context class — fast-changing contexts (skip flag in a moving scene) get smaller rate, stable contexts (slice-level signaling) get larger. Hand-tuned per context but uses ONE parameter, not a 64-state table.",
+      "category": "ms_ac_mechanism"
+    },
+    {
+      "name": "interval_state_high_low",
+      "definition": "AV1's range coder tracks two integer registers (the high and low boundaries of the current interval), each 16-bit. Encoding symbol k with CDF F: new_low = low + (range * F(k-1)) >> 15; new_range = (range * (F(k) - F(k-1))) >> 15.",
+      "why": "Same shape as CABAC's range_state but parameterised over the multi-symbol CDF. The shift-by-15 keeps everything integer; the proportional split is the arithmetic-coding compression mechanism itself.",
+      "category": "ms_ac_mechanism"
+    },
+    {
+      "name": "byte_renormalisation",
+      "definition": "When the AV1 range falls below 2^16, the encoder emits the top byte of low and shifts both registers left by 8 bits.",
+      "why": "CABAC renormalises bit-by-bit; AV1 renormalises byte-by-byte. Fewer renormalisation events per coded symbol (≈ 8x fewer), and each emits a whole byte to the output stream. Wins on output throughput for the same compression efficiency.",
+      "category": "ms_ac_mechanism"
+    },
+    {
+      "name": "carry_via_bool_coder_bit",
+      "definition": "AV1 handles the carry-propagation problem (post-hoc bit flips) via a single 'bool coder bit' that's tracked alongside the interval state; the final output stream incorporates it during termination.",
+      "why": "Same problem CABAC's outstanding-bits chain solves, but resolved differently: instead of buffering an unbounded number of speculative bits, AV1 commits each byte and adjusts at termination if needed. Trades buffering for slightly less compression-tight termination.",
+      "category": "ms_ac_mechanism"
+    },
+    {
+      "name": "static_CDF_initialisation",
+      "definition": "Each context class's CDF starts at a static initial distribution defined in the spec, derived from corpus statistics. The adaptive update only kicks in once coding begins.",
+      "why": "Cold-start coders waste bits while their probability model is wrong. Pre-trained initial CDFs give MS-AC a useful prior; for short streams (small slices, random-access points) the static init does most of the work and adaptation barely kicks in.",
+      "category": "ms_ac_mechanism"
+    },
+    {
+      "name": "tile_independent_CDF",
+      "definition": "Each tile in an AV1 frame starts with the same initial CDFs and updates independently — no CDF state crosses tile boundaries.",
+      "why": "Tiles can be decoded in parallel because CDF state doesn't carry between them. Same trade as CABAC's slice-independence: small compression cost (initial CDFs aren't tuned to each tile's content) for big parallelism win.",
+      "category": "ms_ac_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "single_lookup_replaces_log_n_bins",
+      "if": ["a syntax element has an N-symbol alphabet"],
+      "then": ["MS-AC pays one lookup vs CABAC's log_2(N) bin-coded operations"],
+      "why": "For N = 8, CABAC needs 3 bins + 3 context lookups + 3 state updates per element. MS-AC needs 1 CDF lookup + 1 update. On hardware where memory access dominates compute, the single-lookup path wins by ~3x.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "recursive_averaging_approximates_optimal_update",
+      "if": ["a probability model is updated via recursive averaging at rate r"],
+      "then": ["the model converges to the local stream statistics with time constant ~2^r samples"],
+      "why": "Exponential moving average is a standard tracker for slowly-varying statistics. Same effect as CABAC's hand-tuned transition table but expressible in one line of code; for hardware, simpler IS faster.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "static_init_beats_cold_start",
+      "if": ["a coder's adaptive state takes K samples to converge"],
+      "then": ["a static init derived from corpus statistics beats cold-start by ~K samples of compression loss"],
+      "why": "Cold-start: probability is 1/N for everything → 5-7 bits per symbol for early values. Static init: starts at the true distribution → near-entropy from the first symbol. For short tiles or random-access frames, this matters a lot.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "byte_renorm_amortises_emission",
+      "if": ["a range coder emits whole bytes when range falls below 2^16"],
+      "then": ["renormalisation events occur ~8x less often than bit-by-bit"],
+      "why": "CABAC's per-bit renormalisation pays I/O setup cost on each emission. AV1's per-byte renorm amortises the cost across 8 output bits. Wins on memory bandwidth.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "tile_isolation_enables_parallel_decode",
+      "if": ["CDF state does not cross tile boundaries"],
+      "then": ["tiles are independently decodable in parallel"],
+      "why": "Tile-independent CDFs mean each tile's decoder is a self-contained pipeline. The compression cost (each tile starts with un-adapted CDF) is small for typical tile sizes; the parallelism win is large.",
+      "soundness_category": "cost_equivalence"
+    }
+  ]
+}

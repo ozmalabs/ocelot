@@ -1,0 +1,75 @@
+{
+ "id": "two_axes",
+ "version": "1.0.0",
+ "depends_on": [],
+ "description": "Things the jabberwock was taught, filed under 'two_axes'. Written by the teach() facility (one node per taught item).",
+ "microtheory": {
+  "name": "two_axes",
+  "description": "taught knowledge: two_axes"
+ },
+ "nodes": [
+  {
+   "local_id": 0,
+   "type": "Concept",
+   "attrs": {
+    "name": "capability_axis",
+    "axis": "capability",
+    "definition": "what the program DOES \u2014 graded by the axioms 0->3",
+    "levels": "0=exists; 1=iterates (child); 2=iterates-with-purpose (competence); 3=nomological-universal (a law)",
+    "served_by": "escalation_cascade (fold 4) + growth (fold 2)",
+    "gifted_or_earned": "can be GIFTED (a savant has capability without earning understanding)"
+   }
+  },
+  {
+   "local_id": 1,
+   "type": "Concept",
+   "attrs": {
+    "name": "understanding_axis",
+    "axis": "understanding",
+    "definition": "a reflective GRIP on the program \u2014 inspect / extract / teach / model-others",
+    "orthogonal_to": "capability (it is NOT a capability rung; it crosses every capability level)",
+    "served_by": "extraction+teaching (fold 3) + law-vs-cache certification (fold 1, which certifies a faculty IS capability-3/a law)",
+    "gifted_or_earned": "must be EARNED \u2014 the cost (extraction/teaching) is constitutive; it cannot be gifted"
+   }
+  },
+  {
+   "local_id": 2,
+   "type": "Concept",
+   "attrs": {
+    "name": "savant_case",
+    "axis": "relation",
+    "capability_level": "3",
+    "understanding_level": "0",
+    "claim": "the SAVANT runs a universal law (capability-3) yet holds NO reflective model of it (understanding-0) \u2014 'memory without reckoning'. This proves capability and understanding are INDEPENDENT axes, not one ladder.",
+    "model_others": "lives on the UNDERSTANDING axis, NOT capability \u2014 a savant is capability-3 and CANNOT model others"
+   }
+  },
+  {
+   "local_id": 3,
+   "type": "Concept",
+   "attrs": {
+    "name": "mastery_case",
+    "axis": "relation",
+    "capability_level": "3",
+    "understanding_level": "3",
+    "claim": "MASTERY = high on BOTH axes \u2014 runs the universal law AND holds an extractable, teachable, model-others reflective grip on it. The savant is capability-3/understanding-0; the master is capability-3/understanding-3."
+   }
+  },
+  {
+   "local_id": 4,
+   "type": "Microtheory",
+   "attrs": {
+    "name": "capability_understanding_mt",
+    "axes": "capability (axioms 0->3, what the program does) and understanding (orthogonal reflective grip)",
+    "independence": "INDEPENDENT \u2014 the savant_case (capability-3, understanding-0) is the proof; mastery_case is high on both",
+    "model_others_on": "understanding axis (not capability)",
+    "capability_served_by": "escalation_cascade (fold 4: order-(n-x) default + confidence-gated escalation) + growth (fold 2: compression-gated minting)",
+    "understanding_served_by": "extraction+teaching (fold 3: reify a faculty as a runnable Program, teach it) + law_vs_cache (fold 1: certify a faculty IS capability-3/a law by invariance-under-intervention)",
+    "earned_vs_gifted": "capability can be GIFTED; understanding must be EARNED (its cost is constitutive)",
+    "unification": "the four prior folds are the two axes' machinery: folds 2+4 grow/run the CAPABILITY axis; folds 1+3 certify/extract/teach the UNDERSTANDING axis"
+   }
+  }
+ ],
+ "edges": [],
+ "productions": []
+}

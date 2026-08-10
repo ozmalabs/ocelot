@@ -1,0 +1,118 @@
+{
+  "id": "materials_failure_modes_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "fatigue_SN_curve",
+  "in_microtheory": "engineering",
+  "description": "Material failure modes decomposed. Fatigue (S-N, e-N, fracture mechanics), brittle vs ductile fracture, creep, corrosion (galvanic, pitting, SCC), wear, hydrogen embrittlement, stress concentration factors.",
+  "sub_mechanisms": [
+    {
+      "name": "endurance_limit_steel",
+      "definition": "Steel + iron: stress below ~half UTS = infinite life. Aluminum + non-ferrous: no clear limit.",
+      "why": "Foundation of fatigue design. Steel designed below endurance limit: no fatigue. Non-ferrous: design for finite cycles.",
+      "category": "fail_mode_mechanism"
+    },
+    {
+      "name": "S_N_curve_high_cycle",
+      "definition": "Log-log: stress amplitude vs cycles to failure. Slope on log-log.",
+      "why": "Engineering fatigue data. Tests at multiple stress levels. Curve drives design.",
+      "category": "fail_mode_mechanism"
+    },
+    {
+      "name": "epsilon_N_curve_low_cycle",
+      "definition": "Strain vs cycles. For high-strain (plastic) cycling. Coffin-Manson.",
+      "why": "Thermal cycling, high local stress. Solder joints, hot section. Different physics than high-cycle fatigue.",
+      "category": "fail_mode_mechanism"
+    },
+    {
+      "name": "stress_concentration_factor",
+      "definition": "Kt = σ_max/σ_nominal. Geometric features amplify local stress.",
+      "why": "Holes, notches, fillets. Kt = 3 for circular hole in plate. Fatigue: even higher Kf (fatigue concentration).",
+      "category": "fail_mode_mechanism"
+    },
+    {
+      "name": "fracture_toughness_K_IC",
+      "definition": "Critical stress intensity. K_I = σ√(πa)·Y. K_I ≥ K_IC → fracture.",
+      "why": "Damage tolerance. Larger crack OR higher stress = fracture. Material property + thickness-dependent.",
+      "category": "fail_mode_mechanism"
+    },
+    {
+      "name": "Charpy_impact_test",
+      "definition": "Notched specimen broken by pendulum. Energy absorbed = impact toughness.",
+      "why": "Ductile-brittle transition temperature for steel. Liberty ships' transition in cold WWII Atlantic = brittle failures. Critical material property.",
+      "category": "fail_mode_mechanism"
+    },
+    {
+      "name": "creep_curve",
+      "definition": "Primary (decreasing rate), secondary (steady-state), tertiary (accelerating to rupture).",
+      "why": "High temperature life. Larson-Miller parameter combines T + time. Critical for turbines, pressure vessels.",
+      "category": "fail_mode_mechanism"
+    },
+    {
+      "name": "galvanic_corrosion",
+      "definition": "Two dissimilar metals in electrolyte. Anodic metal corrodes preferentially.",
+      "why": "Galvanic series predicts. Steel + brass + saltwater → steel corrodes. Sacrificial anodes (zinc, Mg) protect.",
+      "category": "fail_mode_mechanism"
+    },
+    {
+      "name": "stress_corrosion_cracking",
+      "definition": "SCC: simultaneous stress + corrosive environment. Crack propagates faster than corrosion alone.",
+      "why": "Stainless steel + chloride, brass + ammonia. Catastrophic + sudden. Avoid by material selection or stress relief.",
+      "category": "fail_mode_mechanism"
+    },
+    {
+      "name": "hydrogen_embrittlement",
+      "definition": "Hydrogen diffuses into metal lattice; reduces ductility; causes brittle fracture.",
+      "why": "High-strength steels, plated parts. Bake-out post-plating mitigates. Catastrophic failures of fasteners + structures.",
+      "category": "fail_mode_mechanism"
+    },
+    {
+      "name": "wear_mechanisms",
+      "definition": "Adhesive, abrasive, fatigue, erosion, corrosive wear. Each different physics.",
+      "why": "Bearings, gears, cutting tools. Hard surfaces, lubrication, materials selection. Standard engineering concern.",
+      "category": "fail_mode_mechanism"
+    },
+    {
+      "name": "Soderberg_Goodman_diagrams",
+      "definition": "Fatigue design: mean stress vs alternating stress. Safe region bounded by line.",
+      "why": "Combined static + cyclic loading. Soderberg conservative; Goodman common. Standard shaft + spring design.",
+      "category": "fail_mode_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "stress_concentration_amplifies_fatigue",
+      "if": ["component has geometric stress concentrator"],
+      "then": ["fatigue life reduced by Kt"],
+      "why": "Cracks initiate at high stress. Round transitions, fillets, eliminate sharp internal corners. Design rules of thumb in modern guidance.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "brittle_fracture_catastrophic",
+      "if": ["material is brittle at service temperature"],
+      "then": ["failure is sudden + complete"],
+      "why": "Ductile materials warn by deforming. Brittle: no warning. Concrete, glass, cold steel. Design philosophy: avoid brittle conditions.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "galvanic_couples_predicted_by_potential_difference",
+      "if": ["dissimilar metals + electrolyte"],
+      "then": ["more anodic metal corrodes, more cathodic protected"],
+      "why": "Galvanic series: Zn, Al anodic; Cu, Au cathodic. Steel between. Pair design intentionally for sacrificial protection or avoid.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "creep_dominates_at_T_above_half_melting",
+      "if": ["operating temperature > 0.4 × melting (absolute)"],
+      "then": ["creep is significant"],
+      "why": "Steel at 1000K (700°C): creep critical. At 600K (300°C): negligible. Determines material selection for high-T service.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "hydrogen_embrittlement_requires_baking",
+      "if": ["high-strength steel is plated"],
+      "then": ["bake-out at 200°C required to remove hydrogen"],
+      "why": "Plating introduces H. Without bake: delayed brittle failure (hours-days post-plating). Standard process control in aerospace fasteners.",
+      "soundness_category": "referential_transparency"
+    }
+  ]
+}

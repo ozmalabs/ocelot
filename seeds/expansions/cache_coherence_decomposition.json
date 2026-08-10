@@ -1,0 +1,124 @@
+{
+  "id": "cache_coherence_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "cache_coherence",
+  "in_microtheory": "computer_architecture",
+  "description": "Cache coherence decomposed. The MESI/MOESI/MESIF protocol family is the hardware mechanism that makes multicore shared memory work. Each cache line has a state (Modified, Exclusive, Shared, Invalid, +Owned/+Forwarder in some variants). State transitions on local actions (read, write) and remote actions (snoop) enforce the invariant that all cores see a consistent view. False sharing, true sharing, and coherence traffic all derive from this state machine.",
+  "sub_mechanisms": [
+    {
+      "name": "MESI_modified_state",
+      "definition": "M: this cache has the line, the line is dirty (modified relative to memory), no other cache has it.",
+      "why": "The exclusive-write state. Modifications are local; no broadcast needed until eviction. Reaching M requires an invalidation broadcast to other caches that might have the line.",
+      "category": "coherence_mechanism"
+    },
+    {
+      "name": "MESI_exclusive_state",
+      "definition": "E: this cache has the line, the line is clean (matches memory), no other cache has it.",
+      "why": "Lets the cache write without first invalidating others (no others have it). E → M on local write requires only updating local state. Acquired on read when no other cache responds to snoop.",
+      "category": "coherence_mechanism"
+    },
+    {
+      "name": "MESI_shared_state",
+      "definition": "S: this cache has the line, the line is clean, other caches may also have it.",
+      "why": "Multiple readers, no writers. Reads are local; writes require transitioning to M, which requires invalidating other sharers. Common for read-mostly data.",
+      "category": "coherence_mechanism"
+    },
+    {
+      "name": "MESI_invalid_state",
+      "definition": "I: this cache does not have the line.",
+      "why": "Initial state and post-invalidation state. Loads from I trigger cache fill (possibly from another cache or DRAM). I → S/E on load; I → M on store (with invalidate).",
+      "category": "coherence_mechanism"
+    },
+    {
+      "name": "bus_snooping",
+      "definition": "Each cache observes the bus (or interconnect) for memory transactions; updates its state based on what other caches do.",
+      "why": "Distributed coherence. Each cache makes its own state transitions based on observed traffic; no central directory. Simple, scalable to ~16 cores; larger systems use directory-based coherence.",
+      "category": "coherence_mechanism"
+    },
+    {
+      "name": "directory_based_coherence",
+      "definition": "Central directory tracks which caches have each line. Cores communicate with the directory; directory forwards as needed.",
+      "why": "Snooping doesn't scale beyond ~16 cores (broadcast bandwidth). Directory localises traffic — only affected caches see invalidations. Used in large servers (64-128+ core SMPs).",
+      "category": "coherence_mechanism"
+    },
+    {
+      "name": "MOESI_owned_state",
+      "definition": "O: this cache has the dirty line and is responsible for supplying it to other readers. Multiple readers may exist in S; the owner has the only dirty copy.",
+      "why": "Avoids writing back to memory when transitioning M → S (with other readers requesting). Owner keeps the dirty data + supplies it to readers. AMD's choice; cleaner write-back avoidance than MESI's M → S → write-back.",
+      "category": "coherence_mechanism"
+    },
+    {
+      "name": "MESIF_forwarder_state",
+      "definition": "F: among multiple S sharers, one is designated 'forwarder' — responsible for responding to read requests. Other S sharers stay silent.",
+      "why": "In MESI, multiple S sharers would all respond to a read request, wasting bandwidth. F designates one responder. Intel's choice; reduces snoop traffic in highly-shared workloads.",
+      "category": "coherence_mechanism"
+    },
+    {
+      "name": "cache_invalidation",
+      "definition": "When a core wants to write a line that other caches hold (S state), it broadcasts an invalidation; other caches transition S → I.",
+      "why": "Maintains the invariant: at most one cache in M state. Writers must own exclusively. Invalidation is the protocol mechanism for taking ownership. Frequent invalidations (contention) collapse performance.",
+      "category": "coherence_mechanism"
+    },
+    {
+      "name": "read_for_ownership",
+      "definition": "RFO: a load that intends to be followed by a store. Acquires the line in E or M state directly, skipping the S → invalidate → M sequence.",
+      "why": "Common case: load-modify-store sequence. RFO does one bus transaction instead of two. Critical for atomic operations (CAS, atomic_add) which always need ownership.",
+      "category": "coherence_mechanism"
+    },
+    {
+      "name": "false_sharing_invalidation_storm",
+      "definition": "Two cores write different bytes on the same cache line. Each write invalidates the other core's copy. Line ping-pongs between caches at ~30+ cycles per bounce.",
+      "why": "Coherence operates on whole lines, not bytes. The line containing two unrelated variables triggers coherence traffic on every write. Performance collapses; profile shows high coherence stall cycles but no obvious lock contention.",
+      "category": "coherence_mechanism"
+    },
+    {
+      "name": "cache_line_padding",
+      "definition": "Explicitly pad data structures so hot variables sit on their own cache line. Typical: align to 64 bytes, fill with padding to next 64-byte boundary.",
+      "why": "Fix for false sharing. Aligning per-thread counters / per-core data to cache-line boundaries eliminates inter-core coherence traffic. Standard for performance-critical concurrent code.",
+      "category": "coherence_mechanism"
+    },
+    {
+      "name": "coherence_traffic_visible_in_pmu",
+      "definition": "Performance Monitoring Units expose coherence events: MESI state transitions, snoop responses, invalidation counts. Profiling tools surface these.",
+      "why": "Cache contention is invisible at the source level. PMU counters (perf, VTune) reveal it: high 'remote cache hit' or 'modified-shared-write' events flag the problem. Enables systematic optimisation of multicore code.",
+      "category": "coherence_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "MESI_invariant_at_most_one_modifier",
+      "if": ["MESI is correctly implemented"],
+      "then": ["at most one cache holds a line in Modified state at any time"],
+      "why": "Foundation of coherence correctness. Writes must be globally serialised; only the M owner can write. Other caches must transition to I before another cache writes. This invariant is what makes shared memory appear consistent.",
+      "soundness_category": "referential_transparency"
+    },
+    {
+      "name": "snooping_scales_to_about_16_cores",
+      "if": ["a system uses bus snooping"],
+      "then": ["practical scaling caps at ~16 cores before bandwidth saturates"],
+      "why": "Each coherence operation broadcasts to all caches. Bandwidth requirement grows with core count. Beyond ~16 cores, directory-based coherence (with localised traffic) is required. The architectural transition from snoop to directory is one of the big changes from desktop to server.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "rfo_avoids_two_transactions",
+      "if": ["a load is followed by a store to the same line"],
+      "then": ["read-for-ownership saves one bus transaction"],
+      "why": "Plain load gets the line in S; subsequent store must invalidate other sharers, requiring a second transaction. RFO acquires in E/M from the start. Critical for atomic-heavy workloads.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "false_sharing_arises_from_byte_packing",
+      "if": ["unrelated data fits on the same cache line"],
+      "then": ["concurrent writes cause coherence ping-pong"],
+      "why": "The coherence protocol operates on lines. Two cores writing to different bytes in the same line look like they're writing the same address from coherence's perspective. The fix (padding to cache-line boundaries) is mechanical but easy to forget.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "moesi_avoids_writeback_on_dirty_share",
+      "if": ["a dirty line transitions to shared (another core reads it)"],
+      "then": ["MOESI keeps the dirty data in the owner state; MESI must write back to memory"],
+      "why": "Without O state, MESI's M-on-read-from-other forces a writeback to memory + transition to S. With O, the data stays dirty in the owner's cache, served to readers from there. Saves a DRAM round trip on shared writeback content.",
+      "soundness_category": "cost_equivalence"
+    }
+  ]
+}

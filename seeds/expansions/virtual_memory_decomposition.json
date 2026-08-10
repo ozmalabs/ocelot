@@ -1,0 +1,118 @@
+{
+  "id": "virtual_memory_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "virtual_address",
+  "in_microtheory": "computer_architecture",
+  "description": "Virtual memory + multi-level page tables decomposed. The full machinery that translates each virtual address to a physical one: TLB lookup, page table walk on miss, page table format (PML4/PDPT/PD/PT on x86_64), page permission checks, page fault handler dispatch. Modern enhancements: PCID/ASID for fast process switches, huge pages for working-set scaling, multi-level TLBs.",
+  "sub_mechanisms": [
+    {
+      "name": "address_split_VPN_offset",
+      "definition": "A virtual address splits into a virtual page number (high bits) and an offset within the page (low bits, typically 12 for 4 KB pages). The VPN is translated; the offset passes through.",
+      "why": "Same offset in virtual address = same offset in physical page. Only the page number changes during translation. This split structure lets the MMU translate quickly — only N-12 bits of indexing required.",
+      "category": "vm_mechanism"
+    },
+    {
+      "name": "TLB_associative_lookup",
+      "definition": "TLB is a small fully-associative or highly-associative cache: each entry holds (VPN, PFN, permissions, ASID). Lookup checks all entries in parallel.",
+      "why": "Every memory access needs translation. TLB must produce a translation in 1 cycle to match L1 latency. Full associativity at small size keeps it fast; modern TLBs are typically 64-128 entries L1 + ~1500 entries L2.",
+      "category": "vm_mechanism"
+    },
+    {
+      "name": "TLB_miss_to_page_walk",
+      "definition": "When TLB lookup fails, hardware (page table walker) traverses the multi-level page table to find the translation. Result is inserted into TLB.",
+      "why": "Page walker is dedicated silicon that handles misses transparently. On x86_64, walks 4 levels of page tables; each level is one DRAM access. Cold page walk = 400+ cycles. Most walks hit L2/L3 cache for the page tables themselves.",
+      "category": "vm_mechanism"
+    },
+    {
+      "name": "PML4_top_level",
+      "definition": "x86_64's top-level page table: 512 entries × 8 bytes = 4 KB. Each entry maps a 512 GB region.",
+      "why": "Indexed by virtual address bits [47:39]. 9 bits = 512 entries per level. Total virtual address space: 256 TB at 4 levels. The top level is mostly stable; switched by writing CR3 register on process switch.",
+      "category": "vm_mechanism"
+    },
+    {
+      "name": "page_table_entry_format",
+      "definition": "PTE: 64 bits encoding physical frame number, present bit, R/W bit, U/S (user/supervisor) bit, access/dirty bits, NX (no-execute) bit, PAT bits for cache attributes.",
+      "why": "Single entry packs the address mapping + access control + caching policy. Hardware enforces R/W (segfault on write to read-only), U/S (kernel-only pages inaccessible from user code), NX (prevents code execution from data pages).",
+      "category": "vm_mechanism"
+    },
+    {
+      "name": "multi_level_indexing",
+      "definition": "Address bits split per level: e.g., x86_64 4 KB pages use bits [47:39] for L4, [38:30] for L3, [29:21] for L2, [20:12] for L1, [11:0] offset.",
+      "why": "Multi-level table lets the virtual address space be sparse. Unused regions don't consume page table memory; only used regions allocate the tables. A typical process uses ~50 MB of page tables for tens of GB of mapped virtual memory.",
+      "category": "vm_mechanism"
+    },
+    {
+      "name": "PCID_process_context_id",
+      "definition": "PCID tags TLB entries with a per-process ID. Process switches don't flush the TLB — entries from other processes are tagged with their PCID and ignored.",
+      "why": "Pre-PCID, every process switch flushed the TLB — fast subsequent accesses paid the page walk cost. PCID lets TLB entries persist across process switches. Substantial latency improvement for context-switch-heavy workloads (web servers, hypervisors).",
+      "category": "vm_mechanism"
+    },
+    {
+      "name": "huge_page_2MB",
+      "definition": "x86 2 MB pages: stop the page walk at level 2; the level-2 entry directly maps a 2 MB region. Saves one level of indirection.",
+      "why": "One TLB entry covers 2 MB instead of 4 KB. For large working sets (database buffers, JVM heap, ML model parameters), this dramatically reduces TLB pressure. Trade-off: less granular memory management — can't unmap 4 KB pieces of a huge page.",
+      "category": "vm_mechanism"
+    },
+    {
+      "name": "huge_page_1GB",
+      "definition": "x86 1 GB pages: stop at level 3. Useful for very large memory regions.",
+      "why": "One TLB entry covers 1 GB. Used by databases (Oracle, PostgreSQL with custom kernels), hypervisors mapping guest memory, ML for model weights. Even more committed-allocation flavour than 2 MB.",
+      "category": "vm_mechanism"
+    },
+    {
+      "name": "demand_paging",
+      "definition": "Virtual memory regions can be mapped but not yet allocated physical frames. First access triggers a page fault; the OS allocates a frame and maps it.",
+      "why": "Saves physical memory: programs touching virtual memory get physical only when they actually access it. Standard for stack growth, file mmaps, anonymous heap regions. The page-fault handler is performance-critical for first-touch-heavy workloads.",
+      "category": "vm_mechanism"
+    },
+    {
+      "name": "page_fault_handler",
+      "definition": "OS routine invoked on page fault. Determines fault type (minor: just allocate; major: read from disk; segfault: kill process) and handles accordingly.",
+      "why": "The kernel's interface between virtual memory abstraction and physical resources. Performance varies: minor faults are ~µs; major faults (disk read) are ms. Heavy fault rate is a common slow-start sign.",
+      "category": "vm_mechanism"
+    },
+    {
+      "name": "copy_on_write_via_RO_marking",
+      "definition": "Shared pages are marked read-only. On write, fault triggers OS to allocate a private copy + mark writable.",
+      "why": "Implementation of COW. The protection-bit trick uses the existing page-fault mechanism — no new hardware needed. Used by fork(), shared libraries, snapshot tools. Free until somebody writes.",
+      "category": "vm_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "TLB_hit_amortises_page_walk_cost",
+      "if": ["the TLB hit rate exceeds 99%"],
+      "then": ["page walk cost becomes invisible in steady-state performance"],
+      "why": "Cold page walk is 400+ cycles. TLB hit is 1 cycle. At 99% hit, amortised cost is ~5 cycles per access. At 99.9%, it's ~1.5 cycles. TLB hit rate dominates memory latency for typical workloads.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "huge_pages_scale_working_set",
+      "if": ["the working set exceeds standard TLB capacity"],
+      "then": ["huge pages reduce TLB pressure and improve performance"],
+      "why": "Standard 4 KB pages give ~256 MB TLB coverage (L1 TLB × 4 KB). Working sets above this thrash the TLB. 2 MB pages give 128 GB coverage — easily containing most workloads. Performance improvement varies 5-30% depending on workload.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "PCID_eliminates_context_switch_flush",
+      "if": ["the CPU implements PCID"],
+      "then": ["TLB survives process context switches"],
+      "why": "Pre-PCID, every context switch invalidated all TLB entries. Modern OS with PCID retains entries — subsequent switches back to a process see warm TLB. Critical for web servers, hypervisors, container runtimes with frequent context switches.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "address_space_isolation_via_page_tables",
+      "if": ["each process has its own top-level page table"],
+      "then": ["processes are isolated from each other's memory"],
+      "why": "CR3 (or TTBR on ARM) holds the top-level page table base for the current context. Process switch updates this pointer. The hardware translates within that process's table only — no way to address another process's pages directly. Hardware-enforced isolation.",
+      "soundness_category": "referential_transparency"
+    },
+    {
+      "name": "page_permissions_implement_security_boundaries",
+      "if": ["PTE has NX bit set"],
+      "then": ["data pages cannot be executed as code"],
+      "why": "NX (No-eXecute) is the hardware-enforced boundary preventing buffer-overflow-into-data attacks. Code pages have NX=0; data, stack, heap have NX=1. Combined with W^X policy (no page is both writable and executable), defeats classic shellcode injection.",
+      "soundness_category": "referential_transparency"
+    }
+  ]
+}

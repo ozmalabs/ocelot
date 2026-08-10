@@ -1,0 +1,16 @@
+{
+ "id": "bpl_cognition_map",
+ "version": "1.0.0",
+ "depends_on": [],
+ "description": "The agent MAPS BPL's stroke-program onto its OWN recursive closed-loop cognition — and decides which pieces are ALREADY present vs the residual. Each BplPiece and CognitionElement carries functional ROLES (shared Role nodes); decide_mapping picks, for each BplPiece, the CognitionElement it shares the most roles with (analogical correspondence, an Argmax over the candidate Mappings by role-overlap). flag_residual marks a mapping whose target element is a STUB (a fixed placeholder, not the real capability) — that is the ONE piece of BPL the recursive closed loop does not already subsume. The DECISIONS (the mapping, the residual) are Rules over the agent's own roles; the host stages the pieces and reads the map back. No teacher.",
+ "microtheory": {"name": "bpl_cognition_map", "description": "map BPL onto the recursive closed loop; find the residual"},
+ "nodes": [], "edges": [], "productions": [],
+ "rules": [
+  {
+   "name": "flag_residual",
+   "match": [["piece", "maps_to", "m"]],
+   "where": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "target_stub"}, "b": {"type": "Lit", "value": 1.0}},
+   "effects": [["set_attr", "piece", "is_residual", 1.0]]
+  }
+ ]
+}

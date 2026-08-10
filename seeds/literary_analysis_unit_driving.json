@@ -1,0 +1,158 @@
+{
+  "id": "literary_analysis_unit_driving",
+  "version": "1.0.0",
+  "depends_on": [],
+  "description": "MOVE 2b: COMPREHENSION RECURSES OVER THE StoryUnit TREE, as a GOAL-DRIVEN GRAPH FIXPOINT. Where literary_analysis_driving fires each FACULTY as a stage on a FLAT source, this seed fires one comprehension per STORY UNIT and one compose per PARENT. reading_drive.run_nested_reading_flow mints one unit_comprehend AnalysisStage per LEAF StoryUnit (carrying a `unit` attr = the leaf's node id + a for_unit edge) + one compose stage per parent; u_dispatch_comprehend fires PER unit_comprehend stage whose UNIT-SCOPED precondition holds (a Source carrying that stage's own `unit` exists) -- so run_rules RECURSES over the tree for free (a rule fires for every unit). u_dispatch_compose fires the parent's compose stage only once EVERY unit_comprehend stage is done (the children are comprehended). The unit_analysis_advance Reflex runs the dispatched stage's thin non-branching Python executor (reading_drive._advance_unit_stage, the analysis_advance / _question_pursue_advance precedent): a unit_comprehend stage calls nested_reading.comprehend_unit(unit); a compose stage calls nested_reading.compose_spanning_theme(parent). There is NO Python `for unit: comprehend(unit)` loop -- the reflex advances ONE stage per firing and the fixpoint iterates the units.",
+  "microtheory": {
+    "name": "literary_analysis_unit_driving",
+    "description": "Per-StoryUnit comprehension + parent compose as a run_rules fixpoint: one unit_comprehend stage per leaf fires on its own unit's Source; the parent's compose stage fires when all children are done; the spanning theme emerges as a SpanningTheme node."
+  },
+  "nodes": [],
+  "edges": [],
+  "productions": [
+    {
+      "provenance": "seed:literary_analysis_unit_driving:has_analysis_stage-0",
+      "src": {"type": "Agent", "var": "s"},
+      "edge_type": "has_analysis_stage",
+      "tgt": {"type": "AnalysisStage", "var": "t"}
+    },
+    {
+      "provenance": "seed:literary_analysis_unit_driving:for_unit-1",
+      "src": {"type": "AnalysisStage", "var": "s"},
+      "edge_type": "for_unit",
+      "tgt": {"type": "StoryUnit", "var": "t"}
+    },
+    {
+      "provenance": "seed:literary_analysis_unit_driving:has_story_unit-2",
+      "src": {"type": "StoryUnit", "var": "s"},
+      "edge_type": "has_story_unit",
+      "tgt": {"type": "StoryUnit", "var": "t"}
+    },
+    {
+      "provenance": "seed:literary_analysis_unit_driving:has_spanning_theme-3",
+      "src": {"type": "StoryUnit", "var": "s"},
+      "edge_type": "has_spanning_theme",
+      "tgt": {"type": "SpanningTheme", "var": "t"}
+    },
+    {
+      "provenance": "seed:literary_analysis_unit_driving:spans_unit-4",
+      "src": {"type": "SpanningTheme", "var": "s"},
+      "edge_type": "spans_unit",
+      "tgt": {"type": "StoryUnit", "var": "t"}
+    },
+    {
+      "provenance": "seed:literary_analysis_unit_driving:has_throughline-5",
+      "src": {"type": "StoryUnit", "var": "s"},
+      "edge_type": "has_throughline",
+      "tgt": {"type": "Throughline", "var": "t"}
+    },
+    {
+      "provenance": "seed:literary_analysis_unit_driving:thr_spans_unit-6",
+      "src": {"type": "Throughline", "var": "s"},
+      "edge_type": "spans_unit",
+      "tgt": {"type": "StoryUnit", "var": "t"}
+    },
+    {
+      "provenance": "seed:literary_analysis_unit_driving:has_meta_theme-7",
+      "src": {"type": "StoryUnit", "var": "s"},
+      "edge_type": "has_meta_theme",
+      "tgt": {"type": "MetaTheme", "var": "t"}
+    },
+    {
+      "provenance": "seed:literary_analysis_unit_driving:threads_throughline-8",
+      "src": {"type": "MetaTheme", "var": "s"},
+      "edge_type": "threads_throughline",
+      "tgt": {"type": "Throughline", "var": "t"}
+    }
+  ],
+  "rules": [
+    {
+      "name": "u_dispatch_comprehend",
+      "comment": "Fire a leaf unit's comprehension the moment its OWN Source exists. The precondition is UNIT-SCOPED: it counts a Source carrying THIS stage's own `unit` attr (the inner Exists var's `unit` compared to the outer matched stage's `unit`). run_rules matches this rule PER unit_comprehend stage node -> the tree recursion is free, no Python loop.",
+      "match_type": "AnalysisStage",
+      "match": [["ag", "has_analysis_stage", "stage"]],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "stage"}, "key": "name"}, "b": {"type": "Lit", "value": "unit_comprehend"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "stage"}, "key": "status"}, "b": {"type": "Lit", "value": "pending"}},
+          {"type": "Exists", "source": {"type": "NodesOfType", "node_type": "Source"}, "var_name": "src",
+           "predicate": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "src"}, "key": "unit"},
+                                       "b": {"type": "Attr", "node": {"type": "Var", "name": "stage"}, "key": "unit"}}}
+        ]
+      },
+      "effects": [["set_attr", "stage", "status", "dispatched"]]
+    },
+    {
+      "name": "u_dispatch_compose",
+      "comment": "Fire the parent's compose stage once EVERY unit_comprehend stage is done -- the parent composes only after its children are comprehended. The gate is Not(Exists an un-done unit_comprehend stage) AND at least one AnalysisStage exists. The compose stage's own for_unit edge points at the parent StoryUnit.",
+      "match_type": "AnalysisStage",
+      "match": [["ag", "has_analysis_stage", "stage"]],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "stage"}, "key": "name"}, "b": {"type": "Lit", "value": "compose"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "stage"}, "key": "status"}, "b": {"type": "Lit", "value": "pending"}},
+          {"type": "Gt", "a": {"type": "Count", "source": {"type": "NodesOfType", "node_type": "AnalysisStage"}}, "b": {"type": "Lit", "value": 0}},
+          {"type": "Not", "arg": {"type": "Exists", "source": {"type": "NodesOfType", "node_type": "AnalysisStage"}, "var_name": "u",
+            "predicate": {"type": "And", "items": [
+              {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "u"}, "key": "name"}, "b": {"type": "Lit", "value": "unit_comprehend"}},
+              {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "u"}, "key": "status"}, "b": {"type": "Lit", "value": "done"}}}
+            ]}}}
+        ]
+      },
+      "effects": [["set_attr", "stage", "status", "dispatched"]]
+    },
+    {
+      "name": "u_dispatch_throughline",
+      "comment": "Fire the root's throughline stage once EVERY unit_comprehend stage is done -- the throughlines thread the arcs only after each arc is comprehended (its UnitAction nodes exist). Same all-children-done gate as u_dispatch_compose; the throughline stage's own for_unit edge points at the root StoryUnit.",
+      "match_type": "AnalysisStage",
+      "match": [["ag", "has_analysis_stage", "stage"]],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "stage"}, "key": "name"}, "b": {"type": "Lit", "value": "throughline"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "stage"}, "key": "status"}, "b": {"type": "Lit", "value": "pending"}},
+          {"type": "Not", "arg": {"type": "Exists", "source": {"type": "NodesOfType", "node_type": "AnalysisStage"}, "var_name": "u",
+            "predicate": {"type": "And", "items": [
+              {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "u"}, "key": "name"}, "b": {"type": "Lit", "value": "unit_comprehend"}},
+              {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "u"}, "key": "status"}, "b": {"type": "Lit", "value": "done"}}}
+            ]}}}
+        ]
+      },
+      "effects": [["set_attr", "stage", "status", "dispatched"]]
+    },
+    {
+      "name": "u_dispatch_meta",
+      "comment": "Fire the root's meta_theme stage once the throughline stage is DONE -- the whole-story meta-theme composes from the SET of throughlines only after they are minted. The gate is Exists a done throughline stage.",
+      "match_type": "AnalysisStage",
+      "match": [["ag", "has_analysis_stage", "stage"]],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "stage"}, "key": "name"}, "b": {"type": "Lit", "value": "meta_theme"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "stage"}, "key": "status"}, "b": {"type": "Lit", "value": "pending"}},
+          {"type": "Exists", "source": {"type": "NodesOfType", "node_type": "AnalysisStage"}, "var_name": "th",
+            "predicate": {"type": "And", "items": [
+              {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "th"}, "key": "name"}, "b": {"type": "Lit", "value": "throughline"}},
+              {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "th"}, "key": "status"}, "b": {"type": "Lit", "value": "done"}}
+            ]}}
+        ]
+      },
+      "effects": [["set_attr", "stage", "status", "dispatched"]]
+    }
+  ],
+  "reflexes": [
+    {
+      "name": "unit_analysis_advance",
+      "stimulus": {
+        "type": "Gte",
+        "a": {"type": "Count", "source": {"type": "Filter", "source": {"type": "NodesOfType", "node_type": "AnalysisStage"},
+              "var_name": "x", "predicate": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "x"}, "key": "status"}, "b": {"type": "Lit", "value": "dispatched"}}}},
+        "b": {"type": "Lit", "value": 1}
+      },
+      "response": "unit_analysis_advance",
+      "refractory_ticks": 0
+    }
+  ]
+}

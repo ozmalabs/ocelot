@@ -1,0 +1,50 @@
+{
+  "microtheory": {
+    "name": "clinical_psychology",
+    "definition": "Diagnosis, formulation, treatment of psychological distress and dysfunction. DSM/ICD nosology; biopsychosocial model; evidence-based treatments (CBT, ACT, DBT, psychodynamic). Substrate analogue: the substrate's failure modes when unchecked + the corrections that restore healthy function map directly to psychopathology + therapy.",
+    "category": "psychology_domain",
+    "parent": "psychology_foundation"
+  },
+  "concepts": [
+    {"name": "generalised_anxiety_disorder", "definition": "Persistent excessive worry across multiple domains. Hypervigilance, intolerance of uncertainty. Substrate analogue: substrate's coherence-drive overactive on prediction errors → constant attempted re-derivation.", "category": "anxiety"},
+    {"name": "panic_disorder", "definition": "Recurrent unexpected panic attacks + worry about future attacks. Often agoraphobia develops. Substrate analogue: substrate's runaway feedback loop in coherence-drive amplification.", "category": "anxiety"},
+    {"name": "social_anxiety_disorder", "definition": "Fear of negative evaluation in social situations. Substrate analogue: in multi-substrate contexts, hyperactive coherence-drive on identity-relevant peer interactions.", "category": "anxiety"},
+    {"name": "ptsd", "definition": "Post-traumatic stress disorder. Re-experiencing + avoidance + hyperarousal + negative cognition after trauma. Substrate analogue: substrate Mt with sustained extreme bias from a high-magnitude past event; intrusive event-replay.", "category": "anxiety"},
+    {"name": "ocd_clinical", "definition": "Obsessive-Compulsive Disorder. Intrusive thoughts (obsessions) + repetitive behaviours (compulsions) to neutralise anxiety. Cortico-striatal-thalamic loop dysfunction. Substrate analogue: substrate's stuck ActionSpec dispatch loop without coverage progress.", "category": "anxiety"},
+
+    {"name": "major_depressive_disorder", "definition": "Persistent low mood + anhedonia + cognitive distortions + sleep/appetite/energy changes. Beck's cognitive triad: negative views of self/world/future. Substrate analogue: substrate state where all drives' targets seem unreachable.", "category": "mood"},
+    {"name": "bipolar_disorder", "definition": "Cycling between depressive + manic/hypomanic episodes. Substrate analogue: substrate oscillation between low-temperature parsimony + high-temperature curiosity extremes.", "category": "mood"},
+    {"name": "dysthymia", "definition": "Chronic low-grade depression. Substrate analogue: substrate's persistent baseline frustration without crisis.", "category": "mood"},
+
+    {"name": "schizophrenia", "definition": "Psychotic disorder: hallucinations + delusions + disorganised thought + negative symptoms. Dopamine + glutamate dysregulation. Substrate analogue: substrate's misfiring pattern-completion producing high-confidence false retrievals.", "category": "psychotic"},
+    {"name": "delusion", "definition": "Fixed false belief held with strong conviction despite disconfirming evidence. Substrate analogue: substrate's identity-protected frozen Mt that resists update.", "category": "psychotic"},
+    {"name": "hallucination", "definition": "Perceptual experience without external stimulus. Substrate analogue: substrate's runtime simulation manifesting as perception.", "category": "psychotic"},
+
+    {"name": "personality_disorder", "definition": "Enduring inflexible pattern of inner experience + behaviour deviating from cultural expectations, causing distress + impairment. DSM-5 clusters A/B/C. Substrate analogue: substrate with unbalanced drive-ensemble producing systematic dysfunction.", "category": "personality_pathology"},
+    {"name": "borderline_personality_disorder", "definition": "Cluster B. Instability of self-image + relationships + affect; impulsivity. Linehan's biosocial model. Substrate analogue: substrate's identity field unstable across contexts; high coherence-drive without convergence.", "category": "personality_pathology"},
+    {"name": "narcissistic_personality_disorder", "definition": "Cluster B. Grandiosity + need for admiration + lack of empathy. Substrate analogue: substrate's identity-protection mechanism overactive — value-of-self exaggerated.", "category": "personality_pathology"},
+
+    {"name": "trauma_psychological", "definition": "Psychological injury from overwhelming event. Acute vs complex. Van der Kolk. Substrate analogue: high-magnitude event creating sustained Mt bias outside normal correction range.", "category": "trauma"},
+    {"name": "dissociation", "definition": "Disruption of integrated functioning — memory, identity, perception, consciousness. Coping mechanism for unprocessable trauma. Substrate analogue: substrate's Mt fragmentation — drive-isolation across coherent sub-Mts.", "category": "trauma"},
+    {"name": "complex_trauma", "definition": "Prolonged repeated trauma (typically interpersonal in childhood). Affects identity + emotion regulation + relationships. Herman 1992. Substrate analogue: substrate with foundational Mts shaped by sustained extreme inputs.", "category": "trauma"},
+
+    {"name": "psychotherapy", "definition": "Talking treatment of psychological distress. Many modalities + traditions. Common factors: relationship, hope, framework, mastery. Substrate analogue: external correction process applied to substrate via collaborative interaction.", "category": "intervention"},
+    {"name": "cognitive_behavioral_therapy", "definition": "Beck + Ellis. Identify + modify cognitive distortions + maladaptive behaviours. Most empirically-supported. Substrate analogue: substrate's derivation_mechanism + correction firing on biased Mts.", "category": "intervention"},
+    {"name": "acceptance_commitment_therapy", "definition": "Hayes. Increase psychological flexibility via acceptance + defusion + present-moment awareness + values-based action. Substrate analogue: substrate's drive-balance over rigid optimisation.", "category": "intervention"},
+    {"name": "dialectical_behavior_therapy", "definition": "Linehan. CBT + mindfulness + dialectics. Especially for BPD. Substrate analogue: substrate's drive-balance + identity stabilisation procedures.", "category": "intervention"},
+    {"name": "psychodynamic_therapy", "definition": "Insight-oriented. Unconscious patterns + childhood experiences + transference in therapy relationship. Substrate analogue: substrate's introspection over its own opaque Python-side handlers.", "category": "intervention"},
+    {"name": "exposure_therapy", "definition": "Graduated approach to feared stimulus without avoidance. Extinguishes anxiety response. Foa. Substrate analogue: substrate's repeated tick exposure to previously-aversive input → habituation.", "category": "intervention"},
+    {"name": "mindfulness", "definition": "Kabat-Zinn. Non-judgmental present-moment awareness. Mediates trait emotion regulation. Substrate analogue: substrate's ArchitectureCortex assessment-without-correction passes.", "category": "intervention"},
+
+    {"name": "therapeutic_alliance", "definition": "Bordin 1979. Quality of bond + agreement on goals + agreement on tasks. Predicts therapy outcome more than modality. Substrate analogue: in collaborative correction contexts, quality of substrate-external relationship.", "category": "intervention"},
+    {"name": "common_factors", "definition": "Wampold. Therapy effects largely from shared factors (relationship, expectancy, hope, framework) rather than specific techniques. Substrate analogue: substrate's general intervention efficacy from drive-engagement rather than specific FilterSpec.", "category": "intervention"}
+  ],
+  "rules": [
+    {"name": "psychopathology_arises_from_drive_imbalance", "head": "the substrate's drive ensemble becomes severely imbalanced", "body": "the substrate exhibits a recognisable pathology pattern — chronic frustration (depression), runaway coherence-seeking (anxiety), stuck-loop dispatch (OCD). Substrate's failure modes catalog psychopathologies."},
+    {"name": "rumination_is_unproductive_coherence_seeking", "head": "the substrate cycles through the same problem without progress", "body": "rumination — coherence-drive attempting resolution without information gain. Pathological in depression + anxiety. Substrate's loop without ΔF reduction."},
+    {"name": "avoidance_maintains_anxiety", "head": "the substrate avoids predicted-aversive inputs", "body": "the prediction never updates from disconfirming experience; anxiety maintained. Exposure therapy reverses by forcing prediction-error. Substrate's avoided-tick pattern."},
+    {"name": "trauma_creates_persistent_extreme_bias", "head": "the substrate experiences an overwhelming high-magnitude event", "body": "the relevant Mts develop sustained extreme bias outside normal correction range. Foundational and resistant to normal updates. Substrate's identity_field × external_field interaction in extreme regime."},
+    {"name": "therapy_provides_external_correction_loop", "head": "the substrate cannot self-correct a pathological pattern", "body": "external collaboration provides the correction signal the substrate's internal loop lacks. Therapy = augmented derivation_mechanism."},
+    {"name": "mindfulness_decouples_observation_from_correction", "head": "the substrate is in pathological self-correction loop", "body": "mindfulness — observation without correction firing — breaks the loop by reducing drive-amplitude. Substrate's assess-without-act pass."}
+  ]
+}

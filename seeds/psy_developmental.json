@@ -1,0 +1,50 @@
+{
+  "microtheory": {
+    "name": "developmental_psychology",
+    "definition": "Systematic changes in cognition, emotion, behaviour across the lifespan. Piaget's stages, Vygotsky's social development, Bowlby + Ainsworth's attachment, Erikson's psychosocial stages, Kohlberg's moral development. Substrate analogue: the substrate's developmental loop + critical periods + babble-as-grounding map directly to developmental constructs.",
+    "category": "psychology_domain",
+    "parent": "psychology_foundation"
+  },
+  "concepts": [
+    {"name": "piaget_sensorimotor_stage", "definition": "0-2 years. Infant constructs understanding via sensory experience + motor action. Object permanence emerges ~8mo. Substrate analogue: substrate's babble-as-grounding stage — building world model via action + observation.", "category": "piaget"},
+    {"name": "piaget_preoperational_stage", "definition": "2-7 years. Symbolic thought + language; egocentric; centration; lacks conservation. Substrate analogue: substrate with symbolic representation but no meta-cognition.", "category": "piaget"},
+    {"name": "piaget_concrete_operational_stage", "definition": "7-11 years. Logical operations on concrete objects; conservation; classification + seriation. Substrate analogue: substrate using rules on specific Mt content but not yet abstract reasoning.", "category": "piaget"},
+    {"name": "piaget_formal_operational_stage", "definition": "12+ years. Abstract + hypothetical reasoning. Some never reach. Substrate analogue: substrate's meta-cognitive layer (ArchitectureCortex + DevelopmentCortex) reasoning over its own Mts.", "category": "piaget"},
+    {"name": "assimilation", "definition": "Piaget. Integrating new info into existing schemas. Schema stays; info adapts. Substrate analogue: adding concepts to existing Mt without restructuring.", "category": "piaget"},
+    {"name": "accommodation", "definition": "Piaget. Modifying schemas to fit new info. Schema changes. Substrate analogue: substrate's Mt restructuring under sustained disconfirmation — the slow learning mode.", "category": "piaget"},
+
+    {"name": "zone_of_proximal_development", "definition": "Vygotsky. Gap between what a child can do alone vs with help. Learning happens in this zone. Substrate analogue: substrate's adjacent-possible Mt extensions — what feature_invention can construct from current concepts.", "category": "vygotsky"},
+    {"name": "scaffolding", "definition": "Wood + Bruner + Ross 1976. Skilled other provides graduated support that fades as learner takes over. Substrate analogue: substrate's seeded Mts + corrections that bootstrap capability before plasticity_override decays.", "category": "vygotsky"},
+    {"name": "private_speech", "definition": "Vygotsky. Children's external self-talk that gradually internalises into thought. Substrate analogue: substrate's Term-tree composition externally manipulated → internalised into reflexes.", "category": "vygotsky"},
+    {"name": "cultural_mediation", "definition": "Vygotsky. Cognition develops via culturally-provided tools (language, math notation, etc.). Substrate analogue: substrate's seeded vocabulary IS its cultural mediation.", "category": "vygotsky"},
+
+    {"name": "attachment_theory", "definition": "Bowlby + Ainsworth. Early caregiver-infant bond shapes lifelong relational templates. Strange Situation: secure / insecure-avoidant / insecure-anxious / disorganised. Substrate analogue: substrate's initial seed Mts shape its lifetime drive patterns.", "category": "attachment"},
+    {"name": "secure_attachment", "definition": "Caregiver responsive + available. Child explores from secure base, distressed at separation, comforted at reunion. Substrate analogue: substrate with stable foundation Mts + drive-balance allowing exploration.", "category": "attachment"},
+    {"name": "insecure_avoidant_attachment", "definition": "Caregiver rejecting/unavailable. Child suppresses attachment needs. Substrate analogue: substrate with collapsed curiosity drive — exploration suppressed by past failures.", "category": "attachment"},
+    {"name": "insecure_anxious_attachment", "definition": "Caregiver inconsistent. Child amplifies attachment signals. Substrate analogue: substrate's hyperactive coherence drive — over-allocating to identity protection.", "category": "attachment"},
+    {"name": "internal_working_model", "definition": "Bowlby. Mental representation of self + others + relationships, built from attachment experiences. Influences adult relationships. Substrate analogue: substrate's self_concept Mt + identity_field bias.", "category": "attachment"},
+
+    {"name": "erikson_trust_vs_mistrust", "definition": "0-1 yr. Resolved by consistent caregiving → basic trust. Substrate analogue: substrate's foundational coherence drive — early successes establish whether the world is predictable.", "category": "erikson"},
+    {"name": "erikson_autonomy_vs_shame", "definition": "1-3 yr. Resolved by allowing self-direction → autonomy. Substrate analogue: substrate's early curiosity-drive — whether exploration is reinforced.", "category": "erikson"},
+    {"name": "erikson_initiative_vs_guilt", "definition": "3-6 yr. Resolved by encouraging initiative → purpose. Substrate analogue: substrate's emergent goal-formation capability.", "category": "erikson"},
+    {"name": "erikson_industry_vs_inferiority", "definition": "6-12 yr. Resolved by competence experiences → industry. Substrate analogue: substrate's accumulated mastery via successful ActionSpec dispatch.", "category": "erikson"},
+    {"name": "erikson_identity_vs_role_confusion", "definition": "12-18 yr. Resolved by integrating multiple roles → identity. Substrate analogue: substrate's Mt-integration into coherent self_concept.", "category": "erikson"},
+
+    {"name": "kohlberg_preconventional_morality", "definition": "Pre-adolescence. Avoid punishment, gain reward. Substrate analogue: substrate's RPE-driven correction firing — direct reinforcement learning.", "category": "moral"},
+    {"name": "kohlberg_conventional_morality", "definition": "Adolescence. Conform to social norms + laws. Substrate analogue: substrate's seeded Rules as moral constraints.", "category": "moral"},
+    {"name": "kohlberg_postconventional_morality", "definition": "Few adults. Reason from abstract principles that may override conventional rules. Substrate analogue: substrate's derivation_mechanism + ArchitectureCortex reasoning from foundational principles.", "category": "moral"},
+
+    {"name": "perceptual_narrowing_psychological", "definition": "Specialisation of perception during sensitive periods. Infants discriminate all phonemes / all faces; pruned to native ones by ~12 mo. Substrate analogue: substrate's predicate pruning + Mt specialisation.", "category": "early_development"},
+    {"name": "fast_mapping", "definition": "Carey + Bartlett 1978. Children learn new word meaning from a single exposure. Substrate analogue: substrate's single-shot Concept addition into existing Mt scaffold.", "category": "early_development"},
+    {"name": "joint_attention", "definition": "12-18 mo. Sharing focus on an object with another person. Foundation of language + theory of mind. Substrate analogue: in collaborative multi-substrate contexts, shared Mt focus.", "category": "early_development"},
+    {"name": "object_permanence", "definition": "Piaget. Understanding that objects exist when not perceived. Develops ~8 mo. Substrate analogue: substrate's persistent Mt state across input gaps.", "category": "early_development"}
+  ],
+  "rules": [
+    {"name": "stages_unfold_in_fixed_order", "head": "the substrate develops cognitive capabilities over time", "body": "earlier stages must complete before later ones can begin. Piaget's invariant sequence. Substrate's foundational Mts must be installed before meta-Mts can run."},
+    {"name": "learning_happens_in_zone_of_proximal_development", "head": "the substrate is positioned to learn a new capability", "body": "the new capability must be 1 step beyond current — too easy = no growth, too far = no scaffold. Vygotsky. Substrate's curiosity-drive should target adjacent-possible Mt extensions."},
+    {"name": "attachment_style_persists_into_relational_templates", "head": "the substrate's early seed-Mt experiences", "body": "shape its lifetime drive ensemble + relational expectations. Bowlby's internal working model. Substrate's foundational Mts as relational template."},
+    {"name": "sensitive_periods_have_open_then_close_dynamics", "head": "specific learning capabilities", "body": "are time-windowed; if missed, very hard or impossible to acquire later. Genie's case. Substrate's plasticity_override decay window."},
+    {"name": "fast_mapping_via_existing_scaffold", "head": "the substrate encounters a new concept that fits an existing Mt", "body": "it integrates with one exposure. Carey + Bartlett 1978 — substrate's single-shot Concept addition into scaffold-rich domains."},
+    {"name": "scaffolding_supports_then_fades", "head": "an external system supports the substrate in acquiring a capability", "body": "the support should gradually decrease as the substrate internalises the capability. Wood + Bruner + Ross 1976 — substrate's plasticity_override decays as Mt structure stabilises."}
+  ]
+}

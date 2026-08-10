@@ -1,0 +1,88 @@
+{
+  "id": "register_source",
+  "version": "1.1.0",
+  "depends_on": [],
+  "description": "REGISTER / SOURCE AS A WIDER SHAPE = COLLAPSE OVER A REGISTER-FUNCTION CODEBOOK (graph data), detected BY-SHAPE (bottom-up) AND BY-HINT (top-down prior). One level WIDER than format_channel (which reads the LAYOUT medium) and cross_text_prior (which places a text on the continuous style manifold): the REGISTER/SOURCE is the KIND OF DOCUMENT the text is -- encyclopedic (a neutral third-person reference entry), a SPECIFIC wikipedia-entry shape (the definitional lead 'X (b. DATE) was a Y' + reference markers, distinct from generic encyclopedic), narrative (a story with acting characters), casual (first/second-person, contractions, exclamations), code (structural layout). The reader perceives register-features -- lexical density (long-word fraction / mean word length), reference markers (digit + parenthetical density), a definitional-lead marker (a copula+article in the first sentence), person mix (first/second-person density vs third-person-character density), contraction density, punctuation punch (? and ! density), and the format_channel LAYOUT verdict (code vs prose) -- QUANTIZES them into a position-aligned functional token vector, and DECODES it against this codebook via reflective_faculty.compose_design_for_goal = the Rust ShapeDecode Term. The register whose canonical signature best fits (max shape_fit, position-aligned) WINS -- the register is the ShapeDecode verdict, not a Python register table, not an LLM. A HINT ('source=wikipedia' / 'you are reading an encyclopedia') installs a RegisterPrior node that PRE-ARMS a register before the shape evidence: the AbS/collapse pattern -- the hint biases, the shape CONFIRMS or OVERRIDES (a hint-vs-shape mismatch is FLAGGED, signal not silent, when the shape is confident). Each winning register carries a `read_approach` attr the reader ROUTES on: encyclopedic/wikipedia -> subject-by-SALIENCE (the most-salient entity = what it is ABOUT); narrative -> protagonist-by-arc-agency (narrative_structure's committed query). ORDER-N: the document has a register AND embedded REGIONS can carry a different one (a wikipedia paragraph pasted into casual text is recognizable as a wiki entry BY ITS SHAPE, no hint -- the cut-and-paste point). GENERIC + EXTENSIBLE: registers are SHAPES added by hint or MINTED on residual (the sd loop) -- NOT a fixed table.",
+  "microtheory": {
+    "name": "register_source",
+    "description": "register/source is ShapeDecode over a register-function codebook, WIDER than the layout-medium (format_channel) and the style-manifold point (cross_text_prior); detected by-shape (bottom-up feature collapse) and by-hint (a graph-resident RegisterPrior that pre-arms). Prior + evidence collapse: the hint biases, the shape confirms or overrides, a confident mismatch is flagged. The winning register's read_approach routes the reading (encyclopedic -> subject-by-salience; narrative -> protagonist-by-arc-agency). Order-N: document register + embedded-region registers (the cut-and-paste wiki entry recognized by shape). Registers are dynamic shapes -- added by hint or minted on residual."
+  },
+  "nodes": [
+    {
+      "local_id": 1,
+      "type": "ShapeSignatureRegister",
+      "attrs": {
+        "name": "wikipedia",
+        "family": "encyclopedic",
+        "source_specific": "wikipedia",
+        "read_approach": "subject_by_salience",
+        "signature": "[[\"dense\"],[\"refs\"],[\"defn\"],[\"impersonal\"],[\"charlight\"],[\"nocontr\"],[\"flat\"],[\"proselayout\"]]",
+        "note": "WIKIPEDIA ENTRY: the SPECIFIC encyclopedic-source shape -- dense latinate vocabulary + reference markers (dates/numbers/parentheticals) + a DEFINITIONAL LEAD ('Maria ... (7 November 1867 - 4 July 1934) ... was a Polish ... physicist'): a copula+article opening that NAMES the subject and its class. Neutral third-person, no contractions, no exclamations. Routes to subject-by-salience: the most-salient entity is the SUBJECT (curie), not an arc-agent. Distinct from generic `encyclopedic` by the defn lead -- that lead is what makes a cut-and-paste wiki paragraph recognizable in the middle of casual text."
+      }
+    },
+    {
+      "local_id": 2,
+      "type": "ShapeSignatureRegister",
+      "attrs": {
+        "name": "encyclopedic",
+        "family": "encyclopedic",
+        "source_specific": "",
+        "read_approach": "subject_by_salience",
+        "signature": "[[\"dense\"],[\"refs\"],[\"nodefn\"],[\"impersonal\"],[\"charlight\"],[\"nocontr\"],[\"flat\"],[\"proselayout\"]]",
+        "note": "GENERIC ENCYCLOPEDIC: a neutral third-person reference paragraph -- dense vocabulary + reference markers, NO definitional lead (a mid-article paragraph, not the entry's opening). The KIND is 'reference': who/what it is ABOUT is the most-salient entity, so it routes to subject-by-salience, NOT the narrative arc-agent."
+      }
+    },
+    {
+      "local_id": 3,
+      "type": "ShapeSignatureRegister",
+      "attrs": {
+        "name": "narrative",
+        "family": "narrative",
+        "source_specific": "",
+        "read_approach": "protagonist_by_arc_agency",
+        "signature": "[[\"plain\"],[\"norefs\"],[\"nodefn\"],[\"impersonal\"],[\"charheavy\"],[\"nocontr\"],[\"flat\"],[\"proselayout\"]]",
+        "note": "NARRATIVE: a story -- plain (short, low-latinate) vocabulary, no reference markers, no definitional lead, third-person-CHARACTER pronoun density (he/she/they acting), no contractions/exclamations. Routes to protagonist-by-arc-agency (narrative_structure's committed query): who the story is ABOUT is the arc-AGENT, not the most-frequent name. The crow fable is this shape."
+      }
+    },
+    {
+      "local_id": 4,
+      "type": "ShapeSignatureRegister",
+      "attrs": {
+        "name": "casual",
+        "family": "casual",
+        "source_specific": "",
+        "read_approach": "subject_by_salience",
+        "signature": "[[\"plain\"],[\"norefs\"],[\"nodefn\"],[\"personal\"],[\"charheavy\"],[\"contr\"],[\"punchy\"],[\"proselayout\"]]",
+        "note": "CASUAL: conversational text -- plain vocabulary, first/second-person density (i/you/we), contractions (can't/i'm), exclamation/question punch. The registers a chat/comment/message occupies. Routes to subject-by-salience (who/what it is most about); the arc-agent query does not apply to a non-narrative aside."
+      }
+    },
+    {
+      "local_id": 5,
+      "type": "ShapeSignatureRegister",
+      "attrs": {
+        "name": "code",
+        "family": "code",
+        "source_specific": "",
+        "read_approach": "structure",
+        "signature": "[[\"plain\"],[\"refs\"],[\"nodefn\"],[\"impersonal\"],[\"charlight\"],[\"nocontr\"],[\"flat\"],[\"codelayout\"]]",
+        "note": "CODE: a structural-layout block -- the format_channel layout verdict is `structure` (indentation carries the tree), symbol/digit density is high, no prose person mix. The same faculty that spots a wiki entry in prose spots a code block in prose. Read-approach `structure` (no narrative subject)."
+      }
+    },
+    {
+      "local_id": 6,
+      "type": "ShapeSignatureRegister",
+      "attrs": {
+        "name": "conversational",
+        "family": "conversational",
+        "source_specific": "chat_turn",
+        "read_approach": "subject_by_salience",
+        "shape_decode": 0.0,
+        "stages": "spine",
+        "max_sentences": 3,
+        "window": 1,
+        "note": "CONVERSATIONAL (Wave 2, the APERTURE-as-graph-data register): a single live chat turn, not a document register decoded BY SHAPE. `shape_decode: 0.0` means `ensure_register_codebook` mints NO ShapeSignature decode-part for it, so it never enters the by-shape/by-hint ranking and can never change an existing document's decode-by-shape verdict -- it exists to be looked up BY NAME (`register_source.conversational_aperture`), because the chat shadow-read gateway already knows it is reading a live turn and has no need to contend for the decode. Its `stages`/`max_sentences`/`window` attrs ARE the reading APERTURE: `stages`='spine' means only the situation-model spine stage runs (predications + entities), so infer_goal/discourse/infer_causal/enabling/centrality/monitoring/tom/narrative/trope never dispatch and their own ensure_seeds/ensure_codebook calls never fire -- a light read pays only the spine's own cost. `route_reading`/`run_reading_flow` read these attrs off a register node generically (`_aperture_attrs`, Wave 2's data-driven execution); the shadow-read gateway in `converse()` reads them directly via `conversational_aperture`."
+      }
+    }
+  ],
+  "edges": []
+}

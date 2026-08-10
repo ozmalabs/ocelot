@@ -1,0 +1,283 @@
+{
+  "id": "reflex_net",
+  "version": "1.0.0",
+  "depends_on": ["tunable_parameter"],
+  "description": "The PRIMAL LAYER as graph data. A reflex net is a graph-resident authored net (a NetworkAssemblage the native NetForward Term evaluates) wrapped by a ReflexNet node that gates it: the fast path is an ORDINARY Rule whose where checks (a) an `enabled` knob (OFF by default = the layer is optional) and (b) a residual/basin membership EXTERNAL to the net (a grounded gate the confidently-wrong-outside-basin net cannot fake), so it serves a cheap answer only INSIDE its basin and defers to cognition otherwise. Because the fast path IS a Rule and its knobs are TunableParameters, adopt/ablate/tweak reuse the substrate's existing rule spine (add_rule/remove_rule + set_attr) with no new executor. The judge combinator (reflex_trial_judge) is the one genuinely new decision: supported iff regression-free AND faster.",
+  "microtheory": {
+    "name": "reflex_net",
+    "definition": "Instincts and reflexes as graph data. Learning/cognition (the sd loop, ShapeDecode, SC+TPS/DTW verdicts) is the deliberate slow path; a reflex net caches a hot (input -> verdict) region so routine inputs skip it. The net is NEVER its own basin detector (its confidence fails exactly out-of-basin); the basin gate is a separate grounded residual the fast-path Rule reads. Cognition corrects out-of-basin and is the teaching signal that grows the basin. Two grades: a CONSTRUCTED net (write-not-train, exact, no basin problem) and a TRAINED net (fuzzy, basin-limited, gated as a shortlist proposer, never the final verdict).",
+    "category": "foundation"
+  },
+  "concepts": [
+    {
+      "name": "reflex_net_is_optional",
+      "definition": "The primal layer is OFF by default. A ReflexNet's `enabled` attr (a TunableParameter, default 0.0) gates its fast-path Rule; nothing serves from a reflex net until a human/adopt decision flips it on. Turning the whole layer off is one node edit, zero code.",
+      "category": "invariant"
+    },
+    {
+      "name": "reflex_net_basin_gate_is_external",
+      "definition": "The fast-path Rule gates on a `residual` the CALLER supplies (the decode residual / quantum-membership from the grounded sd loop) against the ReflexNet's `basin_threshold` knob, NOT on the net's own output confidence. An ungrounded net is confidently wrong outside its basin; only a grounded, net-independent gate is safe.",
+      "category": "invariant"
+    },
+    {
+      "name": "reflex_net_tweakable",
+      "definition": "basin_threshold, enabled, and the judge's tolerance are TunableParameters read by the Rules via Attr, so editing the held node's attr changes runtime behavior with zero code — the agent (or a human) can widen/narrow a basin or turn a reflex off by graph edit.",
+      "category": "invariant"
+    },
+    {
+      "name": "reflex_net_judge_is_faster_and_regression_free",
+      "definition": "A reflex net is adopted iff it is BOTH faster than the slow path AND regression-free (its answer within tolerance of the exact/slow answer). Standalone accuracy is the wrong axis for a cache; hit-rate x speedup at fixed accuracy with a deopt fallback is the right one.",
+      "category": "invariant"
+    }
+  ],
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "ReflexNetPolicy",
+      "attrs": {
+        "kind": "reflex_net_policy",
+        "hot_ms_threshold": 0.05,
+        "default_basin_threshold": 0.25,
+        "description": "Tweakable propose-trigger knobs. hot_ms_threshold: an op's baseline_mean_ms must exceed this to be auto-proposed as a reflex net (don't cache what isn't worth caching). default_basin_threshold: the basin a freshly-proposed net starts with (itself a TunableParameter on the minted net, so tunable per-net thereafter). Editing this singleton changes propose behavior for all future proposals, zero code."
+      }
+    }
+  ],
+  "edges": [],
+  "productions": [
+    {
+      "src": {"type": "ReflexQuery", "var": "src"},
+      "edge_type": "for_net",
+      "tgt": {"type": "ReflexNet", "var": "tgt"},
+      "provenance": "reflex_net:query_for_net"
+    },
+    {
+      "src": {"type": "ReflexNet", "var": "src"},
+      "edge_type": "net_assemblage",
+      "tgt": {"type": "NetworkAssemblage", "var": "tgt"},
+      "provenance": "reflex_net:net_assemblage"
+    },
+    {
+      "src": {"type": "ReflexNet", "var": "src"},
+      "edge_type": "has_tunable",
+      "tgt": {"type": "TunableParameter", "var": "tgt"},
+      "provenance": "reflex_net:reflexnet_has_tunable"
+    },
+    {
+      "src": {"type": "Agent", "var": "src"},
+      "edge_type": "judges",
+      "tgt": {"type": "ReflexTrial", "var": "tgt"},
+      "provenance": "reflex_net:agent_judges_trial"
+    },
+    {
+      "src": {"type": "ReflexNet", "var": "src"},
+      "edge_type": "proposed_from",
+      "tgt": {"type": "ReplacementTarget", "var": "tgt"},
+      "provenance": "reflex_net:proposed_from"
+    },
+    {
+      "src": {"type": "ReflexTrial", "var": "src"},
+      "edge_type": "for_reflex",
+      "tgt": {"type": "ReflexNet", "var": "tgt"},
+      "provenance": "reflex_net:trial_for_reflex"
+    },
+    {
+      "src": {"type": "TrainingJob", "var": "src"},
+      "edge_type": "train_for",
+      "tgt": {"type": "ReflexNet", "var": "tgt"},
+      "provenance": "reflex_net:train_for"
+    },
+    {
+      "src": {"type": "TrainingJob", "var": "src"},
+      "edge_type": "trained_net",
+      "tgt": {"type": "ReflexNet", "var": "tgt"},
+      "provenance": "reflex_net:trained_net"
+    },
+    {
+      "src": {"type": "ReflexObservation", "var": "src"},
+      "edge_type": "observes",
+      "tgt": {"type": "ReflexNet", "var": "tgt"},
+      "provenance": "reflex_net:observation_observes_net"
+    }
+  ],
+  "rules": [
+    {
+      "name": "reflex_net_self_train_step",
+      "comment": "SELF-TRAINING INSIDE THE ENGINE. A pending ReflexObservation for a self_training net fires ONE surprise-driven weight collapse (the net_collapse effect -> net_collapse_step, drained by run_rules) WITHIN the collapse loop, then marks itself consumed so it fires once. The adapter only INGESTS observations (input_vec + target + observes edge — mechanical, like any ingest) and ticks; the collapse runs in the engine's run_rules, no Python iteration. This is 'collapse and surprise within the net' at the engine level: the net trains itself as the graph collapses.",
+      "match": [
+        ["obs", "observes", "rn"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "status"}, "b": {"type": "Lit", "value": "pending"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "rn"}, "key": "status"}, "b": {"type": "Lit", "value": "self_training"}}
+        ]
+      },
+      "effects": [
+        ["net_collapse", "rn", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "input_vec"}}, {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "target"}}, {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "rn"}, "key": "eta"}}],
+        ["set_attr", "obs", "status", "consumed"]
+      ]
+    },
+    {
+      "name": "reflex_self_train_converged",
+      "comment": "The graph-native STOP decision for SELF-TRAINING via collapse+surprise. A self-training net records its rolling surprise (the adapter's per-observation net_collapse_step op writes it — mechanical I/O feeding the observation); when that surprise falls below the net's converge_tol knob, its weight collapse has settled — mark it 'trained' (ready for reflex_trial_judge). The DECISION to stop is this rule; the per-observation weight collapse is the mechanical net_collapse_step Rust op (the WeightTensor twin of hebbian_update_J). This is the online, surprise-driven alternative to the external ELM batch fit: the net trains itself as part of the collapse loop.",
+      "match": [
+        ["rn", "net_assemblage", "asm"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "rn"}, "key": "status"}, "b": {"type": "Lit", "value": "self_training"}},
+          {"type": "Lt", "a": {"type": "Attr", "node": {"type": "Var", "name": "rn"}, "key": "surprise"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "rn"}, "key": "converge_tol"}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "rn", "status", "trained"]
+      ]
+    },
+    {
+      "name": "reflex_request_training",
+      "comment": "THE DECISION TO TRAIN, graph-native. When a reflex net's trial is REFUTED (its approximation regresses beyond tolerance — the judge already decided this), the agent decides to train a better net: mint a TrainingJob (trace_pending — the adapter then mechanically attaches the collected (input,verdict) traces and flips it to requested, which the background training dispatcher picks up). Once per refuted trial (training_requested guard). The agent deciding to improve itself by training — no Python decided it; run_rules did. Training then runs as a BACKGROUND process (domains/training_dispatch spawns a detached child), not an offline batch.",
+      "match": [
+        ["ag", "judges", "trial"],
+        ["trial", "for_reflex", "rn"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "trial"}, "key": "verdict"}, "b": {"type": "Lit", "value": "refuted"}},
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "trial"}, "key": "training_requested"}, "b": {"type": "Lit", "value": 1.0}}}
+        ]
+      },
+      "effects": [
+        ["add_node", "job", "TrainingJob", {"status": "trace_pending", "reason": "reflex_regressed"}],
+        ["add_edge", "job", "train_for", "rn"],
+        ["set_attr", "trial", "training_requested", 1.0]
+      ]
+    },
+    {
+      "name": "reflex_ground_residual",
+      "comment": "GROUNDS THE BASIN GATE. A raw ReflexQuery carrying a symbolic `signature` (its quantized input) has its `residual` COMPUTED by the graph — the sd-loop decode residual: Count(ShapeDecode(signature, ShapeSignature codebook, field=residual)) = how many of the input's relations are NOT covered by the held quantum codebook (0 = fully in the known basin; larger = more novel). Then status raw->pending so reflex_net_serve gates on this GROUNDED residual, not a caller-supplied number. The basin membership is now the agent's own decode against what it knows — exactly the confidently-wrong-outside-basin safeguard, grounded. PER-NET: the decode is scoped to the net's OWN basin via codebook_scope=Attr(rn,basin_parts) (the agent-proposed, human-built ShapeDecode affordance), so two nets over the SAME shared codebook can hold DIFFERENT basins; a net with no basin_parts (None) decodes against the whole codebook, unchanged.",
+      "match": [
+        ["q", "for_net", "rn"]
+      ],
+      "where": {
+        "type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "q"}, "key": "status"}, "b": {"type": "Lit", "value": "raw"}
+      },
+      "effects": [
+        ["set_attr", "q", "residual", {"__term__": {"type": "Count", "source": {"type": "ShapeDecode", "goal": {"type": "Attr", "node": {"type": "Var", "name": "q"}, "key": "signature"}, "codebook_type": "ShapeSignature", "codebook_scope": {"type": "Attr", "node": {"type": "Var", "name": "rn"}, "key": "basin_parts"}, "beam": 3, "max_steps": 8, "cand_k": 3, "field": "residual", "wild": "·?·", "wild_objects": false}}}],
+        ["set_attr", "q", "grounded_residual", 1.0],
+        ["set_attr", "q", "status", "pending"]
+      ]
+    },
+    {
+      "name": "reflex_ground_numeric_residual",
+      "comment": "GROUNDS THE BASIN GATE for a NUMERIC net (the float grade). A net fit over an input range [fit_lo, fit_hi] has a numeric basin: a raw_numeric query's residual is the distance its input_vec[0] falls OUTSIDE that range — Max(fit_lo - x, x - fit_hi, 0) — which is 0 inside the fit range and grows with extrapolation. This is the numeric twin of reflex_ground_residual's symbolic ShapeDecode residual: the 30% basin is real geometry (a fit range), and the gate reads distance-from-fit, not caller-supplied. Then status raw_numeric->pending so reflex_net_serve gates on it. Per-net by construction (reads the net's own fit_lo/fit_hi).",
+      "match": [
+        ["q", "for_net", "rn"]
+      ],
+      "where": {
+        "type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "q"}, "key": "status"}, "b": {"type": "Lit", "value": "raw_numeric"}
+      },
+      "effects": [
+        ["set_attr", "q", "residual", {"__term__": {"type": "Max", "items": [
+          {"type": "Minus", "a": {"type": "Attr", "node": {"type": "Var", "name": "rn"}, "key": "fit_lo"}, "b": {"type": "Nth", "items": {"type": "Attr", "node": {"type": "Var", "name": "q"}, "key": "input_vec"}, "index": 0}},
+          {"type": "Minus", "a": {"type": "Nth", "items": {"type": "Attr", "node": {"type": "Var", "name": "q"}, "key": "input_vec"}, "index": 0}, "b": {"type": "Attr", "node": {"type": "Var", "name": "rn"}, "key": "fit_hi"}},
+          {"type": "Lit", "value": 0.0}
+        ]}}],
+        ["set_attr", "q", "grounded_residual", 1.0],
+        ["set_attr", "q", "status", "pending"]
+      ]
+    },
+    {
+      "name": "auto_propose_reflex_net",
+      "comment": "THE MINT (self-editing propose step). A target that ALREADY has a constructed net (-has_assemblage-> NetworkAssemblage) is proposed as a reflex net when EITHER it is hot (baseline_mean_ms above the ReflexNetPolicy's hot_ms_threshold — the measured trigger) OR it was explicitly requested (cache_requested=1, the NL/host-instruction trigger — an explicit 'cache this' overrides the hot heuristic). Mint a ReflexNet OFF (enabled=0), wire it to the assemblage, attach its two TunableParameter knobs, mark the target (reflex_proposed=1) so it fires exactly once (the gap_awareness once-guard). The proposal is OFF/pending — the reflex_trial_judge + human/adopt spine decide whether to enable it. Thresholds are read from the tweakable ReflexNetPolicy singleton, so editing that node changes propose behavior with zero code. No Python decides any of this.",
+      "match": [
+        ["t", "has_assemblage", "asm"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "t"}, "key": "reflex_proposed"}, "b": {"type": "Lit", "value": 1.0}}},
+          {"type": "Or", "items": [
+            {"type": "Gt", "a": {"type": "Attr", "node": {"type": "Var", "name": "t"}, "key": "baseline_mean_ms"}, "b": {"type": "Attr", "node": {"type": "Pick", "source": {"type": "NodesOfType", "node_type": "ReflexNetPolicy"}}, "key": "hot_ms_threshold"}},
+            {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "t"}, "key": "cache_requested"}, "b": {"type": "Lit", "value": 1.0}}
+          ]}
+        ]
+      },
+      "effects": [
+        ["add_node", "rn", "ReflexNet", {"name": "reflex_proposal", "status": "proposed", "enabled": 0.0, "basin_threshold": {"__term__": {"type": "Attr", "node": {"type": "Pick", "source": {"type": "NodesOfType", "node_type": "ReflexNetPolicy"}}, "key": "default_basin_threshold"}}}],
+        ["add_edge", "rn", "net_assemblage", "asm"],
+        ["add_edge", "rn", "proposed_from", "t"],
+        ["add_node", "tp_en", "TunableParameter", {"attr_name": "enabled", "min": 0.0, "max": 1.0, "step": 1.0, "description": "serve from this reflex net (0=off)"}],
+        ["add_edge", "rn", "has_tunable", "tp_en"],
+        ["add_node", "tp_bt", "TunableParameter", {"attr_name": "basin_threshold", "min": 0.0, "max": 1000000000.0, "step": 0.05, "description": "basin membership gate"}],
+        ["add_edge", "rn", "has_tunable", "tp_bt"],
+        ["set_attr", "t", "reflex_proposed", 1.0]
+      ]
+    },
+    {
+      "name": "reflex_net_serve",
+      "comment": "THE FAST PATH. A pending ReflexQuery whose ReflexNet is enabled AND whose residual is inside the basin serves the native NetForward answer and marks itself served (so it fires once, terminating the fixpoint). enabled==0 (default) or residual>=basin_threshold => this never fires and the query falls through to cognition. The answer is computed by the native NetForward Term over the net's assemblage and the query's own input_vec — no Python, evaluated inside the rule.",
+      "match": [
+        ["q", "for_net", "rn"],
+        ["rn", "net_assemblage", "asm"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "q"}, "key": "status"}, "b": {"type": "Lit", "value": "pending"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "rn"}, "key": "enabled"}, "b": {"type": "Lit", "value": 1.0}},
+          {"type": "Lt", "a": {"type": "Attr", "node": {"type": "Var", "name": "q"}, "key": "residual"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "rn"}, "key": "basin_threshold"}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "q", "answer", {"__term__": {"type": "NetForward", "assemblage": {"type": "Var", "name": "asm"}, "inputs": {"type": "Attr", "node": {"type": "Var", "name": "q"}, "key": "input_vec"}}}],
+        ["set_attr", "q", "served_by", "reflex_net"],
+        ["set_attr", "q", "status", "served"]
+      ]
+    },
+    {
+      "name": "reflex_trial_judge",
+      "comment": "THE JUDGE COMBINATOR (the one genuinely new decision). A measured ReflexTrial is SUPPORTED iff it is regression-free (regression < tolerance) AND faster (reflex_ms < slow_ms). The adapter mechanically measures regression (max abs diff reflex-vs-slow answer) and the two timings; the RULE combines them. tolerance is a held knob. adopt_ready=1 hands the winning fast-path Rule to the existing perform_adoptions spine.",
+      "match": [
+        ["ag", "judges", "trial"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "trial"}, "key": "status"}, "b": {"type": "Lit", "value": "measured"}},
+          {"type": "Lt", "a": {"type": "Attr", "node": {"type": "Var", "name": "trial"}, "key": "regression"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "trial"}, "key": "tolerance"}},
+          {"type": "Lt", "a": {"type": "Attr", "node": {"type": "Var", "name": "trial"}, "key": "reflex_ms"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "trial"}, "key": "slow_ms"}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "trial", "verdict", "supported"],
+        ["set_attr", "trial", "adopt_ready", 1.0],
+        ["set_attr", "trial", "status", "judged"]
+      ]
+    },
+    {
+      "name": "reflex_trial_refuted",
+      "comment": "The complement: a measured ReflexTrial is REFUTED iff it regresses (regression >= tolerance) OR is not faster (reflex_ms >= slow_ms). Same status guard so exactly one of judge/refuted fires per trial; the fixpoint terminates on status:=judged.",
+      "match": [
+        ["ag", "judges", "trial"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "trial"}, "key": "status"}, "b": {"type": "Lit", "value": "measured"}},
+          {"type": "Or", "items": [
+            {"type": "Not", "arg": {"type": "Lt", "a": {"type": "Attr", "node": {"type": "Var", "name": "trial"}, "key": "regression"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "trial"}, "key": "tolerance"}}},
+            {"type": "Not", "arg": {"type": "Lt", "a": {"type": "Attr", "node": {"type": "Var", "name": "trial"}, "key": "reflex_ms"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "trial"}, "key": "slow_ms"}}}
+          ]}
+        ]
+      },
+      "effects": [
+        ["set_attr", "trial", "verdict", "refuted"],
+        ["set_attr", "trial", "adopt_ready", 0.0],
+        ["set_attr", "trial", "status", "judged"]
+      ]
+    }
+  ]
+}

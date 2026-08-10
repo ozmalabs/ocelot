@@ -1,0 +1,118 @@
+{
+  "id": "generational_gc_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "generational_gc",
+  "in_microtheory": "computer_architecture",
+  "description": "Generational garbage collection decomposed. The 'most objects die young' insight (weak generational hypothesis) drives the design. Young generation (nursery / eden) collected frequently via cheap algorithms (copying); survivors promoted to old generation; old generation collected rarely with more expensive algorithms (mark-compact). Write barriers track inter-generational references. Modern GCs (G1, ZGC, Shenandoah) add concurrency to minimise pauses.",
+  "sub_mechanisms": [
+    {
+      "name": "weak_generational_hypothesis",
+      "definition": "Empirical observation: most allocated objects die young. Typical: 80-95% of objects unreachable by the next minor GC.",
+      "why": "Foundation of generational design. If most objects die quickly, collecting young objects often is cheap; surviving objects are likely to live a long time and don't need frequent collection. The hypothesis is robustly true across nearly all programs.",
+      "category": "gc_mechanism"
+    },
+    {
+      "name": "eden_nursery_region",
+      "definition": "Allocation goes into the eden region. Pointer-bump allocation: just increment a pointer.",
+      "why": "Fastest possible allocation: one instruction. No size class lookup, no free list traversal. Java's TLAB (Thread-Local Allocation Buffer) gives each thread its own eden chunk; no synchronisation on allocation.",
+      "category": "gc_mechanism"
+    },
+    {
+      "name": "survivor_space",
+      "definition": "After a minor GC, objects that survived eden are moved to survivor space. May have two survivor spaces (S0, S1) and copy between them.",
+      "why": "Lets the GC observe how long objects live. After surviving N minor GCs (tenuring threshold), objects are promoted to old gen. This adaptive threshold matches the GC's collection frequency to object lifetimes.",
+      "category": "gc_mechanism"
+    },
+    {
+      "name": "old_generation",
+      "definition": "Where long-lived objects live. Collected rarely (major GC) and with a more thorough algorithm (mark-sweep-compact, or concurrent mark-region).",
+      "why": "Old-gen objects are likely to keep living. Frequent collection of old-gen would waste effort. The infrequent major GC catches accumulated garbage at long intervals.",
+      "category": "gc_mechanism"
+    },
+    {
+      "name": "copying_minor_gc",
+      "definition": "Minor GC: scan young-gen roots, copy live objects out of eden + survivor source space into survivor destination. Whatever wasn't copied is garbage.",
+      "why": "Only touches live objects. If young-gen is mostly garbage (per the hypothesis), most objects are never touched. Copying GC is O(live data) not O(total data). Dominant algorithm for young-gen.",
+      "category": "gc_mechanism"
+    },
+    {
+      "name": "write_barrier",
+      "definition": "Code inserted at every reference store (a.field = b). If a is in old-gen and b is in young-gen, records that this old-to-young reference exists.",
+      "why": "Minor GC must trace all references INTO young-gen. Most are from young-gen roots; old-to-young references are rare but must be tracked. Write barrier maintains a 'remembered set' of these references. Without it, minor GC would have to scan all of old-gen — defeating the point.",
+      "category": "gc_mechanism"
+    },
+    {
+      "name": "card_table",
+      "definition": "Common write barrier implementation: divide old-gen into 'cards' (e.g., 512 bytes each); when a write occurs, mark the containing card dirty.",
+      "why": "Coarser than per-reference tracking but much cheaper (one byte write per store). At minor GC, scan dirty cards for old-to-young references. Trade-off: false positives (card has writes but no actual old-to-young ref). Compact + fast.",
+      "category": "gc_mechanism"
+    },
+    {
+      "name": "tenuring_threshold",
+      "definition": "Number of minor GCs an object survives before being promoted to old-gen. Typically 6-15. Adaptive — JVM may adjust based on survivor-space occupancy.",
+      "why": "Too low: short-lived objects get promoted and cause expensive old-gen collection. Too high: objects bounce between survivor spaces wastefully. Adaptive threshold matches the workload's lifetime distribution.",
+      "category": "gc_mechanism"
+    },
+    {
+      "name": "mark_sweep_compact_major_gc",
+      "definition": "Major GC: mark all reachable objects from roots; sweep collects unmarked; optionally compact survivors to eliminate fragmentation.",
+      "why": "Traditional thorough algorithm. Compaction prevents long-term fragmentation. Pause time is proportional to old-gen size; for large heaps, this can be seconds — unacceptable for latency-sensitive applications.",
+      "category": "gc_mechanism"
+    },
+    {
+      "name": "concurrent_marking",
+      "definition": "Marking happens concurrently with application execution. Special techniques (SATB — Snapshot At The Beginning, or incremental update) ensure correctness despite concurrent mutation.",
+      "why": "Eliminates the stop-the-world mark pause. Critical for latency-sensitive applications. ZGC, Shenandoah, G1 all do concurrent marking. Costs CPU (overhead of barriers + concurrent threads) but pauses drop from seconds to milliseconds.",
+      "category": "gc_mechanism"
+    },
+    {
+      "name": "concurrent_relocation",
+      "definition": "Move live objects to new locations concurrently with application execution. Load barriers ensure the application sees the new location after relocation.",
+      "why": "Compaction requires moving objects. Stop-the-world compaction is expensive. Concurrent relocation (ZGC's coloured pointers, Shenandoah's Brooks pointers) lets the application continue while objects move. The advanced 'no pause' GCs depend on this.",
+      "category": "gc_mechanism"
+    },
+    {
+      "name": "GC_pause_target",
+      "definition": "User-tunable target maximum pause: GC chooses strategy to stay under it. G1: ~200ms typical. ZGC: <1ms. Shenandoah: <10ms.",
+      "why": "Pauses break user experience and SLAs. Modern GCs trade throughput for predictable pauses. ZGC/Shenandoah achieve sub-millisecond pauses at the cost of ~10-20% throughput. The choice depends on workload: throughput-critical (HPC) vs latency-critical (trading, services).",
+      "category": "gc_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "weak_hypothesis_drives_design",
+      "if": ["most objects die young"],
+      "then": ["frequent young-gen collection is cheap; rare old-gen collection is appropriate"],
+      "why": "Empirical observation drives algorithmic choice. Frequent minor GC catches the bulk of garbage cheaply (copying is O(live)). Infrequent major GC catches accumulated long-lived garbage. Without the hypothesis holding, the design would be wrong.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "copying_gc_amortises_with_high_garbage_ratio",
+      "if": ["young-gen is mostly garbage at collection time"],
+      "then": ["copying GC is much faster than mark-sweep"],
+      "why": "Copying GC's cost is proportional to live data. If 90% of young-gen is garbage, copying only touches 10%. Mark-sweep visits all objects to mark, then sweeps everything. With high garbage ratios, copying wins by ~5-10x.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "write_barrier_essential_for_generational_correctness",
+      "if": ["the GC collects young-gen without scanning all of old-gen"],
+      "then": ["a write barrier must track inter-generational references"],
+      "why": "Old-gen objects can hold references to young-gen objects. Without tracking, the minor GC might miss live young-gen objects (free them by mistake). Write barrier maintains the invariant: every old-to-young reference is in the remembered set.",
+      "soundness_category": "referential_transparency"
+    },
+    {
+      "name": "concurrent_gc_trades_throughput_for_latency",
+      "if": ["the GC works concurrently with the application"],
+      "then": ["overall throughput drops but pauses become bounded and small"],
+      "why": "Concurrent work adds overhead (synchronisation, barriers). But user-perceived latency improves dramatically. Modern services trade ~10-20% throughput for sub-millisecond pauses. The choice between throughput-focused and pause-focused GC depends on workload SLAs.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "tenuring_adapts_to_lifetime_distribution",
+      "if": ["the tenuring threshold matches object lifetime distribution"],
+      "then": ["promotion costs are amortised correctly"],
+      "why": "Premature promotion costs old-gen GC work on objects that didn't need it. Late promotion costs survivor-space churn. Adaptive threshold (based on observed survivor-space occupancy) finds the right setting per workload. JVM's young-gen tuning is largely about this.",
+      "soundness_category": "cost_equivalence"
+    }
+  ]
+}

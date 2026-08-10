@@ -1,0 +1,47 @@
+{
+  "id": "narrative_convention",
+  "version": "1.0.0",
+  "depends_on": [
+    "prosody",
+    "speech_science"
+  ],
+  "description": "The foundation for reading media: what a TROPE actually is, in the substrate's own terms. A trope is a recurring, NAMED pattern of meaning-making in stories \u2014 i.e. a compression of narrative structure that enough people found worth naming. Knowing a trope sets up an EXPECTATION (a forward model over what tends to follow). A trope is a trope only RELATIVE TO a frame (genre / medium / era / culture) \u2014 Axiom 0: what is cliche in one frame is fresh in another. A trope is grounded EXTENSIONALLY by its example-set (the works tagged with it); the prose definition is the intensional check. This Mt is the scaffold the agent grounds the TV Tropes corpus against; trope_play (the grammar over conventions) and humour (violated expectation) build on it.",
+  "concepts": [
+    {
+      "name": "convention",
+      "definition": "A recurring, named pattern of meaning-making in media \u2014 the substrate's reading of a 'trope'. Mechanistically a named COMPRESSION of narrative structure: a regularity across many works, abstracted and given a (usually figurative) name. Because it is a learned compression, it is exactly the kind of object the curiosity drive seeks; TV Tropes is a human-curated catalogue of such compressions.",
+      "category": "narrative_primitive"
+    },
+    {
+      "name": "expectation",
+      "definition": "The forward model a convention installs: once a convention is recognised in a work, it PREDICTS what tends to follow. The expectation is what every play-operation (trope_play) transforms, and what humour violates. A convention with no associated prediction is inert.",
+      "category": "narrative_primitive"
+    },
+    {
+      "name": "frame_relativity",
+      "definition": "A convention is a convention only RELATIVE TO a frame \u2014 a genre, medium, era, or culture that fixes the shared expectations. The same device is a cliche in one frame and novel in another; there is no frame-independent 'is this a trope'. Reuse the Microtheory/Frame machinery: a convention's salience is indexed to a frame (Axiom 0 applied to media).",
+      "category": "narrative_primitive"
+    },
+    {
+      "name": "extensional_grounding",
+      "definition": "A convention is grounded by its EXAMPLE-SET: the works tagged with it, each carrying a concrete instance (the Example text). The concept IS the compression of that set; the prose definition is the intensional check (form+test). Crucially, a tag is a subjective, frame-relative CLAIM, not a fact \u2014 the agent grounds the convention from the consensus pattern across many examples and may hold contested ones (conclude-from-ground-truth).",
+      "category": "narrative_primitive"
+    },
+    {
+      "name": "genre",
+      "definition": "A frame that bundles a set of conventions and the expectations they license (horror, romance, noir, sitcom). Genre membership is itself frame-relative and gradient; it conditions which conventions are 'in play' and therefore which expectations a viewer holds.",
+      "category": "narrative_frame"
+    },
+    {
+      "name": "medium",
+      "definition": "The channel a work is realised in (film, television, literature, game). Medium constrains which conventions are even expressible and shapes their form; the corpus separates film_tropes / tv_tropes / lit_tropes precisely because conventions distribute differently across media.",
+      "category": "narrative_frame"
+    },
+    {
+      "name": "work",
+      "definition": "A constructed artifact that conveys meaning (a film, book, series, game) \u2014 a node that USES conventions (exemplifies edges) and can REFERENCE other works. A work is the locus where conventions are instantiated and played with; it can be grounded externally (IMDB/Goodreads identity) and attributed to a creator.",
+      "category": "narrative_frame"
+    }
+  ],
+  "wiring_note": "depends_on prosody + speech_science is the structural commitment that comprehension is phonology-grounded. Narrative -- the named-compression a trope IS -- gets its delivery patterns from prosodic structure in speech and from prosody-equivalent serialisations (italic / caps / punctuation) in text. Speech_science holds the foundational input modality through which comprehension acquires its scaffold. The whole comprehension stack inherits this transitively via narrative_convention. Integration is the architecture; speech understanding catches up."
+}

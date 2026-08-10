@@ -1,0 +1,153 @@
+{
+  "id": "conversation_topic_reply",
+  "version": "1.1.0",
+  "depends_on": ["conversation_topic_route", "topic_search"],
+  "description": "Graph-native replies for external-topic questions. After conversation_topic_route mints Goal{kind:answer_topic}, THESE rules read HeldAnswer nodes (written mechanically by learn_from_teacher / scan_and_search) and mint an agent outbound Message. No adapter topic-reply ladder — the graph decides and speaks. Topic TRACKING is its own trio of rules (fresh/same/shift): a resolved answer_topic goal installs its concept as the ONE current topic, retiring the prior CurrentTopic edge rather than accumulating a second (the shift rule dels the stale edge, then the fresh rule installs the new topic in the same fixpoint).",
+  "nodes": [],
+  "edges": [],
+  "productions": [],
+  "rules": [
+    {
+      "name": "reply_topic_from_held_answer",
+      "match": [
+        ["agent", "has_goal", "g"],
+        ["g", "comprehends", "m"],
+        ["agent", "received", "m"],
+        ["agent", "holds_answer", "ha"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "kind"}, "b": {"type": "Lit", "value": "answer_topic"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "ha"}, "key": "topic"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "concept"}},
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "topic_replied"}, "b": {"type": "Lit", "value": 1.0}}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "m", "topic_replied", 1.0],
+        ["set_attr", "g", "outcome", "resolved"],
+        ["add_node", "reply", "Message", {
+          "from": "agent",
+          "text": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "ha"}, "key": "text"}}
+        }],
+        ["add_edge", "reply", "responds_to", "m"],
+        ["add_edge", "agent", "sent", "reply"]
+      ]
+    },
+    {
+      "name": "topic_track_same",
+      "match": [
+        ["agent", "has_goal", "g"],
+        ["g", "comprehends", "m"],
+        ["agent", "current_topic", "old"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "kind"}, "b": {"type": "Lit", "value": "answer_topic"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "outcome"}, "b": {"type": "Lit", "value": "resolved"}},
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "topic_tracked"}, "b": {"type": "Lit", "value": 1.0}}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "old"}, "key": "name"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "concept"}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "g", "topic_tracked", 1.0]
+      ]
+    },
+    {
+      "name": "topic_track_shift",
+      "match": [
+        ["agent", "has_goal", "g"],
+        ["g", "comprehends", "m"],
+        ["agent", "current_topic", "old"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "kind"}, "b": {"type": "Lit", "value": "answer_topic"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "outcome"}, "b": {"type": "Lit", "value": "resolved"}},
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "topic_tracked"}, "b": {"type": "Lit", "value": 1.0}}},
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "old"}, "key": "name"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "concept"}}}
+        ]
+      },
+      "effects": [
+        ["del_edge", "agent", "current_topic", "old"]
+      ]
+    },
+    {
+      "name": "topic_track_fresh",
+      "match": [
+        ["agent", "has_goal", "g"],
+        ["g", "comprehends", "m"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "kind"}, "b": {"type": "Lit", "value": "answer_topic"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "outcome"}, "b": {"type": "Lit", "value": "resolved"}},
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "topic_tracked"}, "b": {"type": "Lit", "value": 1.0}}},
+          {"type": "Not", "arg": {"type": "Exists", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "agent"}, "edge_type": "current_topic"}, "var_name": "ct0", "predicate": {"type": "Lit", "value": true}}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "g", "topic_tracked", 1.0],
+        ["add_node", "ct", "CurrentTopic", {
+          "name": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "concept"}}
+        }],
+        ["add_edge", "agent", "current_topic", "ct"]
+      ]
+    },
+    {
+      "name": "reply_topic_unresolved",
+      "match": [
+        ["agent", "has_goal", "g"],
+        ["g", "comprehends", "m"],
+        ["agent", "received", "m"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "kind"}, "b": {"type": "Lit", "value": "answer_topic"}},
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "topic_replied"}, "b": {"type": "Lit", "value": 1.0}}},
+          {"type": "Not", "arg": {"type": "Exists", "source": {"type": "Filter",
+            "source": {"type": "Neighbours", "node": {"type": "Var", "name": "agent"}, "edge_type": "holds_answer"},
+            "var_name": "ha2",
+            "predicate": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "ha2"}, "key": "topic"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "concept"}}},
+            "var_name": "ha2", "predicate": {"type": "Lit", "value": true}}},
+          {"type": "Not", "arg": {"type": "Exists", "source": {"type": "Filter",
+            "source": {"type": "NodesOfType", "node_type": "SearchRequest"},
+            "var_name": "sr",
+            "predicate": {"type": "And", "items": [
+              {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "sr"}, "key": "query"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "concept"}},
+              {"type": "In", "member": {"type": "Attr", "node": {"type": "Var", "name": "sr"}, "key": "status"},
+               "container": {"type": "Lit", "value": ["requested", "running", "candidates_ready"]}}
+            ]}},
+            "var_name": "sr", "predicate": {"type": "Lit", "value": true}}},
+          {"type": "Not", "arg": {"type": "Exists", "source": {"type": "Filter",
+            "source": {"type": "NodesOfType", "node_type": "GroundRequest"},
+            "var_name": "gr",
+            "predicate": {"type": "And", "items": [
+              {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "gr"}, "key": "query"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "concept"}},
+              {"type": "In", "member": {"type": "Attr", "node": {"type": "Var", "name": "gr"}, "key": "status"},
+               "container": {"type": "Lit", "value": ["requested", "running"]}}
+            ]}},
+            "var_name": "gr", "predicate": {"type": "Lit", "value": true}}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "m", "topic_replied", 1.0],
+        ["set_attr", "g", "outcome", "unresolved"],
+        ["add_node", "reply", "Message", {
+          "from": "agent",
+          "text": {"__term__": {"type": "StringConcat", "parts": [
+            {"type": "Lit", "value": "I don't hold anything about \u201c"},
+            {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "concept"},
+            {"type": "Lit", "value": "\u201d yet, and I couldn't find it through the sources I have. Tell me about it and I'll remember."}
+          ]}}
+        }],
+        ["add_edge", "reply", "responds_to", "m"],
+        ["add_edge", "agent", "sent", "reply"]
+      ]
+    }
+  ]
+}

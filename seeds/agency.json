@@ -1,0 +1,697 @@
+{
+ "id": "agency",
+ "version": "1.0.0",
+ "depends_on": [
+  "region_grouping",
+  "shape_sense"
+ ],
+ "description": "Game-blind CONTROL model: a ControlledElement is whatever responds to my action (action-change coincidence), regardless of HOW it manifests (translate/recolor/resize). Body -controls-> ControlledElement -comprises-> Region(s) (order-N, generalised from the avatar). Selectivity discriminator: a controlled element responds under a PROPER SUBSET of the action repertoire; the environment responds under all. 'Avatar' is NOT here \u2014 it is a game-type ROLE (arc3_game) on top. Control is a measurement; avatar is an interpretation.",
+ "microtheory": {
+  "name": "agency",
+  "description": "what responds to my action is controlled; manifestation-agnostic; selectivity separates control from environment."
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [
+  {
+   "provenance": "seed:control_model:controls-0",
+   "src": {
+    "type": "WorldInstance",
+    "var": "s"
+   },
+   "edge_type": "controls",
+   "tgt": {
+    "type": "ControlledElement",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:control_model:comprises-1",
+   "src": {
+    "type": "ControlledElement",
+    "var": "s"
+   },
+   "edge_type": "comprises",
+   "tgt": {
+    "type": "Region",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:control_model:of_kind-2",
+   "src": {
+    "type": "Action",
+    "var": "s"
+   },
+   "edge_type": "of_kind",
+   "tgt": {
+    "type": "ActionKind",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:control_model:has_action_kind-3",
+   "src": {
+    "type": "WorldInstance",
+    "var": "s"
+   },
+   "edge_type": "has_action_kind",
+   "tgt": {
+    "type": "ActionKind",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:control_model:responds_kind-4",
+   "src": {
+    "type": "Region",
+    "var": "s"
+   },
+   "edge_type": "responds_kind",
+   "tgt": {
+    "type": "ActionKind",
+    "var": "t"
+   }
+  }
+ ],
+ "rules": [
+  {
+   "name": "respond_vote",
+   "comment": "A figure region that changed this frame, on a frame the agent acted, votes that it responded to the action's kind. Reads the eye's persistent Region nodes directly (drow/dcol/changed_frame/is_ground); the floor never votes because is_ground figures are excluded. Once-per-(region,frame) via responded_frame guard; absent attrs via Plus(.,0); a re-fire is a no-op (fixpoint-idempotent).",
+   "match": [
+    [
+     "game",
+     "has_region",
+     "region"
+    ],
+    [
+     "bd",
+     "took",
+     "action"
+    ],
+    [
+     "action",
+     "of_kind",
+     "kind"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "region"
+          },
+          "key": "is_ground"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "region"
+         },
+         "key": "changed_frame"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "game"
+       },
+       "key": "frame"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "action"
+       },
+       "key": "frame"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "game"
+       },
+       "key": "frame"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "region"
+          },
+          "key": "responded_frame"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       },
+       "b": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "game"
+        },
+        "key": "frame"
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "region",
+     "respond_votes",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "region"
+         },
+         "key": "respond_votes"
+        },
+        {
+         "type": "Lit",
+         "value": 1
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "region",
+     "responded_frame",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "game"
+       },
+       "key": "frame"
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "region",
+     "responds_kind",
+     "kind"
+    ]
+   ]
+  },
+  {
+   "name": "control_confirm",
+   "comment": "SELECTIVITY DISCRIMINATOR (replaces avatar_confirm): respond_votes>=2 AND distinct responding actions = Count(Neighbours(region, responds_kind)) is STRICTLY LESS than the full repertoire = Count(Neighbours(game, has_action_kind)). The omni-responding environment (floor, countdown) responds to every action -> distinct==full -> Lt fails -> never confirmed. A selectively-controlled element responds under a proper subset -> Lt holds. Mints/attaches a PERSISTENT ControlledElement keyed on the region's positional footprint (fkey=rid, stable across frames), Body controls it, it comprises the region. Idempotent (add_node_if_absent + add_edge + same dirty) -> self-terminating. game-blind.",
+   "match": [
+    [
+     "game",
+     "has_region",
+     "region"
+    ],
+    [
+     "bd",
+     "took",
+     "action"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gte",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "region"
+       },
+       "key": "respond_votes"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 2.0
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "region"
+        },
+        "edge_type": "responds_kind",
+        "any_type": false
+       }
+      },
+      "b": {
+       "type": "Count",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "game"
+        },
+        "edge_type": "has_action_kind",
+        "any_type": false
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "region"
+          },
+          "key": "is_meter"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node_if_absent",
+     "elem",
+     "ControlledElement",
+     {
+      "fkey": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "region"
+        },
+        "key": "rid"
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "bd",
+     "controls",
+     "elem"
+    ],
+    [
+     "add_edge",
+     "elem",
+     "comprises",
+     "region"
+    ],
+    [
+     "set_attr",
+     "elem",
+     "dirty",
+     1.0
+    ]
+   ]
+  },
+  {
+   "name": "controlled_bounds",
+   "comment": "ORDER-N aggregate (rename of avatar_bounds): the ControlledElement el is a Region-of-Regions; count/centroid/motion are the weighted aggregate over the UNION of its comprises Regions. count=Sum(r.count); cy=Sum(r.cy*r.count)/count; cx likewise; cy_prev/cx_prev SAVED FIRST (effects apply in order) so drow/dcol = whole-element motion whether 1 piece or N. UNCHANGED math; aggregates el over comprises instead of Body over controls. where reads a component count+cy+cx so precise-dirty re-wakes the aggregate when any comprises Region's centroid settles. Idempotent (fires once per comprises binding, same aggregate). First-frame guard: drow/dcol read 0 until bounds_inited=1 (set after, so the element's first frame is no-motion, not absolute-position). manifestation-agnostic.",
+   "match": [
+    [
+     "el",
+     "comprises",
+     "r0"
+    ]
+   ],
+   "where": {
+    "type": "Gte",
+    "a": {
+     "type": "Plus",
+     "items": [
+      {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r0"
+       },
+       "key": "count"
+      },
+      {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r0"
+       },
+       "key": "cy"
+      },
+      {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r0"
+       },
+       "key": "cx"
+      }
+     ]
+    },
+    "b": {
+     "type": "Lit",
+     "value": -1000000000.0
+    }
+   },
+   "effects": [
+    [
+     "set_attr",
+     "el",
+     "cy_prev",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "el"
+       },
+       "key": "cy"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "el",
+     "cx_prev",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "el"
+       },
+       "key": "cx"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "el",
+     "count",
+     {
+      "__term__": {
+       "type": "Sum",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "el"
+        },
+        "edge_type": "comprises",
+        "any_type": false
+       },
+       "var_name": "r",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "r"
+        },
+        "key": "count"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "el",
+     "cy",
+     {
+      "__term__": {
+       "type": "Div",
+       "a": {
+        "type": "Sum",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "el"
+         },
+         "edge_type": "comprises",
+         "any_type": false
+        },
+        "var_name": "r",
+        "value": {
+         "type": "Times",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "r"
+           },
+           "key": "cy"
+          },
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "r"
+           },
+           "key": "count"
+          }
+         ]
+        }
+       },
+       "b": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "el"
+        },
+        "key": "count"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "el",
+     "cx",
+     {
+      "__term__": {
+       "type": "Div",
+       "a": {
+        "type": "Sum",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "el"
+         },
+         "edge_type": "comprises",
+         "any_type": false
+        },
+        "var_name": "r",
+        "value": {
+         "type": "Times",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "r"
+           },
+           "key": "cx"
+          },
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "r"
+           },
+           "key": "count"
+          }
+         ]
+        }
+       },
+       "b": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "el"
+        },
+        "key": "count"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "el",
+     "drow",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "el"
+         },
+         "key": "bounds_inited"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       "then": {
+        "type": "Minus",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "el"
+         },
+         "key": "cy"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "el"
+         },
+         "key": "cy_prev"
+        }
+       },
+       "other": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "el",
+     "dcol",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "el"
+         },
+         "key": "bounds_inited"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       "then": {
+        "type": "Minus",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "el"
+         },
+         "key": "cx"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "el"
+         },
+         "key": "cx_prev"
+        }
+       },
+       "other": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "el",
+     "bounds_inited",
+     1.0
+    ]
+   ]
+  }
+ ]
+}

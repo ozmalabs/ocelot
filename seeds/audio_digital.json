@@ -1,0 +1,46 @@
+{
+  "microtheory": {
+    "name": "digital_audio",
+    "definition": "Representation + processing of audio as discrete numerical samples. Sampling theory (Nyquist-Shannon), quantization, DSP, transforms (FFT, STFT, wavelet), filtering (FIR, IIR), codecs. The substrate's audio input arrives as digital samples; this Mt names the operations applied. Substrate analogue: directly describes the substrate's signal-processing pipeline below the cochlear gammatone bank.",
+    "category": "audio_domain",
+    "parent": "audio_music_foundation"
+  },
+  "concepts": [
+    {"name": "sampling", "definition": "Discrete-time representation: signal value at uniform time intervals. Substrate analogue: substrate's audio input timeline.", "category": "sampling"},
+    {"name": "sample_rate", "definition": "Samples per second. CD: 44.1 kHz; pro: 48 / 96 / 192 kHz. Substrate analogue: substrate's input clock rate.", "category": "sampling"},
+    {"name": "nyquist_shannon_theorem", "definition": "Whittaker-Nyquist-Shannon. To reconstruct a bandwidth-limited signal, sample at least 2× the highest frequency. Substrate analogue: substrate's sample-rate-to-max-frequency constraint.", "category": "sampling"},
+    {"name": "aliasing", "definition": "Frequencies above Nyquist fold back into baseband as false low frequencies. Anti-alias filtering before sampling required. Substrate analogue: substrate's pre-cochlear filtering needs.", "category": "sampling"},
+    {"name": "quantization", "definition": "Representing continuous amplitude with discrete values. Bit depth: 16 bits = 96 dB dynamic range. Substrate analogue: substrate's input precision.", "category": "sampling"},
+    {"name": "dither", "definition": "Adding low-level noise before requantization to randomize quantization error. Substrate analogue: substrate's stochastic-precision mechanism.", "category": "sampling"},
+
+    {"name": "discrete_fourier_transform", "definition": "DFT. N samples → N complex frequency bins. Computes via FFT in O(N log N). Foundation of spectral analysis. Substrate analogue: substrate's spectral-decomposition primitive.", "category": "transform"},
+    {"name": "short_time_fourier_transform", "definition": "STFT. Windowed DFT at successive time points → spectrogram. Time-frequency tradeoff per Heisenberg. Substrate analogue: substrate's auditory front-end spectrogram input.", "category": "transform"},
+    {"name": "window_function", "definition": "Tapered weighting applied before FFT to reduce spectral leakage. Hann, Hamming, Blackman, Kaiser. Substrate analogue: substrate's per-frame envelope.", "category": "transform"},
+    {"name": "wavelet_transform", "definition": "Multi-resolution transform. Good for transient detection. Substrate analogue: substrate's multi-scale temporal analysis.", "category": "transform"},
+    {"name": "mfcc", "definition": "Mel-frequency cepstral coefficients. Spectral envelope on Mel scale; standard speech feature. Substrate analogue: substrate's speech-encoding feature vector.", "category": "transform"},
+
+    {"name": "fir_filter", "definition": "Finite Impulse Response. Output = weighted sum of past N inputs. Linear phase. Always stable. Substrate analogue: substrate's linear-phase signal shaping.", "category": "filter"},
+    {"name": "iir_filter", "definition": "Infinite Impulse Response. Includes feedback from past outputs. More efficient than FIR for same response. Can be unstable. Substrate analogue: substrate's recursive signal processing.", "category": "filter"},
+    {"name": "lowpass_filter", "definition": "Passes frequencies below cutoff, attenuates above. Substrate analogue: substrate's basilar-membrane gradient.", "category": "filter"},
+    {"name": "highpass_filter", "definition": "Passes frequencies above cutoff. Removes DC + rumble. Substrate analogue: substrate's input-level offset removal.", "category": "filter"},
+    {"name": "bandpass_filter", "definition": "Passes a band of frequencies. Substrate analogue: each gammatone channel.", "category": "filter"},
+    {"name": "gammatone_filter", "definition": "Cochlear-modeling bandpass filter. Impulse response = gamma function × cosine. Used in auditory models. Substrate analogue: literally substrate's cochlear front-end filter type.", "category": "filter"},
+
+    {"name": "convolution", "definition": "Operation: y(t) = ∫ x(τ) h(t-τ) dτ. Equivalent to multiplication in frequency domain. Used for filtering + reverb. Substrate analogue: substrate's input-impulse-response combination.", "category": "operation"},
+    {"name": "compression_audio", "definition": "Dynamic range compression. Reduces gain when signal exceeds threshold. Substrate analogue: substrate's automatic gain control.", "category": "operation"},
+    {"name": "limiting", "definition": "Hard compression preventing peaks above ceiling. Mastering. Substrate analogue: substrate's saturation prevention.", "category": "operation"},
+    {"name": "noise_gate", "definition": "Mutes signal below threshold. Removes hum + breath sounds. Substrate analogue: substrate's input-significance threshold.", "category": "operation"},
+
+    {"name": "lossless_codec", "definition": "Compresses without information loss. FLAC, ALAC. Substrate analogue: substrate's exact-replay storage.", "category": "codec"},
+    {"name": "lossy_codec", "definition": "Discards perceptually-irrelevant info. MP3, AAC, Opus. Uses psychoacoustic masking. Substrate analogue: substrate's perception-based information reduction.", "category": "codec"},
+    {"name": "perceptual_coding", "definition": "Exploits psychoacoustic limits (masking, critical bands) to discard inaudible info. Substrate analogue: substrate's masked-information dropping during input processing.", "category": "codec"},
+    {"name": "opus_codec", "definition": "Modern, low-latency, wide bitrate range. Speech + music. WebRTC. Substrate analogue: substrate's modern audio interface.", "category": "codec"}
+  ],
+  "rules": [
+    {"name": "nyquist_constrains_sample_rate", "head": "the substrate samples a signal", "body": "the sample rate must be at least 2× the highest meaningful frequency in the signal. Substrate's audio input must satisfy this."},
+    {"name": "aliasing_must_be_prevented_before_sampling", "head": "the substrate samples analog input", "body": "frequencies above Nyquist must be removed by anti-alias filter BEFORE sampling — once aliased they're indistinguishable from baseband."},
+    {"name": "time_frequency_tradeoff_in_stft", "head": "the substrate computes STFT for analysis", "body": "longer windows give better frequency resolution; shorter windows give better time resolution. Heisenberg uncertainty for signals. Substrate's per-task choice."},
+    {"name": "fir_for_phase_iir_for_efficiency", "head": "the substrate filters audio", "body": "FIR preserves phase (matters for music); IIR is more efficient (matters for real-time). Substrate's filter choice depends on use."},
+    {"name": "perceptual_coding_exploits_masking", "head": "the substrate compresses audio for storage/transmission", "body": "psychoacoustic masking allows discarding inaudible components — the basis of MP3/AAC/Opus. Substrate's perception-aware compression."}
+  ]
+}

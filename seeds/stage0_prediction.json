@@ -1,0 +1,39 @@
+{
+  "id": "stage0_prediction",
+  "version": "1.0.0",
+  "depends_on": [],
+  "description": "Stage 0 of the jabberwock's OWN curriculum (docs/jabberwock_game_play_design.md): 'I can predict a passive world.' The forward model + the surprise signal — the predictor everything else is built on. Per its design: predict each Region's next CENTROID (not pixels — wrong altitude) from the constant-velocity prior (object_permanence + Newton's first law as a DEFAULT prediction): predicted.cy(t+1)=cy+drow, predicted.cx(t+1)=cx+dcol. The prediction is written in-fixpoint as next_predicted_* and COMMITTED at the clock edge by the engine's conservative fold (region carries clocked=1) — the only place the standing prediction can change. Surprise = |observed centroid − the prediction committed last tick|, per Region. Success (the agent's own criterion): per-Region one-step error → floor on a moving dot. No control, no goals, no death yet — only prediction.",
+  "microtheory": {"name": "stage0_prediction", "description": "predict each region's next centroid (constant velocity); surprise = observed - predicted; the predictor everything builds on."},
+  "nodes": [],
+  "edges": [],
+  "productions": [],
+  "rules": [
+    {
+      "name": "region_predict_next",
+      "comment": "The forward model (a graph Term): predict each Region's next centroid = current centroid + its tracked velocity (drow/dcol) — the constant-velocity prior (object_permanence). Written as next_predicted_* (combinational, in-fixpoint); the engine's clock-edge fold commits next_predicted_*→predicted_* (region carries clocked=1), so the standing prediction only changes at the clock edge.",
+      "match": [["game", "has_region", "r"]],
+      "where": {"type": "Lit", "value": true},
+      "effects": [
+        ["set_attr", "r", "clocked", 1.0],
+        ["set_attr", "r", "next_predicted_cy", {"__term__": {"type": "Plus", "items": [{"type": "Attr", "node": {"type": "Var", "name": "r"}, "key": "cy"}, {"type": "Attr", "node": {"type": "Var", "name": "r"}, "key": "drow"}]}}],
+        ["set_attr", "r", "next_predicted_cx", {"__term__": {"type": "Plus", "items": [{"type": "Attr", "node": {"type": "Var", "name": "r"}, "key": "cx"}, {"type": "Attr", "node": {"type": "Var", "name": "r"}, "key": "dcol"}]}}]
+      ]
+    },
+    {
+      "name": "region_surprise",
+      "comment": "Surprise = the prediction error, per Region: |observed centroid − the centroid this Region was predicted (last tick, committed at the clock edge) to have now|. This single residual is the agent's currency (later it drives model update, attention, action; here it just measures whether the predictor works). predicted_cy/predicted_cx default to 0 before the first committed prediction (a one-off opening surprise).",
+      "match": [["game", "has_region", "r"]],
+      "where": {"type": "Lit", "value": true},
+      "effects": [
+        ["set_attr", "r", "surprise", {"__term__": {"type": "Plus", "items": [
+          {"type": "Max", "items": [
+            {"type": "Minus", "a": {"type": "Attr", "node": {"type": "Var", "name": "r"}, "key": "cy"}, "b": {"type": "Plus", "items": [{"type": "Attr", "node": {"type": "Var", "name": "r"}, "key": "predicted_cy"}, {"type": "Lit", "value": 0.0}]}},
+            {"type": "Neg", "arg": {"type": "Minus", "a": {"type": "Attr", "node": {"type": "Var", "name": "r"}, "key": "cy"}, "b": {"type": "Plus", "items": [{"type": "Attr", "node": {"type": "Var", "name": "r"}, "key": "predicted_cy"}, {"type": "Lit", "value": 0.0}]}}}]},
+          {"type": "Max", "items": [
+            {"type": "Minus", "a": {"type": "Attr", "node": {"type": "Var", "name": "r"}, "key": "cx"}, "b": {"type": "Plus", "items": [{"type": "Attr", "node": {"type": "Var", "name": "r"}, "key": "predicted_cx"}, {"type": "Lit", "value": 0.0}]}},
+            {"type": "Neg", "arg": {"type": "Minus", "a": {"type": "Attr", "node": {"type": "Var", "name": "r"}, "key": "cx"}, "b": {"type": "Plus", "items": [{"type": "Attr", "node": {"type": "Var", "name": "r"}, "key": "predicted_cx"}, {"type": "Lit", "value": 0.0}]}}}]}
+        ]}}]
+      ]
+    }
+  ]
+}

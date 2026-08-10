@@ -1,0 +1,494 @@
+{
+ "beam_vs_greedy": {
+  "default_beam3_candk3": {
+   "authored": true,
+   "beam": 3,
+   "covered": [
+    [
+     "move",
+     "X",
+     "by",
+     "D"
+    ],
+    [
+     "stop",
+     "X"
+    ],
+    [
+     "detect",
+     "CONTACT",
+     "between",
+     "PARTS"
+    ],
+    [
+     "type",
+     "CONTACT",
+     "is",
+     "INVARIANT"
+    ],
+    [
+     "build",
+     "NEW",
+     "from",
+     "PRIOR"
+    ],
+    [
+     "bound",
+     "SELF",
+     "by",
+     "UNIT"
+    ]
+   ],
+   "covered_count": 6,
+   "goal_relations": 6,
+   "ordered_parts": [
+    "part_move",
+    "part_detect",
+    "part_build"
+   ],
+   "plan": [
+    {
+     "covers": [
+      [
+       "move",
+       "X",
+       "by",
+       "D"
+      ],
+      [
+       "stop",
+       "X"
+      ]
+     ],
+     "kind": "faculty",
+     "part": "part_move",
+     "shape_fit": 6,
+     "source": "part_move",
+     "step": 1,
+     "why": "the held shape-matcher rated 'part_move' fit 6 and its Covers Term accepts 2 residual relation(s)"
+    },
+    {
+     "covers": [
+      [
+       "detect",
+       "CONTACT",
+       "between",
+       "PARTS"
+      ],
+      [
+       "type",
+       "CONTACT",
+       "is",
+       "INVARIANT"
+      ]
+     ],
+     "kind": "faculty",
+     "part": "part_detect",
+     "shape_fit": 8,
+     "source": "part_detect",
+     "step": 2,
+     "why": "the held shape-matcher rated 'part_detect' fit 8 and its Covers Term accepts 2 residual relation(s)"
+    },
+    {
+     "covers": [
+      [
+       "build",
+       "NEW",
+       "from",
+       "PRIOR"
+      ],
+      [
+       "bound",
+       "SELF",
+       "by",
+       "UNIT"
+      ]
+     ],
+     "kind": "faculty",
+     "part": "part_build",
+     "shape_fit": 8,
+     "source": "part_build",
+     "step": 3,
+     "why": "the held shape-matcher rated 'part_build' fit 8 and its Covers Term accepts 2 residual relation(s)"
+    }
+   ],
+   "provenance": "the plan is the AGENT'S: each step's part was selected by the held shape-matcher (AntiUnify+FixedCount fit, Covers coverage \u2014 Rust Terms) as a best-fitting held part to the partial assembly's residual; Python only iterated the BEAM frontier and read the matcher's Argmax. No LLM, no Python decision over the composition.",
+   "residual": [],
+   "total_fit": 22
+  },
+  "goal_signature": [
+   [
+    "move",
+    "X",
+    "by",
+    "D"
+   ],
+   [
+    "stop",
+    "X"
+   ],
+   [
+    "detect",
+    "CONTACT",
+    "between",
+    "PARTS"
+   ],
+   [
+    "type",
+    "CONTACT",
+    "is",
+    "INVARIANT"
+   ],
+   [
+    "build",
+    "NEW",
+    "from",
+    "PRIOR"
+   ],
+   [
+    "bound",
+    "SELF",
+    "by",
+    "UNIT"
+   ]
+  ],
+  "greedy_beam1_candk1": {
+   "authored": true,
+   "beam": 1,
+   "covered": [
+    [
+     "move",
+     "X",
+     "by",
+     "D"
+    ],
+    [
+     "stop",
+     "X"
+    ],
+    [
+     "detect",
+     "CONTACT",
+     "between",
+     "PARTS"
+    ],
+    [
+     "type",
+     "CONTACT",
+     "is",
+     "INVARIANT"
+    ],
+    [
+     "build",
+     "NEW",
+     "from",
+     "PRIOR"
+    ],
+    [
+     "bound",
+     "SELF",
+     "by",
+     "UNIT"
+    ]
+   ],
+   "covered_count": 6,
+   "goal_relations": 6,
+   "ordered_parts": [
+    "part_move",
+    "part_detect",
+    "part_build"
+   ],
+   "plan": [
+    {
+     "covers": [
+      [
+       "move",
+       "X",
+       "by",
+       "D"
+      ],
+      [
+       "stop",
+       "X"
+      ]
+     ],
+     "kind": "faculty",
+     "part": "part_move",
+     "shape_fit": 6,
+     "source": "part_move",
+     "step": 1,
+     "why": "the held shape-matcher rated 'part_move' fit 6 and its Covers Term accepts 2 residual relation(s)"
+    },
+    {
+     "covers": [
+      [
+       "detect",
+       "CONTACT",
+       "between",
+       "PARTS"
+      ],
+      [
+       "type",
+       "CONTACT",
+       "is",
+       "INVARIANT"
+      ]
+     ],
+     "kind": "faculty",
+     "part": "part_detect",
+     "shape_fit": 8,
+     "source": "part_detect",
+     "step": 2,
+     "why": "the held shape-matcher rated 'part_detect' fit 8 and its Covers Term accepts 2 residual relation(s)"
+    },
+    {
+     "covers": [
+      [
+       "build",
+       "NEW",
+       "from",
+       "PRIOR"
+      ],
+      [
+       "bound",
+       "SELF",
+       "by",
+       "UNIT"
+      ]
+     ],
+     "kind": "faculty",
+     "part": "part_build",
+     "shape_fit": 8,
+     "source": "part_build",
+     "step": 3,
+     "why": "the held shape-matcher rated 'part_build' fit 8 and its Covers Term accepts 2 residual relation(s)"
+    }
+   ],
+   "provenance": "the plan is the AGENT'S: each step's part was selected by the held shape-matcher (AntiUnify+FixedCount fit, Covers coverage \u2014 Rust Terms) as a best-fitting held part to the partial assembly's residual; Python only iterated the BEAM frontier and read the matcher's Argmax. No LLM, no Python decision over the composition.",
+   "residual": [],
+   "total_fit": 22
+  }
+ },
+ "full_cover": {
+  "goal_signature": [
+   [
+    "move",
+    "X",
+    "by",
+    "D"
+   ],
+   [
+    "stop",
+    "X"
+   ],
+   [
+    "detect",
+    "CONTACT",
+    "between",
+    "PARTS"
+   ],
+   [
+    "type",
+    "CONTACT",
+    "is",
+    "INVARIANT"
+   ]
+  ],
+  "result": {
+   "authored": true,
+   "beam": 3,
+   "covered": [
+    [
+     "move",
+     "X",
+     "by",
+     "D"
+    ],
+    [
+     "stop",
+     "X"
+    ],
+    [
+     "detect",
+     "CONTACT",
+     "between",
+     "PARTS"
+    ],
+    [
+     "type",
+     "CONTACT",
+     "is",
+     "INVARIANT"
+    ]
+   ],
+   "covered_count": 4,
+   "goal_relations": 4,
+   "ordered_parts": [
+    "part_move",
+    "part_detect"
+   ],
+   "plan": [
+    {
+     "covers": [
+      [
+       "move",
+       "X",
+       "by",
+       "D"
+      ],
+      [
+       "stop",
+       "X"
+      ]
+     ],
+     "kind": "faculty",
+     "part": "part_move",
+     "shape_fit": 6,
+     "source": "part_move",
+     "step": 1,
+     "why": "the held shape-matcher rated 'part_move' fit 6 and its Covers Term accepts 2 residual relation(s)"
+    },
+    {
+     "covers": [
+      [
+       "detect",
+       "CONTACT",
+       "between",
+       "PARTS"
+      ],
+      [
+       "type",
+       "CONTACT",
+       "is",
+       "INVARIANT"
+      ]
+     ],
+     "kind": "faculty",
+     "part": "part_detect",
+     "shape_fit": 8,
+     "source": "part_detect",
+     "step": 2,
+     "why": "the held shape-matcher rated 'part_detect' fit 8 and its Covers Term accepts 2 residual relation(s)"
+    }
+   ],
+   "provenance": "the plan is the AGENT'S: each step's part was selected by the held shape-matcher (AntiUnify+FixedCount fit, Covers coverage \u2014 Rust Terms) as a best-fitting held part to the partial assembly's residual; Python only iterated the BEAM frontier and read the matcher's Argmax. No LLM, no Python decision over the composition.",
+   "residual": [],
+   "total_fit": 14
+  }
+ },
+ "partial_cover": {
+  "goal_signature": [
+   [
+    "move",
+    "X",
+    "by",
+    "D"
+   ],
+   [
+    "stop",
+    "X"
+   ],
+   [
+    "novel_pred",
+    "A",
+    "given",
+    "B"
+   ]
+  ],
+  "result": {
+   "authored": true,
+   "beam": 3,
+   "covered": [
+    [
+     "move",
+     "X",
+     "by",
+     "D"
+    ],
+    [
+     "stop",
+     "X"
+    ]
+   ],
+   "covered_count": 2,
+   "goal_relations": 3,
+   "ordered_parts": [
+    "part_move"
+   ],
+   "plan": [
+    {
+     "covers": [
+      [
+       "move",
+       "X",
+       "by",
+       "D"
+      ],
+      [
+       "stop",
+       "X"
+      ]
+     ],
+     "kind": "faculty",
+     "part": "part_move",
+     "shape_fit": 6,
+     "source": "part_move",
+     "step": 1,
+     "why": "the held shape-matcher rated 'part_move' fit 6 and its Covers Term accepts 2 residual relation(s)"
+    }
+   ],
+   "provenance": "the plan is the AGENT'S: each step's part was selected by the held shape-matcher (AntiUnify+FixedCount fit, Covers coverage \u2014 Rust Terms) as a best-fitting held part to the partial assembly's residual; Python only iterated the BEAM frontier and read the matcher's Argmax. No LLM, no Python decision over the composition.",
+   "residual": [
+    [
+     "novel_pred",
+     "A",
+     "given",
+     "B"
+    ]
+   ],
+   "total_fit": 6
+  }
+ },
+ "parts": {
+  "part_build": [
+   [
+    "build",
+    "NEW",
+    "from",
+    "PRIOR"
+   ],
+   [
+    "bound",
+    "SELF",
+    "by",
+    "UNIT"
+   ]
+  ],
+  "part_detect": [
+   [
+    "detect",
+    "CONTACT",
+    "between",
+    "PARTS"
+   ],
+   [
+    "type",
+    "CONTACT",
+    "is",
+    "INVARIANT"
+   ]
+  ],
+  "part_move": [
+   [
+    "move",
+    "X",
+    "by",
+    "D"
+   ],
+   [
+    "stop",
+    "X"
+   ]
+  ]
+ }
+}

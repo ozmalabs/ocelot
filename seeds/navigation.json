@@ -1,0 +1,317 @@
+{
+  "id": "navigation",
+  "version": "2.0.0",
+  "depends_on": [
+    "perception_core"
+  ],
+  "description": "The agent's navigable-map PERCEPTION as graph rules (no Python in domains/): stride_loci_from_floor marks floor cells on the body's stride grid as SpatialLocation loci; stride_adjacency connects stride-adjacent loci. The thin adapter only marks floor_cell edges (from figure/ground) and sets nav_br/nav_bc/nav_S (from agency); tick() builds the map. The PLAN is the navigate reflex relaxing the relax Term on master_tick().",
+  "nodes": [],
+  "edges": [],
+  "productions": [],
+  "rules": [
+    {
+      "name": "stride_loci_from_floor",
+      "match": [
+        [
+          "ag",
+          "floor_cell",
+          "c"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "And",
+            "items": [
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Mod",
+                  "a": {
+                    "type": "Minus",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "c"
+                      },
+                      "key": "row"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "ag"
+                      },
+                      "key": "nav_br"
+                    }
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "ag"
+                    },
+                    "key": "nav_S"
+                  }
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 0
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Mod",
+                  "a": {
+                    "type": "Minus",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "c"
+                      },
+                      "key": "col"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "ag"
+                      },
+                      "key": "nav_bc"
+                    }
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "ag"
+                    },
+                    "key": "nav_S"
+                  }
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 0
+                }
+              }
+            ]
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "c"
+                },
+                "key": "world_type"
+              },
+              "b": {
+                "type": "Lit",
+                "value": "SpatialLocation"
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "c",
+          "world_type",
+          {
+            "__term__": {
+              "type": "Lit",
+              "value": "SpatialLocation"
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "ag",
+          "navigable",
+          "c"
+        ]
+      ]
+    },
+    {
+      "name": "stride_adjacency",
+      "match": [
+        [
+          "ag",
+          "navigable",
+          "c1"
+        ],
+        [
+          "ag",
+          "navigable",
+          "c2"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Or",
+            "items": [
+              {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "c1"
+                      },
+                      "key": "row"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "c2"
+                      },
+                      "key": "row"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Abs",
+                      "arg": {
+                        "type": "Minus",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "c1"
+                          },
+                          "key": "col"
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "c2"
+                          },
+                          "key": "col"
+                        }
+                      }
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "ag"
+                      },
+                      "key": "nav_S"
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "c1"
+                      },
+                      "key": "col"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "c2"
+                      },
+                      "key": "col"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Abs",
+                      "arg": {
+                        "type": "Minus",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "c1"
+                          },
+                          "key": "row"
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "c2"
+                          },
+                          "key": "row"
+                        }
+                      }
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "ag"
+                      },
+                      "key": "nav_S"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "c1"
+                },
+                "edge_type": "adjacent_location"
+              },
+              "var_name": "_w",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Var",
+                  "name": "_w"
+                },
+                "b": {
+                  "type": "Var",
+                  "name": "c2"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_edge",
+          "c1",
+          "adjacent_location",
+          "c2"
+        ]
+      ]
+    }
+  ]
+}

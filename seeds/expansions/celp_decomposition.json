@@ -1,0 +1,118 @@
+{
+  "id": "celp_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "CELP",
+  "in_microtheory": "audio_coding_theory",
+  "description": "Code Excited Linear Prediction (CELP) decomposed. CELP is the foundational architecture for low-bitrate speech codecs (G.729, AMR-NB, AMR-WB, Opus SILK, EVS). The 'synthesis-by-analysis' search loop is its defining feature: instead of analysing speech and approximating its parameters, CELP iteratively synthesises candidate outputs and picks the one whose synthesis best matches the original. Combined with LPC's spectral envelope and a codebook of excitation signals, achieves remarkable naturalness at 5-10 kbps.",
+  "sub_mechanisms": [
+    {
+      "name": "lpc_short_term_filter",
+      "definition": "10-16 order all-pole filter modeling the vocal tract's spectral envelope. Coefficients computed from autocorrelation of the input frame.",
+      "why": "Vocal tract resonances dominate speech spectrum. LPC captures these in 10-16 coefficients per frame. The filter's frequency response IS the spectral envelope; the excitation signal drives this filter to produce the output speech.",
+      "category": "celp_mechanism"
+    },
+    {
+      "name": "lsf_line_spectral_frequencies",
+      "definition": "Alternative representation of LPC coefficients with better quantisation properties: the roots of two polynomials derived from the LPC filter, lying on the unit circle.",
+      "why": "Direct LPC coefficients are sensitive to quantisation noise (small changes cause filter instability). LSFs are robust — small quantisation changes produce small filter changes. Standard for transmitting LPC parameters in production codecs.",
+      "category": "celp_mechanism"
+    },
+    {
+      "name": "adaptive_codebook_pitch",
+      "definition": "First-stage excitation: a delay-line of past synthesised excitation, indexed by 'pitch lag'. The excitation at lag L recurs the previous excitation from L samples ago.",
+      "why": "Voiced speech is periodic at the pitch frequency. The adaptive codebook captures this periodicity by self-reference. Pitch lag + gain are sent; the recurrence is automatic at the decoder. Captures most of voiced speech's content cheaply.",
+      "category": "celp_mechanism"
+    },
+    {
+      "name": "fixed_codebook_innovation",
+      "definition": "Second-stage excitation: a pre-defined codebook of candidate excitation patterns. Combined with the adaptive codebook to form the final excitation.",
+      "why": "Adaptive codebook captures periodicity; fixed codebook adds the non-periodic 'innovation' — the part of the excitation not predictable from past. The codebook is small (~512-2048 entries) but covers typical speech innovation patterns.",
+      "category": "celp_mechanism"
+    },
+    {
+      "name": "analysis_by_synthesis",
+      "definition": "The CELP encoder doesn't directly analyse the input to extract parameters. Instead, it iteratively synthesises candidate outputs (using each possible codebook entry) and picks the entry whose synthesised output best matches the original.",
+      "why": "Direct analysis is suboptimal because the decoder uses synthesis. Analysis-by-synthesis tests the actual decoder output, choosing what literally minimises the perceived error. The trade-off is encoder complexity (must run synthesis for every candidate); ACELP makes this tractable.",
+      "category": "celp_mechanism"
+    },
+    {
+      "name": "perceptual_error_weighting",
+      "definition": "The error measured during analysis-by-synthesis is weighted by a perceptual filter (derived from LPC) that de-emphasises errors in formant regions where they'd be masked.",
+      "why": "Plain squared error treats all spectral errors equally; HVS doesn't. Perceptual weighting puts more weight on errors in spectral valleys (between formants, where errors are unmasked) and less on errors in peaks (where they're masked). Substantially improves perceived quality at the same bitrate.",
+      "category": "celp_mechanism"
+    },
+    {
+      "name": "subframe_structure",
+      "definition": "A typical CELP frame (20 ms) is divided into 4-5 subframes (4-5 ms each). LPC is updated per frame; excitation parameters per subframe.",
+      "why": "LPC's spectral envelope is slowly varying (whole frame); excitation parameters vary rapidly (subframe). The two timescales need different update rates. Subframe excitation captures pitch and innovation changes within a phoneme.",
+      "category": "celp_mechanism"
+    },
+    {
+      "name": "acelp_algebraic_structure",
+      "definition": "Algebraic CELP: replaces vector codebooks with algebraic structures — sparse pulse positions with ±1 amplitudes. The 'codebook' is implicit; positions and signs are searched.",
+      "why": "Plain vector codebooks are expensive to search exhaustively. Algebraic structure makes the search O(n^2) instead of O(n × codebook_size). All modern speech codecs (AMR, EVS, Opus SILK) use ACELP for this reason.",
+      "category": "celp_mechanism"
+    },
+    {
+      "name": "voicing_decision",
+      "definition": "Per-frame classification: voiced (periodic, e.g., vowels), unvoiced (noise-like, e.g., 's', 'f'), transitional, silence. Different coding parameters per class.",
+      "why": "Voiced and unvoiced speech have fundamentally different statistics. Voiced needs pitch period coding; unvoiced needs noise modeling. Per-class coding optimises for each — voiced gets pitch+innovation, unvoiced gets innovation-only, silence gets DTX.",
+      "category": "celp_mechanism"
+    },
+    {
+      "name": "gain_quantisation",
+      "definition": "Adaptive codebook gain and fixed codebook gain are separately quantised, often via differential coding (relative to past gains).",
+      "why": "Gains have predictable inter-frame statistics (a strong voice doesn't suddenly become whisper). Differential coding exploits this; the residual is smaller and easier to entropy-code than absolute gains.",
+      "category": "celp_mechanism"
+    },
+    {
+      "name": "postfilter_decoder",
+      "definition": "Decoder-side filter applied after synthesis to enhance perceived quality: emphasises formants, attenuates the noisy spectrum between formants.",
+      "why": "Synthesised speech often has flat-spectrum noise that's perceptually distracting. Postfilter shapes this noise toward the spectral envelope of speech (more noise where formants live, less between), making the noise less perceptible. Adds nothing to bitrate.",
+      "category": "celp_mechanism"
+    },
+    {
+      "name": "comfort_noise_generation",
+      "definition": "During silence (DTX), the decoder synthesises low-level background noise tuned to match the speaker's typical background.",
+      "why": "Pure silence sounds like a dropped call. Comfort noise reassures the listener that the line is active. Spectrally shaped to match background noise — listener doesn't perceive abrupt transitions.",
+      "category": "celp_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "lpc_models_source_filter_speech",
+      "if": ["speech is modeled as glottal source filtered by vocal tract"],
+      "then": ["LPC captures the filter; excitation captures the source"],
+      "why": "The source-filter model of speech (a mathematical idealisation) maps directly to LPC's all-pole structure. The filter coefficients describe vocal tract resonances; the excitation describes the glottal pulse train (voiced) or turbulent noise (unvoiced). This decomposition IS speech production.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "analysis_by_synthesis_optimises_perceived_error",
+      "if": ["the encoder evaluates synthesised output during search"],
+      "then": ["the chosen parameters minimise the actual perceived error"],
+      "why": "Direct parameter estimation can be off-target because the decoder synthesises differently than the analyser. Analysis-by-synthesis tests the actual decoder output, ensuring the parameters chosen produce the best synthesised result. The closed-loop test guarantees the encoder didn't just optimise an irrelevant metric.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "acelp_makes_celp_practical",
+      "if": ["codebook search is O(codebook_size × frame_length)"],
+      "then": ["algebraic structure reduces it to O(frame_length^2)"],
+      "why": "Pure CELP's codebook is too large to search exhaustively. ACELP's algebraic structure lets the search be expressed as a small linear algebra problem, polynomial in frame length instead of exponential in codebook size. Without ACELP, modern CELP-class codecs wouldn't be tractable.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "subframe_structure_matches_timescales",
+      "if": ["LPC parameters vary slowly but excitation varies rapidly"],
+      "then": ["frame-level LPC + subframe-level excitation matches the timescales"],
+      "why": "Spectral envelope is roughly constant over 20 ms; pitch and innovation change every 5 ms. Updating each at its own timescale captures the dynamics without over-spending bits on slow-changing parameters.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "voicing_decision_routes_to_specialised_coding",
+      "if": ["frames are classified into voiced/unvoiced/silence"],
+      "then": ["each class can be coded with parameters tuned to its statistics"],
+      "why": "Voiced needs pitch + innovation; unvoiced needs only innovation; silence needs DTX. Per-class coding skips parameters that wouldn't carry information for that class. Common across G.729, AMR, EVS, Opus SILK.",
+      "soundness_category": "extensional_equivalence"
+    }
+  ]
+}

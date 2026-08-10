@@ -1,0 +1,54 @@
+{
+  "id": "global_monitoring",
+  "version": "1.0.0",
+  "depends_on": [
+    "situation_model"
+  ],
+  "description": "STEP 5 of the comprehension pipeline: GLOBAL comprehension monitoring -- validating a newly-read proposition against the ACCUMULATED situation model, not just its own clause. domains/reading_review.py is a strong LOCAL (within-clause) standards-of-coherence monitor (combined_incoherence: ungroundable / selectionally-mismatched arguments), but it cannot see a contradiction between two facts far apart in the text (Glenberg et al. 1982 illusion-of-knowing; O'Brien & Cook 2016's RI-Val Validation stage, which checks a new proposition against the WHOLE text model, not the current clause). This seed supplies (1) a small, honest, FINITE 'KINSHIP' MarkerClass -- the same member/canon shape domains/situation_model_reader.py's COS class uses, applied to a NOUN class instead of a verb class: 'daughter'/'son'/'child'/'children' all canonicalise to the ONE bridge attribute 'has_child' the contradiction check compares (the entailment 'a daughter -> the parent HAS a child' domains/global_monitoring.py derives) -- and (2) the 'global_contradiction' Program: a GENERIC graph Term (Var/Eq/Not/And -- the exact vocabulary seeds/reading_review.json's review_license Program already proves sufficient, no new Rust Term) that decides whether a NEW value CONTRADICTS an ESTABLISHED sm_entity attr (established is neither unset NOR equal to new). The Program takes established/new/unset as bound VALUES (mechanical Python reads, mirroring reading_review.py's _licensed reading best/runnerup/self before handing them to review_license) -- the CONTRADICTION DECISION itself is native.evaluate on this Program, never a Python `if established != new`. HONEST SCOPE: unlike COS (a VERB class, where reading_collapse.py's _wordnet_nearness meaningfully extends membership by verb-sense adjacency), KINSHIP is a NOMINAL class -- the verb-scoped nearness helper does not apply to nouns, so membership here is EXACT-FORM only over this small finite list; an unseen kinship term (e.g. 'grandchild') is a genuine residual, not silently covered.",
+  "microtheory": {
+    "name": "global_monitoring",
+    "description": "validate a newly-read proposition against the accumulated situation model"
+  },
+  "nodes": [
+    {
+      "local_id": 1,
+      "type": "Concept",
+      "attrs": {
+        "name": "global_monitoring",
+        "description": "The sentinel concept guarding idempotent load of this seed (domains/global_monitoring.py ensure_seeds). GLOBAL comprehension monitoring: RI-Val Validation (O'Brien & Cook 2016) -- a new proposition is checked against the WHOLE situation model, not just its own clause; a failed check escalates to reprocessing (reading_scope.py's existing retained-trace / cold re-read path), matching Validation -> failure -> reprocess."
+      }
+    },
+    {
+      "local_id": 2,
+      "type": "MarkerClass",
+      "attrs": {
+        "cls": "KINSHIP",
+        "forms": [
+          "daughter",
+          "son",
+          "child",
+          "children"
+        ],
+        "canon": {
+          "daughter": "has_child",
+          "son": "has_child",
+          "child": "has_child",
+          "children": "has_child"
+        },
+        "note": "The kinship-noun class the global monitor's entailment reads: any of these nouns, found as (a possibly quantified/negated) argument of a predication, ENTAILS that the predication's possessor holds has_child=1 (or =0 under a seeded NEGATOR prefix like 'no'/'zero'/'none' -- domains/global_monitoring.py's _NEGATORS table). A small, honest, FINITE codebook (mirrors seeds/inference_knowledge.json's own documented finite-codebook honesty) -- an unseen kinship term (e.g. 'grandchild', 'sibling') is a genuine residual, not covered."
+      }
+    },
+    {
+      "local_id": 3,
+      "type": "Program",
+      "attrs": {
+        "name": "global_contradiction",
+        "form": "term_tree",
+        "program": "{\"type\": \"And\", \"items\": [{\"type\": \"Not\", \"arg\": {\"type\": \"Eq\", \"a\": {\"type\": \"Var\", \"name\": \"established\"}, \"b\": {\"type\": \"Var\", \"name\": \"unset\"}}}, {\"type\": \"Not\", \"arg\": {\"type\": \"Eq\", \"a\": {\"type\": \"Var\", \"name\": \"established\"}, \"b\": {\"type\": \"Var\", \"name\": \"new\"}}}]}",
+        "note": "GLOBAL INCOHERENCE decision: fires (True) iff the situation model already holds an ESTABLISHED value for this sm_entity attr (established != unset) AND the newly-entailed value differs from it (established != new). Generic over established/new/unset (bound as VALUES by the caller, mechanical Python reads) -- the same Var/Eq/Not/And vocabulary seeds/reading_review.json's review_license Program already proves sufficient; no new Rust Term."
+      }
+    }
+  ],
+  "edges": [],
+  "rules": []
+}

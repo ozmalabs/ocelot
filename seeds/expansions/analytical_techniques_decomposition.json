@@ -1,0 +1,118 @@
+{
+  "id": "analytical_techniques_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "NMR_spectroscopy",
+  "in_microtheory": "materials_chemistry",
+  "description": "Analytical techniques decomposed. NMR variants (1D, 2D, COSY, NOESY), mass spec ionization methods, chromatography variants, X-ray techniques (XRD, XPS, XRF), electron microscopy (SEM, TEM, STEM, EBSD, EDS), surface analysis (AFM, STM), thermal analysis (DSC, TGA).",
+  "sub_mechanisms": [
+    {
+      "name": "1D_NMR_chemical_shift",
+      "definition": "Spectrum with peaks. Chemical shift δ (ppm) ID's environment. Integration counts H.",
+      "why": "Foundation of organic ID. Aromatic 6-8 ppm; aliphatic 0-3; -OH variable. Standard.",
+      "category": "analytical_mechanism"
+    },
+    {
+      "name": "2D_NMR_COSY_NOESY",
+      "definition": "COSY: H-H coupling (through bond). NOESY: H-H through space (<5 Å).",
+      "why": "Structure determination. COSY shows connectivity. NOESY shows 3D proximity. Standard for complex molecules.",
+      "category": "analytical_mechanism"
+    },
+    {
+      "name": "EI_CI_ESI_MALDI",
+      "definition": "Mass spec ionization: EI (hard, fragmenting), CI (soft, M+H+), ESI (solution), MALDI (proteins).",
+      "why": "Choose by analyte. ESI: drugs, peptides. MALDI: proteins, polymers. EI: structure ID via fragments.",
+      "category": "analytical_mechanism"
+    },
+    {
+      "name": "tandem_mass_spec",
+      "definition": "MS/MS. Select ion, fragment, mass-spec fragments.",
+      "why": "Structure determination + sensitivity. Quantification of trace analytes. Proteomics, drug metabolism.",
+      "category": "analytical_mechanism"
+    },
+    {
+      "name": "HPLC_GC_separation",
+      "definition": "Stationary + mobile phase. Different distribution coefficients separate.",
+      "why": "Foundation of separation. Reverse-phase HPLC (C18 + polar mobile) universal. GC for volatile.",
+      "category": "analytical_mechanism"
+    },
+    {
+      "name": "GC_MS_LC_MS",
+      "definition": "Chromatography + mass spec. Separate then identify.",
+      "why": "Complex mixtures. Environmental, drug screening, metabolomics. Standard combination.",
+      "category": "analytical_mechanism"
+    },
+    {
+      "name": "XRD_powder_single_crystal",
+      "definition": "Powder XRD: phase ID, lattice parameter. Single crystal: full atomic structure.",
+      "why": "Foundation crystallography. Single crystal: protein structures (Nobels). Powder: ubiquitous QC.",
+      "category": "analytical_mechanism"
+    },
+    {
+      "name": "XPS_surface_chemistry",
+      "definition": "X-ray Photoelectron Spectroscopy. Binding energies → elements + oxidation states. Top ~10 nm.",
+      "why": "Surface composition. Oxidation states (C1s shift identifies functional groups). Standard surface chemistry tool.",
+      "category": "analytical_mechanism"
+    },
+    {
+      "name": "EDS_EBSD_in_SEM",
+      "definition": "Energy Dispersive Spectroscopy: elemental ID via X-rays. EBSD: orientation mapping.",
+      "why": "Coupled with SEM. Element maps; grain orientation maps. Foundation modern materials characterisation.",
+      "category": "analytical_mechanism"
+    },
+    {
+      "name": "TEM_STEM_imaging",
+      "definition": "TEM: 2D image. STEM: scanned probe. Atomic resolution at high accelerations.",
+      "why": "Defects, interfaces, nanoparticles. Aberration-corrected STEM: atomic columns. Modern materials science.",
+      "category": "analytical_mechanism"
+    },
+    {
+      "name": "DSC_thermal_analysis",
+      "definition": "Differential Scanning Calorimetry. Heat flow vs T. Detects Tg, Tm, Tc, reactions.",
+      "why": "Polymer characterisation, drug formulation, materials. Phase transitions visible. Standard.",
+      "category": "analytical_mechanism"
+    },
+    {
+      "name": "TGA_thermogravimetric",
+      "definition": "Mass vs T. Decomposition, dehydration, oxidation steps.",
+      "why": "Stability + composition. Polymer filler content. Foundation thermal analysis.",
+      "category": "analytical_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "NMR_structure_determination_complete",
+      "if": ["1D + 2D NMR + chemical analysis available"],
+      "then": ["full molecular structure determinable"],
+      "why": "1D: H count + environment. COSY: connectivity. NOESY: 3D. NMR is most informative single technique for organic structure.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "tandem_MS_picograms",
+      "if": ["analyte quantified by tandem MS"],
+      "then": ["picogram sensitivity achievable"],
+      "why": "Selectivity from precursor + fragment masses; sensitivity from no chemical noise. Drug bioanalysis, doping testing. Foundation.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "XPS_oxidation_state_from_binding_energy",
+      "if": ["XPS measures core electron binding energy"],
+      "then": ["chemical environment + oxidation state determined"],
+      "why": "Fe²⁺ vs Fe³⁺ shifted ~2 eV. C-C vs C-O vs C=O distinguishable. Standard surface chemistry analysis.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "atomic_resolution_TEM_via_aberration_correction",
+      "if": ["Cs aberration corrector installed"],
+      "then": ["atomic resolution imaging routine"],
+      "why": "Lens aberrations limit resolution; corrector removes. Modern TEMs: 0.5 Å resolution. Revolutionised materials science.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "DSC_TGA_complementary",
+      "if": ["material thermal stability characterised"],
+      "then": ["DSC + TGA combined gives complete picture"],
+      "why": "DSC: phase transitions + reactions. TGA: mass changes (decomp, oxidation). Together: full thermal behaviour. Standard.",
+      "soundness_category": "extensional_equivalence"
+    }
+  ]
+}

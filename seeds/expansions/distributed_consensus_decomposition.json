@@ -1,0 +1,118 @@
+{
+  "id": "distributed_consensus_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "Raft_consensus",
+  "in_microtheory": "databases_and_storage",
+  "description": "Distributed consensus decomposed. Raft's leader election + log replication + safety. Paxos's basic protocol + Multi-Paxos. The FLP impossibility. CRDTs as a different approach. Modern variants: EPaxos, Flexible Paxos.",
+  "sub_mechanisms": [
+    {
+      "name": "leader_election",
+      "definition": "Raft: nodes start as followers. After election timeout, become candidate; request votes. Majority votes → leader.",
+      "why": "Single leader simplifies log replication. Random election timeouts prevent split votes. Leader serialises all writes — strong order.",
+      "category": "consensus_mechanism"
+    },
+    {
+      "name": "term_number",
+      "definition": "Raft: monotonic per-election integer. Each election bumps term. Servers compare terms to identify stale leaders.",
+      "why": "Detects + ignores stale leaders. Higher-term message from any server → current term updates. Foundation of safety: stale leaders can't commit.",
+      "category": "consensus_mechanism"
+    },
+    {
+      "name": "log_replication",
+      "definition": "Leader appends client command to log; replicates to followers via AppendEntries RPC. Command committed when majority acknowledge.",
+      "why": "Replicated log is the source of truth. Each node applies committed log entries to its state machine. Foundation of all log-based consensus.",
+      "category": "consensus_mechanism"
+    },
+    {
+      "name": "majority_quorum",
+      "definition": "Decisions need majority (⌈N/2⌉+1). 3 nodes: 2; 5 nodes: 3. Any two quorums intersect — ensures committed entries survive.",
+      "why": "Intersection property is the safety mechanism. New leader's quorum overlaps with prior committed-entries quorum → sees them. Without majority, two disjoint sub-quorums could commit conflicting entries.",
+      "category": "consensus_mechanism"
+    },
+    {
+      "name": "log_matching_property",
+      "definition": "Raft invariant: if two logs contain entry with same index + term, then everything before is identical.",
+      "why": "Simplifies AppendEntries: leader sends (prevLogIndex, prevLogTerm); follower rejects if mismatch. Leader retries with earlier index. Self-correcting replication.",
+      "category": "consensus_mechanism"
+    },
+    {
+      "name": "FLP_impossibility",
+      "definition": "Fischer-Lynch-Paterson 1985: no deterministic consensus algorithm tolerates one crash in asynchronous network.",
+      "why": "Theoretical bound. Practical algorithms (Raft, Paxos) use timeouts (partial synchrony) to make progress. FLP says: can't have safety + liveness + 1 crash in pure async. Real systems compromise on async assumption.",
+      "category": "consensus_mechanism"
+    },
+    {
+      "name": "Paxos_basic_protocol",
+      "definition": "Two phases: prepare (propose ballot number; learn highest accepted value) + accept (propose value; majority accept).",
+      "why": "Foundational consensus. Each round: phase 1 (read prior state) + phase 2 (write new). Multi-Paxos amortises phase 1 across many decisions.",
+      "category": "consensus_mechanism"
+    },
+    {
+      "name": "Multi_Paxos_optimisation",
+      "definition": "Stable leader skips phase 1 (one elected) for many decisions. Just phase 2 per decision.",
+      "why": "Phase 1 expensive (consult majority). Multi-Paxos amortises across N decisions. Closer to Raft in effective protocol but trickier to specify correctly.",
+      "category": "consensus_mechanism"
+    },
+    {
+      "name": "Byzantine_fault_tolerance",
+      "definition": "BFT protocols (PBFT, HotStuff) tolerate malicious nodes, not just crashes. Need ≥3f+1 nodes for f Byzantine.",
+      "why": "Permissioned blockchains, high-security systems. More expensive than crash-tolerant. Bitcoin/Ethereum use different (proof-of-work/stake) approaches; classical BFT used in HotStuff, PBFT.",
+      "category": "consensus_mechanism"
+    },
+    {
+      "name": "EPaxos_leaderless",
+      "definition": "Egalitarian Paxos: no fixed leader; each command picks coordinator. Geo-distributed performance.",
+      "why": "Leader-based protocols serialise through leader — bad for geo-distributed (cross-region latency). EPaxos: command coordinated by nearest replica. Used in some research + niche production.",
+      "category": "consensus_mechanism"
+    },
+    {
+      "name": "flexible_paxos",
+      "definition": "Heidi Howard 2016: quorums for phase 1 + phase 2 can differ. Only requirement: any phase-1 quorum intersects any phase-2 quorum.",
+      "why": "Asymmetric quorums: e.g., phase 2 (writes) needs 2 of 5; phase 1 (leader election) needs 4 of 5. Reduces write latency at cost of slower election. Used in some modern systems.",
+      "category": "consensus_mechanism"
+    },
+    {
+      "name": "CRDT",
+      "definition": "Conflict-free Replicated Data Types. Mathematical structures that converge regardless of update order.",
+      "why": "Eventual consistency without conflict resolution. Counter, set, map variants. Used in Redis CRDTs, Yjs (collaborative editing), Riak. Trade strong consistency for partition tolerance.",
+      "category": "consensus_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "majority_quorum_intersection_guarantees_safety",
+      "if": ["any two quorums of ⌈N/2⌉+1 must intersect"],
+      "then": ["committed entries survive leader changes"],
+      "why": "New leader's election quorum overlaps with prior commit quorum → sees committed entries. Without intersection, two disjoint quorums could commit conflicting entries. The mathematical foundation of Raft + Paxos safety.",
+      "soundness_category": "algebraic_law"
+    },
+    {
+      "name": "FLP_requires_partial_synchrony_for_progress",
+      "if": ["network is fully asynchronous"],
+      "then": ["no deterministic consensus tolerates one crash"],
+      "why": "Fischer-Lynch-Paterson. Practical consensus uses timeouts (partial synchrony assumption) to make progress. Safety preserved without sync; liveness requires it. The fundamental compromise of practical consensus.",
+      "soundness_category": "algebraic_law"
+    },
+    {
+      "name": "Raft_easier_than_Paxos_at_same_safety",
+      "if": ["a system needs consensus + comprehensibility"],
+      "then": ["Raft is preferred over Paxos"],
+      "why": "Ongaro's design goal: easier-to-understand consensus. Strong leader + log structure + state-machine simulation. Same safety as Multi-Paxos but cleaner spec. Production systems (etcd, Consul, CockroachDB) adopt Raft for this.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "CRDTs_trade_consistency_for_availability",
+      "if": ["data type has commutative + associative + idempotent updates"],
+      "then": ["replicas converge without coordination"],
+      "why": "Counter: add operations commute. G-Set: union commutes. Updates apply locally + propagate; merges automatically resolve. No consensus needed; trade-off: eventual consistency instead of strong.",
+      "soundness_category": "algebraic_law"
+    },
+    {
+      "name": "Byzantine_needs_3f_plus_1_nodes",
+      "if": ["f nodes may be Byzantine (malicious)"],
+      "then": ["≥3f+1 total nodes are required for safe consensus"],
+      "why": "Quorum must exclude f Byzantine + tolerate f more crashed. Intersection argument with 2f+1 quorums on 3f+1 nodes. Bitcoin's proof-of-work, PBFT, HotStuff all respect this bound.",
+      "soundness_category": "algebraic_law"
+    }
+  ]
+}

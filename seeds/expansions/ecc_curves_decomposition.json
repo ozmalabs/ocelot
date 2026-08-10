@@ -1,0 +1,118 @@
+{
+  "id": "ecc_curves_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "elliptic_curve_cryptography",
+  "in_microtheory": "security_and_cryptography",
+  "description": "ECC + specific curves decomposed. Mathematical foundation (elliptic curve over finite field). Discrete logarithm problem. NIST curves (P-256, P-384, P-521). Curve25519 + Ed25519. secp256k1 (Bitcoin). The implementation gotchas (constant-time, side channels, signature malleability).",
+  "sub_mechanisms": [
+    {
+      "name": "elliptic_curve_equation",
+      "definition": "y² = x³ + ax + b mod p. Points on curve form group under specific addition rule.",
+      "why": "Foundation. Group operation = elliptic curve addition. Repeated addition = scalar multiplication. Discrete log of scalar multiplication is hard.",
+      "category": "ecc_mechanism"
+    },
+    {
+      "name": "ECDLP_discrete_log_problem",
+      "definition": "Given P, Q = kP, find k. Hard for well-chosen curves.",
+      "why": "Foundation of ECC security. 256-bit ECC ≈ 3072-bit RSA security. Shor's algorithm breaks (motivating post-quantum migration).",
+      "category": "ecc_mechanism"
+    },
+    {
+      "name": "scalar_multiplication",
+      "definition": "kP = P + P + ... + P (k times). Computed via double-and-add in log(k) steps.",
+      "why": "Core ECC operation. Must be constant-time to avoid side channels. Modern: Montgomery ladder, scalar masking.",
+      "category": "ecc_mechanism"
+    },
+    {
+      "name": "NIST_P256",
+      "definition": "secp256r1. NIST-standardised curve. 128-bit security. Widely deployed.",
+      "why": "TLS, FIDO2, many protocols default. Concerns: NSA involvement in parameter selection. Used heavily despite community preference for Curve25519.",
+      "category": "ecc_mechanism"
+    },
+    {
+      "name": "Curve25519_design",
+      "definition": "Bernstein 2005. Twisted Edwards curve. y² + x² = 1 + dx²y² mod 2^255 - 19.",
+      "why": "Modern default for new protocols. Designed to be safer to implement: constant-time scalar mult straightforward, no special-case handling.",
+      "category": "ecc_mechanism"
+    },
+    {
+      "name": "Ed25519_signatures",
+      "definition": "Edwards-curve Digital Signature Algorithm on Curve25519. Deterministic signatures (no per-signature randomness).",
+      "why": "Standard in SSH, GitHub commits, Signal. Fast (~70K sig/s/core). Deterministic: same message → same signature (catches RNG failure that breaks ECDSA).",
+      "category": "ecc_mechanism"
+    },
+    {
+      "name": "ECDSA_signatures",
+      "definition": "Elliptic Curve Digital Signature Algorithm. Requires fresh random per signature.",
+      "why": "FIPS-compliant. Bitcoin (secp256k1), TLS, most protocols. CRITICAL: nonce reuse leaks private key (PS3 hack). Modern code uses RFC 6979 deterministic ECDSA.",
+      "category": "ecc_mechanism"
+    },
+    {
+      "name": "secp256k1_Bitcoin",
+      "definition": "Koblitz curve. y² = x³ + 7. Chosen for Bitcoin by Satoshi.",
+      "why": "Foundation of Bitcoin + Ethereum + most cryptocurrencies. Different curve than NIST P-256. Implementations (libsecp256k1) heavily optimised + audited.",
+      "category": "ecc_mechanism"
+    },
+    {
+      "name": "constant_time_implementation",
+      "definition": "Operations run in time independent of secret values. No data-dependent branches or memory accesses.",
+      "why": "Timing side channels reveal secrets. Modern ECC libraries are constant-time. Older or naive implementations leak via timing. Critical for security.",
+      "category": "ecc_mechanism"
+    },
+    {
+      "name": "ECDH_key_exchange",
+      "definition": "Each party generates ephemeral key pair, exchanges public keys, computes shared secret = privA * pubB = privB * pubA.",
+      "why": "Foundation of TLS 1.3, Signal, WireGuard. With ephemeral keys (ECDHE) provides forward secrecy. Standard for modern key agreement.",
+      "category": "ecc_mechanism"
+    },
+    {
+      "name": "signature_malleability",
+      "definition": "Same message + private key may produce different valid signatures (e.g., negating s in ECDSA).",
+      "why": "Issue for systems that rely on signature uniqueness (Bitcoin's transaction IDs). Mitigation: canonical signature form. Ed25519 is malleability-free by design.",
+      "category": "ecc_mechanism"
+    },
+    {
+      "name": "post_quantum_threat_to_ECC",
+      "definition": "Shor's algorithm on sufficiently large quantum computer breaks ECDLP. ECC needs migration to PQ.",
+      "why": "Same threat as RSA. Hybrid schemes (ECDH + Kyber) provide transition. Long-term secrets must migrate now (harvest-now-decrypt-later).",
+      "category": "ecc_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "ECC_security_per_bit_higher_than_RSA",
+      "if": ["target is 128-bit security"],
+      "then": ["256-bit ECC suffices; RSA needs 3072 bits"],
+      "why": "ECDLP is harder per bit than factoring. Smaller keys + faster operations. Modern protocols favor ECC.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "Curve25519_designed_for_safer_implementation",
+      "if": ["implementing curve operations from scratch"],
+      "then": ["Curve25519 has fewer edge cases than NIST curves"],
+      "why": "No special-case point handling, natural constant-time form, no co-factor concerns. Bernstein designed for implementer safety. Standard choice for new protocols.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "ECDSA_nonce_reuse_leaks_private_key",
+      "if": ["two ECDSA signatures use the same nonce"],
+      "then": ["private key recoverable from the two signatures"],
+      "why": "PS3 ECDSA hack: Sony reused nonce. Mathematical fact: 2 equations in 2 unknowns (k, privkey). RFC 6979 deterministic ECDSA derives nonce from message + key, preventing failure.",
+      "soundness_category": "referential_transparency"
+    },
+    {
+      "name": "Ed25519_deterministic_signatures",
+      "if": ["signature uses Ed25519"],
+      "then": ["same key + message → same signature, no randomness needed"],
+      "why": "Nonce derived deterministically from key + message. No RNG failure mode. Same signature is verification-friendly. Modern preferred over ECDSA when possible.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "ECDH_with_ephemeral_keys_provides_forward_secrecy",
+      "if": ["each session uses fresh ephemeral keys"],
+      "then": ["compromise of long-term keys doesn't expose past sessions"],
+      "why": "Session keys derived from ephemeral DH; discarded after use. Stolen long-term key tomorrow can't decrypt today's traffic. Required property in modern protocols.",
+      "soundness_category": "referential_transparency"
+    }
+  ]
+}

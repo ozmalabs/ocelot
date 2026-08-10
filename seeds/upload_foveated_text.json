@@ -1,0 +1,208 @@
+{
+  "id": "upload_foveated_text",
+  "version": "1.0.0",
+  "depends_on": ["conversation_upload_text_detect"],
+  "description": "REFLEXIVE foveated text identification + ACTIVE full-read decision. When GraphEye contours in a FOVEATED fixation (center/upper/lower) match glyph_stroke, the agent REFLEXIVELY identifies text there (FoveatedTextRegion, foveated_text_identified=1.0) — not optional, not gated on a question. FULL decode is a separate COGNITIVE decision: a Message carrying text_decode_pending=1.0 (the adapter's mechanical parse of 'what does the text say' / 'read the text') mints Goal{kind:decode_upload_text}; ut_dispatch dispatches UploadTextReadStage; the upload_text_read_advance Reflex runs the thin eye+grounding executor (domains/upload_text_read.py). Presence without decode is honest; decode without presence does not fire.",
+  "microtheory": {
+    "name": "upload_foveated_text",
+    "description": "The eye reflexively knows text is in the fovea; the agent chooses when to spend effort decoding it fully."
+  },
+  "nodes": [
+    {
+      "local_id": 1,
+      "type": "Concept",
+      "attrs": {
+        "name": "foveated_text",
+        "description": "Written marks identified reflexively inside a foveated fixation — typography is present in the attended region even before a full decode."
+      }
+    },
+    {
+      "local_id": 2,
+      "type": "Concept",
+      "attrs": {
+        "name": "text_full_read",
+        "description": "An active cognitive decision to decode identified foveated text into lettering — effort the agent chooses to spend, distinct from mere presence identification."
+      }
+    }
+  ],
+  "edges": [],
+  "productions": [
+    {
+      "provenance": "seed:upload_foveated_text:has_text_region-0",
+      "src": {"type": "UploadedDocument", "var": "s"},
+      "edge_type": "has_text_region",
+      "tgt": {"type": "FoveatedTextRegion", "var": "t"}
+    },
+    {
+      "provenance": "seed:upload_foveated_text:has_upload_text_stage-1",
+      "src": {"type": "Agent", "var": "s"},
+      "edge_type": "has_upload_text_stage",
+      "tgt": {"type": "UploadTextReadStage", "var": "t"}
+    },
+    {
+      "provenance": "seed:upload_foveated_text:about_document-2",
+      "src": {"type": "UploadTextReadStage", "var": "s"},
+      "edge_type": "about_document",
+      "tgt": {"type": "UploadedDocument", "var": "t"}
+    }
+  ],
+  "rules": [
+    {
+      "name": "identify_foveated_text_reflexive",
+      "comment": "REFLEXIVE: glyph_strokes clustered in a foveated fixation identify text there. Runs at ingest tick — no question required.",
+      "match": [
+        ["doc", "has_shape", "shape"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "doc"}, "key": "kind"}, "b": {"type": "Lit", "value": "image"}},
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "doc"}, "key": "foveated_text_identified"}, "b": {"type": "Lit", "value": 1.0}}},
+          {"type": "Gte", "a": {
+            "type": "Count",
+            "source": {
+              "type": "Filter",
+              "source": {"type": "Neighbours", "node": {"type": "Var", "name": "doc"}, "edge_type": "has_shape"},
+              "var_name": "s2",
+              "predicate": {"type": "And", "items": [
+                {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "s2"}, "key": "read_as"}, "b": {"type": "Lit", "value": "glyph_stroke"}},
+                {"type": "In", "member": {"type": "Attr", "node": {"type": "Var", "name": "s2"}, "key": "fixation"}, "container": {"type": "Lit", "value": ["center_fovea", "upper_fovea", "lower_fovea", "full"]}}
+              ]}
+            }
+          }, "b": {"type": "Lit", "value": 1}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "doc", "foveated_text_identified", 1.0],
+        ["set_attr", "doc", "foveated_glyph_count", {"__term__": {
+          "type": "Count",
+          "source": {
+            "type": "Filter",
+            "source": {"type": "Neighbours", "node": {"type": "Var", "name": "doc"}, "edge_type": "has_shape"},
+            "var_name": "s3",
+            "predicate": {"type": "And", "items": [
+              {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "s3"}, "key": "read_as"}, "b": {"type": "Lit", "value": "glyph_stroke"}},
+              {"type": "In", "member": {"type": "Attr", "node": {"type": "Var", "name": "s3"}, "key": "fixation"}, "container": {"type": "Lit", "value": ["center_fovea", "upper_fovea", "lower_fovea", "full"]}}
+            ]}
+          }
+        }}],
+        ["add_node", "region", "FoveatedTextRegion", {
+          "status": "identified",
+          "source": "reflexive_foveation"
+        }],
+        ["add_edge", "doc", "has_text_region", "region"],
+        ["set_attr", "doc", "vision_summary", {"__term__": {"type": "StringConcat", "parts": [
+          {"type": "Attr", "node": {"type": "Var", "name": "doc"}, "key": "vision_summary"},
+          {"type": "Lit", "value": " I reflexively identify text-like marks in my foveated view; I have not chosen to read them fully yet."}
+        ]}}],
+        ["set_attr", "doc", "summary", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "doc"}, "key": "vision_summary"}}]
+      ]
+    },
+    {
+      "name": "mint_decode_upload_text_goal",
+      "comment": "ACTIVE DECISION: a turn that asks to read/decode text mints Goal{decode_upload_text}.",
+      "match": [
+        ["agent", "received", "m"],
+        ["agent", "current_attachment", "ca"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "text_decode_pending"}, "b": {"type": "Lit", "value": 1.0}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "ca"}, "key": "foveated_text_identified"}, "b": {"type": "Lit", "value": 1.0}},
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "text_decode_goal_minted"}, "b": {"type": "Lit", "value": 1.0}}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "m", "text_decode_goal_minted", 1.0],
+        ["add_node", "g", "Goal", {
+          "kind": "decode_upload_text",
+          "status": "active",
+          "source": "conversation"
+        }],
+        ["add_edge", "agent", "has_goal", "g"],
+        ["add_edge", "g", "comprehends", "m"],
+        ["add_edge", "g", "about_attachment", "ca"],
+        ["add_edge", "m", "comprehended_by", "g"]
+      ]
+    },
+    {
+      "name": "mint_upload_text_read_stage",
+      "comment": "When a decode goal is active, mint the read stage (once per goal).",
+      "match": [
+        ["agent", "has_goal", "g"],
+        ["g", "about_attachment", "ca"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "kind"}, "b": {"type": "Lit", "value": "decode_upload_text"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "status"}, "b": {"type": "Lit", "value": "active"}},
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "read_stage_minted"}, "b": {"type": "Lit", "value": 1.0}}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "g", "read_stage_minted", 1.0],
+        ["add_node", "stage", "UploadTextReadStage", {
+          "name": "foveated_text_decode",
+          "status": "pending"
+        }],
+        ["add_edge", "agent", "has_upload_text_stage", "stage"],
+        ["add_edge", "stage", "about_document", "ca"],
+        ["add_edge", "g", "has_read_stage", "stage"]
+      ]
+    },
+    {
+      "name": "ut_dispatch",
+      "comment": "Dispatch the read stage the moment the decode goal minted it.",
+      "match_type": "UploadTextReadStage",
+      "match": [
+        ["ag", "has_upload_text_stage", "stage"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "stage"}, "key": "name"}, "b": {"type": "Lit", "value": "foveated_text_decode"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "stage"}, "key": "status"}, "b": {"type": "Lit", "value": "pending"}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "stage", "status", "dispatched"]
+      ]
+    },
+    {
+      "name": "complete_decode_upload_text_goal",
+      "comment": "When the stage finishes and decoded_text is on the doc, resolve the goal.",
+      "match": [
+        ["agent", "has_goal", "g"],
+        ["g", "about_attachment", "ca"],
+        ["g", "has_read_stage", "stage"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "kind"}, "b": {"type": "Lit", "value": "decode_upload_text"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "stage"}, "key": "status"}, "b": {"type": "Lit", "value": "done"}},
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "ca"}, "key": "decoded_text"}, "b": {"type": "Lit", "value": null}}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "g", "status", "resolved"],
+        ["set_attr", "g", "outcome", "decoded"]
+      ]
+    }
+  ],
+  "reflexes": [
+    {
+      "name": "upload_text_read_advance",
+      "stimulus": {
+        "type": "Gte",
+        "a": {"type": "Count", "source": {"type": "Filter", "source": {"type": "NodesOfType", "node_type": "UploadTextReadStage"},
+              "var_name": "x", "predicate": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "x"}, "key": "status"}, "b": {"type": "Lit", "value": "dispatched"}}}},
+        "b": {"type": "Lit", "value": 1}
+      },
+      "response": "upload_text_read_advance",
+      "refractory_ticks": 0
+    }
+  ]
+}

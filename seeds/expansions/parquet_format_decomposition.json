@@ -1,0 +1,118 @@
+{
+  "id": "parquet_format_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "Parquet",
+  "in_microtheory": "databases_and_storage",
+  "description": "Parquet file format decomposed. Row groups + column chunks + pages. Dictionary encoding + RLE + bit packing + Snappy/Zstd cascade. Statistics + min/max + bloom filters per column chunk. Dremel-style nested schema. Predicate + projection pushdown.",
+  "sub_mechanisms": [
+    {
+      "name": "file_structure",
+      "definition": "Parquet file: header (magic 'PAR1') + row groups + footer (schema + metadata + row group offsets). Read footer first, then targeted reads.",
+      "why": "Footer-based layout: reader knows full schema + chunk locations after small footer read. Enables predicate pushdown (skip row groups via stats) + projection pushdown (read only needed columns).",
+      "category": "parquet_mechanism"
+    },
+    {
+      "name": "row_group",
+      "definition": "Horizontal partition of file. Each row group holds N rows (typically 100K-1M). Within a row group: one column chunk per column.",
+      "why": "Parallelism unit: different row groups can be processed in parallel. Stats per row group enable skipping. Typical size 128 MB-1 GB. Tuned for engine + workload.",
+      "category": "parquet_mechanism"
+    },
+    {
+      "name": "column_chunk",
+      "definition": "Per-column contiguous storage within a row group. Holds N rows for that column, encoded + compressed.",
+      "why": "Columnar layout: read one column without reading others. Each chunk has its own encoding + compression. Critical for projection pushdown.",
+      "category": "parquet_mechanism"
+    },
+    {
+      "name": "page_within_chunk",
+      "definition": "Smaller unit within column chunk. Default ~1 MB. Each page has its own dictionary (if used) + encoding + compression.",
+      "why": "Finer granularity for parallel decode + memory streaming. Page-level statistics for predicate filtering. Some readers stream pages without loading whole chunk.",
+      "category": "parquet_mechanism"
+    },
+    {
+      "name": "dictionary_encoding_parquet",
+      "definition": "Per-chunk dictionary of distinct values. Column values stored as dict indices (typically 1-4 bytes).",
+      "why": "Low-cardinality columns shrink dramatically. status column with 5 values: 5 × value_size dictionary + N × 1 byte indices vs N × full values. 5-50x compression typical.",
+      "category": "parquet_mechanism"
+    },
+    {
+      "name": "RLE_in_parquet",
+      "definition": "Run-Length Encoding: store (value, count) pairs for runs of same value. Used for dictionary indices + sparse columns.",
+      "why": "After dictionary encoding, sorted or sparse columns have long runs. RLE compresses them. Combined with bit-packing for further savings.",
+      "category": "parquet_mechanism"
+    },
+    {
+      "name": "bit_packing_parquet",
+      "definition": "Pack dictionary indices into minimum bits. 8 distinct values = 3 bits per index, not 8.",
+      "why": "Indices are small integers; standard byte storage wastes bits. Parquet's RLE/bit-pack hybrid encoding switches between modes per run.",
+      "category": "parquet_mechanism"
+    },
+    {
+      "name": "snappy_zstd_compression_parquet",
+      "definition": "After encoding, apply general compression: Snappy (fast), Zstd (balanced), Gzip (legacy), LZ4, Brotli.",
+      "why": "Encoding does structural compression; general compression cleans up. Cascade is what makes Parquet 5-10x smaller than CSV. Choice trades CPU vs size.",
+      "category": "parquet_mechanism"
+    },
+    {
+      "name": "column_statistics",
+      "definition": "Per-column-chunk: min, max, null count, distinct count (sometimes). Stored in footer.",
+      "why": "Predicate pushdown: WHERE col > 100 + stats showing max(col) = 50 → skip entire chunk. 100-1000x speedup on selective queries. The single most impactful Parquet feature.",
+      "category": "parquet_mechanism"
+    },
+    {
+      "name": "bloom_filter_in_parquet",
+      "definition": "Optional per-column-chunk bloom filter. Added to Parquet spec in 2019.",
+      "why": "Stats handle ranges (min/max); bloom handles point lookups. WHERE col = 'X' + bloom says 'not present' → skip chunk. Particularly valuable for high-cardinality string columns.",
+      "category": "parquet_mechanism"
+    },
+    {
+      "name": "Dremel_nested_schema",
+      "definition": "Repetition + definition levels encode nested + nullable structure. Each value paired with (rep, def) levels.",
+      "why": "JSON-like nested data in columnar layout. Each leaf field becomes a column; rep/def reconstruct structure. Standard in Parquet (from Google Dremel paper) — handles arbitrary JSON-like nesting.",
+      "category": "parquet_mechanism"
+    },
+    {
+      "name": "predicate_projection_pushdown",
+      "definition": "Engines read only needed columns (projection) and skip row groups whose stats don't match predicate.",
+      "why": "Spark / Trino / DuckDB / Pandas all do this. SELECT a FROM t WHERE b > 100 reads col 'a' only, only from row groups where max(b) > 100. Dramatic perf win.",
+      "category": "parquet_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "Parquet_compression_cascade_shrinks_dramatically",
+      "if": ["columnar + dictionary + RLE + bit-pack + Snappy applied"],
+      "then": ["typical file is 5-10x smaller than CSV"],
+      "why": "Each layer compresses the previous output. Columnar enables better general compression (similar values together). Encoding shrinks structural waste. General compression cleans up. Compound effect.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "column_stats_enable_predicate_pushdown",
+      "if": ["query has predicate on column with stats"],
+      "then": ["row groups outside predicate range are skipped"],
+      "why": "Read footer (small) → check stats per row group → skip whole row groups. SELECTIVE queries on indexed-like columns 100-1000x faster than full scan. The reason Parquet beats CSV on analytical workloads.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "row_group_size_balances_parallelism_and_overhead",
+      "if": ["row groups are very small"],
+      "then": ["overhead dominates (many footers, small reads)"],
+      "why": "Many small row groups: more parallelism but per-group overhead. Few large: less parallelism, more efficient. Common: 128 MB-1 GB row groups. Engine + storage tier determine optimum.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "dictionary_encoding_optimal_for_low_cardinality",
+      "if": ["a column has few distinct values"],
+      "then": ["dictionary encoding compresses dramatically"],
+      "why": "K distinct values: dictionary of K + log_2(K) bits per row. For status column with 10 values: 4 bits per row. 1000 rows × 10 bytes (string) = 10KB → 4KB indices + tiny dict. 60% smaller before general compression.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "Dremel_levels_handle_arbitrary_nesting",
+      "if": ["data has nested + nullable structure"],
+      "then": ["rep/def levels encode structure in columnar layout"],
+      "why": "JSON-like {a: [{b: [1,2], c: null}]} flattens to columns with per-value rep/def levels. Reader reconstructs structure. Parquet handles real-world JSON-shaped data without storing JSON.",
+      "soundness_category": "denotational_equivalence"
+    }
+  ]
+}

@@ -1,0 +1,112 @@
+{
+  "id": "self_balancing_bst_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "self_balancing_BST",
+  "in_microtheory": "data_structures_algorithms",
+  "description": "Self-balancing BSTs decomposed. AVL, red-black, splay, and treap. The shared machinery: rotations (the structural primitive), invariants (what keeps the height bounded), and rebalancing (how to restore the invariant after modification). Each variant trades implementation complexity, balance tightness, and amortised guarantees differently.",
+  "sub_mechanisms": [
+    {
+      "name": "BST_property",
+      "definition": "For each node x: all keys in left subtree < x.key < all keys in right subtree. The fundamental BST invariant.",
+      "why": "Lets search proceed by comparison: if target < node, go left; else right. The property must be preserved by all operations. Rotations preserve it because they preserve in-order traversal.",
+      "category": "bst_mechanism"
+    },
+    {
+      "name": "left_rotation",
+      "definition": "Rotate right child up: y becomes x's parent; x becomes y's left child; y's old left becomes x's new right. 3 pointer updates.",
+      "why": "Lowers x by one level, raises y by one level. Preserves the BST property (the in-order order remains the same). The atomic move for rebalancing.",
+      "category": "bst_mechanism"
+    },
+    {
+      "name": "right_rotation",
+      "definition": "Mirror of left rotation: y is x's left child; y becomes x's parent; x becomes y's right child; y's old right becomes x's new left.",
+      "why": "Together with left rotation, rotations form the complete set of local rebalancing primitives. Any rebalancing in AVL or red-black is a sequence of these rotations.",
+      "category": "bst_mechanism"
+    },
+    {
+      "name": "AVL_balance_factor",
+      "definition": "Per-node integer: height(right subtree) − height(left subtree). AVL invariant: |balance_factor| ≤ 1 for every node.",
+      "why": "Tight balance: heights differ by at most 1 means tree depth is at most 1.44 log n. Fastest possible BST lookup. Cost: more rotations on insert/delete than red-black.",
+      "category": "bst_mechanism"
+    },
+    {
+      "name": "AVL_rebalance",
+      "definition": "On insert/delete, walk up from the modified node. If a node's balance factor becomes ±2, perform 1 or 2 rotations to restore ≤ 1.",
+      "why": "Four cases (LL, LR, RL, RR) covering left-heavy and right-heavy imbalance. Each is a single or double rotation. After rebalancing one level, the balance factor change propagates up — at most O(log n) rotations per insert/delete.",
+      "category": "bst_mechanism"
+    },
+    {
+      "name": "red_black_coloring",
+      "definition": "Each node is red or black. Rules: root is black; red nodes have black children (no red-red); every root-to-leaf path has the same number of black nodes.",
+      "why": "Looser balance than AVL: longest path ≤ 2 × shortest path. Less aggressive rebalancing. Easier to recover from deletion than AVL.",
+      "category": "bst_mechanism"
+    },
+    {
+      "name": "red_black_insert_fixup",
+      "definition": "Insert as red. If parent is red (red-red violation), recolor + possibly rotate. Cases depend on uncle's color.",
+      "why": "Three cases handle the various red-red configurations. Each is O(1) work; the walk up the tree is O(log n). Standard textbook (CLRS) details all cases.",
+      "category": "bst_mechanism"
+    },
+    {
+      "name": "red_black_delete_fixup",
+      "definition": "Delete + replace as in plain BST. If the deleted/replaced node was black, walk up restoring the black-height invariant via recoloring + rotations.",
+      "why": "More complex than insert: must restore the equal-black-nodes-per-path property. ~6 cases. The complexity is why red-black is famously hard to implement correctly. Once implemented, it's a workhorse.",
+      "category": "bst_mechanism"
+    },
+    {
+      "name": "splay_tree",
+      "definition": "On every access, splay (rotate) the accessed node to the root via zig, zig-zig, zig-zag operations.",
+      "why": "Self-adjusting: frequently accessed nodes stay near the root. Amortised O(log n) per operation. Excellent for skewed access distributions; competitive with optimal static BST.",
+      "category": "bst_mechanism"
+    },
+    {
+      "name": "treap",
+      "definition": "BST + heap. Each node has key (BST property) + random priority (heap property: parent priority ≥ child priority). Inserts as BST leaf, then rotate up to restore heap.",
+      "why": "Randomisation gives expected O(log n) operations without explicit balancing logic. Conceptually simpler than red-black or AVL. Used in functional data structures, persistent variants.",
+      "category": "bst_mechanism"
+    },
+    {
+      "name": "successor_predecessor",
+      "definition": "In-order successor of node x: smallest key > x.key. Either leftmost node of x's right subtree, or the lowest ancestor where x is in the left subtree.",
+      "why": "Used by deletion when removing a node with two children: replace with successor, then delete the successor. The standard BST deletion algorithm.",
+      "category": "bst_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "rotations_preserve_BST_property",
+      "if": ["a left or right rotation is applied"],
+      "then": ["the in-order traversal is unchanged and the BST property holds"],
+      "why": "Rotations move subtrees around but preserve which keys are < or > others. Mechanical proof: trace pointer updates + verify each subtree's keys still satisfy the property at every node. The structural foundation of self-balancing.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "AVL_strictest_balance_fastest_lookup",
+      "if": ["balance factor invariant is |bf| ≤ 1"],
+      "then": ["tree height is at most ~1.44 log n"],
+      "why": "Fibonacci-like recurrence on minimum nodes per height. AVL has tightest balance among practical BSTs → fastest lookup. Trade-off: more rotations on writes than red-black.",
+      "soundness_category": "algebraic_law"
+    },
+    {
+      "name": "red_black_height_at_most_2_log_n_plus_1",
+      "if": ["red-black invariants hold"],
+      "then": ["height ≤ 2 log₂(n+1)"],
+      "why": "Black-height is log n; each path alternates at most every-other-red. Looser than AVL but still O(log n). Standard textbook proof.",
+      "soundness_category": "algebraic_law"
+    },
+    {
+      "name": "splay_competitive_with_optimal_static",
+      "if": ["accesses follow some distribution"],
+      "then": ["splay tree's total work is within constant factor of optimal offline BST"],
+      "why": "Splay's dynamic-optimality conjecture is the famous open question. Proven within constant factor of working-set bound. Self-adjusting structure adapts to actual access pattern without knowing it in advance.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "treap_expected_log_n_via_randomisation",
+      "if": ["priorities are uniformly random"],
+      "then": ["expected tree height is O(log n)"],
+      "why": "Random heap order is equivalent to inserting nodes in random key order. Expected depth analysis of random BST gives O(log n). No worst-case guarantee (a malicious random source could give O(n)), but expected behaviour is robust.",
+      "soundness_category": "algebraic_law"
+    }
+  ]
+}

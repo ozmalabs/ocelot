@@ -1,0 +1,56 @@
+{
+ "id": "viterbi_decode",
+ "version": "1.0.0",
+ "depends_on": [],
+ "description": "Full VITERBI LATTICE DECODE + graph-native backtrace. FORWARD: vit_step is the recurrence over the Hyp/LatEdge lattice — for the hyps at the lattice active_pos, best_in = MAX over incoming edges of (predecessor vscore + lm_weight*trans_logp) and vscore = emission + best_in (best_in stored so the backtrace can select the winning edge against the EXACT max, float-safe; MaxOver defaults to 0 at position 0). The host ticks active_pos 0,1,2,... left-to-right. BACKTRACE: the host seeds on_path=1 on the best terminal hyp (an Argmax Term), then vit_backtrace propagates it backward — an incoming edge whose (predecessor vscore + lm_weight*trans_logp) reaches cur's stored best_in is on the optimal path, so its predecessor hyp and the edge are marked on_path=1; the chain runs back to position 0. The best path is then materialised as on_path nodes/edges in the graph. No new Rust.",
+ "microtheory": {"name": "viterbi_decode", "description": "best-path sequence decode under a bigram LM; forward recurrence + backward backtrace, both graph rules"},
+ "nodes": [], "edges": [], "productions": [],
+ "rules": [
+  {
+   "name": "vit_step",
+   "match": [["cur", "in_lattice", "lat"]],
+   "where": {"type": "And", "items": [
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "cur"}, "key": "pos"},
+                    "b": {"type": "Attr", "node": {"type": "Var", "name": "lat"}, "key": "active_pos"}},
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "cur"}, "key": "scored"}, "b": {"type": "Lit", "value": 0.0}}
+   ]},
+   "effects": [
+     ["set_attr", "cur", "best_in", {"__term__":
+        {"type": "MaxOver", "var_name": "E", "default": {"type": "Lit", "value": 0.0},
+          "source": {"type": "InNeighbours", "node": {"type": "Var", "name": "cur"}, "edge_type": "dst", "any_type": false},
+          "value": {"type": "Plus", "items": [
+            {"type": "Attr", "key": "vscore",
+              "node": {"type": "Pick", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "E"}, "edge_type": "src", "any_type": false}}},
+            {"type": "Times", "items": [
+              {"type": "Attr", "node": {"type": "Var", "name": "lat"}, "key": "lm_weight"},
+              {"type": "Attr", "node": {"type": "Var", "name": "E"}, "key": "trans_logp"}
+            ]}
+          ]}}}],
+     ["set_attr", "cur", "vscore", {"__term__": {"type": "Plus", "items": [
+        {"type": "Attr", "node": {"type": "Var", "name": "cur"}, "key": "emission"},
+        {"type": "Attr", "node": {"type": "Var", "name": "cur"}, "key": "best_in"}
+     ]}}],
+     ["set_attr", "cur", "scored", 1.0]
+   ]
+  },
+  {
+   "name": "vit_backtrace",
+   "match": [["E", "src", "srch"], ["E", "dst", "cur"], ["cur", "in_lattice", "lat"]],
+   "where": {"type": "And", "items": [
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "cur"}, "key": "on_path"}, "b": {"type": "Lit", "value": 1.0}},
+     {"type": "Gte", "b": {"type": "Attr", "node": {"type": "Var", "name": "cur"}, "key": "best_in"},
+       "a": {"type": "Plus", "items": [
+         {"type": "Attr", "node": {"type": "Var", "name": "srch"}, "key": "vscore"},
+         {"type": "Times", "items": [
+           {"type": "Attr", "node": {"type": "Var", "name": "lat"}, "key": "lm_weight"},
+           {"type": "Attr", "node": {"type": "Var", "name": "E"}, "key": "trans_logp"}
+         ]}
+       ]}}
+   ]},
+   "effects": [
+     ["set_attr", "srch", "on_path", 1.0],
+     ["set_attr", "E", "on_path", 1.0]
+   ]
+  }
+ ]
+}

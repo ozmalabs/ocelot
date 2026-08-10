@@ -1,0 +1,43 @@
+{
+  "id": "onset_prediction",
+  "version": "1.0.0",
+  "depends_on": ["enact", "autonomy", "investigation_loop"],
+  "description": "Point the agent's understand-drive at its own EAR -- the signal as a frontier (the predictive-coding-the-ear move). Two CapabilityAxes the SAME investigation loop predicts: predict-onset-BEAT (the oscillator: next interval = last, the degenerate cadence) and predict-onset-CADENCE (the shape predictor: order-N lean + DtwTo recall over the prosodic contour). The loop's measurement is PREDICTION SKILL (1 - error/shuffled), not a recognition score -- `measured` is faculty-agnostic, so frontier_pick/bind/bank predict the signal with ZERO new cognition. The beat axis STALLS (cadence is not a beat); the cadence axis SATURATES (the shape predicts) -- the frontier's shift from beat to cadence IS the agent's order-3 handoff, demonstrated as two axes. Only-new = 2 axes + 2 operators (the predictors are the world executor's mechanical I/O); the loop is the manifold already held.",
+  "microtheory": {
+    "name": "onset_prediction",
+    "description": "the ear as a frontier: predict the onset stream (beat) and its contour (cadence); the loop minimises prediction error on the signal."
+  },
+  "nodes": [
+    {"local_id": 0, "type": "Microtheory", "attrs": {"name": "onset_prediction"}},
+    {"local_id": 1, "type": "Operator", "attrs": {"name": "onset_oscillator", "runner": "predict_onset_oscillator",
+        "metric": "onset_period_skill", "target": 0.3, "min_order": 1.0,
+        "comment": "the beat: predict next interval = last (persistence over the contour); the degenerate cadence"}},
+    {"local_id": 2, "type": "Operator", "attrs": {"name": "cadence_predictor", "runner": "predict_onset_cadence",
+        "metric": "onset_cadence_skill", "target": 0.3, "min_order": 3.0,
+        "comment": "the cadence: DtwTo recall over the (dt,stress,f0) contour -- repetition-HUNGRY (strong on song, halves on read)"}},
+    {"local_id": 5, "type": "Operator", "attrs": {"name": "cadence_dynamics", "runner": "predict_onset_dynamics",
+        "metric": "onset_dynamics_skill", "target": 0.3, "min_order": 3.0,
+        "comment": "the repetition-FREE cadence: least-squares AR over the contour's local dynamics (declination/phrase structure) -- fit on one part, predicts the rest; TRANSFERS song->read where recall halves"}},
+    {"local_id": 3, "type": "CapabilityAxis", "attrs": {"is_axis": 1.0, "capability_keys": ["predict", "onset", "beat"],
+        "saturation": 0.0, "shortfall": 0.5, "min_order": 1.0, "investigated_count": 0, "mf_stall": 0}},
+    {"local_id": 4, "type": "CapabilityAxis", "attrs": {"is_axis": 1.0, "capability_keys": ["predict", "onset", "cadence"],
+        "saturation": 0.0, "shortfall": 0.5, "min_order": 1.0, "investigated_count": 0, "mf_stall": 0}},
+    {"local_id": 6, "type": "CapabilityAxis", "attrs": {"is_axis": 1.0, "capability_keys": ["predict", "onset", "dynamics"],
+        "saturation": 0.0, "shortfall": 0.5, "min_order": 1.0, "investigated_count": 0, "mf_stall": 0}}
+  ],
+  "edges": [
+    {"src": {"local": 3}, "type": "investigated_by", "tgt": {"local": 1}},
+    {"src": {"local": 4}, "type": "investigated_by", "tgt": {"local": 2}},
+    {"src": {"local": 6}, "type": "investigated_by", "tgt": {"local": 5}},
+    {"src": {"local": 1}, "type": "applies_in", "tgt": {"local": 0}},
+    {"src": {"local": 2}, "type": "applies_in", "tgt": {"local": 0}},
+    {"src": {"local": 5}, "type": "applies_in", "tgt": {"local": 0}}
+  ],
+  "productions": [
+    {"provenance": "seed:onset_prediction:investigated_by",
+     "src": {"type": "CapabilityAxis", "var": "a"}, "edge_type": "investigated_by", "tgt": {"type": "Operator", "var": "o"}},
+    {"provenance": "seed:onset_prediction:applies_in",
+     "src": {"type": "Operator", "var": "o"}, "edge_type": "applies_in", "tgt": {"type": "Microtheory", "var": "m"}}
+  ],
+  "rules": []
+}

@@ -1,0 +1,31 @@
+{
+  "id": "nd_basis_discovery",
+  "version": "1.0.0",
+  "depends_on": ["nd_representation"],
+  "description": "The next core skill (docs/jabberwock_representation_design.md): DISCOVER the natural frame from the dynamics, not be given it. The agent's design: 'the discovered axes are the principal directions of motion.' For a single dominant motion the principal direction IS the observed velocity — which the agent already perceives (drow, dcol). So the discovered along-axis = its own motion vector, and the perpendicular = its orthogonal; rotating the position into that frame (Dot-over-axes, the agent's primitive) DECOUPLES the motion: along-axis carries all of it, the perpendicular is INVARIANT. The frame is read off the agent's own surprise/motion, never provided. (Unnormalised axes still decouple; the full eigen-frame of the action_delta + residual covariance is the general form for multi-directional dynamics.)",
+  "microtheory": {"name": "nd_basis_discovery", "description": "the natural axis = the direction I observe myself moving (the principal motion direction); rotate into it and the motion decouples — discovered, not given."},
+  "nodes": [],
+  "edges": [],
+  "productions": [],
+  "rules": [
+    {
+      "name": "discover_natural_frame",
+      "comment": "Discover the natural frame from the observed motion: along-axis = the velocity vector [drow, dcol] (the principal direction of motion the agent sees); perp-axis = its orthogonal [-dcol, drow]. Then rotate the position into that frame by Dot-over-axes: pos_along = pos.along, pos_perp = pos.perp. Fires only when the region is actually moving (squared speed > 0). For diagonal motion this makes pos_perp constant (invariant) and pos_along carry the motion — the agent found the world's own coordinate from its own dynamics, no basis handed to it.",
+      "match": [["game", "has_region", "r"]],
+      "where": {"type": "Gt", "a": {"type": "Plus", "items": [
+        {"type": "Times", "items": [{"type": "Attr", "node": {"type": "Var", "name": "r"}, "key": "drow"}, {"type": "Attr", "node": {"type": "Var", "name": "r"}, "key": "drow"}]},
+        {"type": "Times", "items": [{"type": "Attr", "node": {"type": "Var", "name": "r"}, "key": "dcol"}, {"type": "Attr", "node": {"type": "Var", "name": "r"}, "key": "dcol"}]}
+      ]}, "b": {"type": "Lit", "value": 0.0}},
+      "effects": [
+        ["set_attr", "r", "axis_along", {"__term__": {"type": "Vec", "items": [{"type": "Attr", "node": {"type": "Var", "name": "r"}, "key": "drow"}, {"type": "Attr", "node": {"type": "Var", "name": "r"}, "key": "dcol"}]}}],
+        ["set_attr", "r", "axis_perp", {"__term__": {"type": "Vec", "items": [{"type": "Neg", "arg": {"type": "Attr", "node": {"type": "Var", "name": "r"}, "key": "dcol"}}, {"type": "Attr", "node": {"type": "Var", "name": "r"}, "key": "drow"}]}}],
+        ["set_attr", "r", "pos_along", {"__term__": {"type": "Dot",
+          "a": {"type": "Vec", "items": [{"type": "Attr", "node": {"type": "Var", "name": "r"}, "key": "cy"}, {"type": "Attr", "node": {"type": "Var", "name": "r"}, "key": "cx"}]},
+          "b": {"type": "Vec", "items": [{"type": "Attr", "node": {"type": "Var", "name": "r"}, "key": "drow"}, {"type": "Attr", "node": {"type": "Var", "name": "r"}, "key": "dcol"}]}}}],
+        ["set_attr", "r", "pos_perp", {"__term__": {"type": "Dot",
+          "a": {"type": "Vec", "items": [{"type": "Attr", "node": {"type": "Var", "name": "r"}, "key": "cy"}, {"type": "Attr", "node": {"type": "Var", "name": "r"}, "key": "cx"}]},
+          "b": {"type": "Vec", "items": [{"type": "Neg", "arg": {"type": "Attr", "node": {"type": "Var", "name": "r"}, "key": "dcol"}}, {"type": "Attr", "node": {"type": "Var", "name": "r"}, "key": "drow"}]}}}]
+      ]
+    }
+  ]
+}

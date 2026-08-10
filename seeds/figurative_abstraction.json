@@ -1,0 +1,467 @@
+{
+  "id": "figurative_abstraction",
+  "version": "1.0.0",
+  "depends_on": [
+    "figurative_language"
+  ],
+  "description": "The jabberwock reasoned over its ten figure-detectors and abstracted: a figure is a tagged DISPLACEMENT (F-L) in meaning-space, a superposition resolved by an operator. The ten collapse into four primitives parameterised by an axis; from the empty cells it PREDICTED five undiscovered figures (synecdoche, litotes, sarcasm, zeugma, catachresis). It then gave each predicted figure its OWN detector (parent primitive + one extra test: mereological link / negation / scalar spike / yoked type-mismatch / lexical gap), checked most-specific-first; proven deterministically (each child fires on its extra signal, each parent control stays the parent).",
+  "microtheory": {
+    "name": "figurative_abstraction",
+    "description": "higher-order structure of figurative language"
+  },
+  "nodes": [
+    {
+      "local_id": 1,
+      "type": "Concept",
+      "attrs": {
+        "name": "figurative_displacement",
+        "description": "A figure of speech is one thing read along different axes: a controlled MISMATCH between a literal reading L and an intended reading F, held as a SUPERPOSITION and tagged with the operator that resolves it. The figure IS the displacement vector F-L; its type is the DIRECTION of that displacement in meaning-space. The ten detectors are special cases of this one structure."
+      }
+    },
+    {
+      "local_id": 2,
+      "type": "Principle",
+      "attrs": {
+        "name": "one_classifier_readout",
+        "why": "the ten figures collapse to a handful of primitives differing only by a parameter",
+        "head": "do not need ten classifiers",
+        "body": "measure L and F as vectors and read off the displacement (magnitude, domain-orthogonality, sign, type-violation, granularity); the figure-name falls out as a THRESHOLDED READOUT, and resolution is the collapse of the superposition along the tagged edge."
+      }
+    },
+    {
+      "local_id": 3,
+      "type": "Primitive",
+      "attrs": {
+        "name": "scalar_displacement",
+        "axis": "magnitude polarity (up/down)"
+      }
+    },
+    {
+      "local_id": 4,
+      "type": "Primitive",
+      "attrs": {
+        "name": "substitution_via_link",
+        "axis": "link-type / domain-distance / type-mismatch / marker-overtness"
+      }
+    },
+    {
+      "local_id": 5,
+      "type": "Primitive",
+      "attrs": {
+        "name": "opposition",
+        "axis": "opposition locus (internal/external)"
+      }
+    },
+    {
+      "local_id": 6,
+      "type": "Primitive",
+      "attrs": {
+        "name": "compositional_granularity",
+        "axis": "displacement applied whole vs part-by-part"
+      }
+    },
+    {
+      "local_id": 7,
+      "type": "FigureType",
+      "attrs": {
+        "name": "hyperbole",
+        "parameter": "polarity=+ (far above)",
+        "predicted": 0,
+        "status": "detected"
+      }
+    },
+    {
+      "local_id": 8,
+      "type": "FigureType",
+      "attrs": {
+        "name": "understatement",
+        "parameter": "polarity=- (far below)",
+        "predicted": 0,
+        "status": "detected"
+      }
+    },
+    {
+      "local_id": 9,
+      "type": "FigureType",
+      "attrs": {
+        "name": "metaphor",
+        "parameter": "domain=cross, marker=absent",
+        "predicted": 0,
+        "status": "detected"
+      }
+    },
+    {
+      "local_id": 10,
+      "type": "FigureType",
+      "attrs": {
+        "name": "simile",
+        "parameter": "domain=cross, marker=overt (like/as)",
+        "predicted": 0,
+        "status": "detected"
+      }
+    },
+    {
+      "local_id": 11,
+      "type": "FigureType",
+      "attrs": {
+        "name": "metonymy",
+        "parameter": "domain=same (contiguity/association)",
+        "predicted": 0,
+        "status": "detected"
+      }
+    },
+    {
+      "local_id": 12,
+      "type": "FigureType",
+      "attrs": {
+        "name": "personification",
+        "parameter": "axis=type/animacy (human predicate on inanimate)",
+        "predicted": 0,
+        "status": "detected"
+      }
+    },
+    {
+      "local_id": 13,
+      "type": "FigureType",
+      "attrs": {
+        "name": "oxymoron",
+        "parameter": "locus=internal (two conjoined parts)",
+        "predicted": 0,
+        "status": "detected"
+      }
+    },
+    {
+      "local_id": 14,
+      "type": "FigureType",
+      "attrs": {
+        "name": "irony",
+        "parameter": "locus=external (literal vs context)",
+        "predicted": 0,
+        "status": "detected"
+      }
+    },
+    {
+      "local_id": 15,
+      "type": "FigureType",
+      "attrs": {
+        "name": "idiom",
+        "parameter": "granularity=whole (no internal mapping)",
+        "predicted": 0,
+        "status": "detected"
+      }
+    },
+    {
+      "local_id": 16,
+      "type": "FigureType",
+      "attrs": {
+        "name": "allegory",
+        "parameter": "granularity=part-by-part (relations preserved)",
+        "predicted": 0,
+        "status": "detected"
+      }
+    },
+    {
+      "local_id": 17,
+      "type": "FigureType",
+      "attrs": {
+        "name": "synecdoche",
+        "parameter": "link=part-whole (mereological), not general contiguity",
+        "predicted": 0,
+        "status": "detected (child = parent primitive + extra test)",
+        "was_predicted": 1,
+        "extra_test": "metonymy + mereological link (literal is a PART of the figurative whole)"
+      }
+    },
+    {
+      "local_id": 18,
+      "type": "FigureType",
+      "attrs": {
+        "name": "litotes",
+        "parameter": "polarity=- realised by NEGATION rather than magnitude",
+        "predicted": 0,
+        "status": "detected (child = parent primitive + extra test)",
+        "was_predicted": 1,
+        "extra_test": "understatement + negation of the opposite (\"not bad\")"
+      }
+    },
+    {
+      "local_id": 19,
+      "type": "FigureType",
+      "attrs": {
+        "name": "sarcasm",
+        "parameter": "locus=external CROSSED with the magnitude axis (irony + scalar spike)",
+        "predicted": 0,
+        "status": "detected (child = parent primitive + extra test)",
+        "was_predicted": 1,
+        "extra_test": "irony + a scalar/contempt spike"
+      }
+    },
+    {
+      "local_id": 20,
+      "type": "FigureType",
+      "attrs": {
+        "name": "zeugma",
+        "parameter": "type-mismatch coordinated across two objects under one predicate",
+        "predicted": 0,
+        "status": "detected (child = parent primitive + extra test)",
+        "was_predicted": 1,
+        "extra_test": "one predicate yoking two objects of mismatched type (structural)"
+      }
+    },
+    {
+      "local_id": 21,
+      "type": "FigureType",
+      "attrs": {
+        "name": "catachresis",
+        "parameter": "metaphor forced because no literal term exists",
+        "predicted": 0,
+        "status": "detected (child = parent primitive + extra test)",
+        "was_predicted": 1,
+        "extra_test": "metaphor + no literal term exists for the target (lexical gap)"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "src": {
+        "local": 1
+      },
+      "tgt": {
+        "local": 3
+      },
+      "type": "factors_into",
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 1
+      },
+      "tgt": {
+        "local": 4
+      },
+      "type": "factors_into",
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 1
+      },
+      "tgt": {
+        "local": 5
+      },
+      "type": "factors_into",
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 1
+      },
+      "tgt": {
+        "local": 6
+      },
+      "type": "factors_into",
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 7
+      },
+      "tgt": {
+        "local": 3
+      },
+      "type": "instance_of",
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 8
+      },
+      "tgt": {
+        "local": 3
+      },
+      "type": "instance_of",
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 9
+      },
+      "tgt": {
+        "local": 4
+      },
+      "type": "instance_of",
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 10
+      },
+      "tgt": {
+        "local": 4
+      },
+      "type": "instance_of",
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 11
+      },
+      "tgt": {
+        "local": 4
+      },
+      "type": "instance_of",
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 12
+      },
+      "tgt": {
+        "local": 4
+      },
+      "type": "instance_of",
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 13
+      },
+      "tgt": {
+        "local": 5
+      },
+      "type": "instance_of",
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 14
+      },
+      "tgt": {
+        "local": 5
+      },
+      "type": "instance_of",
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 15
+      },
+      "tgt": {
+        "local": 6
+      },
+      "type": "instance_of",
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 16
+      },
+      "tgt": {
+        "local": 6
+      },
+      "type": "instance_of",
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 17
+      },
+      "tgt": {
+        "local": 4
+      },
+      "type": "instance_of",
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 1
+      },
+      "tgt": {
+        "local": 17
+      },
+      "type": "predicts",
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 18
+      },
+      "tgt": {
+        "local": 3
+      },
+      "type": "instance_of",
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 1
+      },
+      "tgt": {
+        "local": 18
+      },
+      "type": "predicts",
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 19
+      },
+      "tgt": {
+        "local": 5
+      },
+      "type": "instance_of",
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 1
+      },
+      "tgt": {
+        "local": 19
+      },
+      "type": "predicts",
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 20
+      },
+      "tgt": {
+        "local": 4
+      },
+      "type": "instance_of",
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 1
+      },
+      "tgt": {
+        "local": 20
+      },
+      "type": "predicts",
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 21
+      },
+      "tgt": {
+        "local": 4
+      },
+      "type": "instance_of",
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 1
+      },
+      "tgt": {
+        "local": 21
+      },
+      "type": "predicts",
+      "attrs": {}
+    }
+  ],
+  "rules": []
+}

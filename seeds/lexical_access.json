@@ -1,0 +1,299 @@
+{
+  "id": "lexical_access",
+  "version": "1.0.0",
+  "depends_on": [
+    "categorical_perception",
+    "speech"
+  ],
+  "description": "Top of the auditory pathway: phoneme sequences bind to AcousticSign entries in an AcousticLexicon. Re-hearing audio reuses signs; lexicon grows monotonically. Pairs with the chat-side intent Rules via the existing speech-bridge.",
+  "nodes": [
+    {
+      "local_id": 6,
+      "type": "Rule",
+      "attrs": {
+        "effect": {
+          "__tuple__": [
+            {
+              "__tuple__": [
+                "set_attr",
+                "la",
+                "distance_threshold",
+                {
+                  "__term__": {
+                    "items": {
+                      "__tuple__": [
+                        {
+                          "key": "distance_threshold",
+                          "node": {
+                            "name": "la",
+                            "type": "Var"
+                          },
+                          "type": "Attr"
+                        },
+                        {
+                          "key": "step",
+                          "node": {
+                            "name": "tp",
+                            "type": "Var"
+                          },
+                          "type": "Attr"
+                        }
+                      ]
+                    },
+                    "type": "Plus"
+                  }
+                }
+              ]
+            },
+            {
+              "__tuple__": [
+                "set_attr",
+                "la",
+                "la_tuned_at_n_signs",
+                {
+                  "__term__": {
+                    "key": "n_signs",
+                    "node": {
+                      "name": "lex",
+                      "type": "Var"
+                    },
+                    "type": "Attr"
+                  }
+                }
+              ]
+            },
+            {
+              "__tuple__": [
+                "set_attr",
+                "la",
+                "last_la_tune_direction",
+                "raise"
+              ]
+            }
+          ]
+        },
+        "id": "tune_la_distance_raise",
+        "match": {
+          "__tuple__": [
+            {
+              "__tuple__": [
+                "la",
+                "uses_lexicon",
+                "lex"
+              ]
+            },
+            {
+              "__tuple__": [
+                "la",
+                "has_tunable",
+                "tp"
+              ]
+            }
+          ]
+        },
+        "where": {
+          "items": {
+            "__tuple__": [
+              {
+                "a": {
+                  "key": "attr_name",
+                  "node": {
+                    "name": "tp",
+                    "type": "Var"
+                  },
+                  "type": "Attr"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "distance_threshold"
+                },
+                "type": "Eq"
+              },
+              {
+                "a": {
+                  "key": "n_signs",
+                  "node": {
+                    "name": "lex",
+                    "type": "Var"
+                  },
+                  "type": "Attr"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 20
+                },
+                "type": "Gte"
+              },
+              {
+                "a": {
+                  "key": "distance_threshold",
+                  "node": {
+                    "name": "la",
+                    "type": "Var"
+                  },
+                  "type": "Attr"
+                },
+                "b": {
+                  "key": "max",
+                  "node": {
+                    "name": "tp",
+                    "type": "Var"
+                  },
+                  "type": "Attr"
+                },
+                "type": "Lt"
+              },
+              {
+                "a": {
+                  "a": {
+                    "source": {
+                      "predicate": {
+                        "a": {
+                          "key": "hearings",
+                          "node": {
+                            "name": "s",
+                            "type": "Var"
+                          },
+                          "type": "Attr"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": 1
+                        },
+                        "type": "Eq"
+                      },
+                      "source": {
+                        "edge_type": "has_entry",
+                        "node": {
+                          "name": "lex",
+                          "type": "Var"
+                        },
+                        "type": "Neighbours"
+                      },
+                      "type": "Filter",
+                      "var_name": "s"
+                    },
+                    "type": "Count"
+                  },
+                  "b": {
+                    "source": {
+                      "edge_type": "has_entry",
+                      "node": {
+                        "name": "lex",
+                        "type": "Var"
+                      },
+                      "type": "Neighbours"
+                    },
+                    "type": "Count"
+                  },
+                  "type": "Div"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 0.5
+                },
+                "type": "Gte"
+              },
+              {
+                "items": {
+                  "__tuple__": [
+                    {
+                      "arg": {
+                        "key": "la_tuned_at_n_signs",
+                        "node": {
+                          "name": "la",
+                          "type": "Var"
+                        },
+                        "type": "Attr"
+                      },
+                      "type": "Not"
+                    },
+                    {
+                      "a": {
+                        "a": {
+                          "key": "n_signs",
+                          "node": {
+                            "name": "lex",
+                            "type": "Var"
+                          },
+                          "type": "Attr"
+                        },
+                        "b": {
+                          "key": "la_tuned_at_n_signs",
+                          "node": {
+                            "name": "la",
+                            "type": "Var"
+                          },
+                          "type": "Attr"
+                        },
+                        "type": "Minus"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 30
+                      },
+                      "type": "Gte"
+                    }
+                  ]
+                },
+                "type": "Or"
+              }
+            ]
+          },
+          "type": "And"
+        }
+      }
+    }
+  ],
+  "edges": [],
+  "productions": [
+    {
+      "src": {
+        "type": "AcousticSign",
+        "var": "src"
+      },
+      "edge_type": "contains_phoneme",
+      "tgt": {
+        "type": "Phoneme",
+        "var": "tgt"
+      },
+      "provenance": "lexical_access:sign_phoneme"
+    },
+    {
+      "src": {
+        "type": "AudioStream",
+        "var": "src"
+      },
+      "edge_type": "has_pipeline_entry",
+      "tgt": {
+        "type": "Operation",
+        "var": "tgt"
+      },
+      "provenance": "lexical_access:stream_pipeline_entry"
+    },
+    {
+      "src": {
+        "type": "Operation",
+        "var": "src"
+      },
+      "edge_type": "feeds_into",
+      "tgt": {
+        "type": "Operation",
+        "var": "tgt"
+      },
+      "provenance": "lexical_access:operation_feeds_into"
+    },
+    {
+      "src": {
+        "type": "Operation",
+        "var": "src"
+      },
+      "edge_type": "uses_lexicon",
+      "tgt": {
+        "type": "AcousticLexicon",
+        "var": "tgt"
+      },
+      "provenance": "lexical_access:op_uses_lexicon"
+    }
+  ]
+}

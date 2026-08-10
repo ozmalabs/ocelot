@@ -1,0 +1,397 @@
+{
+  "microtheory": {
+    "name": "optimal_estimation_control",
+    "definition": "Optimal control + state estimation. LQR (Linear Quadratic Regulator), LQG (Linear Quadratic Gaussian), Kalman filter, particle filter, Model Predictive Control (MPC), H-infinity robust control. The mathematical framework for steering systems optimally under cost objectives + noise. Provides Jabberwock's runner/brain with the principled-optimization side of control: not just feedback that works, but feedback that minimizes a cost / maximizes utility under uncertainty.",
+    "category": "foundation"
+  },
+  "concepts": [
+    {
+      "name": "optimal_control",
+      "definition": "Choose control to minimize cost functional J = ∫(state cost + control cost) dt over trajectory. Substrate analogue: substrate's drive-minimization.",
+      "category": "foundation"
+    },
+    {
+      "name": "cost_functional",
+      "definition": "Quadratic in state + control: J = ∫(x^T Q x + u^T R u) dt. Q, R weight matrices. Substrate analogue: substrate's frustration objective.",
+      "category": "foundation"
+    },
+    {
+      "name": "bellman_equation",
+      "definition": "V*(x) = min_u { L(x,u) + V*(f(x,u)) }. Foundation of dynamic programming. Substrate analogue: substrate's recursive optimal-value structure.",
+      "category": "foundation"
+    },
+    {
+      "name": "dynamic_programming_control",
+      "definition": "Bellman. Solve optimal control backward from goal. Curse of dimensionality. Substrate analogue: substrate's backward induction.",
+      "category": "foundation"
+    },
+    {
+      "name": "pontryagins_principle",
+      "definition": "Necessary condition for optimal control: Hamiltonian H = L + λ^T f maximized over u. Substrate analogue: substrate's adjoint-variable optimization.",
+      "category": "foundation"
+    },
+    {
+      "name": "hamilton_jacobi_bellman",
+      "definition": "HJB equation: V_t + min_u {L + V_x^T f} = 0. Continuous-time dynamic programming. Substrate analogue: substrate's PDE characterization.",
+      "category": "foundation"
+    },
+    {
+      "name": "linear_quadratic_regulator",
+      "definition": "LQR. Linear dynamics ẋ = Ax + Bu + quadratic cost. Closed-form solution: u = -Kx where K = R^{-1} B^T P, P solves Algebraic Riccati Equation. Robust to many disturbances. Substrate analogue: substrate's principal-component optimal control.",
+      "category": "lqr"
+    },
+    {
+      "name": "algebraic_riccati_equation",
+      "definition": "ARE: A^T P + P A - P B R^{-1} B^T P + Q = 0. Solves LQR for infinite horizon. Symmetric positive-definite P. Substrate analogue: substrate's stationary-optimality fixed point.",
+      "category": "lqr"
+    },
+    {
+      "name": "lqr_gain",
+      "definition": "K = R^{-1} B^T P. Optimal feedback gain matrix. Doesn't depend on initial state — universal optimal feedback. Substrate analogue: substrate's state-feedback weights.",
+      "term": {
+        "type": "Eq",
+        "a": {
+          "type": "Holds",
+          "concept": "equilibrium_constant",
+          "node": {
+            "type": "Var",
+            "name": "x"
+          },
+          "node2": null
+        },
+        "b": {
+          "type": "Times",
+          "items": [
+            {
+              "type": "Pow",
+              "a": {
+                "type": "Holds",
+                "concept": "Reynolds_number",
+                "node": {
+                  "type": "Var",
+                  "name": "x"
+                },
+                "node2": null
+              },
+              "b": {
+                "type": "Neg",
+                "arg": {
+                  "type": "Lit",
+                  "value": 1
+                }
+              }
+            },
+            {
+              "type": "Pow",
+              "a": {
+                "type": "Holds",
+                "concept": "magnetic_field",
+                "node": {
+                  "type": "Var",
+                  "name": "x"
+                },
+                "node2": null
+              },
+              "b": {
+                "type": "Holds",
+                "concept": "temperature_statistical",
+                "node": {
+                  "type": "Var",
+                  "name": "x"
+                },
+                "node2": null
+              }
+            },
+            {
+              "type": "Lit",
+              "value": "P"
+            }
+          ]
+        }
+      },
+      "category": "lqr"
+    },
+    {
+      "name": "robustness_lqr",
+      "definition": "LQR has 60° phase margin + ∞ gain margin in classical SISO. Optimal AND robust. Substrate analogue: substrate's principled robustness.",
+      "category": "lqr"
+    },
+    {
+      "name": "kalman_filter",
+      "definition": "Kalman 1960. Optimal state estimator for linear Gaussian dynamics. Recursive: predict step + update step. ẋ̂ = Aẋ̂ + Bu + K(y - Cẋ̂), K = PC^T R^{-1}. Substrate analogue: substrate's online Bayesian state estimator.",
+      "category": "kalman"
+    },
+    {
+      "name": "kalman_gain",
+      "definition": "K_t = P_t C^T (CPC^T + R)^{-1}. Weight between prediction + measurement. Large K trusts measurement; small K trusts prediction. Substrate analogue: substrate's belief-update gain.",
+      "term": {
+        "type": "Eq",
+        "a": {
+          "type": "Holds",
+          "concept": "equilibrium_constant",
+          "node": {
+            "type": "Var",
+            "name": "x"
+          },
+          "node2": null
+        },
+        "b": {
+          "type": "Times",
+          "items": [
+            {
+              "type": "Lit",
+              "value": "P_t"
+            },
+            {
+              "type": "Pow",
+              "a": {
+                "type": "Holds",
+                "concept": "channel_capacity",
+                "node": {
+                  "type": "Var",
+                  "name": "x"
+                },
+                "node2": null
+              },
+              "b": {
+                "type": "Holds",
+                "concept": "temperature_statistical",
+                "node": {
+                  "type": "Var",
+                  "name": "x"
+                },
+                "node2": null
+              }
+            },
+            {
+              "type": "Pow",
+              "a": {
+                "type": "Plus",
+                "items": [
+                  {
+                    "type": "Times",
+                    "items": [
+                      {
+                        "type": "Holds",
+                        "concept": "channel_capacity",
+                        "node": {
+                          "type": "Var",
+                          "name": "x"
+                        },
+                        "node2": null
+                      },
+                      {
+                        "type": "Lit",
+                        "value": "P"
+                      },
+                      {
+                        "type": "Pow",
+                        "a": {
+                          "type": "Holds",
+                          "concept": "channel_capacity",
+                          "node": {
+                            "type": "Var",
+                            "name": "x"
+                          },
+                          "node2": null
+                        },
+                        "b": {
+                          "type": "Holds",
+                          "concept": "temperature_statistical",
+                          "node": {
+                            "type": "Var",
+                            "name": "x"
+                          },
+                          "node2": null
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "Holds",
+                    "concept": "Reynolds_number",
+                    "node": {
+                      "type": "Var",
+                      "name": "x"
+                    },
+                    "node2": null
+                  }
+                ]
+              },
+              "b": {
+                "type": "Neg",
+                "arg": {
+                  "type": "Lit",
+                  "value": 1
+                }
+              }
+            }
+          ]
+        }
+      },
+      "category": "kalman"
+    },
+    {
+      "name": "innovation_kalman",
+      "definition": "y - Cẋ̂ — difference between measurement and prediction. Kalman update proportional to innovation. Substrate analogue: substrate's ΔF / prediction error.",
+      "category": "kalman"
+    },
+    {
+      "name": "covariance_propagation_kalman",
+      "definition": "P_t+1 = A P_t A^T + Q. Predict step. Update: P_t+1 = (I - K_t C) P_t. Substrate analogue: substrate's belief-uncertainty evolution.",
+      "category": "kalman"
+    },
+    {
+      "name": "extended_kalman_filter",
+      "definition": "EKF. Linearize nonlinear dynamics around current estimate. Standard for nonlinear estimation. Not optimal, but tractable. Substrate analogue: substrate's local-linear estimation.",
+      "category": "kalman"
+    },
+    {
+      "name": "unscented_kalman_filter",
+      "definition": "UKF. Julier+Uhlmann 1997. Use sigma points to propagate distribution through nonlinearity. Better than EKF for strong nonlinearity. Substrate analogue: substrate's higher-order moment propagation.",
+      "category": "kalman"
+    },
+    {
+      "name": "lqg_control",
+      "definition": "Linear Quadratic Gaussian. LQR + Kalman filter combined via separation principle. Estimate state, control as if it's certain. Substrate analogue: substrate's estimate-then-act optimal control.",
+      "category": "lqg"
+    },
+    {
+      "name": "separation_principle",
+      "definition": "For LQG, optimal estimator + optimal controller designed independently. Combined solution still optimal. Foundation of certainty equivalence. Substrate analogue: substrate's perception-action separation.",
+      "category": "lqg"
+    },
+    {
+      "name": "certainty_equivalence",
+      "definition": "Use estimate as if it were true state. Optimal in LQG. Approximation in general. Substrate analogue: substrate's point-estimate decision.",
+      "category": "lqg"
+    },
+    {
+      "name": "model_predictive_control",
+      "definition": "MPC. At each step: solve finite-horizon optimization, apply first input, repeat. Handles constraints + nonlinearities. Dominates process industry. Substrate analogue: substrate's anticipation-based corrected action.",
+      "category": "mpc"
+    },
+    {
+      "name": "receding_horizon",
+      "definition": "MPC's defining feature: optimization horizon recedes with time. Always plan H steps ahead from current state. Substrate analogue: substrate's continuously-replanning lookahead.",
+      "category": "mpc"
+    },
+    {
+      "name": "mpc_constraints",
+      "definition": "MPC handles input + state constraints directly via constrained optimization. Hard advantage over LQR. Substrate analogue: substrate's constraint-aware action selection.",
+      "category": "mpc"
+    },
+    {
+      "name": "mpc_terminal_cost",
+      "definition": "Terminal cost / set in finite-horizon MPC ensures stability. Lyapunov function on terminal state. Substrate analogue: substrate's bounded-horizon goal-completion.",
+      "category": "mpc"
+    },
+    {
+      "name": "linear_mpc",
+      "definition": "LTI dynamics + quadratic cost + linear constraints. Reduces to QP per step. Real-time tractable. Substrate analogue: substrate's fast-optimization controller.",
+      "category": "mpc"
+    },
+    {
+      "name": "nonlinear_mpc",
+      "definition": "NMPC. Nonlinear dynamics. Computationally expensive. Used in robotics, autonomous vehicles. Substrate analogue: substrate's full-nonlinear lookahead.",
+      "category": "mpc"
+    },
+    {
+      "name": "h_infinity_control",
+      "definition": "H∞. Minimize worst-case disturbance amplification. Robust to model uncertainty + worst-case disturbance. Substrate analogue: substrate's adversarial-robust control.",
+      "category": "robust"
+    },
+    {
+      "name": "mu_synthesis",
+      "definition": "Structured singular value-based control synthesis. Handles structured uncertainty. Substrate analogue: substrate's parameter-uncertainty-robust controller.",
+      "category": "robust"
+    },
+    {
+      "name": "robust_control",
+      "definition": "Design for performance under worst-case uncertainty. Conservatism vs nominal performance tradeoff. Substrate analogue: substrate's worst-case-aware design.",
+      "category": "robust"
+    },
+    {
+      "name": "particle_filter",
+      "definition": "Sequential Monte Carlo. Represent posterior by weighted samples. Handles arbitrary nonlinear non-Gaussian. Substrate analogue: substrate's sample-based posterior.",
+      "category": "estimation"
+    },
+    {
+      "name": "bootstrap_filter",
+      "definition": "Gordon+Salmond+Smith 1993. Standard particle filter: sample from prior, weight by likelihood, resample. Substrate analogue: substrate's sample-importance resampling.",
+      "category": "estimation"
+    },
+    {
+      "name": "rao_blackwellised_filter",
+      "definition": "Particle filter where some state dimensions handled analytically (Kalman) + others by particles. Substrate analogue: substrate's hybrid analytic-sample estimation.",
+      "category": "estimation"
+    },
+    {
+      "name": "adaptive_control",
+      "definition": "Controller parameters update online based on observed performance. Model reference + self-tuning. Substrate analogue: substrate's correction-coefficient learning.",
+      "category": "adaptive"
+    },
+    {
+      "name": "model_reference_adaptive_control",
+      "definition": "MRAC. Adjust controller so closed loop tracks reference model. Substrate analogue: substrate's target-tracking adaptation.",
+      "category": "adaptive"
+    },
+    {
+      "name": "self_tuning_regulator",
+      "definition": "STR. Identify plant online + design controller for current estimate. Substrate analogue: substrate's online system-identification + redesign.",
+      "category": "adaptive"
+    },
+    {
+      "name": "gain_scheduling",
+      "definition": "Pre-computed controller gains for different operating regions. Substrate analogue: substrate's per-context drive weights.",
+      "category": "adaptive"
+    },
+    {
+      "name": "reinforcement_learning_control",
+      "definition": "Modern RL = optimal control with unknown dynamics. Bellman equation reappears. Substrate analogue: substrate's drive-coefficient learning via outcome.",
+      "term": {
+        "type": "Eq",
+        "a": {
+          "type": "Lit",
+          "value": "Modern RL"
+        },
+        "b": {
+          "type": "Lit",
+          "value": "optimal control with unknown dynamics"
+        }
+      },
+      "category": "modern"
+    },
+    {
+      "name": "policy_gradient_control",
+      "definition": "Optimize policy parameters directly via gradient of expected return. Substrate analogue: substrate's correction-parameter optimization."
+    }
+  ],
+  "rules": [
+    {
+      "name": "lqr_principled_state_feedback",
+      "head": "Jabberwock has linear-Gaussian dynamics + quadratic cost",
+      "body": "the LQR solution is computed analytically from the Algebraic Riccati Equation. The resulting feedback is optimal AND inherits LQR robustness margins. Substrate's principled state-feedback."
+    },
+    {
+      "name": "kalman_optimal_for_linear_gaussian",
+      "head": "Jabberwock estimates state under linear-Gaussian dynamics + noise",
+      "body": "Kalman filter is provably optimal (minimum mean squared error). Innovation drives belief update; Kalman gain weights prediction vs measurement."
+    },
+    {
+      "name": "separation_principle_decouples_design",
+      "head": "Jabberwock has LQG problem",
+      "body": "estimator + controller designed independently. Their composition is optimal. Substrate's perception-action separation justified."
+    },
+    {
+      "name": "mpc_handles_constraints_optimally",
+      "head": "Jabberwock has input or state constraints",
+      "body": "MPC handles them directly via constrained optimization at each step. LQR cannot. Substrate's constraint-aware control."
+    },
+    {
+      "name": "h_infinity_for_worst_case_disturbance",
+      "head": "Jabberwock faces worst-case disturbances",
+      "body": "H∞ control minimizes worst-case amplification. Conservatism is the price. Substrate's adversarially-robust design."
+    }
+  ]
+}

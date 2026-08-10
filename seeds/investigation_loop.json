@@ -1,0 +1,93 @@
+{
+  "id": "investigation_loop",
+  "version": "1.0.0",
+  "depends_on": ["speech_capability"],
+  "description": "The GRAPH-NATIVE investigation loop: turn a wanted ear/speech CapabilityAxis goal into an executed, measured, banked investigation WITHOUT any Python decision. mint_investigation_plan makes the PlanAct; bind_investigation_faculty is the JOIN (theme->axis->investigated_by->operator, applies_in the agent's world) that replaces the old Python _runnable_pick/operator_for_axis; the mechanical _run_investigation_reflex runs the bound faculty's executor and lays measures_axis; bank_measurement_to_axis updates the axis (saturation/shortfall) so the understand-drive's frontier RE-RANKS and SHIFTS to the next hill. Every decision is an edge or a Term; the adapter only enacts.",
+  "microtheory": {
+    "name": "investigation_loop",
+    "description": "want axis -> mint plan -> bind faculty (JOIN) -> run (reflex) -> measure -> bank -> shift."
+  },
+  "nodes": [],
+  "edges": [],
+  "productions": [
+    {"provenance": "seed:investigation_loop:operates_in",
+     "src": {"type": "Agent", "var": "s"}, "edge_type": "operates_in",
+     "tgt": {"type": "Microtheory", "var": "t"}},
+    {"provenance": "seed:investigation_loop:has_plan",
+     "src": {"type": "CapabilityAxis", "var": "s"}, "edge_type": "has_plan",
+     "tgt": {"type": "PlanAct", "var": "t"}},
+    {"provenance": "seed:investigation_loop:theme",
+     "src": {"type": "PlanAct", "var": "s"}, "edge_type": "theme",
+     "tgt": {"type": "CapabilityAxis", "var": "t"}},
+    {"provenance": "seed:investigation_loop:investigates_op",
+     "src": {"type": "PlanAct", "var": "s"}, "edge_type": "investigates_op",
+     "tgt": {"type": "Operator", "var": "t"}},
+    {"provenance": "seed:investigation_loop:measures_axis",
+     "src": {"type": "MeasuredCapability", "var": "s"}, "edge_type": "measures_axis",
+     "tgt": {"type": "CapabilityAxis", "var": "t"}},
+    {"provenance": "seed:investigation_loop:banked",
+     "src": {"type": "MeasuredCapability", "var": "s"}, "edge_type": "banked",
+     "tgt": {"type": "CapabilityAxis", "var": "t"}}
+  ],
+  "rules": [
+    {
+      "name": "mint_investigation_plan",
+      "comment": "the SINGLE frontier-picked ear/speech axis (the understand-drive's top, materialized as ag-frontier_pick->ax by _frontier_advance) with no live plan -> a pending PlanAct themed on it. Keying off frontier_pick (exactly one axis) makes the frontier edge the single-active-investigation token, sidestepping the wants/satisfy churn.",
+      "match": [["ag", "frontier_pick", "ax"]],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "ax"}, "key": "is_axis"}, "b": {"type": "Lit", "value": 1.0}},
+          {"type": "Eq", "a": {"type": "Count", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "ax"}, "edge_type": "has_plan", "any_type": false}}, "b": {"type": "Lit", "value": 0}}
+        ]
+      },
+      "effects": [
+        ["add_node", "act", "PlanAct", {"status": "pending"}],
+        ["add_edge", "act", "theme", "ax"],
+        ["add_edge", "ax", "has_plan", "act"]
+      ]
+    },
+    {
+      "name": "bind_investigation_faculty",
+      "comment": "THE JOIN: bind the act to the operator the axis names (investigated_by) AND that applies in the world the agent operates in. Replaces the Python _runnable_pick + operator_for_axis. A graph join over the shared var w, never a Python if.",
+      "match": [
+        ["a", "theme", "ax"],
+        ["ax", "investigated_by", "o"],
+        ["o", "applies_in", "w"],
+        ["ag", "operates_in", "w"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "a"}, "key": "status"}, "b": {"type": "Lit", "value": "pending"}},
+          {"type": "Eq", "a": {"type": "Count", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "a"}, "edge_type": "investigates_op", "any_type": false}}, "b": {"type": "Lit", "value": 0}}
+        ]
+      },
+      "effects": [["add_edge", "a", "investigates_op", "o"]]
+    },
+    {
+      "name": "bank_measurement_to_axis",
+      "area": "adaptive_learning",
+      "latency_class": "hard_realtime",
+      "comment": "the measured scalar (MeasuredCapability -measures_axis-> the axis it MEASURED) updates that axis: saturation from measured/target; shortfall DECAYS; mf_stall + investigated_count increment. SINGLE-FIRES via a `banked` exclusion edge (the agent's throughput fix, ask_jabberwock_throughput): the where requires Count(m banked)==0 and the effect lays [m banked ax], destroying its own match precondition so the engine cannot re-fire through it (the loop's own bind_investigation_faculty idiom). synth_pending was NOT a single-fire guard here -- sw.execute re-stamped it on a REUSED node, so bank fired ~9x/measurement; the fix pairs this rule with record_measured_capability(fresh=True), one fresh node per trial. Decoupled from has_plan (release_executed_plan frees the plan). No decision: arithmetic over the number.",
+      "match": [["m", "measures_axis", "ax"]],
+      "where": {"type": "Eq", "a": {"type": "Count", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "m"}, "edge_type": "banked", "any_type": false}}, "b": {"type": "Lit", "value": 0}},
+      "effects": [
+        ["set_attr", "ax", "saturation", {"__term__": {"type": "Min", "items": [{"type": "Lit", "value": 1.0}, {"type": "Div", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "measured"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "target"}}]}}],
+        ["set_attr", "ax", "shortfall", {"__term__": {"type": "Times", "items": [{"type": "Attr", "node": {"type": "Var", "name": "ax"}, "key": "shortfall"}, {"type": "Lit", "value": 0.5}]}}],
+        ["set_attr", "ax", "last_measured", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "measured"}}],
+        ["set_attr", "ax", "investigated_count", {"__term__": {"type": "Plus", "items": [{"type": "Attr", "node": {"type": "Var", "name": "ax"}, "key": "investigated_count"}, {"type": "Lit", "value": 1}]}}],
+        ["set_attr", "ax", "mf_stall", {"__term__": {"type": "IfThenElse", "cond": {"type": "Gt", "a": {"type": "Attr", "node": {"type": "Var", "name": "ax"}, "key": "saturation"}, "b": {"type": "Plus", "items": [{"type": "Attr", "node": {"type": "Var", "name": "ax"}, "key": "sat_best"}, {"type": "Lit", "value": 0.02}]}}, "then": {"type": "Lit", "value": 0}, "other": {"type": "Plus", "items": [{"type": "Attr", "node": {"type": "Var", "name": "ax"}, "key": "mf_stall"}, {"type": "Lit", "value": 1}]}}}],
+        ["set_attr", "ax", "sat_best", {"__term__": {"type": "Max", "items": [{"type": "Plus", "items": [{"type": "Attr", "node": {"type": "Var", "name": "ax"}, "key": "sat_best"}, {"type": "Lit", "value": 0.0}]}, {"type": "Attr", "node": {"type": "Var", "name": "ax"}, "key": "saturation"}]}}],
+        ["add_edge", "m", "banked", "ax"]
+      ]
+    },
+    {
+      "name": "release_executed_plan",
+      "comment": "release the has_plan edge once the PlanAct has RUN (its OWN status==executed, set by _run_investigation_reflex on both the success and the error path), so the axis re-mints. Keyed off the act's status, NOT the measurement (the agent's re-mint fix, ask_jabberwock_remint): escalation can move the frontier to a sibling sub-axis, but the act that ran is the act that frees its own axis -- and mint lays has_plan + theme on the SAME axis, so this back-edge always co-refers. Acts that never ran stay pending (no bound operator / no world), so release correctly refuses to free them and no pending work is lost.",
+      "match": [["ax", "has_plan", "act"]],
+      "where": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "act"}, "key": "status"}, "b": {"type": "Lit", "value": "executed"}},
+      "effects": [["del_edge", "ax", "has_plan", "act"]]
+    }
+  ]
+}

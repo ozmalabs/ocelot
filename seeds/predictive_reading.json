@@ -1,0 +1,62 @@
+{
+  "id": "predictive_reading",
+  "version": "1.0.0",
+  "depends_on": [],
+  "description": "ANALYSIS-BY-SYNTHESIS READING as a cognitive_tick-driven graph fixpoint. A PredictiveReadingStage (minted by predictive_reading.read_arc_predictively, carrying the target arc text + the discourse context + the WriterStyle it predicts from) is DISPATCHED by pr_dispatch the moment a WriterStyle model exists; the predictive_read_advance Reflex then runs the dispatched stage's thin non-branching executor (predictive_reading._advance_predictive_stage, the reading_drive._advance_unit_stage precedent): it SYNTHESIZES the predicted next words from the writer model + context (the production faculty run forward), DECODES the arriving words against that synthesized prediction as a ShapeDecode collapse (the residual IS the surprise), and mints a PredictiveRead carrying the confirm-vs-surprise split. There is NO Python predict/compare loop and NO run_rules/fire_reflexes hand-pump -- the reflex advances ONE stage per firing and cognitive_tick drives it. reading and writing are ONE model run in opposite directions.",
+  "microtheory": {
+    "name": "predictive_reading",
+    "description": "Reading as analysis-by-synthesis: the reader synthesizes what the writer will write (production run forward, conditioned on a graph-resident WriterStyle/AudienceCentroid + the recurring Throughline beat + the discourse context), compares it to the arriving words via a ShapeDecode collapse, and the residual (prediction error) is the comprehension signal -- low residual reads fast (confirmed), high residual is the deep order-N processing (surprise)."
+  },
+  "nodes": [],
+  "edges": [],
+  "productions": [
+    {
+      "provenance": "seed:predictive_reading:has_prediction_stage-0",
+      "src": {"type": "Agent", "var": "s"},
+      "edge_type": "has_prediction_stage",
+      "tgt": {"type": "PredictiveReadingStage", "var": "t"}
+    },
+    {
+      "provenance": "seed:predictive_reading:relative_to-1",
+      "src": {"type": "WriterStyle", "var": "s"},
+      "edge_type": "relative_to",
+      "tgt": {"type": "AudienceCentroid", "var": "t"}
+    },
+    {
+      "provenance": "seed:predictive_reading:has_predictive_read-2",
+      "src": {"type": "Agent", "var": "s"},
+      "edge_type": "has_predictive_read",
+      "tgt": {"type": "PredictiveRead", "var": "t"}
+    }
+  ],
+  "rules": [
+    {
+      "name": "pr_dispatch",
+      "comment": "Fire the predictive read the moment a WriterStyle model exists (the reader HAS a model of the writer to synthesize from). The precondition is Exists a WriterStyle; the stage's own writer_style attr names which one the executor reads. run_rules dispatches the stage; cognitive_tick's reflex then advances it.",
+      "match_type": "PredictiveReadingStage",
+      "match": [["ag", "has_prediction_stage", "stage"]],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "stage"}, "key": "name"}, "b": {"type": "Lit", "value": "predict_read"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "stage"}, "key": "status"}, "b": {"type": "Lit", "value": "pending"}},
+          {"type": "Gt", "a": {"type": "Count", "source": {"type": "NodesOfType", "node_type": "WriterStyle"}}, "b": {"type": "Lit", "value": 0}}
+        ]
+      },
+      "effects": [["set_attr", "stage", "status", "dispatched"]]
+    }
+  ],
+  "reflexes": [
+    {
+      "name": "predictive_read_advance",
+      "stimulus": {
+        "type": "Gte",
+        "a": {"type": "Count", "source": {"type": "Filter", "source": {"type": "NodesOfType", "node_type": "PredictiveReadingStage"},
+              "var_name": "x", "predicate": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "x"}, "key": "status"}, "b": {"type": "Lit", "value": "dispatched"}}}},
+        "b": {"type": "Lit", "value": 1}
+      },
+      "response": "predictive_read_advance",
+      "refractory_ticks": 0
+    }
+  ]
+}

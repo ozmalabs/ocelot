@@ -1,0 +1,100 @@
+{
+  "id": "speech_bootstrap",
+  "version": "1.0.0",
+  "depends_on": [
+    "speech",
+    "categorical_perception",
+    "lexical_access",
+    "sonority_valley",
+    "compositional_chunking"
+  ],
+  "description": "Speech-and-sound concept vocabulary as graph data. Mints abstract Concept nodes (phoneme / syllable / word / utterance / boundary / silence / voice / sequence) + their hierarchy (kind_of / composed_of / bounded_by). Subsequent calls to bootstrap_speech_concepts add is_a edges from concrete substrate nodes (Phoneme, AcousticSign, Utterance, SonorityValley) to their abstract category, so alignment Rules can reason about kind.",
+  "nodes": [],
+  "edges": [],
+  "productions": [
+    {
+      "src": {
+        "type": "AcousticSign",
+        "var": "src"
+      },
+      "edge_type": "is_a",
+      "tgt": {
+        "type": "Concept",
+        "var": "tgt"
+      },
+      "provenance": "speech_concepts:sign_is_a"
+    },
+    {
+      "src": {
+        "type": "Concept",
+        "var": "src"
+      },
+      "edge_type": "bounded_by",
+      "tgt": {
+        "type": "Concept",
+        "var": "tgt"
+      },
+      "provenance": "speech_concepts:concept_bounded_by"
+    },
+    {
+      "src": {
+        "type": "Concept",
+        "var": "src"
+      },
+      "edge_type": "composed_of",
+      "tgt": {
+        "type": "Concept",
+        "var": "tgt"
+      },
+      "provenance": "speech_concepts:concept_composed_of"
+    },
+    {
+      "src": {
+        "type": "Concept",
+        "var": "src"
+      },
+      "edge_type": "kind_of",
+      "tgt": {
+        "type": "Concept",
+        "var": "tgt"
+      },
+      "provenance": "speech_concepts:concept_kind_of"
+    },
+    {
+      "src": {
+        "type": "Phoneme",
+        "var": "src"
+      },
+      "edge_type": "is_a",
+      "tgt": {
+        "type": "Concept",
+        "var": "tgt"
+      },
+      "provenance": "speech_concepts:phoneme_is_a"
+    },
+    {
+      "src": {
+        "type": "SonorityValley",
+        "var": "src"
+      },
+      "edge_type": "is_a",
+      "tgt": {
+        "type": "Concept",
+        "var": "tgt"
+      },
+      "provenance": "speech_concepts:valley_is_a"
+    },
+    {
+      "src": {
+        "type": "Utterance",
+        "var": "src"
+      },
+      "edge_type": "is_a",
+      "tgt": {
+        "type": "Concept",
+        "var": "tgt"
+      },
+      "provenance": "speech_concepts:utterance_is_a"
+    }
+  ]
+}

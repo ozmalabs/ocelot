@@ -1,0 +1,118 @@
+{
+  "id": "linear_algebra_deep_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "singular_value_decomposition",
+  "in_microtheory": "mathematics",
+  "description": "Linear algebra decomposed at depth. SVD applications, eigendecomposition + diagonalization, Jordan canonical form, Cholesky + LU + QR factorizations, conditioning, pseudoinverse, tensor algebra, Krylov subspaces, randomized linear algebra.",
+  "sub_mechanisms": [
+    {
+      "name": "SVD_geometric_interpretation",
+      "definition": "A maps sphere to ellipsoid. Singular values = semi-axis lengths. U, V rotate input + output.",
+      "why": "Foundation. Any linear map = rotation + scaling + rotation. Universal decomposition.",
+      "category": "linalg_deep_mechanism"
+    },
+    {
+      "name": "low_rank_approximation",
+      "definition": "Best rank-k approximation via truncated SVD. Eckart-Young theorem.",
+      "why": "Foundation of PCA, image compression, recommender systems. Optimal in Frobenius norm.",
+      "category": "linalg_deep_mechanism"
+    },
+    {
+      "name": "Jordan_canonical_form",
+      "definition": "Any complex matrix similar to Jordan blocks. Generalization of diagonalization.",
+      "why": "Handles non-diagonalizable matrices. Foundation of linear ODE theory. Standard result.",
+      "category": "linalg_deep_mechanism"
+    },
+    {
+      "name": "Cholesky_decomposition",
+      "definition": "Symmetric positive definite A = LL^T. L lower triangular.",
+      "why": "Fastest factorization for SPD. Foundation of optimization (Newton method), kernel methods.",
+      "category": "linalg_deep_mechanism"
+    },
+    {
+      "name": "QR_decomposition",
+      "definition": "A = QR. Q orthogonal, R upper triangular. From Gram-Schmidt or Householder.",
+      "why": "Foundation of least squares. Numerically stable. QR algorithm finds eigenvalues.",
+      "category": "linalg_deep_mechanism"
+    },
+    {
+      "name": "condition_number",
+      "definition": "κ(A) = σ_max/σ_min. Measures sensitivity to perturbations.",
+      "why": "Foundation of numerical stability. Large κ: ill-conditioned. Standard analysis.",
+      "category": "linalg_deep_mechanism"
+    },
+    {
+      "name": "Moore_Penrose_pseudoinverse",
+      "definition": "A^+ = VΣ^+U^T from SVD. Solves least squares.",
+      "why": "Foundation. Best least-squares solution to Ax = b. Used in regression, inverse problems.",
+      "category": "linalg_deep_mechanism"
+    },
+    {
+      "name": "tensor_algebra",
+      "definition": "Multilinear algebra. Tensor product. Indices + Einstein summation.",
+      "why": "Foundation of general relativity, modern ML. Higher-order generalization of matrices.",
+      "category": "linalg_deep_mechanism"
+    },
+    {
+      "name": "Krylov_subspace_methods",
+      "definition": "Span{b, Ab, A²b, ...}. Iterative methods for large sparse systems.",
+      "why": "Foundation. CG, GMRES, Lanczos. When direct methods too expensive (huge sparse matrices).",
+      "category": "linalg_deep_mechanism"
+    },
+    {
+      "name": "randomized_linear_algebra",
+      "definition": "Use randomness for approximate but fast computations. Random projections.",
+      "why": "Modern. Johnson-Lindenstrauss. Approximate SVD via random sampling. ML at scale.",
+      "category": "linalg_deep_mechanism"
+    },
+    {
+      "name": "matrix_calculus",
+      "definition": "Derivatives wrt matrices + vectors. ∂(x^T Ax)/∂x = (A + A^T)x.",
+      "why": "Foundation of ML optimization. Backprop calculations. Standard reference identities.",
+      "category": "linalg_deep_mechanism"
+    },
+    {
+      "name": "spectral_theorem",
+      "definition": "Symmetric (Hermitian) matrices have real eigenvalues + orthonormal eigenvectors.",
+      "why": "Foundation. PCA = spectral decomposition of covariance. QM observables Hermitian.",
+      "category": "linalg_deep_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "SVD_universal_tool",
+      "if": ["matrix problem (regression, PCA, recommendation)"],
+      "then": ["SVD typically applicable"],
+      "why": "Universal decomposition. Least squares, low rank, pseudoinverse, condition number all from SVD. Foundation of applied linear algebra.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "condition_number_predicts_numerical_problems",
+      "if": ["matrix has large condition number"],
+      "then": ["numerical solution sensitive to roundoff"],
+      "why": "Hilbert matrix: famously ill-conditioned. Standard diagnostic. Foundation of numerical analysis.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "Cholesky_fastest_for_SPD",
+      "if": ["matrix symmetric positive definite"],
+      "then": ["Cholesky factorization is fastest method"],
+      "why": "Half work of LU. Standard for Newton method, kernel methods, GP regression. SPD detection useful.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "spectral_theorem_simplifies_symmetric",
+      "if": ["matrix symmetric"],
+      "then": ["orthonormal eigenbasis with real eigenvalues exists"],
+      "why": "Foundation of PCA, QM. Diagonalization always possible. Standard simplification.",
+      "soundness_category": "algebraic_law"
+    },
+    {
+      "name": "randomized_methods_scale_to_huge_data",
+      "if": ["data is huge but low-rank structure expected"],
+      "then": ["randomized linear algebra outperforms classical"],
+      "why": "Random projections preserve distances (J-L). Approximate SVD O(mn log k) instead of O(min(mn², m²n)).",
+      "soundness_category": "cost_equivalence"
+    }
+  ]
+}

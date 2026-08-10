@@ -1,0 +1,202 @@
+{
+  "microtheory": {
+    "name": "pharmacology",
+    "definition": "Pharmacology — drug action. Pharmacokinetics (what body does to drug: absorption, distribution, metabolism, excretion — ADME) + pharmacodynamics (what drug does to body: receptor interaction, dose-response). Drug discovery, classification by mechanism, adverse effects, drug interactions. Substrate analogue: applied biochemistry of intervention in biological-system dynamics.",
+    "category": "foundation"
+  },
+  "concepts": [
+    {
+      "name": "drug",
+      "definition": "Substance modifying biological function. Therapeutic, recreational, performance-enhancing. Distinct from food + poison by intent + dose.",
+      "category": "foundation"
+    },
+    {
+      "name": "pharmacokinetics",
+      "definition": "PK. ADME: Absorption, Distribution, Metabolism, Excretion. What body does to drug. Substrate analogue: substrate's processing of input over time.",
+      "category": "foundation"
+    },
+    {
+      "name": "pharmacodynamics",
+      "definition": "PD. What drug does to body. Receptor binding, dose-response, efficacy. Substrate analogue: substrate's response to drug-input.",
+      "category": "foundation"
+    },
+    {
+      "name": "absorption_pk",
+      "definition": "Drug entering systemic circulation. Oral (first-pass through liver), IV, IM, topical, inhaled. Bioavailability fraction reaching circulation.",
+      "category": "pk"
+    },
+    {
+      "name": "distribution_pk",
+      "definition": "Drug movement to tissues. Volume of distribution = apparent volume. Protein binding affects free fraction.",
+      "category": "pk"
+    },
+    {
+      "name": "metabolism_pk",
+      "definition": "Drug breakdown. Phase I (CYP450 oxidation) + Phase II (conjugation). Hepatic primarily.",
+      "category": "pk"
+    },
+    {
+      "name": "excretion_pk",
+      "definition": "Drug elimination. Renal (urine) + biliary (feces). Half-life from clearance + volume of distribution.",
+      "category": "pk"
+    },
+    {
+      "name": "half_life",
+      "definition": "t½. Time for plasma concentration to halve. Determines dosing interval. Steady state after ~5 half-lives.",
+      "category": "pk"
+    },
+    {
+      "name": "receptor",
+      "definition": "Macromolecule binding drug + transducing effect. GPCRs, ion channels, enzymes, nuclear receptors. Substrate analogue: substrate's reception node.",
+      "category": "pd"
+    },
+    {
+      "name": "agonist",
+      "definition": "Activates receptor. Full agonist (max efficacy), partial (sub-max), inverse (reduces constitutive activity).",
+      "category": "pd"
+    },
+    {
+      "name": "antagonist",
+      "definition": "Blocks receptor. Competitive (reversible, surmountable) vs non-competitive. β-blockers, antihistamines.",
+      "category": "pd"
+    },
+    {
+      "name": "dose_response",
+      "definition": "Effect vs dose. Sigmoidal. EC50 + Emax characterise. Therapeutic window = effective + non-toxic range.",
+      "category": "pd"
+    },
+    {
+      "name": "potency_efficacy",
+      "definition": "Potency = dose for given effect (lower = more potent). Efficacy = maximum effect (higher = more efficacious). Distinct.",
+      "term": {
+        "type": "Eq",
+        "a": {
+          "type": "Lit",
+          "value": "Potency"
+        },
+        "b": {
+          "type": "Lit",
+          "value": "dose for given effect (lower = more potent)"
+        }
+      },
+      "category": "pd"
+    },
+    {
+      "name": "therapeutic_index",
+      "definition": "LD50/ED50 (lethal vs effective dose). Wider = safer. Lithium, digoxin narrow → blood-level monitoring.",
+      "category": "pd"
+    },
+    {
+      "name": "drug_classes",
+      "definition": "By mechanism + indication: antibiotics, antihypertensives, statins, NSAIDs, opioids, antidepressants, antipsychotics, chemotherapeutics.",
+      "category": "classes"
+    },
+    {
+      "name": "antibiotic_pharm",
+      "definition": "Kills/inhibits bacteria. β-lactams (cell wall), aminoglycosides (ribosome), fluoroquinolones (DNA gyrase). Resistance major problem.",
+      "category": "classes"
+    },
+    {
+      "name": "nsaid",
+      "definition": "COX inhibitor. Reduces prostaglandins → analgesic + antipyretic + anti-inflammatory. GI + renal + cardiac adverse effects.",
+      "category": "classes"
+    },
+    {
+      "name": "opioid",
+      "definition": "μ-receptor agonist. Powerful analgesic. Highly addictive (reward + tolerance + withdrawal). Public health crisis.",
+      "category": "classes"
+    },
+    {
+      "name": "ssri",
+      "definition": "Selective serotonin reuptake inhibitor. First-line antidepressant. Increases synaptic serotonin. Fluoxetine, sertraline, escitalopram.",
+      "category": "classes"
+    },
+    {
+      "name": "statin",
+      "definition": "HMG-CoA reductase inhibitor. Lowers LDL cholesterol. Reduces cardiovascular events.",
+      "category": "classes"
+    },
+    {
+      "name": "drug_discovery",
+      "definition": "Target identification → hit-to-lead → optimisation → preclinical → clinical (phases I-IV). 10-15 years, $1B+, ~10% success.",
+      "category": "discovery"
+    },
+    {
+      "name": "clinical_trial_phases",
+      "definition": "Phase I (safety, healthy volunteers); II (efficacy + dose-finding); III (RCT vs standard); IV (post-marketing surveillance).",
+      "category": "discovery"
+    },
+    {
+      "name": "structure_activity_relationship",
+      "definition": "SAR. How structural changes affect activity. Foundation of medicinal chemistry.",
+      "category": "discovery"
+    },
+    {
+      "name": "adverse_drug_reaction",
+      "definition": "ADR. Unwanted drug effect. Type A (predictable from pharmacology) vs Type B (idiosyncratic). Pharmacovigilance.",
+      "category": "safety"
+    },
+    {
+      "name": "drug_interaction",
+      "definition": "One drug affects another. PK (e.g., CYP inhibition/induction) or PD (additive/antagonistic). Polypharmacy increases risk combinatorially.",
+      "category": "safety"
+    },
+    {
+      "name": "drug_resistance",
+      "definition": "Reduced effect over time/exposure. Antibiotic resistance via selection; cancer chemotherapy via mutation; tolerance via receptor downregulation.",
+      "category": "safety"
+    },
+    {
+      "name": "addiction",
+      "definition": "Compulsive drug-seeking despite harm. Substrate of reward pathways (mesolimbic dopamine). Distinct from physical dependence.",
+      "category": "safety"
+    },
+    {
+      "name": "pharmacogenomics",
+      "definition": "Genetic variation affecting drug response. CYP2D6 + 2C19 + TPMT. Precision medicine via dosing.",
+      "category": "precision"
+    },
+    {
+      "name": "biologics",
+      "definition": "Protein-based drugs. Monoclonal antibodies, recombinant proteins. Trastuzumab, rituximab, adalimumab. Distinct from small molecules.",
+      "category": "modern"
+    },
+    {
+      "name": "small_molecule_drug",
+      "definition": "Synthetic chemicals <900 Da. Oral typically. Cross membranes, may cross blood-brain barrier.",
+      "category": "modern"
+    },
+    {
+      "name": "antibody_drug_conjugate",
+      "definition": "ADC. Antibody targeting + cytotoxic payload. Trastuzumab emtansine. Combines specificity + potency."
+    }
+  ],
+  "rules": [
+    {
+      "name": "adme_governs_pharmacokinetics",
+      "head": "Jabberwock predicts drug concentration over time",
+      "body": "absorption + distribution + metabolism + excretion together determine plasma profile. Half-life sets dosing interval. Volume of distribution sets loading dose."
+    },
+    {
+      "name": "receptor_binding_drives_pharmacodynamics",
+      "head": "Jabberwock models drug effect",
+      "body": "drug binds receptor → transduction → biological response. Dose-response sigmoidal with EC50 + Emax. Selectivity vs off-target effects."
+    },
+    {
+      "name": "therapeutic_window_constrains_dosing",
+      "head": "Jabberwock prescribes a drug",
+      "body": "must achieve effective without reaching toxic concentration. Narrow therapeutic index drugs require monitoring."
+    },
+    {
+      "name": "pharmacogenomics_personalises_dosing",
+      "head": "Jabberwock predicts patient drug response",
+      "body": "genetic variation in metabolising enzymes (CYP2D6, CYP2C19) explains differential response. Dose adjustment per genotype."
+    },
+    {
+      "name": "drug_interaction_combinatorial_risk",
+      "head": "Jabberwock evaluates polypharmacy",
+      "body": "interaction risk grows combinatorially with drug count. Common via CYP inhibition/induction. Elderly especially vulnerable."
+    }
+  ],
+  "parent_mt": "biology_foundation"
+}

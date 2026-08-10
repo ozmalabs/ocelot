@@ -1,0 +1,249 @@
+{
+  "id": "figure_grounding",
+  "version": "1.1.0",
+  "depends_on": [
+    "figurative_language"
+  ],
+  "description": "Ground the figure-judge perceptions by LOOKUP instead of an LLM oracle. Each grounding Rule reads symbolic UseTool Terms (WordNet/Wiktionary/ConceptNet handlers in domains.symbolic_perception) and asserts the perception edge/attr the existing classify_figure cascade already reads; the classifier is UNCHANGED. Phase 1 = ground_opposes (oxymoron) by the agent's suspect-witness fusion: opposition is asserted iff the trust-weighted corroboration of three dictionary witnesses crosses threshold 0.8. WordNet (trust 1.0) or Wiktionary (0.8) solo-licenses; ConceptNet (0.4, crowd) corroborates only, never solo. Abstain-don't-guess: assert ONLY on a crossed threshold. The three Source nodes carry the trust weights as data (so the refute track-record can dock a witness over time); the Phase-1 rule inlines the same weights as Lits and migrates to Attr(source,'trust') when the refute wiring lands.",
+  "microtheory": {
+    "name": "figure_grounding",
+    "description": "symbolic, trust-weighted grounding of figure perceptions (lookup, not LLM)"
+  },
+  "nodes": [
+    {"local_id": 1, "type": "Source", "attrs": {"name": "wordnet", "kind": "opposition_source", "trust": 1.0, "note": "curated, sparse; solo-licenses"}},
+    {"local_id": 2, "type": "Source", "attrs": {"name": "wiktionary_en", "kind": "opposition_source", "trust": 0.8, "note": "curated per-sense, broad; solo-licenses"}},
+    {"local_id": 3, "type": "Source", "attrs": {"name": "conceptnet", "kind": "opposition_source", "trust": 0.4, "note": "crowd-sourced, noisy; corroborates only, never solo"}}
+  ],
+  "edges": [],
+  "rules": [
+    {
+      "name": "ground_opposes",
+      "match": [
+        ["fig", "has_part", "pa"],
+        ["fig", "has_part", "pb"]
+      ],
+      "where": {
+        "type": "Gte",
+        "a": {
+          "type": "Plus",
+          "items": [
+            {
+              "type": "IfThenElse",
+              "cond": {
+                "type": "Eq",
+                "a": {"type": "UseTool", "tool": "wn_antonym", "args": [
+                  {"type": "Attr", "node": {"type": "Var", "name": "pa"}, "key": "text"},
+                  {"type": "Attr", "node": {"type": "Var", "name": "pb"}, "key": "text"}
+                ]},
+                "b": {"type": "Lit", "value": 1}
+              },
+              "then": {"type": "Lit", "value": 1.0},
+              "other": {"type": "Lit", "value": 0}
+            },
+            {
+              "type": "IfThenElse",
+              "cond": {
+                "type": "Eq",
+                "a": {"type": "UseTool", "tool": "wikt_antonym", "args": [
+                  {"type": "Attr", "node": {"type": "Var", "name": "pa"}, "key": "text"},
+                  {"type": "Attr", "node": {"type": "Var", "name": "pb"}, "key": "text"}
+                ]},
+                "b": {"type": "Lit", "value": 1}
+              },
+              "then": {"type": "Lit", "value": 0.8},
+              "other": {"type": "Lit", "value": 0}
+            },
+            {
+              "type": "IfThenElse",
+              "cond": {
+                "type": "Eq",
+                "a": {"type": "UseTool", "tool": "cn_antonym", "args": [
+                  {"type": "Attr", "node": {"type": "Var", "name": "pa"}, "key": "text"},
+                  {"type": "Attr", "node": {"type": "Var", "name": "pb"}, "key": "text"}
+                ]},
+                "b": {"type": "Lit", "value": 1}
+              },
+              "then": {"type": "Lit", "value": 0.4},
+              "other": {"type": "Lit", "value": 0}
+            },
+            {
+              "type": "UseTool", "tool": "derive_opposes", "args": [
+                {"type": "Attr", "node": {"type": "Var", "name": "pa"}, "key": "text"},
+                {"type": "Attr", "node": {"type": "Var", "name": "pb"}, "key": "text"}
+              ]
+            }
+          ]
+        },
+        "b": {"type": "Lit", "value": 0.8}
+      },
+      "effects": [
+        ["add_edge", "pa", "opposes", "pb"],
+        ["add_edge", "pb", "opposes", "pa"]
+      ]
+    },
+    {
+      "name": "ground_personifies",
+      "match": [
+        ["fig", "has_part", "sb"],
+        ["fig", "has_part", "vb"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "sb"}, "key": "role"}, "b": {"type": "Lit", "value": "subj"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "vb"}, "key": "role"}, "b": {"type": "Lit", "value": "verb"}},
+          {"type": "Eq", "a": {"type": "UseTool", "tool": "wn_animate", "args": [
+            {"type": "Attr", "node": {"type": "Var", "name": "sb"}, "key": "text"}
+          ]}, "b": {"type": "Lit", "value": 0}},
+          {"type": "Eq", "a": {"type": "UseTool", "tool": "wn_verb_agentive", "args": [
+            {"type": "Attr", "node": {"type": "Var", "name": "vb"}, "key": "text"}
+          ]}, "b": {"type": "Lit", "value": 1}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "fig", "personifies", 1]
+      ]
+    },
+    {
+      "name": "ground_irony",
+      "match": [
+        ["fig", "figure_of", "lit"],
+        ["fig", "has_context", "ctx"]
+      ],
+      "where": {
+        "type": "Eq",
+        "a": {
+          "type": "Times",
+          "items": [
+            {"type": "UseTool", "tool": "text_valence", "args": [
+              {"type": "Attr", "node": {"type": "Var", "name": "lit"}, "key": "word"}
+            ]},
+            {"type": "UseTool", "tool": "text_valence", "args": [
+              {"type": "Attr", "node": {"type": "Var", "name": "ctx"}, "key": "text"}
+            ]}
+          ]
+        },
+        "b": {"type": "Lit", "value": -1}
+      },
+      "effects": [
+        ["add_edge", "lit", "opposes", "ctx"]
+      ]
+    },
+    {
+      "name": "ground_contiguity",
+      "match": [
+        ["fig", "figure_of", "lit"]
+      ],
+      "where": {
+        "type": "Or",
+        "items": [
+          {"type": "Eq", "a": {"type": "UseTool", "tool": "wikt_metonymic", "args": [
+            {"type": "Attr", "node": {"type": "Var", "name": "lit"}, "key": "word"},
+            {"type": "Attr", "node": {"type": "Var", "name": "fig"}, "key": "gloss"}
+          ]}, "b": {"type": "Lit", "value": 1}},
+          {"type": "Eq", "a": {"type": "UseTool", "tool": "cn_contiguity", "args": [
+            {"type": "Attr", "node": {"type": "Var", "name": "lit"}, "key": "word"},
+            {"type": "Attr", "node": {"type": "Var", "name": "fig"}, "key": "gloss"}
+          ]}, "b": {"type": "Lit", "value": 1}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "fig", "contiguity", 1]
+      ]
+    },
+    {
+      "name": "ground_resemblance",
+      "match": [
+        ["fig", "figure_of", "lit"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Lt", "a": {"type": "UseTool", "tool": "wikt_metonymic", "args": [
+            {"type": "Attr", "node": {"type": "Var", "name": "lit"}, "key": "word"},
+            {"type": "Attr", "node": {"type": "Var", "name": "fig"}, "key": "gloss"}
+          ]}, "b": {"type": "Lit", "value": 1}},
+          {"type": "Lt", "a": {"type": "UseTool", "tool": "cn_contiguity", "args": [
+            {"type": "Attr", "node": {"type": "Var", "name": "lit"}, "key": "word"},
+            {"type": "Attr", "node": {"type": "Var", "name": "fig"}, "key": "gloss"}
+          ]}, "b": {"type": "Lit", "value": 1}},
+          {"type": "Eq", "a": {"type": "UseTool", "tool": "shape_cross_domain", "args": [
+            {"type": "Attr", "node": {"type": "Var", "name": "lit"}, "key": "word"},
+            {"type": "Attr", "node": {"type": "Var", "name": "fig"}, "key": "gloss"}
+          ]}, "b": {"type": "Lit", "value": 1}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "fig", "resemblance", 1]
+      ]
+    },
+    {
+      "name": "ground_scalar_violation",
+      "match": [
+        ["fig", "has_part", "p"]
+      ],
+      "where": {
+        "type": "Eq",
+        "a": {"type": "UseTool", "tool": "is_extreme", "args": [
+          {"type": "Attr", "node": {"type": "Var", "name": "p"}, "key": "text"}
+        ]},
+        "b": {"type": "Lit", "value": 1}
+      },
+      "effects": [
+        ["set_attr", "fig", "scalar_violation", 1]
+      ]
+    },
+    {
+      "name": "ground_understates",
+      "match": [
+        ["fig", "has_part", "p"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "UseTool", "tool": "is_minimizer", "args": [
+            {"type": "Attr", "node": {"type": "Var", "name": "p"}, "key": "text"}
+          ]}, "b": {"type": "Lit", "value": 1}},
+          {"type": "Eq", "a": {"type": "UseTool", "tool": "text_severe", "args": [
+            {"type": "Attr", "node": {"type": "Var", "name": "fig"}, "key": "gloss"}
+          ]}, "b": {"type": "Lit", "value": 1}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "fig", "understates", 1]
+      ]
+    },
+    {
+      "name": "ground_scalar_spike",
+      "match": [
+        ["fig", "has_part", "p"]
+      ],
+      "where": {
+        "type": "Eq",
+        "a": {"type": "UseTool", "tool": "is_intensifier_spike", "args": [
+          {"type": "Attr", "node": {"type": "Var", "name": "p"}, "key": "text"}
+        ]},
+        "b": {"type": "Lit", "value": 1}
+      },
+      "effects": [
+        ["set_attr", "fig", "scalar_spike", 1]
+      ]
+    },
+    {
+      "name": "ground_noncompositional",
+      "match": [
+        ["fig", "figure_of", "lit"]
+      ],
+      "where": {
+        "type": "Eq",
+        "a": {"type": "UseTool", "tool": "wikt_idiomatic", "args": [
+          {"type": "Attr", "node": {"type": "Var", "name": "fig"}, "key": "word"}
+        ]},
+        "b": {"type": "Lit", "value": 1}
+      },
+      "effects": [
+        ["set_attr", "fig", "noncompositional", 1]
+      ]
+    }
+  ]
+}

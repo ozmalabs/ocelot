@@ -1,0 +1,50 @@
+{
+  "id": "performance_optimization",
+  "version": "1.0.0",
+  "depends_on": [],
+  "description": "THE PERFORMANCE-OPTIMIZATION DECISION as DATA (self-improvement, EFFICIENCY branch). The prior build GUESSED a cache to make Wikipedia loading faster -- blind, because the jabberwock could not SEE its load timing. Now it PERCEIVES its load timing (LatencyObservation nodes, domains/load_timing.py) and DECIDES the fix from that perception. The ONE decision -- given a perceived performance gap, what SHAPE is the cost and which fix does that shape call for -- is NOT a Python if/else; it is these two graph-resident Programs (the twin of seeds/research_agenda_dispatch.json's route_pick and seeds/composer_dispatch.json's composer_pick). perf_diagnose reads the gap's COLD-vs-WARM fields (cold_ms of the dominant stage, warm cost per item) and returns the cost SHAPE: IfThenElse(Gt(Div(cold, warm), RATIO), 'one-time-init', 'per-item') -- when the first (cold) call dwarfs the steady per-item cost, one-time init DOMINATES; else the cost is genuinely per-item. perf_fix_pick then maps that shape to its fix via an Argmin-by-priority over the PerfFixCue nodes whose shape Eq the diagnosed shape (the SAME Filter/Argmin/Attr shape route_pick uses): one-time-init -> warm_once, per-item -> optimize-op. There is DELIBERATELY no PerfFixCue mapping any shape to a cache: a cache amortizes PER-ITEM repetition, which the diagnosis says is NOT the shape of a one-time init -- so the agent, reading its OWN timing through these Programs, never SELECTS a cache. RATIO=50: a cold init >= 50x the warm per-item cost is one-time-init (real WordNet: ~1400ms cold / ~0.4ms warm = 3500x, far over; a per-item-shaped cost has cold ~ warm, far under).",
+  "microtheory": {
+    "name": "performance_optimization",
+    "description": "which fix a perceived performance gap calls for, keyed on the SHAPE of its cost (one-time init -> warm_once; per-item -> optimize-op; never a cache for a one-time init)."
+  },
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "PerfFixCue",
+      "attrs": {
+        "shape": "one-time-init",
+        "fix": "warm_once",
+        "priority": 1,
+        "rationale": "the cost is a one-time init dwarfing the per-item cost -> pay it once up front (warm the corpus); NOT a cache (nothing per-item repeats to amortize)."
+      }
+    },
+    {
+      "local_id": 1,
+      "type": "PerfFixCue",
+      "attrs": {
+        "shape": "per-item",
+        "fix": "optimize-op",
+        "priority": 2,
+        "rationale": "the cost is genuinely per-item -> optimize the repeated op itself."
+      }
+    },
+    {
+      "local_id": 2,
+      "type": "Program",
+      "attrs": {
+        "name": "perf_diagnose",
+        "form": "term_tree",
+        "program": "{\"type\": \"IfThenElse\", \"cond\": {\"type\": \"Gt\", \"a\": {\"type\": \"Div\", \"a\": {\"type\": \"Var\", \"name\": \"cold\"}, \"b\": {\"type\": \"Var\", \"name\": \"warm\"}}, \"b\": {\"type\": \"Lit\", \"value\": 50.0}}, \"then\": {\"type\": \"Lit\", \"value\": \"one-time-init\"}, \"other\": {\"type\": \"Lit\", \"value\": \"per-item\"}}"
+      }
+    },
+    {
+      "local_id": 3,
+      "type": "Program",
+      "attrs": {
+        "name": "perf_fix_pick",
+        "form": "term_tree",
+        "program": "{\"type\": \"Attr\", \"key\": \"fix\", \"node\": {\"type\": \"Argmin\", \"source\": {\"type\": \"Filter\", \"source\": {\"type\": \"NodesOfType\", \"node_type\": \"PerfFixCue\"}, \"var_name\": \"c\", \"predicate\": {\"type\": \"Eq\", \"a\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"c\"}, \"key\": \"shape\"}, \"b\": {\"type\": \"Var\", \"name\": \"shape\"}}}, \"var_name\": \"x\", \"value\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"x\"}, \"key\": \"priority\"}, \"default\": null}}"
+      }
+    }
+  ]
+}

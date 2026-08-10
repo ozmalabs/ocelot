@@ -1,0 +1,428 @@
+{
+  "id": "reading_cortices",
+  "version": "1.0.0",
+  "depends_on": [],
+  "description": "SOCIETY OF CORTICES \u2014 the reading as FIVE concurrent graph-resident cortices driven by the agent's cognitive_tick, NOT a linear u_dispatch chain pumped by hand-called run_rules/fire_reflexes. Each Cortex node bundles a set of AnalysisStages (its faculties) + a per-cortex Reflex that fires EVERY tick, advancing whichever of ITS stages the la_dispatch_* rules have dispatched (i.e. whose graph data-preconditions now hold). The five reflexes REPLACE the single analysis_advance reflex: all five are evaluated every tick, each processes whatever of its own inputs are ready, and the reading EMERGES from their mutual constraint over ticks. Data-dependencies still order the emergence (language must produce predications before situation can build the model) via the la_dispatch preconditions, but no cortex WAITS on a hardcoded Python stage chain -- each fires the moment its inputs exist. Stage->cortex membership is a `cortex` attr + an in_cortex edge stamped per-drive by reading_drive (mechanical); the reflex responses (<name>_cortex_advance) are thin non-branching shim lookups (_advance_cortex_stage, the _question_pursue_advance precedent).",
+  "microtheory": {
+    "name": "reading_cortices",
+    "description": "Five concurrent cortices (language/situation/social/narrative/executive), each a Cortex node + a per-tick Reflex; the reading settles as their reflexes fire over cognitive_ticks."
+  },
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "Cortex",
+      "attrs": {
+        "name": "language",
+        "description": "LANGUAGE \u2014 text -> predications (the parse/situation-model spine: reading_collapse clause collapse + situation_model_reader + coref).",
+        "stages": "[\"spine\"]"
+      }
+    },
+    {
+      "local_id": 1,
+      "type": "Cortex",
+      "attrs": {
+        "name": "situation",
+        "description": "SITUATION \u2014 entities/events/state/causal/discourse (inference_generation goal/causal/enabling + discourse_coherence + centrality).",
+        "stages": "[\"infer_goal\", \"discourse\", \"infer_causal\", \"enabling\", \"centrality\"]"
+      }
+    },
+    {
+      "local_id": 2,
+      "type": "Cortex",
+      "attrs": {
+        "name": "social",
+        "description": "SOCIAL/ToM \u2014 minds/goals/beliefs/attitudes (character_tom).",
+        "stages": "[\"tom\"]"
+      }
+    },
+    {
+      "local_id": 3,
+      "type": "Cortex",
+      "attrs": {
+        "name": "narrative",
+        "description": "NARRATIVE \u2014 structure/arc/trope/theme (narrative_structure + trope_theme).",
+        "stages": "[\"narrative\", \"trope\"]"
+      }
+    },
+    {
+      "local_id": 4,
+      "type": "Cortex",
+      "attrs": {
+        "name": "executive",
+        "description": "EXECUTIVE \u2014 coherence-monitoring + the report production (global_monitoring + literary_analysis produce).",
+        "stages": "[\"monitoring\", \"produce_frames\", \"produce_summary\", \"produce_structure\", \"produce_technique\", \"produce_theme\"]"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "tgt": {
+        "local": 0
+      },
+      "type": "has_cortex",
+      "attrs": {}
+    },
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "tgt": {
+        "local": 1
+      },
+      "type": "has_cortex",
+      "attrs": {}
+    },
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "tgt": {
+        "local": 2
+      },
+      "type": "has_cortex",
+      "attrs": {}
+    },
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "tgt": {
+        "local": 3
+      },
+      "type": "has_cortex",
+      "attrs": {}
+    },
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "tgt": {
+        "local": 4
+      },
+      "type": "has_cortex",
+      "attrs": {}
+    }
+  ],
+  "productions": [
+    {
+      "provenance": "seed:reading_cortices:has_cortex-0",
+      "src": {
+        "type": "Agent",
+        "var": "s"
+      },
+      "edge_type": "has_cortex",
+      "tgt": {
+        "type": "Cortex",
+        "var": "t"
+      }
+    },
+    {
+      "provenance": "seed:reading_cortices:in_cortex-1",
+      "src": {
+        "type": "AnalysisStage",
+        "var": "s"
+      },
+      "edge_type": "in_cortex",
+      "tgt": {
+        "type": "Cortex",
+        "var": "t"
+      }
+    }
+  ],
+  "rules": [],
+  "reflexes": [
+    {
+      "name": "language_cortex",
+      "stimulus": {
+        "type": "Gte",
+        "a": {
+          "type": "Count",
+          "source": {
+            "type": "Filter",
+            "source": {
+              "type": "NodesOfType",
+              "node_type": "AnalysisStage"
+            },
+            "var_name": "x",
+            "predicate": {
+              "type": "And",
+              "items": [
+                {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "x"
+                    },
+                    "key": "status"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": "dispatched"
+                  }
+                },
+                {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "x"
+                    },
+                    "key": "cortex"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": "language"
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "b": {
+          "type": "Lit",
+          "value": 1
+        }
+      },
+      "response": "language_cortex_advance",
+      "refractory_ticks": 0
+    },
+    {
+      "name": "situation_cortex",
+      "stimulus": {
+        "type": "Gte",
+        "a": {
+          "type": "Count",
+          "source": {
+            "type": "Filter",
+            "source": {
+              "type": "NodesOfType",
+              "node_type": "AnalysisStage"
+            },
+            "var_name": "x",
+            "predicate": {
+              "type": "And",
+              "items": [
+                {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "x"
+                    },
+                    "key": "status"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": "dispatched"
+                  }
+                },
+                {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "x"
+                    },
+                    "key": "cortex"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": "situation"
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "b": {
+          "type": "Lit",
+          "value": 1
+        }
+      },
+      "response": "situation_cortex_advance",
+      "refractory_ticks": 0
+    },
+    {
+      "name": "social_cortex",
+      "stimulus": {
+        "type": "Gte",
+        "a": {
+          "type": "Count",
+          "source": {
+            "type": "Filter",
+            "source": {
+              "type": "NodesOfType",
+              "node_type": "AnalysisStage"
+            },
+            "var_name": "x",
+            "predicate": {
+              "type": "And",
+              "items": [
+                {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "x"
+                    },
+                    "key": "status"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": "dispatched"
+                  }
+                },
+                {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "x"
+                    },
+                    "key": "cortex"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": "social"
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "b": {
+          "type": "Lit",
+          "value": 1
+        }
+      },
+      "response": "social_cortex_advance",
+      "refractory_ticks": 0
+    },
+    {
+      "name": "narrative_cortex",
+      "stimulus": {
+        "type": "Gte",
+        "a": {
+          "type": "Count",
+          "source": {
+            "type": "Filter",
+            "source": {
+              "type": "NodesOfType",
+              "node_type": "AnalysisStage"
+            },
+            "var_name": "x",
+            "predicate": {
+              "type": "And",
+              "items": [
+                {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "x"
+                    },
+                    "key": "status"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": "dispatched"
+                  }
+                },
+                {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "x"
+                    },
+                    "key": "cortex"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": "narrative"
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "b": {
+          "type": "Lit",
+          "value": 1
+        }
+      },
+      "response": "narrative_cortex_advance",
+      "refractory_ticks": 0
+    },
+    {
+      "name": "executive_cortex",
+      "stimulus": {
+        "type": "Gte",
+        "a": {
+          "type": "Count",
+          "source": {
+            "type": "Filter",
+            "source": {
+              "type": "NodesOfType",
+              "node_type": "AnalysisStage"
+            },
+            "var_name": "x",
+            "predicate": {
+              "type": "And",
+              "items": [
+                {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "x"
+                    },
+                    "key": "status"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": "dispatched"
+                  }
+                },
+                {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "x"
+                    },
+                    "key": "cortex"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": "executive"
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "b": {
+          "type": "Lit",
+          "value": 1
+        }
+      },
+      "response": "executive_cortex_advance",
+      "refractory_ticks": 0
+    }
+  ]
+}

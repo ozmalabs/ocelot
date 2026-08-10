@@ -1,0 +1,55 @@
+{
+ "id": "depth_axis",
+ "version": "1.0.0",
+ "depends_on": ["shape_decode_loop"],
+ "description": "DEPTH AS AN INFERRED DIMENSION -- monocular structure-from-motion, the DEPTH sibling of time_axis. A scene with real (discrete) depth translated past a moving eye produces a 2D image transformation that NO SINGLE flat generator can explain: near layers sweep faster than far ones (motion parallax). That unexplained residual -- DIFFERENT regions needing DIFFERENT translate generators -- IS the depth signal. The decision is the Rust DepthInfer Term (the residual-of-TimeInfer op): each observable SURFACE (cells sharing their non-coord slots) must be a rigid constant-velocity translate (the SAME rigidity test TimeInfer runs, per region); >=2 DISTINCT surface velocities mint latent:depth, the ordinal dimension indexing surfaces by motion (faster = nearer, n_layers = distinct-velocity count READ FROM THE DATA). <=1 distinct velocity -> ONE generator carries the scene -> residual ZERO -> NO depth (a flat scene, even a multi-colour one at a single velocity, mints NOTHING -- the decisive anti-forced control: depth minted from VELOCITY VARIATION, never from the mere presence of multiple regions). Integer/in-frame only; continuous perspective (a real velocity gradient) is CROSS-FRAME and DEFERRED, like real-angle rotation. Flag-gated on agent.depth_infer_enabled==1, absent by default (OFF, PROTOCOL section 9); the whole seed is inert without it AND matches only status=='depth_seq' observations, which the normal decode ladder never produces.",
+ "microtheory": {"name": "depth_axis", "description": "multi-velocity motion field -> per-surface translate generators + latent:depth ordering (+ downstream prediction of an unseen view); flat/single-velocity -> no depth. The residual of TimeInfer's single-generator question, read as discrete depth (monocular structure-from-motion)."},
+ "nodes": [],
+ "edges": [],
+ "productions": [
+  {"provenance": "seed:depth_axis:observed-0", "src": {"type": "Agent", "var": "s"}, "edge_type": "observed", "tgt": {"type": "Observation", "var": "t"}},
+  {"provenance": "seed:depth_axis:has_latent_dimension-1", "src": {"type": "Observation", "var": "s"}, "edge_type": "has_latent_dimension", "tgt": {"type": "LatentDimension", "var": "t"}}
+ ],
+ "rules": [
+  {
+   "name": "depth_infer_mint",
+   "comment": "MULTI-DEPTH motion field -> mint a latent:depth dimension. Flag ON (agent.depth_infer_enabled==1). On a depth-sequence Observation (status=='depth_seq') whose per-surface motions carry >=2 DISTINCT constant velocities (DepthInfer(frames).explained==1), mint LatentDimension{name:'latent:depth', ...} carrying n_layers (distinct-velocity count read from the data), the per-layer velocities and the surface ORDERING near->far, and record the DOWNSTREAM prediction obs.predicted = the UNSEEN view at tick K with each surface advanced by its OWN velocity (the view a single generator CANNOT produce -- PROTOCOL section 1 clause 5), and mark status='depth_inferred'. Idempotence guard: only if not already depth-inferred.",
+   "match_type": "Observation",
+   "match": [["ag", "observed", "obs"]],
+   "where": {"type": "And", "items": [
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "status"}, "b": {"type": "Lit", "value": "depth_seq"}},
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "ag"}, "key": "depth_infer_enabled"}, "b": {"type": "Lit", "value": 1}},
+     {"type": "Eq", "a": {"type": "DepthInfer", "sequence": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "frames"}, "codebook_type": "ShapeSignature", "max_b": 8, "field": "explained"}, "b": {"type": "Lit", "value": true}}
+   ]},
+   "effects": [
+    ["add_node", "ld", "LatentDimension", {
+      "name": {"__term__": {"type": "Lit", "value": "latent:depth"}},
+      "n_layers": {"__term__": {"type": "DepthInfer", "sequence": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "frames"}, "codebook_type": "ShapeSignature", "max_b": 8, "field": "n_layers"}},
+      "velocities": {"__term__": {"type": "DepthInfer", "sequence": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "frames"}, "codebook_type": "ShapeSignature", "max_b": 8, "field": "velocities"}},
+      "ordering": {"__term__": {"type": "DepthInfer", "sequence": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "frames"}, "codebook_type": "ShapeSignature", "max_b": 8, "field": "ordering"}},
+      "layers": {"__term__": {"type": "DepthInfer", "sequence": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "frames"}, "codebook_type": "ShapeSignature", "max_b": 8, "field": "layers"}},
+      "window": {"__term__": {"type": "DepthInfer", "sequence": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "frames"}, "codebook_type": "ShapeSignature", "max_b": 8, "field": "window"}},
+      "source": {"__term__": {"type": "Lit", "value": "depth_infer"}}
+    }],
+    ["add_edge", "obs", "has_latent_dimension", "ld"],
+    ["set_attr", "obs", "n_layers", {"__term__": {"type": "DepthInfer", "sequence": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "frames"}, "codebook_type": "ShapeSignature", "max_b": 8, "field": "n_layers"}}],
+    ["set_attr", "obs", "predicted", {"__term__": {"type": "DepthInfer", "sequence": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "frames"}, "codebook_type": "ShapeSignature", "max_b": 8, "field": "predicted"}}],
+    ["set_attr", "obs", "status", "depth_inferred"]
+   ]
+  },
+  {
+   "name": "depth_infer_floor",
+   "comment": "FLAT / single-velocity / shuffled / non-rigid scene -> grounds at enumeration, NO depth. Flag ON. On a depth-sequence Observation whose per-surface motion field does NOT carry >=2 distinct constant velocities (DepthInfer(frames).explained!=1), mint NO dimension -- mark status='depth_none'. This is the honest MDL floor ('no depth dimension shorter than a single generator', provisional): a flat scene (one velocity everywhere), a multi-colour scene at a SINGLE velocity, a shuffled sequence (per-surface velocity not constant), or a non-rigid region all reach it. It must hold at the LONGEST window (a forced minter would eventually hallucinate a depth layering -- the section 1.1 dead-arm disease in the depth domain, which is DISQUALIFYING here).",
+   "match_type": "Observation",
+   "match": [["ag", "observed", "obs"]],
+   "where": {"type": "And", "items": [
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "status"}, "b": {"type": "Lit", "value": "depth_seq"}},
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "ag"}, "key": "depth_infer_enabled"}, "b": {"type": "Lit", "value": 1}},
+     {"type": "Not", "arg": {"type": "Eq", "a": {"type": "DepthInfer", "sequence": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "frames"}, "codebook_type": "ShapeSignature", "max_b": 8, "field": "explained"}, "b": {"type": "Lit", "value": true}}}
+   ]},
+   "effects": [
+    ["set_attr", "obs", "status", "depth_none"]
+   ]
+  }
+ ]
+}

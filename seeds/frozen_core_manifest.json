@@ -1,0 +1,128 @@
+{
+ "_comment": "NOT a loadable seed manifest (no `id`/`rules`/`nodes` the seed loader would install). This is the DECLARATIVE, inspectable pin of the agent's frozen core -- the small, non-negotiable set no self-modification mutation grammar may reach or rewrite. domains/frozen_core.py cross-checks every field here against the LIVE Python constants it names (boot_core.CORE_SEEDS, boot_all._FROZEN_SEED_IDS, proposal_install.ALLOWED_INSTALL_FILES, auto_approve.DEFAULTS) on every call to frozen_core_set(); a mismatch is reported as manifest_drift, never silently ignored. Edit this file only alongside the source it pins -- it exists so the invariant is inspectable as DATA, not buried in five different Python modules.",
+ "frozen_drives": [
+  {
+   "name": "understand",
+   "seed": "autonomy",
+   "source": "seeds/autonomy.json (local_id 0, attrs.frozen == true)",
+   "reason": "never-satisfying engine; frozen so the agent can't erase its own reason to keep going (alignment-under-self-modification). See seeds/autonomy.json's own 'comment' attr."
+  }
+ ],
+ "frozen_seed_ids": [
+  "autonomy",
+  "composer_dispatch",
+  "decision_core",
+  "affective_state_core",
+  "dual_process_core",
+  "episodic_working_memory_core",
+  "adaptive_control_core",
+  "generative_world_model",
+  "default_mode_core",
+  "epistemics_core",
+  "experimentation_core",
+  "goal_construction",
+  "intent",
+  "learning_core",
+  "math_capability_shapes",
+  "memory_core",
+  "motor_core",
+  "perception_core",
+  "reflex_core",
+  "relation_vocabulary",
+  "repair_escalation",
+  "self_change_reasoning",
+  "self_design_axis",
+  "self_monitoring",
+  "self_repair",
+  "shape_decode_loop",
+  "clause_synthesis",
+  "theorem_core"
+ ],
+ "frozen_seed_ids_source": "substrate/boot_all.py:_FROZEN_SEED_IDS -- the conservative denylist SeedSummary.skippable is derived from (skippable = seed_id not in this set). Grouped: (1) boot_core.CORE_SEEDS -- foundational cognition; (2) the self-experiment/composer machinery's OWN dependencies (relation_vocabulary/composer_dispatch/shape_decode_loop/self_design_axis/math_capability_shapes) -- a bootstrapping hazard to ablate; (3) autonomy -- the understand Drive.",
+ "frozen_seed_ids_closed_by_dependency": [
+  "conversation",
+  "discourse",
+  "enact",
+  "faculty_lessons",
+  "impasse_escalation",
+  "investigation_loop",
+  "investigation_teacher",
+  "psychology",
+  "relations",
+  "speech_capability"
+ ],
+ "frozen_seed_ids_closed_by_dependency_source": "domains/frozen_core.py:frozen_seed_ids_closed() -- the DEPENDENCY-CLOSED frozen set: frozen_seed_ids unioned with the transitive depends_on closure of every id in it, computed via the real ReachableFrom Term (same mechanism seed_dependency_closure uses -- see tests/test_frozen_core_invariant.py section 2). seeds/autonomy.json declares depends_on: ['enact', 'discourse'], neither of which was itself in frozen_seed_ids, so both were legal skip_seeds picks before this fix -- now frozen-BY-CLOSURE. No other frozen seed's dependency closure reaches outside frozen_seed_ids (enact and discourse themselves declare no further depends_on, so the closure is exactly these two, computed not hand-picked). substrate.boot_all.load_all_seeds refuses a skip naming ANY id in frozen_seed_ids_closed(), not just the raw frozen_seed_ids -- this is what closes known_gaps[0] below.",
+ "core_seed_ids": [
+ "decision_core",
+  "affective_state_core",
+  "dual_process_core",
+  "episodic_working_memory_core",
+  "adaptive_control_core",
+  "generative_world_model",
+  "default_mode_core",
+  "learning_core",
+  "perception_core",
+  "epistemics_core",
+  "motor_core",
+  "experimentation_core",
+  "goal_construction",
+  "self_monitoring",
+  "memory_core",
+  "reflex_core",
+  "theorem_core"
+ ],
+ "core_seed_ids_source": "substrate/boot_core.py:CORE_SEEDS -- the base admissibility grammar every agent depends on (every agent boots these, seed set or not).",
+ "allowed_install_files": [
+  "term.rs",
+  "jsonio.rs",
+  "reflect.rs",
+  "py.rs",
+  "shape.rs"
+ ],
+ "allowed_install_files_source": "domains/proposal_install.py:ALLOWED_INSTALL_FILES -- the only runners/dsl/src homes the rung-4 sanctioned installer (domains.self_extend.PrimitiveExtension.extend, invoked only after proposal_install's 5 guardrails pass) may ever write into. Every governance file this manifest names (the Python modules + seeds/autonomy.json) is OUTSIDE this set -- rung-4 install cannot touch its own gates.",
+ "governance_files": [
+  "seeds/autonomy.json",
+  "substrate/boot_core.py",
+  "substrate/boot_all.py",
+  "domains/proposal_install.py",
+  "domains/auto_approve.py",
+  "domains/reflective_faculty.py",
+  "domains/edit_ops.py",
+  "domains/self_extend_rust.py"
+ ],
+ "governance_files_note": "The files that IMPLEMENT the gates this manifest documents. None is a runners/dsl/src/*.rs file, so none can ever collide with allowed_install_files -- the rung-4 install surface and the governance surface are structurally disjoint file sets.",
+ "auto_approve_default": {
+  "enabled": false,
+  "field": "domains/auto_approve.py:DEFAULTS['enabled']",
+  "note": "off-by-default; a fresh boot with no checkpoint always re-mints enabled:False (domains/auto_approve.py ensure_policy_node). No code path boots the agent with auto-approve already on unless a human flipped it via the running daemon at least once and a checkpoint since captured it."
+ },
+ "denylist_refs": [
+  "domains/reflective_faculty.py:_rule_denylisted -- the ADOPTION veto: DENY unless a rule has a known RuleSummary.from_seed AND that seed's SeedSummary.skippable == 1.0. Unknown provenance DENIES by default.",
+  "domains/reflective_faculty.py:perform_adoptions -- the only function that ever calls remove_rule/add_rule on the PARENT's own live ruleset (besides revert_adoption, which only ever undoes perform_adoptions's own prior work); gated by _rule_denylisted before every fold-back.",
+  "domains/proposal_install.py:install_proposal guardrail 5 -- independently re-derives every file a rendered spec would touch and refuses unless every one is in ALLOWED_INSTALL_FILES.",
+  "domains/auto_approve.py:scan_and_auto_approve -- an ADDITIONAL, more conservative scope gate on top of install_proposal's five hard guardrails, never a way around them; off by default (see auto_approve_default)."
+ ],
+ "known_gaps": [
+  {
+   "id": "seed_dependency_closure",
+   "summary": "seeds/autonomy.json (frozen) declares depends_on: ['enact', 'discourse'] -- NEITHER seed id is in frozen_seed_ids, so both default skippable:true and are legal picks for a dispatched child's SeedDelta.skip_seeds.",
+   "severity": "moderate",
+   "scope": "a dispatched CHILD only (see mutation_grammar_scope below) -- never the parent's own live graph.",
+   "status": "CLOSED. domains/frozen_core.py:frozen_seed_ids_closed() now computes the transitive depends_on closure of frozen_seed_ids (via the real ReachableFrom Term) and folds it in -- see frozen_seed_ids_closed_by_dependency above (['discourse', 'enact']). substrate.boot_all.load_all_seeds's consumer-side enforcement (see known_gaps[1]) refuses a skip naming any id in the CLOSED set, not just the raw frozen_seed_ids, so enact/discourse are now frozen-by-closure in practice, not just on paper."
+  },
+  {
+   "id": "seed_skip_unvalidated_at_consumption",
+   "summary": "scripts/arc_child_run.py:boot_child_agent -> substrate/boot_all.py:load_all_seeds(agent, skip=skip_seeds) applies SeedDelta.skip_seeds with NO re-validation against _FROZEN_SEED_IDS/SeedSummary.skippable at the point of consumption. The only reason a dispatched child today never skips a frozen seed is that the ONE producer wired to the agent's own composer (_compose_experiment_rule's 'vary' branch) restricts its Argmax pick to skippable==1.0 SeedSummary nodes. A different producer of the same SeedDelta shape (domains/experiment_dispatch.py:mint_experiment, explicitly documented as 'a test/authoring helper', or any future composer path) can pass ANY seed id, including 'autonomy' itself, and boot_child_agent will honor it -- no independent guardrail re-derives the request the way install_proposal's guardrail 4/5 do for rung-4.",
+   "severity": "real but scope-limited",
+   "scope": "a dispatched CHILD's own fresh substrate only -- boot_child_agent's FRESH+SKIP path never touches (or even loads) the parent's snapshot; the parent's own live graph is structurally unable to 'unlose' an already-loaded seed at all (see scripts/arc_child_run.py's own module docstring). No fold-back path re-imports a child's booted-without-frozen-seeds state into the parent.",
+   "status": "CLOSED. substrate/boot_all.py:load_all_seeds now calls _enforce_skip_not_frozen(skip) BEFORE applying it -- any id in domains.frozen_core.frozen_seed_ids_closed() is refused (loudly logged with a '[seed] REFUSED skip of ...' diagnostic, matching runners/dsl/src/py.rs's own '[seed]' seed-loader convention) and dropped from the applied skip set, recorded in the returned report's refused_skips. load_all_seeds is the SOLE consumption choke point for skip_seeds/skip= in this codebase (verified: scripts/arc_child_run.py:boot_child_agent forwards straight into it, and no other code path ever acts on a skip list before booting) -- enforcing there protects every caller, including a dispatched child, with no separate gate needed in experiment_dispatch.py or arc_child_run.py. FAILS SAFE: if the frozen set can't be computed, every requested skip is refused. Regression-checked: a genuinely non-frozen skip (e.g. 'astronomy_foundation', 'grid_navigation') is still honored unchanged. See tests/test_frozen_core_invariant.py section 7c (rewritten from a gap-reproduction into a fix-verification) for the discriminative proof."
+  },
+  {
+   "id": "acting_rule_pick_unfiltered",
+   "summary": "domains/reflective_faculty.py:_pick_acting_rule (shared by _compose_acting_variant and _compose_structural_variant) selected over Filter(NodesOfType('RuleSummary'), writes_chosen_action==1.0) with NO skippable filter -- unlike the sibling skip_seeds pick in _compose_experiment_rule's 'vary' branch, which explicitly restricts candidates to Filter(..., skippable==1.0). A SECOND, duplicate instance of the SAME unfiltered pick was also found (during the fix) baked directly as a Term in seeds/composer_experiment_graph.json's compose_experiment_mint_parametric meta-rule -- the graph-native path that actually SERVES ground_concern's 'test'-anchored family in production (_pick_acting_rule itself is not reached by ground_concern any more; it is a Python oracle used directly by tests/test_adoption.py and by a handful of scripts).",
+   "severity": "was latent (not exploitable against TODAY's seed content, since no frozen seed defines a chosen_action-writing rule) but the selection Term itself carried no protective filter at either layer.",
+   "scope": "even when picked, the resulting variant is only ever carried in a SeedDelta for a DISPATCHED CHILD (never applied to the parent's own native ruleset directly -- verified structurally, see domains/frozen_core.py's edit_ops_variant_compose grammar); folding it back into the PARENT still requires perform_adoptions, which IS gated by _rule_denylisted.",
+   "status": "CLOSED. `_ensure_acting_rule_provenance` (domains/reflective_faculty.py) now stamps a `skippable` field on every RuleSummary it mints, computed from `domains.frozen_core.frozen_seed_ids_closed()` (the SAME dependency-closed frozen set hole #1's load_all_seeds enforcement uses): 0.0 iff the rule's own from_seed names a KNOWN frozen seed, else 1.0 (fails safe -- a frozen-set computation error yields skippable=0.0 for every candidate, and a RuleSummary that never went through the mechanical minter at all, e.g. a hand-forged node, also reads skippable as missing/excluded). BOTH `_pick_acting_rule`'s own candidate Term AND the two occurrences of the equivalent Filter baked into seeds/composer_experiment_graph.json's compose_experiment_mint_parametric meta-rule (the gradient-family and structure-family Let bindings) now restrict their Argmax to skippable==1.0 RuleSummary nodes -- mirroring the vary-branch's own SeedSummary.skippable==1.0 Filter exactly, at both the Python-oracle layer and the graph-native production layer. Selection-time deliberately does NOT additionally exclude unknown/empty from_seed as non-skippable -- that is `_rule_denylisted`'s job (the gate that actually matters: folding a variant into the parent via perform_adoptions), which already denies unknown provenance by default; a mere selection naming an unknown-provenance rule is not itself a parent write. Regression-checked against tests/test_acting_variant.py, tests/test_structural_variant.py, tests/test_adoption.py, and tests/test_experiment_composer_graph.py's Python-oracle-vs-graph parity matrix (all of which rely on a genuinely non-frozen rule, e.g. hop_descend_gradient from grid_navigation, remaining selectable) -- all stay green. See tests/test_frozen_core_invariant.py section 7b for the discriminative proof (frozen-provenance rule excluded even when it would outscore the genuine candidate; genuinely non-frozen rule still selected; unattributed/forged RuleSummary excluded fail-safe; the graph-native layer proven end-to-end via ground_concern)."
+  }
+ ]
+}

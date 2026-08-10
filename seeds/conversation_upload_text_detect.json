@@ -1,0 +1,103 @@
+{
+  "id": "conversation_upload_text_detect",
+  "version": "2.0.0",
+  "depends_on": ["shape_decode_loop"],
+  "description": "UPLOAD TEXT = READ GRAPH-EYE SHAPES (graph data). GraphEye mints VisionPolygon contours at ingest; THIS seed specifies what stroke-like glyph contours look like (ShapeSignature kind:vision_contour + Concept glyph_stroke) and DECIDES text presence when enough uploaded contours match — Count(Filter(has_shape, read_as=glyph_stroke)) >= 4. No pixel morphology in Python; no bespoke Rust Term. A residual layout (shapes present but too few glyph_strokes) can grow the codebook via the sd loop like every other domain.",
+  "microtheory": {
+    "name": "upload_vision_read",
+    "description": "Reading uploaded images by shape-matching GraphEye contours against a held glyph-stroke codebook — the same collapse-over-shapes move as reading, ink, and format."
+  },
+  "nodes": [
+    {
+      "local_id": 1,
+      "type": "Concept",
+      "attrs": {
+        "name": "glyph_stroke",
+        "description": "A compact stroke-like contour from GraphEye: small-to-medium area, non-trivial vertex count, typical of letter ink on a page."
+      }
+    },
+    {
+      "local_id": 2,
+      "type": "Concept",
+      "attrs": {
+        "name": "text_like_layout",
+        "description": "An uploaded image whose contour field contains multiple glyph_stroke shapes — typography is present even when not decoded."
+      }
+    },
+    {
+      "local_id": 3,
+      "type": "ShapeSignature",
+      "attrs": {
+        "name": "glyph_stroke_compact",
+        "kind": "vision_contour",
+        "signature": "[[\"contour\", \"stroke\", \"compact\"]]",
+        "note": "Held codebook entry: a compact stroke contour from camera/grid front-end. Rules below recognize contours matching this profile and stamp read_as=glyph_stroke; future Observation+ShapeDecode path can use the same signature."
+      }
+    }
+  ],
+  "edges": [],
+  "productions": [],
+  "rules": [
+    {
+      "name": "read_glyph_stroke_on_upload_contour",
+      "match": [
+        ["doc", "has_shape", "shape"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "doc"}, "key": "kind"}, "b": {"type": "Lit", "value": "image"}},
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "shape"}, "key": "read_as"}, "b": {"type": "Lit", "value": "glyph_stroke"}}},
+          {"type": "Gte", "a": {"type": "Attr", "node": {"type": "Var", "name": "shape"}, "key": "area"}, "b": {"type": "Lit", "value": 12.0}},
+          {"type": "Lt", "a": {"type": "Attr", "node": {"type": "Var", "name": "shape"}, "key": "area"}, "b": {"type": "Lit", "value": 8000.0}},
+          {"type": "Gte", "a": {"type": "Attr", "node": {"type": "Var", "name": "shape"}, "key": "n_vertices"}, "b": {"type": "Lit", "value": 2.0}},
+          {"type": "Lte", "a": {"type": "Attr", "node": {"type": "Var", "name": "shape"}, "key": "n_vertices"}, "b": {"type": "Lit", "value": 24.0}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "shape", "read_as", "glyph_stroke"],
+        ["set_attr", "shape", "matched_shape", "glyph_stroke_compact"]
+      ]
+    },
+    {
+      "name": "infer_upload_text_layout",
+      "match": [
+        ["doc", "has_shape", "shape"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "doc"}, "key": "kind"}, "b": {"type": "Lit", "value": "image"}},
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "doc"}, "key": "text_presence_checked"}, "b": {"type": "Lit", "value": 1.0}}},
+          {"type": "Gte", "a": {
+            "type": "Count",
+            "source": {
+              "type": "Filter",
+              "source": {"type": "Neighbours", "node": {"type": "Var", "name": "doc"}, "edge_type": "has_shape"},
+              "var_name": "s2",
+              "predicate": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "s2"}, "key": "read_as"}, "b": {"type": "Lit", "value": "glyph_stroke"}}
+            }
+          }, "b": {"type": "Lit", "value": 4}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "doc", "text_presence_checked", 1.0],
+        ["set_attr", "doc", "contains_text", 1.0],
+        ["set_attr", "doc", "glyph_like_components", {"__term__": {
+          "type": "Count",
+          "source": {
+            "type": "Filter",
+            "source": {"type": "Neighbours", "node": {"type": "Var", "name": "doc"}, "edge_type": "has_shape"},
+            "var_name": "s3",
+            "predicate": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "s3"}, "key": "read_as"}, "b": {"type": "Lit", "value": "glyph_stroke"}}
+          }
+        }}],
+        ["set_attr", "doc", "vision_summary", {"__term__": {"type": "StringConcat", "parts": [
+          {"type": "Attr", "node": {"type": "Var", "name": "doc"}, "key": "vision_summary"},
+          {"type": "Lit", "value": " I detect text-like stroke shapes in the layout — I have not accurately decoded the lettering yet."}
+        ]}}],
+        ["set_attr", "doc", "summary", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "doc"}, "key": "vision_summary"}}]
+      ]
+    }
+  ]
+}

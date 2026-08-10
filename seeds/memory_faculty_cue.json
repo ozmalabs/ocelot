@@ -1,0 +1,53 @@
+{
+ "id": "memory_faculty_cue",
+ "version": "1.0.0",
+ "depends_on": [],
+ "description": "MEMORY-FACULTY compose path vocabulary (graph data). Two RelationCue nodes map a CACHE/MEMOIZE concern's residual predicates to structural relations, and one ComposerCue routes the 'cache' relation head to the memory_faculty composer (domains/reflective_faculty._compose_memory_faculty). Checked: NO held RelationCue in relation_vocabulary.json carried 'cache'/'memoize' and NO held ComposerCue in composer_dispatch.json carried relation_head 'cache' before this change -- a genuine WALL (the composer could not reach a 'cache/memoize this consult' concern; note 'lookup' is avoided in the concern text because 'look' is a watch-cue keyword substring). This seed is NOT part of the minimal region_grouping/relation_vocabulary fixture the wall demo boots with, so the wall is reproducible at runtime (concern grounds to nothing without this seed); load_all_seeds picks it up alongside the curated seeds with no collision (priority 26, head 'cache' collides with nothing prior). The store_by_key cue names the memory-leaf op the composer chains under the cache: a serve-from-store Term reads the graph-resident hot tier (a HotStore bounded by the Rust memory faculty, memory_bound); the underlying lookup + the raw store put are the held-faculty call boundary (domains/memory_faculty_ops.py).",
+ "microtheory": {
+  "name": "memory_faculty_cue",
+  "description": "which composer builds a CACHE-ASIDE memory faculty (cache -> memory_faculty), and the serve-from-store leaf it chains."
+ },
+ "nodes": [
+  {
+   "local_id": 0,
+   "type": "RelationCue",
+   "attrs": {
+    "name": "cache_aside",
+    "keywords": [
+     "cache",
+     "memoize",
+     "memoise",
+     "cache-aside",
+     "hot store"
+    ],
+    "relation": "[\"cache\", \"CONSULT\", \"by\", \"STORE\"]"
+   }
+  },
+  {
+   "local_id": 1,
+   "type": "RelationCue",
+   "attrs": {
+    "name": "store_by_key",
+    "keywords": [
+     "store",
+     "hot tier",
+     "by key",
+     "reuse"
+    ],
+    "relation": "[\"store\", \"VALUE\", \"by\", \"KEY\"]"
+   }
+  },
+  {
+   "local_id": 2,
+   "type": "ComposerCue",
+   "attrs": {
+    "relation_head": "cache",
+    "composer": "memory_faculty",
+    "priority": 26
+   }
+  }
+ ],
+ "edges": [],
+ "productions": [],
+ "rules": []
+}

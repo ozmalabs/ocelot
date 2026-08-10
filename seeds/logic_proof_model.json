@@ -1,0 +1,203 @@
+{
+  "microtheory": {
+    "name": "proof_model_theory",
+    "definition": "Mathematical logic: proof theory + model theory. Cut elimination, ordinal analysis, compactness, Löwenheim-Skolem, ultraproducts, definability, categoricity. The formal foundations of mathematical reasoning. Substrate analogue: substrate's meta-level reasoning about its own inference.",
+    "category": "logic_domain",
+    "parent": "logic_foundation"
+  },
+  "concepts": [
+    {
+      "name": "proof_theory",
+      "definition": "Gentzen, Hilbert. Mathematical study of proofs as formal objects. Substrate analogue: substrate's reasoning-about-derivation.",
+      "category": "proof_theory"
+    },
+    {
+      "name": "cut_rule",
+      "definition": "Sequent calculus rule combining proofs. (Γ⊢A, A,Δ⊢B) → (Γ,Δ⊢B). Substrate analogue: substrate's proof composition.",
+      "category": "proof_theory"
+    },
+    {
+      "name": "cut_elimination_theorem",
+      "definition": "Gentzen 1934. Every proof reducible to cut-free proof. Subformula property. Substrate analogue: substrate's proof-normalization.",
+      "category": "proof_theory"
+    },
+    {
+      "name": "normal_form_proof",
+      "definition": "Cut-free proof. Subformula property holds. Substrate analogue: substrate's minimal-derivation form.",
+      "category": "proof_theory"
+    },
+    {
+      "name": "ordinal_analysis",
+      "definition": "Measuring strength of formal theories by which ordinals they can prove well-founded. Substrate analogue: substrate's strength-of-theory measure.",
+      "category": "proof_theory"
+    },
+    {
+      "name": "model_theory",
+      "definition": "Tarski. Study of mathematical structures as models of formal theories. Substrate analogue: substrate's structure-based semantics.",
+      "category": "model_theory"
+    },
+    {
+      "name": "structure_first_order",
+      "definition": "Set with named operations + relations. Models of FOL. Substrate analogue: substrate's typed-graph as structure.",
+      "category": "model_theory"
+    },
+    {
+      "name": "elementary_equivalence",
+      "definition": "Two structures satisfy same first-order sentences. Substrate analogue: substrate's behavior-equivalence.",
+      "category": "model_theory"
+    },
+    {
+      "name": "isomorphism_structure",
+      "definition": "Bijection preserving structure. Indistinguishable. Substrate analogue: substrate's structural-identity.",
+      "category": "model_theory"
+    },
+    {
+      "name": "homomorphism_structure",
+      "definition": "Map preserving structure. May not be bijective. Substrate analogue: substrate's structure-preserving transformation.",
+      "category": "model_theory"
+    },
+    {
+      "name": "compactness_theorem",
+      "definition": "FOL: set of sentences has model iff every finite subset has. Substrate analogue: substrate's local-global consistency.",
+      "category": "theorems"
+    },
+    {
+      "name": "lowenheim_skolem_theorem",
+      "definition": "FOL theory with infinite model has models of every infinite cardinality. Substrate analogue: substrate's scale-flexibility.",
+      "category": "theorems"
+    },
+    {
+      "name": "skolem_paradox",
+      "definition": "Set theory has countable models even though it proves uncountable sets exist. Substrate analogue: substrate's representational paradox.",
+      "category": "theorems"
+    },
+    {
+      "name": "categoricity",
+      "definition": "Theory categorical iff all models isomorphic. FOL categorical only for finite structures. Substrate analogue: substrate's unique-realization theory.",
+      "category": "theorems"
+    },
+    {
+      "name": "definability",
+      "definition": "Property/relation expressible in language. Substrate analogue: substrate's expressible-Concept set.",
+      "category": "definability"
+    },
+    {
+      "name": "tarski_undefinability",
+      "definition": "Truth predicate for arithmetic not definable IN arithmetic. Substrate analogue: substrate's self-reference limit.",
+      "category": "definability"
+    },
+    {
+      "name": "beth_definability",
+      "definition": "Implicit definability = explicit definability in FOL. Substrate analogue: substrate's definitional completeness.",
+      "term": {
+        "type": "Eq",
+        "a": {
+          "type": "Lit",
+          "value": "Implicit definability"
+        },
+        "b": {
+          "type": "Lit",
+          "value": "explicit definability in FOL"
+        }
+      },
+      "category": "definability"
+    },
+    {
+      "name": "type_theory_logic",
+      "definition": "Russell + Whitehead, Church, Martin-Löf. Stratified hierarchy of types avoiding paradoxes. Foundation of proof assistants. Substrate analogue: substrate's typed-Concept hierarchy.",
+      "category": "types"
+    },
+    {
+      "name": "simple_type_theory",
+      "definition": "Church 1940. Basic types + function types. Substrate analogue: substrate's primitive + function types.",
+      "category": "types"
+    },
+    {
+      "name": "dependent_type_theory",
+      "definition": "Martin-Löf. Types depending on values. Foundation of Coq, Agda, Lean. Substrate analogue: substrate's value-dependent types.",
+      "category": "types"
+    },
+    {
+      "name": "homotopy_type_theory",
+      "definition": "HoTT. Types as spaces, equality as paths. Univalent foundations. Substrate analogue: substrate's geometric type interpretation.",
+      "category": "types"
+    },
+    {
+      "name": "decidability",
+      "definition": "Algorithm exists deciding every formula. Propositional decidable; FOL undecidable (Church + Turing). Substrate analogue: substrate's algorithmic-verification limit.",
+      "category": "computability"
+    },
+    {
+      "name": "godel_completeness",
+      "definition": "Gödel 1929. FOL: valid implies provable. Substrate analogue: substrate's complete provability for valid.",
+      "category": "computability"
+    },
+    {
+      "name": "godel_first_incompleteness",
+      "definition": "Gödel 1931. Consistent system strong enough for arithmetic contains true unprovable sentence G. Substrate analogue: substrate's truth-beyond-provability.",
+      "category": "computability"
+    },
+    {
+      "name": "godel_second_incompleteness",
+      "definition": "System can't prove its own consistency. Substrate analogue: substrate's self-consistency unprovability.",
+      "category": "computability"
+    },
+    {
+      "name": "proof_assistant",
+      "definition": "Software helping construct + verify proofs. Coq, Isabelle, Lean, Agda. Substrate analogue: substrate's verification tool.",
+      "category": "computational"
+    },
+    {
+      "name": "automated_theorem_prover",
+      "definition": "Software proving theorems automatically. Vampire, E, Prover9. Substrate analogue: substrate's autonomous derivation.",
+      "category": "computational"
+    },
+    {
+      "name": "sat_solver",
+      "definition": "Decides propositional satisfiability. Very efficient despite NP-completeness. Substrate analogue: substrate's basin-finder.",
+      "category": "computational"
+    },
+    {
+      "name": "smt_solver",
+      "definition": "Satisfiability Modulo Theories. SAT + theory-specific reasoning. Substrate analogue: substrate's theory-augmented search.",
+      "category": "computational"
+    },
+    {
+      "name": "reverse_mathematics",
+      "definition": "Friedman 1975. Identifying minimum axioms needed to prove theorems. Substrate analogue: substrate's minimal-axiom analysis.",
+      "category": "analysis"
+    },
+    {
+      "name": "consistency_strength",
+      "definition": "Comparing theories by which prove others' consistency. Substrate analogue: substrate's theory-strength ordering.",
+      "category": "analysis"
+    }
+  ],
+  "rules": [
+    {
+      "name": "cut_elimination_normalizes_proofs",
+      "head": "the substrate has a proof using cut rule",
+      "body": "the proof reduces to cut-free form with subformula property. Gentzen. Substrate's proof-normalization."
+    },
+    {
+      "name": "compactness_links_local_global_consistency",
+      "head": "the substrate has an infinite set of sentences",
+      "body": "it has model iff every finite subset has model. Substrate's local-global consistency principle."
+    },
+    {
+      "name": "lowenheim_skolem_relativizes_cardinality",
+      "head": "the substrate's first-order theory has infinite model",
+      "body": "it has models of every infinite cardinality. Substrate's scale-flexibility."
+    },
+    {
+      "name": "tarski_undefinability_limits_self_reference",
+      "head": "the substrate represents truth within itself",
+      "body": "the truth predicate cannot be definable internally. Substrate's self-reference limit."
+    },
+    {
+      "name": "godel_second_blocks_self_consistency_proof",
+      "head": "the substrate is consistent + strong enough for arithmetic",
+      "body": "it cannot prove its own consistency. Substrate's self-consistency limitation."
+    }
+  ]
+}

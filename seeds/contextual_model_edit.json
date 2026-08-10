@@ -1,0 +1,238 @@
+{
+  "id": "contextual_model_edit",
+  "version": "1.0.0",
+  "depends_on": ["learning_core"],
+  "description": "Graph-native derivation and proof of contextual low-rank language-model edits. The graph recognizes tied input/output embeddings, requires an output-only insertion point, specifies target and protected residual-state constraints, authorizes a closed-form right-inverse compiler, evaluates its numerical witness, and authors a reversible patch. Python performs tensor capture and declared linear algebra only.",
+  "microtheory": {
+    "name": "contextual_residual_model_editing",
+    "description": "state-dependent vocabulary behavior changes with exact protected-context constraints"
+  },
+  "nodes": [],
+  "edges": [],
+  "productions": [
+    {"provenance": "contextual_model_edit:agent-model", "src": {"type": "Agent", "var": "agent"}, "edge_type": "understands_external_language_model", "tgt": {"type": "ExternalLanguageModel", "var": "model"}},
+    {"provenance": "contextual_model_edit:model-interface", "src": {"type": "ExternalLanguageModel", "var": "model"}, "edge_type": "has_residual_output_interface", "tgt": {"type": "ResidualOutputInterface", "var": "interface"}},
+    {"provenance": "contextual_model_edit:agent-goal", "src": {"type": "Agent", "var": "agent"}, "edge_type": "has_model_enhancement_goal", "tgt": {"type": "ModelEnhancementGoal", "var": "goal"}},
+    {"provenance": "contextual_model_edit:goal-interface", "src": {"type": "ModelEnhancementGoal", "var": "goal"}, "edge_type": "targets_residual_output_interface", "tgt": {"type": "ResidualOutputInterface", "var": "interface"}},
+    {"provenance": "contextual_model_edit:goal-constraints", "src": {"type": "ModelEnhancementGoal", "var": "goal"}, "edge_type": "uses_behavior_constraint_set", "tgt": {"type": "BehaviorConstraintSet", "var": "constraints"}},
+    {"provenance": "contextual_model_edit:set-constraint", "src": {"type": "BehaviorConstraintSet", "var": "constraints"}, "edge_type": "has_behavior_constraint", "tgt": {"type": "BehaviorConstraint", "var": "constraint"}},
+    {"provenance": "contextual_model_edit:goal-derivation", "src": {"type": "ModelEnhancementGoal", "var": "goal"}, "edge_type": "has_residual_adapter_derivation", "tgt": {"type": "ResidualAdapterDerivation", "var": "derivation"}},
+    {"provenance": "contextual_model_edit:derivation-interface", "src": {"type": "ResidualAdapterDerivation", "var": "derivation"}, "edge_type": "uses_residual_output_interface", "tgt": {"type": "ResidualOutputInterface", "var": "interface"}},
+    {"provenance": "contextual_model_edit:derivation-constraints", "src": {"type": "ResidualAdapterDerivation", "var": "derivation"}, "edge_type": "compiles_behavior_constraint_set", "tgt": {"type": "BehaviorConstraintSet", "var": "constraints"}},
+    {"provenance": "contextual_model_edit:derivation-obligation", "src": {"type": "ResidualAdapterDerivation", "var": "derivation"}, "edge_type": "has_adapter_proof_obligation", "tgt": {"type": "ModelProofObligation", "var": "obligation"}},
+    {"provenance": "contextual_model_edit:derivation-witness", "src": {"type": "ResidualAdapterDerivation", "var": "derivation"}, "edge_type": "has_residual_adapter_witness", "tgt": {"type": "ResidualAdapterWitness", "var": "witness"}},
+    {"provenance": "contextual_model_edit:goal-patch", "src": {"type": "ModelEnhancementGoal", "var": "goal"}, "edge_type": "authored_contextual_model_patch", "tgt": {"type": "ContextualModelPatch", "var": "patch"}},
+    {"provenance": "contextual_model_edit:patch-interface", "src": {"type": "ContextualModelPatch", "var": "patch"}, "edge_type": "adapts_residual_output_interface", "tgt": {"type": "ResidualOutputInterface", "var": "interface"}},
+    {"provenance": "contextual_model_edit:patch-derivation", "src": {"type": "ContextualModelPatch", "var": "patch"}, "edge_type": "justified_by_residual_adapter_derivation", "tgt": {"type": "ResidualAdapterDerivation", "var": "derivation"}}
+  ],
+  "rules": [
+    {
+      "name": "contextual_edit_derives_greedy_winner_delta",
+      "area": "model_engineering",
+      "order": 83,
+      "latency_class": "deliberative",
+      "match": [["constraints", "has_behavior_constraint", "constraint"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "constraint"}, "key": "constraint_kind"}, "b": {"type": "Lit", "value": "greedy_token_winner"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "constraint"}, "key": "constraint_status"}, "b": {"type": "Lit", "value": "observed"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "constraint"}, "key": "observation_kind"}, "b": {"type": "Lit", "value": "pre_softcap_output_projection"}},
+        {"type": "Gt", "a": {"type": "Attr", "node": {"type": "Var", "name": "constraint"}, "key": "winner_margin"}, "b": {"type": "Lit", "value": 0.0}}
+      ]},
+      "effects": [
+        ["set_attr", "constraint", "desired_target_delta", {"__term__": {"type": "Plus", "items": [
+          {"type": "Minus",
+           "a": {"type": "Attr", "node": {"type": "Var", "name": "constraint"}, "key": "observed_max_competing_logit"},
+           "b": {"type": "Attr", "node": {"type": "Var", "name": "constraint"}, "key": "observed_target_logit"}},
+          {"type": "Attr", "node": {"type": "Var", "name": "constraint"}, "key": "winner_margin"}
+        ]}}],
+        ["set_attr", "constraint", "constraint_status", "derived"],
+        ["set_attr", "constraint", "derivation_theorem", "raising target by max_competitor-target+margin makes target the unique pre-softcap argmax"]
+      ]
+    },
+    {
+      "name": "contextual_edit_derives_output_only_residual_adapter",
+      "area": "model_engineering",
+      "order": 84,
+      "latency_class": "deliberative",
+      "match": [
+        ["agent", "has_model_enhancement_goal", "goal"],
+        ["goal", "targets_residual_output_interface", "interface"],
+        ["goal", "uses_behavior_constraint_set", "constraints"]
+      ],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "goal"}, "key": "intent"}, "b": {"type": "Lit", "value": "contextual_vocabulary_style_shift"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "goal"}, "key": "status"}, "b": {"type": "Lit", "value": "requested"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "interface"}, "key": "operator_kind"}, "b": {"type": "Lit", "value": "affine_vocabulary_projection"}},
+        {"type": "Gt", "a": {"type": "Attr", "node": {"type": "Var", "name": "constraints"}, "key": "target_count"}, "b": {"type": "Lit", "value": 0.0}},
+        {"type": "Gt", "a": {"type": "Attr", "node": {"type": "Var", "name": "constraints"}, "key": "protected_count"}, "b": {"type": "Lit", "value": 0.0}},
+        {"type": "Not", "arg": {"type": "Exists", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "constraints"}, "edge_type": "has_behavior_constraint"}, "var_name": "constraint", "predicate": {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "constraint"}, "key": "constraint_status"}, "b": {"type": "Lit", "value": "derived"}}}}}
+      ]},
+      "effects": [
+        ["add_node", "derivation", "ResidualAdapterDerivation", {
+          "status": "awaiting_structural_proof",
+          "derivation_kind": "constrained_residual_interpolation",
+          "compiler": "minimum_norm_right_inverse",
+          "theorem": "for full-column-rank context matrix H and desired output delta D, DeltaW=D H+ gives DeltaW H=D",
+          "equation": "D=U S V^T; Delta_logits(h)=A B h; A=U S; B=V^T pinv(H)",
+          "rank_bound": "rank(DeltaW)<=number_of_constraints",
+          "protected_context_theorem": "a zero column of D implies exactly zero adapter output on the corresponding captured residual state",
+          "insertion_policy": "after_tied_output_projection_without_parameter_mutation",
+          "source_weight_sha256": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "interface"}, "key": "source_weight_sha256"}},
+          "provenance_kind": "graph_derived_linear_algebra"
+        }],
+        ["add_node", "isolation", "ModelProofObligation", {"kind": "tied_embedding_output_isolation", "status": "pending"}],
+        ["add_node", "completeness", "ModelProofObligation", {"kind": "target_and_protected_constraints_present", "status": "pending"}],
+        ["add_node", "reversibility", "ModelProofObligation", {"kind": "additive_hook_reversible_without_base_mutation", "status": "pending"}],
+        ["add_edge", "goal", "has_residual_adapter_derivation", "derivation", {}],
+        ["add_edge", "derivation", "uses_residual_output_interface", "interface", {}],
+        ["add_edge", "derivation", "compiles_behavior_constraint_set", "constraints", {}],
+        ["add_edge", "derivation", "has_adapter_proof_obligation", "isolation", {}],
+        ["add_edge", "derivation", "has_adapter_proof_obligation", "completeness", {}],
+        ["add_edge", "derivation", "has_adapter_proof_obligation", "reversibility", {}],
+        ["set_attr", "goal", "status", "derived"]
+      ]
+    },
+    {
+      "name": "contextual_edit_proves_tied_embedding_isolation",
+      "area": "model_engineering",
+      "order": 85,
+      "latency_class": "deliberative",
+      "match": [
+        ["derivation", "has_adapter_proof_obligation", "obligation"],
+        ["derivation", "uses_residual_output_interface", "interface"]
+      ],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obligation"}, "key": "kind"}, "b": {"type": "Lit", "value": "tied_embedding_output_isolation"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obligation"}, "key": "status"}, "b": {"type": "Lit", "value": "pending"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "interface"}, "key": "weight_tied_to_input_embedding"}, "b": {"type": "Lit", "value": 1.0}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "interface"}, "key": "adapter_insertion_point"}, "b": {"type": "Lit", "value": "output_projection_result"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "interface"}, "key": "supports_output_only_adapter"}, "b": {"type": "Lit", "value": 1.0}}
+      ]},
+      "effects": [
+        ["set_attr", "obligation", "status", "proved"],
+        ["set_attr", "obligation", "proof_kind", "tensor_alias_and_insertion_point_witness"]
+      ]
+    },
+    {
+      "name": "contextual_edit_proves_constraint_completeness",
+      "area": "model_engineering",
+      "order": 85,
+      "latency_class": "deliberative",
+      "match": [
+        ["derivation", "has_adapter_proof_obligation", "obligation"],
+        ["derivation", "compiles_behavior_constraint_set", "constraints"]
+      ],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obligation"}, "key": "kind"}, "b": {"type": "Lit", "value": "target_and_protected_constraints_present"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obligation"}, "key": "status"}, "b": {"type": "Lit", "value": "pending"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "constraints"}, "key": "status"}, "b": {"type": "Lit", "value": "specified"}},
+        {"type": "Gt", "a": {"type": "Attr", "node": {"type": "Var", "name": "constraints"}, "key": "target_count"}, "b": {"type": "Lit", "value": 0.0}},
+        {"type": "Gt", "a": {"type": "Attr", "node": {"type": "Var", "name": "constraints"}, "key": "protected_count"}, "b": {"type": "Lit", "value": 0.0}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "constraints"}, "key": "constraint_count"}, "b": {"type": "Plus", "items": [
+          {"type": "Attr", "node": {"type": "Var", "name": "constraints"}, "key": "target_count"},
+          {"type": "Attr", "node": {"type": "Var", "name": "constraints"}, "key": "protected_count"}
+        ]}}
+      ]},
+      "effects": [
+        ["set_attr", "obligation", "status", "proved"],
+        ["set_attr", "obligation", "proof_kind", "typed_constraint_cardinality_witness"]
+      ]
+    },
+    {
+      "name": "contextual_edit_proves_reversible_additive_path",
+      "area": "model_engineering",
+      "order": 85,
+      "latency_class": "deliberative",
+      "match": [
+        ["derivation", "has_adapter_proof_obligation", "obligation"],
+        ["derivation", "uses_residual_output_interface", "interface"]
+      ],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obligation"}, "key": "kind"}, "b": {"type": "Lit", "value": "additive_hook_reversible_without_base_mutation"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obligation"}, "key": "status"}, "b": {"type": "Lit", "value": "pending"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "interface"}, "key": "supports_output_only_adapter"}, "b": {"type": "Lit", "value": 1.0}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "interface"}, "key": "hash_state"}, "b": {"type": "Lit", "value": "observed"}}
+      ]},
+      "effects": [
+        ["set_attr", "obligation", "status", "proved"],
+        ["set_attr", "obligation", "proof_kind", "unchanged_base_parameter_and_removable_hook_witness"]
+      ]
+    },
+    {
+      "name": "contextual_edit_authorizes_closed_form_compilation",
+      "area": "model_engineering",
+      "order": 86,
+      "latency_class": "deliberative",
+      "match": [["goal", "has_residual_adapter_derivation", "derivation"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "derivation"}, "key": "status"}, "b": {"type": "Lit", "value": "awaiting_structural_proof"}},
+        {"type": "Not", "arg": {"type": "Exists", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "derivation"}, "edge_type": "has_adapter_proof_obligation"}, "var_name": "obligation", "predicate": {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obligation"}, "key": "status"}, "b": {"type": "Lit", "value": "proved"}}}}}
+      ]},
+      "effects": [
+        ["set_attr", "derivation", "status", "ready_for_compilation"],
+        ["set_attr", "derivation", "structural_proof_complete", 1.0]
+      ]
+    },
+    {
+      "name": "contextual_edit_accepts_exact_numerical_witness",
+      "area": "model_engineering",
+      "order": 87,
+      "latency_class": "deliberative",
+      "match": [
+        ["derivation", "has_residual_adapter_witness", "witness"],
+        ["derivation", "compiles_behavior_constraint_set", "constraints"]
+      ],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "derivation"}, "key": "status"}, "b": {"type": "Lit", "value": "ready_for_compilation"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "witness"}, "key": "status"}, "b": {"type": "Lit", "value": "observed"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "witness"}, "key": "factors_finite"}, "b": {"type": "Lit", "value": 1.0}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "witness"}, "key": "constraint_rank"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "constraints"}, "key": "constraint_count"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "witness"}, "key": "context_count"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "constraints"}, "key": "constraint_count"}},
+        {"type": "Lt", "a": {"type": "Attr", "node": {"type": "Var", "name": "witness"}, "key": "target_max_abs_error"}, "b": {"type": "Lit", "value": 0.000001}},
+        {"type": "Lt", "a": {"type": "Attr", "node": {"type": "Var", "name": "witness"}, "key": "protected_max_abs_delta"}, "b": {"type": "Lit", "value": 0.000001}}
+      ]},
+      "effects": [
+        ["set_attr", "witness", "status", "accepted"],
+        ["set_attr", "witness", "proof_kind", "right_inverse_interpolation_witness"],
+        ["set_attr", "derivation", "status", "numerically_proved"]
+      ]
+    },
+    {
+      "name": "contextual_edit_authors_proved_output_adapter",
+      "area": "model_engineering",
+      "order": 88,
+      "latency_class": "deliberative",
+      "match": [
+        ["goal", "has_residual_adapter_derivation", "derivation"],
+        ["goal", "targets_residual_output_interface", "interface"],
+        ["derivation", "has_residual_adapter_witness", "witness"]
+      ],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "goal"}, "key": "status"}, "b": {"type": "Lit", "value": "derived"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "derivation"}, "key": "status"}, "b": {"type": "Lit", "value": "numerically_proved"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "witness"}, "key": "status"}, "b": {"type": "Lit", "value": "accepted"}}
+      ]},
+      "effects": [
+        ["add_node", "patch", "ContextualModelPatch", {
+          "status": "proved",
+          "transformation_kind": "add_output_only_residual_adapter",
+          "output_module_name": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "interface"}, "key": "name"}},
+          "source_weight_sha256": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "interface"}, "key": "source_weight_sha256"}},
+          "lora_a_sha256": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "witness"}, "key": "lora_a_sha256"}},
+          "lora_b_sha256": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "witness"}, "key": "lora_b_sha256"}},
+          "adapter_rank": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "witness"}, "key": "adapter_rank"}},
+          "equivalence_scope": "captured_target_and_protected_residual_states",
+          "generalization_status": "empirical_outside_proved_states",
+          "base_parameters_mutated": 0.0,
+          "input_embedding_mutated": 0.0,
+          "reversible": 1.0,
+          "provenance_kind": "graph_authored_proof_carrying_patch"
+        }],
+        ["add_edge", "goal", "authored_contextual_model_patch", "patch", {}],
+        ["add_edge", "patch", "adapts_residual_output_interface", "interface", {}],
+        ["add_edge", "patch", "justified_by_residual_adapter_derivation", "derivation", {}],
+        ["set_attr", "goal", "status", "patch_authored"]
+      ]
+    }
+  ]
+}

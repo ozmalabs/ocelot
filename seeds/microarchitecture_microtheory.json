@@ -1,0 +1,66 @@
+{
+ "id": "microarchitecture_microtheory",
+ "version": "1.0.0",
+ "depends_on": [
+  "computer_architecture_microtheory"
+ ],
+ "description": "MICROARCHITECTURE \u2014 the sub-world of computer_architecture: how one processor realises its instruction set. Gives the concept-graph descent a third rung.",
+ "microtheory": {
+  "name": "microarchitecture",
+  "definition": "The concrete implementation of an instruction set in one processor: the pipeline stages, hazard handling, out-of-order and superscalar execution that turn the architectural contract into gates and clocks.",
+  "category": "microarchitecture"
+ },
+ "parent_mt": "computer_architecture",
+ "concepts": [
+  {
+   "name": "pipeline_stage",
+   "definition": "One step (fetch, decode, execute, memory, writeback) of an instruction pipeline.",
+   "category": "microarchitecture"
+  },
+  {
+   "name": "data_hazard",
+   "definition": "A pipeline stall when an instruction needs a result not yet produced.",
+   "category": "microarchitecture"
+  },
+  {
+   "name": "forwarding",
+   "definition": "Bypassing a result directly to a dependent instruction to avoid a stall.",
+   "category": "microarchitecture"
+  },
+  {
+   "name": "out_of_order_execution",
+   "definition": "Executing instructions as operands become ready, not in program order.",
+   "category": "microarchitecture"
+  },
+  {
+   "name": "superscalar",
+   "definition": "Issuing more than one instruction per clock via duplicated execution units.",
+   "category": "microarchitecture"
+  },
+  {
+   "name": "speculation",
+   "definition": "Executing past an unresolved branch on a predicted path, squashing if wrong.",
+   "category": "microarchitecture"
+  },
+  {
+   "name": "reorder_buffer",
+   "definition": "The structure that retires out-of-order results back into program order.",
+   "category": "microarchitecture"
+  },
+  {
+   "name": "register_renaming",
+   "definition": "Mapping architectural registers to a larger physical set to remove false dependencies.",
+   "category": "microarchitecture"
+  },
+  {
+   "name": "branch_prediction",
+   "definition": "Guessing a branch outcome to keep the pipeline supplied with instructions.",
+   "category": "microarchitecture"
+  },
+  {
+   "name": "instruction_retirement",
+   "definition": "Committing a completed instruction's effects, in order, to architectural state.",
+   "category": "microarchitecture"
+  }
+ ]
+}

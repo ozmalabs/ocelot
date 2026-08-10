@@ -1,0 +1,75 @@
+{
+  "id": "math_capability_shapes",
+  "version": "1.0.0",
+  "depends_on": [],
+  "description": "SHAPE-COMPARABLE SIGNATURES (graph data) for the math<->capability BRIDGE. Each node names a held MATH Concept OR a held FACULTY and carries its STRUCTURAL SIGNATURE as a relation-system (positional tuples, the form the held order-N shape-matcher AntiUnify consumes). The bridge faculty runs the HELD AntiUnify over two named signatures and reads out the shared structural skeleton (the connection) + discriminates by FixedCount. The signature is the item's OWN mathematical structure written in the agent's relation vocabulary (build/refers/bound/base/detect/...), NOT a hardcoded 'fractal=residual' string; the connection is whatever AntiUnify finds the two SHARE. Extensible: add a ShapeSignature node to make a new math or faculty bridgeable.",
+  "nodes": [
+    {"local_id": 1, "type": "ShapeSignature", "attrs": {
+      "name": "fractal", "kind": "math", "concept": "fractal_dimension",
+      "signature": "[[\"build\",\"NEW\",\"from\",\"PRIOR\"],[\"refers\",\"NEW\",\"to\",\"SELF\"],[\"bound\",\"SELF\",\"by\",\"SCALE\"],[\"base\",\"STOP\"]]"}},
+
+    {"local_id": 2, "type": "ShapeSignature", "attrs": {
+      "name": "phi_bounded_recursion", "kind": "math", "concept": "phi_as_bounded_recursion_fixedpoint",
+      "signature": "[[\"build\",\"NEW\",\"from\",\"PRIOR\"],[\"refers\",\"NEW\",\"to\",\"SELF\"],[\"bound\",\"SELF\",\"by\",\"UNIT\"],[\"base\",\"STOP\"]]"}},
+
+    {"local_id": 3, "type": "ShapeSignature", "attrs": {
+      "name": "self_similarity", "kind": "math", "concept": "self-similarity",
+      "signature": "[[\"build\",\"NEW\",\"from\",\"PRIOR\"],[\"refers\",\"NEW\",\"to\",\"SELF\"],[\"bound\",\"SELF\",\"by\",\"SCALE\"]]"}},
+
+    {"local_id": 4, "type": "ShapeSignature", "attrs": {
+      "name": "symmetry", "kind": "math", "concept": "balance_symmetry",
+      "signature": "[[\"map\",\"PART\",\"to\",\"PART\"],[\"invariant\",\"PART\",\"under\",\"TRANSFORM\"],[\"repeat\",\"PART\"]]"}},
+
+    {"local_id": 5, "type": "ShapeSignature", "attrs": {
+      "name": "curvature", "kind": "math", "concept": "spacetime_curvature",
+      "signature": "[[\"build\",\"NEW\",\"from\",\"PRIOR\"],[\"advance\",\"BY\",\"TURN\"],[\"accumulate\",\"TURN\",\"into\",\"HEADING\"]]"}},
+
+    {"local_id": 6, "type": "ShapeSignature", "attrs": {
+      "name": "topology", "kind": "math", "concept": "topology_open_sets",
+      "signature": "[[\"detect\",\"CONTACT\",\"between\",\"PARTS\"],[\"type\",\"CONTACT\",\"is\",\"INVARIANT\"],[\"pairwise\",\"PARTS\"]]"}},
+
+    {"local_id": 10, "type": "ShapeSignature", "attrs": {
+      "name": "residual_recurrence", "kind": "faculty", "faculty": "generate_shape",
+      "signature": "[[\"build\",\"NEW\",\"from\",\"PRIOR\"],[\"refers\",\"NEW\",\"to\",\"SELF\"],[\"bound\",\"SELF\",\"by\",\"UNIT\"],[\"base\",\"STOP\"]]"}},
+
+    {"local_id": 11, "type": "ShapeSignature", "attrs": {
+      "name": "turtle_generation", "kind": "faculty", "faculty": "generate_shape",
+      "signature": "[[\"build\",\"NEW\",\"from\",\"PRIOR\"],[\"advance\",\"BY\",\"TURN\"],[\"accumulate\",\"TURN\",\"into\",\"HEADING\"]]"}},
+
+    {"local_id": 12, "type": "ShapeSignature", "attrs": {
+      "name": "junction_perception", "kind": "faculty", "faculty": "junction_perception",
+      "signature": "[[\"detect\",\"CONTACT\",\"between\",\"PARTS\"],[\"type\",\"CONTACT\",\"is\",\"INVARIANT\"],[\"pairwise\",\"PARTS\"]]"}},
+
+    {"local_id": 13, "type": "ShapeSignature", "attrs": {
+      "name": "order_invariant_binding", "kind": "faculty", "faculty": "order_invariant_binding",
+      "signature": "[[\"map\",\"PART\",\"to\",\"PART\"],[\"invariant\",\"PART\",\"under\",\"TRANSFORM\"],[\"correspond\",\"PARTS\"]]"}},
+
+    {"local_id": 14, "type": "ShapeSignature", "attrs": {
+      "name": "compression_selector", "kind": "faculty", "faculty": "order_n_postulates.is_gap",
+      "signature": "[[\"reduce\",\"UNCERTAINTY\",\"given\",\"PRIOR\"],[\"select\",\"SHORTER\",\"over\",\"LONGER\"]]"}},
+
+    {"local_id": 15, "type": "ShapeSignature", "attrs": {
+      "name": "sequence_buffer", "kind": "faculty", "faculty": "sequence_buffer",
+      "signature": "[[\"order\",\"PART\",\"after\",\"PART\"],[\"hold\",\"PART\",\"at\",\"POSITION\"],[\"build\",\"NEW\",\"from\",\"PRIOR\"]]"}},
+
+    {"local_id": 16, "type": "ShapeSignature", "attrs": {
+      "name": "allographic_store", "kind": "faculty", "faculty": "allographic_store",
+      "signature": "[[\"realise\",\"IDENTITY\",\"as\",\"FORM\"],[\"select\",\"ALLOGRAPH\",\"of\",\"IDENTITY\"],[\"map\",\"PART\",\"to\",\"PART\"]]"}},
+
+    {"local_id": 17, "type": "ShapeSignature", "attrs": {
+      "name": "position_binding", "kind": "faculty", "faculty": "position_binding",
+      "signature": "[[\"bind\",\"ITEM\",\"to\",\"SLOT\"],[\"compete\",\"GROUP\",\"with\",\"GROUP\"],[\"hold\",\"PART\",\"at\",\"POSITION\"]]"}},
+
+    {"local_id": 18, "type": "ShapeSignature", "attrs": {
+      "name": "spatial_attention", "kind": "faculty", "faculty": "spatial_attention",
+      "signature": "[[\"weight\",\"POSITION\",\"by\",\"GRADIENT\"],[\"drop\",\"SIDE\",\"below\",\"THRESHOLD\"],[\"hold\",\"PART\",\"at\",\"POSITION\"]]"}},
+
+    {"local_id": 19, "type": "ShapeSignature", "attrs": {
+      "name": "teacher_bootstrap", "kind": "faculty", "faculty": "analysis_by_synthesis",
+      "signature": "[[\"propose\",\"TEACHER\",\"to\",\"STUDENT\"],[\"build\",\"NEW\",\"from\",\"PRIOR\"],[\"distill\",\"CAPABILITY\",\"into\",\"STRUCTURE\"]]"}},
+
+    {"local_id": 20, "type": "ShapeSignature", "attrs": {
+      "name": "library_growth", "kind": "faculty", "faculty": "grow_part_library",
+      "signature": "[[\"grow\",\"LIBRARY\",\"with\",\"PART\"],[\"select\",\"SHORTER\",\"over\",\"LONGER\"],[\"build\",\"NEW\",\"from\",\"PRIOR\"]]"}}
+  ]
+}

@@ -1,0 +1,119 @@
+{
+  "id": "embedded_ml_tinyml_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "TinyML",
+  "in_microtheory": "embedded_iot_realtime",
+  "description": "Embedded ML decomposed. TFLite Micro architecture, CMSIS-NN kernels, quantization (post-training + QAT), pruning, knowledge distillation, neuromorphic accelerators, edge inference hardware (Ethos-U, NPU).",
+  "sub_mechanisms": [
+    {
+      "name": "TFLite_Micro_runtime",
+      "definition": "~16 KB runtime. No allocator (static memory plan). Interprets FlatBuffer model.",
+      "why": "Standard MCU ML runtime. Supports common ops; falls back to reference. Kernel registration: link only used ops.",
+      "category": "embedded_ml_mechanism"
+    },
+    {
+      "name": "CMSIS_NN_kernels",
+      "definition": "ARM-optimised NN kernels. Hand-tuned per Cortex-M variant. Used by TFLite Micro on ARM.",
+      "why": "5-10x faster than reference. Uses M4/M7 DSP extensions, M55 MVE. Critical for practical MCU inference.",
+      "category": "embedded_ml_mechanism"
+    },
+    {
+      "name": "post_training_quantization",
+      "definition": "Train float; convert to int8. Calibration set used to determine activation ranges.",
+      "why": "Easy: no retraining. Cost: ~1-2% accuracy loss. Sufficient for many applications. Standard first step.",
+      "category": "embedded_ml_mechanism"
+    },
+    {
+      "name": "quantization_aware_training",
+      "definition": "QAT: simulate quantization during training. Network adapts to quantization effects.",
+      "why": "Better accuracy than PTQ, especially at int4/int2. Cost: longer training. Used when PTQ accuracy insufficient.",
+      "category": "embedded_ml_mechanism"
+    },
+    {
+      "name": "structured_pruning",
+      "definition": "Remove entire channels/filters. Network becomes smaller + faster.",
+      "why": "Compatible with hardware (no sparsity needed). Cost: more accuracy loss than unstructured. Often combined with QAT.",
+      "category": "embedded_ml_mechanism"
+    },
+    {
+      "name": "knowledge_distillation_embedded",
+      "definition": "Train small student to mimic large teacher's outputs.",
+      "why": "Compress capability into smaller model. Student size = deployable to MCU. Better than training small from scratch.",
+      "category": "embedded_ml_mechanism"
+    },
+    {
+      "name": "Ethos_U_microNPU",
+      "definition": "ARM's Ethos-U55/U65: NPU for Cortex-M. ~256 MAC/cycle. ~50x faster than M4F.",
+      "why": "Dedicated AI accelerator for MCU. ~$1 silicon cost. Used in modern Cortex-M55 designs. Game-changer for MCU AI.",
+      "category": "embedded_ml_mechanism"
+    },
+    {
+      "name": "edge_TPU_coral",
+      "definition": "Google Edge TPU. 4 TOPS. For SBC + cameras.",
+      "why": "Dedicated inference at low power (~2W). Coral Dev Board, USB Accelerator. Bigger than MCU; smaller than data center.",
+      "category": "embedded_ml_mechanism"
+    },
+    {
+      "name": "neuromorphic_chips",
+      "definition": "Spiking neural network hardware. Loihi (Intel), Akida (BrainChip), TrueNorth (IBM).",
+      "why": "Event-driven compute. Ultra-low power for sparse signals. Research → emerging products. Different paradigm than dense matrix.",
+      "category": "embedded_ml_mechanism"
+    },
+    {
+      "name": "model_optimization_toolkit",
+      "definition": "TensorFlow Model Optimization. Pruning, quantization, clustering APIs.",
+      "why": "Standard pipeline: train → optimise → convert. Reduces model size + inference cost. Standard for production embedded ML.",
+      "category": "embedded_ml_mechanism"
+    },
+    {
+      "name": "anomaly_detection_embedded",
+      "definition": "Detect unusual sensor patterns. Autoencoders, one-class SVM, statistical methods.",
+      "why": "Industrial predictive maintenance. Vibration → anomaly score. Local inference avoids cloud bandwidth + latency.",
+      "category": "embedded_ml_mechanism"
+    },
+    {
+      "name": "wake_word_detection",
+      "definition": "Always-on keyword spotting. <50 KB models. <1mA average current.",
+      "why": "Alexa, Google Assistant, Hey Siri. Dedicated micro accelerator (Cortex-M, Hexagon) for always-on. Standard voice UX.",
+      "category": "embedded_ml_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "quantization_essential_for_no_FPU_inference",
+      "if": ["target MCU has no FPU"],
+      "then": ["int8 quantization is required for practical inference"],
+      "why": "Software float on Cortex-M0: 100s of cycles per op. Int8 native + ~1 cycle per MAC with DSP. 50-100x speedup. Quality acceptable.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "CMSIS_NN_dominates_reference_kernels",
+      "if": ["ARM Cortex-M target + CMSIS-NN available"],
+      "then": ["5-10x faster than reference TFLite Micro kernels"],
+      "why": "Hand-tuned assembly using DSP + SIMD extensions. M4F MVE provides multi-element ops. CMSIS-NN library bridges. Standard for ARM embedded ML.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "Ethos_U_NPU_changes_what_fits_on_MCU",
+      "definition": "Tiny NPU dramatically expands MCU ML capability.",
+      "if": ["MCU has integrated Ethos-U NPU"],
+      "then": ["MobileNet-class models become real-time on MCU"],
+      "why": "Cortex-M55 + Ethos-U55: 256 MACs/cycle vs M4F 1 MAC/cycle. Object detection, larger keyword sets, image classification feasible. New class of MCU capability.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "knowledge_distillation_beats_training_small",
+      "if": ["target size requires small model"],
+      "then": ["distillation outperforms training small from scratch"],
+      "why": "Small model trained alone: limited by capacity. Distilled from larger teacher: soft labels carry richer info. Empirical 2-5% accuracy improvement.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "local_inference_for_privacy_and_latency",
+      "if": ["data is privacy-sensitive or latency-critical"],
+      "then": ["embedded ML beats cloud inference"],
+      "why": "Wake words: privacy + always-on (cloud impractical). Industrial anomaly detection: ms response, no internet dependency. Standard embedded ML drivers.",
+      "soundness_category": "extensional_equivalence"
+    }
+  ]
+}

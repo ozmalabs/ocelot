@@ -1,0 +1,661 @@
+{
+ "id": "compilers",
+ "version": "0.1.0",
+ "depends_on": [
+  "compiler_theory"
+ ],
+ "description": "The layers the substrate's existing compiler_theory + llvm_passes + llvm_ir Mts didn't cover. Front-end (lexer, parser, AST, type checking). Mid-end advanced optimisations (inlining, loop opts, alias analysis). Back-end (register allocation, instruction selection, scheduling). JIT specifics (tracing, method, tiered, OSR). Modern compiler infrastructure (MLIR, Clang, Rust MIR, GCC GIMPLE). The substrate already understands LLVM IR + 72 IR passes; this Mt fills in everything around that core.",
+ "category_inheritance": "genlMt → compiler_theory. Specialisation: this Mt's concepts are concrete compiler-pipeline mechanisms that instantiate the compiler_theory framework. Equivalence vocabulary (denotational, algebraic, extensional, cost, referential_transparency) applies directly. Each rule's soundness_category names the equivalence-kind it preserves.",
+ "concepts": [
+  {
+   "name": "lexer",
+   "definition": "Tokeniser: scans source code character-by-character, groups into tokens (identifiers, keywords, literals, operators). Output: token stream.",
+   "why": "Separates lexical structure from grammar. Parser doesn't see whitespace, comments, or character-level details. Standard tools: lex, flex, hand-written, or generated. Lexer-parser split is the foundational front-end architecture.",
+   "category": "frontend"
+  },
+  {
+   "name": "regular_language",
+   "definition": "Languages recognisable by finite automata. Lexer tokens are typically regular: identifiers, integers, keywords match regex patterns.",
+   "why": "Tokens have no recursive structure (no nested parens in an identifier). Regular suffices, and finite automata are efficient (linear-time scan). Distinguishing regular from context-free is what makes the lexer-parser split work.",
+   "category": "frontend"
+  },
+  {
+   "name": "finite_automaton",
+   "definition": "State machine with finite states + deterministic transitions on input characters. DFA (deterministic) or NFA (nondeterministic).",
+   "why": "Lexers compile to DFAs via subset construction from NFA. Each state encodes 'what we've matched so far'. The transition table is the lexer's compiled form. Linear-time scanning per input character.",
+   "category": "frontend"
+  },
+  {
+   "name": "longest_match_rule",
+   "definition": "When multiple tokens could match starting at a position, take the longest. 'if' is a keyword but 'iffy' is an identifier.",
+   "why": "Without this rule, lexer would be ambiguous. Standard lexer behavior: scan as far as the DFA allows, then commit to that token. Edge cases (== vs =) handled by this rule.",
+   "category": "frontend"
+  },
+  {
+   "name": "parser",
+   "definition": "Builds an AST from token stream by matching against a grammar. Top-down (LL, recursive descent) or bottom-up (LR, SLR).",
+   "why": "Imposes structure on linear token sequence. AST captures the program's hierarchical meaning. Parser correctness depends on grammar being unambiguous for the parsing algorithm.",
+   "category": "frontend"
+  },
+  {
+   "name": "context_free_grammar",
+   "definition": "Set of production rules N → α where N is a non-terminal and α is a sequence of terminals and non-terminals. Captures nested/recursive structure.",
+   "why": "Programming languages are CFGs (or close). Nesting (matched parens, nested blocks) requires CFG power; regular grammars can't count. Defines what programs are syntactically valid.",
+   "category": "frontend"
+  },
+  {
+   "name": "AST_abstract_syntax_tree",
+   "definition": "Tree representation of syntactic structure: each node is a construct (expression, statement, declaration). Children are subconstructs.",
+   "why": "Concrete syntax (parentheses, punctuation) discarded; structural meaning preserved. AST is the unit that semantic analysis + optimization + code gen operate on. Compiler's first 'understood' representation.",
+   "category": "frontend"
+  },
+  {
+   "name": "recursive_descent_parser",
+   "definition": "One function per grammar non-terminal. Each function tries to match its production, recursively calling other functions for sub-productions.",
+   "why": "Hand-written, readable, good error messages. Predictive (LL(1)) for unambiguous grammars; backtracking for ambiguous. Used by Clang (C++), Rust's parser, many production compilers — speed + control matter at scale.",
+   "category": "frontend"
+  },
+  {
+   "name": "LL_parsing",
+   "definition": "Left-to-right scan, leftmost derivation. LL(k) needs k tokens of lookahead. LL(1) is the simplest practical case.",
+   "why": "Top-down parsing. Can be implemented as recursive descent. Cannot handle left-recursive grammars directly (requires rewriting). Used in many hand-written parsers.",
+   "category": "frontend"
+  },
+  {
+   "name": "LR_parsing",
+   "definition": "Left-to-right scan, rightmost derivation. Bottom-up: shift tokens onto stack, reduce by applying productions. LR(0), SLR, LALR, LR(1) variants.",
+   "why": "Strictly more powerful than LL: handles left-recursion, ambiguous-looking grammars naturally. Implementation: parser tables computed from grammar. Used by yacc, Bison, GLR parsers.",
+   "category": "frontend"
+  },
+  {
+   "name": "shift_reduce_conflict",
+   "definition": "Parser state can either shift the next token OR reduce by a completed production. Conflict means grammar ambiguity.",
+   "why": "Classic problem in LR parsing (e.g., dangling else). Resolved by precedence rules, grammar rewriting, or convention (default: shift). Tooling reports them as warnings; ignoring them produces wrong parse.",
+   "category": "frontend"
+  },
+  {
+   "name": "PEG_parser",
+   "definition": "Parsing Expression Grammar. Like CFG but with ordered alternatives (a / b means try a first, then b). Inherently unambiguous.",
+   "why": "Simpler than LR for some grammars. Used in Python's PEG parser (Python 3.9+ replaced LL(1)). The ordered choice gives clear semantics for what 'matches first' means.",
+   "category": "frontend"
+  },
+  {
+   "name": "packrat_parsing",
+   "definition": "PEG implementation with memoisation: each (rule, position) pair computed once. Linear time at cost of O(n) space per rule.",
+   "why": "Eliminates exponential blow-up from PEG's backtracking. Trade memory for time. Used in some PEG implementations; less common in production compilers due to memory cost.",
+   "category": "frontend"
+  },
+  {
+   "name": "error_recovery",
+   "definition": "Parser strategy when encountering invalid input: discard tokens until a synchronisation point (semicolon, brace), resume parsing.",
+   "why": "Compiler should report many errors per run, not stop at first. Recovery quality affects developer experience. Recursive-descent parsers (Clang, Rust) often have hand-tuned recovery; generated parsers struggle.",
+   "category": "frontend"
+  },
+  {
+   "name": "type_checking",
+   "definition": "Static analysis verifying that operations are applied to compatible types. Traversal of AST checking each node against typing rules.",
+   "why": "Catches errors before runtime. Type checker IS the language's static semantics. Generates errors for ill-typed programs; annotates AST with inferred types for later passes.",
+   "category": "frontend"
+  },
+  {
+   "name": "type_inference",
+   "definition": "Deriving types without explicit annotations. Constraint generation + unification. Hindley-Milner (HM) is the foundational algorithm.",
+   "why": "Lets programmers write 'let x = expr' without 'int x = ...'. Languages with HM-style inference: ML, Haskell, OCaml, Rust (modified), TypeScript (extended). Polymorphism via let-generalisation.",
+   "category": "frontend"
+  },
+  {
+   "name": "hindley_milner",
+   "definition": "Classic type inference algorithm (Damas-Milner). Generates type constraints, solves via unification, generalises let-bound types.",
+   "why": "Proves: complete inference for prenex polymorphic let-bindings. Foundation of ML-family languages. Modifications for subtyping (Rust), gradual typing (TypeScript), higher-rank (Haskell).",
+   "category": "frontend"
+  },
+  {
+   "name": "unification",
+   "definition": "Find substitution that makes two types equal. Walk both types in parallel, unify sub-parts. Type variables get bound to concrete types.",
+   "why": "Core of HM type inference. Robinson's algorithm: O(n α(n)) with union-find. The mechanism by which constraints get solved. Used beyond compilers (Prolog, theorem provers).",
+   "category": "frontend"
+  },
+  {
+   "name": "subtyping",
+   "definition": "Type A is a subtype of B if values of A can be used wherever B is expected. Java's class hierarchy, structural subtyping (Go interfaces, TypeScript), Rust's lifetime subtyping.",
+   "why": "Captures 'is-a' relationships. Type checker must handle subtyping in unification (e.g., narrowing). Complicates HM significantly — Rust's type system is HM + lifetime constraints + subtyping + traits.",
+   "category": "frontend"
+  },
+  {
+   "name": "function_inlining",
+   "definition": "Replace a function call with the called function's body, substituting arguments.",
+   "why": "Eliminates call overhead. Enables further optimisations (constant propagation across the call boundary). Heuristic: small + hot callees. Excessive inlining bloats code; insufficient leaves performance on the table.",
+   "category": "midend"
+  },
+  {
+   "name": "loop_invariant_code_motion",
+   "definition": "LICM: hoist computations that don't depend on the loop's induction variable out of the loop.",
+   "why": "Per-iteration cost → one-time cost. Classic optimisation; substantial speedup on hot loops. The hoisting must respect dependencies; complicated by aliasing.",
+   "category": "midend"
+  },
+  {
+   "name": "loop_unrolling",
+   "definition": "Duplicate the loop body N times, decrease iteration count proportionally. Reduces branch overhead, enables further per-body optimisations.",
+   "why": "Branch overhead amortises across body replicas. Modern CPUs with good branch prediction benefit less; SIMD unrolling exposes vector parallelism. LLVM's loop unroller is tuned per target.",
+   "category": "midend"
+  },
+  {
+   "name": "loop_vectorisation",
+   "definition": "Convert scalar loop to SIMD operations: one instruction operating on N lanes. Requires no inter-iteration dependencies.",
+   "why": "Nx speedup on data-parallel loops. LLVM's loop vectorizer + SLP vectorizer handle this. Critical for HPC, ML, media. The 'easy' parallelism — auto-vectorisation succeeds when alias analysis can prove independence.",
+   "category": "midend"
+  },
+  {
+   "name": "alias_analysis",
+   "definition": "Determine whether two pointers might point to the same memory location. Essential precondition for many optimisations.",
+   "why": "Without it, compiler must conservatively assume any two memory operations might conflict — forbidding reordering. Andersen's, Steensgaard's, flow-sensitive variants trade precision for cost.",
+   "category": "midend"
+  },
+  {
+   "name": "andersen_alias_analysis",
+   "definition": "Inclusion-based pointer analysis. Subset constraints: pts(p) ⊇ pts(q) when q is assigned to p. Solves to fixed point.",
+   "why": "More precise than Steensgaard's at cost of O(n³) worst case. Used in production for moderate-size programs. Tracks 'which abstract locations can each pointer reach'.",
+   "category": "midend"
+  },
+  {
+   "name": "steensgaard_alias_analysis",
+   "definition": "Equality-based: if p and q can alias, all things they point to are merged into one equivalence class. O(n α(n)).",
+   "why": "Much faster than Andersen — near-linear via union-find. Less precise (over-approximates aliasing). Used in early or fast-pass settings; Andersen for later/precise passes.",
+   "category": "midend"
+  },
+  {
+   "name": "escape_analysis",
+   "definition": "Determines whether an object's lifetime escapes its allocation scope (stored in a field, returned, passed to a function).",
+   "why": "If object doesn't escape, can stack-allocate instead of heap-allocate (eliminates GC pressure). Java JITs, Go compiler, V8 do this. Significant performance + memory benefit on short-lived objects.",
+   "category": "midend"
+  },
+  {
+   "name": "tail_call_optimisation",
+   "definition": "When a function's last action is a call, reuse the current stack frame instead of pushing a new one.",
+   "why": "Recursion equivalent to iteration; deep recursion doesn't blow the stack. Functional languages (Scheme, Haskell, OCaml) require TCO. C/C++ compilers do it opportunistically; Python explicitly doesn't.",
+   "category": "midend"
+  },
+  {
+   "name": "ssa_form",
+   "definition": "Static Single Assignment: each variable is assigned exactly once. PHI nodes merge values from different control-flow predecessors.",
+   "why": "Simplifies many analyses: def-use chains are explicit, dataflow is straightforward. LLVM IR is in SSA form. Conversion from non-SSA via dominance frontiers (Cytron's algorithm).",
+   "category": "midend"
+  },
+  {
+   "name": "register_allocation",
+   "definition": "Assign virtual registers (LLVM IR has unlimited) to physical machine registers (x86_64 has ~16). Spill to stack if no register available.",
+   "why": "IR has infinite virtual registers; CPU has finite physical ones. RA is the back-end's hardest problem. Quality directly affects generated code performance. Spilling is expensive (memory access vs register).",
+   "category": "backend"
+  },
+  {
+   "name": "graph_coloring_RA",
+   "definition": "Construct interference graph (nodes are values; edges connect values live at the same time). Colour with K colours (K = available registers). NP-hard in general.",
+   "why": "Optimal-ish solution. Used by GCC, classical compilers. Variants (Chaitin-Briggs, IRC) refine the coloring + spill strategy. NP-hardness handled by heuristics + spilling.",
+   "category": "backend"
+  },
+  {
+   "name": "linear_scan_RA",
+   "definition": "Sort live ranges by start time. Walk through; at each program point, assign register or spill the longest-remaining live range.",
+   "why": "Faster than graph coloring: O(n log n). Lower-quality code (sometimes ~10% worse). Used by JITs (V8, LuaJIT) where compile time dominates. LLVM's old default; replaced by Greedy.",
+   "category": "backend"
+  },
+  {
+   "name": "greedy_RA",
+   "definition": "LLVM's modern register allocator. Live range splitting + priority-based allocation + iterative refinement.",
+   "why": "Quality close to graph coloring + speed close to linear scan. Default in LLVM since 2011. Handles register pressure adaptively via live range splitting.",
+   "category": "backend"
+  },
+  {
+   "name": "instruction_selection",
+   "definition": "Map IR operations to target ISA instructions. Pattern-match IR tree (or DAG) against patterns; emit matched instructions.",
+   "why": "IR ops are abstract (add); ISA ops are concrete (add r1, r2, r3 vs LEA r1, [r2 + r3]). Pattern matching picks the best instruction sequence. Quality affects code density + speed.",
+   "category": "backend"
+  },
+  {
+   "name": "burs_bottom_up_rewriting",
+   "definition": "Bottom-up rewriting system: pattern match the IR DAG against rewrite rules. Each rule has a cost; chooses minimum-cost tiling.",
+   "why": "Optimal DAG tiling via dynamic programming. LLVM's SelectionDAG, GCC's RTL use variants. Costs reflect target-specific instruction prices.",
+   "category": "backend"
+  },
+  {
+   "name": "instruction_scheduling",
+   "definition": "Reorder instructions to minimise pipeline stalls + maximise instruction-level parallelism.",
+   "why": "Same set of instructions, different orderings, different performance. List scheduling, software pipelining are standard techniques. Most beneficial on in-order CPUs; modern OoO does much of this in hardware.",
+   "category": "backend"
+  },
+  {
+   "name": "list_scheduling",
+   "definition": "Maintain ready list of instructions whose dependencies are satisfied. Pick the highest-priority ready instruction.",
+   "why": "Greedy heuristic that works well in practice. Priority functions consider latency, critical path, resource conflicts. Standard technique in LLVM, GCC, ICC.",
+   "category": "backend"
+  },
+  {
+   "name": "software_pipelining",
+   "definition": "Overlap iterations of a loop: while iteration N executes instruction K, iteration N+1 executes instruction K-1.",
+   "why": "Exposes ILP across iteration boundaries. Critical for in-order CPUs (DSPs, VLIW). Modulo scheduling is the main algorithm. Less critical on modern OoO superscalar CPUs.",
+   "category": "backend"
+  },
+  {
+   "name": "JIT_just_in_time",
+   "definition": "Compile code at runtime rather than ahead of time. Trade compilation latency for runtime performance.",
+   "why": "Enables: speculative optimisations (deoptimise on assumption violation), runtime type specialisation (V8's hidden classes), profile-guided code generation. Used in JVM, V8, LuaJIT, .NET, PyPy.",
+   "category": "jit"
+  },
+  {
+   "name": "method_JIT",
+   "definition": "Compile entire functions when they get hot. JVM HotSpot's C1/C2, V8's TurboFan, .NET RyuJIT.",
+   "why": "Whole-function optimisation: inlining, register allocation, loop opts. Compilation latency is the cost. Mitigated by tiered compilation: cheap C1 first, expensive C2 only for very hot code.",
+   "category": "jit"
+  },
+  {
+   "name": "tracing_JIT",
+   "definition": "Compile hot execution traces (a sequence of instructions actually executed). LuaJIT, TraceMonkey (early Firefox JS), PyPy.",
+   "why": "Optimise the common case observed at runtime. Trace cuts across function boundaries → strong inlining. Cost: trace exits (guards) deoptimise to interpreter; bad guard placement kills performance.",
+   "category": "jit"
+  },
+  {
+   "name": "tiered_compilation",
+   "definition": "Multiple compilation levels: interpret → cheap JIT (Java's C1, V8's Sparkplug) → expensive JIT (C2, TurboFan). Functions promote as they get hot.",
+   "why": "Trade compilation latency for steady-state performance. Cold code stays interpreted (cheap); hot code gets expensive optimisation. The standard production JIT design since the 2010s.",
+   "category": "jit"
+  },
+  {
+   "name": "OSR_on_stack_replacement",
+   "definition": "Transition from interpreted/lower-tier code to higher-tier code WITHIN a running function (e.g., inside a hot loop).",
+   "why": "Hot loop in a cold function would otherwise run interpreted forever. OSR copies the interpreter's stack frame to the compiled frame mid-execution. Tricky to implement; critical for JIT performance on long-running loops.",
+   "category": "jit"
+  },
+  {
+   "name": "deoptimisation",
+   "definition": "Transition from compiled code back to interpreter, typically because a runtime assumption was violated.",
+   "why": "JITs make optimistic assumptions (inline this monomorphic call, this loop iterates >100 times). Violations require deopt: reconstruct interpreter state from compiled state. Inverse of OSR.",
+   "category": "jit"
+  },
+  {
+   "name": "inline_cache",
+   "definition": "Per-call-site cache mapping observed receiver type → resolved method. Avoids virtual dispatch lookup on repeat calls.",
+   "why": "JavaScript and Smalltalk's massive runtime speedup. Monomorphic IC: one type, direct call. Polymorphic IC: small dispatch table. Megamorphic: fall back to slow lookup. V8's foundational performance technique.",
+   "category": "jit"
+  },
+  {
+   "name": "hidden_class",
+   "definition": "V8's runtime data structure tracking the layout of an object based on the property set + order. Shared between objects with identical history.",
+   "why": "Lets dynamic JavaScript objects act like static C++ objects at the CPU level: field access is a fixed offset. Inline caches reference hidden classes. The core of V8's performance.",
+   "category": "jit"
+  },
+  {
+   "name": "profile_guided_optimisation",
+   "definition": "PGO: collect runtime profile (branch frequencies, call counts), then recompile using that data to inform optimisation choices.",
+   "why": "Compile-time guesses replaced with runtime measurements. Inline hot calls, layout code for predicted branches, avoid optimising cold paths. 5-25% speedup typical on real workloads.",
+   "category": "jit"
+  },
+  {
+   "name": "speculative_optimisation",
+   "definition": "JIT optimisations based on runtime observations (typed property accesses, monomorphic calls) that can be invalidated.",
+   "why": "Aggressive: assume the common case, deopt on violation. V8, HotSpot, LuaJIT do this extensively. Without speculation, dynamic languages would be 10-100x slower.",
+   "category": "jit"
+  },
+  {
+   "name": "MLIR",
+   "definition": "Multi-Level Intermediate Representation. LLVM project's IR-of-IRs: a single framework for representing multiple dialects (ML, polyhedral, GPU, etc.) at different abstraction levels.",
+   "why": "Compilers need many IRs (high-level for source semantics, mid-level for optimisation, low-level for code gen). MLIR provides one infrastructure for all. Used in TensorFlow's XLA, PyTorch 2.0's Inductor, IREE.",
+   "category": "modern_infrastructure"
+  },
+  {
+   "name": "MLIR_dialect",
+   "definition": "A specific instantiation of MLIR for a particular domain or abstraction level: linalg (linear algebra), affine (loops), scf (structured control flow), gpu, llvm dialect.",
+   "why": "Each dialect captures domain-specific structure. Lowering pipeline progressively rewrites from high-level dialect to lower until reaching the LLVM dialect → LLVM IR → assembly.",
+   "category": "modern_infrastructure"
+  },
+  {
+   "name": "Clang_frontend",
+   "definition": "LLVM's C/C++/Objective-C front-end. Hand-written recursive-descent parser, AST representation, type checker, codegen to LLVM IR.",
+   "why": "Production C++ front-end. Used by Apple, Google, FreeBSD as the system compiler. Modular design lets tools (clang-format, clang-tidy, static analyzers) reuse the front-end without re-implementing.",
+   "category": "modern_infrastructure"
+  },
+  {
+   "name": "GCC_GIMPLE",
+   "definition": "GCC's tree-based IR. SSA form, three-address operations. Sits between Generic (source-level tree) and RTL (target-aware).",
+   "why": "Multi-level IR was GCC's approach before MLIR existed. Generic → GIMPLE → RTL pipeline. Each level enables different optimisations. Generic's source-level structure for high-level opts; GIMPLE's SSA for mid-level; RTL's machine-aware for back-end.",
+   "category": "modern_infrastructure"
+  },
+  {
+   "name": "Rust_MIR",
+   "definition": "Rust's Mid-level IR. Control-flow graph of statements + terminators. Borrow checker operates on MIR; optimisation passes apply before lowering to LLVM IR.",
+   "why": "Bridges Rust's HIR (high-level, type-checked) and LLVM IR. Borrow check needs a specific shape; MIR is that shape. Rust-specific opts (move-tracking, panic elision) happen here.",
+   "category": "modern_infrastructure"
+  },
+  {
+   "name": "WebAssembly",
+   "definition": "Bytecode + stack machine model. Designed as a compilation target for C/C++/Rust. Runs in browsers, embedded systems, edge compute.",
+   "why": "Portable, sandboxed, fast. Compilers target Wasm; runtime (V8, Wasmtime) JITs or AOT-compiles it. Used to bring native-language code to browsers (Photoshop, Figma, Google Earth) + edge compute (Cloudflare Workers).",
+   "category": "modern_infrastructure"
+  },
+  {
+   "name": "GraalVM",
+   "definition": "Oracle's polyglot VM. Optimising JIT (Graal compiler) for JVM + Truffle interpreter framework for other languages.",
+   "why": "Java compiled by Graal often beats HotSpot's C2 on some workloads. Truffle's partial evaluation lets Ruby, Python, JavaScript share Graal's optimisations. Important research vehicle.",
+   "category": "modern_infrastructure"
+  },
+  {
+   "name": "compiler_explorer",
+   "definition": "Godbolt's compiler explorer (godbolt.org). Web-based tool showing assembly output for any language + compiler + version. The 'show me the code' tool of the 2020s.",
+   "why": "Made compiler output instantly inspectable. Drove broader appreciation of compiler quality differences (gcc vs clang vs icc), enables learning + debugging optimisation behaviour. Generation of programmers grew up using it.",
+   "category": "modern_infrastructure"
+  },
+  {
+   "name": "intermediate_representation",
+   "definition": "Compiler's internal representation of the program between source and machine code. Designed for analysis + transformation.",
+   "why": "Source is human-friendly; machine code is target-specific. IR is the transformation substrate. Multi-level IR (Generic → GIMPLE in GCC, MLIR dialects in modern compilers) handles different abstraction needs at different stages.",
+   "category": "midend"
+  },
+  {
+   "name": "three_address_code",
+   "definition": "IR where each instruction has at most 3 operands: dst = src1 op src2. LLVM IR, GIMPLE all use this form.",
+   "why": "Simple, regular structure. Each instruction does one operation. Easier to analyse + transform than tree-style source. Universal across modern compilers.",
+   "category": "midend"
+  },
+  {
+   "name": "control_flow_graph",
+   "definition": "Directed graph: nodes are basic blocks, edges are possible jumps. Each function has a CFG.",
+   "why": "Many analyses are dataflow problems on the CFG. Dominators, post-dominators, loops all derived from CFG structure. The structural representation of control flow.",
+   "category": "midend"
+  },
+  {
+   "name": "dataflow_analysis",
+   "definition": "Compute properties at each program point (reaching definitions, live variables, available expressions). Iterate to fixed point.",
+   "why": "Foundation of many optimisations. Live variable analysis powers register allocation; reaching definitions powers constant propagation. The lattice + transfer function framework is universal.",
+   "category": "midend"
+  },
+  {
+   "name": "dominator_tree",
+   "definition": "Node X dominates Y if every path from entry to Y passes through X. Tree structure: each node's parent is its immediate dominator.",
+   "why": "Required for SSA conversion (dominance frontiers determine PHI placement). Loop detection. Common subexpression elimination. The structural backbone of many compiler analyses.",
+   "category": "midend"
+  },
+  {
+   "name": "phi_node",
+   "definition": "SSA construct merging values from different predecessor blocks. φ(v1 from B1, v2 from B2): result is v1 if execution came from B1, v2 from B2.",
+   "why": "Lets SSA handle control flow merges (after if-else, at loop entry). Conceptually executed at block entry. Implementation: parallel copies inserted on incoming edges. Foundational SSA mechanism.",
+   "category": "midend"
+  },
+  {
+   "name": "abstract_interpretation",
+   "definition": "Framework for static analysis: execute the program over an abstract domain (intervals, signs, polyhedra) rather than concrete values.",
+   "why": "Theoretical foundation of many analyses. Soundness proof via Galois connection between concrete and abstract semantics. Used in compiler optimisations + verification (Polyspace, Astrée).",
+   "category": "midend"
+  },
+  {
+   "name": "polyhedral_optimisation",
+   "definition": "Loop nests modelled as polyhedra; transformations (tiling, parallelisation, vectorisation) are affine mappings on those polyhedra.",
+   "why": "Provably optimal for affine loops. Used in GCC's Graphite, LLVM's Polly, Pluto. Powerful for HPC + ML workloads. Complex to implement; expensive analysis.",
+   "category": "midend"
+  },
+  {
+   "name": "ahead_of_time_compilation",
+   "definition": "AOT: compile to machine code before deployment. Standard for C/C++/Rust. Some JIT languages have AOT alternatives (Java's GraalVM Native Image, JS via static binding).",
+   "why": "No runtime compilation cost. Faster startup. Smaller memory footprint (no compiler/profile in memory). Trade-off: no runtime profile information; speculative opts impossible.",
+   "category": "jit"
+  },
+  {
+   "name": "LLVM_IR_to_assembly",
+   "definition": "LLVM's backend: IR → SelectionDAG → MachineFunction → assembly. Multi-stage: instruction selection, register allocation, scheduling, asm emission.",
+   "why": "The actual generation of native code. Different targets share LLVM's mid-end IR but have target-specific selectors + register sets. Adding a new architecture means writing target-specific backend phases.",
+   "category": "backend"
+  },
+  {
+   "name": "stack_frame",
+   "definition": "Per-function stack region: parameters, locals, saved registers, return address. Managed by prologue/epilogue.",
+   "why": "Mechanism for function call state. Calling convention (cdecl, fastcall, AAPCS) defines layout. ABI dictates which registers are caller-saved vs callee-saved.",
+   "category": "backend"
+  },
+  {
+   "name": "calling_convention",
+   "definition": "Contract for function calls: which registers hold arguments, where return value goes, which registers must be preserved.",
+   "why": "Inter-function compatibility. x86_64 System V: first 6 integer args in registers; return in RAX. ABI compatibility lets binaries from different compilers interoperate. Violation = crash.",
+   "category": "backend"
+  },
+  {
+   "name": "ABI_application_binary_interface",
+   "definition": "Set of conventions: calling convention, struct layout, name mangling, exception handling format. Lets compiled code interoperate.",
+   "why": "ABI stability is what lets shared libraries work. Different ABIs (Microsoft x64 vs System V) make Windows-Linux binary compat hard. C++'s name mangling is part of its ABI; ABI breakage is a big deal.",
+   "category": "backend"
+  },
+  {
+   "name": "code_generation",
+   "definition": "Final step: produce assembly or machine code from optimised IR. Includes instruction selection, register allocation, scheduling, emission.",
+   "why": "Where IR becomes the artifact users actually run. Quality bridges 'optimised algorithm' and 'actual performance'. Compiler back-end engineering = code gen quality.",
+   "category": "backend"
+  }
+ ],
+ "rules": [
+  {
+   "name": "lexer_parser_split_separates_concerns",
+   "if": [
+    "lexer handles regular tokens; parser handles context-free structure"
+   ],
+   "then": [
+    "each stage can be designed and tested independently"
+   ],
+   "why": "Tokens have no nested structure (regular); programs do (CFG). Separating them lets the lexer be a fast DFA + parser focus on grammar. Universal design pattern in front-ends.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "recursive_descent_for_LL_grammars",
+   "if": [
+    "grammar is LL(k) for small k"
+   ],
+   "then": [
+    "hand-written recursive descent is practical and gives best error messages"
+   ],
+   "why": "One function per non-terminal mirrors grammar structure. Error messages can be tailored per non-terminal. Clang, Rust, Go all use recursive-descent parsers. Generated LR parsers struggle with error recovery.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "HM_inference_complete_for_let_polymorphism",
+   "if": [
+    "language has prenex polymorphism via let-bindings and no subtyping"
+   ],
+   "then": [
+    "Hindley-Milner inference is complete (finds principal types)"
+   ],
+   "why": "Damas-Milner theorem: for HM type system, every expression has a most general type; the algorithm finds it. Extensions (subtyping, higher-rank polymorphism) break completeness.",
+   "soundness_category": "algebraic_law"
+  },
+  {
+   "name": "unification_finds_most_general_substitution",
+   "if": [
+    "two types can be unified"
+   ],
+   "then": [
+    "unification algorithm finds the most general substitution making them equal"
+   ],
+   "why": "Robinson's theorem. Most-general = applying it loses minimum constraint information. Lets HM defer commitments until necessary; combine with let-generalisation to recover polymorphism.",
+   "soundness_category": "algebraic_law"
+  },
+  {
+   "name": "alias_analysis_precision_enables_more_optimisation",
+   "if": [
+    "alias analysis can prove two memory operations target disjoint locations"
+   ],
+   "then": [
+    "they can be reordered / parallelised / eliminated"
+   ],
+   "why": "Conservative aliasing forbids reordering — compilers must assume the worst. Precise alias analysis unlocks: instruction reordering, loop vectorisation, dead store elimination. Quality of alias analysis directly determines downstream optimisation quality.",
+   "soundness_category": "referential_transparency"
+  },
+  {
+   "name": "escape_analysis_enables_stack_allocation",
+   "if": [
+    "an object's lifetime doesn't escape its allocation scope"
+   ],
+   "then": [
+    "it can be stack-allocated, eliminating GC pressure"
+   ],
+   "why": "Stack is essentially free. Heap allocations cost the allocator + future GC. Escape analysis proves the object dies with the scope; stack allocation valid. Java + Go + V8 all exploit this aggressively.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "loop_vectorisation_requires_no_dependencies",
+   "if": [
+    "loop iterations are independent"
+   ],
+   "then": [
+    "vectorisation gives Nx speedup proportional to SIMD width"
+   ],
+   "why": "Dependencies (output of iteration k feeds input of k+1) prevent parallel execution. Auto-vectorisers detect this via alias + dependence analysis. When proof fails, no vectorisation (or scalar epilogue handles overlap).",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "register_allocation_quality_dominates_back_end_performance",
+   "if": [
+    "the back-end emits code with poor register allocation"
+   ],
+   "then": [
+    "generated code has frequent spills + memory accesses"
+   ],
+   "why": "Each spill is a memory access — ~4 cycles vs 0 for register. Hot loops with bad RA can be 5-10x slower than well-allocated equivalents. Spilling is the central problem of code gen.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "graph_coloring_RA_optimal_with_K_colors",
+   "if": [
+    "interference graph is K-colorable"
+   ],
+   "then": [
+    "all live ranges fit in physical registers without spilling"
+   ],
+   "why": "K = number of registers; coloring with K colors means no two interfering values use the same register. K-colorability is NP-hard in general; spilling handles uncoverable cases.",
+   "soundness_category": "algebraic_law"
+  },
+  {
+   "name": "linear_scan_trades_quality_for_speed",
+   "if": [
+    "compilation time matters (JIT context)"
+   ],
+   "then": [
+    "linear scan RA's O(n log n) beats graph coloring's super-linear cost"
+   ],
+   "why": "JITs compile while the program waits. Graph coloring is too slow even at moderate function sizes. Linear scan gives ~10% worse code but compiles 5-10x faster. Used in V8, LuaJIT, .NET.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "instruction_selection_optimal_via_DP_on_DAG",
+   "if": [
+    "instruction patterns have costs assigned"
+   ],
+   "then": [
+    "BURS finds the minimum-cost tiling of the IR DAG"
+   ],
+   "why": "Dynamic programming on DAG: each node's min cost is the min over its possible cover patterns. Classic technique; LLVM's SelectionDAG, GCC's RTL both variants of this approach.",
+   "soundness_category": "algebraic_law"
+  },
+  {
+   "name": "method_JIT_amortises_compilation_over_repeated_execution",
+   "if": [
+    "a function is called many times"
+   ],
+   "then": [
+    "JIT compilation overhead is amortised across calls"
+   ],
+   "why": "Compile-once, run-many. JVM HotSpot compiles a method only after ~10K invocations — by then, the compilation cost is negligible per call. Cold code stays interpreted; hot code is compiled aggressively.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "tracing_JIT_specialises_to_observed_path",
+   "if": [
+    "a trace is recorded through hot code"
+   ],
+   "then": [
+    "compilation specialises to that exact path"
+   ],
+   "why": "Strong inlining across the trace's calls. No virtual dispatch — observed receiver types are baked in. The cost: trace exits (guards) deoptimise back to interpreter if reality diverges from the recorded path.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "tiered_compilation_balances_latency_and_steady_state",
+   "if": [
+    "a JIT supports multiple tiers"
+   ],
+   "then": [
+    "cheap tier optimises startup; expensive tier optimises steady state"
+   ],
+   "why": "C1 in HotSpot compiles quickly with modest optimisation; C2 spends 10x more time for maximum quality. Promotion based on call count. The dominant pattern in production JITs since the 2010s.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "OSR_required_for_hot_loops_in_cold_functions",
+   "if": [
+    "a function contains a hot loop but the function is rarely called"
+   ],
+   "then": [
+    "OSR is required to transition the running loop to optimised code"
+   ],
+   "why": "Without OSR, the loop runs interpreted forever (the function's call count is too low to trigger compilation). OSR copies interpreter state to optimised stack frame mid-execution. Tricky but critical for JIT performance on long-running computations.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "inline_caches_specialise_dynamic_dispatch",
+   "if": [
+    "a virtual call site sees consistent receiver type"
+   ],
+   "then": [
+    "inline cache resolves the call in O(1)"
+   ],
+   "why": "Generic virtual dispatch: vtable lookup. IC: direct call to cached target after type check. V8, HotSpot, Smalltalk all use this. The mechanism that makes dynamic languages perform: monomorphism is the common case.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "speculative_optimisation_requires_deoptimisation",
+   "if": [
+    "JIT speculatively optimises based on runtime assumption"
+   ],
+   "then": [
+    "it must support deoptimisation if the assumption fails"
+   ],
+   "why": "Aggressive opts (assume monomorphic call, assume loop iterates many times) can be wrong. Without deopt, wrong code would execute. Deopt: reconstruct interpreter state from compiled state, resume there. The fundamental safety net of speculation.",
+   "soundness_category": "referential_transparency"
+  },
+  {
+   "name": "MLIR_dialects_enable_multi_level_optimisation",
+   "if": [
+    "a compiler has IRs at multiple abstraction levels"
+   ],
+   "then": [
+    "MLIR dialects provide a uniform framework for them"
+   ],
+   "why": "Each dialect captures domain-specific structure (linalg for matrix ops, affine for loops, gpu for kernel launches). Lowering progressively rewrites high to low. Shared infrastructure: type system, pass manager, debug info. Used by TensorFlow XLA, PyTorch Inductor.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "PGO_replaces_compile_time_guesses",
+   "if": [
+    "a compiler has runtime profile data"
+   ],
+   "then": [
+    "PGO replaces heuristic guesses with measurements"
+   ],
+   "why": "Without PGO: 'inline this if it's small'. With PGO: 'inline this — it's called 10M times/sec'. Branch layout, function ordering, inlining all benefit. 5-25% speedup typical; required for max performance.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "ABI_stability_enables_dynamic_linking",
+   "if": [
+    "compiled libraries follow a stable ABI"
+   ],
+   "then": [
+    "they can be loaded + linked without recompilation"
+   ],
+   "why": "Shared libraries (.so, .dll) depend on this. Calling convention + struct layout + name mangling must match the library's. C ABI is famously stable; C++ ABI has breaking changes (GCC 5 std::string). Rust has no stable ABI by design.",
+   "soundness_category": "referential_transparency"
+  }
+ ],
+ "exclusions": [],
+ "relations": [
+  {
+   "src": "compilers",
+   "edge": "genlMt",
+   "tgt": "compiler_theory"
+  }
+ ]
+}

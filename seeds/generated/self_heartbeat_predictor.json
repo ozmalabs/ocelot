@@ -1,0 +1,224 @@
+{
+  "id": "self_heartbeat_predictor",
+  "version": "1.0.0",
+  "rules": [
+    {
+      "id": "predict_hb",
+      "name": "predict_hb",
+      "match": [
+        [
+          "ag",
+          "obs",
+          "o"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "o"
+              },
+              "key": "mframe"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "o"
+              },
+              "key": "frame"
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "o"
+              },
+              "key": "frame"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "o"
+              },
+              "key": "pframe"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "o",
+          "pred",
+          {
+            "__term__": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Times",
+                  "items": [
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "o"
+                      },
+                      "key": "c0"
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "o"
+                      },
+                      "key": "value"
+                    }
+                  ]
+                },
+                {
+                  "type": "Times",
+                  "items": [
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "o"
+                      },
+                      "key": "c1"
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "o"
+                      },
+                      "key": "prev"
+                    }
+                  ]
+                },
+                {
+                  "type": "Times",
+                  "items": [
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "o"
+                      },
+                      "key": "c2"
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "o"
+                      },
+                      "key": "prev2"
+                    }
+                  ]
+                },
+                {
+                  "type": "Times",
+                  "items": [
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "o"
+                      },
+                      "key": "c3"
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "o"
+                      },
+                      "key": "prev3"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "o",
+          "prev3",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "o"
+              },
+              "key": "prev2"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "o",
+          "prev2",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "o"
+              },
+              "key": "prev"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "o",
+          "prev",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "o"
+              },
+              "key": "value"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "o",
+          "pframe",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "o"
+              },
+              "key": "frame"
+            }
+          }
+        ]
+      ],
+      "kept_coeffs": [
+        2.0,
+        -1.0,
+        0.0,
+        0.0
+      ]
+    }
+  ]
+}

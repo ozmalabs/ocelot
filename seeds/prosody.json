@@ -1,0 +1,98 @@
+{
+  "id": "prosody",
+  "version": "1.0.0",
+  "depends_on": [
+    "audio_psychoacoustics",
+    "audio_music_perception",
+    "language_foundation"
+  ],
+  "description": "Prosody as a medium-INDEPENDENT channel of communicative FUNCTION \u2014 how a thing is said, carrying meaning the words alone don't. The functions here are realized differently per medium (acoustically as F0/timing/loudness in speech; orthographically as punctuation/caps/emphasis/elongation/asides in text \u2014 the text_prosody expansion pack) but the function is the same. The renderer/W_j principle applied to delivery: one prosodic intent, many surface forms. Each function is ALREADY example-grounded in the TV Tropes corpus by named conventions (its exemplar_tropes), which the TropesTeacher serves on demand \u2014 so grounding flows from the corpus, not from hand-coded rules. Prosody is also the EVIDENCE the comprehension frames consume: delivery_contradicts_content is what fires the irony frame.",
+  "concepts": [
+    {
+      "name": "emphasis",
+      "definition": "Prominence placed on an element to mark it as important or stressed. Acoustically a pitch accent + extra duration/loudness; orthographically italics, caps, or punctuated-for-emphasis. The element made prominent is the one the speaker wants weighted.",
+      "category": "prosodic_function",
+      "exemplar_tropes": [
+        "PunctuatedForEmphasis"
+      ]
+    },
+    {
+      "name": "focus",
+      "definition": "Information structure: which part of an utterance is foregrounded as new or contrastive vs background/given. 'I didn't say HE stole it' focuses 'he' \u2014 the stress placement changes what is contradicted. Prosody marks focus directly; getting focus wrong changes the meaning.",
+      "category": "prosodic_function",
+      "exemplar_tropes": [
+        "PunctuatedForEmphasis"
+      ]
+    },
+    {
+      "name": "sentence_type",
+      "definition": "Whether an utterance is a statement, question, or command \u2014 carried by delivery (rising vs falling contour) or orthography (?, ., !) as much as by syntax. The contour can override the words: a statement said with rising intonation becomes a question.",
+      "category": "prosodic_function",
+      "exemplar_tropes": [
+        "ArmorPiercingQuestion",
+        "RhetoricalQuestionBlunder"
+      ]
+    },
+    {
+      "name": "affect",
+      "definition": "The speaker's emotional state carried in delivery \u2014 the principal channel for emotion in speech. Loud+high+fast reads as excited/angry; quiet+low+slow as sad/calm. Reading affect from a partner's delivery is the entry point to theory-of-mind; the agent's own emotion nodes shape its delivery when it speaks.",
+      "category": "prosodic_function",
+      "exemplar_tropes": [
+        "SkywardScream",
+        "TitleScream",
+        "Angrish",
+        "BigWhat"
+      ]
+    },
+    {
+      "name": "stance",
+      "definition": "The speaker's attitude toward the content and the listener \u2014 register, formality, politeness, distance. Carried by word choice and delivery together; a register mismatch (sophisticated words, crude delivery, or vice versa) is itself meaningful.",
+      "category": "prosodic_function",
+      "exemplar_tropes": [
+        "SophisticatedAsHell",
+        "SesquipedalianLoquaciousness",
+        "GoshDangItToHeck"
+      ]
+    },
+    {
+      "name": "pacing",
+      "definition": "Rhythm, timing, and pause as meaning. A held pause creates suspense or weight; a beat lands a joke; rushing signals urgency. Silence is a prosodic act \u2014 the absence is the signal.",
+      "category": "prosodic_function",
+      "exemplar_tropes": [
+        "DramaticPause",
+        "Beat",
+        "TheStinger"
+      ]
+    },
+    {
+      "name": "turn_management",
+      "definition": "Delivery cues that manage the exchange: a falling final contour yields the turn, a sustained one holds it, an overlap interrupts. How speakers negotiate who talks when without saying so.",
+      "category": "prosodic_function",
+      "exemplar_tropes": [
+        "FinishingEachOthersSentences"
+      ]
+    },
+    {
+      "name": "delivery_contradicts_content",
+      "definition": "The keystone: delivery signals the OPPOSITE of (or something other than) what the words literally say \u2014 flat affect on a compliment, sweet tone on a threat. This is the acoustic/orthographic evidence that fires the irony/sarcasm frame (figurative Mt). Without this channel, sincere and sarcastic 'nice job' are indistinguishable.",
+      "category": "prosodic_function",
+      "exemplar_tropes": [
+        "DeadpanSnarker",
+        "SarcasmMode",
+        "TranquilFury",
+        "FauxAffablyEvil"
+      ]
+    },
+    {
+      "name": "idiolect",
+      "definition": "Stable individual delivery markers that identify a speaker \u2014 verbal tics, catchphrases, characteristic rhythm. Carries identity rather than propositional content; recognising it is part of modelling WHO is speaking.",
+      "category": "prosodic_function",
+      "exemplar_tropes": [
+        "CatchPhrase",
+        "VerbalTic",
+        "PokemonSpeak"
+      ]
+    }
+  ],
+  "wiring_note": "Prosody is wired UP into the substrate's perceptual + linguistic foundations. audio_psychoacoustics is the perceptual layer where prosodic features (pitch, duration, loudness) are heard. audio_music_perception shares the rhythm + meter primitives prosody uses (research from Patel and others on the rhythm-music-language overlap). language_foundation gives the linguistic encoding prosody serves. Together: prosody is what the auditory system perceives + what the linguistic system encodes."
+}

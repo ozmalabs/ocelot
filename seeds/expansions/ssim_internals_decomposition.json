@@ -1,0 +1,99 @@
+{
+  "id": "ssim_internals_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "SSIM",
+  "in_microtheory": "video_coding_theory",
+  "description": "Structural Similarity Index (SSIM) decomposed. Proposed by Wang et al. 2004, SSIM compares two images via three local statistics: luminance similarity (sample mean), contrast similarity (sample standard deviation), and structural similarity (sample correlation coefficient). The combined index l*c*s is ~1.0 for identical images and decreases under distortion. The key insight: structural distortion (edge degradation) is perceptually more important than luminance shift, and SSIM measures it directly.",
+  "sub_mechanisms": [
+    {
+      "name": "luminance_term",
+      "definition": "l(x, y) = (2*mu_x*mu_y + C1) / (mu_x² + mu_y² + C2). Measures similarity of local mean intensity between source and reconstruction.",
+      "why": "Captures DC-level mismatch (does the average brightness match?). C1 prevents division by zero in dark regions. Weight: linear in luminance similarity — slight brightness shifts are tolerated, large ones penalised.",
+      "category": "ssim_mechanism"
+    },
+    {
+      "name": "contrast_term",
+      "definition": "c(x, y) = (2*sigma_x*sigma_y + C2) / (sigma_x² + sigma_y² + C2). Measures similarity of local standard deviation between source and reconstruction.",
+      "why": "Captures texture richness preservation. Loss of contrast (compression smoothing) reduces this term. C2 prevents division by zero in flat regions. The HVS is sensitive to contrast loss, so this term contributes substantially.",
+      "category": "ssim_mechanism"
+    },
+    {
+      "name": "structure_term",
+      "definition": "s(x, y) = (cov(x, y) + C3) / (sigma_x*sigma_y + C3). Measures correlation coefficient between source and reconstructed patches (normalised cross-correlation).",
+      "why": "The 'structure' part of SSIM: captures whether the IMAGE PATTERN is preserved, independent of brightness or contrast. Edge displacement, ringing, blocking all reduce this term. Often the dominant contributor to final SSIM score.",
+      "category": "ssim_mechanism"
+    },
+    {
+      "name": "stabilisation_constants",
+      "definition": "C1 = (K1*L)², C2 = (K2*L)², C3 = C2/2, where L is dynamic range (255 for 8-bit) and K1 = 0.01, K2 = 0.03 are small constants.",
+      "why": "Prevent denominators from becoming zero in flat regions. Values chosen to be small relative to typical means/variances — they have negligible effect on SSIM in normal regions but stabilise extreme cases.",
+      "category": "ssim_mechanism"
+    },
+    {
+      "name": "windowed_local_statistics",
+      "definition": "Means, variances, and covariance are computed over an 11x11 Gaussian-weighted window centered on each pixel. The window weights are normalised to sum to 1.",
+      "why": "Per-pixel SSIM captures local quality; 11x11 window matches the foveal extent at typical viewing distance. Gaussian weighting (vs uniform) gives stronger weight to the center pixel — matching HVS's spatial sensitivity falloff.",
+      "category": "ssim_mechanism"
+    },
+    {
+      "name": "ssim_map",
+      "definition": "Per-pixel SSIM values form a 2D map showing where quality is best/worst. The final SSIM index is typically the mean of this map.",
+      "why": "Spatial decomposition is useful for diagnosis (where are the artifacts?) and for pooling strategies (mean, median, percentile). The map reveals localised problems that average SSIM hides.",
+      "category": "ssim_mechanism"
+    },
+    {
+      "name": "multi_scale_SSIM",
+      "definition": "MS-SSIM computes SSIM at multiple downsampled scales (typically 5 levels) and combines via empirical weights. The final index is the product of per-scale contrast and structure terms times the finest-scale luminance term.",
+      "why": "Single-scale SSIM misses coarse structural errors. Multi-scale matches HVS's multi-resolution processing — humans perceive image quality across multiple spatial frequencies. MS-SSIM correlates with MOS scores ~0.05 higher than SSIM at modest extra cost.",
+      "category": "ssim_mechanism"
+    },
+    {
+      "name": "ssim_for_chroma",
+      "definition": "SSIM is typically computed on luma only. For color content, chroma SSIM is computed separately and may be combined via simple weighting.",
+      "why": "Most artifacts that matter are in luma; chroma SSIM rarely correlates with viewer scores in a useful way. Luma-only SSIM is the standard practice.",
+      "category": "ssim_mechanism"
+    },
+    {
+      "name": "video_ssim_pooling",
+      "definition": "For video, SSIM is computed per frame; video-level score is typically the mean or harmonic mean of frame scores.",
+      "why": "Mean is forgiving; harmonic mean punishes worst-quality frames (which viewers remember). Choice depends on whether the goal is average quality or worst-case quality.",
+      "category": "ssim_mechanism"
+    },
+    {
+      "name": "PSNR_HVS_extension",
+      "definition": "PSNR-HVS is a related metric that masks the squared error by an HVS-derived sensitivity function before summing — a non-uniform PSNR.",
+      "why": "Standard PSNR weights all pixels equally; PSNR-HVS weights them by perceptual importance. SSIM took a different path (structural similarity), but PSNR-HVS is a closer relative of SSIM than vanilla PSNR.",
+      "category": "ssim_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "structural_similarity_predicts_perception_better_than_intensity",
+      "if": ["a distortion preserves intensity statistics but disrupts structure"],
+      "then": ["SSIM detects it; PSNR does not"],
+      "why": "PSNR is mean-squared error; structure-preserving noise (Gaussian) has high MSE but minimal perceptual impact. Structure-destroying distortion (blocking, blur) has lower MSE but high perceptual impact. SSIM captures the perception correctly.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "windowed_locality_matches_foveal_perception",
+      "if": ["SSIM is computed over local windows"],
+      "then": ["it captures per-region quality rather than global averages"],
+      "why": "Viewer attention is local — they look at one region at a time. Local SSIM captures the worst-region quality (which dominates perception) rather than averaging across the whole image. The 11x11 window roughly matches foveal extent at typical viewing distance.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "multi_scale_captures_hvs_multi_resolution",
+      "if": ["the HVS processes images at multiple spatial scales"],
+      "then": ["multi-scale SSIM correlates with viewer scores better than single-scale"],
+      "why": "Coarse artifacts (low-frequency blur, ringing) and fine artifacts (texture loss) affect different HVS processing pathways. Single-scale SSIM captures only one band; MS-SSIM integrates across all.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "stabilisation_constants_handle_pathological_regions",
+      "if": ["denominators could be zero in flat or dark regions"],
+      "then": ["small stabilisation constants prevent division errors at negligible quality cost"],
+      "why": "Truly flat regions have sigma = 0; truly dark regions have mu = 0. Without stabilisation, SSIM would diverge. C1, C2 are small enough to be negligible in normal regions but stabilise pathological ones.",
+      "soundness_category": "cost_equivalence"
+    }
+  ]
+}

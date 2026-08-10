@@ -1,0 +1,1020 @@
+{
+ "id": "mathematics",
+ "version": "0.1.0",
+ "depends_on": [
+  "compiler_theory"
+ ],
+ "description": "Mathematics as graph-resident theory — the foundation under everything else the substrate carries. Foundations (logic, sets, functions, proofs), number theory, algebra (linear + abstract), calculus + analysis, topology, geometry, probability + statistics, discrete math, numerical analysis, optimization, category theory, type theory, information theory, game theory, dynamical systems + chaos, mathematical logic. The substrate computes, reasons, proves — all of it lives on math.",
+ "category_inheritance": "genlMt → compiler_theory. Mathematical truths map to compiler_theory equivalence vocabulary: equality is denotational equivalence; algebraic identities are algebraic law; mathematical isomorphism is extensional equivalence (same structure, different representation); proofs are referential transparency (truth is structural, independent of context).",
+ "concepts": [
+  {
+   "name": "propositional_logic_math",
+   "definition": "Atomic propositions + connectives (¬, ∧, ∨, →, ↔). Truth tables. Already in philosophy; here mathematical foundation.",
+   "why": "Foundation of formal reasoning. Boolean algebra. Sound + complete via natural deduction.",
+   "category": "foundations"
+  },
+  {
+   "name": "predicate_logic_FOL_math",
+   "definition": "Variables, quantifiers ∀∃, predicates. Models, satisfaction, validity.",
+   "why": "Foundation of modern mathematics. Frege, Russell. Gödel completeness theorem.",
+   "category": "foundations"
+  },
+  {
+   "name": "ZFC_axioms",
+   "definition": "Zermelo-Fraenkel + Choice. Foundation of standard mathematics. ~10 axioms.",
+   "why": "Replaces naive set theory (Russell's paradox). Foundation of nearly all math. Independence of CH from ZFC.",
+   "category": "foundations"
+  },
+  {
+   "name": "set_operations",
+   "definition": "Union ∪, intersection ∩, complement, difference. Cartesian product ×. Power set.",
+   "why": "Building blocks. Functions defined via sets. Foundation of relations + structures.",
+   "category": "foundations"
+  },
+  {
+   "name": "function_definition",
+   "definition": "f: A → B. Each a ∈ A maps to unique f(a) ∈ B. Domain, codomain, image, preimage.",
+   "why": "Foundation. Injective (1-1), surjective (onto), bijective. Composition. Inverse functions.",
+   "category": "foundations"
+  },
+  {
+   "name": "equivalence_relation",
+   "definition": "Reflexive, symmetric, transitive. Partitions set into equivalence classes.",
+   "why": "Foundation of construction. Integers from naturals, rationals from integers, quotient structures.",
+   "category": "foundations"
+  },
+  {
+   "name": "proof_methods",
+   "definition": "Direct, contradiction, contrapositive, induction, exhaustion. Each suits different claims.",
+   "why": "Foundation. Each method has standard form + caveats. Master proofs distinguish mathematicians.",
+   "category": "foundations"
+  },
+  {
+   "name": "mathematical_induction",
+   "definition": "Base case + inductive step. Strong induction uses all predecessors.",
+   "why": "Proves claims about natural numbers + recursive structures. Foundation. Well-ordering principle equivalent.",
+   "category": "foundations"
+  },
+  {
+   "name": "natural_numbers_Peano",
+   "definition": "0, S (successor). 5 axioms. ZFC constructs N via finite ordinals.",
+   "why": "Foundation of arithmetic. Recursive definition of + and ×. Peano arithmetic provable in ZFC.",
+   "category": "number_theory"
+  },
+  {
+   "name": "integer_construction",
+   "definition": "Z from N via equivalence classes of pairs. (a,b) ~ (c,d) iff a+d = b+c.",
+   "why": "Standard construction. Subtraction always defined. Foundation of algebraic structures (group).",
+   "category": "number_theory"
+  },
+  {
+   "name": "rational_real_complex",
+   "definition": "Q from Z, R from Q (Dedekind cuts or Cauchy sequences), C = R[i].",
+   "why": "Hierarchy of number systems. Each extension adds capability. R completes Q; C algebraically closes R.",
+   "category": "number_theory"
+  },
+  {
+   "name": "prime_numbers",
+   "definition": "Integer > 1 divisible only by 1 + itself. 2, 3, 5, 7, 11, ...",
+   "why": "Foundation of multiplicative structure. Infinite (Euclid). Distribution open (RH).",
+   "category": "number_theory"
+  },
+  {
+   "name": "fundamental_theorem_arithmetic",
+   "definition": "Every integer > 1 has unique prime factorisation.",
+   "why": "Foundation of number theory. Used everywhere: cryptography, divisibility, gcd algorithms.",
+   "category": "number_theory"
+  },
+  {
+   "name": "Euclidean_algorithm",
+   "definition": "GCD via repeated remainders. gcd(a,b) = gcd(b, a mod b). Terminates.",
+   "why": "Ancient algorithm. Foundation of computing GCDs. Extends to find Bézout coefficients.",
+   "category": "number_theory"
+  },
+  {
+   "name": "modular_arithmetic",
+   "definition": "Arithmetic mod n. Z/nZ. Foundation of RSA, hashing, error correction.",
+   "why": "Clock arithmetic generalised. Fermat's little theorem, Euler's theorem, CRT. Foundation of cryptography.",
+   "category": "number_theory"
+  },
+  {
+   "name": "Riemann_hypothesis",
+   "definition": "All non-trivial zeros of ζ(s) have real part 1/2. Conjectured 1859.",
+   "why": "Greatest open problem in math. Affects prime distribution. $1M Millennium Prize.",
+   "category": "number_theory"
+  },
+  {
+   "name": "vector_space",
+   "definition": "Set with + and scalar mult satisfying 8 axioms. Over field F. R^n canonical example.",
+   "why": "Foundation of linear algebra. Universal. Subspaces, linear combinations, basis, dimension.",
+   "category": "linear_algebra"
+  },
+  {
+   "name": "linear_transformation",
+   "definition": "T: V → W preserving + and scalar mult. T(av + bw) = aT(v) + bT(w).",
+   "why": "Foundation. Each represented by matrix in given bases. Composition = matrix multiplication.",
+   "category": "linear_algebra"
+  },
+  {
+   "name": "matrix_multiplication",
+   "definition": "(AB)_ij = Σ A_ik B_kj. Non-commutative. Associative.",
+   "why": "Foundation operation. Represents composition of linear maps. Powers of matrices.",
+   "category": "linear_algebra"
+  },
+  {
+   "name": "determinant",
+   "definition": "Multilinear, alternating function of columns. Volume scaling factor. Non-zero iff invertible.",
+   "why": "Foundation. Cramer's rule, change of variables, eigenvalue computation. Cost: O(n!) naive; O(n³) LU.",
+   "category": "linear_algebra"
+  },
+  {
+   "name": "eigenvalues_eigenvectors",
+   "definition": "Av = λv. λ eigenvalue; v eigenvector. det(A - λI) = 0 (characteristic polynomial).",
+   "term": {
+    "type": "Eq",
+    "a": {
+     "type": "Holds",
+     "concept": "eigenvalues_eigenvectors",
+     "node": {
+      "type": "Var",
+      "name": "x"
+     },
+     "node2": null
+    },
+    "b": {
+     "type": "Holds",
+     "concept": "eigenvalues_eigenvectors",
+     "node": {
+      "type": "Var",
+      "name": "x"
+     },
+     "node2": null
+    }
+   },
+   "why": "Foundation. Diagonalization, PCA, dynamics, quantum mechanics. Eigenvalues = stretching factors.",
+   "category": "linear_algebra"
+  },
+  {
+   "name": "singular_value_decomposition",
+   "definition": "A = UΣV^T. Σ diagonal singular values. U, V orthogonal.",
+   "why": "Universal matrix decomposition. PCA, pseudoinverse, dimensionality reduction. Best rank-k approximation.",
+   "category": "linear_algebra"
+  },
+  {
+   "name": "inner_product_norm",
+   "definition": "⟨,⟩: V × V → F satisfying linearity, symmetry, positivity. Norm: ‖v‖ = √⟨v,v⟩.",
+   "why": "Foundation of geometry on vector spaces. Orthogonality, distance, projection. Hilbert spaces.",
+   "category": "linear_algebra"
+  },
+  {
+   "name": "Gram_Schmidt",
+   "definition": "Orthonormalisation procedure. Build orthonormal basis from any basis.",
+   "why": "Foundation. QR decomposition. Orthonormal bases simplify computation.",
+   "category": "linear_algebra"
+  },
+  {
+   "name": "group_definition",
+   "definition": "Set with associative operation, identity, inverses. Z under +, GL(n) under matmul.",
+   "why": "Foundation of algebra. Symmetries always form group. Galois theory, particle physics.",
+   "category": "abstract_algebra"
+  },
+  {
+   "name": "ring_field",
+   "definition": "Ring: + and × with axioms. Field: ring with mult inverses for non-zero.",
+   "why": "Number systems abstracted. Z ring; Q, R, C fields. Foundation of algebra.",
+   "category": "abstract_algebra"
+  },
+  {
+   "name": "homomorphism_isomorphism",
+   "definition": "Structure-preserving map. Iso: bijection. Algebraic structures 'same' iff isomorphic.",
+   "why": "Foundation. Quotient structures via kernel of homomorphism. Identifies essentially same objects.",
+   "category": "abstract_algebra"
+  },
+  {
+   "name": "Galois_theory",
+   "definition": "Connects field extensions + groups. Solvability of polynomials by radicals.",
+   "why": "Galois 1832. Quintic unsolvable. Foundation of modern algebra. Insolubility of doubling cube, trisection.",
+   "category": "abstract_algebra"
+  },
+  {
+   "name": "limit_definition",
+   "definition": "lim_{x→a} f(x) = L iff ∀ε > 0 ∃δ > 0 : |x - a| < δ → |f(x) - L| < ε.",
+   "why": "Foundation of analysis. Epsilon-delta. Continuity, derivatives, integrals all built on limits.",
+   "category": "calculus"
+  },
+  {
+   "name": "derivative_definition",
+   "definition": "f'(a) = lim_{h→0} (f(a+h) - f(a))/h. Instantaneous rate of change.",
+   "why": "Foundation. Slope of tangent. Linearisation. Foundation of optimization + physics.",
+   "category": "calculus"
+  },
+  {
+   "name": "chain_rule",
+   "definition": "(f∘g)'(x) = f'(g(x))·g'(x).",
+   "why": "Foundation. Composes derivatives. Foundation of backprop in ML. Universal differentiation rule.",
+   "category": "calculus"
+  },
+  {
+   "name": "integral_Riemann",
+   "definition": "∫f dx = lim Σ f(x_i)Δx. Area under curve.",
+   "why": "Foundation. Definite + indefinite. Fundamental theorem connects derivative + integral.",
+   "category": "calculus"
+  },
+  {
+   "name": "fundamental_theorem_calculus",
+   "definition": "Part 1: F(x) = ∫_a^x f → F' = f. Part 2: ∫_a^b f = F(b) - F(a).",
+   "why": "Connects differentiation + integration. Foundation. Enables computing definite integrals.",
+   "category": "calculus"
+  },
+  {
+   "name": "Taylor_series",
+   "definition": "f(x) = Σ f^(n)(a)/n! · (x-a)^n. Polynomial approximation.",
+   "why": "Foundation of approximation. Convergence depends on function. Used everywhere in physics + engineering.",
+   "category": "calculus"
+  },
+  {
+   "name": "multivariable_calculus",
+   "definition": "Partial derivatives ∂f/∂x. Gradient ∇f. Multiple integrals.",
+   "why": "Generalises calculus to many variables. Foundation of physics, ML, optimization.",
+   "category": "calculus"
+  },
+  {
+   "name": "vector_calculus",
+   "definition": "Gradient, divergence ∇·F, curl ∇×F. Operators on vector fields.",
+   "why": "Foundation of EM, fluid dynamics. Stokes' + divergence theorems generalise FTC.",
+   "category": "calculus"
+  },
+  {
+   "name": "differential_equations",
+   "definition": "Equations involving function + derivatives. ODEs + PDEs.",
+   "why": "Universal language of physics + engineering. Newton, Maxwell, Navier-Stokes. Solving = modelling reality.",
+   "category": "calculus"
+  },
+  {
+   "name": "real_analysis_completeness",
+   "definition": "R has completeness: every Cauchy sequence converges. Distinguishes R from Q.",
+   "why": "Foundation of analysis. Intermediate value, extreme value, mean value theorems depend on it.",
+   "category": "analysis"
+  },
+  {
+   "name": "uniform_convergence",
+   "definition": "Sequence of functions converges uniformly if ε independent of x.",
+   "why": "Stronger than pointwise. Preserves continuity, integration. Foundation of Fourier + power series.",
+   "category": "analysis"
+  },
+  {
+   "name": "complex_analysis_holomorphic",
+   "definition": "Complex-differentiable functions. Satisfy Cauchy-Riemann equations.",
+   "why": "Foundation. Cauchy integral formula. Residue theorem. Conformal maps. Powerful tools.",
+   "category": "analysis"
+  },
+  {
+   "name": "measure_theory",
+   "definition": "Generalises length, area, volume. Lebesgue measure. σ-algebras.",
+   "why": "Foundation of modern probability + integration. Lebesgue integral generalises Riemann. Standard in analysis.",
+   "category": "analysis"
+  },
+  {
+   "name": "functional_analysis",
+   "definition": "Linear algebra in infinite dimensions. Banach + Hilbert spaces. Operators.",
+   "why": "Foundation of quantum mechanics, PDEs, signal processing. Generalises finite-dim linear algebra.",
+   "category": "analysis"
+  },
+  {
+   "name": "Hilbert_space",
+   "definition": "Complete inner product space. L² square-integrable functions. ℓ² sequences.",
+   "why": "Foundation of QM (state space). Generalises Euclidean geometry. Orthonormal bases (Fourier).",
+   "category": "analysis"
+  },
+  {
+   "name": "topology_open_sets",
+   "definition": "Topology: collection of open sets satisfying axioms. Foundation of continuity.",
+   "why": "Generalises notion of 'nearby' without metric. Foundation of modern geometry.",
+   "category": "topology"
+  },
+  {
+   "name": "metric_space",
+   "definition": "Set with distance function d satisfying triangle inequality + symmetry + positivity.",
+   "why": "Foundation: any vector space + norm induces. Open balls. Convergence, continuity.",
+   "category": "topology"
+  },
+  {
+   "name": "compactness",
+   "definition": "Every open cover has finite subcover. Heine-Borel: in R^n, compact iff closed + bounded.",
+   "why": "Foundation. Continuous function on compact attains extremes. Equivalent characterizations.",
+   "category": "topology"
+  },
+  {
+   "name": "connectedness",
+   "definition": "Cannot be partitioned into two non-empty open sets. Path-connected stronger.",
+   "why": "Foundation. Intermediate value depends on. Topological invariant.",
+   "category": "topology"
+  },
+  {
+   "name": "fundamental_group",
+   "definition": "π_1(X, x_0). Equivalence classes of loops at x_0. Algebraic invariant.",
+   "why": "Foundation algebraic topology. Distinguishes spaces. Sphere has trivial π_1; torus has Z².",
+   "category": "topology"
+  },
+  {
+   "name": "manifold",
+   "definition": "Locally Euclidean topological space. Charts. Smooth iff transitions are smooth.",
+   "why": "Foundation of modern geometry. Generalises curves + surfaces. Spacetime in GR; phase spaces.",
+   "category": "topology"
+  },
+  {
+   "name": "Euclidean_axioms",
+   "definition": "Euclid's 5 postulates. Foundation of geometry for 2000 years. Parallel postulate independent.",
+   "why": "Foundation. Non-Euclidean geometry from denying parallel postulate. Hyperbolic + elliptic.",
+   "category": "geometry"
+  },
+  {
+   "name": "non_Euclidean_geometry",
+   "definition": "Hyperbolic (angle sum < π) + elliptic (angle sum > π). Saddle + sphere.",
+   "why": "Gauss, Bolyai, Lobachevsky, Riemann. Foundation of general relativity. Curved spaces.",
+   "category": "geometry"
+  },
+  {
+   "name": "Riemannian_metric",
+   "definition": "Inner product on tangent spaces of manifold. Defines length, angle, curvature.",
+   "why": "Foundation of differential geometry. Geodesics, parallel transport, curvature tensors. Einstein's GR.",
+   "category": "geometry"
+  },
+  {
+   "name": "projective_geometry",
+   "definition": "Adds points at infinity. P^n. Duality of points + hyperplanes.",
+   "why": "Foundation of computer graphics, algebraic geometry. Parallel lines meet at infinity.",
+   "category": "geometry"
+  },
+  {
+   "name": "algebraic_geometry",
+   "definition": "Study of solutions to polynomial equations. Varieties, schemes.",
+   "why": "Foundation modern math. Grothendieck. Applications: number theory (FLT), coding, robotics.",
+   "category": "geometry"
+  },
+  {
+   "name": "probability_space",
+   "definition": "(Ω, F, P). Sample space, σ-algebra, probability measure.",
+   "why": "Foundation of modern probability. Kolmogorov 1933. Rigorous.",
+   "category": "probability"
+  },
+  {
+   "name": "random_variable",
+   "definition": "Measurable function X: Ω → R. Distribution F_X(x) = P(X ≤ x).",
+   "why": "Foundation. Discrete (PMF) vs continuous (PDF). Expectation E[X] = ∫x dF.",
+   "category": "probability"
+  },
+  {
+   "name": "expectation_variance",
+   "definition": "E[X] = ∫x dF. Var(X) = E[(X - μ)²]. Moments.",
+   "why": "Foundation. Linearity of expectation universal. Variance + standard deviation measure spread.",
+   "category": "probability"
+  },
+  {
+   "name": "common_distributions",
+   "definition": "Discrete: Bernoulli, Binomial, Poisson, Geometric. Continuous: Uniform, Normal, Exponential, Gamma, Beta.",
+   "why": "Standard models. Normal central (CLT). Poisson for rare events. Exponential for waiting times.",
+   "category": "probability"
+  },
+  {
+   "name": "central_limit_theorem",
+   "definition": "Sum of independent finite-variance RVs converges to normal as n → ∞.",
+   "why": "Foundation. Explains ubiquity of normal distribution. Basis of much statistics.",
+   "category": "probability"
+  },
+  {
+   "name": "law_of_large_numbers",
+   "definition": "Sample mean → population mean as n → ∞. Strong + weak versions.",
+   "why": "Foundation of statistics. Justifies sampling. Underlies Monte Carlo methods.",
+   "category": "probability"
+  },
+  {
+   "name": "Bayes_theorem_math",
+   "definition": "P(A|B) = P(B|A)P(A)/P(B). Already in philosophy + ML; here mathematical foundation.",
+   "why": "Foundation of inference. Update priors with evidence. Universal probabilistic reasoning.",
+   "category": "probability"
+  },
+  {
+   "name": "Markov_chain",
+   "definition": "Stochastic process with memoryless property. P(X_{n+1}|X_n) doesn't depend on history.",
+   "why": "Foundation of stochastic processes. Hidden Markov, MCMC, PageRank. Stationary distributions.",
+   "category": "probability"
+  },
+  {
+   "name": "stochastic_process",
+   "definition": "Family of random variables indexed by time. Brownian motion, Poisson process.",
+   "why": "Foundation of math finance, queueing, biology. Itô calculus extends.",
+   "category": "probability"
+  },
+  {
+   "name": "hypothesis_testing",
+   "definition": "H_0 vs H_1. p-value, significance level α. Type I + II errors.",
+   "why": "Foundation of frequentist statistics. Common but often misunderstood. Replication crisis driver.",
+   "category": "statistics"
+  },
+  {
+   "name": "confidence_intervals",
+   "definition": "Range containing true parameter with confidence 1-α. Interpretation subtle.",
+   "why": "Standard inference. CI interpretation: not 95% probability parameter in interval. Frequentist.",
+   "category": "statistics"
+  },
+  {
+   "name": "regression_analysis",
+   "definition": "Model E[Y|X]. Linear: Y = Xβ + ε. Generalised: GLM with link function.",
+   "why": "Foundation of statistical modelling + ML. Least squares solution closed form for linear.",
+   "category": "statistics"
+  },
+  {
+   "name": "Bayesian_inference",
+   "definition": "Prior + likelihood → posterior via Bayes. Updates beliefs.",
+   "why": "Alternative to frequentist. Natural for sequential learning. Foundation of probabilistic ML.",
+   "category": "statistics"
+  },
+  {
+   "name": "MCMC_sampling",
+   "definition": "Markov Chain Monte Carlo. Metropolis-Hastings, Gibbs. Samples from complex posterior.",
+   "why": "Workhorse of Bayesian computation. Convergence to target distribution. Standard in modern stats.",
+   "category": "statistics"
+  },
+  {
+   "name": "combinatorics_counting",
+   "definition": "Permutations P(n,r) = n!/(n-r)!. Combinations C(n,r) = n!/(r!(n-r)!).",
+   "why": "Foundation of discrete math. Probability + algorithm analysis. Pigeonhole, inclusion-exclusion.",
+   "category": "discrete_math"
+  },
+  {
+   "name": "graph_theory_math",
+   "definition": "G = (V, E). Already in DSA; here mathematical theory. Eulerian, Hamiltonian, planarity, chromatic.",
+   "term": {
+    "type": "Eq",
+    "a": {
+     "type": "Lit",
+     "value": "G"
+    },
+    "b": {
+     "type": "Lit",
+     "value": "(V, E)"
+    }
+   },
+   "why": "Foundation. Four color theorem, Ramsey theory. Network science, optimization.",
+   "category": "discrete_math"
+  },
+  {
+   "name": "generating_functions",
+   "definition": "Σ a_n x^n encodes sequence. Algebraic operations on series.",
+   "why": "Combinatorial counting via algebra. Foundation: Wilf's generatingfunctionology. Powerful.",
+   "category": "discrete_math"
+  },
+  {
+   "name": "recurrence_relations",
+   "definition": "a_n = f(a_{n-1}, a_{n-2}, ...). Closed forms via generating functions or characteristic equations.",
+   "term": {
+    "type": "Eq",
+    "a": {
+     "type": "Lit",
+     "value": "a_n"
+    },
+    "b": {
+     "type": "Lit",
+     "value": "f(a_{n-1}, a_{n-2},"
+    }
+   },
+   "why": "Foundation. Fibonacci, Catalan. Algorithm analysis (master theorem). Standard discrete tool.",
+   "category": "discrete_math"
+  },
+  {
+   "name": "Ramsey_theory",
+   "definition": "Sufficient size guarantees order. R(3,3) = 6: 6 people, some 3 mutually know or unknown.",
+   "why": "Foundation. R(5,5) unknown. Erdős famous result. Influence: combinatorics, probability.",
+   "category": "discrete_math"
+  },
+  {
+   "name": "numerical_root_finding",
+   "definition": "Newton's method, bisection, secant. Solve f(x) = 0.",
+   "why": "Standard numerical task. Newton's quadratic convergence near root. Foundation of optimization.",
+   "category": "numerical"
+  },
+  {
+   "name": "numerical_integration",
+   "definition": "Trapezoidal, Simpson's, Gaussian quadrature. ∫ approximated.",
+   "why": "When analytical intractable. Modern: adaptive methods. Foundation of FEM, ODE solvers.",
+   "category": "numerical"
+  },
+  {
+   "name": "numerical_ODE",
+   "definition": "Euler, Runge-Kutta. Step from initial condition. RK4 standard.",
+   "why": "Foundation of physics simulation. Stiff equations need implicit methods. Stability + accuracy.",
+   "category": "numerical"
+  },
+  {
+   "name": "PDE_solvers",
+   "definition": "Finite difference, finite element, spectral methods. Discretise + solve.",
+   "why": "Foundation of CFD, FEA. Already in engineering. Mathematical underpinnings.",
+   "category": "numerical"
+  },
+  {
+   "name": "numerical_stability",
+   "definition": "Small input perturbations should yield small output. Conditioning + stability.",
+   "why": "Foundation. Forward + backward error. Catastrophic cancellation. Standard analysis.",
+   "category": "numerical"
+  },
+  {
+   "name": "linear_programming",
+   "definition": "Maximise/minimise linear function subject to linear constraints. Simplex method.",
+   "why": "Foundation of optimization. Polynomial via interior point. Foundation of LP-relaxations in IP.",
+   "category": "optimization"
+  },
+  {
+   "name": "convex_optimization",
+   "definition": "Minimise convex function over convex set. Local optimum = global. Tractable.",
+   "why": "Foundation modern optimization. CVX, SDP, QP. Many ML problems convex.",
+   "category": "optimization"
+  },
+  {
+   "name": "gradient_descent_math",
+   "definition": "x_{n+1} = x_n - α∇f(x_n). Move opposite gradient direction.",
+   "why": "Foundation of ML. Already covered there; here mathematical foundation. Convergence on convex.",
+   "category": "optimization"
+  },
+  {
+   "name": "Newton_method_optimization",
+   "definition": "x_{n+1} = x_n - H⁻¹∇f. Quadratic convergence near minimum.",
+   "why": "Faster than gradient descent but H expensive. Quasi-Newton (BFGS) approximates. Foundation.",
+   "category": "optimization"
+  },
+  {
+   "name": "KKT_conditions",
+   "definition": "Karush-Kuhn-Tucker. Necessary conditions for constrained optimum. Generalise Lagrange.",
+   "why": "Foundation of constrained optimization. Dual variables = Lagrange multipliers. Universal.",
+   "category": "optimization"
+  },
+  {
+   "name": "integer_programming",
+   "definition": "LP with integer variables. NP-hard. Branch + bound + cuts.",
+   "why": "Foundation of discrete optimization. Scheduling, routing, allocation. MIP solvers (Gurobi, CPLEX).",
+   "category": "optimization"
+  },
+  {
+   "name": "dynamic_programming_math",
+   "definition": "Bellman: optimal substructure + overlapping subproblems. Memoize.",
+   "why": "Foundation of algorithmic optimization. Already in DSA; here mathematical principle. Reinforcement learning.",
+   "category": "optimization"
+  },
+  {
+   "name": "category_definition",
+   "definition": "Objects + morphisms with composition + identities. Set, Grp, Top, Vect canonical examples.",
+   "why": "Foundation of abstract algebra. Eilenberg-Mac Lane 1945. Modern: programming language semantics.",
+   "category": "category_theory"
+  },
+  {
+   "name": "functor",
+   "definition": "Map between categories preserving composition + identities. Covariant + contravariant.",
+   "why": "Foundation. List, Maybe functors in programming. Foundation: functional programming.",
+   "category": "category_theory"
+  },
+  {
+   "name": "natural_transformation",
+   "definition": "Map between functors. Family of morphisms commuting with functor action.",
+   "why": "Why category theory invented. Compares functors systematically. Foundation modern math.",
+   "category": "category_theory"
+  },
+  {
+   "name": "monad",
+   "definition": "Functor + unit (η) + multiplication (μ). Monad laws.",
+   "why": "Programming language theory. Haskell's IO. Encapsulates effects. Modern: theory + practice.",
+   "category": "category_theory"
+  },
+  {
+   "name": "adjunction",
+   "definition": "Pair of functors F ⊣ G with natural iso Hom(FX, Y) ≅ Hom(X, GY).",
+   "why": "Foundation. Free constructions, geometric realization, Stone duality. Ubiquitous in math.",
+   "category": "category_theory"
+  },
+  {
+   "name": "Yoneda_lemma",
+   "definition": "Object determined by its homs to/from all other objects. Embedding into presheaves.",
+   "why": "Foundation. 'You are what you eat'. Used everywhere in category theory.",
+   "category": "category_theory"
+  },
+  {
+   "name": "lambda_calculus_math",
+   "definition": "Variables, abstraction λx.M, application MN. Beta + eta reduction.",
+   "why": "Foundation of functional programming + type theory. Church 1930s. Universal computation.",
+   "category": "type_theory"
+  },
+  {
+   "name": "simply_typed_lambda",
+   "definition": "STLC. Each variable has type. Functions have arrow types τ → σ. Strong normalisation.",
+   "why": "Foundation. Adds safety to untyped λ. Curry-Howard: types = propositions.",
+   "category": "type_theory"
+  },
+  {
+   "name": "dependent_types",
+   "definition": "Types depend on values. Vector(n) type. Π and Σ types.",
+   "why": "Foundation modern proof assistants (Coq, Lean, Agda). Mathematical proofs as programs.",
+   "category": "type_theory"
+  },
+  {
+   "name": "Curry_Howard_correspondence",
+   "definition": "Types ↔ propositions. Programs ↔ proofs. Computation ↔ proof normalisation.",
+   "why": "Foundation of constructive logic + programming. Implication = function type. Bridge.",
+   "category": "type_theory"
+  },
+  {
+   "name": "homotopy_type_theory",
+   "definition": "HoTT. Types as ∞-groupoids. Univalence axiom: isomorphic types equal.",
+   "why": "Modern foundation candidate. Univalent foundations (Voevodsky). Computer-verified math.",
+   "category": "type_theory"
+  },
+  {
+   "name": "Shannon_entropy",
+   "definition": "H(X) = -Σ p log p. Average information content of random variable.",
+   "why": "Foundation of information theory. Maximum entropy = uniform distribution. Universal measure.",
+   "category": "information_theory"
+  },
+  {
+   "name": "mutual_information",
+   "definition": "I(X;Y) = H(X) - H(X|Y). Information X provides about Y.",
+   "why": "Foundation. Symmetric. Zero iff independent. Foundation of ML feature selection.",
+   "category": "information_theory"
+  },
+  {
+   "name": "KL_divergence_math",
+   "definition": "D(p‖q) = Σ p log(p/q). Asymmetric distance between distributions.",
+   "why": "Foundation of Bayesian + ML. Loss functions, variational inference. Already in ML; here math.",
+   "category": "information_theory"
+  },
+  {
+   "name": "channel_capacity",
+   "definition": "C = max I(X;Y) over input distributions. Maximum reliable rate.",
+   "term": {
+    "type": "Eq",
+    "a": {
+     "type": "Lit",
+     "value": "C"
+    },
+    "b": {
+     "type": "Lit",
+     "value": "max I(X"
+    }
+   },
+   "why": "Shannon's foundational result. Foundation of communication. Coding theorem.",
+   "category": "information_theory"
+  },
+  {
+   "name": "Shannon_source_coding",
+   "definition": "Source can be compressed to entropy rate (and no further).",
+   "why": "Foundation of data compression. Huffman approaches but doesn't reach. Foundational.",
+   "category": "information_theory"
+  },
+  {
+   "name": "Nash_equilibrium",
+   "definition": "Strategy profile where no player benefits from unilateral deviation. Nash 1950.",
+   "why": "Foundation of game theory. Mixed strategies exist always. Foundation of mechanism design.",
+   "category": "game_theory"
+  },
+  {
+   "name": "zero_sum_game",
+   "definition": "Total payoffs constant. One player's gain = other's loss. Minimax = maximin (von Neumann).",
+   "why": "Foundation. Chess, poker. Minimax algorithm in AI. Saddle point exists with mixed strategies.",
+   "category": "game_theory"
+  },
+  {
+   "name": "mechanism_design",
+   "definition": "Design game so equilibrium yields desired outcome. Auctions, voting.",
+   "why": "Reverse game theory. Hurwicz, Maskin, Myerson Nobel 2007. Foundation modern microeconomics.",
+   "category": "game_theory"
+  },
+  {
+   "name": "evolutionary_game_theory",
+   "definition": "Strategies as types in population. Replicator dynamics. ESS (Evolutionary Stable Strategy).",
+   "why": "Biology + economics. Maynard Smith. Hawk-dove, ultimatum game. Foundation modern.",
+   "category": "game_theory"
+  },
+  {
+   "name": "dynamical_system",
+   "definition": "Rule for state evolution: x_{n+1} = f(x_n) or ẋ = f(x).",
+   "why": "Foundation. Fixed points, periodic orbits, attractors. Chaos arises.",
+   "category": "dynamical_systems"
+  },
+  {
+   "name": "fixed_point_stability",
+   "definition": "x* satisfies f(x*) = x*. Stable if perturbations decay. Linearisation tells.",
+   "why": "Foundation of stability analysis. Lyapunov exponents. Universal in physics + engineering.",
+   "category": "dynamical_systems"
+  },
+  {
+   "name": "bifurcation",
+   "definition": "Qualitative change in dynamics as parameter varies. Saddle-node, pitchfork, Hopf.",
+   "why": "Foundation. Period-doubling route to chaos. Universal patterns.",
+   "category": "dynamical_systems"
+  },
+  {
+   "name": "strange_attractor",
+   "definition": "Attractor with fractal structure. Lorenz (butterfly). Sensitivity to initial conditions.",
+   "why": "Foundation of chaos. Weather unpredictability. Fractal dimension.",
+   "category": "dynamical_systems"
+  },
+  {
+   "name": "Lyapunov_exponent",
+   "definition": "Average exponential rate of divergence of nearby trajectories. Positive = chaos.",
+   "why": "Foundation chaos quantification. Lyapunov spectrum characterises dynamics.",
+   "category": "dynamical_systems"
+  },
+  {
+   "name": "fractal_dimension",
+   "definition": "Non-integer dimension. Hausdorff, box-counting. Mandelbrot set 2 (boundary higher).",
+   "why": "Foundation of fractal geometry. Coastline paradox. Self-similarity.",
+   "category": "dynamical_systems"
+  },
+  {
+   "name": "model_theory",
+   "definition": "Study of mathematical structures + their formulas. Logical equivalence, isomorphism.",
+   "why": "Foundation of mathematical logic. Löwenheim-Skolem, compactness. Connects to model theory in CS.",
+   "category": "mathematical_logic"
+  },
+  {
+   "name": "computability_theory",
+   "definition": "Already in compilers; here math foundation. Turing machines, recursive functions.",
+   "why": "Foundation. Halting problem undecidable. Church-Turing thesis.",
+   "category": "mathematical_logic"
+  },
+  {
+   "name": "complexity_theory_math",
+   "definition": "P, NP, NP-complete, PSPACE. Already in DSA; here math foundation.",
+   "why": "Foundation. P vs NP greatest open problem in CS. Foundation modern theoretical CS.",
+   "category": "mathematical_logic"
+  },
+  {
+   "name": "Godel_completeness",
+   "definition": "FOL is complete: every valid formula provable. Gödel 1929.",
+   "why": "Distinct from incompleteness. FOL strong enough for itself; weak enough for completeness.",
+   "category": "mathematical_logic"
+  },
+  {
+   "name": "axiom_of_choice",
+   "definition": "Every collection of non-empty sets has choice function. Equivalent to Zorn, well-ordering.",
+   "why": "Independent of ZF. Allows non-constructive proofs (Banach-Tarski). Standard but controversial.",
+   "category": "foundations"
+  },
+  {
+   "name": "continuum_hypothesis",
+   "definition": "No cardinality strictly between |N| and |R|. Cantor.",
+   "why": "Independent of ZFC (Gödel, Cohen). Foundation of set theory open question. Different settings.",
+   "category": "foundations"
+  }
+ ],
+ "rules": [
+  {
+   "name": "ZFC_foundation_of_math",
+   "if": [
+    "mathematical claim is to be proven rigorously"
+   ],
+   "then": [
+    "it should derive from ZFC axioms"
+   ],
+   "why": "Standard foundation. Most math (analysis, algebra, topology, geometry) reducible. Alternatives: type theory (HoTT).",
+   "soundness_category": "referential_transparency"
+  },
+  {
+   "name": "induction_proves_natural_number_claims",
+   "if": [
+    "claim is about all natural numbers"
+   ],
+   "then": [
+    "mathematical induction is standard proof method"
+   ],
+   "why": "Base + step. Equivalent to well-ordering. Universal for sequences, recursive structures, summations.",
+   "soundness_category": "algebraic_law"
+  },
+  {
+   "name": "fundamental_theorem_arithmetic_uniqueness",
+   "if": [
+    "positive integer > 1"
+   ],
+   "then": [
+    "unique prime factorisation exists"
+   ],
+   "why": "Foundation of multiplicative number theory. Used everywhere. Generalisation: UFDs in algebra.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "matrix_multiplication_composition",
+   "if": [
+    "A represents linear map S in given bases; B represents T"
+   ],
+   "then": [
+    "BA represents T∘S"
+   ],
+   "why": "Foundation. Matrix algebra IS composition of linear maps. Universal in linear algebra applications.",
+   "soundness_category": "algebraic_law"
+  },
+  {
+   "name": "SVD_universal_decomposition",
+   "if": [
+    "matrix A"
+   ],
+   "then": [
+    "SVD A = UΣV^T exists; gives best low-rank approximation"
+   ],
+   "why": "Universal. Foundation of PCA, dimensionality reduction, pseudoinverse. Eckart-Young theorem.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "fundamental_theorem_calculus_bridges",
+   "if": [
+    "derivative + integral applied"
+   ],
+   "then": [
+    "FTC connects them"
+   ],
+   "why": "Differentiation undone by integration. Foundation. Enables computational evaluation of integrals.",
+   "soundness_category": "algebraic_law"
+  },
+  {
+   "name": "chain_rule_universal_backprop",
+   "if": [
+    "composite function differentiated"
+   ],
+   "then": [
+    "chain rule gives derivative"
+   ],
+   "why": "Foundation of differentiation. Modern: backprop in ML implements chain rule on computational graph. Universal.",
+   "soundness_category": "algebraic_law"
+  },
+  {
+   "name": "Taylor_series_local_approximation",
+   "if": [
+    "function smooth + radius of convergence positive"
+   ],
+   "then": [
+    "Taylor series approximates locally"
+   ],
+   "why": "Foundation of approximation. Polynomial → tractable. Physics + engineering everywhere. Computer arithmetic.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "Riemann_hypothesis_open_central",
+   "if": [
+    "RH proven"
+   ],
+   "then": [
+    "bounds on prime distribution + many consequences follow"
+   ],
+   "why": "Central open problem. Affects number theory + cryptography. 160+ years unsolved. $1M prize.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "completeness_distinguishes_R_from_Q",
+   "if": [
+    "Cauchy sequence in R"
+   ],
+   "then": [
+    "it converges (R complete)"
+   ],
+   "why": "Foundation of real analysis. Q not complete (√2 sequence). Foundation of all real analysis theorems.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "compactness_makes_extremes_attainable",
+   "if": [
+    "continuous function on compact set"
+   ],
+   "then": [
+    "attains maximum + minimum"
+   ],
+   "why": "Foundation. Existence of optima. Heine-Borel for R^n. Generalises to topology.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "CLT_explains_normal_ubiquity",
+   "if": [
+    "sum of many independent finite-variance RVs"
+   ],
+   "then": [
+    "distribution approaches normal"
+   ],
+   "why": "Foundation of statistics. Why normal everywhere. Test statistics, measurement errors.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "Bayes_updates_beliefs",
+   "if": [
+    "evidence E observed + prior P(H)"
+   ],
+   "then": [
+    "posterior P(H|E) ∝ P(E|H)·P(H)"
+   ],
+   "why": "Foundation of Bayesian inference. Universal. Modern ML, philosophy, medicine.",
+   "soundness_category": "algebraic_law"
+  },
+  {
+   "name": "convex_problems_globally_solvable",
+   "if": [
+    "minimise convex function over convex set"
+   ],
+   "then": [
+    "any local minimum is global"
+   ],
+   "why": "Foundation of tractable optimization. Many ML problems (regression, SVM, LP) convex. Important property.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "gradient_descent_convex_convergence",
+   "if": [
+    "function convex + smooth + appropriate step size"
+   ],
+   "then": [
+    "gradient descent converges to global minimum"
+   ],
+   "why": "Foundation of ML optimization. Non-convex: may converge to local. Provably guaranteed on convex.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "Curry_Howard_proofs_are_programs",
+   "if": [
+    "constructive logic + lambda calculus"
+   ],
+   "then": [
+    "proofs ↔ programs (Curry-Howard)"
+   ],
+   "why": "Foundation. Lambda terms = proof terms. Modern: proof assistants (Coq, Lean, Agda). Math + programming unite.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "Shannon_entropy_limits_compression",
+   "if": [
+    "source with entropy H"
+   ],
+   "then": [
+    "no lossless compression below H bits/symbol"
+   ],
+   "why": "Source coding theorem. Foundation. Huffman approaches. Arithmetic coding gets arbitrarily close.",
+   "soundness_category": "algebraic_law"
+  },
+  {
+   "name": "Shannon_channel_capacity_limits_communication",
+   "if": [
+    "channel with capacity C"
+   ],
+   "then": [
+    "no reliable communication above C bits/use"
+   ],
+   "why": "Foundation. Modern: turbo + LDPC + polar codes approach. 5G, Wi-Fi, deep space.",
+   "soundness_category": "algebraic_law"
+  },
+  {
+   "name": "Nash_equilibrium_exists",
+   "if": [
+    "finite game"
+   ],
+   "then": [
+    "Nash equilibrium (possibly mixed) exists"
+   ],
+   "why": "Nash's theorem 1950. Foundation of game theory. Doesn't say unique or computable. PPAD-complete.",
+   "soundness_category": "algebraic_law"
+  },
+  {
+   "name": "chaos_sensitive_to_initial_conditions",
+   "if": [
+    "positive Lyapunov exponent"
+   ],
+   "then": [
+    "nearby trajectories diverge exponentially"
+   ],
+   "why": "Definition of chaos. Weather unpredictability. Lorenz butterfly. Foundation of dynamical systems.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "Godel_incompleteness_limits_FOL_arithmetic",
+   "if": [
+    "consistent system extends Peano arithmetic"
+   ],
+   "then": [
+    "incomplete + can't prove own consistency"
+   ],
+   "why": "Already in philosophy; mathematical foundation. Foundation: limits of formal systems.",
+   "soundness_category": "algebraic_law"
+  },
+  {
+   "name": "P_vs_NP_open_central",
+   "if": [
+    "P = NP proven"
+   ],
+   "then": [
+    "fundamental restructuring of computing"
+   ],
+   "why": "Greatest open problem in CS. SAT in P = many breakthroughs. RSA broken. Most experts: P ≠ NP. Foundation.",
+   "soundness_category": "denotational_equivalence"
+  }
+ ],
+ "exclusions": [],
+ "parent_mt": "logic_foundation",
+ "relations": [
+  {
+   "src": "mathematics",
+   "edge": "genlMt",
+   "tgt": "compiler_theory"
+  }
+ ]
+}

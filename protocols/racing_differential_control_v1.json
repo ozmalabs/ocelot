@@ -1,0 +1,42 @@
+{
+  "protocol": "racing_differential_control_v1",
+  "purpose": "Compare symmetric standard wheel commands with graph-authored left/right drive and brake torque vectoring.",
+  "guardrails": {
+    "agent_logic": "Rust graph rules and authored graph state only",
+    "host_role": "Physical integration, exact transduction, experimental condition selection, termination, and reporting",
+    "forbidden_host_behaviour": [
+      "wheel torque allocation",
+      "brake allocation",
+      "yaw control",
+      "stability intervention",
+      "path control"
+    ]
+  },
+  "paired_conditions": {
+    "duration_s": 120.0,
+    "seed_count": 5,
+    "opponents": 3,
+    "standard": "Symmetric graph wheel drive and braking",
+    "differential": "Graph left/right drive and braking differentials composed with standard steering"
+  },
+  "controlled_variables": [
+    "vehicle and tyre model",
+    "track and surface",
+    "initial state",
+    "racing strategy graph",
+    "steering controller",
+    "active aerodynamics",
+    "seed"
+  ],
+  "reported_metrics": [
+    "progress",
+    "mean speed",
+    "off-track time",
+    "collisions",
+    "fuel consumed",
+    "tyre condition",
+    "damage",
+    "graph tick latency"
+  ],
+  "result": "results/racing_differential_control_v1.json"
+}

@@ -1,0 +1,107 @@
+{
+  "id": "fallback_vocabulary",
+  "version": "1.0.0",
+  "depends_on": ["core"],
+  "description": "THE VOCABULARY THAT MAKES DEGRADED OPERATION SAYABLE. VISION_REDUNDANCY_RESULTS.md Arm 4 measured observability 0/2 with the marker inventory EMPTY IN ALL 26 PROBE RUNS INCLUDING BASELINE -- 'the finding is not that the markers didn't fire, it is that there are none to fire'. Ablating vision_lateral drives channels_on 51.976 -> 0.000 and every learned gain to exactly 0.0, leaving NO TRACE in graph state. This seed is the missing trace. The point is not instrumentation: A LAYER IS ONLY A LAYER IF IT HAS DEFINED BEHAVIOUR IN THE ABSENCE OF ITS NEIGHBOURS AND DECLARES IT. Without a declared fallback, 'layer B is independent of A' cannot be distinguished from 'nothing in B was running', which is exactly the vacuous result Arm 5 hit. The engine supplies two FACTS (a rule's progress count; the reads it made against attributes nobody wrote); THESE RULES MAKE THE DECISION about what those facts mean. No Python conditional over graph state is involved anywhere in the classification.",
+  "microtheory": "observability",
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "FallbackVocabDoc",
+      "attrs": {
+        "name": "three_way_split",
+        "comment": "THE SPLIT THE REDUNDANCY AUDIT COULD NOT MAKE. All three of these rows look identical to an ablation harness -- every one of them is 'no test loss' -- and the audit pooled them, which is why its redundancy question ended up with a sample size of ONE. (1) progress>0 and no defaulted read: the rules ran ON REAL INPUTS, so an absence of downstream effect is GENUINE INDEPENDENCE. (2) progress>0 WITH defaulted reads: the rules ran ON VALUES NOBODY WROTE -- degraded, silently, and this is the signature of vision_waves' NON-MONOTONE curve, a component that keeps firing after its preconditions have vanished. (3) progress==0: NOTHING RAN, so the seed's zero says nothing whatever about redundancy -- the 'inert because dead' category, 15 of 25 audited seeds. Separating (1) from (2) from (3) is what this vocabulary is for."
+      }
+    }
+  ],
+  "edges": [],
+  "productions": [
+    {
+      "src": {"type": "FallbackReport", "var": "a"},
+      "edge_type": "has_rule_activity",
+      "tgt": {"type": "RuleActivity", "var": "b"},
+      "provenance": "seed:fallback_vocabulary:has_rule_activity"
+    },
+    {
+      "src": {"type": "RuleActivity", "var": "a"},
+      "edge_type": "defaulted",
+      "tgt": {"type": "DefaultedRead", "var": "b"},
+      "provenance": "seed:fallback_vocabulary:defaulted"
+    },
+    {
+      "src": {"type": "RuleActivity", "var": "a"},
+      "edge_type": "absence_branch",
+      "tgt": {"type": "AbsenceBranch", "var": "b"},
+      "provenance": "seed:fallback_vocabulary:absence_branch"
+    },
+    {
+      "src": {"type": "FallbackReport", "var": "a"},
+      "edge_type": "defaulted",
+      "tgt": {"type": "DefaultedRead", "var": "b"},
+      "provenance": "seed:fallback_vocabulary:defaulted_orphan"
+    },
+    {
+      "src": {"type": "FallbackReport", "var": "a"},
+      "edge_type": "absence_branch",
+      "tgt": {"type": "AbsenceBranch", "var": "b"},
+      "provenance": "seed:fallback_vocabulary:absence_branch_orphan"
+    }
+  ],
+  "rules": [
+    {
+      "name": "fv_status_silent",
+      "comment": "NOTHING RAN. A rule whose progress counter is zero did not fire once on this workload, so its seed's apparent resilience under ablation is INERT-BECAUSE-DEAD, not redundancy. The redundancy audit found 38 such rules installed into every vision-bench substrate and never firing once, and pooling them with the real zeros 'would have produced a beautiful and completely false redundancy result'. This rule is what stops that pooling: it NAMES the dead arm as dead, in the graph, rather than leaving it indistinguishable from a healthy one.",
+      "match_type": "RuleActivity",
+      "match": [["rep", "has_rule_activity", "ra"]],
+      "where": {
+        "type": "Eq",
+        "a": {"type": "Attr", "node": {"type": "Var", "name": "ra"}, "key": "progress"},
+        "b": {"type": "Lit", "value": 0}
+      },
+      "effects": [["set_attr", "ra", "status", "silent"]]
+    },
+    {
+      "name": "fv_status_degraded",
+      "comment": "RAN, ON VALUES NOBODY WROTE. The rule progressed AND the engine recorded at least one DefaultedRead against it -- an Attr evaluation on a LIVE node whose key was ABSENT, term.rs's `.get(key).cloned().unwrap_or(Value::None)`, which is `.get('Name','')` in the engine core. That is a component still confidently computing after the rule that fed it has gone. It is the same structural failure as the known scene-cut violation, and it is precisely what produces a confident, well-formed, numerically clean ZERO with no evidence attached. Note the DECISION that this constitutes degradation is made HERE, by a rule reading graph state -- the engine only supplies the fact that a read missed.",
+      "match_type": "RuleActivity",
+      "match": [["rep", "has_rule_activity", "ra"], ["ra", "defaulted", "dr"]],
+      "where": {
+        "type": "Gt",
+        "a": {"type": "Attr", "node": {"type": "Var", "name": "ra"}, "key": "progress"},
+        "b": {"type": "Lit", "value": 0}
+      },
+      "effects": [["set_attr", "ra", "status", "degraded"]]
+    },
+    {
+      "name": "fv_status_healthy",
+      "comment": "RAN, ON REAL INPUTS. The rule progressed and NOTHING it read defaulted, so every value it consumed was actually written by somebody. This is the only one of the three states under which 'ablating X cost no tests' means what the redundancy audit wanted it to mean. NOTE THE IDIOM: this rule uses Not(Exists(..)) -- the absence-branch shape the rung's H2 hypothesis proposed as the universal marker of a fallback. It is used HERE because here it genuinely means absence-of-a-witness. H2's claim was that this shape identifies fallbacks GENERALLY; that claim is measured, not assumed, in VISION_FALLBACK_VOCAB_RESULTS.md.",
+      "match_type": "RuleActivity",
+      "match": [["rep", "has_rule_activity", "ra"]],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Gt",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "ra"}, "key": "progress"},
+            "b": {"type": "Lit", "value": 0}
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {"type": "Var", "name": "ra"},
+                "edge_type": "defaulted",
+                "any_type": false
+              },
+              "var_name": "d",
+              "predicate": {"type": "Lit", "value": true}
+            }
+          }
+        ]
+      },
+      "effects": [["set_attr", "ra", "status", "healthy"]]
+    }
+  ]
+}

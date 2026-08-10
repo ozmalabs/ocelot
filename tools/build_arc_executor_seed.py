@@ -1,0 +1,495 @@
+#!/usr/bin/env python3
+"""EMIT `seeds/arc_executor.json` — AG-5, THE EXECUTOR AND THE STATUS LIFECYCLE.
+
+`tools/*` are one-off AUTHORING scripts that EMIT seed manifests (CLAUDE.md:
+"deletable; not agent runtime").  Nothing here runs at agent time.
+
+WHY A BUILDER, AND WHY IT IMPORTS THE ARC-GOAL BUILDER.  Every Term idiom this
+rung needs already exists one rung down — `MEASURE_EPOCH()`, the `ONE_OF`
+serializer, the `HUB` match, the null-coalescing `ITE`.  Re-typing them is
+exactly how a misspelled field name becomes a silent no-op (an unknown key on
+an `And` makes it an EMPTY conjunction that returns True).  So they are
+IMPORTED from `tools/build_arc_goals_seed.py` rather than copied, and if that
+builder's idioms change this seed goes out of date LOUDLY.
+
+WHAT THIS SEED IS.  Four rules and a two-node route table.
+
+  ax_dispatch      THE COLLAPSE→ACTION SEAM.  `route_pick`'s own shape
+                   (`seeds/research_agenda_dispatch.json`): an Argmin-by-
+                   priority over the ExecClass cues whose `name` Eq the
+                   SELECTED goal's `kind`.  A goal whose kind has no cue mints
+                   NOTHING — the confinement is the empty Argmin, not a
+                   promise.  The winner is bound by `ag_select`'s OWN stamp
+                   (`arc_sel_agid`), so the executor can never disagree with
+                   the collapse it is acting on, and the pool predicate is
+                   re-asserted on the bound goal so a stale stamp cannot
+                   dispatch a goal that has left the pool.
+  ax_retired_epoch STAMPS the epoch a goal reached its terminal status.
+                   `ag_remeasure_retire` (arc_goals, byte-frozen) writes the
+                   status; this writes WHEN, because the anti-oscillation latch
+                   is defined in epochs and the epoch had no producer until
+                   this rung.
+  ax_rearm         THE ANTI-OSCILLATION LATCH — the arc-goal design's §8.2
+                   second guard, which that rung named as NOT implemented.  A
+                   terminal goal re-enters the pool ONLY when BOTH (a) its
+                   source residual is genuinely stale again AND (b) the
+                   MEASUREMENT EPOCH HAS ADVANCED past its retirement.  Either
+                   half alone is not enough, and that is the two-position
+                   property the gate asserts in both directions.
+  ax_close         Closes the order once its goal is terminal, so "an execution
+                   that completed" is a countable graph fact rather than a
+                   read of the adapter's return value.
+
+Run:  python tools/build_arc_executor_seed.py         (writes seeds/arc_executor.json)
+      python tools/build_arc_executor_seed.py --check (fails if out of date)
+"""
+from __future__ import annotations
+
+import json
+import os
+import sys
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(ROOT, "tools"))
+
+from build_arc_goals_seed import (  # noqa: E402
+    A, AND, ARGMIN, COUNT, EQ, EXISTS, FILT, GT, HUB, ITE, L, MEASURE_EPOCH,
+    NEIGH, NOT, NOT_, ONE_OF, OR, PLUS, T, V,
+)
+
+OUT = os.path.join(ROOT, "seeds", "arc_executor.json")
+
+RUNNER = "arc6_remeasure_row_verdict"
+EXECUTABLE_KIND = "re_measure"
+ARTIFACT = "results/arc6_verdict_pricing.json"
+SOURCE_RID = "arc6.verdict.row_verdict_seed_only"
+
+#  This engine has NO `unset_attr` and writing a null through an effect is not
+#  a shipped idiom, so "the retirement stamp has been consumed" is carried by a
+#  SENTINEL STRING rather than by absence.  `ax_retired_epoch` treats it
+#  exactly as it treats absence; `ax_rearm` refuses on it.  Without this the
+#  SECOND retirement would keep the FIRST one's epoch and the latch would
+#  compare against a dead number — which reads as "the epoch has advanced" and
+#  re-arms immediately, i.e. the oscillation the latch exists to prevent.
+CONSUMED = "__consumed_by_ax_rearm__"
+
+
+# --------------------------------------------------------------------------- #
+#  THE ROUTE TABLE — `route_pick`'s own shape, applied to a goal's `kind`.
+# --------------------------------------------------------------------------- #
+def _cue_matches(cue_var, goal_var):
+    """THE ROUTE KEY, AND IT IS TWO-PART FOR A MEASURED REASON.
+
+    `kind` ALONE IS NOT ENOUGH, and that is not a precaution — it was measured.
+    Running the loop with an unconditioned reply expires the testimony residual
+    the reply minted, `ag_mint_remeasure` then fires **on the testimony**, and
+    the goal it mints is
+    `arc.remeasure.arc.testimony.missing_structural_primitive` with
+    `kind: "re_measure"`.  A route keyed on `kind` alone would hand THAT to the
+    row-verdict runner: same class name, completely different job, and the
+    adapter would have re-run a measurement nobody asked for.
+
+    So a cue declares **which measurement it can re-run** — the artifact — and
+    the goal must name that same artifact.  A `re_measure` goal with no
+    `evidence_artifact` (which is exactly what a testimony-sourced one has) can
+    never match, because `Eq(null, <a string>)` is False and the explicit
+    non-null guard refuses it first.
+    """
+    return AND(
+        EQ(A(V(cue_var), "name"), A(V(goal_var), "kind")),
+        EQ(A(V(cue_var), "evidence_artifact"),
+           A(V(goal_var), "evidence_artifact")),
+    )
+
+
+def ROUTE(goal_var="g"):
+    """The ExecClass cue for this goal, or NOTHING.
+
+    `seeds/research_agenda_dispatch.json::route_pick` is
+    `Argmin(Filter(cues, Eq(cue.kind, kind)), priority)` and this is that term
+    with a two-part key.  An unroutable goal yields the Argmin's `default`
+    (null), and `Attr(null, "runner")` is null — which is why `_routable` is a
+    REQUIRED guard and not a nicety.
+    """
+    return ARGMIN(FILT(NOT_("ExecClass"), "ec", _cue_matches("ec", goal_var)),
+                  "ec2", A(V("ec2"), "priority"), None)
+
+
+def _routable(goal_var="g"):
+    return AND(
+        NOT(EQ(A(V(goal_var), "evidence_artifact"), L(None))),
+        EXISTS(NOT_("ExecClass"), "ec3", _cue_matches("ec3", goal_var)),
+        # THE THIRD KEY.  The runner knows how to re-ingest exactly ONE
+        # residual — the ingest SPEC's dotted paths are per-rid — so the goal's
+        # own mint source must be that residual.  Without this a future goal
+        # pointed at the same artifact by some other route would be handed to a
+        # re-ingest that cannot read it, and the failure would be a silently
+        # skipped re-ingest rather than a refusal.
+        EQ(A(ONE_OF(NEIGH(V(goal_var), "mint_source"), "msr"), "rid"),
+           A(ROUTE(goal_var), "source_rid")),
+    )
+
+
+def _armed(goal_var="g"):
+    """THE TWO-TICK AGREEMENT TEST, AND IT IS NOT A FORMALITY — IT IS A FIX.
+
+    MEASURED, on the shipped boot, with the first draft of this rule: an
+    `ExecOrder` minted for
+    `arc.remeasure.arc6.verdict.row_verdict_seed_only` while the fixpoint's
+    FINAL `arc_sel_agid` was
+    `arc.supply.…missing_structural_primitive` — i.e. **the executor ordered a
+    job the collapse had not chosen.**  `run_rules` is a fixpoint with no rule
+    ordering, so `ag_select`'s stamp is a TRANSIENT while `ag_mint_*` is still
+    populating the pool and `ag_vocab_mint` is still pricing novelty; a rule
+    that reads it in the same fixpoint reads whatever it happened to hold.
+    This is the `children_of`-shaped hazard class exactly: nothing errors, the
+    wrong thing simply happens.
+
+    The fix is an AGREEMENT ACROSS TWO FIXPOINTS.  The adapter copies the
+    settled `arc_sel_agid` / `arc_sel_value` into `arc_exec_armed_*` at the
+    tick boundary — a verbatim copy with no comparison and no branch — and this
+    guard requires the NEXT fixpoint's selection to agree with it on BOTH the
+    winner and its value.  **The comparison is the rule's; the adapter only
+    carries the previous tick's conclusion across the boundary.**  A selection
+    that is still moving cannot satisfy both halves.
+    """
+    return AND(
+        EQ(A(V("agenda"), "arc_exec_armed_agid"), A(V(goal_var), "agid")),
+        EQ(A(V("agenda"), "arc_exec_armed_agid"), A(V("agenda"), "arc_sel_agid")),
+        EQ(A(V("agenda"), "arc_exec_armed_value"), A(V("agenda"), "arc_sel_value")),
+        NOT(EQ(A(V("agenda"), "arc_exec_armed_agid"), L(None))),
+    )
+
+
+def _in_pool(goal_var="g"):
+    """`ag_select`'s POOL predicate, re-asserted on the BOUND goal.
+
+    `ag_select` only rewrites `arc_sel_agid` while the pool is non-empty, so a
+    stamp can outlive its goal's membership.  Re-asserting the predicate here
+    makes "the executor acts only on a pool member" structural rather than
+    inherited.  MEASURED HAZARD: `Gt(x, 0.0)` is TRUE for a MISSING `x`
+    (`Gt(8.0, null)` is True on this engine), so the headroom read is
+    coalesced explicitly — an unmeasured goal must not read as having headroom.
+    """
+    return AND(
+        NOT(EQ(A(V(goal_var), "status"), L("retired"))),
+        NOT(EQ(A(V(goal_var), "status"), L("settled"))),
+        GT(ITE(EQ(A(V(goal_var), "headroom_n"), L(None)), L(0.0),
+               A(V(goal_var), "headroom_n")), L(0.0)),
+    )
+
+
+# --------------------------------------------------------------------------- #
+#  NODES
+# --------------------------------------------------------------------------- #
+def _nodes():
+    return [
+        {"local_id": 4000, "type": "ExecPolicy", "attrs": {
+            "name": "default_exec_policy",
+            "priority": 1,
+            "_confinement_is_STRUCTURAL_not_promised": (
+                "The executor can act on exactly the goal kinds for which an "
+                "ExecClass cue exists.  There is ONE, and the dispatch route is "
+                "an Argmin over the cues matching the goal's kind -- so a "
+                "supply_blocker / source_claim / self_concern winner routes to "
+                "NOTHING and mints no order.  Adding a class is a seed edit, "
+                "visible in a diff; it is not something a rule can do."),
+        }},
+        {"local_id": 4010, "type": "ExecClass", "attrs": {
+            "name": EXECUTABLE_KIND,
+            "runner": RUNNER,
+            "priority": 1,
+            "evidence_artifact": ARTIFACT,
+            "source_rid": SOURCE_RID,
+            "denominator_unit": "mbpp_tasks",
+            "_the_route_key_is_THREE_PART": (
+                "kind + evidence_artifact + source_rid.  MEASURED: `kind` "
+                "alone is not enough -- an expired unconditioned testimony "
+                "mints arc.remeasure.arc.testimony.<region> with "
+                "kind:'re_measure' and NO evidence_artifact, and a kind-only "
+                "route would have handed that to this runner."),
+            "description": (
+                "THE ONE EXECUTABLE CLASS.  A re-measurement goal names an "
+                "artifact, a condition and a denominator, and the measurement "
+                "it asks for ALREADY EXISTS AS A SCRIPT -- so executing it is "
+                "re-running that script on the current binary, which is "
+                "mechanical I/O.  The other seven goals on the shipped agenda "
+                "come from seam A's measured blocker split and from claims "
+                "with no artifact: they require BUILDING something, and "
+                "nothing here can do that."),
+            "_runner_is_a_NAME_not_a_command": (
+                "The adapter resolves this name against a frozen capability "
+                "table.  A name with no table entry is REFUSED and recorded; "
+                "the string is never a path, never an argv and never a shell "
+                "word."),
+        }},
+    ]
+
+
+def _edges():
+    return [{"src": {"local": 4000}, "tgt": {"local": 4010},
+             "type": "has_exec_class", "attrs": {}}]
+
+
+def _productions():
+    return [
+        {"provenance": "seed:arc_executor:has_exec_class-0",
+         "src": {"type": "ExecPolicy", "var": "s"}, "edge_type": "has_exec_class",
+         "tgt": {"type": "ExecClass", "var": "t"}},
+        {"provenance": "seed:arc_executor:has_exec_order-1",
+         "src": {"type": "ArcGoal", "var": "s"}, "edge_type": "has_exec_order",
+         "tgt": {"type": "ExecOrder", "var": "t"}},
+        {"provenance": "seed:arc_executor:has_exec_order-2",
+         "src": {"type": "ArcAgenda", "var": "s"}, "edge_type": "has_exec_order",
+         "tgt": {"type": "ExecOrder", "var": "t"}},
+    ]
+
+
+# --------------------------------------------------------------------------- #
+#  RULES
+# --------------------------------------------------------------------------- #
+def _r_dispatch():
+    return {
+        "name": "ax_dispatch",
+        "comment": (
+            "AG-5, THE COLLAPSE->ACTION SEAM, AND IT IS route_pick's OWN SHAPE. "
+            "The DECISION of what to run is this rule; running it is the "
+            "adapter's mechanical I/O.  Three things are load-bearing and each "
+            "has a measured reason. "
+            "(1) THE WINNER IS BOUND BY ag_select'S OWN STAMP, never re-ranked "
+            "-- the ag_select_audit / ag_ask precedent -- AND THE STAMP MUST "
+            "HAVE SETTLED.  MEASURED: reading the stamp inside the same "
+            "fixpoint that writes it reads a TRANSIENT, and the first draft of "
+            "this rule ordered the RUNNER-UP on the shipped boot while the "
+            "fixpoint's final winner was a different goal.  `_armed` is the "
+            "two-tick agreement test that closes it, on the winner AND its "
+            "value. "
+            "(2) CONFINEMENT IS THE EMPTY ARGMIN.  The route is "
+            "Argmin(Filter(ExecClass, <the THREE-PART key of _cue_matches plus "
+            "_routable's source_rid check>), priority) and ONE ExecClass ships, "
+            "so a goal that does not match on ALL THREE routes to null and the "
+            "Exists guard refuses the mint.  kind ALONE IS NOT THE KEY, and "
+            "that was measured, not foreseen -- see _cue_matches.  On the "
+            "SHIPPED graph the winner IS unroutable (the 42-task blocker goal), "
+            "so this branch is exercised by the boot itself, not by a fixture. "
+            "(3) THE POOL PREDICATE IS RE-ASSERTED ON THE BOUND GOAL.  "
+            "ag_select writes arc_sel_agid only while the pool is non-empty, so "
+            "the stamp can outlive its goal's membership; without this the "
+            "executor could run a goal that had already retired. "
+            "SERIALISED TWO WAYS: at most one outstanding order globally, and "
+            "at most one order per (goal, measurement epoch) -- so re-running "
+            "the fixpoint cannot mint a second order for the same job, and a "
+            "job may only recur once a NEW MEASUREMENT has happened."),
+        "batch": True,
+        "match": HUB + [["agenda", "has_arc_goal", "g"]],
+        "where": AND(
+            _armed("g"),
+            _in_pool("g"),
+            _routable("g"),
+            EQ(COUNT(NEIGH(V("g"), "mint_source")), L(1)),
+            NOT(EXISTS(NOT_("ExecOrder"), "o1", EQ(A(V("o1"), "status"),
+                                                   L("ordered")))),
+            NOT(EXISTS(NOT_("ExecOrder"), "o2",
+                       AND(EQ(A(V("o2"), "agid"), A(V("g"), "agid")),
+                           EQ(A(V("o2"), "ordered_epoch"), MEASURE_EPOCH())))),
+        ),
+        "effects": [
+            ["add_node", "o", "ExecOrder", {
+                "agid": T(A(V("g"), "agid")),
+                "goal_kind": T(A(V("g"), "kind")),
+                "runner": T(A(ROUTE("g"), "runner")),
+                "exec_class": T(A(ROUTE("g"), "name")),
+                "source_rid": T(A(ONE_OF(NEIGH(V("g"), "mint_source"), "ms"),
+                                  "rid")),
+                "evidence_artifact": T(A(V("g"), "evidence_artifact")),
+                "ordered_epoch": T(MEASURE_EPOCH()),
+                "status": "ordered",
+                "_the_decision_lives_here": (
+                    "which job to run is this rule's Argmin over the route "
+                    "table applied to the collapse's own winner.  The adapter "
+                    "reads `runner` and looks it up in a frozen table; it "
+                    "chooses nothing."),
+            }],
+            ["add_edge", "g", "has_exec_order", "o"],
+            ["add_edge", "agenda", "has_exec_order", "o"],
+            ["set_attr", "g", "status", "pursued"],
+            ["set_attr", "g", "pursued_epoch", T(MEASURE_EPOCH())],
+        ],
+    }
+
+
+def _r_retired_epoch():
+    return {
+        "name": "ax_retired_epoch",
+        "comment": (
+            "WHEN a goal reached its terminal status.  ag_remeasure_retire "
+            "(seeds/arc_goals.json, byte-frozen and gated) writes THAT it "
+            "retired; the anti-oscillation latch below is defined in "
+            "MEASUREMENT EPOCHS, and until this rung the epoch had no producer, "
+            "so there was nothing to stamp.  Fires on an ABSENT stamp "
+            "(`Eq(attr, Lit null)` is this tree's 'absent' test) OR on one "
+            "ax_rearm has CONSUMED -- the second disjunct is what makes a "
+            "SECOND retirement get its own epoch instead of inheriting the "
+            "first one's.  Disjoint from ax_rearm's guard by construction, so "
+            "the two never contend for the same goal in one pass."),
+        "batch": True,
+        "match": HUB + [["agenda", "has_arc_goal", "g"]],
+        "where": AND(
+            EQ(A(V("g"), "status"), L("retired")),
+            OR(EQ(A(V("g"), "retired_epoch"), L(None)),
+               EQ(A(V("g"), "retired_epoch"), L(CONSUMED))),
+        ),
+        "effects": [
+            ["set_attr", "g", "retired_epoch", T(MEASURE_EPOCH())],
+        ],
+    }
+
+
+def _r_rearm():
+    return {
+        "name": "ax_rearm",
+        "comment": (
+            "THE ANTI-OSCILLATION LATCH, AND IT IS TWO-SIDED BY CONSTRUCTION. "
+            "The arc-goal design's SS8.2 guard -- 'a selected goal moves to a "
+            "terminal status and only re-enters the pool on a measure_epoch "
+            "bump' -- recorded by that rung as NOT implemented because a "
+            "terminal status with no executor empties the pool with nothing "
+            "done.  Now there is an executor. "
+            "A retired re-measurement goal comes back ONLY when BOTH hold: its "
+            "source residual is GENUINELY STALE AGAIN (gr_condition_lapse's own "
+            "verdict, read off the residual -- this rule never re-evaluates a "
+            "condition), AND the MEASUREMENT EPOCH HAS ADVANCED past the epoch "
+            "it retired in.  The second half is what makes it a latch rather "
+            "than a flap: the moment after a re-measurement the residual is "
+            "un-stale AND the epoch is the retirement epoch, so BOTH halves "
+            "refuse.  A condition that re-fails inside the same epoch waits; a "
+            "new measurement without a re-failed condition changes nothing. "
+            "WHY NOT ag_mint_remeasure.  That rule's mint-once guard is the "
+            "monotone `remeasure_goal` EDGE LATCH and this engine has no "
+            "remove_edge, so it can never fire twice for one residual.  "
+            "Re-arming the EXISTING goal is therefore the only re-entry there "
+            "is, and it is the better one: the pool never grows a duplicate, "
+            "and `rearm_count` makes oscillation COUNTABLE."),
+        "batch": True,
+        "match": HUB + [["agenda", "has_arc_goal", "g"], ["r", "remeasure_goal", "g"]],
+        "where": AND(
+            EQ(A(V("g"), "status"), L("retired")),
+            EQ(A(V("r"), "stale"), L(1.0)),
+            NOT(EQ(A(V("g"), "retired_epoch"), L(None))),
+            NOT(EQ(A(V("g"), "retired_epoch"), L(CONSUMED))),
+            NOT(EQ(A(V("g"), "retired_epoch"), MEASURE_EPOCH())),
+        ),
+        "effects": [
+            ["set_attr", "g", "status", "minted"],
+            ["set_attr", "g", "rearmed_epoch", T(MEASURE_EPOCH())],
+            ["set_attr", "g", "rearmed_because",
+             "source_residual_stale_again_at_a_LATER_measurement_epoch"],
+            ["set_attr", "g", "rearm_count",
+             T(PLUS(ITE(EQ(A(V("g"), "rearm_count"), L(None)), L(0.0),
+                        A(V("g"), "rearm_count")), L(1.0)))],
+            # The retirement stamp must be CONSUMED, or the second retirement
+            # would keep the first one's epoch and the latch would compare
+            # against a dead number.  No unset_attr on this engine, so the
+            # sentinel does the work and ax_retired_epoch re-stamps over it.
+            ["set_attr", "g", "retired_epoch", CONSUMED],
+        ],
+    }
+
+
+def _r_close():
+    return {
+        "name": "ax_close",
+        "comment": (
+            "AN EXECUTION THAT COMPLETED IS A COUNTABLE GRAPH FACT.  The order "
+            "closes when its own goal has reached the terminal status -- i.e. "
+            "when ag_remeasure_retire fired, which happens only if the "
+            "re-measurement actually un-staled the source residual.  So a "
+            "CLOSED order is evidence the loop closed, and an order left at "
+            "`ran` is evidence it did not: the two are distinguishable without "
+            "reading any adapter return value."),
+        "batch": True,
+        "match": [["g", "has_exec_order", "o"]],
+        "where": AND(
+            EQ(A(V("o"), "status"), L("ran")),
+            EQ(A(V("g"), "status"), L("retired")),
+        ),
+        "effects": [
+            ["set_attr", "o", "status", "closed"],
+            ["set_attr", "o", "closed_epoch", T(MEASURE_EPOCH())],
+            ["set_attr", "o", "outcome",
+             "goal_retired_source_residual_no_longer_stale"],
+        ],
+    }
+
+
+def _rules():
+    return [_r_dispatch(), _r_retired_epoch(), _r_rearm(), _r_close()]
+
+
+def build():
+    return {
+        "_GENERATED_BY": "tools/build_arc_executor_seed.py",
+        "_REGENERATION_IS_GATED_BYTE_IDENTICAL": (
+            "tests/test_arc_executor_migrated.py::test_ex6_the_seed_"
+            "REGENERATES_byte_identically re-runs this builder and diffs.  The "
+            "Term idioms are IMPORTED from tools/build_arc_goals_seed.py, so if "
+            "MEASURE_EPOCH or the pool predicate ever changes there, this seed "
+            "goes out of date LOUDLY instead of silently diverging."),
+        "self_load_only": True,
+        "_SELF_LOAD_ONLY_RATIONALE": (
+            "substrate/boot_all.py::_read_seeds GLOBS seeds/*.json and installs "
+            "every match at boot, so a file here is live in EVERY agent in the "
+            "tree the moment it lands.  seeds/arc_goals.json and "
+            "seeds/arc_magnitude.json both ship self_load_only for that reason "
+            "and this seed keeps the gating: an executor that dispatches jobs "
+            "is the LAST thing that should arrive in every agent by a glob.  "
+            "Activation is one key and a paired tree-wide sweep."),
+        "id": "arc_executor",
+        "version": "1.0.0",
+        "depends_on": ["goal_residuals", "arc_goals"],
+        "description": (
+            "AG-5 -- THE EXECUTOR AND THE STATUS LIFECYCLE.  Two independent "
+            "rungs converged on this as the blocker: the arc-goal rung called "
+            "itself 'a planning layer with no hands', and the magnitude rung "
+            "found decomposition blocked because a parent goal must LEAVE THE "
+            "POOL and nothing in this tree ever wrote a terminal status.  This "
+            "seed is the missing seam, and it is four rules. "
+            "ax_dispatch turns the arc-grain collapse's winner into an "
+            "ExecOrder, routed by route_pick's own Argmin-over-cues shape, and "
+            "is STRUCTURALLY INCAPABLE of ordering a goal whose kind has no "
+            "ExecClass -- on the shipped graph the winner is exactly such a "
+            "goal.  ax_retired_epoch stamps when a goal went terminal.  "
+            "ax_rearm is the anti-oscillation latch: a retired goal re-enters "
+            "the pool only when its source residual is genuinely stale again "
+            "AND the measurement epoch has advanced.  ax_close makes a "
+            "completed execution countable. "
+            "THE EPOCH ITSELF: `arc_measure_epoch` was a counter with no "
+            "producer, and every expiry mechanism in the two rungs below turns "
+            "on it.  The adapter bumps it WHEN AND ONLY WHEN a measurement "
+            "actually ran, so an unconditioned answer's one-epoch life is now "
+            "measured in measurements."),
+        "microtheory": "arc6_executor",
+        "nodes": _nodes(),
+        "edges": _edges(),
+        "productions": _productions(),
+        "rules": _rules(),
+    }
+
+
+def main() -> None:
+    doc = build()
+    text = json.dumps(doc, indent=2, sort_keys=False) + "\n"
+    if "--check" in sys.argv:
+        cur = open(OUT).read() if os.path.exists(OUT) else ""
+        if cur != text:
+            raise SystemExit("seeds/arc_executor.json is OUT OF DATE — re-run "
+                             "tools/build_arc_executor_seed.py")
+        print("up to date")
+        return
+    with open(OUT, "w") as fh:
+        fh.write(text)
+    print("wrote", OUT, "(%d bytes, %d rules)" % (len(text), len(doc["rules"])))
+
+
+if __name__ == "__main__":
+    main()

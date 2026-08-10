@@ -1,0 +1,49 @@
+{
+ "id": "reading_async_areas",
+ "version": "1.0.0",
+ "self_load_only": true,
+ "depends_on": ["cognitive_areas", "reading_cortices"],
+ "description": "Maps the five logical reading cortices onto generic CognitiveArea graph data. It defines no scheduler and no Python worker: the core task runtime supplies execution.",
+ "microtheory": {
+  "name": "reading_async_areas",
+  "description": "reading cortex semantics on the generic asynchronous cognitive core"
+ },
+ "nodes": [
+  {"local_id": 1, "type": "CognitiveArea", "attrs": {"name": "reading:language", "cortex": "language", "logical_tick": 0, "input_epoch": 0, "desired_workers": 1, "effort": 0.0, "status": "active", "last_residual_epoch": -1}},
+  {"local_id": 2, "type": "CognitiveArea", "attrs": {"name": "reading:situation", "cortex": "situation", "logical_tick": 0, "input_epoch": 0, "desired_workers": 1, "effort": 0.0, "status": "active", "last_residual_epoch": -1}},
+  {"local_id": 3, "type": "CognitiveArea", "attrs": {"name": "reading:social", "cortex": "social", "logical_tick": 0, "input_epoch": 0, "desired_workers": 1, "effort": 0.0, "status": "active", "last_residual_epoch": -1}},
+  {"local_id": 4, "type": "CognitiveArea", "attrs": {"name": "reading:narrative", "cortex": "narrative", "logical_tick": 0, "input_epoch": 0, "desired_workers": 1, "effort": 0.0, "status": "active", "last_residual_epoch": -1}},
+  {"local_id": 5, "type": "CognitiveArea", "attrs": {"name": "reading:executive", "cortex": "executive", "logical_tick": 0, "input_epoch": 0, "desired_workers": 1, "effort": 0.0, "status": "active", "last_residual_epoch": -1}}
+ ],
+ "edges": [
+  {"src": {"role": "agent_root"}, "tgt": {"local": 1}, "type": "has_cognitive_area", "attrs": {}},
+  {"src": {"role": "agent_root"}, "tgt": {"local": 2}, "type": "has_cognitive_area", "attrs": {}},
+  {"src": {"role": "agent_root"}, "tgt": {"local": 3}, "type": "has_cognitive_area", "attrs": {}},
+  {"src": {"role": "agent_root"}, "tgt": {"local": 4}, "type": "has_cognitive_area", "attrs": {}},
+  {"src": {"role": "agent_root"}, "tgt": {"local": 5}, "type": "has_cognitive_area", "attrs": {}}
+ ],
+ "productions": [
+  {"provenance": "seed:reading_async_areas:cortex-area", "src": {"type": "Cortex", "var": "cortex"}, "edge_type": "maps_to_area", "tgt": {"type": "CognitiveArea", "var": "area"}},
+  {"provenance": "seed:reading_async_areas:stage-area", "src": {"type": "AnalysisStage", "var": "stage"}, "edge_type": "in_cognitive_area", "tgt": {"type": "CognitiveArea", "var": "area"}}
+ ],
+ "rules": [
+  {
+   "name": "reading_map_cortex_to_generic_area",
+   "area": "scheduler",
+   "order": 1,
+   "latency_class": "best_effort",
+   "match": [["agent", "has_cortex", "cortex"], ["agent", "has_cognitive_area", "area"]],
+   "where": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "cortex"}, "key": "name"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "area"}, "key": "cortex"}},
+   "effects": [["add_edge", "cortex", "maps_to_area", "area", {}]]
+  },
+  {
+   "name": "reading_map_stage_to_generic_area",
+   "area": "scheduler",
+   "order": 1,
+   "latency_class": "best_effort",
+   "match": [["stage", "in_cortex", "cortex"], ["cortex", "maps_to_area", "area"]],
+   "where": null,
+   "effects": [["add_edge", "stage", "in_cognitive_area", "area", {}]]
+  }
+ ]
+}

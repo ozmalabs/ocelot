@@ -1,0 +1,59 @@
+{
+  "id": "stage2_boundary",
+  "version": "1.0.0",
+  "depends_on": ["stage1_control"],
+  "description": "Stage 2 of the jabberwock's own curriculum (docs/jabberwock_game_play_design.md): 'the boundary is destruction', UNDERSTOOD. Builds on Stage 1's action_delta. Per its design's termination_prior: roll the controlled-Region model FORWARD one step under each action (cy + action_delta); a predicted next state with NO MODELLED CONTINUATION — off the segmented world — predicts TERMINATION of the Region all the agent's agency depends on. The agent avoids it not by dying and learning a handler, but because the forward rollout predicts no surviving trajectory there (it knows WITHOUT dying). Action selection scores each action and picks the max via competitive-inhibition (Argmax): a predicted-terminating action is catastrophic (huge negative), so it is never chosen while any safe action exists. Death falls with NO death handler. (Surprise can still refine this prior — in a wrap-around world the edge would be observed passable and fold in; that is Stage 4+.)",
+  "microtheory": {"name": "stage2_boundary", "description": "roll the model forward; a move off the world = no continuation = termination; choose the safe action; the boundary is understood as destruction, no death handler."},
+  "nodes": [],
+  "edges": [],
+  "productions": [],
+  "rules": [
+    {
+      "name": "roll_forward",
+      "comment": "The forward rollout (1-step) of the controlled Region under each action: predicted next centroid = its centroid + that action's learned action_delta. Only for the controlled region (respond_votes>=2) and the interaction affordances.",
+      "match": [["game", "has_action", "act"], ["game", "has_region", "c"]],
+      "where": {"type": "And", "items": [
+        {"type": "Gte", "a": {"type": "Plus", "items": [{"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "respond_votes"}, {"type": "Lit", "value": 0}]}, "b": {"type": "Lit", "value": 2}},
+        {"type": "Eq", "a": {"type": "Plus", "items": [{"type": "Attr", "node": {"type": "Var", "name": "act"}, "key": "interaction"}, {"type": "Lit", "value": 0}]}, "b": {"type": "Lit", "value": 1.0}}
+      ]},
+      "effects": [
+        ["set_attr", "act", "predicted_cy", {"__term__": {"type": "Plus", "items": [{"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "cy"}, {"type": "Plus", "items": [{"type": "Attr", "node": {"type": "Var", "name": "act"}, "key": "dcy"}, {"type": "Lit", "value": 0.0}]}]}}],
+        ["set_attr", "act", "predicted_cx", {"__term__": {"type": "Plus", "items": [{"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "cx"}, {"type": "Plus", "items": [{"type": "Attr", "node": {"type": "Var", "name": "act"}, "key": "dcx"}, {"type": "Lit", "value": 0.0}]}]}}]
+      ]
+    },
+    {
+      "name": "mark_terminates",
+      "comment": "TERMINATION PRIOR: a rolled-forward state OFF the segmented world (the block's centroid past any edge, given the world's observed extent game.h/game.w) has no modelled continuation -> predict termination. terminates=1. This is the prior 'beyond the world there is no next-state defined', applied to the rollout — known without dying.",
+      "match": [["game", "has_action", "act"]],
+      "where": {"type": "Eq", "a": {"type": "Plus", "items": [{"type": "Attr", "node": {"type": "Var", "name": "act"}, "key": "interaction"}, {"type": "Lit", "value": 0}]}, "b": {"type": "Lit", "value": 1.0}},
+      "effects": [
+        ["set_attr", "act", "terminates", {"__term__": {"type": "IfThenElse", "cond": {"type": "Or", "items": [
+          {"type": "Lt", "a": {"type": "Plus", "items": [{"type": "Attr", "node": {"type": "Var", "name": "act"}, "key": "predicted_cy"}, {"type": "Lit", "value": 0.0}]}, "b": {"type": "Lit", "value": 0.5}},
+          {"type": "Gt", "a": {"type": "Plus", "items": [{"type": "Attr", "node": {"type": "Var", "name": "act"}, "key": "predicted_cy"}, {"type": "Lit", "value": 0.0}]}, "b": {"type": "Minus", "a": {"type": "Attr", "node": {"type": "Var", "name": "game"}, "key": "h"}, "b": {"type": "Lit", "value": 1.5}}},
+          {"type": "Lt", "a": {"type": "Plus", "items": [{"type": "Attr", "node": {"type": "Var", "name": "act"}, "key": "predicted_cx"}, {"type": "Lit", "value": 0.0}]}, "b": {"type": "Lit", "value": 0.5}},
+          {"type": "Gt", "a": {"type": "Plus", "items": [{"type": "Attr", "node": {"type": "Var", "name": "act"}, "key": "predicted_cx"}, {"type": "Lit", "value": 0.0}]}, "b": {"type": "Minus", "a": {"type": "Attr", "node": {"type": "Var", "name": "game"}, "key": "w"}, "b": {"type": "Lit", "value": 1.5}}}
+        ]}, "then": {"type": "Lit", "value": 1.0}, "other": {"type": "Lit", "value": 0.0}}}]
+      ]
+    },
+    {
+      "name": "choose_safe_action",
+      "comment": "Action selection = roll forward, score, pick the max (competitive_inhibition via Argmax over the action affordances). score = directional-gate * (safe*1000 + momentum*100 + idx) − terminates*100000. A predicted-terminating action is CATASTROPHE (−100000): never chosen while any safe action exists. Among safe directionals, momentum (continue the heading) is preferred, so the agent moves coherently and turns only at a boundary it predicts would destroy it. chosen_action = the winning affordance's name (Attr of the Argmax result). No goals yet (Stage 3) — here the only drive is to keep existing.",
+      "match": [["bd", "inhabits", "game"]],
+      "where": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "game"}, "key": "world_type"}, "b": {"type": "Lit", "value": "Game"}},
+      "effects": [
+        ["set_attr", "game", "chosen_action", {"__term__": {"type": "Attr", "key": "name", "node": {"type": "Argmax",
+          "source": {"type": "Neighbours", "node": {"type": "Var", "name": "game"}, "edge_type": "has_action", "any_type": false},
+          "var_name": "act",
+          "value": {"type": "Minus",
+            "a": {"type": "Times", "items": [
+              {"type": "IfThenElse", "cond": {"type": "Lt", "a": {"type": "Plus", "items": [{"type": "Attr", "node": {"type": "Var", "name": "act"}, "key": "idx"}, {"type": "Lit", "value": 0}]}, "b": {"type": "Lit", "value": 4.0}}, "then": {"type": "Lit", "value": 1.0}, "other": {"type": "Lit", "value": 0.0}},
+              {"type": "Plus", "items": [
+                {"type": "Times", "items": [{"type": "Minus", "a": {"type": "Lit", "value": 1.0}, "b": {"type": "Plus", "items": [{"type": "Attr", "node": {"type": "Var", "name": "act"}, "key": "terminates"}, {"type": "Lit", "value": 0.0}]}}, {"type": "Lit", "value": 1000.0}]},
+                {"type": "Times", "items": [{"type": "IfThenElse", "cond": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "act"}, "key": "name"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "game"}, "key": "last_action"}}, "then": {"type": "Lit", "value": 1.0}, "other": {"type": "Lit", "value": 0.0}}, {"type": "Lit", "value": 100.0}]},
+                {"type": "Plus", "items": [{"type": "Attr", "node": {"type": "Var", "name": "act"}, "key": "idx"}, {"type": "Lit", "value": 0.0}]}]}]},
+            "b": {"type": "Times", "items": [{"type": "Plus", "items": [{"type": "Attr", "node": {"type": "Var", "name": "act"}, "key": "terminates"}, {"type": "Lit", "value": 0.0}]}, {"type": "Lit", "value": 100000.0}]}}
+        }}}]
+      ]
+    }
+  ]
+}

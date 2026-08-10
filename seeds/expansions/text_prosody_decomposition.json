@@ -1,0 +1,77 @@
+{
+  "id": "text_prosody_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "emphasis",
+  "in_microtheory": "prosody",
+  "description": "How prosody is SERIALIZED in text — the orthographic/paralinguistic markers that carry the (medium-independent) prosodic functions in a written message. The corpus DESCRIBES delivery; this is the bit it doesn't do for the agent — parsing the actual markers in a live message. sub_mechanisms name the marker types; derivation_rules map marker → function. The agent grounds WHICH marker means what from the real chat stream (frame-relative, Axiom 0 — '!!!' differs by register); these are the seed inventory, not fixed rules.",
+  "sub_mechanisms": [
+    { "name": "punctuation_contour", "definition": "Terminal and internal punctuation as intonation/timing: ? rising, . final, ! emphatic, … trailing/suspense, — interruption/aside, , minor break.", "why": "The clearest text serialization of sentence_type and pacing.", "category": "text_prosody_marker" },
+    { "name": "capitalization", "definition": "ALL CAPS as loudness/shouting; Deliberate lowercase as flat/casual register.", "why": "Volume has no acoustic dimension in text; caps stand in for it.", "category": "text_prosody_marker" },
+    { "name": "emphasis_markup", "definition": "*italics* / **bold** marking the stressed/focused element.", "why": "Direct serialization of pitch-accent / contrastive focus.", "category": "text_prosody_marker" },
+    { "name": "vowel_elongation", "definition": "Repeated letters ('sooo', 'noooo', 'yesss') = lengthening for emphasis/affect.", "why": "Duration is a prosodic dimension; repetition encodes it orthographically.", "category": "text_prosody_marker" },
+    { "name": "repeated_punctuation", "definition": "'!!!', '???', '?!' = intensity, incredulity, urgency.", "why": "Graded affect/intensity beyond a single mark.", "category": "text_prosody_marker" },
+    { "name": "scare_quotes", "definition": "Quotation marks around a word to distance from / negate its literal sense ('a \"great\" idea').", "why": "The text serialization of delivery_contradicts_content — irony without an acoustic contour.", "category": "text_prosody_marker" },
+    { "name": "emoji_affect", "definition": "Emoji / emoticons as an explicit affect channel stating the intended emotional colouring.", "why": "The digital paralinguistic channel; often the affect signal when delivery can't be heard.", "category": "text_prosody_marker" },
+    { "name": "aside_device", "definition": "Parentheses, em-dashes, and footnotes as a lowered-voice secondary channel — a 'by the way' set apart from the main line.", "why": "Structure as prosody: marks a passage as backgrounded/quieter, a turn-internal aside.", "category": "text_prosody_marker" },
+    { "name": "register_word_choice", "definition": "Formality, slang, contractions, sentence length as register/stance signals.", "why": "Stance is carried lexically in text where tone-of-voice would carry it in speech.", "category": "text_prosody_marker" },
+    { "name": "sentence_rhythm", "definition": "Length variation, fragments, and line breaks as pacing — short fragments quicken, long clauses slow.", "why": "Rhythm/pacing serialized through structure rather than timing.", "category": "text_prosody_marker" }
+  ],
+  "derivation_rules": [
+    {
+      "name": "terminal_punctuation_marks_sentence_type",
+      "if": ["an utterance ends with '?' / '.' / '!'"],
+      "then": ["sentence_type is question / statement / emphatic-statement respectively — UNLESS other markers override (a '?' on a declarative can be incredulity, not a real question)"],
+      "why": "The default text serialization of sentence_type; the override clause is why it must be grounded, not hard-coded.",
+      "soundness_category": "text_realization"
+    },
+    {
+      "name": "emphasis_markup_marks_focus",
+      "if": ["a span is *italicized* / **bold** / Capitalised-for-stress within a sentence"],
+      "then": ["that span carries emphasis / contrastive focus — it is the foregrounded element"],
+      "why": "Direct serialization of pitch-accent. The focused element changes what the utterance contrasts against.",
+      "soundness_category": "text_realization"
+    },
+    {
+      "name": "all_caps_marks_loudness_affect",
+      "if": ["a multi-letter span is ALL CAPS (not an acronym)"],
+      "then": ["heightened loudness + affect — shouting, intensity, or urgency"],
+      "why": "Caps stand in for the volume dimension text lacks; feeds the affect function.",
+      "soundness_category": "text_realization"
+    },
+    {
+      "name": "scare_quotes_mark_delivery_contradiction",
+      "if": ["a word carrying positive/neutral literal sense appears in scare quotes"],
+      "then": ["delivery_contradicts_content — the literal sense is distanced/negated; the irony frame should fire"],
+      "why": "The text serialization of sarcasm: contradiction between literal word and marked delivery, with no acoustic contour available.",
+      "soundness_category": "text_realization"
+    },
+    {
+      "name": "ellipsis_and_dash_mark_pacing",
+      "if": ["'…' or a mid-clause '—' appears"],
+      "then": ["a pause / trailing-off / interruption — pacing: hesitation, suspense, or an aside"],
+      "why": "Silence is a prosodic act; text marks it with these.",
+      "soundness_category": "text_realization"
+    },
+    {
+      "name": "elongation_and_repeated_punct_mark_intensity",
+      "if": ["a vowel is elongated ('soooo') OR punctuation is repeated ('!!!', '?!')"],
+      "then": ["heightened intensity / affect — duration or emphasis scaled up"],
+      "why": "Graded affect serialized through repetition (the text proxy for amplitude/duration).",
+      "soundness_category": "text_realization"
+    },
+    {
+      "name": "aside_device_marks_backgrounded_channel",
+      "if": ["a passage is set in parentheses, between em-dashes, or in a footnote"],
+      "then": ["it is an aside — a lowered-voice, backgrounded secondary channel, not the main assertion"],
+      "why": "Structure-as-prosody: marks the passage as quieter/parenthetical, a turn-internal 'by the way'.",
+      "soundness_category": "text_realization"
+    },
+    {
+      "name": "register_shift_marks_stance",
+      "if": ["word-choice formality shifts within or across an utterance (sophisticated next to crude, formal next to slang)"],
+      "then": ["a stance/register signal — the mismatch itself is meaningful (mock-formality, sincerity break, irony)"],
+      "why": "Stance is carried lexically in text; an abrupt register shift is the written equivalent of a tone change.",
+      "soundness_category": "text_realization"
+    }
+  ]
+}

@@ -1,0 +1,118 @@
+{
+  "id": "linux_network_stack_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "TSO_GSO_offload",
+  "in_microtheory": "network_protocols",
+  "description": "Linux's network stack decomposed. The journey of a packet from NIC to user space (or back). NAPI poll loop, GRO coalescing, protocol stack walk (IP → TCP/UDP), socket queue, sendmsg / recvmsg. Modern features: BPF / XDP at the lowest layer, eBPF for in-kernel programmability, MSG_ZEROCOPY, io_uring. The stack carries 30 years of optimisation; understanding it is required for high-performance networking.",
+  "sub_mechanisms": [
+    {
+      "name": "NAPI_poll",
+      "definition": "New API for receive: interrupt fires for first packet, then NIC driver polls in soft-irq context for batched packets. Reduces interrupt rate.",
+      "why": "At line rate, pure interrupt-per-packet would saturate the CPU on interrupt overhead. NAPI amortises: one interrupt to enter poll mode, then drain the queue. Effective for 10+ Gbps NICs.",
+      "category": "linux_net_mechanism"
+    },
+    {
+      "name": "GRO_coalescing",
+      "definition": "Generic Receive Offload: kernel coalesces consecutive in-flow packets into one super-packet before handing to upper layers.",
+      "why": "Stack processes fewer items at higher per-item cost = lower total cost. Critical for receiver-side high throughput. Hardware GRO is even faster.",
+      "category": "linux_net_mechanism"
+    },
+    {
+      "name": "sk_buff",
+      "definition": "Socket buffer: kernel's packet data structure. Carries headers, payload pointers, network metadata. Allocated per-packet (without GRO).",
+      "why": "Universal packet representation. All kernel net code operates on sk_buff. Allocation/free is one of the higher-cost paths; XDP runs before sk_buff allocation precisely to avoid this.",
+      "category": "linux_net_mechanism"
+    },
+    {
+      "name": "netfilter_hooks",
+      "definition": "5 hook points in the IP layer (PREROUTING, INPUT, FORWARD, OUTPUT, POSTROUTING). iptables / nftables register rules at these.",
+      "why": "Where firewalling, NAT, packet mangling happen. The hooks are stable interfaces; rules can be added/removed dynamically. nftables is the modern replacement for iptables.",
+      "category": "linux_net_mechanism"
+    },
+    {
+      "name": "TCP_socket_buffer",
+      "definition": "Per-socket send + receive buffers. SO_SNDBUF, SO_RCVBUF tunables. Auto-tuning via tcp_rmem, tcp_wmem.",
+      "why": "Decouples kernel network processing from user-space. Sender writes; kernel sends asynchronously. Receiver kernel collects; user reads when ready. Buffer size affects throughput at high BDP.",
+      "category": "linux_net_mechanism"
+    },
+    {
+      "name": "qdisc_queueing_discipline",
+      "definition": "TX-side queue management. Default: pfifo_fast (3 priorities). Modern: fq_codel (fair queueing + active queue management).",
+      "why": "Where bufferbloat happens (or doesn't). pfifo can fill huge buffers; fq_codel sheds tail packets to keep latency low. Default qdisc choice substantially affects host-level latency.",
+      "category": "linux_net_mechanism"
+    },
+    {
+      "name": "MSG_ZEROCOPY",
+      "definition": "Send flag indicating user-space buffer should be used in-place by NIC DMA, without kernel copy. Completion notification when NIC done.",
+      "why": "Reduces CPU + memory bandwidth on send. Per-packet allocation savings ~10-20%. Used by high-performance Java apps (Apache Kafka), Netflix's content delivery.",
+      "category": "linux_net_mechanism"
+    },
+    {
+      "name": "io_uring_async_io",
+      "definition": "Modern async I/O interface (RWF_NOWAIT, IORING_OP_SEND/RECV). Submit ring + completion ring, no syscall per operation.",
+      "why": "Traditional async (epoll + nonblocking) requires syscall per operation. io_uring batches via ring buffers. Order-of-magnitude lower syscall overhead for high-rate I/O. Replacing epoll for high-performance servers.",
+      "category": "linux_net_mechanism"
+    },
+    {
+      "name": "XDP_eXpress_Data_Path",
+      "definition": "BPF program runs at NIC driver, before sk_buff allocation. Can drop, redirect, or modify packets at line rate.",
+      "why": "Skip the kernel stack entirely for fast paths. DDoS mitigation (XDP-based filtering at 100+ Mpps), in-kernel load balancing (Cilium, Katran). Used where DPDK is too heavy.",
+      "category": "linux_net_mechanism"
+    },
+    {
+      "name": "eBPF_kernel_programming",
+      "definition": "Extended BPF: in-kernel sandboxed bytecode. Hooks at many places (XDP, tc, kprobe, tracepoint). Verified for safety before loading.",
+      "why": "Programmable kernel without modifying source. Tools: bpftrace, perf, cilium, falco. Performance close to native because compiled to native code by JIT. Critical infrastructure layer in modern Linux.",
+      "category": "linux_net_mechanism"
+    },
+    {
+      "name": "TCP_offload_engine",
+      "definition": "NIC implements TCP processing in silicon. Software just submits sockets; NIC handles segmentation, checksums, retransmits.",
+      "why": "Moves CPU work to NIC. Common in storage (iSCSI/NVMe-oF). Linux supports TOE poorly; most deployments use partial offload (TSO/GRO) instead.",
+      "category": "linux_net_mechanism"
+    },
+    {
+      "name": "BPF_socket_filter",
+      "definition": "BPF program attached to a socket; decides which packets are delivered. Original use of BPF: tcpdump.",
+      "why": "Efficient filtering: tcpdump compiles its filter expression to BPF; kernel applies it before copying to user space. Many derived applications: seccomp uses BPF for syscall filtering.",
+      "category": "linux_net_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "NAPI_amortises_interrupt_cost",
+      "if": ["packets arrive at high rate"],
+      "then": ["NAPI's polled batches outperform per-packet interrupts"],
+      "why": "Each interrupt costs ~1μs. At 10 Mpps, pure interrupt mode would consume 10 CPUs in interrupt overhead alone. NAPI: one interrupt + sustained polling, amortising the entry cost across many packets.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "kernel_stack_caps_throughput_at_high_speeds",
+      "if": ["NIC can deliver 100 Gbps"],
+      "then": ["kernel stack overhead limits effective throughput"],
+      "why": "Stack walk per packet costs ~1μs. At 10 Mpps (line rate for small packets), this is 10 CPU-seconds per CPU-second. Kernel bypass (DPDK) or near-bypass (XDP) is required to reach line rate.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "fq_codel_eliminates_bufferbloat",
+      "if": ["qdisc is fq_codel"],
+      "then": ["bufferbloat at the host is eliminated"],
+      "why": "CoDel measures packet sojourn time; drops packets that wait too long. fq + CoDel: fair queueing across flows + AQM per flow. End-host bufferbloat (a major source of latency) is solved at the qdisc layer.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "XDP_runs_before_stack_allocation",
+      "if": ["XDP processing is at NIC driver layer"],
+      "then": ["sk_buff allocation cost is skipped for dropped packets"],
+      "why": "Allocating sk_buff costs ~200ns. DDoS mitigation needs to drop 10+ Mpps; allocating then freeing would consume CPU on the attack itself. XDP drops before allocation — sustained drops at 100+ Mpps per CPU possible.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "io_uring_batches_amortise_syscall",
+      "if": ["I/O operations are submitted via io_uring rings"],
+      "then": ["no syscall is required per operation"],
+      "why": "epoll: one syscall per operation. io_uring: shared ring buffer; user space writes operations, kernel reads + processes. One syscall amortises hundreds of operations. Dominant interface for new high-perf code (Postgres, Spdk, ScyllaDB).",
+      "soundness_category": "cost_equivalence"
+    }
+  ]
+}

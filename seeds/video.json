@@ -1,0 +1,70 @@
+{
+  "id": "video",
+  "version": "1.0.0",
+  "depends_on": [],
+  "description": "Video codec grammar: VideoContainer / VideoStream / Frame / MotionVector + their relationship edges.",
+  "nodes": [],
+  "edges": [],
+  "productions": [
+    {
+      "src": {
+        "type": "Frame",
+        "var": "src"
+      },
+      "edge_type": "follows",
+      "tgt": {
+        "type": "Frame",
+        "var": "tgt"
+      },
+      "provenance": "video:frame_follows_frame"
+    },
+    {
+      "src": {
+        "type": "Frame",
+        "var": "src"
+      },
+      "edge_type": "has_motion_vector",
+      "tgt": {
+        "type": "MotionVector",
+        "var": "tgt"
+      },
+      "provenance": "video:frame_has_mv"
+    },
+    {
+      "src": {
+        "type": "MotionVector",
+        "var": "src"
+      },
+      "edge_type": "mv_from",
+      "tgt": {
+        "type": "Frame",
+        "var": "tgt"
+      },
+      "provenance": "video:mv_from_frame"
+    },
+    {
+      "src": {
+        "type": "VideoContainer",
+        "var": "src"
+      },
+      "edge_type": "has_stream",
+      "tgt": {
+        "type": "VideoStream",
+        "var": "tgt"
+      },
+      "provenance": "video:container_has_stream"
+    },
+    {
+      "src": {
+        "type": "VideoStream",
+        "var": "src"
+      },
+      "edge_type": "has_frame",
+      "tgt": {
+        "type": "Frame",
+        "var": "tgt"
+      },
+      "provenance": "video:stream_has_frame"
+    }
+  ]
+}

@@ -1,0 +1,171 @@
+{
+  "id": "boot_metacognition",
+  "version": "1.0.0",
+  "depends_on": ["gap_awareness"],
+  "capability_keys": ["boot_metacognition", "self_monitoring"],
+  "description": "Graph-native metacognition over boot evidence. The host loader only translates Rust load outcomes into a BootCycle and exceptional BootSeedAnomaly observations. These rules—not Python—decide whether the completed boot is healthy or compromised, file a standard SelfConcern, and retain every anomaly as evidence. The decision is categorical and contains no floating-point threshold or magic number.",
+  "nodes": [],
+  "edges": [],
+  "productions": [],
+  "rules": [
+    {
+      "name": "assess_compromised_boot",
+      "match": [
+        ["agent", "observed_boot", "cycle"],
+        ["cycle", "has_seed_anomaly", "anomaly"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "cycle"}, "key": "status"},
+            "b": {"type": "Lit", "value": "complete"}
+          },
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "cycle"}, "key": "integrity"},
+            "b": {"type": "Lit", "value": "unassessed"}
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {"type": "NodesOfType", "node_type": "SelfConcern"},
+              "var_name": "existing",
+              "predicate": {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {"type": "Attr", "node": {"type": "Var", "name": "existing"}, "key": "kind"},
+                    "b": {"type": "Lit", "value": "boot_integrity"}
+                  },
+                  {
+                    "type": "Not",
+                    "arg": {
+                      "type": "Eq",
+                      "a": {"type": "Attr", "node": {"type": "Var", "name": "existing"}, "key": "status"},
+                      "b": {"type": "Lit", "value": "retired"}
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        ["set_attr", "cycle", "integrity", "compromised"],
+        ["add_node", "concern", "SelfConcern", {
+          "status": "noted",
+          "source": "implicit",
+          "kind": "boot_integrity",
+          "content": "core boot integrity is compromised; inspect the linked seed-load evidence"
+        }],
+        ["add_edge", "agent", "has_self_concern", "concern"],
+        ["add_edge", "concern", "about_boot", "cycle"]
+      ]
+    },
+    {
+      "name": "reuse_boot_integrity_concern",
+      "match": [
+        ["agent", "observed_boot", "cycle"],
+        ["cycle", "has_seed_anomaly", "anomaly"],
+        ["agent", "has_self_concern", "concern"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "cycle"}, "key": "status"},
+            "b": {"type": "Lit", "value": "complete"}
+          },
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "cycle"}, "key": "integrity"},
+            "b": {"type": "Lit", "value": "unassessed"}
+          },
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "concern"}, "key": "kind"},
+            "b": {"type": "Lit", "value": "boot_integrity"}
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {"type": "Attr", "node": {"type": "Var", "name": "concern"}, "key": "status"},
+              "b": {"type": "Lit", "value": "retired"}
+            }
+          }
+        ]
+      },
+      "effects": [
+        ["set_attr", "cycle", "integrity", "compromised"],
+        ["add_edge", "concern", "about_boot", "cycle"]
+      ]
+    },
+    {
+      "name": "assess_healthy_boot",
+      "match": [["agent", "observed_boot", "cycle"]],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "cycle"}, "key": "status"},
+            "b": {"type": "Lit", "value": "complete"}
+          },
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "cycle"}, "key": "integrity"},
+            "b": {"type": "Lit", "value": "unassessed"}
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {"type": "Var", "name": "cycle"},
+                "edge_type": "has_seed_anomaly",
+                "any_type": false
+              },
+              "var_name": "other",
+              "predicate": {"type": "Lit", "value": true}
+            }
+          }
+        ]
+      },
+      "effects": [["set_attr", "cycle", "integrity", "healthy"]]
+    },
+    {
+      "name": "bind_boot_anomaly_evidence",
+      "match": [
+        ["concern", "about_boot", "cycle"],
+        ["cycle", "has_seed_anomaly", "anomaly"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "concern"}, "key": "kind"},
+            "b": {"type": "Lit", "value": "boot_integrity"}
+          },
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "anomaly"}, "key": "assessment"},
+            "b": {"type": "Lit", "value": "unexamined"}
+          }
+        ]
+      },
+      "effects": [
+        ["set_attr", "anomaly", "assessment", "evidence_for_concern"],
+        ["add_edge", "concern", "supported_by", "anomaly"]
+      ]
+    }
+  ]
+}

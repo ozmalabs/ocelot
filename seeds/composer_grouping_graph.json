@@ -1,0 +1,280 @@
+{
+ "id": "composer_grouping_graph",
+ "version": "1.0.0",
+ "depends_on": [],
+ "description": "GRAPH-RESIDENT: _compose_grouping_rule as a meta-rule. Mints fuse_whole_<tag> + whole_cells_<tag> from a wants_grouping_rule trigger. Static content, dynamic id only.",
+ "nodes": [
+  {
+   "local_id": 1,
+   "type": "Rule",
+   "attrs": {
+    "id": "compose_grouping_graph",
+    "match": [
+     [
+      "agent",
+      "wants_grouping_rule",
+      "cr"
+     ]
+    ],
+    "where": {
+     "type": "Lt",
+     "a": {
+      "type": "Plus",
+      "items": [
+       {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "cr"
+        },
+        "key": "composed"
+       },
+       {
+        "type": "Lit",
+        "value": 0.0
+       }
+      ]
+     },
+     "b": {
+      "type": "Lit",
+      "value": 0.5
+     }
+    },
+    "effect": [
+     [
+      "add_node",
+      "rn0",
+      "Rule",
+      {
+       "minted": 0.0
+      }
+     ],
+     [
+      "set_attr",
+      "rn0",
+      "id",
+      {
+       "__term__": {
+        "type": "StringConcat",
+        "parts": [
+         {
+          "type": "Lit",
+          "value": "fuse_whole_"
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "cr"
+          },
+          "key": "tag"
+         }
+        ]
+       }
+      }
+     ],
+     [
+      "set_attr",
+      "rn0",
+      "match",
+      [
+       [
+        "game",
+        "has_feature",
+        "F"
+       ]
+      ]
+     ],
+     [
+      "set_attr",
+      "rn0",
+      "where",
+      {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "F"
+        },
+        "key": "responds_to_my_action"
+       },
+       "b": {
+        "type": "Lit",
+        "value": true
+       }
+      }
+     ],
+     [
+      "set_attr",
+      "rn0",
+      "effect",
+      [
+       [
+        "add_node_if_absent",
+        "obj",
+        "Object",
+        {
+         "fkey": 777777.0,
+         "is_body": 1.0
+        }
+       ],
+       [
+        "add_edge",
+        "game",
+        "has_object",
+        "obj"
+       ],
+       [
+        "add_edge",
+        "obj",
+        "has_part",
+        "F"
+       ]
+      ]
+     ],
+     [
+      "set_rule_clause",
+      {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "rn0"
+        },
+        "key": "id"
+       }
+      },
+      "__mint__",
+      {
+       "__term__": {
+        "type": "Var",
+        "name": "rn0"
+       }
+      }
+     ],
+     [
+      "add_node",
+      "rn1",
+      "Rule",
+      {
+       "minted": 0.0
+      }
+     ],
+     [
+      "set_attr",
+      "rn1",
+      "id",
+      {
+       "__term__": {
+        "type": "StringConcat",
+        "parts": [
+         {
+          "type": "Lit",
+          "value": "whole_cells_"
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "cr"
+          },
+          "key": "tag"
+         }
+        ]
+       }
+      }
+     ],
+     [
+      "set_attr",
+      "rn1",
+      "match",
+      [
+       [
+        "game",
+        "has_object",
+        "obj"
+       ],
+       [
+        "obj",
+        "has_part",
+        "F"
+       ],
+       [
+        "R",
+        "realises",
+        "F"
+       ],
+       [
+        "c",
+        "within",
+        "R"
+       ]
+      ]
+     ],
+     [
+      "set_attr",
+      "rn1",
+      "where",
+      {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obj"
+        },
+        "key": "is_body"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      }
+     ],
+     [
+      "set_attr",
+      "rn1",
+      "effect",
+      [
+       [
+        "add_edge",
+        "c",
+        "within",
+        "obj"
+       ]
+      ]
+     ],
+     [
+      "set_rule_clause",
+      {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "rn1"
+        },
+        "key": "id"
+       }
+      },
+      "__mint__",
+      {
+       "__term__": {
+        "type": "Var",
+        "name": "rn1"
+       }
+      }
+     ],
+     [
+      "set_attr",
+      "cr",
+      "composed",
+      1.0
+     ]
+    ]
+   }
+  }
+ ],
+ "edges": [],
+ "productions": []
+}

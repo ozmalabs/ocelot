@@ -1,0 +1,316 @@
+{
+  "id": "describe_utterance",
+  "version": "1.0.0",
+  "depends_on": [
+    "gaming_words",
+    "shape_recognition"
+  ],
+  "description": "Assemble each describe subgoal's utterance frame from graph state: say_agent (the figure's recognised shape, else its GamingWord noun), say_event (the GamingWord verb), say_agent_adj (the perceived colour). The host only reads this frame and produces speech.",
+  "nodes": [],
+  "edges": [],
+  "productions": [],
+  "concepts": [],
+  "rules": [
+    {
+      "name": "utterance_agent",
+      "match": [
+        [
+          "sg",
+          "about",
+          "con"
+        ],
+        [
+          "sg",
+          "of_percept",
+          "p"
+        ],
+        [
+          "gl",
+          "has_word",
+          "w"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "sg"
+              },
+              "key": "kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "produce_utterance"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "con"
+              },
+              "key": "name"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "w"
+              },
+              "key": "name"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "sg"
+              },
+              "key": "say_agent"
+            },
+            "b": {
+              "type": "Lit",
+              "value": null
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "sg",
+          "say_agent",
+          {
+            "__term__": {
+              "type": "IfThenElse",
+              "cond": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "p"
+                  },
+                  "key": "shape"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": null
+                }
+              },
+              "then": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "w"
+                },
+                "key": "noun"
+              },
+              "other": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "p"
+                },
+                "key": "shape"
+              }
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "utterance_event",
+      "match": [
+        [
+          "sg",
+          "about",
+          "con"
+        ],
+        [
+          "gl",
+          "has_word",
+          "w"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "sg"
+              },
+              "key": "kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "produce_utterance"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "con"
+              },
+              "key": "name"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "w"
+              },
+              "key": "name"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "sg"
+              },
+              "key": "say_event"
+            },
+            "b": {
+              "type": "Lit",
+              "value": null
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "w"
+                },
+                "key": "verb"
+              },
+              "b": {
+                "type": "Lit",
+                "value": null
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "sg",
+          "say_event",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "w"
+              },
+              "key": "verb"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "utterance_agent_adj",
+      "match": [
+        [
+          "sg",
+          "of_percept",
+          "p"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "sg"
+              },
+              "key": "kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "produce_utterance"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "sg"
+              },
+              "key": "say_agent_adj"
+            },
+            "b": {
+              "type": "Lit",
+              "value": null
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "p"
+                },
+                "key": "colour"
+              },
+              "b": {
+                "type": "Lit",
+                "value": null
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "sg",
+          "say_agent_adj",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "p"
+              },
+              "key": "colour"
+            }
+          }
+        ]
+      ]
+    }
+  ]
+}

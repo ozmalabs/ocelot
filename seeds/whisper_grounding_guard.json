@@ -1,0 +1,157 @@
+{
+  "id": "whisper_grounding_guard",
+  "version": "1.0.0",
+  "depends_on": ["speech"],
+  "description": "Graph-native oversight for a borrowed Whisper proposal on bounded-vocabulary short speech. The adapter lays every encoder-distance candidate and its support-derived radius. Argmin chooses the identity; Lte admits it; graph rules accept, correct, or abstain. Empty decoder output is never converted into a guessed word.",
+  "microtheory": {
+    "name": "whisper_grounding_guard",
+    "description": "encoder evidence grounds or refuses a decoder proposal"
+  },
+  "nodes": [],
+  "edges": [],
+  "productions": [
+    {
+      "provenance": "seed:whisper_grounding_guard:agent-inquiry",
+      "src": {"type": "Agent", "var": "agent"},
+      "edge_type": "has_whisper_grounding_inquiry",
+      "tgt": {"type": "WhisperGroundingInquiry", "var": "inquiry"}
+    },
+    {
+      "provenance": "seed:whisper_grounding_guard:inquiry-candidate",
+      "src": {"type": "WhisperGroundingInquiry", "var": "inquiry"},
+      "edge_type": "has_grounding_candidate",
+      "tgt": {"type": "WhisperGroundingCandidate", "var": "candidate"}
+    },
+    {
+      "provenance": "seed:whisper_grounding_guard:agent-prototype",
+      "src": {"type": "Agent", "var": "agent"},
+      "edge_type": "holds_whisper_grounding_prototype",
+      "tgt": {"type": "WhisperGroundingPrototype", "var": "prototype"}
+    },
+    {
+      "provenance": "seed:whisper_grounding_guard:candidate-prototype",
+      "src": {"type": "WhisperGroundingCandidate", "var": "candidate"},
+      "edge_type": "derived_from_grounding_prototype",
+      "tgt": {"type": "WhisperGroundingPrototype", "var": "prototype"}
+    }
+  ],
+  "rules": [
+    {
+      "name": "whisper_grounding_accept",
+      "area": "audition",
+      "order": 61,
+      "latency_class": "hard_realtime",
+      "comment": "The graph's Argmin identity is inside its own training-support radius and agrees with the non-empty free-decoder proposal.",
+      "match": [
+        ["agent", "has_whisper_grounding_inquiry", "inquiry"],
+        ["inquiry", "has_grounding_candidate", "candidate"],
+        ["candidate", "derived_from_grounding_prototype", "prototype"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "inquiry"}, "key": "status"}, "b": {"type": "Lit", "value": "raw"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "inquiry"}, "key": "baseline_nonempty"}, "b": {"type": "Lit", "value": 1.0}},
+          {"type": "Eq", "a": {"type": "Var", "name": "candidate"}, "b": {"type": "Argmin", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "inquiry"}, "edge_type": "has_grounding_candidate"}, "var_name": "c", "value": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "distance"}, "default": null}},
+          {"type": "Lte", "a": {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "distance"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "prototype"}, "key": "support_radius"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "prototype"}, "key": "label"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "inquiry"}, "key": "baseline_normalized"}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "inquiry", "winner_label", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "prototype"}, "key": "label"}}],
+        ["set_attr", "inquiry", "winner_distance", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "distance"}}],
+        ["set_attr", "inquiry", "winner_radius", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "prototype"}, "key": "support_radius"}}],
+        ["set_attr", "inquiry", "output_label", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "prototype"}, "key": "label"}}],
+        ["set_attr", "inquiry", "action", "accept"],
+        ["set_attr", "inquiry", "status", "decided"],
+        ["set_attr", "inquiry", "decision_provenance", "graph_argmin_support_radius"]
+      ]
+    },
+    {
+      "name": "whisper_grounding_correct",
+      "area": "audition",
+      "order": 62,
+      "latency_class": "hard_realtime",
+      "comment": "The graph's admitted encoder identity disagrees with the non-empty decoder proposal, so the graph records an evidence-grounded correction.",
+      "match": [
+        ["agent", "has_whisper_grounding_inquiry", "inquiry"],
+        ["inquiry", "has_grounding_candidate", "candidate"],
+        ["candidate", "derived_from_grounding_prototype", "prototype"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "inquiry"}, "key": "status"}, "b": {"type": "Lit", "value": "raw"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "inquiry"}, "key": "baseline_nonempty"}, "b": {"type": "Lit", "value": 1.0}},
+          {"type": "Eq", "a": {"type": "Var", "name": "candidate"}, "b": {"type": "Argmin", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "inquiry"}, "edge_type": "has_grounding_candidate"}, "var_name": "c", "value": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "distance"}, "default": null}},
+          {"type": "Lte", "a": {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "distance"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "prototype"}, "key": "support_radius"}},
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "prototype"}, "key": "label"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "inquiry"}, "key": "baseline_normalized"}}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "inquiry", "winner_label", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "prototype"}, "key": "label"}}],
+        ["set_attr", "inquiry", "winner_distance", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "distance"}}],
+        ["set_attr", "inquiry", "winner_radius", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "prototype"}, "key": "support_radius"}}],
+        ["set_attr", "inquiry", "output_label", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "prototype"}, "key": "label"}}],
+        ["set_attr", "inquiry", "action", "correct"],
+        ["set_attr", "inquiry", "status", "decided"],
+        ["set_attr", "inquiry", "decision_provenance", "graph_argmin_support_radius"]
+      ]
+    },
+    {
+      "name": "whisper_grounding_abstain_empty",
+      "area": "audition",
+      "order": 63,
+      "latency_class": "hard_realtime",
+      "comment": "An encoder classification cannot manufacture speech where the decoder emitted no proposal.",
+      "match": [
+        ["agent", "has_whisper_grounding_inquiry", "inquiry"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "inquiry"}, "key": "status"}, "b": {"type": "Lit", "value": "raw"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "inquiry"}, "key": "baseline_nonempty"}, "b": {"type": "Lit", "value": 0.0}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "inquiry", "output_label", ""],
+        ["set_attr", "inquiry", "action", "abstain"],
+        ["set_attr", "inquiry", "reason", "empty_decoder_proposal"],
+        ["set_attr", "inquiry", "status", "decided"],
+        ["set_attr", "inquiry", "decision_provenance", "graph_empty_proposal_gate"]
+      ]
+    },
+    {
+      "name": "whisper_grounding_abstain_outside_support",
+      "area": "audition",
+      "order": 64,
+      "latency_class": "hard_realtime",
+      "comment": "The closest encoder identity lies outside the extent observed for that identity in the support fold.",
+      "match": [
+        ["agent", "has_whisper_grounding_inquiry", "inquiry"],
+        ["inquiry", "has_grounding_candidate", "candidate"],
+        ["candidate", "derived_from_grounding_prototype", "prototype"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "inquiry"}, "key": "status"}, "b": {"type": "Lit", "value": "raw"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "inquiry"}, "key": "baseline_nonempty"}, "b": {"type": "Lit", "value": 1.0}},
+          {"type": "Eq", "a": {"type": "Var", "name": "candidate"}, "b": {"type": "Argmin", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "inquiry"}, "edge_type": "has_grounding_candidate"}, "var_name": "c", "value": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "distance"}, "default": null}},
+          {"type": "Gt", "a": {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "distance"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "prototype"}, "key": "support_radius"}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "inquiry", "winner_label", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "prototype"}, "key": "label"}}],
+        ["set_attr", "inquiry", "winner_distance", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "distance"}}],
+        ["set_attr", "inquiry", "winner_radius", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "prototype"}, "key": "support_radius"}}],
+        ["set_attr", "inquiry", "output_label", ""],
+        ["set_attr", "inquiry", "action", "abstain"],
+        ["set_attr", "inquiry", "reason", "outside_training_support"],
+        ["set_attr", "inquiry", "status", "decided"],
+        ["set_attr", "inquiry", "decision_provenance", "graph_argmin_support_radius"]
+      ]
+    }
+  ]
+}

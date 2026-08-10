@@ -1,0 +1,3616 @@
+{
+ "id": "vision_border_ownership",
+ "version": "1.3.0",
+ "depends_on": [],
+ "description": "BORDER-OWNERSHIP / PROTO-OBJECT -- a local edge becomes a DIRECTED boundary that OWNS its figure, and a bounded, owned, PRE-IDENTITY region is minted as a ProtoObject (NO category/recognition -- the NEAR side of the objecthood 'what' wall). The Zhou/Friedman/von der Heydt 2000 signature: for an IDENTICAL local edge, ownership FLIPS with the GLOBAL figure -- it is CONTEXTUAL, not local. Mechanism (all seed rules; NO new Rust): bo_bgflood computes SURROUNDEDNESS as a same-value reachability flood from the frame (bg=1 == ground reachable without crossing a contour; bg=0 == enclosed figure) -- iterated by run_rules to a fixpoint, the grouping<->ownership RECURRENCE (grounding doc #4, where the substrate is AHEAD of the feedforward account); bo_label labels same-value components; bo_mint_enclosed mints ONE ProtoObject per enclosed, CLOSED, SINGLY-SURROUNDED figure (the closure test refuses iid speckle -- no size threshold, closure FALLS OUT of 'a hole in one surface', \u00a713); bo_mint_gestalt handles the ambiguous bipartition where surroundedness is silent (figure = the smaller region; a size tie held open); bo_own adds the directed owns_figure edge from a figure boundary cell to its ProtoObject. In-frame integer coords; ownership is a RELATION; surroundedness is discrete reachability (the frame/continuum invariant). NOT object identity/recognition (the 'what' wall, the named frontier). Reuses Neighbours/Filter/Count/Exists/Argmin/NodesOfType + run_rules. Flag-gated on BorderOwnParams.bown, OFF by default (\u00a79). See VISION_BORDER_OWNERSHIP_PREREG.md. v1.1.0 -- COMPETITIVE BORDER OWNERSHIP replaces the isolation test. bo_mint_enclosed's G_figadj ('the figure is a hole in ONE surface') refuses a component if ANY cell touches ANY other enclosed component: true of a synthetic raster, FALSE of a photograph, where a scene is a PARTITION and objects abut objects (it refused 93.4% of 12,319 real enclosed components -- VISION_VALUE_FLOOD_RESULTS.md). bo_mint_owned assigns the shared border instead of being disqualified by it: the side whose own perimeter the border accounts for more of owns it (perim(R) < perim(Q), the shared length cancelling), a TIE IS HELD OPEN, and perim is materialised as Cell.rim by bo_rim. No new threshold (\u00a713): a comparison of two measured counts. Armed by BorderOwnParams.bown_own, OFF by default, so the incumbent path is byte-identical (\u00a79). See VISION_FIGADJ_REPLACEMENT_PREREG.md. v1.2.0 -- WELL-POSEDNESS: bo_mint_owned holds open a competition whose shared border is claimed in full by two rivals at once (a member cell facing two distinct enclosed components), because |B| cancels only between TWO parties. Armed by bown_wp, OFF by default. See VISION_FIGADJ_WELLPOSED_PREREG.md. v1.3.0 -- CONTAINMENT / NESTED FIGURE-GROUND. G_own_lost quantified `R must win` over ALL of R's borders, including the border with a component R ENCLOSES -- which is not part of R's outer contour at all, but the contour of R's own HOLE. Zhou/von der Heydt measure ownership OF AN EDGE WITH A SIDE, not of a region: a region is figure when it owns its OUTER contour, and a figure is routinely GROUND for a smaller figure on it. Where Q is entirely surrounded by R the shared border IS the whole of perim(Q), so |B|/perim(Q) == 1 identically for EVERY R -- pinned at its maximum by the geometry, not decided by the competition (the same degeneracy v1.2.0 found at rim=1, one level up); `perim(R) < perim(Q)` there reads a tautology, not a competition. So a CONTAINED rival is REMOVED from the competition (v1.2.0 held its case OPEN because there was no fact of the matter; here there is one and Zhou supplies it -- the hole's border belongs to the hole, R is ground THERE, and R's figurehood is decided on its outer contour). The SAME rival scoping applies to the v1.2.0 well-posedness conjunct: a non-rival cannot make a competition ill-posed, and the two conjuncts must range over ONE rival set or they disagree about what a rival is. s13: a positive Exists over the graph's own adjacency -- NO Count, NO size, NO magnitude literal; structurally the third instance of the seed's own single-surround closure test, applied to the rival's surround. It excludes a 1-cell hole and a 200-cell hole identically and excludes NO merely-abutting neighbour. Armed by bown_nest>0.5, OFF by default, so v1.2.0 is byte-identical (s9). See VISION_FIGADJ_NESTING_PREREG.md.",
+ "microtheory": {
+  "id": "vision_border_ownership_mt",
+  "label": "border-ownership: a directed boundary that owns its figure, and the proto-object as the pre-identity stage"
+ },
+ "nodes": [
+  {
+   "local_id": 0,
+   "type": "BorderOwnParams",
+   "attrs": {
+    "bown": 0.0,
+    "bown_own": 0.0,
+    "bown_wp": 0.0,
+    "bown_nest": 0.0
+   }
+  }
+ ],
+ "edges": [],
+ "productions": [],
+ "rules": [
+  {
+   "name": "bo_bgflood",
+   "comment": "SURROUNDEDNESS as discrete REACHABILITY (the run_rules recurrence). Set bg=1 on a cell that is a frame cell OR has a same-VAL 4-neighbour with bg=1 -- so bg floods from the frame INWARD along equal-value adjacency and NEVER crosses a contour (a value change). Iterated by run_rules to a fixpoint, bg=1 means the cell's same-value region is reachable from the frame == GROUND/background; bg=0 means ENCLOSED (a figure candidate). Monotone 0->1 (guarded bg<0.5) so the flood terminates. The vision_ground/vision_lateral local-neighbour-fold idiom, O(N) per sweep under run_rules (NOT the O(N^2) apply_rule_once drive). Flag-gated on BorderOwnParams.bown>0.5, OFF by default (\u00a79).",
+   "match": [
+    [
+     "field",
+     "has_cell",
+     "R"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "BorderOwnParams"
+        }
+       },
+       "key": "bown"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "R"
+       },
+       "key": "bg"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Gt",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "R"
+         },
+         "key": "frame"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       },
+       {
+        "type": "Exists",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "R"
+         },
+         "edge_type": "neighbour",
+         "any_type": false
+        },
+        "var_name": "m",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "m"
+            },
+            "key": "val"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "R"
+            },
+            "key": "val"
+           }
+          },
+          {
+           "type": "Gt",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "m"
+            },
+            "key": "bg"
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0.5
+           }
+          }
+         ]
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "R",
+     "bg",
+     {
+      "__term__": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "bo_label",
+   "comment": "COMPONENT LABEL (the grouping substrate): glabel := the minimum glabel among this cell's same-VAL 4-neighbours (init cid = crow*W+ccol). Fires only when a same-val neighbour has a SMALLER glabel, so glabel decreases monotonically and the flood terminates; at the fixpoint every same-value connected component shares its ROOT's cid (its minimum). A cell is a component ROOT iff glabel==cid. This is the canonical-representative substrate for minting ONE proto per component (batch-safe: exactly one root per component). O(N) per sweep. Flag-gated on bown>0.5, OFF by default (\u00a79).",
+   "match": [
+    [
+     "field",
+     "has_cell",
+     "R"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "BorderOwnParams"
+        }
+       },
+       "key": "bown"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Exists",
+      "source": {
+       "type": "Neighbours",
+       "node": {
+        "type": "Var",
+        "name": "R"
+       },
+       "edge_type": "neighbour",
+       "any_type": false
+      },
+      "var_name": "m",
+      "predicate": {
+       "type": "And",
+       "items": [
+        {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "m"
+          },
+          "key": "val"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "R"
+          },
+          "key": "val"
+         }
+        },
+        {
+         "type": "Lt",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "m"
+          },
+          "key": "glabel"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "R"
+          },
+          "key": "glabel"
+         }
+        }
+       ]
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "R",
+     "glabel",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Argmin",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "R"
+          },
+          "edge_type": "neighbour",
+          "any_type": false
+         },
+         "var_name": "n",
+         "predicate": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "n"
+           },
+           "key": "val"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "R"
+           },
+           "key": "val"
+          }
+         }
+        },
+        "var_name": "n",
+        "value": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "n"
+         },
+         "key": "glabel"
+        },
+        "default": null
+       },
+       "key": "glabel"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "bo_rim",
+   "comment": "MATERIALISE perim(component) as a cell attribute. rim = the number of ENCLOSED cells sharing this cell's glabel that have at least one neighbour of a DIFFERENT glabel -- the region's own contour, in cells. Gated on bown_own>0.5 (the competitive-ownership arm) and on the floods being SETTLED (the incumbent's own settled sub-term, reused verbatim) so glabel is final before any count is taken. Re-fires while its own value disagrees with the count, so it settles to a fixpoint like bo_label; idempotent once settled. MEASURED QUANTITY, no threshold (\u00a713): the only literals are the 0.5 boolean discriminators over the 0/1 bg and bown_own flags.",
+   "match": [
+    [
+     "field",
+     "has_cell",
+     "R"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "BorderOwnParams"
+        }
+       },
+       "key": "bown"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "BorderOwnParams"
+        }
+       },
+       "key": "bown_own"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "R"
+       },
+       "key": "bg"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Exists",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "Cell"
+         },
+         "var_name": "z",
+         "predicate": {
+          "type": "And",
+          "items": [
+           {
+            "type": "Lt",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "z"
+             },
+             "key": "bg"
+            },
+            "b": {
+             "type": "Lit",
+             "value": 0.5
+            }
+           },
+           {
+            "type": "Or",
+            "items": [
+             {
+              "type": "Gt",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "z"
+               },
+               "key": "frame"
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0.5
+              }
+             },
+             {
+              "type": "Exists",
+              "source": {
+               "type": "Neighbours",
+               "node": {
+                "type": "Var",
+                "name": "z"
+               },
+               "edge_type": "neighbour",
+               "any_type": false
+              },
+              "var_name": "m",
+              "predicate": {
+               "type": "And",
+               "items": [
+                {
+                 "type": "Eq",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "m"
+                  },
+                  "key": "val"
+                 },
+                 "b": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "z"
+                  },
+                  "key": "val"
+                 }
+                },
+                {
+                 "type": "Gt",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "m"
+                  },
+                  "key": "bg"
+                 },
+                 "b": {
+                  "type": "Lit",
+                  "value": 0.5
+                 }
+                }
+               ]
+              }
+             }
+            ]
+           }
+          ]
+         }
+        }
+       },
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Exists",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "Cell"
+         },
+         "var_name": "z",
+         "predicate": {
+          "type": "Exists",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "z"
+           },
+           "edge_type": "neighbour",
+           "any_type": false
+          },
+          "var_name": "m",
+          "predicate": {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "m"
+              },
+              "key": "val"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "z"
+              },
+              "key": "val"
+             }
+            },
+            {
+             "type": "Lt",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "m"
+              },
+              "key": "glabel"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "z"
+              },
+              "key": "glabel"
+             }
+            }
+           ]
+          }
+         }
+        }
+       }
+      ]
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "R"
+        },
+        "key": "rim"
+       },
+       "b": {
+        "type": "Count",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "Cell"
+         },
+         "var_name": "w",
+         "predicate": {
+          "type": "And",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "w"
+             },
+             "key": "glabel"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "glabel"
+            }
+           },
+           {
+            "type": "Lt",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "w"
+             },
+             "key": "bg"
+            },
+            "b": {
+             "type": "Lit",
+             "value": 0.5
+            }
+           },
+           {
+            "type": "Exists",
+            "source": {
+             "type": "Neighbours",
+             "node": {
+              "type": "Var",
+              "name": "w"
+             },
+             "edge_type": "neighbour",
+             "any_type": false
+            },
+            "var_name": "u",
+            "predicate": {
+             "type": "Not",
+             "arg": {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "u"
+               },
+               "key": "glabel"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "glabel"
+              }
+             }
+            }
+           }
+          ]
+         }
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "R",
+     "rim",
+     {
+      "__term__": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "Cell"
+        },
+        "var_name": "w",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "w"
+            },
+            "key": "glabel"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "R"
+            },
+            "key": "glabel"
+           }
+          },
+          {
+           "type": "Lt",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "w"
+            },
+            "key": "bg"
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0.5
+           }
+          },
+          {
+           "type": "Exists",
+           "source": {
+            "type": "Neighbours",
+            "node": {
+             "type": "Var",
+             "name": "w"
+            },
+            "edge_type": "neighbour",
+            "any_type": false
+           },
+           "var_name": "u",
+           "predicate": {
+            "type": "Not",
+            "arg": {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "u"
+              },
+              "key": "glabel"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "glabel"
+             }
+            }
+           }
+          }
+         ]
+        }
+       }
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "bo_mint_enclosed",
+   "comment": "MINT a ProtoObject (NO identity/category -- the PRE-IDENTITY stage) for an ENCLOSED, CLOSED, SINGLY-SURROUNDED figure component. Gates (cheap self-attr first, expensive graph aggregates last): (1) bown>0.5; (2) R.bg<0.5 -- enclosed; (3) R.glabel==R.cid -- R is the component ROOT (canonical representative, batch-safe: exactly one per component); (4) floods SETTLED (no cell can still flood) so member count and closure are exact, never a transient undercount; (5) SINGLE-GROUND CLOSURE -- Not two ground-side neighbours of the figure with different glabel, i.e. the figure is a hole in ONE surface. This closure test is what makes a proto an OBJECT and what refuses iid speckle (an interior noise cell is bordered by many distinct components -> not singly surrounded -> no proto); it needs NO size threshold -- closure FALLS OUT of 'enclosed by one ground' (\u00a713); (6) Not Exists a ProtoObject already at this root (recognize-not-re-mint). members = Count(cells with this glabel). Flag-gated on bown>0.5, OFF by default (\u00a79).",
+   "match": [
+    [
+     "field",
+     "has_cell",
+     "R"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "BorderOwnParams"
+        }
+       },
+       "key": "bown"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "BorderOwnParams"
+        }
+       },
+       "key": "bown_own"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "R"
+       },
+       "key": "bg"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "R"
+       },
+       "key": "glabel"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "R"
+       },
+       "key": "cid"
+      }
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Exists",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "Cell"
+         },
+         "var_name": "z",
+         "predicate": {
+          "type": "And",
+          "items": [
+           {
+            "type": "Lt",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "z"
+             },
+             "key": "bg"
+            },
+            "b": {
+             "type": "Lit",
+             "value": 0.5
+            }
+           },
+           {
+            "type": "Or",
+            "items": [
+             {
+              "type": "Gt",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "z"
+               },
+               "key": "frame"
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0.5
+              }
+             },
+             {
+              "type": "Exists",
+              "source": {
+               "type": "Neighbours",
+               "node": {
+                "type": "Var",
+                "name": "z"
+               },
+               "edge_type": "neighbour",
+               "any_type": false
+              },
+              "var_name": "m",
+              "predicate": {
+               "type": "And",
+               "items": [
+                {
+                 "type": "Eq",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "m"
+                  },
+                  "key": "val"
+                 },
+                 "b": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "z"
+                  },
+                  "key": "val"
+                 }
+                },
+                {
+                 "type": "Gt",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "m"
+                  },
+                  "key": "bg"
+                 },
+                 "b": {
+                  "type": "Lit",
+                  "value": 0.5
+                 }
+                }
+               ]
+              }
+             }
+            ]
+           }
+          ]
+         }
+        }
+       },
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Exists",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "Cell"
+         },
+         "var_name": "z",
+         "predicate": {
+          "type": "Exists",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "z"
+           },
+           "edge_type": "neighbour",
+           "any_type": false
+          },
+          "var_name": "m",
+          "predicate": {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "m"
+              },
+              "key": "val"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "z"
+              },
+              "key": "val"
+             }
+            },
+            {
+             "type": "Lt",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "m"
+              },
+              "key": "glabel"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "z"
+              },
+              "key": "glabel"
+             }
+            }
+           ]
+          }
+         }
+        }
+       }
+      ]
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Exists",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "NodesOfType",
+           "node_type": "Cell"
+          },
+          "var_name": "f",
+          "predicate": {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "f"
+              },
+              "key": "glabel"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "glabel"
+             }
+            },
+            {
+             "type": "Lt",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "f"
+              },
+              "key": "bg"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0.5
+             }
+            }
+           ]
+          }
+         },
+         "var_name": "f",
+         "predicate": {
+          "type": "Exists",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "f"
+           },
+           "edge_type": "neighbour",
+           "any_type": false
+          },
+          "var_name": "n",
+          "predicate": {
+           "type": "And",
+           "items": [
+            {
+             "type": "Not",
+             "arg": {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "n"
+               },
+               "key": "glabel"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "glabel"
+              }
+             }
+            },
+            {
+             "type": "Lt",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "n"
+              },
+              "key": "bg"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0.5
+             }
+            }
+           ]
+          }
+         }
+        }
+       },
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Exists",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "NodesOfType",
+           "node_type": "Cell"
+          },
+          "var_name": "g",
+          "predicate": {
+           "type": "And",
+           "items": [
+            {
+             "type": "Gt",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "g"
+              },
+              "key": "bg"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0.5
+             }
+            },
+            {
+             "type": "Exists",
+             "source": {
+              "type": "Neighbours",
+              "node": {
+               "type": "Var",
+               "name": "g"
+              },
+              "edge_type": "neighbour",
+              "any_type": false
+             },
+             "var_name": "f",
+             "predicate": {
+              "type": "And",
+              "items": [
+               {
+                "type": "Lt",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "f"
+                 },
+                 "key": "bg"
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": 0.5
+                }
+               },
+               {
+                "type": "Eq",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "f"
+                 },
+                 "key": "glabel"
+                },
+                "b": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "R"
+                 },
+                 "key": "glabel"
+                }
+               }
+              ]
+             }
+            }
+           ]
+          }
+         },
+         "var_name": "g1",
+         "predicate": {
+          "type": "Exists",
+          "source": {
+           "type": "Filter",
+           "source": {
+            "type": "NodesOfType",
+            "node_type": "Cell"
+           },
+           "var_name": "g",
+           "predicate": {
+            "type": "And",
+            "items": [
+             {
+              "type": "Gt",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "g"
+               },
+               "key": "bg"
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0.5
+              }
+             },
+             {
+              "type": "Exists",
+              "source": {
+               "type": "Neighbours",
+               "node": {
+                "type": "Var",
+                "name": "g"
+               },
+               "edge_type": "neighbour",
+               "any_type": false
+              },
+              "var_name": "f",
+              "predicate": {
+               "type": "And",
+               "items": [
+                {
+                 "type": "Lt",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "f"
+                  },
+                  "key": "bg"
+                 },
+                 "b": {
+                  "type": "Lit",
+                  "value": 0.5
+                 }
+                },
+                {
+                 "type": "Eq",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "f"
+                  },
+                  "key": "glabel"
+                 },
+                 "b": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "R"
+                  },
+                  "key": "glabel"
+                 }
+                }
+               ]
+              }
+             }
+            ]
+           }
+          },
+          "var_name": "g2",
+          "predicate": {
+           "type": "Not",
+           "arg": {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "g1"
+             },
+             "key": "glabel"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "g2"
+             },
+             "key": "glabel"
+            }
+           }
+          }
+         }
+        }
+       }
+      ]
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "ProtoObject"
+       },
+       "var_name": "p",
+       "predicate": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "p"
+         },
+         "key": "root"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "R"
+         },
+         "key": "cid"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "po",
+     "ProtoObject",
+     {
+      "root": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "R"
+        },
+        "key": "cid"
+       }
+      },
+      "members": {
+       "__term__": {
+        "type": "Count",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "Cell"
+         },
+         "var_name": "z",
+         "predicate": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "z"
+           },
+           "key": "glabel"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "R"
+           },
+           "key": "glabel"
+          }
+         }
+        }
+       }
+      },
+      "minted": {
+       "__term__": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      },
+      "gestalt": {
+       "__term__": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "field",
+     "has_proto",
+     "po"
+    ]
+   ]
+  },
+  {
+   "name": "bo_mint_owned",
+   "comment": "MINT a ProtoObject for an enclosed component that OWNS ITS WHOLE CONTOUR. Byte-identical to bo_mint_enclosed EXCEPT that the G_figadj conjunct's inner predicate gains Not(Lt(R.rim, n.rim)): an abutting cell `n` of another enclosed component refuses R only if R does NOT STRICTLY WIN the ownership competition against n's component. DERIVATION (Zhou/Friedman/von der Heydt 2000, the basis this seed already cites): a shared border is ASSIGNED, not disqualifying; it goes to the side whose own perimeter it accounts for more of, and since the shared length |B| is common to both sides, |B|/perim(R) > |B|/perim(Q) <=> perim(R) < perim(Q). A TIE (perim equal) is HELD OPEN -- no proto -- exactly as bo_mint_gestalt holds its size tie open. Contact alone no longer vetoes; only a lost competition does, which is what makes ownership CONTEXTUAL rather than a test for ISOLATION. \u00a713: the new comparison is between two MEASURED counts and introduces no literal. Armed by bown_own>0.5; with the flag at its 0.0 default this rule never fires and bo_mint_enclosed runs unchanged (\u00a79). v1.2.0 -- WELL-POSEDNESS. The Zhou cancellation of |B| is a TWO-PARTY statement: it presupposes the border under assignment is ONE length shared by TWO sides. If a single contour cell of R faces two DIFFERENT enclosed components, that one cell is the whole of R's shared border with EACH of them, the same length is claimed in full by two competitions at once, the claimed fractions sum to more than one, and |B| does not cancel -- `perim(R) < perim(Q)` no longer stands for `|B|/perim(R) > |B|/perim(Q)`. There is no well-posed competition to win, so the rule HOLDS IT OPEN, exactly as it holds a TIE open and as bo_mint_gestalt holds a size tie open. NOT a size test -- it never mentions size, and refuses a large component whose contour cell is wedged between two rivals just as readily; that it eliminates the single-cell speckle false mints is a CONSEQUENCE of rim=1 being both the global minimum of the perimeter statistic (so a singleton wins every competition unconditionally) and maximally shared. \u00a713: NO literal -- structurally the twin of the single-ground-closure conjunct already in all four mint rules, generalised from the ground side to the rival side; its only literals are the 0.5 discriminators over the 0/1 bg flag. Armed by bown_wp>0.5; at the 0.0 default the Or short-circuits and the committed v1.1.0 replacement is byte-identical (\u00a79). See VISION_FIGADJ_WELLPOSED_PREREG.md. v1.3.0 -- CONTAINMENT / NESTED FIGURE-GROUND. G_own_lost quantified `R must win` over ALL of R's borders, including the border with a component R ENCLOSES -- which is not part of R's outer contour at all, but the contour of R's own HOLE. Zhou/von der Heydt measure ownership OF AN EDGE WITH A SIDE, not of a region: a region is figure when it owns its OUTER contour, and a figure is routinely GROUND for a smaller figure on it. Where Q is entirely surrounded by R the shared border IS the whole of perim(Q), so |B|/perim(Q) == 1 identically for EVERY R -- pinned at its maximum by the geometry, not decided by the competition (the same degeneracy v1.2.0 found at rim=1, one level up); `perim(R) < perim(Q)` there reads a tautology, not a competition. So a CONTAINED rival is REMOVED from the competition (v1.2.0 held its case OPEN because there was no fact of the matter; here there is one and Zhou supplies it -- the hole's border belongs to the hole, R is ground THERE, and R's figurehood is decided on its outer contour). The SAME rival scoping applies to the v1.2.0 well-posedness conjunct: a non-rival cannot make a competition ill-posed, and the two conjuncts must range over ONE rival set or they disagree about what a rival is. s13: a positive Exists over the graph's own adjacency -- NO Count, NO size, NO magnitude literal; structurally the third instance of the seed's own single-surround closure test, applied to the rival's surround. It excludes a 1-cell hole and a 200-cell hole identically and excludes NO merely-abutting neighbour. Armed by bown_nest>0.5, OFF by default, so v1.2.0 is byte-identical (s9). See VISION_FIGADJ_NESTING_PREREG.md.",
+   "match": [
+    [
+     "field",
+     "has_cell",
+     "R"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "BorderOwnParams"
+        }
+       },
+       "key": "bown"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "BorderOwnParams"
+        }
+       },
+       "key": "bown_own"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "R"
+       },
+       "key": "bg"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "R"
+       },
+       "key": "glabel"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "R"
+       },
+       "key": "cid"
+      }
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Exists",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "Cell"
+         },
+         "var_name": "z",
+         "predicate": {
+          "type": "And",
+          "items": [
+           {
+            "type": "Lt",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "z"
+             },
+             "key": "bg"
+            },
+            "b": {
+             "type": "Lit",
+             "value": 0.5
+            }
+           },
+           {
+            "type": "Or",
+            "items": [
+             {
+              "type": "Gt",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "z"
+               },
+               "key": "frame"
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0.5
+              }
+             },
+             {
+              "type": "Exists",
+              "source": {
+               "type": "Neighbours",
+               "node": {
+                "type": "Var",
+                "name": "z"
+               },
+               "edge_type": "neighbour",
+               "any_type": false
+              },
+              "var_name": "m",
+              "predicate": {
+               "type": "And",
+               "items": [
+                {
+                 "type": "Eq",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "m"
+                  },
+                  "key": "val"
+                 },
+                 "b": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "z"
+                  },
+                  "key": "val"
+                 }
+                },
+                {
+                 "type": "Gt",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "m"
+                  },
+                  "key": "bg"
+                 },
+                 "b": {
+                  "type": "Lit",
+                  "value": 0.5
+                 }
+                }
+               ]
+              }
+             }
+            ]
+           }
+          ]
+         }
+        }
+       },
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Exists",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "Cell"
+         },
+         "var_name": "z",
+         "predicate": {
+          "type": "Exists",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "z"
+           },
+           "edge_type": "neighbour",
+           "any_type": false
+          },
+          "var_name": "m",
+          "predicate": {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "m"
+              },
+              "key": "val"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "z"
+              },
+              "key": "val"
+             }
+            },
+            {
+             "type": "Lt",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "m"
+              },
+              "key": "glabel"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "z"
+              },
+              "key": "glabel"
+             }
+            }
+           ]
+          }
+         }
+        }
+       }
+      ]
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Exists",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "NodesOfType",
+           "node_type": "Cell"
+          },
+          "var_name": "f",
+          "predicate": {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "f"
+              },
+              "key": "glabel"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "glabel"
+             }
+            },
+            {
+             "type": "Lt",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "f"
+              },
+              "key": "bg"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0.5
+             }
+            }
+           ]
+          }
+         },
+         "var_name": "f",
+         "predicate": {
+          "type": "Exists",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "f"
+           },
+           "edge_type": "neighbour",
+           "any_type": false
+          },
+          "var_name": "n",
+          "predicate": {
+           "type": "And",
+           "items": [
+            {
+             "type": "Not",
+             "arg": {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "n"
+               },
+               "key": "glabel"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "glabel"
+              }
+             }
+            },
+            {
+             "type": "Lt",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "n"
+              },
+              "key": "bg"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0.5
+             }
+            },
+            {
+             "type": "Not",
+             "arg": {
+              "type": "Lt",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "rim"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "n"
+               },
+               "key": "rim"
+              }
+             }
+            },
+            {
+             "type": "Or",
+             "items": [
+              {
+               "type": "Lt",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "PickUnique",
+                 "source": {
+                  "type": "NodesOfType",
+                  "node_type": "BorderOwnParams"
+                 }
+                },
+                "key": "bown_nest"
+               },
+               "b": {
+                "type": "Lit",
+                "value": 0.5
+               }
+              },
+              {
+               "type": "Exists",
+               "source": {
+                "type": "Filter",
+                "source": {
+                 "type": "NodesOfType",
+                 "node_type": "Cell"
+                },
+                "var_name": "q1",
+                "predicate": {
+                 "type": "And",
+                 "items": [
+                  {
+                   "type": "Eq",
+                   "a": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "q1"
+                    },
+                    "key": "glabel"
+                   },
+                   "b": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "n"
+                    },
+                    "key": "glabel"
+                   }
+                  },
+                  {
+                   "type": "Lt",
+                   "a": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "q1"
+                    },
+                    "key": "bg"
+                   },
+                   "b": {
+                    "type": "Lit",
+                    "value": 0.5
+                   }
+                  }
+                 ]
+                }
+               },
+               "var_name": "q1",
+               "predicate": {
+                "type": "Exists",
+                "source": {
+                 "type": "Neighbours",
+                 "node": {
+                  "type": "Var",
+                  "name": "q1"
+                 },
+                 "edge_type": "neighbour",
+                 "any_type": false
+                },
+                "var_name": "p1",
+                "predicate": {
+                 "type": "And",
+                 "items": [
+                  {
+                   "type": "Not",
+                   "arg": {
+                    "type": "Eq",
+                    "a": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "p1"
+                     },
+                     "key": "glabel"
+                    },
+                    "b": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "n"
+                     },
+                     "key": "glabel"
+                    }
+                   }
+                  },
+                  {
+                   "type": "Not",
+                   "arg": {
+                    "type": "Eq",
+                    "a": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "p1"
+                     },
+                     "key": "glabel"
+                    },
+                    "b": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "R"
+                     },
+                     "key": "glabel"
+                    }
+                   }
+                  }
+                 ]
+                }
+               }
+              }
+             ]
+            }
+           ]
+          }
+         }
+        }
+       },
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Exists",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "NodesOfType",
+           "node_type": "Cell"
+          },
+          "var_name": "g",
+          "predicate": {
+           "type": "And",
+           "items": [
+            {
+             "type": "Gt",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "g"
+              },
+              "key": "bg"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0.5
+             }
+            },
+            {
+             "type": "Exists",
+             "source": {
+              "type": "Neighbours",
+              "node": {
+               "type": "Var",
+               "name": "g"
+              },
+              "edge_type": "neighbour",
+              "any_type": false
+             },
+             "var_name": "f",
+             "predicate": {
+              "type": "And",
+              "items": [
+               {
+                "type": "Lt",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "f"
+                 },
+                 "key": "bg"
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": 0.5
+                }
+               },
+               {
+                "type": "Eq",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "f"
+                 },
+                 "key": "glabel"
+                },
+                "b": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "R"
+                 },
+                 "key": "glabel"
+                }
+               }
+              ]
+             }
+            }
+           ]
+          }
+         },
+         "var_name": "g1",
+         "predicate": {
+          "type": "Exists",
+          "source": {
+           "type": "Filter",
+           "source": {
+            "type": "NodesOfType",
+            "node_type": "Cell"
+           },
+           "var_name": "g",
+           "predicate": {
+            "type": "And",
+            "items": [
+             {
+              "type": "Gt",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "g"
+               },
+               "key": "bg"
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0.5
+              }
+             },
+             {
+              "type": "Exists",
+              "source": {
+               "type": "Neighbours",
+               "node": {
+                "type": "Var",
+                "name": "g"
+               },
+               "edge_type": "neighbour",
+               "any_type": false
+              },
+              "var_name": "f",
+              "predicate": {
+               "type": "And",
+               "items": [
+                {
+                 "type": "Lt",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "f"
+                  },
+                  "key": "bg"
+                 },
+                 "b": {
+                  "type": "Lit",
+                  "value": 0.5
+                 }
+                },
+                {
+                 "type": "Eq",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "f"
+                  },
+                  "key": "glabel"
+                 },
+                 "b": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "R"
+                  },
+                  "key": "glabel"
+                 }
+                }
+               ]
+              }
+             }
+            ]
+           }
+          },
+          "var_name": "g2",
+          "predicate": {
+           "type": "Not",
+           "arg": {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "g1"
+             },
+             "key": "glabel"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "g2"
+             },
+             "key": "glabel"
+            }
+           }
+          }
+         }
+        }
+       }
+      ]
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "ProtoObject"
+       },
+       "var_name": "p",
+       "predicate": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "p"
+         },
+         "key": "root"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "R"
+         },
+         "key": "cid"
+        }
+       }
+      }
+     },
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Lt",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "PickUnique",
+          "source": {
+           "type": "NodesOfType",
+           "node_type": "BorderOwnParams"
+          }
+         },
+         "key": "bown_wp"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       },
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Exists",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "NodesOfType",
+           "node_type": "Cell"
+          },
+          "var_name": "f",
+          "predicate": {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "f"
+              },
+              "key": "glabel"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "glabel"
+             }
+            },
+            {
+             "type": "Lt",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "f"
+              },
+              "key": "bg"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0.5
+             }
+            }
+           ]
+          }
+         },
+         "var_name": "f",
+         "predicate": {
+          "type": "Exists",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "f"
+           },
+           "edge_type": "neighbour",
+           "any_type": false
+          },
+          "var_name": "n1",
+          "predicate": {
+           "type": "And",
+           "items": [
+            {
+             "type": "Lt",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "n1"
+              },
+              "key": "bg"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0.5
+             }
+            },
+            {
+             "type": "Not",
+             "arg": {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "n1"
+               },
+               "key": "glabel"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "key": "glabel"
+              }
+             }
+            },
+            {
+             "type": "Exists",
+             "source": {
+              "type": "Neighbours",
+              "node": {
+               "type": "Var",
+               "name": "f"
+              },
+              "edge_type": "neighbour",
+              "any_type": false
+             },
+             "var_name": "n2",
+             "predicate": {
+              "type": "And",
+              "items": [
+               {
+                "type": "Lt",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "n2"
+                 },
+                 "key": "bg"
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": 0.5
+                }
+               },
+               {
+                "type": "Not",
+                "arg": {
+                 "type": "Eq",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "n2"
+                  },
+                  "key": "glabel"
+                 },
+                 "b": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "R"
+                  },
+                  "key": "glabel"
+                 }
+                }
+               },
+               {
+                "type": "Not",
+                "arg": {
+                 "type": "Eq",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "n2"
+                  },
+                  "key": "glabel"
+                 },
+                 "b": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "n1"
+                  },
+                  "key": "glabel"
+                 }
+                }
+               },
+               {
+                "type": "Or",
+                "items": [
+                 {
+                  "type": "Lt",
+                  "a": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "PickUnique",
+                    "source": {
+                     "type": "NodesOfType",
+                     "node_type": "BorderOwnParams"
+                    }
+                   },
+                   "key": "bown_nest"
+                  },
+                  "b": {
+                   "type": "Lit",
+                   "value": 0.5
+                  }
+                 },
+                 {
+                  "type": "Exists",
+                  "source": {
+                   "type": "Filter",
+                   "source": {
+                    "type": "NodesOfType",
+                    "node_type": "Cell"
+                   },
+                   "var_name": "q3",
+                   "predicate": {
+                    "type": "And",
+                    "items": [
+                     {
+                      "type": "Eq",
+                      "a": {
+                       "type": "Attr",
+                       "node": {
+                        "type": "Var",
+                        "name": "q3"
+                       },
+                       "key": "glabel"
+                      },
+                      "b": {
+                       "type": "Attr",
+                       "node": {
+                        "type": "Var",
+                        "name": "n2"
+                       },
+                       "key": "glabel"
+                      }
+                     },
+                     {
+                      "type": "Lt",
+                      "a": {
+                       "type": "Attr",
+                       "node": {
+                        "type": "Var",
+                        "name": "q3"
+                       },
+                       "key": "bg"
+                      },
+                      "b": {
+                       "type": "Lit",
+                       "value": 0.5
+                      }
+                     }
+                    ]
+                   }
+                  },
+                  "var_name": "q3",
+                  "predicate": {
+                   "type": "Exists",
+                   "source": {
+                    "type": "Neighbours",
+                    "node": {
+                     "type": "Var",
+                     "name": "q3"
+                    },
+                    "edge_type": "neighbour",
+                    "any_type": false
+                   },
+                   "var_name": "p3",
+                   "predicate": {
+                    "type": "And",
+                    "items": [
+                     {
+                      "type": "Not",
+                      "arg": {
+                       "type": "Eq",
+                       "a": {
+                        "type": "Attr",
+                        "node": {
+                         "type": "Var",
+                         "name": "p3"
+                        },
+                        "key": "glabel"
+                       },
+                       "b": {
+                        "type": "Attr",
+                        "node": {
+                         "type": "Var",
+                         "name": "n2"
+                        },
+                        "key": "glabel"
+                       }
+                      }
+                     },
+                     {
+                      "type": "Not",
+                      "arg": {
+                       "type": "Eq",
+                       "a": {
+                        "type": "Attr",
+                        "node": {
+                         "type": "Var",
+                         "name": "p3"
+                        },
+                        "key": "glabel"
+                       },
+                       "b": {
+                        "type": "Attr",
+                        "node": {
+                         "type": "Var",
+                         "name": "R"
+                        },
+                        "key": "glabel"
+                       }
+                      }
+                     }
+                    ]
+                   }
+                  }
+                 }
+                ]
+               }
+              ]
+             }
+            },
+            {
+             "type": "Or",
+             "items": [
+              {
+               "type": "Lt",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "PickUnique",
+                 "source": {
+                  "type": "NodesOfType",
+                  "node_type": "BorderOwnParams"
+                 }
+                },
+                "key": "bown_nest"
+               },
+               "b": {
+                "type": "Lit",
+                "value": 0.5
+               }
+              },
+              {
+               "type": "Exists",
+               "source": {
+                "type": "Filter",
+                "source": {
+                 "type": "NodesOfType",
+                 "node_type": "Cell"
+                },
+                "var_name": "q2",
+                "predicate": {
+                 "type": "And",
+                 "items": [
+                  {
+                   "type": "Eq",
+                   "a": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "q2"
+                    },
+                    "key": "glabel"
+                   },
+                   "b": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "n1"
+                    },
+                    "key": "glabel"
+                   }
+                  },
+                  {
+                   "type": "Lt",
+                   "a": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "q2"
+                    },
+                    "key": "bg"
+                   },
+                   "b": {
+                    "type": "Lit",
+                    "value": 0.5
+                   }
+                  }
+                 ]
+                }
+               },
+               "var_name": "q2",
+               "predicate": {
+                "type": "Exists",
+                "source": {
+                 "type": "Neighbours",
+                 "node": {
+                  "type": "Var",
+                  "name": "q2"
+                 },
+                 "edge_type": "neighbour",
+                 "any_type": false
+                },
+                "var_name": "p2",
+                "predicate": {
+                 "type": "And",
+                 "items": [
+                  {
+                   "type": "Not",
+                   "arg": {
+                    "type": "Eq",
+                    "a": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "p2"
+                     },
+                     "key": "glabel"
+                    },
+                    "b": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "n1"
+                     },
+                     "key": "glabel"
+                    }
+                   }
+                  },
+                  {
+                   "type": "Not",
+                   "arg": {
+                    "type": "Eq",
+                    "a": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "p2"
+                     },
+                     "key": "glabel"
+                    },
+                    "b": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "R"
+                     },
+                     "key": "glabel"
+                    }
+                   }
+                  }
+                 ]
+                }
+               }
+              }
+             ]
+            }
+           ]
+          }
+         }
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "po",
+     "ProtoObject",
+     {
+      "root": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "R"
+        },
+        "key": "cid"
+       }
+      },
+      "members": {
+       "__term__": {
+        "type": "Count",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "Cell"
+         },
+         "var_name": "z",
+         "predicate": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "z"
+           },
+           "key": "glabel"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "R"
+           },
+           "key": "glabel"
+          }
+         }
+        }
+       }
+      },
+      "minted": {
+       "__term__": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      },
+      "gestalt": {
+       "__term__": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "field",
+     "has_proto",
+     "po"
+    ]
+   ]
+  },
+  {
+   "name": "bo_mint_gestalt",
+   "comment": "GESTALT figure-ground when SURROUNDEDNESS is SILENT (no enclosed component) and the display is a single-contour BIPARTITION (Count(components)==2 -- the definition of one contour splitting the field into figure+ground, NOT a tuned number: an open/partial contour makes >=3 components and this rule never fires). Figure = the SMALLER component (Argmin over the two roots by size = Count of members). A size TIE (Exists the other root with equal size) is HELD OPEN -- no figure, no proto (anti-confabulation; the symmetric bistable Rubin case). Mints a ProtoObject (gestalt:1) for the smaller. Gates ordered cheap-first: bown; R.bg>0.5 (non-enclosed); R is a ROOT; then the O(N) aggregates. Flag-gated on bown>0.5, OFF by default (\u00a79).",
+   "match": [
+    [
+     "field",
+     "has_cell",
+     "R"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "BorderOwnParams"
+        }
+       },
+       "key": "bown"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "R"
+       },
+       "key": "bg"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "R"
+       },
+       "key": "glabel"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "R"
+       },
+       "key": "cid"
+      }
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Exists",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "Cell"
+         },
+         "var_name": "z",
+         "predicate": {
+          "type": "And",
+          "items": [
+           {
+            "type": "Lt",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "z"
+             },
+             "key": "bg"
+            },
+            "b": {
+             "type": "Lit",
+             "value": 0.5
+            }
+           },
+           {
+            "type": "Or",
+            "items": [
+             {
+              "type": "Gt",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "z"
+               },
+               "key": "frame"
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0.5
+              }
+             },
+             {
+              "type": "Exists",
+              "source": {
+               "type": "Neighbours",
+               "node": {
+                "type": "Var",
+                "name": "z"
+               },
+               "edge_type": "neighbour",
+               "any_type": false
+              },
+              "var_name": "m",
+              "predicate": {
+               "type": "And",
+               "items": [
+                {
+                 "type": "Eq",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "m"
+                  },
+                  "key": "val"
+                 },
+                 "b": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "z"
+                  },
+                  "key": "val"
+                 }
+                },
+                {
+                 "type": "Gt",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "m"
+                  },
+                  "key": "bg"
+                 },
+                 "b": {
+                  "type": "Lit",
+                  "value": 0.5
+                 }
+                }
+               ]
+              }
+             }
+            ]
+           }
+          ]
+         }
+        }
+       },
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Exists",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "Cell"
+         },
+         "var_name": "z",
+         "predicate": {
+          "type": "Exists",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "z"
+           },
+           "edge_type": "neighbour",
+           "any_type": false
+          },
+          "var_name": "m",
+          "predicate": {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "m"
+              },
+              "key": "val"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "z"
+              },
+              "key": "val"
+             }
+            },
+            {
+             "type": "Lt",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "m"
+              },
+              "key": "glabel"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "z"
+              },
+              "key": "glabel"
+             }
+            }
+           ]
+          }
+         }
+        }
+       }
+      ]
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "Cell"
+       },
+       "var_name": "z",
+       "predicate": {
+        "type": "Lt",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "z"
+         },
+         "key": "bg"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       }
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "Cell"
+        },
+        "var_name": "q",
+        "predicate": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "q"
+          },
+          "key": "glabel"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "q"
+          },
+          "key": "cid"
+         }
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 2
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Var",
+       "name": "R"
+      },
+      "b": {
+       "type": "Argmin",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "Cell"
+        },
+        "var_name": "q",
+        "predicate": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "q"
+          },
+          "key": "glabel"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "q"
+          },
+          "key": "cid"
+         }
+        }
+       },
+       "var_name": "q",
+       "value": {
+        "type": "Count",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "Cell"
+         },
+         "var_name": "z",
+         "predicate": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "z"
+           },
+           "key": "glabel"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "q"
+           },
+           "key": "glabel"
+          }
+         }
+        }
+       },
+       "default": null
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "Cell"
+        },
+        "var_name": "q",
+        "predicate": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "q"
+          },
+          "key": "glabel"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "q"
+          },
+          "key": "cid"
+         }
+        }
+       },
+       "var_name": "q2",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Not",
+          "arg": {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "q2"
+            },
+            "key": "cid"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "R"
+            },
+            "key": "cid"
+           }
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Count",
+           "source": {
+            "type": "Filter",
+            "source": {
+             "type": "NodesOfType",
+             "node_type": "Cell"
+            },
+            "var_name": "z",
+            "predicate": {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "z"
+              },
+              "key": "glabel"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "q2"
+              },
+              "key": "glabel"
+             }
+            }
+           }
+          },
+          "b": {
+           "type": "Count",
+           "source": {
+            "type": "Filter",
+            "source": {
+             "type": "NodesOfType",
+             "node_type": "Cell"
+            },
+            "var_name": "z",
+            "predicate": {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "z"
+              },
+              "key": "glabel"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "glabel"
+             }
+            }
+           }
+          }
+         }
+        ]
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "ProtoObject"
+       },
+       "var_name": "p",
+       "predicate": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "p"
+         },
+         "key": "root"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "R"
+         },
+         "key": "cid"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "po",
+     "ProtoObject",
+     {
+      "root": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "R"
+        },
+        "key": "cid"
+       }
+      },
+      "members": {
+       "__term__": {
+        "type": "Count",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "Cell"
+         },
+         "var_name": "z",
+         "predicate": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "z"
+           },
+           "key": "glabel"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "R"
+           },
+           "key": "glabel"
+          }
+         }
+        }
+       }
+      },
+      "minted": {
+       "__term__": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      },
+      "gestalt": {
+       "__term__": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "field",
+     "has_proto",
+     "po"
+    ]
+   ]
+  },
+  {
+   "name": "bo_own",
+   "comment": "DIRECTED BORDER-OWNERSHIP. A figure BOUNDARY cell -- one whose component has a ProtoObject (p.root == R.glabel) and which is adjacent across a contour to a cell of a DIFFERENT component (Exists a neighbour with a different glabel) -- sets owns=1 and adds a directed owns_figure edge to its ProtoObject p. The border OWNS the figure side; the ground side is never owned. This is the grounded directed CONTOUR RELATION (a typed edge from the border to the region it owns), covering both the enclosed proto (figure = the hole) and the gestalt proto (figure = the smaller region). Monotone (owns<0.5) so it terminates. p is bound by a has_proto match edge (add_edge needs a bound target). Gates cheap-first; SETTLED last. Flag-gated on bown>0.5, OFF by default (\u00a79).",
+   "match": [
+    [
+     "field",
+     "has_cell",
+     "R"
+    ],
+    [
+     "field",
+     "has_proto",
+     "p"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "BorderOwnParams"
+        }
+       },
+       "key": "bown"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "R"
+       },
+       "key": "owns"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "p"
+       },
+       "key": "root"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "R"
+       },
+       "key": "glabel"
+      }
+     },
+     {
+      "type": "Exists",
+      "source": {
+       "type": "Neighbours",
+       "node": {
+        "type": "Var",
+        "name": "R"
+       },
+       "edge_type": "neighbour",
+       "any_type": false
+      },
+      "var_name": "n",
+      "predicate": {
+       "type": "Not",
+       "arg": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "n"
+         },
+         "key": "glabel"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "R"
+         },
+         "key": "glabel"
+        }
+       }
+      }
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Exists",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "Cell"
+         },
+         "var_name": "z",
+         "predicate": {
+          "type": "And",
+          "items": [
+           {
+            "type": "Lt",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "z"
+             },
+             "key": "bg"
+            },
+            "b": {
+             "type": "Lit",
+             "value": 0.5
+            }
+           },
+           {
+            "type": "Or",
+            "items": [
+             {
+              "type": "Gt",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "z"
+               },
+               "key": "frame"
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0.5
+              }
+             },
+             {
+              "type": "Exists",
+              "source": {
+               "type": "Neighbours",
+               "node": {
+                "type": "Var",
+                "name": "z"
+               },
+               "edge_type": "neighbour",
+               "any_type": false
+              },
+              "var_name": "m",
+              "predicate": {
+               "type": "And",
+               "items": [
+                {
+                 "type": "Eq",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "m"
+                  },
+                  "key": "val"
+                 },
+                 "b": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "z"
+                  },
+                  "key": "val"
+                 }
+                },
+                {
+                 "type": "Gt",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "m"
+                  },
+                  "key": "bg"
+                 },
+                 "b": {
+                  "type": "Lit",
+                  "value": 0.5
+                 }
+                }
+               ]
+              }
+             }
+            ]
+           }
+          ]
+         }
+        }
+       },
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Exists",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "Cell"
+         },
+         "var_name": "z",
+         "predicate": {
+          "type": "Exists",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "z"
+           },
+           "edge_type": "neighbour",
+           "any_type": false
+          },
+          "var_name": "m",
+          "predicate": {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "m"
+              },
+              "key": "val"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "z"
+              },
+              "key": "val"
+             }
+            },
+            {
+             "type": "Lt",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "m"
+              },
+              "key": "glabel"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "z"
+              },
+              "key": "glabel"
+             }
+            }
+           ]
+          }
+         }
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "R",
+     "owns",
+     {
+      "__term__": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "R",
+     "owns_figure",
+     "p"
+    ]
+   ]
+  }
+ ]
+}

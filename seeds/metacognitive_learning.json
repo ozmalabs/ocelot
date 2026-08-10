@@ -1,0 +1,3692 @@
+{
+ "id": "metacognitive_learning",
+ "version": "1.1.0",
+ "depends_on": [
+  "cognitive_pareto",
+  "dual_process_core"
+ ],
+ "area": "metacognitive_learning",
+ "latency_class": "soft_realtime",
+ "description": "Order-N graph-native metacognition over executable learning plans: prediction-error residuals, non-scalar policy counterexamples, typed plan revision, discrimination requests, and conditional reopening. All cognitive quantities are integer.",
+ "nodes": [],
+ "edges": [],
+ "productions": [
+  {
+   "provenance": "metacognitive_learning:episode_plan",
+   "src": {
+    "type": "Node",
+    "var": "src"
+   },
+   "edge_type": "has_self_directed_learning_plan",
+   "tgt": {
+    "type": "LearningPlan",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "metacognitive_learning:plan_step",
+   "src": {
+    "type": "LearningPlan",
+    "var": "src"
+   },
+   "edge_type": "has_learning_plan_step",
+   "tgt": {
+    "type": "LearningPlanStep",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "metacognitive_learning:step_capability",
+   "src": {
+    "type": "LearningPlanStep",
+    "var": "src"
+   },
+   "edge_type": "plans_learning_capability",
+   "tgt": {
+    "type": "Node",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "metacognitive_learning:selected_step",
+   "src": {
+    "type": "LearningPlan",
+    "var": "src"
+   },
+   "edge_type": "has_selected_learning_plan_step",
+   "tgt": {
+    "type": "LearningPlanStep",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "metacognitive_learning:active_capability",
+   "src": {
+    "type": "Node",
+    "var": "src"
+   },
+   "edge_type": "has_active_embodied_developmental_capability",
+   "tgt": {
+    "type": "Node",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "metacognitive_learning:plan_policy",
+   "src": {
+    "type": "LearningPlan",
+    "var": "src"
+   },
+   "edge_type": "has_metacognitive_learning_policy",
+   "tgt": {
+    "type": "MetacognitiveLearningPolicy",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "metacognitive_learning:plan_active_policy",
+   "src": {
+    "type": "LearningPlan",
+    "var": "src"
+   },
+   "edge_type": "has_active_metacognitive_learning_policy",
+   "tgt": {
+    "type": "MetacognitiveLearningPolicy",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "metacognitive_learning:higher_policy",
+   "src": {
+    "type": "MetacognitiveLearningPolicy",
+    "var": "src"
+   },
+   "edge_type": "has_higher_order_metacognitive_policy",
+   "tgt": {
+    "type": "MetacognitiveLearningPolicy",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "metacognitive_learning:plan_alternative",
+   "src": {
+    "type": "LearningPlan",
+    "var": "src"
+   },
+   "edge_type": "has_learning_policy_alternative",
+   "tgt": {
+    "type": "LearningPolicyAlternative",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "metacognitive_learning:alternative_step",
+   "src": {
+    "type": "LearningPolicyAlternative",
+    "var": "src"
+   },
+   "edge_type": "proposes_learning_plan_step",
+   "tgt": {
+    "type": "LearningPlanStep",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "metacognitive_learning:alternative_capability",
+   "src": {
+    "type": "LearningPolicyAlternative",
+    "var": "src"
+   },
+   "edge_type": "predicts_learning_capability",
+   "tgt": {
+    "type": "Node",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "metacognitive_learning:plan_residual",
+   "src": {
+    "type": "LearningPlan",
+    "var": "src"
+   },
+   "edge_type": "has_learning_plan_residual",
+   "tgt": {
+    "type": "LearningPlanResidual",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "metacognitive_learning:step_residual",
+   "src": {
+    "type": "LearningPlanStep",
+    "var": "src"
+   },
+   "edge_type": "has_learning_plan_residual",
+   "tgt": {
+    "type": "LearningPlanResidual",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "metacognitive_learning:residual_step",
+   "src": {
+    "type": "LearningPlanResidual",
+    "var": "src"
+   },
+   "edge_type": "about_learning_plan_step",
+   "tgt": {
+    "type": "LearningPlanStep",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "metacognitive_learning:residual_policy",
+   "src": {
+    "type": "LearningPlanResidual",
+    "var": "src"
+   },
+   "edge_type": "raised_under_metacognitive_policy",
+   "tgt": {
+    "type": "MetacognitiveLearningPolicy",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "metacognitive_learning:residual_profile",
+   "src": {
+    "type": "LearningPlanResidual",
+    "var": "src"
+   },
+   "edge_type": "has_learning_policy_pareto_profile",
+   "tgt": {
+    "type": "ParetoProfile",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "metacognitive_learning:plan_profile",
+   "src": {
+    "type": "LearningPlan",
+    "var": "src"
+   },
+   "edge_type": "has_learning_policy_pareto_profile",
+   "tgt": {
+    "type": "ParetoProfile",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "metacognitive_learning:candidate_step",
+   "src": {
+    "type": "ParetoCandidate",
+    "var": "src"
+   },
+   "edge_type": "represents_learning_plan_step",
+   "tgt": {
+    "type": "LearningPlanStep",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "metacognitive_learning:candidate_alternative",
+   "src": {
+    "type": "ParetoCandidate",
+    "var": "src"
+   },
+   "edge_type": "represents_learning_policy_alternative",
+   "tgt": {
+    "type": "LearningPolicyAlternative",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "metacognitive_learning:plan_revision",
+   "src": {
+    "type": "LearningPlan",
+    "var": "src"
+   },
+   "edge_type": "has_learning_plan_revision",
+   "tgt": {
+    "type": "LearningPlanRevision",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "metacognitive_learning:revision_step",
+   "src": {
+    "type": "LearningPlanRevision",
+    "var": "src"
+   },
+   "edge_type": "revises_learning_plan_step",
+   "tgt": {
+    "type": "LearningPlanStep",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "metacognitive_learning:revision_redirect",
+   "src": {
+    "type": "LearningPlanRevision",
+    "var": "src"
+   },
+   "edge_type": "redirects_to_learning_plan_step",
+   "tgt": {
+    "type": "LearningPlanStep",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "metacognitive_learning:revision_residual",
+   "src": {
+    "type": "LearningPlanRevision",
+    "var": "src"
+   },
+   "edge_type": "resolves_learning_plan_residual",
+   "tgt": {
+    "type": "LearningPlanResidual",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "metacognitive_learning:reassessment_condition",
+   "src": {
+    "type": "Node",
+    "var": "src"
+   },
+   "edge_type": "reassess_after_learning_capability",
+   "tgt": {
+    "type": "Node",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "metacognitive_learning:counterexample_hold",
+   "src": {
+    "type": "LearningPlanStep",
+    "var": "src"
+   },
+   "edge_type": "has_learning_policy_counterexample_hold",
+   "tgt": {
+    "type": "LearningPolicyCounterexampleHold",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "metacognitive_learning:residual_discrimination",
+   "src": {
+    "type": "LearningPlanResidual",
+    "var": "src"
+   },
+   "edge_type": "has_learning_policy_discrimination_request",
+   "tgt": {
+    "type": "LearningPolicyDiscriminationRequest",
+    "var": "tgt"
+   }
+  }
+ ],
+ "rules": [
+  {
+   "name": "ml_attach_metacognitive_policy_to_learning_plan",
+   "area": "metacognitive_learning",
+   "latency_class": "hard_realtime",
+   "batch": false,
+   "comment": "A learning plan is itself a revisable program. The first meta-level is materialized lazily when a plan exists.",
+   "match": [
+    [
+     "episode",
+     "has_self_directed_learning_plan",
+     "plan"
+    ]
+   ],
+   "where": {
+    "type": "Eq",
+    "a": {
+     "type": "Count",
+     "source": {
+      "type": "Neighbours",
+      "node": {
+       "type": "Var",
+       "name": "plan"
+      },
+      "edge_type": "has_active_metacognitive_learning_policy",
+      "any_type": false
+     }
+    },
+    "b": {
+     "type": "Lit",
+     "value": 0
+    }
+   },
+   "effects": [
+    [
+     "add_node",
+     "policy",
+     "MetacognitiveLearningPolicy",
+     {
+      "status": "active",
+      "order_n": 1,
+      "residual_count": 0,
+      "revision_count": 0,
+      "discrimination_count": 0,
+      "output_authority": 0,
+      "integer_native": 1
+     }
+    ],
+    [
+     "add_edge",
+     "plan",
+     "has_metacognitive_learning_policy",
+     "policy"
+    ],
+    [
+     "add_edge",
+     "plan",
+     "has_active_metacognitive_learning_policy",
+     "policy"
+    ]
+   ]
+  },
+  {
+   "name": "ml_publish_learning_step_as_policy_alternative",
+   "area": "metacognitive_learning",
+   "latency_class": "hard_realtime",
+   "batch": true,
+   "match": [
+    [
+     "episode",
+     "has_self_directed_learning_plan",
+     "plan"
+    ],
+    [
+     "plan",
+     "has_active_metacognitive_learning_policy",
+     "policy"
+    ],
+    [
+     "plan",
+     "has_learning_plan_step",
+     "step"
+    ],
+    [
+     "step",
+     "plans_learning_capability",
+     "instance"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "policy"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "deliberating"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "plan"
+         },
+         "edge_type": "has_learning_policy_alternative",
+         "any_type": false
+        },
+        "var_name": "known_alternative",
+        "predicate": {
+         "type": "Exists",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "known_alternative"
+          },
+          "edge_type": "proposes_learning_plan_step",
+          "any_type": false
+         },
+         "var_name": "known_step",
+         "predicate": {
+          "type": "Eq",
+          "a": {
+           "type": "Var",
+           "name": "known_step"
+          },
+          "b": {
+           "type": "Var",
+           "name": "step"
+          }
+         }
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "alternative",
+     "LearningPolicyAlternative",
+     {
+      "kind": "continue_learning_step",
+      "goal": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "step"
+        },
+        "key": "goal"
+       }
+      },
+      "causal_yield_units": {
+       "__term__": {
+        "type": "Minus",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "instance"
+           },
+           "key": "success_count"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        "b": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "step"
+           },
+           "key": "budget_success_baseline"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        }
+       }
+      },
+      "context_units": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "step"
+          },
+          "key": "context_evidence_units"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "failure_burden_units": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "instance"
+          },
+          "key": "failure_count"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "experiment_cost_units": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "step"
+          },
+          "key": "evidence_spent_units"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "last_success_count": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "instance"
+          },
+          "key": "success_count"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "last_failure_count": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "instance"
+          },
+          "key": "failure_count"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "eligible": {
+       "__term__": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Or",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "step"
+              },
+              "key": "status"
+             },
+             "b": {
+              "type": "Lit",
+              "value": "ready"
+             }
+            },
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "step"
+              },
+              "key": "status"
+             },
+             "b": {
+              "type": "Lit",
+              "value": "active"
+             }
+            }
+           ]
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Count",
+            "source": {
+             "type": "Filter",
+             "source": {
+              "type": "Neighbours",
+              "node": {
+               "type": "Var",
+               "name": "step"
+              },
+              "edge_type": "has_learning_policy_counterexample_hold",
+              "any_type": false
+             },
+             "var_name": "counterexample_hold",
+             "predicate": {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "counterexample_hold"
+               },
+               "key": "status"
+              },
+              "b": {
+               "type": "Lit",
+               "value": "active"
+              }
+             }
+            }
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0
+           }
+          }
+         ]
+        },
+        "then": {
+         "type": "Lit",
+         "value": 1
+        },
+        "other": {
+         "type": "Lit",
+         "value": 0
+        }
+       }
+      },
+      "output_authority": 0,
+      "integer_native": 1
+     }
+    ],
+    [
+     "add_edge",
+     "plan",
+     "has_learning_policy_alternative",
+     "alternative"
+    ],
+    [
+     "add_edge",
+     "alternative",
+     "proposes_learning_plan_step",
+     "step"
+    ],
+    [
+     "add_edge",
+     "alternative",
+     "predicts_learning_capability",
+     "instance"
+    ]
+   ]
+  },
+  {
+   "name": "ml_refresh_learning_policy_alternative_from_receipts",
+   "area": "metacognitive_learning",
+   "latency_class": "hard_realtime",
+   "batch": true,
+   "match": [
+    [
+     "plan",
+     "has_active_metacognitive_learning_policy",
+     "policy"
+    ],
+    [
+     "plan",
+     "has_learning_policy_alternative",
+     "alternative"
+    ],
+    [
+     "alternative",
+     "proposes_learning_plan_step",
+     "step"
+    ],
+    [
+     "step",
+     "plans_learning_capability",
+     "instance"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "policy"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "deliberating"
+      }
+     },
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Eq",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "alternative"
+            },
+            "key": "last_success_count"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         "b": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "instance"
+            },
+            "key": "success_count"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         }
+        }
+       },
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Eq",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "alternative"
+            },
+            "key": "last_failure_count"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         "b": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "instance"
+            },
+            "key": "failure_count"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         }
+        }
+       },
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Eq",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "alternative"
+            },
+            "key": "context_units"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         "b": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "step"
+            },
+            "key": "context_evidence_units"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         }
+        }
+       },
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Eq",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "alternative"
+            },
+            "key": "eligible"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         "b": {
+          "type": "IfThenElse",
+          "cond": {
+           "type": "And",
+           "items": [
+            {
+             "type": "Or",
+             "items": [
+              {
+               "type": "Eq",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "step"
+                },
+                "key": "status"
+               },
+               "b": {
+                "type": "Lit",
+                "value": "ready"
+               }
+              },
+              {
+               "type": "Eq",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "step"
+                },
+                "key": "status"
+               },
+               "b": {
+                "type": "Lit",
+                "value": "active"
+               }
+              }
+             ]
+            },
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Count",
+              "source": {
+               "type": "Filter",
+               "source": {
+                "type": "Neighbours",
+                "node": {
+                 "type": "Var",
+                 "name": "step"
+                },
+                "edge_type": "has_learning_policy_counterexample_hold",
+                "any_type": false
+               },
+               "var_name": "counterexample_hold",
+               "predicate": {
+                "type": "Eq",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "counterexample_hold"
+                 },
+                 "key": "status"
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": "active"
+                }
+               }
+              }
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0
+             }
+            }
+           ]
+          },
+          "then": {
+           "type": "Lit",
+           "value": 1
+          },
+          "other": {
+           "type": "Lit",
+           "value": 0
+          }
+         }
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "alternative",
+     "causal_yield_units",
+     {
+      "__term__": {
+       "type": "Minus",
+       "a": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "instance"
+          },
+          "key": "success_count"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       },
+       "b": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "step"
+          },
+          "key": "budget_success_baseline"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "alternative",
+     "context_units",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "step"
+         },
+         "key": "context_evidence_units"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "alternative",
+     "failure_burden_units",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "instance"
+         },
+         "key": "failure_count"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "alternative",
+     "experiment_cost_units",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "step"
+         },
+         "key": "evidence_spent_units"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "alternative",
+     "last_success_count",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "instance"
+         },
+         "key": "success_count"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "alternative",
+     "last_failure_count",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "instance"
+         },
+         "key": "failure_count"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "alternative",
+     "eligible",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Or",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "step"
+             },
+             "key": "status"
+            },
+            "b": {
+             "type": "Lit",
+             "value": "ready"
+            }
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "step"
+             },
+             "key": "status"
+            },
+            "b": {
+             "type": "Lit",
+             "value": "active"
+            }
+           }
+          ]
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Count",
+           "source": {
+            "type": "Filter",
+            "source": {
+             "type": "Neighbours",
+             "node": {
+              "type": "Var",
+              "name": "step"
+             },
+             "edge_type": "has_learning_policy_counterexample_hold",
+             "any_type": false
+            },
+            "var_name": "counterexample_hold",
+            "predicate": {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "counterexample_hold"
+              },
+              "key": "status"
+             },
+             "b": {
+              "type": "Lit",
+              "value": "active"
+             }
+            }
+           }
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0
+          }
+         }
+        ]
+       },
+       "then": {
+        "type": "Lit",
+        "value": 1
+       },
+       "other": {
+        "type": "Lit",
+        "value": 0
+       }
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "ml_detect_exhausted_zero_yield_learning_policy",
+   "area": "metacognitive_learning",
+   "latency_class": "hard_realtime",
+   "batch": false,
+   "comment": "An exhausted body-derived budget with no new causal success falsifies the current learning-policy prediction when a productive frontier alternative exists.",
+   "match": [
+    [
+     "episode",
+     "has_self_directed_learning_plan",
+     "plan"
+    ],
+    [
+     "plan",
+     "has_active_metacognitive_learning_policy",
+     "policy"
+    ],
+    [
+     "plan",
+     "has_selected_learning_plan_step",
+     "step"
+    ],
+    [
+     "step",
+     "plans_learning_capability",
+     "instance"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Lt",
+       "a": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "step"
+          },
+          "key": "evidence_spent_units"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       },
+       "b": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "step"
+          },
+          "key": "evidence_budget_units"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "instance"
+         },
+         "key": "success_count"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "step"
+         },
+         "key": "budget_success_baseline"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "plan"
+         },
+         "edge_type": "has_learning_plan_step",
+         "any_type": false
+        },
+        "var_name": "productive_step",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Gt",
+           "a": {
+            "type": "Minus",
+            "a": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "productive_step"
+               },
+               "key": "successful_evidence_units"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            },
+            "b": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "productive_step"
+               },
+               "key": "budget_success_baseline"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            }
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0
+           }
+          },
+          {
+           "type": "Or",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "productive_step"
+              },
+              "key": "status"
+             },
+             "b": {
+              "type": "Lit",
+              "value": "ready"
+             }
+            },
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "productive_step"
+              },
+              "key": "status"
+             },
+             "b": {
+              "type": "Lit",
+              "value": "active"
+             }
+            }
+           ]
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Count",
+            "source": {
+             "type": "Filter",
+             "source": {
+              "type": "Neighbours",
+              "node": {
+               "type": "Var",
+               "name": "productive_step"
+              },
+              "edge_type": "has_learning_policy_counterexample_hold",
+              "any_type": false
+             },
+             "var_name": "counterexample_hold",
+             "predicate": {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "counterexample_hold"
+               },
+               "key": "status"
+              },
+              "b": {
+               "type": "Lit",
+               "value": "active"
+              }
+             }
+            }
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0
+           }
+          }
+         ]
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "step"
+         },
+         "edge_type": "has_learning_plan_residual",
+         "any_type": false
+        },
+        "var_name": "known_residual",
+        "predicate": {
+         "type": "Not",
+         "arg": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "known_residual"
+           },
+           "key": "status"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "resolved"
+          }
+         }
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "residual",
+     "LearningPlanResidual",
+     {
+      "kind": "effort_without_causal_learning_payoff",
+      "status": "open",
+      "order_n": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "policy"
+          },
+          "key": "order_n"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "evidence_spent_units": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "step"
+          },
+          "key": "evidence_spent_units"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "causal_yield_units": 0,
+      "output_authority": 0,
+      "integer_native": 1
+     }
+    ],
+    [
+     "add_edge",
+     "plan",
+     "has_learning_plan_residual",
+     "residual"
+    ],
+    [
+     "add_edge",
+     "step",
+     "has_learning_plan_residual",
+     "residual"
+    ],
+    [
+     "add_edge",
+     "residual",
+     "about_learning_plan_step",
+     "step"
+    ],
+    [
+     "add_edge",
+     "residual",
+     "raised_under_metacognitive_policy",
+     "policy"
+    ],
+    [
+     "add_node",
+     "profile",
+     "ParetoProfile",
+     {
+      "kind": "metacognitive_learning_policy_revision",
+      "status": "collecting_candidates",
+      "dimension_count": 4,
+      "scalarized": 0,
+      "output_authority": 0,
+      "integer_native": 1
+     }
+    ],
+    [
+     "add_edge",
+     "residual",
+     "has_learning_policy_pareto_profile",
+     "profile"
+    ],
+    [
+     "add_edge",
+     "plan",
+     "has_learning_policy_pareto_profile",
+     "profile"
+    ],
+    [
+     "add_node",
+     "incumbent",
+     "ParetoCandidate",
+     {
+      "kind": "incumbent_learning_policy",
+      "dominated": 0,
+      "verified": 1,
+      "output_authority": 0,
+      "integer_native": 1
+     }
+    ],
+    [
+     "add_edge",
+     "profile",
+     "has_pareto_candidate",
+     "incumbent"
+    ],
+    [
+     "add_edge",
+     "profile",
+     "has_incumbent_pareto_candidate",
+     "incumbent"
+    ],
+    [
+     "add_edge",
+     "incumbent",
+     "represents_learning_plan_step",
+     "step"
+    ],
+    [
+     "add_node",
+     "task_set_meta",
+     "SystemTwoTaskSet",
+     {
+      "area": "metacognitive_learning",
+      "enabled": 1,
+      "integer_native": 1
+     }
+    ],
+    [
+     "add_node",
+     "task_set_pareto",
+     "SystemTwoTaskSet",
+     {
+      "area": "cognitive_pareto",
+      "enabled": 1,
+      "integer_native": 1
+     }
+    ],
+    [
+     "add_node",
+     "escalation",
+     "SystemTwoEscalation",
+     {
+      "status": "requested",
+      "reason": "learning_plan_prediction_error",
+      "output_authority": 0,
+      "integer_native": 1
+     }
+    ],
+    [
+     "add_edge",
+     "escalation",
+     "about_context",
+     "residual"
+    ],
+    [
+     "add_edge",
+     "escalation",
+     "recruits_task_set",
+     "task_set_meta"
+    ],
+    [
+     "add_edge",
+     "escalation",
+     "recruits_task_set",
+     "task_set_pareto"
+    ],
+    [
+     "set_attr",
+     "policy",
+     "status",
+     "deliberating"
+    ],
+    [
+     "set_attr",
+     "policy",
+     "residual_count",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "policy"
+           },
+           "key": "residual_count"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        {
+         "type": "Lit",
+         "value": 1
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "add_node",
+     "incumbent_value_0",
+     "ParetoValue",
+     {
+      "dimension_ordinal": 0,
+      "raw_value": {
+       "__term__": {
+        "type": "Minus",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "instance"
+           },
+           "key": "success_count"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        "b": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "step"
+           },
+           "key": "budget_success_baseline"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        }
+       }
+      },
+      "signed_value": {
+       "__term__": {
+        "type": "Minus",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "instance"
+           },
+           "key": "success_count"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        "b": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "step"
+           },
+           "key": "budget_success_baseline"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        }
+       }
+      },
+      "verified": 1,
+      "integer_native": 1
+     }
+    ],
+    [
+     "add_edge",
+     "incumbent",
+     "has_pareto_value",
+     "incumbent_value_0"
+    ],
+    [
+     "add_node",
+     "incumbent_value_1",
+     "ParetoValue",
+     {
+      "dimension_ordinal": 1,
+      "raw_value": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "step"
+          },
+          "key": "context_evidence_units"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "signed_value": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "step"
+          },
+          "key": "context_evidence_units"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "verified": 1,
+      "integer_native": 1
+     }
+    ],
+    [
+     "add_edge",
+     "incumbent",
+     "has_pareto_value",
+     "incumbent_value_1"
+    ],
+    [
+     "add_node",
+     "incumbent_value_2",
+     "ParetoValue",
+     {
+      "dimension_ordinal": 2,
+      "raw_value": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "instance"
+          },
+          "key": "failure_count"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "signed_value": {
+       "__term__": {
+        "type": "Neg",
+        "arg": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "instance"
+           },
+           "key": "failure_count"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        }
+       }
+      },
+      "verified": 1,
+      "integer_native": 1
+     }
+    ],
+    [
+     "add_edge",
+     "incumbent",
+     "has_pareto_value",
+     "incumbent_value_2"
+    ],
+    [
+     "add_node",
+     "incumbent_value_3",
+     "ParetoValue",
+     {
+      "dimension_ordinal": 3,
+      "raw_value": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "step"
+          },
+          "key": "evidence_spent_units"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "signed_value": {
+       "__term__": {
+        "type": "Neg",
+        "arg": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "step"
+           },
+           "key": "evidence_spent_units"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        }
+       }
+      },
+      "verified": 1,
+      "integer_native": 1
+     }
+    ],
+    [
+     "add_edge",
+     "incumbent",
+     "has_pareto_value",
+     "incumbent_value_3"
+    ]
+   ]
+  },
+  {
+   "name": "ml_publish_productive_policy_counterexample",
+   "area": "metacognitive_learning",
+   "latency_class": "soft_realtime",
+   "batch": true,
+   "match": [
+    [
+     "plan",
+     "has_learning_policy_pareto_profile",
+     "profile"
+    ],
+    [
+     "profile",
+     "has_incumbent_pareto_candidate",
+     "incumbent"
+    ],
+    [
+     "incumbent",
+     "represents_learning_plan_step",
+     "current_step"
+    ],
+    [
+     "plan",
+     "has_learning_policy_alternative",
+     "alternative"
+    ],
+    [
+     "alternative",
+     "proposes_learning_plan_step",
+     "step"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "profile"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "collecting_candidates"
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "alternative"
+         },
+         "key": "causal_yield_units"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "alternative"
+         },
+         "key": "eligible"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Var",
+        "name": "step"
+       },
+       "b": {
+        "type": "Var",
+        "name": "current_step"
+       }
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "profile"
+         },
+         "edge_type": "has_pareto_candidate",
+         "any_type": false
+        },
+        "var_name": "known_candidate",
+        "predicate": {
+         "type": "Exists",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "known_candidate"
+          },
+          "edge_type": "represents_learning_policy_alternative",
+          "any_type": false
+         },
+         "var_name": "known_alternative",
+         "predicate": {
+          "type": "Eq",
+          "a": {
+           "type": "Var",
+           "name": "known_alternative"
+          },
+          "b": {
+           "type": "Var",
+           "name": "alternative"
+          }
+         }
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "candidate",
+     "ParetoCandidate",
+     {
+      "kind": "learning_policy_alternative",
+      "causal_yield_units": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "alternative"
+          },
+          "key": "causal_yield_units"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "experiment_cost_units": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "alternative"
+          },
+          "key": "experiment_cost_units"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "dominated": 0,
+      "verified": 1,
+      "output_authority": 0,
+      "integer_native": 1
+     }
+    ],
+    [
+     "add_edge",
+     "profile",
+     "has_pareto_candidate",
+     "candidate"
+    ],
+    [
+     "add_edge",
+     "candidate",
+     "represents_learning_policy_alternative",
+     "alternative"
+    ],
+    [
+     "add_node",
+     "candidate_value_0",
+     "ParetoValue",
+     {
+      "dimension_ordinal": 0,
+      "raw_value": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "alternative"
+          },
+          "key": "causal_yield_units"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "signed_value": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "alternative"
+          },
+          "key": "causal_yield_units"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "verified": 1,
+      "integer_native": 1
+     }
+    ],
+    [
+     "add_edge",
+     "candidate",
+     "has_pareto_value",
+     "candidate_value_0"
+    ],
+    [
+     "add_node",
+     "candidate_value_1",
+     "ParetoValue",
+     {
+      "dimension_ordinal": 1,
+      "raw_value": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "alternative"
+          },
+          "key": "context_units"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "signed_value": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "alternative"
+          },
+          "key": "context_units"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "verified": 1,
+      "integer_native": 1
+     }
+    ],
+    [
+     "add_edge",
+     "candidate",
+     "has_pareto_value",
+     "candidate_value_1"
+    ],
+    [
+     "add_node",
+     "candidate_value_2",
+     "ParetoValue",
+     {
+      "dimension_ordinal": 2,
+      "raw_value": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "alternative"
+          },
+          "key": "failure_burden_units"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "signed_value": {
+       "__term__": {
+        "type": "Neg",
+        "arg": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "alternative"
+           },
+           "key": "failure_burden_units"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        }
+       }
+      },
+      "verified": 1,
+      "integer_native": 1
+     }
+    ],
+    [
+     "add_edge",
+     "candidate",
+     "has_pareto_value",
+     "candidate_value_2"
+    ],
+    [
+     "add_node",
+     "candidate_value_3",
+     "ParetoValue",
+     {
+      "dimension_ordinal": 3,
+      "raw_value": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "alternative"
+          },
+          "key": "experiment_cost_units"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "signed_value": {
+       "__term__": {
+        "type": "Neg",
+        "arg": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "alternative"
+           },
+           "key": "experiment_cost_units"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        }
+       }
+      },
+      "verified": 1,
+      "integer_native": 1
+     }
+    ],
+    [
+     "add_edge",
+     "candidate",
+     "has_pareto_value",
+     "candidate_value_3"
+    ]
+   ]
+  },
+  {
+   "name": "ml_apply_unique_dominating_learning_policy_revision",
+   "area": "metacognitive_learning",
+   "latency_class": "soft_realtime",
+   "batch": false,
+   "comment": "Only one verified non-dominated counterexample may enact a revision. Incomparable alternatives require discrimination.",
+   "match": [
+    [
+     "episode",
+     "has_self_directed_learning_plan",
+     "plan"
+    ],
+    [
+     "plan",
+     "has_active_metacognitive_learning_policy",
+     "policy"
+    ],
+    [
+     "plan",
+     "has_learning_policy_pareto_profile",
+     "profile"
+    ],
+    [
+     "profile",
+     "has_incumbent_pareto_candidate",
+     "incumbent"
+    ],
+    [
+     "incumbent",
+     "represents_learning_plan_step",
+     "current_step"
+    ],
+    [
+     "current_step",
+     "plans_learning_capability",
+     "current_instance"
+    ],
+    [
+     "incumbent",
+     "is_dominated_by_pareto_candidate",
+     "candidate"
+    ],
+    [
+     "candidate",
+     "represents_learning_policy_alternative",
+     "alternative"
+    ],
+    [
+     "alternative",
+     "proposes_learning_plan_step",
+     "next_step"
+    ],
+    [
+     "next_step",
+     "plans_learning_capability",
+     "next_instance"
+    ],
+    [
+     "current_step",
+     "has_learning_plan_residual",
+     "residual"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "residual"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "open"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "next_instance"
+        },
+        "key": "status"
+       },
+       "b": {
+        "type": "Lit",
+        "value": "mastered"
+       }
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "profile"
+         },
+         "edge_type": "has_pareto_candidate",
+         "any_type": false
+        },
+        "var_name": "published_candidate",
+        "predicate": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "published_candidate"
+          },
+          "key": "kind"
+         },
+         "b": {
+          "type": "Lit",
+          "value": "learning_policy_alternative"
+         }
+        }
+       }
+      },
+      "b": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "plan"
+         },
+         "edge_type": "has_learning_policy_alternative",
+         "any_type": false
+        },
+        "var_name": "productive_alternative",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Gt",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "productive_alternative"
+              },
+              "key": "causal_yield_units"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "productive_alternative"
+              },
+              "key": "eligible"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           },
+           "b": {
+            "type": "Lit",
+            "value": 1
+           }
+          }
+         ]
+        }
+       }
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "incumbent"
+         },
+         "edge_type": "is_dominated_by_pareto_candidate",
+         "any_type": false
+        },
+        "var_name": "dominator",
+        "predicate": {
+         "type": "Eq",
+         "a": {
+          "type": "Count",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "dominator"
+           },
+           "edge_type": "is_dominated_by_pareto_candidate",
+           "any_type": false
+          }
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0
+         }
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Exists",
+      "source": {
+       "type": "Filter",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "incumbent"
+        },
+        "edge_type": "is_dominated_by_pareto_candidate",
+        "any_type": false
+       },
+       "var_name": "dominator",
+       "predicate": {
+        "type": "Eq",
+        "a": {
+         "type": "Count",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "dominator"
+          },
+          "edge_type": "is_dominated_by_pareto_candidate",
+          "any_type": false
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0
+        }
+       }
+      },
+      "var_name": "frontier_candidate",
+      "predicate": {
+       "type": "Eq",
+       "a": {
+        "type": "Var",
+        "name": "frontier_candidate"
+       },
+       "b": {
+        "type": "Var",
+        "name": "candidate"
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "revision",
+     "LearningPlanRevision",
+     {
+      "kind": "redirect_to_productive_learning_frontier",
+      "reason": "verified_pareto_counterexample",
+      "status": "enacted",
+      "order_n": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "policy"
+          },
+          "key": "order_n"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "redirect_success_baseline": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "next_instance"
+          },
+          "key": "success_count"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "output_authority": 0,
+      "integer_native": 1
+     }
+    ],
+    [
+     "add_edge",
+     "plan",
+     "has_learning_plan_revision",
+     "revision"
+    ],
+    [
+     "add_edge",
+     "revision",
+     "revises_learning_plan_step",
+     "current_step"
+    ],
+    [
+     "add_edge",
+     "revision",
+     "redirects_to_learning_plan_step",
+     "next_step"
+    ],
+    [
+     "add_edge",
+     "revision",
+     "resolves_learning_plan_residual",
+     "residual"
+    ],
+    [
+     "add_edge",
+     "current_instance",
+     "reassess_after_learning_capability",
+     "next_instance"
+    ],
+    [
+     "del_edge",
+     "episode",
+     "has_active_embodied_developmental_capability",
+     "current_instance"
+    ],
+    [
+     "del_edge",
+     "plan",
+     "has_selected_learning_plan_step",
+     "current_step"
+    ],
+    [
+     "set_attr",
+     "current_step",
+     "status",
+     "meta_suspended"
+    ],
+    [
+     "set_attr",
+     "current_instance",
+     "status",
+     "meta_suspended"
+    ],
+    [
+     "set_attr",
+     "next_step",
+     "status",
+     "ready"
+    ],
+    [
+     "set_attr",
+     "residual",
+     "status",
+     "resolved"
+    ],
+    [
+     "set_attr",
+     "profile",
+     "status",
+     "revision_enacted"
+    ],
+    [
+     "set_attr",
+     "policy",
+     "status",
+     "active"
+    ],
+    [
+     "set_attr",
+     "policy",
+     "revision_count",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "policy"
+           },
+           "key": "revision_count"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        {
+         "type": "Lit",
+         "value": 1
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "plan",
+     "replan_count",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "plan"
+           },
+           "key": "replan_count"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        {
+         "type": "Lit",
+         "value": 1
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "ml_request_discrimination_between_incomparable_policy_revisions",
+   "area": "metacognitive_learning",
+   "latency_class": "soft_realtime",
+   "batch": false,
+   "match": [
+    [
+     "plan",
+     "has_active_metacognitive_learning_policy",
+     "policy"
+    ],
+    [
+     "plan",
+     "has_learning_policy_pareto_profile",
+     "profile"
+    ],
+    [
+     "profile",
+     "has_incumbent_pareto_candidate",
+     "incumbent"
+    ],
+    [
+     "residual",
+     "has_learning_policy_pareto_profile",
+     "profile"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "residual"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "open"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "profile"
+         },
+         "edge_type": "has_pareto_candidate",
+         "any_type": false
+        },
+        "var_name": "published_candidate",
+        "predicate": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "published_candidate"
+          },
+          "key": "kind"
+         },
+         "b": {
+          "type": "Lit",
+          "value": "learning_policy_alternative"
+         }
+        }
+       }
+      },
+      "b": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "plan"
+         },
+         "edge_type": "has_learning_policy_alternative",
+         "any_type": false
+        },
+        "var_name": "productive_alternative",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Gt",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "productive_alternative"
+              },
+              "key": "causal_yield_units"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "productive_alternative"
+              },
+              "key": "eligible"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           },
+           "b": {
+            "type": "Lit",
+            "value": 1
+           }
+          }
+         ]
+        }
+       }
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "incumbent"
+         },
+         "edge_type": "is_dominated_by_pareto_candidate",
+         "any_type": false
+        },
+        "var_name": "dominator",
+        "predicate": {
+         "type": "Eq",
+         "a": {
+          "type": "Count",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "dominator"
+           },
+           "edge_type": "is_dominated_by_pareto_candidate",
+           "any_type": false
+          }
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0
+         }
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "residual"
+        },
+        "edge_type": "has_learning_policy_discrimination_request",
+        "any_type": false
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "request",
+     "LearningPolicyDiscriminationRequest",
+     {
+      "status": "requested",
+      "kind": "distinguish_incomparable_learning_policies",
+      "candidate_count": {
+       "__term__": {
+        "type": "Count",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "incumbent"
+          },
+          "edge_type": "is_dominated_by_pareto_candidate",
+          "any_type": false
+         },
+         "var_name": "dominator",
+         "predicate": {
+          "type": "Eq",
+          "a": {
+           "type": "Count",
+           "source": {
+            "type": "Neighbours",
+            "node": {
+             "type": "Var",
+             "name": "dominator"
+            },
+            "edge_type": "is_dominated_by_pareto_candidate",
+            "any_type": false
+           }
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0
+          }
+         }
+        }
+       }
+      },
+      "order_n": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "policy"
+          },
+          "key": "order_n"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "output_authority": 0,
+      "integer_native": 1
+     }
+    ],
+    [
+     "add_edge",
+     "residual",
+     "has_learning_policy_discrimination_request",
+     "request"
+    ],
+    [
+     "set_attr",
+     "policy",
+     "status",
+     "awaiting_discrimination"
+    ],
+    [
+     "set_attr",
+     "policy",
+     "discrimination_count",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "policy"
+           },
+           "key": "discrimination_count"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        {
+         "type": "Lit",
+         "value": 1
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "ml_reopen_suspended_step_after_revision_condition_changes",
+   "area": "metacognitive_learning",
+   "latency_class": "hard_realtime",
+   "batch": true,
+   "match": [
+    [
+     "plan",
+     "has_learning_plan_step",
+     "step"
+    ],
+    [
+     "step",
+     "plans_learning_capability",
+     "instance"
+    ],
+    [
+     "instance",
+     "reassess_after_learning_capability",
+     "condition"
+    ],
+    [
+     "plan",
+     "has_learning_plan_revision",
+     "revision"
+    ],
+    [
+     "revision",
+     "revises_learning_plan_step",
+     "step"
+    ],
+    [
+     "revision",
+     "redirects_to_learning_plan_step",
+     "condition_step"
+    ],
+    [
+     "condition_step",
+     "plans_learning_capability",
+     "condition"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "instance"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "meta_suspended"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "condition"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "mastered"
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "condition"
+         },
+         "key": "success_count"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "revision"
+         },
+         "key": "redirect_success_baseline"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "del_edge",
+     "instance",
+     "reassess_after_learning_capability",
+     "condition"
+    ],
+    [
+     "set_attr",
+     "instance",
+     "status",
+     "available"
+    ],
+    [
+     "set_attr",
+     "step",
+     "status",
+     "ready"
+    ]
+   ]
+  },
+  {
+   "name": "ml_materialize_next_meta_order_after_revision_fails",
+   "area": "metacognitive_learning",
+   "latency_class": "hard_realtime",
+   "batch": false,
+   "comment": "The reflective tower is order-N and lazy. A failed revision materializes exactly one higher order; ordinary learning does not pay for unused meta-levels.",
+   "match": [
+    [
+     "plan",
+     "has_active_metacognitive_learning_policy",
+     "policy"
+    ],
+    [
+     "plan",
+     "has_learning_plan_revision",
+     "revision"
+    ],
+    [
+     "revision",
+     "redirects_to_learning_plan_step",
+     "step"
+    ],
+    [
+     "step",
+     "plans_learning_capability",
+     "instance"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "revision"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "enacted"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Lt",
+       "a": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "step"
+          },
+          "key": "evidence_spent_units"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       },
+       "b": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "step"
+          },
+          "key": "evidence_budget_units"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "instance"
+         },
+         "key": "success_count"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "step"
+         },
+         "key": "budget_success_baseline"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "policy"
+        },
+        "edge_type": "has_higher_order_metacognitive_policy",
+        "any_type": false
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "higher",
+     "MetacognitiveLearningPolicy",
+     {
+      "status": "active",
+      "order_n": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "policy"
+            },
+            "key": "order_n"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         {
+          "type": "Lit",
+          "value": 1
+         }
+        ]
+       }
+      },
+      "residual_count": 0,
+      "revision_count": 0,
+      "discrimination_count": 0,
+      "output_authority": 0,
+      "integer_native": 1
+     }
+    ],
+    [
+     "add_edge",
+     "policy",
+     "has_higher_order_metacognitive_policy",
+     "higher"
+    ],
+    [
+     "del_edge",
+     "plan",
+     "has_active_metacognitive_learning_policy",
+     "policy"
+    ],
+    [
+     "add_edge",
+     "plan",
+     "has_active_metacognitive_learning_policy",
+     "higher"
+    ],
+    [
+     "set_attr",
+     "policy",
+     "status",
+     "superseded_by_higher_order"
+    ],
+    [
+     "set_attr",
+     "revision",
+     "status",
+     "counterexample_observed"
+    ]
+   ]
+  }
+ ]
+}

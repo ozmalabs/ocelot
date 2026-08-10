@@ -1,0 +1,214 @@
+{
+ "id": "composer_grounding_guard_graph",
+ "version": "1.0.0",
+ "depends_on": [],
+ "description": "GRAPH-RESIDENT: the CONFIDENT-WRONG-OUTSIDE-ITS-RANGE guard, authored by the jabberwock via the composer (CLAUDE.md discipline: no hand-written agent rule). Theory: a cheap-model basin-snap that is confidently WRONG has LOW residual within its own basin, so residual alone cannot catch it; what DOES distinguish it from a genuinely-solved collapse is whether its grounding chain reaches something EXTERNAL to the agent's own generative loop (an anchor) or loops back into itself. domains/grounding_reach.py's flag_ungrounded_confident already computes exactly that discriminator (low residual + high confidence + grounding_reach(node).reached is False) and mints a GroundingGap node -- mechanical adapter I/O, not a decision. THIS seed is the agent's OWN response to that flag: mints ONE rule, escalate_grounding_gap_<tag>, from an agent -wants_grounding_guard_rule-> ComposeRequest trigger (ground_concern's 'escalate' relation head, seeds/relation_vocabulary.json's new grounding_escalate cue + seeds/composer_dispatch.json's new ComposerCue). The minted rule matches every agent -has_grounding_gap-> gap edge (the mechanical exposure of an already-flagged GroundingGap to the rule engine -- domains/reflective_faculty.py's ensure_grounding_gap_edges, the SAME idempotent trigger-wiring idiom induce_concern uses for agent -observed-> observation) not yet escalated (gap.escalated is null), and -- instead of trusting the cheap snap -- mints an Impasse{kind:'grounding_gap'} and wires agent -surprised_by-> impasse (+ impasse -about_gap-> gap), REUSING the standing surprised_by/Impasse escalation channel this codebase already uses everywhere active cognition is engaged (seeds/impasse_escalation.json, seeds/investigation_teacher.json, seeds/self_extension.json): when seeds/autonomy.json's mint_goal_from_surprise is also loaded, that ALREADY-SEEDED rule turns the surprised_by edge into a wanted Goal on its own -- this seed does not reimplement 'unexplained -> goal', it plugs a GroundingGap into that existing channel. A node that flag_ungrounded_confident never flags (because its grounding chain DOES reach an anchor) never gets a has_grounding_gap edge, so this rule never touches it -- trust is the default; escalation is what a genuine gap earns. Marks gap.escalated so a re-run never re-escalates the same gap (fixpoint safety, the same guard idiom composer_control_graph's default_no_response uses).",
+ "nodes": [
+  {
+   "local_id": 1,
+   "type": "Rule",
+   "attrs": {
+    "id": "compose_grounding_guard_graph",
+    "match": [
+     [
+      "agent",
+      "wants_grounding_guard_rule",
+      "cr"
+     ]
+    ],
+    "where": {
+     "type": "Lt",
+     "a": {
+      "type": "Plus",
+      "items": [
+       {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "cr"
+        },
+        "key": "composed"
+       },
+       {
+        "type": "Lit",
+        "value": 0.0
+       }
+      ]
+     },
+     "b": {
+      "type": "Lit",
+      "value": 0.5
+     }
+    },
+    "effect": [
+     [
+      "add_node",
+      "rn0",
+      "Rule",
+      {
+       "minted": 0.0
+      }
+     ],
+     [
+      "set_attr",
+      "rn0",
+      "id",
+      {
+       "__term__": {
+        "type": "StringConcat",
+        "parts": [
+         {
+          "type": "Lit",
+          "value": "escalate_grounding_gap_"
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "cr"
+          },
+          "key": "tag"
+         }
+        ]
+       }
+      }
+     ],
+     [
+      "set_attr",
+      "rn0",
+      "match",
+      [
+       [
+        "ag",
+        "has_grounding_gap",
+        "gap"
+       ]
+      ]
+     ],
+     [
+      "set_attr",
+      "rn0",
+      "where",
+      {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "gap"
+        },
+        "key": "escalated"
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       }
+      }
+     ],
+     [
+      "set_attr",
+      "rn0",
+      "effect",
+      [
+       [
+        "add_node",
+        "mi",
+        "Impasse",
+        {
+         "resolved": false,
+         "kind": "grounding_gap",
+         "order": 0,
+         "acted_order": 0,
+         "why": "confident and low-residual, but the grounding chain does not reach an external anchor -- escalate to active cognition, do not trust the snap"
+        }
+       ],
+       [
+        "add_edge",
+        "ag",
+        "surprised_by",
+        "mi"
+       ],
+       [
+        "add_edge",
+        "mi",
+        "about_gap",
+        "gap"
+       ],
+       [
+        "set_attr",
+        "gap",
+        "escalated",
+        true
+       ]
+      ]
+     ],
+     [
+      "set_rule_clause",
+      {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "rn0"
+        },
+        "key": "id"
+       }
+      },
+      "__mint__",
+      {
+       "__term__": {
+        "type": "Var",
+        "name": "rn0"
+       }
+      }
+     ],
+     [
+      "set_attr",
+      "cr",
+      "composed",
+      1.0
+     ]
+    ]
+   }
+  }
+ ],
+ "edges": [],
+ "productions": [
+  {
+   "provenance": "seed:composer_grounding_guard_graph:has_grounding_gap",
+   "src": {
+    "type": "Agent",
+    "var": "s"
+   },
+   "edge_type": "has_grounding_gap",
+   "tgt": {
+    "type": "GroundingGap",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:composer_grounding_guard_graph:surprised_by",
+   "src": {
+    "type": "Agent",
+    "var": "s"
+   },
+   "edge_type": "surprised_by",
+   "tgt": {
+    "type": "Impasse",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:composer_grounding_guard_graph:about_gap",
+   "src": {
+    "type": "Impasse",
+    "var": "s"
+   },
+   "edge_type": "about_gap",
+   "tgt": {
+    "type": "GroundingGap",
+    "var": "t"
+   }
+  }
+ ]
+}

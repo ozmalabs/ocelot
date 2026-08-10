@@ -1,0 +1,142 @@
+{
+ "id": "psychosis_grounding",
+ "version": "1.0.0",
+ "self_load_only": true,
+ "depends_on": [],
+ "description": "DEFAULT-OFF glass-box demonstration that the engine's grounding/collapse operation, run in a failure regime, reproduces the two native psychosis forms (self-grounding delusion; non-optimal-basin misperception) plus the sycophantic-confirmer amplification and grounding-source correction. NO new Rust: the grounding update is a combinational DSL rule over a Belief node built from existing arithmetic Terms (Plus/Minus/Times/Div/Abs/Max/Min/Neg/Attr/Lit) + guarded collapse rules (Eq/Gt/Not/And), evaluated by the real engine run_rules fixpoint and committed by the native fold_clock_edge (next_belief->belief, next_conf->conf on the clocked Belief node). TWO external grounding channels feed the belief: (obs, w_ext) = the REALITY / grounding-source channel, and (obs2, w_conf) = the CONFIRMER channel (a second source whose asserted content the harness sets; a SYCOPHANTIC confirmer sets obs2=belief, so it moves the belief 0 but supplies false corroboration). Grounding is the predictive-coding pull, PRECISION-GATED by confidence (aberrant precision: a confident prior down-weights contradictory evidence -> external pull divided by (1+conf)): next_belief = belief + kx*w_ext*(obs-belief)/(1+conf) + kx*w_conf*(obs2-belief)/(1+conf) + ks*conf*(committed-belief) [self-grounding: pull into the belief's own committed basin, gain proportional to confidence -- the closed loop]. Collapse = nearest-basin selection (pg_collapse_r/pg_collapse_w). Confidence is the aberrant-precision axis: it rises on self-confirmation (belief sits in its own basin) and on external CORROBORATION from EITHER channel (a source whose content AGREES with the current belief, |source-belief|<tol -- so a sycophantic confirmer that mirrors the belief always validates it, robustly, wherever the belief sits), and falls on external DISCONFIRMATION (a source whose content is far from the belief, |source-belief|>tol -- reality contradicting a wrong belief). INERT unless a Belief carries a pg_managed_by edge to a PsyConfig with pg_enabled=1 -> a graph that never loads this seed is byte-identical. The self-grounding term, the precision gating, and the confidence positive feedback are AUTHORED for this reduced harness (the analogue of the seizure model's added alpha): they express the substrate's own predictive-coding grounding core, but they are not the live conversation-faculty grounding rules firing. Prereg: PSYCHOSIS_DEMO_PREREG.md.",
+ "microtheory": {
+  "name": "psychosis_grounding",
+  "description": "grounding/collapse run in a failure regime: self-grounding (closed loop) + non-optimal basin, with confirmer amplification and grounding-source correction (glass-box, tunable, default off)"
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [
+  {
+   "provenance": "seed:psychosis_grounding:belief-config",
+   "src": {"type": "Belief", "var": "b"},
+   "edge_type": "pg_managed_by",
+   "tgt": {"type": "PsyConfig", "var": "cfg"}
+  }
+ ],
+ "rules": [
+  {
+   "name": "pg_collapse_r",
+   "comment": "COLLAPSE = nearest-basin selection. Commit the belief to the RIGHT basin R when it is at least as close to R as to W (|b-R| <= |b-W|). Sets committed_center = R. Fires only when pg_enabled==1 so absent/off is byte-identical.",
+   "match_type": "Belief",
+   "match": [["b", "pg_managed_by", "cfg"]],
+   "where": {
+    "type": "And",
+    "items": [
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "cfg"}, "key": "pg_enabled"}, "b": {"type": "Lit", "value": 1.0}},
+     {"type": "Not", "arg": {"type": "Gt",
+       "a": {"type": "Abs", "arg": {"type": "Minus", "a": {"type": "Attr", "node": {"type": "Var", "name": "b"}, "key": "belief"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "cfg"}, "key": "basin_r"}}},
+       "b": {"type": "Abs", "arg": {"type": "Minus", "a": {"type": "Attr", "node": {"type": "Var", "name": "b"}, "key": "belief"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "cfg"}, "key": "basin_w"}}}}}
+    ]
+   },
+   "effects": [
+    ["set_attr_if_different", "b", "committed_center", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "cfg"}, "key": "basin_r"}}]
+   ]
+  },
+  {
+   "name": "pg_collapse_w",
+   "comment": "COLLAPSE to the WRONG basin W when the belief is strictly closer to W than to R (|b-R| > |b-W|). The non-optimal-basin form: a confident wrong grounding is a stable commitment to W. Sets committed_center = W.",
+   "match_type": "Belief",
+   "match": [["b", "pg_managed_by", "cfg"]],
+   "where": {
+    "type": "And",
+    "items": [
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "cfg"}, "key": "pg_enabled"}, "b": {"type": "Lit", "value": 1.0}},
+     {"type": "Gt",
+       "a": {"type": "Abs", "arg": {"type": "Minus", "a": {"type": "Attr", "node": {"type": "Var", "name": "b"}, "key": "belief"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "cfg"}, "key": "basin_r"}}},
+       "b": {"type": "Abs", "arg": {"type": "Minus", "a": {"type": "Attr", "node": {"type": "Var", "name": "b"}, "key": "belief"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "cfg"}, "key": "basin_w"}}}}
+    ]
+   },
+   "effects": [
+    ["set_attr_if_different", "b", "committed_center", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "cfg"}, "key": "basin_w"}}]
+   ]
+  },
+  {
+   "name": "pg_ground",
+   "comment": "GROUNDING (predictive coding, precision-gated) + CONFIDENCE (precision) update, in one rule so they commit together. next_belief = belief + kx*w_ext*(obs-belief)/(1+conf) [REALITY / grounding-source channel: the FRICTION term, ATTENUATED by confidence -- aberrant precision down-weights contradictory evidence] + kx*w_conf*(obs2-belief)/(1+conf) [CONFIRMER channel: pulls toward the confirmer's asserted content; a sycophantic confirmer sets obs2=belief so this is 0 -- a pure mirror] + ks*conf*(committed-belief) [SELF-GROUNDING: pulled into own committed basin, gain proportional to confidence -- the closed loop]. Clipped to [-r_clip, r_clip] (numeric safety, not a mechanism). next_conf rises on self-confirmation (belief in its own basin) and on CORROBORATION from either channel (w*max(0,tol-|source-committed|) -- false validation from a confirmer that agrees with the committed basin), falls on DISCONFIRMATION from either channel (w*max(0,|source-committed|-tol)); clipped to [0, cmax]. The engine's fold_clock_edge commits next_belief->belief and next_conf->conf on the clocked Belief node.",
+   "match_type": "Belief",
+   "match": [["b", "pg_managed_by", "cfg"]],
+   "where": {
+    "type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "cfg"}, "key": "pg_enabled"}, "b": {"type": "Lit", "value": 1.0}
+   },
+   "effects": [
+    ["set_attr_if_different", "b", "next_belief",
+     {"__term__": {"type": "Max", "items": [
+       {"type": "Neg", "arg": {"type": "Attr", "node": {"type": "Var", "name": "cfg"}, "key": "r_clip"}},
+       {"type": "Min", "items": [
+         {"type": "Attr", "node": {"type": "Var", "name": "cfg"}, "key": "r_clip"},
+         {"type": "Plus", "items": [
+           {"type": "Attr", "node": {"type": "Var", "name": "b"}, "key": "belief"},
+           {"type": "Div",
+             "a": {"type": "Times", "items": [
+               {"type": "Attr", "node": {"type": "Var", "name": "cfg"}, "key": "kx"},
+               {"type": "Attr", "node": {"type": "Var", "name": "b"}, "key": "w_ext"},
+               {"type": "Minus", "a": {"type": "Attr", "node": {"type": "Var", "name": "b"}, "key": "obs"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "b"}, "key": "belief"}}
+             ]},
+             "b": {"type": "Plus", "items": [{"type": "Lit", "value": 1.0}, {"type": "Attr", "node": {"type": "Var", "name": "b"}, "key": "conf"}]}
+           },
+           {"type": "Div",
+             "a": {"type": "Times", "items": [
+               {"type": "Attr", "node": {"type": "Var", "name": "cfg"}, "key": "kx"},
+               {"type": "Attr", "node": {"type": "Var", "name": "b"}, "key": "w_conf"},
+               {"type": "Minus", "a": {"type": "Attr", "node": {"type": "Var", "name": "b"}, "key": "obs2"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "b"}, "key": "belief"}}
+             ]},
+             "b": {"type": "Plus", "items": [{"type": "Lit", "value": 1.0}, {"type": "Attr", "node": {"type": "Var", "name": "b"}, "key": "conf"}]}
+           },
+           {"type": "Times", "items": [
+             {"type": "Attr", "node": {"type": "Var", "name": "cfg"}, "key": "ks"},
+             {"type": "Attr", "node": {"type": "Var", "name": "b"}, "key": "conf"},
+             {"type": "Minus", "a": {"type": "Attr", "node": {"type": "Var", "name": "b"}, "key": "committed_center"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "b"}, "key": "belief"}}
+           ]}
+         ]}
+       ]}
+     ]}}
+    ],
+    ["set_attr_if_different", "b", "next_conf",
+     {"__term__": {"type": "Max", "items": [
+       {"type": "Lit", "value": 0.0},
+       {"type": "Min", "items": [
+         {"type": "Attr", "node": {"type": "Var", "name": "cfg"}, "key": "cmax"},
+         {"type": "Plus", "items": [
+           {"type": "Attr", "node": {"type": "Var", "name": "b"}, "key": "conf"},
+           {"type": "Times", "items": [
+             {"type": "Attr", "node": {"type": "Var", "name": "cfg"}, "key": "gc"},
+             {"type": "Max", "items": [{"type": "Lit", "value": 0.0},
+               {"type": "Minus", "a": {"type": "Attr", "node": {"type": "Var", "name": "cfg"}, "key": "tol"}, "b": {"type": "Abs", "arg": {"type": "Minus", "a": {"type": "Attr", "node": {"type": "Var", "name": "b"}, "key": "belief"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "b"}, "key": "committed_center"}}}}]}
+           ]},
+           {"type": "Times", "items": [
+             {"type": "Attr", "node": {"type": "Var", "name": "cfg"}, "key": "ge"},
+             {"type": "Attr", "node": {"type": "Var", "name": "b"}, "key": "w_ext"},
+             {"type": "Max", "items": [{"type": "Lit", "value": 0.0},
+               {"type": "Minus", "a": {"type": "Attr", "node": {"type": "Var", "name": "cfg"}, "key": "tol"}, "b": {"type": "Abs", "arg": {"type": "Minus", "a": {"type": "Attr", "node": {"type": "Var", "name": "b"}, "key": "obs"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "b"}, "key": "belief"}}}}]}
+           ]},
+           {"type": "Times", "items": [
+             {"type": "Attr", "node": {"type": "Var", "name": "cfg"}, "key": "ge"},
+             {"type": "Attr", "node": {"type": "Var", "name": "b"}, "key": "w_conf"},
+             {"type": "Max", "items": [{"type": "Lit", "value": 0.0},
+               {"type": "Minus", "a": {"type": "Attr", "node": {"type": "Var", "name": "cfg"}, "key": "tol"}, "b": {"type": "Abs", "arg": {"type": "Minus", "a": {"type": "Attr", "node": {"type": "Var", "name": "b"}, "key": "obs2"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "b"}, "key": "belief"}}}}]}
+           ]},
+           {"type": "Neg", "arg": {"type": "Times", "items": [
+             {"type": "Attr", "node": {"type": "Var", "name": "cfg"}, "key": "dc"},
+             {"type": "Attr", "node": {"type": "Var", "name": "b"}, "key": "w_ext"},
+             {"type": "Max", "items": [{"type": "Lit", "value": 0.0},
+               {"type": "Minus", "a": {"type": "Abs", "arg": {"type": "Minus", "a": {"type": "Attr", "node": {"type": "Var", "name": "b"}, "key": "obs"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "b"}, "key": "belief"}}}, "b": {"type": "Attr", "node": {"type": "Var", "name": "cfg"}, "key": "tol"}}]}
+           ]}},
+           {"type": "Neg", "arg": {"type": "Times", "items": [
+             {"type": "Attr", "node": {"type": "Var", "name": "cfg"}, "key": "dc"},
+             {"type": "Attr", "node": {"type": "Var", "name": "b"}, "key": "w_conf"},
+             {"type": "Max", "items": [{"type": "Lit", "value": 0.0},
+               {"type": "Minus", "a": {"type": "Abs", "arg": {"type": "Minus", "a": {"type": "Attr", "node": {"type": "Var", "name": "b"}, "key": "obs2"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "b"}, "key": "belief"}}}, "b": {"type": "Attr", "node": {"type": "Var", "name": "cfg"}, "key": "tol"}}]}
+           ]}}
+         ]}
+       ]}
+     ]}}
+    ]
+   ]
+  }
+ ]
+}

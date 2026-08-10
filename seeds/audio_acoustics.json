@@ -1,0 +1,273 @@
+{
+  "microtheory": {
+    "name": "acoustics",
+    "definition": "Physics of sound — wave equation, propagation, reflection, diffraction, absorption, room behavior, source characteristics. The mechanical foundation underlying everything the substrate's audio pipeline processes. Substrate analogue: the input characteristics the cochlear gammatone filterbank receives.",
+    "category": "audio_domain",
+    "parent": "audio_music_foundation"
+  },
+  "concepts": [
+    {
+      "name": "wave_equation",
+      "definition": "∂²p/∂t² = c² ∇²p. Governs how pressure waves propagate. Substrate analogue: physical model behind substrate's audio input.",
+      "category": "physics"
+    },
+    {
+      "name": "speed_of_sound",
+      "definition": "c ≈ 343 m/s in dry air at 20°C. Increases with temperature + humidity. Substrate analogue: implicit constant in substrate's wavelength-frequency relation.",
+      "category": "physics"
+    },
+    {
+      "name": "sound_pressure_level",
+      "definition": "SPL in dB SPL = 20 log10(p/p_ref) where p_ref = 20 μPa. Hearing threshold ~0 dB SPL; pain threshold ~120 dB. Substrate analogue: substrate's input gain calibration.",
+      "term": {
+        "type": "Eq",
+        "a": {
+          "type": "Times",
+          "items": [
+            {
+              "type": "Holds",
+              "concept": "entropy_thermodynamic",
+              "node": {
+                "type": "Var",
+                "name": "x"
+              },
+              "node2": null
+            },
+            {
+              "type": "Lit",
+              "value": "P"
+            },
+            {
+              "type": "Holds",
+              "concept": "angular_momentum",
+              "node": {
+                "type": "Var",
+                "name": "x"
+              },
+              "node2": null
+            },
+            {
+              "type": "Lit",
+              "value": "in"
+            },
+            {
+              "type": "Lit",
+              "value": "d"
+            },
+            {
+              "type": "Holds",
+              "concept": "magnetic_field",
+              "node": {
+                "type": "Var",
+                "name": "x"
+              },
+              "node2": null
+            },
+            {
+              "type": "Holds",
+              "concept": "entropy_thermodynamic",
+              "node": {
+                "type": "Var",
+                "name": "x"
+              },
+              "node2": null
+            },
+            {
+              "type": "Lit",
+              "value": "P"
+            },
+            {
+              "type": "Holds",
+              "concept": "angular_momentum",
+              "node": {
+                "type": "Var",
+                "name": "x"
+              },
+              "node2": null
+            }
+          ]
+        },
+        "b": {
+          "type": "Times",
+          "items": [
+            {
+              "type": "Lit",
+              "value": 20
+            },
+            {
+              "type": "Lit",
+              "value": "log10"
+            },
+            {
+              "type": "Div",
+              "a": {
+                "type": "Holds",
+                "concept": "momentum",
+                "node": {
+                  "type": "Var",
+                  "name": "x"
+                },
+                "node2": null
+              },
+              "b": {
+                "type": "Holds",
+                "concept": "momentum",
+                "node": {
+                  "type": "Var",
+                  "name": "x"
+                },
+                "node2": null
+              }
+            },
+            {
+              "type": "Lit",
+              "value": "where"
+            },
+            {
+              "type": "Holds",
+              "concept": "momentum",
+              "node": {
+                "type": "Var",
+                "name": "x"
+              },
+              "node2": null
+            }
+          ]
+        }
+      },
+      "category": "physics"
+    },
+    {
+      "name": "intensity",
+      "definition": "Power per unit area, W/m². Proportional to p²/(ρc). Substrate analogue: substrate's per-channel power calculation.",
+      "category": "physics"
+    },
+    {
+      "name": "inverse_square_law",
+      "definition": "Free-field intensity falls 6 dB per doubling of distance. Substrate analogue: substrate's distance-from-source modeling.",
+      "category": "physics"
+    },
+    {
+      "name": "reflection",
+      "definition": "Sound bouncing off surface. Specular (smooth) or diffuse (rough). Substrate analogue: substrate's multi-arrival signal detection.",
+      "category": "propagation"
+    },
+    {
+      "name": "absorption",
+      "definition": "Sound energy converting to heat in materials. Frequency-dependent — high frequencies absorbed more. Substrate analogue: substrate's frequency-dependent envelope decay.",
+      "category": "propagation"
+    },
+    {
+      "name": "diffraction",
+      "definition": "Sound bending around obstacles when wavelength is comparable to obstacle size. Low frequencies diffract more. Substrate analogue: substrate's source-localization with occluders.",
+      "category": "propagation"
+    },
+    {
+      "name": "refraction",
+      "definition": "Sound bending due to medium variation — temperature gradients, wind. Substrate analogue: substrate's anomalous-path detection.",
+      "category": "propagation"
+    },
+    {
+      "name": "interference",
+      "definition": "Constructive + destructive superposition of waves. Standing waves in rooms. Substrate analogue: substrate's spatial pattern from interfering sources.",
+      "category": "propagation"
+    },
+    {
+      "name": "resonance",
+      "definition": "Frequency at which a system naturally vibrates. String, air column, room mode. Substrate analogue: substrate's gammatone channel center frequencies.",
+      "category": "resonance"
+    },
+    {
+      "name": "natural_frequency",
+      "definition": "Frequency of unforced oscillation, determined by mass + stiffness. Substrate analogue: substrate's basin attractor frequencies.",
+      "category": "resonance"
+    },
+    {
+      "name": "damping",
+      "definition": "Energy dissipation reducing oscillation amplitude over time. Substrate analogue: substrate's σ decay rate.",
+      "category": "resonance"
+    },
+    {
+      "name": "Q_factor",
+      "definition": "Quality factor. Bandwidth at half-power normalized to center frequency. High Q = narrow + ringy; low Q = wide + damped. Substrate analogue: substrate's gammatone filter Q.",
+      "category": "resonance"
+    },
+    {
+      "name": "mode",
+      "definition": "Spatial pattern of natural vibration. Strings have nodes + antinodes; rooms have standing waves at specific places. Substrate analogue: substrate's room-mode detector.",
+      "category": "resonance"
+    },
+    {
+      "name": "room_acoustics",
+      "definition": "How rooms shape sound — reverberation, modes, early reflections, diffusion. Substrate analogue: substrate's source-vs-environment separation.",
+      "category": "room"
+    },
+    {
+      "name": "reverberation_time",
+      "definition": "RT60 — time for sound to decay 60 dB after source stops. Sabine's equation. Substrate analogue: substrate's decay-envelope time-constant.",
+      "category": "room"
+    },
+    {
+      "name": "early_reflections",
+      "definition": "Reflections arriving within ~80ms of direct sound. Crucial for spaciousness perception. Substrate analogue: substrate's source-image clustering.",
+      "category": "room"
+    },
+    {
+      "name": "diffuse_field",
+      "definition": "Late reverb where reflections are too dense to distinguish. Substrate analogue: substrate's noise-background estimation.",
+      "category": "room"
+    },
+    {
+      "name": "haas_effect",
+      "definition": "Two sounds within ~30ms are fused; later one is heard as direction-coloring. Helmut Haas 1949. Substrate analogue: substrate's source-fusion temporal window.",
+      "category": "room"
+    },
+    {
+      "name": "sound_source",
+      "definition": "Origin of acoustic energy. Point, line, volume sources. Substrate analogue: substrate's signal-origin localizer.",
+      "category": "source"
+    },
+    {
+      "name": "directivity_pattern",
+      "definition": "How a source radiates in different directions. Omnidirectional, cardioid, figure-8. Substrate analogue: substrate's source-orientation tracker.",
+      "category": "source"
+    },
+    {
+      "name": "near_field_far_field",
+      "definition": "Near sources: pressure + velocity in phase; far: in quadrature. Different localization cues. Substrate analogue: substrate's distance estimation.",
+      "category": "source"
+    },
+    {
+      "name": "doppler_effect",
+      "definition": "Frequency shift due to relative motion. Substrate analogue: substrate's velocity-from-frequency-shift detector.",
+      "category": "source"
+    }
+  ],
+  "rules": [
+    {
+      "name": "wave_equation_governs_propagation",
+      "head": "sound propagates through any medium",
+      "body": "the wave equation determines pressure at every point + time. Substrate's audio input has wave-equation history."
+    },
+    {
+      "name": "high_frequencies_absorb_faster",
+      "head": "sound travels distance through air",
+      "body": "high frequencies attenuate more than low. Substrate's distance-correction in source-direction estimation should account for this."
+    },
+    {
+      "name": "low_frequencies_diffract_around_obstacles",
+      "head": "sound encounters an obstacle of size comparable to wavelength",
+      "body": "low frequencies diffract; high frequencies cast acoustic shadow. Substrate's occlusion handling."
+    },
+    {
+      "name": "reverberation_blurs_temporal_detail",
+      "head": "the substrate processes sound in a reverberant room",
+      "body": "early reflections + late reverb mask onset transients. Substrate's source-vs-reverb separation needs to address this."
+    },
+    {
+      "name": "haas_effect_fuses_close_arrivals",
+      "head": "two arrivals of similar amplitude within 30ms",
+      "body": "the substrate perceives them as one source localized to the first; later arrivals color but don't separate. Substrate's source-fusion threshold."
+    }
+  ]
+}

@@ -1,0 +1,569 @@
+{
+ "id": "mbpp_request_cues",
+ "version": "1.0.0",
+ "depends_on": [
+  "code_write_request_cues"
+ ],
+ "capability_keys": [
+  "mbpp_spec_comprehension"
+ ],
+ "description": "Arc 2 Q2: MBPP-benchmark-specific request-facts cue vocabulary (domains.mbpp_spec.request_facts's held Concept source), additive to code_write_request_cues. TWO Concept roles: 'mbpp_verb_frame' (6 phrase-prefix variants of MBPP's 'Write a [python] function to/that/which' framing) and 'mbpp_constraint_word' (44 content words naming the computation/shape a requested function performs -- sorted, prime, tuple, dictionary, ...). CONTAMINATION-SAFE PROVENANCE, list-gated (tests/test_mbpp_spec_migrated.py): every Concept here was mined EXCLUSIVELY from the 120 TRAIN-split prompts (task_id>=601, tests/fixtures/mbpp/sanitized-mbpp.json) -- never from the 257 TEST-split prompts (task_id in [11,510]) this vocabulary is later measured against (PROGRAM_SYNTHESIS_ARC2_PREREG.md sec7's contamination rule: measurement may read test-split text, but a cue-vocabulary token may only be MINED from train). Each Concept's 'train_count' + 'provenance' attrs record exactly how many of the 120 train prompts justified it -- a reproducible, checkable claim, never an unverified copy of scripts/mbpp_blocker_histogram.py's CONSTRAINT_VOCAB (that list was built from the FULL 427-task corpus, test included, so it is NOT itself a valid contamination-safe source; every constraint word here was independently re-verified to actually occur in a TRAIN prompt before inclusion -- 12 of that list's 56 words do not occur in any train prompt [armstrong, camel, duplicate, factorial, frequency, kth, negative, palindrome, positive, snake, substring, unique] and are correctly EXCLUDED here, a residual named in PROGRAM_SYNTHESIS_ARC2_Q2_NOTES.md). Similarly, TWO verb-frame variants beyond Q0-B's original 4 fixed prefixes ('write a python function which', 'write function to') were newly earned from train mining -- a 5th variant ('write a python function that') has ZERO train occurrences and is honestly left OUT (falls to 'other' in request_facts) despite being a plausible sibling form. domains.mbpp_spec.request_facts reads these Concepts (falling back to a byte-identical closed set when this seed is absent -- the code_write_request_cues parity precedent) to compute FACTS (verb_frame tag, request_body residual, constraint_hits) for a downstream cue rule to consume; it decides nothing itself. MBPP's own phrasing already satisfies code_write_request_cues's write_verb/function_noun/imperative-lead gates zero-shot (256/257 test tasks recognized, PROGRAM_SYNTHESIS_ARC2_Q0_BASELINE.md) -- this seed adds finer-grained facts, not recognition (already met).",
+ "microtheory": {
+  "name": "mbpp_request_cues",
+  "description": "MBPP-benchmark-specific request-facts vocabulary: verb-frame prefixes and constraint-vocabulary words, both mined exclusively from the 120 TRAIN-split prompts (task_id>=601) -- never from the 257 TEST-split prompts (task_id in [11,510]) this vocabulary is later evaluated against. domains.mbpp_spec.request_facts reads these as HELD Concept nodes (code_request_role='mbpp_verb_frame'|'mbpp_constraint_word'), falling back to a byte-identical closed set when this seed is absent (the code_write_request_cues parity precedent). Additive to, and depends on, code_write_request_cues -- MBPP's own 'write a [python] function to/that/which' phrasing already satisfies that seed's write_verb/function_noun/imperative-lead gates zero-shot (256/257 test tasks recognized, PROGRAM_SYNTHESIS_ARC2_Q0_BASELINE.md); this seed adds FINER-GRAINED facts (which exact verb-frame variant, which constraint words are present) for a later cue RULE to consume -- it makes no routing decision itself."
+ },
+ "nodes": [
+  {
+   "local_id": 1,
+   "type": "Concept",
+   "attrs": {
+    "name": "write a function to",
+    "code_request_role": "mbpp_verb_frame",
+    "description": "MBPP request verb-frame cue: prompts starting with this phrase are a write-request naming the residual clause as WHAT to write",
+    "train_count": 70,
+    "provenance": "mined from the 120 TRAIN-split prompts (task_id>=601, tests/fixtures/mbpp/sanitized-mbpp.json); 70/120 train prompts start with this exact phrase (case-insensitive)"
+   }
+  },
+  {
+   "local_id": 2,
+   "type": "Concept",
+   "attrs": {
+    "name": "write a python function to",
+    "code_request_role": "mbpp_verb_frame",
+    "description": "MBPP request verb-frame cue: prompts starting with this phrase are a write-request naming the residual clause as WHAT to write",
+    "train_count": 32,
+    "provenance": "mined from the 120 TRAIN-split prompts (task_id>=601, tests/fixtures/mbpp/sanitized-mbpp.json); 32/120 train prompts start with this exact phrase (case-insensitive)"
+   }
+  },
+  {
+   "local_id": 3,
+   "type": "Concept",
+   "attrs": {
+    "name": "write a function that",
+    "code_request_role": "mbpp_verb_frame",
+    "description": "MBPP request verb-frame cue: prompts starting with this phrase are a write-request naming the residual clause as WHAT to write",
+    "train_count": 7,
+    "provenance": "mined from the 120 TRAIN-split prompts (task_id>=601, tests/fixtures/mbpp/sanitized-mbpp.json); 7/120 train prompts start with this exact phrase (case-insensitive)"
+   }
+  },
+  {
+   "local_id": 4,
+   "type": "Concept",
+   "attrs": {
+    "name": "write a function which",
+    "code_request_role": "mbpp_verb_frame",
+    "description": "MBPP request verb-frame cue: prompts starting with this phrase are a write-request naming the residual clause as WHAT to write",
+    "train_count": 3,
+    "provenance": "mined from the 120 TRAIN-split prompts (task_id>=601, tests/fixtures/mbpp/sanitized-mbpp.json); 3/120 train prompts start with this exact phrase (case-insensitive)"
+   }
+  },
+  {
+   "local_id": 5,
+   "type": "Concept",
+   "attrs": {
+    "name": "write a python function which",
+    "code_request_role": "mbpp_verb_frame",
+    "description": "MBPP request verb-frame cue: prompts starting with this phrase are a write-request naming the residual clause as WHAT to write",
+    "train_count": 2,
+    "provenance": "mined from the 120 TRAIN-split prompts (task_id>=601, tests/fixtures/mbpp/sanitized-mbpp.json); 2/120 train prompts start with this exact phrase (case-insensitive)"
+   }
+  },
+  {
+   "local_id": 6,
+   "type": "Concept",
+   "attrs": {
+    "name": "write function to",
+    "code_request_role": "mbpp_verb_frame",
+    "description": "MBPP request verb-frame cue: prompts starting with this phrase are a write-request naming the residual clause as WHAT to write",
+    "train_count": 1,
+    "provenance": "mined from the 120 TRAIN-split prompts (task_id>=601, tests/fixtures/mbpp/sanitized-mbpp.json); 1/120 train prompts start with this exact phrase (case-insensitive)"
+   }
+  },
+  {
+   "local_id": 7,
+   "type": "Concept",
+   "attrs": {
+    "name": "tuple",
+    "code_request_role": "mbpp_constraint_word",
+    "description": "MBPP constraint-vocabulary cue word (a content word naming a computation/shape the requested function performs)",
+    "train_count": 17,
+    "provenance": "mined from the 120 TRAIN-split prompts (task_id>=601); occurs as a whole word in 17/120 train prompts; also present in scripts/mbpp_blocker_histogram.py's CONSTRAINT_VOCAB (the existing generic 55-word cue list) -- both conditions verified before inclusion"
+   }
+  },
+  {
+   "local_id": 8,
+   "type": "Concept",
+   "attrs": {
+    "name": "sum",
+    "code_request_role": "mbpp_constraint_word",
+    "description": "MBPP constraint-vocabulary cue word (a content word naming a computation/shape the requested function performs)",
+    "train_count": 15,
+    "provenance": "mined from the 120 TRAIN-split prompts (task_id>=601); occurs as a whole word in 15/120 train prompts; also present in scripts/mbpp_blocker_histogram.py's CONSTRAINT_VOCAB (the existing generic 55-word cue list) -- both conditions verified before inclusion"
+   }
+  },
+  {
+   "local_id": 9,
+   "type": "Concept",
+   "attrs": {
+    "name": "count",
+    "code_request_role": "mbpp_constraint_word",
+    "description": "MBPP constraint-vocabulary cue word (a content word naming a computation/shape the requested function performs)",
+    "train_count": 11,
+    "provenance": "mined from the 120 TRAIN-split prompts (task_id>=601); occurs as a whole word in 11/120 train prompts; also present in scripts/mbpp_blocker_histogram.py's CONSTRAINT_VOCAB (the existing generic 55-word cue list) -- both conditions verified before inclusion"
+   }
+  },
+  {
+   "local_id": 10,
+   "type": "Concept",
+   "attrs": {
+    "name": "index",
+    "code_request_role": "mbpp_constraint_word",
+    "description": "MBPP constraint-vocabulary cue word (a content word naming a computation/shape the requested function performs)",
+    "train_count": 7,
+    "provenance": "mined from the 120 TRAIN-split prompts (task_id>=601); occurs as a whole word in 7/120 train prompts; also present in scripts/mbpp_blocker_histogram.py's CONSTRAINT_VOCAB (the existing generic 55-word cue list) -- both conditions verified before inclusion"
+   }
+  },
+  {
+   "local_id": 11,
+   "type": "Concept",
+   "attrs": {
+    "name": "length",
+    "code_request_role": "mbpp_constraint_word",
+    "description": "MBPP constraint-vocabulary cue word (a content word naming a computation/shape the requested function performs)",
+    "train_count": 7,
+    "provenance": "mined from the 120 TRAIN-split prompts (task_id>=601); occurs as a whole word in 7/120 train prompts; also present in scripts/mbpp_blocker_histogram.py's CONSTRAINT_VOCAB (the existing generic 55-word cue list) -- both conditions verified before inclusion"
+   }
+  },
+  {
+   "local_id": 12,
+   "type": "Concept",
+   "attrs": {
+    "name": "sorted",
+    "code_request_role": "mbpp_constraint_word",
+    "description": "MBPP constraint-vocabulary cue word (a content word naming a computation/shape the requested function performs)",
+    "train_count": 7,
+    "provenance": "mined from the 120 TRAIN-split prompts (task_id>=601); occurs as a whole word in 7/120 train prompts; also present in scripts/mbpp_blocker_histogram.py's CONSTRAINT_VOCAB (the existing generic 55-word cue list) -- both conditions verified before inclusion"
+   }
+  },
+  {
+   "local_id": 13,
+   "type": "Concept",
+   "attrs": {
+    "name": "contains",
+    "code_request_role": "mbpp_constraint_word",
+    "description": "MBPP constraint-vocabulary cue word (a content word naming a computation/shape the requested function performs)",
+    "train_count": 6,
+    "provenance": "mined from the 120 TRAIN-split prompts (task_id>=601); occurs as a whole word in 6/120 train prompts; also present in scripts/mbpp_blocker_histogram.py's CONSTRAINT_VOCAB (the existing generic 55-word cue list) -- both conditions verified before inclusion"
+   }
+  },
+  {
+   "local_id": 14,
+   "type": "Concept",
+   "attrs": {
+    "name": "dictionary",
+    "code_request_role": "mbpp_constraint_word",
+    "description": "MBPP constraint-vocabulary cue word (a content word naming a computation/shape the requested function performs)",
+    "train_count": 6,
+    "provenance": "mined from the 120 TRAIN-split prompts (task_id>=601); occurs as a whole word in 6/120 train prompts; also present in scripts/mbpp_blocker_histogram.py's CONSTRAINT_VOCAB (the existing generic 55-word cue list) -- both conditions verified before inclusion"
+   }
+  },
+  {
+   "local_id": 15,
+   "type": "Concept",
+   "attrs": {
+    "name": "odd",
+    "code_request_role": "mbpp_constraint_word",
+    "description": "MBPP constraint-vocabulary cue word (a content word naming a computation/shape the requested function performs)",
+    "train_count": 6,
+    "provenance": "mined from the 120 TRAIN-split prompts (task_id>=601); occurs as a whole word in 6/120 train prompts; also present in scripts/mbpp_blocker_histogram.py's CONSTRAINT_VOCAB (the existing generic 55-word cue list) -- both conditions verified before inclusion"
+   }
+  },
+  {
+   "local_id": 16,
+   "type": "Concept",
+   "attrs": {
+    "name": "convert",
+    "code_request_role": "mbpp_constraint_word",
+    "description": "MBPP constraint-vocabulary cue word (a content word naming a computation/shape the requested function performs)",
+    "train_count": 5,
+    "provenance": "mined from the 120 TRAIN-split prompts (task_id>=601); occurs as a whole word in 5/120 train prompts; also present in scripts/mbpp_blocker_histogram.py's CONSTRAINT_VOCAB (the existing generic 55-word cue list) -- both conditions verified before inclusion"
+   }
+  },
+  {
+   "local_id": 17,
+   "type": "Concept",
+   "attrs": {
+    "name": "even",
+    "code_request_role": "mbpp_constraint_word",
+    "description": "MBPP constraint-vocabulary cue word (a content word naming a computation/shape the requested function performs)",
+    "train_count": 5,
+    "provenance": "mined from the 120 TRAIN-split prompts (task_id>=601); occurs as a whole word in 5/120 train prompts; also present in scripts/mbpp_blocker_histogram.py's CONSTRAINT_VOCAB (the existing generic 55-word cue list) -- both conditions verified before inclusion"
+   }
+  },
+  {
+   "local_id": 18,
+   "type": "Concept",
+   "attrs": {
+    "name": "area",
+    "code_request_role": "mbpp_constraint_word",
+    "description": "MBPP constraint-vocabulary cue word (a content word naming a computation/shape the requested function performs)",
+    "train_count": 4,
+    "provenance": "mined from the 120 TRAIN-split prompts (task_id>=601); occurs as a whole word in 4/120 train prompts; also present in scripts/mbpp_blocker_histogram.py's CONSTRAINT_VOCAB (the existing generic 55-word cue list) -- both conditions verified before inclusion"
+   }
+  },
+  {
+   "local_id": 19,
+   "type": "Concept",
+   "attrs": {
+    "name": "equal",
+    "code_request_role": "mbpp_constraint_word",
+    "description": "MBPP constraint-vocabulary cue word (a content word naming a computation/shape the requested function performs)",
+    "train_count": 4,
+    "provenance": "mined from the 120 TRAIN-split prompts (task_id>=601); occurs as a whole word in 4/120 train prompts; also present in scripts/mbpp_blocker_histogram.py's CONSTRAINT_VOCAB (the existing generic 55-word cue list) -- both conditions verified before inclusion"
+   }
+  },
+  {
+   "local_id": 20,
+   "type": "Concept",
+   "attrs": {
+    "name": "nth",
+    "code_request_role": "mbpp_constraint_word",
+    "description": "MBPP constraint-vocabulary cue word (a content word naming a computation/shape the requested function performs)",
+    "train_count": 4,
+    "provenance": "mined from the 120 TRAIN-split prompts (task_id>=601); occurs as a whole word in 4/120 train prompts; also present in scripts/mbpp_blocker_histogram.py's CONSTRAINT_VOCAB (the existing generic 55-word cue list) -- both conditions verified before inclusion"
+   }
+  },
+  {
+   "local_id": 21,
+   "type": "Concept",
+   "attrs": {
+    "name": "pairs",
+    "code_request_role": "mbpp_constraint_word",
+    "description": "MBPP constraint-vocabulary cue word (a content word naming a computation/shape the requested function performs)",
+    "train_count": 4,
+    "provenance": "mined from the 120 TRAIN-split prompts (task_id>=601); occurs as a whole word in 4/120 train prompts; also present in scripts/mbpp_blocker_histogram.py's CONSTRAINT_VOCAB (the existing generic 55-word cue list) -- both conditions verified before inclusion"
+   }
+  },
+  {
+   "local_id": 22,
+   "type": "Concept",
+   "attrs": {
+    "name": "consecutive",
+    "code_request_role": "mbpp_constraint_word",
+    "description": "MBPP constraint-vocabulary cue word (a content word naming a computation/shape the requested function performs)",
+    "train_count": 3,
+    "provenance": "mined from the 120 TRAIN-split prompts (task_id>=601); occurs as a whole word in 3/120 train prompts; also present in scripts/mbpp_blocker_histogram.py's CONSTRAINT_VOCAB (the existing generic 55-word cue list) -- both conditions verified before inclusion"
+   }
+  },
+  {
+   "local_id": 23,
+   "type": "Concept",
+   "attrs": {
+    "name": "digits",
+    "code_request_role": "mbpp_constraint_word",
+    "description": "MBPP constraint-vocabulary cue word (a content word naming a computation/shape the requested function performs)",
+    "train_count": 3,
+    "provenance": "mined from the 120 TRAIN-split prompts (task_id>=601); occurs as a whole word in 3/120 train prompts; also present in scripts/mbpp_blocker_histogram.py's CONSTRAINT_VOCAB (the existing generic 55-word cue list) -- both conditions verified before inclusion"
+   }
+  },
+  {
+   "local_id": 24,
+   "type": "Concept",
+   "attrs": {
+    "name": "minimum",
+    "code_request_role": "mbpp_constraint_word",
+    "description": "MBPP constraint-vocabulary cue word (a content word naming a computation/shape the requested function performs)",
+    "train_count": 3,
+    "provenance": "mined from the 120 TRAIN-split prompts (task_id>=601); occurs as a whole word in 3/120 train prompts; also present in scripts/mbpp_blocker_histogram.py's CONSTRAINT_VOCAB (the existing generic 55-word cue list) -- both conditions verified before inclusion"
+   }
+  },
+  {
+   "local_id": 25,
+   "type": "Concept",
+   "attrs": {
+    "name": "natural",
+    "code_request_role": "mbpp_constraint_word",
+    "description": "MBPP constraint-vocabulary cue word (a content word naming a computation/shape the requested function performs)",
+    "train_count": 3,
+    "provenance": "mined from the 120 TRAIN-split prompts (task_id>=601); occurs as a whole word in 3/120 train prompts; also present in scripts/mbpp_blocker_histogram.py's CONSTRAINT_VOCAB (the existing generic 55-word cue list) -- both conditions verified before inclusion"
+   }
+  },
+  {
+   "local_id": 26,
+   "type": "Concept",
+   "attrs": {
+    "name": "power",
+    "code_request_role": "mbpp_constraint_word",
+    "description": "MBPP constraint-vocabulary cue word (a content word naming a computation/shape the requested function performs)",
+    "train_count": 3,
+    "provenance": "mined from the 120 TRAIN-split prompts (task_id>=601); occurs as a whole word in 3/120 train prompts; also present in scripts/mbpp_blocker_histogram.py's CONSTRAINT_VOCAB (the existing generic 55-word cue list) -- both conditions verified before inclusion"
+   }
+  },
+  {
+   "local_id": 27,
+   "type": "Concept",
+   "attrs": {
+    "name": "reverse",
+    "code_request_role": "mbpp_constraint_word",
+    "description": "MBPP constraint-vocabulary cue word (a content word naming a computation/shape the requested function performs)",
+    "train_count": 3,
+    "provenance": "mined from the 120 TRAIN-split prompts (task_id>=601); occurs as a whole word in 3/120 train prompts; also present in scripts/mbpp_blocker_histogram.py's CONSTRAINT_VOCAB (the existing generic 55-word cue list) -- both conditions verified before inclusion"
+   }
+  },
+  {
+   "local_id": 28,
+   "type": "Concept",
+   "attrs": {
+    "name": "smallest",
+    "code_request_role": "mbpp_constraint_word",
+    "description": "MBPP constraint-vocabulary cue word (a content word naming a computation/shape the requested function performs)",
+    "train_count": 3,
+    "provenance": "mined from the 120 TRAIN-split prompts (task_id>=601); occurs as a whole word in 3/120 train prompts; also present in scripts/mbpp_blocker_histogram.py's CONSTRAINT_VOCAB (the existing generic 55-word cue list) -- both conditions verified before inclusion"
+   }
+  },
+  {
+   "local_id": 29,
+   "type": "Concept",
+   "attrs": {
+    "name": "common",
+    "code_request_role": "mbpp_constraint_word",
+    "description": "MBPP constraint-vocabulary cue word (a content word naming a computation/shape the requested function performs)",
+    "train_count": 2,
+    "provenance": "mined from the 120 TRAIN-split prompts (task_id>=601); occurs as a whole word in 2/120 train prompts; also present in scripts/mbpp_blocker_histogram.py's CONSTRAINT_VOCAB (the existing generic 55-word cue list) -- both conditions verified before inclusion"
+   }
+  },
+  {
+   "local_id": 30,
+   "type": "Concept",
+   "attrs": {
+    "name": "difference",
+    "code_request_role": "mbpp_constraint_word",
+    "description": "MBPP constraint-vocabulary cue word (a content word naming a computation/shape the requested function performs)",
+    "train_count": 2,
+    "provenance": "mined from the 120 TRAIN-split prompts (task_id>=601); occurs as a whole word in 2/120 train prompts; also present in scripts/mbpp_blocker_histogram.py's CONSTRAINT_VOCAB (the existing generic 55-word cue list) -- both conditions verified before inclusion"
+   }
+  },
+  {
+   "local_id": 31,
+   "type": "Concept",
+   "attrs": {
+    "name": "divisible",
+    "code_request_role": "mbpp_constraint_word",
+    "description": "MBPP constraint-vocabulary cue word (a content word naming a computation/shape the requested function performs)",
+    "train_count": 2,
+    "provenance": "mined from the 120 TRAIN-split prompts (task_id>=601); occurs as a whole word in 2/120 train prompts; also present in scripts/mbpp_blocker_histogram.py's CONSTRAINT_VOCAB (the existing generic 55-word cue list) -- both conditions verified before inclusion"
+   }
+  },
+  {
+   "local_id": 32,
+   "type": "Concept",
+   "attrs": {
+    "name": "duplicates",
+    "code_request_role": "mbpp_constraint_word",
+    "description": "MBPP constraint-vocabulary cue word (a content word naming a computation/shape the requested function performs)",
+    "train_count": 2,
+    "provenance": "mined from the 120 TRAIN-split prompts (task_id>=601); occurs as a whole word in 2/120 train prompts; also present in scripts/mbpp_blocker_histogram.py's CONSTRAINT_VOCAB (the existing generic 55-word cue list) -- both conditions verified before inclusion"
+   }
+  },
+  {
+   "local_id": 33,
+   "type": "Concept",
+   "attrs": {
+    "name": "largest",
+    "code_request_role": "mbpp_constraint_word",
+    "description": "MBPP constraint-vocabulary cue word (a content word naming a computation/shape the requested function performs)",
+    "train_count": 2,
+    "provenance": "mined from the 120 TRAIN-split prompts (task_id>=601); occurs as a whole word in 2/120 train prompts; also present in scripts/mbpp_blocker_histogram.py's CONSTRAINT_VOCAB (the existing generic 55-word cue list) -- both conditions verified before inclusion"
+   }
+  },
+  {
+   "local_id": 34,
+   "type": "Concept",
+   "attrs": {
+    "name": "matrix",
+    "code_request_role": "mbpp_constraint_word",
+    "description": "MBPP constraint-vocabulary cue word (a content word naming a computation/shape the requested function performs)",
+    "train_count": 2,
+    "provenance": "mined from the 120 TRAIN-split prompts (task_id>=601); occurs as a whole word in 2/120 train prompts; also present in scripts/mbpp_blocker_histogram.py's CONSTRAINT_VOCAB (the existing generic 55-word cue list) -- both conditions verified before inclusion"
+   }
+  },
+  {
+   "local_id": 35,
+   "type": "Concept",
+   "attrs": {
+    "name": "maximum",
+    "code_request_role": "mbpp_constraint_word",
+    "description": "MBPP constraint-vocabulary cue word (a content word naming a computation/shape the requested function performs)",
+    "train_count": 2,
+    "provenance": "mined from the 120 TRAIN-split prompts (task_id>=601); occurs as a whole word in 2/120 train prompts; also present in scripts/mbpp_blocker_histogram.py's CONSTRAINT_VOCAB (the existing generic 55-word cue list) -- both conditions verified before inclusion"
+   }
+  },
+  {
+   "local_id": 36,
+   "type": "Concept",
+   "attrs": {
+    "name": "product",
+    "code_request_role": "mbpp_constraint_word",
+    "description": "MBPP constraint-vocabulary cue word (a content word naming a computation/shape the requested function performs)",
+    "train_count": 2,
+    "provenance": "mined from the 120 TRAIN-split prompts (task_id>=601); occurs as a whole word in 2/120 train prompts; also present in scripts/mbpp_blocker_histogram.py's CONSTRAINT_VOCAB (the existing generic 55-word cue list) -- both conditions verified before inclusion"
+   }
+  },
+  {
+   "local_id": 37,
+   "type": "Concept",
+   "attrs": {
+    "name": "rotate",
+    "code_request_role": "mbpp_constraint_word",
+    "description": "MBPP constraint-vocabulary cue word (a content word naming a computation/shape the requested function performs)",
+    "train_count": 2,
+    "provenance": "mined from the 120 TRAIN-split prompts (task_id>=601); occurs as a whole word in 2/120 train prompts; also present in scripts/mbpp_blocker_histogram.py's CONSTRAINT_VOCAB (the existing generic 55-word cue list) -- both conditions verified before inclusion"
+   }
+  },
+  {
+   "local_id": 38,
+   "type": "Concept",
+   "attrs": {
+    "name": "sort",
+    "code_request_role": "mbpp_constraint_word",
+    "description": "MBPP constraint-vocabulary cue word (a content word naming a computation/shape the requested function performs)",
+    "train_count": 2,
+    "provenance": "mined from the 120 TRAIN-split prompts (task_id>=601); occurs as a whole word in 2/120 train prompts; also present in scripts/mbpp_blocker_histogram.py's CONSTRAINT_VOCAB (the existing generic 55-word cue list) -- both conditions verified before inclusion"
+   }
+  },
+  {
+   "local_id": 39,
+   "type": "Concept",
+   "attrs": {
+    "name": "square",
+    "code_request_role": "mbpp_constraint_word",
+    "description": "MBPP constraint-vocabulary cue word (a content word naming a computation/shape the requested function performs)",
+    "train_count": 2,
+    "provenance": "mined from the 120 TRAIN-split prompts (task_id>=601); occurs as a whole word in 2/120 train prompts; also present in scripts/mbpp_blocker_histogram.py's CONSTRAINT_VOCAB (the existing generic 55-word cue list) -- both conditions verified before inclusion"
+   }
+  },
+  {
+   "local_id": 40,
+   "type": "Concept",
+   "attrs": {
+    "name": "sublists",
+    "code_request_role": "mbpp_constraint_word",
+    "description": "MBPP constraint-vocabulary cue word (a content word naming a computation/shape the requested function performs)",
+    "train_count": 2,
+    "provenance": "mined from the 120 TRAIN-split prompts (task_id>=601); occurs as a whole word in 2/120 train prompts; also present in scripts/mbpp_blocker_histogram.py's CONSTRAINT_VOCAB (the existing generic 55-word cue list) -- both conditions verified before inclusion"
+   }
+  },
+  {
+   "local_id": 41,
+   "type": "Concept",
+   "attrs": {
+    "name": "uppercase",
+    "code_request_role": "mbpp_constraint_word",
+    "description": "MBPP constraint-vocabulary cue word (a content word naming a computation/shape the requested function performs)",
+    "train_count": 2,
+    "provenance": "mined from the 120 TRAIN-split prompts (task_id>=601); occurs as a whole word in 2/120 train prompts; also present in scripts/mbpp_blocker_histogram.py's CONSTRAINT_VOCAB (the existing generic 55-word cue list) -- both conditions verified before inclusion"
+   }
+  },
+  {
+   "local_id": 42,
+   "type": "Concept",
+   "attrs": {
+    "name": "balanced",
+    "code_request_role": "mbpp_constraint_word",
+    "description": "MBPP constraint-vocabulary cue word (a content word naming a computation/shape the requested function performs)",
+    "train_count": 1,
+    "provenance": "mined from the 120 TRAIN-split prompts (task_id>=601); occurs as a whole word in 1/120 train prompts; also present in scripts/mbpp_blocker_histogram.py's CONSTRAINT_VOCAB (the existing generic 55-word cue list) -- both conditions verified before inclusion"
+   }
+  },
+  {
+   "local_id": 43,
+   "type": "Concept",
+   "attrs": {
+    "name": "binary",
+    "code_request_role": "mbpp_constraint_word",
+    "description": "MBPP constraint-vocabulary cue word (a content word naming a computation/shape the requested function performs)",
+    "train_count": 1,
+    "provenance": "mined from the 120 TRAIN-split prompts (task_id>=601); occurs as a whole word in 1/120 train prompts; also present in scripts/mbpp_blocker_histogram.py's CONSTRAINT_VOCAB (the existing generic 55-word cue list) -- both conditions verified before inclusion"
+   }
+  },
+  {
+   "local_id": 44,
+   "type": "Concept",
+   "attrs": {
+    "name": "lowercase",
+    "code_request_role": "mbpp_constraint_word",
+    "description": "MBPP constraint-vocabulary cue word (a content word naming a computation/shape the requested function performs)",
+    "train_count": 1,
+    "provenance": "mined from the 120 TRAIN-split prompts (task_id>=601); occurs as a whole word in 1/120 train prompts; also present in scripts/mbpp_blocker_histogram.py's CONSTRAINT_VOCAB (the existing generic 55-word cue list) -- both conditions verified before inclusion"
+   }
+  },
+  {
+   "local_id": 45,
+   "type": "Concept",
+   "attrs": {
+    "name": "perfect",
+    "code_request_role": "mbpp_constraint_word",
+    "description": "MBPP constraint-vocabulary cue word (a content word naming a computation/shape the requested function performs)",
+    "train_count": 1,
+    "provenance": "mined from the 120 TRAIN-split prompts (task_id>=601); occurs as a whole word in 1/120 train prompts; also present in scripts/mbpp_blocker_histogram.py's CONSTRAINT_VOCAB (the existing generic 55-word cue list) -- both conditions verified before inclusion"
+   }
+  },
+  {
+   "local_id": 46,
+   "type": "Concept",
+   "attrs": {
+    "name": "prime",
+    "code_request_role": "mbpp_constraint_word",
+    "description": "MBPP constraint-vocabulary cue word (a content word naming a computation/shape the requested function performs)",
+    "train_count": 1,
+    "provenance": "mined from the 120 TRAIN-split prompts (task_id>=601); occurs as a whole word in 1/120 train prompts; also present in scripts/mbpp_blocker_histogram.py's CONSTRAINT_VOCAB (the existing generic 55-word cue list) -- both conditions verified before inclusion"
+   }
+  },
+  {
+   "local_id": 47,
+   "type": "Concept",
+   "attrs": {
+    "name": "sublist",
+    "code_request_role": "mbpp_constraint_word",
+    "description": "MBPP constraint-vocabulary cue word (a content word naming a computation/shape the requested function performs)",
+    "train_count": 1,
+    "provenance": "mined from the 120 TRAIN-split prompts (task_id>=601); occurs as a whole word in 1/120 train prompts; also present in scripts/mbpp_blocker_histogram.py's CONSTRAINT_VOCAB (the existing generic 55-word cue list) -- both conditions verified before inclusion"
+   }
+  },
+  {
+   "local_id": 48,
+   "type": "Concept",
+   "attrs": {
+    "name": "triangle",
+    "code_request_role": "mbpp_constraint_word",
+    "description": "MBPP constraint-vocabulary cue word (a content word naming a computation/shape the requested function performs)",
+    "train_count": 1,
+    "provenance": "mined from the 120 TRAIN-split prompts (task_id>=601); occurs as a whole word in 1/120 train prompts; also present in scripts/mbpp_blocker_histogram.py's CONSTRAINT_VOCAB (the existing generic 55-word cue list) -- both conditions verified before inclusion"
+   }
+  },
+  {
+   "local_id": 49,
+   "type": "Concept",
+   "attrs": {
+    "name": "vowel",
+    "code_request_role": "mbpp_constraint_word",
+    "description": "MBPP constraint-vocabulary cue word (a content word naming a computation/shape the requested function performs)",
+    "train_count": 1,
+    "provenance": "mined from the 120 TRAIN-split prompts (task_id>=601); occurs as a whole word in 1/120 train prompts; also present in scripts/mbpp_blocker_histogram.py's CONSTRAINT_VOCAB (the existing generic 55-word cue list) -- both conditions verified before inclusion"
+   }
+  },
+  {
+   "local_id": 50,
+   "type": "Concept",
+   "attrs": {
+    "name": "vowels",
+    "code_request_role": "mbpp_constraint_word",
+    "description": "MBPP constraint-vocabulary cue word (a content word naming a computation/shape the requested function performs)",
+    "train_count": 1,
+    "provenance": "mined from the 120 TRAIN-split prompts (task_id>=601); occurs as a whole word in 1/120 train prompts; also present in scripts/mbpp_blocker_histogram.py's CONSTRAINT_VOCAB (the existing generic 55-word cue list) -- both conditions verified before inclusion"
+   }
+  }
+ ],
+ "edges": [],
+ "productions": []
+}

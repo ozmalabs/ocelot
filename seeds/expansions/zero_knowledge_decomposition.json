@@ -1,0 +1,118 @@
+{
+  "id": "zero_knowledge_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "zero_knowledge_proof",
+  "in_microtheory": "security_and_cryptography",
+  "description": "Zero-knowledge proofs decomposed. Interactive vs non-interactive. zk-SNARKs (Groth16, PLONK), zk-STARKs. R1CS + arithmetisation. Trusted setup vs transparent. Applications: privacy (Zcash), scaling (zk-rollups), verifiable compute, identity.",
+  "sub_mechanisms": [
+    {
+      "name": "completeness_soundness_zero_knowledge",
+      "definition": "ZK proof properties: completeness (true statement provable), soundness (false statement not provable except negligible probability), zero-knowledge (proof reveals nothing beyond truth).",
+      "why": "Defining trio. All three required. Computational variants: relaxed soundness/ZK based on hardness assumptions. Strong versions for non-interactive.",
+      "category": "zk_mechanism"
+    },
+    {
+      "name": "interactive_vs_non_interactive",
+      "definition": "Interactive: prover + verifier exchange messages. Non-interactive: single message (NIZK).",
+      "why": "Non-interactive practical. Fiat-Shamir transformation makes interactive into NIZK using hash function. Standard in blockchain (no interactive verifier).",
+      "category": "zk_mechanism"
+    },
+    {
+      "name": "zk_SNARK_succinct",
+      "definition": "Zero-Knowledge Succinct Non-interactive Argument of Knowledge. Proof size constant (~200 bytes) regardless of computation.",
+      "why": "Practical for blockchain. Verifier work O(1). Cost: trusted setup ceremony. Schemes: Groth16 (smallest), PLONK (universal setup), Marlin.",
+      "category": "zk_mechanism"
+    },
+    {
+      "name": "trusted_setup",
+      "definition": "Some SNARKs need 'toxic waste' generated during setup, then destroyed. If retained, proofs forgeable.",
+      "why": "Required for Groth16. Mitigation: multi-party computation ceremony — only one honest participant required. Zcash 'Powers of Tau' ceremony.",
+      "category": "zk_mechanism"
+    },
+    {
+      "name": "PLONK_universal_setup",
+      "definition": "Setup is statement-independent. Same setup serves any circuit up to size N.",
+      "why": "Setup amortised across applications. Foundation of many modern SNARK systems. Trade: slightly larger proofs than Groth16.",
+      "category": "zk_mechanism"
+    },
+    {
+      "name": "zk_STARK_transparent",
+      "definition": "Scalable Transparent Argument of Knowledge. No trusted setup. Post-quantum (hash-based).",
+      "why": "StarkNet, Polygon Miden. Trade: larger proofs (10-100 KB vs SNARK's 200 bytes). Transparency + PQ resistance.",
+      "category": "zk_mechanism"
+    },
+    {
+      "name": "R1CS_arithmetisation",
+      "definition": "Rank-1 Constraint System. Express computation as constraints over field: a · b = c.",
+      "why": "Computation → constraints → polynomial → proof. Universal: any computation expressible as R1CS. Cost: blow-up factor depends on structure.",
+      "category": "zk_mechanism"
+    },
+    {
+      "name": "circuit_compiler",
+      "definition": "Compile high-level language (Circom, Cairo, Noir, Halo2's DSL) to constraint system.",
+      "why": "Hand-writing constraints painful. Compilers expose constraint count + size. Active development; performance critical (proof generation slow).",
+      "category": "zk_mechanism"
+    },
+    {
+      "name": "zk_rollup_scaling",
+      "definition": "Execute many transactions off-chain; submit single succinct proof to L1. L1 verifies; updates state.",
+      "why": "Scaling Ethereum. zkSync, StarkNet, Polygon zkEVM. Proof cost amortised across thousands of transactions. 100-1000x throughput.",
+      "category": "zk_mechanism"
+    },
+    {
+      "name": "Zcash_private_transactions",
+      "definition": "Shielded transactions: amounts + sender + recipient encrypted. Validity proved via zk-SNARK.",
+      "why": "First major ZK deployment (2016). Demonstrates privacy + verifiability simultaneously. Note: most Zcash usage is transparent (UX cost of shielded).",
+      "category": "zk_mechanism"
+    },
+    {
+      "name": "proof_generation_cost",
+      "definition": "Proof generation 100-10000x slower than direct computation. Memory + CPU intensive.",
+      "why": "The bottleneck. ZK rollup proofs take minutes-hours. Hardware acceleration (GPUs, ASICs) reducing. Active area of optimisation.",
+      "category": "zk_mechanism"
+    },
+    {
+      "name": "ZK_for_identity",
+      "definition": "Prove age > 18 without revealing DOB. Prove member of set without revealing which member.",
+      "why": "Privacy-preserving identity. EU eIDAS framework + zkLogin patterns. Active deployment 2024+.",
+      "category": "zk_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "ZK_separates_proof_from_data",
+      "if": ["a statement is proved via ZK"],
+      "then": ["verifier learns nothing beyond truth of statement"],
+      "why": "Defining property. Computationally enforced. Foundation of privacy applications (private transactions, anonymous voting, selective disclosure of credentials).",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "SNARK_succinctness_enables_blockchain_scaling",
+      "if": ["proof is constant-size regardless of computation"],
+      "then": ["expensive computation off-chain with succinct on-chain verification"],
+      "why": "L1 verifies tiny proof in milliseconds. Off-chain computation arbitrary complexity. 1000x throughput via zk-rollups. The economic foundation of ZK in blockchain.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "trusted_setup_security_via_MPC_ceremony",
+      "if": ["trusted setup is performed via MPC with N participants"],
+      "then": ["only one honest participant needed to ensure security"],
+      "why": "Each participant contributes randomness; final result secure if any single contribution untainted. Zcash 'Powers of Tau' had hundreds of participants. Pragmatic mitigation of trusted setup concern.",
+      "soundness_category": "algebraic_law"
+    },
+    {
+      "name": "STARK_transparency_at_proof_size_cost",
+      "if": ["application can't accept trusted setup"],
+      "then": ["zk-STARKs are the alternative at larger proof size"],
+      "why": "Trade: SNARK 200 bytes + trusted setup vs STARK 10-100 KB + no setup. PQ resistance also favours STARKs. StarkNet bet on this trade.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "proof_generation_is_the_bottleneck",
+      "if": ["a ZK application is deployed"],
+      "then": ["proof generation cost dominates compute requirements"],
+      "why": "Generation 100-10000x of native compute. Verification fast. Hardware acceleration (GPUs, future ASICs) addressing. Active research + engineering.",
+      "soundness_category": "cost_equivalence"
+    }
+  ]
+}

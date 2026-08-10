@@ -1,0 +1,71 @@
+{
+  "microtheory": {
+    "name": "assessment_spans_observation",
+    "definition": "Meta-rule: a substrate's assessment vocabulary (qualities, smells, scoring functions) should span what it observes. If the substrate has eyes pointed at a subject (Observation nodes exist) and the assessment faculty has no quality or smell that READS those observations, the assessment is incomplete — not because the score is wrong but because the subject isn't actually being assessed. The substrate's existing assessment-of-the-graph (introspectability, data_drivenness, compositional_reuse, separation_of_concerns, abstraction_layering) measures graph shape. If observations of other kinds (runner behaviour, CPU usage, binary structure, ...) exist, qualities that read THOSE observations must exist for the assessment to actually cover the subject. Without this meta-rule the substrate's eyes can be open while its judgment looks elsewhere.",
+    "category": "foundation"
+  },
+  "concepts": [
+    {
+      "name": "observation_is_data_for_assessment",
+      "definition": "An Observation node is what the substrate SEES about a subject. The role of the assessment faculty is to apply qualities + smells to whatever the substrate observes. If observations of a subject exist, the assessment of that subject is incomplete UNTIL qualities + smells reference those observations.",
+      "category": "principle"
+    },
+    {
+      "name": "quality_without_observation_is_speculation",
+      "definition": "Qualities not grounded in observation are abstract assessments of what should be true rather than measurements of what is. They're acceptable as seeds (the substrate's prior theory) but the substrate should notice when its qualities measure nothing observable + treat that as a different kind of completeness gap.",
+      "category": "principle"
+    },
+    {
+      "name": "observation_without_quality_is_blindspot",
+      "definition": "Observations that no quality reads are a graph-resident BLINDSPOT. The substrate sees the data but its assessment looks past it. Surface as a structural gap — the substrate has eyes that are open onto something its judgment treats as not-present.",
+      "category": "principle"
+    },
+    {
+      "name": "assessment_coverage_per_subject",
+      "definition": "For any subject the substrate would assess, coverage = (categories of observation in graph for that subject ∩ categories referenced by qualities/smells) / (categories of observation in graph for that subject). Coverage < 1 means the assessment is incomplete. The substrate computes this per subject.",
+      "category": "metric"
+    },
+    {
+      "name": "fail_mode_unread_observations",
+      "definition": "Failure mode at the substrate's META layer: there exist observations of a subject that no quality or smell references. Symptom: the substrate has eyes open and its judgment treats them as not-present. The substrate should surface this as a structural gap to be filled by either extending its quality vocabulary OR retracting the observation channel if it's irrelevant.",
+      "category": "failure_modes"
+    },
+    {
+      "name": "correction_extend_quality_vocabulary",
+      "definition": "When unread observations are detected: the substrate identifies what category of observation has no quality coverage + designs a new quality that reads it. The new quality's threshold + rationale come from the substrate's existing domain Mts (e.g., for runner observations, the computer_architecture Mt's vocabulary). The new quality is graph-resident.",
+      "category": "corrections"
+    },
+    {
+      "name": "drive_curiosity_on_unread_observations",
+      "definition": "The curiosity drive (substrate is alive iff curiosity drives it) should surface observation categories with no quality coverage as high-information targets. An observation no quality reads is an unexplored part of the substrate's own state — exactly what curiosity exists for.",
+      "category": "drive"
+    },
+    {
+      "name": "drive_coherence_on_vocabulary_observation_mismatch",
+      "definition": "The coherence drive should fire when the substrate has rich vocabulary (Mt concepts) for a domain (e.g., 102 computer_architecture concepts about ISA / IPC / pipelining / cache) AND observations of that domain (runner CPU/binary observations) AND zero qualities connecting the two. Coherence demands that vocabulary + observation + judgment form a triangle.",
+      "category": "drive"
+    }
+  ],
+  "rules": [
+    {
+      "name": "unread_observation_surfaces_failure_mode",
+      "head": "an observation category exists in the graph for a subject AND no quality or smell in the assessment vocabulary references that category",
+      "body": "the substrate's introspection should surface this as fail_mode_unread_observations on that subject. The substrate then either extends its quality vocabulary (correction_extend_quality_vocabulary) or revisits whether the observation channel should exist."
+    },
+    {
+      "name": "vocabulary_observation_judgment_triangle",
+      "head": "the substrate holds vocabulary about a domain (a Mt with > N concepts) AND observations from that domain (Observation nodes whose category matches concepts in the Mt) AND no qualities applying the vocabulary to the observations",
+      "body": "coherence drive identifies this as structural incoherence. Either the vocabulary is decorative (no qualities apply it), the observations are uninterpreted (no qualities read them), or both — the substrate's coherence has a gap to close."
+    },
+    {
+      "name": "curiosity_targets_unread_observations",
+      "head": "an observation category has no quality coverage and the substrate is computing curiosity targets",
+      "body": "those observations rank high — they are state the substrate sees but does not interpret. Curiosity's role is exactly to surface what's seen-but-not-understood."
+    },
+    {
+      "name": "assessment_completeness_is_per_subject",
+      "head": "whenever the substrate assesses a subject and reports a score",
+      "body": "it should also report observation-coverage for that subject (what observation categories exist, what categories are read by some quality, what are not). Without this the score is an assessment of what the qualities cover, not of the subject itself."
+    }
+  ]
+}

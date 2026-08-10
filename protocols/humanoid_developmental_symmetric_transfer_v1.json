@@ -1,0 +1,48 @@
+{
+  "protocol": "humanoid_developmental_symmetric_transfer_v1",
+  "status": "cross_morphology_development_experiment",
+  "claim": "Test whether output-null capabilities learned on the 21-channel humanoid reduce developmental search on a distinct 17-channel articulated morphology.",
+  "simulator": "pybullet",
+  "asset": "mjcf/humanoid_symmetric.xml",
+  "seed": 0,
+  "body": {
+    "time_step_seconds": 0.004166666666666667,
+    "gravity_acceleration": 9.81,
+    "initial_settling_frames": 480,
+    "initial_base_quarter_turns": [1, 0, 0],
+    "joint_twitch_radians": 0.085,
+    "maximum_joint_force": 50.0,
+    "position_gain": 0.3,
+    "velocity_gain": 1.0
+  },
+  "calibration": {
+    "samples_per_non_tonic_actuator": 1,
+    "reset_body_before_each_sample": true
+  },
+  "curriculum": {
+    "developmental": true,
+    "somatomotor_waves": true,
+    "selection": "graph_receipt_gated_capability_frontier",
+    "initial_fixture": "supported_supine_floor_exploration",
+    "support_observation": "all_tactile_contacts_plus_legacy_distal_pair",
+    "authority": "active_general_capability_goal_only"
+  },
+  "locomotion": {
+    "actions": 80,
+    "heading_x": -1.0,
+    "target_froude_speed": 0.05,
+    "target_directed_progress_m": 3.0,
+    "support_geometry_preview_authority": 1.0,
+    "persistent_task_residual_authority": 1.0,
+    "modes": ["directed_walk"]
+  },
+  "evaluation": {
+    "minimum_upright_height_fraction": 0.75,
+    "minimum_directed_progress_metres": 0.1,
+    "maximum_final_lateral_drift_metres": 1.0,
+    "minimum_support_alternations": 1,
+    "maximum_aerial_samples_per_locomotor_cycle": 1.0,
+    "adaptive_must_remain_upright": false,
+    "tonic_control_must_not_match_progress": false
+  }
+}

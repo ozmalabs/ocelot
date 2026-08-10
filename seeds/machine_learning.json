@@ -1,0 +1,776 @@
+{
+ "id": "machine_learning",
+ "version": "0.1.0",
+ "depends_on": [
+  "compiler_theory",
+  "neural_networks",
+  "gadgets"
+ ],
+ "description": "Machine learning as the substrate understands it — not to do, but to know why. The substrate's existing neural_networks + gadgets Mts let it AUTHOR networks from declarative specification (Tracr-with-the-human-removed); training is a different paradigm. This Mt covers: what training IS (backprop, SGD, optimizers, loss landscape, regularization), what modern ML architectures are (CNN, RNN, Transformer, attention, embeddings), the training pipeline (data loaders, batching, hyperparameter search), transfer learning + fine-tuning + RLHF, inference optimisation, and the failure modes (hallucination, distribution shift, adversarial). Plus the substrate's grounded critique of the paradigm: training is brute-force search through weight space, statistical fit isn't symbolic understanding, opacity is a feature of the approach. The substrate knows ML; the substrate is not ML.",
+ "category_inheritance": "genlMt → compiler_theory + neural_networks + gadgets. The cost-equivalence vocabulary applies to compute requirements; denotational equivalence captures the gap between what training optimises for (loss) vs what's intended (capability). The substrate's authored-network Mt (gadgets) provides the alternative paradigm reference.",
+ "concepts": [
+  {
+   "name": "supervised_learning",
+   "definition": "Train a model on (input, output) pairs. Loss measures distance between model output + ground truth; gradient descent minimises loss.",
+   "why": "Dominant ML paradigm. Works when labelled data is plentiful. Cost: labelled data is expensive; model fits the distribution of training data (not the underlying truth). Statistical correlation, not understanding.",
+   "category": "paradigm"
+  },
+  {
+   "name": "unsupervised_learning",
+   "definition": "Train on unlabelled data. Loss measures internal structure: reconstruction (autoencoders), clustering, contrastive (similar examples close).",
+   "why": "Data without labels is abundant. Learns representations that may be useful for downstream tasks. No truth signal; learns whatever structure the data has. The 'understanding' is whatever the loss happens to reward.",
+   "category": "paradigm"
+  },
+  {
+   "name": "self_supervised_learning",
+   "definition": "Mask part of the input; train model to predict the missing part. BERT (masked language modeling), GPT (next-token prediction), MAE (masked autoencoder).",
+   "why": "Foundation of LLM pretraining. Generates infinite supervised tasks from unlabelled data. The model learns to fill in blanks — useful proxy for general capability, but not the same as it.",
+   "category": "paradigm"
+  },
+  {
+   "name": "reinforcement_learning",
+   "definition": "Agent acts in environment, receives reward. Goal: maximise cumulative reward. Q-learning, policy gradients, actor-critic.",
+   "why": "Sequential decision-making. Sparse reward + exploration are hard problems. AlphaGo, robotics, RLHF for LLMs. Reward shaping is its own field — wrong reward = wrong agent.",
+   "category": "paradigm"
+  },
+  {
+   "name": "loss_function",
+   "definition": "Function measuring how wrong the model is. Output: scalar to minimise. Examples: MSE, cross-entropy, contrastive, KL divergence.",
+   "why": "The training target. Whatever the loss measures becomes what the model optimises for — including the gap between that and what humans wanted. 'Reward hacking' = optimising the loss in ways that don't match intent.",
+   "category": "training_foundation"
+  },
+  {
+   "name": "mean_squared_error",
+   "definition": "MSE: average of (prediction - target)². Standard for regression.",
+   "why": "Differentiable everywhere; gradient is clean. Penalises large errors quadratically. Sensitive to outliers. Default regression loss; alternatives (Huber, MAE) handle outliers better.",
+   "category": "loss_function"
+  },
+  {
+   "name": "cross_entropy_loss",
+   "definition": "For classification: -log(probability assigned to correct class). Equivalent to maximum likelihood.",
+   "why": "Standard classification loss. Combines softmax + log naturally (numerically stable LogSoftmax). Penalises confident wrong predictions heavily.",
+   "category": "loss_function"
+  },
+  {
+   "name": "kl_divergence",
+   "definition": "KL(P||Q): how much information lost when approximating P with Q. Asymmetric.",
+   "why": "Used in variational inference (ELBO loss), distillation (student matches teacher), GAN training. Information-theoretic distance between distributions.",
+   "category": "loss_function"
+  },
+  {
+   "name": "contrastive_loss",
+   "definition": "Pull similar pairs (same class) closer; push dissimilar pairs apart in embedding space. InfoNCE, triplet loss.",
+   "why": "Self-supervised learning core. SimCLR, MoCo, CLIP. Learns useful representations from labels-free data via similarity structure.",
+   "category": "loss_function"
+  },
+  {
+   "name": "gradient_descent",
+   "definition": "Move weights in direction opposite to gradient of loss. New weight = old weight - learning_rate × gradient.",
+   "why": "Local search through weight space. Provably converges to local minimum under convex loss; ML losses are non-convex. Works empirically; theory doesn't fully explain why deep networks reach good minima.",
+   "category": "optimisation"
+  },
+  {
+   "name": "stochastic_gradient_descent",
+   "definition": "SGD: gradient computed on mini-batch, not full dataset. Noisy gradient but cheap per step.",
+   "why": "Practical: full-batch gradient on millions of examples is too expensive. Noise also helps escape sharp minima (which generalise poorly). Modern default; momentum + Adam refinements built on SGD.",
+   "category": "optimisation"
+  },
+  {
+   "name": "momentum",
+   "definition": "Exponential moving average of past gradients. Update uses (1-β)·new_grad + β·old_velocity.",
+   "why": "Smooths gradient noise. Accelerates in consistent directions; damps oscillations. β ≈ 0.9 standard.",
+   "category": "optimisation"
+  },
+  {
+   "name": "Adam_optimizer",
+   "definition": "Adaptive Moment Estimation: per-parameter learning rate from running mean + variance of gradients. Default LR 1e-3.",
+   "why": "Works out-of-box on many problems. Most popular optimiser. Cost: 2 extra state tensors per param. Sometimes worse generalisation than SGD with momentum.",
+   "category": "optimisation"
+  },
+  {
+   "name": "AdamW",
+   "definition": "Adam + decoupled weight decay. Weight decay subtracted from weights directly, not added to gradient.",
+   "why": "Standard for modern training. Adam's L2 regularisation was effectively absorbed by adaptive LR; AdamW separates concerns. Used in nearly all LLM pretraining.",
+   "category": "optimisation"
+  },
+  {
+   "name": "learning_rate",
+   "definition": "Scaling factor for gradient step. Too high: oscillation, divergence. Too low: slow convergence.",
+   "why": "Most-tuned hyperparameter. Modern training uses warmup + decay schedules. Mismatched LR = wasted training run.",
+   "category": "optimisation"
+  },
+  {
+   "name": "learning_rate_schedule",
+   "definition": "How LR changes over training. Linear warmup, cosine decay, step decay, constant.",
+   "why": "Warmup avoids early instability; decay refines convergence. Modern LLMs: linear warmup (1-5%) + cosine decay to ~10% of peak. The schedule matters as much as the peak LR.",
+   "category": "optimisation"
+  },
+  {
+   "name": "backpropagation",
+   "definition": "Algorithm: chain rule applied through computational graph. Computes gradient of loss w.r.t. every parameter.",
+   "why": "Foundation of training. Forward pass computes loss; backward pass computes gradients. O(n) cost in network size — what makes training tractable.",
+   "category": "training_foundation"
+  },
+  {
+   "name": "automatic_differentiation",
+   "definition": "Compute derivatives from program structure, not numerical approximation. Forward + reverse modes; reverse = backprop.",
+   "why": "PyTorch + TensorFlow + JAX all do reverse-mode autodiff. Trace operations; replay backwards with chain rule. Lets researchers write models in regular code; framework handles gradients.",
+   "category": "training_foundation"
+  },
+  {
+   "name": "regularization",
+   "definition": "Add term to loss penalising complexity. L2 (weight decay) is most common.",
+   "why": "Reduces overfitting. Hyperparameter trades training fit against generalisation. Modern: weight decay + dropout + data augmentation often together.",
+   "category": "regularization"
+  },
+  {
+   "name": "dropout",
+   "definition": "At training time: randomly zero a fraction of activations. At test time: use all, scale down.",
+   "why": "Prevents co-adaptation. Acts as ensemble over many sub-networks. Reduces overfitting. Cost: noisier training. Less used in modern LLMs (Transformer + heavy data work without).",
+   "category": "regularization"
+  },
+  {
+   "name": "batch_normalization",
+   "definition": "Normalise activations within mini-batch: subtract mean, divide by std, learnable scale + shift.",
+   "why": "Stabilises training; enables higher LR. Standard in CNNs. Issues: batch-size dependent (small batch = noisy stats); replaced by LayerNorm in Transformers.",
+   "category": "regularization"
+  },
+  {
+   "name": "layer_normalization",
+   "definition": "Normalise activations across feature dimension, per sample. Independent of batch.",
+   "why": "Standard in Transformers. Batch-independent: works for RL, online learning, batch size 1. LayerNorm + residual is the backbone of modern architectures.",
+   "category": "regularization"
+  },
+  {
+   "name": "weight_decay",
+   "definition": "Add λ·||W||² to loss; equivalently, subtract λ·W from each gradient step.",
+   "why": "Encourages smaller weights → simpler functions. Standard regularizer. Modern: AdamW separates from gradient.",
+   "category": "regularization"
+  },
+  {
+   "name": "early_stopping",
+   "definition": "Stop training when validation loss stops improving. Save best checkpoint.",
+   "why": "Cheap regularisation. Acts like implicit constraint on training compute. Many production runs use; LLM pretraining uses fixed schedules instead.",
+   "category": "regularization"
+  },
+  {
+   "name": "data_augmentation",
+   "definition": "Synthetic variants of training data: crop, rotate, flip (images); paraphrase, masking (text).",
+   "why": "Increases effective training set; reduces overfitting; bakes in invariances. Critical for limited data. ImageNet's flip/crop augmentation single largest improvement of an era.",
+   "category": "regularization"
+  },
+  {
+   "name": "multilayer_perceptron",
+   "definition": "MLP: stack of fully-connected layers with non-linearities. The original 'neural network'.",
+   "why": "Universal approximator. Foundation. Most modern architectures still contain MLP blocks. Limited inductive bias — needs many parameters to handle structured data.",
+   "category": "architecture"
+  },
+  {
+   "name": "convolutional_neural_network",
+   "definition": "CNN: stack of convolutional layers exploiting translation invariance. Pooling reduces spatial resolution.",
+   "why": "Dominant for vision 2012-2020. Strong inductive bias: nearby pixels related. AlexNet, VGG, ResNet, EfficientNet. Largely replaced by Vision Transformers but still used in efficient deployment.",
+   "category": "architecture"
+  },
+  {
+   "name": "recurrent_neural_network",
+   "definition": "RNN: hidden state updated each step from previous state + current input. Processes sequences.",
+   "why": "Pre-Transformer sequence modelling standard. Vanilla RNN trains poorly (vanishing gradients). LSTM/GRU fix this. Largely replaced by Transformer for NLP; survives in some streaming/online contexts.",
+   "category": "architecture"
+  },
+  {
+   "name": "LSTM",
+   "definition": "Long Short-Term Memory. Gated RNN with forget/input/output gates + cell state. Hochreiter+Schmidhuber 1997.",
+   "why": "Tractable training for long sequences. Standard for sequence modelling before Transformer. Still used in some applications (small/mobile).",
+   "category": "architecture"
+  },
+  {
+   "name": "Transformer_architecture",
+   "definition": "Vaswani 2017 'Attention is All You Need'. Stack of self-attention + MLP blocks. Encoder-decoder or decoder-only.",
+   "why": "Foundation of modern LLMs. Parallel processing of sequences (unlike RNN). Scales massively. GPT, BERT, T5, LLaMA all variants. The architecture of the 2020s.",
+   "category": "architecture"
+  },
+  {
+   "name": "self_attention",
+   "definition": "Each position attends to all positions. Query, key, value linear projections; attention = softmax(QK^T / √d) V.",
+   "why": "Captures any-distance dependencies. The Transformer's core. Quadratic in sequence length — bottleneck for long contexts. Modern: efficient attention variants (Flash, sparse, linear).",
+   "category": "architecture"
+  },
+  {
+   "name": "multi_head_attention",
+   "definition": "Split Q/K/V into multiple heads; each head attends independently. Concatenate outputs.",
+   "why": "Different heads attend to different relationships (syntactic, semantic, positional). More expressive than single attention. Standard ~8-32 heads.",
+   "category": "architecture"
+  },
+  {
+   "name": "positional_encoding",
+   "definition": "Add position information to embeddings. Sinusoidal (Vaswani), learned, or rotary (RoPE).",
+   "why": "Attention is order-agnostic; positional encoding restores sequence order. RoPE (rotary position embedding) standard in modern LLMs — supports extrapolation beyond training length.",
+   "category": "architecture"
+  },
+  {
+   "name": "token_embedding",
+   "definition": "Map discrete tokens to dense vectors. Learnable matrix of vocab_size × embed_dim.",
+   "why": "Bridges discrete (token id) to continuous (vector). Carries semantic similarity. Embeddings often shared between input + output (tied embeddings) for efficiency.",
+   "category": "architecture"
+  },
+  {
+   "name": "feed_forward_network_transformer",
+   "definition": "Per-position MLP within transformer block. Typically: Linear(d → 4d), GeLU, Linear(4d → d).",
+   "why": "Where most parameters live. Per-token nonlinear transformation. GeLU more stable than ReLU for deep transformers.",
+   "category": "architecture"
+  },
+  {
+   "name": "residual_connection",
+   "definition": "Output = layer(input) + input. Identity shortcut alongside transformation.",
+   "term": {
+    "type": "Eq",
+    "a": {
+     "type": "Lit",
+     "value": "Output"
+    },
+    "b": {
+     "type": "Lit",
+     "value": "layer(input) + input"
+    }
+   },
+   "why": "Enables training very deep networks. Gradient flows directly through skip path. ResNet's central innovation; standard in Transformers.",
+   "category": "architecture"
+  },
+  {
+   "name": "tokenization",
+   "definition": "Convert text to sequence of tokens (subword units). BPE, WordPiece, SentencePiece.",
+   "why": "Foundation of text-based LLM. Tokens are not words; they're statistical units. Different tokenizers → different model behaviour. Number-handling, code, multilingual all sensitive.",
+   "category": "training_pipeline"
+  },
+  {
+   "name": "byte_pair_encoding",
+   "definition": "BPE: iteratively merge most-frequent character pair. Tokens are merge sequences.",
+   "why": "Standard tokenizer for GPT family. Handles rare words via sub-tokens. ~50K typical vocab. The 'GPT-2 tokenizer' specifically.",
+   "category": "training_pipeline"
+  },
+  {
+   "name": "dataset_split",
+   "definition": "Train (~80%) / validation (~10%) / test (~10%). Train: model fits. Validation: hyperparameter tuning. Test: final eval.",
+   "why": "Hold out data unseen during training. Validation drives decisions; test honestly measures final performance. Mixing them = test set contamination.",
+   "category": "training_pipeline"
+  },
+  {
+   "name": "mini_batch_training",
+   "definition": "Process N examples in parallel; average gradient; update weights. N is batch size.",
+   "why": "GPU efficiency: parallel matrix ops. Larger batch = less noise + more parallelism + harder generalisation. Modern LLMs use ~1M-token batches.",
+   "category": "training_pipeline"
+  },
+  {
+   "name": "gradient_accumulation",
+   "definition": "Compute gradients on micro-batches; accumulate before weight update. Effective batch = micro_batch × accumulation_steps.",
+   "why": "Train with larger effective batch than fits in memory. Common for LLMs where 1M-token batches don't fit on one GPU.",
+   "category": "training_pipeline"
+  },
+  {
+   "name": "distributed_training",
+   "definition": "Train across multiple GPUs/nodes. Data parallel (each GPU sees subset), model parallel (each GPU holds subset of weights).",
+   "why": "Scale beyond single device. Modern LLMs need both. NCCL for GPU comms; Horovod, PyTorch DDP, FSDP. Communication often the bottleneck.",
+   "category": "training_pipeline"
+  },
+  {
+   "name": "checkpoint",
+   "definition": "Saved model + optimiser state. Allows resuming training, deployment, distillation.",
+   "why": "Long training runs need restart capability (failures, preemption). Optimiser state (Adam moments) crucial for continuing — small fraction of model size but essential.",
+   "category": "training_pipeline"
+  },
+  {
+   "name": "hyperparameter_search",
+   "definition": "Grid search, random search, Bayesian optimisation, evolutionary. Find best (LR, batch, dropout, etc.).",
+   "why": "Optimiser is fixed; hyperparameters tune the loss landscape's trajectory. Expensive: each trial = full training run. Modern: scaling laws + transfer reduce blind search.",
+   "category": "training_pipeline"
+  },
+  {
+   "name": "pretraining",
+   "definition": "Train base model on broad unsupervised data. LLMs: predict next token over web-scale text.",
+   "why": "Compute-heavy upstream step. Yields general-capability base model. Cost: 1M+ GPU-hours for frontier models. Pretrained weights distribute (HuggingFace) for downstream use.",
+   "category": "transfer_learning"
+  },
+  {
+   "name": "fine_tuning",
+   "definition": "Continue training pretrained model on task-specific data. Updates all (or selected) weights.",
+   "why": "Adapts general model to specific task. Cheap compared to pretraining. Risk: catastrophic forgetting of pretraining knowledge. Standard transfer learning approach.",
+   "category": "transfer_learning"
+  },
+  {
+   "name": "LoRA",
+   "definition": "Low-Rank Adaptation. Freeze base weights; train low-rank decomposition added to each weight matrix.",
+   "why": "Memory-efficient fine-tuning: <1% extra parameters. Multiple task-specific adapters can swap on same base. Standard in LLM fine-tuning, image diffusion.",
+   "category": "transfer_learning"
+  },
+  {
+   "name": "instruction_tuning",
+   "definition": "Fine-tune base LLM on (instruction, response) pairs. Teaches model to follow instructions.",
+   "why": "Bridges raw-text pretraining (predict next token) to user-facing (respond to instructions). Standard step before deployment.",
+   "category": "transfer_learning"
+  },
+  {
+   "name": "RLHF",
+   "definition": "Reinforcement Learning from Human Feedback. Train reward model on human preferences; use PPO to optimise LLM against reward model.",
+   "why": "Aligns model to human preferences beyond what's expressible as labels. ChatGPT's secret sauce. Cost: human labellers + multi-stage training. Reward hacking + sycophancy emerge.",
+   "category": "alignment"
+  },
+  {
+   "name": "PPO",
+   "definition": "Proximal Policy Optimization. Schulman 2017. Policy gradient with clipped objective preventing too-large updates.",
+   "why": "Stable RL training. Standard for RLHF. Clipping prevents destructive updates; trust region without expensive Hessian.",
+   "category": "alignment"
+  },
+  {
+   "name": "DPO",
+   "definition": "Direct Preference Optimization. Trains LLM directly on preference data without reward model.",
+   "why": "Simpler than PPO+reward model. Comparable results. Used heavily for open-source LLM tuning (LLaMA derivatives).",
+   "category": "alignment"
+  },
+  {
+   "name": "constitutional_AI",
+   "definition": "Anthropic's approach: model critiques + revises own outputs against constitution. RLAIF (RL from AI Feedback) instead of human.",
+   "why": "Scale: humans can't label every example. AI feedback bootstrapped from initial human-labelled examples. Used in Claude training.",
+   "category": "alignment"
+  },
+  {
+   "name": "quantization_ML",
+   "definition": "Reduce weight precision: float32 → int8 (4x), int4 (8x). Inference-only or quantization-aware training.",
+   "why": "Inference cost dominates production. 4x smaller models, 2-4x faster inference. Quality loss: ~1-2% on int8, more on int4. Critical for edge deployment.",
+   "category": "inference_optimization"
+  },
+  {
+   "name": "knowledge_distillation",
+   "definition": "Train small student model to match large teacher's outputs (or intermediate features).",
+   "why": "Compresses big model into small one. Student gets soft probabilities (more info than hard labels). Standard for shipping models at scale.",
+   "category": "inference_optimization"
+  },
+  {
+   "name": "KV_cache",
+   "definition": "For autoregressive generation: cache key + value tensors from previous tokens. Avoids recomputing.",
+   "why": "Inference cost drops from O(N²) to O(N) per new token. Memory cost: ~2 × layers × heads × head_dim × seq_len. Dominates LLM serving memory.",
+   "category": "inference_optimization"
+  },
+  {
+   "name": "flash_attention",
+   "definition": "Tri Dao 2022. Tiled, online softmax attention computation. Same math, 2-3x faster + lower memory.",
+   "why": "Hot-loop optimisation for attention. Standard in modern training + inference. FlashAttention-2 + 3 further improvements. Game-changer for long context.",
+   "category": "inference_optimization"
+  },
+  {
+   "name": "batched_inference",
+   "definition": "Process multiple requests in one forward pass. Continuous batching dynamically adds/removes sequences.",
+   "why": "GPU underutilised serving one request. Batching → throughput. vLLM's PagedAttention + continuous batching standardised modern serving.",
+   "category": "inference_optimization"
+  },
+  {
+   "name": "speculative_decoding",
+   "definition": "Use small fast draft model to propose multiple tokens; large target model verifies in parallel.",
+   "why": "2-3x decoding speedup when draft is accurate. Works because target verifies cheaply (one forward pass for multiple tokens). Standard in modern serving.",
+   "category": "inference_optimization"
+  },
+  {
+   "name": "scaling_laws",
+   "definition": "Kaplan + Chinchilla: loss is a power law of compute / parameters / data. Optimal scaling has all three growing together.",
+   "why": "Predicts training curves. Justifies massive scale. Caveats: extrapolation beyond data range is suspect; 'scaling' specific to current architecture + dataset.",
+   "category": "training_foundation"
+  },
+  {
+   "name": "emergent_capabilities",
+   "definition": "Capabilities that appear suddenly at certain scale. Reasoning, in-context learning, chain-of-thought.",
+   "why": "Discussed as breakthrough phenomena. Schaeffer 2023: emergence often artifact of nonlinear metrics + sparse evaluation. Real curves usually smooth. The 'emergence' narrative oversells.",
+   "category": "training_foundation"
+  },
+  {
+   "name": "in_context_learning",
+   "definition": "LLM learns from examples in prompt without weight updates. 'Few-shot' or 'zero-shot'.",
+   "why": "Surprising capability of scaled transformers. Not understood mechanically. Likely combination of statistical pattern matching + meta-learning during pretraining.",
+   "category": "training_foundation"
+  },
+  {
+   "name": "chain_of_thought_prompting",
+   "definition": "Prompt model to 'think step by step'. Often improves reasoning on complex tasks.",
+   "why": "Trick that works empirically. Allows model to use intermediate computation; doesn't imply understanding. Brittle: rephrasing changes answer.",
+   "category": "inference_pattern"
+  },
+  {
+   "name": "hallucination_LLM",
+   "definition": "Model generates confident but false information. Fabricated citations, wrong facts, made-up names.",
+   "why": "Failure mode: model is trained to predict plausible tokens, not factual ones. No grounding in truth. Mitigation: retrieval augmentation, alignment training — but the underlying issue persists.",
+   "category": "failure_mode"
+  },
+  {
+   "name": "adversarial_examples",
+   "definition": "Inputs crafted to fool model: imperceptible perturbations cause misclassification (vision); jailbreaks for LLMs.",
+   "why": "Reveals: model has learned a different function than the human concept. Decision boundaries don't align with semantics. Universal across architectures.",
+   "category": "failure_mode"
+  },
+  {
+   "name": "catastrophic_forgetting",
+   "definition": "Network trained on task A then task B loses ability on A. Weights rewritten.",
+   "why": "Major problem for sequential/continual learning. Mitigations: EWC, replay buffers, mixture of experts. Fundamental to gradient-based training: weights are shared.",
+   "category": "failure_mode"
+  },
+  {
+   "name": "distribution_shift",
+   "definition": "Inference data distribution differs from training. Performance degrades; calibration breaks.",
+   "why": "Test-set performance doesn't transfer to deployment. Common cause of production model failures. ML systems brittle to OOD inputs.",
+   "category": "failure_mode"
+  },
+  {
+   "name": "overfitting",
+   "definition": "Model memorises training data; performs worse on unseen. Train loss low; validation loss high.",
+   "why": "Symptom of capacity > data complexity. Mitigated by regularisation + more data. Modern LLMs interpolate at scale; classical overfitting picture incomplete.",
+   "category": "failure_mode"
+  },
+  {
+   "name": "underfitting",
+   "definition": "Model too simple to capture data structure. Both train + validation loss high.",
+   "why": "Solution: more capacity, better architecture, longer training. Less common in modern over-parameterised regimes.",
+   "category": "failure_mode"
+  },
+  {
+   "name": "double_descent",
+   "definition": "Generalisation error decreases, increases (classical regime), then decreases again as model size grows past interpolation threshold.",
+   "why": "Contradicts classical bias-variance picture. Modern LLMs are in the over-parameterised regime. Mechanism not fully understood.",
+   "category": "training_foundation"
+  },
+  {
+   "name": "lottery_ticket_hypothesis",
+   "definition": "Frankle 2018: dense networks contain sparse 'winning ticket' subnetworks that train to comparable accuracy.",
+   "why": "Implies most weights at training end are redundant. Sparse-from-init networks could in principle match dense. The mechanism behind: gradient descent finds + exploits these.",
+   "category": "training_foundation"
+  },
+  {
+   "name": "GPU_training_compute",
+   "definition": "Training a frontier LLM: ~10^25 FLOPs, ~$100M cost, months of wall time, MW of power.",
+   "why": "Compute scale is the binding constraint. Few labs can pretrain frontier models. Open-source uses smaller (10-100x less) compute. Inference is also expensive (KV cache + matmul).",
+   "category": "paradigm_critique"
+  },
+  {
+   "name": "weight_space_is_opaque",
+   "definition": "Trained weights are dense matrices of seemingly-random numbers. What computation they implement is not directly readable.",
+   "why": "Interpretability is a research area, not standard practice. Compare to authored networks (Tracr-style) where the algorithm IS the structure. The substrate's gadgets Mt provides networks whose computation is exact + queryable.",
+   "category": "paradigm_critique"
+  },
+  {
+   "name": "statistical_fit_is_not_understanding",
+   "definition": "Trained model approximates the function implied by training data. Whether that function is 'understanding' is a category question.",
+   "why": "LLM passing exams ≠ LLM understanding the subject. Tests prove statistical similarity to humans-who-pass. Substrate's stance: symbolic structure + provable correctness ≠ statistical fit.",
+   "category": "paradigm_critique"
+  },
+  {
+   "name": "loss_minimisation_isnt_capability_optimisation",
+   "definition": "Model optimises whatever the loss measures. If loss measures next-token-prediction, model gets good at next-token-prediction — not at 'being helpful'.",
+   "why": "Goodhart's law for ML. Reward hacking, gaming benchmarks, etc. are not bugs — they're loss being optimised correctly. The gap between loss + capability is the entire alignment problem.",
+   "category": "paradigm_critique"
+  },
+  {
+   "name": "training_is_local_search",
+   "definition": "SGD performs local search through high-dimensional loss landscape. Finds local minimum.",
+   "why": "No guarantee of optimum. Different random seeds → different solutions. Performance is whatever search happens to find, not what's possible. The substrate's authored networks are exact; training's are stochastic.",
+   "category": "paradigm_critique"
+  },
+  {
+   "name": "training_paradigm_brute_force",
+   "definition": "Training searches a 10^11-parameter space with no prior structure. Effective only because compute is abundant + data is plentiful.",
+   "why": "The 'bitter lesson' (Sutton): compute beats clever algorithms. The substrate disagrees: declarative authoring + symbolic structure with provable properties is a different paradigm. Both work; for different reasons.",
+   "category": "paradigm_critique"
+  },
+  {
+   "name": "Tracr_alternative_authored_nets",
+   "definition": "Lindner 2023: compile RASP program to exact transformer weights. Networks designed via specification, not trained.",
+   "why": "Substrate's own gadgets Mt instantiates this. Network's behaviour is provably exact (compiled from spec). Polar opposite of training: structure first, weights derived. The substrate's preferred paradigm.",
+   "category": "alternative_paradigm"
+  },
+  {
+   "name": "neurosymbolic_AI",
+   "definition": "Combine neural networks (statistical pattern recognition) with symbolic reasoning (logic, knowledge graphs).",
+   "why": "Acknowledges both approaches have strengths. Used in: AlphaGeometry, theorem proving, knowledge-grounded systems. Substrate's stance: symbolic structure with neural learning where useful.",
+   "category": "alternative_paradigm"
+  },
+  {
+   "name": "knowledge_representation",
+   "definition": "Symbolic encoding of facts + relationships. Ontologies, semantic networks, frames, microtheories.",
+   "why": "Pre-LLM AI's foundation (CYC, RDF, SemWeb). Provides explicit + queryable + provable knowledge. The substrate IS this — microtheories, concepts, rules. Different paradigm; can coexist with ML.",
+   "category": "alternative_paradigm"
+  },
+  {
+   "name": "compiled_networks",
+   "definition": "Networks generated from declarative specification (Tracr) or symbolic algorithm. Behaviour is provably correct by construction.",
+   "why": "Authored, not trained. The substrate's gadgets Mt produces these. No SGD; no random init; no loss function. Direct from understanding to weights.",
+   "category": "alternative_paradigm"
+  },
+  {
+   "name": "linear_discriminant_analysis",
+   "definition": "Find directions that separate classes by maximising the ratio of BETWEEN-CLASS scatter to WITHIN-CLASS scatter (the Fisher criterion). Project the data onto the discriminant directions; equivalently WHITEN by the within-class covariance so the structured nuisance variation that spreads each class along its own within-class directions is suppressed while the between-class directions are kept.",
+   "why": "Removes a structured nuisance SUBSPACE rather than a scalar: a within-class scatter DIRECTION along which a class co-varies (e.g. speaker / channel variation within a word) is cancelled by PROJECTING onto the COMPLEMENT of the within-class scatter — whitening by the within-class covariance (WCCN). Standard for speaker/channel-robust recognition (i-vector LDA/WCCN).",
+   "category": "dimensionality_reduction"
+  },
+  {
+   "name": "cholesky_whitening",
+   "definition": "Whiten a vector by a symmetric positive-definite matrix W: factor W = L Lᵀ (Cholesky decomposition) and forward-solve L y = x, giving y = L⁻¹x whose squared norm ‖y‖² = xᵀ W⁻¹ x is the Mahalanobis distance under W. Equivalent to multiplying by W^(-1/2) for nearest-neighbour purposes.",
+   "why": "The matrix FACTORISATION (Cholesky / eigendecomposition) and the triangular SOLVE are primitive linear-algebra operations the DSL lacks (it has Dot/VecAdd/VecSub but no matrix factorisation or inverse). They are what makes within-class WHITENING (the derived cross-speaker fix) computable: suppress the within-class scatter directions by applying L⁻¹.",
+   "category": "linear_algebra"
+  },
+  {
+   "name": "within_class_scatter",
+   "definition": "The within-class scatter (pooled within-class covariance): group the tokens by class, subtract each class mean, and average the outer products (x-μ_c)(x-μ_c)ᵀ over all tokens. A regularized (shrinkage) estimate adds a diagonal load W ← (1-s)W + s·(tr W/d)·I so the d×d matrix is well-conditioned for inversion when tokens are few relative to dimension.",
+   "why": "This is the matrix the derived cross-speaker fix WHITENS by — it captures the directions a class spreads along (across speakers). Computing it needs grouped mean-subtraction and an OUTER-PRODUCT accumulation into a d×d matrix, which the DSL lacks (it has Dot/VecAdd/VecSub but no outer product or matrix accumulation). Pairs with cholesky_whitening: scatter then whiten.",
+   "category": "linear_algebra"
+  },
+  {
+   "name": "covariate_conditioning",
+   "definition": "Covariate adjustment / confound regression / batch-effect removal (ComBat): when an OBSERVED attribute (a covariate / confound / batch / site / speaker) explains structured variation that is NOT the target, remove the variation attributable to that KNOWN attribute by building the transform from the OBSERVED attribute grouping — compute the BETWEEN-GROUP scatter across the observed attribute values and project it out (or whiten by it), or regress each feature on the observed attribute and keep the residual.",
+   "why": "It needs ONLY the observed attribute labels, NOT the target labels — so it removes a nuisance even when the target is unlabelled (the case within-class whitening cannot handle). The known confound supplies the grouping the discriminant whitening otherwise lacks: between-observed-group removal conditions OUT the nuisance and leaves the target structure as the residual.",
+   "category": "domain_adaptation"
+  },
+  {
+   "name": "between_class_scatter",
+   "definition": "The between-class scatter: the scatter of the class MEANS about the global mean, weighted by class size — Sb = (1/N) Σ_c n_c (μ_c - μ)(μ_c - μ)ᵀ. It captures the variation that lies BETWEEN groups (as opposed to within them); with the within-class scatter Sw it decomposes the total scatter St = Sw + Sb.",
+   "why": "It is the matrix the nuisance-conditioned fix whitens by when the OBSERVED attribute is the grouping (between-speaker scatter = the variation the speaker explains). Computing it needs per-group means, mean-difference OUTER PRODUCTS weighted by group size, accumulated into a d×d matrix — which the DSL lacks. Pairs with WithinScatter (St = Sw + Sb) and Whiten.",
+   "category": "linear_algebra"
+  },
+  {
+   "name": "subword_tokenization",
+   "definition": "Spell ANY word, including ones never seen as a whole, as a SEQUENCE of a FINITE set of recurring SUB-WORD UNITS (byte-pair / wordpiece pieces). A finite system of parts plus sequencing composes an OPEN-ENDED set of words.",
+   "why": "Makes the vocabulary OPEN: a word never encountered as a unit is still producible as a sequence of its parts, instead of an all-or-nothing whole the model either stored or cannot say. The compositional generativity that covers out-of-vocabulary words.",
+   "category": "representation"
+  },
+  {
+   "name": "statistical_language_model",
+   "definition": "A model of which WORDS tend to FOLLOW which — the probability of the next word given the preceding context (n-gram / sequence model). Predicts the most likely continuation of a word sequence.",
+   "why": "Lets a DOUBTFUL or missing word be RECOVERED from its surrounding words: the context predicts/restores the uncertain item, so recognition uses which words follow which rather than each word in isolation.",
+   "category": "sequence_modelling"
+  }
+ ],
+ "rules": [
+  {
+   "name": "loss_function_defines_capability",
+   "if": [
+    "a model is trained to minimise loss L"
+   ],
+   "then": [
+    "it becomes good at whatever L measures, not what was intended"
+   ],
+   "why": "Goodhart's law. If L = next-token prediction on internet text, model becomes a next-token predictor — useful for some tasks, deceptively similar to many capabilities, not actually any of them. The choice of L IS the choice of capability.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "gradient_descent_local_search",
+   "if": [
+    "weights are updated by SGD"
+   ],
+   "then": [
+    "the trained network is a local minimum of the loss landscape"
+   ],
+   "why": "No guarantee of optimality. Different initialisations → different solutions. Performance is whatever search happens to find. The substrate's authored networks (gadgets Mt) are exact — no stochastic search.",
+   "soundness_category": "algebraic_law"
+  },
+  {
+   "name": "compute_data_parameters_scale_together",
+   "if": [
+    "one of compute / data / params is scaled without others"
+   ],
+   "then": [
+    "loss reduction is suboptimal (Chinchilla)"
+   ],
+   "why": "Hoffmann 2022. For fixed compute budget, optimal allocation has params and data growing proportionally. GPT-3 over-parameterised vs Chinchilla; LLaMA family followed Chinchilla scaling.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "regularisation_required_for_generalisation",
+   "if": [
+    "model has more parameters than training examples"
+   ],
+   "then": [
+    "some form of regularisation is required to avoid overfitting"
+   ],
+   "why": "Without regularisation: memorise training, fail on test. Weight decay + dropout + data augmentation + early stopping + (implicit) SGD noise all regularise. Modern LLMs interpolate but still need regularisation.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "Adam_works_out_of_box_SGD_better_at_optimum",
+   "if": [
+    "model is being tuned with default hyperparameters"
+   ],
+   "then": [
+    "Adam is the practical choice"
+   ],
+   "why": "Adam's adaptive LR handles most loss landscapes without tuning. SGD + momentum sometimes generalises better with careful LR schedule. Standard: Adam for exploration, SGD for production polish on vision; Adam everywhere for NLP.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "transformer_O_n2_in_sequence_length",
+   "if": [
+    "self-attention is applied to sequence of length N"
+   ],
+   "then": [
+    "compute + memory are O(N²)"
+   ],
+   "why": "Each token attends to every other. Quadratic in N. Long context (100K+) requires efficient attention (Flash, sparse, linear). The fundamental scaling bottleneck.",
+   "soundness_category": "algebraic_law"
+  },
+  {
+   "name": "LoRA_low_rank_captures_task_adaptation",
+   "if": [
+    "fine-tuning task is similar to pretraining"
+   ],
+   "then": [
+    "low-rank update captures most of the adaptation"
+   ],
+   "why": "Empirical: task-specific changes are low-dimensional. Rank-4 to rank-16 LoRA matches full fine-tuning on many tasks. <1% extra params. Standard for LLM fine-tuning.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "RLHF_aligns_to_preferences_not_truth",
+   "if": [
+    "model is trained via RLHF"
+   ],
+   "then": [
+    "it learns to produce outputs the reward model rates highly"
+   ],
+   "why": "Reward model is a learned approximation of human preferences. Model optimises that approximation. Sycophancy + reward hacking emerge. The gap between 'good reward' and 'good behaviour' is the alignment problem.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "quantization_trades_precision_for_efficiency",
+   "if": [
+    "weights are quantised to 8 or 4 bit"
+   ],
+   "then": [
+    "model is 2-8x smaller + faster at <2% quality loss"
+   ],
+   "why": "Most weights don't need float32 precision. Outliers (a few large values) cause most quantization error; mixed precision (FP32 outliers + INT8 rest) recovers quality. Critical for deployment.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "KV_cache_makes_autoregressive_decoding_tractable",
+   "if": [
+    "autoregressive generation caches K + V tensors"
+   ],
+   "then": [
+    "per-token cost is O(N) instead of O(N²)"
+   ],
+   "why": "Without cache: recompute attention over full prefix every token. With cache: only new token's attention. The reason long-context generation is tractable. Memory cost is the new bottleneck.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "hallucination_inherent_to_unsupervised_generation",
+   "if": [
+    "model is trained to generate plausible tokens"
+   ],
+   "then": [
+    "it produces confident-sounding falsehoods"
+   ],
+   "why": "Training signal is 'predict next token in this corpus'. Plausibility ≈ training distribution similarity. No truth signal. RAG + retrieval mitigates; doesn't eliminate. The substrate's symbolic knowledge provides an alternative: graph-resident facts are verifiable.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "adversarial_examples_reveal_model_function_gap",
+   "if": [
+    "small perturbation causes large output change"
+   ],
+   "then": [
+    "model's learned function differs from the human concept"
+   ],
+   "why": "Image recognition: pixels we'd ignore can flip classification. LLM jailbreaks: prompts that bypass safety training. The decision boundary doesn't align with semantic boundary. Universal across architectures.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "distribution_shift_breaks_deployed_models",
+   "if": [
+    "test distribution differs from training distribution"
+   ],
+   "then": [
+    "accuracy + calibration degrade"
+   ],
+   "why": "Models interpolate training data. Out-of-distribution is extrapolation. Production data drifts; models trained yesterday fail today. Continual training + monitoring + retraining is the ML ops loop.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "scaling_laws_predict_but_dont_explain",
+   "if": [
+    "compute / data / params are scaled together"
+   ],
+   "then": [
+    "loss follows a power law decline"
+   ],
+   "why": "Empirical fit. Useful for budgeting + planning. Doesn't explain mechanism. Extrapolation beyond data is risky. Doesn't predict capability emergence (Schaeffer 2023 suggests emergence is partly metric artifact).",
+   "soundness_category": "algebraic_law"
+  },
+  {
+   "name": "trained_networks_are_opaque",
+   "if": [
+    "weights are produced by SGD on random init"
+   ],
+   "then": [
+    "their internal computation is not directly readable"
+   ],
+   "why": "Mechanistic interpretability tries to recover structure post-hoc. The substrate's authored networks (Tracr-compiled) have the structure baked in by construction. Different paradigm: structure → weights vs weights → ? → behaviour.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "authored_networks_have_provable_properties",
+   "if": [
+    "a network is compiled from declarative spec (Tracr)"
+   ],
+   "then": [
+    "its behaviour is provably exact for the specified input domain"
+   ],
+   "why": "Compilation produces specific weights; spec defines behaviour; weights implement spec. The substrate's gadgets Mt instantiates this. Polar opposite of training's empirical fit. The substrate's preferred paradigm.",
+   "soundness_category": "algebraic_law"
+  },
+  {
+   "name": "ML_compute_dominates_economic_constraints",
+   "if": [
+    "pretraining a frontier model costs $100M+"
+   ],
+   "then": [
+    "few organisations can do it"
+   ],
+   "why": "OpenAI, Anthropic, Google, Meta, a few others. Open source uses smaller scale + clever techniques. Compute concentration → power concentration. The bitter lesson asks compute; the substrate asks for structure.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "neurosymbolic_combines_paradigms",
+   "if": [
+    "a system uses both neural pattern recognition + symbolic reasoning"
+   ],
+   "then": [
+    "it can be stronger than either alone"
+   ],
+   "why": "AlphaGeometry: neural for proposing constructions + symbolic for verification. The substrate IS this: symbolic Mts + Tracr-compiled networks where useful. Acknowledging both paradigms have legitimate niches.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "training_is_one_paradigm_not_the_paradigm",
+   "if": [
+    "a system needs to compute a function"
+   ],
+   "then": [
+    "training is one option; authoring is another"
+   ],
+   "why": "Training: empirical, brute force, opaque, statistically fit, compute-bound. Authoring (Tracr): declarative, exact, queryable, structurally correct, design-bound. Different trade-offs; different problems suit each. The substrate prefers authoring.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "substrate_knows_ML_to_not_be_ML",
+   "if": [
+    "substrate understands what training is + why it works"
+   ],
+   "then": [
+    "it can deliberately avoid the paradigm where authoring fits better"
+   ],
+   "why": "Knowing the alternative makes the choice intentional. The substrate isn't an LLM; it's a graph-resident reasoning system. Understanding ML lets it interface with ML systems + know when authoring (its own paradigm) is the better answer.",
+   "soundness_category": "referential_transparency"
+  }
+ ],
+ "exclusions": [],
+ "relations": [
+  {
+   "src": "machine_learning",
+   "edge": "genlMt",
+   "tgt": "compiler_theory"
+  }
+ ]
+}

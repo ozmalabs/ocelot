@@ -1,0 +1,118 @@
+{
+  "id": "type_inference_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "hindley_milner",
+  "in_microtheory": "compilers",
+  "description": "Type inference decomposed. Hindley-Milner: the foundational algorithm. Constraint generation + unification + generalisation. Extensions: type classes (Haskell), rank-N polymorphism, bidirectional type checking, subtyping, dependent types. Type variables, substitutions, principal types.",
+  "sub_mechanisms": [
+    {
+      "name": "type_variable",
+      "definition": "Unknown type, written α, β, etc. Introduced for unannotated expressions; gets bound during unification.",
+      "why": "Lets inference defer commitment. 'let id = λx. x' has type α → α; the specific α is determined by use. Type variables are inference's working memory.",
+      "category": "type_inference_mechanism"
+    },
+    {
+      "name": "constraint_generation",
+      "definition": "Traverse AST, generate equality constraints between types. e.g., 'if e1 then e2 else e3' generates type(e1) = Bool, type(e2) = type(e3).",
+      "why": "Reduces type inference to constraint solving. Each language construct contributes specific constraints. The constraint set captures all type requirements.",
+      "category": "type_inference_mechanism"
+    },
+    {
+      "name": "substitution",
+      "definition": "Mapping from type variables to types. Apply to a type by replacing variables with their mapped types.",
+      "why": "Solution to constraint set. Unification produces a substitution making all constraints satisfied. Composed substitutions accumulate as unification proceeds.",
+      "category": "type_inference_mechanism"
+    },
+    {
+      "name": "occurs_check",
+      "definition": "Before binding type variable α to type T, check that α doesn't appear in T. If it does, unification fails (infinite type).",
+      "why": "Without occurs check, unification could produce α = List α — an infinite recursive type. Most languages disallow such types. Performance: O(n) check; skipping it (some implementations do) is unsound but faster.",
+      "category": "type_inference_mechanism"
+    },
+    {
+      "name": "let_generalisation",
+      "definition": "After inferring let-bound expression's type, generalise free type variables to quantified ones. id : α → α becomes id : ∀α. α → α.",
+      "why": "Enables polymorphism. The generalised type can be instantiated differently at each use site. The 'let polymorphism' part of HM. Generalisation rule: only generalise variables NOT free in environment.",
+      "category": "type_inference_mechanism"
+    },
+    {
+      "name": "instantiation",
+      "definition": "Replace bound type variables in ∀α. T with fresh variables. ∀α. α → α instantiates to β → β for fresh β.",
+      "why": "Each use of a polymorphic value gets its own instance. Fresh variables let different uses be independently constrained. The flip side of generalisation.",
+      "category": "type_inference_mechanism"
+    },
+    {
+      "name": "principal_type",
+      "definition": "Most general type for an expression — any other valid type is an instance of it. HM finds principal types.",
+      "why": "Inference's quality measure. Principal types maximise polymorphism + composition. Damas-Milner's theorem: HM always finds principal types (when they exist).",
+      "category": "type_inference_mechanism"
+    },
+    {
+      "name": "type_classes",
+      "definition": "Constrained polymorphism: types satisfying a class (e.g., Eq, Ord) can use class methods. Haskell, Rust traits, Scala implicits.",
+      "why": "Lets functions like 'sort : Ord a → [a] → [a]' work for any orderable type. Resolution: at call site, find the class instance matching the type. Coherence + global instance uniqueness required.",
+      "category": "type_inference_mechanism"
+    },
+    {
+      "name": "rank_N_polymorphism",
+      "definition": "Polymorphic types nested inside other types. e.g., (∀α. α → α) → Int — function takes a polymorphic argument.",
+      "why": "Beyond HM. Useful for higher-order combinators (ST monad in Haskell). Inference becomes undecidable; requires type annotations at higher-rank positions. Haskell extensions support this.",
+      "category": "type_inference_mechanism"
+    },
+    {
+      "name": "bidirectional_type_checking",
+      "definition": "Alternates between inferring (synthesis) and checking (against expected type). Useful for systems where inference is undecidable.",
+      "why": "Type annotations break the inference into local decidable problems. Used in Haskell's GHC for higher-rank types, F* / Idris / Agda for dependent types, TypeScript for contextual typing.",
+      "category": "type_inference_mechanism"
+    },
+    {
+      "name": "value_restriction",
+      "definition": "OCaml/ML restriction: generalisation only on values, not arbitrary expressions. Prevents unsound polymorphism with side effects.",
+      "why": "Without it, 'let r = ref (λx. x)' would have generalised type giving unsoundness — ref's polymorphic content gets used at different types. Restriction trades expressiveness for soundness.",
+      "category": "type_inference_mechanism"
+    },
+    {
+      "name": "row_polymorphism",
+      "definition": "Polymorphism over record extensions: a function works on records with at least certain fields, possibly more. OCaml objects, PureScript, GoSubtyping-style.",
+      "why": "Flexible record types without subtyping's complications. The 'extra fields' are abstracted via row variables. Used in some ML extensions; pattern Type-Level used by TypeScript's structural subtyping.",
+      "category": "type_inference_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "Damas_Milner_theorem_principal_types",
+      "if": ["the language is HM (prenex polymorphism via let-bindings, no subtyping)"],
+      "then": ["every well-typed expression has a principal type, found by HM inference"],
+      "why": "Foundational soundness + completeness result. Algorithm W terminates + produces the most general type. Justifies HM as 'the right' algorithm for ML-family languages.",
+      "soundness_category": "algebraic_law"
+    },
+    {
+      "name": "occurs_check_prevents_infinite_types",
+      "if": ["unification skips the occurs check"],
+      "then": ["inference may produce infinite recursive types"],
+      "why": "Without checking that α doesn't appear in T before α := T, unification can produce α = List α. Most languages disallow these. Some Prolog implementations skip occurs check for speed and have to handle the consequences.",
+      "soundness_category": "referential_transparency"
+    },
+    {
+      "name": "let_generalisation_only_on_non_free_variables",
+      "if": ["a type variable α is free in the environment"],
+      "then": ["α cannot be generalised when binding"],
+      "why": "α being free means it has constraints from the environment. Generalising would 'forget' those constraints, producing unsound types. Standard rule preserving HM's soundness.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "rank_N_inference_undecidable",
+      "if": ["polymorphism extends to higher ranks"],
+      "then": ["inference becomes undecidable; annotations are required"],
+      "why": "HM's decidability depends on prenex polymorphism. Higher-rank polymorphism in 2nd-order lambda calculus is undecidable. Bidirectional checking with annotations restores tractability.",
+      "soundness_category": "algebraic_law"
+    },
+    {
+      "name": "type_class_resolution_via_constraint_solving",
+      "if": ["a constraint Ord α appears"],
+      "then": ["resolution finds an Ord instance matching α at use site"],
+      "why": "Type classes add a constraint context to types. Resolution is constraint solving: dispatch to a specific instance dictionary. Haskell does this at compile time (no runtime overhead); Java interfaces do similar at runtime.",
+      "soundness_category": "denotational_equivalence"
+    }
+  ]
+}

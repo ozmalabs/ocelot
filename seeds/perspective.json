@@ -1,0 +1,462 @@
+{
+  "id": "perspective",
+  "version": "1.0.0",
+  "depends_on": [
+    "conversation"
+  ],
+  "description": "The deictic ORIGIN under the meaning ladder: person (pronoun tally) + tense (verb-morphology) + interiority-access (distinct minds) are three structural counts on one Origin node; POV and focalization are derived from them (robust by inheritance); reliability reuses suspect-witness trust on the Origin. classify_perspective derives person/POV/focalization from the counts.",
+  "microtheory": {
+    "name": "perspective",
+    "description": "narrative deictic origin: person/POV/focalization/tense/reliability"
+  },
+  "nodes": [
+    {
+      "local_id": 1,
+      "type": "Concept",
+      "attrs": {
+        "name": "perspective",
+        "description": "NOT another rung on the displacement ladder but the ORIGIN the ladder is measured FROM: displacement F-L is only defined relative to a zero-point, and perspective is that narrative deictic center. A four-coordinate Origin node \u2014 I (person), here (vantage), now (tense), whose-eyes (focalization) \u2014 so person/tense/focalization are axes of ONE origin, which is why it sits UNDER the meaning ladder. Same frame-relativity as projection: hold the structure once, view it through a Viewpoint."
+      }
+    },
+    {
+      "local_id": 2,
+      "type": "Concept",
+      "attrs": {
+        "name": "narrative_person",
+        "description": "Pure pronoun-class tally on the narration: I/we dominant with the narrator a story participant = FIRST; you-addressed = SECOND; he/she/they/names with the narrator absent = THIRD. Structural (a marker count like the simile-marker test), robust without outside perception."
+      }
+    },
+    {
+      "local_id": 3,
+      "type": "Concept",
+      "attrs": {
+        "name": "point_of_view",
+        "description": "Derived (not separately observed) as an Argmax over person-dominance x interiority-breadth: first-person + interiority to the narrator = first-person; third + interiority to one mind = third-limited; third + interiority to >=2 minds = third-omniscient; third + zero interiority = objective."
+      }
+    },
+    {
+      "local_id": 4,
+      "type": "Concept",
+      "attrs": {
+        "name": "focalization",
+        "description": "Genette whose-eyes, mapped off the interiority-breadth axis: internal<->limited (one mind field), zero<->omniscient (unrestricted), external<->objective (no interior). Focalization is the per-PASSAGE local origin; POV is the Argmax over the segments (work-level aggregate) \u2014 the same local-vs-global order-N pattern."
+      }
+    },
+    {
+      "local_id": 5,
+      "type": "Concept",
+      "attrs": {
+        "name": "narration_tense",
+        "description": "Verb-morphology tally over main-clause verbs (past/present/future) = the now coordinate: the relation between narrating-now and narrated-now. Structural."
+      }
+    },
+    {
+      "local_id": 6,
+      "type": "Concept",
+      "attrs": {
+        "name": "narrator_reliability",
+        "description": "No new machinery: the narrator is just another witness node, so the suspect-witness rule (believe = trust x corroboration, + refute) points at the Origin node; unreliability falls out as low narrator-trust when the narration is contradicted by depicted events, self-contradiction, or interiority it inadvertently betrays (the Humpty pattern)."
+      }
+    }
+  ],
+  "edges": [],
+  "rules": [
+    {
+      "name": "classify_perspective",
+      "match": [
+        [
+          "o",
+          "origin_of",
+          "seg"
+        ]
+      ],
+      "where": {
+        "type": "Lit",
+        "value": true
+      },
+      "effects": [
+        [
+          "set_attr",
+          "o",
+          "person",
+          {
+            "__term__": {
+              "type": "IfThenElse",
+              "cond": {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Gte",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "o"
+                      },
+                      "key": "n2"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "o"
+                      },
+                      "key": "n1"
+                    }
+                  },
+                  {
+                    "type": "Gte",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "o"
+                      },
+                      "key": "n2"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "o"
+                      },
+                      "key": "n3"
+                    }
+                  },
+                  {
+                    "type": "Gt",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "o"
+                      },
+                      "key": "n2"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": 0
+                    }
+                  }
+                ]
+              },
+              "then": {
+                "type": "Lit",
+                "value": "second"
+              },
+              "other": {
+                "type": "IfThenElse",
+                "cond": {
+                  "type": "And",
+                  "items": [
+                    {
+                      "type": "Gte",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "o"
+                        },
+                        "key": "n1"
+                      },
+                      "b": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "o"
+                        },
+                        "key": "n2"
+                      }
+                    },
+                    {
+                      "type": "Gte",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "o"
+                        },
+                        "key": "n1"
+                      },
+                      "b": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "o"
+                        },
+                        "key": "n3"
+                      }
+                    },
+                    {
+                      "type": "Gt",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "o"
+                        },
+                        "key": "n1"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 0
+                      }
+                    }
+                  ]
+                },
+                "then": {
+                  "type": "Lit",
+                  "value": "first"
+                },
+                "other": {
+                  "type": "Lit",
+                  "value": "third"
+                }
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "o",
+          "point_of_view",
+          {
+            "__term__": {
+              "type": "IfThenElse",
+              "cond": {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Gte",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "o"
+                      },
+                      "key": "n2"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "o"
+                      },
+                      "key": "n1"
+                    }
+                  },
+                  {
+                    "type": "Gte",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "o"
+                      },
+                      "key": "n2"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "o"
+                      },
+                      "key": "n3"
+                    }
+                  },
+                  {
+                    "type": "Gt",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "o"
+                      },
+                      "key": "n2"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": 0
+                    }
+                  }
+                ]
+              },
+              "then": {
+                "type": "Lit",
+                "value": "second-person"
+              },
+              "other": {
+                "type": "IfThenElse",
+                "cond": {
+                  "type": "And",
+                  "items": [
+                    {
+                      "type": "Gte",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "o"
+                        },
+                        "key": "n1"
+                      },
+                      "b": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "o"
+                        },
+                        "key": "n2"
+                      }
+                    },
+                    {
+                      "type": "Gte",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "o"
+                        },
+                        "key": "n1"
+                      },
+                      "b": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "o"
+                        },
+                        "key": "n3"
+                      }
+                    },
+                    {
+                      "type": "Gt",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "o"
+                        },
+                        "key": "n1"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 0
+                      }
+                    }
+                  ]
+                },
+                "then": {
+                  "type": "Lit",
+                  "value": "first-person"
+                },
+                "other": {
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Gte",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "o"
+                      },
+                      "key": "minds"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": 2
+                    }
+                  },
+                  "then": {
+                    "type": "Lit",
+                    "value": "third-omniscient"
+                  },
+                  "other": {
+                    "type": "IfThenElse",
+                    "cond": {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "o"
+                        },
+                        "key": "minds"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 1
+                      }
+                    },
+                    "then": {
+                      "type": "Lit",
+                      "value": "third-limited"
+                    },
+                    "other": {
+                      "type": "Lit",
+                      "value": "objective"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "o",
+          "focalization",
+          {
+            "__term__": {
+              "type": "IfThenElse",
+              "cond": {
+                "type": "Gte",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "o"
+                  },
+                  "key": "minds"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 2
+                }
+              },
+              "then": {
+                "type": "Lit",
+                "value": "zero (omniscient)"
+              },
+              "other": {
+                "type": "IfThenElse",
+                "cond": {
+                  "type": "Gte",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "o"
+                    },
+                    "key": "minds"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": 1
+                  }
+                },
+                "then": {
+                  "type": "Lit",
+                  "value": "internal"
+                },
+                "other": {
+                  "type": "Lit",
+                  "value": "external"
+                }
+              }
+            }
+          }
+        ]
+      ]
+    }
+  ]
+}

@@ -1,0 +1,325 @@
+{
+  "id": "transcoding",
+  "version": "1.0.0",
+  "depends_on": [
+    "video"
+  ],
+  "description": "ABR ladder + transcode job ontology. TranscodeJob, Ladder, LadderRung node types + a default 3-tier HLS ladder as seed data (1080p/720p/480p).",
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "LadderRung",
+      "attrs": {
+        "bitrate_kbps": 5000,
+        "height": 1080,
+        "name": "high",
+        "width": 1920
+      }
+    },
+    {
+      "local_id": 1,
+      "type": "LadderRung",
+      "attrs": {
+        "bitrate_kbps": 2500,
+        "height": 720,
+        "name": "medium",
+        "width": 1280
+      }
+    },
+    {
+      "local_id": 2,
+      "type": "LadderRung",
+      "attrs": {
+        "bitrate_kbps": 1000,
+        "height": 480,
+        "name": "low",
+        "width": 854
+      }
+    },
+    {
+      "local_id": 3,
+      "type": "Rule",
+      "attrs": {
+        "effect": {
+          "__tuple__": [
+            {
+              "__tuple__": [
+                "set_attr",
+                "job",
+                "primitive",
+                "h264_area_average_2to1"
+              ]
+            }
+          ]
+        },
+        "id": "dispatch_downscale",
+        "match": {
+          "__tuple__": [
+            {
+              "__tuple__": [
+                "job",
+                "input",
+                "in_stream"
+              ]
+            }
+          ]
+        },
+        "where": {
+          "items": {
+            "__tuple__": [
+              {
+                "a": {
+                  "key": "kind",
+                  "node": {
+                    "name": "job",
+                    "type": "Var"
+                  },
+                  "type": "Attr"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "downscale"
+                },
+                "type": "Eq"
+              },
+              {
+                "arg": {
+                  "a": {
+                    "key": "primitive",
+                    "node": {
+                      "name": "job",
+                      "type": "Var"
+                    },
+                    "type": "Attr"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": "h264_area_average_2to1"
+                  },
+                  "type": "Eq"
+                },
+                "type": "Not"
+              }
+            ]
+          },
+          "type": "And"
+        }
+      }
+    },
+    {
+      "local_id": 4,
+      "type": "Rule",
+      "attrs": {
+        "effect": {
+          "__tuple__": [
+            {
+              "__tuple__": [
+                "set_attr",
+                "job",
+                "primitive",
+                "h264_transcode_pyramid_full"
+              ]
+            }
+          ]
+        },
+        "id": "dispatch_transrate",
+        "match": {
+          "__tuple__": [
+            {
+              "__tuple__": [
+                "job",
+                "input",
+                "in_stream"
+              ]
+            }
+          ]
+        },
+        "where": {
+          "items": {
+            "__tuple__": [
+              {
+                "a": {
+                  "key": "kind",
+                  "node": {
+                    "name": "job",
+                    "type": "Var"
+                  },
+                  "type": "Attr"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "transrate"
+                },
+                "type": "Eq"
+              },
+              {
+                "arg": {
+                  "a": {
+                    "key": "primitive",
+                    "node": {
+                      "name": "job",
+                      "type": "Var"
+                    },
+                    "type": "Attr"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": "h264_transcode_pyramid_full"
+                  },
+                  "type": "Eq"
+                },
+                "type": "Not"
+              }
+            ]
+          },
+          "type": "And"
+        }
+      }
+    },
+    {
+      "local_id": 5,
+      "type": "Rule",
+      "attrs": {
+        "effect": {
+          "__tuple__": [
+            {
+              "__tuple__": [
+                "set_attr",
+                "job",
+                "primitive",
+                "h264_repack_nal"
+              ]
+            }
+          ]
+        },
+        "id": "dispatch_format_hop",
+        "match": {
+          "__tuple__": [
+            {
+              "__tuple__": [
+                "job",
+                "input",
+                "in_stream"
+              ]
+            }
+          ]
+        },
+        "where": {
+          "items": {
+            "__tuple__": [
+              {
+                "a": {
+                  "key": "kind",
+                  "node": {
+                    "name": "job",
+                    "type": "Var"
+                  },
+                  "type": "Attr"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "format_hop"
+                },
+                "type": "Eq"
+              },
+              {
+                "arg": {
+                  "a": {
+                    "key": "primitive",
+                    "node": {
+                      "name": "job",
+                      "type": "Var"
+                    },
+                    "type": "Attr"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": "h264_repack_nal"
+                  },
+                  "type": "Eq"
+                },
+                "type": "Not"
+              }
+            ]
+          },
+          "type": "And"
+        }
+      }
+    }
+  ],
+  "edges": [],
+  "productions": [
+    {
+      "src": {
+        "type": "Ladder",
+        "var": "src"
+      },
+      "edge_type": "has_input",
+      "tgt": {
+        "type": "VideoStream",
+        "var": "tgt"
+      },
+      "provenance": "transcoding:ladder_input"
+    },
+    {
+      "src": {
+        "type": "Ladder",
+        "var": "src"
+      },
+      "edge_type": "has_rung",
+      "tgt": {
+        "type": "LadderRung",
+        "var": "tgt"
+      },
+      "provenance": "transcoding:ladder_rung"
+    },
+    {
+      "src": {
+        "type": "LadderRung",
+        "var": "src"
+      },
+      "edge_type": "produces",
+      "tgt": {
+        "type": "VideoStream",
+        "var": "tgt"
+      },
+      "provenance": "transcoding:rung_output"
+    },
+    {
+      "src": {
+        "type": "LadderRung",
+        "var": "src"
+      },
+      "edge_type": "realised_by",
+      "tgt": {
+        "type": "TranscodeJob",
+        "var": "tgt"
+      },
+      "provenance": "transcoding:rung_job"
+    },
+    {
+      "src": {
+        "type": "TranscodeJob",
+        "var": "src"
+      },
+      "edge_type": "input",
+      "tgt": {
+        "type": "VideoStream",
+        "var": "tgt"
+      },
+      "provenance": "transcoding:job_input"
+    },
+    {
+      "src": {
+        "type": "TranscodeJob",
+        "var": "src"
+      },
+      "edge_type": "output",
+      "tgt": {
+        "type": "VideoStream",
+        "var": "tgt"
+      },
+      "provenance": "transcoding:job_output"
+    }
+  ]
+}

@@ -1,0 +1,68 @@
+{
+  "id": "conflicting_goals_default",
+  "version": "1.0.0",
+  "depends_on": [],
+  "self_load_only": true,
+  "description": "DEFAULT DATA (no rule) for the conflicting-goals goal layer, so the disclaimer analysis auto-fires on an article read WITHOUT a per-analysis teach. Ships ONLY graph DATA: a starter DisclaimerCue codebook (the classic 'not racist but' family -- a stated-goal / hidden-goal tension) and a MethodSpec holding the natural-language method the agent AUTHORS the classify-by-join rule from. The RULE itself is DELIBERATELY NOT shipped here (test_agent_authors_conflicting_goals_rule asserts _no_shipped_conflicting_goals_rule): the only ConflictingGoalsReading rule is the one the agent authors at runtime from this method text via its procedural_reader -> binding_resolver -> method_synthesis faculty (domains/actor_goals.ensure_conflicting_goals_rule). Cues are the agent's held, teach()-extensible data -- teaching a new DisclaimerCue row grows coverage with zero code/rule change.",
+  "nodes": [
+    {
+      "local_id": 1,
+      "type": "MethodSpec",
+      "attrs": {
+        "name": "conflicting_goals",
+        "text": "When a disclaimer candidate's phrase matches a disclaimer cue's phrase, classify a conflicting goals reading."
+      }
+    },
+    {
+      "local_id": 2,
+      "type": "DisclaimerCue",
+      "attrs": {
+        "phrase": "not racist but",
+        "tension": "express-vs-avoid-social-cost"
+      }
+    },
+    {
+      "local_id": 3,
+      "type": "DisclaimerCue",
+      "attrs": {
+        "phrase": "no offense but",
+        "tension": "express-vs-avoid-social-cost"
+      }
+    },
+    {
+      "local_id": 4,
+      "type": "DisclaimerCue",
+      "attrs": {
+        "phrase": "with all due respect",
+        "tension": "express-vs-avoid-social-cost"
+      }
+    },
+    {
+      "local_id": 5,
+      "type": "DisclaimerCue",
+      "attrs": {
+        "phrase": "some of my best friends",
+        "tension": "express-vs-avoid-social-cost"
+      }
+    },
+    {
+      "local_id": 6,
+      "type": "DisclaimerCue",
+      "attrs": {
+        "phrase": "not to be rude but",
+        "tension": "express-vs-avoid-social-cost"
+      }
+    },
+    {
+      "local_id": 7,
+      "type": "DisclaimerCue",
+      "attrs": {
+        "phrase": "don't get me wrong but",
+        "tension": "express-vs-avoid-social-cost"
+      }
+    }
+  ],
+  "edges": [],
+  "productions": [],
+  "rules": []
+}

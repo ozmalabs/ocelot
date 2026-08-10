@@ -1,0 +1,942 @@
+{
+  "id": "pattern_recognition",
+  "version": "1.0.0",
+  "self_load_only": true,
+  "depends_on": [],
+  "area": "vision",
+  "description": "GENERIC integer-native shape/pattern recognition: a PatternLibrary of HELD PatternPrototypes (integer descriptors), generic novelty-salience (L1 distance from a background prototype), generic nearest-prototype recognition (coarse family FAR, fine members NEAR), and affordance-driven investigation. door/switch/background/operable_feature are library DATA; the mechanism is domain-free. OFF by default (gated on a PatternParams node).",
+  "microtheory": "perception",
+  "nodes": [
+    {
+      "local_id": 1,
+      "type": "PatternLibrary",
+      "attrs": {
+        "name": "pattern_library"
+      }
+    },
+    {
+      "local_id": 2,
+      "type": "PatternPrototype",
+      "attrs": {
+        "name": "background",
+        "label": "background",
+        "tier": "background",
+        "geom_sig": 0,
+        "tex_sig": 0,
+        "descriptor_vec": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "local_id": 3,
+      "type": "PatternPrototype",
+      "attrs": {
+        "name": "operable_feature",
+        "label": "operable_feature",
+        "tier": "coarse",
+        "geom_sig": 4,
+        "tex_sig": 6,
+        "descriptor_vec": [
+          4,
+          6
+        ],
+        "min_distinctness": 2,
+        "operate_action": "approach",
+        "affordance": "worth_approaching",
+        "effect_locality": "unknown"
+      }
+    },
+    {
+      "local_id": 4,
+      "type": "PatternPrototype",
+      "attrs": {
+        "name": "door",
+        "label": "door",
+        "tier": "fine",
+        "geom_sig": 4,
+        "tex_sig": 6,
+        "descriptor_vec": [
+          4,
+          6
+        ],
+        "match_thresh": 3,
+        "affordance": "gates_passage",
+        "operate_action": "use",
+        "effect_locality": "local"
+      }
+    },
+    {
+      "local_id": 5,
+      "type": "PatternPrototype",
+      "attrs": {
+        "name": "switch",
+        "label": "switch",
+        "tier": "fine",
+        "geom_sig": 0,
+        "tex_sig": 6,
+        "descriptor_vec": [
+          0,
+          6
+        ],
+        "match_thresh": 3,
+        "affordance": "changes_remote_sector",
+        "operate_action": "use",
+        "effect_locality": "remote"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "src": {
+        "local": 1
+      },
+      "tgt": {
+        "local": 2
+      },
+      "type": "has_prototype",
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 1
+      },
+      "tgt": {
+        "local": 3
+      },
+      "type": "has_prototype",
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 1
+      },
+      "tgt": {
+        "local": 4
+      },
+      "type": "has_prototype",
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 1
+      },
+      "tgt": {
+        "local": 5
+      },
+      "type": "has_prototype",
+      "attrs": {}
+    }
+  ],
+  "productions": [
+    {
+      "provenance": "seed:pattern:params",
+      "src": {
+        "type": "WorldInstance",
+        "var": "game"
+      },
+      "edge_type": "has_pattern_params",
+      "tgt": {
+        "type": "PatternParams",
+        "var": "p"
+      }
+    },
+    {
+      "provenance": "seed:pattern:region",
+      "src": {
+        "type": "WorldInstance",
+        "var": "game"
+      },
+      "edge_type": "has_perceived_region",
+      "tgt": {
+        "type": "PerceivedRegion",
+        "var": "R"
+      }
+    },
+    {
+      "provenance": "seed:pattern:lib",
+      "src": {
+        "type": "WorldInstance",
+        "var": "game"
+      },
+      "edge_type": "has_pattern_library",
+      "tgt": {
+        "type": "PatternLibrary",
+        "var": "lib"
+      }
+    },
+    {
+      "provenance": "seed:pattern:has_proto",
+      "src": {
+        "type": "PatternLibrary",
+        "var": "lib"
+      },
+      "edge_type": "has_prototype",
+      "tgt": {
+        "type": "PatternPrototype",
+        "var": "C"
+      }
+    },
+    {
+      "provenance": "seed:pattern:recognised",
+      "src": {
+        "type": "PerceivedRegion",
+        "var": "R"
+      },
+      "edge_type": "recognised_prototype",
+      "tgt": {
+        "type": "PatternPrototype",
+        "var": "C"
+      }
+    },
+    {
+      "provenance": "seed:pattern:goal",
+      "src": {
+        "type": "WorldInstance",
+        "var": "game"
+      },
+      "edge_type": "has_pattern_goal",
+      "tgt": {
+        "type": "Investigation",
+        "var": "inv"
+      }
+    },
+    {
+      "provenance": "seed:pattern:investigates",
+      "src": {
+        "type": "Investigation",
+        "var": "inv"
+      },
+      "edge_type": "investigates",
+      "tgt": {
+        "type": "PerceivedRegion",
+        "var": "R"
+      }
+    }
+  ],
+  "rules": [
+    {
+      "name": "pattern_salience",
+      "area": "vision",
+      "order": 3,
+      "latency_class": "deferred",
+      "match": [
+        [
+          "game",
+          "has_pattern_params",
+          "p"
+        ],
+        [
+          "game",
+          "has_pattern_library",
+          "lib"
+        ],
+        [
+          "lib",
+          "has_prototype",
+          "BG"
+        ],
+        [
+          "game",
+          "has_perceived_region",
+          "R"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "p"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "BG"
+              },
+              "key": "tier"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "background"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "R"
+                },
+                "key": "sal_done"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 1.0
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "R",
+          "salience",
+          {
+            "__term__": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Abs",
+                  "arg": {
+                    "type": "Minus",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "R"
+                      },
+                      "key": "geom_level"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "BG"
+                      },
+                      "key": "geom_sig"
+                    }
+                  }
+                },
+                {
+                  "type": "Abs",
+                  "arg": {
+                    "type": "Minus",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "R"
+                      },
+                      "key": "tex_level"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "BG"
+                      },
+                      "key": "tex_sig"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "R",
+          "salient",
+          {
+            "__term__": {
+              "type": "IfThenElse",
+              "cond": {
+                "type": "Gte",
+                "a": {
+                  "type": "Plus",
+                  "items": [
+                    {
+                      "type": "Abs",
+                      "arg": {
+                        "type": "Minus",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "R"
+                          },
+                          "key": "geom_level"
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "BG"
+                          },
+                          "key": "geom_sig"
+                        }
+                      }
+                    },
+                    {
+                      "type": "Abs",
+                      "arg": {
+                        "type": "Minus",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "R"
+                          },
+                          "key": "tex_level"
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "BG"
+                          },
+                          "key": "tex_sig"
+                        }
+                      }
+                    }
+                  ]
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "p"
+                  },
+                  "key": "salience_floor"
+                }
+              },
+              "then": {
+                "type": "Lit",
+                "value": 1.0
+              },
+              "other": {
+                "type": "Lit",
+                "value": 0.0
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "R",
+          "sal_done",
+          {
+            "__term__": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "pattern_recognise_coarse",
+      "area": "vision",
+      "order": 4,
+      "latency_class": "deferred",
+      "match": [
+        [
+          "game",
+          "has_pattern_library",
+          "lib"
+        ],
+        [
+          "lib",
+          "has_prototype",
+          "C"
+        ],
+        [
+          "game",
+          "has_perceived_region",
+          "R"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "C"
+              },
+              "key": "tier"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "coarse"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "R"
+              },
+              "key": "salient"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "R"
+                },
+                "key": "coarse_done"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 1.0
+              }
+            }
+          },
+          {
+            "type": "Gte",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "R"
+              },
+              "key": "salience"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "C"
+              },
+              "key": "min_distinctness"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "R",
+          "recognised_family",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "C"
+              },
+              "key": "name"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "R",
+          "coarse_done",
+          {
+            "__term__": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          }
+        ],
+        [
+          "add_node",
+          "inv",
+          "Investigation",
+          {
+            "kind": "approach_to_resolve",
+            "target_concept": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "C"
+                },
+                "key": "name"
+              }
+            },
+            "action": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "C"
+                },
+                "key": "operate_action"
+              }
+            },
+            "locality": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "C"
+                },
+                "key": "effect_locality"
+              }
+            },
+            "status": "planned"
+          }
+        ],
+        [
+          "add_edge",
+          "game",
+          "has_pattern_goal",
+          "inv"
+        ],
+        [
+          "add_edge",
+          "inv",
+          "investigates",
+          "R"
+        ]
+      ]
+    },
+    {
+      "name": "pattern_recognise_fine",
+      "area": "vision",
+      "order": 5,
+      "latency_class": "deferred",
+      "match": [
+        [
+          "game",
+          "has_pattern_library",
+          "lib"
+        ],
+        [
+          "lib",
+          "has_prototype",
+          "C"
+        ],
+        [
+          "game",
+          "has_perceived_region",
+          "R"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "C"
+              },
+              "key": "tier"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "fine"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "R"
+              },
+              "key": "salient"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "R"
+              },
+              "key": "near"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "R"
+                },
+                "key": "recognised"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 1.0
+              }
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Abs",
+                  "arg": {
+                    "type": "Minus",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "R"
+                      },
+                      "key": "geom_level"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "C"
+                      },
+                      "key": "geom_sig"
+                    }
+                  }
+                },
+                {
+                  "type": "Abs",
+                  "arg": {
+                    "type": "Minus",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "R"
+                      },
+                      "key": "tex_level"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "C"
+                      },
+                      "key": "tex_sig"
+                    }
+                  }
+                }
+              ]
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "C"
+              },
+              "key": "match_thresh"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_edge",
+          "R",
+          "recognised_prototype",
+          "C"
+        ],
+        [
+          "set_attr",
+          "R",
+          "recognised_as",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "C"
+              },
+              "key": "name"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "R",
+          "recognised",
+          {
+            "__term__": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "R",
+          "recog_affordance",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "C"
+              },
+              "key": "affordance"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "pattern_investigate_operate",
+      "area": "vision",
+      "order": 6,
+      "latency_class": "deferred",
+      "match": [
+        [
+          "game",
+          "has_perceived_region",
+          "R"
+        ],
+        [
+          "R",
+          "recognised_prototype",
+          "C"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "R"
+              },
+              "key": "recognised"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "R"
+                },
+                "key": "investigated"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 1.0
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "inv",
+          "Investigation",
+          {
+            "kind": "operate",
+            "target_concept": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "C"
+                },
+                "key": "name"
+              }
+            },
+            "action": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "C"
+                },
+                "key": "operate_action"
+              }
+            },
+            "locality": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "C"
+                },
+                "key": "effect_locality"
+              }
+            },
+            "status": "planned"
+          }
+        ],
+        [
+          "add_edge",
+          "game",
+          "has_pattern_goal",
+          "inv"
+        ],
+        [
+          "add_edge",
+          "inv",
+          "investigates",
+          "R"
+        ],
+        [
+          "set_attr",
+          "R",
+          "investigated",
+          {
+            "__term__": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          }
+        ]
+      ]
+    }
+  ]
+}

@@ -1,0 +1,118 @@
+{
+  "id": "serverless_patterns_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "AWS_Lambda",
+  "in_microtheory": "cloud_infrastructure",
+  "description": "Serverless decomposed. Lambda execution model, cold starts, provisioned concurrency, SnapStart, Cloud Run (Knative), edge functions (Workers), Fargate, serverless patterns (fanout, queue-based decoupling).",
+  "sub_mechanisms": [
+    {
+      "name": "Lambda_micro_VM",
+      "definition": "Firecracker microVM per Lambda environment. Shared across invocations until idle.",
+      "why": "Strong isolation (VM boundary). Fast boot (~125ms). Underpins AWS Lambda + Fargate. Open-sourced by AWS.",
+      "category": "serverless_mechanism"
+    },
+    {
+      "name": "Lambda_execution_environment_reuse",
+      "definition": "Container reused across invocations. /tmp + global variables persist.",
+      "why": "Warm invocation amortises init. Use globals for DB connections, cached data. Don't rely on persistence (env may be terminated).",
+      "category": "serverless_mechanism"
+    },
+    {
+      "name": "Lambda_SnapStart",
+      "definition": "Snapshot of post-init JVM state. Restored on cold start instead of fresh boot.",
+      "why": "Java cold starts 500ms-2s reduced to 100ms. Limited to Java currently. Innovative approach to cold start.",
+      "category": "serverless_mechanism"
+    },
+    {
+      "name": "Cloud_Run_container_based",
+      "definition": "Run any HTTP-serving container. Scale 0 to N based on requests. Cold starts ~500ms-2s.",
+      "why": "Container portability + serverless ops. No code changes. More flexible than Lambda. Knative open-source standard.",
+      "category": "serverless_mechanism"
+    },
+    {
+      "name": "Cloud_Run_jobs",
+      "definition": "Run-to-completion containers. Replacement for Cloud Functions for batch.",
+      "why": "Serverless batch. Pay only when running. Use for ETL, scheduled jobs, processing.",
+      "category": "serverless_mechanism"
+    },
+    {
+      "name": "Cloudflare_Workers_isolates",
+      "definition": "V8 isolates (Chrome's JS engine). 100s of isolates per process. Sub-millisecond startup.",
+      "why": "Much lighter than containers/VMs. Trade: no native code, no filesystem, CPU time limited. Designed for edge.",
+      "category": "serverless_mechanism"
+    },
+    {
+      "name": "Workers_KV_storage",
+      "definition": "Eventually-consistent KV store at edge. Reads near-zero latency; writes 60s globally.",
+      "why": "Edge-co-located storage. Foundation for stateful edge logic. Cloudflare model: distinct storage for distinct consistency.",
+      "category": "serverless_mechanism"
+    },
+    {
+      "name": "Durable_Objects",
+      "definition": "Cloudflare: per-key singleton with strong consistency + transactional storage. Each object has location.",
+      "why": "Stateful edge. Strong consistency at cost of locality. Used for sessions, real-time coordination, leader-like patterns.",
+      "category": "serverless_mechanism"
+    },
+    {
+      "name": "Fargate_managed_pods",
+      "definition": "AWS: containers without managing EC2. Per-pod resources, pay per second.",
+      "why": "Bridges EC2 + Lambda. Container portability + serverless ops. Slightly more expensive than EC2 at high utilisation.",
+      "category": "serverless_mechanism"
+    },
+    {
+      "name": "queue_based_serverless_decoupling",
+      "definition": "Producer → queue → Lambda consumer. Spike absorbed by queue.",
+      "why": "Lambda concurrency limits + queue buffering. SQS + Lambda standard pattern. Decouples bursty producers from rate-limited Lambdas.",
+      "category": "serverless_mechanism"
+    },
+    {
+      "name": "fanout_pattern_serverless",
+      "definition": "SNS topic → many SQS queues → many Lambdas. Single event triggers parallel processing.",
+      "why": "Decoupled fanout. Each subscriber processes independently. Failure isolation. Standard event-driven architecture.",
+      "category": "serverless_mechanism"
+    },
+    {
+      "name": "step_functions_orchestration",
+      "definition": "AWS Step Functions: visual workflow. State machine across Lambdas + AWS services.",
+      "why": "Complex serverless workflows. Retries, branching, parallel execution. Distributed map for batch. Alternative to in-Lambda orchestration.",
+      "category": "serverless_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "serverless_amortises_when_traffic_spiky",
+      "if": ["traffic is highly variable"],
+      "then": ["serverless cheaper than provisioned"],
+      "why": "Provisioned: pay for peak even when idle. Serverless: pay per execution. Idle 90% of time = serverless cheaper. Crossover at sustained ~50% utilisation.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "edge_isolates_beat_containers_for_cold_start",
+      "if": ["latency-sensitive global service"],
+      "then": ["V8 isolates (Workers) beat Lambda/Cloud Run cold starts"],
+      "why": "Lambda cold ~125ms; Cloud Run ~500ms+; Workers sub-ms. For interactive UX globally, isolates win. Trade: programming model constraints.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "queue_decouples_serverless_consumer_from_producer",
+      "if": ["bursty producer + rate-limited Lambda consumer"],
+      "then": ["queue buffers spike, smooths consumption"],
+      "why": "Direct: bursts overwhelm Lambda concurrency limit. With queue: burst goes into queue, Lambda processes at sustainable rate. Standard pattern.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "Lambda_payload_limit_forces_S3_handoff",
+      "if": ["payload exceeds 6 MB sync / 256 KB async"],
+      "then": ["S3 + reference required"],
+      "why": "Hard limit. Common pattern: upload to S3 → trigger Lambda with key → Lambda reads. Pre-signed URLs for client direct upload.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "Step_Functions_replaces_complex_in_Lambda_orchestration",
+      "if": ["workflow has > 3 steps + branching + retry"],
+      "then": ["Step Functions cleaner than chained Lambdas"],
+      "why": "In-Lambda orchestration: complex code, retry logic, error handling. Step Functions: declarative state machine, built-in retry, visual debug. Standard at AWS scale.",
+      "soundness_category": "extensional_equivalence"
+    }
+  ]
+}

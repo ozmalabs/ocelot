@@ -1,0 +1,882 @@
+{
+  "id": "snap_frustration",
+  "version": "1.0.0",
+  "depends_on": [
+    "affective_state_core"
+  ],
+  "self_load_only": true,
+  "area": "retina",
+  "description": "FRUSTRATED / ANGRY SNAPPING (block 242000) -- the explosive episode of the developmental-emotion line (Ross Greene's explosive child: 'kids do well if they can'). A 'snap' is an accumulating FRUSTRATION RESIDUAL crossing the window of tolerance's UPPER bound (hi, hyperarousal), riding the REAL affective_state_core AffectiveState.arousal + 239000's WindowOfTolerance node. Three signatures, each a named rule: ABRUPT (all-or-none at threshold -- the last straw), DISPROPORTIONATE (snap MAGNITUDE = the accumulated residual, NOT the immediate trigger -- the trigger looks trivial), DISCHARGING (build->snap->drop->recover). The frustration accumulator is a LEAKY INTEGRATOR whose leak is literal sd_blend (staleness_decay's held-vs-new Kalman blend toward 0 -- the (1-alpha) factor IS the leak, exactly mood_r1's decomposition) and whose drive term integrates each goal-block's magnitude. ANGER vs undirected distress = whether an attributable BLOCKING AGENT is present (blocked_by edge -> abductive attribution -> DIRECTED discharge at it; no blocker -> undirected distress). A regulated caregiver (239000) co-regulates the frustration back down, holding it below the threshold (co-regulation INTERRUPTS the snap). The snap is a STATE with a legible cause -- NO reward/punishment anywhere. self_load_only, default-OFF; NO Rust, NO new Term (Plus/Times/Minus/Attr/Var/Lit/Eq/Gt/Lt/And/Not/Count/Neighbours/add_edge/set_attr all pre-exist).",
+  "microtheory": {
+    "name": "frustration_snap_window_of_tolerance",
+    "description": "Frustration is a leaky accumulator of goal-blocks; when it drives arousal past the window of tolerance's upper bound the agent SNAPS -- abruptly (all-or-none at threshold), disproportionately (magnitude set by the accumulated residual, not the trigger), and with a discharge and recovery. An attributable blocker directs the snap (anger); a regulated caregiver holds arousal below threshold (co-regulation interrupts it). A dysregulation event with a legible cause, never a badness."
+  },
+  "nodes": [],
+  "edges": [],
+  "productions": [
+    {
+      "provenance": "snap_frustration:agent_window",
+      "src": {
+        "type": "Agent",
+        "var": "agent"
+      },
+      "edge_type": "has_window",
+      "tgt": {
+        "type": "WindowOfTolerance",
+        "var": "wot"
+      }
+    },
+    {
+      "provenance": "snap_frustration:agent_goal_block",
+      "src": {
+        "type": "Agent",
+        "var": "agent"
+      },
+      "edge_type": "has_goal_block",
+      "tgt": {
+        "type": "GoalBlock",
+        "var": "gb"
+      }
+    },
+    {
+      "provenance": "snap_frustration:agent_blocked_by",
+      "src": {
+        "type": "Agent",
+        "var": "agent"
+      },
+      "edge_type": "blocked_by",
+      "tgt": {
+        "type": "Agent",
+        "var": "blocker"
+      }
+    },
+    {
+      "provenance": "snap_frustration:agent_attended_by",
+      "src": {
+        "type": "Agent",
+        "var": "agent"
+      },
+      "edge_type": "attended_by",
+      "tgt": {
+        "type": "Agent",
+        "var": "cg"
+      }
+    }
+  ],
+  "rules": [
+    {
+      "name": "snap_goal_block_accumulate",
+      "area": "retina",
+      "order": 2,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "agent",
+          "has_affective_state",
+          "aff"
+        ],
+        [
+          "agent",
+          "has_goal_block",
+          "gb"
+        ]
+      ],
+      "where": {
+        "type": "Eq",
+        "a": {
+          "type": "Attr",
+          "node": {
+            "type": "Var",
+            "name": "gb"
+          },
+          "key": "armed"
+        },
+        "b": {
+          "type": "Lit",
+          "value": 1.0
+        }
+      },
+      "effects": [
+        [
+          "set_attr",
+          "aff",
+          "frustration",
+          {
+            "__term__": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "aff"
+                  },
+                  "key": "frustration"
+                },
+                {
+                  "type": "Times",
+                  "items": [
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "aff"
+                      },
+                      "key": "k_acc"
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "gb"
+                      },
+                      "key": "magnitude"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "aff",
+          "last_trigger_mag",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "gb"
+              },
+              "key": "magnitude"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "gb",
+          "armed",
+          0.0
+        ]
+      ]
+    },
+    {
+      "name": "snap_frustration_leak",
+      "area": "retina",
+      "order": 3,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "agent",
+          "has_affective_state",
+          "aff"
+        ]
+      ],
+      "where": {
+        "type": "Lt",
+        "a": {
+          "type": "Attr",
+          "node": {
+            "type": "Var",
+            "name": "aff"
+          },
+          "key": "leak_epoch"
+        },
+        "b": {
+          "type": "Attr",
+          "node": {
+            "type": "Var",
+            "name": "aff"
+          },
+          "key": "tick_epoch"
+        }
+      },
+      "effects": [
+        [
+          "set_attr",
+          "aff",
+          "frustration",
+          {
+            "__term__": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "aff"
+                  },
+                  "key": "frustration"
+                },
+                {
+                  "type": "Times",
+                  "items": [
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "aff"
+                      },
+                      "key": "leak"
+                    },
+                    {
+                      "type": "Minus",
+                      "a": {
+                        "type": "Lit",
+                        "value": 0.0
+                      },
+                      "b": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "aff"
+                        },
+                        "key": "frustration"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "aff",
+          "leak_epoch",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "aff"
+              },
+              "key": "tick_epoch"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "snap_coreg_pull",
+      "area": "retina",
+      "order": 4,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "agent",
+          "has_affective_state",
+          "aff"
+        ],
+        [
+          "agent",
+          "attended_by",
+          "cg"
+        ],
+        [
+          "cg",
+          "has_affective_state",
+          "caff"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "caff"
+              },
+              "key": "regulated"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "aff"
+              },
+              "key": "cr_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "aff"
+              },
+              "key": "tick_epoch"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "aff",
+          "frustration",
+          {
+            "__term__": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "aff"
+                  },
+                  "key": "frustration"
+                },
+                {
+                  "type": "Times",
+                  "items": [
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "aff"
+                      },
+                      "key": "k_co"
+                    },
+                    {
+                      "type": "Minus",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "caff"
+                        },
+                        "key": "frustration"
+                      },
+                      "b": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "aff"
+                        },
+                        "key": "frustration"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "aff",
+          "cr_epoch",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "aff"
+              },
+              "key": "tick_epoch"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "snap_arousal_track",
+      "area": "retina",
+      "order": 5,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "agent",
+          "has_affective_state",
+          "aff"
+        ]
+      ],
+      "where": {
+        "type": "Not",
+        "arg": {
+          "type": "Eq",
+          "a": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "aff"
+            },
+            "key": "arousal"
+          },
+          "b": {
+            "type": "Plus",
+            "items": [
+              {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "aff"
+                },
+                "key": "setpoint"
+              },
+              {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "aff"
+                },
+                "key": "frustration"
+              }
+            ]
+          }
+        }
+      },
+      "effects": [
+        [
+          "set_attr",
+          "aff",
+          "arousal",
+          {
+            "__term__": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "aff"
+                  },
+                  "key": "setpoint"
+                },
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "aff"
+                  },
+                  "key": "frustration"
+                }
+              ]
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "snap_threshold_fire",
+      "area": "retina",
+      "order": 6,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "agent",
+          "has_affective_state",
+          "aff"
+        ],
+        [
+          "agent",
+          "has_window",
+          "wot"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "aff"
+              },
+              "key": "in_snap"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0.0
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "aff"
+              },
+              "key": "arousal"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "wot"
+              },
+              "key": "hi"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "aff",
+          "snapped",
+          1.0
+        ],
+        [
+          "set_attr",
+          "aff",
+          "in_snap",
+          1.0
+        ],
+        [
+          "set_attr",
+          "aff",
+          "snap_magnitude",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "aff"
+              },
+              "key": "frustration"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "aff",
+          "snap_count",
+          {
+            "__term__": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "aff"
+                  },
+                  "key": "snap_count"
+                },
+                {
+                  "type": "Lit",
+                  "value": 1.0
+                }
+              ]
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "snap_attribution_directed",
+      "area": "retina",
+      "order": 7,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "agent",
+          "has_affective_state",
+          "aff"
+        ],
+        [
+          "agent",
+          "blocked_by",
+          "blocker"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "aff"
+              },
+              "key": "snapped"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "aff"
+              },
+              "key": "snap_directed"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0.0
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "aff",
+          "snap_directed",
+          1.0
+        ],
+        [
+          "add_edge",
+          "agent",
+          "directed_at",
+          "blocker"
+        ]
+      ]
+    },
+    {
+      "name": "snap_attribution_undirected",
+      "area": "retina",
+      "order": 7,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "agent",
+          "has_affective_state",
+          "aff"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "aff"
+              },
+              "key": "snapped"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "And",
+            "items": [
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "aff"
+                  },
+                  "key": "snap_undirected"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 0.0
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Count",
+                  "source": {
+                    "type": "Neighbours",
+                    "node": {
+                      "type": "Var",
+                      "name": "agent"
+                    },
+                    "edge_type": "blocked_by",
+                    "any_type": false
+                  }
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 0.0
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "aff",
+          "snap_undirected",
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "snap_discharge",
+      "area": "retina",
+      "order": 8,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "agent",
+          "has_affective_state",
+          "aff"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "aff"
+              },
+              "key": "in_snap"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "aff"
+              },
+              "key": "snapped"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "aff",
+          "frustration",
+          {
+            "__term__": {
+              "type": "Times",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "aff"
+                  },
+                  "key": "frustration"
+                },
+                {
+                  "type": "Minus",
+                  "a": {
+                    "type": "Lit",
+                    "value": 1.0
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "aff"
+                    },
+                    "key": "discharge"
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "aff",
+          "snapped",
+          0.0
+        ]
+      ]
+    },
+    {
+      "name": "snap_recover",
+      "area": "retina",
+      "order": 9,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "agent",
+          "has_affective_state",
+          "aff"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "aff"
+              },
+              "key": "in_snap"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Gt",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "aff"
+                },
+                "key": "frustration"
+              },
+              "b": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "aff"
+                },
+                "key": "recover_floor"
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "aff",
+          "in_snap",
+          0.0
+        ]
+      ]
+    }
+  ]
+}

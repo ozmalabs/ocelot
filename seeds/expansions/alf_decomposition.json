@@ -1,0 +1,99 @@
+{
+  "id": "alf_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "adaptive_loop_filter",
+  "in_microtheory": "video_coding_theory",
+  "description": "VVC's Adaptive Loop Filter (ALF) decomposed. ALF is a content-adapted Wiener filter that replaces HEVC's SAO. Each CTU's samples are classified into one of 25 categories based on local activity and direction; each category gets its own diamond-shaped FIR filter with coefficients signalled by the encoder. The filter is in-loop, applied AFTER deblocking. Cross-component ALF (CC-ALF) additionally uses luma to enhance chroma.",
+  "sub_mechanisms": [
+    {
+      "name": "diamond_filter_shape",
+      "definition": "Three supported shapes — 5x5, 7x7, 9x9 diamonds (so 9, 13, 21 taps respectively, centered on the target sample). The shape is selected per CTU.",
+      "why": "Diamond shape (vs square) gives directional reach with fewer taps — 21 taps for a 9-tap radius vs 81 for a 9x9 square. The radii cover the typical correlation length of compression noise without paying for irrelevant corner taps.",
+      "category": "alf_mechanism"
+    },
+    {
+      "name": "block_classification",
+      "definition": "Each 4x4 block is classified into one of 25 categories based on 5 directional activity bins (horizontal, vertical, two diagonals, isotropic) crossed with 5 activity-strength bins (computed from gradient sums).",
+      "why": "Different categories of local structure benefit from different filters. Flat regions want low-pass; edges want directional preservation; texture wants minimal filtering. 25 classes is the empirical sweet spot — finer doesn't help, coarser loses adaptivity.",
+      "category": "alf_mechanism"
+    },
+    {
+      "name": "gradient_based_direction",
+      "definition": "Direction classification computes horizontal, vertical, and two diagonal gradient sums over each 4x4 block; the largest determines the direction class.",
+      "why": "Gradient-based direction is fast and robust. Captures the dominant local structure without needing edge detection. Same computation could be reused for other tools but is currently ALF-specific in VVC.",
+      "category": "alf_mechanism"
+    },
+    {
+      "name": "activity_based_strength",
+      "definition": "Activity strength uses the sum of all gradient magnitudes; quantised into 5 bins (low → high activity).",
+      "why": "High-activity regions (textured) tolerate less filtering than low-activity (flat). Strength-classification lets each direction's filter be applied with different aggressiveness.",
+      "category": "alf_mechanism"
+    },
+    {
+      "name": "coefficient_signalling_APS",
+      "definition": "Filter coefficients are signalled in Adaptation Parameter Sets (APS). Each APS can carry multiple filter sets; a CTU can reference an APS by ID + select one filter set within it.",
+      "why": "APS-based signalling lets the encoder pre-define multiple filter sets at the slice header (cheap), then per-CTU select which one to use (very cheap). Decouples coefficient signalling cost from per-CTU filter selection cost.",
+      "category": "alf_mechanism"
+    },
+    {
+      "name": "filter_coefficient_inheritance",
+      "definition": "Each CTU's filter selection can inherit coefficients from the APS or from prior CTUs' filters; only the SELECTION needs signalling, not the coefficients each time.",
+      "why": "Coefficients are expensive to signal (16-21 of them per filter). Inheriting from a smaller set + selecting by index drops the per-CTU cost from ~100 bits to ~4 bits. The compression cost difference is significant across millions of CTUs.",
+      "category": "alf_mechanism"
+    },
+    {
+      "name": "cross_component_alf",
+      "definition": "CC-ALF: an additional ALF stage where chroma samples are filtered using LUMA neighbourhood samples as input. A small 8-tap filter is applied.",
+      "why": "Chroma edges tend to align with luma edges (cross-component correlation in YCbCr). Using luma as input lets the chroma filter recover edge sharpness that intra-channel filtering can't. Cheap addition that gives ~0.5% bitrate saving on chroma.",
+      "category": "alf_mechanism"
+    },
+    {
+      "name": "alf_enable_disable_per_CTU",
+      "definition": "A 1-bit flag per CTU enables or disables ALF for that CTU. Encoder picks via R-D cost (some CTUs are better off without ALF).",
+      "why": "Some content actively suffers from ALF (sharp screen content, very low QP clean encodes). Per-CTU disable lets the encoder skip the filter where it'd cause harm, at minimal signalling cost.",
+      "category": "alf_mechanism"
+    },
+    {
+      "name": "luma_chroma_separate_filters",
+      "definition": "Luma and chroma have entirely separate ALF systems (different coefficient sets, different shapes, different classification).",
+      "why": "Luma and chroma have very different statistics (luma is high-detail, chroma is low-frequency in 4:2:0). One-size-fits-all filters would be sub-optimal for both. Separate systems let each be tuned to its channel.",
+      "category": "alf_mechanism"
+    },
+    {
+      "name": "fixed_filter_fallback",
+      "definition": "If no APS-signalled filter is suitable, ALF can fall back to one of 16 pre-defined fixed filters (built into the standard).",
+      "why": "Sometimes the encoder can't justify the signalling cost of a custom filter set but still wants ALF. Fixed filters give a baseline at zero per-CTU coefficient cost — a free option that captures ~half the gain of a fully-custom filter.",
+      "category": "alf_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "content_classification_enables_per_block_adaptation",
+      "if": ["each block is classified by local activity + direction"],
+      "then": ["the filter applied is the best one for that block's category"],
+      "why": "ALF's gain over a uniform filter is exactly the gain from adaptation. 25 classes is enough to capture the major content variations within typical frames; finer classification helps marginally at higher signalling cost.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "wiener_filter_minimises_squared_error",
+      "if": ["filter coefficients are derived by solving Wiener-Hopf equations"],
+      "then": ["the filter is optimal (in MSE sense) for the given input statistics"],
+      "why": "Wiener filtering is the closed-form optimal linear filter for noise removal under MSE. ALF coefficients are essentially Wiener filters fit to the local autocorrelation. Optimal in theory, near-optimal in practice given finite signalling precision.",
+      "soundness_category": "algebraic_law"
+    },
+    {
+      "name": "aps_signalling_decouples_definition_from_selection",
+      "if": ["filter sets are pre-defined in APS"],
+      "then": ["per-CTU bit cost is selection-only, not coefficient-redefinition"],
+      "why": "APS pays the cost ONCE per slice; per-CTU just references an APS by ID + filter index. Splits a 100-bit-per-CTU cost into a ~100-bit-per-slice + ~4-bit-per-CTU cost, dramatically reducing total signalling.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "cross_component_filtering_exploits_yuv_correlation",
+      "if": ["chroma is filtered using luma neighbourhood input"],
+      "then": ["chroma edges align with luma edges, gaining sharpness"],
+      "why": "YCbCr's luma and chroma channels are correlated at edge boundaries. A linear model on luma input can predict chroma edge structure that pure intra-chroma filtering misses. Same insight as CCLM in intra prediction, applied to in-loop filtering.",
+      "soundness_category": "denotational_equivalence"
+    }
+  ]
+}

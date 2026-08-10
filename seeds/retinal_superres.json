@@ -1,0 +1,96 @@
+{
+ "id": "retinal_superres",
+ "version": "1.0.0",
+ "self_load_only": true,
+ "depends_on": [],
+ "area": "retina",
+ "description": "Multi-look de-aliasing super-resolution from TWO offset eyes (Rung 5 of the photon-eye migration). Two low-resolution eyes offset by a KNOWN sub-receptor amount sample ONE flat textured surface; their offset samples interleave at sub-receptor lattice positions, carrying the phase that de-aliases spatial frequencies above either eye's receptor-Nyquist that NEITHER can represent alone (Tsai-Huang microscanning; NOT stereo). The multilook_superres Rust task kind reconstructs the underlying field by band-limited least squares from samples at known nonuniform positions, through one fixed operator; a small ridge damps modes the samples do not constrain, so a genuine sub-receptor OFFSET (interleaved positions -> full-rank high harmonics) recovers detail while a ZERO offset (coincident positions -> rank-deficient) shows NO gain -- the offset is load-bearing through conditioning. This rule mints a SuperResolvedField carrying the reconstruction array. OFF by default: the rule cannot fire unless a SuperresParams node exists (created by the adapter only when the world opts in), and the adapter creates the fusion task only then. Same kernel serves the async two-clock TEMPORAL super-resolution win when positions are TIMES (space-offset == time-offset).",
+ "microtheory": {
+  "name": "retinal_superres",
+  "description": "band-limited least-squares fusion of two offset eyes' samples -> de-aliased super-resolved field"
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [
+  {
+   "provenance": "seed:retinal_superres:retina-superres-params",
+   "src": {"type": "Retina", "var": "retina"},
+   "edge_type": "has_superres_params",
+   "tgt": {"type": "SuperresParams", "var": "params"}
+  },
+  {
+   "provenance": "seed:retinal_superres:retina-superres-task",
+   "src": {"type": "Retina", "var": "retina"},
+   "edge_type": "has_superres_task",
+   "tgt": {"type": "CognitiveTask", "var": "task"}
+  },
+  {
+   "provenance": "seed:retinal_superres:retina-superres-field",
+   "src": {"type": "Retina", "var": "retina"},
+   "edge_type": "has_superres_field",
+   "tgt": {"type": "SuperResolvedField", "var": "field"}
+  }
+ ],
+ "rules": [
+  {
+   "name": "retinal_mint_superres",
+   "area": "retina",
+   "order": 3,
+   "latency_class": "hard_realtime",
+   "match": [
+    ["retina", "has_superres_params", "params"],
+    ["retina", "has_superres_task", "task"]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "params"}, "key": "enabled"},
+      "b": {"type": "Lit", "value": 1.0}
+     },
+     {
+      "type": "Eq",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "task"}, "key": "kind"},
+      "b": {"type": "Lit", "value": "multilook_superres"}
+     },
+     {
+      "type": "Eq",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "task"}, "key": "status"},
+      "b": {"type": "Lit", "value": "done"}
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {"type": "Attr", "node": {"type": "Var", "name": "task"}, "key": "superres_seen"},
+       "b": {"type": "Lit", "value": 1.0}
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node", "field", "SuperResolvedField",
+     {
+      "reconstruction": {
+       "__term__": {"type": "Attr", "node": {"type": "Var", "name": "task"}, "key": "output"}
+      },
+      "n_fine": {
+       "__term__": {
+        "type": "IndexAt",
+        "seq": {"type": "Attr", "node": {"type": "Var", "name": "task"}, "key": "output"},
+        "index": {"type": "Lit", "value": 0}
+       }
+      },
+      "epoch": {
+       "__term__": {"type": "Attr", "node": {"type": "Var", "name": "task"}, "key": "input_epoch"}
+      }
+     }
+    ],
+    ["add_edge", "retina", "has_superres_field", "field"],
+    ["set_attr", "task", "superres_seen", 1.0]
+   ]
+  }
+ ]
+}

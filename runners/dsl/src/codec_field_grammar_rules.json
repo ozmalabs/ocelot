@@ -1,0 +1,4072 @@
+[
+  {
+    "name": "decode_ue",
+    "match": [
+      [
+        "state",
+        "current",
+        "field"
+      ],
+      [
+        "state",
+        "buffer",
+        "buf"
+      ],
+      [
+        "field",
+        "next",
+        "nxt"
+      ]
+    ],
+    "where": {
+      "type": "And",
+      "items": [
+        {
+          "type": "Eq",
+          "a": {
+            "type": "TypeOf",
+            "node": {
+              "type": "Var",
+              "name": "state"
+            }
+          },
+          "b": {
+            "type": "Lit",
+            "value": "DecodeState"
+          }
+        },
+        {
+          "type": "Eq",
+          "a": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "field"
+            },
+            "key": "kind"
+          },
+          "b": {
+            "type": "Lit",
+            "value": "ue"
+          }
+        },
+        {
+          "type": "Or",
+          "items": [
+            {
+              "type": "Not",
+              "arg": {
+                "type": "Exists",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {
+                    "type": "Var",
+                    "name": "field"
+                  },
+                  "edge_type": "cond_group"
+                },
+                "var_name": "_g",
+                "predicate": {
+                  "type": "Lit",
+                  "value": true
+                }
+              }
+            },
+            {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "field"
+                },
+                "edge_type": "cond_group"
+              },
+              "var_name": "g",
+              "predicate": {
+                "type": "Not",
+                "arg": {
+                  "type": "Exists",
+                  "source": {
+                    "type": "Neighbours",
+                    "node": {
+                      "type": "Var",
+                      "name": "g"
+                    },
+                    "edge_type": "member"
+                  },
+                  "var_name": "m",
+                  "predicate": {
+                    "type": "Not",
+                    "arg": {
+                      "type": "Exists",
+                      "source": {
+                        "type": "Neighbours",
+                        "node": {
+                          "type": "Var",
+                          "name": "state"
+                        },
+                        "edge_type": "decoded"
+                      },
+                      "var_name": "cv",
+                      "predicate": {
+                        "type": "And",
+                        "items": [
+                          {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "cv"
+                              },
+                              "key": "name"
+                            },
+                            "b": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "m"
+                              },
+                              "key": "name"
+                            }
+                          },
+                          {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "cv"
+                              },
+                              "key": "val"
+                            },
+                            "b": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "m"
+                              },
+                              "key": "val"
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "effects": [
+      [
+        "add_node",
+        "v",
+        "Value",
+        {
+          "name": {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "field"
+              },
+              "key": "name"
+            }
+          },
+          "val": {
+            "__term__": {
+              "type": "Nth",
+              "items": {
+                "type": "ExpGolombDecode",
+                "buffer": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "buf"
+                  },
+                  "key": "bytes"
+                },
+                "bitpos": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "state"
+                  },
+                  "key": "bp"
+                }
+              },
+              "index": 0
+            }
+          }
+        }
+      ],
+      [
+        "add_edge",
+        "state",
+        "decoded",
+        "v"
+      ],
+      [
+        "set_attr",
+        "state",
+        "bp",
+        {
+          "__term__": {
+            "type": "Nth",
+            "items": {
+              "type": "ExpGolombDecode",
+              "buffer": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "buf"
+                },
+                "key": "bytes"
+              },
+              "bitpos": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "state"
+                },
+                "key": "bp"
+              }
+            },
+            "index": 1
+          }
+        }
+      ],
+      [
+        "del_edge",
+        "state",
+        "current",
+        "field"
+      ],
+      [
+        "add_edge",
+        "state",
+        "current",
+        "nxt"
+      ]
+    ]
+  },
+  {
+    "name": "decode_se",
+    "match": [
+      [
+        "state",
+        "current",
+        "field"
+      ],
+      [
+        "state",
+        "buffer",
+        "buf"
+      ],
+      [
+        "field",
+        "next",
+        "nxt"
+      ]
+    ],
+    "where": {
+      "type": "And",
+      "items": [
+        {
+          "type": "Eq",
+          "a": {
+            "type": "TypeOf",
+            "node": {
+              "type": "Var",
+              "name": "state"
+            }
+          },
+          "b": {
+            "type": "Lit",
+            "value": "DecodeState"
+          }
+        },
+        {
+          "type": "Eq",
+          "a": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "field"
+            },
+            "key": "kind"
+          },
+          "b": {
+            "type": "Lit",
+            "value": "se"
+          }
+        },
+        {
+          "type": "Or",
+          "items": [
+            {
+              "type": "Not",
+              "arg": {
+                "type": "Exists",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {
+                    "type": "Var",
+                    "name": "field"
+                  },
+                  "edge_type": "cond_group"
+                },
+                "var_name": "_g",
+                "predicate": {
+                  "type": "Lit",
+                  "value": true
+                }
+              }
+            },
+            {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "field"
+                },
+                "edge_type": "cond_group"
+              },
+              "var_name": "g",
+              "predicate": {
+                "type": "Not",
+                "arg": {
+                  "type": "Exists",
+                  "source": {
+                    "type": "Neighbours",
+                    "node": {
+                      "type": "Var",
+                      "name": "g"
+                    },
+                    "edge_type": "member"
+                  },
+                  "var_name": "m",
+                  "predicate": {
+                    "type": "Not",
+                    "arg": {
+                      "type": "Exists",
+                      "source": {
+                        "type": "Neighbours",
+                        "node": {
+                          "type": "Var",
+                          "name": "state"
+                        },
+                        "edge_type": "decoded"
+                      },
+                      "var_name": "cv",
+                      "predicate": {
+                        "type": "And",
+                        "items": [
+                          {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "cv"
+                              },
+                              "key": "name"
+                            },
+                            "b": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "m"
+                              },
+                              "key": "name"
+                            }
+                          },
+                          {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "cv"
+                              },
+                              "key": "val"
+                            },
+                            "b": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "m"
+                              },
+                              "key": "val"
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "effects": [
+      [
+        "add_node",
+        "v",
+        "Value",
+        {
+          "name": {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "field"
+              },
+              "key": "name"
+            }
+          },
+          "val": {
+            "__term__": {
+              "type": "Nth",
+              "items": {
+                "type": "ExpGolombDecodeSigned",
+                "buffer": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "buf"
+                  },
+                  "key": "bytes"
+                },
+                "bitpos": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "state"
+                  },
+                  "key": "bp"
+                }
+              },
+              "index": 0
+            }
+          }
+        }
+      ],
+      [
+        "add_edge",
+        "state",
+        "decoded",
+        "v"
+      ],
+      [
+        "set_attr",
+        "state",
+        "bp",
+        {
+          "__term__": {
+            "type": "Nth",
+            "items": {
+              "type": "ExpGolombDecodeSigned",
+              "buffer": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "buf"
+                },
+                "key": "bytes"
+              },
+              "bitpos": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "state"
+                },
+                "key": "bp"
+              }
+            },
+            "index": 1
+          }
+        }
+      ],
+      [
+        "del_edge",
+        "state",
+        "current",
+        "field"
+      ],
+      [
+        "add_edge",
+        "state",
+        "current",
+        "nxt"
+      ]
+    ]
+  },
+  {
+    "name": "decode_u",
+    "match": [
+      [
+        "state",
+        "current",
+        "field"
+      ],
+      [
+        "state",
+        "buffer",
+        "buf"
+      ],
+      [
+        "field",
+        "next",
+        "nxt"
+      ]
+    ],
+    "where": {
+      "type": "And",
+      "items": [
+        {
+          "type": "Eq",
+          "a": {
+            "type": "TypeOf",
+            "node": {
+              "type": "Var",
+              "name": "state"
+            }
+          },
+          "b": {
+            "type": "Lit",
+            "value": "DecodeState"
+          }
+        },
+        {
+          "type": "Eq",
+          "a": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "field"
+            },
+            "key": "kind"
+          },
+          "b": {
+            "type": "Lit",
+            "value": "u"
+          }
+        },
+        {
+          "type": "Or",
+          "items": [
+            {
+              "type": "Not",
+              "arg": {
+                "type": "Exists",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {
+                    "type": "Var",
+                    "name": "field"
+                  },
+                  "edge_type": "cond_group"
+                },
+                "var_name": "_g",
+                "predicate": {
+                  "type": "Lit",
+                  "value": true
+                }
+              }
+            },
+            {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "field"
+                },
+                "edge_type": "cond_group"
+              },
+              "var_name": "g",
+              "predicate": {
+                "type": "Not",
+                "arg": {
+                  "type": "Exists",
+                  "source": {
+                    "type": "Neighbours",
+                    "node": {
+                      "type": "Var",
+                      "name": "g"
+                    },
+                    "edge_type": "member"
+                  },
+                  "var_name": "m",
+                  "predicate": {
+                    "type": "Not",
+                    "arg": {
+                      "type": "Exists",
+                      "source": {
+                        "type": "Neighbours",
+                        "node": {
+                          "type": "Var",
+                          "name": "state"
+                        },
+                        "edge_type": "decoded"
+                      },
+                      "var_name": "cv",
+                      "predicate": {
+                        "type": "And",
+                        "items": [
+                          {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "cv"
+                              },
+                              "key": "name"
+                            },
+                            "b": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "m"
+                              },
+                              "key": "name"
+                            }
+                          },
+                          {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "cv"
+                              },
+                              "key": "val"
+                            },
+                            "b": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "m"
+                              },
+                              "key": "val"
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "effects": [
+      [
+        "add_node",
+        "v",
+        "Value",
+        {
+          "name": {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "field"
+              },
+              "key": "name"
+            }
+          },
+          "val": {
+            "__term__": {
+              "type": "BitsAt",
+              "buffer": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "buf"
+                },
+                "key": "bytes"
+              },
+              "bitpos": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "state"
+                },
+                "key": "bp"
+              },
+              "n_bits": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "field"
+                },
+                "key": "nbits"
+              }
+            }
+          }
+        }
+      ],
+      [
+        "add_edge",
+        "state",
+        "decoded",
+        "v"
+      ],
+      [
+        "set_attr",
+        "state",
+        "bp",
+        {
+          "__term__": {
+            "type": "Plus",
+            "items": [
+              {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "state"
+                },
+                "key": "bp"
+              },
+              {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "field"
+                },
+                "key": "nbits"
+              }
+            ]
+          }
+        }
+      ],
+      [
+        "del_edge",
+        "state",
+        "current",
+        "field"
+      ],
+      [
+        "add_edge",
+        "state",
+        "current",
+        "nxt"
+      ]
+    ]
+  },
+  {
+    "name": "decode_skip",
+    "match": [
+      [
+        "state",
+        "current",
+        "field"
+      ],
+      [
+        "state",
+        "buffer",
+        "buf"
+      ],
+      [
+        "field",
+        "next",
+        "nxt"
+      ]
+    ],
+    "where": {
+      "type": "And",
+      "items": [
+        {
+          "type": "Eq",
+          "a": {
+            "type": "TypeOf",
+            "node": {
+              "type": "Var",
+              "name": "state"
+            }
+          },
+          "b": {
+            "type": "Lit",
+            "value": "DecodeState"
+          }
+        },
+        {
+          "type": "And",
+          "items": [
+            {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "field"
+                },
+                "edge_type": "cond_group"
+              },
+              "var_name": "_g",
+              "predicate": {
+                "type": "Lit",
+                "value": true
+              }
+            },
+            {
+              "type": "Not",
+              "arg": {
+                "type": "Or",
+                "items": [
+                  {
+                    "type": "Not",
+                    "arg": {
+                      "type": "Exists",
+                      "source": {
+                        "type": "Neighbours",
+                        "node": {
+                          "type": "Var",
+                          "name": "field"
+                        },
+                        "edge_type": "cond_group"
+                      },
+                      "var_name": "_g",
+                      "predicate": {
+                        "type": "Lit",
+                        "value": true
+                      }
+                    }
+                  },
+                  {
+                    "type": "Exists",
+                    "source": {
+                      "type": "Neighbours",
+                      "node": {
+                        "type": "Var",
+                        "name": "field"
+                      },
+                      "edge_type": "cond_group"
+                    },
+                    "var_name": "g",
+                    "predicate": {
+                      "type": "Not",
+                      "arg": {
+                        "type": "Exists",
+                        "source": {
+                          "type": "Neighbours",
+                          "node": {
+                            "type": "Var",
+                            "name": "g"
+                          },
+                          "edge_type": "member"
+                        },
+                        "var_name": "m",
+                        "predicate": {
+                          "type": "Not",
+                          "arg": {
+                            "type": "Exists",
+                            "source": {
+                              "type": "Neighbours",
+                              "node": {
+                                "type": "Var",
+                                "name": "state"
+                              },
+                              "edge_type": "decoded"
+                            },
+                            "var_name": "cv",
+                            "predicate": {
+                              "type": "And",
+                              "items": [
+                                {
+                                  "type": "Eq",
+                                  "a": {
+                                    "type": "Attr",
+                                    "node": {
+                                      "type": "Var",
+                                      "name": "cv"
+                                    },
+                                    "key": "name"
+                                  },
+                                  "b": {
+                                    "type": "Attr",
+                                    "node": {
+                                      "type": "Var",
+                                      "name": "m"
+                                    },
+                                    "key": "name"
+                                  }
+                                },
+                                {
+                                  "type": "Eq",
+                                  "a": {
+                                    "type": "Attr",
+                                    "node": {
+                                      "type": "Var",
+                                      "name": "cv"
+                                    },
+                                    "key": "val"
+                                  },
+                                  "b": {
+                                    "type": "Attr",
+                                    "node": {
+                                      "type": "Var",
+                                      "name": "m"
+                                    },
+                                    "key": "val"
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "effects": [
+      [
+        "del_edge",
+        "state",
+        "current",
+        "field"
+      ],
+      [
+        "add_edge",
+        "state",
+        "current",
+        "nxt"
+      ]
+    ]
+  },
+  {
+    "name": "loop_init",
+    "match": [
+      [
+        "state",
+        "current",
+        "loop"
+      ],
+      [
+        "state",
+        "buffer",
+        "buf"
+      ],
+      [
+        "state",
+        "decoded",
+        "count_v"
+      ]
+    ],
+    "where": {
+      "type": "And",
+      "items": [
+        {
+          "type": "Eq",
+          "a": {
+            "type": "TypeOf",
+            "node": {
+              "type": "Var",
+              "name": "state"
+            }
+          },
+          "b": {
+            "type": "Lit",
+            "value": "DecodeState"
+          }
+        },
+        {
+          "type": "Eq",
+          "a": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "loop"
+            },
+            "key": "kind"
+          },
+          "b": {
+            "type": "Lit",
+            "value": "loop"
+          }
+        },
+        {
+          "type": "Eq",
+          "a": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "count_v"
+            },
+            "key": "name"
+          },
+          "b": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "loop"
+            },
+            "key": "count_name"
+          }
+        },
+        {
+          "type": "Not",
+          "arg": {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "loop"
+              },
+              "key": "count_name"
+            },
+            "b": {
+              "type": "Lit",
+              "value": null
+            }
+          }
+        },
+        {
+          "type": "Not",
+          "arg": {
+            "type": "Exists",
+            "source": {
+              "type": "Neighbours",
+              "node": {
+                "type": "Var",
+                "name": "state"
+              },
+              "edge_type": "loop_state"
+            },
+            "var_name": "ls",
+            "predicate": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "ls"
+                },
+                "edge_type": "loop"
+              },
+              "var_name": "lr",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Var",
+                  "name": "lr"
+                },
+                "b": {
+                  "type": "Var",
+                  "name": "loop"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "effects": [
+      [
+        "add_node",
+        "ls",
+        "LoopState",
+        {
+          "i": {
+            "__term__": {
+              "type": "Lit",
+              "value": 0
+            }
+          },
+          "count": {
+            "__term__": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "count_v"
+                  },
+                  "key": "val"
+                },
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "loop"
+                  },
+                  "key": "count_offset"
+                }
+              ]
+            }
+          }
+        }
+      ],
+      [
+        "add_edge",
+        "state",
+        "loop_state",
+        "ls"
+      ],
+      [
+        "add_edge",
+        "ls",
+        "loop",
+        "loop"
+      ]
+    ]
+  },
+  {
+    "name": "loop_init_literal",
+    "match": [
+      [
+        "state",
+        "current",
+        "loop"
+      ],
+      [
+        "state",
+        "buffer",
+        "buf"
+      ]
+    ],
+    "where": {
+      "type": "And",
+      "items": [
+        {
+          "type": "Eq",
+          "a": {
+            "type": "TypeOf",
+            "node": {
+              "type": "Var",
+              "name": "state"
+            }
+          },
+          "b": {
+            "type": "Lit",
+            "value": "DecodeState"
+          }
+        },
+        {
+          "type": "Eq",
+          "a": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "loop"
+            },
+            "key": "kind"
+          },
+          "b": {
+            "type": "Lit",
+            "value": "loop"
+          }
+        },
+        {
+          "type": "Not",
+          "arg": {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "loop"
+              },
+              "key": "count_literal"
+            },
+            "b": {
+              "type": "Lit",
+              "value": null
+            }
+          }
+        },
+        {
+          "type": "Not",
+          "arg": {
+            "type": "Exists",
+            "source": {
+              "type": "Neighbours",
+              "node": {
+                "type": "Var",
+                "name": "state"
+              },
+              "edge_type": "loop_state"
+            },
+            "var_name": "ls",
+            "predicate": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "ls"
+                },
+                "edge_type": "loop"
+              },
+              "var_name": "lr",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Var",
+                  "name": "lr"
+                },
+                "b": {
+                  "type": "Var",
+                  "name": "loop"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "effects": [
+      [
+        "add_node",
+        "ls",
+        "LoopState",
+        {
+          "i": {
+            "__term__": {
+              "type": "Lit",
+              "value": 0
+            }
+          },
+          "count": {
+            "__term__": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "loop"
+                  },
+                  "key": "count_literal"
+                },
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "loop"
+                  },
+                  "key": "count_offset"
+                }
+              ]
+            }
+          }
+        }
+      ],
+      [
+        "add_edge",
+        "state",
+        "loop_state",
+        "ls"
+      ],
+      [
+        "add_edge",
+        "ls",
+        "loop",
+        "loop"
+      ]
+    ]
+  },
+  {
+    "name": "loop_iter_ue",
+    "match": [
+      [
+        "state",
+        "current",
+        "loop"
+      ],
+      [
+        "state",
+        "buffer",
+        "buf"
+      ],
+      [
+        "state",
+        "loop_state",
+        "ls"
+      ],
+      [
+        "ls",
+        "loop",
+        "loop"
+      ]
+    ],
+    "where": {
+      "type": "And",
+      "items": [
+        {
+          "type": "Eq",
+          "a": {
+            "type": "TypeOf",
+            "node": {
+              "type": "Var",
+              "name": "state"
+            }
+          },
+          "b": {
+            "type": "Lit",
+            "value": "DecodeState"
+          }
+        },
+        {
+          "type": "Eq",
+          "a": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "loop"
+            },
+            "key": "kind"
+          },
+          "b": {
+            "type": "Lit",
+            "value": "loop"
+          }
+        },
+        {
+          "type": "Eq",
+          "a": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "loop"
+            },
+            "key": "body_kind"
+          },
+          "b": {
+            "type": "Lit",
+            "value": "ue"
+          }
+        },
+        {
+          "type": "Lt",
+          "a": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "ls"
+            },
+            "key": "i"
+          },
+          "b": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "ls"
+            },
+            "key": "count"
+          }
+        }
+      ]
+    },
+    "effects": [
+      [
+        "add_node",
+        "v",
+        "Value",
+        {
+          "name": {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "loop"
+              },
+              "key": "name"
+            }
+          },
+          "val": {
+            "__term__": {
+              "type": "Nth",
+              "items": {
+                "type": "ExpGolombDecode",
+                "buffer": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "buf"
+                  },
+                  "key": "bytes"
+                },
+                "bitpos": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "state"
+                  },
+                  "key": "bp"
+                }
+              },
+              "index": 0
+            }
+          },
+          "index": {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ls"
+              },
+              "key": "i"
+            }
+          }
+        }
+      ],
+      [
+        "add_edge",
+        "state",
+        "decoded",
+        "v"
+      ],
+      [
+        "set_attr",
+        "state",
+        "bp",
+        {
+          "__term__": {
+            "type": "Nth",
+            "items": {
+              "type": "ExpGolombDecode",
+              "buffer": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "buf"
+                },
+                "key": "bytes"
+              },
+              "bitpos": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "state"
+                },
+                "key": "bp"
+              }
+            },
+            "index": 1
+          }
+        }
+      ],
+      [
+        "set_attr",
+        "ls",
+        "i",
+        {
+          "__term__": {
+            "type": "Plus",
+            "items": [
+              {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ls"
+                },
+                "key": "i"
+              },
+              {
+                "type": "Lit",
+                "value": 1
+              }
+            ]
+          }
+        }
+      ]
+    ]
+  },
+  {
+    "name": "loop_iter_se",
+    "match": [
+      [
+        "state",
+        "current",
+        "loop"
+      ],
+      [
+        "state",
+        "buffer",
+        "buf"
+      ],
+      [
+        "state",
+        "loop_state",
+        "ls"
+      ],
+      [
+        "ls",
+        "loop",
+        "loop"
+      ]
+    ],
+    "where": {
+      "type": "And",
+      "items": [
+        {
+          "type": "Eq",
+          "a": {
+            "type": "TypeOf",
+            "node": {
+              "type": "Var",
+              "name": "state"
+            }
+          },
+          "b": {
+            "type": "Lit",
+            "value": "DecodeState"
+          }
+        },
+        {
+          "type": "Eq",
+          "a": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "loop"
+            },
+            "key": "kind"
+          },
+          "b": {
+            "type": "Lit",
+            "value": "loop"
+          }
+        },
+        {
+          "type": "Eq",
+          "a": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "loop"
+            },
+            "key": "body_kind"
+          },
+          "b": {
+            "type": "Lit",
+            "value": "se"
+          }
+        },
+        {
+          "type": "Lt",
+          "a": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "ls"
+            },
+            "key": "i"
+          },
+          "b": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "ls"
+            },
+            "key": "count"
+          }
+        }
+      ]
+    },
+    "effects": [
+      [
+        "add_node",
+        "v",
+        "Value",
+        {
+          "name": {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "loop"
+              },
+              "key": "name"
+            }
+          },
+          "val": {
+            "__term__": {
+              "type": "Nth",
+              "items": {
+                "type": "ExpGolombDecodeSigned",
+                "buffer": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "buf"
+                  },
+                  "key": "bytes"
+                },
+                "bitpos": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "state"
+                  },
+                  "key": "bp"
+                }
+              },
+              "index": 0
+            }
+          },
+          "index": {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ls"
+              },
+              "key": "i"
+            }
+          }
+        }
+      ],
+      [
+        "add_edge",
+        "state",
+        "decoded",
+        "v"
+      ],
+      [
+        "set_attr",
+        "state",
+        "bp",
+        {
+          "__term__": {
+            "type": "Nth",
+            "items": {
+              "type": "ExpGolombDecodeSigned",
+              "buffer": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "buf"
+                },
+                "key": "bytes"
+              },
+              "bitpos": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "state"
+                },
+                "key": "bp"
+              }
+            },
+            "index": 1
+          }
+        }
+      ],
+      [
+        "set_attr",
+        "ls",
+        "i",
+        {
+          "__term__": {
+            "type": "Plus",
+            "items": [
+              {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ls"
+                },
+                "key": "i"
+              },
+              {
+                "type": "Lit",
+                "value": 1
+              }
+            ]
+          }
+        }
+      ]
+    ]
+  },
+  {
+    "name": "loop_iter_u",
+    "match": [
+      [
+        "state",
+        "current",
+        "loop"
+      ],
+      [
+        "state",
+        "buffer",
+        "buf"
+      ],
+      [
+        "state",
+        "loop_state",
+        "ls"
+      ],
+      [
+        "ls",
+        "loop",
+        "loop"
+      ]
+    ],
+    "where": {
+      "type": "And",
+      "items": [
+        {
+          "type": "Eq",
+          "a": {
+            "type": "TypeOf",
+            "node": {
+              "type": "Var",
+              "name": "state"
+            }
+          },
+          "b": {
+            "type": "Lit",
+            "value": "DecodeState"
+          }
+        },
+        {
+          "type": "Eq",
+          "a": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "loop"
+            },
+            "key": "kind"
+          },
+          "b": {
+            "type": "Lit",
+            "value": "loop"
+          }
+        },
+        {
+          "type": "Eq",
+          "a": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "loop"
+            },
+            "key": "body_kind"
+          },
+          "b": {
+            "type": "Lit",
+            "value": "u"
+          }
+        },
+        {
+          "type": "Lt",
+          "a": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "ls"
+            },
+            "key": "i"
+          },
+          "b": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "ls"
+            },
+            "key": "count"
+          }
+        }
+      ]
+    },
+    "effects": [
+      [
+        "add_node",
+        "v",
+        "Value",
+        {
+          "name": {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "loop"
+              },
+              "key": "name"
+            }
+          },
+          "val": {
+            "__term__": {
+              "type": "BitsAt",
+              "buffer": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "buf"
+                },
+                "key": "bytes"
+              },
+              "bitpos": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "state"
+                },
+                "key": "bp"
+              },
+              "n_bits": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "loop"
+                },
+                "key": "body_nbits"
+              }
+            }
+          },
+          "index": {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ls"
+              },
+              "key": "i"
+            }
+          }
+        }
+      ],
+      [
+        "add_edge",
+        "state",
+        "decoded",
+        "v"
+      ],
+      [
+        "set_attr",
+        "state",
+        "bp",
+        {
+          "__term__": {
+            "type": "Plus",
+            "items": [
+              {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "state"
+                },
+                "key": "bp"
+              },
+              {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "loop"
+                },
+                "key": "body_nbits"
+              }
+            ]
+          }
+        }
+      ],
+      [
+        "set_attr",
+        "ls",
+        "i",
+        {
+          "__term__": {
+            "type": "Plus",
+            "items": [
+              {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ls"
+                },
+                "key": "i"
+              },
+              {
+                "type": "Lit",
+                "value": 1
+              }
+            ]
+          }
+        }
+      ]
+    ]
+  },
+  {
+    "name": "loop_complete",
+    "match": [
+      [
+        "state",
+        "current",
+        "loop"
+      ],
+      [
+        "state",
+        "loop_state",
+        "ls"
+      ],
+      [
+        "ls",
+        "loop",
+        "loop"
+      ],
+      [
+        "loop",
+        "next",
+        "nxt"
+      ]
+    ],
+    "where": {
+      "type": "And",
+      "items": [
+        {
+          "type": "Eq",
+          "a": {
+            "type": "TypeOf",
+            "node": {
+              "type": "Var",
+              "name": "state"
+            }
+          },
+          "b": {
+            "type": "Lit",
+            "value": "DecodeState"
+          }
+        },
+        {
+          "type": "Eq",
+          "a": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "loop"
+            },
+            "key": "kind"
+          },
+          "b": {
+            "type": "Lit",
+            "value": "loop"
+          }
+        },
+        {
+          "type": "Not",
+          "arg": {
+            "type": "Lt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ls"
+              },
+              "key": "i"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ls"
+              },
+              "key": "count"
+            }
+          }
+        }
+      ]
+    },
+    "effects": [
+      [
+        "del_edge",
+        "ls",
+        "loop",
+        "loop"
+      ],
+      [
+        "del_edge",
+        "state",
+        "loop_state",
+        "ls"
+      ],
+      [
+        "del_node",
+        "ls"
+      ],
+      [
+        "del_edge",
+        "state",
+        "current",
+        "loop"
+      ],
+      [
+        "add_edge",
+        "state",
+        "current",
+        "nxt"
+      ]
+    ]
+  },
+  {
+    "name": "encode_ue",
+    "match": [
+      [
+        "estate",
+        "current",
+        "field"
+      ],
+      [
+        "estate",
+        "buffer",
+        "buf"
+      ],
+      [
+        "estate",
+        "source",
+        "dstate"
+      ],
+      [
+        "dstate",
+        "decoded",
+        "value"
+      ],
+      [
+        "field",
+        "next",
+        "nxt"
+      ]
+    ],
+    "where": {
+      "type": "And",
+      "items": [
+        {
+          "type": "Eq",
+          "a": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "field"
+            },
+            "key": "kind"
+          },
+          "b": {
+            "type": "Lit",
+            "value": "ue"
+          }
+        },
+        {
+          "type": "Eq",
+          "a": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "value"
+            },
+            "key": "name"
+          },
+          "b": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "field"
+            },
+            "key": "name"
+          }
+        },
+        {
+          "type": "Or",
+          "items": [
+            {
+              "type": "Not",
+              "arg": {
+                "type": "Exists",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {
+                    "type": "Var",
+                    "name": "field"
+                  },
+                  "edge_type": "cond_group"
+                },
+                "var_name": "_g",
+                "predicate": {
+                  "type": "Lit",
+                  "value": true
+                }
+              }
+            },
+            {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "field"
+                },
+                "edge_type": "cond_group"
+              },
+              "var_name": "g",
+              "predicate": {
+                "type": "Not",
+                "arg": {
+                  "type": "Exists",
+                  "source": {
+                    "type": "Neighbours",
+                    "node": {
+                      "type": "Var",
+                      "name": "g"
+                    },
+                    "edge_type": "member"
+                  },
+                  "var_name": "m",
+                  "predicate": {
+                    "type": "Not",
+                    "arg": {
+                      "type": "Exists",
+                      "source": {
+                        "type": "Neighbours",
+                        "node": {
+                          "type": "Var",
+                          "name": "dstate"
+                        },
+                        "edge_type": "decoded"
+                      },
+                      "var_name": "cv",
+                      "predicate": {
+                        "type": "And",
+                        "items": [
+                          {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "cv"
+                              },
+                              "key": "name"
+                            },
+                            "b": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "m"
+                              },
+                              "key": "name"
+                            }
+                          },
+                          {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "cv"
+                              },
+                              "key": "val"
+                            },
+                            "b": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "m"
+                              },
+                              "key": "val"
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "effects": [
+      [
+        "set_attr",
+        "buf",
+        "bytes",
+        {
+          "__term__": {
+            "type": "Nth",
+            "items": {
+              "type": "ExpGolombEncode",
+              "buffer": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "buf"
+                },
+                "key": "bytes"
+              },
+              "bitpos": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "estate"
+                },
+                "key": "bp"
+              },
+              "value": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "value"
+                },
+                "key": "val"
+              }
+            },
+            "index": 0
+          }
+        }
+      ],
+      [
+        "set_attr",
+        "estate",
+        "bp",
+        {
+          "__term__": {
+            "type": "Nth",
+            "items": {
+              "type": "ExpGolombEncode",
+              "buffer": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "buf"
+                },
+                "key": "bytes"
+              },
+              "bitpos": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "estate"
+                },
+                "key": "bp"
+              },
+              "value": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "value"
+                },
+                "key": "val"
+              }
+            },
+            "index": 1
+          }
+        }
+      ],
+      [
+        "del_edge",
+        "estate",
+        "current",
+        "field"
+      ],
+      [
+        "add_edge",
+        "estate",
+        "current",
+        "nxt"
+      ]
+    ]
+  },
+  {
+    "name": "encode_se",
+    "match": [
+      [
+        "estate",
+        "current",
+        "field"
+      ],
+      [
+        "estate",
+        "buffer",
+        "buf"
+      ],
+      [
+        "estate",
+        "source",
+        "dstate"
+      ],
+      [
+        "dstate",
+        "decoded",
+        "value"
+      ],
+      [
+        "field",
+        "next",
+        "nxt"
+      ]
+    ],
+    "where": {
+      "type": "And",
+      "items": [
+        {
+          "type": "Eq",
+          "a": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "field"
+            },
+            "key": "kind"
+          },
+          "b": {
+            "type": "Lit",
+            "value": "se"
+          }
+        },
+        {
+          "type": "Eq",
+          "a": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "value"
+            },
+            "key": "name"
+          },
+          "b": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "field"
+            },
+            "key": "name"
+          }
+        },
+        {
+          "type": "Or",
+          "items": [
+            {
+              "type": "Not",
+              "arg": {
+                "type": "Exists",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {
+                    "type": "Var",
+                    "name": "field"
+                  },
+                  "edge_type": "cond_group"
+                },
+                "var_name": "_g",
+                "predicate": {
+                  "type": "Lit",
+                  "value": true
+                }
+              }
+            },
+            {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "field"
+                },
+                "edge_type": "cond_group"
+              },
+              "var_name": "g",
+              "predicate": {
+                "type": "Not",
+                "arg": {
+                  "type": "Exists",
+                  "source": {
+                    "type": "Neighbours",
+                    "node": {
+                      "type": "Var",
+                      "name": "g"
+                    },
+                    "edge_type": "member"
+                  },
+                  "var_name": "m",
+                  "predicate": {
+                    "type": "Not",
+                    "arg": {
+                      "type": "Exists",
+                      "source": {
+                        "type": "Neighbours",
+                        "node": {
+                          "type": "Var",
+                          "name": "dstate"
+                        },
+                        "edge_type": "decoded"
+                      },
+                      "var_name": "cv",
+                      "predicate": {
+                        "type": "And",
+                        "items": [
+                          {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "cv"
+                              },
+                              "key": "name"
+                            },
+                            "b": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "m"
+                              },
+                              "key": "name"
+                            }
+                          },
+                          {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "cv"
+                              },
+                              "key": "val"
+                            },
+                            "b": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "m"
+                              },
+                              "key": "val"
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "effects": [
+      [
+        "set_attr",
+        "buf",
+        "bytes",
+        {
+          "__term__": {
+            "type": "Nth",
+            "items": {
+              "type": "ExpGolombEncodeSigned",
+              "buffer": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "buf"
+                },
+                "key": "bytes"
+              },
+              "bitpos": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "estate"
+                },
+                "key": "bp"
+              },
+              "value": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "value"
+                },
+                "key": "val"
+              }
+            },
+            "index": 0
+          }
+        }
+      ],
+      [
+        "set_attr",
+        "estate",
+        "bp",
+        {
+          "__term__": {
+            "type": "Nth",
+            "items": {
+              "type": "ExpGolombEncodeSigned",
+              "buffer": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "buf"
+                },
+                "key": "bytes"
+              },
+              "bitpos": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "estate"
+                },
+                "key": "bp"
+              },
+              "value": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "value"
+                },
+                "key": "val"
+              }
+            },
+            "index": 1
+          }
+        }
+      ],
+      [
+        "del_edge",
+        "estate",
+        "current",
+        "field"
+      ],
+      [
+        "add_edge",
+        "estate",
+        "current",
+        "nxt"
+      ]
+    ]
+  },
+  {
+    "name": "encode_u",
+    "match": [
+      [
+        "estate",
+        "current",
+        "field"
+      ],
+      [
+        "estate",
+        "buffer",
+        "buf"
+      ],
+      [
+        "estate",
+        "source",
+        "dstate"
+      ],
+      [
+        "dstate",
+        "decoded",
+        "value"
+      ],
+      [
+        "field",
+        "next",
+        "nxt"
+      ]
+    ],
+    "where": {
+      "type": "And",
+      "items": [
+        {
+          "type": "Eq",
+          "a": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "field"
+            },
+            "key": "kind"
+          },
+          "b": {
+            "type": "Lit",
+            "value": "u"
+          }
+        },
+        {
+          "type": "Eq",
+          "a": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "value"
+            },
+            "key": "name"
+          },
+          "b": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "field"
+            },
+            "key": "name"
+          }
+        },
+        {
+          "type": "Or",
+          "items": [
+            {
+              "type": "Not",
+              "arg": {
+                "type": "Exists",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {
+                    "type": "Var",
+                    "name": "field"
+                  },
+                  "edge_type": "cond_group"
+                },
+                "var_name": "_g",
+                "predicate": {
+                  "type": "Lit",
+                  "value": true
+                }
+              }
+            },
+            {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "field"
+                },
+                "edge_type": "cond_group"
+              },
+              "var_name": "g",
+              "predicate": {
+                "type": "Not",
+                "arg": {
+                  "type": "Exists",
+                  "source": {
+                    "type": "Neighbours",
+                    "node": {
+                      "type": "Var",
+                      "name": "g"
+                    },
+                    "edge_type": "member"
+                  },
+                  "var_name": "m",
+                  "predicate": {
+                    "type": "Not",
+                    "arg": {
+                      "type": "Exists",
+                      "source": {
+                        "type": "Neighbours",
+                        "node": {
+                          "type": "Var",
+                          "name": "dstate"
+                        },
+                        "edge_type": "decoded"
+                      },
+                      "var_name": "cv",
+                      "predicate": {
+                        "type": "And",
+                        "items": [
+                          {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "cv"
+                              },
+                              "key": "name"
+                            },
+                            "b": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "m"
+                              },
+                              "key": "name"
+                            }
+                          },
+                          {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "cv"
+                              },
+                              "key": "val"
+                            },
+                            "b": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "m"
+                              },
+                              "key": "val"
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "effects": [
+      [
+        "set_attr",
+        "buf",
+        "bytes",
+        {
+          "__term__": {
+            "type": "BitsWrite",
+            "buffer": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "buf"
+              },
+              "key": "bytes"
+            },
+            "bitpos": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "estate"
+              },
+              "key": "bp"
+            },
+            "value": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "value"
+              },
+              "key": "val"
+            },
+            "n_bits": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "field"
+              },
+              "key": "nbits"
+            }
+          }
+        }
+      ],
+      [
+        "set_attr",
+        "estate",
+        "bp",
+        {
+          "__term__": {
+            "type": "Plus",
+            "items": [
+              {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "estate"
+                },
+                "key": "bp"
+              },
+              {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "field"
+                },
+                "key": "nbits"
+              }
+            ]
+          }
+        }
+      ],
+      [
+        "del_edge",
+        "estate",
+        "current",
+        "field"
+      ],
+      [
+        "add_edge",
+        "estate",
+        "current",
+        "nxt"
+      ]
+    ]
+  },
+  {
+    "name": "encode_skip",
+    "match": [
+      [
+        "estate",
+        "current",
+        "field"
+      ],
+      [
+        "estate",
+        "source",
+        "dstate"
+      ],
+      [
+        "field",
+        "next",
+        "nxt"
+      ]
+    ],
+    "where": {
+      "type": "And",
+      "items": [
+        {
+          "type": "Exists",
+          "source": {
+            "type": "Neighbours",
+            "node": {
+              "type": "Var",
+              "name": "field"
+            },
+            "edge_type": "cond_group"
+          },
+          "var_name": "_g",
+          "predicate": {
+            "type": "Lit",
+            "value": true
+          }
+        },
+        {
+          "type": "Not",
+          "arg": {
+            "type": "Or",
+            "items": [
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Exists",
+                  "source": {
+                    "type": "Neighbours",
+                    "node": {
+                      "type": "Var",
+                      "name": "field"
+                    },
+                    "edge_type": "cond_group"
+                  },
+                  "var_name": "_g",
+                  "predicate": {
+                    "type": "Lit",
+                    "value": true
+                  }
+                }
+              },
+              {
+                "type": "Exists",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {
+                    "type": "Var",
+                    "name": "field"
+                  },
+                  "edge_type": "cond_group"
+                },
+                "var_name": "g",
+                "predicate": {
+                  "type": "Not",
+                  "arg": {
+                    "type": "Exists",
+                    "source": {
+                      "type": "Neighbours",
+                      "node": {
+                        "type": "Var",
+                        "name": "g"
+                      },
+                      "edge_type": "member"
+                    },
+                    "var_name": "m",
+                    "predicate": {
+                      "type": "Not",
+                      "arg": {
+                        "type": "Exists",
+                        "source": {
+                          "type": "Neighbours",
+                          "node": {
+                            "type": "Var",
+                            "name": "dstate"
+                          },
+                          "edge_type": "decoded"
+                        },
+                        "var_name": "cv",
+                        "predicate": {
+                          "type": "And",
+                          "items": [
+                            {
+                              "type": "Eq",
+                              "a": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "cv"
+                                },
+                                "key": "name"
+                              },
+                              "b": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "m"
+                                },
+                                "key": "name"
+                              }
+                            },
+                            {
+                              "type": "Eq",
+                              "a": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "cv"
+                                },
+                                "key": "val"
+                              },
+                              "b": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "m"
+                                },
+                                "key": "val"
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "effects": [
+      [
+        "del_edge",
+        "estate",
+        "current",
+        "field"
+      ],
+      [
+        "add_edge",
+        "estate",
+        "current",
+        "nxt"
+      ]
+    ]
+  },
+  {
+    "name": "encode_loop_init",
+    "match": [
+      [
+        "estate",
+        "current",
+        "loop"
+      ],
+      [
+        "estate",
+        "source",
+        "dstate"
+      ],
+      [
+        "dstate",
+        "decoded",
+        "count_v"
+      ]
+    ],
+    "where": {
+      "type": "And",
+      "items": [
+        {
+          "type": "Eq",
+          "a": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "loop"
+            },
+            "key": "kind"
+          },
+          "b": {
+            "type": "Lit",
+            "value": "loop"
+          }
+        },
+        {
+          "type": "Eq",
+          "a": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "count_v"
+            },
+            "key": "name"
+          },
+          "b": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "loop"
+            },
+            "key": "count_name"
+          }
+        },
+        {
+          "type": "Not",
+          "arg": {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "loop"
+              },
+              "key": "count_name"
+            },
+            "b": {
+              "type": "Lit",
+              "value": null
+            }
+          }
+        },
+        {
+          "type": "Not",
+          "arg": {
+            "type": "Exists",
+            "source": {
+              "type": "Neighbours",
+              "node": {
+                "type": "Var",
+                "name": "estate"
+              },
+              "edge_type": "loop_state"
+            },
+            "var_name": "ls",
+            "predicate": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "ls"
+                },
+                "edge_type": "loop"
+              },
+              "var_name": "lr",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Var",
+                  "name": "lr"
+                },
+                "b": {
+                  "type": "Var",
+                  "name": "loop"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "effects": [
+      [
+        "add_node",
+        "ls",
+        "LoopState",
+        {
+          "i": {
+            "__term__": {
+              "type": "Lit",
+              "value": 0
+            }
+          },
+          "count": {
+            "__term__": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "count_v"
+                  },
+                  "key": "val"
+                },
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "loop"
+                  },
+                  "key": "count_offset"
+                }
+              ]
+            }
+          }
+        }
+      ],
+      [
+        "add_edge",
+        "estate",
+        "loop_state",
+        "ls"
+      ],
+      [
+        "add_edge",
+        "ls",
+        "loop",
+        "loop"
+      ]
+    ]
+  },
+  {
+    "name": "encode_loop_init_literal",
+    "match": [
+      [
+        "estate",
+        "current",
+        "loop"
+      ],
+      [
+        "estate",
+        "buffer",
+        "buf"
+      ]
+    ],
+    "where": {
+      "type": "And",
+      "items": [
+        {
+          "type": "Eq",
+          "a": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "loop"
+            },
+            "key": "kind"
+          },
+          "b": {
+            "type": "Lit",
+            "value": "loop"
+          }
+        },
+        {
+          "type": "Not",
+          "arg": {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "loop"
+              },
+              "key": "count_literal"
+            },
+            "b": {
+              "type": "Lit",
+              "value": null
+            }
+          }
+        },
+        {
+          "type": "Not",
+          "arg": {
+            "type": "Exists",
+            "source": {
+              "type": "Neighbours",
+              "node": {
+                "type": "Var",
+                "name": "estate"
+              },
+              "edge_type": "loop_state"
+            },
+            "var_name": "ls",
+            "predicate": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "ls"
+                },
+                "edge_type": "loop"
+              },
+              "var_name": "lr",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Var",
+                  "name": "lr"
+                },
+                "b": {
+                  "type": "Var",
+                  "name": "loop"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "effects": [
+      [
+        "add_node",
+        "ls",
+        "LoopState",
+        {
+          "i": {
+            "__term__": {
+              "type": "Lit",
+              "value": 0
+            }
+          },
+          "count": {
+            "__term__": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "loop"
+                  },
+                  "key": "count_literal"
+                },
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "loop"
+                  },
+                  "key": "count_offset"
+                }
+              ]
+            }
+          }
+        }
+      ],
+      [
+        "add_edge",
+        "estate",
+        "loop_state",
+        "ls"
+      ],
+      [
+        "add_edge",
+        "ls",
+        "loop",
+        "loop"
+      ]
+    ]
+  },
+  {
+    "name": "encode_loop_iter_ue",
+    "match": [
+      [
+        "estate",
+        "current",
+        "loop"
+      ],
+      [
+        "estate",
+        "buffer",
+        "buf"
+      ],
+      [
+        "estate",
+        "source",
+        "dstate"
+      ],
+      [
+        "estate",
+        "loop_state",
+        "ls"
+      ],
+      [
+        "ls",
+        "loop",
+        "loop"
+      ],
+      [
+        "dstate",
+        "decoded",
+        "value"
+      ]
+    ],
+    "where": {
+      "type": "And",
+      "items": [
+        {
+          "type": "Eq",
+          "a": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "loop"
+            },
+            "key": "kind"
+          },
+          "b": {
+            "type": "Lit",
+            "value": "loop"
+          }
+        },
+        {
+          "type": "Eq",
+          "a": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "loop"
+            },
+            "key": "body_kind"
+          },
+          "b": {
+            "type": "Lit",
+            "value": "ue"
+          }
+        },
+        {
+          "type": "Eq",
+          "a": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "value"
+            },
+            "key": "name"
+          },
+          "b": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "loop"
+            },
+            "key": "name"
+          }
+        },
+        {
+          "type": "Eq",
+          "a": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "value"
+            },
+            "key": "index"
+          },
+          "b": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "ls"
+            },
+            "key": "i"
+          }
+        },
+        {
+          "type": "Lt",
+          "a": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "ls"
+            },
+            "key": "i"
+          },
+          "b": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "ls"
+            },
+            "key": "count"
+          }
+        }
+      ]
+    },
+    "effects": [
+      [
+        "set_attr",
+        "buf",
+        "bytes",
+        {
+          "__term__": {
+            "type": "Nth",
+            "items": {
+              "type": "ExpGolombEncode",
+              "buffer": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "buf"
+                },
+                "key": "bytes"
+              },
+              "bitpos": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "estate"
+                },
+                "key": "bp"
+              },
+              "value": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "value"
+                },
+                "key": "val"
+              }
+            },
+            "index": 0
+          }
+        }
+      ],
+      [
+        "set_attr",
+        "estate",
+        "bp",
+        {
+          "__term__": {
+            "type": "Nth",
+            "items": {
+              "type": "ExpGolombEncode",
+              "buffer": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "buf"
+                },
+                "key": "bytes"
+              },
+              "bitpos": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "estate"
+                },
+                "key": "bp"
+              },
+              "value": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "value"
+                },
+                "key": "val"
+              }
+            },
+            "index": 1
+          }
+        }
+      ],
+      [
+        "set_attr",
+        "ls",
+        "i",
+        {
+          "__term__": {
+            "type": "Plus",
+            "items": [
+              {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ls"
+                },
+                "key": "i"
+              },
+              {
+                "type": "Lit",
+                "value": 1
+              }
+            ]
+          }
+        }
+      ]
+    ]
+  },
+  {
+    "name": "encode_loop_iter_se",
+    "match": [
+      [
+        "estate",
+        "current",
+        "loop"
+      ],
+      [
+        "estate",
+        "buffer",
+        "buf"
+      ],
+      [
+        "estate",
+        "source",
+        "dstate"
+      ],
+      [
+        "estate",
+        "loop_state",
+        "ls"
+      ],
+      [
+        "ls",
+        "loop",
+        "loop"
+      ],
+      [
+        "dstate",
+        "decoded",
+        "value"
+      ]
+    ],
+    "where": {
+      "type": "And",
+      "items": [
+        {
+          "type": "Eq",
+          "a": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "loop"
+            },
+            "key": "kind"
+          },
+          "b": {
+            "type": "Lit",
+            "value": "loop"
+          }
+        },
+        {
+          "type": "Eq",
+          "a": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "loop"
+            },
+            "key": "body_kind"
+          },
+          "b": {
+            "type": "Lit",
+            "value": "se"
+          }
+        },
+        {
+          "type": "Eq",
+          "a": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "value"
+            },
+            "key": "name"
+          },
+          "b": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "loop"
+            },
+            "key": "name"
+          }
+        },
+        {
+          "type": "Eq",
+          "a": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "value"
+            },
+            "key": "index"
+          },
+          "b": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "ls"
+            },
+            "key": "i"
+          }
+        },
+        {
+          "type": "Lt",
+          "a": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "ls"
+            },
+            "key": "i"
+          },
+          "b": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "ls"
+            },
+            "key": "count"
+          }
+        }
+      ]
+    },
+    "effects": [
+      [
+        "set_attr",
+        "buf",
+        "bytes",
+        {
+          "__term__": {
+            "type": "Nth",
+            "items": {
+              "type": "ExpGolombEncodeSigned",
+              "buffer": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "buf"
+                },
+                "key": "bytes"
+              },
+              "bitpos": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "estate"
+                },
+                "key": "bp"
+              },
+              "value": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "value"
+                },
+                "key": "val"
+              }
+            },
+            "index": 0
+          }
+        }
+      ],
+      [
+        "set_attr",
+        "estate",
+        "bp",
+        {
+          "__term__": {
+            "type": "Nth",
+            "items": {
+              "type": "ExpGolombEncodeSigned",
+              "buffer": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "buf"
+                },
+                "key": "bytes"
+              },
+              "bitpos": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "estate"
+                },
+                "key": "bp"
+              },
+              "value": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "value"
+                },
+                "key": "val"
+              }
+            },
+            "index": 1
+          }
+        }
+      ],
+      [
+        "set_attr",
+        "ls",
+        "i",
+        {
+          "__term__": {
+            "type": "Plus",
+            "items": [
+              {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ls"
+                },
+                "key": "i"
+              },
+              {
+                "type": "Lit",
+                "value": 1
+              }
+            ]
+          }
+        }
+      ]
+    ]
+  },
+  {
+    "name": "encode_loop_iter_u",
+    "match": [
+      [
+        "estate",
+        "current",
+        "loop"
+      ],
+      [
+        "estate",
+        "buffer",
+        "buf"
+      ],
+      [
+        "estate",
+        "source",
+        "dstate"
+      ],
+      [
+        "estate",
+        "loop_state",
+        "ls"
+      ],
+      [
+        "ls",
+        "loop",
+        "loop"
+      ],
+      [
+        "dstate",
+        "decoded",
+        "value"
+      ]
+    ],
+    "where": {
+      "type": "And",
+      "items": [
+        {
+          "type": "Eq",
+          "a": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "loop"
+            },
+            "key": "kind"
+          },
+          "b": {
+            "type": "Lit",
+            "value": "loop"
+          }
+        },
+        {
+          "type": "Eq",
+          "a": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "loop"
+            },
+            "key": "body_kind"
+          },
+          "b": {
+            "type": "Lit",
+            "value": "u"
+          }
+        },
+        {
+          "type": "Eq",
+          "a": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "value"
+            },
+            "key": "name"
+          },
+          "b": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "loop"
+            },
+            "key": "name"
+          }
+        },
+        {
+          "type": "Eq",
+          "a": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "value"
+            },
+            "key": "index"
+          },
+          "b": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "ls"
+            },
+            "key": "i"
+          }
+        },
+        {
+          "type": "Lt",
+          "a": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "ls"
+            },
+            "key": "i"
+          },
+          "b": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "ls"
+            },
+            "key": "count"
+          }
+        }
+      ]
+    },
+    "effects": [
+      [
+        "set_attr",
+        "buf",
+        "bytes",
+        {
+          "__term__": {
+            "type": "BitsWrite",
+            "buffer": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "buf"
+              },
+              "key": "bytes"
+            },
+            "bitpos": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "estate"
+              },
+              "key": "bp"
+            },
+            "value": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "value"
+              },
+              "key": "val"
+            },
+            "n_bits": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "loop"
+              },
+              "key": "body_nbits"
+            }
+          }
+        }
+      ],
+      [
+        "set_attr",
+        "estate",
+        "bp",
+        {
+          "__term__": {
+            "type": "Plus",
+            "items": [
+              {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "estate"
+                },
+                "key": "bp"
+              },
+              {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "loop"
+                },
+                "key": "body_nbits"
+              }
+            ]
+          }
+        }
+      ],
+      [
+        "set_attr",
+        "ls",
+        "i",
+        {
+          "__term__": {
+            "type": "Plus",
+            "items": [
+              {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ls"
+                },
+                "key": "i"
+              },
+              {
+                "type": "Lit",
+                "value": 1
+              }
+            ]
+          }
+        }
+      ]
+    ]
+  },
+  {
+    "name": "encode_loop_complete",
+    "match": [
+      [
+        "estate",
+        "current",
+        "loop"
+      ],
+      [
+        "estate",
+        "loop_state",
+        "ls"
+      ],
+      [
+        "ls",
+        "loop",
+        "loop"
+      ],
+      [
+        "loop",
+        "next",
+        "nxt"
+      ]
+    ],
+    "where": {
+      "type": "And",
+      "items": [
+        {
+          "type": "Eq",
+          "a": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "loop"
+            },
+            "key": "kind"
+          },
+          "b": {
+            "type": "Lit",
+            "value": "loop"
+          }
+        },
+        {
+          "type": "Not",
+          "arg": {
+            "type": "Lt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ls"
+              },
+              "key": "i"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ls"
+              },
+              "key": "count"
+            }
+          }
+        }
+      ]
+    },
+    "effects": [
+      [
+        "del_edge",
+        "ls",
+        "loop",
+        "loop"
+      ],
+      [
+        "del_edge",
+        "estate",
+        "loop_state",
+        "ls"
+      ],
+      [
+        "del_node",
+        "ls"
+      ],
+      [
+        "del_edge",
+        "estate",
+        "current",
+        "loop"
+      ],
+      [
+        "add_edge",
+        "estate",
+        "current",
+        "nxt"
+      ]
+    ]
+  }
+]

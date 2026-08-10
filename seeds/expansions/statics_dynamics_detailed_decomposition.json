@@ -1,0 +1,118 @@
+{
+  "id": "statics_dynamics_detailed_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "statics_equilibrium",
+  "in_microtheory": "engineering",
+  "description": "Statics + dynamics decomposed. Free body diagrams, 2D/3D equilibrium, virtual work, friction, rigid body kinematics + kinetics, energy methods, vibrations, dynamic balancing.",
+  "sub_mechanisms": [
+    {
+      "name": "2D_equilibrium",
+      "definition": "ΣFx = 0, ΣFy = 0, ΣM_z = 0. Three equations; up to three unknowns.",
+      "why": "Standard plane structures. Beams, trusses, frames. Foundation of structural statics.",
+      "category": "stat_dyn_mechanism"
+    },
+    {
+      "name": "3D_equilibrium",
+      "definition": "ΣF_i = 0 for i=x,y,z. ΣM_i = 0 for i=x,y,z. Six equations; up to six unknowns.",
+      "why": "Spatial structures. More unknowns possible. Vector form: ΣF = 0, ΣM = 0.",
+      "category": "stat_dyn_mechanism"
+    },
+    {
+      "name": "support_reactions",
+      "definition": "Pin: 2 reactions (2D), 3 (3D). Roller: 1. Fixed: 3 (2D), 6 (3D). Determine from equilibrium.",
+      "why": "FBD includes reactions. Static determinacy: unknowns = equations. Indeterminate needs additional methods.",
+      "category": "stat_dyn_mechanism"
+    },
+    {
+      "name": "Coulomb_friction",
+      "definition": "F_friction ≤ μN. Static μ_s > kinetic μ_k. Limiting friction at slip.",
+      "why": "Most common friction model. Belts, brakes, climbing systems. Self-locking when angle < arctan(μ).",
+      "category": "stat_dyn_mechanism"
+    },
+    {
+      "name": "virtual_work_principle",
+      "definition": "δW = 0 for system in equilibrium. Sum of virtual works by all forces.",
+      "why": "Alternative to FBD. Powerful for connected systems. Avoids analysing internal reactions.",
+      "category": "stat_dyn_mechanism"
+    },
+    {
+      "name": "rigid_body_kinematics_velocity",
+      "definition": "v_B = v_A + ω × r_AB. Velocity of B from A's velocity + body rotation.",
+      "why": "Linkage analysis, robotics. Foundation of mechanism design. Instantaneous centre of rotation.",
+      "category": "stat_dyn_mechanism"
+    },
+    {
+      "name": "rigid_body_kinetics_Newton",
+      "definition": "ΣF = ma_G (center of mass). ΣM_G = I_G α. Decoupled translation + rotation.",
+      "why": "Standard rigid body dynamics. Position of mass centre + rotation about it. Foundation.",
+      "category": "stat_dyn_mechanism"
+    },
+    {
+      "name": "energy_method_dynamics",
+      "definition": "T_1 + V_1 + W_nc = T_2 + V_2. Kinetic + potential + non-conservative work.",
+      "why": "Often simpler than F=ma. Scalar. Useful for connected systems, varying forces. Standard alternative.",
+      "category": "stat_dyn_mechanism"
+    },
+    {
+      "name": "single_DOF_vibration",
+      "definition": "mẍ + cẋ + kx = F(t). Spring-mass-damper.",
+      "why": "Foundation of vibration. Natural freq ω_n = √(k/m). Damping ratio ζ = c/(2√(km)).",
+      "category": "stat_dyn_mechanism"
+    },
+    {
+      "name": "modal_analysis",
+      "definition": "MDOF system: eigenvalue problem M⁻¹K. Natural frequencies + mode shapes.",
+      "why": "Building vibration, vehicle NVH, machine resonance. Avoid forcing near natural frequencies. Standard CAE analysis.",
+      "category": "stat_dyn_mechanism"
+    },
+    {
+      "name": "dynamic_balancing",
+      "definition": "Rotating systems: add masses to cancel out-of-balance. Static + dynamic balance.",
+      "why": "Engines, turbines, tyres. Imbalance: vibration, bearing wear, noise. Standard manufacturing operation.",
+      "category": "stat_dyn_mechanism"
+    },
+    {
+      "name": "gyroscopic_effect",
+      "definition": "Spinning body resists axis change. M = I·ω×Ω.",
+      "why": "Gyroscopes, motorcycles, aircraft. Stable platform. Critical in high-RPM systems.",
+      "category": "stat_dyn_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "FBD_first_step_in_every_problem",
+      "if": ["analyzing forces on body"],
+      "then": ["FBD must be drawn first"],
+      "why": "Errors in FBD propagate. Identify all forces: applied, weights, reactions. Standard discipline. Engineering instructors insist.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "static_determinacy_unknowns_equations",
+      "if": ["unknowns = equations"],
+      "then": ["statically determinate; solvable by equilibrium alone"],
+      "why": "More unknowns: indeterminate, need deflection compatibility. Fewer: mechanism. Determinacy = solvability via equilibrium.",
+      "soundness_category": "algebraic_law"
+    },
+    {
+      "name": "energy_methods_simpler_for_complex_systems",
+      "if": ["system has many interconnected parts"],
+      "then": ["energy method easier than F=ma per part"],
+      "why": "F=ma: many vector equations, internal forces. Energy: scalar, internal forces cancel. Lagrangian mechanics formalises.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "natural_frequency_at_resonance_amplifies",
+      "if": ["forcing frequency near natural frequency"],
+      "then": ["response amplification (Q factor)"],
+      "why": "Damping limited. Bridge collapse (Tacoma Narrows), washing machine wobble. Avoid by design: shift natural freq, add damping.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "balancing_critical_high_RPM",
+      "if": ["component rotates at high RPM"],
+      "then": ["dynamic balancing required"],
+      "why": "Imbalance force = mω²r. ω² makes high RPM critical. Even small imbalance = large force. Engines, turbines must be balanced.",
+      "soundness_category": "cost_equivalence"
+    }
+  ]
+}

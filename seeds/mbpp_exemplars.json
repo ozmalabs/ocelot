@@ -1,0 +1,3762 @@
+{
+ "id": "mbpp_exemplars",
+ "version": "1.0.0",
+ "depends_on": [],
+ "capability_keys": [
+  "mbpp_exemplar_store"
+ ],
+ "description": "Arc 3 R1: the ~90 emittable MBPP train-split programs, kept WHOLE (never abstracted into a codebook shape), as graph-resident Exemplar nodes carrying their own Term-JSON IR, paired prompt-token TF-IDF weights, and signature facts -- the retrieval store `seeds/program_synthesis.json`'s pr_select_candidate/pr_screen_* rules score and adapt against. Built by scripts/build_exemplar_store.py; train-content-only (contamination-legal, tests/fixtures/mbpp/provenance.json).",
+ "microtheory": {
+  "name": "mbpp_exemplars",
+  "description": "a bank of whole, executable, worked programs the agent can retrieve, adapt (as-is / permuted / one-leaf-edited / re-opened-hole), and verify by execution -- case-based reasoning at program grain."
+ },
+ "nodes": [
+  {
+   "local_id": 1,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 602,
+    "entry": "first_repeated_char",
+    "arity": 1,
+    "params": [
+     "str1"
+    ],
+    "predictable": true,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"str1\", \"type\": \"ProgDefFnParam\"}, {\"body\": {\"stmts\": [{\"targets\": [\"index\", \"c\"], \"type\": \"ProgTupleUnpack\", \"value\": {\"name\": \"__u0\", \"type\": \"Var\"}}, {\"cond\": {\"a\": {\"args\": [{\"name\": \"c\", \"type\": \"Var\"}], \"name\": \"count\", \"recv\": {\"obj\": {\"name\": \"str1\", \"type\": \"Var\"}, \"start\": null, \"step\": null, \"stop\": {\"items\": [{\"name\": \"index\", \"type\": \"Var\"}, {\"type\": \"Lit\", \"value\": 1}], \"type\": \"Plus\"}, \"type\": \"ProgSlice\"}, \"type\": \"ProgCallExtern\"}, \"b\": {\"type\": \"Lit\", \"value\": 1}, \"type\": \"Gt\"}, \"orelse\": null, \"then\": {\"type\": \"ProgReturn\", \"value\": {\"name\": \"c\", \"type\": \"Var\"}}, \"type\": \"ProgIfStmt\"}], \"type\": \"ProgSeq\"}, \"iter\": {\"args\": [{\"name\": \"str1\", \"type\": \"Var\"}], \"name\": \"enumerate\", \"recv\": null, \"type\": \"ProgCallExtern\"}, \"orelse\": null, \"type\": \"ProgForEach\", \"var\": \"__u0\"}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "character",
+     "find",
+     "first",
+     "repeated",
+     "string"
+    ],
+    "tfidf": {
+     "find": 2.098612,
+     "first": 3.5539,
+     "repeated": 5.49981,
+     "character": 5.49981,
+     "string": 2.321756
+    },
+    "arg_types": [
+     "str"
+    ],
+    "return_type": "str",
+    "consistent_types": false,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 2,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 604,
+    "entry": "reverse_words",
+    "arity": 1,
+    "params": [
+     "s"
+    ],
+    "predictable": true,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"s\", \"type\": \"ProgDefFnParam\"}, {\"type\": \"ProgReturn\", \"value\": {\"args\": [{\"args\": [{\"args\": [], \"name\": \"split\", \"recv\": {\"name\": \"s\", \"type\": \"Var\"}, \"type\": \"ProgCallExtern\"}], \"name\": \"reversed\", \"recv\": null, \"type\": \"ProgCallExtern\"}], \"name\": \"join\", \"recv\": {\"type\": \"Lit\", \"value\": \" \"}, \"type\": \"ProgCallExtern\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "by",
+     "reverse",
+     "seperated",
+     "spaces",
+     "string",
+     "words"
+    ],
+    "tfidf": {
+     "reverse": 4.806662,
+     "words": 4.401197,
+     "seperated": 5.49981,
+     "by": 3.70805,
+     "spaces": 4.113515,
+     "string": 2.321756
+    },
+    "arg_types": [
+     "str"
+    ],
+    "return_type": "str",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 3,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 606,
+    "entry": "radian_degree",
+    "arity": 1,
+    "params": [
+     "degree"
+    ],
+    "predictable": true,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"degree\", \"type\": \"ProgDefFnParam\"}, {\"name\": \"radian\", \"type\": \"ProgAssignVar\", \"value\": {\"items\": [{\"name\": \"degree\", \"type\": \"Var\"}, {\"a\": {\"attr\": \"pi\", \"obj\": {\"name\": \"math\", \"type\": \"Var\"}, \"type\": \"ProgAttrGet\"}, \"b\": {\"type\": \"Lit\", \"value\": 180}, \"type\": \"Div\"}], \"type\": \"Times\"}}, {\"type\": \"ProgReturn\", \"value\": {\"name\": \"radian\", \"type\": \"Var\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "convert",
+     "degrees",
+     "radians"
+    ],
+    "tfidf": {
+     "convert": 3.890372,
+     "degrees": 4.806662,
+     "radians": 5.49981
+    },
+    "arg_types": [
+     "int"
+    ],
+    "return_type": "float",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 4,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 607,
+    "entry": "find_literals",
+    "arity": 2,
+    "params": [
+     "text",
+     "pattern"
+    ],
+    "predictable": false,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"text\", \"type\": \"ProgDefFnParam\"}, {\"default\": null, \"name\": \"pattern\", \"type\": \"ProgDefFnParam\"}, {\"name\": \"match\", \"type\": \"ProgAssignVar\", \"value\": {\"args\": [{\"name\": \"pattern\", \"type\": \"Var\"}, {\"name\": \"text\", \"type\": \"Var\"}], \"name\": \"re.search\", \"recv\": null, \"type\": \"ProgCallExtern\"}}, {\"name\": \"s\", \"type\": \"ProgAssignVar\", \"value\": {\"args\": [], \"name\": \"match.start\", \"recv\": null, \"type\": \"ProgCallExtern\"}}, {\"name\": \"e\", \"type\": \"ProgAssignVar\", \"value\": {\"args\": [], \"name\": \"match.end\", \"recv\": null, \"type\": \"ProgCallExtern\"}}, {\"type\": \"ProgReturn\", \"value\": {\"items\": [{\"attr\": \"pattern\", \"obj\": {\"attr\": \"re\", \"obj\": {\"name\": \"match\", \"type\": \"Var\"}, \"type\": \"ProgAttrGet\"}, \"type\": \"ProgAttrGet\"}, {\"name\": \"s\", \"type\": \"Var\"}, {\"name\": \"e\", \"type\": \"Var\"}], \"kind\": \"tuple\", \"type\": \"ProgContainerLit\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "end",
+     "index",
+     "matching",
+     "pattern",
+     "regex",
+     "search",
+     "should",
+     "start",
+     "string",
+     "subtring"
+    ],
+    "tfidf": {
+     "search": 5.49981,
+     "string": 2.321756,
+     "regex": 4.806662,
+     "pattern": 5.49981,
+     "should": 4.806662,
+     "matching": 5.49981,
+     "subtring": 5.49981,
+     "start": 4.806662,
+     "index": 7.4161,
+     "end": 4.113515
+    },
+    "arg_types": [
+     "str",
+     "str"
+    ],
+    "return_type": "tuple",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 5,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 608,
+    "entry": "bell_Number",
+    "arity": 1,
+    "params": [
+     "n"
+    ],
+    "predictable": true,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"n\", \"type\": \"ProgDefFnParam\"}, {\"name\": \"bell\", \"type\": \"ProgAssignVar\", \"value\": {\"cond\": null, \"expr\": {\"cond\": null, \"expr\": {\"type\": \"Lit\", \"value\": 0}, \"source\": {\"args\": [{\"items\": [{\"name\": \"n\", \"type\": \"Var\"}, {\"type\": \"Lit\", \"value\": 1}], \"type\": \"Plus\"}], \"name\": \"range\", \"recv\": null, \"type\": \"ProgCallExtern\"}, \"type\": \"ProgComprehensionList\", \"var\": \"i\"}, \"source\": {\"args\": [{\"items\": [{\"name\": \"n\", \"type\": \"Var\"}, {\"type\": \"Lit\", \"value\": 1}], \"type\": \"Plus\"}], \"name\": \"range\", \"recv\": null, \"type\": \"ProgCallExtern\"}, \"type\": \"ProgComprehensionList\", \"var\": \"j\"}}, {\"index\": {\"type\": \"Lit\", \"value\": 0}, \"obj\": {\"index\": {\"type\": \"Lit\", \"value\": 0}, \"obj\": {\"name\": \"bell\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"type\": \"ProgSubscriptSet\", \"value\": {\"type\": \"Lit\", \"value\": 1}}, {\"body\": {\"stmts\": [{\"index\": {\"type\": \"Lit\", \"value\": 0}, \"obj\": {\"index\": {\"name\": \"i\", \"type\": \"Var\"}, \"obj\": {\"name\": \"bell\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"type\": \"ProgSubscriptSet\", \"value\": {\"index\": {\"a\": {\"name\": \"i\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 1}, \"type\": \"Minus\"}, \"obj\": {\"index\": {\"a\": {\"name\": \"i\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 1}, \"type\": \"Minus\"}, \"obj\": {\"name\": \"bell\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"type\": \"ProgSubscript\"}}, {\"body\": {\"index\": {\"name\": \"j\", \"type\": \"Var\"}, \"obj\": {\"index\": {\"name\": \"i\", \"type\": \"Var\"}, \"obj\": {\"name\": \"bell\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"type\": \"ProgSubscriptSet\", \"value\": {\"items\": [{\"index\": {\"a\": {\"name\": \"j\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 1}, \"type\": \"Minus\"}, \"obj\": {\"index\": {\"a\": {\"name\": \"i\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 1}, \"type\": \"Minus\"}, \"obj\": {\"name\": \"bell\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"type\": \"ProgSubscript\"}, {\"index\": {\"a\": {\"name\": \"j\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 1}, \"type\": \"Minus\"}, \"obj\": {\"index\": {\"name\": \"i\", \"type\": \"Var\"}, \"obj\": {\"name\": \"bell\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"type\": \"ProgSubscript\"}], \"type\": \"Plus\"}}, \"iter\": {\"args\": [{\"type\": \"Lit\", \"value\": 1}, {\"items\": [{\"name\": \"i\", \"type\": \"Var\"}, {\"type\": \"Lit\", \"value\": 1}], \"type\": \"Plus\"}], \"name\": \"range\", \"recv\": null, \"type\": \"ProgCallExtern\"}, \"orelse\": null, \"type\": \"ProgForEach\", \"var\": \"j\"}], \"type\": \"ProgSeq\"}, \"iter\": {\"args\": [{\"type\": \"Lit\", \"value\": 1}, {\"items\": [{\"name\": \"n\", \"type\": \"Var\"}, {\"type\": \"Lit\", \"value\": 1}], \"type\": \"Plus\"}], \"name\": \"range\", \"recv\": null, \"type\": \"ProgCallExtern\"}, \"orelse\": null, \"type\": \"ProgForEach\", \"var\": \"i\"}, {\"type\": \"ProgReturn\", \"value\": {\"index\": {\"type\": \"Lit\", \"value\": 0}, \"obj\": {\"index\": {\"name\": \"n\", \"type\": \"Var\"}, \"obj\": {\"name\": \"bell\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"type\": \"ProgSubscript\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "bell",
+     "find",
+     "nth",
+     "number"
+    ],
+    "tfidf": {
+     "find": 2.098612,
+     "nth": 4.113515,
+     "bell": 5.49981,
+     "number": 2.455287
+    },
+    "arg_types": [
+     "int"
+    ],
+    "return_type": "int",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 6,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 610,
+    "entry": "remove_kth_element",
+    "arity": 2,
+    "params": [
+     "list1",
+     "L"
+    ],
+    "predictable": true,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"list1\", \"type\": \"ProgDefFnParam\"}, {\"default\": null, \"name\": \"L\", \"type\": \"ProgDefFnParam\"}, {\"type\": \"ProgReturn\", \"value\": {\"items\": [{\"obj\": {\"name\": \"list1\", \"type\": \"Var\"}, \"start\": null, \"step\": null, \"stop\": {\"a\": {\"name\": \"L\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 1}, \"type\": \"Minus\"}, \"type\": \"ProgSlice\"}, {\"obj\": {\"name\": \"list1\", \"type\": \"Var\"}, \"start\": {\"name\": \"L\", \"type\": \"Var\"}, \"step\": null, \"stop\": null, \"type\": \"ProgSlice\"}], \"type\": \"Plus\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "but",
+     "element",
+     "elements",
+     "k'th",
+     "list",
+     "removed",
+     "same",
+     "takes"
+    ],
+    "tfidf": {
+     "takes": 4.113515,
+     "list": 4.817534,
+     "same": 4.113515,
+     "elements": 4.401197,
+     "but": 5.49981,
+     "k'th": 5.49981,
+     "element": 4.113515,
+     "removed": 5.49981
+    },
+    "arg_types": [
+     "list",
+     "int"
+    ],
+    "return_type": "list",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 7,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 611,
+    "entry": "max_of_nth",
+    "arity": 2,
+    "params": [
+     "test_list",
+     "N"
+    ],
+    "predictable": true,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"test_list\", \"type\": \"ProgDefFnParam\"}, {\"default\": null, \"name\": \"N\", \"type\": \"ProgDefFnParam\"}, {\"name\": \"res\", \"type\": \"ProgAssignVar\", \"value\": {\"args\": [{\"cond\": null, \"expr\": {\"index\": {\"name\": \"N\", \"type\": \"Var\"}, \"obj\": {\"name\": \"sub\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"source\": {\"name\": \"test_list\", \"type\": \"Var\"}, \"type\": \"ProgComprehensionList\", \"var\": \"sub\"}], \"name\": \"max\", \"recv\": null, \"type\": \"ProgCallExtern\"}}, {\"type\": \"ProgReturn\", \"value\": {\"name\": \"res\", \"type\": \"Var\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "column",
+     "list",
+     "lists",
+     "matrix",
+     "max",
+     "n'th",
+     "represented"
+    ],
+    "tfidf": {
+     "matrix": 4.806662,
+     "represented": 5.49981,
+     "list": 2.408767,
+     "lists": 3.5539,
+     "max": 5.49981,
+     "n'th": 5.49981,
+     "column": 5.49981
+    },
+    "arg_types": [
+     "list",
+     "int"
+    ],
+    "return_type": "int",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 8,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 614,
+    "entry": "cummulative_sum",
+    "arity": 1,
+    "params": [
+     "test_list"
+    ],
+    "predictable": false,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"test_list\", \"type\": \"ProgDefFnParam\"}, {\"name\": \"res\", \"type\": \"ProgAssignVar\", \"value\": {\"args\": [{\"args\": [{\"name\": \"sum\", \"type\": \"Var\"}, {\"name\": \"test_list\", \"type\": \"Var\"}], \"name\": \"map\", \"recv\": null, \"type\": \"ProgCallExtern\"}], \"name\": \"sum\", \"recv\": null, \"type\": \"ProgCallExtern\"}}, {\"type\": \"ProgReturn\", \"value\": {\"name\": \"res\", \"type\": \"Var\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "all",
+     "are",
+     "cumulative",
+     "find",
+     "list",
+     "present",
+     "sum",
+     "tuple",
+     "values"
+    ],
+    "tfidf": {
+     "find": 2.098612,
+     "cumulative": 5.49981,
+     "sum": 3.101914,
+     "all": 2.727221,
+     "values": 4.401197,
+     "are": 4.401197,
+     "present": 5.49981,
+     "tuple": 3.5539,
+     "list": 2.408767
+    },
+    "arg_types": [
+     "list"
+    ],
+    "return_type": "int",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 9,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 617,
+    "entry": "min_Jumps",
+    "arity": 2,
+    "params": [
+     "steps",
+     "d"
+    ],
+    "predictable": true,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"steps\", \"type\": \"ProgDefFnParam\"}, {\"default\": null, \"name\": \"d\", \"type\": \"ProgDefFnParam\"}, {\"targets\": [\"a\", \"b\"], \"type\": \"ProgTupleUnpack\", \"value\": {\"name\": \"steps\", \"type\": \"Var\"}}, {\"name\": \"temp\", \"type\": \"ProgAssignVar\", \"value\": {\"name\": \"a\", \"type\": \"Var\"}}, {\"name\": \"a\", \"type\": \"ProgAssignVar\", \"value\": {\"args\": [{\"name\": \"a\", \"type\": \"Var\"}, {\"name\": \"b\", \"type\": \"Var\"}], \"name\": \"min\", \"recv\": null, \"type\": \"ProgCallExtern\"}}, {\"name\": \"b\", \"type\": \"ProgAssignVar\", \"value\": {\"args\": [{\"name\": \"temp\", \"type\": \"Var\"}, {\"name\": \"b\", \"type\": \"Var\"}], \"name\": \"max\", \"recv\": null, \"type\": \"ProgCallExtern\"}}, {\"cond\": {\"a\": {\"name\": \"d\", \"type\": \"Var\"}, \"b\": {\"name\": \"b\", \"type\": \"Var\"}, \"type\": \"Gte\"}, \"orelse\": null, \"then\": {\"type\": \"ProgReturn\", \"value\": {\"a\": {\"a\": {\"items\": [{\"name\": \"d\", \"type\": \"Var\"}, {\"name\": \"b\", \"type\": \"Var\"}], \"type\": \"Plus\"}, \"b\": {\"type\": \"Lit\", \"value\": 1}, \"type\": \"Minus\"}, \"b\": {\"name\": \"b\", \"type\": \"Var\"}, \"type\": \"Div\"}}, \"type\": \"ProgIfStmt\"}, {\"cond\": {\"a\": {\"name\": \"d\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 0}, \"type\": \"Eq\"}, \"orelse\": null, \"then\": {\"type\": \"ProgReturn\", \"value\": {\"type\": \"Lit\", \"value\": 0}}, \"type\": \"ProgIfStmt\"}, {\"cond\": {\"a\": {\"name\": \"d\", \"type\": \"Var\"}, \"b\": {\"name\": \"a\", \"type\": \"Var\"}, \"type\": \"Eq\"}, \"orelse\": {\"type\": \"ProgReturn\", \"value\": {\"type\": \"Lit\", \"value\": 2}}, \"then\": {\"type\": \"ProgReturn\", \"value\": {\"type\": \"Lit\", \"value\": 1}}, \"type\": \"ProgIfStmt\"}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "check",
+     "form",
+     "jumps",
+     "length",
+     "number",
+     "origin",
+     "plane",
+     "point",
+     "reach",
+     "required"
+    ],
+    "tfidf": {
+     "check": 2.93486,
+     "number": 2.455287,
+     "jumps": 5.49981,
+     "required": 4.806662,
+     "length": 4.113515,
+     "reach": 5.49981,
+     "point": 4.401197,
+     "form": 5.49981,
+     "origin": 5.49981,
+     "plane": 5.49981
+    },
+    "arg_types": [
+     "tuple",
+     "int"
+    ],
+    "return_type": "float",
+    "consistent_types": false,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 10,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 619,
+    "entry": "move_num",
+    "arity": 1,
+    "params": [
+     "test_str"
+    ],
+    "predictable": true,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"test_str\", \"type\": \"ProgDefFnParam\"}, {\"name\": \"res\", \"type\": \"ProgAssignVar\", \"value\": {\"type\": \"Lit\", \"value\": \"\"}}, {\"name\": \"dig\", \"type\": \"ProgAssignVar\", \"value\": {\"type\": \"Lit\", \"value\": \"\"}}, {\"body\": {\"cond\": {\"args\": [], \"name\": \"isdigit\", \"recv\": {\"name\": \"ele\", \"type\": \"Var\"}, \"type\": \"ProgCallExtern\"}, \"orelse\": {\"name\": \"res\", \"op\": \"add\", \"type\": \"ProgAugAssign\", \"value\": {\"name\": \"ele\", \"type\": \"Var\"}}, \"then\": {\"name\": \"dig\", \"op\": \"add\", \"type\": \"ProgAugAssign\", \"value\": {\"name\": \"ele\", \"type\": \"Var\"}}, \"type\": \"ProgIfStmt\"}, \"iter\": {\"name\": \"test_str\", \"type\": \"Var\"}, \"orelse\": null, \"type\": \"ProgForEach\", \"var\": \"ele\"}, {\"name\": \"res\", \"op\": \"add\", \"type\": \"ProgAugAssign\", \"value\": {\"name\": \"dig\", \"type\": \"Var\"}}, {\"type\": \"ProgReturn\", \"value\": {\"name\": \"res\", \"type\": \"Var\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "all",
+     "end",
+     "move",
+     "numbers",
+     "string"
+    ],
+    "tfidf": {
+     "move": 4.401197,
+     "all": 2.727221,
+     "numbers": 2.791759,
+     "end": 4.113515,
+     "string": 2.321756
+    },
+    "arg_types": [
+     "str"
+    ],
+    "return_type": "str",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 11,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 620,
+    "entry": "largest_subset",
+    "arity": 1,
+    "params": [
+     "a"
+    ],
+    "predictable": true,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"a\", \"type\": \"ProgDefFnParam\"}, {\"name\": \"n\", \"type\": \"ProgAssignVar\", \"value\": {\"args\": [{\"name\": \"a\", \"type\": \"Var\"}], \"name\": \"len\", \"recv\": null, \"type\": \"ProgCallExtern\"}}, {\"name\": \"dp\", \"type\": \"ProgAssignVar\", \"value\": {\"cond\": null, \"expr\": {\"type\": \"Lit\", \"value\": 0}, \"source\": {\"args\": [{\"name\": \"n\", \"type\": \"Var\"}], \"name\": \"range\", \"recv\": null, \"type\": \"ProgCallExtern\"}, \"type\": \"ProgComprehensionList\", \"var\": \"i\"}}, {\"index\": {\"a\": {\"name\": \"n\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 1}, \"type\": \"Minus\"}, \"obj\": {\"name\": \"dp\", \"type\": \"Var\"}, \"type\": \"ProgSubscriptSet\", \"value\": {\"type\": \"Lit\", \"value\": 1}}, {\"body\": {\"stmts\": [{\"name\": \"mxm\", \"type\": \"ProgAssignVar\", \"value\": {\"type\": \"Lit\", \"value\": 0}}, {\"body\": {\"cond\": {\"cond\": {\"a\": {\"a\": {\"index\": {\"name\": \"j\", \"type\": \"Var\"}, \"obj\": {\"name\": \"a\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"b\": {\"index\": {\"name\": \"i\", \"type\": \"Var\"}, \"obj\": {\"name\": \"a\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"type\": \"Mod\"}, \"b\": {\"type\": \"Lit\", \"value\": 0}, \"type\": \"Eq\"}, \"other\": {\"a\": {\"a\": {\"index\": {\"name\": \"i\", \"type\": \"Var\"}, \"obj\": {\"name\": \"a\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"b\": {\"index\": {\"name\": \"j\", \"type\": \"Var\"}, \"obj\": {\"name\": \"a\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"type\": \"Mod\"}, \"b\": {\"type\": \"Lit\", \"value\": 0}, \"type\": \"Eq\"}, \"then\": {\"a\": {\"a\": {\"index\": {\"name\": \"j\", \"type\": \"Var\"}, \"obj\": {\"name\": \"a\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"b\": {\"index\": {\"name\": \"i\", \"type\": \"Var\"}, \"obj\": {\"name\": \"a\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"type\": \"Mod\"}, \"b\": {\"type\": \"Lit\", \"value\": 0}, \"type\": \"Eq\"}, \"type\": \"IfThenElse\"}, \"orelse\": null, \"then\": {\"name\": \"mxm\", \"type\": \"ProgAssignVar\", \"value\": {\"args\": [{\"name\": \"mxm\", \"type\": \"Var\"}, {\"index\": {\"name\": \"j\", \"type\": \"Var\"}, \"obj\": {\"name\": \"dp\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}], \"name\": \"max\", \"recv\": null, \"type\": \"ProgCallExtern\"}}, \"type\": \"ProgIfStmt\"}, \"iter\": {\"args\": [{\"items\": [{\"name\": \"i\", \"type\": \"Var\"}, {\"type\": \"Lit\", \"value\": 1}], \"type\": \"Plus\"}, {\"name\": \"n\", \"type\": \"Var\"}], \"name\": \"range\", \"recv\": null, \"type\": \"ProgCallExtern\"}, \"orelse\": null, \"type\": \"ProgForEach\", \"var\": \"j\"}, {\"index\": {\"name\": \"i\", \"type\": \"Var\"}, \"obj\": {\"name\": \"dp\", \"type\": \"Var\"}, \"type\": \"ProgSubscriptSet\", \"value\": {\"items\": [{\"type\": \"Lit\", \"value\": 1}, {\"name\": \"mxm\", \"type\": \"Var\"}], \"type\": \"Plus\"}}], \"type\": \"ProgSeq\"}, \"iter\": {\"args\": [{\"a\": {\"name\": \"n\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 2}, \"type\": \"Minus\"}, {\"arg\": {\"type\": \"Lit\", \"value\": 1}, \"type\": \"Neg\"}, {\"arg\": {\"type\": \"Lit\", \"value\": 1}, \"type\": \"Neg\"}], \"name\": \"range\", \"recv\": null, \"type\": \"ProgCallExtern\"}, \"orelse\": null, \"type\": \"ProgForEach\", \"var\": \"i\"}, {\"type\": \"ProgReturn\", \"value\": {\"args\": [{\"name\": \"dp\", \"type\": \"Var\"}], \"name\": \"max\", \"recv\": null, \"type\": \"ProgCallExtern\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "divisible",
+     "every",
+     "find",
+     "largest",
+     "list",
+     "numbers",
+     "pair",
+     "size",
+     "so",
+     "subset"
+    ],
+    "tfidf": {
+     "find": 2.098612,
+     "size": 4.401197,
+     "largest": 4.806662,
+     "subset": 5.49981,
+     "list": 2.408767,
+     "numbers": 2.791759,
+     "so": 5.49981,
+     "every": 4.401197,
+     "pair": 4.401197,
+     "divisible": 5.49981
+    },
+    "arg_types": [
+     "list"
+    ],
+    "return_type": "int",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 12,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 622,
+    "entry": "get_median",
+    "arity": 3,
+    "params": [
+     "arr1",
+     "arr2",
+     "n"
+    ],
+    "predictable": true,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"arr1\", \"type\": \"ProgDefFnParam\"}, {\"default\": null, \"name\": \"arr2\", \"type\": \"ProgDefFnParam\"}, {\"default\": null, \"name\": \"n\", \"type\": \"ProgDefFnParam\"}, {\"name\": \"i\", \"type\": \"ProgAssignVar\", \"value\": {\"type\": \"Lit\", \"value\": 0}}, {\"name\": \"j\", \"type\": \"ProgAssignVar\", \"value\": {\"type\": \"Lit\", \"value\": 0}}, {\"name\": \"m1\", \"type\": \"ProgAssignVar\", \"value\": {\"arg\": {\"type\": \"Lit\", \"value\": 1}, \"type\": \"Neg\"}}, {\"name\": \"m2\", \"type\": \"ProgAssignVar\", \"value\": {\"arg\": {\"type\": \"Lit\", \"value\": 1}, \"type\": \"Neg\"}}, {\"name\": \"count\", \"type\": \"ProgAssignVar\", \"value\": {\"type\": \"Lit\", \"value\": 0}}, {\"body\": {\"stmts\": [{\"name\": \"count\", \"op\": \"add\", \"type\": \"ProgAugAssign\", \"value\": {\"type\": \"Lit\", \"value\": 1}}, {\"cond\": {\"a\": {\"name\": \"i\", \"type\": \"Var\"}, \"b\": {\"name\": \"n\", \"type\": \"Var\"}, \"type\": \"Eq\"}, \"orelse\": {\"cond\": {\"a\": {\"name\": \"j\", \"type\": \"Var\"}, \"b\": {\"name\": \"n\", \"type\": \"Var\"}, \"type\": \"Eq\"}, \"orelse\": null, \"then\": {\"stmts\": [{\"name\": \"m1\", \"type\": \"ProgAssignVar\", \"value\": {\"name\": \"m2\", \"type\": \"Var\"}}, {\"name\": \"m2\", \"type\": \"ProgAssignVar\", \"value\": {\"index\": {\"type\": \"Lit\", \"value\": 0}, \"obj\": {\"name\": \"arr1\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}}, {\"kind\": \"break\", \"type\": \"ProgLoopCtl\"}], \"type\": \"ProgSeq\"}, \"type\": \"ProgIfStmt\"}, \"then\": {\"stmts\": [{\"name\": \"m1\", \"type\": \"ProgAssignVar\", \"value\": {\"name\": \"m2\", \"type\": \"Var\"}}, {\"name\": \"m2\", \"type\": \"ProgAssignVar\", \"value\": {\"index\": {\"type\": \"Lit\", \"value\": 0}, \"obj\": {\"name\": \"arr2\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}}, {\"kind\": \"break\", \"type\": \"ProgLoopCtl\"}], \"type\": \"ProgSeq\"}, \"type\": \"ProgIfStmt\"}, {\"cond\": {\"a\": {\"index\": {\"name\": \"i\", \"type\": \"Var\"}, \"obj\": {\"name\": \"arr1\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"b\": {\"index\": {\"name\": \"j\", \"type\": \"Var\"}, \"obj\": {\"name\": \"arr2\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"type\": \"Lte\"}, \"orelse\": {\"stmts\": [{\"name\": \"m1\", \"type\": \"ProgAssignVar\", \"value\": {\"name\": \"m2\", \"type\": \"Var\"}}, {\"name\": \"m2\", \"type\": \"ProgAssignVar\", \"value\": {\"index\": {\"name\": \"j\", \"type\": \"Var\"}, \"obj\": {\"name\": \"arr2\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}}, {\"name\": \"j\", \"op\": \"add\", \"type\": \"ProgAugAssign\", \"value\": {\"type\": \"Lit\", \"value\": 1}}], \"type\": \"ProgSeq\"}, \"then\": {\"stmts\": [{\"name\": \"m1\", \"type\": \"ProgAssignVar\", \"value\": {\"name\": \"m2\", \"type\": \"Var\"}}, {\"name\": \"m2\", \"type\": \"ProgAssignVar\", \"value\": {\"index\": {\"name\": \"i\", \"type\": \"Var\"}, \"obj\": {\"name\": \"arr1\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}}, {\"name\": \"i\", \"op\": \"add\", \"type\": \"ProgAugAssign\", \"value\": {\"type\": \"Lit\", \"value\": 1}}], \"type\": \"ProgSeq\"}, \"type\": \"ProgIfStmt\"}], \"type\": \"ProgSeq\"}, \"cond\": {\"a\": {\"name\": \"count\", \"type\": \"Var\"}, \"b\": {\"items\": [{\"name\": \"n\", \"type\": \"Var\"}, {\"type\": \"Lit\", \"value\": 1}], \"type\": \"Plus\"}, \"type\": \"Lt\"}, \"orelse\": null, \"type\": \"ProgWhile\"}, {\"type\": \"ProgReturn\", \"value\": {\"a\": {\"items\": [{\"name\": \"m1\", \"type\": \"Var\"}, {\"name\": \"m2\", \"type\": \"Var\"}], \"type\": \"Plus\"}, \"b\": {\"type\": \"Lit\", \"value\": 2}, \"type\": \"Div\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "find",
+     "lists",
+     "median",
+     "same",
+     "size",
+     "sorted",
+     "two"
+    ],
+    "tfidf": {
+     "find": 2.098612,
+     "median": 5.49981,
+     "two": 3.890372,
+     "sorted": 3.5539,
+     "lists": 3.5539,
+     "same": 4.113515,
+     "size": 4.401197
+    },
+    "arg_types": [
+     "list",
+     "list",
+     "int"
+    ],
+    "return_type": "float",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 13,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 624,
+    "entry": "is_upper",
+    "arity": 1,
+    "params": [
+     "string"
+    ],
+    "predictable": true,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"string\", \"type\": \"ProgDefFnParam\"}, {\"type\": \"ProgReturn\", \"value\": {\"args\": [], \"name\": \"upper\", \"recv\": {\"name\": \"string\", \"type\": \"Var\"}, \"type\": \"ProgCallExtern\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "convert",
+     "string",
+     "uppercase"
+    ],
+    "tfidf": {
+     "convert": 3.890372,
+     "string": 2.321756,
+     "uppercase": 4.806662
+    },
+    "arg_types": [
+     "str"
+    ],
+    "return_type": "str",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 14,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 625,
+    "entry": "swap_List",
+    "arity": 1,
+    "params": [
+     "newList"
+    ],
+    "predictable": true,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"newList\", \"type\": \"ProgDefFnParam\"}, {\"name\": \"size\", \"type\": \"ProgAssignVar\", \"value\": {\"args\": [{\"name\": \"newList\", \"type\": \"Var\"}], \"name\": \"len\", \"recv\": null, \"type\": \"ProgCallExtern\"}}, {\"name\": \"temp\", \"type\": \"ProgAssignVar\", \"value\": {\"index\": {\"type\": \"Lit\", \"value\": 0}, \"obj\": {\"name\": \"newList\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}}, {\"index\": {\"type\": \"Lit\", \"value\": 0}, \"obj\": {\"name\": \"newList\", \"type\": \"Var\"}, \"type\": \"ProgSubscriptSet\", \"value\": {\"index\": {\"a\": {\"name\": \"size\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 1}, \"type\": \"Minus\"}, \"obj\": {\"name\": \"newList\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}}, {\"index\": {\"a\": {\"name\": \"size\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 1}, \"type\": \"Minus\"}, \"obj\": {\"name\": \"newList\", \"type\": \"Var\"}, \"type\": \"ProgSubscriptSet\", \"value\": {\"name\": \"temp\", \"type\": \"Var\"}}, {\"type\": \"ProgReturn\", \"value\": {\"name\": \"newList\", \"type\": \"Var\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "element",
+     "first",
+     "interchange",
+     "last",
+     "list"
+    ],
+    "tfidf": {
+     "interchange": 5.49981,
+     "first": 3.5539,
+     "last": 4.401197,
+     "element": 4.113515,
+     "list": 2.408767
+    },
+    "arg_types": [
+     "list"
+    ],
+    "return_type": "list",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 15,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 626,
+    "entry": "triangle_area",
+    "arity": 1,
+    "params": [
+     "r"
+    ],
+    "predictable": true,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"r\", \"type\": \"ProgDefFnParam\"}, {\"cond\": {\"a\": {\"name\": \"r\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 0}, \"type\": \"Lt\"}, \"orelse\": null, \"then\": {\"type\": \"ProgReturn\", \"value\": {\"type\": \"Lit\", \"value\": null}}, \"type\": \"ProgIfStmt\"}, {\"type\": \"ProgReturn\", \"value\": {\"items\": [{\"name\": \"r\", \"type\": \"Var\"}, {\"name\": \"r\", \"type\": \"Var\"}], \"type\": \"Times\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "area",
+     "be",
+     "can",
+     "find",
+     "inscribed",
+     "largest",
+     "radius",
+     "semicircle",
+     "triangle"
+    ],
+    "tfidf": {
+     "find": 2.098612,
+     "area": 4.113515,
+     "largest": 4.806662,
+     "triangle": 5.49981,
+     "can": 5.49981,
+     "be": 5.49981,
+     "inscribed": 5.49981,
+     "semicircle": 5.49981,
+     "radius": 4.401197
+    },
+    "arg_types": [
+     "int"
+    ],
+    "return_type": "NoneType",
+    "consistent_types": false,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 16,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 627,
+    "entry": "find_First_Missing",
+    "arity": 3,
+    "params": [
+     "array",
+     "start",
+     "end"
+    ],
+    "predictable": false,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"array\", \"type\": \"ProgDefFnParam\"}, {\"default\": {\"type\": \"Lit\", \"value\": 0}, \"name\": \"start\", \"type\": \"ProgDefFnParam\"}, {\"default\": {\"type\": \"Lit\", \"value\": null}, \"name\": \"end\", \"type\": \"ProgDefFnParam\"}, {\"cond\": {\"a\": {\"name\": \"end\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": null}, \"negated\": false, \"type\": \"ProgIsOp\"}, \"orelse\": null, \"then\": {\"name\": \"end\", \"type\": \"ProgAssignVar\", \"value\": {\"a\": {\"args\": [{\"name\": \"array\", \"type\": \"Var\"}], \"name\": \"len\", \"recv\": null, \"type\": \"ProgCallExtern\"}, \"b\": {\"type\": \"Lit\", \"value\": 1}, \"type\": \"Minus\"}}, \"type\": \"ProgIfStmt\"}, {\"cond\": {\"a\": {\"name\": \"start\", \"type\": \"Var\"}, \"b\": {\"name\": \"end\", \"type\": \"Var\"}, \"type\": \"Gt\"}, \"orelse\": null, \"then\": {\"type\": \"ProgReturn\", \"value\": {\"items\": [{\"name\": \"end\", \"type\": \"Var\"}, {\"type\": \"Lit\", \"value\": 1}], \"type\": \"Plus\"}}, \"type\": \"ProgIfStmt\"}, {\"cond\": {\"arg\": {\"a\": {\"name\": \"start\", \"type\": \"Var\"}, \"b\": {\"index\": {\"name\": \"start\", \"type\": \"Var\"}, \"obj\": {\"name\": \"array\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"type\": \"Eq\"}, \"type\": \"Not\"}, \"orelse\": null, \"then\": {\"type\": \"ProgReturn\", \"value\": {\"name\": \"start\", \"type\": \"Var\"}}, \"type\": \"ProgIfStmt\"}, {\"name\": \"mid\", \"type\": \"ProgAssignVar\", \"value\": {\"args\": [{\"a\": {\"items\": [{\"name\": \"start\", \"type\": \"Var\"}, {\"name\": \"end\", \"type\": \"Var\"}], \"type\": \"Plus\"}, \"b\": {\"type\": \"Lit\", \"value\": 2}, \"type\": \"Div\"}], \"name\": \"int\", \"recv\": null, \"type\": \"ProgCallExtern\"}}, {\"cond\": {\"a\": {\"index\": {\"name\": \"mid\", \"type\": \"Var\"}, \"obj\": {\"name\": \"array\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"b\": {\"name\": \"mid\", \"type\": \"Var\"}, \"type\": \"Eq\"}, \"orelse\": null, \"then\": {\"type\": \"ProgReturn\", \"value\": {\"args\": [{\"name\": \"array\", \"type\": \"Var\"}, {\"items\": [{\"name\": \"mid\", \"type\": \"Var\"}, {\"type\": \"Lit\", \"value\": 1}], \"type\": \"Plus\"}, {\"name\": \"end\", \"type\": \"Var\"}], \"name\": \"find_First_Missing\", \"recv\": null, \"type\": \"ProgCallExtern\"}}, \"type\": \"ProgIfStmt\"}, {\"type\": \"ProgReturn\", \"value\": {\"args\": [{\"name\": \"array\", \"type\": \"Var\"}, {\"name\": \"start\", \"type\": \"Var\"}, {\"name\": \"mid\", \"type\": \"Var\"}], \"name\": \"find_First_Missing\", \"recv\": null, \"type\": \"ProgCallExtern\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "find",
+     "list",
+     "missing",
+     "natural",
+     "number",
+     "numbers",
+     "smallest",
+     "sorted"
+    ],
+    "tfidf": {
+     "find": 2.098612,
+     "smallest": 4.806662,
+     "missing": 5.49981,
+     "number": 2.455287,
+     "sorted": 3.5539,
+     "list": 2.408767,
+     "natural": 4.401197,
+     "numbers": 2.791759
+    },
+    "arg_types": [
+     "list"
+    ],
+    "return_type": "int",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 17,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 628,
+    "entry": "replace_spaces",
+    "arity": 1,
+    "params": [
+     "string"
+    ],
+    "predictable": true,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"string\", \"type\": \"ProgDefFnParam\"}, {\"type\": \"ProgReturn\", \"value\": {\"args\": [{\"type\": \"Lit\", \"value\": \" \"}, {\"type\": \"Lit\", \"value\": \"%20\"}], \"name\": \"replace\", \"recv\": {\"name\": \"string\", \"type\": \"Var\"}, \"type\": \"ProgCallExtern\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "all",
+     "replace",
+     "spaces",
+     "string"
+    ],
+    "tfidf": {
+     "replace": 4.401197,
+     "all": 2.727221,
+     "spaces": 4.113515,
+     "string": 2.321756
+    },
+    "arg_types": [
+     "str"
+    ],
+    "return_type": "str",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 18,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 629,
+    "entry": "Split",
+    "arity": 1,
+    "params": [
+     "list"
+    ],
+    "predictable": true,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"list\", \"type\": \"ProgDefFnParam\"}, {\"type\": \"ProgReturn\", \"value\": {\"cond\": {\"a\": {\"a\": {\"name\": \"num\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 2}, \"type\": \"Mod\"}, \"b\": {\"type\": \"Lit\", \"value\": 0}, \"type\": \"Eq\"}, \"expr\": {\"name\": \"num\", \"type\": \"Var\"}, \"source\": {\"name\": \"list\", \"type\": \"Var\"}, \"type\": \"ProgComprehensionList\", \"var\": \"num\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "even",
+     "find",
+     "list",
+     "numbers"
+    ],
+    "tfidf": {
+     "find": 2.098612,
+     "even": 4.113515,
+     "numbers": 5.583519,
+     "list": 2.408767
+    },
+    "arg_types": [
+     "list"
+    ],
+    "return_type": "list",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 19,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 630,
+    "entry": "get_coordinates",
+    "arity": 1,
+    "params": [
+     "test_tup"
+    ],
+    "predictable": false,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"test_tup\", \"type\": \"ProgDefFnParam\"}, {\"type\": \"ProgReturn\", \"value\": {\"args\": [{\"args\": [{\"name\": \"test_tup\", \"type\": \"Var\"}], \"name\": \"adjac\", \"recv\": null, \"type\": \"ProgCallExtern\"}], \"name\": \"list\", \"recv\": null, \"type\": \"ProgCallExtern\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "adjacent",
+     "all",
+     "coordinate",
+     "coordinates",
+     "extract",
+     "tuple"
+    ],
+    "tfidf": {
+     "extract": 4.806662,
+     "all": 2.727221,
+     "adjacent": 4.806662,
+     "coordinates": 5.49981,
+     "coordinate": 5.49981,
+     "tuple": 3.5539
+    },
+    "arg_types": [
+     "tuple"
+    ],
+    "return_type": "list",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 20,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 631,
+    "entry": "replace_spaces",
+    "arity": 1,
+    "params": [
+     "text"
+    ],
+    "predictable": true,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"text\", \"type\": \"ProgDefFnParam\"}, {\"type\": \"ProgReturn\", \"value\": {\"args\": [{\"cond\": null, \"expr\": {\"cond\": {\"a\": {\"name\": \"c\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": \"_\"}, \"type\": \"Eq\"}, \"other\": {\"cond\": {\"a\": {\"name\": \"c\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": \" \"}, \"type\": \"Eq\"}, \"other\": {\"name\": \"c\", \"type\": \"Var\"}, \"then\": {\"type\": \"Lit\", \"value\": \"_\"}, \"type\": \"IfThenElse\"}, \"then\": {\"type\": \"Lit\", \"value\": \" \"}, \"type\": \"IfThenElse\"}, \"source\": {\"name\": \"text\", \"type\": \"Var\"}, \"type\": \"ProgComprehensionGen\", \"var\": \"c\"}], \"name\": \"join\", \"recv\": {\"type\": \"Lit\", \"value\": \"\"}, \"type\": \"ProgCallExtern\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "replace",
+     "string",
+     "underscore",
+     "versa",
+     "vice",
+     "whitespaces"
+    ],
+    "tfidf": {
+     "replace": 4.401197,
+     "whitespaces": 4.806662,
+     "underscore": 5.49981,
+     "vice": 5.49981,
+     "versa": 5.49981,
+     "string": 2.321756
+    },
+    "arg_types": [
+     "str"
+    ],
+    "return_type": "str",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 21,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 632,
+    "entry": "move_zero",
+    "arity": 1,
+    "params": [
+     "num_list"
+    ],
+    "predictable": true,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"num_list\", \"type\": \"ProgDefFnParam\"}, {\"name\": \"a\", \"type\": \"ProgAssignVar\", \"value\": {\"cond\": null, \"expr\": {\"type\": \"Lit\", \"value\": 0}, \"source\": {\"args\": [{\"args\": [{\"type\": \"Lit\", \"value\": 0}], \"name\": \"count\", \"recv\": {\"name\": \"num_list\", \"type\": \"Var\"}, \"type\": \"ProgCallExtern\"}], \"name\": \"range\", \"recv\": null, \"type\": \"ProgCallExtern\"}, \"type\": \"ProgComprehensionList\", \"var\": \"i\"}}, {\"name\": \"x\", \"type\": \"ProgAssignVar\", \"value\": {\"cond\": {\"arg\": {\"a\": {\"name\": \"i\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 0}, \"type\": \"Eq\"}, \"type\": \"Not\"}, \"expr\": {\"name\": \"i\", \"type\": \"Var\"}, \"source\": {\"name\": \"num_list\", \"type\": \"Var\"}, \"type\": \"ProgComprehensionList\", \"var\": \"i\"}}, {\"type\": \"ProgReturn\", \"value\": {\"items\": [{\"name\": \"x\", \"type\": \"Var\"}, {\"name\": \"a\", \"type\": \"Var\"}], \"type\": \"Plus\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "all",
+     "end",
+     "list",
+     "move",
+     "zeroes"
+    ],
+    "tfidf": {
+     "move": 4.401197,
+     "all": 2.727221,
+     "zeroes": 5.49981,
+     "end": 4.113515,
+     "list": 2.408767
+    },
+    "arg_types": [
+     "list"
+    ],
+    "return_type": "list",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 22,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 633,
+    "entry": "pair_xor_Sum",
+    "arity": 2,
+    "params": [
+     "arr",
+     "n"
+    ],
+    "predictable": true,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"arr\", \"type\": \"ProgDefFnParam\"}, {\"default\": null, \"name\": \"n\", \"type\": \"ProgDefFnParam\"}, {\"name\": \"ans\", \"type\": \"ProgAssignVar\", \"value\": {\"type\": \"Lit\", \"value\": 0}}, {\"body\": {\"body\": {\"name\": \"ans\", \"type\": \"ProgAssignVar\", \"value\": {\"items\": [{\"name\": \"ans\", \"type\": \"Var\"}, {\"a\": {\"index\": {\"name\": \"i\", \"type\": \"Var\"}, \"obj\": {\"name\": \"arr\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"b\": {\"index\": {\"name\": \"j\", \"type\": \"Var\"}, \"obj\": {\"name\": \"arr\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"type\": \"BitXor\"}], \"type\": \"Plus\"}}, \"iter\": {\"args\": [{\"items\": [{\"name\": \"i\", \"type\": \"Var\"}, {\"type\": \"Lit\", \"value\": 1}], \"type\": \"Plus\"}, {\"name\": \"n\", \"type\": \"Var\"}], \"name\": \"range\", \"recv\": null, \"type\": \"ProgCallExtern\"}, \"orelse\": null, \"type\": \"ProgForEach\", \"var\": \"j\"}, \"iter\": {\"args\": [{\"type\": \"Lit\", \"value\": 0}, {\"name\": \"n\", \"type\": \"Var\"}], \"name\": \"range\", \"recv\": null, \"type\": \"ProgCallExtern\"}, \"orelse\": null, \"type\": \"ProgForEach\", \"var\": \"i\"}, {\"type\": \"ProgReturn\", \"value\": {\"name\": \"ans\", \"type\": \"Var\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "all",
+     "find",
+     "list",
+     "numbers",
+     "pairs",
+     "sum",
+     "xor"
+    ],
+    "tfidf": {
+     "find": 2.098612,
+     "sum": 3.101914,
+     "xor": 5.49981,
+     "all": 2.727221,
+     "pairs": 4.806662,
+     "numbers": 2.791759,
+     "list": 2.408767
+    },
+    "arg_types": [
+     "list",
+     "int"
+    ],
+    "return_type": "int",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 23,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 635,
+    "entry": "heap_sort",
+    "arity": 1,
+    "params": [
+     "iterable"
+    ],
+    "predictable": false,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"iterable\", \"type\": \"ProgDefFnParam\"}, {\"name\": \"h\", \"type\": \"ProgAssignVar\", \"value\": {\"items\": [], \"kind\": \"list\", \"type\": \"ProgContainerLit\"}}, {\"body\": {\"args\": [{\"name\": \"h\", \"type\": \"Var\"}, {\"name\": \"value\", \"type\": \"Var\"}], \"name\": \"hq.heappush\", \"recv\": null, \"type\": \"ProgCallExtern\"}, \"iter\": {\"name\": \"iterable\", \"type\": \"Var\"}, \"orelse\": null, \"type\": \"ProgForEach\", \"var\": \"value\"}, {\"type\": \"ProgReturn\", \"value\": {\"cond\": null, \"expr\": {\"args\": [{\"name\": \"h\", \"type\": \"Var\"}], \"name\": \"hq.heappop\", \"recv\": null, \"type\": \"ProgCallExtern\"}, \"source\": {\"args\": [{\"args\": [{\"name\": \"h\", \"type\": \"Var\"}], \"name\": \"len\", \"recv\": null, \"type\": \"ProgCallExtern\"}], \"name\": \"range\", \"recv\": null, \"type\": \"ProgCallExtern\"}, \"type\": \"ProgComprehensionList\", \"var\": \"i\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "list",
+     "sort"
+    ],
+    "tfidf": {
+     "sort": 5.49981,
+     "list": 2.408767
+    },
+    "arg_types": [
+     "list"
+    ],
+    "return_type": "list",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 24,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 637,
+    "entry": "noprofit_noloss",
+    "arity": 2,
+    "params": [
+     "actual_cost",
+     "sale_amount"
+    ],
+    "predictable": true,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"actual_cost\", \"type\": \"ProgDefFnParam\"}, {\"default\": null, \"name\": \"sale_amount\", \"type\": \"ProgDefFnParam\"}, {\"cond\": {\"a\": {\"name\": \"sale_amount\", \"type\": \"Var\"}, \"b\": {\"name\": \"actual_cost\", \"type\": \"Var\"}, \"type\": \"Eq\"}, \"orelse\": {\"type\": \"ProgReturn\", \"value\": {\"type\": \"Lit\", \"value\": false}}, \"then\": {\"type\": \"ProgReturn\", \"value\": {\"type\": \"Lit\", \"value\": true}}, \"type\": \"ProgIfStmt\"}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "amount",
+     "check",
+     "has",
+     "loss",
+     "no",
+     "profit",
+     "whether"
+    ],
+    "tfidf": {
+     "check": 2.93486,
+     "whether": 3.197225,
+     "amount": 5.49981,
+     "has": 4.113515,
+     "no": 9.613325,
+     "profit": 5.49981,
+     "loss": 5.49981
+    },
+    "arg_types": [
+     "int",
+     "int"
+    ],
+    "return_type": "bool",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 25,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 638,
+    "entry": "wind_chill",
+    "arity": 2,
+    "params": [
+     "v",
+     "t"
+    ],
+    "predictable": true,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"v\", \"type\": \"ProgDefFnParam\"}, {\"default\": null, \"name\": \"t\", \"type\": \"ProgDefFnParam\"}, {\"name\": \"windchill\", \"type\": \"ProgAssignVar\", \"value\": {\"items\": [{\"a\": {\"items\": [{\"type\": \"Lit\", \"value\": 13.12}, {\"items\": [{\"type\": \"Lit\", \"value\": 0.6215}, {\"name\": \"t\", \"type\": \"Var\"}], \"type\": \"Times\"}], \"type\": \"Plus\"}, \"b\": {\"items\": [{\"type\": \"Lit\", \"value\": 11.37}, {\"args\": [{\"name\": \"v\", \"type\": \"Var\"}, {\"type\": \"Lit\", \"value\": 0.16}], \"name\": \"math.pow\", \"recv\": null, \"type\": \"ProgCallExtern\"}], \"type\": \"Times\"}, \"type\": \"Minus\"}, {\"items\": [{\"items\": [{\"type\": \"Lit\", \"value\": 0.3965}, {\"name\": \"t\", \"type\": \"Var\"}], \"type\": \"Times\"}, {\"args\": [{\"name\": \"v\", \"type\": \"Var\"}, {\"type\": \"Lit\", \"value\": 0.16}], \"name\": \"math.pow\", \"recv\": null, \"type\": \"ProgCallExtern\"}], \"type\": \"Times\"}], \"type\": \"Plus\"}}, {\"type\": \"ProgReturn\", \"value\": {\"args\": [{\"args\": [{\"name\": \"windchill\", \"type\": \"Var\"}, {\"type\": \"Lit\", \"value\": 0}], \"name\": \"round\", \"recv\": null, \"type\": \"ProgCallExtern\"}], \"name\": \"int\", \"recv\": null, \"type\": \"ProgCallExtern\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "calculate",
+     "celsius",
+     "chill",
+     "index",
+     "integer",
+     "km",
+     "next",
+     "rounded",
+     "temperature",
+     "velocity",
+     "wind"
+    ],
+    "tfidf": {
+     "calculate": 4.401197,
+     "wind": 10.999619,
+     "chill": 5.49981,
+     "index": 3.70805,
+     "rounded": 5.49981,
+     "next": 5.49981,
+     "integer": 4.806662,
+     "velocity": 5.49981,
+     "km": 5.49981,
+     "temperature": 5.49981,
+     "celsius": 5.49981
+    },
+    "arg_types": [
+     "int",
+     "int"
+    ],
+    "return_type": "int",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 26,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 640,
+    "entry": "remove_parenthesis",
+    "arity": 1,
+    "params": [
+     "items"
+    ],
+    "predictable": false,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"items\", \"type\": \"ProgDefFnParam\"}, {\"body\": {\"type\": \"ProgReturn\", \"value\": {\"args\": [{\"type\": \"Lit\", \"value\": \" ?\\\\([^)]+\\\\)\"}, {\"type\": \"Lit\", \"value\": \"\"}, {\"name\": \"item\", \"type\": \"Var\"}], \"name\": \"re.sub\", \"recv\": null, \"type\": \"ProgCallExtern\"}}, \"iter\": {\"name\": \"items\", \"type\": \"Var\"}, \"orelse\": null, \"type\": \"ProgForEach\", \"var\": \"item\"}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "inbetween",
+     "parenthesis",
+     "remove",
+     "string",
+     "them",
+     "what"
+    ],
+    "tfidf": {
+     "remove": 4.113515,
+     "parenthesis": 5.49981,
+     "what": 5.49981,
+     "inbetween": 5.49981,
+     "them": 5.49981,
+     "string": 2.321756
+    },
+    "arg_types": [
+     "list"
+    ],
+    "return_type": "str",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 27,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 641,
+    "entry": "is_nonagonal",
+    "arity": 1,
+    "params": [
+     "n"
+    ],
+    "predictable": true,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"n\", \"type\": \"ProgDefFnParam\"}, {\"type\": \"ProgReturn\", \"value\": {\"args\": [{\"a\": {\"items\": [{\"name\": \"n\", \"type\": \"Var\"}, {\"a\": {\"items\": [{\"type\": \"Lit\", \"value\": 7}, {\"name\": \"n\", \"type\": \"Var\"}], \"type\": \"Times\"}, \"b\": {\"type\": \"Lit\", \"value\": 5}, \"type\": \"Minus\"}], \"type\": \"Times\"}, \"b\": {\"type\": \"Lit\", \"value\": 2}, \"type\": \"Div\"}], \"name\": \"int\", \"recv\": null, \"type\": \"ProgCallExtern\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "find",
+     "nonagonal",
+     "nth",
+     "number"
+    ],
+    "tfidf": {
+     "find": 2.098612,
+     "nth": 4.113515,
+     "nonagonal": 5.49981,
+     "number": 2.455287
+    },
+    "arg_types": [
+     "int"
+    ],
+    "return_type": "int",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 28,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 643,
+    "entry": "text_match_wordz_middle",
+    "arity": 1,
+    "params": [
+     "text"
+    ],
+    "predictable": false,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"text\", \"type\": \"ProgDefFnParam\"}, {\"type\": \"ProgReturn\", \"value\": {\"args\": [{\"args\": [{\"type\": \"Lit\", \"value\": \"\\\\Bz\\\\B\"}, {\"name\": \"text\", \"type\": \"Var\"}], \"name\": \"re.search\", \"recv\": null, \"type\": \"ProgCallExtern\"}], \"name\": \"bool\", \"recv\": null, \"type\": \"ProgCallExtern\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "'z'",
+     "at",
+     "checks",
+     "contains",
+     "end",
+     "except",
+     "start",
+     "strings",
+     "word"
+    ],
+    "tfidf": {
+     "checks": 5.49981,
+     "strings": 4.806662,
+     "contains": 3.890372,
+     "'z'": 5.49981,
+     "except": 4.806662,
+     "at": 5.49981,
+     "start": 4.806662,
+     "end": 4.113515,
+     "word": 5.49981
+    },
+    "arg_types": [
+     "str"
+    ],
+    "return_type": "bool",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 29,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 644,
+    "entry": "reverse_Array_Upto_K",
+    "arity": 2,
+    "params": [
+     "input",
+     "k"
+    ],
+    "predictable": true,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"input\", \"type\": \"ProgDefFnParam\"}, {\"default\": null, \"name\": \"k\", \"type\": \"ProgDefFnParam\"}, {\"type\": \"ProgReturn\", \"value\": {\"items\": [{\"obj\": {\"name\": \"input\", \"type\": \"Var\"}, \"start\": {\"a\": {\"name\": \"k\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 1}, \"type\": \"Minus\"}, \"step\": {\"arg\": {\"type\": \"Lit\", \"value\": 1}, \"type\": \"Neg\"}, \"stop\": null, \"type\": \"ProgSlice\"}, {\"obj\": {\"name\": \"input\", \"type\": \"Var\"}, \"start\": {\"name\": \"k\", \"type\": \"Var\"}, \"step\": null, \"stop\": null, \"type\": \"ProgSlice\"}], \"type\": \"Plus\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "array",
+     "position",
+     "reverse",
+     "upto"
+    ],
+    "tfidf": {
+     "reverse": 4.806662,
+     "array": 3.5539,
+     "upto": 5.49981,
+     "position": 4.401197
+    },
+    "arg_types": [
+     "list",
+     "int"
+    ],
+    "return_type": "list",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 30,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 721,
+    "entry": "maxAverageOfPath",
+    "arity": 1,
+    "params": [
+     "cost"
+    ],
+    "predictable": true,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"cost\", \"type\": \"ProgDefFnParam\"}, {\"name\": \"N\", \"type\": \"ProgAssignVar\", \"value\": {\"args\": [{\"name\": \"cost\", \"type\": \"Var\"}], \"name\": \"len\", \"recv\": null, \"type\": \"ProgCallExtern\"}}, {\"name\": \"dp\", \"type\": \"ProgAssignVar\", \"value\": {\"cond\": null, \"expr\": {\"cond\": null, \"expr\": {\"type\": \"Lit\", \"value\": 0}, \"source\": {\"args\": [{\"items\": [{\"name\": \"N\", \"type\": \"Var\"}, {\"type\": \"Lit\", \"value\": 1}], \"type\": \"Plus\"}], \"name\": \"range\", \"recv\": null, \"type\": \"ProgCallExtern\"}, \"type\": \"ProgComprehensionList\", \"var\": \"i\"}, \"source\": {\"args\": [{\"items\": [{\"name\": \"N\", \"type\": \"Var\"}, {\"type\": \"Lit\", \"value\": 1}], \"type\": \"Plus\"}], \"name\": \"range\", \"recv\": null, \"type\": \"ProgCallExtern\"}, \"type\": \"ProgComprehensionList\", \"var\": \"j\"}}, {\"index\": {\"type\": \"Lit\", \"value\": 0}, \"obj\": {\"index\": {\"type\": \"Lit\", \"value\": 0}, \"obj\": {\"name\": \"dp\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"type\": \"ProgSubscriptSet\", \"value\": {\"index\": {\"type\": \"Lit\", \"value\": 0}, \"obj\": {\"index\": {\"type\": \"Lit\", \"value\": 0}, \"obj\": {\"name\": \"cost\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"type\": \"ProgSubscript\"}}, {\"body\": {\"index\": {\"type\": \"Lit\", \"value\": 0}, \"obj\": {\"index\": {\"name\": \"i\", \"type\": \"Var\"}, \"obj\": {\"name\": \"dp\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"type\": \"ProgSubscriptSet\", \"value\": {\"items\": [{\"index\": {\"type\": \"Lit\", \"value\": 0}, \"obj\": {\"index\": {\"a\": {\"name\": \"i\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 1}, \"type\": \"Minus\"}, \"obj\": {\"name\": \"dp\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"type\": \"ProgSubscript\"}, {\"index\": {\"type\": \"Lit\", \"value\": 0}, \"obj\": {\"index\": {\"name\": \"i\", \"type\": \"Var\"}, \"obj\": {\"name\": \"cost\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"type\": \"ProgSubscript\"}], \"type\": \"Plus\"}}, \"iter\": {\"args\": [{\"type\": \"Lit\", \"value\": 1}, {\"name\": \"N\", \"type\": \"Var\"}], \"name\": \"range\", \"recv\": null, \"type\": \"ProgCallExtern\"}, \"orelse\": null, \"type\": \"ProgForEach\", \"var\": \"i\"}, {\"body\": {\"index\": {\"name\": \"j\", \"type\": \"Var\"}, \"obj\": {\"index\": {\"type\": \"Lit\", \"value\": 0}, \"obj\": {\"name\": \"dp\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"type\": \"ProgSubscriptSet\", \"value\": {\"items\": [{\"index\": {\"a\": {\"name\": \"j\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 1}, \"type\": \"Minus\"}, \"obj\": {\"index\": {\"type\": \"Lit\", \"value\": 0}, \"obj\": {\"name\": \"dp\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"type\": \"ProgSubscript\"}, {\"index\": {\"name\": \"j\", \"type\": \"Var\"}, \"obj\": {\"index\": {\"type\": \"Lit\", \"value\": 0}, \"obj\": {\"name\": \"cost\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"type\": \"ProgSubscript\"}], \"type\": \"Plus\"}}, \"iter\": {\"args\": [{\"type\": \"Lit\", \"value\": 1}, {\"name\": \"N\", \"type\": \"Var\"}], \"name\": \"range\", \"recv\": null, \"type\": \"ProgCallExtern\"}, \"orelse\": null, \"type\": \"ProgForEach\", \"var\": \"j\"}, {\"body\": {\"body\": {\"index\": {\"name\": \"j\", \"type\": \"Var\"}, \"obj\": {\"index\": {\"name\": \"i\", \"type\": \"Var\"}, \"obj\": {\"name\": \"dp\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"type\": \"ProgSubscriptSet\", \"value\": {\"items\": [{\"args\": [{\"index\": {\"name\": \"j\", \"type\": \"Var\"}, \"obj\": {\"index\": {\"a\": {\"name\": \"i\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 1}, \"type\": \"Minus\"}, \"obj\": {\"name\": \"dp\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"type\": \"ProgSubscript\"}, {\"index\": {\"a\": {\"name\": \"j\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 1}, \"type\": \"Minus\"}, \"obj\": {\"index\": {\"name\": \"i\", \"type\": \"Var\"}, \"obj\": {\"name\": \"dp\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"type\": \"ProgSubscript\"}], \"name\": \"max\", \"recv\": null, \"type\": \"ProgCallExtern\"}, {\"index\": {\"name\": \"j\", \"type\": \"Var\"}, \"obj\": {\"index\": {\"name\": \"i\", \"type\": \"Var\"}, \"obj\": {\"name\": \"cost\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"type\": \"ProgSubscript\"}], \"type\": \"Plus\"}}, \"iter\": {\"args\": [{\"type\": \"Lit\", \"value\": 1}, {\"name\": \"N\", \"type\": \"Var\"}], \"name\": \"range\", \"recv\": null, \"type\": \"ProgCallExtern\"}, \"orelse\": null, \"type\": \"ProgForEach\", \"var\": \"j\"}, \"iter\": {\"args\": [{\"type\": \"Lit\", \"value\": 1}, {\"name\": \"N\", \"type\": \"Var\"}], \"name\": \"range\", \"recv\": null, \"type\": \"ProgCallExtern\"}, \"orelse\": null, \"type\": \"ProgForEach\", \"var\": \"i\"}, {\"type\": \"ProgReturn\", \"value\": {\"a\": {\"index\": {\"a\": {\"name\": \"N\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 1}, \"type\": \"Minus\"}, \"obj\": {\"index\": {\"a\": {\"name\": \"N\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 1}, \"type\": \"Minus\"}, \"obj\": {\"name\": \"dp\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"type\": \"ProgSubscript\"}, \"b\": {\"a\": {\"items\": [{\"type\": \"Lit\", \"value\": 2}, {\"name\": \"N\", \"type\": \"Var\"}], \"type\": \"Times\"}, \"b\": {\"type\": \"Lit\", \"value\": 1}, \"type\": \"Minus\"}, \"type\": \"Div\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "all",
+     "associated",
+     "average",
+     "bottom",
+     "by",
+     "cell",
+     "cells",
+     "computed",
+     "cost",
+     "defined",
+     "divided",
+     "down",
+     "each",
+     "ends",
+     "existing",
+     "find",
+     "left",
+     "list",
+     "lists",
+     "matrix",
+     "maximum",
+     "move",
+     "number",
+     "only",
+     "over",
+     "path",
+     "paths",
+     "right",
+     "sequence",
+     "size",
+     "specific",
+     "square",
+     "starts",
+     "top",
+     "total",
+     "visited",
+     "want",
+     "we",
+     "where"
+    ],
+    "tfidf": {
+     "square": 4.806662,
+     "matrix": 4.806662,
+     "size": 4.401197,
+     "list": 2.408767,
+     "lists": 3.5539,
+     "where": 4.806662,
+     "each": 5.49981,
+     "cell": 16.499429,
+     "associated": 5.49981,
+     "specific": 10.999619,
+     "cost": 10.999619,
+     "path": 16.499429,
+     "defined": 4.806662,
+     "sequence": 4.806662,
+     "cells": 10.999619,
+     "starts": 5.49981,
+     "top": 5.49981,
+     "left": 4.806662,
+     "move": 4.401197,
+     "only": 4.806662,
+     "right": 8.802395,
+     "down": 5.49981,
+     "ends": 5.49981,
+     "bottom": 5.49981,
+     "we": 5.49981,
+     "want": 5.49981,
+     "find": 2.098612,
+     "maximum": 4.806662,
+     "average": 10.999619,
+     "over": 5.49981,
+     "all": 2.727221,
+     "existing": 5.49981,
+     "paths": 5.49981,
+     "computed": 5.49981,
+     "total": 5.49981,
+     "divided": 5.49981,
+     "by": 3.70805,
+     "number": 2.455287,
+     "visited": 5.49981
+    },
+    "arg_types": [
+     "list"
+    ],
+    "return_type": "float",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 31,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 723,
+    "entry": "count_same_pair",
+    "arity": 2,
+    "params": [
+     "nums1",
+     "nums2"
+    ],
+    "predictable": false,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"nums1\", \"type\": \"ProgDefFnParam\"}, {\"default\": null, \"name\": \"nums2\", \"type\": \"ProgDefFnParam\"}, {\"name\": \"result\", \"type\": \"ProgAssignVar\", \"value\": {\"args\": [{\"args\": [{\"name\": \"eq\", \"type\": \"Var\"}, {\"name\": \"nums1\", \"type\": \"Var\"}, {\"name\": \"nums2\", \"type\": \"Var\"}], \"name\": \"map\", \"recv\": null, \"type\": \"ProgCallExtern\"}], \"name\": \"sum\", \"recv\": null, \"type\": \"ProgCallExtern\"}}, {\"type\": \"ProgReturn\", \"value\": {\"name\": \"result\", \"type\": \"Var\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "count",
+     "defined",
+     "have",
+     "indices",
+     "input",
+     "length",
+     "lists",
+     "same",
+     "two",
+     "values",
+     "where"
+    ],
+    "tfidf": {
+     "input": 4.401197,
+     "defined": 4.806662,
+     "two": 3.890372,
+     "lists": 7.107799,
+     "same": 8.227031,
+     "length": 4.113515,
+     "count": 3.5539,
+     "indices": 5.49981,
+     "where": 4.806662,
+     "have": 4.806662,
+     "values": 4.401197
+    },
+    "arg_types": [
+     "list",
+     "list"
+    ],
+    "return_type": "int",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 32,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 724,
+    "entry": "power_base_sum",
+    "arity": 2,
+    "params": [
+     "base",
+     "power"
+    ],
+    "predictable": true,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"base\", \"type\": \"ProgDefFnParam\"}, {\"default\": null, \"name\": \"power\", \"type\": \"ProgDefFnParam\"}, {\"type\": \"ProgReturn\", \"value\": {\"args\": [{\"cond\": null, \"expr\": {\"args\": [{\"name\": \"i\", \"type\": \"Var\"}], \"name\": \"int\", \"recv\": null, \"type\": \"ProgCallExtern\"}, \"source\": {\"args\": [{\"args\": [{\"name\": \"base\", \"type\": \"Var\"}, {\"name\": \"power\", \"type\": \"Var\"}], \"name\": \"pow\", \"recv\": null, \"type\": \"ProgCallExtern\"}], \"name\": \"str\", \"recv\": null, \"type\": \"ProgCallExtern\"}, \"type\": \"ProgComprehensionList\", \"var\": \"i\"}], \"name\": \"sum\", \"recv\": null, \"type\": \"ProgCallExtern\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "all",
+     "arguments",
+     "base",
+     "calculate",
+     "digits",
+     "power",
+     "specified",
+     "sum",
+     "takes"
+    ],
+    "tfidf": {
+     "takes": 4.113515,
+     "base": 10.999619,
+     "power": 9.613325,
+     "arguments": 5.49981,
+     "calculate": 4.401197,
+     "sum": 3.101914,
+     "all": 2.727221,
+     "digits": 4.401197,
+     "specified": 4.113515
+    },
+    "arg_types": [
+     "int",
+     "int"
+    ],
+    "return_type": "int",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 33,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 725,
+    "entry": "extract_quotation",
+    "arity": 1,
+    "params": [
+     "text1"
+    ],
+    "predictable": false,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"text1\", \"type\": \"ProgDefFnParam\"}, {\"type\": \"ProgReturn\", \"value\": {\"args\": [{\"type\": \"Lit\", \"value\": \"\\\"(.*?)\\\"\"}, {\"name\": \"text1\", \"type\": \"Var\"}], \"name\": \"re.findall\", \"recv\": null, \"type\": \"ProgCallExtern\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "between",
+     "extract",
+     "marks",
+     "quotation",
+     "string",
+     "values"
+    ],
+    "tfidf": {
+     "extract": 4.806662,
+     "values": 4.401197,
+     "between": 4.113515,
+     "quotation": 5.49981,
+     "marks": 5.49981,
+     "string": 2.321756
+    },
+    "arg_types": [
+     "str"
+    ],
+    "return_type": "list",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 34,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 728,
+    "entry": "sum_list",
+    "arity": 2,
+    "params": [
+     "lst1",
+     "lst2"
+    ],
+    "predictable": true,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"lst1\", \"type\": \"ProgDefFnParam\"}, {\"default\": null, \"name\": \"lst2\", \"type\": \"ProgDefFnParam\"}, {\"name\": \"res_list\", \"type\": \"ProgAssignVar\", \"value\": {\"cond\": null, \"expr\": {\"items\": [{\"index\": {\"name\": \"i\", \"type\": \"Var\"}, \"obj\": {\"name\": \"lst1\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, {\"index\": {\"name\": \"i\", \"type\": \"Var\"}, \"obj\": {\"name\": \"lst2\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}], \"type\": \"Plus\"}, \"source\": {\"args\": [{\"args\": [{\"name\": \"lst1\", \"type\": \"Var\"}], \"name\": \"len\", \"recv\": null, \"type\": \"ProgCallExtern\"}], \"name\": \"range\", \"recv\": null, \"type\": \"ProgCallExtern\"}, \"type\": \"ProgComprehensionList\", \"var\": \"i\"}}, {\"type\": \"ProgReturn\", \"value\": {\"name\": \"res_list\", \"type\": \"Var\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "input",
+     "lists",
+     "takes",
+     "two"
+    ],
+    "tfidf": {
+     "takes": 4.113515,
+     "input": 4.401197,
+     "two": 3.890372,
+     "lists": 3.5539
+    },
+    "arg_types": [
+     "list",
+     "list"
+    ],
+    "return_type": "list",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 35,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 731,
+    "entry": "lateralsurface_cone",
+    "arity": 2,
+    "params": [
+     "r",
+     "h"
+    ],
+    "predictable": true,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"r\", \"type\": \"ProgDefFnParam\"}, {\"default\": null, \"name\": \"h\", \"type\": \"ProgDefFnParam\"}, {\"name\": \"l\", \"type\": \"ProgAssignVar\", \"value\": {\"args\": [{\"items\": [{\"items\": [{\"name\": \"r\", \"type\": \"Var\"}, {\"name\": \"r\", \"type\": \"Var\"}], \"type\": \"Times\"}, {\"items\": [{\"name\": \"h\", \"type\": \"Var\"}, {\"name\": \"h\", \"type\": \"Var\"}], \"type\": \"Times\"}], \"type\": \"Plus\"}], \"name\": \"math.sqrt\", \"recv\": null, \"type\": \"ProgCallExtern\"}}, {\"name\": \"LSA\", \"type\": \"ProgAssignVar\", \"value\": {\"items\": [{\"items\": [{\"attr\": \"pi\", \"obj\": {\"name\": \"math\", \"type\": \"Var\"}, \"type\": \"ProgAttrGet\"}, {\"name\": \"r\", \"type\": \"Var\"}], \"type\": \"Times\"}, {\"name\": \"l\", \"type\": \"Var\"}], \"type\": \"Times\"}}, {\"type\": \"ProgReturn\", \"value\": {\"name\": \"LSA\", \"type\": \"Var\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "area",
+     "cone",
+     "find",
+     "height",
+     "lateral",
+     "radius",
+     "surface"
+    ],
+    "tfidf": {
+     "find": 2.098612,
+     "lateral": 5.49981,
+     "surface": 5.49981,
+     "area": 4.113515,
+     "cone": 5.49981,
+     "radius": 4.401197,
+     "height": 5.49981
+    },
+    "arg_types": [
+     "int",
+     "int"
+    ],
+    "return_type": "float",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 36,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 732,
+    "entry": "replace_specialchar",
+    "arity": 1,
+    "params": [
+     "text"
+    ],
+    "predictable": false,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"text\", \"type\": \"ProgDefFnParam\"}, {\"type\": \"ProgReturn\", \"value\": {\"args\": [{\"type\": \"Lit\", \"value\": \"[ ,.]\"}, {\"type\": \"Lit\", \"value\": \":\"}, {\"name\": \"text\", \"type\": \"Var\"}], \"name\": \"re.sub\", \"recv\": null, \"type\": \"ProgCallExtern\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "all",
+     "colon",
+     "commas",
+     "dots",
+     "occurrences",
+     "replace",
+     "spaces"
+    ],
+    "tfidf": {
+     "replace": 4.401197,
+     "all": 2.727221,
+     "occurrences": 5.49981,
+     "spaces": 4.113515,
+     "commas": 5.49981,
+     "dots": 5.49981,
+     "colon": 5.49981
+    },
+    "arg_types": [
+     "str"
+    ],
+    "return_type": "str",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 37,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 733,
+    "entry": "find_first_occurrence",
+    "arity": 2,
+    "params": [
+     "A",
+     "x"
+    ],
+    "predictable": true,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"A\", \"type\": \"ProgDefFnParam\"}, {\"default\": null, \"name\": \"x\", \"type\": \"ProgDefFnParam\"}, {\"targets\": [\"left\", \"right\"], \"type\": \"ProgTupleUnpack\", \"value\": {\"items\": [{\"type\": \"Lit\", \"value\": 0}, {\"a\": {\"args\": [{\"name\": \"A\", \"type\": \"Var\"}], \"name\": \"len\", \"recv\": null, \"type\": \"ProgCallExtern\"}, \"b\": {\"type\": \"Lit\", \"value\": 1}, \"type\": \"Minus\"}], \"kind\": \"tuple\", \"type\": \"ProgContainerLit\"}}, {\"name\": \"result\", \"type\": \"ProgAssignVar\", \"value\": {\"arg\": {\"type\": \"Lit\", \"value\": 1}, \"type\": \"Neg\"}}, {\"body\": {\"stmts\": [{\"stmts\": [{\"name\": \"__u0\", \"type\": \"ProgAssignVar\", \"value\": {\"a\": {\"items\": [{\"name\": \"left\", \"type\": \"Var\"}, {\"name\": \"right\", \"type\": \"Var\"}], \"type\": \"Plus\"}, \"b\": {\"a\": {\"items\": [{\"name\": \"left\", \"type\": \"Var\"}, {\"name\": \"right\", \"type\": \"Var\"}], \"type\": \"Plus\"}, \"b\": {\"type\": \"Lit\", \"value\": 2}, \"type\": \"Mod\"}, \"type\": \"Minus\"}}, {\"name\": \"__u0\", \"op\": \"floordiv\", \"type\": \"ProgAugAssign\", \"value\": {\"type\": \"Lit\", \"value\": 2}}, {\"name\": \"mid\", \"type\": \"ProgAssignVar\", \"value\": {\"name\": \"__u0\", \"type\": \"Var\"}}], \"type\": \"ProgSeq\"}, {\"cond\": {\"a\": {\"name\": \"x\", \"type\": \"Var\"}, \"b\": {\"index\": {\"name\": \"mid\", \"type\": \"Var\"}, \"obj\": {\"name\": \"A\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"type\": \"Eq\"}, \"orelse\": {\"cond\": {\"a\": {\"name\": \"x\", \"type\": \"Var\"}, \"b\": {\"index\": {\"name\": \"mid\", \"type\": \"Var\"}, \"obj\": {\"name\": \"A\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"type\": \"Lt\"}, \"orelse\": {\"name\": \"left\", \"type\": \"ProgAssignVar\", \"value\": {\"items\": [{\"name\": \"mid\", \"type\": \"Var\"}, {\"type\": \"Lit\", \"value\": 1}], \"type\": \"Plus\"}}, \"then\": {\"name\": \"right\", \"type\": \"ProgAssignVar\", \"value\": {\"a\": {\"name\": \"mid\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 1}, \"type\": \"Minus\"}}, \"type\": \"ProgIfStmt\"}, \"then\": {\"stmts\": [{\"name\": \"result\", \"type\": \"ProgAssignVar\", \"value\": {\"name\": \"mid\", \"type\": \"Var\"}}, {\"name\": \"right\", \"type\": \"ProgAssignVar\", \"value\": {\"a\": {\"name\": \"mid\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 1}, \"type\": \"Minus\"}}], \"type\": \"ProgSeq\"}, \"type\": \"ProgIfStmt\"}], \"type\": \"ProgSeq\"}, \"cond\": {\"a\": {\"name\": \"left\", \"type\": \"Var\"}, \"b\": {\"name\": \"right\", \"type\": \"Var\"}, \"type\": \"Lte\"}, \"orelse\": null, \"type\": \"ProgWhile\"}, {\"type\": \"ProgReturn\", \"value\": {\"name\": \"result\", \"type\": \"Var\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "array",
+     "find",
+     "first",
+     "index",
+     "number",
+     "occurrence",
+     "sorted"
+    ],
+    "tfidf": {
+     "find": 2.098612,
+     "index": 3.70805,
+     "first": 3.5539,
+     "occurrence": 4.806662,
+     "number": 2.455287,
+     "sorted": 3.5539,
+     "array": 3.5539
+    },
+    "arg_types": [
+     "list",
+     "int"
+    ],
+    "return_type": "int",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 38,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 734,
+    "entry": "sum_Of_Subarray_Prod",
+    "arity": 1,
+    "params": [
+     "arr"
+    ],
+    "predictable": true,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"arr\", \"type\": \"ProgDefFnParam\"}, {\"name\": \"ans\", \"type\": \"ProgAssignVar\", \"value\": {\"type\": \"Lit\", \"value\": 0}}, {\"name\": \"res\", \"type\": \"ProgAssignVar\", \"value\": {\"type\": \"Lit\", \"value\": 0}}, {\"name\": \"i\", \"type\": \"ProgAssignVar\", \"value\": {\"a\": {\"args\": [{\"name\": \"arr\", \"type\": \"Var\"}], \"name\": \"len\", \"recv\": null, \"type\": \"ProgCallExtern\"}, \"b\": {\"type\": \"Lit\", \"value\": 1}, \"type\": \"Minus\"}}, {\"body\": {\"stmts\": [{\"name\": \"incr\", \"type\": \"ProgAssignVar\", \"value\": {\"items\": [{\"index\": {\"name\": \"i\", \"type\": \"Var\"}, \"obj\": {\"name\": \"arr\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, {\"items\": [{\"type\": \"Lit\", \"value\": 1}, {\"name\": \"res\", \"type\": \"Var\"}], \"type\": \"Plus\"}], \"type\": \"Times\"}}, {\"name\": \"ans\", \"op\": \"add\", \"type\": \"ProgAugAssign\", \"value\": {\"name\": \"incr\", \"type\": \"Var\"}}, {\"name\": \"res\", \"type\": \"ProgAssignVar\", \"value\": {\"name\": \"incr\", \"type\": \"Var\"}}, {\"name\": \"i\", \"op\": \"sub\", \"type\": \"ProgAugAssign\", \"value\": {\"type\": \"Lit\", \"value\": 1}}], \"type\": \"ProgSeq\"}, \"cond\": {\"a\": {\"name\": \"i\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 0}, \"type\": \"Gte\"}, \"orelse\": null, \"type\": \"ProgWhile\"}, {\"type\": \"ProgReturn\", \"value\": {\"name\": \"ans\", \"type\": \"Var\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "all",
+     "find",
+     "geeksforgeeks",
+     "https",
+     "list",
+     "org",
+     "possible",
+     "products",
+     "subarrays",
+     "sublists",
+     "sum",
+     "www"
+    ],
+    "tfidf": {
+     "find": 2.098612,
+     "sum": 6.203829,
+     "products": 10.999619,
+     "all": 5.454442,
+     "possible": 10.999619,
+     "sublists": 5.49981,
+     "list": 2.408767,
+     "https": 2.727221,
+     "www": 2.727221,
+     "geeksforgeeks": 2.860752,
+     "org": 2.860752,
+     "subarrays": 4.806662
+    },
+    "arg_types": [
+     "list"
+    ],
+    "return_type": "int",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 39,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 735,
+    "entry": "toggle_middle_bits",
+    "arity": 1,
+    "params": [
+     "n"
+    ],
+    "predictable": false,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"n\", \"type\": \"ProgDefFnParam\"}, {\"cond\": {\"a\": {\"name\": \"n\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 1}, \"type\": \"Eq\"}, \"orelse\": null, \"then\": {\"type\": \"ProgReturn\", \"value\": {\"type\": \"Lit\", \"value\": 1}}, \"type\": \"ProgIfStmt\"}, {\"type\": \"ProgReturn\", \"value\": {\"a\": {\"name\": \"n\", \"type\": \"Var\"}, \"b\": {\"args\": [{\"name\": \"n\", \"type\": \"Var\"}], \"name\": \"set_middle_bits\", \"recv\": null, \"type\": \"ProgCallExtern\"}, \"type\": \"BitXor\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "bit",
+     "bits",
+     "except",
+     "expect",
+     "first",
+     "geeksforgeeks",
+     "https",
+     "last",
+     "number",
+     "org",
+     "toggle",
+     "www"
+    ],
+    "tfidf": {
+     "toggle": 10.999619,
+     "bits": 16.499429,
+     "number": 4.910574,
+     "except": 4.806662,
+     "first": 7.107799,
+     "last": 8.802395,
+     "bit": 5.49981,
+     "https": 2.727221,
+     "www": 2.727221,
+     "geeksforgeeks": 2.860752,
+     "org": 2.860752,
+     "expect": 5.49981
+    },
+    "arg_types": [
+     "int"
+    ],
+    "return_type": "int",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 40,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 736,
+    "entry": "left_insertion",
+    "arity": 2,
+    "params": [
+     "a",
+     "x"
+    ],
+    "predictable": false,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"a\", \"type\": \"ProgDefFnParam\"}, {\"default\": null, \"name\": \"x\", \"type\": \"ProgDefFnParam\"}, {\"name\": \"i\", \"type\": \"ProgAssignVar\", \"value\": {\"args\": [{\"name\": \"a\", \"type\": \"Var\"}, {\"name\": \"x\", \"type\": \"Var\"}], \"name\": \"bisect.bisect_left\", \"recv\": null, \"type\": \"ProgCallExtern\"}}, {\"type\": \"ProgReturn\", \"value\": {\"name\": \"i\", \"type\": \"Var\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "algorithms",
+     "com",
+     "data",
+     "exercise",
+     "exercises",
+     "https",
+     "insertion",
+     "left",
+     "locate",
+     "order",
+     "php",
+     "point",
+     "resource",
+     "sorted",
+     "specified",
+     "structure",
+     "structures",
+     "value",
+     "www"
+    ],
+    "tfidf": {
+     "locate": 4.806662,
+     "left": 4.806662,
+     "insertion": 4.806662,
+     "point": 4.401197,
+     "specified": 4.113515,
+     "value": 4.401197,
+     "sorted": 3.5539,
+     "order": 4.806662,
+     "https": 2.727221,
+     "www": 2.727221,
+     "resource": 4.401197,
+     "com": 4.401197,
+     "exercises": 4.401197,
+     "data": 9.613325,
+     "structures": 4.806662,
+     "algorithms": 4.806662,
+     "structure": 5.49981,
+     "exercise": 4.401197,
+     "php": 4.401197
+    },
+    "arg_types": [
+     "list",
+     "int"
+    ],
+    "return_type": "int",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 41,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 737,
+    "entry": "check_str",
+    "arity": 1,
+    "params": [
+     "string"
+    ],
+    "predictable": false,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"string\", \"type\": \"ProgDefFnParam\"}, {\"type\": \"ProgReturn\", \"value\": {\"args\": [{\"name\": \"regex\", \"type\": \"Var\"}, {\"name\": \"string\", \"type\": \"Var\"}], \"name\": \"re.search\", \"recv\": null, \"type\": \"ProgCallExtern\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "check",
+     "not",
+     "regex",
+     "starting",
+     "string",
+     "using",
+     "vowel",
+     "whether"
+    ],
+    "tfidf": {
+     "check": 2.93486,
+     "whether": 3.197225,
+     "string": 2.321756,
+     "starting": 4.806662,
+     "vowel": 5.49981,
+     "not": 3.420368,
+     "using": 4.806662,
+     "regex": 4.806662
+    },
+    "arg_types": null,
+    "return_type": null,
+    "consistent_types": false,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 42,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 738,
+    "entry": "geometric_sum",
+    "arity": 1,
+    "params": [
+     "n"
+    ],
+    "predictable": false,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"n\", \"type\": \"ProgDefFnParam\"}, {\"cond\": {\"a\": {\"name\": \"n\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 0}, \"type\": \"Lt\"}, \"orelse\": {\"type\": \"ProgReturn\", \"value\": {\"items\": [{\"a\": {\"type\": \"Lit\", \"value\": 1}, \"b\": {\"args\": [{\"type\": \"Lit\", \"value\": 2}, {\"name\": \"n\", \"type\": \"Var\"}], \"name\": \"pow\", \"recv\": null, \"type\": \"ProgCallExtern\"}, \"type\": \"Div\"}, {\"args\": [{\"a\": {\"name\": \"n\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 1}, \"type\": \"Minus\"}], \"name\": \"geometric_sum\", \"recv\": null, \"type\": \"ProgCallExtern\"}], \"type\": \"Plus\"}}, \"then\": {\"type\": \"ProgReturn\", \"value\": {\"type\": \"Lit\", \"value\": 0}}, \"type\": \"ProgIfStmt\"}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "algorithms",
+     "calculate",
+     "com",
+     "data",
+     "exercise",
+     "exercises",
+     "geometric",
+     "https",
+     "php",
+     "recursion",
+     "resource",
+     "structures",
+     "sum",
+     "www"
+    ],
+    "tfidf": {
+     "calculate": 4.401197,
+     "geometric": 5.49981,
+     "sum": 3.101914,
+     "https": 2.727221,
+     "www": 2.727221,
+     "resource": 4.401197,
+     "com": 4.401197,
+     "exercises": 4.401197,
+     "data": 4.806662,
+     "structures": 4.806662,
+     "algorithms": 4.806662,
+     "recursion": 5.49981,
+     "exercise": 4.401197,
+     "php": 4.401197
+    },
+    "arg_types": [
+     "int"
+    ],
+    "return_type": "float",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 43,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 739,
+    "entry": "find_Index",
+    "arity": 1,
+    "params": [
+     "n"
+    ],
+    "predictable": true,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"n\", \"type\": \"ProgDefFnParam\"}, {\"name\": \"x\", \"type\": \"ProgAssignVar\", \"value\": {\"args\": [{\"items\": [{\"type\": \"Lit\", \"value\": 2}, {\"args\": [{\"type\": \"Lit\", \"value\": 10}, {\"a\": {\"name\": \"n\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 1}, \"type\": \"Minus\"}], \"name\": \"math.pow\", \"recv\": null, \"type\": \"ProgCallExtern\"}], \"type\": \"Times\"}], \"name\": \"math.sqrt\", \"recv\": null, \"type\": \"ProgCallExtern\"}}, {\"type\": \"ProgReturn\", \"value\": {\"args\": [{\"name\": \"x\", \"type\": \"Var\"}], \"name\": \"round\", \"recv\": null, \"type\": \"ProgCallExtern\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "digits",
+     "find",
+     "geeksforgeeks",
+     "https",
+     "index",
+     "number",
+     "org",
+     "smallest",
+     "triangular",
+     "www"
+    ],
+    "tfidf": {
+     "find": 2.098612,
+     "index": 7.4161,
+     "smallest": 9.613325,
+     "triangular": 10.999619,
+     "number": 4.910574,
+     "digits": 8.802395,
+     "https": 2.727221,
+     "www": 2.727221,
+     "geeksforgeeks": 2.860752,
+     "org": 2.860752
+    },
+    "arg_types": [
+     "int"
+    ],
+    "return_type": "int",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 44,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 740,
+    "entry": "tuple_to_dict",
+    "arity": 1,
+    "params": [
+     "test_tup"
+    ],
+    "predictable": true,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"test_tup\", \"type\": \"ProgDefFnParam\"}, {\"name\": \"res\", \"type\": \"ProgAssignVar\", \"value\": {\"args\": [{\"cond\": null, \"expr\": {\"obj\": {\"name\": \"test_tup\", \"type\": \"Var\"}, \"start\": {\"name\": \"idx\", \"type\": \"Var\"}, \"step\": null, \"stop\": {\"items\": [{\"name\": \"idx\", \"type\": \"Var\"}, {\"type\": \"Lit\", \"value\": 2}], \"type\": \"Plus\"}, \"type\": \"ProgSlice\"}, \"source\": {\"args\": [{\"type\": \"Lit\", \"value\": 0}, {\"args\": [{\"name\": \"test_tup\", \"type\": \"Var\"}], \"name\": \"len\", \"recv\": null, \"type\": \"ProgCallExtern\"}, {\"type\": \"Lit\", \"value\": 2}], \"name\": \"range\", \"recv\": null, \"type\": \"ProgCallExtern\"}, \"type\": \"ProgComprehensionGen\", \"var\": \"idx\"}], \"name\": \"dict\", \"recv\": null, \"type\": \"ProgCallExtern\"}}, {\"type\": \"ProgReturn\", \"value\": {\"name\": \"res\", \"type\": \"Var\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "adjacent",
+     "convert",
+     "dictionary",
+     "elements",
+     "geeksforgeeks",
+     "https",
+     "key",
+     "org",
+     "pair",
+     "tuple",
+     "using",
+     "value",
+     "www"
+    ],
+    "tfidf": {
+     "convert": 7.780744,
+     "tuple": 7.107799,
+     "key": 5.49981,
+     "value": 4.401197,
+     "dictionary": 9.613325,
+     "using": 4.806662,
+     "adjacent": 9.613325,
+     "elements": 4.401197,
+     "https": 2.727221,
+     "www": 2.727221,
+     "geeksforgeeks": 2.860752,
+     "org": 2.860752,
+     "pair": 4.401197
+    },
+    "arg_types": [
+     "tuple"
+    ],
+    "return_type": "dict",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 45,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 741,
+    "entry": "all_Characters_Same",
+    "arity": 1,
+    "params": [
+     "s"
+    ],
+    "predictable": true,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"s\", \"type\": \"ProgDefFnParam\"}, {\"name\": \"n\", \"type\": \"ProgAssignVar\", \"value\": {\"args\": [{\"name\": \"s\", \"type\": \"Var\"}], \"name\": \"len\", \"recv\": null, \"type\": \"ProgCallExtern\"}}, {\"body\": {\"cond\": {\"arg\": {\"a\": {\"index\": {\"name\": \"i\", \"type\": \"Var\"}, \"obj\": {\"name\": \"s\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"b\": {\"index\": {\"type\": \"Lit\", \"value\": 0}, \"obj\": {\"name\": \"s\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"type\": \"Eq\"}, \"type\": \"Not\"}, \"orelse\": null, \"then\": {\"type\": \"ProgReturn\", \"value\": {\"type\": \"Lit\", \"value\": false}}, \"type\": \"ProgIfStmt\"}, \"iter\": {\"args\": [{\"type\": \"Lit\", \"value\": 1}, {\"name\": \"n\", \"type\": \"Var\"}], \"name\": \"range\", \"recv\": null, \"type\": \"ProgCallExtern\"}, \"orelse\": null, \"type\": \"ProgForEach\", \"var\": \"i\"}, {\"type\": \"ProgReturn\", \"value\": {\"type\": \"Lit\", \"value\": true}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "all",
+     "are",
+     "characters",
+     "check",
+     "not",
+     "same",
+     "whether"
+    ],
+    "tfidf": {
+     "check": 2.93486,
+     "whether": 3.197225,
+     "all": 2.727221,
+     "characters": 4.401197,
+     "are": 4.401197,
+     "same": 4.113515,
+     "not": 3.420368
+    },
+    "arg_types": [
+     "str"
+    ],
+    "return_type": "bool",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 46,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 742,
+    "entry": "area_tetrahedron",
+    "arity": 1,
+    "params": [
+     "side"
+    ],
+    "predictable": true,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"side\", \"type\": \"ProgDefFnParam\"}, {\"name\": \"area\", \"type\": \"ProgAssignVar\", \"value\": {\"items\": [{\"args\": [{\"type\": \"Lit\", \"value\": 3}], \"name\": \"math.sqrt\", \"recv\": null, \"type\": \"ProgCallExtern\"}, {\"items\": [{\"name\": \"side\", \"type\": \"Var\"}, {\"name\": \"side\", \"type\": \"Var\"}], \"type\": \"Times\"}], \"type\": \"Times\"}}, {\"type\": \"ProgReturn\", \"value\": {\"name\": \"area\", \"type\": \"Var\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "area",
+     "caluclate",
+     "tetrahedron"
+    ],
+    "tfidf": {
+     "caluclate": 5.49981,
+     "area": 4.113515,
+     "tetrahedron": 5.49981
+    },
+    "arg_types": [
+     "int"
+    ],
+    "return_type": "float",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 47,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 743,
+    "entry": "rotate_right",
+    "arity": 2,
+    "params": [
+     "list",
+     "m"
+    ],
+    "predictable": true,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"list\", \"type\": \"ProgDefFnParam\"}, {\"default\": null, \"name\": \"m\", \"type\": \"ProgDefFnParam\"}, {\"name\": \"result\", \"type\": \"ProgAssignVar\", \"value\": {\"items\": [{\"obj\": {\"name\": \"list\", \"type\": \"Var\"}, \"start\": {\"arg\": {\"name\": \"m\", \"type\": \"Var\"}, \"type\": \"Neg\"}, \"step\": null, \"stop\": null, \"type\": \"ProgSlice\"}, {\"obj\": {\"name\": \"list\", \"type\": \"Var\"}, \"start\": null, \"step\": null, \"stop\": {\"arg\": {\"name\": \"m\", \"type\": \"Var\"}, \"type\": \"Neg\"}, \"type\": \"ProgSlice\"}], \"type\": \"Plus\"}}, {\"type\": \"ProgReturn\", \"value\": {\"name\": \"result\", \"type\": \"Var\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "by",
+     "direction",
+     "geeksforgeeks",
+     "https",
+     "items",
+     "list",
+     "number",
+     "org",
+     "program",
+     "right",
+     "rotate",
+     "specified",
+     "www"
+    ],
+    "tfidf": {
+     "rotate": 10.999619,
+     "list": 4.817534,
+     "by": 3.70805,
+     "specified": 4.113515,
+     "number": 2.455287,
+     "items": 4.806662,
+     "right": 8.802395,
+     "direction": 5.49981,
+     "https": 2.727221,
+     "www": 2.727221,
+     "geeksforgeeks": 2.860752,
+     "org": 2.860752,
+     "program": 4.806662
+    },
+    "arg_types": [
+     "list",
+     "int"
+    ],
+    "return_type": "list",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 48,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 746,
+    "entry": "sector_area",
+    "arity": 2,
+    "params": [
+     "r",
+     "a"
+    ],
+    "predictable": true,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"r\", \"type\": \"ProgDefFnParam\"}, {\"default\": null, \"name\": \"a\", \"type\": \"ProgDefFnParam\"}, {\"cond\": {\"a\": {\"name\": \"a\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 360}, \"type\": \"Gt\"}, \"orelse\": null, \"then\": {\"type\": \"ProgReturn\", \"value\": {\"type\": \"Lit\", \"value\": null}}, \"type\": \"ProgIfStmt\"}, {\"type\": \"ProgReturn\", \"value\": {\"items\": [{\"items\": [{\"attr\": \"pi\", \"obj\": {\"name\": \"math\", \"type\": \"Var\"}, \"type\": \"ProgAttrGet\"}, {\"a\": {\"name\": \"r\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 2}, \"type\": \"Pow\"}], \"type\": \"Times\"}, {\"a\": {\"name\": \"a\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 360}, \"type\": \"Div\"}], \"type\": \"Times\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "angle",
+     "area",
+     "degrees",
+     "find",
+     "inputs",
+     "larger",
+     "none",
+     "radius",
+     "sector",
+     "should",
+     "takes",
+     "than"
+    ],
+    "tfidf": {
+     "find": 2.098612,
+     "area": 4.113515,
+     "sector": 5.49981,
+     "takes": 4.113515,
+     "radius": 4.401197,
+     "angle": 10.999619,
+     "inputs": 5.49981,
+     "should": 4.806662,
+     "none": 4.806662,
+     "larger": 5.49981,
+     "than": 5.49981,
+     "degrees": 4.806662
+    },
+    "arg_types": [
+     "int",
+     "int"
+    ],
+    "return_type": "float",
+    "consistent_types": false,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 49,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 747,
+    "entry": "lcs_of_three",
+    "arity": 3,
+    "params": [
+     "X",
+     "Y",
+     "Z"
+    ],
+    "predictable": true,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"X\", \"type\": \"ProgDefFnParam\"}, {\"default\": null, \"name\": \"Y\", \"type\": \"ProgDefFnParam\"}, {\"default\": null, \"name\": \"Z\", \"type\": \"ProgDefFnParam\"}, {\"name\": \"m\", \"type\": \"ProgAssignVar\", \"value\": {\"args\": [{\"name\": \"X\", \"type\": \"Var\"}], \"name\": \"len\", \"recv\": null, \"type\": \"ProgCallExtern\"}}, {\"name\": \"n\", \"type\": \"ProgAssignVar\", \"value\": {\"args\": [{\"name\": \"Y\", \"type\": \"Var\"}], \"name\": \"len\", \"recv\": null, \"type\": \"ProgCallExtern\"}}, {\"name\": \"o\", \"type\": \"ProgAssignVar\", \"value\": {\"args\": [{\"name\": \"Z\", \"type\": \"Var\"}], \"name\": \"len\", \"recv\": null, \"type\": \"ProgCallExtern\"}}, {\"name\": \"L\", \"type\": \"ProgAssignVar\", \"value\": {\"cond\": null, \"expr\": {\"cond\": null, \"expr\": {\"cond\": null, \"expr\": {\"type\": \"Lit\", \"value\": 0}, \"source\": {\"args\": [{\"items\": [{\"name\": \"o\", \"type\": \"Var\"}, {\"type\": \"Lit\", \"value\": 1}], \"type\": \"Plus\"}], \"name\": \"range\", \"recv\": null, \"type\": \"ProgCallExtern\"}, \"type\": \"ProgComprehensionList\", \"var\": \"i\"}, \"source\": {\"args\": [{\"items\": [{\"name\": \"n\", \"type\": \"Var\"}, {\"type\": \"Lit\", \"value\": 1}], \"type\": \"Plus\"}], \"name\": \"range\", \"recv\": null, \"type\": \"ProgCallExtern\"}, \"type\": \"ProgComprehensionList\", \"var\": \"j\"}, \"source\": {\"args\": [{\"items\": [{\"name\": \"m\", \"type\": \"Var\"}, {\"type\": \"Lit\", \"value\": 1}], \"type\": \"Plus\"}], \"name\": \"range\", \"recv\": null, \"type\": \"ProgCallExtern\"}, \"type\": \"ProgComprehensionList\", \"var\": \"k\"}}, {\"body\": {\"body\": {\"body\": {\"cond\": {\"cond\": {\"a\": {\"name\": \"i\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 0}, \"type\": \"Eq\"}, \"other\": {\"cond\": {\"a\": {\"name\": \"j\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 0}, \"type\": \"Eq\"}, \"other\": {\"a\": {\"name\": \"k\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 0}, \"type\": \"Eq\"}, \"then\": {\"a\": {\"name\": \"j\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 0}, \"type\": \"Eq\"}, \"type\": \"IfThenElse\"}, \"then\": {\"a\": {\"name\": \"i\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 0}, \"type\": \"Eq\"}, \"type\": \"IfThenElse\"}, \"orelse\": {\"cond\": {\"cond\": {\"a\": {\"index\": {\"a\": {\"name\": \"i\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 1}, \"type\": \"Minus\"}, \"obj\": {\"name\": \"X\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"b\": {\"index\": {\"a\": {\"name\": \"j\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 1}, \"type\": \"Minus\"}, \"obj\": {\"name\": \"Y\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"type\": \"Eq\"}, \"other\": {\"a\": {\"index\": {\"a\": {\"name\": \"i\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 1}, \"type\": \"Minus\"}, \"obj\": {\"name\": \"X\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"b\": {\"index\": {\"a\": {\"name\": \"j\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 1}, \"type\": \"Minus\"}, \"obj\": {\"name\": \"Y\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"type\": \"Eq\"}, \"then\": {\"a\": {\"index\": {\"a\": {\"name\": \"i\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 1}, \"type\": \"Minus\"}, \"obj\": {\"name\": \"X\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"b\": {\"index\": {\"a\": {\"name\": \"k\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 1}, \"type\": \"Minus\"}, \"obj\": {\"name\": \"Z\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"type\": \"Eq\"}, \"type\": \"IfThenElse\"}, \"orelse\": {\"index\": {\"name\": \"k\", \"type\": \"Var\"}, \"obj\": {\"index\": {\"name\": \"j\", \"type\": \"Var\"}, \"obj\": {\"index\": {\"name\": \"i\", \"type\": \"Var\"}, \"obj\": {\"name\": \"L\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"type\": \"ProgSubscript\"}, \"type\": \"ProgSubscriptSet\", \"value\": {\"args\": [{\"args\": [{\"index\": {\"name\": \"k\", \"type\": \"Var\"}, \"obj\": {\"index\": {\"name\": \"j\", \"type\": \"Var\"}, \"obj\": {\"index\": {\"a\": {\"name\": \"i\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 1}, \"type\": \"Minus\"}, \"obj\": {\"name\": \"L\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"type\": \"ProgSubscript\"}, \"type\": \"ProgSubscript\"}, {\"index\": {\"name\": \"k\", \"type\": \"Var\"}, \"obj\": {\"index\": {\"a\": {\"name\": \"j\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 1}, \"type\": \"Minus\"}, \"obj\": {\"index\": {\"name\": \"i\", \"type\": \"Var\"}, \"obj\": {\"name\": \"L\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"type\": \"ProgSubscript\"}, \"type\": \"ProgSubscript\"}], \"name\": \"max\", \"recv\": null, \"type\": \"ProgCallExtern\"}, {\"index\": {\"a\": {\"name\": \"k\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 1}, \"type\": \"Minus\"}, \"obj\": {\"index\": {\"name\": \"j\", \"type\": \"Var\"}, \"obj\": {\"index\": {\"name\": \"i\", \"type\": \"Var\"}, \"obj\": {\"name\": \"L\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"type\": \"ProgSubscript\"}, \"type\": \"ProgSubscript\"}], \"name\": \"max\", \"recv\": null, \"type\": \"ProgCallExtern\"}}, \"then\": {\"index\": {\"name\": \"k\", \"type\": \"Var\"}, \"obj\": {\"index\": {\"name\": \"j\", \"type\": \"Var\"}, \"obj\": {\"index\": {\"name\": \"i\", \"type\": \"Var\"}, \"obj\": {\"name\": \"L\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"type\": \"ProgSubscript\"}, \"type\": \"ProgSubscriptSet\", \"value\": {\"items\": [{\"index\": {\"a\": {\"name\": \"k\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 1}, \"type\": \"Minus\"}, \"obj\": {\"index\": {\"a\": {\"name\": \"j\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 1}, \"type\": \"Minus\"}, \"obj\": {\"index\": {\"a\": {\"name\": \"i\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 1}, \"type\": \"Minus\"}, \"obj\": {\"name\": \"L\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"type\": \"ProgSubscript\"}, \"type\": \"ProgSubscript\"}, {\"type\": \"Lit\", \"value\": 1}], \"type\": \"Plus\"}}, \"type\": \"ProgIfStmt\"}, \"then\": {\"index\": {\"name\": \"k\", \"type\": \"Var\"}, \"obj\": {\"index\": {\"name\": \"j\", \"type\": \"Var\"}, \"obj\": {\"index\": {\"name\": \"i\", \"type\": \"Var\"}, \"obj\": {\"name\": \"L\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"type\": \"ProgSubscript\"}, \"type\": \"ProgSubscriptSet\", \"value\": {\"type\": \"Lit\", \"value\": 0}}, \"type\": \"ProgIfStmt\"}, \"iter\": {\"args\": [{\"items\": [{\"name\": \"o\", \"type\": \"Var\"}, {\"type\": \"Lit\", \"value\": 1}], \"type\": \"Plus\"}], \"name\": \"range\", \"recv\": null, \"type\": \"ProgCallExtern\"}, \"orelse\": null, \"type\": \"ProgForEach\", \"var\": \"k\"}, \"iter\": {\"args\": [{\"items\": [{\"name\": \"n\", \"type\": \"Var\"}, {\"type\": \"Lit\", \"value\": 1}], \"type\": \"Plus\"}], \"name\": \"range\", \"recv\": null, \"type\": \"ProgCallExtern\"}, \"orelse\": null, \"type\": \"ProgForEach\", \"var\": \"j\"}, \"iter\": {\"args\": [{\"items\": [{\"name\": \"m\", \"type\": \"Var\"}, {\"type\": \"Lit\", \"value\": 1}], \"type\": \"Plus\"}], \"name\": \"range\", \"recv\": null, \"type\": \"ProgCallExtern\"}, \"orelse\": null, \"type\": \"ProgForEach\", \"var\": \"i\"}, {\"type\": \"ProgReturn\", \"value\": {\"index\": {\"name\": \"o\", \"type\": \"Var\"}, \"obj\": {\"index\": {\"name\": \"n\", \"type\": \"Var\"}, \"obj\": {\"index\": {\"name\": \"m\", \"type\": \"Var\"}, \"obj\": {\"name\": \"L\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"type\": \"ProgSubscript\"}, \"type\": \"ProgSubscript\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "common",
+     "find",
+     "geeksforgeeks",
+     "https",
+     "lcs",
+     "longest",
+     "org",
+     "sequence",
+     "string",
+     "strings",
+     "subsequence",
+     "three",
+     "www"
+    ],
+    "tfidf": {
+     "find": 2.098612,
+     "longest": 10.999619,
+     "common": 10.999619,
+     "subsequence": 10.999619,
+     "three": 8.802395,
+     "string": 2.321756,
+     "sequence": 4.806662,
+     "https": 2.727221,
+     "www": 2.727221,
+     "geeksforgeeks": 2.860752,
+     "org": 2.860752,
+     "lcs": 5.49981,
+     "strings": 4.806662
+    },
+    "arg_types": [
+     "str",
+     "str",
+     "str"
+    ],
+    "return_type": "int",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 50,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 748,
+    "entry": "capital_words_spaces",
+    "arity": 1,
+    "params": [
+     "str1"
+    ],
+    "predictable": false,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"str1\", \"type\": \"ProgDefFnParam\"}, {\"type\": \"ProgReturn\", \"value\": {\"args\": [{\"type\": \"Lit\", \"value\": \"(\\\\w)([A-Z])\"}, {\"type\": \"Lit\", \"value\": \"\\\\1 \\\\2\"}, {\"name\": \"str1\", \"type\": \"Var\"}], \"name\": \"re.sub\", \"recv\": null, \"type\": \"ProgCallExtern\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "between",
+     "capital",
+     "letters",
+     "put",
+     "spaces",
+     "starting",
+     "string",
+     "words"
+    ],
+    "tfidf": {
+     "put": 5.49981,
+     "spaces": 4.113515,
+     "between": 4.113515,
+     "words": 4.401197,
+     "starting": 4.806662,
+     "capital": 5.49981,
+     "letters": 5.49981,
+     "string": 2.321756
+    },
+    "arg_types": [
+     "str"
+    ],
+    "return_type": "str",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 51,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 750,
+    "entry": "add_tuple",
+    "arity": 2,
+    "params": [
+     "test_list",
+     "test_tup"
+    ],
+    "predictable": true,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"test_list\", \"type\": \"ProgDefFnParam\"}, {\"default\": null, \"name\": \"test_tup\", \"type\": \"ProgDefFnParam\"}, {\"name\": \"test_list\", \"op\": \"add\", \"type\": \"ProgAugAssign\", \"value\": {\"name\": \"test_tup\", \"type\": \"Var\"}}, {\"type\": \"ProgReturn\", \"value\": {\"name\": \"test_list\", \"type\": \"Var\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "add",
+     "list",
+     "tuple"
+    ],
+    "tfidf": {
+     "add": 5.49981,
+     "tuple": 3.5539,
+     "list": 2.408767
+    },
+    "arg_types": [
+     "list",
+     "tuple"
+    ],
+    "return_type": "list",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 52,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 751,
+    "entry": "check_min_heap",
+    "arity": 1,
+    "params": [
+     "arr"
+    ],
+    "predictable": false,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"arr\", \"type\": \"ProgDefFnParam\"}, {\"type\": \"ProgReturn\", \"value\": {\"args\": [{\"name\": \"arr\", \"type\": \"Var\"}, {\"type\": \"Lit\", \"value\": 0}], \"name\": \"check_min_heap_helper\", \"recv\": null, \"type\": \"ProgCallExtern\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "array",
+     "binary",
+     "check",
+     "geeksforgeeks",
+     "heap",
+     "how",
+     "https",
+     "min",
+     "not",
+     "org",
+     "represents",
+     "www"
+    ],
+    "tfidf": {
+     "check": 5.869721,
+     "array": 7.107799,
+     "represents": 10.999619,
+     "min": 5.49981,
+     "heap": 10.999619,
+     "not": 3.420368,
+     "https": 2.727221,
+     "www": 2.727221,
+     "geeksforgeeks": 2.860752,
+     "org": 2.860752,
+     "how": 5.49981,
+     "binary": 5.49981
+    },
+    "arg_types": [
+     "list"
+    ],
+    "return_type": "bool",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 53,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 752,
+    "entry": "jacobsthal_num",
+    "arity": 1,
+    "params": [
+     "n"
+    ],
+    "predictable": true,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"n\", \"type\": \"ProgDefFnParam\"}, {\"name\": \"dp\", \"type\": \"ProgAssignVar\", \"value\": {\"items\": [{\"items\": [{\"type\": \"Lit\", \"value\": 0}], \"kind\": \"list\", \"type\": \"ProgContainerLit\"}, {\"items\": [{\"name\": \"n\", \"type\": \"Var\"}, {\"type\": \"Lit\", \"value\": 1}], \"type\": \"Plus\"}], \"type\": \"Times\"}}, {\"index\": {\"type\": \"Lit\", \"value\": 0}, \"obj\": {\"name\": \"dp\", \"type\": \"Var\"}, \"type\": \"ProgSubscriptSet\", \"value\": {\"type\": \"Lit\", \"value\": 0}}, {\"index\": {\"type\": \"Lit\", \"value\": 1}, \"obj\": {\"name\": \"dp\", \"type\": \"Var\"}, \"type\": \"ProgSubscriptSet\", \"value\": {\"type\": \"Lit\", \"value\": 1}}, {\"body\": {\"index\": {\"name\": \"i\", \"type\": \"Var\"}, \"obj\": {\"name\": \"dp\", \"type\": \"Var\"}, \"type\": \"ProgSubscriptSet\", \"value\": {\"items\": [{\"index\": {\"a\": {\"name\": \"i\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 1}, \"type\": \"Minus\"}, \"obj\": {\"name\": \"dp\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, {\"items\": [{\"type\": \"Lit\", \"value\": 2}, {\"index\": {\"a\": {\"name\": \"i\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 2}, \"type\": \"Minus\"}, \"obj\": {\"name\": \"dp\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}], \"type\": \"Times\"}], \"type\": \"Plus\"}}, \"iter\": {\"args\": [{\"type\": \"Lit\", \"value\": 2}, {\"items\": [{\"name\": \"n\", \"type\": \"Var\"}, {\"type\": \"Lit\", \"value\": 1}], \"type\": \"Plus\"}], \"name\": \"range\", \"recv\": null, \"type\": \"ProgCallExtern\"}, \"orelse\": null, \"type\": \"ProgForEach\", \"var\": \"i\"}, {\"type\": \"ProgReturn\", \"value\": {\"index\": {\"name\": \"n\", \"type\": \"Var\"}, \"obj\": {\"name\": \"dp\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "find",
+     "geeksforgeeks",
+     "https",
+     "jacobsthal",
+     "lucas",
+     "nth",
+     "number",
+     "numbers",
+     "org",
+     "www"
+    ],
+    "tfidf": {
+     "find": 2.098612,
+     "nth": 4.113515,
+     "jacobsthal": 16.499429,
+     "number": 2.455287,
+     "https": 2.727221,
+     "www": 2.727221,
+     "geeksforgeeks": 2.860752,
+     "org": 2.860752,
+     "lucas": 5.49981,
+     "numbers": 2.791759
+    },
+    "arg_types": [
+     "int"
+    ],
+    "return_type": "int",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 54,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 756,
+    "entry": "text_match_zero_one",
+    "arity": 1,
+    "params": [
+     "text"
+    ],
+    "predictable": false,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"text\", \"type\": \"ProgDefFnParam\"}, {\"name\": \"patterns\", \"type\": \"ProgAssignVar\", \"value\": {\"type\": \"Lit\", \"value\": \"ab+?\"}}, {\"cond\": {\"args\": [{\"name\": \"patterns\", \"type\": \"Var\"}, {\"name\": \"text\", \"type\": \"Var\"}], \"name\": \"re.search\", \"recv\": null, \"type\": \"ProgCallExtern\"}, \"orelse\": {\"type\": \"ProgReturn\", \"value\": {\"type\": \"Lit\", \"value\": false}}, \"then\": {\"type\": \"ProgReturn\", \"value\": {\"type\": \"Lit\", \"value\": true}}, \"type\": \"ProgIfStmt\"}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "'a'",
+     "'b's",
+     "by",
+     "com",
+     "exercise",
+     "exercises",
+     "followed",
+     "has",
+     "https",
+     "matches",
+     "more",
+     "one",
+     "php",
+     "re",
+     "resource",
+     "string",
+     "www"
+    ],
+    "tfidf": {
+     "matches": 4.401197,
+     "string": 2.321756,
+     "has": 4.113515,
+     "'a'": 4.806662,
+     "followed": 4.401197,
+     "by": 3.70805,
+     "one": 4.806662,
+     "more": 5.49981,
+     "'b's": 5.49981,
+     "https": 2.727221,
+     "www": 2.727221,
+     "resource": 4.401197,
+     "com": 4.401197,
+     "exercises": 4.401197,
+     "re": 10.999619,
+     "exercise": 4.401197,
+     "php": 4.401197
+    },
+    "arg_types": [
+     "str"
+    ],
+    "return_type": "bool",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 55,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 759,
+    "entry": "is_decimal",
+    "arity": 1,
+    "params": [
+     "num"
+    ],
+    "predictable": false,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"num\", \"type\": \"ProgDefFnParam\"}, {\"alias\": \"\", \"module\": \"re\", \"names\": [], \"type\": \"ProgImportStmt\"}, {\"name\": \"dnumre\", \"type\": \"ProgAssignVar\", \"value\": {\"args\": [{\"type\": \"Lit\", \"value\": \"^[0-9]+(\\\\.[0-9]{1,2})?$\"}], \"name\": \"re.compile\", \"recv\": null, \"type\": \"ProgCallExtern\"}}, {\"name\": \"result\", \"type\": \"ProgAssignVar\", \"value\": {\"args\": [{\"name\": \"num\", \"type\": \"Var\"}], \"name\": \"dnumre.search\", \"recv\": null, \"type\": \"ProgCallExtern\"}}, {\"type\": \"ProgReturn\", \"value\": {\"args\": [{\"name\": \"result\", \"type\": \"Var\"}], \"name\": \"bool\", \"recv\": null, \"type\": \"ProgCallExtern\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "check",
+     "decimal",
+     "number",
+     "precision",
+     "string",
+     "whether"
+    ],
+    "tfidf": {
+     "check": 2.93486,
+     "whether": 3.197225,
+     "string": 2.321756,
+     "decimal": 5.49981,
+     "number": 2.455287,
+     "precision": 5.49981
+    },
+    "arg_types": [
+     "str"
+    ],
+    "return_type": "bool",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 56,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 760,
+    "entry": "unique_Element",
+    "arity": 1,
+    "params": [
+     "arr"
+    ],
+    "predictable": true,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"arr\", \"type\": \"ProgDefFnParam\"}, {\"name\": \"s\", \"type\": \"ProgAssignVar\", \"value\": {\"args\": [{\"name\": \"arr\", \"type\": \"Var\"}], \"name\": \"set\", \"recv\": null, \"type\": \"ProgCallExtern\"}}, {\"type\": \"ProgReturn\", \"value\": {\"a\": {\"args\": [{\"name\": \"s\", \"type\": \"Var\"}], \"name\": \"len\", \"recv\": null, \"type\": \"ProgCallExtern\"}, \"b\": {\"type\": \"Lit\", \"value\": 1}, \"type\": \"Eq\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "check",
+     "contains",
+     "distinct",
+     "element",
+     "list",
+     "not",
+     "numbers",
+     "one",
+     "only",
+     "whether"
+    ],
+    "tfidf": {
+     "check": 2.93486,
+     "whether": 3.197225,
+     "list": 2.408767,
+     "numbers": 2.791759,
+     "contains": 3.890372,
+     "only": 4.806662,
+     "one": 4.806662,
+     "distinct": 5.49981,
+     "element": 4.113515,
+     "not": 3.420368
+    },
+    "arg_types": [
+     "list"
+    ],
+    "return_type": "bool",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 57,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 762,
+    "entry": "check_monthnumber_number",
+    "arity": 1,
+    "params": [
+     "monthnum3"
+    ],
+    "predictable": true,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"monthnum3\", \"type\": \"ProgDefFnParam\"}, {\"type\": \"ProgReturn\", \"value\": {\"cond\": {\"a\": {\"name\": \"monthnum3\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 4}, \"type\": \"Eq\"}, \"other\": {\"cond\": {\"a\": {\"name\": \"monthnum3\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 6}, \"type\": \"Eq\"}, \"other\": {\"cond\": {\"a\": {\"name\": \"monthnum3\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 9}, \"type\": \"Eq\"}, \"other\": {\"a\": {\"name\": \"monthnum3\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 11}, \"type\": \"Eq\"}, \"then\": {\"a\": {\"name\": \"monthnum3\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 9}, \"type\": \"Eq\"}, \"type\": \"IfThenElse\"}, \"then\": {\"a\": {\"name\": \"monthnum3\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 6}, \"type\": \"Eq\"}, \"type\": \"IfThenElse\"}, \"then\": {\"a\": {\"name\": \"monthnum3\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 4}, \"type\": \"Eq\"}, \"type\": \"IfThenElse\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "are",
+     "check",
+     "contains",
+     "days",
+     "month",
+     "months",
+     "not",
+     "number",
+     "whether"
+    ],
+    "tfidf": {
+     "check": 2.93486,
+     "whether": 3.197225,
+     "month": 5.49981,
+     "number": 4.910574,
+     "contains": 3.890372,
+     "days": 5.49981,
+     "not": 3.420368,
+     "months": 5.49981,
+     "are": 4.401197
+    },
+    "arg_types": [
+     "int"
+    ],
+    "return_type": "bool",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 58,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 763,
+    "entry": "find_min_diff",
+    "arity": 2,
+    "params": [
+     "arr",
+     "n"
+    ],
+    "predictable": true,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"arr\", \"type\": \"ProgDefFnParam\"}, {\"default\": null, \"name\": \"n\", \"type\": \"ProgDefFnParam\"}, {\"name\": \"arr\", \"type\": \"ProgAssignVar\", \"value\": {\"args\": [{\"name\": \"arr\", \"type\": \"Var\"}], \"name\": \"sorted\", \"recv\": null, \"type\": \"ProgCallExtern\"}}, {\"name\": \"diff\", \"type\": \"ProgAssignVar\", \"value\": {\"a\": {\"type\": \"Lit\", \"value\": 10}, \"b\": {\"type\": \"Lit\", \"value\": 20}, \"type\": \"Pow\"}}, {\"body\": {\"cond\": {\"a\": {\"a\": {\"index\": {\"items\": [{\"name\": \"i\", \"type\": \"Var\"}, {\"type\": \"Lit\", \"value\": 1}], \"type\": \"Plus\"}, \"obj\": {\"name\": \"arr\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"b\": {\"index\": {\"name\": \"i\", \"type\": \"Var\"}, \"obj\": {\"name\": \"arr\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"type\": \"Minus\"}, \"b\": {\"name\": \"diff\", \"type\": \"Var\"}, \"type\": \"Lt\"}, \"orelse\": null, \"then\": {\"name\": \"diff\", \"type\": \"ProgAssignVar\", \"value\": {\"a\": {\"index\": {\"items\": [{\"name\": \"i\", \"type\": \"Var\"}, {\"type\": \"Lit\", \"value\": 1}], \"type\": \"Plus\"}, \"obj\": {\"name\": \"arr\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"b\": {\"index\": {\"name\": \"i\", \"type\": \"Var\"}, \"obj\": {\"name\": \"arr\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"type\": \"Minus\"}}, \"type\": \"ProgIfStmt\"}, \"iter\": {\"args\": [{\"a\": {\"name\": \"n\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 1}, \"type\": \"Minus\"}], \"name\": \"range\", \"recv\": null, \"type\": \"ProgCallExtern\"}, \"orelse\": null, \"type\": \"ProgForEach\", \"var\": \"i\"}, {\"type\": \"ProgReturn\", \"value\": {\"name\": \"diff\", \"type\": \"Var\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "any",
+     "array",
+     "between",
+     "difference",
+     "elements",
+     "find",
+     "geeksforgeeks",
+     "https",
+     "minimum",
+     "org",
+     "pair",
+     "two",
+     "www"
+    ],
+    "tfidf": {
+     "find": 4.197225,
+     "minimum": 10.999619,
+     "difference": 9.613325,
+     "between": 4.113515,
+     "any": 5.49981,
+     "two": 3.890372,
+     "elements": 4.401197,
+     "array": 3.5539,
+     "https": 2.727221,
+     "www": 2.727221,
+     "geeksforgeeks": 2.860752,
+     "org": 2.860752,
+     "pair": 4.401197
+    },
+    "arg_types": [
+     "tuple",
+     "int"
+    ],
+    "return_type": "int",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 59,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 764,
+    "entry": "number_ctr",
+    "arity": 1,
+    "params": [
+     "str"
+    ],
+    "predictable": true,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"str\", \"type\": \"ProgDefFnParam\"}, {\"name\": \"number_ctr\", \"type\": \"ProgAssignVar\", \"value\": {\"type\": \"Lit\", \"value\": 0}}, {\"body\": {\"cond\": {\"cond\": {\"a\": {\"index\": {\"name\": \"i\", \"type\": \"Var\"}, \"obj\": {\"name\": \"str\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"b\": {\"type\": \"Lit\", \"value\": \"0\"}, \"type\": \"Gte\"}, \"other\": {\"a\": {\"index\": {\"name\": \"i\", \"type\": \"Var\"}, \"obj\": {\"name\": \"str\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"b\": {\"type\": \"Lit\", \"value\": \"0\"}, \"type\": \"Gte\"}, \"then\": {\"a\": {\"index\": {\"name\": \"i\", \"type\": \"Var\"}, \"obj\": {\"name\": \"str\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"b\": {\"type\": \"Lit\", \"value\": \"9\"}, \"type\": \"Lte\"}, \"type\": \"IfThenElse\"}, \"orelse\": null, \"then\": {\"name\": \"number_ctr\", \"op\": \"add\", \"type\": \"ProgAugAssign\", \"value\": {\"type\": \"Lit\", \"value\": 1}}, \"type\": \"ProgIfStmt\"}, \"iter\": {\"args\": [{\"args\": [{\"name\": \"str\", \"type\": \"Var\"}], \"name\": \"len\", \"recv\": null, \"type\": \"ProgCallExtern\"}], \"name\": \"range\", \"recv\": null, \"type\": \"ProgCallExtern\"}, \"orelse\": null, \"type\": \"ProgForEach\", \"var\": \"i\"}, {\"type\": \"ProgReturn\", \"value\": {\"name\": \"number_ctr\", \"type\": \"Var\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "count",
+     "digits",
+     "number",
+     "string"
+    ],
+    "tfidf": {
+     "count": 3.5539,
+     "number": 2.455287,
+     "digits": 4.401197,
+     "string": 2.321756
+    },
+    "arg_types": [
+     "str"
+    ],
+    "return_type": "int",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 60,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 765,
+    "entry": "is_polite",
+    "arity": 1,
+    "params": [
+     "n"
+    ],
+    "predictable": false,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"n\", \"type\": \"ProgDefFnParam\"}, {\"name\": \"n\", \"type\": \"ProgAssignVar\", \"value\": {\"items\": [{\"name\": \"n\", \"type\": \"Var\"}, {\"type\": \"Lit\", \"value\": 1}], \"type\": \"Plus\"}}, {\"type\": \"ProgReturn\", \"value\": {\"args\": [{\"items\": [{\"name\": \"n\", \"type\": \"Var\"}, {\"args\": [{\"items\": [{\"name\": \"n\", \"type\": \"Var\"}, {\"args\": [{\"name\": \"n\", \"type\": \"Var\"}, {\"type\": \"Lit\", \"value\": 2}], \"name\": \"math.log\", \"recv\": null, \"type\": \"ProgCallExtern\"}], \"type\": \"Plus\"}, {\"type\": \"Lit\", \"value\": 2}], \"name\": \"math.log\", \"recv\": null, \"type\": \"ProgCallExtern\"}], \"type\": \"Plus\"}], \"name\": \"int\", \"recv\": null, \"type\": \"ProgCallExtern\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "find",
+     "geeksforgeeks",
+     "nth",
+     "number",
+     "org",
+     "polite",
+     "th"
+    ],
+    "tfidf": {
+     "find": 2.098612,
+     "nth": 4.113515,
+     "polite": 10.999619,
+     "number": 4.910574,
+     "geeksforgeeks": 2.860752,
+     "org": 2.860752,
+     "th": 5.49981
+    },
+    "arg_types": [
+     "int"
+    ],
+    "return_type": "int",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 61,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 767,
+    "entry": "get_pairs_count",
+    "arity": 2,
+    "params": [
+     "arr",
+     "sum"
+    ],
+    "predictable": true,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"arr\", \"type\": \"ProgDefFnParam\"}, {\"default\": null, \"name\": \"sum\", \"type\": \"ProgDefFnParam\"}, {\"name\": \"count\", \"type\": \"ProgAssignVar\", \"value\": {\"type\": \"Lit\", \"value\": 0}}, {\"body\": {\"body\": {\"cond\": {\"a\": {\"items\": [{\"index\": {\"name\": \"i\", \"type\": \"Var\"}, \"obj\": {\"name\": \"arr\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, {\"index\": {\"name\": \"j\", \"type\": \"Var\"}, \"obj\": {\"name\": \"arr\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}], \"type\": \"Plus\"}, \"b\": {\"name\": \"sum\", \"type\": \"Var\"}, \"type\": \"Eq\"}, \"orelse\": null, \"then\": {\"name\": \"count\", \"op\": \"add\", \"type\": \"ProgAugAssign\", \"value\": {\"type\": \"Lit\", \"value\": 1}}, \"type\": \"ProgIfStmt\"}, \"iter\": {\"args\": [{\"items\": [{\"name\": \"i\", \"type\": \"Var\"}, {\"type\": \"Lit\", \"value\": 1}], \"type\": \"Plus\"}, {\"args\": [{\"name\": \"arr\", \"type\": \"Var\"}], \"name\": \"len\", \"recv\": null, \"type\": \"ProgCallExtern\"}], \"name\": \"range\", \"recv\": null, \"type\": \"ProgCallExtern\"}, \"orelse\": null, \"type\": \"ProgForEach\", \"var\": \"j\"}, \"iter\": {\"args\": [{\"args\": [{\"name\": \"arr\", \"type\": \"Var\"}], \"name\": \"len\", \"recv\": null, \"type\": \"ProgCallExtern\"}], \"name\": \"range\", \"recv\": null, \"type\": \"ProgCallExtern\"}, \"orelse\": null, \"type\": \"ProgForEach\", \"var\": \"i\"}, {\"type\": \"ProgReturn\", \"value\": {\"name\": \"count\", \"type\": \"Var\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "count",
+     "equal",
+     "funtion",
+     "gets",
+     "input",
+     "list",
+     "number",
+     "numbers",
+     "pairs",
+     "sum",
+     "whose"
+    ],
+    "tfidf": {
+     "count": 3.5539,
+     "number": 2.455287,
+     "pairs": 4.806662,
+     "whose": 5.49981,
+     "sum": 9.305743,
+     "equal": 4.806662,
+     "funtion": 5.49981,
+     "gets": 5.49981,
+     "input": 4.401197,
+     "list": 2.408767,
+     "numbers": 2.791759
+    },
+    "arg_types": [
+     "list",
+     "int"
+    ],
+    "return_type": "int",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 62,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 769,
+    "entry": "Diff",
+    "arity": 2,
+    "params": [
+     "li1",
+     "li2"
+    ],
+    "predictable": true,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"li1\", \"type\": \"ProgDefFnParam\"}, {\"default\": null, \"name\": \"li2\", \"type\": \"ProgDefFnParam\"}, {\"type\": \"ProgReturn\", \"value\": {\"items\": [{\"args\": [{\"a\": {\"args\": [{\"name\": \"li1\", \"type\": \"Var\"}], \"name\": \"set\", \"recv\": null, \"type\": \"ProgCallExtern\"}, \"b\": {\"args\": [{\"name\": \"li2\", \"type\": \"Var\"}], \"name\": \"set\", \"recv\": null, \"type\": \"ProgCallExtern\"}, \"type\": \"Minus\"}], \"name\": \"list\", \"recv\": null, \"type\": \"ProgCallExtern\"}, {\"args\": [{\"a\": {\"args\": [{\"name\": \"li2\", \"type\": \"Var\"}], \"name\": \"set\", \"recv\": null, \"type\": \"ProgCallExtern\"}, \"b\": {\"args\": [{\"name\": \"li1\", \"type\": \"Var\"}], \"name\": \"set\", \"recv\": null, \"type\": \"ProgCallExtern\"}, \"type\": \"Minus\"}], \"name\": \"list\", \"recv\": null, \"type\": \"ProgCallExtern\"}], \"type\": \"Plus\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "between",
+     "difference",
+     "get",
+     "lists",
+     "two"
+    ],
+    "tfidf": {
+     "get": 5.49981,
+     "difference": 4.806662,
+     "between": 4.113515,
+     "two": 3.890372,
+     "lists": 3.5539
+    },
+    "arg_types": [
+     "list",
+     "list"
+    ],
+    "return_type": "list",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 63,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 770,
+    "entry": "odd_num_sum",
+    "arity": 1,
+    "params": [
+     "n"
+    ],
+    "predictable": true,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"n\", \"type\": \"ProgDefFnParam\"}, {\"name\": \"j\", \"type\": \"ProgAssignVar\", \"value\": {\"type\": \"Lit\", \"value\": 0}}, {\"name\": \"sm\", \"type\": \"ProgAssignVar\", \"value\": {\"type\": \"Lit\", \"value\": 0}}, {\"body\": {\"stmts\": [{\"name\": \"j\", \"type\": \"ProgAssignVar\", \"value\": {\"a\": {\"items\": [{\"type\": \"Lit\", \"value\": 2}, {\"name\": \"i\", \"type\": \"Var\"}], \"type\": \"Times\"}, \"b\": {\"type\": \"Lit\", \"value\": 1}, \"type\": \"Minus\"}}, {\"name\": \"sm\", \"type\": \"ProgAssignVar\", \"value\": {\"items\": [{\"name\": \"sm\", \"type\": \"Var\"}, {\"items\": [{\"items\": [{\"items\": [{\"name\": \"j\", \"type\": \"Var\"}, {\"name\": \"j\", \"type\": \"Var\"}], \"type\": \"Times\"}, {\"name\": \"j\", \"type\": \"Var\"}], \"type\": \"Times\"}, {\"name\": \"j\", \"type\": \"Var\"}], \"type\": \"Times\"}], \"type\": \"Plus\"}}], \"type\": \"ProgSeq\"}, \"iter\": {\"args\": [{\"type\": \"Lit\", \"value\": 1}, {\"items\": [{\"name\": \"n\", \"type\": \"Var\"}, {\"type\": \"Lit\", \"value\": 1}], \"type\": \"Plus\"}], \"name\": \"range\", \"recv\": null, \"type\": \"ProgCallExtern\"}, \"orelse\": null, \"type\": \"ProgForEach\", \"var\": \"i\"}, {\"type\": \"ProgReturn\", \"value\": {\"name\": \"sm\", \"type\": \"Var\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "find",
+     "first",
+     "fourth",
+     "natural",
+     "numbers",
+     "odd",
+     "power",
+     "sum"
+    ],
+    "tfidf": {
+     "find": 2.098612,
+     "sum": 3.101914,
+     "fourth": 5.49981,
+     "power": 4.806662,
+     "first": 3.5539,
+     "odd": 3.70805,
+     "natural": 4.401197,
+     "numbers": 2.791759
+    },
+    "arg_types": [
+     "int"
+    ],
+    "return_type": "int",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 64,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 772,
+    "entry": "remove_length",
+    "arity": 2,
+    "params": [
+     "test_str",
+     "K"
+    ],
+    "predictable": true,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"test_str\", \"type\": \"ProgDefFnParam\"}, {\"default\": null, \"name\": \"K\", \"type\": \"ProgDefFnParam\"}, {\"name\": \"temp\", \"type\": \"ProgAssignVar\", \"value\": {\"args\": [], \"name\": \"split\", \"recv\": {\"name\": \"test_str\", \"type\": \"Var\"}, \"type\": \"ProgCallExtern\"}}, {\"name\": \"res\", \"type\": \"ProgAssignVar\", \"value\": {\"cond\": {\"arg\": {\"a\": {\"args\": [{\"name\": \"ele\", \"type\": \"Var\"}], \"name\": \"len\", \"recv\": null, \"type\": \"ProgCallExtern\"}, \"b\": {\"name\": \"K\", \"type\": \"Var\"}, \"type\": \"Eq\"}, \"type\": \"Not\"}, \"expr\": {\"name\": \"ele\", \"type\": \"Var\"}, \"source\": {\"name\": \"temp\", \"type\": \"Var\"}, \"type\": \"ProgComprehensionList\", \"var\": \"ele\"}}, {\"name\": \"res\", \"type\": \"ProgAssignVar\", \"value\": {\"args\": [{\"name\": \"res\", \"type\": \"Var\"}], \"name\": \"join\", \"recv\": {\"type\": \"Lit\", \"value\": \" \"}, \"type\": \"ProgCallExtern\"}}, {\"type\": \"ProgReturn\", \"value\": {\"name\": \"res\", \"type\": \"Var\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "all",
+     "length",
+     "remove",
+     "string",
+     "words"
+    ],
+    "tfidf": {
+     "remove": 4.113515,
+     "all": 2.727221,
+     "words": 4.401197,
+     "length": 4.113515,
+     "string": 2.321756
+    },
+    "arg_types": [
+     "str",
+     "int"
+    ],
+    "return_type": "str",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 65,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 773,
+    "entry": "occurance_substring",
+    "arity": 2,
+    "params": [
+     "text",
+     "pattern"
+    ],
+    "predictable": false,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"text\", \"type\": \"ProgDefFnParam\"}, {\"default\": null, \"name\": \"pattern\", \"type\": \"ProgDefFnParam\"}, {\"body\": {\"stmts\": [{\"name\": \"s\", \"type\": \"ProgAssignVar\", \"value\": {\"args\": [], \"name\": \"match.start\", \"recv\": null, \"type\": \"ProgCallExtern\"}}, {\"name\": \"e\", \"type\": \"ProgAssignVar\", \"value\": {\"args\": [], \"name\": \"match.end\", \"recv\": null, \"type\": \"ProgCallExtern\"}}, {\"type\": \"ProgReturn\", \"value\": {\"items\": [{\"obj\": {\"name\": \"text\", \"type\": \"Var\"}, \"start\": {\"name\": \"s\", \"type\": \"Var\"}, \"step\": null, \"stop\": {\"name\": \"e\", \"type\": \"Var\"}, \"type\": \"ProgSlice\"}, {\"name\": \"s\", \"type\": \"Var\"}, {\"name\": \"e\", \"type\": \"Var\"}], \"kind\": \"tuple\", \"type\": \"ProgContainerLit\"}}], \"type\": \"ProgSeq\"}, \"iter\": {\"args\": [{\"name\": \"pattern\", \"type\": \"Var\"}, {\"name\": \"text\", \"type\": \"Var\"}], \"name\": \"re.finditer\", \"recv\": null, \"type\": \"ProgCallExtern\"}, \"orelse\": null, \"type\": \"ProgForEach\", \"var\": \"match\"}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "find",
+     "match",
+     "no",
+     "none",
+     "occurrence",
+     "position",
+     "string",
+     "substrings",
+     "there",
+     "within"
+    ],
+    "tfidf": {
+     "find": 2.098612,
+     "occurrence": 4.806662,
+     "position": 4.401197,
+     "substrings": 5.49981,
+     "within": 4.806662,
+     "string": 2.321756,
+     "none": 4.806662,
+     "there": 5.49981,
+     "no": 4.806662,
+     "match": 5.49981
+    },
+    "arg_types": [
+     "str",
+     "str"
+    ],
+    "return_type": "tuple",
+    "consistent_types": false,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 66,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 775,
+    "entry": "odd_position",
+    "arity": 1,
+    "params": [
+     "nums"
+    ],
+    "predictable": true,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"nums\", \"type\": \"ProgDefFnParam\"}, {\"type\": \"ProgReturn\", \"value\": {\"args\": [{\"cond\": null, \"expr\": {\"a\": {\"a\": {\"index\": {\"name\": \"i\", \"type\": \"Var\"}, \"obj\": {\"name\": \"nums\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"b\": {\"type\": \"Lit\", \"value\": 2}, \"type\": \"Mod\"}, \"b\": {\"a\": {\"name\": \"i\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 2}, \"type\": \"Mod\"}, \"type\": \"Eq\"}, \"source\": {\"args\": [{\"args\": [{\"name\": \"nums\", \"type\": \"Var\"}], \"name\": \"len\", \"recv\": null, \"type\": \"ProgCallExtern\"}], \"name\": \"range\", \"recv\": null, \"type\": \"ProgCallExtern\"}, \"type\": \"ProgComprehensionGen\", \"var\": \"i\"}], \"name\": \"all\", \"recv\": null, \"type\": \"ProgCallExtern\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "check",
+     "contains",
+     "every",
+     "index",
+     "list",
+     "numbers",
+     "odd",
+     "whether"
+    ],
+    "tfidf": {
+     "check": 2.93486,
+     "whether": 3.197225,
+     "every": 4.401197,
+     "odd": 7.4161,
+     "index": 3.70805,
+     "contains": 3.890372,
+     "numbers": 2.791759,
+     "list": 2.408767
+    },
+    "arg_types": [
+     "list"
+    ],
+    "return_type": "bool",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 67,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 776,
+    "entry": "count_vowels",
+    "arity": 1,
+    "params": [
+     "test_str"
+    ],
+    "predictable": true,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"test_str\", \"type\": \"ProgDefFnParam\"}, {\"name\": \"res\", \"type\": \"ProgAssignVar\", \"value\": {\"type\": \"Lit\", \"value\": 0}}, {\"name\": \"vow_list\", \"type\": \"ProgAssignVar\", \"value\": {\"items\": [{\"type\": \"Lit\", \"value\": \"a\"}, {\"type\": \"Lit\", \"value\": \"e\"}, {\"type\": \"Lit\", \"value\": \"i\"}, {\"type\": \"Lit\", \"value\": \"o\"}, {\"type\": \"Lit\", \"value\": \"u\"}], \"kind\": \"list\", \"type\": \"ProgContainerLit\"}}, {\"body\": {\"cond\": {\"cond\": {\"arg\": {\"container\": {\"name\": \"vow_list\", \"type\": \"Var\"}, \"member\": {\"index\": {\"name\": \"idx\", \"type\": \"Var\"}, \"obj\": {\"name\": \"test_str\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"type\": \"In\"}, \"type\": \"Not\"}, \"other\": {\"arg\": {\"container\": {\"name\": \"vow_list\", \"type\": \"Var\"}, \"member\": {\"index\": {\"name\": \"idx\", \"type\": \"Var\"}, \"obj\": {\"name\": \"test_str\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"type\": \"In\"}, \"type\": \"Not\"}, \"then\": {\"cond\": {\"container\": {\"name\": \"vow_list\", \"type\": \"Var\"}, \"member\": {\"index\": {\"a\": {\"name\": \"idx\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 1}, \"type\": \"Minus\"}, \"obj\": {\"name\": \"test_str\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"type\": \"In\"}, \"other\": {\"container\": {\"name\": \"vow_list\", \"type\": \"Var\"}, \"member\": {\"index\": {\"items\": [{\"name\": \"idx\", \"type\": \"Var\"}, {\"type\": \"Lit\", \"value\": 1}], \"type\": \"Plus\"}, \"obj\": {\"name\": \"test_str\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"type\": \"In\"}, \"then\": {\"container\": {\"name\": \"vow_list\", \"type\": \"Var\"}, \"member\": {\"index\": {\"a\": {\"name\": \"idx\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 1}, \"type\": \"Minus\"}, \"obj\": {\"name\": \"test_str\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"type\": \"In\"}, \"type\": \"IfThenElse\"}, \"type\": \"IfThenElse\"}, \"orelse\": null, \"then\": {\"name\": \"res\", \"op\": \"add\", \"type\": \"ProgAugAssign\", \"value\": {\"type\": \"Lit\", \"value\": 1}}, \"type\": \"ProgIfStmt\"}, \"iter\": {\"args\": [{\"type\": \"Lit\", \"value\": 1}, {\"a\": {\"args\": [{\"name\": \"test_str\", \"type\": \"Var\"}], \"name\": \"len\", \"recv\": null, \"type\": \"ProgCallExtern\"}, \"b\": {\"type\": \"Lit\", \"value\": 1}, \"type\": \"Minus\"}], \"name\": \"range\", \"recv\": null, \"type\": \"ProgCallExtern\"}, \"orelse\": null, \"type\": \"ProgForEach\", \"var\": \"idx\"}, {\"cond\": {\"cond\": {\"arg\": {\"container\": {\"name\": \"vow_list\", \"type\": \"Var\"}, \"member\": {\"index\": {\"type\": \"Lit\", \"value\": 0}, \"obj\": {\"name\": \"test_str\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"type\": \"In\"}, \"type\": \"Not\"}, \"other\": {\"arg\": {\"container\": {\"name\": \"vow_list\", \"type\": \"Var\"}, \"member\": {\"index\": {\"type\": \"Lit\", \"value\": 0}, \"obj\": {\"name\": \"test_str\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"type\": \"In\"}, \"type\": \"Not\"}, \"then\": {\"container\": {\"name\": \"vow_list\", \"type\": \"Var\"}, \"member\": {\"index\": {\"type\": \"Lit\", \"value\": 1}, \"obj\": {\"name\": \"test_str\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"type\": \"In\"}, \"type\": \"IfThenElse\"}, \"orelse\": null, \"then\": {\"name\": \"res\", \"op\": \"add\", \"type\": \"ProgAugAssign\", \"value\": {\"type\": \"Lit\", \"value\": 1}}, \"type\": \"ProgIfStmt\"}, {\"cond\": {\"cond\": {\"arg\": {\"container\": {\"name\": \"vow_list\", \"type\": \"Var\"}, \"member\": {\"index\": {\"arg\": {\"type\": \"Lit\", \"value\": 1}, \"type\": \"Neg\"}, \"obj\": {\"name\": \"test_str\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"type\": \"In\"}, \"type\": \"Not\"}, \"other\": {\"arg\": {\"container\": {\"name\": \"vow_list\", \"type\": \"Var\"}, \"member\": {\"index\": {\"arg\": {\"type\": \"Lit\", \"value\": 1}, \"type\": \"Neg\"}, \"obj\": {\"name\": \"test_str\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"type\": \"In\"}, \"type\": \"Not\"}, \"then\": {\"container\": {\"name\": \"vow_list\", \"type\": \"Var\"}, \"member\": {\"index\": {\"arg\": {\"type\": \"Lit\", \"value\": 2}, \"type\": \"Neg\"}, \"obj\": {\"name\": \"test_str\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"type\": \"In\"}, \"type\": \"IfThenElse\"}, \"orelse\": null, \"then\": {\"name\": \"res\", \"op\": \"add\", \"type\": \"ProgAugAssign\", \"value\": {\"type\": \"Lit\", \"value\": 1}}, \"type\": \"ProgIfStmt\"}, {\"type\": \"ProgReturn\", \"value\": {\"name\": \"res\", \"type\": \"Var\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "characters",
+     "count",
+     "have",
+     "neighbors",
+     "string",
+     "their",
+     "those",
+     "vowels"
+    ],
+    "tfidf": {
+     "count": 3.5539,
+     "those": 5.49981,
+     "characters": 4.401197,
+     "have": 4.806662,
+     "vowels": 5.49981,
+     "their": 5.49981,
+     "neighbors": 5.49981,
+     "string": 2.321756
+    },
+    "arg_types": [
+     "str"
+    ],
+    "return_type": "int",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 68,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 782,
+    "entry": "odd_length_sum",
+    "arity": 1,
+    "params": [
+     "arr"
+    ],
+    "predictable": true,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"arr\", \"type\": \"ProgDefFnParam\"}, {\"name\": \"Sum\", \"type\": \"ProgAssignVar\", \"value\": {\"type\": \"Lit\", \"value\": 0}}, {\"name\": \"l\", \"type\": \"ProgAssignVar\", \"value\": {\"args\": [{\"name\": \"arr\", \"type\": \"Var\"}], \"name\": \"len\", \"recv\": null, \"type\": \"ProgCallExtern\"}}, {\"body\": {\"stmts\": [{\"name\": \"__u0\", \"type\": \"ProgAssignVar\", \"value\": {\"a\": {\"items\": [{\"items\": [{\"items\": [{\"name\": \"i\", \"type\": \"Var\"}, {\"type\": \"Lit\", \"value\": 1}], \"type\": \"Plus\"}, {\"a\": {\"name\": \"l\", \"type\": \"Var\"}, \"b\": {\"name\": \"i\", \"type\": \"Var\"}, \"type\": \"Minus\"}], \"type\": \"Times\"}, {\"type\": \"Lit\", \"value\": 1}], \"type\": \"Plus\"}, \"b\": {\"a\": {\"items\": [{\"items\": [{\"items\": [{\"name\": \"i\", \"type\": \"Var\"}, {\"type\": \"Lit\", \"value\": 1}], \"type\": \"Plus\"}, {\"a\": {\"name\": \"l\", \"type\": \"Var\"}, \"b\": {\"name\": \"i\", \"type\": \"Var\"}, \"type\": \"Minus\"}], \"type\": \"Times\"}, {\"type\": \"Lit\", \"value\": 1}], \"type\": \"Plus\"}, \"b\": {\"type\": \"Lit\", \"value\": 2}, \"type\": \"Mod\"}, \"type\": \"Minus\"}}, {\"name\": \"__u0\", \"op\": \"floordiv\", \"type\": \"ProgAugAssign\", \"value\": {\"type\": \"Lit\", \"value\": 2}}, {\"name\": \"Sum\", \"op\": \"add\", \"type\": \"ProgAugAssign\", \"value\": {\"items\": [{\"name\": \"__u0\", \"type\": \"Var\"}, {\"index\": {\"name\": \"i\", \"type\": \"Var\"}, \"obj\": {\"name\": \"arr\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}], \"type\": \"Times\"}}], \"type\": \"ProgSeq\"}, \"iter\": {\"args\": [{\"name\": \"l\", \"type\": \"Var\"}], \"name\": \"range\", \"recv\": null, \"type\": \"ProgCallExtern\"}, \"orelse\": null, \"type\": \"ProgForEach\", \"var\": \"i\"}, {\"type\": \"ProgReturn\", \"value\": {\"name\": \"Sum\", \"type\": \"Var\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "all",
+     "find",
+     "geeksforgeeks",
+     "https",
+     "length",
+     "odd",
+     "org",
+     "subarrays",
+     "sum",
+     "www"
+    ],
+    "tfidf": {
+     "find": 2.098612,
+     "sum": 6.203829,
+     "all": 5.454442,
+     "odd": 7.4161,
+     "length": 8.227031,
+     "subarrays": 9.613325,
+     "https": 2.727221,
+     "www": 2.727221,
+     "geeksforgeeks": 2.860752,
+     "org": 2.860752
+    },
+    "arg_types": [
+     "list"
+    ],
+    "return_type": "int",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 69,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 783,
+    "entry": "rgb_to_hsv",
+    "arity": 3,
+    "params": [
+     "r",
+     "g",
+     "b"
+    ],
+    "predictable": true,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"r\", \"type\": \"ProgDefFnParam\"}, {\"default\": null, \"name\": \"g\", \"type\": \"ProgDefFnParam\"}, {\"default\": null, \"name\": \"b\", \"type\": \"ProgDefFnParam\"}, {\"targets\": [\"r\", \"g\", \"b\"], \"type\": \"ProgTupleUnpack\", \"value\": {\"items\": [{\"a\": {\"name\": \"r\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 255.0}, \"type\": \"Div\"}, {\"a\": {\"name\": \"g\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 255.0}, \"type\": \"Div\"}, {\"a\": {\"name\": \"b\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 255.0}, \"type\": \"Div\"}], \"kind\": \"tuple\", \"type\": \"ProgContainerLit\"}}, {\"name\": \"mx\", \"type\": \"ProgAssignVar\", \"value\": {\"args\": [{\"name\": \"r\", \"type\": \"Var\"}, {\"name\": \"g\", \"type\": \"Var\"}, {\"name\": \"b\", \"type\": \"Var\"}], \"name\": \"max\", \"recv\": null, \"type\": \"ProgCallExtern\"}}, {\"name\": \"mn\", \"type\": \"ProgAssignVar\", \"value\": {\"args\": [{\"name\": \"r\", \"type\": \"Var\"}, {\"name\": \"g\", \"type\": \"Var\"}, {\"name\": \"b\", \"type\": \"Var\"}], \"name\": \"min\", \"recv\": null, \"type\": \"ProgCallExtern\"}}, {\"name\": \"df\", \"type\": \"ProgAssignVar\", \"value\": {\"a\": {\"name\": \"mx\", \"type\": \"Var\"}, \"b\": {\"name\": \"mn\", \"type\": \"Var\"}, \"type\": \"Minus\"}}, {\"cond\": {\"a\": {\"name\": \"mx\", \"type\": \"Var\"}, \"b\": {\"name\": \"mn\", \"type\": \"Var\"}, \"type\": \"Eq\"}, \"orelse\": {\"cond\": {\"a\": {\"name\": \"mx\", \"type\": \"Var\"}, \"b\": {\"name\": \"r\", \"type\": \"Var\"}, \"type\": \"Eq\"}, \"orelse\": {\"cond\": {\"a\": {\"name\": \"mx\", \"type\": \"Var\"}, \"b\": {\"name\": \"g\", \"type\": \"Var\"}, \"type\": \"Eq\"}, \"orelse\": {\"cond\": {\"a\": {\"name\": \"mx\", \"type\": \"Var\"}, \"b\": {\"name\": \"b\", \"type\": \"Var\"}, \"type\": \"Eq\"}, \"orelse\": null, \"then\": {\"name\": \"h\", \"type\": \"ProgAssignVar\", \"value\": {\"a\": {\"items\": [{\"items\": [{\"type\": \"Lit\", \"value\": 60}, {\"a\": {\"a\": {\"name\": \"r\", \"type\": \"Var\"}, \"b\": {\"name\": \"g\", \"type\": \"Var\"}, \"type\": \"Minus\"}, \"b\": {\"name\": \"df\", \"type\": \"Var\"}, \"type\": \"Div\"}], \"type\": \"Times\"}, {\"type\": \"Lit\", \"value\": 240}], \"type\": \"Plus\"}, \"b\": {\"type\": \"Lit\", \"value\": 360}, \"type\": \"Mod\"}}, \"type\": \"ProgIfStmt\"}, \"then\": {\"name\": \"h\", \"type\": \"ProgAssignVar\", \"value\": {\"a\": {\"items\": [{\"items\": [{\"type\": \"Lit\", \"value\": 60}, {\"a\": {\"a\": {\"name\": \"b\", \"type\": \"Var\"}, \"b\": {\"name\": \"r\", \"type\": \"Var\"}, \"type\": \"Minus\"}, \"b\": {\"name\": \"df\", \"type\": \"Var\"}, \"type\": \"Div\"}], \"type\": \"Times\"}, {\"type\": \"Lit\", \"value\": 120}], \"type\": \"Plus\"}, \"b\": {\"type\": \"Lit\", \"value\": 360}, \"type\": \"Mod\"}}, \"type\": \"ProgIfStmt\"}, \"then\": {\"name\": \"h\", \"type\": \"ProgAssignVar\", \"value\": {\"a\": {\"items\": [{\"items\": [{\"type\": \"Lit\", \"value\": 60}, {\"a\": {\"a\": {\"name\": \"g\", \"type\": \"Var\"}, \"b\": {\"name\": \"b\", \"type\": \"Var\"}, \"type\": \"Minus\"}, \"b\": {\"name\": \"df\", \"type\": \"Var\"}, \"type\": \"Div\"}], \"type\": \"Times\"}, {\"type\": \"Lit\", \"value\": 360}], \"type\": \"Plus\"}, \"b\": {\"type\": \"Lit\", \"value\": 360}, \"type\": \"Mod\"}}, \"type\": \"ProgIfStmt\"}, \"then\": {\"name\": \"h\", \"type\": \"ProgAssignVar\", \"value\": {\"type\": \"Lit\", \"value\": 0}}, \"type\": \"ProgIfStmt\"}, {\"cond\": {\"a\": {\"name\": \"mx\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 0}, \"type\": \"Eq\"}, \"orelse\": {\"name\": \"s\", \"type\": \"ProgAssignVar\", \"value\": {\"items\": [{\"a\": {\"name\": \"df\", \"type\": \"Var\"}, \"b\": {\"name\": \"mx\", \"type\": \"Var\"}, \"type\": \"Div\"}, {\"type\": \"Lit\", \"value\": 100}], \"type\": \"Times\"}}, \"then\": {\"name\": \"s\", \"type\": \"ProgAssignVar\", \"value\": {\"type\": \"Lit\", \"value\": 0}}, \"type\": \"ProgIfStmt\"}, {\"name\": \"v\", \"type\": \"ProgAssignVar\", \"value\": {\"items\": [{\"name\": \"mx\", \"type\": \"Var\"}, {\"type\": \"Lit\", \"value\": 100}], \"type\": \"Times\"}}, {\"type\": \"ProgReturn\", \"value\": {\"items\": [{\"name\": \"h\", \"type\": \"Var\"}, {\"name\": \"s\", \"type\": \"Var\"}, {\"name\": \"v\", \"type\": \"Var\"}], \"kind\": \"tuple\", \"type\": \"ProgContainerLit\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "change",
+     "color",
+     "convert",
+     "geeksforgeeks",
+     "hsv",
+     "https",
+     "model",
+     "org",
+     "program",
+     "rgb",
+     "www"
+    ],
+    "tfidf": {
+     "convert": 3.890372,
+     "rgb": 10.999619,
+     "color": 21.999239,
+     "hsv": 10.999619,
+     "https": 2.727221,
+     "www": 2.727221,
+     "geeksforgeeks": 2.860752,
+     "org": 2.860752,
+     "program": 4.806662,
+     "change": 5.49981,
+     "model": 10.999619
+    },
+    "arg_types": [
+     "int",
+     "int",
+     "int"
+    ],
+    "return_type": "tuple",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 70,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 784,
+    "entry": "mul_even_odd",
+    "arity": 1,
+    "params": [
+     "list1"
+    ],
+    "predictable": false,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"list1\", \"type\": \"ProgDefFnParam\"}, {\"name\": \"first_even\", \"type\": \"ProgAssignVar\", \"value\": {\"args\": [{\"cond\": {\"a\": {\"a\": {\"name\": \"el\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 2}, \"type\": \"Mod\"}, \"b\": {\"type\": \"Lit\", \"value\": 0}, \"type\": \"Eq\"}, \"expr\": {\"name\": \"el\", \"type\": \"Var\"}, \"source\": {\"name\": \"list1\", \"type\": \"Var\"}, \"type\": \"ProgComprehensionGen\", \"var\": \"el\"}, {\"arg\": {\"type\": \"Lit\", \"value\": 1}, \"type\": \"Neg\"}], \"name\": \"next\", \"recv\": null, \"type\": \"ProgCallExtern\"}}, {\"name\": \"first_odd\", \"type\": \"ProgAssignVar\", \"value\": {\"args\": [{\"cond\": {\"arg\": {\"a\": {\"a\": {\"name\": \"el\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 2}, \"type\": \"Mod\"}, \"b\": {\"type\": \"Lit\", \"value\": 0}, \"type\": \"Eq\"}, \"type\": \"Not\"}, \"expr\": {\"name\": \"el\", \"type\": \"Var\"}, \"source\": {\"name\": \"list1\", \"type\": \"Var\"}, \"type\": \"ProgComprehensionGen\", \"var\": \"el\"}, {\"arg\": {\"type\": \"Lit\", \"value\": 1}, \"type\": \"Neg\"}], \"name\": \"next\", \"recv\": null, \"type\": \"ProgCallExtern\"}}, {\"type\": \"ProgReturn\", \"value\": {\"items\": [{\"name\": \"first_even\", \"type\": \"Var\"}, {\"name\": \"first_odd\", \"type\": \"Var\"}], \"type\": \"Times\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "even",
+     "find",
+     "first",
+     "list",
+     "number",
+     "odd",
+     "product"
+    ],
+    "tfidf": {
+     "find": 2.098612,
+     "product": 4.806662,
+     "first": 3.5539,
+     "even": 4.113515,
+     "odd": 3.70805,
+     "number": 2.455287,
+     "list": 2.408767
+    },
+    "arg_types": [
+     "list"
+    ],
+    "return_type": "int",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 71,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 785,
+    "entry": "tuple_str_int",
+    "arity": 1,
+    "params": [
+     "test_str"
+    ],
+    "predictable": true,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"test_str\", \"type\": \"ProgDefFnParam\"}, {\"name\": \"res\", \"type\": \"ProgAssignVar\", \"value\": {\"args\": [{\"cond\": null, \"expr\": {\"args\": [{\"name\": \"num\", \"type\": \"Var\"}], \"name\": \"int\", \"recv\": null, \"type\": \"ProgCallExtern\"}, \"source\": {\"args\": [{\"type\": \"Lit\", \"value\": \", \"}], \"name\": \"split\", \"recv\": {\"args\": [{\"type\": \"Lit\", \"value\": \"...\"}, {\"type\": \"Lit\", \"value\": \"\"}], \"name\": \"replace\", \"recv\": {\"args\": [{\"type\": \"Lit\", \"value\": \")\"}, {\"type\": \"Lit\", \"value\": \"\"}], \"name\": \"replace\", \"recv\": {\"args\": [{\"type\": \"Lit\", \"value\": \"(\"}, {\"type\": \"Lit\", \"value\": \"\"}], \"name\": \"replace\", \"recv\": {\"name\": \"test_str\", \"type\": \"Var\"}, \"type\": \"ProgCallExtern\"}, \"type\": \"ProgCallExtern\"}, \"type\": \"ProgCallExtern\"}, \"type\": \"ProgCallExtern\"}, \"type\": \"ProgComprehensionGen\", \"var\": \"num\"}], \"name\": \"tuple\", \"recv\": null, \"type\": \"ProgCallExtern\"}}, {\"type\": \"ProgReturn\", \"value\": {\"name\": \"res\", \"type\": \"Var\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "convert",
+     "integer",
+     "string",
+     "tuple"
+    ],
+    "tfidf": {
+     "convert": 3.890372,
+     "tuple": 7.107799,
+     "string": 2.321756,
+     "integer": 4.806662
+    },
+    "arg_types": [
+     "str"
+    ],
+    "return_type": "tuple",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 72,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 786,
+    "entry": "right_insertion",
+    "arity": 2,
+    "params": [
+     "a",
+     "x"
+    ],
+    "predictable": false,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"a\", \"type\": \"ProgDefFnParam\"}, {\"default\": null, \"name\": \"x\", \"type\": \"ProgDefFnParam\"}, {\"type\": \"ProgReturn\", \"value\": {\"args\": [{\"name\": \"a\", \"type\": \"Var\"}, {\"name\": \"x\", \"type\": \"Var\"}], \"name\": \"bisect.bisect_right\", \"recv\": null, \"type\": \"ProgCallExtern\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "insertion",
+     "locate",
+     "order",
+     "point",
+     "right",
+     "sorted",
+     "specified",
+     "value"
+    ],
+    "tfidf": {
+     "locate": 4.806662,
+     "right": 4.401197,
+     "insertion": 4.806662,
+     "point": 4.401197,
+     "specified": 4.113515,
+     "value": 4.401197,
+     "sorted": 3.5539,
+     "order": 4.806662
+    },
+    "arg_types": [
+     "list",
+     "int"
+    ],
+    "return_type": "int",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 73,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 787,
+    "entry": "text_match_three",
+    "arity": 1,
+    "params": [
+     "text"
+    ],
+    "predictable": false,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"text\", \"type\": \"ProgDefFnParam\"}, {\"name\": \"patterns\", \"type\": \"ProgAssignVar\", \"value\": {\"type\": \"Lit\", \"value\": \"ab{3}?\"}}, {\"type\": \"ProgReturn\", \"value\": {\"args\": [{\"name\": \"patterns\", \"type\": \"Var\"}, {\"name\": \"text\", \"type\": \"Var\"}], \"name\": \"re.search\", \"recv\": null, \"type\": \"ProgCallExtern\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "'b'",
+     "by",
+     "followed",
+     "has",
+     "matches",
+     "string",
+     "three"
+    ],
+    "tfidf": {
+     "matches": 4.401197,
+     "string": 2.321756,
+     "has": 4.113515,
+     "followed": 4.401197,
+     "by": 3.70805,
+     "three": 4.401197,
+     "'b'": 4.806662
+    },
+    "arg_types": null,
+    "return_type": null,
+    "consistent_types": false,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 74,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 788,
+    "entry": "new_tuple",
+    "arity": 2,
+    "params": [
+     "test_list",
+     "test_str"
+    ],
+    "predictable": true,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"test_list\", \"type\": \"ProgDefFnParam\"}, {\"default\": null, \"name\": \"test_str\", \"type\": \"ProgDefFnParam\"}, {\"type\": \"ProgReturn\", \"value\": {\"args\": [{\"items\": [{\"name\": \"test_list\", \"type\": \"Var\"}, {\"items\": [{\"name\": \"test_str\", \"type\": \"Var\"}], \"kind\": \"list\", \"type\": \"ProgContainerLit\"}], \"type\": \"Plus\"}], \"name\": \"tuple\", \"recv\": null, \"type\": \"ProgCallExtern\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "create",
+     "list",
+     "new",
+     "string",
+     "tuple"
+    ],
+    "tfidf": {
+     "create": 5.49981,
+     "new": 5.49981,
+     "tuple": 3.5539,
+     "string": 2.321756,
+     "list": 2.408767
+    },
+    "arg_types": [
+     "list",
+     "str"
+    ],
+    "return_type": "tuple",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 75,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 790,
+    "entry": "even_position",
+    "arity": 1,
+    "params": [
+     "nums"
+    ],
+    "predictable": true,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"nums\", \"type\": \"ProgDefFnParam\"}, {\"type\": \"ProgReturn\", \"value\": {\"args\": [{\"cond\": null, \"expr\": {\"a\": {\"a\": {\"index\": {\"name\": \"i\", \"type\": \"Var\"}, \"obj\": {\"name\": \"nums\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"b\": {\"type\": \"Lit\", \"value\": 2}, \"type\": \"Mod\"}, \"b\": {\"a\": {\"name\": \"i\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 2}, \"type\": \"Mod\"}, \"type\": \"Eq\"}, \"source\": {\"args\": [{\"args\": [{\"name\": \"nums\", \"type\": \"Var\"}], \"name\": \"len\", \"recv\": null, \"type\": \"ProgCallExtern\"}], \"name\": \"range\", \"recv\": null, \"type\": \"ProgCallExtern\"}, \"type\": \"ProgComprehensionGen\", \"var\": \"i\"}], \"name\": \"all\", \"recv\": null, \"type\": \"ProgCallExtern\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "check",
+     "contains",
+     "even",
+     "every",
+     "index",
+     "list",
+     "numbers",
+     "whether"
+    ],
+    "tfidf": {
+     "check": 2.93486,
+     "whether": 3.197225,
+     "every": 4.401197,
+     "even": 8.227031,
+     "index": 3.70805,
+     "contains": 3.890372,
+     "numbers": 2.791759,
+     "list": 2.408767
+    },
+    "arg_types": [
+     "list"
+    ],
+    "return_type": "bool",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 76,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 791,
+    "entry": "remove_nested",
+    "arity": 1,
+    "params": [
+     "test_tup"
+    ],
+    "predictable": true,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"test_tup\", \"type\": \"ProgDefFnParam\"}, {\"name\": \"res\", \"type\": \"ProgAssignVar\", \"value\": {\"args\": [], \"name\": \"tuple\", \"recv\": null, \"type\": \"ProgCallExtern\"}}, {\"body\": {\"stmts\": [{\"targets\": [\"count\", \"ele\"], \"type\": \"ProgTupleUnpack\", \"value\": {\"name\": \"__u0\", \"type\": \"Var\"}}, {\"cond\": {\"arg\": {\"args\": [{\"name\": \"ele\", \"type\": \"Var\"}, {\"type\": \"Lit\", \"value\": \"tuple\"}], \"name\": \"isinstance\", \"recv\": null, \"type\": \"ProgCallExtern\"}, \"type\": \"Not\"}, \"orelse\": null, \"then\": {\"name\": \"res\", \"type\": \"ProgAssignVar\", \"value\": {\"items\": [{\"name\": \"res\", \"type\": \"Var\"}, {\"items\": [{\"name\": \"ele\", \"type\": \"Var\"}], \"kind\": \"tuple\", \"type\": \"ProgContainerLit\"}], \"type\": \"Plus\"}}, \"type\": \"ProgIfStmt\"}], \"type\": \"ProgSeq\"}, \"iter\": {\"args\": [{\"name\": \"test_tup\", \"type\": \"Var\"}], \"name\": \"enumerate\", \"recv\": null, \"type\": \"ProgCallExtern\"}, \"orelse\": null, \"type\": \"ProgForEach\", \"var\": \"__u0\"}, {\"type\": \"ProgReturn\", \"value\": {\"name\": \"res\", \"type\": \"Var\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "remove",
+     "tuple",
+     "tuples"
+    ],
+    "tfidf": {
+     "remove": 4.113515,
+     "tuples": 4.806662,
+     "tuple": 3.5539
+    },
+    "arg_types": [
+     "tuple"
+    ],
+    "return_type": "tuple",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 77,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 792,
+    "entry": "count_list",
+    "arity": 1,
+    "params": [
+     "input_list"
+    ],
+    "predictable": true,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"input_list\", \"type\": \"ProgDefFnParam\"}, {\"type\": \"ProgReturn\", \"value\": {\"args\": [{\"name\": \"input_list\", \"type\": \"Var\"}], \"name\": \"len\", \"recv\": null, \"type\": \"ProgCallExtern\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "count",
+     "lists",
+     "number"
+    ],
+    "tfidf": {
+     "count": 3.5539,
+     "number": 4.910574,
+     "lists": 7.107799
+    },
+    "arg_types": [
+     "list"
+    ],
+    "return_type": "int",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 78,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 793,
+    "entry": "last",
+    "arity": 2,
+    "params": [
+     "arr",
+     "x"
+    ],
+    "predictable": true,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"arr\", \"type\": \"ProgDefFnParam\"}, {\"default\": null, \"name\": \"x\", \"type\": \"ProgDefFnParam\"}, {\"name\": \"n\", \"type\": \"ProgAssignVar\", \"value\": {\"args\": [{\"name\": \"arr\", \"type\": \"Var\"}], \"name\": \"len\", \"recv\": null, \"type\": \"ProgCallExtern\"}}, {\"name\": \"low\", \"type\": \"ProgAssignVar\", \"value\": {\"type\": \"Lit\", \"value\": 0}}, {\"name\": \"high\", \"type\": \"ProgAssignVar\", \"value\": {\"a\": {\"name\": \"n\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 1}, \"type\": \"Minus\"}}, {\"name\": \"res\", \"type\": \"ProgAssignVar\", \"value\": {\"arg\": {\"type\": \"Lit\", \"value\": 1}, \"type\": \"Neg\"}}, {\"body\": {\"stmts\": [{\"stmts\": [{\"name\": \"__u0\", \"type\": \"ProgAssignVar\", \"value\": {\"a\": {\"items\": [{\"name\": \"low\", \"type\": \"Var\"}, {\"name\": \"high\", \"type\": \"Var\"}], \"type\": \"Plus\"}, \"b\": {\"a\": {\"items\": [{\"name\": \"low\", \"type\": \"Var\"}, {\"name\": \"high\", \"type\": \"Var\"}], \"type\": \"Plus\"}, \"b\": {\"type\": \"Lit\", \"value\": 2}, \"type\": \"Mod\"}, \"type\": \"Minus\"}}, {\"name\": \"__u0\", \"op\": \"floordiv\", \"type\": \"ProgAugAssign\", \"value\": {\"type\": \"Lit\", \"value\": 2}}, {\"name\": \"mid\", \"type\": \"ProgAssignVar\", \"value\": {\"name\": \"__u0\", \"type\": \"Var\"}}], \"type\": \"ProgSeq\"}, {\"cond\": {\"a\": {\"index\": {\"name\": \"mid\", \"type\": \"Var\"}, \"obj\": {\"name\": \"arr\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"b\": {\"name\": \"x\", \"type\": \"Var\"}, \"type\": \"Gt\"}, \"orelse\": {\"cond\": {\"a\": {\"index\": {\"name\": \"mid\", \"type\": \"Var\"}, \"obj\": {\"name\": \"arr\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"b\": {\"name\": \"x\", \"type\": \"Var\"}, \"type\": \"Lt\"}, \"orelse\": {\"stmts\": [{\"name\": \"res\", \"type\": \"ProgAssignVar\", \"value\": {\"name\": \"mid\", \"type\": \"Var\"}}, {\"name\": \"low\", \"type\": \"ProgAssignVar\", \"value\": {\"items\": [{\"name\": \"mid\", \"type\": \"Var\"}, {\"type\": \"Lit\", \"value\": 1}], \"type\": \"Plus\"}}], \"type\": \"ProgSeq\"}, \"then\": {\"name\": \"low\", \"type\": \"ProgAssignVar\", \"value\": {\"items\": [{\"name\": \"mid\", \"type\": \"Var\"}, {\"type\": \"Lit\", \"value\": 1}], \"type\": \"Plus\"}}, \"type\": \"ProgIfStmt\"}, \"then\": {\"name\": \"high\", \"type\": \"ProgAssignVar\", \"value\": {\"a\": {\"name\": \"mid\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 1}, \"type\": \"Minus\"}}, \"type\": \"ProgIfStmt\"}], \"type\": \"ProgSeq\"}, \"cond\": {\"a\": {\"name\": \"low\", \"type\": \"Var\"}, \"b\": {\"name\": \"high\", \"type\": \"Var\"}, \"type\": \"Lte\"}, \"orelse\": null, \"type\": \"ProgWhile\"}, {\"type\": \"ProgReturn\", \"value\": {\"name\": \"res\", \"type\": \"Var\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "array",
+     "element",
+     "find",
+     "last",
+     "position",
+     "sorted"
+    ],
+    "tfidf": {
+     "find": 2.098612,
+     "last": 4.401197,
+     "position": 4.401197,
+     "element": 4.113515,
+     "sorted": 3.5539,
+     "array": 3.5539
+    },
+    "arg_types": [
+     "list",
+     "int"
+    ],
+    "return_type": "int",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 79,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 794,
+    "entry": "text_starta_endb",
+    "arity": 1,
+    "params": [
+     "text"
+    ],
+    "predictable": false,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"text\", \"type\": \"ProgDefFnParam\"}, {\"name\": \"patterns\", \"type\": \"ProgAssignVar\", \"value\": {\"type\": \"Lit\", \"value\": \"a.*?b$\"}}, {\"type\": \"ProgReturn\", \"value\": {\"args\": [{\"name\": \"patterns\", \"type\": \"Var\"}, {\"name\": \"text\", \"type\": \"Var\"}], \"name\": \"re.search\", \"recv\": null, \"type\": \"ProgCallExtern\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "'a'",
+     "'b'",
+     "anything",
+     "by",
+     "ending",
+     "followed",
+     "has",
+     "matches",
+     "string"
+    ],
+    "tfidf": {
+     "matches": 4.401197,
+     "string": 2.321756,
+     "has": 4.113515,
+     "'a'": 4.806662,
+     "followed": 4.401197,
+     "by": 3.70805,
+     "anything": 5.49981,
+     "ending": 5.49981,
+     "'b'": 4.806662
+    },
+    "arg_types": null,
+    "return_type": null,
+    "consistent_types": false,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 80,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 796,
+    "entry": "return_sum",
+    "arity": 1,
+    "params": [
+     "dict"
+    ],
+    "predictable": true,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"dict\", \"type\": \"ProgDefFnParam\"}, {\"name\": \"sum\", \"type\": \"ProgAssignVar\", \"value\": {\"type\": \"Lit\", \"value\": 0}}, {\"body\": {\"name\": \"sum\", \"type\": \"ProgAssignVar\", \"value\": {\"items\": [{\"name\": \"sum\", \"type\": \"Var\"}, {\"name\": \"i\", \"type\": \"Var\"}], \"type\": \"Plus\"}}, \"iter\": {\"args\": [], \"name\": \"values\", \"recv\": {\"name\": \"dict\", \"type\": \"Var\"}, \"type\": \"ProgCallExtern\"}, \"orelse\": null, \"type\": \"ProgForEach\", \"var\": \"i\"}, {\"type\": \"ProgReturn\", \"value\": {\"name\": \"sum\", \"type\": \"Var\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "all",
+     "dictionary",
+     "find",
+     "items",
+     "sum"
+    ],
+    "tfidf": {
+     "find": 2.098612,
+     "sum": 3.101914,
+     "all": 2.727221,
+     "items": 4.806662,
+     "dictionary": 4.806662
+    },
+    "arg_types": [
+     "dict"
+    ],
+    "return_type": "int",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 81,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 797,
+    "entry": "sum_in_range",
+    "arity": 2,
+    "params": [
+     "l",
+     "r"
+    ],
+    "predictable": false,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"l\", \"type\": \"ProgDefFnParam\"}, {\"default\": null, \"name\": \"r\", \"type\": \"ProgDefFnParam\"}, {\"type\": \"ProgReturn\", \"value\": {\"a\": {\"args\": [{\"name\": \"r\", \"type\": \"Var\"}], \"name\": \"sum_odd\", \"recv\": null, \"type\": \"ProgCallExtern\"}, \"b\": {\"args\": [{\"a\": {\"name\": \"l\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 1}, \"type\": \"Minus\"}], \"name\": \"sum_odd\", \"recv\": null, \"type\": \"ProgCallExtern\"}, \"type\": \"Minus\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "all",
+     "find",
+     "natural",
+     "numbers",
+     "odd",
+     "range",
+     "sum",
+     "within"
+    ],
+    "tfidf": {
+     "find": 2.098612,
+     "sum": 3.101914,
+     "all": 2.727221,
+     "odd": 3.70805,
+     "natural": 4.401197,
+     "numbers": 2.791759,
+     "within": 4.806662,
+     "range": 5.49981
+    },
+    "arg_types": [
+     "int",
+     "int"
+    ],
+    "return_type": "int",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 82,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 798,
+    "entry": "_sum",
+    "arity": 1,
+    "params": [
+     "arr"
+    ],
+    "predictable": true,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"arr\", \"type\": \"ProgDefFnParam\"}, {\"name\": \"sum\", \"type\": \"ProgAssignVar\", \"value\": {\"type\": \"Lit\", \"value\": 0}}, {\"body\": {\"name\": \"sum\", \"type\": \"ProgAssignVar\", \"value\": {\"items\": [{\"name\": \"sum\", \"type\": \"Var\"}, {\"name\": \"i\", \"type\": \"Var\"}], \"type\": \"Plus\"}}, \"iter\": {\"name\": \"arr\", \"type\": \"Var\"}, \"orelse\": null, \"type\": \"ProgForEach\", \"var\": \"i\"}, {\"type\": \"ProgReturn\", \"value\": {\"name\": \"sum\", \"type\": \"Var\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "array",
+     "find",
+     "sum"
+    ],
+    "tfidf": {
+     "find": 2.098612,
+     "sum": 3.101914,
+     "array": 3.5539
+    },
+    "arg_types": [
+     "list"
+    ],
+    "return_type": "int",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 83,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 800,
+    "entry": "remove_all_spaces",
+    "arity": 1,
+    "params": [
+     "text"
+    ],
+    "predictable": false,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"text\", \"type\": \"ProgDefFnParam\"}, {\"type\": \"ProgReturn\", \"value\": {\"args\": [{\"type\": \"Lit\", \"value\": \"\\\\s+\"}, {\"type\": \"Lit\", \"value\": \"\"}, {\"name\": \"text\", \"type\": \"Var\"}], \"name\": \"re.sub\", \"recv\": null, \"type\": \"ProgCallExtern\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "all",
+     "remove",
+     "string",
+     "whitespaces"
+    ],
+    "tfidf": {
+     "remove": 4.113515,
+     "all": 2.727221,
+     "whitespaces": 4.806662,
+     "string": 2.321756
+    },
+    "arg_types": [
+     "str"
+    ],
+    "return_type": "str",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 84,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 801,
+    "entry": "test_three_equal",
+    "arity": 3,
+    "params": [
+     "x",
+     "y",
+     "z"
+    ],
+    "predictable": true,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"x\", \"type\": \"ProgDefFnParam\"}, {\"default\": null, \"name\": \"y\", \"type\": \"ProgDefFnParam\"}, {\"default\": null, \"name\": \"z\", \"type\": \"ProgDefFnParam\"}, {\"name\": \"result\", \"type\": \"ProgAssignVar\", \"value\": {\"args\": [{\"items\": [{\"name\": \"x\", \"type\": \"Var\"}, {\"name\": \"y\", \"type\": \"Var\"}, {\"name\": \"z\", \"type\": \"Var\"}], \"kind\": \"list\", \"type\": \"ProgContainerLit\"}], \"name\": \"set\", \"recv\": null, \"type\": \"ProgCallExtern\"}}, {\"cond\": {\"a\": {\"args\": [{\"name\": \"result\", \"type\": \"Var\"}], \"name\": \"len\", \"recv\": null, \"type\": \"ProgCallExtern\"}, \"b\": {\"type\": \"Lit\", \"value\": 3}, \"type\": \"Eq\"}, \"orelse\": {\"type\": \"ProgReturn\", \"value\": {\"a\": {\"type\": \"Lit\", \"value\": 4}, \"b\": {\"args\": [{\"name\": \"result\", \"type\": \"Var\"}], \"name\": \"len\", \"recv\": null, \"type\": \"ProgCallExtern\"}, \"type\": \"Minus\"}}, \"then\": {\"type\": \"ProgReturn\", \"value\": {\"type\": \"Lit\", \"value\": 0}}, \"type\": \"ProgIfStmt\"}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "count",
+     "equal",
+     "integers",
+     "number",
+     "numbers",
+     "three"
+    ],
+    "tfidf": {
+     "count": 3.5539,
+     "number": 2.455287,
+     "equal": 4.806662,
+     "numbers": 2.791759,
+     "three": 4.401197,
+     "integers": 5.49981
+    },
+    "arg_types": [
+     "int",
+     "int",
+     "int"
+    ],
+    "return_type": "int",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 85,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 802,
+    "entry": "count_rotation",
+    "arity": 1,
+    "params": [
+     "arr"
+    ],
+    "predictable": true,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"arr\", \"type\": \"ProgDefFnParam\"}, {\"body\": {\"cond\": {\"a\": {\"index\": {\"name\": \"i\", \"type\": \"Var\"}, \"obj\": {\"name\": \"arr\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"b\": {\"index\": {\"a\": {\"name\": \"i\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 1}, \"type\": \"Minus\"}, \"obj\": {\"name\": \"arr\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"type\": \"Lt\"}, \"orelse\": null, \"then\": {\"type\": \"ProgReturn\", \"value\": {\"name\": \"i\", \"type\": \"Var\"}}, \"type\": \"ProgIfStmt\"}, \"iter\": {\"args\": [{\"type\": \"Lit\", \"value\": 1}, {\"args\": [{\"name\": \"arr\", \"type\": \"Var\"}], \"name\": \"len\", \"recv\": null, \"type\": \"ProgCallExtern\"}], \"name\": \"range\", \"recv\": null, \"type\": \"ProgCallExtern\"}, \"orelse\": null, \"type\": \"ProgForEach\", \"var\": \"i\"}, {\"type\": \"ProgReturn\", \"value\": {\"type\": \"Lit\", \"value\": 0}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "array",
+     "count",
+     "geeksforgeeks",
+     "generate",
+     "https",
+     "number",
+     "org",
+     "required",
+     "rotations",
+     "sorted",
+     "www"
+    ],
+    "tfidf": {
+     "count": 7.107799,
+     "number": 2.455287,
+     "rotations": 10.999619,
+     "required": 9.613325,
+     "generate": 10.999619,
+     "sorted": 7.107799,
+     "array": 7.107799,
+     "https": 2.727221,
+     "www": 2.727221,
+     "geeksforgeeks": 2.860752,
+     "org": 2.860752
+    },
+    "arg_types": [
+     "list"
+    ],
+    "return_type": "int",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 86,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 803,
+    "entry": "is_perfect_square",
+    "arity": 1,
+    "params": [
+     "n"
+    ],
+    "predictable": true,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"n\", \"type\": \"ProgDefFnParam\"}, {\"name\": \"i\", \"type\": \"ProgAssignVar\", \"value\": {\"type\": \"Lit\", \"value\": 1}}, {\"body\": {\"stmts\": [{\"cond\": {\"cond\": {\"a\": {\"a\": {\"name\": \"n\", \"type\": \"Var\"}, \"b\": {\"name\": \"i\", \"type\": \"Var\"}, \"type\": \"Mod\"}, \"b\": {\"type\": \"Lit\", \"value\": 0}, \"type\": \"Eq\"}, \"other\": {\"a\": {\"a\": {\"name\": \"n\", \"type\": \"Var\"}, \"b\": {\"name\": \"i\", \"type\": \"Var\"}, \"type\": \"Mod\"}, \"b\": {\"type\": \"Lit\", \"value\": 0}, \"type\": \"Eq\"}, \"then\": {\"a\": {\"a\": {\"name\": \"n\", \"type\": \"Var\"}, \"b\": {\"name\": \"i\", \"type\": \"Var\"}, \"type\": \"Div\"}, \"b\": {\"name\": \"i\", \"type\": \"Var\"}, \"type\": \"Eq\"}, \"type\": \"IfThenElse\"}, \"orelse\": null, \"then\": {\"type\": \"ProgReturn\", \"value\": {\"type\": \"Lit\", \"value\": true}}, \"type\": \"ProgIfStmt\"}, {\"name\": \"i\", \"type\": \"ProgAssignVar\", \"value\": {\"items\": [{\"name\": \"i\", \"type\": \"Var\"}, {\"type\": \"Lit\", \"value\": 1}], \"type\": \"Plus\"}}], \"type\": \"ProgSeq\"}, \"cond\": {\"a\": {\"items\": [{\"name\": \"i\", \"type\": \"Var\"}, {\"name\": \"i\", \"type\": \"Var\"}], \"type\": \"Times\"}, \"b\": {\"name\": \"n\", \"type\": \"Var\"}, \"type\": \"Lte\"}, \"orelse\": null, \"type\": \"ProgWhile\"}, {\"type\": \"ProgReturn\", \"value\": {\"type\": \"Lit\", \"value\": false}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "check",
+     "cpp",
+     "geeksforgeeks",
+     "https",
+     "not",
+     "number",
+     "org",
+     "perfect",
+     "square",
+     "whether",
+     "www"
+    ],
+    "tfidf": {
+     "check": 5.869721,
+     "whether": 3.197225,
+     "number": 4.910574,
+     "perfect": 10.999619,
+     "square": 9.613325,
+     "not": 3.420368,
+     "https": 2.727221,
+     "www": 2.727221,
+     "geeksforgeeks": 2.860752,
+     "org": 2.860752,
+     "cpp": 5.49981
+    },
+    "arg_types": null,
+    "return_type": null,
+    "consistent_types": false,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 87,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 804,
+    "entry": "is_product_even",
+    "arity": 1,
+    "params": [
+     "arr"
+    ],
+    "predictable": true,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"arr\", \"type\": \"ProgDefFnParam\"}, {\"body\": {\"cond\": {\"a\": {\"a\": {\"index\": {\"name\": \"i\", \"type\": \"Var\"}, \"obj\": {\"name\": \"arr\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"b\": {\"type\": \"Lit\", \"value\": 1}, \"type\": \"BitAnd\"}, \"b\": {\"type\": \"Lit\", \"value\": 0}, \"type\": \"Eq\"}, \"orelse\": null, \"then\": {\"type\": \"ProgReturn\", \"value\": {\"type\": \"Lit\", \"value\": true}}, \"type\": \"ProgIfStmt\"}, \"iter\": {\"args\": [{\"args\": [{\"name\": \"arr\", \"type\": \"Var\"}], \"name\": \"len\", \"recv\": null, \"type\": \"ProgCallExtern\"}], \"name\": \"range\", \"recv\": null, \"type\": \"ProgCallExtern\"}, \"orelse\": null, \"type\": \"ProgForEach\", \"var\": \"i\"}, {\"type\": \"ProgReturn\", \"value\": {\"type\": \"Lit\", \"value\": false}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "check",
+     "even",
+     "list",
+     "not",
+     "numbers",
+     "product",
+     "whether"
+    ],
+    "tfidf": {
+     "check": 2.93486,
+     "whether": 3.197225,
+     "product": 4.806662,
+     "numbers": 2.791759,
+     "list": 2.408767,
+     "even": 4.113515,
+     "not": 3.420368
+    },
+    "arg_types": null,
+    "return_type": null,
+    "consistent_types": false,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 88,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 806,
+    "entry": "max_run_uppercase",
+    "arity": 1,
+    "params": [
+     "test_str"
+    ],
+    "predictable": true,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"test_str\", \"type\": \"ProgDefFnParam\"}, {\"name\": \"cnt\", \"type\": \"ProgAssignVar\", \"value\": {\"type\": \"Lit\", \"value\": 0}}, {\"name\": \"res\", \"type\": \"ProgAssignVar\", \"value\": {\"type\": \"Lit\", \"value\": 0}}, {\"body\": {\"cond\": {\"args\": [], \"name\": \"isupper\", \"recv\": {\"index\": {\"name\": \"idx\", \"type\": \"Var\"}, \"obj\": {\"name\": \"test_str\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"type\": \"ProgCallExtern\"}, \"orelse\": {\"stmts\": [{\"name\": \"res\", \"type\": \"ProgAssignVar\", \"value\": {\"name\": \"cnt\", \"type\": \"Var\"}}, {\"name\": \"cnt\", \"type\": \"ProgAssignVar\", \"value\": {\"type\": \"Lit\", \"value\": 0}}], \"type\": \"ProgSeq\"}, \"then\": {\"name\": \"cnt\", \"op\": \"add\", \"type\": \"ProgAugAssign\", \"value\": {\"type\": \"Lit\", \"value\": 1}}, \"type\": \"ProgIfStmt\"}, \"iter\": {\"args\": [{\"type\": \"Lit\", \"value\": 0}, {\"args\": [{\"name\": \"test_str\", \"type\": \"Var\"}], \"name\": \"len\", \"recv\": null, \"type\": \"ProgCallExtern\"}], \"name\": \"range\", \"recv\": null, \"type\": \"ProgCallExtern\"}, \"orelse\": null, \"type\": \"ProgForEach\", \"var\": \"idx\"}, {\"cond\": {\"args\": [], \"name\": \"isupper\", \"recv\": {\"index\": {\"a\": {\"args\": [{\"name\": \"test_str\", \"type\": \"Var\"}], \"name\": \"len\", \"recv\": null, \"type\": \"ProgCallExtern\"}, \"b\": {\"type\": \"Lit\", \"value\": 1}, \"type\": \"Minus\"}, \"obj\": {\"name\": \"test_str\", \"type\": \"Var\"}, \"type\": \"ProgSubscript\"}, \"type\": \"ProgCallExtern\"}, \"orelse\": null, \"then\": {\"name\": \"res\", \"type\": \"ProgAssignVar\", \"value\": {\"name\": \"cnt\", \"type\": \"Var\"}}, \"type\": \"ProgIfStmt\"}, {\"type\": \"ProgReturn\", \"value\": {\"name\": \"res\", \"type\": \"Var\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "characters",
+     "find",
+     "maximum",
+     "run",
+     "string",
+     "uppercase"
+    ],
+    "tfidf": {
+     "find": 2.098612,
+     "maximum": 4.806662,
+     "run": 5.49981,
+     "uppercase": 4.806662,
+     "characters": 4.401197,
+     "string": 2.321756
+    },
+    "arg_types": [
+     "str"
+    ],
+    "return_type": "int",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 89,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 807,
+    "entry": "first_odd",
+    "arity": 1,
+    "params": [
+     "nums"
+    ],
+    "predictable": false,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"nums\", \"type\": \"ProgDefFnParam\"}, {\"name\": \"first_odd\", \"type\": \"ProgAssignVar\", \"value\": {\"args\": [{\"cond\": {\"arg\": {\"a\": {\"a\": {\"name\": \"el\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 2}, \"type\": \"Mod\"}, \"b\": {\"type\": \"Lit\", \"value\": 0}, \"type\": \"Eq\"}, \"type\": \"Not\"}, \"expr\": {\"name\": \"el\", \"type\": \"Var\"}, \"source\": {\"name\": \"nums\", \"type\": \"Var\"}, \"type\": \"ProgComprehensionGen\", \"var\": \"el\"}, {\"arg\": {\"type\": \"Lit\", \"value\": 1}, \"type\": \"Neg\"}], \"name\": \"next\", \"recv\": null, \"type\": \"ProgCallExtern\"}}, {\"type\": \"ProgReturn\", \"value\": {\"name\": \"first_odd\", \"type\": \"Var\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "find",
+     "first",
+     "list",
+     "number",
+     "numbers",
+     "odd"
+    ],
+    "tfidf": {
+     "find": 2.098612,
+     "first": 3.5539,
+     "odd": 3.70805,
+     "number": 2.455287,
+     "list": 2.408767,
+     "numbers": 2.791759
+    },
+    "arg_types": [
+     "list"
+    ],
+    "return_type": "int",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  },
+  {
+   "local_id": 90,
+   "type": "Exemplar",
+   "attrs": {
+    "task_id": 808,
+    "entry": "check_K",
+    "arity": 2,
+    "params": [
+     "test_tup",
+     "K"
+    ],
+    "predictable": true,
+    "ir_json": "{\"stmts\": [{\"default\": null, \"name\": \"test_tup\", \"type\": \"ProgDefFnParam\"}, {\"default\": null, \"name\": \"K\", \"type\": \"ProgDefFnParam\"}, {\"name\": \"res\", \"type\": \"ProgAssignVar\", \"value\": {\"type\": \"Lit\", \"value\": false}}, {\"body\": {\"cond\": {\"a\": {\"name\": \"ele\", \"type\": \"Var\"}, \"b\": {\"name\": \"K\", \"type\": \"Var\"}, \"type\": \"Eq\"}, \"orelse\": null, \"then\": {\"stmts\": [{\"name\": \"res\", \"type\": \"ProgAssignVar\", \"value\": {\"type\": \"Lit\", \"value\": true}}, {\"kind\": \"break\", \"type\": \"ProgLoopCtl\"}], \"type\": \"ProgSeq\"}, \"type\": \"ProgIfStmt\"}, \"iter\": {\"name\": \"test_tup\", \"type\": \"Var\"}, \"orelse\": null, \"type\": \"ProgForEach\", \"var\": \"ele\"}, {\"type\": \"ProgReturn\", \"value\": {\"name\": \"res\", \"type\": \"Var\"}}], \"type\": \"ProgSeq\"}",
+    "prompt_tokens": [
+     "check",
+     "contain",
+     "not",
+     "tuples"
+    ],
+    "tfidf": {
+     "check": 2.93486,
+     "tuples": 4.806662,
+     "contain": 5.49981,
+     "not": 3.420368
+    },
+    "arg_types": [
+     "tuple",
+     "int"
+    ],
+    "return_type": "bool",
+    "consistent_types": true,
+    "provenance": "train",
+    "kind": "mbpp_exemplar"
+   }
+  }
+ ],
+ "edges": [],
+ "productions": [],
+ "rules": []
+}

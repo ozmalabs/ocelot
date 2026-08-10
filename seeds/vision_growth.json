@@ -1,0 +1,146 @@
+{
+ "id": "vision_growth",
+ "version": "1.0.0",
+ "depends_on": ["sensory_convolution", "vision_floor"],
+ "description": "KERNEL GROWTH (Stage 2, L0) — the agent GROWS its own visual receptive fields from image statistics, instead of selecting from a hand-designed pool. This seed exists because the Stage-1 floor did NOT do this: sensory_convolution ships six designed:1.0 kernels (onset/offset/edge_axis1/centre_surround/diagonal/smoother), NO rule anywhere mints a Kernel, and keep_discriminative_kernel only SELECTS (it keeps whatever responds variably across fields — an injected garbage kernel is kept just as readily). So 'center-surround and oriented kernels emerged from image statistics' was, in the floor, finding what the seed had planted. These two rules close that gap: a kernel is MINTED from a real unexplained image patch (its initial weights ARE image structure, never a designed template) and then LEARNS by Oja's rule against the image stream. Whether biological structure (center-surround / oriented) actually emerges is then an OPEN, FALSIFIABLE measurement over real data — not an assumption baked into the pool.",
+ "microtheory": {
+  "name": "vision_growth",
+  "description": "receptive fields are grown, not designed: mint-on-residual (an unexplained patch becomes a new kernel) + Oja's rule (local Hebbian learning with self-normalisation) driven by the image stream, all inside the run_rules fixpoint"
+ },
+ "nodes": [
+  {
+   "local_id": 0,
+   "type": "KernelGrowth",
+   "attrs": {
+    "name": "default",
+    "eta": 0.02,
+    "novelty_threshold": 0.55,
+    "min_contrast": 0.35,
+    "max_kernels": 24.0,
+    "kh": 7.0,
+    "kw": 7.0,
+    "comment": "Growth knobs as GRAPH DATA (tunable, no Python literal). eta: Oja learning rate. novelty_threshold: a patch is UNEXPLAINED (mint a kernel for it) when the best held kernel's |response| is below novelty_threshold x the patch's own magnitude — a scale-aware residual test, so it does not fire merely because a patch is bright. min_contrast: a patch must carry real structure (Magnitude > this) before it can mint or teach — blank sky must not become a receptive field. max_kernels: the pool cap (growth is bounded, and the cap being REACHED is itself a reportable fact). kh/kw: the receptive-field size the world adapter slices patches at; a grown kernel's weights ARE a patch, so these must agree."
+   }
+  }
+ ],
+ "edges": [],
+ "productions": [],
+ "rules": [
+  {
+   "name": "vg_mint_kernel_from_patch",
+   "comment": "MINT-ON-RESIDUAL (the vf_contradiction_split / sd_mint_quantum shape, pointed at Kernel). A patch that (a) carries real structure and (b) is NOT explained by any held kernel (best |Dot(w,x)| < novelty_threshold x |x| — scale-aware, so the test is about SHAPE agreement, not brightness) becomes a new Kernel whose weights ARE that patch. This is the honest sense of 'grown from image statistics': the receptive field is initialised out of real image structure the agent could not already account for, never from a designed template. ConvFaculty -has_kernel-> Kernel is already a declared sensory_convolution production, so the minted kernel joins the candidate pool with no schema change and keep_discriminative_kernel picks it up unmodified. Terminates: mint_checked is set only on the patch that actually minted (once per patch), the pool is capped by max_kernels, and a patch already explained by the pool never fires at all.",
+   "match_type": "Patch",
+   "match": [
+    ["sense", "considers", "fac"],
+    ["sense", "has_field", "f"],
+    ["f", "has_patch", "p"]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {"type": "Not", "arg": {"type": "Eq",
+       "a": {"type": "Attr", "node": {"type": "Var", "name": "p"}, "key": "mint_checked"},
+       "b": {"type": "Lit", "value": 1.0}}},
+     {"type": "Gt",
+      "a": {"type": "Magnitude", "arg": {"type": "Attr", "node": {"type": "Var", "name": "p"}, "key": "vals"}},
+      "b": {"type": "Attr", "node": {"type": "PickUnique", "source": {"type": "NodesOfType", "node_type": "KernelGrowth"}}, "key": "min_contrast"}},
+     {"type": "Lt",
+      "a": {"type": "Count", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "fac"}, "edge_type": "has_kernel", "any_type": false}},
+      "b": {"type": "Attr", "node": {"type": "PickUnique", "source": {"type": "NodesOfType", "node_type": "KernelGrowth"}}, "key": "max_kernels"}},
+     {"type": "Gt",
+      "a": {"type": "Times", "items": [
+        {"type": "Attr", "node": {"type": "PickUnique", "source": {"type": "NodesOfType", "node_type": "KernelGrowth"}}, "key": "novelty_threshold"},
+        {"type": "Magnitude", "arg": {"type": "Attr", "node": {"type": "Var", "name": "p"}, "key": "vals"}}
+      ]},
+      "b": {"type": "MaxOver",
+        "source": {"type": "Neighbours", "node": {"type": "Var", "name": "fac"}, "edge_type": "has_kernel", "any_type": false},
+        "var_name": "k2",
+        "value": {"type": "Abs", "arg": {"type": "Dot",
+          "a": {"type": "Attr", "node": {"type": "Var", "name": "k2"}, "key": "weights"},
+          "b": {"type": "Attr", "node": {"type": "Var", "name": "p"}, "key": "vals"}}},
+        "default": {"type": "Lit", "value": 0.0}}}
+    ]
+   },
+   "effects": [
+    ["add_node", "k", "Kernel", {
+      "weights": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "p"}, "key": "vals"}},
+      "kh": {"__term__": {"type": "Attr", "node": {"type": "PickUnique", "source": {"type": "NodesOfType", "node_type": "KernelGrowth"}}, "key": "kh"}},
+      "kw": {"__term__": {"type": "Attr", "node": {"type": "PickUnique", "source": {"type": "NodesOfType", "node_type": "KernelGrowth"}}, "key": "kw"}},
+      "designed": {"__term__": {"type": "Lit", "value": 0.0}},
+      "grown": {"__term__": {"type": "Lit", "value": 1.0}},
+      "name": "grown",
+      "source": "vg_mint_kernel_from_patch"
+    }],
+    ["add_edge", "fac", "has_kernel", "k"],
+    ["set_attr", "p", "mint_checked", 1.0]
+   ]
+  },
+  {
+   "name": "vg_learn_kernel_oja",
+   "comment": "OJA'S RULE, GRAPH-NATIVE — the learning step, inside the run_rules fixpoint (the same 'the net trains itself as the graph collapses' posture as net_collapse, but at the right shape for a receptive field). w <- w(1 - eta*y^2) + eta*y*x, with y = Dot(w, x). Plain Hebbian (w += eta*y*x) diverges; Oja's decay term is what self-normalises it, and it is the textbook local rule whose fixed point is the leading principal component of the input a unit wins — the biologically-plausible route to a receptive field. Expressible with NO new Rust because the update factors into two scalar-x-vector maps plus a VecAdd: MapList binds its var ON TOP of the existing env, so the outer match vars (k, p) and the scalar y stay in scope inside the map. WINNER-TAKE-ALL (Eq(k, Argmax over the pool of |response|)) is what makes the pool DIVERSIFY rather than every unit collapsing onto the same first component: each patch teaches only the kernel that already best explains it, so units specialise (competitive learning). Only grown:1.0 kernels learn — a designed kernel, if any is present, is left exactly as seeded, so the two populations never mix in a measurement. Terminates: the `learned` marker makes it exactly ONE Oja step per patch per ingest; the stream (more frames -> more patches) is what supplies more steps.",
+   "match_type": "Patch",
+   "match": [
+    ["sense", "considers", "fac"],
+    ["sense", "has_field", "f"],
+    ["f", "has_patch", "p"],
+    ["fac", "has_kernel", "k"]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {"type": "Not", "arg": {"type": "Eq",
+       "a": {"type": "Attr", "node": {"type": "Var", "name": "p"}, "key": "learned"},
+       "b": {"type": "Lit", "value": 1.0}}},
+     {"type": "Eq",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "k"}, "key": "grown"},
+      "b": {"type": "Lit", "value": 1.0}},
+     {"type": "Gt",
+      "a": {"type": "Magnitude", "arg": {"type": "Attr", "node": {"type": "Var", "name": "p"}, "key": "vals"}},
+      "b": {"type": "Attr", "node": {"type": "PickUnique", "source": {"type": "NodesOfType", "node_type": "KernelGrowth"}}, "key": "min_contrast"}},
+     {"type": "Eq",
+      "a": {"type": "Var", "name": "k"},
+      "b": {"type": "Argmax",
+        "source": {"type": "Neighbours", "node": {"type": "Var", "name": "fac"}, "edge_type": "has_kernel", "any_type": false},
+        "var_name": "k3",
+        "value": {"type": "Abs", "arg": {"type": "Dot",
+          "a": {"type": "Attr", "node": {"type": "Var", "name": "k3"}, "key": "weights"},
+          "b": {"type": "Attr", "node": {"type": "Var", "name": "p"}, "key": "vals"}}},
+        "default": null}}
+    ]
+   },
+   "effects": [
+    ["set_attr", "k", "weights", {"__term__": {
+      "type": "VecAdd",
+      "a": {"type": "MapList",
+        "source": {"type": "Attr", "node": {"type": "Var", "name": "k"}, "key": "weights"},
+        "var_name": "wi",
+        "value": {"type": "Times", "items": [
+          {"type": "Var", "name": "wi"},
+          {"type": "Minus",
+            "a": {"type": "Lit", "value": 1.0},
+            "b": {"type": "Times", "items": [
+              {"type": "Attr", "node": {"type": "PickUnique", "source": {"type": "NodesOfType", "node_type": "KernelGrowth"}}, "key": "eta"},
+              {"type": "Dot",
+                "a": {"type": "Attr", "node": {"type": "Var", "name": "k"}, "key": "weights"},
+                "b": {"type": "Attr", "node": {"type": "Var", "name": "p"}, "key": "vals"}},
+              {"type": "Dot",
+                "a": {"type": "Attr", "node": {"type": "Var", "name": "k"}, "key": "weights"},
+                "b": {"type": "Attr", "node": {"type": "Var", "name": "p"}, "key": "vals"}}
+            ]}}
+        ]}},
+      "b": {"type": "MapList",
+        "source": {"type": "Attr", "node": {"type": "Var", "name": "p"}, "key": "vals"},
+        "var_name": "xi",
+        "value": {"type": "Times", "items": [
+          {"type": "Var", "name": "xi"},
+          {"type": "Attr", "node": {"type": "PickUnique", "source": {"type": "NodesOfType", "node_type": "KernelGrowth"}}, "key": "eta"},
+          {"type": "Dot",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "k"}, "key": "weights"},
+            "b": {"type": "Attr", "node": {"type": "Var", "name": "p"}, "key": "vals"}}
+        ]}}
+    }}],
+    ["set_attr", "p", "learned", 1.0]
+   ]
+  }
+ ]
+}

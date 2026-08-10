@@ -1,0 +1,91 @@
+{
+  "id": "scientific_writing",
+  "version": "0.1.0",
+  "description": "The agent's vocabulary for the conventions of scientific prose — what definitions look like, how theorems are stated, how citations work, the IMRaD structure, hedging conventions. Foundational to extracting structured claims from research text.",
+  "depends_on": ["language_foundation", "comprehension"],
+  "concepts": [
+    {"name": "definitional_sentence", "definition": "A sentence introducing a term and stating what it refers to. In math, conventionally marked by 'Definition.', 'Define', 'Let X be ...', 'X is called a ...'. Body after the marker defines the term.", "category": "claim_kind"},
+    {"name": "theorem_statement", "definition": "A sentence (or block) asserting a proved result. Marked by 'Theorem.', often with author/year. Body asserts a conditional or universal claim. Followed by a Proof. block.", "category": "claim_kind"},
+    {"name": "lemma_statement", "definition": "A sentence (or block) asserting an auxiliary result, typically used in service of a main theorem. Conventions identical to theorem_statement.", "category": "claim_kind"},
+    {"name": "corollary_statement", "definition": "A sentence (or block) asserting an immediate consequence of a preceding theorem. Often with brief or no proof.", "category": "claim_kind"},
+    {"name": "proposition_statement", "definition": "A sentence (or block) asserting a result less central than a theorem but more substantive than a lemma. Conventions identical to theorem_statement.", "category": "claim_kind"},
+    {"name": "conjecture_statement", "definition": "A sentence asserting a proposed result that is plausible but unproved. Marked by 'Conjecture.', 'It is conjectured that ...'. The substrate should NOT take conjectures as established facts.", "category": "claim_kind"},
+    {"name": "proof_step", "definition": "One sentence in a proof, typically connected to surrounding steps by inference markers ('Since', 'By X', 'Thus'). Carries an intermediate inference.", "category": "claim_kind"},
+    {"name": "proof_completion_marker", "definition": "A symbol or phrase marking the end of a proof. 'QED', the open box, 'square root of two squared', 'This completes the proof.'", "category": "structural_marker"},
+    {"name": "citation_year_author", "definition": "Inline citation of the form 'Author (Year)' or 'Author, Year' or '(Author Year)'. The standard mechanism for grounding a claim in prior published work.", "category": "citation_form"},
+    {"name": "citation_bracketed_number", "definition": "Inline citation of the form '[12]' referring to a bibliography entry. Common in CS / engineering.", "category": "citation_form"},
+    {"name": "citation_doi", "definition": "A DOI (digital object identifier) string, usually following an author-year citation. Provides a stable resolvable identifier for the cited work.", "category": "citation_form"},
+    {"name": "abstract_section", "definition": "Opening section of a paper summarizing its contribution. Typically 100-300 words. The first place to look for the paper's main claim.", "category": "imrad_section"},
+    {"name": "introduction_section", "definition": "Section motivating the work, surveying prior work, stating the contribution. Often heaviest in citations.", "category": "imrad_section"},
+    {"name": "methods_section", "definition": "Section describing the procedure / construction / proof technique used. The 'how' of the paper.", "category": "imrad_section"},
+    {"name": "results_section", "definition": "Section presenting the main findings — theorems proved, experiments completed, data observed.", "category": "imrad_section"},
+    {"name": "discussion_section", "definition": "Section interpreting the results — what they mean, what they don't show, what's next.", "category": "imrad_section"},
+    {"name": "conclusion_section", "definition": "Closing section restating the contribution and pointing to future work. Often a good place to find the paper's bottom-line claim.", "category": "imrad_section"},
+    {"name": "hedging", "definition": "Linguistic marking of partial commitment — 'may', 'might', 'suggests', 'tends to', 'apparently'. Signals the speaker is not fully confident in the claim.", "category": "stance_marker"},
+    {"name": "certainty_marker", "definition": "Linguistic marking of full commitment — 'clearly', 'obviously', 'we prove', 'it is known that'. Signals the speaker stands fully behind the claim.", "category": "stance_marker"},
+    {"name": "qualification", "definition": "A restriction on the scope of a claim — 'for n >= 3', 'in the planar case', 'assuming the axiom of choice'. Critical for accurate extraction.", "category": "stance_marker"},
+    {"name": "forward_reference", "definition": "An in-text pointer to material yet to come — 'see Theorem 3 below', 'we will show'. Indicates the cited claim isn't proved at this point.", "category": "cross_reference"},
+    {"name": "backward_reference", "definition": "An in-text pointer to material already presented — 'by Theorem 2', 'as shown above', '(*)' referring to a numbered equation.", "category": "cross_reference"},
+    {"name": "equation_inline", "definition": "A mathematical expression appearing within a paragraph, surrounded by $...$ or \\(...\\). Compact, part of the sentence flow.", "category": "math_form"},
+    {"name": "equation_display", "definition": "A mathematical expression set apart on its own line(s), surrounded by $$...$$ or \\[...\\] or in an equation environment. Highlights a key formula.", "category": "math_form"},
+    {"name": "equation_numbered", "definition": "A display equation labeled with a number for cross-reference. The label is the equation's identity in subsequent references.", "category": "math_form"},
+    {"name": "named_result", "definition": "A theorem with a conventional name — 'the Halting Theorem', 'Fermat's Last Theorem', 'Theorem of Najman'. Named results are particularly important for the substrate to recognize.", "category": "claim_kind"},
+    {"name": "open_problem", "definition": "A statement that some question remains unanswered. Marked by 'is open', 'remains unknown', 'whether X is unknown'. The substrate should not assume an answer exists.", "category": "claim_kind"}
+  ],
+  "rules": [
+    {
+      "name": "a_definitional_sentence_introduces_a_term_and_its_body_defines_it",
+      "if": ["a Sentence is a definitional_sentence (starts with Definition., Define, Let, Suppose, or 'X is called')"],
+      "then": ["the term to be defined appears immediately after the marker", "the body after 'is' or '=' is the definition", "the substrate may install the (term, definition) as a Concept node"],
+      "why": "Definitions are the most reliable source of substrate-grade Concept material in research text."
+    },
+    {
+      "name": "a_theorem_statement_asserts_an_if_then_claim",
+      "if": ["a Sentence is a theorem_statement"],
+      "then": ["the body of the theorem is conventionally an if/then conditional (possibly with universal quantification)", "the substrate may install the (hypothesis, conclusion) as a Rule node"],
+      "why": "Theorems in standard form ARE Rules in the substrate's sense. The conversion is direct."
+    },
+    {
+      "name": "a_citation_grounds_a_claim_in_prior_work",
+      "if": ["a Sentence contains a citation_year_author or citation_bracketed_number"],
+      "then": ["the Sentence's claim is attributed to the cited work, not to the current author", "the cited work is the authoritative source if the claim needs verification"],
+      "why": "Distinguishing original claims from cited claims affects how the substrate treats them — original claims are the paper's contribution; cited claims are background."
+    },
+    {
+      "name": "a_doi_uniquely_identifies_the_cited_work",
+      "if": ["a Sentence contains a citation_doi"],
+      "then": ["the DOI is the canonical identifier for the cited work", "the agent may fetch the full text by resolving the DOI"],
+      "why": "DOIs are the substrate's hook for autonomous citation following — they're machine-resolvable identifiers."
+    },
+    {
+      "name": "a_qualification_restricts_the_scope_of_a_claim",
+      "if": ["a Sentence contains a qualification ('for n >= 3', 'in the planar case')"],
+      "then": ["the claim applies ONLY within the qualification's scope", "matching the claim against a question requires checking the question falls in scope"],
+      "why": "Unqualified extraction of a qualified claim produces wrong answers. The substrate must honor qualifications."
+    },
+    {
+      "name": "hedging_signals_reduced_speaker_commitment",
+      "if": ["a Sentence is hedged ('may', 'suggests', 'might')"],
+      "then": ["the claim is not fully asserted; the substrate should reduce its confidence accordingly", "downstream reasoning should treat the claim as a candidate hypothesis, not as established fact"],
+      "why": "Treating hedged claims as facts inflates the substrate's confidence and produces wrong answers."
+    },
+    {
+      "name": "an_open_problem_means_no_answer_is_currently_known",
+      "if": ["a Sentence states a problem is open"],
+      "then": ["the substrate should NOT extract a claim about the open problem's answer", "any apparent answer in the text is a conjecture, not a fact"],
+      "why": "Open problems are the right place to halt extraction; pretending an answer exists corrupts the knowledge base."
+    },
+    {
+      "name": "a_proof_step_carries_one_inference_in_a_proof_chain",
+      "if": ["a Sentence is in a proof block AND starts with a premise marker ('Since', 'By', 'Because')"],
+      "then": ["the Sentence carries one step of the proof inference", "extracting the full proof requires composing the steps"],
+      "why": "Proof chains are the textual form of the substrate's rule-application sequences."
+    },
+    {
+      "name": "an_abstract_section_summarizes_the_paper_contribution",
+      "if": ["a Sentence is in the abstract_section"],
+      "then": ["the Sentence likely encodes the paper's main claim or contribution", "the substrate should rank abstract sentences highly for paper-level questions"],
+      "why": "The abstract is the densest, highest-priority source of the paper's headline claim."
+    }
+  ]
+}

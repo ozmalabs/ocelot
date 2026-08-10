@@ -1,0 +1,84 @@
+{
+  "id": "native_codec",
+  "version": "1.0.0",
+  "depends_on": [
+    "audio"
+  ],
+  "description": "Native codec parser productions (MP3 / Vorbis / Opus / AAC / FLAC) \u2014 the bitstream-as-substrate graph types.",
+  "nodes": [],
+  "edges": [],
+  "productions": [
+    {
+      "src": {
+        "type": "AudioFrame",
+        "var": "src"
+      },
+      "edge_type": "has_codec_info",
+      "tgt": {
+        "type": "AacFrameInfo",
+        "var": "tgt"
+      },
+      "provenance": "audio:frame_has_aac_info"
+    },
+    {
+      "src": {
+        "type": "AudioFrame",
+        "var": "src"
+      },
+      "edge_type": "has_codec_info",
+      "tgt": {
+        "type": "FlacFrameInfo",
+        "var": "tgt"
+      },
+      "provenance": "audio:frame_has_flac_info"
+    },
+    {
+      "src": {
+        "type": "AudioFrame",
+        "var": "src"
+      },
+      "edge_type": "has_codec_info",
+      "tgt": {
+        "type": "OpusPacketInfo",
+        "var": "tgt"
+      },
+      "provenance": "audio:frame_has_opus_info"
+    },
+    {
+      "src": {
+        "type": "AudioFrame",
+        "var": "src"
+      },
+      "edge_type": "has_codec_info",
+      "tgt": {
+        "type": "VorbisPacketInfo",
+        "var": "tgt"
+      },
+      "provenance": "audio:frame_has_vorbis_info"
+    },
+    {
+      "src": {
+        "type": "AudioFrame",
+        "var": "src"
+      },
+      "edge_type": "has_granule",
+      "tgt": {
+        "type": "Mp3Granule",
+        "var": "tgt"
+      },
+      "provenance": "audio:frame_has_mp3_granule"
+    },
+    {
+      "src": {
+        "type": "FlacFrameInfo",
+        "var": "src"
+      },
+      "edge_type": "has_subframe",
+      "tgt": {
+        "type": "FlacSubframe",
+        "var": "tgt"
+      },
+      "provenance": "audio:flac_frame_has_subframe"
+    }
+  ]
+}

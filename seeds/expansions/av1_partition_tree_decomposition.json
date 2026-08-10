@@ -1,0 +1,111 @@
+{
+  "id": "av1_partition_tree_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "partition_tree_10_way",
+  "in_microtheory": "video_coding_theory",
+  "description": "AV1's superblock partition tree decomposed. A 128x128 (or 64x64) superblock is recursively split via a 10-way decision tree until each leaf block reaches its terminal size (typically 4x4 to 64x64). The 10 partition types extend the quadtree-only model of VP9/HEVC with binary, ternary, and 4-way splits — matching real image structure more naturally.",
+  "sub_mechanisms": [
+    {
+      "name": "split_NONE",
+      "definition": "Terminal: this block is not split further; it becomes a leaf coding unit.",
+      "why": "Encoder picks this when further splitting wouldn't help R-D cost. The 'no further split' decision is a partition type itself, costing 1 bit but identifying that this block is the final analysis unit.",
+      "category": "av1_partition_mechanism"
+    },
+    {
+      "name": "split_SPLIT",
+      "definition": "Quadtree split into 4 equal sub-blocks (top-left, top-right, bottom-left, bottom-right). Each can be further partitioned.",
+      "why": "The classical quadtree split, inherited from HEVC. Optimal for symmetric content patterns; the 'safe choice' that's always available.",
+      "category": "av1_partition_mechanism"
+    },
+    {
+      "name": "split_HORZ",
+      "definition": "Binary horizontal split into top half + bottom half (each block_size/2 in height).",
+      "why": "Matches vertically-oriented content boundaries (horizontal lines, lying objects, text rows). 1 split decision instead of needing the full quadtree to express it; saves signalling bits.",
+      "category": "av1_partition_mechanism"
+    },
+    {
+      "name": "split_VERT",
+      "definition": "Binary vertical split into left half + right half (each block_size/2 in width).",
+      "why": "Matches horizontally-oriented content boundaries (vertical lines, standing objects, columns). Symmetric counterpart to HORZ; together they cover the rectangular-split cases that quadtree can't directly express.",
+      "category": "av1_partition_mechanism"
+    },
+    {
+      "name": "split_HORZ_A",
+      "definition": "T-shaped split: a horizontal split at the top creates two side-by-side sub-blocks (each block_size/4 height), with the bottom half a single block.",
+      "why": "Matches L-shaped content (e.g., a frame border + main image area). The split's irregularity captures L-shaped object boundaries with one decision instead of the multiple quadtree splits otherwise needed.",
+      "category": "av1_partition_mechanism"
+    },
+    {
+      "name": "split_HORZ_B",
+      "definition": "Mirror of HORZ_A: the top half is a single block, the bottom is split into two side-by-side blocks.",
+      "why": "Same insight as HORZ_A, mirrored. Covers the inverted L-shape; together with HORZ_A handles all four T-shape orientations sharing a horizontal axis of symmetry.",
+      "category": "av1_partition_mechanism"
+    },
+    {
+      "name": "split_VERT_A",
+      "definition": "T-shape with axis of symmetry on the vertical: left vertical split into two stacked sub-blocks, right half a single block.",
+      "why": "Same insight as HORZ_A but for vertically-oriented L-shapes. Each direction's pair (HORZ_A/B, VERT_A/B) is together a natural set for any L-shape orientation.",
+      "category": "av1_partition_mechanism"
+    },
+    {
+      "name": "split_VERT_B",
+      "definition": "Mirror of VERT_A: left a single block, right split into two stacked sub-blocks.",
+      "why": "Completes the T-shape family. With HORZ_A/B + VERT_A/B + SPLIT, AV1 can describe all the natural L-shape configurations that arise at object boundaries.",
+      "category": "av1_partition_mechanism"
+    },
+    {
+      "name": "split_HORZ_4",
+      "definition": "4-way horizontal split into 4 horizontal strips, each block_size/4 in height (full width).",
+      "why": "Matches multiple horizontal text rows or thin horizontal lines (e.g., bookcase shelves, hairline edges). One 4-way split instead of 3 binary splits saves ~2 bits of signalling.",
+      "category": "av1_partition_mechanism"
+    },
+    {
+      "name": "split_VERT_4",
+      "definition": "4-way vertical split into 4 vertical strips, each block_size/4 in width (full height).",
+      "why": "Symmetric counterpart to HORZ_4. Together they handle long-strip content patterns that quadtree would need 3 splits + extra coding to express.",
+      "category": "av1_partition_mechanism"
+    },
+    {
+      "name": "partition_signalling_context",
+      "definition": "The chosen partition type is signalled per node via a CDF context derived from the node's block size + the partition types of spatial neighbours.",
+      "why": "Partition statistics correlate spatially (a frame with lots of HORZ_4 in one region tends to have it nearby). CDF context exploits this via the multi-symbol arithmetic coder's CDF tables — partition signalling drops to <1 bit per node on average.",
+      "category": "av1_partition_mechanism"
+    },
+    {
+      "name": "partition_size_constraints",
+      "definition": "Not every partition type is legal at every size. E.g., HORZ_4 is illegal at 8x8 (would give 8x2 blocks below the 4x4 minimum). The decoder enforces these via implicit context.",
+      "why": "Block-size constraints prevent partitions that would violate the 4x4 minimum or produce non-rectangular shapes. The decoder doesn't need to be told which partitions are legal — it derives them from the current block size, saving signalling bits.",
+      "category": "av1_partition_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "asymmetric_splits_match_object_boundaries",
+      "if": ["object boundaries in real images are rarely quadtree-symmetric"],
+      "then": ["T-shape (HORZ_A/B, VERT_A/B) partitions cheaply capture them"],
+      "why": "Quadtree alone forces splits to align on the same axis at every depth. Real boundaries don't. T-shape partitions express L-shapes in one decision; without them, the encoder needs 2-3 quadtree levels and pays for each unnecessary split.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "ternary_4way_splits_match_strip_content",
+      "if": ["content contains long thin horizontal or vertical strips (text rows, thin objects)"],
+      "then": ["HORZ_4 or VERT_4 partitions save ~2 bits per region vs binary splits"],
+      "why": "Each binary split costs ~1 bit. 4 strips in 3 binary splits = 3 bits; in one 4-way split = 1 bit. Multiplied across the many strip regions in typical content, the saving is substantial.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "partition_cdf_context_amortises_signalling",
+      "if": ["spatial neighbours' partition types correlate"],
+      "then": ["CDF-based signalling drops per-node bit cost below 1"],
+      "why": "Multi-symbol arithmetic coder with CDF context derives per-node probability from neighbours' choices. In coherent regions (frame border, large flat area), partition choices are predictable; the average cost drops well below the entropy of a uniform distribution.",
+      "soundness_category": "algebraic_law"
+    },
+    {
+      "name": "partition_legality_derived_not_signalled",
+      "if": ["the decoder knows the current block size"],
+      "then": ["it can derive which partitions are legal without signalling"],
+      "why": "Many partitions are illegal at small sizes (would create sub-4x4 blocks). The decoder enforces these via context-derived constraints. Saves signalling bits by not transmitting choices that couldn't be made.",
+      "soundness_category": "extensional_equivalence"
+    }
+  ]
+}

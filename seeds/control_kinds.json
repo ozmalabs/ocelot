@@ -1,0 +1,623 @@
+{
+ "id": "control_kinds",
+ "version": "1.0.0",
+ "depends_on": [],
+ "description": "The OPEN control-kind taxonomy classifier. Kinds are grounded on demand from the on-disk wiki (a starter set + arbitrarily more); this seed reads a grounded kind's name and assigns its effect_family from the most-specific matching signal-word. Both kinds and the signal table extend with no code \u2014 reason from grounded knowledge, don't brute-force.",
+ "microtheory": {
+  "name": "control_kinds",
+  "description": "control kinds are grounded knowledge (open taxonomy); a kind's effect_family is read from its name/gloss via specificity-weighted signals"
+ },
+ "nodes": [
+  {
+   "local_id": 0,
+   "type": "SignalRegistry",
+   "attrs": {
+    "name": "control_family_signals"
+   }
+  },
+  {
+   "local_id": 1,
+   "type": "FamilySignal",
+   "attrs": {
+    "word": "trackball",
+    "family": "relative_pointer",
+    "spec": 3.0
+   }
+  },
+  {
+   "local_id": 2,
+   "type": "FamilySignal",
+   "attrs": {
+    "word": "trackpad",
+    "family": "relative_pointer",
+    "spec": 3.0
+   }
+  },
+  {
+   "local_id": 3,
+   "type": "FamilySignal",
+   "attrs": {
+    "word": "touchpad",
+    "family": "relative_pointer",
+    "spec": 3.0
+   }
+  },
+  {
+   "local_id": 4,
+   "type": "FamilySignal",
+   "attrs": {
+    "word": "mouse",
+    "family": "relative_pointer",
+    "spec": 3.0
+   }
+  },
+  {
+   "local_id": 5,
+   "type": "FamilySignal",
+   "attrs": {
+    "word": "pointer",
+    "family": "relative_pointer",
+    "spec": 2.0
+   }
+  },
+  {
+   "local_id": 6,
+   "type": "FamilySignal",
+   "attrs": {
+    "word": "touch",
+    "family": "relative_pointer",
+    "spec": 2.0
+   }
+  },
+  {
+   "local_id": 7,
+   "type": "FamilySignal",
+   "attrs": {
+    "word": "joystick",
+    "family": "continuous_direction",
+    "spec": 3.0
+   }
+  },
+  {
+   "local_id": 8,
+   "type": "FamilySignal",
+   "attrs": {
+    "word": "stick",
+    "family": "continuous_direction",
+    "spec": 2.0
+   }
+  },
+  {
+   "local_id": 9,
+   "type": "FamilySignal",
+   "attrs": {
+    "word": "rotary",
+    "family": "discrete_select",
+    "spec": 2.0
+   }
+  },
+  {
+   "local_id": 10,
+   "type": "FamilySignal",
+   "attrs": {
+    "word": "knob",
+    "family": "discrete_select",
+    "spec": 2.0
+   }
+  },
+  {
+   "local_id": 11,
+   "type": "FamilySignal",
+   "attrs": {
+    "word": "dial",
+    "family": "discrete_select",
+    "spec": 2.0
+   }
+  },
+  {
+   "local_id": 12,
+   "type": "FamilySignal",
+   "attrs": {
+    "word": "steering",
+    "family": "continuous_rotation",
+    "spec": 3.0
+   }
+  },
+  {
+   "local_id": 13,
+   "type": "FamilySignal",
+   "attrs": {
+    "word": "wheel",
+    "family": "continuous_rotation",
+    "spec": 2.0
+   }
+  },
+  {
+   "local_id": 14,
+   "type": "FamilySignal",
+   "attrs": {
+    "word": "paddle",
+    "family": "continuous_rotation",
+    "spec": 2.0
+   }
+  },
+  {
+   "local_id": 15,
+   "type": "FamilySignal",
+   "attrs": {
+    "word": "slider",
+    "family": "range_1dof",
+    "spec": 3.0
+   }
+  },
+  {
+   "local_id": 16,
+   "type": "FamilySignal",
+   "attrs": {
+    "word": "throttle",
+    "family": "range_1dof",
+    "spec": 3.0
+   }
+  },
+  {
+   "local_id": 17,
+   "type": "FamilySignal",
+   "attrs": {
+    "word": "lever",
+    "family": "range_1dof",
+    "spec": 3.0
+   }
+  },
+  {
+   "local_id": 18,
+   "type": "FamilySignal",
+   "attrs": {
+    "word": "pedal",
+    "family": "range_1dof",
+    "spec": 3.0
+   }
+  },
+  {
+   "local_id": 19,
+   "type": "FamilySignal",
+   "attrs": {
+    "word": "button",
+    "family": "discrete_act",
+    "spec": 1.0
+   }
+  },
+  {
+   "local_id": 20,
+   "type": "FamilySignal",
+   "attrs": {
+    "word": "switch",
+    "family": "discrete_act",
+    "spec": 1.0
+   }
+  },
+  {
+   "local_id": 21,
+   "type": "FamilySignal",
+   "attrs": {
+    "word": "trigger",
+    "family": "discrete_act",
+    "spec": 2.0
+   }
+  },
+  {
+   "local_id": 22,
+   "type": "FamilySignal",
+   "attrs": {
+    "word": "gamepad",
+    "family": "discrete_act",
+    "spec": 2.0
+   }
+  },
+  {
+   "local_id": 23,
+   "type": "FamilySignal",
+   "attrs": {
+    "word": "key",
+    "family": "discrete_act",
+    "spec": 1.0
+   }
+  }
+ ],
+ "edges": [
+  {
+   "src": {
+    "local": 0
+   },
+   "type": "has_signal",
+   "tgt": {
+    "local": 1
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 0
+   },
+   "type": "has_signal",
+   "tgt": {
+    "local": 2
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 0
+   },
+   "type": "has_signal",
+   "tgt": {
+    "local": 3
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 0
+   },
+   "type": "has_signal",
+   "tgt": {
+    "local": 4
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 0
+   },
+   "type": "has_signal",
+   "tgt": {
+    "local": 5
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 0
+   },
+   "type": "has_signal",
+   "tgt": {
+    "local": 6
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 0
+   },
+   "type": "has_signal",
+   "tgt": {
+    "local": 7
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 0
+   },
+   "type": "has_signal",
+   "tgt": {
+    "local": 8
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 0
+   },
+   "type": "has_signal",
+   "tgt": {
+    "local": 9
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 0
+   },
+   "type": "has_signal",
+   "tgt": {
+    "local": 10
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 0
+   },
+   "type": "has_signal",
+   "tgt": {
+    "local": 11
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 0
+   },
+   "type": "has_signal",
+   "tgt": {
+    "local": 12
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 0
+   },
+   "type": "has_signal",
+   "tgt": {
+    "local": 13
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 0
+   },
+   "type": "has_signal",
+   "tgt": {
+    "local": 14
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 0
+   },
+   "type": "has_signal",
+   "tgt": {
+    "local": 15
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 0
+   },
+   "type": "has_signal",
+   "tgt": {
+    "local": 16
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 0
+   },
+   "type": "has_signal",
+   "tgt": {
+    "local": 17
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 0
+   },
+   "type": "has_signal",
+   "tgt": {
+    "local": 18
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 0
+   },
+   "type": "has_signal",
+   "tgt": {
+    "local": 19
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 0
+   },
+   "type": "has_signal",
+   "tgt": {
+    "local": 20
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 0
+   },
+   "type": "has_signal",
+   "tgt": {
+    "local": 21
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 0
+   },
+   "type": "has_signal",
+   "tgt": {
+    "local": 22
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 0
+   },
+   "type": "has_signal",
+   "tgt": {
+    "local": 23
+   },
+   "attrs": {}
+  }
+ ],
+ "productions": [],
+ "rules": [
+  {
+   "name": "classify_kind_family",
+   "comment": "effect_family = family of the most-specific signal-word found in the kind's NAME (Argmax by spec). Name-matched so generic words in definitions don't pollute; specificity breaks multi-word ties (rotary switch -> discrete_select). Single-fire per kind. OPEN: more signals/kinds extend it, no code.",
+   "match": [
+    [
+     "kreg",
+     "has_kind",
+     "ck"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "ck"
+         },
+         "key": "family_set"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "FamilySignal"
+        },
+        "var_name": "fs",
+        "predicate": {
+         "type": "Gt",
+         "a": {
+          "type": "StringIndexOf",
+          "haystack": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "ck"
+           },
+           "key": "name_lc"
+          },
+          "needle": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "fs"
+           },
+           "key": "word"
+          }
+         },
+         "b": {
+          "type": "Lit",
+          "value": -1.0
+         }
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "ck",
+     "effect_family",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Argmax",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "FamilySignal"
+         },
+         "var_name": "fs",
+         "predicate": {
+          "type": "Gt",
+          "a": {
+           "type": "StringIndexOf",
+           "haystack": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "ck"
+            },
+            "key": "name_lc"
+           },
+           "needle": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "fs"
+            },
+            "key": "word"
+           }
+          },
+          "b": {
+           "type": "Lit",
+           "value": -1.0
+          }
+         }
+        },
+        "var_name": "fs",
+        "value": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "fs"
+           },
+           "key": "spec"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        },
+        "default": {
+         "type": "Var",
+         "name": "ck"
+        }
+       },
+       "key": "family"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "ck",
+     "family_set",
+     1.0
+    ]
+   ]
+  }
+ ]
+}

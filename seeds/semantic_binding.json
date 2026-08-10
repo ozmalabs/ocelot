@@ -1,0 +1,26 @@
+{
+ "id": "semantic_binding",
+ "version": "1.0.0",
+ "depends_on": [],
+ "description": "The SEMANTICS faculty (associative_recall — the agent's own shape verdict), graph-native. When a recognised mark points at the candidate it was recognised as (recognised_as edge, stamped by the world adapter = the recognition result), this Rule COMPLETES the form to its MEANING: it get-or-creates ONE canonical meaning Concept by name (add_node_if_absent, dedup by name = autoassociative attractor — every instance of a character recalls the SAME concept) and binds the mark to it (denotes). No Python decision; the binding IS the Rule.",
+ "microtheory": {"name": "semantic_binding", "description": "form -> meaning associative binding"},
+ "nodes": [],
+ "edges": [],
+ "productions": [],
+ "rules": [
+  {
+   "name": "bind_recognised_meaning",
+   "match": [["m", "recognised_as", "cand"]],
+   "where": {"type": "Eq",
+     "a": {"type": "Count", "source": {"type": "Neighbours",
+            "node": {"type": "Var", "name": "m"}, "edge_type": "denotes", "any_type": false}},
+     "b": {"type": "Lit", "value": 0}},
+   "effects": [
+     ["add_node_if_absent", "meaning", "Concept",
+       {"name": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "cand"}, "key": "name"}},
+        "is_meaning": 1.0}],
+     ["add_edge", "m", "denotes", "meaning"]
+   ]
+  }
+ ]
+}

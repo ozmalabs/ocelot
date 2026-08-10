@@ -1,0 +1,3507 @@
+{
+ "id": "projection",
+ "version": "1.4.0",
+ "depends_on": [
+  "region_grouping",
+  "arc3_game"
+ ],
+ "description": "SLICE 3: the INVERSE (the 'vice versa') + the conservation law, on top of slices 1-2. (A) LIFT = single-view inverse projection (PERCEPTION): a Sample(u,v,appearance) under an INPUT viewpoint mints Loci in the held N-D structure, the COLLAPSED ray coord recovered from a graph-resident ExtrudePrior (appearance_class -> set of ray heights). PROJECT/LIFT cannot loop: a Viewpoint carries vp_mode (0=output,1=input); project_sample fires ONLY on output vps, lift ONLY on input vps; per-vp Samples keep the two sets disjoint. (B) CONSERVED-MEMBERSHIP: a change is REAL only if the HELD STRUCTURE changes (Locus appears, appearance attr changes, or comprises-membership flips); a projection re-read after the viewpoint moved mints NO agency signal. DEFERRED to slice 4: multi-view parallax LIFT, ls20 enclosure inference, StructureDelta -> respond_vote rewire. | SLICE 5: PERSPECTIVE projection kind (u=f*(X-px)/Z, occlusion still nearest-along-ray) + parallax_lift (depth-from-motion: Z=f*(px1-px2)/(u2-u1) from two perspective INPUT viewpoints + the two Samples of one corresponded Feature; no prior; guards d==0; loop-free; idempotent). Angular/trig raycast triangulation deferred (needs a trig primitive).",
+ "microtheory": {
+  "name": "projection",
+  "description": "hold the world once (Loci on Axes). PROJECT (imagination) renders to an OUTPUT viewpoint: nearest-along-ray=MinOver. LIFT (perception) reconstructs from EXTERNALLY-GIVEN Samples on an INPUT viewpoint: u/v fixed by the vp's u/v axes; the ray axis is recovered per-appearance by the ExtrudePrior (wall->full column, floor->single locus). PROJECT o LIFT ~= identity on the observed region. A change is real only when the held Loci change."
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [
+  {
+   "provenance": "seed:projection:has_axis-0",
+   "src": {
+    "type": "WorldInstance",
+    "var": "s"
+   },
+   "edge_type": "has_axis",
+   "tgt": {
+    "type": "Axis",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:projection:has_locus-1",
+   "src": {
+    "type": "WorldInstance",
+    "var": "s"
+   },
+   "edge_type": "has_locus",
+   "tgt": {
+    "type": "Locus",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:projection:has_viewpoint-2",
+   "src": {
+    "type": "WorldInstance",
+    "var": "s"
+   },
+   "edge_type": "has_viewpoint",
+   "tgt": {
+    "type": "Viewpoint",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:projection:at-3",
+   "src": {
+    "type": "Locus",
+    "var": "s"
+   },
+   "edge_type": "at",
+   "tgt": {
+    "type": "Coord",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:projection:on-4",
+   "src": {
+    "type": "Coord",
+    "var": "s"
+   },
+   "edge_type": "on",
+   "tgt": {
+    "type": "Axis",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:projection:screen_axis-5",
+   "src": {
+    "type": "Viewpoint",
+    "var": "s"
+   },
+   "edge_type": "screen_axis",
+   "tgt": {
+    "type": "Axis",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:projection:screen_u_axis-5a",
+   "src": {
+    "type": "Viewpoint",
+    "var": "s"
+   },
+   "edge_type": "screen_u_axis",
+   "tgt": {
+    "type": "Axis",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:projection:screen_v_axis-5b",
+   "src": {
+    "type": "Viewpoint",
+    "var": "s"
+   },
+   "edge_type": "screen_v_axis",
+   "tgt": {
+    "type": "Axis",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:projection:ray_axis-6",
+   "src": {
+    "type": "Viewpoint",
+    "var": "s"
+   },
+   "edge_type": "ray_axis",
+   "tgt": {
+    "type": "Axis",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:projection:has_sample-7",
+   "src": {
+    "type": "Viewpoint",
+    "var": "s"
+   },
+   "edge_type": "has_sample",
+   "tgt": {
+    "type": "Sample",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:projection:comprises-8",
+   "src": {
+    "type": "Region",
+    "var": "s"
+   },
+   "edge_type": "comprises",
+   "tgt": {
+    "type": "Locus",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:projection:has_extrude_prior-9",
+   "src": {
+    "type": "WorldInstance",
+    "var": "s"
+   },
+   "edge_type": "has_extrude_prior",
+   "tgt": {
+    "type": "ExtrudePrior",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:projection:has_structure_delta-10",
+   "src": {
+    "type": "WorldInstance",
+    "var": "s"
+   },
+   "edge_type": "has_structure_delta",
+   "tgt": {
+    "type": "StructureDelta",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:projection:delta_on-11",
+   "src": {
+    "type": "StructureDelta",
+    "var": "s"
+   },
+   "edge_type": "delta_on",
+   "tgt": {
+    "type": "Locus",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:projection:mirrors-12",
+   "src": {
+    "type": "Locus",
+    "var": "s"
+   },
+   "edge_type": "mirrors",
+   "tgt": {
+    "type": "Cell",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:projection:has_feature-13",
+   "src": {
+    "type": "WorldInstance",
+    "var": "s"
+   },
+   "edge_type": "has_feature",
+   "tgt": {
+    "type": "Feature",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:projection:of_feature-14",
+   "src": {
+    "type": "Sample",
+    "var": "s"
+   },
+   "edge_type": "of_feature",
+   "tgt": {
+    "type": "Feature",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:projection:recovered_from-15",
+   "src": {
+    "type": "Locus",
+    "var": "s"
+   },
+   "edge_type": "recovered_from",
+   "tgt": {
+    "type": "Feature",
+    "var": "t"
+   }
+  }
+ ],
+ "concepts": [
+  {
+   "name": "screen_u",
+   "domain": "projection",
+   "definition": {
+    "type": "Sum",
+    "source": {
+     "type": "Neighbours",
+     "node": {
+      "type": "Var",
+      "name": "x"
+     },
+     "edge_type": "at"
+    },
+    "var_name": "c",
+    "value": {
+     "type": "Times",
+     "items": [
+      {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "value"
+      },
+      {
+       "type": "Eq",
+       "a": {
+        "type": "MaxOver",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "c"
+         },
+         "edge_type": "on"
+        },
+        "var_name": "a",
+        "value": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "a"
+         },
+         "key": "proj_role"
+        },
+        "default": {
+         "type": "Lit",
+         "value": -1
+        }
+       },
+       "b": {
+        "type": "MaxOver",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "y"
+         },
+         "edge_type": "screen_u_axis"
+        },
+        "var_name": "au",
+        "value": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "au"
+         },
+         "key": "proj_role"
+        },
+        "default": {
+         "type": "Lit",
+         "value": -2
+        }
+       }
+      }
+     ]
+    }
+   },
+   "comment": "u(locus|vp). Unchanged from slice 2 \u2014 LIFT mints Coords carrying proj_role + an `on` edge so this reader works on recovered Loci identically."
+  },
+  {
+   "name": "screen_v",
+   "domain": "projection",
+   "definition": {
+    "type": "Sum",
+    "source": {
+     "type": "Neighbours",
+     "node": {
+      "type": "Var",
+      "name": "x"
+     },
+     "edge_type": "at"
+    },
+    "var_name": "c",
+    "value": {
+     "type": "Times",
+     "items": [
+      {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "value"
+      },
+      {
+       "type": "Eq",
+       "a": {
+        "type": "MaxOver",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "c"
+         },
+         "edge_type": "on"
+        },
+        "var_name": "a",
+        "value": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "a"
+         },
+         "key": "proj_role"
+        },
+        "default": {
+         "type": "Lit",
+         "value": -1
+        }
+       },
+       "b": {
+        "type": "MaxOver",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "y"
+         },
+         "edge_type": "screen_v_axis"
+        },
+        "var_name": "av",
+        "value": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "av"
+         },
+         "key": "proj_role"
+        },
+        "default": {
+         "type": "Lit",
+         "value": -2
+        }
+       }
+      }
+     ]
+    }
+   },
+   "comment": "v(locus|vp). Unchanged from slice 2."
+  },
+  {
+   "name": "ray_depth",
+   "domain": "projection",
+   "definition": {
+    "type": "Sum",
+    "source": {
+     "type": "Neighbours",
+     "node": {
+      "type": "Var",
+      "name": "x"
+     },
+     "edge_type": "at"
+    },
+    "var_name": "c",
+    "value": {
+     "type": "Times",
+     "items": [
+      {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "value"
+      },
+      {
+       "type": "Eq",
+       "a": {
+        "type": "MaxOver",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "c"
+         },
+         "edge_type": "on"
+        },
+        "var_name": "a",
+        "value": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "a"
+         },
+         "key": "proj_role"
+        },
+        "default": {
+         "type": "Lit",
+         "value": -1
+        }
+       },
+       "b": {
+        "type": "MaxOver",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "y"
+         },
+         "edge_type": "ray_axis"
+        },
+        "var_name": "ar",
+        "value": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "ar"
+         },
+         "key": "proj_role"
+        },
+        "default": {
+         "type": "Lit",
+         "value": -2
+        }
+       }
+      }
+     ]
+    }
+   },
+   "comment": "ray(locus|vp). Unchanged from slice 2. LIFT mints the recovered ray Coord on the input vp's ray axis (height), so this reads it back."
+  },
+  {
+   "name": "proj_depth",
+   "domain": "projection",
+   "definition": {
+    "type": "IfThenElse",
+    "cond": {
+     "type": "Eq",
+     "a": {
+      "type": "Attr",
+      "node": {
+       "type": "Var",
+       "name": "y"
+      },
+      "key": "raycast"
+     },
+     "b": {
+      "type": "Lit",
+      "value": 1.0
+     }
+    },
+    "then": {
+     "type": "Sqrt",
+     "arg": {
+      "type": "Plus",
+      "items": [
+       {
+        "type": "Times",
+        "items": [
+         {
+          "type": "Minus",
+          "a": {
+           "type": "Holds",
+           "concept": "screen_u",
+           "node": {
+            "type": "Var",
+            "name": "x"
+           },
+           "node2": {
+            "type": "Var",
+            "name": "y"
+           }
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "y"
+           },
+           "key": "px"
+          }
+         },
+         {
+          "type": "Minus",
+          "a": {
+           "type": "Holds",
+           "concept": "screen_u",
+           "node": {
+            "type": "Var",
+            "name": "x"
+           },
+           "node2": {
+            "type": "Var",
+            "name": "y"
+           }
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "y"
+           },
+           "key": "px"
+          }
+         }
+        ]
+       },
+       {
+        "type": "Times",
+        "items": [
+         {
+          "type": "Minus",
+          "a": {
+           "type": "Holds",
+           "concept": "screen_v",
+           "node": {
+            "type": "Var",
+            "name": "x"
+           },
+           "node2": {
+            "type": "Var",
+            "name": "y"
+           }
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "y"
+           },
+           "key": "py"
+          }
+         },
+         {
+          "type": "Minus",
+          "a": {
+           "type": "Holds",
+           "concept": "screen_v",
+           "node": {
+            "type": "Var",
+            "name": "x"
+           },
+           "node2": {
+            "type": "Var",
+            "name": "y"
+           }
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "y"
+           },
+           "key": "py"
+          }
+         }
+        ]
+       }
+      ]
+     }
+    },
+    "other": {
+     "type": "Holds",
+     "concept": "ray_depth",
+     "node": {
+      "type": "Var",
+      "name": "x"
+     },
+     "node2": {
+      "type": "Var",
+      "name": "y"
+     }
+    }
+   },
+   "comment": "DEPTH for occlusion, kind aware (slice 6). raycast==1 -> euclidean range sqrt((X-px)^2+(Y-py)^2) (near hides far at same bearing); else == ray_depth so ortho/persp occlusion unchanged. project_sample folds this instead of ray_depth."
+  },
+  {
+   "name": "region_is_ground",
+   "domain": "projection",
+   "definition": {
+    "type": "Eq",
+    "a": {
+     "type": "Attr",
+     "node": {
+      "type": "Var",
+      "name": "x"
+     },
+     "key": "count"
+    },
+    "b": {
+     "type": "MaxOver",
+     "source": {
+      "type": "Neighbours",
+      "node": {
+       "type": "Var",
+       "name": "y"
+      },
+      "edge_type": "has_region",
+      "any_type": false
+     },
+     "var_name": "r",
+     "value": {
+      "type": "Attr",
+      "node": {
+       "type": "Var",
+       "name": "r"
+      },
+      "key": "count"
+     },
+     "default": {
+      "type": "Lit",
+      "value": 0
+     }
+    }
+   },
+   "comment": "STRUCTURAL ground = the largest Region by member count (colour-blind). x=region, y=game. The ls20 floor is uniquely the max; ties would read both as ground (acceptable here)."
+  },
+  {
+   "name": "proj_u",
+   "domain": "projection",
+   "definition": {
+    "type": "IfThenElse",
+    "cond": {
+     "type": "Eq",
+     "a": {
+      "type": "Attr",
+      "node": {
+       "type": "Var",
+       "name": "y"
+      },
+      "key": "raycast"
+     },
+     "b": {
+      "type": "Lit",
+      "value": 1.0
+     }
+    },
+    "then": {
+     "type": "Minus",
+     "a": {
+      "type": "Atan2",
+      "y": {
+       "type": "Minus",
+       "a": {
+        "type": "Holds",
+        "concept": "screen_v",
+        "node": {
+         "type": "Var",
+         "name": "x"
+        },
+        "node2": {
+         "type": "Var",
+         "name": "y"
+        }
+       },
+       "b": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "y"
+        },
+        "key": "py"
+       }
+      },
+      "x": {
+       "type": "Minus",
+       "a": {
+        "type": "Holds",
+        "concept": "screen_u",
+        "node": {
+         "type": "Var",
+         "name": "x"
+        },
+        "node2": {
+         "type": "Var",
+         "name": "y"
+        }
+       },
+       "b": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "y"
+        },
+        "key": "px"
+       }
+      }
+     },
+     "b": {
+      "type": "Attr",
+      "node": {
+       "type": "Var",
+       "name": "y"
+      },
+      "key": "yaw"
+     }
+    },
+    "other": {
+     "type": "IfThenElse",
+     "cond": {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "y"
+       },
+       "key": "persp"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     "then": {
+      "type": "Times",
+      "items": [
+       {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "y"
+        },
+        "key": "focal"
+       },
+       {
+        "type": "Div",
+        "a": {
+         "type": "Minus",
+         "a": {
+          "type": "Holds",
+          "concept": "screen_u",
+          "node": {
+           "type": "Var",
+           "name": "x"
+          },
+          "node2": {
+           "type": "Var",
+           "name": "y"
+          }
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "y"
+          },
+          "key": "px"
+         }
+        },
+        "b": {
+         "type": "Holds",
+         "concept": "ray_depth",
+         "node": {
+          "type": "Var",
+          "name": "x"
+         },
+         "node2": {
+          "type": "Var",
+          "name": "y"
+         }
+        }
+       }
+      ]
+     },
+     "other": {
+      "type": "Holds",
+      "concept": "screen_u",
+      "node": {
+       "type": "Var",
+       "name": "x"
+      },
+      "node2": {
+       "type": "Var",
+       "name": "y"
+      }
+     }
+    }
+   },
+   "comment": "PROJECTED screen-u, kind aware (slice 6). raycast==1 -> BEARING atan2(Y-py,X-px)-yaw (X=screen_u/role0, Y=screen_v/role1); else slice-5 persp pinhole / ortho identity. Kinds disjoint via absent-attr fall-through."
+  },
+  {
+   "name": "proj_v",
+   "domain": "projection",
+   "definition": {
+    "type": "IfThenElse",
+    "cond": {
+     "type": "Eq",
+     "a": {
+      "type": "Attr",
+      "node": {
+       "type": "Var",
+       "name": "y"
+      },
+      "key": "raycast"
+     },
+     "b": {
+      "type": "Lit",
+      "value": 1.0
+     }
+    },
+    "then": {
+     "type": "Lit",
+     "value": 0.0
+    },
+    "other": {
+     "type": "IfThenElse",
+     "cond": {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "y"
+       },
+       "key": "persp"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     "then": {
+      "type": "Times",
+      "items": [
+       {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "y"
+        },
+        "key": "focal"
+       },
+       {
+        "type": "Div",
+        "a": {
+         "type": "Minus",
+         "a": {
+          "type": "Holds",
+          "concept": "screen_v",
+          "node": {
+           "type": "Var",
+           "name": "x"
+          },
+          "node2": {
+           "type": "Var",
+           "name": "y"
+          }
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "y"
+          },
+          "key": "py"
+         }
+        },
+        "b": {
+         "type": "Holds",
+         "concept": "ray_depth",
+         "node": {
+          "type": "Var",
+          "name": "x"
+         },
+         "node2": {
+          "type": "Var",
+          "name": "y"
+         }
+        }
+       }
+      ]
+     },
+     "other": {
+      "type": "Holds",
+      "concept": "screen_v",
+      "node": {
+       "type": "Var",
+       "name": "x"
+      },
+      "node2": {
+       "type": "Var",
+       "name": "y"
+      }
+     }
+    }
+   },
+   "comment": "PROJECTED screen-v, kind aware (slice 6). raycast==1 -> constant 0 (1-D screen) so same-(u,v) column = same-BEARING; else slice-5 / ortho."
+  }
+ ],
+ "rules": [
+  {
+   "name": "projection_bootstrap",
+   "comment": "FRAME 0 ONLY, idempotent. Axes (proj_role 0=row=u,1=col=v,2=depth,3=height). THREE Viewpoints: OUTPUT ortho_topdown(vp_id 0,ray=depth) + ortho_map(vp_id 1,ray=height); INPUT map_in(vp_id 2,ray=height,vp_mode 1) \u2014 LIFT consumes Samples placed here. EXTRUDE PRIOR (ls20, self-subsettable): 'wall' -> ray {0,1,2} (full column), 'floor' -> ray {0} (single); one ExtrudePrior per (appearance_class,h). add_node_if_absent/add_edge dedup; anchored on has_cell to bind `game`.",
+   "match": [
+    [
+     "game",
+     "has_cell",
+     "cell"
+    ]
+   ],
+   "where": {
+    "type": "Eq",
+    "a": {
+     "type": "Attr",
+     "node": {
+      "type": "Var",
+      "name": "game"
+     },
+     "key": "frame"
+    },
+    "b": {
+     "type": "Lit",
+     "value": 0.0
+    }
+   },
+   "effects": [
+    [
+     "add_node_if_absent",
+     "uaxis",
+     "Axis",
+     {
+      "proj_role": 0.0
+     }
+    ],
+    [
+     "set_attr",
+     "uaxis",
+     "name",
+     "row"
+    ],
+    [
+     "add_node_if_absent",
+     "vaxis",
+     "Axis",
+     {
+      "proj_role": 1.0
+     }
+    ],
+    [
+     "set_attr",
+     "vaxis",
+     "name",
+     "col"
+    ],
+    [
+     "add_node_if_absent",
+     "daxis",
+     "Axis",
+     {
+      "proj_role": 2.0
+     }
+    ],
+    [
+     "set_attr",
+     "daxis",
+     "name",
+     "depth"
+    ],
+    [
+     "add_node_if_absent",
+     "haxis",
+     "Axis",
+     {
+      "proj_role": 3.0
+     }
+    ],
+    [
+     "set_attr",
+     "haxis",
+     "name",
+     "height"
+    ],
+    [
+     "add_node_if_absent",
+     "vp",
+     "Viewpoint",
+     {
+      "vp_id": 0.0
+     }
+    ],
+    [
+     "set_attr",
+     "vp",
+     "projection_kind",
+     "ortho_topdown"
+    ],
+    [
+     "set_attr",
+     "vp",
+     "vp_mode",
+     0.0
+    ],
+    [
+     "add_node_if_absent",
+     "mapvp",
+     "Viewpoint",
+     {
+      "vp_id": 1.0
+     }
+    ],
+    [
+     "set_attr",
+     "mapvp",
+     "projection_kind",
+     "ortho_map"
+    ],
+    [
+     "set_attr",
+     "mapvp",
+     "vp_mode",
+     0.0
+    ],
+    [
+     "add_node_if_absent",
+     "invp",
+     "Viewpoint",
+     {
+      "vp_id": 2.0
+     }
+    ],
+    [
+     "set_attr",
+     "invp",
+     "projection_kind",
+     "ortho_map_input"
+    ],
+    [
+     "set_attr",
+     "invp",
+     "vp_mode",
+     1.0
+    ],
+    [
+     "add_node_if_absent",
+     "wall0",
+     "ExtrudePrior",
+     {
+      "appearance_class": "wall",
+      "h": 0.0
+     }
+    ],
+    [
+     "add_node_if_absent",
+     "wall1",
+     "ExtrudePrior",
+     {
+      "appearance_class": "wall",
+      "h": 1.0
+     }
+    ],
+    [
+     "add_node_if_absent",
+     "wall2",
+     "ExtrudePrior",
+     {
+      "appearance_class": "wall",
+      "h": 2.0
+     }
+    ],
+    [
+     "add_node_if_absent",
+     "floor0",
+     "ExtrudePrior",
+     {
+      "appearance_class": "floor",
+      "h": 0.0
+     }
+    ],
+    [
+     "add_edge",
+     "game",
+     "has_axis",
+     "uaxis"
+    ],
+    [
+     "add_edge",
+     "game",
+     "has_axis",
+     "vaxis"
+    ],
+    [
+     "add_edge",
+     "game",
+     "has_axis",
+     "daxis"
+    ],
+    [
+     "add_edge",
+     "game",
+     "has_axis",
+     "haxis"
+    ],
+    [
+     "add_edge",
+     "game",
+     "has_viewpoint",
+     "vp"
+    ],
+    [
+     "add_edge",
+     "game",
+     "has_viewpoint",
+     "mapvp"
+    ],
+    [
+     "add_edge",
+     "game",
+     "has_viewpoint",
+     "invp"
+    ],
+    [
+     "add_edge",
+     "vp",
+     "screen_axis",
+     "uaxis"
+    ],
+    [
+     "add_edge",
+     "vp",
+     "screen_axis",
+     "vaxis"
+    ],
+    [
+     "add_edge",
+     "vp",
+     "screen_u_axis",
+     "uaxis"
+    ],
+    [
+     "add_edge",
+     "vp",
+     "screen_v_axis",
+     "vaxis"
+    ],
+    [
+     "add_edge",
+     "vp",
+     "ray_axis",
+     "daxis"
+    ],
+    [
+     "add_edge",
+     "mapvp",
+     "screen_axis",
+     "uaxis"
+    ],
+    [
+     "add_edge",
+     "mapvp",
+     "screen_axis",
+     "vaxis"
+    ],
+    [
+     "add_edge",
+     "mapvp",
+     "screen_u_axis",
+     "uaxis"
+    ],
+    [
+     "add_edge",
+     "mapvp",
+     "screen_v_axis",
+     "vaxis"
+    ],
+    [
+     "add_edge",
+     "mapvp",
+     "ray_axis",
+     "haxis"
+    ],
+    [
+     "add_edge",
+     "invp",
+     "screen_axis",
+     "uaxis"
+    ],
+    [
+     "add_edge",
+     "invp",
+     "screen_axis",
+     "vaxis"
+    ],
+    [
+     "add_edge",
+     "invp",
+     "screen_u_axis",
+     "uaxis"
+    ],
+    [
+     "add_edge",
+     "invp",
+     "screen_v_axis",
+     "vaxis"
+    ],
+    [
+     "add_edge",
+     "invp",
+     "ray_axis",
+     "haxis"
+    ],
+    [
+     "add_edge",
+     "game",
+     "has_extrude_prior",
+     "wall0"
+    ],
+    [
+     "add_edge",
+     "game",
+     "has_extrude_prior",
+     "wall1"
+    ],
+    [
+     "add_edge",
+     "game",
+     "has_extrude_prior",
+     "wall2"
+    ],
+    [
+     "add_edge",
+     "game",
+     "has_extrude_prior",
+     "floor0"
+    ]
+   ],
+   "batch": true
+  },
+  {
+   "name": "project_sample",
+   "comment": "THE PROJECT FOLD (occlusion = nearest-along-ray), viewpoint-relative. SLICE-3 GATE: added And clause Eq(vp.vp_mode,0) restricts firing to OUTPUT viewpoints -> PROJECT never re-reads the Samples LIFT consumes -> no PROJECT/LIFT oscillation. Argmin guard unchanged. sid = vp_id*1e8+u*1e4+v carries the viewpoint. Fixpoint-idempotent + self-terminating. | SLICE 6: occlusion fold reads proj_depth (kind-aware) not ray_depth -> raycast occludes by min euclidean range; ortho/persp unchanged (proj_depth==ray_depth there).",
+   "match": [
+    [
+     "game",
+     "has_viewpoint",
+     "vp"
+    ],
+    [
+     "game",
+     "has_locus",
+     "l"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "vp"
+       },
+       "key": "vp_mode"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Holds",
+       "concept": "proj_depth",
+       "node": {
+        "type": "Var",
+        "name": "l"
+       },
+       "node2": {
+        "type": "Var",
+        "name": "vp"
+       }
+      },
+      "b": {
+       "type": "MinOver",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "game"
+         },
+         "edge_type": "has_locus"
+        },
+        "var_name": "l2",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Holds",
+            "concept": "proj_u",
+            "node": {
+             "type": "Var",
+             "name": "l2"
+            },
+            "node2": {
+             "type": "Var",
+             "name": "vp"
+            }
+           },
+           "b": {
+            "type": "Holds",
+            "concept": "proj_u",
+            "node": {
+             "type": "Var",
+             "name": "l"
+            },
+            "node2": {
+             "type": "Var",
+             "name": "vp"
+            }
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Holds",
+            "concept": "proj_v",
+            "node": {
+             "type": "Var",
+             "name": "l2"
+            },
+            "node2": {
+             "type": "Var",
+             "name": "vp"
+            }
+           },
+           "b": {
+            "type": "Holds",
+            "concept": "proj_v",
+            "node": {
+             "type": "Var",
+             "name": "l"
+            },
+            "node2": {
+             "type": "Var",
+             "name": "vp"
+            }
+           }
+          }
+         ]
+        }
+       },
+       "var_name": "l2",
+       "value": {
+        "type": "Holds",
+        "concept": "proj_depth",
+        "node": {
+         "type": "Var",
+         "name": "l2"
+        },
+        "node2": {
+         "type": "Var",
+         "name": "vp"
+        }
+       },
+       "default": {
+        "type": "Lit",
+        "value": 1000000000
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node_if_absent",
+     "sample",
+     "Sample",
+     {
+      "sid": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Times",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "vp"
+            },
+            "key": "vp_id"
+           },
+           {
+            "type": "Lit",
+            "value": 100000000
+           }
+          ]
+         },
+         {
+          "type": "Times",
+          "items": [
+           {
+            "type": "Holds",
+            "concept": "proj_u",
+            "node": {
+             "type": "Var",
+             "name": "l"
+            },
+            "node2": {
+             "type": "Var",
+             "name": "vp"
+            }
+           },
+           {
+            "type": "Lit",
+            "value": 10000
+           }
+          ]
+         },
+         {
+          "type": "Holds",
+          "concept": "proj_v",
+          "node": {
+           "type": "Var",
+           "name": "l"
+          },
+          "node2": {
+           "type": "Var",
+           "name": "vp"
+          }
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "vp",
+     "has_sample",
+     "sample"
+    ],
+    [
+     "set_attr",
+     "sample",
+     "u",
+     {
+      "__term__": {
+       "type": "Holds",
+       "concept": "proj_u",
+       "node": {
+        "type": "Var",
+        "name": "l"
+       },
+       "node2": {
+        "type": "Var",
+        "name": "vp"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "sample",
+     "v",
+     {
+      "__term__": {
+       "type": "Holds",
+       "concept": "proj_v",
+       "node": {
+        "type": "Var",
+        "name": "l"
+       },
+       "node2": {
+        "type": "Var",
+        "name": "vp"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "sample",
+     "appearance",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "l"
+       },
+       "key": "appearance"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "lift",
+   "comment": "SLICE 3-A: INVERSE PROJECTION = PERCEPTION. For each INPUT viewpoint (vp_mode 1), each Sample on it, and each ExtrudePrior whose appearance_class == Sample.appearance, mint ONE Locus. ua/va (screen_u/v_axis) fix u,v = Sample.u/v; ra (ray_axis = height) is the COLLAPSED coord recovered as prior.h. 'wall' (3 priors) -> full-height column of 3 Loci; 'floor' (1 prior) -> single Locus at ray 0. Locus deduped on lid=u*1e4+v*1e2+h; Coords deduped on (value,proj_role) and wired `on`->Axis so slice-1/2 readers work unchanged. LOOP-FREE: gate Eq(vp.vp_mode,1); recovered Loci re-project only via project_sample on OUTPUT vps -> the two never feed each other. Fixpoint-idempotent + self-terminating. ROUND-TRIP: 3D -> project (output map vp) -> floor-plan Samples -> copy onto input vp -> lift -> wall footprints regain ray {0,1,2}; re-projecting reproduces the plan.",
+   "match": [
+    [
+     "game",
+     "has_viewpoint",
+     "vp"
+    ],
+    [
+     "vp",
+     "has_sample",
+     "sample"
+    ],
+    [
+     "vp",
+     "screen_u_axis",
+     "ua"
+    ],
+    [
+     "vp",
+     "screen_v_axis",
+     "va"
+    ],
+    [
+     "vp",
+     "ray_axis",
+     "ra"
+    ],
+    [
+     "game",
+     "has_extrude_prior",
+     "prior"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "vp"
+       },
+       "key": "vp_mode"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "sample"
+       },
+       "key": "appearance"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "prior"
+       },
+       "key": "appearance_class"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node_if_absent",
+     "loc",
+     "Locus",
+     {
+      "lid": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Times",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "sample"
+            },
+            "key": "u"
+           },
+           {
+            "type": "Lit",
+            "value": 10000
+           }
+          ]
+         },
+         {
+          "type": "Times",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "sample"
+            },
+            "key": "v"
+           },
+           {
+            "type": "Lit",
+            "value": 100
+           }
+          ]
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "prior"
+          },
+          "key": "h"
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "game",
+     "has_locus",
+     "loc"
+    ],
+    [
+     "set_attr",
+     "loc",
+     "appearance",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "sample"
+       },
+       "key": "appearance"
+      }
+     }
+    ],
+    [
+     "add_node_if_absent",
+     "cu",
+     "Coord",
+     {
+      "value": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "sample"
+        },
+        "key": "u"
+       }
+      },
+      "proj_role": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "ua"
+        },
+        "key": "proj_role"
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "cu",
+     "on",
+     "ua"
+    ],
+    [
+     "add_edge",
+     "loc",
+     "at",
+     "cu"
+    ],
+    [
+     "add_node_if_absent",
+     "cv",
+     "Coord",
+     {
+      "value": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "sample"
+        },
+        "key": "v"
+       }
+      },
+      "proj_role": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "va"
+        },
+        "key": "proj_role"
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "cv",
+     "on",
+     "va"
+    ],
+    [
+     "add_edge",
+     "loc",
+     "at",
+     "cv"
+    ],
+    [
+     "add_node_if_absent",
+     "cr",
+     "Coord",
+     {
+      "value": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "prior"
+        },
+        "key": "h"
+       }
+      },
+      "proj_role": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "ra"
+        },
+        "key": "proj_role"
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "cr",
+     "on",
+     "ra"
+    ],
+    [
+     "add_edge",
+     "loc",
+     "at",
+     "cr"
+    ]
+   ]
+  },
+  {
+   "name": "parallax_lift",
+   "comment": "SLICE 5: DEPTH-FROM-MOTION. Two perspective INPUT viewpoints (vp_mode 1, persp 1) and the two Samples of ONE corresponded Feature (s1 -of_feature-> f <- of_feature- s2) triangulate the feature: Z = focal*(px1-px2)/(u2-u1), X = px1 + u1*Z/focal (pinhole, pure Div/Minus/Times, NO prior, NO trig). Mints add_node_if_absent(Locus) at the recovered (X on lateral role-0 axis, Z on ray/depth role-2 axis) with the Feature's appearance; Coords carry proj_role + `on`->Axis so screen_u/ray_depth read it back. ORDER+DISTINCT guard Lt(vp2.vp_id, vp1.vp_id) (one binding per feature-pair, no self-match); DEGENERATE guard Not(Eq(u2-u1,0)) (feature at infinity / no parallax -> no mint, and dodges the Div-by-0 that returns 0). LOOP-FREE: gated to input vps, never writes a Sample on an input vp -> never re-consumes its own Locus; project_sample (output vps) may re-project it, different rule, no cycle. IDEMPOTENT: lid = X*1e6 + Z recomputed deterministically -> add_node_if_absent/add_edge/set_attr all no-op at fixpoint. Axes latax(role0)/rayax(role2) come from projection_bootstrap (frame 0, persistent).",
+   "match": [
+    [
+     "game",
+     "has_viewpoint",
+     "vp1"
+    ],
+    [
+     "game",
+     "has_viewpoint",
+     "vp2"
+    ],
+    [
+     "vp1",
+     "has_sample",
+     "s1"
+    ],
+    [
+     "vp2",
+     "has_sample",
+     "s2"
+    ],
+    [
+     "s1",
+     "of_feature",
+     "f"
+    ],
+    [
+     "s2",
+     "of_feature",
+     "f"
+    ],
+    [
+     "game",
+     "has_axis",
+     "latax"
+    ],
+    [
+     "game",
+     "has_axis",
+     "rayax"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "vp1"
+       },
+       "key": "vp_mode"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "vp2"
+       },
+       "key": "vp_mode"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "vp1"
+       },
+       "key": "persp"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "vp2"
+       },
+       "key": "persp"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "vp2"
+       },
+       "key": "vp_id"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "vp1"
+       },
+       "key": "vp_id"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "latax"
+       },
+       "key": "proj_role"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "rayax"
+       },
+       "key": "proj_role"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 2.0
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Minus",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "s2"
+         },
+         "key": "u"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "s1"
+         },
+         "key": "u"
+        }
+       },
+       "b": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node_if_absent",
+     "loc",
+     "Locus",
+     {
+      "lid": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Times",
+          "items": [
+           {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "vp1"
+              },
+              "key": "px"
+             },
+             {
+              "type": "Div",
+              "a": {
+               "type": "Times",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "s1"
+                 },
+                 "key": "u"
+                },
+                {
+                 "type": "Div",
+                 "a": {
+                  "type": "Times",
+                  "items": [
+                   {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "vp1"
+                    },
+                    "key": "focal"
+                   },
+                   {
+                    "type": "Minus",
+                    "a": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "vp1"
+                     },
+                     "key": "px"
+                    },
+                    "b": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "vp2"
+                     },
+                     "key": "px"
+                    }
+                   }
+                  ]
+                 },
+                 "b": {
+                  "type": "Minus",
+                  "a": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "s2"
+                   },
+                   "key": "u"
+                  },
+                  "b": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "s1"
+                   },
+                   "key": "u"
+                  }
+                 }
+                }
+               ]
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "vp1"
+               },
+               "key": "focal"
+              }
+             }
+            ]
+           },
+           {
+            "type": "Lit",
+            "value": 1000000
+           }
+          ]
+         },
+         {
+          "type": "Div",
+          "a": {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "vp1"
+             },
+             "key": "focal"
+            },
+            {
+             "type": "Minus",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "vp1"
+              },
+              "key": "px"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "vp2"
+              },
+              "key": "px"
+             }
+            }
+           ]
+          },
+          "b": {
+           "type": "Minus",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "s2"
+            },
+            "key": "u"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "s1"
+            },
+            "key": "u"
+           }
+          }
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "game",
+     "has_locus",
+     "loc"
+    ],
+    [
+     "add_edge",
+     "loc",
+     "recovered_from",
+     "f"
+    ],
+    [
+     "set_attr",
+     "loc",
+     "appearance",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "f"
+       },
+       "key": "appearance"
+      }
+     }
+    ],
+    [
+     "add_node_if_absent",
+     "clat",
+     "Coord",
+     {
+      "value": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "vp1"
+          },
+          "key": "px"
+         },
+         {
+          "type": "Div",
+          "a": {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "s1"
+             },
+             "key": "u"
+            },
+            {
+             "type": "Div",
+             "a": {
+              "type": "Times",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "vp1"
+                },
+                "key": "focal"
+               },
+               {
+                "type": "Minus",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "vp1"
+                 },
+                 "key": "px"
+                },
+                "b": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "vp2"
+                 },
+                 "key": "px"
+                }
+               }
+              ]
+             },
+             "b": {
+              "type": "Minus",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "s2"
+               },
+               "key": "u"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "s1"
+               },
+               "key": "u"
+              }
+             }
+            }
+           ]
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "vp1"
+           },
+           "key": "focal"
+          }
+         }
+        ]
+       }
+      },
+      "proj_role": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "latax"
+        },
+        "key": "proj_role"
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "clat",
+     "on",
+     "latax"
+    ],
+    [
+     "add_edge",
+     "loc",
+     "at",
+     "clat"
+    ],
+    [
+     "add_node_if_absent",
+     "cray",
+     "Coord",
+     {
+      "value": {
+       "__term__": {
+        "type": "Div",
+        "a": {
+         "type": "Times",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "vp1"
+           },
+           "key": "focal"
+          },
+          {
+           "type": "Minus",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "vp1"
+            },
+            "key": "px"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "vp2"
+            },
+            "key": "px"
+           }
+          }
+         ]
+        },
+        "b": {
+         "type": "Minus",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "s2"
+          },
+          "key": "u"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "s1"
+          },
+          "key": "u"
+         }
+        }
+       }
+      },
+      "proj_role": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "rayax"
+        },
+        "key": "proj_role"
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "cray",
+     "on",
+     "rayax"
+    ],
+    [
+     "add_edge",
+     "loc",
+     "at",
+     "cray"
+    ]
+   ]
+  },
+  {
+   "name": "raycast_triangulate",
+   "comment": "SLICE 6: ANGULAR TRIANGULATION LIFT (true Doom/Quake depth-from-motion; subsumes slice-5 pinhole as its small-angle limit). Two raycast INPUT vps (vp_mode 1, raycast 1) at known poses + the two Samples of ONE Feature (of_feature). Sample.u IS the bearing b_i; th_i = yaw_i + b_i; intersect rays: t1 = ((px2-px1)*sin th2 - (py2-py1)*cos th2)/sin(th2-th1); X = px1 + t1*cos th1; Y = py1 + t1*sin th1. Mints Locus at (X role0, Y role1) + recovered_from->f + appearance; Coords on/proj_role so screen_u/screen_v read it back. GUARDS: Lt(vp2.vp_id,vp1.vp_id); Gt(Abs(sin(th2-th1)),1e-6) (near-parallel rays / collinear feature -> no mint, dodges Div-by-0). LOOP-FREE (input vps, no Sample written on them). IDEMPOTENT (lid=X*1e6+Y deterministic). Disjoint from parallax_lift (persp==1).",
+   "match": [
+    [
+     "game",
+     "has_viewpoint",
+     "vp1"
+    ],
+    [
+     "game",
+     "has_viewpoint",
+     "vp2"
+    ],
+    [
+     "vp1",
+     "has_sample",
+     "s1"
+    ],
+    [
+     "vp2",
+     "has_sample",
+     "s2"
+    ],
+    [
+     "s1",
+     "of_feature",
+     "f"
+    ],
+    [
+     "s2",
+     "of_feature",
+     "f"
+    ],
+    [
+     "game",
+     "has_axis",
+     "latax"
+    ],
+    [
+     "game",
+     "has_axis",
+     "otheraxis"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "vp1"
+       },
+       "key": "vp_mode"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "vp2"
+       },
+       "key": "vp_mode"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "vp1"
+       },
+       "key": "raycast"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "vp2"
+       },
+       "key": "raycast"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "vp2"
+       },
+       "key": "vp_id"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "vp1"
+       },
+       "key": "vp_id"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "latax"
+       },
+       "key": "proj_role"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "otheraxis"
+       },
+       "key": "proj_role"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Abs",
+       "arg": {
+        "type": "Sin",
+        "arg": {
+         "type": "Minus",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "vp2"
+            },
+            "key": "yaw"
+           },
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "s2"
+            },
+            "key": "u"
+           }
+          ]
+         },
+         "b": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "vp1"
+            },
+            "key": "yaw"
+           },
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "s1"
+            },
+            "key": "u"
+           }
+          ]
+         }
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1e-06
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node_if_absent",
+     "loc",
+     "Locus",
+     {
+      "lid": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Times",
+          "items": [
+           {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "vp1"
+              },
+              "key": "px"
+             },
+             {
+              "type": "Times",
+              "items": [
+               {
+                "type": "Div",
+                "a": {
+                 "type": "Minus",
+                 "a": {
+                  "type": "Times",
+                  "items": [
+                   {
+                    "type": "Minus",
+                    "a": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "vp2"
+                     },
+                     "key": "px"
+                    },
+                    "b": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "vp1"
+                     },
+                     "key": "px"
+                    }
+                   },
+                   {
+                    "type": "Sin",
+                    "arg": {
+                     "type": "Plus",
+                     "items": [
+                      {
+                       "type": "Attr",
+                       "node": {
+                        "type": "Var",
+                        "name": "vp2"
+                       },
+                       "key": "yaw"
+                      },
+                      {
+                       "type": "Attr",
+                       "node": {
+                        "type": "Var",
+                        "name": "s2"
+                       },
+                       "key": "u"
+                      }
+                     ]
+                    }
+                   }
+                  ]
+                 },
+                 "b": {
+                  "type": "Times",
+                  "items": [
+                   {
+                    "type": "Minus",
+                    "a": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "vp2"
+                     },
+                     "key": "py"
+                    },
+                    "b": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "vp1"
+                     },
+                     "key": "py"
+                    }
+                   },
+                   {
+                    "type": "Cos",
+                    "arg": {
+                     "type": "Plus",
+                     "items": [
+                      {
+                       "type": "Attr",
+                       "node": {
+                        "type": "Var",
+                        "name": "vp2"
+                       },
+                       "key": "yaw"
+                      },
+                      {
+                       "type": "Attr",
+                       "node": {
+                        "type": "Var",
+                        "name": "s2"
+                       },
+                       "key": "u"
+                      }
+                     ]
+                    }
+                   }
+                  ]
+                 }
+                },
+                "b": {
+                 "type": "Sin",
+                 "arg": {
+                  "type": "Minus",
+                  "a": {
+                   "type": "Plus",
+                   "items": [
+                    {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "vp2"
+                     },
+                     "key": "yaw"
+                    },
+                    {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "s2"
+                     },
+                     "key": "u"
+                    }
+                   ]
+                  },
+                  "b": {
+                   "type": "Plus",
+                   "items": [
+                    {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "vp1"
+                     },
+                     "key": "yaw"
+                    },
+                    {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "s1"
+                     },
+                     "key": "u"
+                    }
+                   ]
+                  }
+                 }
+                }
+               },
+               {
+                "type": "Cos",
+                "arg": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "vp1"
+                   },
+                   "key": "yaw"
+                  },
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "s1"
+                   },
+                   "key": "u"
+                  }
+                 ]
+                }
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "Lit",
+            "value": 1000000
+           }
+          ]
+         },
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "vp1"
+            },
+            "key": "py"
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Div",
+              "a": {
+               "type": "Minus",
+               "a": {
+                "type": "Times",
+                "items": [
+                 {
+                  "type": "Minus",
+                  "a": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "vp2"
+                   },
+                   "key": "px"
+                  },
+                  "b": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "vp1"
+                   },
+                   "key": "px"
+                  }
+                 },
+                 {
+                  "type": "Sin",
+                  "arg": {
+                   "type": "Plus",
+                   "items": [
+                    {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "vp2"
+                     },
+                     "key": "yaw"
+                    },
+                    {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "s2"
+                     },
+                     "key": "u"
+                    }
+                   ]
+                  }
+                 }
+                ]
+               },
+               "b": {
+                "type": "Times",
+                "items": [
+                 {
+                  "type": "Minus",
+                  "a": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "vp2"
+                   },
+                   "key": "py"
+                  },
+                  "b": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "vp1"
+                   },
+                   "key": "py"
+                  }
+                 },
+                 {
+                  "type": "Cos",
+                  "arg": {
+                   "type": "Plus",
+                   "items": [
+                    {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "vp2"
+                     },
+                     "key": "yaw"
+                    },
+                    {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "s2"
+                     },
+                     "key": "u"
+                    }
+                   ]
+                  }
+                 }
+                ]
+               }
+              },
+              "b": {
+               "type": "Sin",
+               "arg": {
+                "type": "Minus",
+                "a": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "vp2"
+                   },
+                   "key": "yaw"
+                  },
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "s2"
+                   },
+                   "key": "u"
+                  }
+                 ]
+                },
+                "b": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "vp1"
+                   },
+                   "key": "yaw"
+                  },
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "s1"
+                   },
+                   "key": "u"
+                  }
+                 ]
+                }
+               }
+              }
+             },
+             {
+              "type": "Sin",
+              "arg": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "vp1"
+                 },
+                 "key": "yaw"
+                },
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "s1"
+                 },
+                 "key": "u"
+                }
+               ]
+              }
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "game",
+     "has_locus",
+     "loc"
+    ],
+    [
+     "add_edge",
+     "loc",
+     "recovered_from",
+     "f"
+    ],
+    [
+     "set_attr",
+     "loc",
+     "appearance",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "f"
+       },
+       "key": "appearance"
+      }
+     }
+    ],
+    [
+     "add_node_if_absent",
+     "clat",
+     "Coord",
+     {
+      "value": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "vp1"
+          },
+          "key": "px"
+         },
+         {
+          "type": "Times",
+          "items": [
+           {
+            "type": "Div",
+            "a": {
+             "type": "Minus",
+             "a": {
+              "type": "Times",
+              "items": [
+               {
+                "type": "Minus",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "vp2"
+                 },
+                 "key": "px"
+                },
+                "b": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "vp1"
+                 },
+                 "key": "px"
+                }
+               },
+               {
+                "type": "Sin",
+                "arg": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "vp2"
+                   },
+                   "key": "yaw"
+                  },
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "s2"
+                   },
+                   "key": "u"
+                  }
+                 ]
+                }
+               }
+              ]
+             },
+             "b": {
+              "type": "Times",
+              "items": [
+               {
+                "type": "Minus",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "vp2"
+                 },
+                 "key": "py"
+                },
+                "b": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "vp1"
+                 },
+                 "key": "py"
+                }
+               },
+               {
+                "type": "Cos",
+                "arg": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "vp2"
+                   },
+                   "key": "yaw"
+                  },
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "s2"
+                   },
+                   "key": "u"
+                  }
+                 ]
+                }
+               }
+              ]
+             }
+            },
+            "b": {
+             "type": "Sin",
+             "arg": {
+              "type": "Minus",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "vp2"
+                 },
+                 "key": "yaw"
+                },
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "s2"
+                 },
+                 "key": "u"
+                }
+               ]
+              },
+              "b": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "vp1"
+                 },
+                 "key": "yaw"
+                },
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "s1"
+                 },
+                 "key": "u"
+                }
+               ]
+              }
+             }
+            }
+           },
+           {
+            "type": "Cos",
+            "arg": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "vp1"
+               },
+               "key": "yaw"
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "s1"
+               },
+               "key": "u"
+              }
+             ]
+            }
+           }
+          ]
+         }
+        ]
+       }
+      },
+      "proj_role": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "latax"
+        },
+        "key": "proj_role"
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "clat",
+     "on",
+     "latax"
+    ],
+    [
+     "add_edge",
+     "loc",
+     "at",
+     "clat"
+    ],
+    [
+     "add_node_if_absent",
+     "cother",
+     "Coord",
+     {
+      "value": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "vp1"
+          },
+          "key": "py"
+         },
+         {
+          "type": "Times",
+          "items": [
+           {
+            "type": "Div",
+            "a": {
+             "type": "Minus",
+             "a": {
+              "type": "Times",
+              "items": [
+               {
+                "type": "Minus",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "vp2"
+                 },
+                 "key": "px"
+                },
+                "b": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "vp1"
+                 },
+                 "key": "px"
+                }
+               },
+               {
+                "type": "Sin",
+                "arg": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "vp2"
+                   },
+                   "key": "yaw"
+                  },
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "s2"
+                   },
+                   "key": "u"
+                  }
+                 ]
+                }
+               }
+              ]
+             },
+             "b": {
+              "type": "Times",
+              "items": [
+               {
+                "type": "Minus",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "vp2"
+                 },
+                 "key": "py"
+                },
+                "b": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "vp1"
+                 },
+                 "key": "py"
+                }
+               },
+               {
+                "type": "Cos",
+                "arg": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "vp2"
+                   },
+                   "key": "yaw"
+                  },
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "s2"
+                   },
+                   "key": "u"
+                  }
+                 ]
+                }
+               }
+              ]
+             }
+            },
+            "b": {
+             "type": "Sin",
+             "arg": {
+              "type": "Minus",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "vp2"
+                 },
+                 "key": "yaw"
+                },
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "s2"
+                 },
+                 "key": "u"
+                }
+               ]
+              },
+              "b": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "vp1"
+                 },
+                 "key": "yaw"
+                },
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "s1"
+                 },
+                 "key": "u"
+                }
+               ]
+              }
+             }
+            }
+           },
+           {
+            "type": "Sin",
+            "arg": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "vp1"
+               },
+               "key": "yaw"
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "s1"
+               },
+               "key": "u"
+              }
+             ]
+            }
+           }
+          ]
+         }
+        ]
+       }
+      },
+      "proj_role": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "otheraxis"
+        },
+        "key": "proj_role"
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "cother",
+     "on",
+     "otheraxis"
+    ],
+    [
+     "add_edge",
+     "loc",
+     "at",
+     "cother"
+    ]
+   ]
+  }
+ ],
+ "goals": []
+}

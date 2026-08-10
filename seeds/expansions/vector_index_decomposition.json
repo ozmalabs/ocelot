@@ -1,0 +1,118 @@
+{
+  "id": "vector_index_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "Pinecone",
+  "in_microtheory": "databases_and_storage",
+  "description": "Vector index structures decomposed. HNSW (hierarchical navigable small world). IVF (inverted file). Product quantization. Locality-sensitive hashing. The mechanisms that make approximate nearest neighbor search at billion-vector scale tractable.",
+  "sub_mechanisms": [
+    {
+      "name": "ANN_approximate_nearest_neighbor",
+      "definition": "Find k nearest vectors to query within tolerance. Exact NN is O(N) for billion vectors; ANN trades small accuracy loss for log/sub-linear time.",
+      "why": "Vector search foundation. Recall (fraction of true neighbours returned) vs latency tradeoff. 95-99% recall typical. Standard in RAG, recommendation, image search.",
+      "category": "vector_index_mechanism"
+    },
+    {
+      "name": "HNSW_layered_graph",
+      "definition": "Hierarchical Navigable Small World: multi-layer graph. Top layer: few sparse-connected nodes. Each layer below: more nodes + more connections.",
+      "why": "Search descends layers: start at top entry, find closer node, descend. Each layer prunes search exponentially. O(log N) search; high recall.",
+      "category": "vector_index_mechanism"
+    },
+    {
+      "name": "HNSW_M_parameter",
+      "definition": "Max connections per node. Typical M=16-48. Higher M = better recall, more memory, more build time.",
+      "why": "Graph density trade-off. Quality scales with M up to ~50. Memory: ~4M bytes per vector for graph (vs vector itself). Standard for production HNSW.",
+      "category": "vector_index_mechanism"
+    },
+    {
+      "name": "HNSW_ef_construction",
+      "definition": "Search width during graph construction. Higher = better-built graph, slower build, no query-time cost.",
+      "why": "One-time cost. ef_construction=200 produces high-quality graph; ef_construction=40 is fast but lower quality. Tuned per dataset.",
+      "category": "vector_index_mechanism"
+    },
+    {
+      "name": "HNSW_ef_search",
+      "definition": "Search width at query time. Higher = better recall, slower query.",
+      "why": "Per-query latency vs recall trade. ef=10-200 typical. Dynamic: can tune per query for different SLAs.",
+      "category": "vector_index_mechanism"
+    },
+    {
+      "name": "IVF_inverted_file",
+      "definition": "Cluster vectors via k-means. At query: find nearest cluster centroids; search within those clusters.",
+      "why": "Older but still common. Smaller memory than HNSW (no graph). Slower than HNSW for same recall. Used in Faiss, IVF-PQ combos.",
+      "category": "vector_index_mechanism"
+    },
+    {
+      "name": "IVF_nprobe",
+      "definition": "Number of clusters to search per query. More = better recall, slower.",
+      "why": "Standard IVF tuning. nprobe=1 fast but low recall; nprobe=100 high recall, slow. Per-query knob.",
+      "category": "vector_index_mechanism"
+    },
+    {
+      "name": "product_quantization",
+      "definition": "Split vector into M sub-vectors; quantize each into K codes. Vector represented as M small ints.",
+      "why": "Dramatic memory reduction. 1536-dim float vector (6 KB) → 16 bytes (375x smaller). Cost: approximate distances (use lookup tables). Foundation of billion-scale ANN.",
+      "category": "vector_index_mechanism"
+    },
+    {
+      "name": "ScaNN_google",
+      "definition": "Google's ScaNN: combines tree-based partitioning + asymmetric hashing + reranking. Highest-recall benchmarks.",
+      "why": "Engineered for max recall at fixed latency. Used inside Google Search vector retrieval. Open source; widely deployed.",
+      "category": "vector_index_mechanism"
+    },
+    {
+      "name": "Annoy_random_projection_tree",
+      "definition": "Random projection trees: build many trees with random hyperplane splits. Query: descend each tree to leaf set; union.",
+      "why": "Spotify's original library. Simple, on-disk friendly. Lower recall than HNSW. Less common in modern systems but historically important.",
+      "category": "vector_index_mechanism"
+    },
+    {
+      "name": "filtered_ANN",
+      "definition": "ANN with predicate filter: 'nearest neighbours where category = X'. Combines vector + scalar filter.",
+      "why": "Real-world queries combine. Pre-filtering (filter first, ANN in subset): slow if subset small. Post-filtering (ANN, then filter): may not return k. Active research; Qdrant + Weaviate + Pinecone all have strategies.",
+      "category": "vector_index_mechanism"
+    },
+    {
+      "name": "vector_quantization_compression",
+      "definition": "Reduce vector size: float32 → float16 (2x), int8 (4x), 1-bit (32x). Trade precision for storage.",
+      "why": "Vector databases store billions of vectors. Compression is key. ANN search uses lookup tables on quantized codes. Binary quantization gaining popularity (10x faster, modest recall loss).",
+      "category": "vector_index_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "HNSW_log_N_search_via_layered_graph",
+      "if": ["graph has logarithmic layers"],
+      "then": ["search is O(log N) instead of O(N)"],
+      "why": "Each layer cuts search space. Top: few entries; bottom: all data. Descend layer by layer. Same insight as skip list, applied to vector space. Foundation of HNSW's performance.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "product_quantization_dramatic_memory_reduction",
+      "if": ["vector is split into M sub-vectors with K codes each"],
+      "then": ["storage drops from D × 4 bytes (float) to M × log_2(K) bits"],
+      "why": "1536-dim × 4 bytes = 6 KB → M=8 × log_2(256) = 8 bytes (compressed by 750x). Distance approximation via lookup. Foundation of billion-scale ANN (Facebook's FAISS PQ).",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "recall_vs_latency_pareto_frontier",
+      "if": ["a vector index has tunable ef_search or nprobe"],
+      "then": ["recall vs latency traces a Pareto frontier"],
+      "why": "Higher ef = visit more nodes = better recall + higher latency. Production systems pick per query (or per workload). HNSW dominates this frontier for moderate-size datasets; ScaNN for large.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "filter_strategy_depends_on_predicate_selectivity",
+      "if": ["filter predicate is highly selective"],
+      "then": ["pre-filtering may beat post-filtering"],
+      "why": "Selective filter → tiny candidate set → exact search feasible. Non-selective filter → most candidates remain → post-filter from ANN. Engines choose per query. Qdrant + Weaviate + Pinecone all implement.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "vector_databases_combine_index_types",
+      "if": ["production system needs filtered ANN"],
+      "then": ["it typically combines an ANN index with secondary indexes"],
+      "why": "ANN handles vector similarity; secondary indexes handle predicate. Combining requires careful integration (filter while traversing, build separate indexes per filter, etc.). Active engineering area.",
+      "soundness_category": "extensional_equivalence"
+    }
+  ]
+}

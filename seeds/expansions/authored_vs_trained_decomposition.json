@@ -1,0 +1,118 @@
+{
+  "id": "authored_vs_trained_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "Tracr_alternative_authored_nets",
+  "in_microtheory": "machine_learning",
+  "description": "The substrate's authored-vs-trained paradigm contrast made explicit. Tracr (RASP → exact transformer weights), constructive ReLU networks (CPWL), ELM (analytic readout), neurosymbolic. Each mechanism that makes 'understanding → weights' possible. This is the substrate's preferred paradigm; ML training is a different approach with different trade-offs.",
+  "sub_mechanisms": [
+    {
+      "name": "Tracr_RASP_compilation",
+      "definition": "Lindner 2023. Write program in RASP (Restricted Access Sequence Processing). Compile to exact transformer weights implementing it.",
+      "why": "The flagship of authored networks. Algorithm: select + aggregate primitives compose like normal programming. Compile → weights. Network implements algorithm exactly + provably. The substrate's gadgets Mt instantiates this.",
+      "category": "authored_paradigm"
+    },
+    {
+      "name": "RASP_primitives",
+      "definition": "Select (predicate of pairs → attention pattern), Aggregate (attention pattern + value → reduce), Map (per-position transformation).",
+      "why": "Small DSL covering transformer's expressiveness. Each primitive compiles to specific attention + MLP structure. Closed under composition: chain primitives = chain network blocks.",
+      "category": "authored_paradigm"
+    },
+    {
+      "name": "CPWL_constructive_relu",
+      "definition": "Any continuous piecewise-linear function exactly representable as ReLU network. Arora 2018 constructive proof.",
+      "why": "Given CPWL function f, can derive weights of ReLU net implementing f exactly. Substrate's gadgets Mt has ~80 such constructions: identity, abs, max, min, polynomial evaluator, multiplexer.",
+      "category": "authored_paradigm"
+    },
+    {
+      "name": "ELM_extreme_learning_machine",
+      "definition": "Random hidden weights; analytic least-squares for output weights. β = pinv(H) · T.",
+      "why": "Training-free for the readout. Closed form. The substrate uses this in code_writing_cortex's analytic_construction. Different from gradient descent: no iteration, exact for given hidden features.",
+      "category": "authored_paradigm"
+    },
+    {
+      "name": "neurosymbolic_AlphaGeometry",
+      "definition": "Neural model proposes geometric constructions; symbolic solver verifies. Solved IMO-level geometry 2024.",
+      "why": "Hybrid: neural for creative proposal; symbolic for rigour. Each handles what the other can't. DeepMind's flagship demonstration. The substrate's design philosophy: symbolic primary, neural where it adds value.",
+      "category": "authored_paradigm"
+    },
+    {
+      "name": "symbolic_knowledge_representation",
+      "definition": "Facts as graph: entities, relationships, types, attributes. SPARQL, Cyc microtheories, RDF + OWL.",
+      "why": "Explicit + queryable + provable. No statistical fit; knowledge is what's encoded. The substrate's Mts ARE this. Reading the graph = querying knowledge directly.",
+      "category": "authored_paradigm"
+    },
+    {
+      "name": "deductive_inference",
+      "definition": "From premises + rules derive conclusions. Modus ponens, syllogisms, resolution. Sound: conclusions follow from premises.",
+      "why": "Different from statistical generalisation. The substrate's rule graph supports this. Conclusions are derivable, not generated. Truth-preserving when rules + premises are.",
+      "category": "authored_paradigm"
+    },
+    {
+      "name": "provable_correctness",
+      "definition": "Network's behavior can be proven to match specification. Possible for authored networks; difficult for trained.",
+      "why": "Tracr proves exact behaviour per spec. Trained networks have only statistical guarantees + empirical evaluation. Different epistemic stance: 'this network IS X' vs 'this network performs X with 99% accuracy on test set'.",
+      "category": "authored_paradigm"
+    },
+    {
+      "name": "interpretable_by_construction",
+      "definition": "Network's structure reveals its computation. Each weight = specific algorithmic role.",
+      "why": "Tracr networks are readable: this attention head implements that RASP operation. Trained networks: post-hoc mechanistic interpretability tries to recover this. The substrate prefers the construction approach.",
+      "category": "authored_paradigm"
+    },
+    {
+      "name": "no_training_data_required",
+      "definition": "Authored networks don't need training data. Designed from specification.",
+      "why": "Training-bound paradigm fails without data. Authored paradigm doesn't have this dependency. The substrate's gadgets work from declarative input, not corpus.",
+      "category": "authored_paradigm"
+    },
+    {
+      "name": "compositional_correctness",
+      "definition": "Compose authored networks; correctness composes. f∘g correct if f and g are.",
+      "why": "Algebraic structure. Trained network composition: surprises common, debugging hard. Authored composition: known behaviour. The substrate's gadgets compose via cpwl_composed gadget kind.",
+      "category": "authored_paradigm"
+    },
+    {
+      "name": "the_substrate_uses_authored_primarily",
+      "definition": "Substrate's Mts ARE symbolic knowledge. Gadgets ARE authored networks. Tracr-compiled where networks needed. Training-free + provable.",
+      "why": "Design choice. Not 'no ML' but 'authored primary'. Where ML adds value (statistical pattern recognition not expressible algorithmically), neurosymbolic interfaces. The substrate doesn't run gradient descent on itself.",
+      "category": "authored_paradigm"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "Tracr_RASP_provides_exact_weights",
+      "if": ["a RASP program is compiled via Tracr"],
+      "then": ["resulting transformer weights implement the program exactly"],
+      "why": "Compilation is constructive: each RASP primitive maps to specific attention + MLP structure. Weights produced + network behaviour proven. No SGD; no random init; no training data. The 'understanding → weights' direct path.",
+      "soundness_category": "algebraic_law"
+    },
+    {
+      "name": "authored_network_interpretability_by_construction",
+      "if": ["network is compiled from declarative spec"],
+      "then": ["its computation is directly readable from structure"],
+      "why": "Each component has known algorithmic role. The substrate's gadgets carry their construction history as attrs. Mechanistic interpretability of authored networks is trivial; of trained networks is research.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "authored_paradigm_avoids_failure_modes",
+      "if": ["network is exactly compiled from specification"],
+      "then": ["hallucination + adversarial + distribution shift are not applicable"],
+      "why": "Specification defines behaviour. Outside specification, behaviour is whatever spec says (typically default value). Doesn't 'hallucinate' because it doesn't generate; doesn't fail OOD because no distribution assumption. Different paradigm; different failure profile.",
+      "soundness_category": "referential_transparency"
+    },
+    {
+      "name": "no_training_data_required_for_authoring",
+      "if": ["network is authored from specification"],
+      "then": ["no training data is required"],
+      "why": "Training paradigm: data-hungry, expensive to collect. Authored paradigm: needs specification (algorithm or function definition). Different cost structure. The substrate operates in the authored regime; data not its currency.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "neurosymbolic_acknowledges_both_paradigms",
+      "if": ["a system combines symbolic structure + neural learning"],
+      "then": ["it can do what neither alone can"],
+      "why": "Pure neural: statistical pattern recognition without provable structure. Pure symbolic: brittle to noise + unhandled cases. Combined: symbolic primary + neural where useful. AlphaGeometry, AlphaProof demonstrate. The substrate's design.",
+      "soundness_category": "extensional_equivalence"
+    }
+  ]
+}

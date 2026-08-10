@@ -1,0 +1,561 @@
+{
+ "id": "gap_verify",
+ "version": "1.0.0",
+ "depends_on": [
+  "time_axis"
+ ],
+ "description": "THE ABDUCED INTERMEDIATES, CHECKED -- the constraint the gapabduce rung (97000-97999) named as the lever it earned. Its deepest measured result was a negative: THE OPERATOR HAS NO DISCRIMINATIVE POWER, accepting independent random endpoints at ~1/steps because any two same-shape figures ARE rigid translates. Its intermediates were emitted and CHECKED AGAINST NOTHING. This seed checks them: in a scene with other content, G^t(f_before) makes a falsifiable prediction at every gap tick, and STRICT ACCOUNTABILITY (every predicted cell must coincide with an observed cell, exact integer coordinates) makes interpolation REFUSABLE. Flag-gated on agent.gap_verify_enabled==1, OFF by default (PROTOCOL 9); inert without it AND matches only status=='gap_vseq'.",
+ "microtheory": {
+  "name": "gap_verify",
+  "description": "an interpolation that can be WRONG. The abduction fits two endpoints and one free generator, which always fit; the intermediates it implies do not. Continuation is constrained because verification across every consecutive pair can fail -- this gives interpolation the same kind of constraint, against the scene rather than against a third sample."
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [
+  {
+   "provenance": "seed:gap_verify:observed-0",
+   "src": {
+    "type": "Agent",
+    "var": "s"
+   },
+   "edge_type": "observed",
+   "tgt": {
+    "type": "Observation",
+    "var": "t"
+   }
+  }
+ ],
+ "rules": [
+  {
+   "name": "gap_verify_intermediates",
+   "comment": "CHECK THE ABDUCED INTERMEDIATES AGAINST WHAT WAS ACTUALLY OBSERVED. GapAbduce emits its intermediates (`bridged`) and compares them to NOTHING -- which is why it has NO DISCRIMINATIVE POWER: any two same-shape figures ARE rigid translates, so divisibility is its only constraint and it accepts independent random endpoints at ~1/steps. This rule supplies the missing constraint. On a gap-sequence Observation whose gap frames are OBSERVED rather than blank (the figure absent, the rest of the scene present), each abduced intermediate G^t(f_before) is a FALSIFIABLE PREDICTION about frame t, and it is CHECKED: every predicted cell must COINCIDE with some cell actually observed at the same integer coordinates. `vviolations` is the count that do not; `verified` iff that count is 0. There is NO TOLERANCE in this and nowhere to put one -- an in-frame comparison is integer by construction (a 'close enough' radius would be a CROSS-frame quantity smuggled in-frame), so PROTOCOL 13 is satisfied the strongest way available: no number at all. `vabduced` is the divisibility verdict ALONE, so the rule reports what the incumbent would have said next to what verification says -- a refusal is DIAGNOSABLE (`vreason`: ok/unverified/identity/indivisible/not_rigid/no_gap_structure/inconsistent_gap/hidden_mismatch/multi_motion) and a refusal-after-a-full-check (`vticks`,`vpredicted` non-zero) is distinguishable from a refusal at a guard. status flips to 'gap_verified'. WHAT THIS DOES NOT DO: it does not infer occlusion ORDER, and on a genuinely BLANK gap nothing is observed, so every prediction is violated and classic phi is REFUSED -- this mechanism is MORE refusing than a human, by construction.",
+   "match_type": "Observation",
+   "match": [
+    [
+     "ag",
+     "observed",
+     "obs"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "gap_vseq"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ag"
+       },
+       "key": "gap_verify_enabled"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "obs",
+     "verified",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Eq",
+        "a": {
+         "type": "GapVerify",
+         "sequence": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "obs"
+          },
+          "key": "frames"
+         },
+         "codebook_type": "ShapeSignature",
+         "max_b": 8,
+         "field": "verified"
+        },
+        "b": {
+         "type": "Lit",
+         "value": true
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": 1.0
+       },
+       "other": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "vabduced",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Eq",
+        "a": {
+         "type": "GapVerify",
+         "sequence": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "obs"
+          },
+          "key": "frames"
+         },
+         "codebook_type": "ShapeSignature",
+         "max_b": 8,
+         "field": "abduced"
+        },
+        "b": {
+         "type": "Lit",
+         "value": true
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": 1.0
+       },
+       "other": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "vcloses",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Eq",
+        "a": {
+         "type": "GapVerify",
+         "sequence": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "obs"
+          },
+          "key": "frames"
+         },
+         "codebook_type": "ShapeSignature",
+         "max_b": 8,
+         "field": "closes"
+        },
+        "b": {
+         "type": "Lit",
+         "value": true
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": 1.0
+       },
+       "other": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "vdivisible",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Eq",
+        "a": {
+         "type": "GapVerify",
+         "sequence": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "obs"
+          },
+          "key": "frames"
+         },
+         "codebook_type": "ShapeSignature",
+         "max_b": 8,
+         "field": "divisible"
+        },
+        "b": {
+         "type": "Lit",
+         "value": true
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": 1.0
+       },
+       "other": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "vreason",
+     {
+      "__term__": {
+       "type": "GapVerify",
+       "sequence": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "frames"
+       },
+       "codebook_type": "ShapeSignature",
+       "max_b": 8,
+       "field": "reason"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "vkind",
+     {
+      "__term__": {
+       "type": "GapVerify",
+       "sequence": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "frames"
+       },
+       "codebook_type": "ShapeSignature",
+       "max_b": 8,
+       "field": "kind"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "voffset",
+     {
+      "__term__": {
+       "type": "GapVerify",
+       "sequence": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "frames"
+       },
+       "codebook_type": "ShapeSignature",
+       "max_b": 8,
+       "field": "offset"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "vtotal",
+     {
+      "__term__": {
+       "type": "GapVerify",
+       "sequence": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "frames"
+       },
+       "codebook_type": "ShapeSignature",
+       "max_b": 8,
+       "field": "total"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "vgap",
+     {
+      "__term__": {
+       "type": "GapVerify",
+       "sequence": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "frames"
+       },
+       "codebook_type": "ShapeSignature",
+       "max_b": 8,
+       "field": "gap"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "vsteps",
+     {
+      "__term__": {
+       "type": "GapVerify",
+       "sequence": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "frames"
+       },
+       "codebook_type": "ShapeSignature",
+       "max_b": 8,
+       "field": "steps"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "vprefix",
+     {
+      "__term__": {
+       "type": "GapVerify",
+       "sequence": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "frames"
+       },
+       "codebook_type": "ShapeSignature",
+       "max_b": 8,
+       "field": "prefix_len"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "vcorrection",
+     {
+      "__term__": {
+       "type": "GapVerify",
+       "sequence": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "frames"
+       },
+       "codebook_type": "ShapeSignature",
+       "max_b": 8,
+       "field": "correction"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "vviolations",
+     {
+      "__term__": {
+       "type": "GapVerify",
+       "sequence": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "frames"
+       },
+       "codebook_type": "ShapeSignature",
+       "max_b": 8,
+       "field": "violations"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "vticks",
+     {
+      "__term__": {
+       "type": "GapVerify",
+       "sequence": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "frames"
+       },
+       "codebook_type": "ShapeSignature",
+       "max_b": 8,
+       "field": "ticks"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "vpredicted",
+     {
+      "__term__": {
+       "type": "GapVerify",
+       "sequence": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "frames"
+       },
+       "codebook_type": "ShapeSignature",
+       "max_b": 8,
+       "field": "predicted"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "vcovered",
+     {
+      "__term__": {
+       "type": "GapVerify",
+       "sequence": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "frames"
+       },
+       "codebook_type": "ShapeSignature",
+       "max_b": 8,
+       "field": "covered"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "vsurfaces",
+     {
+      "__term__": {
+       "type": "GapVerify",
+       "sequence": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "frames"
+       },
+       "codebook_type": "ShapeSignature",
+       "max_b": 8,
+       "field": "surfaces"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "vhidden",
+     {
+      "__term__": {
+       "type": "GapVerify",
+       "sequence": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "frames"
+       },
+       "codebook_type": "ShapeSignature",
+       "max_b": 8,
+       "field": "hidden"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "vchecked",
+     {
+      "__term__": {
+       "type": "GapVerify",
+       "sequence": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "frames"
+       },
+       "codebook_type": "ShapeSignature",
+       "max_b": 8,
+       "field": "checked"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "status",
+     {
+      "__term__": {
+       "type": "Lit",
+       "value": "gap_verified"
+      }
+     }
+    ]
+   ]
+  }
+ ]
+}

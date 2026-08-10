@@ -1,0 +1,75 @@
+{
+  "id": "language_foundation",
+  "version": "0.1.0",
+  "description": "Core linguistic vocabulary — units of language (phoneme to discourse), grammatical categories, syntactic roles, sentence types. The agent's foundation for talking about language at all. Built per the structuralist tradition (Saussure, Bloomfield, Chomsky) without committing to any single theoretical school.",
+  "depends_on": [],
+  "concepts": [
+    {"name": "phoneme", "definition": "Minimal contrastive unit of sound in a language. Identified by minimal pair tests. The phoneme /p/ in English contrasts with /b/ (pat vs bat).", "category": "unit"},
+    {"name": "morpheme", "definition": "Minimal meaningful unit of grammar. May be free (stand alone: 'cat') or bound (attached: '-s' plural marker). Distinct from word — 'cats' contains two morphemes.", "category": "unit"},
+    {"name": "lexeme", "definition": "Abstract unit underlying a set of word-forms. 'run', 'runs', 'ran', 'running' are forms of the lexeme RUN. The dictionary headword.", "category": "unit"},
+    {"name": "word", "definition": "Free morpheme or compound thereof that can stand alone in an utterance. Bounded by spaces in writing systems with word-spacing.", "category": "unit"},
+    {"name": "phrase", "definition": "Group of words functioning as a single unit, headed by a particular category (noun phrase, verb phrase, prepositional phrase). Building block of clauses.", "category": "unit"},
+    {"name": "clause", "definition": "Syntactic unit with a subject and a predicate. May be independent (main clause) or dependent (subordinate clause).", "category": "unit"},
+    {"name": "sentence", "definition": "Maximal syntactic unit, typically containing at least one main clause. In writing, bounded by sentence-final punctuation.", "category": "unit"},
+    {"name": "paragraph", "definition": "Discourse unit grouping sentences around a coherent topic. In writing, marked by indentation or vertical space.", "category": "unit"},
+    {"name": "discourse", "definition": "Connected stretch of language above the sentence level. The site of coherence, cohesion, topic management, and pragmatic inference.", "category": "unit"},
+    {"name": "syntax", "definition": "Branch of linguistics concerned with how words combine into phrases, clauses, sentences. The structural side of grammar.", "category": "subfield"},
+    {"name": "semantics", "definition": "Branch of linguistics concerned with literal meaning — denotation, sense, reference, truth-conditional content.", "category": "subfield"},
+    {"name": "pragmatics", "definition": "Branch of linguistics concerned with meaning in context — implicature, speech acts, presupposition, deixis, conversational inference.", "category": "subfield"},
+    {"name": "noun", "definition": "Part-of-speech category for words referring to entities, concepts, kinds, instances. Subject and object roles typically filled by nouns.", "category": "pos"},
+    {"name": "verb", "definition": "Part-of-speech category for words denoting actions, states, processes. Heads predicates; carries tense, aspect, mood, voice.", "category": "pos"},
+    {"name": "adjective", "definition": "Part-of-speech category for words modifying nouns by attributing properties. Pre- or post-nominal depending on language.", "category": "pos"},
+    {"name": "adverb", "definition": "Part-of-speech category for words modifying verbs, adjectives, other adverbs, or whole clauses. Encode manner, degree, time, place.", "category": "pos"},
+    {"name": "preposition", "definition": "Part-of-speech for words heading prepositional phrases — encode spatial, temporal, logical relations between entities.", "category": "pos"},
+    {"name": "pronoun", "definition": "Part-of-speech for words substituting for noun phrases — anaphoric (refer back), deictic (refer to context), or interrogative.", "category": "pos"},
+    {"name": "determiner", "definition": "Part-of-speech for words specifying reference of a noun phrase — articles (a, the), demonstratives (this, that), quantifiers (some, all).", "category": "pos"},
+    {"name": "subject", "definition": "Syntactic role: the noun phrase whose referent is the topic of the predicate. Typically nominative-case-marked, agrees with the verb.", "category": "role"},
+    {"name": "object", "definition": "Syntactic role: the noun phrase argument of a transitive verb. Direct object (acted upon); indirect object (recipient/beneficiary).", "category": "role"},
+    {"name": "predicate", "definition": "Syntactic role: the part of a clause that says something about the subject. Headed by a verb (or sometimes a copula + complement).", "category": "role"},
+    {"name": "modifier", "definition": "Syntactic role: a phrase adding optional information to its head (adjective modifying noun; adverb modifying verb).", "category": "role"},
+    {"name": "tense", "definition": "Grammatical category locating an event in time relative to the moment of speaking — past, present, future.", "category": "feature"},
+    {"name": "aspect", "definition": "Grammatical category encoding the temporal flow or completeness of an event — perfective (bounded), imperfective (ongoing), perfect (resultative).", "category": "feature"},
+    {"name": "voice", "definition": "Grammatical category encoding the relation between the subject and the action — active (subject is agent), passive (subject is patient).", "category": "feature"},
+    {"name": "declarative", "definition": "Sentence type that makes a statement. Has falsifiable truth conditions; the prototypical input to factual reasoning.", "category": "sentence_type"},
+    {"name": "interrogative", "definition": "Sentence type that asks a question. Yes/no (polar) or wh- (content). Expects an answer; not directly truth-evaluable.", "category": "sentence_type"},
+    {"name": "imperative", "definition": "Sentence type that issues a command, request, or instruction. Subjectless (implied 'you'); demands action.", "category": "sentence_type"}
+  ],
+  "rules": [
+    {
+      "name": "a_declarative_sentence_asserts_a_proposition",
+      "if": ["a Sentence is declarative", "its content is not hedged"],
+      "then": ["the Sentence asserts a proposition", "the proposition is a candidate atomic fact for the substrate's reasoning"],
+      "why": "Declaratives are the workhorse of factual prose. Identifying them is the first step in extracting claims from text."
+    },
+    {
+      "name": "a_clause_has_a_subject_and_a_predicate",
+      "if": ["a Sentence (or subordinate Clause) is syntactically well-formed"],
+      "then": ["it contains a subject phrase", "it contains a predicate phrase headed by a verb"],
+      "why": "Identifying subject + predicate is the minimum structural decomposition needed to ask 'what is being claimed about what'."
+    },
+    {
+      "name": "a_pronoun_requires_anaphoric_or_deictic_resolution",
+      "if": ["a Sentence contains a pronoun"],
+      "then": ["the pronoun has an antecedent in nearby discourse OR a deictic referent in context", "answering questions about the referent requires resolving it first"],
+      "why": "Unresolved pronouns block claim-extraction — the substrate cannot match a question's keywords against a Sentence whose subject is 'it'."
+    },
+    {
+      "name": "a_phrase_is_classified_by_its_head_category",
+      "if": ["a phrase is well-formed"],
+      "then": ["it has a head — a single word that determines its syntactic category", "the phrase is classified as noun-phrase / verb-phrase / etc. by its head"],
+      "why": "Head-based classification is the substrate's hook for matching question keywords against phrase referents."
+    },
+    {
+      "name": "tense_locates_an_event_in_time",
+      "if": ["a Sentence contains a tensed verb"],
+      "then": ["the Sentence's claim has a temporal anchor (past, present, future)", "matching the Sentence against time-bounded questions requires honoring its tense"],
+      "why": "Research text is full of tense-laden claims ('Najman classified', 'will be shown'); tense matters for the substrate's relevance scoring."
+    },
+    {
+      "name": "an_interrogative_sentence_seeks_information_not_asserts_it",
+      "if": ["a Sentence is interrogative"],
+      "then": ["the Sentence does NOT contribute a candidate fact", "the Sentence indicates a query the agent should attend to"],
+      "why": "Distinguishing questions from assertions prevents the substrate from extracting question text as if it were claims."
+    }
+  ]
+}

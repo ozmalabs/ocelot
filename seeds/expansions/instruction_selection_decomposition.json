@@ -1,0 +1,118 @@
+{
+  "id": "instruction_selection_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "instruction_selection",
+  "in_microtheory": "compilers",
+  "description": "Instruction selection decomposed. Map IR operations to target ISA instructions. Tree pattern matching, DAG pattern matching, BURS (bottom-up rewriting system), peephole optimisation, target description languages (LLVM TableGen, GCC machine description). LLVM's SelectionDAG architecture.",
+  "sub_mechanisms": [
+    {
+      "name": "instruction_pattern",
+      "definition": "Description of an ISA instruction's behaviour as an IR sub-tree pattern. Match the pattern → emit the instruction.",
+      "why": "Bridges IR's abstract operations to ISA's concrete ones. Each instruction has 1+ patterns. Patterns include cost (cycle count, code size) for optimal selection.",
+      "category": "isel_mechanism"
+    },
+    {
+      "name": "tree_pattern_matching",
+      "definition": "Match IR tree against patterns. Each pattern is a tree fragment; matched node emits the corresponding instruction.",
+      "why": "Tree matching is well-studied (BURS, Aho-Sethi). Handles simple cases like 'add r1, r2, r3' but breaks when IR isn't strictly tree-shaped (shared subexpressions).",
+      "category": "isel_mechanism"
+    },
+    {
+      "name": "DAG_pattern_matching",
+      "definition": "Generalisation to DAGs (common in IR after CSE). Each node may match multiple patterns; combination must be consistent.",
+      "why": "IR after optimisation typically has shared sub-expressions (CSE). DAG matching handles this without splitting back to trees. More complex than tree matching but matches reality.",
+      "category": "isel_mechanism"
+    },
+    {
+      "name": "BURS",
+      "definition": "Bottom-Up Rewriting System: dynamic programming over the IR DAG. At each node, compute min-cost cover among matching patterns.",
+      "why": "Optimal tiling for the DAG with given pattern costs. Classical technique (Aho-Sethi 1989). LLVM's SelectionDAG ISel is BURS-based.",
+      "category": "isel_mechanism"
+    },
+    {
+      "name": "LLVM_SelectionDAG",
+      "definition": "LLVM's IR → MachineInstr converter. Per-function DAG; nodes are IR ops; rules from TableGen .td files match against the DAG.",
+      "why": "Production instruction selector. Each backend (X86, ARM, RISCV) provides patterns via TableGen; the framework handles common matching infrastructure. Standard since LLVM 2.x.",
+      "category": "isel_mechanism"
+    },
+    {
+      "name": "LLVM_GlobalISel",
+      "definition": "Replacement for SelectionDAG. Operates on whole function, eliminates per-basic-block boundary issues, faster compile times.",
+      "why": "SelectionDAG operates per-block, missing cross-block opportunities. GlobalISel works globally. Gradually replacing SelectionDAG in LLVM; ARM64 has been a leader in adopting it.",
+      "category": "isel_mechanism"
+    },
+    {
+      "name": "peephole_optimisation",
+      "definition": "Local optimisation after instruction selection. Scan small windows of instructions for known patterns; rewrite.",
+      "why": "Catches cases instruction selection missed or introduced. e.g., (mov a, r; add a, b) → (lea r + b, a). Used by every production compiler. Simple, fast, robust.",
+      "category": "isel_mechanism"
+    },
+    {
+      "name": "TableGen",
+      "definition": "LLVM's domain-specific language for describing targets. .td files declare registers, instructions, calling conventions, patterns.",
+      "why": "Declarative target description. LLVM generates code (decoders, encoders, pattern matchers) from .td files. New target = mostly TableGen + some C++.",
+      "category": "isel_mechanism"
+    },
+    {
+      "name": "GCC_machine_description",
+      "definition": "GCC's analogous DSL: .md files describe instructions as RTL templates. The pattern matcher reads them.",
+      "why": "GCC's analogue of TableGen, predating it. Each backend describes itself via .md. Older + less polished than TableGen but powers the same kind of automatic backend generation.",
+      "category": "isel_mechanism"
+    },
+    {
+      "name": "tile_cost_model",
+      "definition": "Each instruction pattern has a cost: cycles, code size, latency. ISel picks minimum-cost cover.",
+      "why": "Multiple ways to express IR op as ISA instructions. Cost model chooses best. x86's LEA can implement add + shift in one instruction at lower cost than separate instructions.",
+      "category": "isel_mechanism"
+    },
+    {
+      "name": "addressing_mode_matching",
+      "definition": "x86 addressing modes (base + index*scale + offset) match complex IR patterns. ISel folds address computation into a single memory access.",
+      "why": "Without folding, 'load (a + b*4 + 8)' becomes 4 instructions. With folding: 1 LEA + 1 load (or 1 load with addressing mode). Major code density + performance win.",
+      "category": "isel_mechanism"
+    },
+    {
+      "name": "instruction_legalisation",
+      "definition": "Pre-ISel pass converting IR ops the target doesn't support directly. e.g., i128 add on x86 → two i64 adds + carry.",
+      "why": "IR is target-independent; many ops aren't directly supported. Legalisation makes the IR target-feasible before ISel. Specific to each target's capabilities.",
+      "category": "isel_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "BURS_optimal_for_tree_or_DAG_matching",
+      "if": ["pattern costs are accurate"],
+      "then": ["BURS finds the minimum-cost cover"],
+      "why": "Dynamic programming optimal: each subtree's min cost computed from its children's. Provably optimal among the given patterns. Cost accuracy determines quality; LLVM's costs are approximate but well-tuned.",
+      "soundness_category": "algebraic_law"
+    },
+    {
+      "name": "addressing_mode_folding_dominates_code_density",
+      "if": ["target ISA has rich addressing modes (x86)"],
+      "then": ["folding address computation into memory ops dramatically improves code density"],
+      "why": "x86's [base + index*scale + offset] saves 2-3 explicit ALU instructions per memory access. Code size + execution time both improve. ISel's address-mode matching is one of the highest-impact opportunities.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "DAG_matching_required_after_CSE",
+      "if": ["IR has common subexpressions"],
+      "then": ["tree matching fails; DAG matching is required"],
+      "why": "CSE produces shared nodes (one expression with multiple uses). Tree matching would duplicate; DAG matching reuses. Real IR is DAG-shaped after optimisation; tree-only matchers are obsolete.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "TableGen_declarative_description_amortises_target_work",
+      "if": ["new target supports TableGen description"],
+      "then": ["framework generates most of the backend"],
+      "why": "Decoder, encoder, pattern matcher, asm printer all generated from .td files. Adding new architecture: weeks of TableGen vs months of hand-written code. Foundation of LLVM's target proliferation.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "peephole_complements_global_isel",
+      "if": ["instruction selection misses local opportunities"],
+      "then": ["peephole catches them"],
+      "why": "Global ISel optimises structure but may produce sub-optimal local patterns. Peephole's small window catches these cheaply. Standard pipeline: global ISel + RA + scheduling + peephole.",
+      "soundness_category": "extensional_equivalence"
+    }
+  ]
+}

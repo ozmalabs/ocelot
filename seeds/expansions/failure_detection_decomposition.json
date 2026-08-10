@@ -1,0 +1,118 @@
+{
+  "id": "failure_detection_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "phi_accrual_failure_detector",
+  "in_microtheory": "distributed_systems",
+  "description": "Failure detection decomposed. Heartbeat patterns, gossip protocols (SWIM), phi accrual, epidemic protocols. The mechanisms by which distributed systems detect (and sometimes wrongly suspect) failed members.",
+  "sub_mechanisms": [
+    {
+      "name": "periodic_heartbeat",
+      "definition": "Each node sends 'I'm alive' to monitor at fixed interval. Missing N heartbeats → suspect failure.",
+      "why": "Simplest. Threshold trade: tight = false positives; loose = slow detection. Foundational baseline.",
+      "category": "fd_mechanism"
+    },
+    {
+      "name": "all_to_all_heartbeat",
+      "definition": "Every node sends heartbeat to every other. O(N²) messages.",
+      "why": "Strong info but doesn't scale. ~50 nodes max. Replaced by gossip in larger clusters.",
+      "category": "fd_mechanism"
+    },
+    {
+      "name": "gossip_dissemination",
+      "definition": "Each node periodically gossips state to K random peers. Info spreads exponentially.",
+      "why": "Scalable: O(log N) rounds to converge. Used in Cassandra, Consul, Hashicorp memberlist. Foundation of large-cluster membership.",
+      "category": "fd_mechanism"
+    },
+    {
+      "name": "SWIM_direct_probe",
+      "definition": "Node A probes node B directly with ping. Failure → indirect probes via peers.",
+      "why": "Distinguishes 'B is dead' from 'A-B network broken'. K indirect probes; if all fail, declare B dead. Hashicorp Memberlist + Serf use.",
+      "category": "fd_mechanism"
+    },
+    {
+      "name": "SWIM_indirect_probe",
+      "definition": "If A can't reach B, A asks K other nodes to ping B. If they succeed, B is alive (network issue between A-B).",
+      "why": "Reduces false positives from partial partitions. Robust against asymmetric network failures.",
+      "category": "fd_mechanism"
+    },
+    {
+      "name": "phi_accrual_value",
+      "definition": "φ = -log10(P(t_late > t_now - last_heartbeat | normal distribution)). Continuous probability of failure.",
+      "why": "Not binary up/down. Application decides threshold (φ > 8 = ~99.999999% failed). Adapts to network latency variance. Cassandra, Akka use.",
+      "category": "fd_mechanism"
+    },
+    {
+      "name": "ping_pong_RTT_window",
+      "definition": "Track recent ping RTTs in sliding window. Compute mean + std.",
+      "why": "Foundation of phi accrual: distribution of normal RTTs. Failure = current latency far in tail of distribution.",
+      "category": "fd_mechanism"
+    },
+    {
+      "name": "membership_protocol",
+      "definition": "Mechanism for nodes to learn cluster composition. Gossip-based membership + version vectors.",
+      "why": "Knowing who's in cluster prerequisite to detecting failure. Combined with failure detection in SWIM, Consul, etcd.",
+      "category": "fd_mechanism"
+    },
+    {
+      "name": "split_brain_avoidance",
+      "definition": "When network partitions, two sides may each claim leadership. Prevent: majority quorum required.",
+      "why": "Without: both sides accept writes, conflicting state. With majority: only one side has quorum, other refuses. Raft + Paxos enforce.",
+      "category": "fd_mechanism"
+    },
+    {
+      "name": "Byzantine_failure_detection",
+      "definition": "Detect nodes returning wrong answers (not just silence). Cryptographic signatures + voting.",
+      "why": "Pure failure detection assumes crash failures. Byzantine: malicious answers. PBFT + HotStuff handle. Required for permissioned blockchain.",
+      "category": "fd_mechanism"
+    },
+    {
+      "name": "anti_entropy_state_sync",
+      "definition": "Periodic full state exchange between replicas. Catch missed updates.",
+      "why": "Gossip may miss updates; anti-entropy rectifies. Merkle trees enable efficient diff. Cassandra read repair + nodetool repair.",
+      "category": "fd_mechanism"
+    },
+    {
+      "name": "fencing_token",
+      "definition": "Monotonically increasing ID issued by lock service. Operations require fence ≥ current.",
+      "why": "Prevents zombie processes from corrupting state after fail-over. Process A locked, paused, B took over. A returns, must include fence; storage rejects old fence.",
+      "category": "fd_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "perfect_failure_detection_impossible_async",
+      "if": ["network is asynchronous"],
+      "then": ["no failure detector is perfect"],
+      "why": "Slow node indistinguishable from dead. FLP impossibility consequence. Practical detectors are eventually-correct: detect failures eventually, may have false positives.",
+      "soundness_category": "algebraic_law"
+    },
+    {
+      "name": "gossip_scales_to_thousands_of_nodes",
+      "if": ["cluster has thousands of nodes"],
+      "then": ["gossip outperforms all-to-all"],
+      "why": "All-to-all: O(N²) messages per round = unsustainable. Gossip: each node sends to K peers. O(N×K) total; O(log N) rounds to converge. Cassandra deploys at this scale.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "SWIM_handles_asymmetric_partitions",
+      "if": ["network has unidirectional failures"],
+      "then": ["SWIM's indirect probes detect them"],
+      "why": "Single probe: A can't reach B; mark B dead. SWIM: K others probe B; if any reach, B is alive. Asymmetric link between A-B detected. Real networks have such failures.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "phi_accrual_adapts_to_network_variance",
+      "if": ["network latency varies significantly"],
+      "then": ["phi accrual adapts; fixed thresholds give false positives"],
+      "why": "Fixed: 'N missed = dead'. Variable latency → N misses common = false positives. Phi: computes probability based on observed distribution. Adapts naturally.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "fencing_tokens_required_for_safe_locking",
+      "if": ["distributed lock protects state correctness"],
+      "then": ["fencing token required to prevent zombie writes"],
+      "why": "Without: paused process resumes, performs write thinking it holds lock. With: storage validates fence; rejects old. Kleppmann's critique of Redlock-style locks. Required for safety.",
+      "soundness_category": "referential_transparency"
+    }
+  ]
+}

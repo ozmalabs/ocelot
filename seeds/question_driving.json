@@ -1,0 +1,1174 @@
+{
+  "id": "question_driving",
+  "version": "1.0.0",
+  "depends_on": [],
+  "description": "QuestionDriver (question_driver.py) as graph data: QuestionDriver.drive/_pursue/_decompose/_pursue_contrast/_pursue_know's kind-dispatch + recursion + the one real Python state (self._gap_depth) become a graph-resident Goal tree + JOIN rules. Resolver nodes name the faculties the driver sequences (elevator_compute/know_ground/reflect/contrast/gap_parse); kind-dispatch is a JOIN (qd_bind_resolver) via Agent-has_goal->Goal / Agent-has_resolver->Resolver sharing the Agent var, not a Python if/elif. Compound/compare decomposition (qd_decompose) and compound resolve/wall (qd_compound_resolve/qd_compound_wall) mirror _decompose's fold-up. gap_depth is DATA on the Goal node (qd_gap_guard), replacing self._gap_depth. qd_contrast_compare folds _pursue_contrast's genus comparison. The question_pursue Reflex entry (new 'reflexes' manifest key, Part A2 -- not yet landed, so expected to be ignored/absent until then) fires the executor whenever a Goal is dispatched.",
+  "microtheory": {
+    "name": "question_driving",
+    "description": "Question -> comprehended Goal -> resolver dispatch / decompose / gap-ground -> resolved|walled, tick-driven."
+  },
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "Resolver",
+      "attrs": {
+        "name": "elevator_compute",
+        "resolves_kind": "world"
+      }
+    },
+    {
+      "local_id": 1,
+      "type": "Resolver",
+      "attrs": {
+        "name": "know_ground",
+        "resolves_kind": "know"
+      }
+    },
+    {
+      "local_id": 2,
+      "type": "Resolver",
+      "attrs": {
+        "name": "reflect",
+        "resolves_kind": "meta"
+      }
+    },
+    {
+      "local_id": 3,
+      "type": "Resolver",
+      "attrs": {
+        "name": "contrast",
+        "resolves_kind": "contrast"
+      }
+    },
+    {
+      "local_id": 4,
+      "type": "Resolver",
+      "attrs": {
+        "name": "gap_parse",
+        "resolves_kind": "gap"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "tgt": {
+        "local": 0
+      },
+      "type": "has_resolver",
+      "attrs": {}
+    },
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "tgt": {
+        "local": 1
+      },
+      "type": "has_resolver",
+      "attrs": {}
+    },
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "tgt": {
+        "local": 2
+      },
+      "type": "has_resolver",
+      "attrs": {}
+    },
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "tgt": {
+        "local": 3
+      },
+      "type": "has_resolver",
+      "attrs": {}
+    },
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "tgt": {
+        "local": 4
+      },
+      "type": "has_resolver",
+      "attrs": {}
+    }
+  ],
+  "productions": [
+    {
+      "provenance": "seed:question_driving:comprehended_as-0",
+      "src": {
+        "type": "Question",
+        "var": "s"
+      },
+      "edge_type": "comprehended_as",
+      "tgt": {
+        "type": "Goal",
+        "var": "t"
+      }
+    },
+    {
+      "provenance": "seed:question_driving:has_subgoal-1",
+      "src": {
+        "type": "Goal",
+        "var": "s"
+      },
+      "edge_type": "has_subgoal",
+      "tgt": {
+        "type": "Goal",
+        "var": "t"
+      }
+    },
+    {
+      "provenance": "seed:question_driving:resolve_with-2",
+      "src": {
+        "type": "Goal",
+        "var": "s"
+      },
+      "edge_type": "resolve_with",
+      "tgt": {
+        "type": "Resolver",
+        "var": "t"
+      }
+    },
+    {
+      "provenance": "seed:question_driving:has_subgoal_spec-3",
+      "src": {
+        "type": "Goal",
+        "var": "s"
+      },
+      "edge_type": "has_subgoal_spec",
+      "tgt": {
+        "type": "SubgoalSpec",
+        "var": "t"
+      }
+    },
+    {
+      "provenance": "seed:question_driving:has_gap_spec-4",
+      "src": {
+        "type": "Goal",
+        "var": "s"
+      },
+      "edge_type": "has_gap_spec",
+      "tgt": {
+        "type": "GapSpec",
+        "var": "t"
+      }
+    },
+    {
+      "provenance": "seed:question_driving:has_goal-5",
+      "src": {
+        "type": "Agent",
+        "var": "s"
+      },
+      "edge_type": "has_goal",
+      "tgt": {
+        "type": "Goal",
+        "var": "t"
+      }
+    },
+    {
+      "provenance": "seed:question_driving:has_resolver-6",
+      "src": {
+        "type": "Agent",
+        "var": "s"
+      },
+      "edge_type": "has_resolver",
+      "tgt": {
+        "type": "Resolver",
+        "var": "t"
+      }
+    }
+  ],
+  "rules": [
+    {
+      "name": "qd_bind_resolver",
+      "comment": "kind-DISPATCH as a JOIN, not Python if/elif: a pending leaf Goal binds to the Resolver sharing its kind, both hanging off the same Agent (has_goal / has_resolver).",
+      "match": [
+        [
+          "ag",
+          "has_goal",
+          "goal"
+        ],
+        [
+          "ag",
+          "has_resolver",
+          "resolver"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "goal"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "pending"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "goal"
+              },
+              "key": "kind"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "resolver"
+              },
+              "key": "resolves_kind"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_edge",
+          "goal",
+          "resolve_with",
+          "resolver"
+        ],
+        [
+          "set_attr",
+          "goal",
+          "status",
+          "dispatched"
+        ]
+      ]
+    },
+    {
+      "name": "qd_decompose",
+      "comment": "_decompose's fan-out: a compound/compare Goal's SubgoalSpec children (written at ingest, Part C) each mint ONE child Goal + a has_subgoal edge; one firing per spec (batch=true, since specs are independent), guarded by spec.materialized so re-ticking is a no-op (fixpoint-idempotent).",
+      "match_type": "SubgoalSpec",
+      "match": [
+        [
+          "goal",
+          "has_subgoal_spec",
+          "spec"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Or",
+            "items": [
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "goal"
+                  },
+                  "key": "kind"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "compound"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "goal"
+                  },
+                  "key": "kind"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "compare"
+                }
+              }
+            ]
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "spec"
+              },
+              "key": "materialized"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0
+            }
+          }
+        ]
+      },
+      "batch": true,
+      "effects": [
+        [
+          "add_node",
+          "child",
+          "Goal",
+          {
+            "kind": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "spec"
+                },
+                "key": "kind"
+              }
+            },
+            "raw": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "spec"
+                },
+                "key": "raw"
+              }
+            },
+            "gap_depth": {
+              "__term__": {
+                "type": "Plus",
+                "items": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "goal"
+                    },
+                    "key": "gap_depth"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": 0
+                  }
+                ]
+              }
+            },
+            "status": "pending"
+          }
+        ],
+        [
+          "add_edge",
+          "goal",
+          "has_subgoal",
+          "child"
+        ],
+        [
+          "set_attr",
+          "spec",
+          "materialized",
+          {
+            "__term__": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "goal",
+          "status",
+          "waiting"
+        ]
+      ]
+    },
+    {
+      "name": "qd_compound_resolve",
+      "comment": "_decompose's fold-up (success path): a waiting compound/compare Goal whose children are ALL resolved (and none walled) resolves, with the answer the Join of the children's answers (compound_resolve's 'compose the results').",
+      "match_type": "Goal",
+      "match": [
+        [
+          "ag",
+          "has_goal",
+          "goal"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "goal"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "waiting"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Filter",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {
+                    "type": "Var",
+                    "name": "goal"
+                  },
+                  "edge_type": "has_subgoal"
+                },
+                "var_name": "cw",
+                "predicate": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "cw"
+                    },
+                    "key": "status"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": "walled"
+                  }
+                }
+              }
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Filter",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {
+                    "type": "Var",
+                    "name": "goal"
+                  },
+                  "edge_type": "has_subgoal"
+                },
+                "var_name": "cu",
+                "predicate": {
+                  "type": "Not",
+                  "arg": {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "cu"
+                      },
+                      "key": "status"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "resolved"
+                    }
+                  }
+                }
+              }
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "goal",
+          "status",
+          "resolved"
+        ],
+        [
+          "set_attr",
+          "goal",
+          "answer",
+          {
+            "__term__": {
+              "type": "Join",
+              "separator": {
+                "type": "Lit",
+                "value": " "
+              },
+              "items": {
+                "type": "MapList",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {
+                    "type": "Var",
+                    "name": "goal"
+                  },
+                  "edge_type": "has_subgoal"
+                },
+                "var_name": "ca",
+                "value": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "ca"
+                  },
+                  "key": "answer"
+                }
+              }
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "qd_compound_wall",
+      "comment": "_decompose's fold-up (failure path): any walled child walls the compound/compare parent.",
+      "match_type": "Goal",
+      "match": [
+        [
+          "ag",
+          "has_goal",
+          "goal"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "goal"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "waiting"
+            }
+          },
+          {
+            "type": "Gte",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Filter",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {
+                    "type": "Var",
+                    "name": "goal"
+                  },
+                  "edge_type": "has_subgoal"
+                },
+                "var_name": "cw",
+                "predicate": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "cw"
+                    },
+                    "key": "status"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": "walled"
+                  }
+                }
+              }
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "goal",
+          "status",
+          "walled"
+        ]
+      ]
+    },
+    {
+      "name": "qd_gap_guard",
+      "comment": "Replaces self._gap_depth: mints ONE 'What is <gap>?' KNOW subgoal per GapSpec (written at ingest from the gap frame, Part C) ONLY while gap_depth < 1 -- the recursion bound as DATA on the Goal node, not Python state. One firing per spec (batch), guarded by spec.materialized.",
+      "match_type": "GapSpec",
+      "match": [
+        [
+          "goal",
+          "has_gap_spec",
+          "spec"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "goal"
+              },
+              "key": "gap_depth"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "spec"
+              },
+              "key": "materialized"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0
+            }
+          }
+        ]
+      },
+      "batch": true,
+      "effects": [
+        [
+          "add_node",
+          "child",
+          "Goal",
+          {
+            "kind": "know",
+            "raw": {
+              "__term__": {
+                "type": "StringConcat",
+                "parts": [
+                  {
+                    "type": "Lit",
+                    "value": "What is "
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "spec"
+                    },
+                    "key": "surface"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": "?"
+                  }
+                ]
+              }
+            },
+            "gap_depth": {
+              "__term__": {
+                "type": "Plus",
+                "items": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "goal"
+                    },
+                    "key": "gap_depth"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": 1
+                  }
+                ]
+              }
+            },
+            "status": "pending"
+          }
+        ],
+        [
+          "add_edge",
+          "goal",
+          "has_subgoal",
+          "child"
+        ],
+        [
+          "set_attr",
+          "spec",
+          "materialized",
+          {
+            "__term__": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "qd_contrast_compare",
+      "comment": "_pursue_contrast folded: a contrast Goal's two know-children compared by genus once both resolve (Eq -> 'same'/'different'); any child walled walls the contrast instead.",
+      "match_type": "Goal",
+      "match": [
+        [
+          "ag",
+          "has_goal",
+          "goal"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "goal"
+              },
+              "key": "kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "contrast"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "goal"
+                },
+                "edge_type": "has_subgoal"
+              }
+            },
+            "b": {
+              "type": "Lit",
+              "value": 2
+            }
+          },
+          {
+            "type": "Or",
+            "items": [
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Count",
+                  "source": {
+                    "type": "Filter",
+                    "source": {
+                      "type": "Neighbours",
+                      "node": {
+                        "type": "Var",
+                        "name": "goal"
+                      },
+                      "edge_type": "has_subgoal"
+                    },
+                    "var_name": "cw",
+                    "predicate": {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "cw"
+                        },
+                        "key": "status"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": "walled"
+                      }
+                    }
+                  }
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 0
+                }
+              },
+              {
+                "type": "Gte",
+                "a": {
+                  "type": "Count",
+                  "source": {
+                    "type": "Filter",
+                    "source": {
+                      "type": "Neighbours",
+                      "node": {
+                        "type": "Var",
+                        "name": "goal"
+                      },
+                      "edge_type": "has_subgoal"
+                    },
+                    "var_name": "cw",
+                    "predicate": {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "cw"
+                        },
+                        "key": "status"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": "walled"
+                      }
+                    }
+                  }
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 1
+                }
+              }
+            ]
+          },
+          {
+            "type": "Or",
+            "items": [
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Count",
+                  "source": {
+                    "type": "Filter",
+                    "source": {
+                      "type": "Neighbours",
+                      "node": {
+                        "type": "Var",
+                        "name": "goal"
+                      },
+                      "edge_type": "has_subgoal"
+                    },
+                    "var_name": "cu",
+                    "predicate": {
+                      "type": "Not",
+                      "arg": {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "cu"
+                          },
+                          "key": "status"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": "resolved"
+                        }
+                      }
+                    }
+                  }
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 0
+                }
+              },
+              {
+                "type": "Gte",
+                "a": {
+                  "type": "Count",
+                  "source": {
+                    "type": "Filter",
+                    "source": {
+                      "type": "Neighbours",
+                      "node": {
+                        "type": "Var",
+                        "name": "goal"
+                      },
+                      "edge_type": "has_subgoal"
+                    },
+                    "var_name": "cw",
+                    "predicate": {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "cw"
+                        },
+                        "key": "status"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": "walled"
+                      }
+                    }
+                  }
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 1
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "goal",
+          "status",
+          {
+            "__term__": {
+              "type": "IfThenElse",
+              "cond": {
+                "type": "Gte",
+                "a": {
+                  "type": "Count",
+                  "source": {
+                    "type": "Filter",
+                    "source": {
+                      "type": "Neighbours",
+                      "node": {
+                        "type": "Var",
+                        "name": "goal"
+                      },
+                      "edge_type": "has_subgoal"
+                    },
+                    "var_name": "cw",
+                    "predicate": {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "cw"
+                        },
+                        "key": "status"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": "walled"
+                      }
+                    }
+                  }
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 1
+                }
+              },
+              "then": {
+                "type": "Lit",
+                "value": "walled"
+              },
+              "other": {
+                "type": "Lit",
+                "value": "resolved"
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "goal",
+          "answer",
+          {
+            "__term__": {
+              "type": "IfThenElse",
+              "cond": {
+                "type": "Gte",
+                "a": {
+                  "type": "Count",
+                  "source": {
+                    "type": "Filter",
+                    "source": {
+                      "type": "Neighbours",
+                      "node": {
+                        "type": "Var",
+                        "name": "goal"
+                      },
+                      "edge_type": "has_subgoal"
+                    },
+                    "var_name": "cw",
+                    "predicate": {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "cw"
+                        },
+                        "key": "status"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": "walled"
+                      }
+                    }
+                  }
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 1
+                }
+              },
+              "then": {
+                "type": "Lit",
+                "value": null
+              },
+              "other": {
+                "type": "IfThenElse",
+                "cond": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "IndexAt",
+                    "seq": {
+                      "type": "MapList",
+                      "source": {
+                        "type": "Neighbours",
+                        "node": {
+                          "type": "Var",
+                          "name": "goal"
+                        },
+                        "edge_type": "has_subgoal"
+                      },
+                      "var_name": "cg",
+                      "value": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "cg"
+                        },
+                        "key": "genus"
+                      }
+                    },
+                    "index": {
+                      "type": "Lit",
+                      "value": 0
+                    }
+                  },
+                  "b": {
+                    "type": "IndexAt",
+                    "seq": {
+                      "type": "MapList",
+                      "source": {
+                        "type": "Neighbours",
+                        "node": {
+                          "type": "Var",
+                          "name": "goal"
+                        },
+                        "edge_type": "has_subgoal"
+                      },
+                      "var_name": "cg2",
+                      "value": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "cg2"
+                        },
+                        "key": "genus"
+                      }
+                    },
+                    "index": {
+                      "type": "Lit",
+                      "value": 1
+                    }
+                  }
+                },
+                "then": {
+                  "type": "Lit",
+                  "value": "same"
+                },
+                "other": {
+                  "type": "Lit",
+                  "value": "different"
+                }
+              }
+            }
+          }
+        ]
+      ]
+    }
+  ],
+  "reflexes": [
+    {
+      "name": "question_pursue",
+      "stimulus": {
+        "type": "Gte",
+        "a": {
+          "type": "Count",
+          "source": {
+            "type": "Filter",
+            "source": {
+              "type": "NodesOfType",
+              "node_type": "Goal"
+            },
+            "var_name": "g",
+            "predicate": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "g"
+                },
+                "key": "status"
+              },
+              "b": {
+                "type": "Lit",
+                "value": "dispatched"
+              }
+            }
+          }
+        },
+        "b": {
+          "type": "Lit",
+          "value": 1
+        }
+      },
+      "response": "question_pursue",
+      "refractory_ticks": 0
+    }
+  ]
+}

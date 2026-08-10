@@ -1,0 +1,313 @@
+{
+ "id": "blink_bridge",
+ "version": "1.0.0",
+ "depends_on": [
+  "time_axis"
+ ],
+ "description": "THE BLINK -- a temporal hole bridged by grounding, the TEMPORAL TWIN of the blind spot (vision_ground) and the COMPOSITION of the grounded-field fill with TimeInfer's transition generator. Every few seconds the eyelid closes and there is NO visual input for ~100-400 ms, yet no shutter is experienced. A blink is a hole in the TEMPORAL orbit (f0,f1,[BLINK],f4,f5); it is bridged by CONTINUING the transition generator G that carries frame(t)->frame(t+1): the belief during blink tick t is CONFABULATED as a best-guess. Perception FILLS the hole by default (predictive coding: the prediction stands where there is no data -- that IS change blindness; an ungrounded fill IS hallucination, not silence). Grounding only CONSTRAINS the guess: consistent motion pins it to G^t(f0) at high confidence (invisible); an ungrounded prefix still fills, with the freeze default at confidence 0 (UNCONSTRAINED). When data RESUMES the guess is CONFIRMED (invisible) or REVISED where reality diverges (the perceptible 'jump'). The Rust BlinkBridge Term supplies the generator+continuation (reusing TimeInfer's infer/verify and apply_generator_k); the single fill rule always fires, grounding decides only constraint+confidence. Confidence is RELATIVE (confirm_run/(confirm_run+gap), the confirmed-transition support), never a fixed-K constant. In-frame/integer only (continuous motion is cross-frame, deferred -- the frame/continuum invariant). Flag-gated on agent.blink_bridge_enabled==1, OFF by default (PROTOCOL \u00a79); inert without it AND matches only status=='blink_seq'.",
+ "microtheory": {
+  "name": "blink_bridge",
+  "description": "the eye CONFABULATES across a temporal hole; grounding constrains the guess. A blink's belief is a best-guess continuation -- pinned to the pre-blink transition generator (G^t(f0), high confidence, invisible) under consistent motion, or the unconstrained freeze default (low confidence, the seed of hallucination) without one. Motion-continuing (belief at G^k(last), not frozen) when grounded; change-blind (a change during the blink is missed until divergence, then corrected -- the perceptible jump). PERCEPTION is liberal (fill by default); DISCOVERY (time_axis minting) stays conservative. The same grounded-field operation as the blind spot, with the surround in TIME and the grounding the transition generator."
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [
+  {
+   "provenance": "seed:blink_bridge:observed-0",
+   "src": {
+    "type": "Agent",
+    "var": "s"
+   },
+   "edge_type": "observed",
+   "tgt": {
+    "type": "Observation",
+    "var": "t"
+   }
+  }
+ ],
+ "rules": [
+  {
+   "name": "blink_bridge_fill",
+   "comment": "CONFABULATE BY DEFAULT. Flag ON (agent.blink_bridge_enabled==1). On a blink-sequence Observation (status=='blink_seq'), ALWAYS fill the temporal hole with a best-guess continuation -- perception does not go silent when ungrounded, it guesses (predictive coding: the prediction stands where there is no data). Grounding only CONSTRAINS the guess: a consistent motion (BlinkBridge.constrained==1) pins bridged to G^t(f0) at a confidence that FALLS OUT of support (confirm_run/(confirm_run+gap), RELATIVE, no constant); an ungrounded prefix (accelerating / shuffled) still fills, with the freeze default at confidence 0 -- UNCONSTRAINED, the seed of hallucination, NOT held-open and NOT silence. Writes the guess, the persistence baseline (frozen), the resume-divergence tick (diverged_at: -1 == invisible; >=0 == a change bridged over during the blink and revised on data return -> change blindness) and the correction magnitude (the perceptible 'jump'). status flips to 'blink_bridged'.",
+   "match_type": "Observation",
+   "match": [
+    [
+     "ag",
+     "observed",
+     "obs"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "blink_seq"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ag"
+       },
+       "key": "blink_bridge_enabled"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "obs",
+     "bridged",
+     {
+      "__term__": {
+       "type": "BlinkBridge",
+       "sequence": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "frames"
+       },
+       "codebook_type": "ShapeSignature",
+       "max_b": 8,
+       "field": "bridged"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "frozen",
+     {
+      "__term__": {
+       "type": "BlinkBridge",
+       "sequence": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "frames"
+       },
+       "codebook_type": "ShapeSignature",
+       "max_b": 8,
+       "field": "frozen"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "diverged_at",
+     {
+      "__term__": {
+       "type": "BlinkBridge",
+       "sequence": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "frames"
+       },
+       "codebook_type": "ShapeSignature",
+       "max_b": 8,
+       "field": "diverged_at"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "correction",
+     {
+      "__term__": {
+       "type": "BlinkBridge",
+       "sequence": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "frames"
+       },
+       "codebook_type": "ShapeSignature",
+       "max_b": 8,
+       "field": "correction"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "confidence",
+     {
+      "__term__": {
+       "type": "BlinkBridge",
+       "sequence": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "frames"
+       },
+       "codebook_type": "ShapeSignature",
+       "max_b": 8,
+       "field": "confidence"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "bridge_kind",
+     {
+      "__term__": {
+       "type": "BlinkBridge",
+       "sequence": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "frames"
+       },
+       "codebook_type": "ShapeSignature",
+       "max_b": 8,
+       "field": "kind"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "bridge_gap",
+     {
+      "__term__": {
+       "type": "BlinkBridge",
+       "sequence": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "frames"
+       },
+       "codebook_type": "ShapeSignature",
+       "max_b": 8,
+       "field": "gap"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "bridge_confirm",
+     {
+      "__term__": {
+       "type": "BlinkBridge",
+       "sequence": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "frames"
+       },
+       "codebook_type": "ShapeSignature",
+       "max_b": 8,
+       "field": "confirm_run"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "bridge_prefix",
+     {
+      "__term__": {
+       "type": "BlinkBridge",
+       "sequence": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "frames"
+       },
+       "codebook_type": "ShapeSignature",
+       "max_b": 8,
+       "field": "prefix_len"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "constrained",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Eq",
+        "a": {
+         "type": "BlinkBridge",
+         "sequence": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "obs"
+          },
+          "key": "frames"
+         },
+         "codebook_type": "ShapeSignature",
+         "max_b": 8,
+         "field": "constrained"
+        },
+        "b": {
+         "type": "Lit",
+         "value": true
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": 1.0
+       },
+       "other": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "status",
+     "blink_bridged"
+    ]
+   ]
+  }
+ ]
+}

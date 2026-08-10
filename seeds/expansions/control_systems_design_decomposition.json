@@ -1,0 +1,118 @@
+{
+  "id": "control_systems_design_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "PID_controller",
+  "in_microtheory": "engineering",
+  "description": "Control systems design decomposed. PID tuning methods, root locus design, Bode design, state space (LQR, Kalman), observers, MIMO control, MPC formulation, anti-windup, gain scheduling.",
+  "sub_mechanisms": [
+    {
+      "name": "Ziegler_Nichols_tuning",
+      "definition": "Increase Kp until oscillation; record critical Kc + period Pc. Compute Kp, Ki, Kd from formulas.",
+      "why": "Classic empirical tuning. Aggressive response, often overshoot. Starting point; manual refinement common.",
+      "category": "control_design_mechanism"
+    },
+    {
+      "name": "Cohen_Coon_tuning",
+      "definition": "Open-loop step response: K, τ, θ. Compute PID gains.",
+      "why": "Better than Z-N for processes with significant dead time. Process industry default.",
+      "category": "control_design_mechanism"
+    },
+    {
+      "name": "lambda_tuning",
+      "definition": "λ = desired closed-loop time constant. Compute Kp from process model.",
+      "why": "Industrial tuning: target response speed. Conservative + robust. Standard in chemical processes.",
+      "category": "control_design_mechanism"
+    },
+    {
+      "name": "integrator_windup",
+      "definition": "Saturation: actuator at limit, integrator keeps accumulating. Recovery is sluggish.",
+      "why": "Common bug. Mitigations: anti-windup (clamp integrator at limit, back-calculation). Standard PID implementation feature.",
+      "category": "control_design_mechanism"
+    },
+    {
+      "name": "gain_scheduling",
+      "definition": "Different PID gains for different operating regions. Smooth interpolation.",
+      "why": "Process gains change with operating point. Aircraft: different gains at different speeds. Better than single tuning for wide-range systems.",
+      "category": "control_design_mechanism"
+    },
+    {
+      "name": "phase_margin_gain_margin",
+      "definition": "PM: phase between -180° at gain crossover. GM: gain below 1 at phase crossover.",
+      "why": "Stability margins. PM > 45°, GM > 6 dB standard. Read from Bode. Foundation of frequency-domain stability.",
+      "category": "control_design_mechanism"
+    },
+    {
+      "name": "loop_shaping_Bode",
+      "definition": "Design controller to shape open-loop frequency response: high gain low-freq, attenuation high-freq.",
+      "why": "Classical frequency-domain design. Lead, lag, lead-lag compensators. Standard control technique.",
+      "category": "control_design_mechanism"
+    },
+    {
+      "name": "state_observer_Luenberger",
+      "definition": "Estimate state from measurements. x̂' = Ax̂ + Bu + L(y - Cx̂).",
+      "why": "Most states not measured. Observer reconstructs. Combined with state feedback = full state control. Standard modern control.",
+      "category": "control_design_mechanism"
+    },
+    {
+      "name": "Kalman_filter_optimal_observer",
+      "definition": "Stochastic observer. Optimal state estimation under Gaussian noise.",
+      "why": "Already in embedded; here in control context. LQG = LQR + Kalman = optimal control + estimation. Standard for noisy systems.",
+      "category": "control_design_mechanism"
+    },
+    {
+      "name": "LQR_optimal_control",
+      "definition": "Linear Quadratic Regulator. Minimise ∫(x'Qx + u'Ru)dt. Solve Riccati equation for gain.",
+      "why": "Tradeoff Q (state penalty) vs R (control penalty). Modern multi-variable control. Standard for MIMO.",
+      "category": "control_design_mechanism"
+    },
+    {
+      "name": "MPC_formulation",
+      "definition": "At each time step: solve constrained optimisation over horizon; apply first control. Repeat.",
+      "why": "Handles constraints + multi-variable + nonlinearity. Drones, chemical processes. Computational cost = horizon × MIMO size.",
+      "category": "control_design_mechanism"
+    },
+    {
+      "name": "controllability_observability_tests",
+      "definition": "Controllability matrix rank n: can drive state anywhere. Observability matrix rank n: can reconstruct state from output.",
+      "why": "Foundational state space property. Uncontrollable modes can't be controlled. Unobservable modes can't be estimated. Standard test.",
+      "category": "control_design_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "phase_margin_predicts_overshoot",
+      "if": ["PM is small (< 30°)"],
+      "then": ["closed-loop overshoot is high"],
+      "why": "Rules of thumb: PM=45° → ~25% overshoot, PM=60° → ~10%. Phase margin is robustness against phase errors. Standard design target.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "anti_windup_essential_for_saturating_actuators",
+      "if": ["actuator saturates during PID operation"],
+      "then": ["anti-windup prevents integrator runaway"],
+      "why": "Without: integrator keeps accumulating; recovery sluggish. With: clamp or back-calculate. Modern PID always includes. Standard practice.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "LQR_balances_state_control_effort",
+      "if": ["Q ≫ R"],
+      "then": ["aggressive control, fast response, large effort"],
+      "why": "Q penalises state deviation; R penalises control. Ratio determines tradeoff. Bryson's rule: Q_ii = 1/(max acceptable x_i)². Standard scaling.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "MPC_solves_constrained_optimisation_real_time",
+      "if": ["constraints on states + inputs"],
+      "then": ["MPC enforces them at each step"],
+      "why": "Classical PID + saturation: ad hoc. MPC: constraints explicit in optimisation. Cost: solve every sample. Used where constraints critical.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "controllability_test_before_design",
+      "if": ["designing state feedback"],
+      "then": ["check controllability first"],
+      "why": "Uncontrollable system can't be moved anywhere. Wasted effort to design feedback. Standard verification before LQR / pole placement.",
+      "soundness_category": "algebraic_law"
+    }
+  ]
+}

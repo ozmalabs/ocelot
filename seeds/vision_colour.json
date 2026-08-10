@@ -1,0 +1,888 @@
+{
+ "id": "vision_colour",
+ "version": "1.0.0",
+ "depends_on": [],
+ "description": "COLOUR SALIENCE -- colour is the pop-out channel for the EQUILUMINANT target, where luminance salience is ZERO. Two rules generalise the eye's surround-relative difference (vision_lateral's lat_pool/lat_residual centre-surround) to the two cone-opponent axes L-M (red-green) and S-(L+M) (blue-yellow), orthogonal to luminance L+M: cc_contrast computes the CONTINUOUS opponent-space DISTANCE of a cell from its surround (the salience magnitude) and the same difference on the achromatic axis (luminance salience); cc_salience combines them INTERACTIVELY (lsal + csal + lsal*csal, the parameter-free superadditive form -- NOT strict addition; Bauer/Jolicoeur/Cowan) into Region.residual, which the unchanged vision_stream rule then streams a bounded budget over. So a near-equiluminant target (zero luminance contrast) with high cone-opponent contrast becomes salient via COLOUR and is streamed in, where a luminance-only salience MISSES it -- the 'ripe fruit against foliage' case. NOT categorical colour (the identity 'what' sign is the named frontier, out of scope). NO new Rust: reuses Fold/Neighbours/Div/Minus/Sqrt/Abs/Times + run_rules. In-frame colour coordinate is integer; only the contrast MAGNITUDE is continuous (the frame/continuum invariant). Flag-gated on ColourParams.{salience,colour}, both OFF by default (\u00a79). See VISION_COLOUR_PREREG.md.",
+ "microtheory": {
+  "id": "vision_colour_mt",
+  "label": "colour salience: surround-relative cone-opponent contrast, pop-out for the equiluminant target"
+ },
+ "nodes": [
+  {
+   "local_id": 0,
+   "type": "ColourParams",
+   "attrs": {
+    "salience": 0.0,
+    "colour": 0.0
+   }
+  }
+ ],
+ "edges": [],
+ "productions": [],
+ "rules": [
+  {
+   "name": "cc_contrast",
+   "comment": "SURROUND-RELATIVE CONE-OPPONENT CONTRAST -- the eye's centre-surround difference (vision_lateral's lat_pool/lat_residual idiom) generalised to the cone-opponent axes. Per cell: csal = the Euclidean opponent-space DISTANCE of (L-M, S-(L+M)) from its surround mean (a CONTINUOUS contrast MAGNITUDE -- the continuous-in-comparison role of the frame/continuum invariant; the in-frame colour coordinate stays integer), and lsal = the SAME surround-relative difference on the achromatic axis L+M (luminance salience). Reads ONLY raw cone attrs (self + neighbours) -- NO cross-node computed dependency, so firing order is irrelevant. The surround mean is Div(Fold(+neighbour-value), Max(Fold(+1),1)): a TRUE mean that edge-corrects the ring. Flag-gated on ColourParams.salience>0.5, OFF by default (\u00a79). Once per cell (cc_done guard).",
+   "match": [
+    [
+     "scene",
+     "has_region",
+     "R"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "ColourParams"
+        }
+       },
+       "key": "salience"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "R"
+       },
+       "key": "cc_done"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "R",
+     "csal",
+     {
+      "__term__": {
+       "type": "Sqrt",
+       "arg": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Times",
+          "items": [
+           {
+            "type": "Minus",
+            "a": {
+             "type": "Minus",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cL"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cM"
+             }
+            },
+            "b": {
+             "type": "Div",
+             "a": {
+              "type": "Fold",
+              "source": {
+               "type": "Neighbours",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "edge_type": "neighbour",
+               "any_type": false
+              },
+              "var_name": "n",
+              "acc_name": "acc",
+              "init": {
+               "type": "Lit",
+               "value": 0.0
+              },
+              "body": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Var",
+                 "name": "acc"
+                },
+                {
+                 "type": "Minus",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "n"
+                  },
+                  "key": "cL"
+                 },
+                 "b": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "n"
+                  },
+                  "key": "cM"
+                 }
+                }
+               ]
+              }
+             },
+             "b": {
+              "type": "Max",
+              "items": [
+               {
+                "type": "Fold",
+                "source": {
+                 "type": "Neighbours",
+                 "node": {
+                  "type": "Var",
+                  "name": "R"
+                 },
+                 "edge_type": "neighbour",
+                 "any_type": false
+                },
+                "var_name": "n",
+                "acc_name": "acc",
+                "init": {
+                 "type": "Lit",
+                 "value": 0.0
+                },
+                "body": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Var",
+                   "name": "acc"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 1.0
+                  }
+                 ]
+                }
+               },
+               {
+                "type": "Lit",
+                "value": 1.0
+               }
+              ]
+             }
+            }
+           },
+           {
+            "type": "Minus",
+            "a": {
+             "type": "Minus",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cL"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cM"
+             }
+            },
+            "b": {
+             "type": "Div",
+             "a": {
+              "type": "Fold",
+              "source": {
+               "type": "Neighbours",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "edge_type": "neighbour",
+               "any_type": false
+              },
+              "var_name": "n",
+              "acc_name": "acc",
+              "init": {
+               "type": "Lit",
+               "value": 0.0
+              },
+              "body": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Var",
+                 "name": "acc"
+                },
+                {
+                 "type": "Minus",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "n"
+                  },
+                  "key": "cL"
+                 },
+                 "b": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "n"
+                  },
+                  "key": "cM"
+                 }
+                }
+               ]
+              }
+             },
+             "b": {
+              "type": "Max",
+              "items": [
+               {
+                "type": "Fold",
+                "source": {
+                 "type": "Neighbours",
+                 "node": {
+                  "type": "Var",
+                  "name": "R"
+                 },
+                 "edge_type": "neighbour",
+                 "any_type": false
+                },
+                "var_name": "n",
+                "acc_name": "acc",
+                "init": {
+                 "type": "Lit",
+                 "value": 0.0
+                },
+                "body": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Var",
+                   "name": "acc"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 1.0
+                  }
+                 ]
+                }
+               },
+               {
+                "type": "Lit",
+                "value": 1.0
+               }
+              ]
+             }
+            }
+           }
+          ]
+         },
+         {
+          "type": "Times",
+          "items": [
+           {
+            "type": "Minus",
+            "a": {
+             "type": "Minus",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cS"
+             },
+             "b": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "R"
+                },
+                "key": "cL"
+               },
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "R"
+                },
+                "key": "cM"
+               }
+              ]
+             }
+            },
+            "b": {
+             "type": "Div",
+             "a": {
+              "type": "Fold",
+              "source": {
+               "type": "Neighbours",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "edge_type": "neighbour",
+               "any_type": false
+              },
+              "var_name": "n",
+              "acc_name": "acc",
+              "init": {
+               "type": "Lit",
+               "value": 0.0
+              },
+              "body": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Var",
+                 "name": "acc"
+                },
+                {
+                 "type": "Minus",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "n"
+                  },
+                  "key": "cS"
+                 },
+                 "b": {
+                  "type": "Plus",
+                  "items": [
+                   {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "n"
+                    },
+                    "key": "cL"
+                   },
+                   {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "n"
+                    },
+                    "key": "cM"
+                   }
+                  ]
+                 }
+                }
+               ]
+              }
+             },
+             "b": {
+              "type": "Max",
+              "items": [
+               {
+                "type": "Fold",
+                "source": {
+                 "type": "Neighbours",
+                 "node": {
+                  "type": "Var",
+                  "name": "R"
+                 },
+                 "edge_type": "neighbour",
+                 "any_type": false
+                },
+                "var_name": "n",
+                "acc_name": "acc",
+                "init": {
+                 "type": "Lit",
+                 "value": 0.0
+                },
+                "body": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Var",
+                   "name": "acc"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 1.0
+                  }
+                 ]
+                }
+               },
+               {
+                "type": "Lit",
+                "value": 1.0
+               }
+              ]
+             }
+            }
+           },
+           {
+            "type": "Minus",
+            "a": {
+             "type": "Minus",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cS"
+             },
+             "b": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "R"
+                },
+                "key": "cL"
+               },
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "R"
+                },
+                "key": "cM"
+               }
+              ]
+             }
+            },
+            "b": {
+             "type": "Div",
+             "a": {
+              "type": "Fold",
+              "source": {
+               "type": "Neighbours",
+               "node": {
+                "type": "Var",
+                "name": "R"
+               },
+               "edge_type": "neighbour",
+               "any_type": false
+              },
+              "var_name": "n",
+              "acc_name": "acc",
+              "init": {
+               "type": "Lit",
+               "value": 0.0
+              },
+              "body": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Var",
+                 "name": "acc"
+                },
+                {
+                 "type": "Minus",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "n"
+                  },
+                  "key": "cS"
+                 },
+                 "b": {
+                  "type": "Plus",
+                  "items": [
+                   {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "n"
+                    },
+                    "key": "cL"
+                   },
+                   {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "n"
+                    },
+                    "key": "cM"
+                   }
+                  ]
+                 }
+                }
+               ]
+              }
+             },
+             "b": {
+              "type": "Max",
+              "items": [
+               {
+                "type": "Fold",
+                "source": {
+                 "type": "Neighbours",
+                 "node": {
+                  "type": "Var",
+                  "name": "R"
+                 },
+                 "edge_type": "neighbour",
+                 "any_type": false
+                },
+                "var_name": "n",
+                "acc_name": "acc",
+                "init": {
+                 "type": "Lit",
+                 "value": 0.0
+                },
+                "body": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Var",
+                   "name": "acc"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 1.0
+                  }
+                 ]
+                }
+               },
+               {
+                "type": "Lit",
+                "value": 1.0
+               }
+              ]
+             }
+            }
+           }
+          ]
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "R",
+     "lsal",
+     {
+      "__term__": {
+       "type": "Abs",
+       "arg": {
+        "type": "Minus",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "R"
+           },
+           "key": "cL"
+          },
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "R"
+           },
+           "key": "cM"
+          }
+         ]
+        },
+        "b": {
+         "type": "Div",
+         "a": {
+          "type": "Fold",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "R"
+           },
+           "edge_type": "neighbour",
+           "any_type": false
+          },
+          "var_name": "n",
+          "acc_name": "acc",
+          "init": {
+           "type": "Lit",
+           "value": 0.0
+          },
+          "body": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Var",
+             "name": "acc"
+            },
+            {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "n"
+               },
+               "key": "cL"
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "n"
+               },
+               "key": "cM"
+              }
+             ]
+            }
+           ]
+          }
+         },
+         "b": {
+          "type": "Max",
+          "items": [
+           {
+            "type": "Fold",
+            "source": {
+             "type": "Neighbours",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "edge_type": "neighbour",
+             "any_type": false
+            },
+            "var_name": "n",
+            "acc_name": "acc",
+            "init": {
+             "type": "Lit",
+             "value": 0.0
+            },
+            "body": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Var",
+               "name": "acc"
+              },
+              {
+               "type": "Lit",
+               "value": 1.0
+              }
+             ]
+            }
+           },
+           {
+            "type": "Lit",
+            "value": 1.0
+           }
+          ]
+         }
+        }
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "R",
+     "cc_done",
+     {
+      "__term__": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "cc_salience",
+   "comment": "COMBINE colour salience with luminance salience INTERACTIVELY into Region.residual, which the unchanged vision_stream rule spends a bounded budget over. residual = lsal + (colour armed ? csal + lsal*csal : 0). The interaction term lsal*csal makes a BOTH-channel target's salience NOT a trivial sum (Bauer/Jolicoeur/Cowan reject naive additive-colour); the combine is the parameter-free (1+lsal)(1+csal)-1 -- no magic weight. With colour OFF the residual is lsal alone: colour is ADDITIVE capability, it does not break the luminance path. Flag-gated on ColourParams.salience>0.5 and gated on cc_done (waits for cc_contrast, data dependency). OFF by default (\u00a79). Once per cell (sal_done guard).",
+   "match": [
+    [
+     "scene",
+     "has_region",
+     "R"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "ColourParams"
+        }
+       },
+       "key": "salience"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "R"
+       },
+       "key": "cc_done"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "R"
+       },
+       "key": "sal_done"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "R",
+     "residual",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "R"
+         },
+         "key": "lsal"
+        },
+        {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Gt",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "PickUnique",
+            "source": {
+             "type": "NodesOfType",
+             "node_type": "ColourParams"
+            }
+           },
+           "key": "colour"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0.5
+          }
+         },
+         "then": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "R"
+            },
+            "key": "csal"
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "lsal"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "csal"
+             }
+            ]
+           }
+          ]
+         },
+         "other": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "R",
+     "sal_done",
+     {
+      "__term__": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ]
+   ]
+  }
+ ]
+}

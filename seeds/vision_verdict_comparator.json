@@ -1,0 +1,311 @@
+{
+ "id": "vision_verdict_comparator",
+ "version": "1.0.0",
+ "depends_on": ["shape_decode_loop"],
+ "description": "VERDICT COMPARATOR (VISION_VERDICT_PREREG.md, seeds 70000-70999). VISION_INVARIANT_COMPARATOR_RESULTS.md measured the orbit-radius knee at rho=2 and named this rung in its section 10: hold the PROPOSAL layer fixed and vary ONLY the VERDICT. This seed holds the incumbent's two-layer structure exactly -- score every candidate, Argmax, then MaxOver the translation orbit and read the winning member's answer -- and swaps ONE thing: the score. Four arms, each isolating exactly one change from the one above it. V0 hamming is ShapeDecode.covered_count over relation tuples, i.e. the published Q2 arm byte-for-byte. V1 ssdq is squared distance on the SAME quantized values (categorical -> graded). V2 ssdg is squared distance on the RAW grey tile (bins -> continuous). V3 ncc is normalized cross-correlation on the raw grey tile (adds invariance to an affine luminance map -- the identity-PRESERVING nuisance of natural video, argued on this domain in the adapter's docstring rather than imported from where it worked). The continuous verdict is architecturally licensed: a comparator is a MAP BETWEEN FRAMES, and CLAUDE.md's frame/continuum invariant puts all real-valued structure there -- in-frame coordinates stay integer, and they do here (region-local r,c and the k=4 levels are unchanged). TWO DELIBERATE DELETIONS from vision_invariant_comparator 1.0.0. (1) THE TIE COUNT IS GONE. That rung pre-registered icg_ntied as its load-bearing diagnostic and its own section 5 retracted it: it counts tied ORBIT MEMBERS not tied REGIONS, is 1 by construction at rho=0, and is computed by the very Argmax it diagnoses. A diagnostic must not be computed by the component it checks, so this seed computes no tie statistic at all -- the rung's tie statistic is the region-level count computed outside the graph under V0's scores and held FIXED across arms. (2) ABSTENTION IS ADDED, and its threshold is MEASURED not chosen (protocol section 13): a group refuses unless its score strictly exceeds the best score THIS SAME ARM achieves on the calibration noise probes presented in the SAME substrate. No constant is written anywhere in this file. The refusal is positive-controlled by a SECOND, independent noise draw (G2t) that did not define the floor, so the control is not the tautology 'the max of a set does not exceed itself'. SHIPS OFF (VerdictParams.verdict is the empty string, matching no arm) and is NOT in the default boot set -- the runner loads this manifest explicitly, so every committed result reproduces byte-identically (protocol section 9).",
+ "nodes": [
+  {"local_id": 0, "type": "VerdictParams", "attrs": {"verdict": "", "cell_index": []}}
+ ],
+ "edges": [],
+ "productions": [
+  {"provenance": "seed:vision_verdict_comparator:has_group-0",
+   "src": {"type": "Agent", "var": "s"},
+   "edge_type": "has_group",
+   "tgt": {"type": "ObsGroup", "var": "t"}},
+  {"provenance": "seed:vision_verdict_comparator:has_member-1",
+   "src": {"type": "ObsGroup", "var": "s"},
+   "edge_type": "has_member",
+   "tgt": {"type": "Observation", "var": "t"}}
+ ],
+ "rules": [
+  {
+   "name": "vd_score_hamming",
+   "comment": "V0, THE INCUMBENT'S SCORE, UNCHANGED. ShapeDecode's covered_count over the relation system ['cell', r, c, 'v<q>'] -- categorical match on a quantized value, so v0-vs-v1 scores exactly as badly as v0-vs-v3. MaxOver with the codebook scoped to one candidate makes the value that candidate's own covered_count. Guarded on VerdictParams.verdict so exactly one arm is live per substrate and the seed is inert until a measurement arms it (protocol section 9).",
+   "match_type": "Observation",
+   "match": [["ag", "observed", "obs"]],
+   "where": {"type": "And", "items": [
+    {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "status"}, "b": {"type": "Lit", "value": "vd_obs_pending"}},
+    {"type": "Eq", "a": {"type": "Attr", "node": {"type": "PickUnique", "source": {"type": "NodesOfType", "node_type": "VerdictParams"}}, "key": "verdict"}, "b": {"type": "Lit", "value": "hamming"}}
+   ]},
+   "effects": [
+    ["set_attr", "obs", "ic_max", {"__term__": {
+      "type": "MaxOver",
+      "source": {"type": "NodesOfType", "node_type": "VdSignature"},
+      "var_name": "sig",
+      "value": {"type": "ShapeDecode",
+                "goal": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "signature"},
+                "codebook_type": "VdSignature",
+                "codebook_scope": {"type": "SetT", "items": [{"type": "Attr", "node": {"type": "Var", "name": "sig"}, "key": "name"}]},
+                "field": "covered_count", "beam": 1, "max_steps": 1, "cand_k": 1},
+      "default": {"type": "Lit", "value": -1}}}],
+    ["set_attr", "obs", "status", "vd_obs_scored"]
+   ]
+  },
+  {
+   "name": "vd_identify_hamming",
+   "comment": "V0's decision: Argmax over the held codebook by the same covered_count, and the winning candidate's name is written to identified_as. The adapter only reads that attr back. No tie count is written -- see the seed description.",
+   "match_type": "Observation",
+   "match": [["ag", "observed", "obs"]],
+   "where": {"type": "And", "items": [
+    {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "status"}, "b": {"type": "Lit", "value": "vd_obs_scored"}},
+    {"type": "Eq", "a": {"type": "Attr", "node": {"type": "PickUnique", "source": {"type": "NodesOfType", "node_type": "VerdictParams"}}, "key": "verdict"}, "b": {"type": "Lit", "value": "hamming"}}
+   ]},
+   "effects": [
+    ["set_attr", "obs", "identified_as", {"__term__": {
+      "type": "Attr", "key": "name",
+      "node": {"type": "Argmax",
+               "source": {"type": "NodesOfType", "node_type": "VdSignature"},
+               "var_name": "sig",
+               "value": {"type": "ShapeDecode",
+                         "goal": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "signature"},
+                         "codebook_type": "VdSignature",
+                         "codebook_scope": {"type": "SetT", "items": [{"type": "Attr", "node": {"type": "Var", "name": "sig"}, "key": "name"}]},
+                         "field": "covered_count", "beam": 1, "max_steps": 1, "cand_k": 1},
+               "default": null}}}],
+    ["set_attr", "obs", "status", "vd_obs_done"]
+   ]
+  },
+
+  {
+   "name": "vd_score_ssdq",
+   "comment": "V1: NEGATED SQUARED DISTANCE ON THE QUANTIZED VALUES. The ONLY change from V0 is the metric -- same k=4 bins, same raster order, but a one-level slip now costs 1 where a three-level slip costs 9, instead of both costing a full miss. This is the ordinal structure of luminance that the categorical 'v<q>' token discards. Expanded by the exact identity -||p-c||^2 = 2<p,c> - ||p||^2 - ||c||^2 so the score is ONE Dot per candidate; the norms are held as attributes by the adapter. The identity is exact, not an approximation, and the runner checks the graph's value against an independently computed reference on every trial.",
+   "match_type": "Observation",
+   "match": [["ag", "observed", "obs"]],
+   "where": {"type": "And", "items": [
+    {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "status"}, "b": {"type": "Lit", "value": "vd_obs_pending"}},
+    {"type": "Eq", "a": {"type": "Attr", "node": {"type": "PickUnique", "source": {"type": "NodesOfType", "node_type": "VerdictParams"}}, "key": "verdict"}, "b": {"type": "Lit", "value": "ssdq"}}
+   ]},
+   "effects": [
+    ["set_attr", "obs", "ic_max", {"__term__": {
+      "type": "MaxOver",
+      "source": {"type": "NodesOfType", "node_type": "VdSignature"},
+      "var_name": "sig",
+      "value": {"type": "Minus",
+                "a": {"type": "Times", "items": [
+                       {"type": "Lit", "value": 2.0},
+                       {"type": "Dot",
+                        "a": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "qvals"},
+                        "b": {"type": "Attr", "node": {"type": "Var", "name": "sig"}, "key": "qvals"}}]},
+                "b": {"type": "Plus", "items": [
+                       {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "qsq"},
+                       {"type": "Attr", "node": {"type": "Var", "name": "sig"}, "key": "qsq"}]}},
+      "default": {"type": "Lit", "value": -1.0e18}}}],
+    ["set_attr", "obs", "status", "vd_obs_scored"]
+   ]
+  },
+  {
+   "name": "vd_identify_ssdq",
+   "comment": "V1's decision: Argmax over the held codebook by the same negated squared distance.",
+   "match_type": "Observation",
+   "match": [["ag", "observed", "obs"]],
+   "where": {"type": "And", "items": [
+    {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "status"}, "b": {"type": "Lit", "value": "vd_obs_scored"}},
+    {"type": "Eq", "a": {"type": "Attr", "node": {"type": "PickUnique", "source": {"type": "NodesOfType", "node_type": "VerdictParams"}}, "key": "verdict"}, "b": {"type": "Lit", "value": "ssdq"}}
+   ]},
+   "effects": [
+    ["set_attr", "obs", "identified_as", {"__term__": {
+      "type": "Attr", "key": "name",
+      "node": {"type": "Argmax",
+               "source": {"type": "NodesOfType", "node_type": "VdSignature"},
+               "var_name": "sig",
+               "value": {"type": "Minus",
+                         "a": {"type": "Times", "items": [
+                                {"type": "Lit", "value": 2.0},
+                                {"type": "Dot",
+                                 "a": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "qvals"},
+                                 "b": {"type": "Attr", "node": {"type": "Var", "name": "sig"}, "key": "qvals"}}]},
+                         "b": {"type": "Plus", "items": [
+                                {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "qsq"},
+                                {"type": "Attr", "node": {"type": "Var", "name": "sig"}, "key": "qsq"}]}},
+               "default": null}}}],
+    ["set_attr", "obs", "status", "vd_obs_done"]
+   ]
+  },
+
+  {
+   "name": "vd_score_ssdg",
+   "comment": "V2: NEGATED SQUARED DISTANCE ON THE RAW GREY TILE. The ONLY change from V1 is the quantization -- k=4 bins become the continuous luminance the decoder actually produced. This is where 'bins propose, continuous decides' becomes literal: the orbit is still proposed over quantized geometry, and the verdict is taken on the unquantized signal. Same one-Dot expansion as V1.",
+   "match_type": "Observation",
+   "match": [["ag", "observed", "obs"]],
+   "where": {"type": "And", "items": [
+    {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "status"}, "b": {"type": "Lit", "value": "vd_obs_pending"}},
+    {"type": "Eq", "a": {"type": "Attr", "node": {"type": "PickUnique", "source": {"type": "NodesOfType", "node_type": "VerdictParams"}}, "key": "verdict"}, "b": {"type": "Lit", "value": "ssdg"}}
+   ]},
+   "effects": [
+    ["set_attr", "obs", "ic_max", {"__term__": {
+      "type": "MaxOver",
+      "source": {"type": "NodesOfType", "node_type": "VdSignature"},
+      "var_name": "sig",
+      "value": {"type": "Minus",
+                "a": {"type": "Times", "items": [
+                       {"type": "Lit", "value": 2.0},
+                       {"type": "Dot",
+                        "a": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "gvals"},
+                        "b": {"type": "Attr", "node": {"type": "Var", "name": "sig"}, "key": "gvals"}}]},
+                "b": {"type": "Plus", "items": [
+                       {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "gsq"},
+                       {"type": "Attr", "node": {"type": "Var", "name": "sig"}, "key": "gsq"}]}},
+      "default": {"type": "Lit", "value": -1.0e18}}}],
+    ["set_attr", "obs", "status", "vd_obs_scored"]
+   ]
+  },
+  {
+   "name": "vd_identify_ssdg",
+   "comment": "V2's decision: Argmax over the held codebook by the same negated squared distance on raw grey.",
+   "match_type": "Observation",
+   "match": [["ag", "observed", "obs"]],
+   "where": {"type": "And", "items": [
+    {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "status"}, "b": {"type": "Lit", "value": "vd_obs_scored"}},
+    {"type": "Eq", "a": {"type": "Attr", "node": {"type": "PickUnique", "source": {"type": "NodesOfType", "node_type": "VerdictParams"}}, "key": "verdict"}, "b": {"type": "Lit", "value": "ssdg"}}
+   ]},
+   "effects": [
+    ["set_attr", "obs", "identified_as", {"__term__": {
+      "type": "Attr", "key": "name",
+      "node": {"type": "Argmax",
+               "source": {"type": "NodesOfType", "node_type": "VdSignature"},
+               "var_name": "sig",
+               "value": {"type": "Minus",
+                         "a": {"type": "Times", "items": [
+                                {"type": "Lit", "value": 2.0},
+                                {"type": "Dot",
+                                 "a": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "gvals"},
+                                 "b": {"type": "Attr", "node": {"type": "Var", "name": "sig"}, "key": "gvals"}}]},
+                         "b": {"type": "Plus", "items": [
+                                {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "gsq"},
+                                {"type": "Attr", "node": {"type": "Var", "name": "sig"}, "key": "gsq"}]}},
+               "default": null}}}],
+    ["set_attr", "obs", "status", "vd_obs_done"]
+   ]
+  },
+
+  {
+   "name": "vd_score_ncc",
+   "comment": "V3: NORMALIZED CROSS-CORRELATION ON THE RAW GREY TILE. The ONLY change from V2 is the photometric invariance: ncc(p,c) is unchanged by any affine map a*p+b with a>0 applied to either tile, so exposure drift, auto-gain, shading and lamp flicker -- the identity-PRESERVING nuisances of natural video -- are quotiented out. The argument for THIS group on THIS domain is in the adapter's docstring; it is not imported from a domain where it worked, which is the ink rung's lesson (VISION_INK_VENTRAL_RESULTS.md: D4 imported from a synthetic crossing HARMED -11.3pp because reflection is identity-CHANGING for a glyph). ncc(p,c) == <p_hat, c_hat> exactly where p_hat is the mean-centred unit-normalised tile, so the score is ONE Dot; the adapter holds p_hat as an attribute because computing the mean inside the rule is O(n^2) in the tile and was measured infeasible at this trial count. A ZERO-VARIANCE tile has no correlation defined: the adapter emits the zero vector and flags nflat, so the score is 0.0 -- no evidence -- rather than a guarded division silently returning something. The flat rate is reported per corpus, and it is a declared weakness of this arm on cel-shaded cartoon.",
+   "match_type": "Observation",
+   "match": [["ag", "observed", "obs"]],
+   "where": {"type": "And", "items": [
+    {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "status"}, "b": {"type": "Lit", "value": "vd_obs_pending"}},
+    {"type": "Eq", "a": {"type": "Attr", "node": {"type": "PickUnique", "source": {"type": "NodesOfType", "node_type": "VerdictParams"}}, "key": "verdict"}, "b": {"type": "Lit", "value": "ncc"}}
+   ]},
+   "effects": [
+    ["set_attr", "obs", "ic_max", {"__term__": {
+      "type": "MaxOver",
+      "source": {"type": "NodesOfType", "node_type": "VdSignature"},
+      "var_name": "sig",
+      "value": {"type": "Dot",
+                "a": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "nvals"},
+                "b": {"type": "Attr", "node": {"type": "Var", "name": "sig"}, "key": "nvals"}},
+      "default": {"type": "Lit", "value": -1.0e18}}}],
+    ["set_attr", "obs", "status", "vd_obs_scored"]
+   ]
+  },
+  {
+   "name": "vd_identify_ncc",
+   "comment": "V3's decision: Argmax over the held codebook by normalized cross-correlation.",
+   "match_type": "Observation",
+   "match": [["ag", "observed", "obs"]],
+   "where": {"type": "And", "items": [
+    {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "status"}, "b": {"type": "Lit", "value": "vd_obs_scored"}},
+    {"type": "Eq", "a": {"type": "Attr", "node": {"type": "PickUnique", "source": {"type": "NodesOfType", "node_type": "VerdictParams"}}, "key": "verdict"}, "b": {"type": "Lit", "value": "ncc"}}
+   ]},
+   "effects": [
+    ["set_attr", "obs", "identified_as", {"__term__": {
+      "type": "Attr", "key": "name",
+      "node": {"type": "Argmax",
+               "source": {"type": "NodesOfType", "node_type": "VdSignature"},
+               "var_name": "sig",
+               "value": {"type": "Dot",
+                         "a": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "nvals"},
+                         "b": {"type": "Attr", "node": {"type": "Var", "name": "sig"}, "key": "nvals"}},
+               "default": null}}}],
+    ["set_attr", "obs", "status", "vd_obs_done"]
+   ]
+  },
+
+  {
+   "name": "vd_group_score",
+   "comment": "THE TRANSLATION QUOTIENT, first half -- HELD FIXED from vision_invariant_comparator's icg_score, because the proposal layer is what this rung does NOT vary. An ObsGroup holds the orbit of one probe (the same aperture at every shift in the Chebyshev ball of radius rho=2, the measured knee). Its invariant score is the MAXIMUM over the orbit of the member scores, taken by the graph. Fires only once every member has reached vd_obs_done (the Count-equals-Count guard), so the fixpoint orders the layers with no adapter sequencing.",
+   "match_type": "ObsGroup",
+   "match": [["ag", "has_group", "grp"]],
+   "where": {"type": "And", "items": [
+    {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "grp"}, "key": "status"}, "b": {"type": "Lit", "value": "vd_pending"}},
+    {"type": "Eq",
+     "a": {"type": "Count", "source": {"type": "Filter",
+           "source": {"type": "Neighbours", "node": {"type": "Var", "name": "grp"}, "edge_type": "has_member", "any_type": false},
+           "var_name": "m",
+           "predicate": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "status"}, "b": {"type": "Lit", "value": "vd_obs_done"}}}},
+     "b": {"type": "Count", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "grp"}, "edge_type": "has_member", "any_type": false}}}
+   ]},
+   "effects": [
+    ["set_attr", "grp", "ic_max", {"__term__": {
+      "type": "MaxOver",
+      "source": {"type": "Neighbours", "node": {"type": "Var", "name": "grp"}, "edge_type": "has_member", "any_type": false},
+      "var_name": "m",
+      "value": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "ic_max"},
+      "default": {"type": "Lit", "value": -1.0e18}}}],
+    ["set_attr", "grp", "status", "vd_scored"]
+   ]
+  },
+  {
+   "name": "vd_group_identify",
+   "comment": "THE TRANSLATION QUOTIENT, second half -- HELD FIXED from icg_identify minus its retracted tie Count. Argmax over the orbit by member score selects the translation that best explains the observation, and the group's answer is THAT member's identified_as: max over (region, shift), argmax'd to a region.",
+   "match_type": "ObsGroup",
+   "match": [["ag", "has_group", "grp"]],
+   "where": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "grp"}, "key": "status"}, "b": {"type": "Lit", "value": "vd_scored"}},
+   "effects": [
+    ["set_attr", "grp", "identified_as", {"__term__": {
+      "type": "Attr", "key": "identified_as",
+      "node": {"type": "Argmax",
+               "source": {"type": "Neighbours", "node": {"type": "Var", "name": "grp"}, "edge_type": "has_member", "any_type": false},
+               "var_name": "m",
+               "value": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "ic_max"},
+               "default": null}}}],
+    ["set_attr", "grp", "status", "vd_done"]
+   ]
+  },
+
+  {
+   "name": "vd_refuse",
+   "comment": "ABSTENTION -- THE DECISION TO DECLINE, and it is the graph's. A group answers only if its score STRICTLY EXCEEDS the best score this same arm achieves on the CALIBRATION noise probes (probe_kind G2c) presented in the same substrate; otherwise it answers 'refused'. NO CONSTANT IS WRITTEN: the floor is the system's own measured noise floor, per arm and per base frame, which is exactly protocol section 13's test -- a number determined by the system's own constraints rather than chosen to make an output look right. The floor is computed inline as a MaxOver over the agent's own G2c groups (reading attributes only, so it is cheap), and the guard requires every group to have finished scoring, so the fixpoint orders this after the two layers above without any adapter sequencing. THE CONTROL IS NOT A TAUTOLOGY: the G2c draws DEFINE the floor, so of course they do not exceed it -- the refusal rate that is actually measured is on G2t, an INDEPENDENT noise draw from the same distribution that did not define the floor, against G1 (the identical frame) which must be answered. A refusal rule that refuses everything or nothing is a dead instrument, and those two arms are what make that visible.",
+   "match_type": "ObsGroup",
+   "match": [["ag", "has_group", "grp"]],
+   "where": {"type": "And", "items": [
+    {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "grp"}, "key": "status"}, "b": {"type": "Lit", "value": "vd_done"}},
+    {"type": "Eq",
+     "a": {"type": "Count", "source": {"type": "Filter",
+           "source": {"type": "Neighbours", "node": {"type": "Var", "name": "ag"}, "edge_type": "has_group", "any_type": false},
+           "var_name": "g",
+           "predicate": {"type": "Or", "items": [
+             {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "status"}, "b": {"type": "Lit", "value": "vd_pending"}},
+             {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "status"}, "b": {"type": "Lit", "value": "vd_scored"}}]}}},
+     "b": {"type": "Lit", "value": 0}}
+   ]},
+   "effects": [
+    ["set_attr", "grp", "vd_floor", {"__term__": {
+      "type": "MaxOver",
+      "source": {"type": "Filter",
+                 "source": {"type": "Neighbours", "node": {"type": "Var", "name": "ag"}, "edge_type": "has_group", "any_type": false},
+                 "var_name": "g",
+                 "predicate": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "probe_kind"}, "b": {"type": "Lit", "value": "G2c"}}},
+      "var_name": "g",
+      "value": {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "ic_max"},
+      "default": {"type": "Lit", "value": -1.0e18}}}],
+    ["set_attr", "grp", "vd_answer", {"__term__": {
+      "type": "IfThenElse",
+      "cond": {"type": "Gt",
+               "a": {"type": "Attr", "node": {"type": "Var", "name": "grp"}, "key": "ic_max"},
+               "b": {"type": "MaxOver",
+                     "source": {"type": "Filter",
+                                "source": {"type": "Neighbours", "node": {"type": "Var", "name": "ag"}, "edge_type": "has_group", "any_type": false},
+                                "var_name": "g",
+                                "predicate": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "probe_kind"}, "b": {"type": "Lit", "value": "G2c"}}},
+                     "var_name": "g",
+                     "value": {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "ic_max"},
+                     "default": {"type": "Lit", "value": -1.0e18}}},
+      "then": {"type": "Attr", "node": {"type": "Var", "name": "grp"}, "key": "identified_as"},
+      "other": {"type": "Lit", "value": "refused"}}}],
+    ["set_attr", "grp", "status", "vd_final"]
+   ]
+  }
+ ]
+}

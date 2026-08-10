@@ -1,0 +1,752 @@
+{
+ "id": "causal_attitude_networks",
+ "version": "0.1.0",
+ "depends_on": [
+  "compiler_theory",
+  "philosophy",
+  "mathematics",
+  "grounding_theory"
+ ],
+ "description": "Causal Attitude Networks (CAN) as the mechanism that generates the substrate's grounding vectors. Borsboom, Dalege, van Harreveld et al. reframed attitudes: NOT latent variables expressed in correlated indicators, but NETWORKS of causally interacting evaluations + beliefs + behavioural intentions. Each Concept is a node with state σ ∈ {-1, 0, +1} (or continuous); causally coupled to other concepts via causal_influence edges with weight J_ij; driven by external field h_i (current evidence + object salience); at effective inverse temperature β (= attention level on that frame). Network Hamiltonian H = -ΣJ_ij σ_i σ_j - Σh_i σ_i. Equilibrium distribution P(σ) ∝ exp(-βH) (Boltzmann). The 'grounding vector' from grounding_theory is the marginal expectation ⟨σ⟩ at equilibrium — DERIVED, not primitive. Stability = local energy minimum. Attitude strength = network connectivity. Ambivalence = spin-glass frustration. Polarisation = phase transition at low T. Multiple inconsistent views = multistable network with distinct basins. The substrate's existing features map cleanly: babble = MCMC sampling, predicate churn = bistability with thermal flips, conviction = J × β, coherence = -H/N, curiosity = expected info gain about σ.",
+ "category_inheritance": "genlMt → compiler_theory + philosophy + mathematics + grounding_theory. CAN gives a generative mechanism for grounding_theory's vector. Mathematics provides Ising machinery (statistical mechanics on graphs, MCMC, free energy). Philosophy provides Axiom 0 (frame-relativity → network state lives in a frame; multiple frames = multiple Hamiltonians coexisting).",
+ "concepts": [
+  {
+   "name": "CAN_Borsboom_Dalege",
+   "definition": "Causal Attitude Network model. Borsboom (psychometrics), Dalege + van Harreveld (social psychology). 2016 'Toward a formalized account of attitudes' (Psych Review).",
+   "why": "Foundation. Reframed attitudes after decades of latent-variable orthodoxy. Borsboom + Cramer earlier did same for psychopathology (symptom networks).",
+   "category": "foundation"
+  },
+  {
+   "name": "attitudes_not_latent_variables",
+   "definition": "Classical view: latent construct (the attitude) causes its observable indicators (correlated responses). CAN view: NO latent construct — the network IS the attitude.",
+   "why": "Foundation distinction. Latent-variable thinking treats observed pattern as effect; CAN treats it as constitutive. Different ontology, different statistics.",
+   "category": "foundation"
+  },
+  {
+   "name": "evaluations_beliefs_behaviours_as_nodes",
+   "definition": "Each node = one specific evaluation ('this is good'), belief ('this causes X'), or behavioural intention ('I would do Y'). Many per attitude object.",
+   "why": "Granularity. Attitude toward 'climate change' = many nodes: 'CO2 traps heat', 'humans cause warming', 'will harm grandchildren', 'should reduce emissions'. Each its own node.",
+   "category": "foundation"
+  },
+  {
+   "name": "node_state_sigma",
+   "definition": "σ_i = state of node i. Binary (±1, agree/disagree), trinary (-1, 0, +1), or continuous.",
+   "term": {
+    "type": "Eq",
+    "a": {
+     "type": "Holds",
+     "concept": "node_state_sigma",
+     "node": {
+      "type": "Var",
+      "name": "x"
+     },
+     "node2": null
+    },
+    "b": {
+     "type": "Times",
+     "items": [
+      {
+       "type": "Lit",
+       "value": "state"
+      },
+      {
+       "type": "Lit",
+       "value": "of"
+      },
+      {
+       "type": "Lit",
+       "value": "node"
+      },
+      {
+       "type": "Lit",
+       "value": "i"
+      }
+     ]
+    }
+   },
+   "why": "Foundation Ising variable. Marginal expectation ⟨σ_i⟩ ∈ [-1, +1] is the dimension's contribution to grounding vector. Substrate: each Concept gains state attr.",
+   "category": "Ising_basis"
+  },
+  {
+   "name": "coupling_J_ij",
+   "definition": "J_ij = causal influence strength between nodes i and j. Positive: mutual reinforcement. Negative: mutual inhibition. Asymmetric possible (directed).",
+   "term": {
+    "type": "Eq",
+    "a": {
+     "type": "Holds",
+     "concept": "coupling_J_ij",
+     "node": {
+      "type": "Var",
+      "name": "x"
+     },
+     "node2": null
+    },
+    "b": {
+     "type": "Times",
+     "items": [
+      {
+       "type": "Lit",
+       "value": "causal"
+      },
+      {
+       "type": "Lit",
+       "value": "influence"
+      },
+      {
+       "type": "Lit",
+       "value": "strength"
+      },
+      {
+       "type": "Lit",
+       "value": "between"
+      },
+      {
+       "type": "Lit",
+       "value": "nodes"
+      },
+      {
+       "type": "Lit",
+       "value": "i"
+      },
+      {
+       "type": "Lit",
+       "value": "and"
+      },
+      {
+       "type": "Lit",
+       "value": "j"
+      }
+     ]
+    }
+   },
+   "why": "Foundation. J encodes 'believing this makes me more (or less) likely to believe that'. Strong attitudes = high |J| densely. Substrate: refers_to edges become causal_influence edges with J.",
+   "category": "Ising_basis"
+  },
+  {
+   "name": "external_field_h_i",
+   "definition": "h_i = external bias on node i. Encodes evidence, object salience, prior. Positive h: world pushes node toward +1.",
+   "term": {
+    "type": "Eq",
+    "a": {
+     "type": "Holds",
+     "concept": "external_field_h_i",
+     "node": {
+      "type": "Var",
+      "name": "x"
+     },
+     "node2": null
+    },
+    "b": {
+     "type": "Times",
+     "items": [
+      {
+       "type": "Lit",
+       "value": "external"
+      },
+      {
+       "type": "Lit",
+       "value": "bias"
+      },
+      {
+       "type": "Lit",
+       "value": "on"
+      },
+      {
+       "type": "Lit",
+       "value": "node"
+      },
+      {
+       "type": "Lit",
+       "value": "i"
+      }
+     ]
+    }
+   },
+   "why": "How world enters. Sensory evidence on perceptual node; testimonial evidence from others; structural pressure from Mt commitments. Substrate: per-Concept external_field attr.",
+   "category": "Ising_basis"
+  },
+  {
+   "name": "inverse_temperature_beta",
+   "definition": "β = 1/T. High β (low T) = states crystallise into definite values. Low β (high T) = states diffuse + uncertain. β scales BOTH J + h.",
+   "term": {
+    "type": "Eq",
+    "a": {
+     "type": "Holds",
+     "concept": "inverse_temperature_beta",
+     "node": {
+      "type": "Var",
+      "name": "x"
+     },
+     "node2": null
+    },
+    "b": {
+     "type": "Div",
+     "a": {
+      "type": "Lit",
+      "value": 1
+     },
+     "b": {
+      "type": "Holds",
+      "concept": "temperature_statistical",
+      "node": {
+       "type": "Var",
+       "name": "x"
+      },
+      "node2": null
+     }
+    }
+   },
+   "why": "Foundation. CAN connects β to attention: attention to attitude object → effective β rises → polarisation. Substrate: per-Mt temperature; attended frames have higher β.",
+   "category": "Ising_basis"
+  },
+  {
+   "name": "Hamiltonian_H",
+   "definition": "H(σ) = -Σ_{i<j} J_ij σ_i σ_j - Σ_i h_i σ_i. Energy of configuration σ.",
+   "why": "Foundation. Lower H = more stable. Equilibrium states minimise H locally. Substrate operations: compute H, find local minima, identify basins.",
+   "category": "Ising_basis"
+  },
+  {
+   "name": "Boltzmann_distribution",
+   "definition": "P(σ) = exp(-βH(σ)) / Z. Z = partition function = Σ_σ exp(-βH).",
+   "why": "Foundation. Equilibrium distribution over network states. High β: distribution sharp on minima. Low β: spread. Substrate samples via MCMC.",
+   "category": "Ising_basis"
+  },
+  {
+   "name": "marginal_expectation_is_grounding",
+   "definition": "⟨σ_i⟩ = Σ_σ σ_i P(σ). The marginal expectation at equilibrium. This IS the i-th component of the grounding vector.",
+   "why": "Bridge to grounding_theory. The 'grounding vector' isn't primitive — it's the network's equilibrium marginal. CAN provides the generative model the vector was missing.",
+   "category": "mapping_to_grounding"
+  },
+  {
+   "name": "Metropolis_Hastings_update",
+   "definition": "Propose σ_i → σ_i'. Accept with probability min(1, exp(-βΔH)). Generates Boltzmann samples.",
+   "why": "Standard MCMC. Substrate uses to sample equilibrium. Each step is local; many steps → equilibrium. Fast for sparse networks.",
+   "category": "dynamics"
+  },
+  {
+   "name": "Glauber_dynamics",
+   "definition": "Sequentially update each node σ_i to ±1 with probabilities ∝ exp(-βE_i(±1)). Stochastic per-node update.",
+   "why": "Alternative to Metropolis. Detailed balance. Models gradual belief revision: one node at a time updates based on its local field (couplings + external).",
+   "category": "dynamics"
+  },
+  {
+   "name": "mean_field_approximation",
+   "definition": "Replace neighbours' states with their averages. Self-consistent equation: ⟨σ_i⟩ = tanh(β(Σ_j J_ij ⟨σ_j⟩ + h_i)).",
+   "why": "Fast deterministic approximation. Substrate uses for quick estimates of marginals without full MCMC. Exact for dense networks; approximate for sparse.",
+   "category": "dynamics"
+  },
+  {
+   "name": "stability_local_minimum",
+   "definition": "State σ* is locally stable if H(σ*) ≤ H(σ) for all σ differing in one node. Bistability + multistability possible.",
+   "why": "Why some beliefs resist revision. Substrate's 'stability' aspect emerges: high stability = deep local minimum. Predicate churn = sitting at saddle between minima.",
+   "category": "attitude_properties"
+  },
+  {
+   "name": "attitude_strength_is_connectivity",
+   "definition": "Strong attitude = high network connectivity (many nodes, high |J|). Resists external perturbation.",
+   "term": {
+    "type": "Eq",
+    "a": {
+     "type": "Lit",
+     "value": "Strong attitude"
+    },
+    "b": {
+     "type": "Lit",
+     "value": "high network connectivity (many nodes, high |J|)"
+    }
+   },
+   "why": "Foundation CAN result. Strong attitudes hard to change because many constituents reinforce each other. Substrate: 'conviction' aspect = network density measure.",
+   "category": "attitude_properties"
+  },
+  {
+   "name": "ambivalence_spin_glass_frustration",
+   "definition": "Network has frustrated couplings: no σ satisfies all J_ij. Multiple low-but-not-lowest minima. High residual energy.",
+   "why": "Mechanism for ambivalence + cognitive dissonance. NOT just 'conflicting opinions' — specific spin-glass structure. Substrate detects via energy gap + multistability.",
+   "category": "attitude_properties"
+  },
+  {
+   "name": "polarisation_phase_transition",
+   "definition": "At critical β_c, network undergoes phase transition: symmetric → broken-symmetry (definite states). Sharper for stronger couplings.",
+   "why": "Foundation. Attention crosses β_c → opinions snap into place. Below: ambivalent. Critical phenomena explain polarisation dynamics.",
+   "category": "attitude_properties"
+  },
+  {
+   "name": "attention_modulates_beta",
+   "definition": "Dalege et al.: attention to attitude object increases effective β. Engaged = polarised; uninterested = diffuse.",
+   "why": "Foundation CAN result. Explains: priming + thinking-about-it leads to extreme views. Substrate: focused-on Mts have high effective β.",
+   "category": "attitude_properties"
+  },
+  {
+   "name": "multiple_basins_multiple_views",
+   "definition": "Network with multiple low-energy basins = multistable. State can sit in any. Each basin = coherent set of beliefs (e.g. folk physics OR scientific physics).",
+   "why": "Mechanism for grounding_theory's 'multiple inconsistent views'. Not orthogonal vector components — distinct attractors in same network. Thermal noise / new evidence flips between.",
+   "category": "attitude_properties"
+  },
+  {
+   "name": "evidence_shifts_field",
+   "definition": "New evidence at node i changes h_i. Field shift drives state update via dynamics. Strong evidence dominates; weak gets damped by network.",
+   "why": "Mechanism of belief revision. h alone doesn't fix σ; the network's J pull back if internally incoherent. Substrate models: how does evidence flow through network?",
+   "category": "dynamics"
+  },
+  {
+   "name": "basin_hopping_belief_revision",
+   "definition": "Sufficient field change or thermal fluctuation can flip network from one basin to another. Sudden conversion, gestalt switch.",
+   "why": "Mechanism for paradigm shift, Kuhnian conversion. Not gradual move — discrete basin transition. Substrate observes: sudden coherence shifts vs gradual drift.",
+   "category": "dynamics"
+  },
+  {
+   "name": "free_energy_F",
+   "definition": "F = -T log Z. At equilibrium, system minimises free energy F = ⟨H⟩ - TS. Balances energy + entropy.",
+   "term": {
+    "type": "Eq",
+    "a": {
+     "type": "Holds",
+     "concept": "force",
+     "node": {
+      "type": "Var",
+      "name": "x"
+     },
+     "node2": null
+    },
+    "b": {
+     "type": "Times",
+     "items": [
+      {
+       "type": "Neg",
+       "arg": {
+        "type": "Holds",
+        "concept": "temperature_statistical",
+        "node": {
+         "type": "Var",
+         "name": "x"
+        },
+        "node2": null
+       }
+      },
+      {
+       "type": "Lit",
+       "value": "log"
+      },
+      {
+       "type": "Holds",
+       "concept": "partition_function",
+       "node": {
+        "type": "Var",
+        "name": "x"
+       },
+       "node2": null
+      }
+     ]
+    }
+   },
+   "why": "Foundation. Free energy = effective potential. Substrate's 'coherence' aspect ≈ -F/N (negative free energy density). Low F = coherent + stable.",
+   "category": "Ising_basis"
+  },
+  {
+   "name": "coupling_learning_Hebbian",
+   "definition": "J_ij learned over time: J_ij ← J_ij + η σ_i σ_j (Hebbian). Co-activated nodes become coupled.",
+   "why": "Mechanism for attitude formation. 'Fire together, wire together' for beliefs. Substrate: how do J_ij get set? Learned from co-occurrence of states.",
+   "category": "learning"
+  },
+  {
+   "name": "field_calibration_from_world",
+   "definition": "h_i set by accumulated evidence: h_i = (positive evidence count) - (negative evidence count), weighted by reliability.",
+   "why": "Mechanism for how world enters. Sensor evidence on perceptual nodes, testimony on others. Substrate's existing 'observation' becomes field update.",
+   "category": "learning"
+  },
+  {
+   "name": "info_gain_drives_curiosity",
+   "definition": "Curiosity = expected reduction in entropy of σ distribution. Probe nodes where high uncertainty (state near 0, ambivalent).",
+   "term": {
+    "type": "Eq",
+    "a": {
+     "type": "Lit",
+     "value": "Curiosity"
+    },
+    "b": {
+     "type": "Times",
+     "items": [
+      {
+       "type": "Lit",
+       "value": "expected"
+      },
+      {
+       "type": "Lit",
+       "value": "reduction"
+      },
+      {
+       "type": "Lit",
+       "value": "in"
+      },
+      {
+       "type": "Lit",
+       "value": "entropy"
+      },
+      {
+       "type": "Lit",
+       "value": "of"
+      },
+      {
+       "type": "Holds",
+       "concept": "node_state_sigma",
+       "node": {
+        "type": "Var",
+        "name": "x"
+       },
+       "node2": null
+      },
+      {
+       "type": "Lit",
+       "value": "distribution"
+      }
+     ]
+    }
+   },
+   "why": "Substrate's curiosity drive formalised. Bayesian: minimise expected posterior entropy. Practical: investigate ambivalent (frustrated) parts of network.",
+   "category": "substrate_features"
+  },
+  {
+   "name": "babble_is_MCMC_sampling",
+   "definition": "Babble loop = thermal stochastic sampling of network state. Each cycle = one (or many) Metropolis updates. Estimates marginals.",
+   "term": {
+    "type": "Eq",
+    "a": {
+     "type": "Lit",
+     "value": "Babble loop"
+    },
+    "b": {
+     "type": "Lit",
+     "value": "thermal stochastic sampling of network state"
+    }
+   },
+   "why": "Substrate's existing babble loop maps directly. Existing phonology divergence work uses same: sample → estimate marginal → impasse-or-not.",
+   "category": "substrate_features"
+  },
+  {
+   "name": "predicate_churn_is_bistability",
+   "definition": "Substrate's 'predicate churn' Impasse = network sitting at saddle between two basins, thermally flipping. Not noise — specific dynamics.",
+   "why": "Mechanism. Currently substrate detects predicate churn as 'still changing'. CAN: it's bistability + thermal noise. Resolution: more evidence + lower T (more attention).",
+   "category": "substrate_features"
+  },
+  {
+   "name": "conviction_is_J_times_beta",
+   "definition": "Effective conviction at node i ≈ Σ_j |J_ij| × β. High coupling × high attention = unshakeable.",
+   "why": "Substrate's 'conviction' aspect formalised. Not just magnitude — product of network embeddedness + attentional engagement.",
+   "category": "substrate_features"
+  },
+  {
+   "name": "coherence_is_negative_free_energy",
+   "definition": "Coherence(network) ∝ -F/N = (energy term + entropy term)/N. Low F = mutually-supporting beliefs at low temperature.",
+   "why": "Substrate's 'coherence' aspect formalised. Not a separate measure — emergent from H + temperature. Free energy = system's effective potential.",
+   "category": "substrate_features"
+  },
+  {
+   "name": "Mt_is_subnetwork_with_signature_couplings",
+   "definition": "A Microtheory = a subset of nodes + characteristic coupling pattern. The Mt's 'commitments' are constraints encoded in its J.",
+   "why": "Mapping Mts to CAN. Folk_physics Mt = nodes for everyday physical beliefs + couplings supporting folk-coherent assignments. Scientific_physics Mt = same nodes, different J.",
+   "category": "mapping_to_grounding"
+  },
+  {
+   "name": "multiple_Mts_multiple_Hamiltonians",
+   "definition": "Different Mts contribute different J_ij to same nodes. Total Hamiltonian = Σ_Mt H_Mt. Frame-relativity = different J in different frames.",
+   "why": "Bridge to grounding_theory. Axiom 0's frame-relativity becomes: there are multiple Hamiltonians coexisting on the same node set. Each Mt's grounding marginal = ⟨σ⟩ under THAT Mt's H.",
+   "category": "mapping_to_grounding"
+  },
+  {
+   "name": "frame_switch_changes_active_Hamiltonian",
+   "definition": "Switching attention to a different Mt switches the active Hamiltonian. Network re-equilibrates. Same nodes, different basins, different marginals.",
+   "why": "How substrate moves between frames. Per-frame attention β + Mt-specific couplings = different equilibria. Substrate query: 'is X grounded in Mt_y?' = marginal under H_{Mt_y}.",
+   "category": "mapping_to_grounding"
+  },
+  {
+   "name": "wrongness_is_distance_to_target_marginal",
+   "definition": "Distance from current ⟨σ⟩ to target ⟨σ⟩* under target H*. With direction (which nodes off) + magnitude.",
+   "why": "Refines grounding_theory's wrongness. Not arbitrary target vector — target is itself an equilibrium of a target H. 'How wrong' = how far from target attractor.",
+   "category": "mapping_to_grounding"
+  },
+  {
+   "name": "diagnostic_per_node_deviation",
+   "definition": "(⟨σ_i⟩ - ⟨σ_i⟩*) per node. Which beliefs deviate from target. Can be due to wrong h, wrong J, or insufficient relaxation.",
+   "why": "Targeted self-correction. Substrate can identify: 'belief X is the off-node; trace its couplings + field for source'. Vector grounding's diagnosis gains mechanism.",
+   "category": "mapping_to_grounding"
+  },
+  {
+   "name": "network_size_grows_with_learning",
+   "definition": "New beliefs = new nodes. New couplings learned via Hebbian updates as beliefs co-activate. Network grows with experience.",
+   "term": {
+    "type": "Eq",
+    "a": {
+     "type": "Lit",
+     "value": "New beliefs"
+    },
+    "b": {
+     "type": "Lit",
+     "value": "new nodes"
+    }
+   },
+   "why": "Mechanism for substrate's growth. Concepts added; coupled to existing via Hebbian as they co-occur. Network thickens. Strength of attitudes accumulates structurally.",
+   "category": "learning"
+  },
+  {
+   "name": "Ising_model_history",
+   "definition": "Ising 1925 (ferromagnetism). Decades of physics. Adopted: epilepsy (Hopfield), neural networks (Hopfield + Boltzmann machines), opinion dynamics, psychometric networks.",
+   "why": "Foundation is well-developed. CAN inherits all the Ising machinery. Substrate not inventing — connecting to a deep mathematical lineage.",
+   "category": "lineage"
+  },
+  {
+   "name": "Hopfield_network_associative_memory",
+   "definition": "Hopfield 1982: Ising network with learned couplings stores patterns as attractors. Retrieval = relaxation to nearest attractor.",
+   "why": "Direct precedent. Belief patterns as attractors. Substrate's 'recognition' = network relaxation to closest stored pattern. Familiar territory.",
+   "category": "lineage"
+  },
+  {
+   "name": "Boltzmann_machine_learning",
+   "definition": "Hinton + Sejnowski 1985: stochastic Ising with hidden units. Learns to model distributions via contrastive divergence.",
+   "why": "Direct precedent for learning the J. RBMs etc. Substrate borrows learning machinery: contrastive divergence on observed states updates J.",
+   "category": "lineage"
+  },
+  {
+   "name": "psychopathology_network_Cramer_Borsboom",
+   "definition": "Cramer + Borsboom: depression NOT a latent disease causing symptoms; depression IS the network of causally interacting symptoms.",
+   "why": "Same methodological move as CAN, applied to clinical. Network analysis of symptom-symptom edges. Substrate's grounding parallels: not a latent property but the network.",
+   "category": "lineage"
+  },
+  {
+   "name": "concept_state_attr_substrate",
+   "definition": "Architecturally: Concept gains state σ ∈ [-1, +1] attribute. Initialised to 0; updated by dynamics.",
+   "why": "Concrete schema change. Backwards compatible: legacy code that doesn't read state sees normal Concept. Vector-aware code computes ⟨σ⟩ from state + couplings.",
+   "category": "architecture"
+  },
+  {
+   "name": "causal_influence_edge_type",
+   "definition": "Architecturally: new edge type causal_influence with weight J (signed). Replaces refers_to for grounding purposes.",
+   "why": "Concrete schema. refers_to was binary; causal_influence is signed-weighted. J_ij = +0.7 (strong positive coupling), -0.4 (weak inhibition).",
+   "category": "architecture"
+  },
+  {
+   "name": "external_field_attr_substrate",
+   "definition": "Architecturally: Concept gains external_field h ∈ R attribute. Updated when world produces evidence on that node.",
+   "why": "Concrete schema. World adapters update h; dynamics update σ in response. Field-state separation cleanly separates world from network.",
+   "category": "architecture"
+  },
+  {
+   "name": "Mt_temperature_attr",
+   "definition": "Architecturally: Microtheory gains β attribute (effective inverse temperature). Attention = high β; passive = low β.",
+   "why": "Concrete schema. Per-Mt attention level. Active reasoning in physics Mt: β high → equilibration sharp. Idle: β low → diffuse.",
+   "category": "architecture"
+  },
+  {
+   "name": "dynamics_module_metropolis_glauber",
+   "definition": "Architecturally: dynamics module supporting Metropolis, Glauber, mean-field. Operates on Concept states + causal_influence edges.",
+   "why": "Concrete code. Each Mt's reflexes can invoke updates. Babble loop = repeated MH steps. Convergence detection via free energy.",
+   "category": "architecture"
+  },
+  {
+   "name": "Impasse_becomes_network_diagnosis",
+   "definition": "Architecturally: Impasses gain network-state diagnostics. Predicate churn = bistability + θ flipping rate. Frustration = energy gap. Ambivalence = high entropy.",
+   "why": "Concrete schema. Existing Impasses extended with network observables. Already vector-shaped after grounding_theory; now CAN-grounded interpretation.",
+   "category": "architecture"
+  },
+  {
+   "name": "migration_from_binary_to_CAN",
+   "definition": "Architecturally: existing refers_to edges → causal_influence with J=+1 (strong positive). Existing Unknowns → Concept with field=0, decoupled.",
+   "why": "Concrete migration path. Legacy graph becomes CAN graph with trivial structure. Subsequent edits set proper J, h. Substrate becomes CAN-native incrementally.",
+   "category": "architecture"
+  },
+  {
+   "name": "frequentist_vs_thermal_sampling",
+   "definition": "Frequentist statistics: repeated trials yield distributions. CAN: thermal fluctuations of network yield distributions. Same math, different interpretation.",
+   "why": "Substrate doesn't run trials — it runs MCMC on its own network. Stationary distribution = belief distribution. Bayesian by construction.",
+   "category": "comparisons"
+  },
+  {
+   "name": "CAN_vs_predictive_processing",
+   "definition": "Predictive processing: brain minimises prediction error via hierarchical generative model. CAN: minimises free energy via network dynamics. Closely related; CAN simpler + explicit.",
+   "why": "Substrate's design close to PP framework. CAN is concrete + amenable to graph-resident expression. Bridges to active inference literature.",
+   "category": "comparisons"
+  },
+  {
+   "name": "CAN_vs_Bayesian_network",
+   "definition": "Bayesian network: directed acyclic, conditional probabilities. CAN: undirected (or asymmetric), couplings. Bayesian computes posteriors via inference; CAN via thermal equilibrium.",
+   "why": "Different formalism, related questions. CAN handles cycles + bidirectional influence natively. Bayes-net inference is special case of CAN at zero temperature.",
+   "category": "comparisons"
+  }
+ ],
+ "rules": [
+  {
+   "name": "attitudes_are_networks_not_latents",
+   "if": [
+    "attitude observed through multiple indicators"
+   ],
+   "then": [
+    "it should be modelled as network, not latent variable"
+   ],
+   "why": "Borsboom + Dalege foundational shift. Network treats indicators as constitutive + causally interacting. Latent treats them as effects of unobserved cause. Different ontology, different stats, different interventions.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "grounding_vector_is_equilibrium_marginal",
+   "if": [
+    "concept's grounding queried"
+   ],
+   "then": [
+    "answer is marginal ⟨σ⟩ at equilibrium under applicable Hamiltonian"
+   ],
+   "why": "Refines grounding_theory. Vector isn't primitive; it's derived from network dynamics. Generative mechanism. The vector has a story for how it got that way.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "strong_attitudes_are_densely_coupled",
+   "if": [
+    "attitude resists revision"
+   ],
+   "then": [
+    "underlying network has high connectivity + strong J"
+   ],
+   "why": "Foundation CAN result. Belief perseverance has mechanism: network's many couplings mutually support assignment. Single-node perturbation insufficient.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "attention_increases_polarisation",
+   "if": [
+    "attention to attitude object increases (β rises)"
+   ],
+   "then": [
+    "network polarises further toward existing basin"
+   ],
+   "why": "Foundation CAN result. Engagement crystallises. Explains: thinking about politics makes views stronger, not more nuanced. Critical phenomena.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "ambivalence_is_frustration_not_indecision",
+   "if": [
+    "network has frustrated couplings"
+   ],
+   "then": [
+    "ambivalence + high energy + no clean assignment"
+   ],
+   "why": "Mechanism vs description. Not 'undecided' — specific spin-glass structure. Detectable via energy gap. Different from low conviction (low coupling).",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "multiple_inconsistent_views_are_multistable_basins",
+   "if": [
+    "holding folk + scientific views simultaneously"
+   ],
+   "then": [
+    "network has multiple stable basins, state can sit in either"
+   ],
+   "why": "Refines grounding_theory's 'multiple inconsistent views'. Not orthogonal vector components — distinct attractors. Mechanism for paradigm switch (basin hop).",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "babble_loop_is_thermal_sampling",
+   "if": [
+    "substrate runs babble cycles"
+   ],
+   "then": [
+    "it's MCMC on its own network"
+   ],
+   "why": "Reframes existing mechanism. Substrate babble = Metropolis chain. Cycles → marginals → grounding. The mechanism that was lurking is now named.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "predicate_churn_is_bistable_thermal_flipping",
+   "if": [
+    "predicate state alternates rapidly"
+   ],
+   "then": [
+    "network is bistable + temperature too high"
+   ],
+   "why": "Mechanism for substrate's existing Impasse. Resolution: more evidence (raise effective h) OR more attention (raise β) → freeze into one basin.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "Hebbian_learning_updates_J",
+   "if": [
+    "nodes i and j co-activate"
+   ],
+   "then": [
+    "J_ij increases (Hebbian)"
+   ],
+   "why": "Mechanism for coupling formation. Substrate's experience: co-occurring states strengthen mutual influence. Network grows through use.",
+   "soundness_category": "algebraic_law"
+  },
+  {
+   "name": "Mt_relativity_is_multiple_Hamiltonians",
+   "if": [
+    "concept grounded differently in different Mts"
+   ],
+   "then": [
+    "each Mt contributes its own H + marginal"
+   ],
+   "why": "Axiom 0 made concrete. Different Mts = different J on (possibly same) nodes. Each Mt's H has its own equilibrium. Frame switch = active Hamiltonian switch.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "wrongness_is_distance_to_target_equilibrium",
+   "if": [
+    "judging concept's grounding as wrong"
+   ],
+   "then": [
+    "distance is from current ⟨σ⟩ to target H*'s equilibrium ⟨σ⟩*"
+   ],
+   "why": "Refines grounding_theory wrongness. Not arbitrary target — target is itself an attractor of some target H. Direction + magnitude + mechanism for correction.",
+   "soundness_category": "algebraic_law"
+  },
+  {
+   "name": "coherence_is_negative_free_energy_density",
+   "definition": "Coherence(network) = -F/N.",
+   "if": [
+    "network's coherence assessed"
+   ],
+   "then": [
+    "coherence = -F/N = (mean coupling + entropy contribution)/N"
+   ],
+   "why": "Foundation. Low F = nodes mutually supporting + appropriately uncertain. Substrate's 'coherence' aspect grounded in statistical mechanics.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "evidence_changes_field_then_relaxation",
+   "if": [
+    "new evidence on node i"
+   ],
+   "then": [
+    "h_i shifts; network relaxes; ⟨σ⟩ updates"
+   ],
+   "why": "Mechanism for belief revision. Evidence doesn't directly set state — it changes field; field changes drive dynamics; network finds new equilibrium. Possibly basin-hops.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "curiosity_targets_ambivalent_nodes",
+   "if": [
+    "substrate selects what to investigate"
+   ],
+   "then": [
+    "nodes with high state uncertainty (near 0) are highest info gain"
+   ],
+   "why": "Curiosity drive formalised. Ambivalent nodes (no clean basin yet) provide most info. Substrate's existing 'investigate impasse' aligns.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "CAN_is_substrate_grounding_mechanism",
+   "if": [
+    "substrate represents grounding"
+   ],
+   "then": [
+    "CAN provides the generative model"
+   ],
+   "why": "Substrate's design position. Grounding vectors are observables of underlying network. Vectors without networks underneath are unmechanism'd. CAN supplies what was missing.",
+   "soundness_category": "denotational_equivalence"
+  }
+ ],
+ "exclusions": [],
+ "parent_mt": "social_psychology",
+ "relations": [
+  {
+   "src": "causal_attitude_networks",
+   "edge": "genlMt",
+   "tgt": "compiler_theory"
+  }
+ ]
+}

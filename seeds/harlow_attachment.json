@@ -1,0 +1,158 @@
+{
+ "id": "harlow_attachment",
+ "version": "1.0.0",
+ "self_load_only": true,
+ "depends_on": ["drives", "modulators", "affective_state_core"],
+ "area": "retina",
+ "description": "HARLOW D1 (block 233000) -- attachment sociology as rules riding the REAL emotion framework (drives.json drive system + modulators.json/affective_state_core.json regulator). An infant EmotionHub -has_regulator-> ModulatorState carries the drive system's contact_comfort / hunger / distress Drives (has_active_drive). The infant -cares_for-> two Mother figures: a CONTACT-COMFORT mother (provides_contact=1) and a FEEDING mother (provides_feed=1). The VALUE of approaching a mother is the REGULATOR RELIEF it provides, read from the real drives: a contact mother relieves the contact drive (weight*urge) PLUS buffers the active threat/distress channel (the secure base -- distress.arousal_contrib, which ONLY contact buffers); a feeding mother relieves hunger (weight*urge). The infant's approach_target is the Argmax over cared-for mothers by approach_value (hl_select_initial_target / hl_switch_target, mirroring affective_state_core's psi_select/psi_switch leading-drive selection). Attachment is thus a CONSEQUENCE of the regulator depending on the comfort bond: because contact decays and only contact buffers threat, the contact mother dominates proximity and is the flee target under stress -- Harlow (1958), contact comfort load-bearing, NOT feeding. Ablating the contact drive (no has_active_drive edge) leaves only the hunger value, inverting the preference to the feeding mother -- the falsifier. NO agent decision in Python: the value computation and the Argmax approach choice are these rules; the world adapter only publishes world facts (which mother provides what, time, stress) and tallies proximity mechanically. Integer/float-native, NO Rust, NO new Term. OFF by default: every rule guards on ModulatorState.enabled the adapter sets only on opt-in. drive_kind numeric tag: 1=contact, 2=hunger, 3=distress.",
+ "microtheory": {
+  "name": "harlow_attachment",
+  "description": "Infant attachment is not reducible to feeding; contact comfort is the load-bearing variable (Harlow 1958). The bond emerges because the security regulator (arousal/valence/securing over the drive system) is stabilised by the contact drive -- which decays continuously and alone buffers threat -- so the contact mother is preferred in proximity and fled to under stress. Remove the contact drive and the preference follows feeding instead."
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [
+  {
+   "provenance": "seed:harlow:infant-regulator",
+   "src": {"type": "EmotionHub", "var": "infant"},
+   "edge_type": "has_regulator",
+   "tgt": {"type": "ModulatorState", "var": "ms"}
+  },
+  {
+   "provenance": "seed:harlow:infant-cares-for",
+   "src": {"type": "EmotionHub", "var": "infant"},
+   "edge_type": "cares_for",
+   "tgt": {"type": "Mother", "var": "m"}
+  },
+  {
+   "provenance": "seed:harlow:infant-approach-target",
+   "src": {"type": "EmotionHub", "var": "infant"},
+   "edge_type": "approach_target",
+   "tgt": {"type": "Mother", "var": "m"}
+  }
+ ],
+ "rules": [
+  {
+   "name": "hl_value_contact_mother",
+   "area": "retina",
+   "order": 4,
+   "latency_class": "hard_realtime",
+   "match": [
+    ["infant", "cares_for", "m"],
+    ["infant", "has_regulator", "ms"],
+    ["ms", "has_active_drive", "dc"],
+    ["ms", "has_active_drive", "dt"]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "ms"}, "key": "enabled"}, "b": {"type": "Lit", "value": 1.0}},
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "provides_contact"}, "b": {"type": "Lit", "value": 1.0}},
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "dc"}, "key": "drive_kind"}, "b": {"type": "Lit", "value": 1.0}},
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "dt"}, "key": "drive_kind"}, "b": {"type": "Lit", "value": 3.0}}
+    ]
+   },
+   "effects": [
+    ["set_attr", "m", "approach_value", {
+     "__term__": {
+      "type": "Plus",
+      "items": [
+       {"type": "Times", "items": [
+        {"type": "Attr", "node": {"type": "Var", "name": "dc"}, "key": "weight"},
+        {"type": "Attr", "node": {"type": "Var", "name": "dc"}, "key": "urge"}
+       ]},
+       {"type": "Attr", "node": {"type": "Var", "name": "dt"}, "key": "arousal_contrib"}
+      ]
+     }
+    }]
+   ]
+  },
+  {
+   "name": "hl_value_feed_mother",
+   "area": "retina",
+   "order": 4,
+   "latency_class": "hard_realtime",
+   "match": [
+    ["infant", "cares_for", "m"],
+    ["infant", "has_regulator", "ms"],
+    ["ms", "has_active_drive", "dh"]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "ms"}, "key": "enabled"}, "b": {"type": "Lit", "value": 1.0}},
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "provides_feed"}, "b": {"type": "Lit", "value": 1.0}},
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "dh"}, "key": "drive_kind"}, "b": {"type": "Lit", "value": 2.0}}
+    ]
+   },
+   "effects": [
+    ["set_attr", "m", "approach_value", {
+     "__term__": {
+      "type": "Times",
+      "items": [
+       {"type": "Attr", "node": {"type": "Var", "name": "dh"}, "key": "weight"},
+       {"type": "Attr", "node": {"type": "Var", "name": "dh"}, "key": "urge"}
+      ]
+     }
+    }]
+   ]
+  },
+  {
+   "name": "hl_select_initial_target",
+   "area": "retina",
+   "order": 6,
+   "latency_class": "hard_realtime",
+   "match": [
+    ["infant", "cares_for", "m"]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {"type": "Eq",
+      "a": {"type": "Count", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "infant"}, "edge_type": "approach_target", "any_type": false}},
+      "b": {"type": "Lit", "value": 0.0}},
+     {"type": "Eq",
+      "a": {"type": "Var", "name": "m"},
+      "b": {"type": "Argmax",
+            "source": {"type": "Neighbours", "node": {"type": "Var", "name": "infant"}, "edge_type": "cares_for", "any_type": false},
+            "var_name": "cand",
+            "value": {"type": "Attr", "node": {"type": "Var", "name": "cand"}, "key": "approach_value"},
+            "default": {"type": "Lit", "value": null}}}
+    ]
+   },
+   "effects": [
+    ["add_edge", "infant", "approach_target", "m"]
+   ]
+  },
+  {
+   "name": "hl_switch_target",
+   "area": "retina",
+   "order": 6,
+   "latency_class": "hard_realtime",
+   "match": [
+    ["infant", "approach_target", "incumbent"],
+    ["infant", "cares_for", "challenger"]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Var", "name": "challenger"}, "b": {"type": "Var", "name": "incumbent"}}},
+     {"type": "Eq",
+      "a": {"type": "Var", "name": "challenger"},
+      "b": {"type": "Argmax",
+            "source": {"type": "Neighbours", "node": {"type": "Var", "name": "infant"}, "edge_type": "cares_for", "any_type": false},
+            "var_name": "cand",
+            "value": {"type": "Attr", "node": {"type": "Var", "name": "cand"}, "key": "approach_value"},
+            "default": {"type": "Lit", "value": null}}},
+     {"type": "Gt",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "challenger"}, "key": "approach_value"},
+      "b": {"type": "Attr", "node": {"type": "Var", "name": "incumbent"}, "key": "approach_value"}}
+    ]
+   },
+   "effects": [
+    ["del_edge", "infant", "approach_target", "incumbent"],
+    ["add_edge", "infant", "approach_target", "challenger"]
+   ]
+  }
+ ]
+}

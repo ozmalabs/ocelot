@@ -1,0 +1,206 @@
+{
+ "id": "composer_attention_graph",
+ "version": "1.0.0",
+ "depends_on": [],
+ "description": "GRAPH-RESIDENT: _compose_attention_rule as a meta-rule. Mints look_when_frame_advances_<tag> from a wants_attention_rule trigger.",
+ "nodes": [
+  {
+   "local_id": 1,
+   "type": "Rule",
+   "attrs": {
+    "id": "compose_attention_graph",
+    "match": [
+     [
+      "agent",
+      "wants_attention_rule",
+      "cr"
+     ]
+    ],
+    "where": {
+     "type": "Lt",
+     "a": {
+      "type": "Plus",
+      "items": [
+       {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "cr"
+        },
+        "key": "composed"
+       },
+       {
+        "type": "Lit",
+        "value": 0.0
+       }
+      ]
+     },
+     "b": {
+      "type": "Lit",
+      "value": 0.5
+     }
+    },
+    "effect": [
+     [
+      "add_node",
+      "rn0",
+      "Rule",
+      {
+       "minted": 0.0
+      }
+     ],
+     [
+      "set_attr",
+      "rn0",
+      "id",
+      {
+       "__term__": {
+        "type": "StringConcat",
+        "parts": [
+         {
+          "type": "Lit",
+          "value": "look_when_frame_advances_"
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "cr"
+          },
+          "key": "tag"
+         }
+        ]
+       }
+      }
+     ],
+     [
+      "set_attr",
+      "rn0",
+      "match",
+      [
+       [
+        "t",
+        "wants_look",
+        "g"
+       ]
+      ]
+     ],
+     [
+      "set_attr",
+      "rn0",
+      "where",
+      {
+       "type": "Gt",
+       "a": {
+        "type": "FbFrameSeq",
+        "fb": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "t"
+         },
+         "key": "fb_id"
+        }
+       },
+       "b": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "g"
+        },
+        "key": "last_looked_seq"
+       }
+      }
+     ],
+     [
+      "set_attr",
+      "rn0",
+      "effect",
+      [
+       [
+        "fb_sample",
+        {
+         "__term__": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "t"
+          },
+          "key": "fb_id"
+         }
+        },
+        "g",
+        {
+         "__term__": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "t"
+          },
+          "key": "grid_w"
+         }
+        },
+        {
+         "__term__": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "t"
+          },
+          "key": "grid_h"
+         }
+        }
+       ],
+       [
+        "set_attr",
+        "g",
+        "last_looked_seq",
+        {
+         "__term__": {
+          "type": "FbFrameSeq",
+          "fb": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "t"
+           },
+           "key": "fb_id"
+          }
+         }
+        }
+       ]
+      ]
+     ],
+     [
+      "set_rule_clause",
+      {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "rn0"
+        },
+        "key": "id"
+       }
+      },
+      "__mint__",
+      {
+       "__term__": {
+        "type": "Var",
+        "name": "rn0"
+       }
+      }
+     ],
+     [
+      "set_attr",
+      "cr",
+      "composed",
+      1.0
+     ]
+    ]
+   }
+  }
+ ],
+ "edges": [],
+ "productions": []
+}

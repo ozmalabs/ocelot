@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "protocol": "motor_core_manifest_audit_v1",
+  "description": "Simulator-free structural audit of the consolidated graph-native embodied motor stack.",
+  "manifests": [
+    {
+      "role": "ground",
+      "path": "seeds/embodied_adaptation.json",
+      "seed_id": "embodied_adaptation"
+    },
+    {
+      "role": "aerial",
+      "path": "seeds/aerial_adaptation.json",
+      "seed_id": "aerial_adaptation"
+    },
+    {
+      "role": "humanoid",
+      "path": "seeds/humanoid_adaptation.json",
+      "seed_id": "humanoid_adaptation"
+    },
+    {
+      "role": "helicopter",
+      "path": "seeds/helicopter_autorotation.json",
+      "seed_id": "helicopter_autorotation"
+    },
+    {
+      "role": "shared-decision",
+      "path": "seeds/motor_decision_collapse.json",
+      "seed_id": "motor_decision_collapse"
+    },
+    {
+      "role": "shared-program",
+      "path": "seeds/embodied_motor_program.json",
+      "seed_id": "embodied_motor_program"
+    },
+    {
+      "role": "shared-structural",
+      "path": "seeds/embodied_structural_limits.json",
+      "seed_id": "embodied_structural_limits"
+    },
+    {
+      "role": "shared-sensorimotor",
+      "path": "seeds/embodied_sensorimotor_core.json",
+      "seed_id": "embodied_sensorimotor_core"
+    },
+    {
+      "role": "shared-priors",
+      "path": "seeds/embodied_motor_priors.json",
+      "seed_id": "embodied_motor_priors"
+    }
+  ],
+  "candidate_scope_contract": {
+    "selector_types": [
+      "Argmax",
+      "Argmin"
+    ],
+    "forbidden_global_sources": [
+      "NodesOfType"
+    ],
+    "anchor_variable_fragments": [
+      "agent",
+      "actor",
+      "episode"
+    ]
+  }
+}

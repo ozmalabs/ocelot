@@ -1,0 +1,118 @@
+{
+  "id": "probability_statistics_deep_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "central_limit_theorem",
+  "in_microtheory": "mathematics",
+  "description": "Probability + statistics decomposed. Concentration inequalities (Hoeffding, Chernoff), martingales, sufficient statistics, exponential families, EM algorithm, bootstrap, multiple testing correction, causal inference, modern Bayesian methods (variational inference).",
+  "sub_mechanisms": [
+    {
+      "name": "Markov_inequality",
+      "definition": "P(X ≥ a) ≤ E[X]/a for non-negative X.",
+      "why": "Foundation. Weakest concentration. Basis for stronger inequalities.",
+      "category": "prob_stats_deep_mechanism"
+    },
+    {
+      "name": "Chebyshev_inequality",
+      "definition": "P(|X - μ| ≥ kσ) ≤ 1/k².",
+      "why": "Foundation. From Markov applied to (X-μ)². Universal bound.",
+      "category": "prob_stats_deep_mechanism"
+    },
+    {
+      "name": "Hoeffding_inequality",
+      "definition": "For bounded RVs: P(|X̄ - μ| ≥ t) ≤ 2exp(-2nt²/Σ(b_i-a_i)²).",
+      "why": "Foundation modern ML theory. Concentration bound for averages. Used in generalization bounds.",
+      "category": "prob_stats_deep_mechanism"
+    },
+    {
+      "name": "Chernoff_bound",
+      "definition": "Exponential bound: P(X ≥ t) ≤ inf_s>0 e^{-st} MGF(s).",
+      "why": "Foundation. Tighter than Markov + Chebyshev. Standard in algorithm analysis + ML.",
+      "category": "prob_stats_deep_mechanism"
+    },
+    {
+      "name": "martingale",
+      "definition": "Process where E[X_{n+1}|X_1,...,X_n] = X_n. Fair game.",
+      "why": "Foundation. Gambler's ruin, stock prices (under martingale assumption), proofs.",
+      "category": "prob_stats_deep_mechanism"
+    },
+    {
+      "name": "exponential_family",
+      "definition": "p(x|θ) = h(x) exp(η(θ)·T(x) - A(θ)). Includes normal, Poisson, exponential, gamma, binomial.",
+      "why": "Foundation of statistics. Sufficient statistic T(x). Conjugate priors. MLE via gradient of A.",
+      "category": "prob_stats_deep_mechanism"
+    },
+    {
+      "name": "sufficient_statistic",
+      "definition": "T(X) such that P(X|T) doesn't depend on θ. Compresses data.",
+      "why": "Foundation. Fisher-Neyman criterion. Rao-Blackwell improvement. Bayesian + frequentist.",
+      "category": "prob_stats_deep_mechanism"
+    },
+    {
+      "name": "EM_algorithm",
+      "definition": "Expectation-Maximization. Iterative MLE for latent variable models.",
+      "why": "Foundation. GMM, HMM, mixture models. Monotonic convergence to local max.",
+      "category": "prob_stats_deep_mechanism"
+    },
+    {
+      "name": "bootstrap",
+      "definition": "Resample with replacement to estimate sampling distribution.",
+      "why": "Foundation modern statistics. Efron 1979. Empirical alternative to asymptotic theory.",
+      "category": "prob_stats_deep_mechanism"
+    },
+    {
+      "name": "multiple_testing_correction",
+      "definition": "Family-wise error rate (Bonferroni) or false discovery rate (Benjamini-Hochberg).",
+      "why": "Foundation of modern statistics. p-hacking solution. Genomics + ML evaluation depend.",
+      "category": "prob_stats_deep_mechanism"
+    },
+    {
+      "name": "causal_inference",
+      "definition": "Pearl's do-calculus. SCM. Distinguish observation from intervention.",
+      "why": "Foundation. P(Y|do(X)) vs P(Y|X). Foundation of modern causal methods.",
+      "category": "prob_stats_deep_mechanism"
+    },
+    {
+      "name": "variational_inference",
+      "definition": "Approximate intractable posterior by family of distributions. Minimise KL(q‖p).",
+      "why": "Foundation of modern Bayesian computation. Faster than MCMC. VAE foundation.",
+      "category": "prob_stats_deep_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "concentration_inequalities_quantify_deviation",
+      "if": ["sample size n"],
+      "then": ["sample mean concentrates around true mean exponentially fast"],
+      "why": "Hoeffding: exponential bound. Foundation of statistics + ML generalization. Universal.",
+      "soundness_category": "algebraic_law"
+    },
+    {
+      "name": "exponential_family_admits_sufficient_statistics",
+      "if": ["distribution exponential family"],
+      "then": ["sufficient statistic exists + dimension small"],
+      "why": "T(x) = h(x)·1[x ∈ support]. Fisher-Neyman. Foundation of efficient statistics.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "EM_converges_monotonically",
+      "if": ["EM applied to latent variable model"],
+      "then": ["likelihood monotonically increases to local max"],
+      "why": "Foundation. Doesn't reach global max. Init matters. Standard for mixtures.",
+      "soundness_category": "algebraic_law"
+    },
+    {
+      "name": "bootstrap_estimates_sampling_distribution",
+      "if": ["data n samples, B bootstrap resamples"],
+      "then": ["bootstrap distribution approximates true sampling distribution"],
+      "why": "Empirical approach. Works for many statistics. Computational alternative to closed-form.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "do_calculus_distinguishes_causation_correlation",
+      "if": ["question is causal (intervention)"],
+      "then": ["do-calculus must be applied"],
+      "why": "Standard statistics gives P(Y|X). Causal: P(Y|do(X)). Different generally. Foundation of causal inference.",
+      "soundness_category": "denotational_equivalence"
+    }
+  ]
+}

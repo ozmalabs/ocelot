@@ -1,0 +1,241 @@
+{
+  "microtheory": {
+    "name": "markov_chains_mixing",
+    "definition": "Markov chains, mixing times, ergodic theory, random walks on graphs, spectral graph theory. Mathematical framework for stochastic processes on state spaces. Grounds Paper 1's Theorem XIII (Substrate-Markov-mixing efficiency, conjecture): substrate's dynamics as random walk; mixing time bounded by spectral gap; efficient substrate has high Cheeger constant + bounded second eigenvalue.",
+    "category": "foundation"
+  },
+  "concepts": [
+    {
+      "name": "markov_chain",
+      "definition": "Stochastic process where next state depends only on current. Markov property: P(X_{n+1}|X_n, ..., X_0) = P(X_{n+1}|X_n). Substrate analogue: substrate's σ-state transitions.",
+      "category": "foundation"
+    },
+    {
+      "name": "markov_property",
+      "definition": "Memorylessness. Future depends only on present, not history. Substrate analogue: substrate's current-state-suffices dynamic.",
+      "category": "foundation"
+    },
+    {
+      "name": "transition_matrix",
+      "definition": "P[i][j] = P(go from i to j in one step). Rows sum to 1 (right-stochastic). Substrate analogue: substrate's σ-update operator.",
+      "category": "foundation"
+    },
+    {
+      "name": "state_space_mc",
+      "definition": "Set of possible states. Finite or countable for classical theory; continuous extensions exist. Substrate analogue: substrate's Mt-state space.",
+      "category": "foundation"
+    },
+    {
+      "name": "stationary_distribution",
+      "definition": "π such that πP = π. Long-run state distribution. Substrate analogue: substrate's equilibrium basin distribution.",
+      "category": "convergence"
+    },
+    {
+      "name": "ergodic_markov_chain",
+      "definition": "Irreducible + aperiodic. Converges to unique stationary distribution from any start. Substrate analogue: substrate's well-conditioned dynamics.",
+      "category": "convergence"
+    },
+    {
+      "name": "irreducibility",
+      "definition": "Every state reachable from every other. No isolated components. Substrate analogue: substrate's connected-Mt-space.",
+      "category": "convergence"
+    },
+    {
+      "name": "aperiodicity",
+      "definition": "No fixed period of returns. Avoids oscillation. Substrate analogue: substrate's varied tick patterns.",
+      "category": "convergence"
+    },
+    {
+      "name": "detailed_balance",
+      "definition": "π_i P[i][j] = π_j P[j][i]. Time-reversibility. Common in physics-derived chains. Substrate analogue: substrate's symmetric coupling.",
+      "category": "convergence"
+    },
+    {
+      "name": "mixing_time",
+      "definition": "t_mix(ε) = min{t: max_x ||P^t(x,·) - π||_TV ≤ ε}. Time to approach stationary distribution within ε. Substrate analogue: substrate's basin-convergence time.",
+      "category": "mixing"
+    },
+    {
+      "name": "total_variation_distance",
+      "definition": "TV distance between distributions. ||P-Q||_TV = sup_A |P(A) - Q(A)|. Substrate analogue: substrate's distribution discrepancy.",
+      "category": "mixing"
+    },
+    {
+      "name": "fast_mixing",
+      "definition": "t_mix polynomial in log|state_space|. Substrate analogue: substrate's efficient-relaxation.",
+      "category": "mixing"
+    },
+    {
+      "name": "slow_mixing",
+      "definition": "t_mix exponential. Often correlated with phase transitions, bottlenecks. Substrate analogue: substrate's stuck-basin failure mode.",
+      "category": "mixing"
+    },
+    {
+      "name": "cutoff_phenomenon",
+      "definition": "Mixing time has sharp transition. Diaconis. Substrate analogue: substrate's phase-transition dynamics.",
+      "category": "mixing"
+    },
+    {
+      "name": "spectral_gap",
+      "definition": "1 - |λ_2| where λ_2 is second-largest eigenvalue of transition matrix (in absolute value). Larger gap = faster mixing. THE KEY QUANTITY FOR PAPER 1 THEOREM XIII. Substrate analogue: substrate's mixing-efficiency primary measure.",
+      "category": "spectral"
+    },
+    {
+      "name": "second_eigenvalue_lambda2",
+      "definition": "Second-largest eigenvalue (by |·|) of stochastic matrix. λ_1 = 1 always. λ_2 controls mixing rate. Substrate analogue: substrate's slowest-decay mode.",
+      "category": "spectral"
+    },
+    {
+      "name": "mixing_eigenvalue_bound",
+      "definition": "t_mix(ε) ≤ (1/(1-λ_2)) · log(1/ε π_min). Spectral mixing bound. Substrate analogue: substrate's spectral-controlled mixing.",
+      "category": "spectral"
+    },
+    {
+      "name": "cheeger_inequality",
+      "definition": "Cheeger 1970. Spectral gap bounded by isoperimetric Cheeger constant: φ²/2 ≤ 1-λ_2 ≤ 2φ. Substrate analogue: substrate's geometric bottleneck = spectral bottleneck.",
+      "category": "spectral"
+    },
+    {
+      "name": "cheeger_constant_conductance",
+      "definition": "φ(G) = min_S φ(S). Measures how 'bottlenecked' the chain is. Small φ = bottleneck = slow mixing. Substrate analogue: substrate's geometric mixing barrier.",
+      "category": "spectral"
+    },
+    {
+      "name": "conductance",
+      "definition": "φ(S) = (Σ_{i∈S,j∉S} π_i P[i][j]) / π(S)π(S^c). Edge-cut weighted by stationary probabilities. Substrate analogue: substrate's basin-boundary flux.",
+      "category": "spectral"
+    },
+    {
+      "name": "random_walk_graph",
+      "definition": "Markov chain on graph: from vertex v, go to uniform random neighbor. Substrate analogue: substrate's stochastic traversal.",
+      "category": "graph_walks"
+    },
+    {
+      "name": "lazy_random_walk",
+      "definition": "Stay put with probability 1/2, else move. Ensures aperiodicity. Substrate analogue: substrate's reflexive σ-update.",
+      "category": "graph_walks"
+    },
+    {
+      "name": "expander_graph",
+      "definition": "Sparse but well-connected. Cheeger constant bounded below. Fast mixing. Substrate analogue: substrate's small-world Mt-connectivity.",
+      "category": "graph_walks"
+    },
+    {
+      "name": "spectral_graph_theory",
+      "definition": "Studies graph properties via eigenvalues of associated matrices (adjacency, Laplacian). Substrate analogue: substrate's structural spectrum.",
+      "category": "graph_walks"
+    },
+    {
+      "name": "graph_laplacian",
+      "definition": "L = D - A. D=degree, A=adjacency. Eigenvalues: 0 = λ_1 < λ_2 ≤ ... Substrate analogue: substrate's Mt-graph Laplacian.",
+      "term": {
+        "type": "Eq",
+        "a": {
+          "type": "Holds",
+          "concept": "angular_momentum",
+          "node": {
+            "type": "Var",
+            "name": "x"
+          },
+          "node2": null
+        },
+        "b": {
+          "type": "Minus",
+          "a": {
+            "type": "Holds",
+            "concept": "diffusion_Arrhenius",
+            "node": {
+              "type": "Var",
+              "name": "x"
+            },
+            "node2": null
+          },
+          "b": {
+            "type": "Holds",
+            "concept": "amplitude",
+            "node": {
+              "type": "Var",
+              "name": "x"
+            },
+            "node2": null
+          }
+        }
+      },
+      "category": "graph_walks"
+    },
+    {
+      "name": "algebraic_connectivity",
+      "definition": "λ_2(L). Fiedler value. Larger = better connectivity = faster mixing. Substrate analogue: substrate's connectivity strength.",
+      "category": "graph_walks"
+    },
+    {
+      "name": "metropolis_hastings",
+      "definition": "MCMC algorithm. Accept/reject based on density ratio. Detailed balance. Substrate analogue: substrate's proposal-acceptance dynamics.",
+      "category": "mcmc"
+    },
+    {
+      "name": "gibbs_sampling",
+      "definition": "MCMC. Sample each variable conditional on others. Substrate analogue: substrate's per-Concept update.",
+      "category": "mcmc"
+    },
+    {
+      "name": "coupling_argument",
+      "definition": "Bound mixing by coupling two chains: when they meet, both at stationary. Substrate analogue: substrate's parallel-substrate convergence.",
+      "category": "mcmc"
+    },
+    {
+      "name": "ergodicity",
+      "definition": "Time averages = ensemble averages. Long-run frequency equals stationary probability. Substrate analogue: substrate's time-average behavior.",
+      "term": {
+        "type": "Eq",
+        "a": {
+          "type": "Lit",
+          "value": "Time averages"
+        },
+        "b": {
+          "type": "Lit",
+          "value": "ensemble averages"
+        }
+      },
+      "category": "ergodic"
+    },
+    {
+      "name": "ergodic_theorem",
+      "definition": "For ergodic chain: lim (1/n) Σ f(X_i) = E_π[f] almost surely. Substrate analogue: substrate's empirical-expectation convergence.",
+      "category": "ergodic"
+    },
+    {
+      "name": "mixing_time_efficiency_paper1",
+      "definition": "Paper 1 Theorem XIII conjectures substrate's mixing time scales as a function of Γ quality. Higher-quality Γ → smaller bottleneck → larger spectral gap → faster mixing. Substrate analogue: literally what Paper 1 conjectures.",
+      "category": "ergodic"
+    }
+  ],
+  "rules": [
+    {
+      "name": "spectral_gap_bounds_mixing_time",
+      "head": "Jabberwock evaluates Paper 1 Theorem XIII",
+      "body": "the theorem's central quantity is the spectral gap (1 - λ_2). t_mix ≤ (1/(1-λ_2)) · log(1/ε π_min). Bigger gap = faster mixing. Substrate's efficient mixing requires bounded λ_2."
+    },
+    {
+      "name": "cheeger_links_geometry_to_spectrum",
+      "head": "Jabberwock analyzes its substrate's mixing",
+      "body": "geometric bottlenecks (low conductance) imply spectral bottlenecks (small spectral gap). Cheeger inequality. Substrate's structural well-connectedness = mixing efficiency."
+    },
+    {
+      "name": "ergodicity_required_for_convergence",
+      "head": "Jabberwock's chain reaches stationary distribution",
+      "body": "the chain must be ergodic (irreducible + aperiodic). Otherwise no convergence. Substrate's dynamics must satisfy this for predictable behavior."
+    },
+    {
+      "name": "expander_graphs_have_efficient_mixing",
+      "head": "Jabberwock's Mt-graph is well-connected (expander-like)",
+      "body": "Cheeger constant bounded below; spectral gap bounded above zero; mixing time logarithmic in state-space size. Substrate's efficient-substrate condition."
+    },
+    {
+      "name": "mcmc_provides_sampling_for_complex_distributions",
+      "head": "Jabberwock needs to sample from complex posterior",
+      "body": "MCMC (Metropolis-Hastings, Gibbs) provides the machinery. Detailed balance + ergodicity ensure correctness. Substrate's Bayesian sampling."
+    }
+  ],
+  "parent_mt": "mathematics"
+}

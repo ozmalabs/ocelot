@@ -1,0 +1,118 @@
+{
+  "id": "branch_prediction_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "branch_prediction",
+  "in_microtheory": "computer_architecture",
+  "description": "Branch prediction decomposed. Modern CPUs predict branches with >97% accuracy via layered predictors: BTB caches branch targets, direction predictors (TAGE, perceptron) decide taken/not-taken, return address stack handles returns. The predictor's history tables, indexing strategies, and update rules each shape the accuracy/cost trade-off.",
+  "sub_mechanisms": [
+    {
+      "name": "branch_target_buffer",
+      "definition": "BTB: cache mapping branch PC to target address. Hit at fetch gives immediate next-PC; miss requires decode (BTB couldn't direct fetch ahead).",
+      "why": "Fetch must produce next-PC every cycle. Without BTB, branches stall fetch until decode determines the target. BTB lets the front-end run ahead, fetching from the predicted target while the branch is still being decoded.",
+      "category": "branch_prediction_mechanism"
+    },
+    {
+      "name": "direction_predictor",
+      "definition": "Predicts taken/not-taken for conditional branches. Inputs: branch PC, global history, local history. Outputs: 1-bit prediction.",
+      "why": "Even with BTB providing the target, the CPU needs to know if the branch is actually taken. Direction prediction drives speculation. Accuracy is the dominant factor in OoO front-end throughput.",
+      "category": "branch_prediction_mechanism"
+    },
+    {
+      "name": "two_bit_saturating_counter",
+      "definition": "Classic predictor: 2-bit counter per branch, saturating at 00/01/10/11. Predict taken if >= 10. Update on outcome: increment if taken, decrement if not.",
+      "why": "Simple + effective at ~85% accuracy. The 2-bit counter resists single-outcome noise (one mispredict doesn't flip the state). Foundation; modern predictors layer on top of this.",
+      "category": "branch_prediction_mechanism"
+    },
+    {
+      "name": "global_history_register",
+      "definition": "GHR: shift register recording the outcomes of the last N branches (typically N = 60-200 bits). Used as index into the predictor table.",
+      "why": "Many branches' behaviour correlates with recent history (e.g., 'if previous branch taken, this one is too'). Global history captures these correlations. The length of GHR is a tunable trade-off — longer history catches more patterns but spreads index entries thinner.",
+      "category": "branch_prediction_mechanism"
+    },
+    {
+      "name": "TAGE_predictor",
+      "definition": "Tagged Geometric history Length: multiple prediction tables indexed by different lengths of global history. Longer-history tables have more bits per entry but are sparser; their prediction takes precedence when present.",
+      "why": "Different branches have different optimal history lengths — some correlate with the last 5 branches, others with the last 100. TAGE adapts per-branch. The dominant predictor architecture in modern CPUs (Intel, AMD, Apple all use TAGE-family designs).",
+      "category": "branch_prediction_mechanism"
+    },
+    {
+      "name": "perceptron_predictor",
+      "definition": "Each branch has a small perceptron weight vector. Prediction is the sign of the dot product between weights and history bits. Update via perceptron learning rule on each outcome.",
+      "why": "Linear classifier over branch history. Can capture longer correlations than fixed-table predictors. Used in AMD CPUs (Zen) as a complement to TAGE. The perceptron's continuous weights resist noise better than binary entries.",
+      "category": "branch_prediction_mechanism"
+    },
+    {
+      "name": "return_address_stack",
+      "definition": "RAS: small hardware stack pushing return address on call, popping on return. Predicts return targets.",
+      "why": "Return targets aren't statically known; standard BTB can't predict them well across multiple call sites. RAS directly tracks the call chain. Highly accurate (close to 100%) unless mispredict-induced corruption or deep recursion overflow.",
+      "category": "branch_prediction_mechanism"
+    },
+    {
+      "name": "indirect_branch_predictor",
+      "definition": "Predicts targets of indirect branches (jmp [reg], virtual function calls, switch jumps). More complex than direct-branch BTB because targets are runtime-dependent.",
+      "why": "OOP dispatch (vtable), interpreter dispatch, switch statements all use indirect branches. Without good prediction, every dispatch costs a mispredict. Specialised predictors (ITTAGE, fast tables) target this.",
+      "category": "branch_prediction_mechanism"
+    },
+    {
+      "name": "loop_predictor",
+      "definition": "Specialised predictor that recognises loop branches (taken N times, then not taken) and counts iterations.",
+      "why": "Standard predictors mispredict the loop exit. Loop predictor knows exactly when the loop ends. Effective on hot loops with predictable trip counts (which most are).",
+      "category": "branch_prediction_mechanism"
+    },
+    {
+      "name": "branch_predictor_update",
+      "definition": "On branch resolution: update the relevant predictor tables (TAGE, perceptron, RAS). Update is delayed until execute stage when the actual outcome is known.",
+      "why": "Updates lag the predictions they should inform. Modern CPUs update predictors as soon as branch resolves; some recent designs speculate the update at predict time and roll back on mispredict. Update latency affects predictor accuracy on streaming loops.",
+      "category": "branch_prediction_mechanism"
+    },
+    {
+      "name": "speculative_predictor_update",
+      "definition": "Update the predictor's history at predict time, not at resolve time. Lets back-to-back branches with similar histories not all see the same predictor state.",
+      "why": "Without speculative update, a tight loop's branches all read the same history (the resolved one from before the loop). With speculative update, each branch's prediction reflects what was predicted for its predecessor. Substantially improves accuracy on dense branch sequences.",
+      "category": "branch_prediction_mechanism"
+    },
+    {
+      "name": "mispredict_recovery_pipeline",
+      "definition": "On mispredict: flush all in-flight instructions from the branch onward, restore RAT to a checkpoint, refetch from the correct address.",
+      "why": "Mispredict cost is the recovery latency: pipeline depth (fetch to execute) + scheduler refill. Modern wide CPUs pay ~15-25 cycles per mispredict. With 95% accuracy, this still amortises favourably; below 90%, performance collapses.",
+      "category": "branch_prediction_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "BTB_makes_fetch_ahead_possible",
+      "if": ["BTB hits provide branch targets at fetch time"],
+      "then": ["fetch can produce next-PC every cycle even through branches"],
+      "why": "Without BTB, every branch stalls fetch for decode (3-5 cycles). BTB makes branches free at fetch. Front-end throughput is fundamentally BTB-driven.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "tage_adapts_history_per_branch",
+      "if": ["different branches correlate with different lengths of history"],
+      "then": ["TAGE-style per-branch history length adaptation outperforms fixed-length predictors"],
+      "why": "Some branches are 'highly local' (correlated with last 5 outcomes); others are 'distantly correlated' (last 100). Single-history-length predictors compromise on both. TAGE's multi-table design lets each branch find its right table.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "ras_exact_for_balanced_calls",
+      "if": ["the call/return structure is balanced (no exceptions, no setjmp)"],
+      "then": ["RAS predicts return targets exactly"],
+      "why": "RAS is a simple stack; returns pop what calls pushed. As long as call/return are balanced, RAS is perfect. Unbalanced control flow (longjmp, exceptions) corrupts the stack and reduces accuracy.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "speculative_update_improves_dense_branches",
+      "if": ["multiple branches predict in close succession"],
+      "then": ["speculative predictor update gives each branch a distinct history view"],
+      "why": "Without speculative update, the predictor history is stale for back-to-back branches. With it, each branch's predict-time history reflects its immediate predecessors' predictions. Critical for tight loops with multiple branches per iteration.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "mispredict_amortises_at_high_accuracy",
+      "if": ["prediction accuracy exceeds ~95%"],
+      "then": ["the amortised cost of mispredict is small compared to fetch throughput gains"],
+      "why": "At 95% accuracy with 20-cycle mispredict penalty, the amortised cost is 1 cycle per branch. The throughput gain from running ahead of branches is much larger. Below 90%, the cost outweighs the benefit.",
+      "soundness_category": "cost_equivalence"
+    }
+  ]
+}

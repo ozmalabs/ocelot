@@ -1,0 +1,149 @@
+{
+  "id": "recount_realization",
+  "version": "1.1.0",
+  "depends_on": [],
+  "description": "GRAPH-NATIVE realization decisions for the recount faculty (the READ twin of describe_utterance.json). project_read_scene ingests each read predication's RAW structure onto a Concept node WITHOUT deciding anything: the agent/patient entity's FULL cased surface (recount_agent / recount_patient -- no head-collapse), the past-inflected predicate surface (recount_pred), the raw predicate lemma (recount_pred_lemma), and the raw slugs (recount_agent_slug / recount_patient_slug). THESE RULES make the decisions that used to be Python (recount_faculty.head_surface / is_function_predicate, both deleted): (1) recount_event_realizable DECIDES a predication is a realizable event iff its predicate lemma is NOT a closed-class preposition -- the held codebook is the Lit list below (the SAME In-over-Lit shape gap_awareness.json uses for its deficiency/self-word cue sets), so a mis-extracted preposition predicate ('of', from 'promoted the burning OF fossil fuels') is NOT realized; (2) recount_residual_mark DECIDES the complement is a named reading residual (recount_residual) the host reports honestly, never faked; (3) recount_say_agent / _event / _patient route the raw fields into the produce-frame slots the host reads back and speaks through LanguageProduction.produce -- realizing the WHOLE entity ('Justice Department', 'Public Citizen'), not just its head. Ablating recount_event_realizable makes the 'of' line realize (the skip is the rule's decision); ablating a say_* rule drops that slot (the realization is the rule's decision). Anchored on ['p','is_a','con'] (the SAME percept->concept edge the composed communicate_what_i_read rule reads); every rule is guarded by recount_pred_lemma!=null so it fires ONLY on recount concepts and never on any other agent's graph.\n\nv1.1.0 -- THE COPULAR FIX (filed as a SelfConcern gap: 'renders is_a wrongly'). project_read_scene's mechanical +ed morphology bridge (_past_surface) is a REGULAR-verb bridge; applied uniformly to the closed-class predicate lemma 'is_a' (a copular/designation predication -- 'a spokesman CALLED the critics misinformed' reads as is_a(spokesman, critics) on this pipeline; see the module's own honest note that reading_collapse's construction tag distinguishing genuine taxonomic is_a from a copular 'called X Y' does not survive onto this read path) it mis-produces the non-word 'is_aed'. recount_say_event now EXCLUDES the is_a lemma (added guard below) and the new recount_say_event_copular rule renders it with the held copular surface 'called' instead -- the SAME 'a rule's own literal is graph-resident, ablatable data' pattern seeds/recount_analysis_realization.json already uses for its five say_event literals (signalled/marked/reversed/revealed/leaned), not a Python if rel=='is_a'. This does not claim to recover the true source verb 'called' from the mis-collapsed dyadic (rel,a0,a1) triple (the complement 'misinformed' is dropped upstream, a separate honest reading-layer residual, not fixed here) -- it only stops rendering an ungrammatical non-word. Ablating recount_say_event_copular reverts to no say_event at all for an is_a concept (recount_say_event's own exclusion guard keeps it from filling in 'is_aed' either) -- an HONEST silence rather than a wrong word, proving the copular surface is this rule's own decision.",
+  "nodes": [],
+  "edges": [],
+  "productions": [],
+  "concepts": [],
+  "rules": [
+    {
+      "name": "recount_event_realizable",
+      "match": [["p", "is_a", "con"]],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Not", "arg": {"type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "con"}, "key": "recount_pred_lemma"},
+            "b": {"type": "Lit", "value": null}}},
+          {"type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "con"}, "key": "recount_realize"},
+            "b": {"type": "Lit", "value": null}},
+          {"type": "Not", "arg": {"type": "In",
+            "member": {"type": "Attr", "node": {"type": "Var", "name": "con"}, "key": "recount_pred_lemma"},
+            "container": {"type": "Lit", "value": [
+              "of", "in", "on", "at", "to", "for", "by", "with", "from", "as",
+              "into", "onto", "upon", "about", "over", "under", "between",
+              "through", "during", "without", "within", "against", "among",
+              "across", "behind", "beyond", "before", "after", "off"]}}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "con", "recount_realize", {"__term__": {"type": "Lit", "value": 1.0}}]
+      ]
+    },
+    {
+      "name": "recount_residual_mark",
+      "match": [["p", "is_a", "con"]],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Not", "arg": {"type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "con"}, "key": "recount_pred_lemma"},
+            "b": {"type": "Lit", "value": null}}},
+          {"type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "con"}, "key": "recount_residual"},
+            "b": {"type": "Lit", "value": null}},
+          {"type": "In",
+            "member": {"type": "Attr", "node": {"type": "Var", "name": "con"}, "key": "recount_pred_lemma"},
+            "container": {"type": "Lit", "value": [
+              "of", "in", "on", "at", "to", "for", "by", "with", "from", "as",
+              "into", "onto", "upon", "about", "over", "under", "between",
+              "through", "during", "without", "within", "against", "among",
+              "across", "behind", "beyond", "before", "after", "off"]}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "con", "recount_residual", {"__term__": {"type": "Lit", "value": 1.0}}]
+      ]
+    },
+    {
+      "name": "recount_say_agent",
+      "match": [["p", "is_a", "con"]],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "con"}, "key": "recount_realize"},
+            "b": {"type": "Lit", "value": 1.0}},
+          {"type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "con"}, "key": "say_agent"},
+            "b": {"type": "Lit", "value": null}},
+          {"type": "Not", "arg": {"type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "con"}, "key": "recount_agent"},
+            "b": {"type": "Lit", "value": null}}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "con", "say_agent", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "con"}, "key": "recount_agent"}}]
+      ]
+    },
+    {
+      "name": "recount_say_event",
+      "match": [["p", "is_a", "con"]],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "con"}, "key": "recount_realize"},
+            "b": {"type": "Lit", "value": 1.0}},
+          {"type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "con"}, "key": "say_event"},
+            "b": {"type": "Lit", "value": null}},
+          {"type": "Not", "arg": {"type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "con"}, "key": "recount_pred"},
+            "b": {"type": "Lit", "value": null}}},
+          {"type": "Not", "arg": {"type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "con"}, "key": "recount_pred_lemma"},
+            "b": {"type": "Lit", "value": "is_a"}}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "con", "say_event", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "con"}, "key": "recount_pred"}}]
+      ]
+    },
+    {
+      "name": "recount_say_event_copular",
+      "match": [["p", "is_a", "con"]],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "con"}, "key": "recount_realize"},
+            "b": {"type": "Lit", "value": 1.0}},
+          {"type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "con"}, "key": "recount_pred_lemma"},
+            "b": {"type": "Lit", "value": "is_a"}},
+          {"type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "con"}, "key": "say_event"},
+            "b": {"type": "Lit", "value": null}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "con", "say_event", {"__term__": {"type": "Lit", "value": "called"}}]
+      ]
+    },
+    {
+      "name": "recount_say_patient",
+      "match": [["p", "is_a", "con"]],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "con"}, "key": "recount_realize"},
+            "b": {"type": "Lit", "value": 1.0}},
+          {"type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "con"}, "key": "say_patient"},
+            "b": {"type": "Lit", "value": null}},
+          {"type": "Not", "arg": {"type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "con"}, "key": "recount_patient"},
+            "b": {"type": "Lit", "value": null}}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "con", "say_patient", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "con"}, "key": "recount_patient"}}]
+      ]
+    }
+  ]
+}

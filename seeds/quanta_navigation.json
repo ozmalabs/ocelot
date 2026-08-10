@@ -1,0 +1,6618 @@
+{
+ "id": "quanta_navigation",
+ "version": "1.0.0",
+ "depends_on": [
+  "navigation_modes",
+  "affordance_basis"
+ ],
+ "description": "Graph-native quantum-grain flood/route/explore/refine over SpaceQuantum belief (dynamic, foveated, N-dimensional quanta navigation -- CLAUDE.md's Rust-is-the-agent split: this seed is graph DATA only, no Python decisions). qf_seed_goal/qf_seed_frontier seed the Bellman flood root(s) (single committed goal, or multi-source over every frontier quantum while exploring); qf_relax propagates qdist=distance-to-goal backward over portal edges gated by oneway_ok; qf_visit marks the avatar's containing quantum visited; qf_hop_direct/qf_hop_route are the ONE decision writing game.chosen_action (per-dim sign step when the goal shares the avatar's box, else Argmin-portal descent over a pool FILTERED by oneway_ok+freshness, clamped to the crossing span), mapping the desired displacement to the world's action vocabulary via the EXISTING is_self-region responds_via/ControlResponse Dot-pick (no hardcoded Up/Down/Left/Right, N-dim by construction); qf_frontier_goal commits the nearest frontier (Argmin, deterministic tiebreak -- exactly one mint per cycle, not one per tied frontier) as a uniform Goal{pose,exploration,commit_epoch} node; qf_goal_retire is the ONLY rule that removes a committed_goal, and only an exploration-minted one (reached / no-longer-frontier / superseded by a fresher one) -- world-committed goals are never touched; qf_stale_on_belief_change/_block_interior/_block_portal turn an observed belief correction or blocked crossing into either a per-dim stale mark (resplit) or a flipped portal oneway_ok; qf_requantize_flag is the adapter's epoch-gated cue to re-run space_quantize; qf_closed/qf_mint_hyp port msp_closed/msp_mint_hyp to quantum grain (movement exhausted -> a non-movement-affordance Hypothesis). All qf_* rules guard on game.nav_repr==\"quanta\"; hop_descend_gradient (cell mode, seeds/grid_navigation.json) is untouched and starves naturally in quanta mode since _dist is never written there.",
+ "microtheory": {
+  "name": "quanta_navigation",
+  "description": "quantum-grain flood/route/explore/refine over SpaceQuantum belief, body-conditional and foveated"
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [],
+ "concepts": [],
+ "rules": [
+  {
+   "name": "qf_seed_goal",
+   "comment": "a WORLD-committed goal's containing quantum -> qdist=0 (single-source flood root). Restricted to `world==1` goals ONLY (not exploration-minted ones): an exploration goal's own quantum is ALREADY a flood source via qf_seed_frontier (it's one of the frontiers) -- seeding it AGAIN here would be redundant while fresh and actively HARMFUL once stale (a churned exploration-goal pose that no longer sits in a frontier would otherwise plant a bogus single-source root at an arbitrary already-explored cell, competing with the real multi-source frontier flood qf_hop_route/qf_frontier_goal depend on).",
+   "match": [
+    [
+     "Q",
+     "in_space",
+     "game"
+    ],
+    [
+     "game",
+     "committed_goal",
+     "G"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "game"
+       },
+       "key": "nav_repr"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "quanta"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "G"
+       },
+       "key": "world"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "And",
+        "items": [
+         {
+          "type": "Gte",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "G"
+            },
+            "key": "pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 0
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "lo"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 0
+           }
+          }
+         },
+         {
+          "type": "Lte",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "G"
+            },
+            "key": "pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 0
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "hi"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 0
+           }
+          }
+         }
+        ]
+       },
+       {
+        "type": "And",
+        "items": [
+         {
+          "type": "Gte",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "G"
+            },
+            "key": "pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 1
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "lo"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 1
+           }
+          }
+         },
+         {
+          "type": "Lte",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "G"
+            },
+            "key": "pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 1
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "hi"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 1
+           }
+          }
+         }
+        ]
+       },
+       {
+        "type": "And",
+        "items": [
+         {
+          "type": "Gte",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "G"
+            },
+            "key": "pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 2
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "lo"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 2
+           }
+          }
+         },
+         {
+          "type": "Lte",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "G"
+            },
+            "key": "pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 2
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "hi"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 2
+           }
+          }
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr_if_different",
+     "Q",
+     "qdist",
+     0.0
+    ],
+    [
+     "set_attr_if_different",
+     "Q",
+     "qdist_epoch",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "game"
+       },
+       "key": "flood_epoch"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "qf_seed_frontier",
+   "comment": "no WORLD-committed goal (pure exploration) -> every frontier quantum is a flood source (multi-source qdist=0); qf_frontier_goal separately commits ONE of them as a bookkeeping Goal{pose} (for qf_hop_direct's exact-arrival step + other consumers), but that exploration goal does NOT gate this rule off (guard is world==1 specifically, not 'any committed_goal') -- the multi-source flood stays live across every known frontier the whole time exploration is active, so hop can still route toward WHICHEVER frontier is nearer via the CURRENTLY known portal graph even if the nominally-committed one turns out to be unreached / disconnected so far. This is what makes aggressive goal retiring unnecessary for correctness (qf_goal_retire is now a lifecycle/bookkeeping cleanup, not a routing necessity).",
+   "match": [
+    [
+     "Q",
+     "in_space",
+     "game"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "game"
+       },
+       "key": "nav_repr"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "quanta"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "Q"
+       },
+       "key": "kind"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "frontier"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "game"
+        },
+        "edge_type": "committed_goal",
+        "any_type": false
+       },
+       "var_name": "_g",
+       "predicate": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "_g"
+         },
+         "key": "world"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr_if_different",
+     "Q",
+     "qdist",
+     0.0
+    ],
+    [
+     "set_attr_if_different",
+     "Q",
+     "qdist_epoch",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "game"
+       },
+       "key": "flood_epoch"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "qf_relax",
+   "comment": "Bellman relax: Q.qdist <- min(Q.qdist, R.qdist+cost) over portal Q->R with oneway_ok. Batched -- bindings snapshotted before mutation, converges via set_attr_if_different's own progress flag.",
+   "match": [
+    [
+     "Q",
+     "portal",
+     "R"
+    ],
+    [
+     "Q",
+     "in_space",
+     "game"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "game"
+       },
+       "key": "nav_repr"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "quanta"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "EdgeAttr",
+       "edge": {
+        "type": "Vec",
+        "items": [
+         {
+          "type": "Var",
+          "name": "Q"
+         },
+         {
+          "type": "Lit",
+          "value": "portal"
+         },
+         {
+          "type": "Var",
+          "name": "R"
+         }
+        ]
+       },
+       "key": "oneway_ok"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Gte",
+      "a": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "R"
+         },
+         "key": "qdist_epoch"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "game"
+         },
+         "key": "flood_epoch"
+        }
+       },
+       "then": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "R"
+        },
+        "key": "qdist"
+       },
+       "other": {
+        "type": "Lit",
+        "value": -1.0
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     },
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Lt",
+        "a": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "Q"
+           },
+           "key": "qdist_epoch"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "game"
+           },
+           "key": "flood_epoch"
+          }
+         },
+         "then": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "Q"
+          },
+          "key": "qdist"
+         },
+         "other": {
+          "type": "Lit",
+          "value": -1.0
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.0
+        }
+       },
+       {
+        "type": "Gt",
+        "a": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "Q"
+           },
+           "key": "qdist_epoch"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "game"
+           },
+           "key": "flood_epoch"
+          }
+         },
+         "then": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "Q"
+          },
+          "key": "qdist"
+         },
+         "other": {
+          "type": "Lit",
+          "value": -1.0
+         }
+        },
+        "b": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "IfThenElse",
+           "cond": {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "qdist_epoch"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "game"
+             },
+             "key": "flood_epoch"
+            }
+           },
+           "then": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "R"
+            },
+            "key": "qdist"
+           },
+           "other": {
+            "type": "Lit",
+            "value": -1.0
+           }
+          },
+          {
+           "type": "EdgeAttr",
+           "edge": {
+            "type": "Vec",
+            "items": [
+             {
+              "type": "Var",
+              "name": "Q"
+             },
+             {
+              "type": "Lit",
+              "value": "portal"
+             },
+             {
+              "type": "Var",
+              "name": "R"
+             }
+            ]
+           },
+           "key": "cost"
+          }
+         ]
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr_if_different",
+     "Q",
+     "qdist",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "R"
+           },
+           "key": "qdist_epoch"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "game"
+           },
+           "key": "flood_epoch"
+          }
+         },
+         "then": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "R"
+          },
+          "key": "qdist"
+         },
+         "other": {
+          "type": "Lit",
+          "value": -1.0
+         }
+        },
+        {
+         "type": "EdgeAttr",
+         "edge": {
+          "type": "Vec",
+          "items": [
+           {
+            "type": "Var",
+            "name": "Q"
+           },
+           {
+            "type": "Lit",
+            "value": "portal"
+           },
+           {
+            "type": "Var",
+            "name": "R"
+           }
+          ]
+         },
+         "key": "cost"
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr_if_different",
+     "Q",
+     "qdist_epoch",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "game"
+       },
+       "key": "flood_epoch"
+      }
+     }
+    ]
+   ],
+   "batch": true
+  },
+  {
+   "name": "qf_visit",
+   "match": [
+    [
+     "Q",
+     "in_space",
+     "game"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "game"
+       },
+       "key": "nav_repr"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "quanta"
+      }
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "And",
+        "items": [
+         {
+          "type": "Gte",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "game"
+            },
+            "key": "avatar_pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 0
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "lo"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 0
+           }
+          }
+         },
+         {
+          "type": "Lte",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "game"
+            },
+            "key": "avatar_pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 0
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "hi"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 0
+           }
+          }
+         }
+        ]
+       },
+       {
+        "type": "And",
+        "items": [
+         {
+          "type": "Gte",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "game"
+            },
+            "key": "avatar_pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 1
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "lo"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 1
+           }
+          }
+         },
+         {
+          "type": "Lte",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "game"
+            },
+            "key": "avatar_pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 1
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "hi"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 1
+           }
+          }
+         }
+        ]
+       },
+       {
+        "type": "And",
+        "items": [
+         {
+          "type": "Gte",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "game"
+            },
+            "key": "avatar_pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 2
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "lo"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 2
+           }
+          }
+         },
+         {
+          "type": "Lte",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "game"
+            },
+            "key": "avatar_pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 2
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "hi"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 2
+           }
+          }
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr_if_different",
+     "Q",
+     "visited",
+     1.0
+    ]
+   ]
+  },
+  {
+   "name": "qf_hop_direct",
+   "comment": "goal is inside the avatar's own quantum -> per-dim sign step straight to it (a passable box admits any interior motion by construction, no per-cell flood needed).",
+   "match": [
+    [
+     "Q",
+     "in_space",
+     "game"
+    ],
+    [
+     "game",
+     "committed_goal",
+     "G"
+    ],
+    [
+     "game",
+     "has_region",
+     "sr"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "game"
+       },
+       "key": "nav_repr"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "quanta"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "game"
+        },
+        "key": "nav_mode"
+       },
+       "b": {
+        "type": "Lit",
+        "value": "pocket_escape"
+       }
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "sr"
+       },
+       "key": "is_self"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "And",
+        "items": [
+         {
+          "type": "Gte",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "game"
+            },
+            "key": "avatar_pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 0
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "lo"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 0
+           }
+          }
+         },
+         {
+          "type": "Lte",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "game"
+            },
+            "key": "avatar_pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 0
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "hi"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 0
+           }
+          }
+         }
+        ]
+       },
+       {
+        "type": "And",
+        "items": [
+         {
+          "type": "Gte",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "game"
+            },
+            "key": "avatar_pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 1
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "lo"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 1
+           }
+          }
+         },
+         {
+          "type": "Lte",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "game"
+            },
+            "key": "avatar_pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 1
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "hi"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 1
+           }
+          }
+         }
+        ]
+       },
+       {
+        "type": "And",
+        "items": [
+         {
+          "type": "Gte",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "game"
+            },
+            "key": "avatar_pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 2
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "lo"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 2
+           }
+          }
+         },
+         {
+          "type": "Lte",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "game"
+            },
+            "key": "avatar_pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 2
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "hi"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 2
+           }
+          }
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "And",
+        "items": [
+         {
+          "type": "Gte",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "G"
+            },
+            "key": "pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 0
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "lo"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 0
+           }
+          }
+         },
+         {
+          "type": "Lte",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "G"
+            },
+            "key": "pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 0
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "hi"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 0
+           }
+          }
+         }
+        ]
+       },
+       {
+        "type": "And",
+        "items": [
+         {
+          "type": "Gte",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "G"
+            },
+            "key": "pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 1
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "lo"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 1
+           }
+          }
+         },
+         {
+          "type": "Lte",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "G"
+            },
+            "key": "pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 1
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "hi"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 1
+           }
+          }
+         }
+        ]
+       },
+       {
+        "type": "And",
+        "items": [
+         {
+          "type": "Gte",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "G"
+            },
+            "key": "pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 2
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "lo"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 2
+           }
+          }
+         },
+         {
+          "type": "Lte",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "G"
+            },
+            "key": "pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 2
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "hi"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 2
+           }
+          }
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "game",
+     "chosen_action",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Argmax",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "sr"
+         },
+         "edge_type": "responds_via",
+         "any_type": false
+        },
+        "var_name": "cr",
+        "value": {
+         "type": "Dot",
+         "a": {
+          "type": "Vec",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "cr"
+            },
+            "key": "dr"
+           },
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "cr"
+            },
+            "key": "dc"
+           },
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "cr"
+            },
+            "key": "dz"
+           }
+          ]
+         },
+         "b": {
+          "type": "Vec",
+          "items": [
+           {
+            "type": "IfThenElse",
+            "cond": {
+             "type": "Gt",
+             "a": {
+              "type": "Minus",
+              "a": {
+               "type": "IndexAt",
+               "seq": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "G"
+                },
+                "key": "pose"
+               },
+               "index": {
+                "type": "Lit",
+                "value": 0
+               }
+              },
+              "b": {
+               "type": "IndexAt",
+               "seq": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "game"
+                },
+                "key": "avatar_pose"
+               },
+               "index": {
+                "type": "Lit",
+                "value": 0
+               }
+              }
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0.0
+             }
+            },
+            "then": {
+             "type": "Lit",
+             "value": 1.0
+            },
+            "other": {
+             "type": "IfThenElse",
+             "cond": {
+              "type": "Lt",
+              "a": {
+               "type": "Minus",
+               "a": {
+                "type": "IndexAt",
+                "seq": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "G"
+                 },
+                 "key": "pose"
+                },
+                "index": {
+                 "type": "Lit",
+                 "value": 0
+                }
+               },
+               "b": {
+                "type": "IndexAt",
+                "seq": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "game"
+                 },
+                 "key": "avatar_pose"
+                },
+                "index": {
+                 "type": "Lit",
+                 "value": 0
+                }
+               }
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0.0
+              }
+             },
+             "then": {
+              "type": "Lit",
+              "value": -1.0
+             },
+             "other": {
+              "type": "Lit",
+              "value": 0.0
+             }
+            }
+           },
+           {
+            "type": "IfThenElse",
+            "cond": {
+             "type": "Gt",
+             "a": {
+              "type": "Minus",
+              "a": {
+               "type": "IndexAt",
+               "seq": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "G"
+                },
+                "key": "pose"
+               },
+               "index": {
+                "type": "Lit",
+                "value": 1
+               }
+              },
+              "b": {
+               "type": "IndexAt",
+               "seq": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "game"
+                },
+                "key": "avatar_pose"
+               },
+               "index": {
+                "type": "Lit",
+                "value": 1
+               }
+              }
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0.0
+             }
+            },
+            "then": {
+             "type": "Lit",
+             "value": 1.0
+            },
+            "other": {
+             "type": "IfThenElse",
+             "cond": {
+              "type": "Lt",
+              "a": {
+               "type": "Minus",
+               "a": {
+                "type": "IndexAt",
+                "seq": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "G"
+                 },
+                 "key": "pose"
+                },
+                "index": {
+                 "type": "Lit",
+                 "value": 1
+                }
+               },
+               "b": {
+                "type": "IndexAt",
+                "seq": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "game"
+                 },
+                 "key": "avatar_pose"
+                },
+                "index": {
+                 "type": "Lit",
+                 "value": 1
+                }
+               }
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0.0
+              }
+             },
+             "then": {
+              "type": "Lit",
+              "value": -1.0
+             },
+             "other": {
+              "type": "Lit",
+              "value": 0.0
+             }
+            }
+           },
+           {
+            "type": "IfThenElse",
+            "cond": {
+             "type": "Gt",
+             "a": {
+              "type": "Minus",
+              "a": {
+               "type": "IndexAt",
+               "seq": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "G"
+                },
+                "key": "pose"
+               },
+               "index": {
+                "type": "Lit",
+                "value": 2
+               }
+              },
+              "b": {
+               "type": "IndexAt",
+               "seq": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "game"
+                },
+                "key": "avatar_pose"
+               },
+               "index": {
+                "type": "Lit",
+                "value": 2
+               }
+              }
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0.0
+             }
+            },
+            "then": {
+             "type": "Lit",
+             "value": 1.0
+            },
+            "other": {
+             "type": "IfThenElse",
+             "cond": {
+              "type": "Lt",
+              "a": {
+               "type": "Minus",
+               "a": {
+                "type": "IndexAt",
+                "seq": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "G"
+                 },
+                 "key": "pose"
+                },
+                "index": {
+                 "type": "Lit",
+                 "value": 2
+                }
+               },
+               "b": {
+                "type": "IndexAt",
+                "seq": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "game"
+                 },
+                 "key": "avatar_pose"
+                },
+                "index": {
+                 "type": "Lit",
+                 "value": 2
+                }
+               }
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0.0
+              }
+             },
+             "then": {
+              "type": "Lit",
+              "value": -1.0
+             },
+             "other": {
+              "type": "Lit",
+              "value": 0.0
+             }
+            }
+           }
+          ]
+         }
+        },
+        "default": {
+         "type": "Var",
+         "name": "sr"
+        }
+       },
+       "key": "cname"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "qf_hop_route",
+   "comment": "goal not in the avatar's own quantum (or exploring) -> pick the portal minimising (neighbour qdist + cost) from the FILTERED candidate pool (oneway_ok==1 AND target qdist fresh this epoch -- filtered into the Argmin pool itself, not just guarded), then step: crossing dim follows the portal's dir (gated in-span on the other dims), other dims clamp toward the shared span.",
+   "match": [
+    [
+     "Q",
+     "in_space",
+     "game"
+    ],
+    [
+     "game",
+     "has_region",
+     "sr"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "game"
+       },
+       "key": "nav_repr"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "quanta"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "game"
+        },
+        "key": "nav_mode"
+       },
+       "b": {
+        "type": "Lit",
+        "value": "pocket_escape"
+       }
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "sr"
+       },
+       "key": "is_self"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "And",
+        "items": [
+         {
+          "type": "Gte",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "game"
+            },
+            "key": "avatar_pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 0
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "lo"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 0
+           }
+          }
+         },
+         {
+          "type": "Lte",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "game"
+            },
+            "key": "avatar_pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 0
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "hi"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 0
+           }
+          }
+         }
+        ]
+       },
+       {
+        "type": "And",
+        "items": [
+         {
+          "type": "Gte",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "game"
+            },
+            "key": "avatar_pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 1
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "lo"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 1
+           }
+          }
+         },
+         {
+          "type": "Lte",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "game"
+            },
+            "key": "avatar_pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 1
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "hi"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 1
+           }
+          }
+         }
+        ]
+       },
+       {
+        "type": "And",
+        "items": [
+         {
+          "type": "Gte",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "game"
+            },
+            "key": "avatar_pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 2
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "lo"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 2
+           }
+          }
+         },
+         {
+          "type": "Lte",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "game"
+            },
+            "key": "avatar_pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 2
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "hi"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 2
+           }
+          }
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "game"
+        },
+        "edge_type": "committed_goal",
+        "any_type": false
+       },
+       "var_name": "G2",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "And",
+          "items": [
+           {
+            "type": "Gte",
+            "a": {
+             "type": "IndexAt",
+             "seq": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "G2"
+              },
+              "key": "pose"
+             },
+             "index": {
+              "type": "Lit",
+              "value": 0
+             }
+            },
+            "b": {
+             "type": "IndexAt",
+             "seq": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "lo"
+             },
+             "index": {
+              "type": "Lit",
+              "value": 0
+             }
+            }
+           },
+           {
+            "type": "Lte",
+            "a": {
+             "type": "IndexAt",
+             "seq": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "G2"
+              },
+              "key": "pose"
+             },
+             "index": {
+              "type": "Lit",
+              "value": 0
+             }
+            },
+            "b": {
+             "type": "IndexAt",
+             "seq": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "hi"
+             },
+             "index": {
+              "type": "Lit",
+              "value": 0
+             }
+            }
+           }
+          ]
+         },
+         {
+          "type": "And",
+          "items": [
+           {
+            "type": "Gte",
+            "a": {
+             "type": "IndexAt",
+             "seq": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "G2"
+              },
+              "key": "pose"
+             },
+             "index": {
+              "type": "Lit",
+              "value": 1
+             }
+            },
+            "b": {
+             "type": "IndexAt",
+             "seq": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "lo"
+             },
+             "index": {
+              "type": "Lit",
+              "value": 1
+             }
+            }
+           },
+           {
+            "type": "Lte",
+            "a": {
+             "type": "IndexAt",
+             "seq": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "G2"
+              },
+              "key": "pose"
+             },
+             "index": {
+              "type": "Lit",
+              "value": 1
+             }
+            },
+            "b": {
+             "type": "IndexAt",
+             "seq": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "hi"
+             },
+             "index": {
+              "type": "Lit",
+              "value": 1
+             }
+            }
+           }
+          ]
+         },
+         {
+          "type": "And",
+          "items": [
+           {
+            "type": "Gte",
+            "a": {
+             "type": "IndexAt",
+             "seq": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "G2"
+              },
+              "key": "pose"
+             },
+             "index": {
+              "type": "Lit",
+              "value": 2
+             }
+            },
+            "b": {
+             "type": "IndexAt",
+             "seq": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "lo"
+             },
+             "index": {
+              "type": "Lit",
+              "value": 2
+             }
+            }
+           },
+           {
+            "type": "Lte",
+            "a": {
+             "type": "IndexAt",
+             "seq": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "G2"
+              },
+              "key": "pose"
+             },
+             "index": {
+              "type": "Lit",
+              "value": 2
+             }
+            },
+            "b": {
+             "type": "IndexAt",
+             "seq": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Q"
+              },
+              "key": "hi"
+             },
+             "index": {
+              "type": "Lit",
+              "value": 2
+             }
+            }
+           }
+          ]
+         }
+        ]
+       }
+      }
+     },
+     {
+      "type": "Exists",
+      "source": {
+       "type": "Edges",
+       "node": {
+        "type": "Var",
+        "name": "Q"
+       },
+       "edge_type": "portal",
+       "any_type": false
+      },
+      "var_name": "h",
+      "predicate": {
+       "type": "And",
+       "items": [
+        {
+         "type": "Eq",
+         "a": {
+          "type": "EdgeAttr",
+          "edge": {
+           "type": "Var",
+           "name": "h"
+          },
+          "key": "oneway_ok"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1.0
+         }
+        },
+        {
+         "type": "Gte",
+         "a": {
+          "type": "IfThenElse",
+          "cond": {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Nth",
+             "items": {
+              "type": "Var",
+              "name": "h"
+             },
+             "index": 2
+            },
+            "key": "qdist_epoch"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "game"
+            },
+            "key": "flood_epoch"
+           }
+          },
+          "then": {
+           "type": "Attr",
+           "node": {
+            "type": "Nth",
+            "items": {
+             "type": "Var",
+             "name": "h"
+            },
+            "index": 2
+           },
+           "key": "qdist"
+          },
+          "other": {
+           "type": "Lit",
+           "value": -1.0
+          }
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        }
+       ]
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "game",
+     "chosen_action",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Argmax",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "sr"
+         },
+         "edge_type": "responds_via",
+         "any_type": false
+        },
+        "var_name": "cr",
+        "value": {
+         "type": "Dot",
+         "a": {
+          "type": "Vec",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "cr"
+            },
+            "key": "dr"
+           },
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "cr"
+            },
+            "key": "dc"
+           },
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "cr"
+            },
+            "key": "dz"
+           }
+          ]
+         },
+         "b": {
+          "type": "Let",
+          "name": "winner",
+          "value": {
+           "type": "Argmin",
+           "source": {
+            "type": "Filter",
+            "source": {
+             "type": "Edges",
+             "node": {
+              "type": "Var",
+              "name": "Q"
+             },
+             "edge_type": "portal",
+             "any_type": false
+            },
+            "var_name": "h",
+            "predicate": {
+             "type": "And",
+             "items": [
+              {
+               "type": "Eq",
+               "a": {
+                "type": "EdgeAttr",
+                "edge": {
+                 "type": "Var",
+                 "name": "h"
+                },
+                "key": "oneway_ok"
+               },
+               "b": {
+                "type": "Lit",
+                "value": 1.0
+               }
+              },
+              {
+               "type": "Gte",
+               "a": {
+                "type": "IfThenElse",
+                "cond": {
+                 "type": "Eq",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Nth",
+                   "items": {
+                    "type": "Var",
+                    "name": "h"
+                   },
+                   "index": 2
+                  },
+                  "key": "qdist_epoch"
+                 },
+                 "b": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "game"
+                  },
+                  "key": "flood_epoch"
+                 }
+                },
+                "then": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Nth",
+                  "items": {
+                   "type": "Var",
+                   "name": "h"
+                  },
+                  "index": 2
+                 },
+                 "key": "qdist"
+                },
+                "other": {
+                 "type": "Lit",
+                 "value": -1.0
+                }
+               },
+               "b": {
+                "type": "Lit",
+                "value": 0.0
+               }
+              }
+             ]
+            }
+           },
+           "var_name": "h",
+           "value": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "IfThenElse",
+              "cond": {
+               "type": "Eq",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Nth",
+                 "items": {
+                  "type": "Var",
+                  "name": "h"
+                 },
+                 "index": 2
+                },
+                "key": "qdist_epoch"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "game"
+                },
+                "key": "flood_epoch"
+               }
+              },
+              "then": {
+               "type": "Attr",
+               "node": {
+                "type": "Nth",
+                "items": {
+                 "type": "Var",
+                 "name": "h"
+                },
+                "index": 2
+               },
+               "key": "qdist"
+              },
+              "other": {
+               "type": "Lit",
+               "value": -1.0
+              }
+             },
+             {
+              "type": "EdgeAttr",
+              "edge": {
+               "type": "Var",
+               "name": "h"
+              },
+              "key": "cost"
+             }
+            ]
+           },
+           "default": null
+          },
+          "body": {
+           "type": "Vec",
+           "items": [
+            {
+             "type": "IfThenElse",
+             "cond": {
+              "type": "Eq",
+              "a": {
+               "type": "Lit",
+               "value": 0.0
+              },
+              "b": {
+               "type": "EdgeAttr",
+               "edge": {
+                "type": "Var",
+                "name": "winner"
+               },
+               "key": "dim"
+              }
+             },
+             "then": {
+              "type": "IfThenElse",
+              "cond": {
+               "type": "And",
+               "items": [
+                {
+                 "type": "And",
+                 "items": [
+                  {
+                   "type": "Gte",
+                   "a": {
+                    "type": "IndexAt",
+                    "seq": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "game"
+                     },
+                     "key": "avatar_pose"
+                    },
+                    "index": {
+                     "type": "Lit",
+                     "value": 1
+                    }
+                   },
+                   "b": {
+                    "type": "IndexAt",
+                    "seq": {
+                     "type": "EdgeAttr",
+                     "edge": {
+                      "type": "Var",
+                      "name": "winner"
+                     },
+                     "key": "span_lo"
+                    },
+                    "index": {
+                     "type": "Lit",
+                     "value": 1
+                    }
+                   }
+                  },
+                  {
+                   "type": "Lte",
+                   "a": {
+                    "type": "IndexAt",
+                    "seq": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "game"
+                     },
+                     "key": "avatar_pose"
+                    },
+                    "index": {
+                     "type": "Lit",
+                     "value": 1
+                    }
+                   },
+                   "b": {
+                    "type": "IndexAt",
+                    "seq": {
+                     "type": "EdgeAttr",
+                     "edge": {
+                      "type": "Var",
+                      "name": "winner"
+                     },
+                     "key": "span_hi"
+                    },
+                    "index": {
+                     "type": "Lit",
+                     "value": 1
+                    }
+                   }
+                  }
+                 ]
+                },
+                {
+                 "type": "And",
+                 "items": [
+                  {
+                   "type": "Gte",
+                   "a": {
+                    "type": "IndexAt",
+                    "seq": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "game"
+                     },
+                     "key": "avatar_pose"
+                    },
+                    "index": {
+                     "type": "Lit",
+                     "value": 2
+                    }
+                   },
+                   "b": {
+                    "type": "IndexAt",
+                    "seq": {
+                     "type": "EdgeAttr",
+                     "edge": {
+                      "type": "Var",
+                      "name": "winner"
+                     },
+                     "key": "span_lo"
+                    },
+                    "index": {
+                     "type": "Lit",
+                     "value": 2
+                    }
+                   }
+                  },
+                  {
+                   "type": "Lte",
+                   "a": {
+                    "type": "IndexAt",
+                    "seq": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "game"
+                     },
+                     "key": "avatar_pose"
+                    },
+                    "index": {
+                     "type": "Lit",
+                     "value": 2
+                    }
+                   },
+                   "b": {
+                    "type": "IndexAt",
+                    "seq": {
+                     "type": "EdgeAttr",
+                     "edge": {
+                      "type": "Var",
+                      "name": "winner"
+                     },
+                     "key": "span_hi"
+                    },
+                    "index": {
+                     "type": "Lit",
+                     "value": 2
+                    }
+                   }
+                  }
+                 ]
+                }
+               ]
+              },
+              "then": {
+               "type": "EdgeAttr",
+               "edge": {
+                "type": "Var",
+                "name": "winner"
+               },
+               "key": "dir"
+              },
+              "other": {
+               "type": "Lit",
+               "value": 0.0
+              }
+             },
+             "other": {
+              "type": "IfThenElse",
+              "cond": {
+               "type": "Gt",
+               "a": {
+                "type": "Minus",
+                "a": {
+                 "type": "IfThenElse",
+                 "cond": {
+                  "type": "Lt",
+                  "a": {
+                   "type": "IndexAt",
+                   "seq": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "game"
+                    },
+                    "key": "avatar_pose"
+                   },
+                   "index": {
+                    "type": "Lit",
+                    "value": 0
+                   }
+                  },
+                  "b": {
+                   "type": "IndexAt",
+                   "seq": {
+                    "type": "EdgeAttr",
+                    "edge": {
+                     "type": "Var",
+                     "name": "winner"
+                    },
+                    "key": "span_lo"
+                   },
+                   "index": {
+                    "type": "Lit",
+                    "value": 0
+                   }
+                  }
+                 },
+                 "then": {
+                  "type": "IndexAt",
+                  "seq": {
+                   "type": "EdgeAttr",
+                   "edge": {
+                    "type": "Var",
+                    "name": "winner"
+                   },
+                   "key": "span_lo"
+                  },
+                  "index": {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 },
+                 "other": {
+                  "type": "IfThenElse",
+                  "cond": {
+                   "type": "Gt",
+                   "a": {
+                    "type": "IndexAt",
+                    "seq": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "game"
+                     },
+                     "key": "avatar_pose"
+                    },
+                    "index": {
+                     "type": "Lit",
+                     "value": 0
+                    }
+                   },
+                   "b": {
+                    "type": "IndexAt",
+                    "seq": {
+                     "type": "EdgeAttr",
+                     "edge": {
+                      "type": "Var",
+                      "name": "winner"
+                     },
+                     "key": "span_hi"
+                    },
+                    "index": {
+                     "type": "Lit",
+                     "value": 0
+                    }
+                   }
+                  },
+                  "then": {
+                   "type": "IndexAt",
+                   "seq": {
+                    "type": "EdgeAttr",
+                    "edge": {
+                     "type": "Var",
+                     "name": "winner"
+                    },
+                    "key": "span_hi"
+                   },
+                   "index": {
+                    "type": "Lit",
+                    "value": 0
+                   }
+                  },
+                  "other": {
+                   "type": "IndexAt",
+                   "seq": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "game"
+                    },
+                    "key": "avatar_pose"
+                   },
+                   "index": {
+                    "type": "Lit",
+                    "value": 0
+                   }
+                  }
+                 }
+                },
+                "b": {
+                 "type": "IndexAt",
+                 "seq": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "game"
+                  },
+                  "key": "avatar_pose"
+                 },
+                 "index": {
+                  "type": "Lit",
+                  "value": 0
+                 }
+                }
+               },
+               "b": {
+                "type": "Lit",
+                "value": 0.0
+               }
+              },
+              "then": {
+               "type": "Lit",
+               "value": 1.0
+              },
+              "other": {
+               "type": "IfThenElse",
+               "cond": {
+                "type": "Lt",
+                "a": {
+                 "type": "Minus",
+                 "a": {
+                  "type": "IfThenElse",
+                  "cond": {
+                   "type": "Lt",
+                   "a": {
+                    "type": "IndexAt",
+                    "seq": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "game"
+                     },
+                     "key": "avatar_pose"
+                    },
+                    "index": {
+                     "type": "Lit",
+                     "value": 0
+                    }
+                   },
+                   "b": {
+                    "type": "IndexAt",
+                    "seq": {
+                     "type": "EdgeAttr",
+                     "edge": {
+                      "type": "Var",
+                      "name": "winner"
+                     },
+                     "key": "span_lo"
+                    },
+                    "index": {
+                     "type": "Lit",
+                     "value": 0
+                    }
+                   }
+                  },
+                  "then": {
+                   "type": "IndexAt",
+                   "seq": {
+                    "type": "EdgeAttr",
+                    "edge": {
+                     "type": "Var",
+                     "name": "winner"
+                    },
+                    "key": "span_lo"
+                   },
+                   "index": {
+                    "type": "Lit",
+                    "value": 0
+                   }
+                  },
+                  "other": {
+                   "type": "IfThenElse",
+                   "cond": {
+                    "type": "Gt",
+                    "a": {
+                     "type": "IndexAt",
+                     "seq": {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "game"
+                      },
+                      "key": "avatar_pose"
+                     },
+                     "index": {
+                      "type": "Lit",
+                      "value": 0
+                     }
+                    },
+                    "b": {
+                     "type": "IndexAt",
+                     "seq": {
+                      "type": "EdgeAttr",
+                      "edge": {
+                       "type": "Var",
+                       "name": "winner"
+                      },
+                      "key": "span_hi"
+                     },
+                     "index": {
+                      "type": "Lit",
+                      "value": 0
+                     }
+                    }
+                   },
+                   "then": {
+                    "type": "IndexAt",
+                    "seq": {
+                     "type": "EdgeAttr",
+                     "edge": {
+                      "type": "Var",
+                      "name": "winner"
+                     },
+                     "key": "span_hi"
+                    },
+                    "index": {
+                     "type": "Lit",
+                     "value": 0
+                    }
+                   },
+                   "other": {
+                    "type": "IndexAt",
+                    "seq": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "game"
+                     },
+                     "key": "avatar_pose"
+                    },
+                    "index": {
+                     "type": "Lit",
+                     "value": 0
+                    }
+                   }
+                  }
+                 },
+                 "b": {
+                  "type": "IndexAt",
+                  "seq": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "game"
+                   },
+                   "key": "avatar_pose"
+                  },
+                  "index": {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 }
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": 0.0
+                }
+               },
+               "then": {
+                "type": "Lit",
+                "value": -1.0
+               },
+               "other": {
+                "type": "Lit",
+                "value": 0.0
+               }
+              }
+             }
+            },
+            {
+             "type": "IfThenElse",
+             "cond": {
+              "type": "Eq",
+              "a": {
+               "type": "Lit",
+               "value": 1.0
+              },
+              "b": {
+               "type": "EdgeAttr",
+               "edge": {
+                "type": "Var",
+                "name": "winner"
+               },
+               "key": "dim"
+              }
+             },
+             "then": {
+              "type": "IfThenElse",
+              "cond": {
+               "type": "And",
+               "items": [
+                {
+                 "type": "And",
+                 "items": [
+                  {
+                   "type": "Gte",
+                   "a": {
+                    "type": "IndexAt",
+                    "seq": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "game"
+                     },
+                     "key": "avatar_pose"
+                    },
+                    "index": {
+                     "type": "Lit",
+                     "value": 0
+                    }
+                   },
+                   "b": {
+                    "type": "IndexAt",
+                    "seq": {
+                     "type": "EdgeAttr",
+                     "edge": {
+                      "type": "Var",
+                      "name": "winner"
+                     },
+                     "key": "span_lo"
+                    },
+                    "index": {
+                     "type": "Lit",
+                     "value": 0
+                    }
+                   }
+                  },
+                  {
+                   "type": "Lte",
+                   "a": {
+                    "type": "IndexAt",
+                    "seq": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "game"
+                     },
+                     "key": "avatar_pose"
+                    },
+                    "index": {
+                     "type": "Lit",
+                     "value": 0
+                    }
+                   },
+                   "b": {
+                    "type": "IndexAt",
+                    "seq": {
+                     "type": "EdgeAttr",
+                     "edge": {
+                      "type": "Var",
+                      "name": "winner"
+                     },
+                     "key": "span_hi"
+                    },
+                    "index": {
+                     "type": "Lit",
+                     "value": 0
+                    }
+                   }
+                  }
+                 ]
+                },
+                {
+                 "type": "And",
+                 "items": [
+                  {
+                   "type": "Gte",
+                   "a": {
+                    "type": "IndexAt",
+                    "seq": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "game"
+                     },
+                     "key": "avatar_pose"
+                    },
+                    "index": {
+                     "type": "Lit",
+                     "value": 2
+                    }
+                   },
+                   "b": {
+                    "type": "IndexAt",
+                    "seq": {
+                     "type": "EdgeAttr",
+                     "edge": {
+                      "type": "Var",
+                      "name": "winner"
+                     },
+                     "key": "span_lo"
+                    },
+                    "index": {
+                     "type": "Lit",
+                     "value": 2
+                    }
+                   }
+                  },
+                  {
+                   "type": "Lte",
+                   "a": {
+                    "type": "IndexAt",
+                    "seq": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "game"
+                     },
+                     "key": "avatar_pose"
+                    },
+                    "index": {
+                     "type": "Lit",
+                     "value": 2
+                    }
+                   },
+                   "b": {
+                    "type": "IndexAt",
+                    "seq": {
+                     "type": "EdgeAttr",
+                     "edge": {
+                      "type": "Var",
+                      "name": "winner"
+                     },
+                     "key": "span_hi"
+                    },
+                    "index": {
+                     "type": "Lit",
+                     "value": 2
+                    }
+                   }
+                  }
+                 ]
+                }
+               ]
+              },
+              "then": {
+               "type": "EdgeAttr",
+               "edge": {
+                "type": "Var",
+                "name": "winner"
+               },
+               "key": "dir"
+              },
+              "other": {
+               "type": "Lit",
+               "value": 0.0
+              }
+             },
+             "other": {
+              "type": "IfThenElse",
+              "cond": {
+               "type": "Gt",
+               "a": {
+                "type": "Minus",
+                "a": {
+                 "type": "IfThenElse",
+                 "cond": {
+                  "type": "Lt",
+                  "a": {
+                   "type": "IndexAt",
+                   "seq": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "game"
+                    },
+                    "key": "avatar_pose"
+                   },
+                   "index": {
+                    "type": "Lit",
+                    "value": 1
+                   }
+                  },
+                  "b": {
+                   "type": "IndexAt",
+                   "seq": {
+                    "type": "EdgeAttr",
+                    "edge": {
+                     "type": "Var",
+                     "name": "winner"
+                    },
+                    "key": "span_lo"
+                   },
+                   "index": {
+                    "type": "Lit",
+                    "value": 1
+                   }
+                  }
+                 },
+                 "then": {
+                  "type": "IndexAt",
+                  "seq": {
+                   "type": "EdgeAttr",
+                   "edge": {
+                    "type": "Var",
+                    "name": "winner"
+                   },
+                   "key": "span_lo"
+                  },
+                  "index": {
+                   "type": "Lit",
+                   "value": 1
+                  }
+                 },
+                 "other": {
+                  "type": "IfThenElse",
+                  "cond": {
+                   "type": "Gt",
+                   "a": {
+                    "type": "IndexAt",
+                    "seq": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "game"
+                     },
+                     "key": "avatar_pose"
+                    },
+                    "index": {
+                     "type": "Lit",
+                     "value": 1
+                    }
+                   },
+                   "b": {
+                    "type": "IndexAt",
+                    "seq": {
+                     "type": "EdgeAttr",
+                     "edge": {
+                      "type": "Var",
+                      "name": "winner"
+                     },
+                     "key": "span_hi"
+                    },
+                    "index": {
+                     "type": "Lit",
+                     "value": 1
+                    }
+                   }
+                  },
+                  "then": {
+                   "type": "IndexAt",
+                   "seq": {
+                    "type": "EdgeAttr",
+                    "edge": {
+                     "type": "Var",
+                     "name": "winner"
+                    },
+                    "key": "span_hi"
+                   },
+                   "index": {
+                    "type": "Lit",
+                    "value": 1
+                   }
+                  },
+                  "other": {
+                   "type": "IndexAt",
+                   "seq": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "game"
+                    },
+                    "key": "avatar_pose"
+                   },
+                   "index": {
+                    "type": "Lit",
+                    "value": 1
+                   }
+                  }
+                 }
+                },
+                "b": {
+                 "type": "IndexAt",
+                 "seq": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "game"
+                  },
+                  "key": "avatar_pose"
+                 },
+                 "index": {
+                  "type": "Lit",
+                  "value": 1
+                 }
+                }
+               },
+               "b": {
+                "type": "Lit",
+                "value": 0.0
+               }
+              },
+              "then": {
+               "type": "Lit",
+               "value": 1.0
+              },
+              "other": {
+               "type": "IfThenElse",
+               "cond": {
+                "type": "Lt",
+                "a": {
+                 "type": "Minus",
+                 "a": {
+                  "type": "IfThenElse",
+                  "cond": {
+                   "type": "Lt",
+                   "a": {
+                    "type": "IndexAt",
+                    "seq": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "game"
+                     },
+                     "key": "avatar_pose"
+                    },
+                    "index": {
+                     "type": "Lit",
+                     "value": 1
+                    }
+                   },
+                   "b": {
+                    "type": "IndexAt",
+                    "seq": {
+                     "type": "EdgeAttr",
+                     "edge": {
+                      "type": "Var",
+                      "name": "winner"
+                     },
+                     "key": "span_lo"
+                    },
+                    "index": {
+                     "type": "Lit",
+                     "value": 1
+                    }
+                   }
+                  },
+                  "then": {
+                   "type": "IndexAt",
+                   "seq": {
+                    "type": "EdgeAttr",
+                    "edge": {
+                     "type": "Var",
+                     "name": "winner"
+                    },
+                    "key": "span_lo"
+                   },
+                   "index": {
+                    "type": "Lit",
+                    "value": 1
+                   }
+                  },
+                  "other": {
+                   "type": "IfThenElse",
+                   "cond": {
+                    "type": "Gt",
+                    "a": {
+                     "type": "IndexAt",
+                     "seq": {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "game"
+                      },
+                      "key": "avatar_pose"
+                     },
+                     "index": {
+                      "type": "Lit",
+                      "value": 1
+                     }
+                    },
+                    "b": {
+                     "type": "IndexAt",
+                     "seq": {
+                      "type": "EdgeAttr",
+                      "edge": {
+                       "type": "Var",
+                       "name": "winner"
+                      },
+                      "key": "span_hi"
+                     },
+                     "index": {
+                      "type": "Lit",
+                      "value": 1
+                     }
+                    }
+                   },
+                   "then": {
+                    "type": "IndexAt",
+                    "seq": {
+                     "type": "EdgeAttr",
+                     "edge": {
+                      "type": "Var",
+                      "name": "winner"
+                     },
+                     "key": "span_hi"
+                    },
+                    "index": {
+                     "type": "Lit",
+                     "value": 1
+                    }
+                   },
+                   "other": {
+                    "type": "IndexAt",
+                    "seq": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "game"
+                     },
+                     "key": "avatar_pose"
+                    },
+                    "index": {
+                     "type": "Lit",
+                     "value": 1
+                    }
+                   }
+                  }
+                 },
+                 "b": {
+                  "type": "IndexAt",
+                  "seq": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "game"
+                   },
+                   "key": "avatar_pose"
+                  },
+                  "index": {
+                   "type": "Lit",
+                   "value": 1
+                  }
+                 }
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": 0.0
+                }
+               },
+               "then": {
+                "type": "Lit",
+                "value": -1.0
+               },
+               "other": {
+                "type": "Lit",
+                "value": 0.0
+               }
+              }
+             }
+            },
+            {
+             "type": "IfThenElse",
+             "cond": {
+              "type": "Eq",
+              "a": {
+               "type": "Lit",
+               "value": 2.0
+              },
+              "b": {
+               "type": "EdgeAttr",
+               "edge": {
+                "type": "Var",
+                "name": "winner"
+               },
+               "key": "dim"
+              }
+             },
+             "then": {
+              "type": "IfThenElse",
+              "cond": {
+               "type": "And",
+               "items": [
+                {
+                 "type": "And",
+                 "items": [
+                  {
+                   "type": "Gte",
+                   "a": {
+                    "type": "IndexAt",
+                    "seq": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "game"
+                     },
+                     "key": "avatar_pose"
+                    },
+                    "index": {
+                     "type": "Lit",
+                     "value": 0
+                    }
+                   },
+                   "b": {
+                    "type": "IndexAt",
+                    "seq": {
+                     "type": "EdgeAttr",
+                     "edge": {
+                      "type": "Var",
+                      "name": "winner"
+                     },
+                     "key": "span_lo"
+                    },
+                    "index": {
+                     "type": "Lit",
+                     "value": 0
+                    }
+                   }
+                  },
+                  {
+                   "type": "Lte",
+                   "a": {
+                    "type": "IndexAt",
+                    "seq": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "game"
+                     },
+                     "key": "avatar_pose"
+                    },
+                    "index": {
+                     "type": "Lit",
+                     "value": 0
+                    }
+                   },
+                   "b": {
+                    "type": "IndexAt",
+                    "seq": {
+                     "type": "EdgeAttr",
+                     "edge": {
+                      "type": "Var",
+                      "name": "winner"
+                     },
+                     "key": "span_hi"
+                    },
+                    "index": {
+                     "type": "Lit",
+                     "value": 0
+                    }
+                   }
+                  }
+                 ]
+                },
+                {
+                 "type": "And",
+                 "items": [
+                  {
+                   "type": "Gte",
+                   "a": {
+                    "type": "IndexAt",
+                    "seq": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "game"
+                     },
+                     "key": "avatar_pose"
+                    },
+                    "index": {
+                     "type": "Lit",
+                     "value": 1
+                    }
+                   },
+                   "b": {
+                    "type": "IndexAt",
+                    "seq": {
+                     "type": "EdgeAttr",
+                     "edge": {
+                      "type": "Var",
+                      "name": "winner"
+                     },
+                     "key": "span_lo"
+                    },
+                    "index": {
+                     "type": "Lit",
+                     "value": 1
+                    }
+                   }
+                  },
+                  {
+                   "type": "Lte",
+                   "a": {
+                    "type": "IndexAt",
+                    "seq": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "game"
+                     },
+                     "key": "avatar_pose"
+                    },
+                    "index": {
+                     "type": "Lit",
+                     "value": 1
+                    }
+                   },
+                   "b": {
+                    "type": "IndexAt",
+                    "seq": {
+                     "type": "EdgeAttr",
+                     "edge": {
+                      "type": "Var",
+                      "name": "winner"
+                     },
+                     "key": "span_hi"
+                    },
+                    "index": {
+                     "type": "Lit",
+                     "value": 1
+                    }
+                   }
+                  }
+                 ]
+                }
+               ]
+              },
+              "then": {
+               "type": "EdgeAttr",
+               "edge": {
+                "type": "Var",
+                "name": "winner"
+               },
+               "key": "dir"
+              },
+              "other": {
+               "type": "Lit",
+               "value": 0.0
+              }
+             },
+             "other": {
+              "type": "IfThenElse",
+              "cond": {
+               "type": "Gt",
+               "a": {
+                "type": "Minus",
+                "a": {
+                 "type": "IfThenElse",
+                 "cond": {
+                  "type": "Lt",
+                  "a": {
+                   "type": "IndexAt",
+                   "seq": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "game"
+                    },
+                    "key": "avatar_pose"
+                   },
+                   "index": {
+                    "type": "Lit",
+                    "value": 2
+                   }
+                  },
+                  "b": {
+                   "type": "IndexAt",
+                   "seq": {
+                    "type": "EdgeAttr",
+                    "edge": {
+                     "type": "Var",
+                     "name": "winner"
+                    },
+                    "key": "span_lo"
+                   },
+                   "index": {
+                    "type": "Lit",
+                    "value": 2
+                   }
+                  }
+                 },
+                 "then": {
+                  "type": "IndexAt",
+                  "seq": {
+                   "type": "EdgeAttr",
+                   "edge": {
+                    "type": "Var",
+                    "name": "winner"
+                   },
+                   "key": "span_lo"
+                  },
+                  "index": {
+                   "type": "Lit",
+                   "value": 2
+                  }
+                 },
+                 "other": {
+                  "type": "IfThenElse",
+                  "cond": {
+                   "type": "Gt",
+                   "a": {
+                    "type": "IndexAt",
+                    "seq": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "game"
+                     },
+                     "key": "avatar_pose"
+                    },
+                    "index": {
+                     "type": "Lit",
+                     "value": 2
+                    }
+                   },
+                   "b": {
+                    "type": "IndexAt",
+                    "seq": {
+                     "type": "EdgeAttr",
+                     "edge": {
+                      "type": "Var",
+                      "name": "winner"
+                     },
+                     "key": "span_hi"
+                    },
+                    "index": {
+                     "type": "Lit",
+                     "value": 2
+                    }
+                   }
+                  },
+                  "then": {
+                   "type": "IndexAt",
+                   "seq": {
+                    "type": "EdgeAttr",
+                    "edge": {
+                     "type": "Var",
+                     "name": "winner"
+                    },
+                    "key": "span_hi"
+                   },
+                   "index": {
+                    "type": "Lit",
+                    "value": 2
+                   }
+                  },
+                  "other": {
+                   "type": "IndexAt",
+                   "seq": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "game"
+                    },
+                    "key": "avatar_pose"
+                   },
+                   "index": {
+                    "type": "Lit",
+                    "value": 2
+                   }
+                  }
+                 }
+                },
+                "b": {
+                 "type": "IndexAt",
+                 "seq": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "game"
+                  },
+                  "key": "avatar_pose"
+                 },
+                 "index": {
+                  "type": "Lit",
+                  "value": 2
+                 }
+                }
+               },
+               "b": {
+                "type": "Lit",
+                "value": 0.0
+               }
+              },
+              "then": {
+               "type": "Lit",
+               "value": 1.0
+              },
+              "other": {
+               "type": "IfThenElse",
+               "cond": {
+                "type": "Lt",
+                "a": {
+                 "type": "Minus",
+                 "a": {
+                  "type": "IfThenElse",
+                  "cond": {
+                   "type": "Lt",
+                   "a": {
+                    "type": "IndexAt",
+                    "seq": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "game"
+                     },
+                     "key": "avatar_pose"
+                    },
+                    "index": {
+                     "type": "Lit",
+                     "value": 2
+                    }
+                   },
+                   "b": {
+                    "type": "IndexAt",
+                    "seq": {
+                     "type": "EdgeAttr",
+                     "edge": {
+                      "type": "Var",
+                      "name": "winner"
+                     },
+                     "key": "span_lo"
+                    },
+                    "index": {
+                     "type": "Lit",
+                     "value": 2
+                    }
+                   }
+                  },
+                  "then": {
+                   "type": "IndexAt",
+                   "seq": {
+                    "type": "EdgeAttr",
+                    "edge": {
+                     "type": "Var",
+                     "name": "winner"
+                    },
+                    "key": "span_lo"
+                   },
+                   "index": {
+                    "type": "Lit",
+                    "value": 2
+                   }
+                  },
+                  "other": {
+                   "type": "IfThenElse",
+                   "cond": {
+                    "type": "Gt",
+                    "a": {
+                     "type": "IndexAt",
+                     "seq": {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "game"
+                      },
+                      "key": "avatar_pose"
+                     },
+                     "index": {
+                      "type": "Lit",
+                      "value": 2
+                     }
+                    },
+                    "b": {
+                     "type": "IndexAt",
+                     "seq": {
+                      "type": "EdgeAttr",
+                      "edge": {
+                       "type": "Var",
+                       "name": "winner"
+                      },
+                      "key": "span_hi"
+                     },
+                     "index": {
+                      "type": "Lit",
+                      "value": 2
+                     }
+                    }
+                   },
+                   "then": {
+                    "type": "IndexAt",
+                    "seq": {
+                     "type": "EdgeAttr",
+                     "edge": {
+                      "type": "Var",
+                      "name": "winner"
+                     },
+                     "key": "span_hi"
+                    },
+                    "index": {
+                     "type": "Lit",
+                     "value": 2
+                    }
+                   },
+                   "other": {
+                    "type": "IndexAt",
+                    "seq": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "game"
+                     },
+                     "key": "avatar_pose"
+                    },
+                    "index": {
+                     "type": "Lit",
+                     "value": 2
+                    }
+                   }
+                  }
+                 },
+                 "b": {
+                  "type": "IndexAt",
+                  "seq": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "game"
+                   },
+                   "key": "avatar_pose"
+                  },
+                  "index": {
+                   "type": "Lit",
+                   "value": 2
+                  }
+                 }
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": 0.0
+                }
+               },
+               "then": {
+                "type": "Lit",
+                "value": -1.0
+               },
+               "other": {
+                "type": "Lit",
+                "value": 0.0
+               }
+              }
+             }
+            }
+           ]
+          }
+         }
+        },
+        "default": {
+         "type": "Var",
+         "name": "sr"
+        }
+       },
+       "key": "cname"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "qf_frontier_goal",
+   "comment": "commits the SINGLE nearest frontier (Argmin, deterministic first-encountered tiebreak) by matching F against that one winner -- NOT 'any frontier tied at the min qdist', which used to commit every tied frontier as its own Goal in the same pass.",
+   "match": [
+    [
+     "F",
+     "in_space",
+     "game"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "game"
+       },
+       "key": "nav_repr"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "quanta"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "game"
+        },
+        "edge_type": "committed_goal",
+        "any_type": false
+       },
+       "var_name": "_g",
+       "predicate": {
+        "type": "Lit",
+        "value": true
+       }
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "F"
+       },
+       "key": "kind"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "frontier"
+      }
+     },
+     {
+      "type": "Gte",
+      "a": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "F"
+         },
+         "key": "qdist_epoch"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "game"
+         },
+         "key": "flood_epoch"
+        }
+       },
+       "then": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "F"
+        },
+        "key": "qdist"
+       },
+       "other": {
+        "type": "Lit",
+        "value": -1.0
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Var",
+       "name": "F"
+      },
+      "b": {
+       "type": "Argmin",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "InNeighbours",
+         "node": {
+          "type": "Var",
+          "name": "game"
+         },
+         "edge_type": "in_space",
+         "any_type": false
+        },
+        "var_name": "C",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "C"
+            },
+            "key": "kind"
+           },
+           "b": {
+            "type": "Lit",
+            "value": "frontier"
+           }
+          },
+          {
+           "type": "Gte",
+           "a": {
+            "type": "IfThenElse",
+            "cond": {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "C"
+              },
+              "key": "qdist_epoch"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "game"
+              },
+              "key": "flood_epoch"
+             }
+            },
+            "then": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "C"
+             },
+             "key": "qdist"
+            },
+            "other": {
+             "type": "Lit",
+             "value": -1.0
+            }
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0.0
+           }
+          }
+         ]
+        }
+       },
+       "var_name": "C",
+       "value": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "C"
+          },
+          "key": "qdist_epoch"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "game"
+          },
+          "key": "flood_epoch"
+         }
+        },
+        "then": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "C"
+         },
+         "key": "qdist"
+        },
+        "other": {
+         "type": "Lit",
+         "value": -1.0
+        }
+       },
+       "default": null
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "game"
+        },
+        "key": "active_explore"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "G2",
+     "Goal",
+     {
+      "pose": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "F"
+        },
+        "key": "lo"
+       }
+      },
+      "committed": 1.0,
+      "exploration": 1.0,
+      "commit_epoch": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "game"
+        },
+        "key": "flood_epoch"
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "game",
+     "committed_goal",
+     "G2",
+     {}
+    ]
+   ]
+  },
+  {
+   "name": "qf_goal_retire",
+   "comment": "retires an exploration-minted committed_goal when reached (avatar pose == goal pose exactly), its pose is no longer covered by any frontier quantum (resolved by observation/decode), or a fresher exploration goal superseded it. World-committed goals (`world==1`) are never touched -- only ever `exploration==1` goals.",
+   "match": [
+    [
+     "game",
+     "committed_goal",
+     "G"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "game"
+       },
+       "key": "nav_repr"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "quanta"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "G"
+       },
+       "key": "exploration"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "G"
+            },
+            "key": "pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 0
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "game"
+            },
+            "key": "avatar_pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 0
+           }
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "G"
+            },
+            "key": "pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 1
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "game"
+            },
+            "key": "avatar_pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 1
+           }
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "G"
+            },
+            "key": "pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 2
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "game"
+            },
+            "key": "avatar_pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 2
+           }
+          }
+         }
+        ]
+       },
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Exists",
+         "source": {
+          "type": "InNeighbours",
+          "node": {
+           "type": "Var",
+           "name": "game"
+          },
+          "edge_type": "in_space",
+          "any_type": false
+         },
+         "var_name": "Q2",
+         "predicate": {
+          "type": "And",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "Q2"
+             },
+             "key": "kind"
+            },
+            "b": {
+             "type": "Lit",
+             "value": "frontier"
+            }
+           },
+           {
+            "type": "And",
+            "items": [
+             {
+              "type": "And",
+              "items": [
+               {
+                "type": "Gte",
+                "a": {
+                 "type": "IndexAt",
+                 "seq": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "G"
+                  },
+                  "key": "pose"
+                 },
+                 "index": {
+                  "type": "Lit",
+                  "value": 0
+                 }
+                },
+                "b": {
+                 "type": "IndexAt",
+                 "seq": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "Q2"
+                  },
+                  "key": "lo"
+                 },
+                 "index": {
+                  "type": "Lit",
+                  "value": 0
+                 }
+                }
+               },
+               {
+                "type": "Lte",
+                "a": {
+                 "type": "IndexAt",
+                 "seq": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "G"
+                  },
+                  "key": "pose"
+                 },
+                 "index": {
+                  "type": "Lit",
+                  "value": 0
+                 }
+                },
+                "b": {
+                 "type": "IndexAt",
+                 "seq": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "Q2"
+                  },
+                  "key": "hi"
+                 },
+                 "index": {
+                  "type": "Lit",
+                  "value": 0
+                 }
+                }
+               }
+              ]
+             },
+             {
+              "type": "And",
+              "items": [
+               {
+                "type": "Gte",
+                "a": {
+                 "type": "IndexAt",
+                 "seq": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "G"
+                  },
+                  "key": "pose"
+                 },
+                 "index": {
+                  "type": "Lit",
+                  "value": 1
+                 }
+                },
+                "b": {
+                 "type": "IndexAt",
+                 "seq": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "Q2"
+                  },
+                  "key": "lo"
+                 },
+                 "index": {
+                  "type": "Lit",
+                  "value": 1
+                 }
+                }
+               },
+               {
+                "type": "Lte",
+                "a": {
+                 "type": "IndexAt",
+                 "seq": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "G"
+                  },
+                  "key": "pose"
+                 },
+                 "index": {
+                  "type": "Lit",
+                  "value": 1
+                 }
+                },
+                "b": {
+                 "type": "IndexAt",
+                 "seq": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "Q2"
+                  },
+                  "key": "hi"
+                 },
+                 "index": {
+                  "type": "Lit",
+                  "value": 1
+                 }
+                }
+               }
+              ]
+             },
+             {
+              "type": "And",
+              "items": [
+               {
+                "type": "Gte",
+                "a": {
+                 "type": "IndexAt",
+                 "seq": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "G"
+                  },
+                  "key": "pose"
+                 },
+                 "index": {
+                  "type": "Lit",
+                  "value": 2
+                 }
+                },
+                "b": {
+                 "type": "IndexAt",
+                 "seq": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "Q2"
+                  },
+                  "key": "lo"
+                 },
+                 "index": {
+                  "type": "Lit",
+                  "value": 2
+                 }
+                }
+               },
+               {
+                "type": "Lte",
+                "a": {
+                 "type": "IndexAt",
+                 "seq": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "G"
+                  },
+                  "key": "pose"
+                 },
+                 "index": {
+                  "type": "Lit",
+                  "value": 2
+                 }
+                },
+                "b": {
+                 "type": "IndexAt",
+                 "seq": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "Q2"
+                  },
+                  "key": "hi"
+                 },
+                 "index": {
+                  "type": "Lit",
+                  "value": 2
+                 }
+                }
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        }
+       },
+       {
+        "type": "Exists",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "game"
+         },
+         "edge_type": "committed_goal",
+         "any_type": false
+        },
+        "var_name": "G2",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Not",
+           "arg": {
+            "type": "Eq",
+            "a": {
+             "type": "Var",
+             "name": "G2"
+            },
+            "b": {
+             "type": "Var",
+             "name": "G"
+            }
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "G2"
+            },
+            "key": "exploration"
+           },
+           "b": {
+            "type": "Lit",
+            "value": 1.0
+           }
+          },
+          {
+           "type": "Gt",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "G2"
+            },
+            "key": "commit_epoch"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "G"
+            },
+            "key": "commit_epoch"
+           }
+          }
+         ]
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "effects": [
+    [
+     "del_node",
+     "G"
+    ]
+   ]
+  },
+  {
+   "name": "qf_stale_on_belief_change",
+   "comment": "a belief-correction observation (game -belief_changed-> BC{pose,dim}, mechanical adapter stamp) inside a quantum's box -> mark it stale for a per-dim resplit. Same stale/stale_dim/stale_pose contract as qf_stale_on_block_interior; the adapter no longer scans quanta for containment itself.",
+   "match": [
+    [
+     "game",
+     "belief_changed",
+     "BC"
+    ],
+    [
+     "Q",
+     "in_space",
+     "game"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "game"
+       },
+       "key": "nav_repr"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "quanta"
+      }
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "And",
+        "items": [
+         {
+          "type": "Gte",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "BC"
+            },
+            "key": "pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 0
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "lo"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 0
+           }
+          }
+         },
+         {
+          "type": "Lte",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "BC"
+            },
+            "key": "pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 0
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "hi"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 0
+           }
+          }
+         }
+        ]
+       },
+       {
+        "type": "And",
+        "items": [
+         {
+          "type": "Gte",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "BC"
+            },
+            "key": "pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 1
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "lo"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 1
+           }
+          }
+         },
+         {
+          "type": "Lte",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "BC"
+            },
+            "key": "pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 1
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "hi"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 1
+           }
+          }
+         }
+        ]
+       },
+       {
+        "type": "And",
+        "items": [
+         {
+          "type": "Gte",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "BC"
+            },
+            "key": "pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 2
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "lo"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 2
+           }
+          }
+         },
+         {
+          "type": "Lte",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "BC"
+            },
+            "key": "pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 2
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "hi"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 2
+           }
+          }
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr_if_different",
+     "Q",
+     "stale",
+     1.0
+    ],
+    [
+     "set_attr_if_different",
+     "Q",
+     "stale_dim",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "BC"
+       },
+       "key": "dim"
+      }
+     }
+    ],
+    [
+     "set_attr_if_different",
+     "Q",
+     "stale_pose",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "BC"
+       },
+       "key": "pose"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "qf_stale_on_block_interior",
+   "comment": "block observation strictly inside a quantum's box (not on a face along the blocked dim) -> a mover/obstacle appeared mid-box; mark stale for a per-dim resplit.",
+   "match": [
+    [
+     "game",
+     "blocked",
+     "B"
+    ],
+    [
+     "Q",
+     "in_space",
+     "game"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "game"
+       },
+       "key": "nav_repr"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "quanta"
+      }
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "And",
+        "items": [
+         {
+          "type": "Gte",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "B"
+            },
+            "key": "pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 0
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "lo"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 0
+           }
+          }
+         },
+         {
+          "type": "Lte",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "B"
+            },
+            "key": "pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 0
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "hi"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 0
+           }
+          }
+         }
+        ]
+       },
+       {
+        "type": "And",
+        "items": [
+         {
+          "type": "Gte",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "B"
+            },
+            "key": "pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 1
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "lo"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 1
+           }
+          }
+         },
+         {
+          "type": "Lte",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "B"
+            },
+            "key": "pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 1
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "hi"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 1
+           }
+          }
+         }
+        ]
+       },
+       {
+        "type": "And",
+        "items": [
+         {
+          "type": "Gte",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "B"
+            },
+            "key": "pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 2
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "lo"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 2
+           }
+          }
+         },
+         {
+          "type": "Lte",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "B"
+            },
+            "key": "pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 2
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "hi"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 2
+           }
+          }
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Gt",
+        "a": {
+         "type": "IndexAt",
+         "seq": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "B"
+          },
+          "key": "pose"
+         },
+         "index": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "B"
+          },
+          "key": "dim"
+         }
+        },
+        "b": {
+         "type": "IndexAt",
+         "seq": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "Q"
+          },
+          "key": "lo"
+         },
+         "index": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "B"
+          },
+          "key": "dim"
+         }
+        }
+       },
+       {
+        "type": "Lt",
+        "a": {
+         "type": "IndexAt",
+         "seq": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "B"
+          },
+          "key": "pose"
+         },
+         "index": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "B"
+          },
+          "key": "dim"
+         }
+        },
+        "b": {
+         "type": "IndexAt",
+         "seq": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "Q"
+          },
+          "key": "hi"
+         },
+         "index": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "B"
+          },
+          "key": "dim"
+         }
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr_if_different",
+     "Q",
+     "stale",
+     1.0
+    ],
+    [
+     "set_attr_if_different",
+     "Q",
+     "stale_dim",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "B"
+       },
+       "key": "dim"
+      }
+     }
+    ],
+    [
+     "set_attr_if_different",
+     "Q",
+     "stale_pose",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "B"
+       },
+       "key": "pose"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "qf_stale_on_block_portal",
+   "comment": "block observation on a quantum's face, matching an existing portal's crossing dim/dir -> flip that portal's oneway_ok (no split needed).",
+   "match": [
+    [
+     "game",
+     "blocked",
+     "B"
+    ],
+    [
+     "Q",
+     "in_space",
+     "game"
+    ],
+    [
+     "Q",
+     "portal",
+     "R"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "game"
+       },
+       "key": "nav_repr"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "quanta"
+      }
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "And",
+        "items": [
+         {
+          "type": "Gte",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "B"
+            },
+            "key": "pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 0
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "lo"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 0
+           }
+          }
+         },
+         {
+          "type": "Lte",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "B"
+            },
+            "key": "pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 0
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "hi"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 0
+           }
+          }
+         }
+        ]
+       },
+       {
+        "type": "And",
+        "items": [
+         {
+          "type": "Gte",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "B"
+            },
+            "key": "pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 1
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "lo"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 1
+           }
+          }
+         },
+         {
+          "type": "Lte",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "B"
+            },
+            "key": "pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 1
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "hi"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 1
+           }
+          }
+         }
+        ]
+       },
+       {
+        "type": "And",
+        "items": [
+         {
+          "type": "Gte",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "B"
+            },
+            "key": "pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 2
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "lo"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 2
+           }
+          }
+         },
+         {
+          "type": "Lte",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "B"
+            },
+            "key": "pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 2
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "hi"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 2
+           }
+          }
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "And",
+       "items": [
+        {
+         "type": "Gt",
+         "a": {
+          "type": "IndexAt",
+          "seq": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "B"
+           },
+           "key": "pose"
+          },
+          "index": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "B"
+           },
+           "key": "dim"
+          }
+         },
+         "b": {
+          "type": "IndexAt",
+          "seq": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "Q"
+           },
+           "key": "lo"
+          },
+          "index": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "B"
+           },
+           "key": "dim"
+          }
+         }
+        },
+        {
+         "type": "Lt",
+         "a": {
+          "type": "IndexAt",
+          "seq": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "B"
+           },
+           "key": "pose"
+          },
+          "index": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "B"
+           },
+           "key": "dim"
+          }
+         },
+         "b": {
+          "type": "IndexAt",
+          "seq": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "Q"
+           },
+           "key": "hi"
+          },
+          "index": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "B"
+           },
+           "key": "dim"
+          }
+         }
+        }
+       ]
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "EdgeAttr",
+       "edge": {
+        "type": "Vec",
+        "items": [
+         {
+          "type": "Var",
+          "name": "Q"
+         },
+         {
+          "type": "Lit",
+          "value": "portal"
+         },
+         {
+          "type": "Var",
+          "name": "R"
+         }
+        ]
+       },
+       "key": "dim"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "B"
+       },
+       "key": "dim"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "EdgeAttr",
+       "edge": {
+        "type": "Vec",
+        "items": [
+         {
+          "type": "Var",
+          "name": "Q"
+         },
+         {
+          "type": "Lit",
+          "value": "portal"
+         },
+         {
+          "type": "Var",
+          "name": "R"
+         }
+        ]
+       },
+       "key": "dir"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "B"
+       },
+       "key": "dir"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "EdgeAttr",
+       "edge": {
+        "type": "Vec",
+        "items": [
+         {
+          "type": "Var",
+          "name": "Q"
+         },
+         {
+          "type": "Lit",
+          "value": "portal"
+         },
+         {
+          "type": "Var",
+          "name": "R"
+         }
+        ]
+       },
+       "key": "oneway_ok"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_edge",
+     "Q",
+     "portal",
+     "R",
+     {
+      "dim": {
+       "__term__": {
+        "type": "EdgeAttr",
+        "edge": {
+         "type": "Vec",
+         "items": [
+          {
+           "type": "Var",
+           "name": "Q"
+          },
+          {
+           "type": "Lit",
+           "value": "portal"
+          },
+          {
+           "type": "Var",
+           "name": "R"
+          }
+         ]
+        },
+        "key": "dim"
+       }
+      },
+      "dir": {
+       "__term__": {
+        "type": "EdgeAttr",
+        "edge": {
+         "type": "Vec",
+         "items": [
+          {
+           "type": "Var",
+           "name": "Q"
+          },
+          {
+           "type": "Lit",
+           "value": "portal"
+          },
+          {
+           "type": "Var",
+           "name": "R"
+          }
+         ]
+        },
+        "key": "dir"
+       }
+      },
+      "span_lo": {
+       "__term__": {
+        "type": "EdgeAttr",
+        "edge": {
+         "type": "Vec",
+         "items": [
+          {
+           "type": "Var",
+           "name": "Q"
+          },
+          {
+           "type": "Lit",
+           "value": "portal"
+          },
+          {
+           "type": "Var",
+           "name": "R"
+          }
+         ]
+        },
+        "key": "span_lo"
+       }
+      },
+      "span_hi": {
+       "__term__": {
+        "type": "EdgeAttr",
+        "edge": {
+         "type": "Vec",
+         "items": [
+          {
+           "type": "Var",
+           "name": "Q"
+          },
+          {
+           "type": "Lit",
+           "value": "portal"
+          },
+          {
+           "type": "Var",
+           "name": "R"
+          }
+         ]
+        },
+        "key": "span_hi"
+       }
+      },
+      "cost": {
+       "__term__": {
+        "type": "EdgeAttr",
+        "edge": {
+         "type": "Vec",
+         "items": [
+          {
+           "type": "Var",
+           "name": "Q"
+          },
+          {
+           "type": "Lit",
+           "value": "portal"
+          },
+          {
+           "type": "Var",
+           "name": "R"
+          }
+         ]
+        },
+        "key": "cost"
+       }
+      },
+      "oneway_ok": 0.0
+     }
+    ]
+   ]
+  },
+  {
+   "name": "qf_requantize_flag",
+   "match": [
+    [
+     "Q",
+     "in_space",
+     "game"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "game"
+       },
+       "key": "nav_repr"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "quanta"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "Q"
+       },
+       "key": "stale"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr_if_different",
+     "game",
+     "needs_quantize",
+     1.0
+    ]
+   ]
+  },
+  {
+   "name": "qf_closed",
+   "comment": "avatar's own quantum never got a qdist this epoch, though something was seeded (goal committed or a frontier exists) -> movement exhausted.",
+   "match": [
+    [
+     "Q",
+     "in_space",
+     "game"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "game"
+       },
+       "key": "nav_repr"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "quanta"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "game"
+       },
+       "key": "closed"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "And",
+        "items": [
+         {
+          "type": "Gte",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "game"
+            },
+            "key": "avatar_pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 0
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "lo"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 0
+           }
+          }
+         },
+         {
+          "type": "Lte",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "game"
+            },
+            "key": "avatar_pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 0
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "hi"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 0
+           }
+          }
+         }
+        ]
+       },
+       {
+        "type": "And",
+        "items": [
+         {
+          "type": "Gte",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "game"
+            },
+            "key": "avatar_pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 1
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "lo"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 1
+           }
+          }
+         },
+         {
+          "type": "Lte",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "game"
+            },
+            "key": "avatar_pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 1
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "hi"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 1
+           }
+          }
+         }
+        ]
+       },
+       {
+        "type": "And",
+        "items": [
+         {
+          "type": "Gte",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "game"
+            },
+            "key": "avatar_pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 2
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "lo"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 2
+           }
+          }
+         },
+         {
+          "type": "Lte",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "game"
+            },
+            "key": "avatar_pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 2
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "Q"
+            },
+            "key": "hi"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 2
+           }
+          }
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "Q"
+         },
+         "key": "qdist_epoch"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "game"
+         },
+         "key": "flood_epoch"
+        }
+       },
+       "then": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "Q"
+        },
+        "key": "qdist"
+       },
+       "other": {
+        "type": "Lit",
+        "value": -1.0
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     },
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Exists",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "game"
+         },
+         "edge_type": "committed_goal",
+         "any_type": false
+        },
+        "var_name": "_g",
+        "predicate": {
+         "type": "Lit",
+         "value": true
+        }
+       },
+       {
+        "type": "Exists",
+        "source": {
+         "type": "InNeighbours",
+         "node": {
+          "type": "Var",
+          "name": "game"
+         },
+         "edge_type": "in_space",
+         "any_type": false
+        },
+        "var_name": "F2",
+        "predicate": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "F2"
+          },
+          "key": "kind"
+         },
+         "b": {
+          "type": "Lit",
+          "value": "frontier"
+         }
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr_if_different",
+     "game",
+     "closed",
+     1.0
+    ]
+   ]
+  },
+  {
+   "name": "qf_mint_hyp",
+   "comment": "add_node_if_absent (not add_node) so a same-pass double-binding of Q (irrelevant to the effect, just along for the match) can't mint two Hypotheses -- the dedup key IS the kind, matching msp_mint_hyp's single-hypothesis intent exactly.",
+   "match": [
+    [
+     "Q",
+     "in_space",
+     "game"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "game"
+       },
+       "key": "closed"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "game"
+        },
+        "edge_type": "minted",
+        "any_type": false
+       },
+       "var_name": "h",
+       "predicate": {
+        "type": "Lit",
+        "value": true
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node_if_absent",
+     "hyp",
+     "Hypothesis",
+     {
+      "kind": "need_non_movement_affordance"
+     }
+    ],
+    [
+     "add_edge",
+     "game",
+     "minted",
+     "hyp"
+    ]
+   ]
+  }
+ ]
+}

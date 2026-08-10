@@ -1,0 +1,513 @@
+{
+ "id": "lua_correspondence",
+ "version": "1.0.0",
+ "depends_on": [],
+ "description": "P2 (PROGRAM_SYNTHESIS_PLAN.md section 4): the lua-frame CST -> hub Program-IR correspondence as INSPECTABLE SEED DATA (the ast_term_rules.CORRESPONDENCE spirit). Each CorrespondenceRow maps a tree-sitter cst_kind (+ optional operator guard) to a Prog*/DSL Term via a uniform field plan, or names a mechanical shape handler in domains/prog_ir_lua.py. The 1-based -> 0-based index shift and the repeat/until desugar live HERE as documented cross-frame maps. Unmapped constructs are honest residuals (blockers).",
+ "nodes": [
+  {
+   "local_id": 1,
+   "type": "CorrespondenceRow",
+   "attrs": {
+    "lang": "lua",
+    "cst_kind": "binary_expression",
+    "op": "+",
+    "emit": "term",
+    "term": "Plus",
+    "handler": "",
+    "plan": "{\"arity\": \"items\", \"fields\": [\"left\", \"right\"]}",
+    "note": ""
+   }
+  },
+  {
+   "local_id": 2,
+   "type": "CorrespondenceRow",
+   "attrs": {
+    "lang": "lua",
+    "cst_kind": "binary_expression",
+    "op": "-",
+    "emit": "term",
+    "term": "Minus",
+    "handler": "",
+    "plan": "{\"arity\": \"fields\", \"map\": [[\"left\", \"a\"], [\"right\", \"b\"]]}",
+    "note": ""
+   }
+  },
+  {
+   "local_id": 3,
+   "type": "CorrespondenceRow",
+   "attrs": {
+    "lang": "lua",
+    "cst_kind": "binary_expression",
+    "op": "*",
+    "emit": "term",
+    "term": "Times",
+    "handler": "",
+    "plan": "{\"arity\": \"items\", \"fields\": [\"left\", \"right\"]}",
+    "note": ""
+   }
+  },
+  {
+   "local_id": 4,
+   "type": "CorrespondenceRow",
+   "attrs": {
+    "lang": "lua",
+    "cst_kind": "binary_expression",
+    "op": "/",
+    "emit": "term",
+    "term": "Div",
+    "handler": "",
+    "plan": "{\"arity\": \"fields\", \"map\": [[\"left\", \"a\"], [\"right\", \"b\"]]}",
+    "note": "lua `/` is float (true) division (5.3+); DSL Div is true division -- EXACT (both 7/2 = 3.5)"
+   }
+  },
+  {
+   "local_id": 5,
+   "type": "CorrespondenceRow",
+   "attrs": {
+    "lang": "lua",
+    "cst_kind": "binary_expression",
+    "op": "//",
+    "emit": "term",
+    "term": "IDiv",
+    "handler": "",
+    "plan": "{\"arity\": \"fields\", \"map\": [[\"left\", \"a\"], [\"right\", \"b\"]]}",
+    "note": "DIVERGENCE on negatives: lua // floors (-7//2=-4); DSL IDiv truncates (-7//2=-3). Fixtures avoid negative operands."
+   }
+  },
+  {
+   "local_id": 6,
+   "type": "CorrespondenceRow",
+   "attrs": {
+    "lang": "lua",
+    "cst_kind": "binary_expression",
+    "op": "%",
+    "emit": "term",
+    "term": "Mod",
+    "handler": "",
+    "plan": "{\"arity\": \"fields\", \"map\": [[\"left\", \"a\"], [\"right\", \"b\"]]}",
+    "note": "lua % is floor-mod -- matches DSL Mod exactly (-7%2=1 both)"
+   }
+  },
+  {
+   "local_id": 7,
+   "type": "CorrespondenceRow",
+   "attrs": {
+    "lang": "lua",
+    "cst_kind": "binary_expression",
+    "op": "^",
+    "emit": "term",
+    "term": "Pow",
+    "handler": "",
+    "plan": "{\"arity\": \"fields\", \"map\": [[\"left\", \"a\"], [\"right\", \"b\"]]}",
+    "note": "DIVERGENCE in result type: lua ^ is always float (2^3=8.0); DSL Pow is int on ints (2**3=8). Fixtures avoid ^ or compare via numeric equality."
+   }
+  },
+  {
+   "local_id": 8,
+   "type": "CorrespondenceRow",
+   "attrs": {
+    "lang": "lua",
+    "cst_kind": "binary_expression",
+    "op": "==",
+    "emit": "term",
+    "term": "Eq",
+    "handler": "",
+    "plan": "{\"arity\": \"fields\", \"map\": [[\"left\", \"a\"], [\"right\", \"b\"]]}",
+    "note": ""
+   }
+  },
+  {
+   "local_id": 9,
+   "type": "CorrespondenceRow",
+   "attrs": {
+    "lang": "lua",
+    "cst_kind": "binary_expression",
+    "op": "~=",
+    "emit": "term",
+    "term": "Eq",
+    "handler": "",
+    "plan": "{\"arity\": \"fields\", \"map\": [[\"left\", \"a\"], [\"right\", \"b\"]], \"wrap\": \"not\"}",
+    "note": "~= is Not(Eq)"
+   }
+  },
+  {
+   "local_id": 10,
+   "type": "CorrespondenceRow",
+   "attrs": {
+    "lang": "lua",
+    "cst_kind": "binary_expression",
+    "op": "<",
+    "emit": "term",
+    "term": "Lt",
+    "handler": "",
+    "plan": "{\"arity\": \"fields\", \"map\": [[\"left\", \"a\"], [\"right\", \"b\"]]}",
+    "note": ""
+   }
+  },
+  {
+   "local_id": 11,
+   "type": "CorrespondenceRow",
+   "attrs": {
+    "lang": "lua",
+    "cst_kind": "binary_expression",
+    "op": "<=",
+    "emit": "term",
+    "term": "Lte",
+    "handler": "",
+    "plan": "{\"arity\": \"fields\", \"map\": [[\"left\", \"a\"], [\"right\", \"b\"]]}",
+    "note": ""
+   }
+  },
+  {
+   "local_id": 12,
+   "type": "CorrespondenceRow",
+   "attrs": {
+    "lang": "lua",
+    "cst_kind": "binary_expression",
+    "op": ">",
+    "emit": "term",
+    "term": "Gt",
+    "handler": "",
+    "plan": "{\"arity\": \"fields\", \"map\": [[\"left\", \"a\"], [\"right\", \"b\"]]}",
+    "note": ""
+   }
+  },
+  {
+   "local_id": 13,
+   "type": "CorrespondenceRow",
+   "attrs": {
+    "lang": "lua",
+    "cst_kind": "binary_expression",
+    "op": ">=",
+    "emit": "term",
+    "term": "Gte",
+    "handler": "",
+    "plan": "{\"arity\": \"fields\", \"map\": [[\"left\", \"a\"], [\"right\", \"b\"]]}",
+    "note": ""
+   }
+  },
+  {
+   "local_id": 14,
+   "type": "CorrespondenceRow",
+   "attrs": {
+    "lang": "lua",
+    "cst_kind": "binary_expression",
+    "op": "and",
+    "emit": "term",
+    "term": "And",
+    "handler": "",
+    "plan": "{\"arity\": \"items\", \"fields\": [\"left\", \"right\"]}",
+    "note": "CAVEAT: lua and/or return an OPERAND (x and y = y when x truthy); DSL And/Or return booleans. Sound in boolean contexts only -- fixtures use boolean contexts; the doc records the caveat."
+   }
+  },
+  {
+   "local_id": 15,
+   "type": "CorrespondenceRow",
+   "attrs": {
+    "lang": "lua",
+    "cst_kind": "binary_expression",
+    "op": "or",
+    "emit": "term",
+    "term": "Or",
+    "handler": "",
+    "plan": "{\"arity\": \"items\", \"fields\": [\"left\", \"right\"]}",
+    "note": "same operand-value caveat as `and`"
+   }
+  },
+  {
+   "local_id": 16,
+   "type": "CorrespondenceRow",
+   "attrs": {
+    "lang": "lua",
+    "cst_kind": "binary_expression",
+    "op": "..",
+    "emit": "handler",
+    "term": "",
+    "handler": "lua_concat",
+    "plan": "",
+    "note": ".. -> ProgFString(left, right): py_str spellings agree with lua tostring for ints/strings ('1', 'x'); float spellings can drift at extreme precision (doc ledger)"
+   }
+  },
+  {
+   "local_id": 17,
+   "type": "CorrespondenceRow",
+   "attrs": {
+    "lang": "lua",
+    "cst_kind": "number",
+    "op": "",
+    "emit": "term",
+    "term": "Lit",
+    "handler": "",
+    "plan": "{\"arity\": \"leaf\", \"value\": \"num_text\"}",
+    "note": "integer text -> Int, decimal/exponent text -> Float (lua 5.3+ integer/float split)"
+   }
+  },
+  {
+   "local_id": 18,
+   "type": "CorrespondenceRow",
+   "attrs": {
+    "lang": "lua",
+    "cst_kind": "string",
+    "op": "",
+    "emit": "term",
+    "term": "Lit",
+    "handler": "",
+    "plan": "{\"arity\": \"leaf\", \"value\": \"string\"}",
+    "note": ""
+   }
+  },
+  {
+   "local_id": 19,
+   "type": "CorrespondenceRow",
+   "attrs": {
+    "lang": "lua",
+    "cst_kind": "nil",
+    "op": "",
+    "emit": "term",
+    "term": "Lit",
+    "handler": "",
+    "plan": "{\"arity\": \"leaf\", \"const\": null, \"value\": \"const\"}",
+    "note": ""
+   }
+  },
+  {
+   "local_id": 20,
+   "type": "CorrespondenceRow",
+   "attrs": {
+    "lang": "lua",
+    "cst_kind": "true",
+    "op": "",
+    "emit": "term",
+    "term": "Lit",
+    "handler": "",
+    "plan": "{\"arity\": \"leaf\", \"const\": true, \"value\": \"const\"}",
+    "note": ""
+   }
+  },
+  {
+   "local_id": 21,
+   "type": "CorrespondenceRow",
+   "attrs": {
+    "lang": "lua",
+    "cst_kind": "false",
+    "op": "",
+    "emit": "term",
+    "term": "Lit",
+    "handler": "",
+    "plan": "{\"arity\": \"leaf\", \"const\": false, \"value\": \"const\"}",
+    "note": ""
+   }
+  },
+  {
+   "local_id": 22,
+   "type": "CorrespondenceRow",
+   "attrs": {
+    "lang": "lua",
+    "cst_kind": "identifier",
+    "op": "",
+    "emit": "term",
+    "term": "Var",
+    "handler": "",
+    "plan": "{\"arity\": \"leaf\", \"value\": \"name\"}",
+    "note": ""
+   }
+  },
+  {
+   "local_id": 23,
+   "type": "CorrespondenceRow",
+   "attrs": {
+    "lang": "lua",
+    "cst_kind": "parenthesized_expression",
+    "op": "",
+    "emit": "handler",
+    "term": "",
+    "handler": "lua_unwrap_paren",
+    "plan": "",
+    "note": ""
+   }
+  },
+  {
+   "local_id": 24,
+   "type": "CorrespondenceRow",
+   "attrs": {
+    "lang": "lua",
+    "cst_kind": "unary_expression",
+    "op": "",
+    "emit": "handler",
+    "term": "",
+    "handler": "lua_unary",
+    "plan": "",
+    "note": "- -> Neg; not -> Not; # -> the declared `len` oracle (sound for the array part); ~ is a blocker"
+   }
+  },
+  {
+   "local_id": 25,
+   "type": "CorrespondenceRow",
+   "attrs": {
+    "lang": "lua",
+    "cst_kind": "function_declaration",
+    "op": "",
+    "emit": "handler",
+    "term": "",
+    "handler": "lua_function",
+    "plan": "",
+    "note": "body -> ProgSeq (lua has no tail-expression return); varargs (...) is a blocker"
+   }
+  },
+  {
+   "local_id": 26,
+   "type": "CorrespondenceRow",
+   "attrs": {
+    "lang": "lua",
+    "cst_kind": "variable_declaration",
+    "op": "",
+    "emit": "handler",
+    "term": "",
+    "handler": "lua_local",
+    "plan": "",
+    "note": "local NAME = v unwraps to its assignment; bare `local x` is a blocker"
+   }
+  },
+  {
+   "local_id": 27,
+   "type": "CorrespondenceRow",
+   "attrs": {
+    "lang": "lua",
+    "cst_kind": "assignment_statement",
+    "op": "",
+    "emit": "handler",
+    "term": "",
+    "handler": "lua_assign",
+    "plan": "",
+    "note": "NAME = v -> ProgAssignVar; t[i] = v -> ProgSubscriptSet with the 1-based -> 0-based index shift (the cross-frame map); multiple targets/values are blockers"
+   }
+  },
+  {
+   "local_id": 28,
+   "type": "CorrespondenceRow",
+   "attrs": {
+    "lang": "lua",
+    "cst_kind": "if_statement",
+    "op": "",
+    "emit": "handler",
+    "term": "",
+    "handler": "lua_if",
+    "plan": "",
+    "note": "if/elseif/else -> nested ProgIfStmt"
+   }
+  },
+  {
+   "local_id": 29,
+   "type": "CorrespondenceRow",
+   "attrs": {
+    "lang": "lua",
+    "cst_kind": "while_statement",
+    "op": "",
+    "emit": "handler",
+    "term": "",
+    "handler": "lua_while",
+    "plan": "",
+    "note": ""
+   }
+  },
+  {
+   "local_id": 30,
+   "type": "CorrespondenceRow",
+   "attrs": {
+    "lang": "lua",
+    "cst_kind": "repeat_statement",
+    "op": "",
+    "emit": "handler",
+    "term": "",
+    "handler": "lua_repeat",
+    "plan": "",
+    "note": "repeat B until C -> B; While(Not C){B} (body emitted twice -- exact for straight-line bodies); a body containing break is a blocker (the duplicated first pass would put the break outside the loop)"
+   }
+  },
+  {
+   "local_id": 31,
+   "type": "CorrespondenceRow",
+   "attrs": {
+    "lang": "lua",
+    "cst_kind": "for_statement",
+    "op": "",
+    "emit": "handler",
+    "term": "",
+    "handler": "lua_for",
+    "plan": "",
+    "note": "numeric for a,b[,literal step] -> ForEach over the range oracle with the inclusive stop shifted by the step sign; generic for k,v in ipairs(xs) -> counter+ForEach desugar; pairs()/iterators are blockers"
+   }
+  },
+  {
+   "local_id": 32,
+   "type": "CorrespondenceRow",
+   "attrs": {
+    "lang": "lua",
+    "cst_kind": "return_statement",
+    "op": "",
+    "emit": "handler",
+    "term": "",
+    "handler": "lua_return",
+    "plan": "",
+    "note": "multiple return values are a blocker"
+   }
+  },
+  {
+   "local_id": 33,
+   "type": "CorrespondenceRow",
+   "attrs": {
+    "lang": "lua",
+    "cst_kind": "break_statement",
+    "op": "",
+    "emit": "handler",
+    "term": "",
+    "handler": "lua_break",
+    "plan": "",
+    "note": ""
+   }
+  },
+  {
+   "local_id": 34,
+   "type": "CorrespondenceRow",
+   "attrs": {
+    "lang": "lua",
+    "cst_kind": "function_call",
+    "op": "",
+    "emit": "handler",
+    "term": "",
+    "handler": "lua_call",
+    "plan": "",
+    "note": "f(x) -> ProgCallExtern with the lua name verbatim (print/ipairs...); a.b(x) -> dotted name verbatim (math.floor); t:m(x) -> ProgCallExtern{name: m, recv: t}"
+   }
+  },
+  {
+   "local_id": 35,
+   "type": "CorrespondenceRow",
+   "attrs": {
+    "lang": "lua",
+    "cst_kind": "bracket_index_expression",
+    "op": "",
+    "emit": "handler",
+    "term": "",
+    "handler": "lua_index",
+    "plan": "",
+    "note": "t[i] -> ProgSubscript{obj, index: i-1} -- lua is 1-based, the hub IR is 0-based; the shift IS the cross-frame map. ARRAY-PART reading only: a string-literal key is a blocker (the map-part caveat)"
+   }
+  },
+  {
+   "local_id": 36,
+   "type": "CorrespondenceRow",
+   "attrs": {
+    "lang": "lua",
+    "cst_kind": "table_constructor",
+    "op": "",
+    "emit": "handler",
+    "term": "",
+    "handler": "lua_table",
+    "plan": "",
+    "note": "{a, b, c} (array part) -> ProgContainerLit(list); any keyed field ({k = v} / [k] = v) is a blocker -- the map-part caveat, recorded, never silently dropped"
+   }
+  }
+ ],
+ "edges": []
+}

@@ -1,0 +1,101 @@
+{
+  "microtheory": {
+    "name": "thematic_roles",
+    "definition": "The inventory of THEMATIC ROLES (theta-roles / semantic roles): the semantic relations a participant bears to the event named by the predicate, independent of its syntactic position. Refines the single ``thematic_role`` concept (ling_syntax) into a named inventory the grammar grounds onto. The roles are the slots a SemanticFrame carries; comprehension assigns a noun to a role from the preposition / case-particle that marks it (VerbNet-derived prep->role, see domains/preposition_roles.py), and production emits the role's marker. Sources: Fillmore 1968 (case grammar); Gruber 1965 / Jackendoff 1972 (thematic relations); Dowty 1991 (proto-roles); VerbNet (Kipper et al.) as the prep->role reference.",
+    "category": "linguistics_domain",
+    "parent": "linguistics_foundation"
+  },
+  "concepts": [
+    {
+      "name": "agent",
+      "definition": "The volitional initiator / doer of the event (the entity that performs the action). Typically the subject of an active clause. A kind of thematic_role. Proto-agent (Dowty): volition, sentience, causation, movement.",
+      "category": "thematic_role",
+      "status": "settled"
+    },
+    {
+      "name": "patient",
+      "definition": "The entity that undergoes the action and is changed by it (the affected participant). Typically the direct object. A kind of thematic_role. Proto-patient (Dowty): change of state, causally affected, incremental theme.",
+      "category": "thematic_role",
+      "status": "settled"
+    },
+    {
+      "name": "theme",
+      "definition": "The entity that is located, moved, or whose state is described, but NOT necessarily changed (distinguished from patient by the absence of a change of state). The default / least-marked oblique role; VerbNet's most promiscuous role, hence the noise sink when deriving prep->role.",
+      "category": "thematic_role",
+      "status": "settled"
+    },
+    {
+      "name": "recipient",
+      "definition": "The (typically animate) entity that receives the theme in a transfer event (give, send, hand). Marked in English by ``to`` (VerbNet: Recipient is the dominant role for ``to``). Distinguished from goal by animacy + the transfer-of-possession reading.",
+      "category": "thematic_role",
+      "status": "settled"
+    },
+    {
+      "name": "goal",
+      "definition": "The endpoint / destination toward which motion or transfer is directed (spatial or abstract). Marked in English by ``to`` / ``into`` / ``onto`` (VerbNet: Destination). Canonical split from recipient: goal is the spatial endpoint, recipient the animate receiver; ``to`` canonicalises to recipient in the substrate when ambiguous.",
+      "category": "thematic_role",
+      "status": "settled"
+    },
+    {
+      "name": "source",
+      "definition": "The origin / starting point from which the theme moves or originates, or the material from which something is made. Marked in English by ``from`` (VerbNet: Source; Material -> source). The inverse of goal.",
+      "category": "thematic_role",
+      "status": "settled"
+    },
+    {
+      "name": "instrument",
+      "definition": "The means / tool with which the agent performs the action (cut with a knife). Marked in English by ``with`` (VerbNet: Instrument is the dominant role for ``with``). Inanimate and used-by-the-agent, distinguishing it from comitative.",
+      "category": "thematic_role",
+      "status": "settled"
+    },
+    {
+      "name": "beneficiary",
+      "definition": "The entity for whose benefit (or to whose detriment) the action is performed (buy a gift for Mary). Marked in English by ``for`` (VerbNet: Beneficiary). Not a participant in the core event, an adjunct of advantage.",
+      "category": "thematic_role",
+      "status": "settled"
+    },
+    {
+      "name": "location",
+      "definition": "The place where the event occurs or the theme is situated (sit on the mat, in the box). Marked by the SPATIAL prepositions (on/in/at/under/over/...) in English/Spanish and by case particles (に/で) in Japanese. The substrate keeps this COARSE: any spatial preposition -> location, since VerbNet's in/on/at counts are verb-frame-dependent noise for these clearly-spatial words.",
+      "category": "thematic_role",
+      "status": "settled"
+    },
+    {
+      "name": "manner",
+      "definition": "How the action is carried out (quickly, with care). Adverbial / oblique. Listed for inventory completeness; not yet grounded from a preposition in the substrate.",
+      "category": "thematic_role",
+      "status": "settled"
+    },
+    {
+      "name": "time",
+      "definition": "When the event occurs (temporal location / extent). Adverbial / oblique. Listed for inventory completeness.",
+      "category": "thematic_role",
+      "status": "settled"
+    },
+    {
+      "name": "cause",
+      "definition": "The non-volitional cause that brings about the event (the entity or event responsible, without intention — distinguishing it from agent). VerbNet marks some ``from`` / ``at`` frames Cause; mapped to the inventory but kept distinct from agent.",
+      "category": "thematic_role",
+      "status": "settled"
+    },
+    {
+      "name": "possession",
+      "definition": "The possessor / owned relation (the leg OF the table, Mary's book). Marked in English by ``of`` / the genitive. Listed for inventory completeness; ``of`` is treated as VerbNet noise for thematic-role purposes (it is a possession marker, not a theta-role preposition) and is NOT mapped to a role in domains/preposition_roles.py.",
+      "category": "thematic_role",
+      "status": "settled"
+    },
+    {
+      "name": "comitative",
+      "definition": "The entity accompanying the agent in the action (dance WITH Mary) — animate co-participant, distinguished from instrument (inanimate tool). Both surface with ``with`` in English; the comitative reading needs animacy, a later refinement (the substrate's ``with`` defaults to instrument).",
+      "category": "thematic_role",
+      "status": "settled"
+    },
+    {
+      "name": "topic",
+      "definition": "The matter the event is about (talk ABOUT the weather, think about X). Marked in English by ``about`` (VerbNet: Topic is dominant for ``about``). The subject-matter role, distinct from the discourse-topic notion.",
+      "category": "thematic_role",
+      "status": "settled"
+    }
+  ],
+  "rules": []
+}

@@ -1,0 +1,124 @@
+{
+  "id": "dns_resolution_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "DNS",
+  "in_microtheory": "network_protocols",
+  "description": "DNS resolution decomposed. Client → stub resolver → recursive resolver → root → TLD → authoritative server. Caching at every level. Resource record types (A, AAAA, CNAME, MX, TXT, NS, SOA, CAA). Modern variants: DoH (over HTTPS), DoT (over TLS), DoQ (over QUIC). DNSSEC adds cryptographic signatures. The Internet's most-used lookup system, fundamental to nearly every connection.",
+  "sub_mechanisms": [
+    {
+      "name": "stub_resolver",
+      "definition": "Client-side DNS library (in OS: getaddrinfo). Forwards queries to a recursive resolver; doesn't walk the hierarchy itself.",
+      "why": "Per-process DNS code would be heavy. OS-provided stub resolver caches + handles retries. Programs do gethostbyname or getaddrinfo and get IP back.",
+      "category": "dns_mechanism"
+    },
+    {
+      "name": "recursive_resolver",
+      "definition": "Resolver that walks the DNS hierarchy: queries root, then TLD, then authoritative — recursively. Caches results.",
+      "why": "Centralised resolution amortises hierarchy traversal across many clients. ISP runs one for its customers; public ones (8.8.8.8, 1.1.1.1) serve everyone. Caching is the resolver's value-add: ms latency vs hundreds.",
+      "category": "dns_mechanism"
+    },
+    {
+      "name": "root_servers",
+      "definition": "13 named root servers (a.root-servers.net through m). Hundreds of physical instances via anycast. Top of the DNS hierarchy.",
+      "why": "Bootstrap of the hierarchy. Recursive resolvers know the root server IPs from configuration. Roots delegate to TLDs (.com, .org, .uk). Anycast lets each query reach the closest root instance.",
+      "category": "dns_mechanism"
+    },
+    {
+      "name": "TLD_servers",
+      "definition": "Top-Level Domain servers: .com is run by Verisign; .org by Public Interest Registry; country TLDs by national registries.",
+      "why": "Below root in the hierarchy. TLD servers delegate to authoritative servers for individual domains. The TLD operator is responsible for the namespace's integrity (e.g., Verisign's role in .com security).",
+      "category": "dns_mechanism"
+    },
+    {
+      "name": "authoritative_server",
+      "definition": "DNS server hosting the actual records for a domain. example.com's records live on its authoritative servers (named in NS records).",
+      "why": "Domain owners control these. Cloudflare, AWS Route53, Google Cloud DNS are popular hosted authoritative providers. Authoritative ≠ recursive: roles are separate.",
+      "category": "dns_mechanism"
+    },
+    {
+      "name": "resource_record_types",
+      "definition": "A (IPv4 address), AAAA (IPv6 address), CNAME (alias), MX (mail), NS (nameserver), SOA (start of authority), TXT (arbitrary text), CAA (which CAs may issue certs).",
+      "why": "DNS isn't just hostname → IP. Each record type carries different information. TXT is the universal extension point (SPF, DKIM, domain ownership verification). CAA was added for certificate security.",
+      "category": "dns_mechanism"
+    },
+    {
+      "name": "TTL_caching_lifetime",
+      "definition": "Each record carries a TTL (seconds). Resolvers cache it for that duration. After expiry, fresh lookup required.",
+      "why": "Tradeoff: short TTL = fast change propagation but more load; long TTL = less load but slow propagation. CDNs often use 60-300 sec TTLs. Migrations require lowering TTL in advance.",
+      "category": "dns_mechanism"
+    },
+    {
+      "name": "DNS_over_UDP",
+      "definition": "Default: queries sent over UDP, port 53. Single packet request, single packet response.",
+      "why": "Lightweight: no TCP setup overhead. Limited to ~512 bytes original spec; EDNS0 extends to ~4096. Beyond that, retry over TCP. Most queries fit in UDP.",
+      "category": "dns_mechanism"
+    },
+    {
+      "name": "DNS_over_TCP",
+      "definition": "Fallback when UDP response would be too large or when zone transfers are needed.",
+      "why": "Zone transfers (AXFR/IXFR) require TCP for reliability + ordering. Large responses (many records) exceed UDP size. TCP fallback indicated by truncated UDP response's TC bit.",
+      "category": "dns_mechanism"
+    },
+    {
+      "name": "DNSSEC_signatures",
+      "definition": "Cryptographically signed DNS records. RRSIG signature accompanies each record set. Chain of trust via DS records up to the signed root.",
+      "why": "Authenticates DNS responses against tampering / spoofing. Recursive resolvers validate signatures; clients trust the validation. Adoption ~25% of domains; deployment friction has been operational complexity.",
+      "category": "dns_mechanism"
+    },
+    {
+      "name": "EDNS0_extension",
+      "definition": "Extensions to DNS allowing larger UDP responses (4096 bytes), client subnet hints, DNSSEC OK flag.",
+      "why": "Original DNS's 512-byte limit constrained modern use (DNSSEC signatures are large). EDNS0 negotiates larger size. Client subnet (ECS) lets CDNs return location-appropriate responses for client subnets (controversial for privacy).",
+      "category": "dns_mechanism"
+    },
+    {
+      "name": "DoH_DNS_over_HTTPS",
+      "definition": "RFC 8484. DNS queries inside HTTPS requests, port 443. Indistinguishable from web traffic.",
+      "why": "Privacy from ISP. Bypasses ISP-level DNS hijacking / censorship. Centralisation concern: many users default to one DoH provider (Cloudflare, Google) — single point of observation.",
+      "category": "dns_mechanism"
+    },
+    {
+      "name": "DNS_cache_poisoning",
+      "definition": "Injecting forged responses into a resolver's cache. Classic attack: race the legitimate response with a forged one matching the transaction ID.",
+      "why": "Pre-mitigation (random source port + 0x20 randomisation), the 16-bit transaction ID was guessable. Kaminsky's 2008 attack made this practical. Modern mitigations + DNSSEC raise the bar.",
+      "category": "dns_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "hierarchy_enables_distributed_authority",
+      "if": ["names are organised hierarchically with delegation"],
+      "then": ["each level can be managed independently"],
+      "why": "Verisign manages .com; Cloudflare manages cloudflare.com under .com; etc. No central authority controls all names. Delegation lets each domain owner control their subdomain without affecting others. Distributed scalable authority.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "caching_amortises_hierarchy_traversal",
+      "if": ["recursive resolvers cache responses"],
+      "then": ["typical lookups complete in milliseconds"],
+      "why": "Cold lookup: walks the hierarchy (4+ round-trips). Cached lookup: instant. Real-world DNS load is dominated by cached hits. The TTL mechanism is what makes caching effective + correct (cache invalidation by expiry).",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "DNSSEC_authenticates_against_spoofing",
+      "if": ["a resolver validates DNSSEC signatures"],
+      "then": ["forged responses are detectable and rejected"],
+      "why": "Signatures bind responses to the legitimate authoritative server. An attacker can inject forged responses, but without the signing key, they can't produce a valid signature. Validating resolvers reject invalid responses.",
+      "soundness_category": "referential_transparency"
+    },
+    {
+      "name": "DoH_provides_query_privacy",
+      "if": ["queries traverse HTTPS"],
+      "then": ["network observers see only that DNS over HTTPS is happening, not the queries themselves"],
+      "why": "TLS encrypts query content. ISP sees TCP/443 connection but not the domain queried. Major privacy improvement. Centralisation trade-off: the DoH provider sees all queries.",
+      "soundness_category": "referential_transparency"
+    },
+    {
+      "name": "low_TTL_for_dynamic_records",
+      "if": ["records change frequently (load balancing, failover)"],
+      "then": ["TTL should be low (10-60 seconds)"],
+      "why": "Cache freshness vs lookup load tradeoff. CDNs use short TTLs (~60s) to enable failover; static records (your MX server's IPv4) use long TTLs (86400s). Application choice based on change rate.",
+      "soundness_category": "cost_equivalence"
+    }
+  ]
+}

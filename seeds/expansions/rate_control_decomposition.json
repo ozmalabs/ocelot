@@ -1,0 +1,118 @@
+{
+  "id": "rate_control_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "rate_distortion",
+  "in_microtheory": "video_coding_theory",
+  "description": "Rate control — the encoder system that adjusts QP per frame/region to hit a target bitrate or quality — decomposed. Real-time, streaming, and VOD scenarios each have different rate-control requirements. The 5 main modes (CBR, VBR, CRF, capped CRF, ABR) trade quality consistency against bitrate predictability. Each operates by adjusting per-frame QP based on a feedback model from buffer state and complexity estimation.",
+  "sub_mechanisms": [
+    {
+      "name": "CRF_constant_rate_factor",
+      "definition": "Targets constant perceived quality: QP varies per frame so that visual quality stays roughly constant. The rate factor (a scalar 0-51) sets the quality target; bitrate varies with content complexity.",
+      "why": "What viewers actually want: consistent quality. Simple content uses few bits; complex content uses many. CRF is the default mode for x264/x265 because it produces the best quality-per-bit on average.",
+      "category": "rate_control_mechanism"
+    },
+    {
+      "name": "VBR_variable_bitrate",
+      "definition": "Targets an average bitrate over the whole video; QP and per-frame bitrate vary widely to hit the average.",
+      "why": "Good middle ground: target storage size while preserving quality consistency. Used for VOD downloads where the file size matters but per-frame bitrate doesn't.",
+      "category": "rate_control_mechanism"
+    },
+    {
+      "name": "CBR_constant_bitrate",
+      "definition": "Targets a strict bitrate every frame (within a small window). QP varies to maintain bitrate; quality varies as content changes.",
+      "why": "Required for live streaming and broadcast where network bandwidth is fixed. Quality dips on complex scenes are accepted because the alternative (buffer underrun) is worse.",
+      "category": "rate_control_mechanism"
+    },
+    {
+      "name": "capped_CRF",
+      "definition": "CRF with a maximum bitrate cap. Quality stays constant (CRF mode) until bitrate hits the cap; then it caps and quality may drop on the hardest scenes.",
+      "why": "Compromise between CRF (quality consistent) and VBR (bitrate predictable). Common for streaming where bandwidth is variable but bounded — the cap prevents buffer overflow.",
+      "category": "rate_control_mechanism"
+    },
+    {
+      "name": "ABR_average_bitrate",
+      "definition": "Targets a specific average bitrate exactly, with the encoder doing 2-pass analysis (first pass measures complexity, second pass distributes bits).",
+      "why": "Used when target file size is critical (e.g., specific ABR ladder rung). 2-pass mode produces better quality at the target bitrate than 1-pass because the encoder knows the full complexity distribution before encoding.",
+      "category": "rate_control_mechanism"
+    },
+    {
+      "name": "two_pass_analysis",
+      "definition": "First pass: encode at constant QP, measure per-frame bit cost. Second pass: redistribute bits per frame based on the first-pass measurements, achieving the target bitrate with better quality.",
+      "why": "Single-pass rate control guesses future complexity; two-pass knows it. Two-pass beats single-pass at the same bitrate by 5-15% PSNR. Cost is encoding the stream twice.",
+      "category": "rate_control_mechanism"
+    },
+    {
+      "name": "vbv_buffer_model",
+      "definition": "Video Buffer Verifier: a model of a hypothetical receiver buffer with fixed size and constant fill rate. The encoder must not overflow or underflow this buffer.",
+      "why": "Standardised buffer model lets encoders produce streams that work on any decoder. Encoders constrain per-frame bit cost so the VBV stays within bounds. The VBV is the standard's way of ensuring decode feasibility.",
+      "category": "rate_control_mechanism"
+    },
+    {
+      "name": "macroblock_tree_complexity",
+      "definition": "x264's 'MB-tree' algorithm: estimates which macroblocks will be referenced by future frames and allocates more bits to those (so future frames have better predictors).",
+      "why": "Bits spent on a reference frame's high-quality macroblocks pay off across all future frames that use them as prediction. MB-tree allocates bits to the most-used reference macroblocks, improving overall efficiency by ~5-10%.",
+      "category": "rate_control_mechanism"
+    },
+    {
+      "name": "psycho_visual_rate_control",
+      "definition": "Adjusts per-region QP based on perceptual saliency: faces get more bits, background gets fewer; high-contrast edges get more, smooth regions get less.",
+      "why": "Bit budget allocated by perceptual importance. PSNR-tuned RC over-spends bits on smooth regions (low MSE per bit), under-spends on faces. PSY-RC corrects this; gains ~10% subjective quality at the same bitrate.",
+      "category": "rate_control_mechanism"
+    },
+    {
+      "name": "adaptive_quantisation",
+      "definition": "Per-block QP variation derived from local complexity (variance, mode, edge strength). High-complexity blocks get finer QP; flat blocks get coarser.",
+      "why": "Same total bit budget allocated where it matters most. Adaptive Q (called AQ in x264) is a per-frame application of MB-tree's logic — extracts ~5-10% subjective quality.",
+      "category": "rate_control_mechanism"
+    },
+    {
+      "name": "look_ahead_buffer",
+      "definition": "Encoder maintains a buffer of N future frames to analyse before encoding the current frame. Used for B-frame placement, scene change detection, and RC decisions.",
+      "why": "Future knowledge improves current decisions. Scene change before a high-QP frame means that frame is a good IDR candidate; complex future frames mean the current one should leave bits available. Look-ahead is one of x264's defining quality features.",
+      "category": "rate_control_mechanism"
+    },
+    {
+      "name": "scene_change_detection",
+      "definition": "Frame-to-frame complexity comparison: large jumps in inter-prediction residual cost indicate a scene change. Triggers IDR insertion + RC reset.",
+      "why": "Scene changes break inter-prediction; encoding the new scene as a P-frame would waste many bits on the impossible prediction. IDR insertion at scene boundaries trades the I-frame cost for predictable future encoding.",
+      "category": "rate_control_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "crf_quality_consistent_bitrate_varies",
+      "if": ["the goal is consistent perceived quality"],
+      "then": ["CRF rate control beats CBR for average-quality optimisation"],
+      "why": "CRF allocates bits where they're needed. Simple frames use few; complex frames use many. CBR forces equal bits per frame, wasting them on simple frames and starving complex ones.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "two_pass_beats_single_pass_at_known_bitrate",
+      "if": ["the target is a specific average bitrate"],
+      "then": ["two-pass beats single-pass by 5-15% quality at that bitrate"],
+      "why": "Single-pass must guess future complexity; two-pass knows it. Optimal bit allocation requires knowing the whole complexity distribution. Cost is 2x encode time.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "mb_tree_amortises_bits_across_dependencies",
+      "if": ["a macroblock will be referenced by many future frames"],
+      "then": ["allocating more bits to it improves all those future frames"],
+      "why": "Reference quality propagates: high-quality reference → high-quality prediction → low residual → fewer bits future. MB-tree's analysis identifies these high-impact macroblocks; allocating extra bits there has compounding gains.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "psy_rc_matches_hvs_attention",
+      "if": ["bits are allocated by perceptual saliency"],
+      "then": ["subjective quality improves at the same average bitrate"],
+      "why": "PSNR-tuned RC over-spends on the wrong regions. PSY-RC's saliency model (faces, edges, motion) gets bits where viewers notice them. The same bitrate, allocated better, scores higher on subjective tests.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "vbv_buffer_constraint_ensures_decode_feasibility",
+      "if": ["a stream meets the VBV buffer model constraints"],
+      "then": ["all conformant decoders can decode it without buffer underrun"],
+      "why": "VBV is the standard's contract: encoders that respect it produce universally-decodable streams. Per-frame bit budget is constrained to keep the hypothetical buffer in bounds — without this, encoders could create streams that exceed decoder memory.",
+      "soundness_category": "referential_transparency"
+    }
+  ]
+}

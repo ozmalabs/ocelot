@@ -1,0 +1,34 @@
+{
+  "id": "parallax_efference",
+  "version": "1.0.0",
+  "depends_on": ["vision_motion_group"],
+  "description": "EFFERENCE-COPY reference frame for common-fate motion grouping. The eye moves itself by a KNOWN shift (efference copy); it predicts the reference/fixation plane's motion field and SUBTRACTS it, so the fixated surface reads STATIONARY (space constancy) and every other surface is grouped by its residual (depth-relative) motion. vision_motion_group's mo_dominant ESTIMATES the reference frame as the LARGEST group's velocity (dom_v); this seed REPLACES that estimate with the SUPPLIED, chosen efference copy (field.efference_v). ONE rule, gated by graph DATA (MotionParams.mo_efference), default OFF: when disarmed, mo_dominant runs unchanged and behaviour is byte-identical (PROTOCOL §9). When armed, pe_efference_ref writes field.dom_v = field.efference_v and dom_done=1 EARLY, so mo_dominant's own `dom_done < 0.5` guard suppresses it (no edit to the vision_motion_group seed) and the UNCHANGED mo_mint refuses the CHOSEN fixation plane. NO new constant (PROTOCOL §13); efference_v is the eye's own self-motion, a mechanical adapter input, NEVER estimated from pixels.",
+  "microtheory": {
+    "name": "efference_copy_reference_frame",
+    "definition": "The reference frame for common-fate segmentation is the eye's OWN self-motion (efference copy), a known quantity, not the estimated dominant motion of the field. Subtracting it makes the fixated plane read stationary (space constancy: zero residual) and turns the residual field into depth-relative structure. This is why a self-generated shift is not perceived (it is predicted and cancelled) and why parallax carves a depth-structured scene into surfaces while a flat scene yields nothing."
+  },
+  "nodes": [],
+  "edges": [],
+  "productions": [],
+  "rules": [
+    {
+      "name": "pe_efference_ref",
+      "comment": "THE EFFERENCE COPY BECOMES THE REFERENCE FRAME. When armed (marm) AND the efference flag is set (MotionParams.mo_efference > 0.5) AND the reference frame is not yet fixed (field.dom_done < 0.5), write the field's dominant motion as the SUPPLIED efference copy (field.efference_v) rather than letting mo_dominant estimate it from the largest group. Setting dom_done=1 here makes mo_dominant's own guard (dom_done < 0.5) false, so it never fires and the vision_motion_group seed is not edited. mo_mint then refuses whatever surface matches the efference copy (residual zero = the fixated, stationary plane = space constancy). Idempotent: re-firing writes the same values; once dom_done=1 the guard stops it. Default OFF: with mo_efference absent/0 this rule never fires and behaviour is byte-identical (PROTOCOL §9). NO CONSTANT (PROTOCOL §13): efference_v is an adapter-supplied input (the eye's chosen self-motion), never estimated.",
+      "match_type": null,
+      "match": [["field", "has_cell", "R"]],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Gt", "a": {"type": "Attr", "key": "marm", "node": {"type": "PickUnique", "source": {"type": "NodesOfType", "node_type": "MotionParams"}}}, "b": {"type": "Lit", "value": 0.5}},
+          {"type": "Gt", "a": {"type": "Attr", "key": "mo_efference", "node": {"type": "PickUnique", "source": {"type": "NodesOfType", "node_type": "MotionParams"}}}, "b": {"type": "Lit", "value": 0.5}},
+          {"type": "Lt", "a": {"type": "Attr", "node": {"type": "Var", "name": "field"}, "key": "dom_done"}, "b": {"type": "Lit", "value": 0.5}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "field", "dom_v", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "field"}, "key": "efference_v"}}],
+        ["set_attr", "field", "dom_root", {"__term__": {"type": "Lit", "value": -1.0}}],
+        ["set_attr", "field", "dom_done", {"__term__": {"type": "Lit", "value": 1.0}}]
+      ]
+    }
+  ]
+}

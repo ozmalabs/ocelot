@@ -1,0 +1,138 @@
+{
+  "microtheory": {
+    "name": "cerebellar_circuit",
+    "definition": "The cerebellum's canonical microcircuit — Marr 1969, Albus 1971, Ito's revisions. The cerebellum has more neurons than the rest of the brain combined (80%); maps not to motor cortex but to ALL cortical regions via cerebro-cerebellar loops. Modern view: the cerebellum is a universal predictor — supplies expectation-of-consequence to whatever it's connected to. Substrate analogue: the anticipation handler (∂²F prediction).",
+    "category": "neuroscience_domain",
+    "parent": "neuroscience"
+  },
+  "concepts": [
+    {
+      "name": "purkinje_cell",
+      "definition": "The cerebellum's only output neuron. Massive fan-shaped dendritic arbor receives ~150,000 parallel-fiber synapses. Inhibits deep cerebellar nuclei. Substrate analogue: the output aggregator of an anticipation Mt.",
+      "category": "cell_type"
+    },
+    {
+      "name": "granule_cell",
+      "definition": "Smallest, most numerous neurons in the brain (~50 billion in human cerebellum). Receive mossy fiber input; their axons form parallel fibers. Expand mossy fiber input into a high-dimensional sparse code (Marr 1969). Substrate analogue: sparse expansion concepts for feature recombination.",
+      "category": "cell_type"
+    },
+    {
+      "name": "mossy_fiber",
+      "definition": "Cerebellar input from pons (carrying cortical info) + spinal cord. Multiple firing modes. Encodes context for prediction. Substrate analogue: context-input edges feeding the anticipation Mt.",
+      "category": "input_pathway"
+    },
+    {
+      "name": "climbing_fiber",
+      "definition": "Cerebellar input from inferior olive. Each Purkinje cell receives just ONE climbing fiber, but it makes hundreds of synapses. Fires sparsely (~1 Hz) but with massive effect — encodes the error signal. Substrate analogue: ΔF teaching signal for the anticipation Mt.",
+      "category": "input_pathway"
+    },
+    {
+      "name": "parallel_fiber",
+      "definition": "Granule cell axon. Bifurcates + runs longitudinally for several mm, contacting many Purkinje cells in a row. Conveys context to multiple predictors. Substrate analogue: shared context concept reachable by many anticipation handlers.",
+      "category": "input_pathway"
+    },
+    {
+      "name": "inferior_olive",
+      "definition": "Brainstem nucleus, source of climbing fibers. Computes prediction-error from comparison of intended vs actual movement / outcome. Substrate analogue: ΔF computation in _stash_post_state.",
+      "category": "subcortical"
+    },
+    {
+      "name": "deep_cerebellar_nuclei",
+      "definition": "Cerebellum's actual output. Receive inhibition from Purkinje cells + excitation from collaterals. Send predictions back to cortex via thalamus. Substrate analogue: anticipation output that propagates to other Mts.",
+      "category": "subcortical"
+    },
+    {
+      "name": "cerebellar_long_term_depression",
+      "definition": "Cerebellar LTD. Coincident climbing-fiber + parallel-fiber input WEAKENS the parallel-fiber-Purkinje synapse. Opposite sign from cortical LTP. The Marr-Albus learning rule. Substrate analogue: prediction-error-driven weight DECAY in the anticipation Mt's connections.",
+      "category": "plasticity"
+    },
+    {
+      "name": "marr_albus_model",
+      "definition": "1969-1971 theory: granule cells expand mossy-fiber input into a high-dimensional sparse code; climbing-fiber error signal modifies which parallel-fiber inputs each Purkinje cell listens to. The result is supervised learning of context→prediction mappings. Foundational computational theory of cerebellum. Substrate analogue: the substrate's whole anticipation pipeline.",
+      "category": "framework"
+    },
+    {
+      "name": "forward_model",
+      "definition": "An internal model that predicts the sensory consequence of an action BEFORE it occurs. Cerebellum implements forward models for motor + cognitive functions. Substrate analogue: the substrate's anticipation handler computing ∂²F (predicted state change).",
+      "category": "framework"
+    },
+    {
+      "name": "inverse_model",
+      "definition": "Maps desired outcome → required action. Cerebellum has both forward + inverse models in parallel circuits. Substrate analogue: motor schema selection given goal state.",
+      "category": "framework"
+    },
+    {
+      "name": "temporal_difference_prediction",
+      "definition": "The cerebellum predicts outcomes at multiple timescales simultaneously. Different Purkinje cell populations encode different prediction horizons. Substrate analogue: ∂²F as second-order temporal difference.",
+      "category": "framework"
+    },
+    {
+      "name": "cerebro_cerebellar_loop",
+      "definition": "Every cortical area projects to cerebellum (via pons) and receives back from cerebellum (via thalamus). Not just motor — prefrontal, parietal, temporal, all loop through cerebellum. The 'universal predictor' view.",
+      "category": "circuit"
+    },
+    {
+      "name": "modular_organization",
+      "definition": "Cerebellum is divided into ~hundred microzones, each receiving its own climbing-fiber input + each handling one prediction. Each microzone is an independent learner. Substrate analogue: one anticipation Mt per concept domain.",
+      "category": "circuit"
+    },
+    {
+      "name": "vermis_versus_hemisphere",
+      "definition": "Medial vermis handles posture + balance + emotion; lateral hemispheres handle limb coordination + cognition. Anatomical specialisation by function. Substrate analogue: different anticipation handlers for different drive domains.",
+      "category": "circuit"
+    },
+    {
+      "name": "motor_timing",
+      "definition": "Cerebellum learns precise temporal sequences. Eye-blink conditioning is the classic example: pair tone + airpuff at exactly 250ms; learn to blink at 250ms. Lesion abolishes the learned timing. Substrate analogue: streak detection's exact-K timing.",
+      "category": "function"
+    },
+    {
+      "name": "coordination",
+      "definition": "Cerebellum synchronizes multi-muscle, multi-joint movements. Lesion → ataxia (jerky uncoordinated movement). Substrate analogue: cross-Mt coherence enforcement.",
+      "category": "function"
+    },
+    {
+      "name": "motor_learning",
+      "definition": "Cerebellum drives skill acquisition. The smooth ramp from clumsy to expert reaching/typing/playing-piano happens in cerebellum. Substrate analogue: ActionSpec refinement through error-driven updates.",
+      "category": "function"
+    },
+    {
+      "name": "cognitive_prediction",
+      "definition": "Cerebellum also predicts cognitive outcomes — what the next word will be, what someone is about to say, what consequence will follow. Schmahmann's cerebellar cognitive affective syndrome documents this. Substrate analogue: anticipation across non-motor Mts.",
+      "category": "function"
+    },
+    {
+      "name": "language_prediction",
+      "definition": "Cerebellum predicts upcoming words in sentences; lesion impairs verb generation. Subverbal motor simulation. Substrate analogue: anticipation in the substrate's lexical access cortex.",
+      "category": "function"
+    }
+  ],
+  "rules": [
+    {
+      "name": "cerebellum_predicts_consequence",
+      "head": "an action is initiated",
+      "body": "the cerebellum predicts its sensory consequence in parallel. If prediction matches actual, no error; if mismatch, climbing-fiber fires and learns. Substrate's anticipation handler is this mechanism."
+    },
+    {
+      "name": "climbing_fiber_carries_error",
+      "head": "the actual outcome diverges from the cerebellar prediction",
+      "body": "the inferior olive fires a climbing-fiber spike to the relevant Purkinje cell, triggering LTD at parallel-fiber synapses that contributed to the wrong prediction. Substrate analogue: ΔF as the teaching signal for anticipation weights."
+    },
+    {
+      "name": "sparse_expansion_in_granule_layer",
+      "head": "low-dimensional mossy-fiber input arrives at granule cell layer",
+      "body": "granule cells expand it into a high-dimensional sparse code (Marr 1969) that increases the cerebellum's pattern-separation capacity. Substrate analogue: the substrate's feature_invention process — expanding existing features into more discriminative ones."
+    },
+    {
+      "name": "microzones_are_independent_learners",
+      "head": "cerebellum is functionally divided into ~hundred microzones",
+      "body": "each receives its own error signal + makes its own prediction independently. Failures in one microzone don't propagate to others. Substrate analogue: per-Mt anticipation isolation."
+    },
+    {
+      "name": "cerebellum_is_universal_predictor",
+      "head": "any cortical region engaged in any task",
+      "body": "loops through cerebellum to receive prediction support. Not motor-specific. Substrate analogue: anticipation handler should run for every Mt, not just motor ones."
+    }
+  ],
+  "parent_mt": "neuroscience"
+}

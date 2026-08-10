@@ -1,0 +1,107 @@
+{
+  "id": "refusal_representable",
+  "version": "1.0.0",
+  "depends_on": [
+    "core"
+  ],
+  "description": "A REPRESENTABLE REFUSAL. Ships the held RefusalMark node -- the distinct token an ArgminRefusal (Rust Term idx 180) returns on a tie (a comparison matched nothing), reachable ONLY by a comparison-matched-nothing and never by a selection over ordinary values. A refusal becomes a first-class graph value: distinct from None (NOTHING), Bool(false) (NO), and any real winner (REAL). The hear-and-mint rule turns a heard refusal into a Residual node the gap-awareness / SelfConcern -> StandingConcern spine can promote and the teacher can ground (the NAMED successor).",
+  "microtheory": "refusal_capacity",
+  "nodes": [
+    {
+      "local_id": 1,
+      "type": "RefusalMark",
+      "attrs": {
+        "is_refusal_marker": 1,
+        "note": "the held refusal token; reference via Pick(NodesOfType(RefusalMark))"
+      }
+    }
+  ],
+  "edges": [],
+  "productions": [],
+  "rules": [
+    {
+      "name": "refusal_query_mints_residual",
+      "comment": "HEAR a refusal (ArgminRefusal tie == RefusalMark) and MINT a Residual node the promote/ground spine can carry. Empty candidate set -> sel is None (NOTHING), not the token, so this does NOT fire on emptiness.",
+      "match_type": null,
+      "match": [
+        [
+          "q",
+          "refusal_probe",
+          "p"
+        ]
+      ],
+      "where": {
+        "type": "Eq",
+        "a": {
+          "type": "ArgminRefusal",
+          "source": {
+            "type": "Neighbours",
+            "node": {
+              "type": "Var",
+              "name": "q"
+            },
+            "edge_type": "refusal_cand"
+          },
+          "var_name": "c",
+          "value": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "c"
+            },
+            "key": "score"
+          },
+          "refused": {
+            "type": "Pick",
+            "source": {
+              "type": "NodesOfType",
+              "node_type": "RefusalMark"
+            }
+          }
+        },
+        "b": {
+          "type": "Pick",
+          "source": {
+            "type": "NodesOfType",
+            "node_type": "RefusalMark"
+          }
+        }
+      },
+      "effects": [
+        [
+          "add_node",
+          "res",
+          "Residual",
+          {
+            "source_count": {
+              "__term__": {
+                "type": "Count",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {
+                    "type": "Var",
+                    "name": "q"
+                  },
+                  "edge_type": "refusal_cand"
+                }
+              }
+            },
+            "kind": {
+              "__term__": {
+                "type": "Lit",
+                "value": "no_unique_extremum"
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "q",
+          "has_residual",
+          "res",
+          {}
+        ]
+      ]
+    }
+  ]
+}

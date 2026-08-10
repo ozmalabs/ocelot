@@ -1,0 +1,163 @@
+{
+ "id": "vision_invariant_comparator",
+ "version": "1.0.0",
+ "depends_on": ["shape_decode_loop"],
+ "description": "INVARIANT COMPARATOR (VISION_INVARIANT_COMPARATOR_PREREG.md, seeds 57000-57999). The cross-frame rung (VISION_CROSSFRAME_IDENTITY_RESULTS.md) proved its comparator is EXACTLY pixel Hamming overlap and therefore survives ONE pixel of translation. This seed keeps that DECISION -- Argmax over a held codebook by ShapeDecode's covered_count -- and adds a SECOND, GROUP-LEVEL Argmax that QUOTIENTS BY THE NUISANCE GROUP: an observation is presented as an ObsGroup whose members are the same aperture sampled at every translation in the Chebyshev ball of radius rho, and rules 3 and 4 take the max over that orbit and read the winning member's answer. The quotient is performed BY THE GRAPH (a MaxOver and an Argmax over graph-resident orbit members), not by an adapter loop. The group is 2D INTEGER TRANSLATION -- the dominant nuisance of natural video and, unlike D4 on handwriting (VISION_INK_VENTRAL_RESULTS.md, -11.3pp), identity-PRESERVING for an image region. NO new Rust, NO new Term, NO new constant: rho is the independent variable of the measurement, and rho=0 (a group of one member) is EXACTLY the incumbent comparator. THREE DIFFERENCES from vision_crossframe_identity 1.0.0, all declared in the pre-registration: (1) the codebook node type is the PRIVATE 'XfSignature', which closes that rung's own named section-4.1 defect (its Argmax ranged over NodesOfType(ShapeSignature) and therefore over the 17 foreign signatures boot_core + shape_decode_loop install; measured inert there, but a codebook built by adding nodes was not the codebook the rule saw); (2) a private status ladder ic_pending -> ic_scored -> ic_done / icg_pending -> icg_scored -> icg_done that no other seed's rule matches; (3) the group layer itself. SHIPS OFF (InvComparatorParams.invcomp > 0.5) and is NOT in the default boot set -- the runner loads this manifest explicitly, so every committed result reproduces byte-identically (protocol section 9).",
+ "nodes": [
+  {"local_id": 0, "type": "InvComparatorParams", "attrs": {"invcomp": 0.0}}
+ ],
+ "edges": [],
+ "productions": [
+  {"provenance": "seed:vision_invariant_comparator:has_group-0",
+   "src": {"type": "Agent", "var": "s"},
+   "edge_type": "has_group",
+   "tgt": {"type": "ObsGroup", "var": "t"}},
+  {"provenance": "seed:vision_invariant_comparator:has_member-1",
+   "src": {"type": "ObsGroup", "var": "s"},
+   "edge_type": "has_member",
+   "tgt": {"type": "Observation", "var": "t"}}
+ ],
+ "rules": [
+  {
+   "name": "ic_score",
+   "comment": "Stage 1 of 2. Score the observation against EVERY held XfSignature and keep the best score. MaxOver evaluates ShapeDecode once per candidate with the codebook scoped to that candidate alone, so the value is that candidate's covered_count. When the codebook holds a translation ORBIT (one XfSignature per (region, shift)), THIS MaxOver IS THE QUOTIENT BY THE GROUP: the invariant score of a region is the maximum of its orbit's scores, computed by the graph, not by the adapter. Guarded on InvComparatorParams.invcomp so the seed is inert unless the measurement explicitly arms it (protocol section 9).",
+   "match_type": "Observation",
+   "match": [["ag", "observed", "obs"]],
+   "where": {
+    "type": "And",
+    "items": [
+     {"type": "Eq",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "status"},
+      "b": {"type": "Lit", "value": "ic_pending"}},
+     {"type": "Gt",
+      "a": {"type": "Count",
+            "source": {"type": "Filter",
+                       "source": {"type": "NodesOfType", "node_type": "InvComparatorParams"},
+                       "var_name": "cp",
+                       "predicate": {"type": "Gt",
+                                     "a": {"type": "Attr", "node": {"type": "Var", "name": "cp"}, "key": "invcomp"},
+                                     "b": {"type": "Lit", "value": 0.5}}}},
+      "b": {"type": "Lit", "value": 0}}
+    ]
+   },
+   "effects": [
+    ["set_attr", "obs", "ic_max",
+     {"__term__": {
+       "type": "MaxOver",
+       "source": {"type": "NodesOfType", "node_type": "XfSignature"},
+       "var_name": "sig",
+       "value": {"type": "ShapeDecode",
+                 "goal": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "signature"},
+                 "codebook_type": "XfSignature",
+                 "codebook_scope": {"type": "SetT", "items": [{"type": "Attr", "node": {"type": "Var", "name": "sig"}, "key": "name"}]},
+                 "field": "covered_count", "beam": 1, "max_steps": 1, "cand_k": 1},
+       "default": {"type": "Lit", "value": -1}}}],
+    ["set_attr", "obs", "status", "ic_scored"]
+   ]
+  },
+  {
+   "name": "ic_identify",
+   "comment": "Stage 2 of 2. THE DECISION: Argmax over the held codebook by the same per-candidate covered_count picks the orbit member that best explains this observation, and its name is written to identified_as -- the adapter only reads that attr back and splits the region index off the name. ic_ntied counts how many candidates achieve the stored maximum, so a top-1 answer produced by an arbitrary tie-break is VISIBLE rather than silent (the Pick-returns-one-of-N disease, protocol section 12.3). This count is the load-bearing diagnostic of THIS rung: a comparator can buy invariance by making everything tie, and the tie count is where that shows.",
+   "match_type": "Observation",
+   "match": [["ag", "observed", "obs"]],
+   "where": {
+    "type": "Eq",
+    "a": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "status"},
+    "b": {"type": "Lit", "value": "ic_scored"}
+   },
+   "effects": [
+    ["set_attr", "obs", "identified_as",
+     {"__term__": {
+       "type": "Attr", "key": "name",
+       "node": {"type": "Argmax",
+                "source": {"type": "NodesOfType", "node_type": "XfSignature"},
+                "var_name": "sig",
+                "value": {"type": "ShapeDecode",
+                          "goal": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "signature"},
+                          "codebook_type": "XfSignature",
+                          "codebook_scope": {"type": "SetT", "items": [{"type": "Attr", "node": {"type": "Var", "name": "sig"}, "key": "name"}]},
+                          "field": "covered_count", "beam": 1, "max_steps": 1, "cand_k": 1},
+                "default": null}}}],
+    ["set_attr", "obs", "ic_ntied",
+     {"__term__": {
+       "type": "Count",
+       "source": {"type": "Filter",
+                  "source": {"type": "NodesOfType", "node_type": "XfSignature"},
+                  "var_name": "sig",
+                  "predicate": {"type": "Eq",
+                                "a": {"type": "ShapeDecode",
+                                      "goal": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "signature"},
+                                      "codebook_type": "XfSignature",
+                                      "codebook_scope": {"type": "SetT", "items": [{"type": "Attr", "node": {"type": "Var", "name": "sig"}, "key": "name"}]},
+                                      "field": "covered_count", "beam": 1, "max_steps": 1, "cand_k": 1},
+                                "b": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "ic_max"}}}}}],
+    ["set_attr", "obs", "status", "ic_done"]
+   ]
+  },
+  {
+   "name": "icg_score",
+   "comment": "Stage 3 of 4 -- THE QUOTIENT, first half. An ObsGroup holds the orbit of ONE probe: the same aperture sampled at every translation in the Chebyshev ball of radius rho. Its invariant score is the MAXIMUM over the orbit of the member scores rules 1-2 already computed -- a MaxOver over graph-resident members, i.e. the graph taking the max over the group, not the adapter. Fires only once EVERY member has reached ic_done (the Count-equals-Count guard), so the fixpoint orders the two layers without any adapter sequencing. At rho=0 the group has ONE member and this layer is the identity: Q(0) IS the incumbent comparator, exactly.",
+   "match_type": "ObsGroup",
+   "match": [["ag", "has_group", "grp"]],
+   "where": {
+    "type": "And",
+    "items": [
+     {"type": "Eq",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "grp"}, "key": "status"},
+      "b": {"type": "Lit", "value": "icg_pending"}},
+     {"type": "Eq",
+      "a": {"type": "Count",
+            "source": {"type": "Filter",
+                       "source": {"type": "Neighbours", "node": {"type": "Var", "name": "grp"}, "edge_type": "has_member", "any_type": false},
+                       "var_name": "m",
+                       "predicate": {"type": "Eq",
+                                     "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "status"},
+                                     "b": {"type": "Lit", "value": "ic_done"}}}},
+      "b": {"type": "Count",
+            "source": {"type": "Neighbours", "node": {"type": "Var", "name": "grp"}, "edge_type": "has_member", "any_type": false}}}
+    ]
+   },
+   "effects": [
+    ["set_attr", "grp", "icg_max",
+     {"__term__": {
+       "type": "MaxOver",
+       "source": {"type": "Neighbours", "node": {"type": "Var", "name": "grp"}, "edge_type": "has_member", "any_type": false},
+       "var_name": "m",
+       "value": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "ic_max"},
+       "default": {"type": "Lit", "value": -1}}}],
+    ["set_attr", "grp", "status", "icg_scored"]
+   ]
+  },
+  {
+   "name": "icg_identify",
+   "comment": "Stage 4 of 4 -- THE QUOTIENT, second half. Argmax over the orbit by member score selects the translation that best explains the observation, and the group's answer is THAT member's identified_as: max over (region, shift) of covered_count, argmax'd to a region. icg_ntied counts how many orbit members achieve the group maximum -- the load-bearing diagnostic of this rung, because the failure mode a translation quotient invites is buying invariance by making everything tie, and this is where that becomes visible rather than silent.",
+   "match_type": "ObsGroup",
+   "match": [["ag", "has_group", "grp"]],
+   "where": {
+    "type": "Eq",
+    "a": {"type": "Attr", "node": {"type": "Var", "name": "grp"}, "key": "status"},
+    "b": {"type": "Lit", "value": "icg_scored"}
+   },
+   "effects": [
+    ["set_attr", "grp", "identified_as",
+     {"__term__": {
+       "type": "Attr", "key": "identified_as",
+       "node": {"type": "Argmax",
+                "source": {"type": "Neighbours", "node": {"type": "Var", "name": "grp"}, "edge_type": "has_member", "any_type": false},
+                "var_name": "m",
+                "value": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "ic_max"},
+                "default": null}}}],
+    ["set_attr", "grp", "icg_ntied",
+     {"__term__": {
+       "type": "Count",
+       "source": {"type": "Filter",
+                  "source": {"type": "Neighbours", "node": {"type": "Var", "name": "grp"}, "edge_type": "has_member", "any_type": false},
+                  "var_name": "m",
+                  "predicate": {"type": "Eq",
+                                "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "ic_max"},
+                                "b": {"type": "Attr", "node": {"type": "Var", "name": "grp"}, "key": "icg_max"}}}}}],
+    ["set_attr", "grp", "status", "icg_done"]
+   ]
+  }
+ ]
+}

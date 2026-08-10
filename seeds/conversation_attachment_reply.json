@@ -1,0 +1,98 @@
+{
+  "id": "conversation_attachment_reply",
+  "version": "1.2.0",
+  "depends_on": ["conversation_attachment_route", "upload_foveated_text"],
+  "description": "Graph-native replies for upload follow-up questions. v1.2.0: when the agent chose a full foveated read (decoded_text on the doc), reply from that; else vision_summary (GraphEye shapes at ingest); else metadata fallback. All gated by attachment_replied.",
+  "nodes": [],
+  "edges": [],
+  "productions": [],
+  "rules": [
+    {
+      "name": "reply_attachment_from_decoded_text",
+      "match": [
+        ["agent", "has_goal", "g"],
+        ["g", "comprehends", "m"],
+        ["agent", "received", "m"],
+        ["g", "about_attachment", "ca"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "In", "member": {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "kind"}, "container": {"type": "Lit", "value": ["answer_attachment", "decode_upload_text"]}},
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "attachment_replied"}, "b": {"type": "Lit", "value": 1.0}}},
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "ca"}, "key": "decoded_text"}, "b": {"type": "Lit", "value": null}}},
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "ca"}, "key": "decoded_text"}, "b": {"type": "Lit", "value": ""}}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "m", "attachment_replied", 1.0],
+        ["set_attr", "g", "outcome", "resolved"],
+        ["add_node", "reply", "Message", {
+          "from": "agent",
+          "text": {"__term__": {"type": "StringConcat", "parts": [
+            {"type": "Lit", "value": "From my foveated read of your image, the text I recover is: "},
+            {"type": "Attr", "node": {"type": "Var", "name": "ca"}, "key": "decoded_text"},
+            {"type": "Lit", "value": "."}
+          ]}}
+        }],
+        ["add_edge", "reply", "responds_to", "m"],
+        ["add_edge", "agent", "sent", "reply"]
+      ]
+    },
+    {
+      "name": "reply_attachment_from_vision",
+      "match": [
+        ["agent", "has_goal", "g"],
+        ["g", "comprehends", "m"],
+        ["agent", "received", "m"],
+        ["g", "about_attachment", "ca"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "kind"}, "b": {"type": "Lit", "value": "answer_attachment"}},
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "attachment_replied"}, "b": {"type": "Lit", "value": 1.0}}},
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "ca"}, "key": "vision_summary"}, "b": {"type": "Lit", "value": null}}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "ca"}, "key": "decoded_text"}, "b": {"type": "Lit", "value": null}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "m", "attachment_replied", 1.0],
+        ["set_attr", "g", "outcome", "resolved"],
+        ["add_node", "reply", "Message", {
+          "from": "agent",
+          "text": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "ca"}, "key": "vision_summary"}}
+        }],
+        ["add_edge", "reply", "responds_to", "m"],
+        ["add_edge", "agent", "sent", "reply"]
+      ]
+    },
+    {
+      "name": "reply_attachment_from_document",
+      "match": [
+        ["agent", "has_goal", "g"],
+        ["g", "comprehends", "m"],
+        ["agent", "received", "m"],
+        ["g", "about_attachment", "ca"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "kind"}, "b": {"type": "Lit", "value": "answer_attachment"}},
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "attachment_replied"}, "b": {"type": "Lit", "value": 1.0}}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "ca"}, "key": "vision_summary"}, "b": {"type": "Lit", "value": null}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "m", "attachment_replied", 1.0],
+        ["set_attr", "g", "outcome", "resolved"],
+        ["add_node", "reply", "Message", {
+          "from": "agent",
+          "text": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "ca"}, "key": "summary"}}
+        }],
+        ["add_edge", "reply", "responds_to", "m"],
+        ["add_edge", "agent", "sent", "reply"]
+      ]
+    }
+  ]
+}

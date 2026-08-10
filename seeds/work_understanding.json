@@ -1,0 +1,217 @@
+{
+  "id": "work_understanding",
+  "version": "1.0.0",
+  "depends_on": [
+    "dialogue_intertext"
+  ],
+  "description": "The top of the ladder, over a WORK (ordered passages) and a CORPUS (works): theme (recurrent matter), leitmotif (recurrent concrete vehicle), structure (sequence-shape), worldview (fixed-point invariant frame), genre (cross-work centroid). One move re-pointed: recurrence, sequence-displacement, fixed-point, cross-tier centroid.",
+  "microtheory": {
+    "name": "work_understanding",
+    "description": "order-N work/corpus understanding"
+  },
+  "nodes": [
+    {
+      "local_id": 1,
+      "type": "Concept",
+      "attrs": {
+        "name": "theme",
+        "description": "Order-N over a WORK, beside VOICE but pointed at MATTER not manner: voice is the centroid of the displacement OPERATOR (the how), theme is the centroid of the operator ENDPOINTS in referent-space (the what-about). A recurrence cluster over the passage referents; theme = the referent-axis recurring across the most passages. Holds iff carried by MORE THAN ONE VOICE (else it is just a voice signature) and excising it drops the work referent-coherence."
+      }
+    },
+    {
+      "local_id": 2,
+      "type": "Concept",
+      "attrs": {
+        "name": "leitmotif",
+        "description": "The same recurrence as THEME but one level DOWN, on concrete FIGURE objects not abstract referents: the literal recurring VEHICLE \u2014 a figure/image whose instances are near-copies (low intra-cluster displacement, intertext-translations within one work), bound by points_to to the THEME it carries. Theme survives paraphrase; a leitmotif is the concrete thing that keeps showing up to mean it, accruing stance each return."
+      }
+    },
+    {
+      "local_id": 3,
+      "type": "Concept",
+      "attrs": {
+        "name": "structure",
+        "description": "ANALYSIS re-pointed one level UP: the displacement primitive applied to the SEQUENCE of passage-trajectories. A bag of trajectories has no order; structure is the shape of the trajectory-of-trajectories \u2014 the displacement between consecutive passages, classified as rising / falling / arc / ring. Holds iff PERMUTATION-SENSITIVE: shuffle the passages and the shape signature breaks (invariance-to-reorder would prove there is no structure)."
+      }
+    },
+    {
+      "local_id": 4,
+      "type": "Concept",
+      "attrs": {
+        "name": "worldview",
+        "description": "The FIXED-POINT of the work entire operator-family: the assumption-frame every voice/theme/structure presupposes and none displaces. Found by relax_to_fixpoint \u2014 apply the work operators until something stops moving; the conserved coordinate frame all axes measure FROM but never move IS the worldview. Holds iff applying any operator returns it unchanged (zero displacement); a passage that DOES displace it is a worldview crack \u2014 a contradiction, the falsifier."
+      }
+    },
+    {
+      "local_id": 5,
+      "type": "Concept",
+      "attrs": {
+        "name": "genre",
+        "description": "Genre is to WORKS what VOICE is to passages: the invariant operator across a CORPUS. A cross-work centroid+spread over whole works reduced to their (structure-shape, theme-axis, worldview-frame) signatures; genre = prototype + admissible spread (family resemblance, a Beta/CI region). A new work is in-genre iff its signature falls inside the spread; cross-genre/parody lifts the INTERTEXT off-domain move one rung up (one genre operator applied to another genre matter)."
+      }
+    },
+    {
+      "local_id": 6,
+      "type": "Principle",
+      "attrs": {
+        "name": "theme_voice_independence",
+        "head": "work/corpus understanding",
+        "body": "a theme must be carried by more than one voice; a recurring referent in a single voice is a voice signature, not a theme"
+      }
+    },
+    {
+      "local_id": 7,
+      "type": "Principle",
+      "attrs": {
+        "name": "leitmotif_small_displacement",
+        "head": "work/corpus understanding",
+        "body": "leitmotif instances translate onto each other with small displacement (the same concrete vehicle, not a paraphrase) and each co-occurrence carries the theme referent"
+      }
+    },
+    {
+      "local_id": 8,
+      "type": "Principle",
+      "attrs": {
+        "name": "structure_permutation_sensitive",
+        "head": "work/corpus understanding",
+        "body": "structure is real only if permutation-sensitive \u2014 shuffling the passages must break the shape signature; reorder-invariance proves there is no structure"
+      }
+    },
+    {
+      "local_id": 9,
+      "type": "Principle",
+      "attrs": {
+        "name": "worldview_fixed_point",
+        "head": "work/corpus understanding",
+        "body": "the worldview holds iff every work operator applied to it returns it unchanged (zero displacement); a passage that displaces it is a worldview crack"
+      }
+    },
+    {
+      "local_id": 10,
+      "type": "Principle",
+      "attrs": {
+        "name": "genre_membership_ci",
+        "head": "work/corpus understanding",
+        "body": "a work is in-genre iff its (structure,theme,worldview) signature falls inside the genre centroid spread; outside-by-margin mints a candidate new genre"
+      }
+    }
+  ],
+  "edges": [],
+  "rules": [
+    {
+      "name": "classify_structure",
+      "match": [
+        [
+          "s",
+          "of_work",
+          "w"
+        ]
+      ],
+      "where": {
+        "type": "Lit",
+        "value": true
+      },
+      "effects": [
+        [
+          "set_attr",
+          "s",
+          "shape",
+          {
+            "__term__": {
+              "type": "IfThenElse",
+              "cond": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "s"
+                  },
+                  "key": "returns"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 1
+                }
+              },
+              "then": {
+                "type": "Lit",
+                "value": "ring/return"
+              },
+              "other": {
+                "type": "IfThenElse",
+                "cond": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "s"
+                    },
+                    "key": "peak_interior"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": 1
+                  }
+                },
+                "then": {
+                  "type": "Lit",
+                  "value": "arc (rise-then-fall)"
+                },
+                "other": {
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "s"
+                      },
+                      "key": "net_up"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": 1
+                    }
+                  },
+                  "then": {
+                    "type": "Lit",
+                    "value": "rising"
+                  },
+                  "other": {
+                    "type": "IfThenElse",
+                    "cond": {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "s"
+                        },
+                        "key": "net_down"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 1
+                      }
+                    },
+                    "then": {
+                      "type": "Lit",
+                      "value": "falling"
+                    },
+                    "other": {
+                      "type": "Lit",
+                      "value": "flat"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      ]
+    }
+  ]
+}

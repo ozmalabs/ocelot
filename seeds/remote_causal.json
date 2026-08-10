@@ -1,0 +1,1884 @@
+{
+ "id": "remote_causal",
+ "version": "1.0.0",
+ "depends_on": [],
+ "area": "retina",
+ "description": "REMOTE CAUSATION (block 228000): the only-other salient thing is a SWITCH; interacting with it affects a REMOTE thing (the deferred Doom problem: switch here -> door there). EXHAUSTION-FIRST: try the known option (rc_try_known), exhaust + break the futile cycle (rc_exhausted, 226), EXPLORE the un-visited salient object (rc_seek_novel_salient \u2014 visited/salience only, NO causal model), INTERVENE on arrival, POSIT+CONFIRM the remote-causal link by the do-contrast (rc_posit_link -> rc_confirm_interventional: eff_act==1 AND eff_noop==0, attributing across space; rc_refute_interventional; rc_attribute_remote), then ACT (rc_act_seek_confirmed -> rc_pass). Controls: causal_prior (no exploration), local_only (attributes only at B's location), no_intervention (passive co-occurrence -> confabulates). Domain-agnostic (no ls20/doom/cross/lever token); same rules run ls20 cross->shape AND Doom lever->door. Guarded on game.remote_on==1 (default-OFF, byte-identical) + game.arm. Integer-native; no Rust; reuses the 227 posit/confirm + 210 operate + 220 nav + 226 frustration.",
+ "microtheory": {
+  "name": "remote_causal",
+  "description": "A salient object can affect a REMOTE thing across space. The agent explores the un-visited salient object out of exhaustion (no prior causal belief), intervenes, and DISCOVERS the remote-causal link by the interventional do-contrast (act->effect vs no-op->no-effect), attributing B's change to the remote action across space; then acts on the confirmed link. Every decision is a rule."
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [],
+ "rules": [
+  {
+   "name": "rc_try_known",
+   "comment": "TRY KNOWN: probe the block as-is (the known option) before exploring.",
+   "match": [
+    [
+     "g",
+     "has_ping",
+     "p"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "remote_on"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       {
+        "type": "Or",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "g"
+           },
+           "key": "arm"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "remote"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "g"
+           },
+           "key": "arm"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "local_only"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "g"
+           },
+           "key": "arm"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "no_intervention"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "g"
+           },
+           "key": "arm"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "causal_prior"
+          }
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "known_option_tried"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "symbol_matches_goal"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "explore_mode"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "g",
+     "waypoint",
+     "goal"
+    ],
+    [
+     "set_attr",
+     "g",
+     "wp_r",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "goal_r"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "g",
+     "wp_c",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "goal_c"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "rc_exhausted",
+   "comment": "EXHAUST: known option failed + futile cycle broken -> explore_mode=1. Exhaustion+salience only; NO causal model. (Not causal_prior.)",
+   "match": [
+    [
+     "g",
+     "has_ping",
+     "p"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "remote_on"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       {
+        "type": "Or",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "g"
+           },
+           "key": "arm"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "remote"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "g"
+           },
+           "key": "arm"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "local_only"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "g"
+           },
+           "key": "arm"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "no_intervention"
+          }
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "known_option_tried"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "symbol_matches_goal"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "explore_mode"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "g",
+     "explore_mode",
+     1.0
+    ],
+    [
+     "set_attr",
+     "g",
+     "affect",
+     "frustrated_explore"
+    ]
+   ]
+  },
+  {
+   "name": "rc_seek_novel_salient",
+   "comment": "EXPLORE: explore_mode + an un-visited salient object -> go there. Reads ONLY visited/salience; no prior causal belief.",
+   "match": [
+    [
+     "g",
+     "has_object",
+     "o"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "remote_on"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       {
+        "type": "Or",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "g"
+           },
+           "key": "arm"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "remote"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "g"
+           },
+           "key": "arm"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "local_only"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "g"
+           },
+           "key": "arm"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "no_intervention"
+          }
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "explore_mode"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "symbol_matches_goal"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "o"
+       },
+       "key": "salient"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "o"
+       },
+       "key": "visited"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "g",
+     "waypoint",
+     "object"
+    ],
+    [
+     "set_attr",
+     "g",
+     "wp_r",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "o"
+       },
+       "key": "r"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "g",
+     "wp_c",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "o"
+       },
+       "key": "c"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "g",
+     "seek_obj",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "o"
+       },
+       "key": "obj_id"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "rc_posit_link",
+   "comment": "POSIT: interacted object, no posit yet -> mint a RemoteCausalPosit (full spatial scope). The causal model is BORN from the interaction.",
+   "match": [
+    [
+     "g",
+     "has_object",
+     "o"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "remote_on"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       {
+        "type": "Or",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "g"
+           },
+           "key": "arm"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "remote"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "g"
+           },
+           "key": "arm"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "no_intervention"
+          }
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "o"
+       },
+       "key": "interacted"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "g"
+        },
+        "edge_type": "has_posit",
+        "any_type": false
+       },
+       "var_name": "q2",
+       "predicate": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "q2"
+         },
+         "key": "obj_id"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "o"
+         },
+         "key": "obj_id"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "q",
+     "RemoteCausalPosit",
+     {
+      "obj_id": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "o"
+        },
+        "key": "obj_id"
+       }
+      },
+      "is_local": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "o"
+        },
+        "key": "is_local"
+       }
+      },
+      "eff_act": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "o"
+        },
+        "key": "eff_act"
+       }
+      },
+      "eff_noop": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "o"
+        },
+        "key": "eff_noop"
+       }
+      },
+      "passive_cooccur": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "o"
+        },
+        "key": "passive_cooccur"
+       }
+      },
+      "status": {
+       "__term__": {
+        "type": "Lit",
+        "value": "posited"
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "g",
+     "has_posit",
+     "q"
+    ]
+   ]
+  },
+  {
+   "name": "rc_posit_link_local",
+   "comment": "CONTROL (local_only): posit ONLY local (is_local==1) objects. A spatially-separated object is out of scope -> never posited -> never attributed.",
+   "match": [
+    [
+     "g",
+     "has_object",
+     "o"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "remote_on"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "arm"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "local_only"
+        }
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "o"
+       },
+       "key": "interacted"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "o"
+       },
+       "key": "is_local"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "g"
+        },
+        "edge_type": "has_posit",
+        "any_type": false
+       },
+       "var_name": "q2",
+       "predicate": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "q2"
+         },
+         "key": "obj_id"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "o"
+         },
+         "key": "obj_id"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "q",
+     "RemoteCausalPosit",
+     {
+      "obj_id": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "o"
+        },
+        "key": "obj_id"
+       }
+      },
+      "is_local": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "o"
+        },
+        "key": "is_local"
+       }
+      },
+      "eff_act": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "o"
+        },
+        "key": "eff_act"
+       }
+      },
+      "eff_noop": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "o"
+        },
+        "key": "eff_noop"
+       }
+      },
+      "passive_cooccur": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "o"
+        },
+        "key": "passive_cooccur"
+       }
+      },
+      "status": {
+       "__term__": {
+        "type": "Lit",
+        "value": "posited"
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "g",
+     "has_posit",
+     "q"
+    ]
+   ]
+  },
+  {
+   "name": "rc_confirm_interventional",
+   "comment": "CONFIRM: eff_act==1 AND eff_noop==0 (intervention makes the difference) -> confirmed. The do-contrast; a spatially-separated cause is confirmed across space.",
+   "match": [
+    [
+     "g",
+     "has_posit",
+     "q"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "remote_on"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       {
+        "type": "Or",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "g"
+           },
+           "key": "arm"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "remote"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "g"
+           },
+           "key": "arm"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "local_only"
+          }
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "q"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "posited"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "q"
+       },
+       "key": "eff_act"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "q"
+       },
+       "key": "eff_noop"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "q",
+     "status",
+     "confirmed"
+    ]
+   ]
+  },
+  {
+   "name": "rc_refute_interventional",
+   "comment": "REFUTE: eff_act==eff_noop (no interventional difference) -> refuted (coincidence / non-cause).",
+   "match": [
+    [
+     "g",
+     "has_posit",
+     "q"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "remote_on"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       {
+        "type": "Or",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "g"
+           },
+           "key": "arm"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "remote"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "g"
+           },
+           "key": "arm"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "local_only"
+          }
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "q"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "posited"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "q"
+       },
+       "key": "eff_act"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "q"
+       },
+       "key": "eff_noop"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "q",
+     "status",
+     "refuted"
+    ]
+   ]
+  },
+  {
+   "name": "rc_confirm_passive",
+   "comment": "CONTROL (no_intervention): confirm on passive co-occurrence (passive_cooccur==1), no do-probe -> confabulates a link.",
+   "match": [
+    [
+     "g",
+     "has_posit",
+     "q"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "remote_on"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "arm"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "no_intervention"
+        }
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "q"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "posited"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "q"
+       },
+       "key": "passive_cooccur"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "q",
+     "status",
+     "confirmed"
+    ]
+   ]
+  },
+  {
+   "name": "rc_attribute_remote",
+   "comment": "ATTRIBUTE: a confirmed link on a spatially-separated object -> attributed_remote=1 (B's change attributed across space).",
+   "match": [
+    [
+     "g",
+     "has_posit",
+     "q"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "remote_on"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       {
+        "type": "Or",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "g"
+           },
+           "key": "arm"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "remote"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "g"
+           },
+           "key": "arm"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "local_only"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "g"
+           },
+           "key": "arm"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "no_intervention"
+          }
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "q"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "confirmed"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "q"
+       },
+       "key": "is_local"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "g",
+     "attributed_remote",
+     1.0
+    ],
+    [
+     "set_attr",
+     "g",
+     "attributed_obj",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "q"
+       },
+       "key": "obj_id"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "rc_act_seek_confirmed",
+   "comment": "ACT: confirmed remote link + not matching -> seek the confirmed remote cause to operate it (furthers the posit).",
+   "match": [
+    [
+     "g",
+     "has_posit",
+     "q"
+    ],
+    [
+     "g",
+     "has_object",
+     "o"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "remote_on"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       {
+        "type": "Or",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "g"
+           },
+           "key": "arm"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "remote"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "g"
+           },
+           "key": "arm"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "local_only"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "g"
+           },
+           "key": "arm"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "no_intervention"
+          }
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "q"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "confirmed"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "q"
+       },
+       "key": "is_local"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "q"
+       },
+       "key": "obj_id"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "o"
+       },
+       "key": "obj_id"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "symbol_matches_goal"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "g",
+     "waypoint",
+     "object"
+    ],
+    [
+     "set_attr",
+     "g",
+     "wp_r",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "o"
+       },
+       "key": "r"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "g",
+     "wp_c",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "o"
+       },
+       "key": "c"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "g",
+     "seek_obj",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "o"
+       },
+       "key": "obj_id"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "g",
+     "act_on_confirmed",
+     1.0
+    ]
+   ]
+  },
+  {
+   "name": "rc_pass",
+   "comment": "PASS: the carried thing matches the requirement -> route to the block and pass.",
+   "match": [
+    [
+     "g",
+     "has_ping",
+     "p"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "remote_on"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       {
+        "type": "Or",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "g"
+           },
+           "key": "arm"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "remote"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "g"
+           },
+           "key": "arm"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "local_only"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "g"
+           },
+           "key": "arm"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "no_intervention"
+          }
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "symbol_matches_goal"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "g",
+     "waypoint",
+     "goal"
+    ],
+    [
+     "set_attr",
+     "g",
+     "wp_r",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "goal_r"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "g",
+     "wp_c",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "goal_c"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "rc_prior_seek",
+   "comment": "CONTROL (causal_prior): move ONLY toward an object with an ALREADY confirmed link. None ever forms -> never goes -> cycles.",
+   "match": [
+    [
+     "g",
+     "has_posit",
+     "q"
+    ],
+    [
+     "g",
+     "has_object",
+     "o"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "remote_on"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "arm"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "causal_prior"
+        }
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "q"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "confirmed"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "q"
+       },
+       "key": "obj_id"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "o"
+       },
+       "key": "obj_id"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "symbol_matches_goal"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "g",
+     "waypoint",
+     "object"
+    ],
+    [
+     "set_attr",
+     "g",
+     "wp_r",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "o"
+       },
+       "key": "r"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "g",
+     "wp_c",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "o"
+       },
+       "key": "c"
+      }
+     }
+    ]
+   ]
+  }
+ ]
+}

@@ -1,0 +1,39 @@
+{
+  "id": "research_agenda_dispatch",
+  "version": "1.0.0",
+  "depends_on": [],
+  "description": "THE RESEARCH-AGENDA ROUTE-BY-KIND as DATA (self-improvement #5's dispatch). The meta-loop driver (domains/research_agenda.py) chains the four held self-improvement faculties (#1 perceive-gap, #2 verify, #3 acquire-knowledge, #4 extend-substrate). The ONE decision the driver must make per gap -- which FILLER handles it -- is NOT a Python if/else over graph state; it is this graph dispatch, the exact twin of seeds/composer_dispatch.json's composer_pick. Two GapRouteCue nodes map a gap KIND to its filler: a KNOWLEDGE gap (concept_graph's is_knowledge_gap true: a thin/ungrounded dimension) routes to 'acquisition' (#3 gap_driven_acquisition); a CAPABILITY gap (a behavioral faculty failure solvable by composition or specifiable as a primitive) routes to 'substrate_extension' (#4). The stored Program 'route_pick', given the gap's own kind attr (env: kind), returns the matching GapRouteCue's filler via an Argmin-by-priority over the cues whose kind Eq the gap's kind -- the same Filter/Argmin/Attr shape composer_pick uses, with Eq(cue.kind, kind) in place of In(cue.relation_head, heads). The gap's kind attr is itself written mechanically off the held faculties' own signals (gap_domain_of + is_knowledge_gap -- the learner's coverage read), the same admissible boundary read self_capability_collapse.observe_outcome makes; the ROUTE from that kind to a filler is this Program, evaluated in Rust.",
+  "microtheory": {
+    "name": "research_agenda_dispatch",
+    "description": "which filler faculty handles a perceived gap, keyed on its kind (knowledge -> acquisition, capability -> substrate_extension)."
+  },
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "GapRouteCue",
+      "attrs": {
+        "kind": "knowledge",
+        "filler": "acquisition",
+        "priority": 1
+      }
+    },
+    {
+      "local_id": 1,
+      "type": "GapRouteCue",
+      "attrs": {
+        "kind": "capability",
+        "filler": "substrate_extension",
+        "priority": 2
+      }
+    },
+    {
+      "local_id": 2,
+      "type": "Program",
+      "attrs": {
+        "name": "route_pick",
+        "form": "term_tree",
+        "program": "{\"type\": \"Attr\", \"key\": \"filler\", \"node\": {\"type\": \"Argmin\", \"source\": {\"type\": \"Filter\", \"source\": {\"type\": \"NodesOfType\", \"node_type\": \"GapRouteCue\"}, \"var_name\": \"c\", \"predicate\": {\"type\": \"Eq\", \"a\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"c\"}, \"key\": \"kind\"}, \"b\": {\"type\": \"Var\", \"name\": \"kind\"}}}, \"var_name\": \"x\", \"value\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"x\"}, \"key\": \"priority\"}, \"default\": null}}"
+      }
+    }
+  ]
+}

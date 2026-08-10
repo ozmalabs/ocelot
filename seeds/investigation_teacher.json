@@ -1,0 +1,325 @@
+{
+  "id": "investigation_teacher",
+  "version": "1.0.0",
+  "depends_on": [
+    "investigation_loop"
+  ],
+  "description": "The teacher-on-stall path, graph-native. When a faculty STALLS on a frontier (mf_stall >= k attempts without solving), the agent mints an Impasse formulated from its OWN stalled axis -> the EXISTING graph-native auto_resolve_impasse reflex consults the LLM teacher on METHOD (claude -p, off-thread, non-blocking) -> the answer is recorded on the impasse -> ground_hint_to_investigation mints a NEW from_teacher CapabilityAxis the agent then TESTS (it does not obey the advice \u2014 it tries it as a fresh frontier). The agent decides WHEN (stalled) and WHAT (its own frontier); the LLM is only the channel, never the loop.",
+  "microtheory": {
+    "name": "investigation_teacher",
+    "description": "stall -> impasse (from the agent's own frontier) -> teacher on method -> ground advice as a new investigation to TEST."
+  },
+  "nodes": [],
+  "edges": [],
+  "productions": [
+    {
+      "provenance": "seed:investigation_teacher:taught_about",
+      "src": {
+        "type": "CapabilityAxis",
+        "var": "s"
+      },
+      "edge_type": "taught_about",
+      "tgt": {
+        "type": "Impasse",
+        "var": "t"
+      }
+    },
+    {
+      "provenance": "seed:investigation_teacher:about_axis",
+      "src": {
+        "type": "Impasse",
+        "var": "s"
+      },
+      "edge_type": "about_axis",
+      "tgt": {
+        "type": "CapabilityAxis",
+        "var": "t"
+      }
+    },
+    {
+      "provenance": "seed:investigation_teacher:surprised_by",
+      "src": {
+        "type": "Agent",
+        "var": "s"
+      },
+      "edge_type": "surprised_by",
+      "tgt": {
+        "type": "Impasse",
+        "var": "t"
+      }
+    },
+    {
+      "provenance": "seed:investigation_teacher:names_cue",
+      "src": {
+        "type": "Impasse",
+        "var": "a"
+      },
+      "edge_type": "names_cue",
+      "tgt": {
+        "type": "AdviceCue",
+        "var": "b"
+      }
+    },
+    {
+      "provenance": "seed:investigation_teacher:grounds",
+      "src": {
+        "type": "AdviceCue",
+        "var": "a"
+      },
+      "edge_type": "grounds",
+      "tgt": {
+        "type": "CapabilityAxis",
+        "var": "b"
+      }
+    }
+  ],
+  "rules": [
+    {
+      "name": "mint_impasse_from_stall",
+      "comment": "a faculty that has stalled on its frontier (mf_stall >= 3, not yet taught about) -> an Impasse the agent is surprised_by, formulated from the stalled axis itself. Reuses mint_goal_from_surprise (the impasse becomes a wanted goal) and the auto_resolve_impasse reflex (consults the teacher). The agent decides it needs help.",
+      "match": [
+        [
+          "ag",
+          "operates_in",
+          "w"
+        ],
+        [
+          "ax",
+          "investigated_by",
+          "op"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ax"
+              },
+              "key": "is_axis"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Gte",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ax"
+              },
+              "key": "mf_stall"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 3
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "ax"
+                },
+                "edge_type": "taught_about",
+                "any_type": false
+              }
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "imp",
+          "Impasse",
+          {
+            "resolved": false,
+            "kind": "frontier_stall",
+            "question": "A speech faculty I am developing has stalled: repeated attempts stay below target. In 2-3 sentences, what distinguishing acoustic cue or approach should I try next?",
+            "for_frontier": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ax"
+                },
+                "key": "capability_keys"
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "ag",
+          "surprised_by",
+          "imp"
+        ],
+        [
+          "add_edge",
+          "ax",
+          "taught_about",
+          "imp"
+        ],
+        [
+          "add_edge",
+          "imp",
+          "about_axis",
+          "ax"
+        ]
+      ]
+    },
+    {
+      "name": "ground_hint_to_investigation",
+      "comment": "DISTINCT-FRONTIER grounding (proliferation fix): the teacher's advice is turned by the drain's thin classifier into an AdviceCue node (its distinguishing token + DISTINCT capability_keys). This Rule mints ONE from_teacher frontier per cue and DEDUPS \u2014 `grounds` count 0 means this cue has not grounded a frontier yet \u2014 so the same advice no longer proliferates identical copies; different advice -> different frontiers. The agent TESTS the cue-specific frontier (high shortfall -> picked next).",
+      "match": [
+        [
+          "imp",
+          "about_axis",
+          "ax"
+        ],
+        [
+          "imp",
+          "names_cue",
+          "cue"
+        ],
+        [
+          "ax",
+          "investigated_by",
+          "op"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "imp"
+              },
+              "key": "advice_ready"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "imp"
+                },
+                "key": "grounded"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 1
+              }
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "cue"
+                },
+                "edge_type": "grounds",
+                "any_type": false
+              }
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "nax",
+          "CapabilityAxis",
+          {
+            "is_axis": 1.0,
+            "saturation": 0.0,
+            "shortfall": 0.6,
+            "min_order": 1.0,
+            "investigated_count": 0,
+            "mf_stall": 0,
+            "from_teacher": 1.0,
+            "capability_keys": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "cue"
+                },
+                "key": "capability_keys"
+              }
+            },
+            "cue": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "cue"
+                },
+                "key": "token"
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "nax",
+          "investigated_by",
+          "op"
+        ],
+        [
+          "add_edge",
+          "cue",
+          "grounds",
+          "nax"
+        ],
+        [
+          "set_attr",
+          "imp",
+          "grounded",
+          {
+            "__term__": {
+              "type": "Lit",
+              "value": 1
+            }
+          }
+        ]
+      ]
+    }
+  ]
+}

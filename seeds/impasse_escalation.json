@@ -1,0 +1,160 @@
+{
+  "id": "impasse_escalation",
+  "version": "2.1.0",
+  "depends_on": ["investigation_teacher"],
+  "description": "ORDER-N IMPASSE ESCALATION — domain-agnostic meta-cognition. When a faculty was already TAUGHT a cue and STILL stalls, the agent escalates the ORDER of the impasse and changes its mind FUNDAMENTALLY about the approach. Ladder: order2=change the METHOD (re-bind a different operator), order3=change the FRAMING (decompose into a sub-axis), order4=change the TOOLS (author a NEW faculty — consumed by the self-extend reflex), order5=re-PRIORITISE (deprioritise, shift the frontier, return later), order6=RETHINK THE SELF APPROACH (the whole way it tackles this class of problem may be wrong — route to the reflective self-faculty). Keyed ONLY on the generic investigation machinery (CapabilityAxis/Operator/investigated_by/mf_stall/saturation/order) — NO domain terms — so it applies to ANY world. THE CLIMB IS CONFIDENCE-DRIVEN, not a timer: each rung ACTS ONCE, then the agent TRIES it; confidence = the axis's saturation (how well the current approach measures). The order climbs when the axis is BELOW TARGET (saturation < 0.95) and has PLATEAUED (mf_stall >= 4, now a PATIENCE counter reset on every real gain) — settling below target is no longer a victory. The escalation RESOLVES only at the GOAL (saturation >= 0.95). (The agent's escalation-policy fix, ask_jabberwock_escalation: the old 0.4 line declared victory at 40%-of-target and left plateaued-below-target axes never reaching order-4 authoring.)",
+  "microtheory": {
+    "name": "impasse_escalation",
+    "description": "taught-and-still-stalling -> escalate the order -> method/framing/tools/priority/self, climbing only while NOT confident the current approach works. Domain-agnostic."
+  },
+  "nodes": [],
+  "edges": [],
+  "productions": [
+    {"provenance": "seed:impasse_escalation:about_axis", "src": {"type": "Impasse", "var": "s"}, "edge_type": "about_axis", "tgt": {"type": "CapabilityAxis", "var": "t"}},
+    {"provenance": "seed:impasse_escalation:surprised_by", "src": {"type": "Agent", "var": "s"}, "edge_type": "surprised_by", "tgt": {"type": "Impasse", "var": "t"}},
+    {"provenance": "seed:impasse_escalation:tried", "src": {"type": "CapabilityAxis", "var": "s"}, "edge_type": "tried", "tgt": {"type": "Operator", "var": "t"}},
+    {"provenance": "seed:impasse_escalation:investigated_by", "src": {"type": "CapabilityAxis", "var": "s"}, "edge_type": "investigated_by", "tgt": {"type": "Operator", "var": "t"}},
+    {"provenance": "seed:impasse_escalation:decomposes_into", "src": {"type": "CapabilityAxis", "var": "s"}, "edge_type": "decomposes_into", "tgt": {"type": "CapabilityAxis", "var": "t"}},
+    {"provenance": "seed:impasse_escalation:needs_tool", "src": {"type": "Impasse", "var": "s"}, "edge_type": "needs_tool", "tgt": {"type": "CapabilityAxis", "var": "t"}},
+    {"provenance": "seed:impasse_escalation:needs_decomposition", "src": {"type": "Impasse", "var": "s"}, "edge_type": "needs_decomposition", "tgt": {"type": "CapabilityAxis", "var": "t"}},
+    {"provenance": "seed:impasse_escalation:rethinking", "src": {"type": "Agent", "var": "s"}, "edge_type": "rethinking", "tgt": {"type": "Impasse", "var": "t"}},
+    {"provenance": "seed:impasse_escalation:reconsiders", "src": {"type": "Impasse", "var": "s"}, "edge_type": "reconsiders", "tgt": {"type": "CapabilityAxis", "var": "t"}}
+  ],
+  "rules": [
+    {
+      "name": "escalate_open",
+      "comment": "STALL-OF-STALLS: an axis already TAUGHT a cue that STILL stalls (mf_stall >= 4) and is not already escalating -> open an order-2 escalation (acted_order=1, the cue WAS order-1) and mark the current operator TRIED so order-2 re-binds to a different one.",
+      "match": [["ag", "operates_in", "w"], ["ax", "investigated_by", "op"], ["ax", "taught_about", "h"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "ax"}, "key": "is_axis"}, "b": {"type": "Lit", "value": 1.0}},
+        {"type": "Gte", "a": {"type": "Attr", "node": {"type": "Var", "name": "ax"}, "key": "mf_stall"}, "b": {"type": "Lit", "value": 4}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "ax"}, "key": "escalating"}, "b": {"type": "Lit", "value": 1.0}}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "ax"}, "key": "subskill"}, "b": {"type": "Lit", "value": 1.0}}}
+      ]},
+      "effects": [
+        ["add_node", "mi", "Impasse", {"resolved": false, "kind": "escalation", "order": 2, "acted_order": 1,
+          "note": "taught a cue and still stalling — escalate the approach; resolved by the ladder (confidence-driven), not the teacher.",
+          "for_frontier": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "ax"}, "key": "capability_keys"}}}],
+        ["add_edge", "ag", "surprised_by", "mi"],
+        ["add_edge", "mi", "about_axis", "ax"],
+        ["add_edge", "ax", "tried", "op"],
+        ["set_attr", "ax", "escalating", {"__term__": {"type": "Lit", "value": 1.0}}]
+      ]
+    },
+    {
+      "name": "order2_change_method",
+      "comment": "ORDER 2 (change the METHOD): re-bind to a DIFFERENT operator FOR THE SAME CAPABILITY (same metric as the stalled op), applies in the world, NOT in the axis's `tried` set. Acts once (acted_order<2), resets mf_stall for a fresh confidence trial. The same-metric guard stops a stalled recognise axis being re-bound to a segment faculty that trivially 'succeeds' (continuous_purity=1.0) and falsely saturates it, masking the wall; when no same-metric alternative exists the climb proceeds to order-4 authoring.",
+      "match": [["mi", "about_axis", "ax"], ["ax", "investigated_by", "oldop"], ["cand", "applies_in", "w"], ["ag", "operates_in", "w"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "mi"}, "key": "order"}, "b": {"type": "Lit", "value": 2}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "cand"}, "key": "metric"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "oldop"}, "key": "metric"}},
+        {"type": "Lt", "a": {"type": "Attr", "node": {"type": "Var", "name": "mi"}, "key": "acted_order"}, "b": {"type": "Lit", "value": 2}},
+        {"type": "Eq", "a": {"type": "Count", "source": {"type": "Filter", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "ax"}, "edge_type": "tried", "any_type": false}, "var_name": "z", "predicate": {"type": "Eq", "a": {"type": "Var", "name": "z"}, "b": {"type": "Var", "name": "cand"}}}}, "b": {"type": "Lit", "value": 0}}
+      ]},
+      "effects": [
+        ["del_edge", "ax", "investigated_by", "oldop"],
+        ["add_edge", "ax", "investigated_by", "cand"],
+        ["add_edge", "ax", "tried", "cand"],
+        ["set_attr", "ax", "mf_stall", {"__term__": {"type": "Lit", "value": 0}}],
+        ["set_attr", "ax", "shortfall", {"__term__": {"type": "Lit", "value": 0.7}}],
+        ["set_attr", "mi", "acted_order", {"__term__": {"type": "Lit", "value": 2}}]
+      ]
+    },
+    {
+      "name": "order3_reframe",
+      "comment": "ORDER 3 (change the FRAMING): REQUEST a finer decomposition of the stuck capability -- it does NOT mint an axis (the agent's own dedup fix, ask_jabberwock_dedup). The old version cloned the parent: it minted a sub-axis with capability_keys COPIED verbatim from the parent + subskill:1.0, an identity-duplicate of the very hill it was stuck on, which then out-ranked the parent (fresh sat=0.0) and fragmented investigation. order2 already re-binds the method and order4 authors a tool, so a same-capability sibling is never meaningful. Reframe now acts on the EXISTING axis: lay a needs_decomposition request, refresh shortfall + reset mf_stall so its confidence trial continues, and flag `reframed` (once-guard). The genuinely-distinct sub-axes come ONLY from ground_hint_to_investigation grounding a real teacher cue (keys EXTENDED with a distinguishing token), never from a copy. A consumer can honor needs_decomposition later; until then order3 is a clean no-op that climbs to order4 -- strictly better than a counterfeit hill.",
+      "match": [["mi", "about_axis", "ax"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "mi"}, "key": "order"}, "b": {"type": "Lit", "value": 3}},
+        {"type": "Lt", "a": {"type": "Attr", "node": {"type": "Var", "name": "mi"}, "key": "acted_order"}, "b": {"type": "Lit", "value": 3}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "ax"}, "key": "reframed"}, "b": {"type": "Lit", "value": 1.0}}}
+      ]},
+      "effects": [
+        ["add_edge", "mi", "needs_decomposition", "ax"],
+        ["set_attr", "ax", "reframed", {"__term__": {"type": "Lit", "value": 1.0}}],
+        ["set_attr", "ax", "shortfall", {"__term__": {"type": "Lit", "value": 0.7}}],
+        ["set_attr", "ax", "mf_stall", {"__term__": {"type": "Lit", "value": 0}}],
+        ["set_attr", "mi", "acted_order", {"__term__": {"type": "Lit", "value": 3}}]
+      ]
+    },
+    {
+      "name": "order4_self_extend",
+      "comment": "ORDER 4 (change the TOOLS): no existing operator and decomposition did not help -> request a NEW faculty. UNBINDS the failed operator (so nothing runs and the climb counter cannot advance on the OLD method while the new tool is being authored) and sets needs_tool; the self-extend reflex (jabberwock_authors_*) consumes it, authors a new Operator, binds the axis to it, and resets mf_stall for a fresh trial. If no authoring faculty is wired, the axis stays unbound (no measurement) and the climb proceeds to order 5.",
+      "match": [["mi", "about_axis", "ax"], ["ax", "investigated_by", "curop"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "mi"}, "key": "order"}, "b": {"type": "Lit", "value": 4}},
+        {"type": "Lt", "a": {"type": "Attr", "node": {"type": "Var", "name": "mi"}, "key": "acted_order"}, "b": {"type": "Lit", "value": 4}}
+      ]},
+      "effects": [
+        ["del_edge", "ax", "investigated_by", "curop"],
+        ["add_edge", "mi", "needs_tool", "ax"],
+        ["set_attr", "ax", "mf_stall", {"__term__": {"type": "Lit", "value": 0}}],
+        ["set_attr", "mi", "acted_order", {"__term__": {"type": "Lit", "value": 4}}]
+      ]
+    },
+    {
+      "name": "order5_reprioritise",
+      "comment": "ORDER 5 (re-PRIORITISE): set the axis aside — deprioritise it (shortfall *= 0.1) so the frontier shifts to other work; the agent returns once a prerequisite has matured. If there is no other work and it STILL fails, the climb proceeds to order 6.",
+      "match": [["mi", "about_axis", "ax"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "mi"}, "key": "order"}, "b": {"type": "Lit", "value": 5}},
+        {"type": "Lt", "a": {"type": "Attr", "node": {"type": "Var", "name": "mi"}, "key": "acted_order"}, "b": {"type": "Lit", "value": 5}}
+      ]},
+      "effects": [
+        ["set_attr", "ax", "shortfall", {"__term__": {"type": "Times", "items": [{"type": "Attr", "node": {"type": "Var", "name": "ax"}, "key": "shortfall"}, {"type": "Lit", "value": 0.1}]}}],
+        ["set_attr", "ax", "mf_stall", {"__term__": {"type": "Lit", "value": 0}}],
+        ["set_attr", "ax", "deprioritised", {"__term__": {"type": "Lit", "value": 1.0}}],
+        ["set_attr", "mi", "acted_order", {"__term__": {"type": "Lit", "value": 5}}]
+      ]
+    },
+    {
+      "name": "order6_rethink_self",
+      "comment": "ORDER 6 (RETHINK THE SELF APPROACH): even setting it aside did not help and it is unavoidable -> the agent's WHOLE approach to this class of problem may be wrong. Mint a self_rethink Impasse routed to the agent (rethinking edge) + the reflective self-faculty reflex consumes it to re-examine how the agent is organised/shaped and re-derive its approach. The deepest, terminal rung.",
+      "match": [["ag", "surprised_by", "mi"], ["mi", "about_axis", "ax"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "mi"}, "key": "order"}, "b": {"type": "Lit", "value": 6}},
+        {"type": "Lt", "a": {"type": "Attr", "node": {"type": "Var", "name": "mi"}, "key": "acted_order"}, "b": {"type": "Lit", "value": 6}}
+      ]},
+      "effects": [
+        ["set_attr", "mi", "kind", {"__term__": {"type": "Lit", "value": "self_rethink"}}],
+        ["add_edge", "ag", "rethinking", "mi"],
+        ["add_edge", "mi", "reconsiders", "ax"],
+        ["set_attr", "ag", "rethink_self", {"__term__": {"type": "Lit", "value": 1.0}}],
+        ["set_attr", "ax", "escalating", {"__term__": {"type": "Lit", "value": 0.0}}],
+        ["set_attr", "mi", "acted_order", {"__term__": {"type": "Lit", "value": 6}}],
+        ["set_attr", "mi", "resolved", {"__term__": {"type": "Lit", "value": true}}]
+      ]
+    },
+    {
+      "name": "escalation_climb_low_confidence",
+      "comment": "THE PLATEAU-DRIVEN CLIMB (the agent's escalation-policy fix, ask_jabberwock_escalation): raise the order by one when the axis is BELOW TARGET (saturation < 0.95) AND has PLATEAUED -- mf_stall >= 4 measurements with no improvement (mf_stall is now a PATIENCE counter in bank_measurement_to_axis: reset to 0 on a real saturation gain > sat_best+0.02, else incremented). The old saturation<0.4 gate declared victory at 40%-of-target and left axes stably below target un-escalated (recognition stuck at sat 0.80, never authored). A still-improving axis keeps zeroing its clock so it cannot reach 4 -- only a flat, below-target axis climbs toward order-4 authoring. Climbs up to order 6.",
+      "match": [["ag", "surprised_by", "mi"], ["mi", "about_axis", "ax"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "mi"}, "key": "kind"}, "b": {"type": "Lit", "value": "escalation"}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "mi"}, "key": "resolved"}, "b": {"type": "Lit", "value": true}}},
+        {"type": "Lt", "a": {"type": "Attr", "node": {"type": "Var", "name": "mi"}, "key": "order"}, "b": {"type": "Lit", "value": 6}},
+        {"type": "Gte", "a": {"type": "Attr", "node": {"type": "Var", "name": "ax"}, "key": "mf_stall"}, "b": {"type": "Lit", "value": 4}},
+        {"type": "Lt", "a": {"type": "Attr", "node": {"type": "Var", "name": "ax"}, "key": "saturation"}, "b": {"type": "Lit", "value": 0.95}}
+      ]},
+      "effects": [
+        ["set_attr", "mi", "order", {"__term__": {"type": "Plus", "items": [{"type": "Attr", "node": {"type": "Var", "name": "mi"}, "key": "order"}, {"type": "Lit", "value": 1}]}}],
+        ["set_attr", "ax", "mf_stall", {"__term__": {"type": "Lit", "value": 0}}]
+      ]
+    },
+    {
+      "name": "escalation_resolve_high_confidence",
+      "comment": "REACHED TARGET: the axis under an open escalation reached saturation >= 0.95 (its GOAL, within 5%) -> resolve. Was 0.4 (40%-of-target = a false-victory exit that stranded below-target axes); now resolution means the goal is actually met, so a plateaued-below-target axis stays open and the plateau guard authors.",
+      "match": [["mi", "about_axis", "ax"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "mi"}, "key": "kind"}, "b": {"type": "Lit", "value": "escalation"}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "mi"}, "key": "resolved"}, "b": {"type": "Lit", "value": true}}},
+        {"type": "Gte", "a": {"type": "Attr", "node": {"type": "Var", "name": "ax"}, "key": "saturation"}, "b": {"type": "Lit", "value": 0.95}}
+      ]},
+      "effects": [
+        ["set_attr", "mi", "resolved", {"__term__": {"type": "Lit", "value": true}}],
+        ["set_attr", "mi", "outcome", {"__term__": {"type": "Lit", "value": "approach_changed_and_worked"}}],
+        ["set_attr", "ax", "escalating", {"__term__": {"type": "Lit", "value": 0.0}}]
+      ]
+    }
+  ]
+}

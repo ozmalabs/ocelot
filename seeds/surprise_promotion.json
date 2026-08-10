@@ -1,0 +1,2598 @@
+{
+ "id": "surprise_promotion",
+ "version": "1.2.0",
+ "depends_on": [
+  "energy_ledger",
+  "time_axis",
+  "cognitive_pareto"
+ ],
+ "description": "SURPRISE IS THE PROMOTION MECHANISM. A channel is not a candidate for authority until the model is surprised about it \u2014 either a reading contradicts its expectation (detected) or the forward model projects it to a crossing before contact (predicted). Surprise mints a candidate carrying its axes separately; the existing collapse decides. No standing per-effector weight, no scalar, and no rule that knows what a fall, a desk or a wall is. The resolution chain (measured -> expected -> declared) is a precondition rather than hygiene: a dark channel cannot surprise you, so it can never promote and its effector can never be rescued. v1.1.0 BUILDS THE STREAM route (b) needs: a channel's own observation history, scoped to the current trial, is read as a sequence and projected forward to a crossing, so the predicted route is reachable instead of merely present. It also replaces three declared literals with the graph data they were ratios to \u2014 the channel's measurement quantum, the ledger's control horizon, and the ledger's own reach as the floor an unpriced option must lose to.",
+ "microtheory": "surprise_promotion",
+ "nodes": [
+  {
+   "local_id": 1,
+   "type": "ChannelStreamSignature",
+   "attrs": {
+    "name": "channel_sample",
+    "signature": [
+     [
+      0
+     ]
+    ],
+    "dim_types": [
+     "coord:value"
+    ],
+    "integer_native": 1,
+    "output_authority": 0
+   }
+  }
+ ],
+ "edges": [],
+ "productions": [
+  {
+   "provenance": "seed:surprise_promotion:has_sensed_channel-0",
+   "src": {
+    "type": "EmbodiedEffector",
+    "var": "s"
+   },
+   "edge_type": "has_sensed_channel",
+   "tgt": {
+    "type": "SensedChannel",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:surprise_promotion:has_channel_observation-1",
+   "src": {
+    "type": "SensedChannel",
+    "var": "s"
+   },
+   "edge_type": "has_channel_observation",
+   "tgt": {
+    "type": "ChannelObservation",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:surprise_promotion:has_channel_expectation-2",
+   "src": {
+    "type": "SensedChannel",
+    "var": "s"
+   },
+   "edge_type": "has_channel_expectation",
+   "tgt": {
+    "type": "ChannelExpectation",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:surprise_promotion:observation_program-12",
+   "src": {
+    "type": "ChannelObservation",
+    "var": "s"
+   },
+   "edge_type": "observed_under_motor_program",
+   "tgt": {
+    "type": "EmbodiedMotorProgram",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:surprise_promotion:has_surprise-3",
+   "src": {
+    "type": "SensedChannel",
+    "var": "s"
+   },
+   "edge_type": "has_surprise",
+   "tgt": {
+    "type": "SurpriseSignal",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:surprise_promotion:promoted_candidate-4",
+   "src": {
+    "type": "SurpriseSignal",
+    "var": "s"
+   },
+   "edge_type": "promoted_candidate",
+   "tgt": {
+    "type": "PromotedCandidate",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:surprise_promotion:has_promoted_candidate-5",
+   "src": {
+    "type": "EmbodiedEffector",
+    "var": "s"
+   },
+   "edge_type": "has_promoted_candidate",
+   "tgt": {
+    "type": "PromotedCandidate",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:surprise_promotion:has_embodied_effector-6",
+   "src": {
+    "type": "EmbodiedDevelopmentEpisode",
+    "var": "s"
+   },
+   "edge_type": "has_embodied_effector",
+   "tgt": {
+    "type": "EmbodiedEffector",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:surprise_promotion:connection_effector-11",
+   "src": {
+    "type": "EmbodiedSimulatorConnection",
+    "var": "s"
+   },
+   "edge_type": "has_embodied_effector",
+   "tgt": {
+    "type": "EmbodiedEffector",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:surprise_promotion:authority_profile-8",
+   "src": {
+    "type": "EmbodiedDevelopmentEpisode",
+    "var": "s"
+   },
+   "edge_type": "has_authority_pareto_profile",
+   "tgt": {
+    "type": "ParetoProfile",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:surprise_promotion:profile_candidate-9",
+   "src": {
+    "type": "ParetoProfile",
+    "var": "s"
+   },
+   "edge_type": "has_pareto_candidate",
+   "tgt": {
+    "type": "PromotedCandidate",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:surprise_promotion:candidate_value-10",
+   "src": {
+    "type": "PromotedCandidate",
+    "var": "s"
+   },
+   "edge_type": "has_pareto_value",
+   "tgt": {
+    "type": "ParetoValue",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:surprise_promotion:channel_projection-7",
+   "src": {
+    "type": "SensedChannel",
+    "var": "s"
+   },
+   "edge_type": "has_temporal_projection",
+   "tgt": {
+    "type": "TemporalProjection",
+    "var": "t"
+   }
+  }
+ ],
+ "rules": [
+  {
+   "name": "srp_resolve_channel_from_measurement",
+   "area": "general_cognition",
+   "latency_class": "hard_realtime",
+   "comment": "A published observation is the strongest rung. Provenance says so, so nothing downstream can mistake it for an assumption.",
+   "match": [
+    [
+     "channel",
+     "has_channel_observation",
+     "observation"
+    ]
+   ],
+   "where": {
+    "type": "Lit",
+    "value": true
+   },
+   "effects": [
+    [
+     "set_attr",
+     "channel",
+     "value_units",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "observation"
+         },
+         "key": "value_units"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "channel",
+     "provenance",
+     "measured"
+    ],
+    [
+     "set_attr",
+     "channel",
+     "measured",
+     1
+    ]
+   ]
+  },
+  {
+   "name": "srp_resolve_channel_from_expectation",
+   "area": "general_cognition",
+   "latency_class": "hard_realtime",
+   "comment": "WE EXPECT TO TURN, WE ASSUME WE HAVE. With no observation the efference copy's prediction stands in \u2014 usable, and flagged as an assumption rather than a reading.",
+   "match": [
+    [
+     "channel",
+     "has_channel_expectation",
+     "expectation"
+    ]
+   ],
+   "where": {
+    "type": "Not",
+    "arg": {
+     "type": "Exists",
+     "source": {
+      "type": "Neighbours",
+      "node": {
+       "type": "Var",
+       "name": "channel"
+      },
+      "edge_type": "has_channel_observation"
+     },
+     "var_name": "prior",
+     "predicate": {
+      "type": "Lit",
+      "value": true
+     }
+    }
+   },
+   "effects": [
+    [
+     "set_attr",
+     "channel",
+     "value_units",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "expectation"
+         },
+         "key": "value_units"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "channel",
+     "provenance",
+     "expected"
+    ],
+    [
+     "set_attr",
+     "channel",
+     "measured",
+     0
+    ]
+   ]
+  },
+  {
+   "name": "srp_resolve_channel_from_declared_prior",
+   "area": "general_cognition",
+   "latency_class": "hard_realtime",
+   "comment": "Neither read nor predicted: the declared prior, explicitly marked. This is the rung that replaces the silent zero \u2014 a channel with no information says so instead of reporting 0 like a measurement.",
+   "match": [
+    [
+     "effector",
+     "has_sensed_channel",
+     "channel"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "channel"
+        },
+        "edge_type": "has_channel_observation"
+       },
+       "var_name": "prior",
+       "predicate": {
+        "type": "Lit",
+        "value": true
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "channel"
+        },
+        "edge_type": "has_channel_expectation"
+       },
+       "var_name": "prior",
+       "predicate": {
+        "type": "Lit",
+        "value": true
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "channel",
+     "value_units",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "channel"
+         },
+         "key": "declared_units"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "channel",
+     "provenance",
+     "declared"
+    ],
+    [
+     "set_attr",
+     "channel",
+     "measured",
+     0
+    ]
+   ]
+  },
+  {
+   "name": "srp_expect_channel_from_enacted_program",
+   "area": "general_cognition",
+   "latency_class": "hard_realtime",
+   "comment": "An efference copy is not a measurement and not a policy: it is what the issued command already said would happen. A channel with no declared predictor mints nothing and stays unsurprisable, which is an honest statement about the body rather than a gap.",
+   "match": [
+    [
+     "channel",
+     "has_channel_observation",
+     "observation"
+    ],
+    [
+     "observation",
+     "observed_under_motor_program",
+     "program"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "channel"
+       },
+       "key": "predictor_kind"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "peak_load"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "program"
+        },
+        "key": "predicted_peak_load_units"
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "channel"
+        },
+        "edge_type": "has_channel_expectation"
+       },
+       "var_name": "prior",
+       "predicate": {
+        "type": "Lit",
+        "value": true
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "expectation",
+     "ChannelExpectation",
+     {
+      "value_units": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "program"
+          },
+          "key": "predicted_peak_load_units"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "predictor_kind": "peak_load",
+      "integer_native": 1,
+      "output_authority": 0
+     }
+    ],
+    [
+     "add_edge",
+     "channel",
+     "has_channel_expectation",
+     "expectation"
+    ]
+   ]
+  },
+  {
+   "name": "srp_expect_vertical_channel_from_enacted_program",
+   "area": "general_cognition",
+   "latency_class": "hard_realtime",
+   "comment": "An efference copy is not a measurement and not a policy: it is what the issued command already said would happen. A channel with no declared predictor mints nothing and stays unsurprisable, which is an honest statement about the body rather than a gap.",
+   "match": [
+    [
+     "channel",
+     "has_channel_observation",
+     "observation"
+    ],
+    [
+     "observation",
+     "observed_under_motor_program",
+     "program"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "channel"
+       },
+       "key": "predictor_kind"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "vertical"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "program"
+        },
+        "key": "predicted_vertical_units"
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "channel"
+        },
+        "edge_type": "has_channel_expectation"
+       },
+       "var_name": "prior",
+       "predicate": {
+        "type": "Lit",
+        "value": true
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "expectation",
+     "ChannelExpectation",
+     {
+      "value_units": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "program"
+          },
+          "key": "predicted_vertical_units"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "predictor_kind": "vertical",
+      "integer_native": 1,
+      "output_authority": 0
+     }
+    ],
+    [
+     "add_edge",
+     "channel",
+     "has_channel_expectation",
+     "expectation"
+    ]
+   ]
+  },
+  {
+   "name": "srp_detect_surprise_from_violated_expectation",
+   "area": "general_cognition",
+   "latency_class": "hard_realtime",
+   "comment": "Surprise is the reading against the expectation, over the channel's own declared tolerance. Both sides must exist: a channel with no expectation cannot be surprised, and neither can a dark one.",
+   "match": [
+    [
+     "channel",
+     "has_channel_observation",
+     "observation"
+    ],
+    [
+     "channel",
+     "has_channel_expectation",
+     "expectation"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "observation"
+        },
+        "key": "value_units"
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "expectation"
+        },
+        "key": "value_units"
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       }
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Abs",
+       "arg": {
+        "type": "Minus",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "observation"
+           },
+           "key": "value_units"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        "b": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "expectation"
+           },
+           "key": "value_units"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        }
+       }
+      },
+      "b": {
+       "type": "Max",
+       "items": [
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "channel"
+           },
+           "key": "tolerance_units"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        {
+         "type": "Minus",
+         "a": {
+          "type": "Max",
+          "items": [
+           {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "channel"
+              },
+              "key": "quantum_units"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           },
+           {
+            "type": "Lit",
+            "value": 1
+           }
+          ]
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1
+         }
+        }
+       ]
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "channel"
+        },
+        "edge_type": "has_surprise"
+       },
+       "var_name": "prior",
+       "predicate": {
+        "type": "Lit",
+        "value": true
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "surprise",
+     "SurpriseSignal",
+     {
+      "route": "detected",
+      "surprise_units": {
+       "__term__": {
+        "type": "Abs",
+        "arg": {
+         "type": "Minus",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "observation"
+            },
+            "key": "value_units"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         "b": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "expectation"
+            },
+            "key": "value_units"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         }
+        }
+       }
+      },
+      "crossing_units": 0,
+      "integer_native": 1,
+      "output_authority": 0
+     }
+    ],
+    [
+     "add_edge",
+     "channel",
+     "has_surprise",
+     "surprise"
+    ]
+   ]
+  },
+  {
+   "name": "srp_scope_channel_stream_to_current_trial",
+   "area": "general_cognition",
+   "latency_class": "hard_realtime",
+   "comment": "The channel's stream epoch is the latest trial its observations carry. UNCONDITIONAL, because `MaxOver` over `Neighbours` is an aggregate and aggregates read as their identity inside a `where` while being correct in an effect \u2014 measured, not assumed. It does not need a guard: it is a pure function of the observation set, so re-firing rewrites the same number.",
+   "match": [
+    [
+     "effector",
+     "has_sensed_channel",
+     "channel"
+    ]
+   ],
+   "where": {
+    "type": "Lit",
+    "value": true
+   },
+   "effects": [
+    [
+     "set_attr",
+     "channel",
+     "stream_epoch",
+     {
+      "__term__": {
+       "type": "MaxOver",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "channel"
+        },
+        "edge_type": "has_channel_observation"
+       },
+       "var_name": "sample",
+       "value": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "sample"
+          },
+          "key": "trial_ordinal"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0
+       }
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "srp_read_channel_history_as_a_stream",
+   "area": "general_cognition",
+   "latency_class": "hard_realtime",
+   "comment": "Until this rule existed nothing in the graph turned a channel's observations into a sequence, so no projection could be attached and route (b) was unreachable \u2014 the predicted route was present in the rule set and dead in every run. UNCONDITIONAL for the same reason as the scope rule above: the aggregates must live in an effect. Note the RAW `value_units` read: a sample carrying no reading must poison the stream into no-fit, never coalesce to 0, because 0 is exactly the origin the crossing is measured to and a missing reading would otherwise report maximum urgency.",
+   "match": [
+    [
+     "effector",
+     "has_sensed_channel",
+     "channel"
+    ]
+   ],
+   "where": {
+    "type": "Lit",
+    "value": true
+   },
+   "effects": [
+    [
+     "set_attr",
+     "channel",
+     "stream_frames",
+     {
+      "__term__": {
+       "type": "MapList",
+       "source": {
+        "type": "FilterList",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "channel"
+         },
+         "edge_type": "has_channel_observation"
+        },
+        "var_name": "sample",
+        "predicate": {
+         "type": "Eq",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "sample"
+            },
+            "key": "trial_ordinal"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         "b": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "channel"
+            },
+            "key": "stream_epoch"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         }
+        }
+       },
+       "var_name": "sample",
+       "value": {
+        "type": "Append",
+        "seq": {
+         "type": "Lit",
+         "value": []
+        },
+        "item": {
+         "type": "Append",
+         "seq": {
+          "type": "Lit",
+          "value": []
+         },
+         "item": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "sample"
+          },
+          "key": "value_units"
+         }
+        }
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "channel",
+     "stream_length",
+     {
+      "__term__": {
+       "type": "Count",
+       "source": {
+        "type": "FilterList",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "channel"
+         },
+         "edge_type": "has_channel_observation"
+        },
+        "var_name": "sample",
+        "predicate": {
+         "type": "Eq",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "sample"
+            },
+            "key": "trial_ordinal"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         "b": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "channel"
+            },
+            "key": "stream_epoch"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         }
+        }
+       }
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "srp_project_channel_stream_to_a_crossing",
+   "area": "general_cognition",
+   "latency_class": "hard_realtime",
+   "comment": "The missing half of route (b). `crossing` at the MEASURED order is margin/rate generalised: an accelerating approach reports sooner than the linear reading, and the difference is the curvature the linear reading throws away. `horizon_units` is recorded ON the projection because `crossing` returns the bound BOTH when the stream crosses at it and when it never crosses at all; the consumer needs to tell a deadline from the absence of one.",
+   "match": [
+    [
+     "effector",
+     "has_sensed_channel",
+     "channel"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "channel"
+         },
+         "key": "stream_length"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 2
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "channel"
+        },
+        "edge_type": "has_temporal_projection"
+       },
+       "var_name": "prior",
+       "predicate": {
+        "type": "Lit",
+        "value": true
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "projection",
+     "TemporalProjection",
+     {
+      "order_fit": {
+       "__term__": {
+        "type": "TimeInfer",
+        "sequence": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "channel"
+         },
+         "key": "stream_frames"
+        },
+        "codebook_type": "ChannelStreamSignature",
+        "max_b": 8,
+        "field": "order_fit",
+        "max_steps": 9
+       }
+      },
+      "crossing": {
+       "__term__": {
+        "type": "TimeInfer",
+        "sequence": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "channel"
+         },
+         "key": "stream_frames"
+        },
+        "codebook_type": "ChannelStreamSignature",
+        "max_b": 8,
+        "field": "crossing",
+        "max_steps": 9
+       }
+      },
+      "horizon_units": 9,
+      "stream_length": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "channel"
+          },
+          "key": "stream_length"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "source": "channel_stream",
+      "integer_native": 1,
+      "output_authority": 0
+     }
+    ],
+    [
+     "add_edge",
+     "channel",
+     "has_temporal_projection",
+     "projection"
+    ]
+   ]
+  },
+  {
+   "name": "srp_refresh_channel_projection_from_the_current_stream",
+   "area": "general_cognition",
+   "latency_class": "hard_realtime",
+   "comment": "Unconditional over the projections this seed minted, so the crossing is always the reading of the stream as it stands rather than the reading it had when the projection was first attached. A pure function of the stream, so re-firing rewrites the same numbers and the fixpoint terminates.",
+   "match": [
+    [
+     "channel",
+     "has_temporal_projection",
+     "projection"
+    ]
+   ],
+   "where": {
+    "type": "Eq",
+    "a": {
+     "type": "Attr",
+     "node": {
+      "type": "Var",
+      "name": "projection"
+     },
+     "key": "source"
+    },
+    "b": {
+     "type": "Lit",
+     "value": "channel_stream"
+    }
+   },
+   "effects": [
+    [
+     "set_attr",
+     "projection",
+     "order_fit",
+     {
+      "__term__": {
+       "type": "TimeInfer",
+       "sequence": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "channel"
+        },
+        "key": "stream_frames"
+       },
+       "codebook_type": "ChannelStreamSignature",
+       "max_b": 8,
+       "field": "order_fit",
+       "max_steps": 9
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "projection",
+     "crossing",
+     {
+      "__term__": {
+       "type": "TimeInfer",
+       "sequence": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "channel"
+        },
+        "key": "stream_frames"
+       },
+       "codebook_type": "ChannelStreamSignature",
+       "max_b": 8,
+       "field": "crossing",
+       "max_steps": 9
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "projection",
+     "stream_length",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "channel"
+         },
+         "key": "stream_length"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "srp_predict_surprise_from_projected_crossing",
+   "area": "general_cognition",
+   "latency_class": "hard_realtime",
+   "comment": "ANTICIPATION, NOT REACTION. A projected crossing inside the declared horizon promotes with NO contact having occurred. This is the route that lets a falling body reach for the ground before it arrives, and nothing here knows what falling is.",
+   "match": [
+    [
+     "episode",
+     "has_energy_ledger",
+     "ledger"
+    ],
+    [
+     "episode",
+     "has_embodied_effector",
+     "effector"
+    ],
+    [
+     "effector",
+     "has_sensed_channel",
+     "channel"
+    ],
+    [
+     "channel",
+     "has_temporal_projection",
+     "projection"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "projection"
+         },
+         "key": "order_fit"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "projection"
+        },
+        "key": "crossing"
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Gt",
+       "a": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "projection"
+          },
+          "key": "crossing"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       },
+       "b": {
+        "type": "Max",
+        "items": [
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "channel"
+            },
+            "key": "predict_horizon_units"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "ledger"
+            },
+            "key": "horizon_actions"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         }
+        ]
+       }
+      }
+     },
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "projection"
+         },
+         "key": "horizon_units"
+        },
+        "b": {
+         "type": "Lit",
+         "value": null
+        }
+       },
+       {
+        "type": "Gt",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "projection"
+         },
+         "key": "horizon_units"
+        },
+        "b": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "projection"
+           },
+           "key": "crossing"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        }
+       }
+      ]
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "channel"
+        },
+        "edge_type": "has_surprise"
+       },
+       "var_name": "prior",
+       "predicate": {
+        "type": "Lit",
+        "value": true
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "surprise",
+     "SurpriseSignal",
+     {
+      "route": "predicted",
+      "surprise_units": 0,
+      "crossing_units": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "projection"
+          },
+          "key": "crossing"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "integer_native": 1,
+      "output_authority": 0
+     }
+    ],
+    [
+     "add_edge",
+     "channel",
+     "has_surprise",
+     "surprise"
+    ]
+   ]
+  },
+  {
+   "name": "srp_promote_surprised_channel_to_candidate",
+   "area": "general_cognition",
+   "latency_class": "hard_realtime",
+   "comment": "The whole of authority allocation. An effector no goal is using becomes contestable the moment something about it is surprising \u2014 which is why nothing is ever zero and why no standing weight is needed. The axes are carried SEPARATELY into the collapse; this rule invents no scalar and picks no winner.",
+   "match": [
+    [
+     "episode",
+     "has_energy_ledger",
+     "ledger"
+    ],
+    [
+     "episode",
+     "has_embodied_effector",
+     "effector"
+    ],
+    [
+     "effector",
+     "has_sensed_channel",
+     "channel"
+    ],
+    [
+     "channel",
+     "has_surprise",
+     "surprise"
+    ]
+   ],
+   "where": {
+    "type": "Not",
+    "arg": {
+     "type": "Exists",
+     "source": {
+      "type": "Neighbours",
+      "node": {
+       "type": "Var",
+       "name": "surprise"
+      },
+      "edge_type": "promoted_candidate"
+     },
+     "var_name": "prior",
+     "predicate": {
+      "type": "Lit",
+      "value": true
+     }
+    }
+   },
+   "effects": [
+    [
+     "add_node",
+     "candidate",
+     "PromotedCandidate",
+     {
+      "route": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "surprise"
+        },
+        "key": "route"
+       }
+      },
+      "goal_relevance_units": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "effector"
+          },
+          "key": "goal_relevance_units"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "urgency_units": {
+       "__term__": {
+        "type": "Minus",
+        "a": {
+         "type": "Max",
+         "items": [
+          {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "channel"
+             },
+             "key": "predict_horizon_units"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          },
+          {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "ledger"
+             },
+             "key": "horizon_actions"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          }
+         ]
+        },
+        "b": {
+         "type": "Min",
+         "items": [
+          {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "surprise"
+             },
+             "key": "crossing_units"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          },
+          {
+           "type": "Max",
+           "items": [
+            {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "channel"
+               },
+               "key": "predict_horizon_units"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            },
+            {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "ledger"
+               },
+               "key": "horizon_actions"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        }
+       }
+      },
+      "damage_units": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "channel"
+          },
+          "key": "damage_units"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "energy_cost_units": {
+       "__term__": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Gt",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "effector"
+            },
+            "key": "release_cost_units"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0
+         }
+        },
+        "then": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "effector"
+           },
+           "key": "release_cost_units"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        "other": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Max",
+           "items": [
+            {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "ledger"
+               },
+               "key": "stock_units"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            },
+            {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "ledger"
+               },
+               "key": "reachable_units"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            }
+           ]
+          },
+          {
+           "type": "Lit",
+           "value": 1
+          }
+         ]
+        }
+       }
+      },
+      "cost_priced": {
+       "__term__": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Gt",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "effector"
+            },
+            "key": "release_cost_units"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0
+         }
+        },
+        "then": {
+         "type": "Lit",
+         "value": 1
+        },
+        "other": {
+         "type": "Lit",
+         "value": 0
+        }
+       }
+      },
+      "recoverability_units": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "effector"
+          },
+          "key": "recoverability_units"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "surprise_units": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "surprise"
+          },
+          "key": "surprise_units"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "provenance": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "channel"
+        },
+        "key": "provenance"
+       }
+      },
+      "affordable": 0,
+      "dominated": 0,
+      "verified": 1,
+      "integer_native": 1,
+      "output_authority": 0
+     }
+    ],
+    [
+     "add_edge",
+     "surprise",
+     "promoted_candidate",
+     "candidate"
+    ],
+    [
+     "add_edge",
+     "effector",
+     "has_promoted_candidate",
+     "candidate"
+    ]
+   ]
+  },
+  {
+   "name": "srp_mark_candidate_affordable_against_ledger",
+   "area": "general_cognition",
+   "latency_class": "hard_realtime",
+   "comment": "Whether the collapse MAY take a candidate is separate from whether it wants to. Reachable = min(stock, rate x horizon) already keeps the amount and rate ceilings apart; a candidate costing more than is reachable is marked unaffordable and stays visible, so the refusal is legible rather than silent.",
+   "match": [
+    [
+     "episode",
+     "has_energy_ledger",
+     "ledger"
+    ],
+    [
+     "episode",
+     "has_embodied_effector",
+     "effector"
+    ],
+    [
+     "effector",
+     "has_promoted_candidate",
+     "candidate"
+    ]
+   ],
+   "where": {
+    "type": "Lit",
+    "value": true
+   },
+   "effects": [
+    [
+     "set_attr",
+     "candidate",
+     "affordable",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Or",
+        "items": [
+         {
+          "type": "Not",
+          "arg": {
+           "type": "Not",
+           "arg": {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "candidate"
+             },
+             "key": "energy_cost_units"
+            },
+            "b": {
+             "type": "Lit",
+             "value": null
+            }
+           }
+          }
+         },
+         {
+          "type": "Gt",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "candidate"
+             },
+             "key": "energy_cost_units"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          },
+          "b": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "ledger"
+             },
+             "key": "stock_units"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          }
+         }
+        ]
+       },
+       "then": {
+        "type": "Lit",
+        "value": 0
+       },
+       "other": {
+        "type": "Lit",
+        "value": 1
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "candidate",
+     "actions_required",
+     {
+      "__term__": {
+       "type": "IDiv",
+       "a": {
+        "type": "Minus",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "candidate"
+             },
+             "key": "energy_cost_units"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          },
+          {
+           "type": "Max",
+           "items": [
+            {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "ledger"
+               },
+               "key": "rate_ceiling_units"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            },
+            {
+             "type": "Lit",
+             "value": 1
+            }
+           ]
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1
+        }
+       },
+       "b": {
+        "type": "Max",
+        "items": [
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "ledger"
+            },
+            "key": "rate_ceiling_units"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         {
+          "type": "Lit",
+          "value": 1
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "candidate",
+     "ledger_reachable_units",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "ledger"
+         },
+         "key": "reachable_units"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "candidate",
+     "ledger_stock_units",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "ledger"
+         },
+         "key": "stock_units"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "srp_adopt_simulator_effector_into_episode",
+   "area": "general_cognition",
+   "latency_class": "hard_realtime",
+   "comment": "An attached simulator publishes effectors under its connection. The episode adopts them so the ledger and the frontier can reach them. The adapter never writes this edge itself.",
+   "match": [
+    [
+     "agent",
+     "has_embodied_development_episode",
+     "episode"
+    ],
+    [
+     "agent",
+     "has_embodied_simulator_connection",
+     "connection"
+    ],
+    [
+     "connection",
+     "has_embodied_effector",
+     "effector"
+    ]
+   ],
+   "where": {
+    "type": "Not",
+    "arg": {
+     "type": "Exists",
+     "source": {
+      "type": "Neighbours",
+      "node": {
+       "type": "Var",
+       "name": "episode"
+      },
+      "edge_type": "has_embodied_effector"
+     },
+     "var_name": "held",
+     "predicate": {
+      "type": "Eq",
+      "a": {
+       "type": "Var",
+       "name": "held"
+      },
+      "b": {
+       "type": "Var",
+       "name": "effector"
+      }
+     }
+    }
+   },
+   "effects": [
+    [
+     "add_edge",
+     "episode",
+     "has_embodied_effector",
+     "effector"
+    ]
+   ]
+  },
+  {
+   "name": "srp_open_authority_pareto_profile",
+   "area": "general_cognition",
+   "latency_class": "soft_realtime",
+   "comment": "One frontier per episode, declaring how many objectives it compares. `dimension_count` is the number of axes, not a weighting of them.",
+   "match": [
+    [
+     "agent",
+     "has_embodied_development_episode",
+     "episode"
+    ]
+   ],
+   "where": {
+    "type": "Not",
+    "arg": {
+     "type": "Exists",
+     "source": {
+      "type": "Neighbours",
+      "node": {
+       "type": "Var",
+       "name": "episode"
+      },
+      "edge_type": "has_authority_pareto_profile"
+     },
+     "var_name": "prior",
+     "predicate": {
+      "type": "Lit",
+      "value": true
+     }
+    }
+   },
+   "effects": [
+    [
+     "add_node",
+     "profile",
+     "ParetoProfile",
+     {
+      "status": "open",
+      "pareto_suspended": 0,
+      "dimension_count": 5,
+      "identity": "effector_authority",
+      "integer_native": 1,
+      "output_authority": 0
+     }
+    ],
+    [
+     "add_edge",
+     "episode",
+     "has_authority_pareto_profile",
+     "profile"
+    ]
+   ]
+  },
+  {
+   "name": "srp_publish_candidate_to_authority_frontier",
+   "area": "general_cognition",
+   "latency_class": "soft_realtime",
+   "comment": "The promotion layer's whole output: a candidate with its axes carried SEPARATELY onto the frontier the rest of cognition already uses. `cp_recognize_relational_dominance` does the comparing; this seed never picks a winner. Cost is the only negated axis, because it is the only one where more is worse.",
+   "match": [
+    [
+     "episode",
+     "has_authority_pareto_profile",
+     "profile"
+    ],
+    [
+     "episode",
+     "has_embodied_effector",
+     "effector"
+    ],
+    [
+     "effector",
+     "has_promoted_candidate",
+     "candidate"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "candidate"
+         },
+         "key": "affordable"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "candidate"
+        },
+        "edge_type": "has_pareto_value"
+       },
+       "var_name": "prior",
+       "predicate": {
+        "type": "Lit",
+        "value": true
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_edge",
+     "profile",
+     "has_pareto_candidate",
+     "candidate"
+    ],
+    [
+     "add_node",
+     "value_0",
+     "ParetoValue",
+     {
+      "dimension_ordinal": 0,
+      "objective": "authority_goal_relevance",
+      "signed_value": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "candidate"
+          },
+          "key": "goal_relevance_units"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "verified": 1,
+      "integer_native": 1,
+      "output_authority": 0
+     }
+    ],
+    [
+     "add_edge",
+     "candidate",
+     "has_pareto_value",
+     "value_0"
+    ],
+    [
+     "add_node",
+     "value_1",
+     "ParetoValue",
+     {
+      "dimension_ordinal": 1,
+      "objective": "authority_urgency",
+      "signed_value": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "candidate"
+          },
+          "key": "urgency_units"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "verified": 1,
+      "integer_native": 1,
+      "output_authority": 0
+     }
+    ],
+    [
+     "add_edge",
+     "candidate",
+     "has_pareto_value",
+     "value_1"
+    ],
+    [
+     "add_node",
+     "value_2",
+     "ParetoValue",
+     {
+      "dimension_ordinal": 2,
+      "objective": "authority_damage",
+      "signed_value": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "candidate"
+          },
+          "key": "damage_units"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "verified": 1,
+      "integer_native": 1,
+      "output_authority": 0
+     }
+    ],
+    [
+     "add_edge",
+     "candidate",
+     "has_pareto_value",
+     "value_2"
+    ],
+    [
+     "add_node",
+     "value_3",
+     "ParetoValue",
+     {
+      "dimension_ordinal": 3,
+      "objective": "authority_energy_cost",
+      "signed_value": {
+       "__term__": {
+        "type": "Minus",
+        "a": {
+         "type": "Lit",
+         "value": 0
+        },
+        "b": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "candidate"
+           },
+           "key": "energy_cost_units"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        }
+       }
+      },
+      "verified": 1,
+      "integer_native": 1,
+      "output_authority": 0
+     }
+    ],
+    [
+     "add_edge",
+     "candidate",
+     "has_pareto_value",
+     "value_3"
+    ],
+    [
+     "add_node",
+     "value_4",
+     "ParetoValue",
+     {
+      "dimension_ordinal": 4,
+      "objective": "authority_recoverability",
+      "signed_value": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "candidate"
+          },
+          "key": "recoverability_units"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "verified": 1,
+      "integer_native": 1,
+      "output_authority": 0
+     }
+    ],
+    [
+     "add_edge",
+     "candidate",
+     "has_pareto_value",
+     "value_4"
+    ]
+   ]
+  }
+ ]
+}

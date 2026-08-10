@@ -1,0 +1,1038 @@
+{
+ "id": "relation_vocabulary",
+ "version": "1.0.0",
+ "depends_on": [],
+ "description": "RELATION-VOCABULARY lexicon (graph data) for SIGNATURE-AUTHORING. Each RelationCue node maps DEFINITION-WORDS (keywords found in a held Concept's own grounded definition) to a structural RELATION-TUPLE in the signature relation-vocabulary (build/refers/bound/base/detect/map/invariant/move/reduce/...). The signature-authoring mechanism reads a Concept's OWN definition, finds which cues fire (keyword hit, the same mechanical category as the held ShapePrinciple lexicon / relation perception), and assembles the relation tuples those cues emit into the Concept's structural signature \u2014 which the held bridge matcher (AntiUnify/FixedCount) then compares to faculties. The signature is EARNED from the Concept's own definition text, not hand-written per Concept; this lexicon is the (text -> structural relation) mapping, extensible by adding a RelationCue node.",
+ "nodes": [
+  {
+   "local_id": 1,
+   "type": "RelationCue",
+   "attrs": {
+    "name": "self_reference",
+    "keywords": [
+     "self-reference",
+     "self reference",
+     "refers to itself",
+     "recursion",
+     "recursive",
+     "fixed point",
+     "fixed-point",
+     "self-similar",
+     "iterate",
+     "calling itself"
+    ],
+    "relation": "[\"refers\",\"NEW\",\"to\",\"SELF\"]"
+   }
+  },
+  {
+   "local_id": 2,
+   "type": "RelationCue",
+   "attrs": {
+    "name": "build_from_prior",
+    "keywords": [
+     "build the new from",
+     "new weight = old",
+     "new = old",
+     "from the prior",
+     "from the previous",
+     "from prior",
+     "f(n-1)",
+     "previous state",
+     "recent prior",
+     "step from"
+    ],
+    "relation": "[\"build\",\"NEW\",\"from\",\"PRIOR\"]"
+   }
+  },
+  {
+   "local_id": 3,
+   "type": "RelationCue",
+   "attrs": {
+    "name": "bounded",
+    "keywords": [
+     "bound",
+     "bounded",
+     "unit bound",
+     "threshold",
+     "exceeds threshold",
+     "scale",
+     "scaled",
+     "constraint",
+     "limit"
+    ],
+    "relation": "[\"bound\",\"SELF\",\"by\",\"UNIT\"]"
+   }
+  },
+  {
+   "local_id": 4,
+   "type": "RelationCue",
+   "attrs": {
+    "name": "base_case",
+    "keywords": [
+     "base case",
+     "terminate",
+     "termination",
+     "stop",
+     "axiom",
+     "axioms",
+     "foundation"
+    ],
+    "relation": "[\"base\",\"STOP\"]"
+   }
+  },
+  {
+   "local_id": 5,
+   "type": "RelationCue",
+   "attrs": {
+    "name": "move_toward",
+    "keywords": [
+     "move",
+     "direction",
+     "adjust",
+     "opposite to",
+     "toward",
+     "descent",
+     "advance",
+     "step in direction",
+     "follows"
+    ],
+    "relation": "[\"advance\",\"BY\",\"TURN\"]"
+   }
+  },
+  {
+   "local_id": 6,
+   "type": "RelationCue",
+   "attrs": {
+    "name": "accumulate",
+    "keywords": [
+     "accumulate",
+     "integrated",
+     "integral",
+     "sum over",
+     "running",
+     "curves",
+     "curved",
+     "geodesic"
+    ],
+    "relation": "[\"accumulate\",\"TURN\",\"into\",\"HEADING\"]"
+   }
+  },
+  {
+   "local_id": 7,
+   "type": "RelationCue",
+   "attrs": {
+    "name": "invariant_under",
+    "keywords": [
+     "invariant",
+     "mirror",
+     "symmetric",
+     "symmetry",
+     "under transform",
+     "balance",
+     "equal",
+     "preserved"
+    ],
+    "relation": "[\"invariant\",\"PART\",\"under\",\"TRANSFORM\"]"
+   }
+  },
+  {
+   "local_id": 8,
+   "type": "RelationCue",
+   "attrs": {
+    "name": "map_part_to_part",
+    "keywords": [
+     "map",
+     "mapping",
+     "maps",
+     "correspond",
+     "operator",
+     "transform",
+     "transformation",
+     "group"
+    ],
+    "relation": "[\"map\",\"PART\",\"to\",\"PART\"]"
+   }
+  },
+  {
+   "local_id": 9,
+   "type": "RelationCue",
+   "attrs": {
+    "name": "repeat",
+    "keywords": [
+     "repeat",
+     "repetition",
+     "tile",
+     "periodic",
+     "again",
+     "copy"
+    ],
+    "relation": "[\"repeat\",\"PART\"]"
+   }
+  },
+  {
+   "local_id": 10,
+   "type": "RelationCue",
+   "attrs": {
+    "name": "detect_contact",
+    "keywords": [
+     "open sets",
+     "collection of",
+     "contact",
+     "touch",
+     "junction",
+     "continuity",
+     "connected",
+     "neighbourhood",
+     "between"
+    ],
+    "relation": "[\"detect\",\"CONTACT\",\"between\",\"PARTS\"]"
+   }
+  },
+  {
+   "local_id": 11,
+   "type": "RelationCue",
+   "attrs": {
+    "name": "type_invariant",
+    "keywords": [
+     "type",
+     "topolog",
+     "invariant property",
+     "classification",
+     "kind",
+     "axioms"
+    ],
+    "relation": "[\"type\",\"CONTACT\",\"is\",\"INVARIANT\"]"
+   }
+  },
+  {
+   "local_id": 12,
+   "type": "RelationCue",
+   "attrs": {
+    "name": "pairwise",
+    "keywords": [
+     "pairwise",
+     "between parts",
+     "pair",
+     "relative",
+     "two",
+     "each other"
+    ],
+    "relation": "[\"pairwise\",\"PARTS\"]"
+   }
+  },
+  {
+   "local_id": 13,
+   "type": "RelationCue",
+   "attrs": {
+    "name": "reduce_uncertainty",
+    "keywords": [
+     "information",
+     "uncertainty",
+     "entropy",
+     "given",
+     "reduces",
+     "reduce",
+     "probability",
+     "distribution",
+     "compression",
+     "lossless"
+    ],
+    "relation": "[\"reduce\",\"UNCERTAINTY\",\"given\",\"PRIOR\"]"
+   }
+  },
+  {
+   "local_id": 14,
+   "type": "RelationCue",
+   "attrs": {
+    "name": "gap_select",
+    "keywords": [
+     "minimum description",
+     "mdl",
+     "compress",
+     "shorter",
+     "model of their probability",
+     "code"
+    ],
+    "relation": "[\"select\",\"SHORTER\",\"over\",\"LONGER\"]"
+   }
+  },
+  {
+   "local_id": 15,
+   "type": "RelationCue",
+   "attrs": {
+    "name": "sequence_order",
+    "keywords": [
+     "sequence",
+     "ordered",
+     "order of",
+     "in order",
+     "serial",
+     "in sequence",
+     "one after another",
+     "successive",
+     "the next",
+     "string of"
+    ],
+    "relation": "[\"order\",\"PART\",\"after\",\"PART\"]"
+   }
+  },
+  {
+   "local_id": 16,
+   "type": "RelationCue",
+   "attrs": {
+    "name": "position_buffer",
+    "keywords": [
+     "position",
+     "slot",
+     "index",
+     "place in the sequence",
+     "working memory",
+     "buffer",
+     "hold the",
+     "retain",
+     "short-term store",
+     "which position"
+    ],
+    "relation": "[\"hold\",\"PART\",\"at\",\"POSITION\"]"
+   }
+  },
+  {
+   "local_id": 17,
+   "type": "RelationCue",
+   "attrs": {
+    "name": "identity_to_form",
+    "keywords": [
+     "identity to the form",
+     "identity to form",
+     "abstract to concrete",
+     "letter form",
+     "to a concrete",
+     "realise as",
+     "instantiate as",
+     "render as the form"
+    ],
+    "relation": "[\"realise\",\"IDENTITY\",\"as\",\"FORM\"]"
+   }
+  },
+  {
+   "local_id": 18,
+   "type": "RelationCue",
+   "attrs": {
+    "name": "allograph_select",
+    "keywords": [
+     "allograph",
+     "case",
+     "style variant",
+     "case and style",
+     "uppercase",
+     "lowercase",
+     "cursive",
+     "select the form",
+     "among variants",
+     "letter shape"
+    ],
+    "relation": "[\"select\",\"ALLOGRAPH\",\"of\",\"IDENTITY\"]"
+   }
+  },
+  {
+   "local_id": 19,
+   "type": "RelationCue",
+   "attrs": {
+    "name": "bind_to_slot",
+    "keywords": [
+     "bind",
+     "binding",
+     "bind to the slot",
+     "item to a slot",
+     "group and position",
+     "group membership",
+     "belongs to the group",
+     "within-group index",
+     "slot of the group"
+    ],
+    "relation": "[\"bind\",\"ITEM\",\"to\",\"SLOT\"]"
+   }
+  },
+  {
+   "local_id": 20,
+   "type": "RelationCue",
+   "attrs": {
+    "name": "cross_group_competition",
+    "keywords": [
+     "competition",
+     "compete",
+     "flanker",
+     "flanking",
+     "migrate",
+     "migration",
+     "cross-group",
+     "between groups",
+     "attentional load",
+     "keep separate"
+    ],
+    "relation": "[\"compete\",\"GROUP\",\"with\",\"GROUP\"]"
+   }
+  },
+  {
+   "local_id": 21,
+   "type": "RelationCue",
+   "attrs": {
+    "name": "spatial_gradient",
+    "keywords": [
+     "spatial gradient",
+     "attention gradient",
+     "attention weight",
+     "attend to the position",
+     "attention over",
+     "spatial extent",
+     "attention falls",
+     "gradient over position",
+     "attention window"
+    ],
+    "relation": "[\"weight\",\"POSITION\",\"by\",\"GRADIENT\"]"
+   }
+  },
+  {
+   "local_id": 22,
+   "type": "RelationCue",
+   "attrs": {
+    "name": "side_threshold",
+    "keywords": [
+     "side",
+     "one side",
+     "lateralized",
+     "neglect",
+     "left side",
+     "right side",
+     "below the threshold",
+     "drops the side",
+     "the neglected"
+    ],
+    "relation": "[\"drop\",\"SIDE\",\"below\",\"THRESHOLD\"]"
+   }
+  },
+  {
+   "local_id": 23,
+   "type": "RelationCue",
+   "attrs": {
+    "name": "teacher_proposes",
+    "keywords": [
+     "the teacher proposes",
+     "teacher proposes",
+     "recognition prior",
+     "amortized proposal",
+     "amortised proposal",
+     "propose to bootstrap",
+     "bootstrap the search",
+     "pseudo-label",
+     "scaffold the search",
+     "fast proposal"
+    ],
+    "relation": "[\"propose\",\"TEACHER\",\"to\",\"STUDENT\"]"
+   }
+  },
+  {
+   "local_id": 24,
+   "type": "RelationCue",
+   "attrs": {
+    "name": "distill_into_structure",
+    "keywords": [
+     "distill into structure",
+     "distill the capability",
+     "earn the structure",
+     "extract the program",
+     "into a held program",
+     "into earned structure",
+     "re-represent as",
+     "savant"
+    ],
+    "relation": "[\"distill\",\"CAPABILITY\",\"into\",\"STRUCTURE\"]"
+   }
+  },
+  {
+   "local_id": 25,
+   "type": "RelationCue",
+   "attrs": {
+    "name": "grow_library",
+    "keywords": [
+     "grow the library",
+     "extend the library",
+     "library of abstractions",
+     "new abstraction",
+     "refactor common",
+     "teach the program",
+     "teach and extend",
+     "compose a new part"
+    ],
+    "relation": "[\"grow\",\"LIBRARY\",\"with\",\"PART\"]"
+   }
+  },
+  {
+   "local_id": 26,
+   "type": "RelationCue",
+   "attrs": {
+    "name": "communicate_action",
+    "keywords": [
+     "communicate",
+     "produce an utterance",
+     "produces",
+     "utterance",
+     "say",
+     "tell",
+     "told",
+     "describe",
+     "speak",
+     "report"
+    ],
+    "relation": "[\"communicate\", \"UTTERANCE\", \"to\", \"AUDIENCE\"]"
+   }
+  },
+  {
+   "local_id": 27,
+   "type": "RelationCue",
+   "attrs": {
+    "name": "iterate_each",
+    "keywords": [
+     "for_each",
+     "for each",
+     "each",
+     "every",
+     "per",
+     "per item"
+    ],
+    "relation": "[\"iterate\", \"OVER\", \"each\", \"ITEM\"]"
+   }
+  },
+  {
+   "local_id": 28,
+   "type": "RelationCue",
+   "attrs": {
+    "name": "decompose_subgoal",
+    "keywords": [
+     "subgoal",
+     "sub-goal",
+     "sub goal",
+     "mint",
+     "mint a subgoal",
+     "decompose",
+     "spawn"
+    ],
+    "relation": "[\"decompose\", \"GOAL\", \"into\", \"SUBGOAL\"]"
+   }
+  },
+  {
+   "local_id": 29,
+   "type": "RelationCue",
+   "attrs": {
+    "name": "source_recognition",
+    "keywords": [
+     "recognition",
+     "from recognition",
+     "from what i recognise",
+     "perceived",
+     "percept",
+     "what i see",
+     "seen",
+     "source",
+     "recognis"
+    ],
+    "relation": "[\"source\", \"CONTENT\", \"from\", \"RECOGNITION\"]"
+   }
+  },
+  {
+   "local_id": 30,
+   "type": "RelationCue",
+   "attrs": {
+    "name": "comprehend_directive",
+    "keywords": [
+     "hear",
+     "heard",
+     "comprehend",
+     "directive",
+     "instruction",
+     "listen",
+     "when i hear",
+     "understand"
+    ],
+    "relation": "[\"comprehend\", \"DIRECTIVE\", \"mint\", \"GOAL\"]"
+   }
+  },
+  {
+   "local_id": 31,
+   "type": "RelationCue",
+   "attrs": {
+    "name": "expected_utility_decision",
+    "keywords": [
+     "expected utility",
+     "best utility",
+     "utility",
+     "argmax",
+     "best action",
+     "over candidates",
+     "across candidates",
+     "under uncertainty",
+     "whichever is me",
+     "average over"
+    ],
+    "relation": "[\"utility\", \"ARGMAX\", \"over\", \"CANDIDATE\"]"
+   }
+  },
+  {
+   "local_id": 32,
+   "type": "RelationCue",
+   "attrs": {
+    "name": "control_agency",
+    "keywords": [
+     "i control",
+     "what i control",
+     "the thing i control",
+     "responds to my action",
+     "responds to my actions",
+     "respond to my action",
+     "moves as i move",
+     "moves with me",
+     "my body",
+     "control",
+     "agency",
+     "what is mine"
+    ],
+    "relation": "[\"control\", \"WHOLE\", \"is\", \"SELF\"]"
+   }
+  },
+  {
+   "local_id": 33,
+   "type": "RelationCue",
+   "attrs": {
+    "name": "compose_whole_object",
+    "keywords": [
+     "compose the whole",
+     "whole from parts",
+     "one object",
+     "group the parts",
+     "parts of one",
+     "parts move together",
+     "co-move",
+     "co-moving",
+     "same displacement",
+     "fuse parts",
+     "order-n object",
+     "compose object",
+     "the whole body",
+     "a region of regions"
+    ],
+    "relation": "[\"group\", \"WHOLE\", \"from\", \"PARTS\"]"
+   }
+  },
+  {
+   "local_id": 34,
+   "type": "RelationCue",
+   "attrs": {
+    "name": "hypothesis_test",
+    "keywords": [
+     "test",
+     "hypothesis",
+     "hypotheses",
+     "conjecture",
+     "conjectures",
+     "test my hypothesis",
+     "test the hypothesis",
+     "by trial",
+     "run a trial"
+    ],
+    "relation": "[\"test\", \"HYPOTHESIS\", \"by\", \"TRIAL\"]"
+   }
+  },
+  {
+   "local_id": 35,
+   "type": "RelationCue",
+   "attrs": {
+    "name": "vary_self",
+    "keywords": [
+     "vary",
+     "variant",
+     "modify",
+     "modification",
+     "version",
+     "vary myself",
+     "vary the seed",
+     "seed delta",
+     "a delta of myself"
+    ],
+    "relation": "[\"vary\", \"SELF\", \"by\", \"DELTA\"]"
+   }
+  },
+  {
+   "local_id": 36,
+   "type": "RelationCue",
+   "attrs": {
+    "name": "dispatch_variant",
+    "keywords": [
+     "send",
+     "dispatch",
+     "delegate",
+     "launch",
+     "dispatch a variant",
+     "send a copy",
+     "send myself",
+     "dispatch to the world"
+    ],
+    "relation": "[\"send\", \"VARIANT\", \"to\", \"WORLD\"]"
+   }
+  },
+  {
+   "local_id": 37,
+   "type": "RelationCue",
+   "attrs": {
+    "name": "judge_outcome",
+    "keywords": [
+     "judge",
+     "verdict",
+     "outcome",
+     "support",
+     "refute",
+     "supported",
+     "refuted",
+     "inconclusive",
+     "judge the trial",
+     "judge by the result"
+    ],
+    "relation": "[\"judge\", \"TRIAL\", \"by\", \"RESULT\"]"
+   }
+  },
+  {
+   "local_id": 38,
+   "type": "RelationCue",
+   "attrs": {
+    "name": "find_target_directive",
+    "keywords": [
+     "find",
+     "find the",
+     "look for",
+     "search for",
+     "browse for",
+     "browse to find",
+     "go find"
+    ],
+    "relation": "[\"find\", \"TARGET\", \"in\", \"CONTENT\"]"
+   }
+  },
+  {
+   "local_id": 39,
+   "type": "RelationCue",
+   "attrs": {
+    "name": "relevance_match",
+    "keywords": [
+     "match",
+     "matches",
+     "matching",
+     "match the goal",
+     "matches the goal",
+     "relevant to my goal",
+     "score by overlap",
+     "content overlap",
+     "overlap with the goal",
+     "closest match",
+     "best match",
+     "match affordance",
+     "match the target"
+    ],
+    "relation": "[\"match\", \"AFFORDANCE\", \"to\", \"GOAL\"]"
+   }
+  },
+  {
+   "local_id": 40,
+   "type": "RelationCue",
+   "attrs": {
+    "name": "embed_variant",
+    "keywords": [
+     "embed",
+     "embed the variant",
+     "carry the variant",
+     "install variant",
+     "install the modification",
+     "modify my decision",
+     "modify my rule",
+     "variant rule",
+     "carry a modified rule",
+     "embed a variant"
+    ],
+    "relation": "[\"embed\", \"VARIANT\", \"as\", \"RULE\"]"
+   }
+  },
+  {
+   "local_id": 41,
+   "type": "RelationCue",
+   "attrs": {
+    "name": "attention_watch",
+    "keywords": [
+     "watch",
+     "observe",
+     "look",
+     "perceive",
+     "attend",
+     "notice",
+     "watch the frame",
+     "when a new frame",
+     "new frame arrives",
+     "sample my eye",
+     "look again",
+     "keep watching",
+     "look when new"
+    ],
+    "relation": "[\"watch\", \"FRAME\", \"when\", \"NEW\"]"
+   }
+  },
+  {
+   "local_id": 42,
+   "type": "RelationCue",
+   "attrs": {
+    "name": "vary_acting_gradient",
+    "keywords": [
+     "gradient",
+     "acting rule",
+     "act differently",
+     "behave differently",
+     "vary how i act",
+     "change how i act",
+     "vary my acting rule",
+     "mutate my acting rule",
+     "shift the gradient",
+     "vary the gradient",
+     "modify my navigation rule",
+     "change my movement rule",
+     "vary what i do, not what i judge"
+    ],
+    "relation": "[\"gradient\", \"VARIANT\", \"of\", \"ACTING\"]"
+   }
+  },
+  {
+   "local_id": 43,
+   "type": "RelationCue",
+   "attrs": {
+    "name": "constrain_target_directive",
+    "keywords": [
+     "constrain",
+     "constrained by",
+     "near",
+     "next to",
+     "beside",
+     "adjacent to",
+     "close to",
+     "narrow to"
+    ],
+    "relation": "[\"constrain\", \"CONSTRAINT\", \"near\", \"TARGET\"]"
+   }
+  },
+  {
+   "local_id": 44,
+   "type": "RelationCue",
+   "attrs": {
+    "name": "adopt_winner",
+    "keywords": [
+     "adopt",
+     "adopt the winner",
+     "adopt into myself",
+     "make it permanent",
+     "keep the variant",
+     "promote the variant",
+     "install the variant permanently",
+     "become the variant",
+     "replace myself with",
+     "fold the supported variant back into me",
+     "supported experiment becomes me"
+    ],
+    "relation": "[\"adopt\", \"WINNER\", \"as\", \"SELF\"]"
+   }
+  },
+  {
+   "local_id": 45,
+   "type": "RelationCue",
+   "attrs": {
+    "name": "structural_edit_variant",
+    "keywords": [
+     "structure",
+     "structural",
+     "structural edit",
+     "edit operator",
+     "flip comparison",
+     "swap attribute",
+     "drop match edge",
+     "rewrite my rule's shape",
+     "change my rule's shape, not just its threshold",
+     "algebra of edits",
+     "restructure my rule"
+    ],
+    "relation": "[\"structure\", \"VARIANT\", \"of\", \"ACTING\"]"
+   }
+  },
+  {
+   "local_id": 46,
+   "type": "RelationCue",
+   "attrs": {
+    "name": "grounding_escalate",
+    "keywords": [
+     "escalate",
+     "escalate to active cognition",
+     "confident but ungrounded",
+     "confidently wrong",
+     "ungrounded",
+     "not grounded",
+     "no anchor",
+     "does not reach an anchor",
+     "grounding gap",
+     "reground",
+     "re-ground",
+     "distrust the collapse",
+     "do not trust the snap",
+     "active cognition"
+    ],
+    "relation": "[\"escalate\", \"COLLAPSE\", \"when\", \"UNGROUNDED\"]"
+   }
+  },
+  {
+   "local_id": 47,
+   "type": "RelationCue",
+   "attrs": {
+    "name": "cost_worth_escalate",
+    "keywords": [
+     "worth",
+     "worth refining",
+     "worth the cost",
+     "worth escalating",
+     "refine when worth it",
+     "residual times value",
+     "residual outweighs cost",
+     "cost worth it",
+     "bound refinement by cost",
+     "refine",
+     "not worth it",
+     "trust the cheap snap"
+    ],
+    "relation": "[\"worth\", \"REFINEMENT\", \"by\", \"RESIDUAL_MINUS_COST\"]"
+   }
+  },
+  {
+   "local_id": 48,
+   "type": "RelationCue",
+   "attrs": {
+    "name": "imagine_counterfactual",
+    "keywords": [
+     "imagine",
+     "imagination",
+     "counterfactual",
+     "suppose",
+     "what if",
+     "simulate",
+     "simulate mentally",
+     "detached collapse",
+     "run it in imagination",
+     "explore hypothetically",
+     "imagined conclusion",
+     "imagine a counterfactual",
+     "model the collapse independent of reality"
+    ],
+    "relation": "[\"imagine\", \"COLLAPSE\", \"from\", \"IMPASSE\"]"
+   }
+  },
+  {
+   "local_id": 49,
+   "type": "RelationCue",
+   "attrs": {
+    "name": "collapse_watch",
+    "keywords": [
+     "predict",
+     "prediction",
+     "foresee",
+     "foresight",
+     "converge",
+     "converges",
+     "convergence",
+     "diverge",
+     "diverges",
+     "divergence",
+     "whole graph",
+     "whole-graph",
+     "collapse model",
+     "own collapse",
+     "predicted divergence",
+     "frontier growth",
+     "before it happens",
+     "own becoming"
+    ],
+    "relation": "[\"predict\", \"COLLAPSE\", \"of\", \"DIVERGENCE\"]"
+   }
+  },
+  {
+   "local_id": 50,
+   "type": "RelationCue",
+   "attrs": {
+    "name": "self_correct_action",
+    "keywords": [
+     "correct",
+     "self-correct",
+     "self correct",
+     "correction",
+     "repair",
+     "mend",
+     "fix the divergence",
+     "fix a divergence",
+     "correct the divergence",
+     "predicted divergence fix",
+     "candidate fix",
+     "converging fix"
+    ],
+    "relation": "[\"correct\", \"DIVERGENCE\", \"by\", \"CANDIDATE\"]"
+   }
+  },
+  {
+   "local_id": 51,
+   "type": "RelationCue",
+   "attrs": {
+    "name": "system_model",
+    "keywords": [
+     "regard",
+     "regard other",
+     "model another",
+     "model of another",
+     "another system",
+     "foreign system",
+     "audience model",
+     "theory of mind",
+     "own modeling",
+     "modeling of my modeling",
+     "meta-model",
+     "modeling faculty",
+     "well-founded modeling",
+     "recursion bottoms out",
+     "settled system model"
+    ],
+    "relation": "[\"regard\", \"OTHER\", \"SYSTEM\"]"
+   }
+  },
+  {
+   "local_id": 52,
+   "type": "RelationCue",
+   "attrs": {
+    "name": "audience_produce",
+    "keywords": [
+     "tailor",
+     "tailor to audience",
+     "tailor the utterance",
+     "tailor to the audience",
+     "audience-tailored",
+     "audience tailored",
+     "produce for audience",
+     "speak to the audience",
+     "speak to my audience",
+     "terse to a known audience",
+     "explicit to a stranger",
+     "model the audience before speaking",
+     "who am i talking to"
+    ],
+    "relation": "[\"tailor\", \"UTTERANCE\", \"to\", \"AUDIENCE\"]"
+   }
+  }
+ ],
+ "edges": [],
+ "productions": []
+}

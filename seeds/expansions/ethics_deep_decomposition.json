@@ -1,0 +1,118 @@
+{
+  "id": "ethics_deep_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "trolley_problem",
+  "in_microtheory": "philosophy",
+  "description": "Ethics decomposed. Trolley variants (footbridge, transplant), doing vs allowing, doctrine of double effect, demandingness objection, Rawlsian justice, capabilities approach, animal ethics, environmental ethics, applied ethics (medical, AI).",
+  "sub_mechanisms": [
+    {
+      "name": "trolley_variants",
+      "definition": "Standard: switch tracks, 1 dies vs 5. Footbridge: push fat man, 1 dies vs 5. Different intuitions.",
+      "why": "Tests theories. Switch (mostly accept); push (mostly reject). Doctrine of double effect explains: side effect vs means.",
+      "category": "ethics_deep_mechanism"
+    },
+    {
+      "name": "doctrine_double_effect",
+      "definition": "OK to cause bad effect as side-effect of good act; not OK if bad effect is means.",
+      "why": "Thomas Aquinas. Distinguishes trolley variants. Applied: pain medication hastening death (OK if pain relief intent).",
+      "category": "ethics_deep_mechanism"
+    },
+    {
+      "name": "doing_vs_allowing",
+      "definition": "Morally weightier to do harm than to allow it. Foot.",
+      "why": "Distinguishes killing from letting die. Applied: euthanasia, charity. Critics: arbitrary.",
+      "category": "ethics_deep_mechanism"
+    },
+    {
+      "name": "demandingness_objection",
+      "definition": "Consequentialism demands too much: maximise good means constantly sacrificing.",
+      "why": "Standard critique of utilitarianism. Williams' attack on impartiality. Replies: agent-relative perms, satisficing.",
+      "category": "ethics_deep_mechanism"
+    },
+    {
+      "name": "Rawls_veil_ignorance",
+      "definition": "Principles of justice = those chosen behind veil of ignorance about one's position.",
+      "why": "Rawls 1971 'A Theory of Justice'. Modern liberalism foundation. Maximin: maximise worst-off position. Critics: many.",
+      "category": "ethics_deep_mechanism"
+    },
+    {
+      "name": "capabilities_approach",
+      "definition": "Sen + Nussbaum. Justice as developed capabilities (not just resources or utility).",
+      "why": "Alternative to utility + resources. UN Human Development Index. Foundation development ethics.",
+      "category": "ethics_deep_mechanism"
+    },
+    {
+      "name": "animal_ethics_speciesism",
+      "definition": "Singer: speciesism analogous to racism. Equal consideration for capacity to suffer.",
+      "why": "Foundation of modern animal ethics. Utilitarian basis. Drives factory farming, animal research debates.",
+      "category": "ethics_deep_mechanism"
+    },
+    {
+      "name": "environmental_ethics",
+      "definition": "Moral status of non-humans + ecosystems. Anthropocentric vs biocentric vs ecocentric.",
+      "why": "Modern field. Climate ethics central. Future generations. Foundation of environmental policy.",
+      "category": "ethics_deep_mechanism"
+    },
+    {
+      "name": "medical_ethics_principlism",
+      "definition": "Beauchamp + Childress: autonomy, beneficence, non-maleficence, justice. Four principles.",
+      "why": "Standard medical ethics framework. Applied clinical decision-making. Foundation of bioethics.",
+      "category": "ethics_deep_mechanism"
+    },
+    {
+      "name": "AI_ethics_specific",
+      "definition": "Bias, transparency, accountability, autonomy preservation, value alignment.",
+      "why": "Emerging field. Algorithm fairness, X-risk, work displacement. Foundation of modern technology ethics.",
+      "category": "ethics_deep_mechanism"
+    },
+    {
+      "name": "experimental_philosophy_ethics",
+      "definition": "Empirical study of moral intuitions. Different demographics + cultures.",
+      "why": "Knobe + others. Trolley variants surveyed cross-culturally. Influence on metaethics. Calling armchair into question.",
+      "category": "ethics_deep_mechanism"
+    },
+    {
+      "name": "moral_uncertainty",
+      "definition": "How to act when uncertain about ethics? MacAskill + Ord.",
+      "why": "Modern formal approach. Maximise expected moral value across theories. Foundation of effective altruism.",
+      "category": "ethics_deep_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "trolley_variants_distinguish_theories",
+      "if": ["intuitive responses to trolley variants differ"],
+      "then": ["acceptable ethical theory must explain the difference"],
+      "why": "Standard methodology. Theories that say 'consequentialism: switch + push both OK' don't match intuitions. Doctrine of double effect explains.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "DDE_distinguishes_means_from_side_effects",
+      "if": ["bad effect is side effect of good act"],
+      "then": ["permissible (vs bad effect as means)"],
+      "why": "Trolley switch: death side effect of saving 5. Push: death means to saving 5. DDE: first OK, second not. Aquinas. Foundation Catholic ethics.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "Rawls_maximin_demands_concern_for_worst_off",
+      "if": ["behind veil of ignorance, choose principles"],
+      "then": ["choose those maximising worst-off position (maximin)"],
+      "why": "Risk aversion (you might be worst-off). Yields liberal egalitarianism. Critics: not all behind-veil choices yield this. Foundation.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "capabilities_address_resource_focus_failure",
+      "if": ["justice judged by resources alone"],
+      "then": ["capabilities to use them ignored"],
+      "why": "Disabled person + same money + less actual capability. Capabilities approach captures this. Foundation human development.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "moral_uncertainty_requires_meta_framework",
+      "if": ["uncertain across multiple ethical theories"],
+      "then": ["expected moral value framework helps"],
+      "why": "MacAskill: weight by credence in theory. Foundation effective altruism. Modern formal ethics. Cost: intertheoretic comparisons.",
+      "soundness_category": "cost_equivalence"
+    }
+  ]
+}

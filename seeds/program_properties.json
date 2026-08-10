@@ -1,0 +1,366 @@
+{
+  "_doc": "PROGRAM_SYNTHESIS_ARC6_D.md / PROGRAM_SYNTHESIS_ARC6_M0_CD.md Ceiling D: the 36-task honest structural residual (PROGRAM_SYNTHESIS_ARC4_STRUCTURAL_NOTES.md) each admits a real, prompt-entailed, execution-verified property the accepted (wrong) IR VIOLATES. This table is the theorem_constructions.json-shaped analogue for PROGRAM-shaped content instead of group-theoretic content: a PropertyAtom names a phrase cue (what the spec must say to even consider the atom), an arg_count guard, a NAMED reference relation (domains/prog_property.py's ref_* registry -- external domain knowledge, elementary geometry/number theory/string-collection semantics, never a task's held-out row), and a small set of hand-constructed WITNESS envs (never a held-out row) at which the reference is checked against the candidate's own executed output. `arg_count`/`phrases` are a MATCH guard only; the actual REFUTATION decision requires the reference to ALSO self-verify against the goal's own revealed rows (domains/prog_property.py::_self_verify_atom) before it may fire at all -- a property the revealed data itself contradicts is refused, never applied.",
+  "_doc_property_atoms": "Each atom: `id` (unique name), `task_hint` (the MBPP task id this was derived from, for provenance/traceability only -- matching is by phrase+arg_count+self-verify, never by task id), `kind` (the property FAMILY, drawn from what the ceiling probe actually found across the 36 -- geometric_formula / modular_condition / set_membership / counting_cardinality / bit_operation / monotonic_bound / closed_form_formula / recurrence_identity / arithmetic_relation / relational_identity / predicate_check / input_output_relation), `phrases` (ALL must appear, case-insensitive substring, in the goal's own prompt text), `arg_count` (the reference relation's required argument count), `reference` (the domains/prog_property.py ref_* function name), `witnesses` (env dicts -- keyword args matching the reference's own parameter names, the MBPP single-letter convention).",
+  "property_atoms": [
+    {
+      "id": "prop_perimeter_square",
+      "task_hint": 17,
+      "kind": "geometric_formula",
+      "phrases": ["perimeter of a square"],
+      "arg_count": 1,
+      "reference": "ref_perimeter_square",
+      "witnesses": [{"a": 1}, {"a": 2}, {"a": 3}],
+      "_doc": "perimeter of a square = 4 x side (elementary geometry)."
+    },
+    {
+      "id": "prop_reverse_relation",
+      "task_hint": 56,
+      "kind": "relational_identity",
+      "phrases": ["twice its reverse"],
+      "arg_count": 1,
+      "reference": "ref_reverse_relation",
+      "witnesses": [{"a": 1}, {"a": 793}, {"a": 7993}],
+      "_doc": "the stated relation a == 2*reverse(a) - 1; witnesses are the first three positive solutions to the relation itself (found independently of any held-out row)."
+    },
+    {
+      "id": "prop_bell_number",
+      "task_hint": 67,
+      "kind": "recurrence_identity",
+      "phrases": ["bell numbers"],
+      "arg_count": 1,
+      "reference": "ref_bell_number",
+      "witnesses": [{"a": 3}, {"a": 4}, {"a": 26}],
+      "_doc": "Bell number via the Bell triangle (number of set partitions)."
+    },
+    {
+      "id": "prop_diff_of_two_squares",
+      "task_hint": 72,
+      "kind": "modular_condition",
+      "phrases": ["difference of two squares"],
+      "arg_count": 1,
+      "reference": "ref_diff_of_two_squares",
+      "witnesses": [{"a": 6}, {"a": 2}, {"a": 14}],
+      "_doc": "a number is a difference of two squares iff a % 4 != 2."
+    },
+    {
+      "id": "prop_divisible_by_11",
+      "task_hint": 77,
+      "kind": "modular_condition",
+      "phrases": ["divisible by 11"],
+      "arg_count": 1,
+      "reference": "ref_divisible_by_11",
+      "witnesses": [{"a": 11}, {"a": 5}, {"a": 22}],
+      "_doc": "divisibility by 11 (a % 11 == 0)."
+    },
+    {
+      "id": "prop_odd_length",
+      "task_hint": 79,
+      "kind": "input_output_relation",
+      "phrases": ["length of the word is odd"],
+      "arg_count": 1,
+      "reference": "ref_odd_length",
+      "witnesses": [{"a": "abc"}, {"a": "hi"}, {"a": "x"}],
+      "_doc": "a word's length is odd (len(a) % 2 == 1)."
+    },
+    {
+      "id": "prop_substring_in_list",
+      "task_hint": 91,
+      "kind": "set_membership",
+      "phrases": ["substring in a given list"],
+      "arg_count": 2,
+      "reference": "ref_substring_in_list",
+      "witnesses": [{"a": ["red", "blue"], "b": "lu"}, {"a": ["red", "blue"], "b": "zz"}],
+      "_doc": "b is a substring of some string in list a."
+    },
+    {
+      "id": "prop_divisor_count",
+      "task_hint": 96,
+      "kind": "counting_cardinality",
+      "phrases": ["number of divisors"],
+      "arg_count": 1,
+      "reference": "ref_divisor_count",
+      "witnesses": [{"a": 6}, {"a": 7}, {"a": 9}],
+      "_doc": "the number of divisors of a (inclusive of 1 and a)."
+    },
+    {
+      "id": "prop_count_true",
+      "task_hint": 105,
+      "kind": "counting_cardinality",
+      "phrases": ["count true booleans"],
+      "arg_count": 1,
+      "reference": "ref_count_true",
+      "witnesses": [{"a": [true, true, false]}, {"a": [true, true, true]}],
+      "_doc": "count of True elements in the list."
+    },
+    {
+      "id": "prop_is_digit_string",
+      "task_hint": 113,
+      "kind": "predicate_check",
+      "phrases": ["string represents an integer"],
+      "arg_count": 1,
+      "reference": "ref_is_digit_string",
+      "witnesses": [{"a": "42"}, {"a": "foo"}, {"a": "007"}],
+      "_doc": "the string parses as an integer (digit characters only)."
+    },
+    {
+      "id": "prop_count_lists_in_tuple",
+      "task_hint": 143,
+      "kind": "counting_cardinality",
+      "phrases": ["lists present in the given tuple"],
+      "arg_count": 1,
+      "reference": "ref_count_lists_in_tuple",
+      "witnesses": [{"a": [[1, 2], 3, [4]]}, {"a": [1, 2, 3]}],
+      "_doc": "count of tuple elements that are lists."
+    },
+    {
+      "id": "prop_alphabet_position_count",
+      "task_hint": 165,
+      "kind": "counting_cardinality",
+      "phrases": ["same position in the string as in the english alphabet"],
+      "arg_count": 1,
+      "reference": "ref_alphabet_position_count",
+      "witnesses": [{"a": "ab"}, {"a": "ba"}, {"a": "abz"}],
+      "_doc": "count of positions i (0-indexed) where lower(a)[i] == chr(ord('a')+i)."
+    },
+    {
+      "id": "prop_smallest_pow2_ge",
+      "task_hint": 167,
+      "kind": "monotonic_bound",
+      "phrases": ["smallest power of 2 greater than or equal to"],
+      "arg_count": 1,
+      "reference": "ref_smallest_pow2_ge",
+      "witnesses": [{"a": 1}, {"a": 3}, {"a": 9}],
+      "_doc": "smallest power of 2 >= a."
+    },
+    {
+      "id": "prop_perimeter_pentagon",
+      "task_hint": 171,
+      "kind": "geometric_formula",
+      "phrases": ["perimeter of a regular pentagon"],
+      "arg_count": 1,
+      "reference": "ref_perimeter_pentagon",
+      "witnesses": [{"a": 1}, {"a": 2}, {"a": 3}],
+      "_doc": "perimeter of a regular pentagon = 5 x side."
+    },
+    {
+      "id": "prop_popcount",
+      "task_hint": 224,
+      "kind": "counting_cardinality",
+      "phrases": ["number of set bits"],
+      "arg_count": 1,
+      "reference": "ref_popcount",
+      "witnesses": [{"a": 1}, {"a": 3}, {"a": 7}],
+      "_doc": "count of set bits (popcount)."
+    },
+    {
+      "id": "prop_set_even_bits",
+      "task_hint": 235,
+      "kind": "bit_operation",
+      "phrases": ["set all even bits"],
+      "arg_count": 1,
+      "reference": "ref_set_even_bits",
+      "witnesses": [{"a": 1}, {"a": 5}, {"a": 9}],
+      "_doc": "set all even (1-indexed) bits of a, within a's own bit-width."
+    },
+    {
+      "id": "prop_count_nonempty_substrings",
+      "task_hint": 238,
+      "kind": "closed_form_formula",
+      "phrases": ["non-empty substrings"],
+      "arg_count": 1,
+      "reference": "ref_count_nonempty_substrings",
+      "witnesses": [{"a": "a"}, {"a": "ab"}, {"a": "wxyz"}],
+      "_doc": "count of non-empty substrings of a = n(n+1)/2, n=len(a)."
+    },
+    {
+      "id": "prop_next_perfect_square_gt",
+      "task_hint": 244,
+      "kind": "monotonic_bound",
+      "phrases": ["next perfect square greater than"],
+      "arg_count": 1,
+      "reference": "ref_next_perfect_square_gt",
+      "witnesses": [{"a": 0}, {"a": 1}, {"a": 8}],
+      "_doc": "smallest perfect square strictly greater than a."
+    },
+    {
+      "id": "prop_tuple_count_occurrences",
+      "task_hint": 250,
+      "kind": "counting_cardinality",
+      "phrases": ["takes in a tuple and an element", "counts"],
+      "arg_count": 2,
+      "reference": "ref_tuple_count_occurrences",
+      "witnesses": [{"a": [1, 2, 2, 3], "b": 2}, {"a": [], "b": 5}],
+      "_doc": "count of occurrences of b in tuple a."
+    },
+    {
+      "id": "prop_count_primes_below",
+      "task_hint": 256,
+      "kind": "counting_cardinality",
+      "phrases": ["number of prime numbers less than"],
+      "arg_count": 1,
+      "reference": "ref_count_primes_below",
+      "witnesses": [{"a": 7}, {"a": 20}],
+      "_doc": "count of primes strictly less than a."
+    },
+    {
+      "id": "prop_star_number",
+      "task_hint": 268,
+      "kind": "closed_form_formula",
+      "phrases": ["star number"],
+      "arg_count": 1,
+      "reference": "ref_star_number",
+      "witnesses": [{"a": 1}, {"a": 2}, {"a": 5}],
+      "_doc": "n'th star number = 6n(n-1)+1."
+    },
+    {
+      "id": "prop_decagonal_number",
+      "task_hint": 279,
+      "kind": "closed_form_formula",
+      "phrases": ["decagonal number"],
+      "arg_count": 1,
+      "reference": "ref_decagonal_number",
+      "witnesses": [{"a": 1}, {"a": 2}, {"a": 5}],
+      "_doc": "n'th decagonal number = 4n^2 - 3n."
+    },
+    {
+      "id": "prop_paint_fence",
+      "task_hint": 291,
+      "kind": "recurrence_identity",
+      "phrases": ["painting the fence"],
+      "arg_count": 2,
+      "reference": "ref_paint_fence",
+      "witnesses": [{"a": 4, "b": 3}, {"a": 5, "b": 2}],
+      "_doc": "fence-painting recurrence: paint_fence(n=a, k=b)."
+    },
+    {
+      "id": "prop_floor_quotient",
+      "task_hint": 292,
+      "kind": "arithmetic_relation",
+      "phrases": ["quotient of two numbers"],
+      "arg_count": 2,
+      "reference": "ref_floor_quotient",
+      "witnesses": [{"a": 7, "b": 2}, {"a": 9, "b": 4}],
+      "_doc": "integer quotient a // b (floor division)."
+    },
+    {
+      "id": "prop_proper_divisor_sum",
+      "task_hint": 295,
+      "kind": "counting_cardinality",
+      "phrases": ["sum of all divisors"],
+      "arg_count": 1,
+      "reference": "ref_proper_divisor_sum",
+      "witnesses": [{"a": 6}, {"a": 10}, {"a": 1}],
+      "_doc": "sum of PROPER divisors of a (aliquot sum, excludes a itself) -- the MBPP dataset's own reference answer for this prompt excludes a itself, confirmed by self-verification against the goal's own revealed rows (PROGRAM_SYNTHESIS_ARC6_M0_CD.md task 295)."
+    },
+    {
+      "id": "prop_central_binomial",
+      "task_hint": 300,
+      "kind": "closed_form_formula",
+      "phrases": ["sum of first n bits"],
+      "arg_count": 1,
+      "reference": "ref_central_binomial",
+      "witnesses": [{"a": 3}, {"a": 4}],
+      "_doc": "central binomial coefficient C(2n, n)."
+    },
+    {
+      "id": "prop_set_leftmost_unset",
+      "task_hint": 311,
+      "kind": "bit_operation",
+      "phrases": ["left most unset bit"],
+      "arg_count": 1,
+      "reference": "ref_set_leftmost_unset",
+      "witnesses": [{"a": 2}, {"a": 5}, {"a": 9}],
+      "_doc": "set the leftmost (highest sub-MSB) unset bit of a."
+    },
+    {
+      "id": "prop_highest_pow2_le",
+      "task_hint": 388,
+      "kind": "monotonic_bound",
+      "phrases": ["highest power of 2"],
+      "arg_count": 1,
+      "reference": "ref_highest_pow2_le",
+      "witnesses": [{"a": 1}, {"a": 3}, {"a": 7}],
+      "_doc": "highest power of 2 <= a."
+    },
+    {
+      "id": "prop_lucas_number",
+      "task_hint": 389,
+      "kind": "recurrence_identity",
+      "phrases": ["lucas number"],
+      "arg_count": 1,
+      "reference": "ref_lucas_number",
+      "witnesses": [{"a": 2}, {"a": 5}, {"a": 6}],
+      "_doc": "n'th Lucas number (L0=2, L1=1, L_n=L_{n-1}+L_{n-2})."
+    },
+    {
+      "id": "prop_max_recursive",
+      "task_hint": 392,
+      "kind": "recurrence_identity",
+      "phrases": ["f(n/2) + f(n/3)"],
+      "arg_count": 1,
+      "reference": "ref_max_recursive",
+      "witnesses": [{"a": 20}, {"a": 40}],
+      "_doc": "f(n) = max(f(n//2)+f(n//3)+f(n//4)+f(n//5), n), memoised recursion."
+    },
+    {
+      "id": "prop_tuple_membership",
+      "task_hint": 405,
+      "kind": "set_membership",
+      "phrases": ["element exists within a tuple"],
+      "arg_count": 2,
+      "reference": "ref_tuple_membership",
+      "witnesses": [{"a": [1, 2, 3], "b": 4}, {"a": [1, 2, 3], "b": 2}],
+      "_doc": "element b exists within tuple a."
+    },
+    {
+      "id": "prop_surface_area_cube",
+      "task_hint": 441,
+      "kind": "geometric_formula",
+      "phrases": ["surface area of a cube"],
+      "arg_count": 1,
+      "reference": "ref_surface_area_cube",
+      "witnesses": [{"a": 1}, {"a": 2}, {"a": 4}],
+      "_doc": "surface area of a cube of side a = 6 x a^2."
+    },
+    {
+      "id": "prop_trim_tuples",
+      "task_hint": 444,
+      "kind": "input_output_relation",
+      "phrases": ["trim each tuple by k"],
+      "arg_count": 2,
+      "reference": "ref_trim_tuples",
+      "witnesses": [{"a": [[1, 2, 3, 4, 5]], "b": 0}, {"a": [[1, 2, 3, 4, 5]], "b": 2}],
+      "_doc": "trim each tuple in list a by k=b elements from both ends: t[k: len(t)-k]."
+    },
+    {
+      "id": "prop_sale_loss",
+      "task_hint": 452,
+      "kind": "arithmetic_relation",
+      "phrases": ["loss amount on a sale"],
+      "arg_count": 2,
+      "reference": "ref_sale_loss",
+      "witnesses": [{"a": 100, "b": 150}, {"a": 50, "b": 80}],
+      "_doc": "loss amount = max(0, selling_price(b) - cost_price(a))."
+    },
+    {
+      "id": "prop_even_divisor_sum",
+      "task_hint": 453,
+      "kind": "counting_cardinality",
+      "phrases": ["sum of even factors"],
+      "arg_count": 1,
+      "reference": "ref_even_divisor_sum",
+      "witnesses": [{"a": 1}, {"a": 4}, {"a": 6}],
+      "_doc": "sum of EVEN divisors of a (inclusive of a itself if even)."
+    },
+    {
+      "id": "prop_month_has_31_days",
+      "task_hint": 455,
+      "kind": "set_membership",
+      "phrases": ["contains 31 days"],
+      "arg_count": 1,
+      "reference": "ref_month_has_31_days",
+      "witnesses": [{"a": 4}, {"a": 6}, {"a": 9}],
+      "_doc": "month number a has 31 days iff a in {1,3,5,7,8,10,12}."
+    }
+  ]
+}

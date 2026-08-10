@@ -1,0 +1,1103 @@
+{
+ "id": "reading_constructions",
+ "version": "1.3.0",
+ "depends_on": [],
+ "description": "READING = COLLAPSE OVER A CONSTRUCTION CODEBOOK (graph data). A recognized clause is turned into a STRUCTURAL SKELETON: each recognized construction-marker (copula, determiner, subordinator, relativizer, preposition, the main verb) becomes a SINGLE-ELEMENT relation whose PREDICATE is the marker's normalized class (COP/DET/IF/OF/VERB/...). The marker sits in the PREDICATE slot deliberately: sd_transform_decode can substitute an ARGUMENT slot (a transform, no growth) but never the predicate (a different predicate is a different shape), so a genuinely novel marker skeleton produces a real residual and MINTS instead of being explained away. Each construction is a ShapeSignature{kind:'construction'} whose signature IS its distinctive marker skeleton; reading DECODES the clause against this codebook (reflective_faculty.compose_design_for_goal = the ShapeDecode Term) and the construction with the best shape_fit + zero residual WINS. A clause whose skeleton no construction covers has a non-empty residual -> the sd loop (seeds/shape_decode_loop.json) mints a quantum -> domains/reading_collapse.py installs the skeleton as a NEW construction ShapeSignature + bumps codebook_epoch -> re-decode grounds it. The MarkerClass nodes are the (surface -> normalized class) function-word lexicon (general closed-class + high-frequency relational verbs), recognition against held data, not a hardcoded per-construction regex. ground_template is the construction-GENERAL role->predication map read by one routine (never a per-construction Python branch): mode 'pair' emits pred(role0,role1); 'pair_swap' emits pred(role1,role0); 'enum_head_first'/'enum_head_last' emit pred(item,head) for each list item.",
+ "microtheory": {
+  "name": "reading_constructions",
+  "description": "reading is ShapeDecode over a construction codebook; a novel construction is minted, not parsed"
+ },
+ "nodes": [
+  {
+   "local_id": 1,
+   "type": "MarkerClass",
+   "attrs": {
+    "cls": "COP",
+    "forms": [
+     "is",
+     "are",
+     "was",
+     "were",
+     "be",
+     "been",
+     "being",
+     "am",
+     "'s"
+    ]
+   }
+  },
+  {
+   "local_id": 2,
+   "type": "MarkerClass",
+   "attrs": {
+    "cls": "DET",
+    "forms": [
+     "a",
+     "an",
+     "the",
+     "this",
+     "these",
+     "those"
+    ]
+   }
+  },
+  {
+   "local_id": 3,
+   "type": "MarkerClass",
+   "attrs": {
+    "cls": "CAUSE_SUB",
+    "forms": [
+     "because",
+     "since"
+    ]
+   }
+  },
+  {
+   "local_id": 4,
+   "type": "MarkerClass",
+   "attrs": {
+    "cls": "CAUSE_V",
+    "forms": [
+     "causes",
+     "cause",
+     "caused",
+     "causing"
+    ]
+   }
+  },
+  {
+   "local_id": 5,
+   "type": "MarkerClass",
+   "attrs": {
+    "cls": "UNLIKE",
+    "forms": [
+     "unlike"
+    ]
+   }
+  },
+  {
+   "local_id": 6,
+   "type": "MarkerClass",
+   "attrs": {
+    "cls": "LIKE",
+    "forms": [
+     "like",
+     "resembles",
+     "resemble"
+    ]
+   }
+  },
+  {
+   "local_id": 7,
+   "type": "MarkerClass",
+   "attrs": {
+    "cls": "THAN",
+    "forms": [
+     "than"
+    ]
+   }
+  },
+  {
+   "local_id": 8,
+   "type": "MarkerClass",
+   "attrs": {
+    "cls": "IF",
+    "forms": [
+     "if"
+    ]
+   }
+  },
+  {
+   "local_id": 9,
+   "type": "MarkerClass",
+   "attrs": {
+    "cls": "THEN",
+    "forms": [
+     "then"
+    ]
+   }
+  },
+  {
+   "local_id": 10,
+   "type": "MarkerClass",
+   "attrs": {
+    "cls": "INCL",
+    "forms": [
+     "includes",
+     "include",
+     "including",
+     "comprises",
+     "comprising",
+     "contains",
+     "containing",
+     "consists"
+    ]
+   }
+  },
+  {
+   "local_id": 11,
+   "type": "MarkerClass",
+   "attrs": {
+    "cls": "SUCH",
+    "forms": [
+     "such"
+    ]
+   }
+  },
+  {
+   "local_id": 12,
+   "type": "MarkerClass",
+   "attrs": {
+    "cls": "AS",
+    "forms": [
+     "as"
+    ]
+   }
+  },
+  {
+   "local_id": 13,
+   "type": "MarkerClass",
+   "attrs": {
+    "cls": "REL",
+    "forms": [
+     "which",
+     "who",
+     "whom",
+     "whose",
+     "where"
+    ]
+   }
+  },
+  {
+   "local_id": 14,
+   "type": "MarkerClass",
+   "attrs": {
+    "cls": "OF",
+    "forms": [
+     "of"
+    ],
+    "yields_to_finite_verb": true
+   }
+  },
+  {
+   "local_id": 15,
+   "type": "MarkerClass",
+   "attrs": {
+    "cls": "TO",
+    "forms": [
+     "to"
+    ]
+   }
+  },
+  {
+   "local_id": 16,
+   "type": "MarkerClass",
+   "attrs": {
+    "cls": "FOR",
+    "forms": [
+     "for"
+    ]
+   }
+  },
+  {
+   "local_id": 17,
+   "type": "MarkerClass",
+   "attrs": {
+    "cls": "WITH",
+    "forms": [
+     "with"
+    ]
+   }
+  },
+  {
+   "local_id": 18,
+   "type": "MarkerClass",
+   "attrs": {
+    "cls": "BY",
+    "forms": [
+     "by"
+    ]
+   }
+  },
+  {
+   "local_id": 19,
+   "type": "MarkerClass",
+   "attrs": {
+    "cls": "FROM",
+    "forms": [
+     "from"
+    ]
+   }
+  },
+  {
+   "local_id": 20,
+   "type": "MarkerClass",
+   "attrs": {
+    "cls": "AND",
+    "forms": [
+     "and"
+    ]
+   }
+  },
+  {
+   "local_id": 21,
+   "type": "MarkerClass",
+   "attrs": {
+    "cls": "OR",
+    "forms": [
+     "or"
+    ]
+   }
+  },
+  {
+   "local_id": 168,
+   "type": "MarkerClass",
+   "attrs": {
+    "cls": "BUT",
+    "forms": [
+     "but"
+    ]
+   }
+  },
+  {
+   "local_id": 169,
+   "type": "MarkerClass",
+   "attrs": {
+    "cls": "QUANTIFIER",
+    "forms": [
+     "hundreds",
+     "dozens",
+     "thousands",
+     "millions",
+     "scores"
+    ]
+   }
+  },
+  {
+   "local_id": 22,
+   "type": "MarkerClass",
+   "attrs": {
+    "cls": "DESIGNATE",
+    "forms": [
+     "called",
+     "describe",
+     "described",
+     "describes",
+     "known",
+     "define",
+     "defined",
+     "defines",
+     "designate",
+     "designated",
+     "designates",
+     "labelled",
+     "labeled",
+     "classified",
+     "classifies",
+     "classify"
+    ],
+    "adjacency_anchor": [
+     "call",
+     "name",
+     "designate",
+     "label",
+     "describe",
+     "define"
+    ],
+    "adjacency_threshold": 0.5,
+    "adjacency_context": "post_copular",
+    "note": "DESIGNATION marker-class: a thing bound to what it is CALLED/named/classified. The 16 forms are SEED members; a NEW surface marker (termed/dubbed/styled/...) JOINS this class by ADJACENCY (WordNet nearness of its verb sense to adjacency_anchor >= adjacency_threshold), not by being on this list."
+   }
+  },
+  {
+   "local_id": 23,
+   "type": "MarkerClass",
+   "attrs": {
+    "cls": "POSSESS",
+    "forms": [
+     "exhibits",
+     "exhibit",
+     "possesses",
+     "possess",
+     "features",
+     "feature",
+     "bears",
+     "bear"
+    ],
+    "adjacency_anchor": [
+     "exhibit",
+     "display",
+     "manifest"
+    ],
+    "adjacency_threshold": 0.7,
+    "adjacency_context": "other",
+    "note": "POSSESSION marker-class (the SECOND construction class, added as pure seed data): a thing bound to a PROPERTY it HAS/exhibits/possesses/features/bears. The 8 forms are SEED members; a NEW surface marker (demonstrates/evidences/presents/displays/manifests/...) JOINS this class by ADJACENCY (WordNet nearness of its verb sense to adjacency_anchor >= adjacency_threshold, in the MAIN-VERB slot 'other'), not by being on this list. Distinct from DESIGNATE: main-verb slot (not post_copular) + higher threshold (0.7) so content verbs (runs/walks/eats/chased/point/have <= 0.5) are rejected while unseen exhibit-family verbs (demonstrates/evidences = 1.0) join. HONEST LIMITS (possession is inherently weaker-gated than designation, which has the distinctive post-copular 'is called' context; possession's main-verb slot 'other' has NO function-word context, so the anchor MUST be chosen to dodge polysemy): (1) the anchor is the EXHIBIT/DISPLAY/MANIFEST sub-family, NOT possess/bear -- because the auxiliary 'have'/'has' is a WordNet synonym of possess/bear (nearness 1.0) and would over-fire (aux 'have' in 'could have done' would hijack the reading); (2) 'show' is excluded too -- its indicate-sense pulls in the noun 'point' (point~show 1.0), which mis-reads 'a mute point'; (3) consequently the possess/bear-synonym unseen tail (owns/holds/carries) and the show-only synonym 'evinces' are out of adjacency reach -- covered only if seeded. The one residual over-fire is 'shows'/'show' themselves (genuine exhibit verbs, defensible). possess/features/bears stay covered as SEED FORMS (lexicon, no adjacency needed)."
+   }
+  },
+  {
+   "local_id": 40,
+   "type": "ShapeSignature",
+   "attrs": {
+    "name": "definitional",
+    "kind": "construction",
+    "predication": "is_a",
+    "signature": "[[\"COP\"],[\"DET\"]]",
+    "ground_template": "{\"pred\": \"is_a\", \"mode\": \"pair\"}"
+   }
+  },
+  {
+   "local_id": 41,
+   "type": "ShapeSignature",
+   "attrs": {
+    "name": "definitional_bare",
+    "kind": "construction",
+    "predication": "is_a",
+    "signature": "[[\"COP\"]]",
+    "ground_template": "{\"pred\": \"is_a\", \"mode\": \"pair\"}"
+   }
+  },
+  {
+   "local_id": 42,
+   "type": "ShapeSignature",
+   "attrs": {
+    "name": "enumeration_includes",
+    "kind": "construction",
+    "predication": "part_of",
+    "signature": "[[\"INCL\"]]",
+    "ground_template": "{\"pred\": \"part_of\", \"mode\": \"enum_head_first\"}"
+   }
+  },
+  {
+   "local_id": 43,
+   "type": "ShapeSignature",
+   "attrs": {
+    "name": "enumeration_such_as",
+    "kind": "construction",
+    "predication": "part_of",
+    "signature": "[[\"SUCH\"],[\"AS\"]]",
+    "ground_template": "{\"pred\": \"part_of\", \"mode\": \"enum_head_first\"}"
+   }
+  },
+  {
+   "local_id": 44,
+   "type": "ShapeSignature",
+   "attrs": {
+    "name": "causal_because",
+    "kind": "construction",
+    "predication": "causes",
+    "signature": "[[\"CAUSE_SUB\"]]",
+    "ground_template": "{\"pred\": \"causes\", \"mode\": \"pair_swap\"}"
+   }
+  },
+  {
+   "local_id": 45,
+   "type": "ShapeSignature",
+   "attrs": {
+    "name": "causal_verb",
+    "kind": "construction",
+    "predication": "causes",
+    "signature": "[[\"CAUSE_V\"]]",
+    "ground_template": "{\"pred\": \"causes\", \"mode\": \"pair\"}"
+   }
+  },
+  {
+   "local_id": 46,
+   "type": "ShapeSignature",
+   "attrs": {
+    "name": "comparative_unlike",
+    "kind": "construction",
+    "predication": "contrast",
+    "signature": "[[\"UNLIKE\"]]",
+    "ground_template": "{\"pred\": \"contrast\", \"mode\": \"pair\"}"
+   }
+  },
+  {
+   "local_id": 146,
+   "type": "ShapeSignature",
+   "attrs": {
+    "name": "comparative_unlike_cop",
+    "kind": "construction",
+    "predication": "contrast",
+    "signature": "[[\"COP\"],[\"UNLIKE\"]]",
+    "ground_template": "{\"pred\": \"contrast\", \"mode\": \"pair\"}"
+   }
+  },
+  {
+   "local_id": 47,
+   "type": "ShapeSignature",
+   "attrs": {
+    "name": "comparative_like",
+    "kind": "construction",
+    "predication": "similar",
+    "signature": "[[\"LIKE\"]]",
+    "ground_template": "{\"pred\": \"similar\", \"mode\": \"pair\"}"
+   }
+  },
+  {
+   "local_id": 147,
+   "type": "ShapeSignature",
+   "attrs": {
+    "name": "comparative_like_cop",
+    "kind": "construction",
+    "predication": "similar",
+    "signature": "[[\"COP\"],[\"LIKE\"]]",
+    "ground_template": "{\"pred\": \"similar\", \"mode\": \"pair\"}"
+   }
+  },
+  {
+   "local_id": 48,
+   "type": "ShapeSignature",
+   "attrs": {
+    "name": "conditional",
+    "kind": "construction",
+    "predication": "implies",
+    "signature": "[[\"IF\"],[\"THEN\"]]",
+    "ground_template": "{\"pred\": \"implies\", \"mode\": \"pair\"}"
+   }
+  },
+  {
+   "local_id": 49,
+   "type": "ShapeSignature",
+   "attrs": {
+    "name": "attributive",
+    "kind": "construction",
+    "predication": "has_property",
+    "signature": "[[\"REL\"],[\"COP\"]]",
+    "ground_template": "{\"pred\": \"has_property\", \"mode\": \"pair\"}"
+   }
+  },
+  {
+   "local_id": 50,
+   "type": "ShapeSignature",
+   "attrs": {
+    "name": "event",
+    "kind": "construction",
+    "predication": "svo",
+    "signature": "[[\"VERB\"]]",
+    "ground_template": "{\"pred\": \"@verb\", \"mode\": \"pair\"}"
+   }
+  },
+  {
+   "local_id": 51,
+   "type": "ShapeSignature",
+   "attrs": {
+    "name": "designation",
+    "kind": "construction",
+    "predication": "is_a",
+    "class_marker": "DESIGNATE",
+    "signature": "[[\"COP\"],[\"DESIGNATE\"]]",
+    "ground_template": "{\"pred\": \"is_a\", \"mode\": \"pair\"}",
+    "note": "ONE CLASS-CONSTRUCTION over the DESIGNATE marker-class. Its marker slot is the DESIGNATE CLASS, so EVERY member (called/described/known/termed/...) decodes to this SAME construction; the filled marker is the member used. Binds the subject to what it is CALLED (a naming/is_a relation). The trailing 'as'/'to' of 'described as' / 'referred to as' is designation glue absorbed at skeleton build, so the family shares this ONE signature."
+   }
+  },
+  {
+   "local_id": 52,
+   "type": "ShapeSignature",
+   "attrs": {
+    "name": "possession",
+    "kind": "construction",
+    "predication": "has_property",
+    "class_marker": "POSSESS",
+    "signature": "[[\"POSSESS\"]]",
+    "ground_template": "{\"pred\": \"has_property\", \"mode\": \"pair\"}",
+    "note": "THE SECOND CLASS-CONSTRUCTION over the POSSESS marker-class (pure seed data, mirroring designation). Its single marker slot IS the POSSESS CLASS, so EVERY member (exhibits/possesses/features/bears/evinces/...) decodes to this SAME construction; the filled marker is the member used. Binds the subject to a PROPERTY it has (has_property, mode pair: has_property(subject, property)) -- a DIFFERENT relation from designation's is_a, proving the class abstraction is not designation-specific. has_property is also produced by the different-SHAPE 'attributive' [REL][COP] construction; no cross-fire (distinct signatures, different markers)."
+   }
+  },
+  {
+   "type": "ClosedClass",
+   "attrs": {
+    "role": "wh_fronting",
+    "forms": [
+     "what",
+     "when",
+     "why",
+     "how"
+    ],
+    "note": "WH-QUESTION FRONTING forms (Wave 1B, chat constructions), consulted POSITIONALLY -- deliberately a ClosedClass, NOT a MarkerClass, so `_marker_lexicon`'s flat (surface -> class) table never sees them: 'how'/'why'/'when'/'what' are extremely common as embedded-clause complementizers/subordinators mid-sentence ('no matter HOW he tried', 'I don't know WHY she left') and must stay plain content there, exactly as before this class existed. `domains/reading_collapse._skeleton_from_words` promotes one of these forms (or a REL-class word: which/who/whom/whose/where, held by REL for a mid-clause relative clause -- 'the man WHO ran') to the WH skeleton marker ONLY when nothing has yet been accumulated in the current clause (the very first marker-worthy token) -- a relativizer/subordinator can never OPEN a matrix clause with nothing before it, so clause-initial position is a genuine STRUCTURAL disambiguator, not a semantic decision, the same status the existing post_copular adjacency context already has."
+   }
+  },
+  {
+   "type": "ClosedClass",
+   "attrs": {
+    "role": "inversion_aux",
+    "forms": [
+     "do",
+     "does",
+     "did",
+     "can",
+     "could",
+     "will",
+     "would",
+     "shall",
+     "should",
+     "may",
+     "might",
+     "must",
+     "have",
+     "has",
+     "had"
+    ],
+    "note": "SUBJECT-AUX INVERSION auxiliaries/modals (Wave 1B): the do-support + modal + perfect-aux set consulted POSITIONALLY by `reading_collapse._skeleton_from_words` to recognise the AUXINV skeleton marker. The copula (is/are/was/were/am, already the COP class) is handled the SAME way via COP's own clause-initial position -- not duplicated here. Negators (not/never/cannot) are DELIBERATELY EXCLUDED: they never front a clause. A form in this set becomes AUXINV ONLY when NOTHING has yet been accumulated as content in the current clause (nothing precedes it -- literally the definition of subject-aux inversion: the aux precedes its subject). An ordinary declarative modal/aux mid-clause ('the fox WILL return', 'she COULD tell', 'they HAVE gone') therefore stays exactly as it was before this class existed -- plain content, no skeleton marker, zero perturbation of any existing construction."
+   }
+  },
+  {
+   "local_id": 24,
+   "type": "MarkerClass",
+   "attrs": {
+    "cls": "CLAUSE_LINK",
+    "forms": [
+     "when",
+     "whenever",
+     "until",
+     "till",
+     "while",
+     "though",
+     "although",
+     "unless",
+     "before",
+     "after",
+     "once",
+     "so"
+    ],
+    "note": "CLAUSE-LINK marker-class: subordinating / temporal / result linkers that OPEN a dependent clause. Recognized (against held data, not a Python splitter) as a CLAUSE BOUNDARY by the order-N clause descent (domains/reading_collapse.decompose_sentence): the linker ends the current clause and starts a new one, and the linker word itself is boundary glue (dropped, like DET). It is NOT a construction-identity marker (not in reading_collapse._SKELETON), so it stays CONTENT inside a single read_clause skeleton — adding it perturbs no existing construction decode; it only gives the clause segmenter a recognized boundary. The always-present subordinators/relativizers 'if'/'as'/'because'/'which'/'who' keep their own marker classes (IF/AS/CAUSE_SUB/REL) and the descent treats those as clause-openers too."
+   }
+  },
+  {
+   "type": "MarkerClass",
+   "attrs": {
+    "cls": "COS",
+    "forms": [
+     "drop",
+     "fall",
+     "move",
+     "go",
+     "take",
+     "put",
+     "give",
+     "break",
+     "shatter",
+     "enter",
+     "walk",
+     "come",
+     "grab",
+     "pick",
+     "place",
+     "hand",
+     "spill",
+     "knock",
+     "tumble",
+     "fetch",
+     "toss",
+     "hurl",
+     "throw",
+     "push",
+     "pull",
+     "carry",
+     "bring",
+     "lift",
+     "lower",
+     "roll"
+    ],
+    "canon": {
+     "drop": "drop",
+     "fall": "drop",
+     "spill": "drop",
+     "knock": "drop",
+     "tumble": "drop",
+     "toss": "drop",
+     "throw": "drop",
+     "roll": "drop",
+     "lower": "drop",
+     "lift": "take",
+     "move": "move",
+     "go": "move",
+     "enter": "move",
+     "walk": "move",
+     "come": "move",
+     "bring": "move",
+     "carry": "move",
+     "push": "move",
+     "pull": "move",
+     "take": "take",
+     "grab": "take",
+     "pick": "take",
+     "fetch": "take",
+     "put": "put",
+     "place": "put",
+     "give": "give",
+     "hand": "give",
+     "break": "shatter",
+     "shatter": "shatter",
+     "hurl": "drop"
+    },
+    "fell_canon": [
+     "drop"
+    ],
+    "cos_anchor": [
+     "drop",
+     "move",
+     "take",
+     "break"
+    ],
+    "cos_threshold": 0.75,
+    "note": "CHANGE-OF-STATE marker-class (the SITUATION-MODEL trigger class): a verb that applies a state DELTA to its arguments. `forms` are SEED members (lemmas); each maps via `canon` to the canonical situation_model rule verb (drop/move/take/put/give/shatter) whose graph rule applies the delta. A NEW surface verb JOINS by ADJACENCY (situation_model_reader reuses reading_collapse's WordNet path-similarity nearness to `cos_anchor` >= `cos_threshold`, the SAME join-by-adjacency signal DESIGNATE/POSSESS use), inheriting its nearest anchor's canon; it is NOT a hardcoded Python verb list. Threshold 0.75 keeps the coarse WordNet signal discriminative (smash~break=1.0 joins; like=0.33, love/know=0.5 do NOT) at the cost of the mid-distance synonym tail (toss/hurl/push) which is seeded as forms instead -- the SAME honest coarse-WordNet limit POSSESS documents. NOT in the reading-time `adjacency_anchor` slot on purpose: this class is consulted at predication-ingest, so it never perturbs the reading skeleton. `fell_canon` names the canon verbs whose object ends up fallen (event_reasoning's `fell` trigger)."
+   }
+  },
+  {
+   "type": "ReportClass",
+   "attrs": {
+    "cls": "REPORT",
+    "forms": [
+     "say",
+     "said",
+     "reply",
+     "replied",
+     "write",
+     "wrote",
+     "announce",
+     "announced",
+     "state",
+     "stated",
+     "declare",
+     "declared",
+     "exclaim",
+     "exclaimed",
+     "remark",
+     "remarked",
+     "whisper",
+     "whispered",
+     "shout",
+     "shouted",
+     "murmur",
+     "murmured",
+     "mutter",
+     "muttered"
+    ],
+    "report_anchor": [
+     "say",
+     "tell",
+     "announce",
+     "declare"
+    ],
+    "report_threshold": 0.5,
+    "note": "REPORT/COMMUNICATION class (Phase 2 of READER_PARSER_MIGRATION.md, the reading_collapse.report_membership consultation): a verb that introduces a FINITE-CLAUSE COMPLEMENT reporting what was said/written/exclaimed. `forms` are SEED members (lemmas); a NEW surface verb (asserted/claimed/alleged/proclaimed/responded/cried/tell/...) JOINS by ADJACENCY (reading_collapse._wordnet_nearness, the SAME WordNet path-similarity signal COS/DESIGNATE/POSSESS use, to `report_anchor` >= `report_threshold`) -- NOT a hardcoded Python verb list. Deliberately typed `ReportClass`, NOT `MarkerClass`: `_marker_lexicon` (reading_collapse._skeleton_from_words's shared surface->class dict) iterates `MarkerClass` nodes ONLY, and its `c = lex.get(word)` check runs BEFORE any class's own join-by-adjacency test -- so a literal REPORT seed member ('said'/'wrote'/...) living in that SAME shared dict would silently pre-empt whatever OTHER class (DESIGNATE's 'it is SAID' post-copular naming sense, measured live: this exact collision broke the frozen parity corpus in this phase's own audit) currently reaches the same surface form by adjacency in some clause contexts, changing skeletons this phase must never touch. A dedicated node type keeps REPORT membership a query `_segment_into_clauses` makes EXPLICITLY (via `report_membership`, mirroring situation_model_reader.cos_membership's own dedicated-lookup pattern) and invisible to every other reading-time consultation -- zero interference with `_skeleton_from_words`'s decode, by construction, not by convention. `_segment_into_clauses` reads this class to decide whether a finite clause immediately following a REPORT verb (no explicit 'that', unlike the pre-existing COMPLEMENTIZER path) is a nested clause to DECOMPOSE rather than a flat object NP to mash -- the held DECISION this phase moves graph-native, mirroring `yields_to_finite_verb`'s pattern exactly."
+   }
+  },
+  {
+   "type": "ClosedClass",
+   "attrs": {
+    "role": "aux",
+    "forms": [
+     "is",
+     "are",
+     "was",
+     "were",
+     "be",
+     "been",
+     "being",
+     "am",
+     "s",
+     "has",
+     "have",
+     "had",
+     "do",
+     "does",
+     "did",
+     "will",
+     "would",
+     "shall",
+     "should",
+     "can",
+     "could",
+     "may",
+     "might",
+     "must",
+     "not",
+     "never",
+     "cannot"
+    ],
+    "note": "AUXILIARY / modal / negator forms the argument-structure parse skips before the finite main verb (the ex-Python _AUX frozenset, now graph-resident so the reading rules read it off the graph like the MarkerClass lexicon)."
+   }
+  },
+  {
+   "type": "ClosedClass",
+   "attrs": {
+    "role": "pp_prep",
+    "forms": [
+     "in",
+     "into",
+     "on",
+     "onto",
+     "at",
+     "up",
+     "upon",
+     "with",
+     "by",
+     "to",
+     "of",
+     "from",
+     "for",
+     "over",
+     "under",
+     "through",
+     "across",
+     "about",
+     "near",
+     "around",
+     "toward",
+     "towards",
+     "inside",
+     "out",
+     "off",
+     "down",
+     "against",
+     "between",
+     "among",
+     "without",
+     "within"
+    ],
+    "note": "PREPOSITION forms that open a prepositional phrase (the ex-Python _PP_PREPS): a leading PP is skipped so its object noun is not mistaken for the clause subject."
+   }
+  },
+  {
+   "type": "ClosedClass",
+   "attrs": {
+    "role": "determiner",
+    "forms": [
+     "a",
+     "an",
+     "the",
+     "this",
+     "that",
+     "these",
+     "those",
+     "some",
+     "any",
+     "each",
+     "every",
+     "his",
+     "her",
+     "its",
+     "their",
+     "my",
+     "your",
+     "our",
+     "no"
+    ],
+    "note": "DETERMINER forms (the ex-Python _DETERMINERS): dropped when reducing an NP to its head noun and when skipping a leading PP. Broader than the DET MarkerClass forms (which are the construction-identity determiners)."
+   }
+  },
+  {
+   "type": "ClosedClass",
+   "attrs": {
+    "role": "lead_connective",
+    "forms": [
+     "but",
+     "and",
+     "or",
+     "so",
+     "then",
+     "yet",
+     "nor",
+     "thus",
+     "therefore",
+     "however"
+    ],
+    "note": "LEADING DISCOURSE CONNECTIVE forms (the ex-Python _LEAD_CONNECTIVES): stripped from a clause head (they belong to the coherence layer, not the predication)."
+   }
+  },
+  {
+   "type": "ReadingRoles",
+   "attrs": {
+    "skeleton": [
+     "COP",
+     "INCL",
+     "SUCH",
+     "AS",
+     "IF",
+     "THEN",
+     "REL",
+     "OF",
+     "TO",
+     "FOR",
+     "WITH",
+     "BY",
+     "FROM",
+     "CAUSE_SUB",
+     "CAUSE_V",
+     "UNLIKE",
+     "LIKE",
+     "THAN",
+     "DESIGNATE",
+     "POSSESS",
+     "WH",
+     "AUXINV",
+     "OBL",
+     "VERB_IMP",
+     "PPART",
+     "BOUND_COMMA_DEF",
+     "BOUND_PAREN_DEF"
+    ],
+    "glue": [
+     "DET",
+     "AND",
+     "OR"
+    ],
+    "prep": [
+     "OF",
+     "TO",
+     "FOR",
+     "WITH",
+     "BY",
+     "FROM",
+     "OBL"
+    ],
+    "clause_opener": [
+     "CLAUSE_LINK",
+     "IF",
+     "CAUSE_SUB",
+     "REL"
+    ],
+    "note": "MARKER-CLASS ROLE memberships (the ex-Python _SKELETON / _GLUE / _PREP / _CLAUSE_OPENERS class-name sets). skeleton = construction-identity markers; glue = role-boundary markers (determiners/conjunctions that never identify a construction); prep = oblique-introducing skeleton markers; clause_opener = marker classes that open a dependent clause (a recognised clause boundary). _STRUCTURING is derived (skeleton MINUS prep). Read off the graph by the reading rules; no hardcoded Python set. Wave 1B added WH (question fronting), AUXINV (subject-aux inversion, positionally synthesised), OBL (a question-scoped oblique preposition marker, positionally synthesised only once WH/AUXINV has already fired -- so it NEVER perturbs an ordinary declarative PP) and VERB_IMP (a clause-initial bare content verb -- the imperative). OBL sits in `prep` (oblique-introducing, like OF/TO/FOR/WITH/BY/FROM) so it is excluded from `_STRUCTURING`'s abstain check the same way; WH/AUXINV/VERB_IMP stay in `_STRUCTURING` so a question/imperative clause always defers to read_clause rather than the SVO argument-structure fallback."
+   }
+  },
+  {
+   "type": "ShapeSignature",
+   "attrs": {
+    "name": "wh_question",
+    "kind": "construction",
+    "predication": "ask",
+    "signature": "[[\"WH\"],[\"AUXINV\"]]",
+    "ground_template": "{\"mode\": \"question\", \"speech_act\": \"question\", \"polar\": false}",
+    "note": "WH-QUESTION with subject-AUX inversion, no oblique focus ('What do you want?', 'Who are you?', 'What are you?'). WH is the fronted interrogative pro-form; AUXINV is the inverted (do-support/modal/copula) auxiliary immediately following it with no intervening subject -- the two-marker skeleton IS subject-aux inversion after a fronted wh-word. mode 'question' (domains/reading_collapse._ground_question) re-derives the jammed subject+verb core via the held main-verb/head faculties (the SAME ones the event-clause path uses) rather than a naive positional split -- see wh_question_oblique for the oblique-focus sibling."
+   }
+  },
+  {
+   "type": "ShapeSignature",
+   "attrs": {
+    "name": "wh_question_oblique",
+    "kind": "construction",
+    "predication": "ask",
+    "signature": "[[\"WH\"],[\"AUXINV\"],[\"OBL\"]]",
+    "ground_template": "{\"mode\": \"question\", \"speech_act\": \"question\", \"polar\": false}",
+    "note": "WH-QUESTION whose predicate takes an oblique PP complement ('What do you know ABOUT the moon?', 'What are you working ON?') -- the OBL marker (a question-scoped preposition, see ReadingRoles' note) splits the oblique's object off as its OWN role so mode 'question' can bind it as the wh-question's FOCUS (the thing being asked about) instead of it being swallowed into the undifferentiated core span."
+   }
+  },
+  {
+   "type": "ShapeSignature",
+   "attrs": {
+    "name": "polar_question",
+    "kind": "construction",
+    "predication": "ask",
+    "signature": "[[\"AUXINV\"]]",
+    "ground_template": "{\"mode\": \"question\", \"speech_act\": \"question\", \"polar\": true}",
+    "note": "POLAR (yes/no) QUESTION: subject-AUX inversion with NO fronted wh-word ('Are you an LLM?', 'Can you dance?', 'Do you know...'). Shares mode 'question' with the wh_question family -- the core-split logic (subject/predicate/object read off the held main-verb + head faculties) is identical; only the ABSENCE of a WH marker distinguishes a polar question from a wh-question, which is exactly the marker-skeleton difference between this construction and wh_question. `polar: true` is the ONE piece of data that tells the reader this question is yes/no-shaped rather than open-focus -- read straight off this construction node, never decided in Python."
+   }
+  },
+  {
+   "type": "ShapeSignature",
+   "attrs": {
+    "name": "imperative",
+    "kind": "construction",
+    "predication": "instruct",
+    "signature": "[[\"VERB_IMP\"]]",
+    "ground_template": "{\"mode\": \"imperative\", \"speech_act\": \"instruction\"}",
+    "note": "IMPERATIVE (INSTRUCTION): a clause-initial bare content verb with no subject before it ('Improve your grammar.', 'Read this.') -- the implicit subject is the ADDRESSEE ('you'). VERB_IMP is recognised by `_skeleton_from_words` two ways, BOTH speech-turn-gated (a whole utterance STRING; a words-LIST is a narrative clause fragment from the decompose/descent path, where a bare verb is reported/quoted action -- the frozen reading-parity corpus fixes that grain and is byte-identical): (1) when the clause carries NO other marker, a DIRECT per-word `_primary_pos`=='verb' + non-inflected test on word0 (the same tier-B signal `_find_main_verb`'s ladder trusts most, applied to word0 alone rather than scanned tier-by-tier across the whole clause -- that whole-clause scan lets a LATER token that merely LOOKS inflected via the weak '-ing'/morphy heuristic outrank the true clause-initial imperative verb, and the interior bare-SVO scan's loose is_verb_headed would let 'me' hijack 'Tell ME about the moon'); (2) a DESIGNATE-class verb (describe/define/classify/...) at the true clause-initial boundary promotes to VERB_IMP -- designation is structurally POST-copular ([[COP],[DESIGNATE]] -- 'is described as'), so clause-initial with nothing before it the verb can only be the bare imperative ('Describe yourself.'). Both are positional/structural disambiguation, never a semantic decision; a declarative never fronts its finite verb with no subject."
+   }
+  },
+  {
+   "local_id": 148,
+   "type": "MarkerClass",
+   "attrs": {
+    "cls": "PPART",
+    "forms": [],
+    "morph_signal": "past_participle",
+    "morph_context": "post_copular",
+    "note": "PASSIVE marker-class: a post-copular PAST-PARTICIPLE of a TRANSITIVE verb (evicted/flushed/beaten/shot) is a passive predicate, NOT a copular adjective (fragile/blue). No literal forms — membership is the held WordNet morph_signal test (morphy->distinct transitive verb lemma; regular '-ed' tail unconditional, irregular ablaut forms held to a stricter transitive-dominance margin so ergative/resultative irregulars like grown/gone/done stay stative), so the class is a MORPHOLOGICAL predicate the agent extends by teaching new morph_signals, the graph-native analogue of join-by-adjacency."
+   }
+  },
+  {
+   "local_id": 149,
+   "type": "ShapeSignature",
+   "attrs": {
+    "name": "passive",
+    "kind": "construction",
+    "predication": "@ppart",
+    "class_marker": "PPART",
+    "signature": "[[\"COP\"], [\"PPART\"]]",
+    "ground_template": "{\"pred\": \"@ppart\", \"mode\": \"passive_event\"}",
+    "note": "PASSIVE construction over [COP][PPART]. The subject (role 0) is the PATIENT/theme of the participle base verb (WordNet morphy); the agent is unspecified. Grounds a passive EVENT [verb, _, patient] the situation model mints as an SmEvent, dissolving the copular is_a mis-read of a passive (a page IS EVICTED -> evict(_,page), not is_a(page,evicted))."
+   }
+  },
+  {
+   "local_id": 150,
+   "type": "PassiveLeanPolicy",
+   "attrs": {
+    "prior": 0.5,
+    "threshold": 0.5,
+    "note": "The passive-vs-stative COLLAPSE is confidence-graded (the substrate collapse framework: commit to one reading, hold it as a revisable belief). confidence = clamp(prior + Sum signal.weight*signal.lean_value, 0, 1); >= threshold collapses PASSIVE, else STATIVE. A borderline (~0.5) still commits but flips trivially when a signal changes."
+   }
+  },
+  {
+   "local_id": 151,
+   "type": "PassiveLeanSignal",
+   "attrs": {
+    "signal": "eventive_lexname",
+    "detector": "eventive_lexname",
+    "weight": 0.35,
+    "lean": 1.0,
+    "note": "WordNet verb lexname eventiveness of the base verb: (eventive_senses - stative_senses)/total in [-1,1]. Strongly eventive (evict=verb.contact) -> passive; stative/psych-tending -> stative."
+   }
+  },
+  {
+   "local_id": 152,
+   "type": "PassiveLeanSignal",
+   "attrs": {
+    "signal": "agent_by_phrase",
+    "detector": "agent_by_phrase",
+    "weight": 0.45,
+    "lean": 1.0,
+    "note": "A by-phrase after the participle (an explicit external AGENT) -> passive-strengthening."
+   }
+  },
+  {
+   "local_id": 153,
+   "type": "PassiveLeanSignal",
+   "attrs": {
+    "signal": "reciprocal",
+    "detector": "reciprocal",
+    "weight": 0.45,
+    "lean": -1.0,
+    "note": "A reciprocal/reflexive context (each other / one another / a -selves pronoun) -> stative-leaning (a mutual STATE, not an external agents action)."
+   }
+  },
+  {
+   "local_id": 154,
+   "type": "PassiveLeanSignal",
+   "attrs": {
+    "signal": "transitive_dominance",
+    "detector": "transitive_dominance",
+    "weight": 0.1,
+    "lean": 1.0,
+    "note": "How strongly the base verbs WordNet frames are transitive over intransitive, normalized -> mild passive support."
+   }
+  },
+  {
+   "local_id": 155,
+   "type": "PassiveLeanSignal",
+   "attrs": {
+    "signal": "psych_experiencer",
+    "detector": "psych_experiencer",
+    "weight": 0.55,
+    "lean": -1.0,
+    "note": "a subject that 'is Verb-ed' is the EXPERIENCER of a mental state (delighted/frightened), stative-leaning, not the patient of an external action"
+   }
+  },
+  {
+   "local_id": 156,
+   "type": "ExperiencerVerb",
+   "attrs": {
+    "name": "surprise"
+   }
+  },
+  {
+   "local_id": 157,
+   "type": "ExperiencerVerb",
+   "attrs": {
+    "name": "amaze"
+   }
+  },
+  {
+   "local_id": 158,
+   "type": "ExperiencerVerb",
+   "attrs": {
+    "name": "astonish"
+   }
+  },
+  {
+   "local_id": 159,
+   "type": "ExperiencerVerb",
+   "attrs": {
+    "name": "astound"
+   }
+  },
+  {
+   "local_id": 160,
+   "type": "ExperiencerVerb",
+   "attrs": {
+    "name": "bewilder"
+   }
+  },
+  {
+   "local_id": 161,
+   "type": "ExperiencerVerb",
+   "attrs": {
+    "name": "puzzle"
+   }
+  },
+  {
+   "local_id": 162,
+   "type": "ExperiencerVerb",
+   "attrs": {
+    "name": "interest"
+   }
+  },
+  {
+   "local_id": 163,
+   "type": "PassiveLeanSignal",
+   "attrs": {
+    "signal": "resultative_complement",
+    "detector": "resultative_complement",
+    "weight": 0.35,
+    "lean": -1.0,
+    "note": "participle followed by a resultative adjective/degree complement (grown very old) = ergative/resultative state, stative-leaning"
+   }
+  },
+  {
+   "local_id": 164,
+   "type": "MarkerClass",
+   "attrs": {
+    "cls": "BOUND_COMMA_DEF",
+    "forms": [
+     "‹bound_comma_def›"
+    ],
+    "note": "IN-SITU DEFINITION boundary marker: a comma immediately flanking a DET-headed NP (an appositive genus span) -- taught by the jabberwock via teach() as the mechanical boundary token domains/reading_collapse._boundary_words inserts around a comma-delimited region whose neighbour is DET-led (the held DET MarkerClass, the SAME lookup every word already goes through). A PLAIN comma (no DET-led neighbour) never receives this class -- it falls through as inert content, so an ordinary comma-appositive ('the crow, tired and hungry, flew') never grounds a definition."
+   }
+  },
+  {
+   "local_id": 165,
+   "type": "MarkerClass",
+   "attrs": {
+    "cls": "BOUND_PAREN_DEF",
+    "forms": [
+     "‹bound_paren_def›"
+    ],
+    "note": "Parenthetical twin of BOUND_COMMA_DEF: the boundary token domains/reading_collapse._boundary_words inserts around a paren-delimited region (domains/comprehend_text._paren_regions) whose interior is DET-led -- an in-situ parenthetical definition 'X (a Y) ...'."
+   }
+  },
+  {
+   "local_id": 166,
+   "type": "ShapeSignature",
+   "attrs": {
+    "name": "appositive_definition",
+    "kind": "construction",
+    "signature": "[[\"BOUND_COMMA_DEF\"], [\"BOUND_COMMA_DEF\"]]",
+    "ground_template": "{\"pred\": \"is_a\", \"mode\": \"pair\"}",
+    "note": "IN-SITU APPOSITIVE DEFINITION: 'X, a Y, ...' -- a DET-headed NP flanked by two comma boundaries the jabberwock itself recognised as DET-adjacent (BOUND_COMMA_DEF). Same ground_template as the copular 'definitional' construction ({pred:'is_a', mode:'pair'}) -- reuses the SAME _ground pair-mode machinery, only reached via a separate boundary-preserving word stream domains/reading_collapse._ground_insitu_definition builds (never touching the shared byte-parity tokenizer path)."
+   }
+  },
+  {
+   "local_id": 167,
+   "type": "ShapeSignature",
+   "attrs": {
+    "name": "parenthetical_definition",
+    "kind": "construction",
+    "signature": "[[\"BOUND_PAREN_DEF\"], [\"BOUND_PAREN_DEF\"]]",
+    "ground_template": "{\"pred\": \"is_a\", \"mode\": \"pair\"}",
+    "note": "IN-SITU PARENTHETICAL DEFINITION: 'X (a Y) ...' -- the paren twin of appositive_definition, same is_a/pair ground_template."
+   }
+  }
+ ],
+ "edges": [],
+ "productions": []
+}

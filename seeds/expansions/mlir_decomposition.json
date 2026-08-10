@@ -1,0 +1,118 @@
+{
+  "id": "mlir_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "MLIR",
+  "in_microtheory": "compilers",
+  "description": "MLIR (Multi-Level Intermediate Representation) decomposed. LLVM project's IR-of-IRs framework. Dialects, operations, types, attributes. Progressive lowering. Pass infrastructure. Used by TensorFlow XLA, PyTorch 2.0's Inductor, IREE, CIRCT (hardware), Mojo, Flang.",
+  "sub_mechanisms": [
+    {
+      "name": "MLIR_operation",
+      "definition": "Fundamental unit in MLIR. Has a name (dialect-qualified, e.g., 'arith.addi'), operands, results, attributes, regions.",
+      "why": "Universal representation. Same data model handles abstract (matmul) + concrete (i32 add). Operation classes hierarchy enables generic transformations across dialects.",
+      "category": "mlir_mechanism"
+    },
+    {
+      "name": "MLIR_dialect",
+      "definition": "Namespaced set of operations, types, attributes. arith (arithmetic), affine (affine loops), scf (structured control flow), linalg (linear algebra), gpu, llvm.",
+      "why": "Modular extension mechanism. Each dialect captures domain-specific structure. Lowering progressively rewrites from high-level dialects to low-level. Avoids the 'one true IR' constraint.",
+      "category": "mlir_mechanism"
+    },
+    {
+      "name": "MLIR_type_system",
+      "definition": "Dialect-extensible type hierarchy. Built-in types (i32, f64, vector, tensor) + custom dialect types (linalg structures, gpu memref).",
+      "why": "Type system carries domain semantics. Tensor types track shape + element type + encoding. Lets type-driven dispatch in passes ('apply this transformation to tensor ops only').",
+      "category": "mlir_mechanism"
+    },
+    {
+      "name": "MLIR_attribute",
+      "definition": "Compile-time constant attached to operations. Integer values, strings, arrays, dialect-specific attributes (affine maps, gpu launch configurations).",
+      "why": "Encodes operation parameters that aren't runtime values: loop trip counts, tile sizes, kernel launch dimensions. Pass infrastructure can match + rewrite based on attribute values.",
+      "category": "mlir_mechanism"
+    },
+    {
+      "name": "MLIR_region_block",
+      "definition": "Operations can contain regions (nested IR), regions contain basic blocks (sequences of operations). Function bodies are regions; loops are operations with body regions.",
+      "why": "Hierarchical IR. Structured control flow (loops, conditionals) is nested operations + regions. Avoids the unstructured CFG of LLVM IR. Enables structural pattern matching on loops.",
+      "category": "mlir_mechanism"
+    },
+    {
+      "name": "progressive_lowering",
+      "definition": "Compilation pipeline applies lowering passes, each transforming one dialect's operations into operations of a lower-level dialect.",
+      "why": "From high-level (linalg.matmul) progressively to lower (affine.for nests, then scf.for, then llvm dialect, then LLVM IR). Each step reveals more detail. Optimisations apply at each level.",
+      "category": "mlir_mechanism"
+    },
+    {
+      "name": "linalg_dialect",
+      "definition": "Linear algebra dialect: matmul, conv, reduce as structured operations on tensors. Compiler-friendly abstractions for ML workloads.",
+      "why": "ML compilation entry point. Operations carry algebraic semantics (matmul's commutativity properties). Tiling, fusion, vectorisation apply at this level before lowering.",
+      "category": "mlir_mechanism"
+    },
+    {
+      "name": "affine_dialect",
+      "definition": "Affine loop dialect: affine.for nests with affine bounds + memory access patterns. Polyhedral analysis applies here.",
+      "why": "Constrained form enabling provably-optimal transformations. Polyhedral tiling, parallelisation, vectorisation work on affine code. Bridges high-level + low-level via well-understood theory.",
+      "category": "mlir_mechanism"
+    },
+    {
+      "name": "scf_dialect",
+      "definition": "Structured Control Flow dialect: scf.for, scf.if, scf.while. More general than affine; less structured than llvm CFG.",
+      "why": "Captures structured control without affine constraints. Intermediate between high-level (parallel for) and low-level (basic blocks + jumps). Many transformations preserve structure at this level.",
+      "category": "mlir_mechanism"
+    },
+    {
+      "name": "MLIR_pass_infrastructure",
+      "definition": "Pass manager + pass abstraction. Passes apply to specific dialects or specific operation types. Pipelines compose passes.",
+      "why": "Compiler engineer assembles pipelines from passes. Generic infrastructure (pass scheduling, parallel execution, debug instrumentation) shared across dialects. Same shape as LLVM's pass manager but extended.",
+      "category": "mlir_mechanism"
+    },
+    {
+      "name": "MLIR_dialect_conversion",
+      "definition": "Framework for systematic lowering between dialects. Pattern rewrites + type conversion + legalisation.",
+      "why": "Lowering pipelines need consistent infrastructure. Dialect conversion handles type substitution + operation replacement uniformly. Reduces lowering complexity from O(N²) ad-hoc rewrites to declarative patterns.",
+      "category": "mlir_mechanism"
+    },
+    {
+      "name": "TensorFlow_XLA_uses_MLIR",
+      "definition": "TensorFlow's XLA compiler migrated to MLIR-based representation. HLO operations as MLIR dialect.",
+      "why": "First major MLIR user. Demonstrated MLIR's value at production scale. PyTorch 2.0's Inductor + IREE follow similar pattern. Established MLIR as the modern ML compiler infrastructure.",
+      "category": "mlir_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "dialect_separation_enables_modular_optimisation",
+      "if": ["a compiler has dialects at different abstraction levels"],
+      "then": ["optimisations apply at the appropriate level"],
+      "why": "Matmul transformations (tiling, fusion) apply on linalg dialect. Loop transformations (vectorisation, parallelisation) apply on affine. Low-level instruction selection on llvm dialect. Each level has its own optimisation opportunities.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "progressive_lowering_preserves_high_level_semantics",
+      "if": ["high-level operations are lowered through intermediate dialects"],
+      "then": ["high-level semantic information guides each level's optimisations"],
+      "why": "Lower-level IR (LLVM IR) loses information from higher (matmul → many adds + muls). Progressive lowering carries information forward as long as useful. Matmul's structure enables tiling decisions impossible at LLVM IR level.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "shared_infrastructure_amortises_compiler_construction",
+      "if": ["multiple compilers share MLIR infrastructure"],
+      "then": ["each saves on pass manager, debug, IR validation costs"],
+      "why": "Building a compiler from scratch is enormous work. Sharing MLIR's framework lets ML compilers (XLA, Inductor, IREE), hardware compilers (CIRCT), language frontends (Flang, Mojo) reuse infrastructure. Reduces marginal cost of new compiler.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "structured_regions_preserve_loop_structure",
+      "if": ["IR represents loops as operations with body regions"],
+      "then": ["loop transformations work directly on the structured form"],
+      "why": "LLVM IR's basic-block-and-branch loops require loop analysis to recognise. Structured loops (scf.for, affine.for) are explicit; transformations apply directly. Loses some flexibility (unstructured control flow); gains transformation simplicity.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "type_system_extension_carries_domain_information",
+      "if": ["dialects extend the type system"],
+      "then": ["type-driven dispatch encodes domain semantics"],
+      "why": "Tensor types carrying shape + element type let pass match 'apply to ranked tensors'. Memref types carry layout + memory space. Type extension is how MLIR adapts to wildly different domains (ML, hardware, languages) without losing generality.",
+      "soundness_category": "denotational_equivalence"
+    }
+  ]
+}

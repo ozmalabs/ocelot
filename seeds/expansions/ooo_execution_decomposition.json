@@ -1,0 +1,124 @@
+{
+  "id": "ooo_execution_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "out_of_order_execution",
+  "in_microtheory": "computer_architecture",
+  "description": "Out-of-order execution decomposed via Tomasulo's algorithm + its modern descendants. The complete machinery: fetch/decode produces a stream; the rename stage maps architectural to physical registers; dispatch puts instructions in reservation stations; the ready instructions issue to execution units; results broadcast on the common data bus update waiting RS entries; the reorder buffer tracks completion; in-order retire updates architectural state. This is what makes IPC > 1 possible.",
+  "sub_mechanisms": [
+    {
+      "name": "rename_stage",
+      "definition": "Per-instruction lookup that maps the architectural destination register to a freshly-allocated physical register, and source operands to their current physical mappings.",
+      "why": "Decouples instruction identity from register names. Two independent instructions writing the same architectural register get different physical registers — no false dependency. The renaming map IS the OoO execution's enabler.",
+      "category": "ooo_mechanism"
+    },
+    {
+      "name": "physical_register_file",
+      "definition": "Pool of physical registers (200-400 entries) backing the renamed values. Each in-flight instruction owns one entry until it retires and the rename is committed.",
+      "why": "Larger than the architectural register count (16-32). The pool size limits how many in-flight instructions can be tracked — physical register file pressure is a real bottleneck on dense-FP code.",
+      "category": "ooo_mechanism"
+    },
+    {
+      "name": "register_alias_table",
+      "definition": "RAT: per-cycle map from architectural register names to physical register tags. Updated by rename; rolled back on mispredict.",
+      "why": "The 'current state' of renaming. Speculative state of the RAT lives in the rename stage; architectural RAT is updated on retire. Branch mispredicts roll back to a checkpointed RAT.",
+      "category": "ooo_mechanism"
+    },
+    {
+      "name": "reservation_station",
+      "definition": "Per-instruction entry queueing operands. When all operands arrive (from rename or from broadcasted results), the entry signals ready to issue.",
+      "why": "Decouples ready-to-execute from ready-to-issue. An instruction enters RS with some operands unresolved; sits there until they all arrive. The RS is the OoO scheduler's working memory.",
+      "category": "ooo_mechanism"
+    },
+    {
+      "name": "issue_wakeup",
+      "definition": "Each cycle, scheduler picks ready RS entries and issues them to functional units. Selection considers age (older first), unit availability, port pressure.",
+      "why": "The dispatch loop's core. Wakeup logic compares each RS entry's operand tags against broadcasted result tags; matching entries become ready. Scaling wakeup to large RS is one of the biggest power costs in modern CPUs.",
+      "category": "ooo_mechanism"
+    },
+    {
+      "name": "common_data_bus",
+      "definition": "Result-broadcast network. When an execution unit produces a result, it broadcasts (tag, value) to all RS entries; matching entries capture the operand.",
+      "why": "The 'tag matching' that lets multiple instructions wake up simultaneously off one result. Wide CDB lets multiple results broadcast per cycle. Power-expensive — wide CPUs have multiple parallel CDBs.",
+      "category": "ooo_mechanism"
+    },
+    {
+      "name": "reorder_buffer_entry",
+      "definition": "ROB entry: holds (instruction, destination physical register, completion bit). Allocated at rename in program order; retired in program order.",
+      "why": "Tracks 'completed but not yet retired' instructions. Maintains in-order semantics for retirement even when execution was out-of-order. ROB size = max in-flight instructions = max ILP reachable.",
+      "category": "ooo_mechanism"
+    },
+    {
+      "name": "retire_stage",
+      "definition": "In-order commit. Head of ROB checks if its instruction completed; if so, updates architectural state (RAT, memory) and frees the ROB entry.",
+      "why": "Maintains the program's apparent sequentiality. Software sees in-order execution; hardware reordered freely behind the scenes. Retire is the boundary where speculation becomes architectural fact.",
+      "category": "ooo_mechanism"
+    },
+    {
+      "name": "branch_misprediction_recovery",
+      "definition": "On mispredict, flush all in-flight instructions younger than the branch, restore the RAT to a checkpoint, refetch from the correct target.",
+      "why": "Mispredict penalty = pipeline depth × throughput lost. Modern CPUs save checkpoints of the RAT at each branch to enable cheap rollback. Without checkpoints, restoration would require traversing the ROB serially.",
+      "category": "ooo_mechanism"
+    },
+    {
+      "name": "memory_dependency_speculation",
+      "definition": "Load instructions may execute speculatively before earlier stores whose addresses haven't been computed. Predictor learns which stores typically alias.",
+      "why": "Store-load dependencies prevent loads from executing OoO. Speculating they don't alias lets the load proceed; on misspeculation (store actually does alias), the load + dependents are squashed. Critical for performance.",
+      "category": "ooo_mechanism"
+    },
+    {
+      "name": "store_buffer",
+      "definition": "Holds completed-but-not-retired stores. Their values are forwarded to in-flight loads that match the address.",
+      "why": "Stores can't go to cache until retired (might be squashed). Buffer holds them; loads check the buffer before going to L1. Store-to-load forwarding makes 'store immediately followed by load' efficient.",
+      "category": "ooo_mechanism"
+    },
+    {
+      "name": "load_queue",
+      "definition": "Tracks in-flight loads, their addresses, and ordering relative to earlier stores. Used to detect load-store ordering violations.",
+      "why": "If a load executed speculatively before a store and the store's address turns out to match, the load read stale data. Load queue detects this; CPU squashes the load + dependents and re-executes.",
+      "category": "ooo_mechanism"
+    },
+    {
+      "name": "scheduler_clustering",
+      "definition": "Modern CPUs split the scheduler into clusters (e.g., 4 integer schedulers + 2 FP). Reduces wakeup fanout per cluster.",
+      "why": "Single monolithic scheduler at width 8 has 8×N wakeup logic — expensive. Clustering reduces per-cluster fanout. Trade-off: ops bound to one cluster can't issue elsewhere. Modern designs (Zen, Apple Silicon) heavily cluster.",
+      "category": "ooo_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "tomasulo_algorithm_underlies_modern_ooo",
+      "if": ["a CPU implements register renaming + reservation stations + CDB + ROB"],
+      "then": ["it executes Tomasulo's algorithm with in-order retire"],
+      "why": "Tomasulo (1967) is the canonical OoO scheme. Modern CPUs add window size, port count, scheduler clustering, but the algorithm is identical. The ROB extension (1988) added precise interrupts.",
+      "soundness_category": "algebraic_law"
+    },
+    {
+      "name": "rob_size_caps_in_flight_instructions",
+      "if": ["the ROB has N entries"],
+      "then": ["at most N instructions can be in flight simultaneously"],
+      "why": "Each in-flight instruction needs an ROB entry. When ROB fills, dispatch stalls. ROB size is a major IPC determinant — Apple M3's 670 entries vs Intel's 512 vs ARM Cortex-X's ~300 directly affects how much memory latency they can hide.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "memory_speculation_makes_loads_first_class",
+      "if": ["loads can execute speculatively past unresolved store addresses"],
+      "then": ["they participate in OoO execution like compute instructions"],
+      "why": "Without memory speculation, loads serialise after stores whose addresses aren't yet known. The OoO window shrinks effectively to the load wait. Memory speculation makes loads start their cache access early — hiding ~50% of typical memory latency.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "in_order_retire_preserves_software_semantics",
+      "if": ["instructions retire in program order"],
+      "then": ["software sees the same architectural state as if execution were sequential"],
+      "why": "The OoO scheme guarantees in-order retire (not in-order execute). Exceptions, interrupts, debug see architectural state corresponding to a specific instruction boundary. Speculation is invisible above the retire boundary.",
+      "soundness_category": "referential_transparency"
+    },
+    {
+      "name": "scheduler_complexity_limits_width",
+      "if": ["scheduler wakeup complexity is O(N²) per cycle for N RS entries"],
+      "then": ["practical width is limited"],
+      "why": "Each broadcasted result must compare against each RS entry. Scaling N hurts power + clock frequency. Clustering and split schedulers mitigate this; the wide-decode designs (Apple, Zen 5) all use clustered schedulers.",
+      "soundness_category": "cost_equivalence"
+    }
+  ]
+}

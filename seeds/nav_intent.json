@@ -1,0 +1,889 @@
+{
+  "id": "nav_intent",
+  "version": "1.0.0",
+  "depends_on": [
+    "gaming",
+    "shape_recognition"
+  ],
+  "description": "The agent says its GOALS from its drive state: intent_control names the WHOLE order-N object it controls (one thing, by its whole shape) \u2014 I control the <shape>; intent_aim_navtarget names the OTHER feature it navigates to (never itself); intent_aim_escape covers fleeing; curiosity_watch/reason speak each unpredicted mover that is NOT itself.",
+  "nodes": [
+    {
+      "local_id": 50,
+      "type": "LexEntry",
+      "attrs": {
+        "surface": "I",
+        "concept": "I",
+        "language": "en",
+        "status": "confirmed"
+      }
+    },
+    {
+      "local_id": 51,
+      "type": "LexEntry",
+      "attrs": {
+        "surface": "approach",
+        "concept": "approach",
+        "language": "en",
+        "status": "confirmed"
+      }
+    },
+    {
+      "local_id": 52,
+      "type": "LexEntry",
+      "attrs": {
+        "surface": "escape",
+        "concept": "escape",
+        "language": "en",
+        "status": "confirmed"
+      }
+    },
+    {
+      "local_id": 53,
+      "type": "LexEntry",
+      "attrs": {
+        "surface": "watch",
+        "concept": "watch",
+        "language": "en",
+        "status": "confirmed"
+      }
+    },
+    {
+      "local_id": 54,
+      "type": "LexEntry",
+      "attrs": {
+        "surface": "wonder",
+        "concept": "wonder",
+        "language": "en",
+        "status": "confirmed"
+      }
+    },
+    {
+      "local_id": 55,
+      "type": "LexEntry",
+      "attrs": {
+        "surface": "control",
+        "concept": "control",
+        "language": "en",
+        "status": "confirmed"
+      }
+    }
+  ],
+  "edges": [],
+  "productions": [],
+  "concepts": [],
+  "rules": [
+    {
+      "name": "comprehend_intent",
+      "match": [
+        [
+          "msg",
+          "intent_about",
+          "g"
+        ]
+      ],
+      "where": {
+        "type": "Not",
+        "arg": {
+          "type": "Eq",
+          "a": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "msg"
+            },
+            "key": "intent_done"
+          },
+          "b": {
+            "type": "Lit",
+            "value": 1.0
+          }
+        }
+      },
+      "effects": [
+        [
+          "add_node",
+          "ig",
+          "Goal",
+          {
+            "kind": "report_intent"
+          }
+        ],
+        [
+          "add_edge",
+          "ig",
+          "intent_of",
+          "g"
+        ],
+        [
+          "set_attr",
+          "msg",
+          "intent_done",
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "intent_control",
+      "match": [
+        [
+          "ig",
+          "intent_of",
+          "g"
+        ],
+        [
+          "g",
+          "has_object",
+          "obj"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ig"
+              },
+              "key": "kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "report_intent"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "obj"
+              },
+              "key": "is_body"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ig"
+                },
+                "key": "control_done"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 1.0
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "sg",
+          "Goal",
+          {
+            "kind": "produce_utterance",
+            "role": "control"
+          }
+        ],
+        [
+          "add_edge",
+          "ig",
+          "has_subgoal",
+          "sg"
+        ],
+        [
+          "set_attr",
+          "sg",
+          "say_agent",
+          "I"
+        ],
+        [
+          "set_attr",
+          "sg",
+          "say_event",
+          "control"
+        ],
+        [
+          "set_attr",
+          "sg",
+          "say_patient",
+          {
+            "__term__": {
+              "type": "IfThenElse",
+              "cond": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "obj"
+                  },
+                  "key": "shape"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": null
+                }
+              },
+              "then": {
+                "type": "Lit",
+                "value": "thing"
+              },
+              "other": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "obj"
+                },
+                "key": "shape"
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "ig",
+          "control_done",
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "intent_aim_navtarget",
+      "match": [
+        [
+          "ig",
+          "intent_of",
+          "g"
+        ],
+        [
+          "g",
+          "has_feature",
+          "F"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ig"
+              },
+              "key": "kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "report_intent"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "F"
+              },
+              "key": "is_nav_target"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "F"
+                },
+                "key": "responds_to_my_action"
+              },
+              "b": {
+                "type": "Lit",
+                "value": true
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ig"
+                },
+                "key": "aim_done"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 1.0
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "sg",
+          "Goal",
+          {
+            "kind": "produce_utterance",
+            "role": "aim"
+          }
+        ],
+        [
+          "add_edge",
+          "ig",
+          "has_subgoal",
+          "sg"
+        ],
+        [
+          "set_attr",
+          "sg",
+          "say_agent",
+          "I"
+        ],
+        [
+          "set_attr",
+          "sg",
+          "say_event",
+          "approach"
+        ],
+        [
+          "set_attr",
+          "sg",
+          "say_patient",
+          {
+            "__term__": {
+              "type": "IfThenElse",
+              "cond": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "F"
+                  },
+                  "key": "shape"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": null
+                }
+              },
+              "then": {
+                "type": "Lit",
+                "value": "thing"
+              },
+              "other": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "F"
+                },
+                "key": "shape"
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "sg",
+          "say_patient_adj",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "F"
+              },
+              "key": "colour"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "ig",
+          "aim_done",
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "intent_aim_escape",
+      "match": [
+        [
+          "ig",
+          "intent_of",
+          "g"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ig"
+              },
+              "key": "kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "report_intent"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "g"
+              },
+              "key": "nav_mode"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "pocket_escape"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ig"
+                },
+                "key": "aim_done"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 1.0
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "sg",
+          "Goal",
+          {
+            "kind": "produce_utterance",
+            "role": "aim"
+          }
+        ],
+        [
+          "add_edge",
+          "ig",
+          "has_subgoal",
+          "sg"
+        ],
+        [
+          "set_attr",
+          "sg",
+          "say_agent",
+          "I"
+        ],
+        [
+          "set_attr",
+          "sg",
+          "say_event",
+          "escape"
+        ],
+        [
+          "set_attr",
+          "ig",
+          "aim_done",
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "intent_curiosity_watch",
+      "match": [
+        [
+          "ig",
+          "intent_of",
+          "g"
+        ],
+        [
+          "g",
+          "has_feature",
+          "F"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ig"
+              },
+              "key": "kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "report_intent"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "F"
+              },
+              "key": "kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "mover"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "F"
+                },
+                "key": "responds_to_my_action"
+              },
+              "b": {
+                "type": "Lit",
+                "value": true
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ig"
+                },
+                "key": "cwatch_done"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 1.0
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "sg",
+          "Goal",
+          {
+            "kind": "produce_utterance",
+            "role": "curiosity"
+          }
+        ],
+        [
+          "add_edge",
+          "ig",
+          "has_subgoal",
+          "sg"
+        ],
+        [
+          "set_attr",
+          "sg",
+          "say_agent",
+          "I"
+        ],
+        [
+          "set_attr",
+          "sg",
+          "say_event",
+          "watch"
+        ],
+        [
+          "set_attr",
+          "sg",
+          "say_patient",
+          {
+            "__term__": {
+              "type": "IfThenElse",
+              "cond": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "F"
+                  },
+                  "key": "shape"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": null
+                }
+              },
+              "then": {
+                "type": "Lit",
+                "value": "thing"
+              },
+              "other": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "F"
+                },
+                "key": "shape"
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "sg",
+          "say_patient_adj",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "F"
+              },
+              "key": "colour"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "ig",
+          "cwatch_done",
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "intent_curiosity_reason",
+      "match": [
+        [
+          "ig",
+          "intent_of",
+          "g"
+        ],
+        [
+          "g",
+          "has_feature",
+          "F"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ig"
+              },
+              "key": "kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "report_intent"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "F"
+              },
+              "key": "kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "mover"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "F"
+                },
+                "key": "responds_to_my_action"
+              },
+              "b": {
+                "type": "Lit",
+                "value": true
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ig"
+                },
+                "key": "creason_done"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 1.0
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "sg",
+          "Goal",
+          {
+            "kind": "produce_utterance",
+            "role": "reason"
+          }
+        ],
+        [
+          "add_edge",
+          "ig",
+          "has_subgoal",
+          "sg"
+        ],
+        [
+          "set_attr",
+          "sg",
+          "say_agent",
+          "I"
+        ],
+        [
+          "set_attr",
+          "sg",
+          "say_event",
+          "wonder"
+        ],
+        [
+          "set_attr",
+          "sg",
+          "say_oblique_role",
+          "topic"
+        ],
+        [
+          "set_attr",
+          "sg",
+          "say_oblique",
+          {
+            "__term__": {
+              "type": "IfThenElse",
+              "cond": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "F"
+                  },
+                  "key": "shape"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": null
+                }
+              },
+              "then": {
+                "type": "Lit",
+                "value": "thing"
+              },
+              "other": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "F"
+                },
+                "key": "shape"
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "sg",
+          "say_oblique_adj",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "F"
+              },
+              "key": "colour"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "ig",
+          "creason_done",
+          1.0
+        ]
+      ]
+    }
+  ]
+}

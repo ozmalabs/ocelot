@@ -1,0 +1,421 @@
+{
+ "id": "ls20_frustration",
+ "version": "1.0.0",
+ "self_load_only": true,
+ "depends_on": [],
+ "area": "retina",
+ "description": "FRUSTRATION as the PSI REGRESS-BREAKER (block 226000): futile repetition -- repetition WITHOUT understanding-gain -- raises a leaky scale2-decayed frustration modulator that, past a threshold, BREAKS the loop (STOP). Frustration is the emotional COMPLEMENT to the 221000 understanding drive (understanding rewards compression; frustration punishes futile repetition). THE DISCRIMINATOR: a step is FUTILE iff it RECURS (an Exists MATCH over the has_step history) AND yields no gain (d_hyp==0 AND d_state==0 AND s_drop==0 -- the raw observables the adapter stamps, the 208000 ev_* pattern); a PRODUCTIVE repeat is NOT marked futile so frustration stays flat -- NOT a repeat-counter. fr_mark_futile marks it; fr_accumulate is the 215000 gs_grievance_from_slights leaky Sum(Times(futile, Ashr(unit, age/half_life))); fr_break reads the modulator across the threshold and sets break_now=STOP. Integer-native, NO Rust, NO new Term. self_load_only + depends_on [] + every rule guarded on HeldFrustrationParams.enabled==1: default-OFF and byte-identical when absent.",
+ "microtheory": {
+  "name": "ls20_frustration",
+  "description": "Frustration is a leaky accumulator of FUTILE-repeat events (recurrence with no understanding-gain); crossing a threshold it breaks the current strategy (stop/switch). It is the emotional regress-breaker -- the complement of curiosity: the same understanding signal that rewards compression, read with the opposite sign on futile repetition."
+ },
+ "nodes": [
+  {
+   "local_id": 1,
+   "type": "FrustrationNarration",
+   "attrs": {
+    "code": 1.0,
+    "emotion_name": "frustration",
+    "tendency": "STOP",
+    "template": "Same thing over and over, no progress \u2014 this is frustrating. Stop and try something else."
+   }
+  }
+ ],
+ "edges": [],
+ "productions": [
+  {
+   "provenance": "seed:ls20_frustration:fparams",
+   "src": {
+    "type": "EmotionHub",
+    "var": "hub"
+   },
+   "edge_type": "has_frustration_params",
+   "tgt": {
+    "type": "HeldFrustrationParams",
+    "var": "fp"
+   }
+  },
+  {
+   "provenance": "seed:ls20_frustration:modulator",
+   "src": {
+    "type": "EmotionHub",
+    "var": "hub"
+   },
+   "edge_type": "has_frustration",
+   "tgt": {
+    "type": "FrustrationModulator",
+    "var": "m"
+   }
+  },
+  {
+   "provenance": "seed:ls20_frustration:step",
+   "src": {
+    "type": "FrustrationModulator",
+    "var": "m"
+   },
+   "edge_type": "has_step",
+   "tgt": {
+    "type": "Step",
+    "var": "st"
+   }
+  }
+ ],
+ "rules": [
+  {
+   "name": "fr_mark_futile",
+   "area": "retina",
+   "order": 0,
+   "latency_class": "hard_realtime",
+   "comment": "A step is FUTILE iff it RECURS (Exists an earlier has_step Step with the same sig) AND yields NO understanding-gain (d_hyp==0 AND d_state==0 AND s_drop==0). Recurrence is a graph match; no-gain is the three raw observables the adapter stamps. A PRODUCTIVE repeat has a gain observable set -> this rule does NOT fire -> not futile. THE TEETH: a plain repeat-counter would fire on any recurrence.",
+   "match": [
+    [
+     "hub",
+     "has_frustration_params",
+     "gp"
+    ],
+    [
+     "hub",
+     "has_frustration",
+     "m"
+    ],
+    [
+     "m",
+     "has_step",
+     "st"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "gp"
+       },
+       "key": "enabled"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "st"
+       },
+       "key": "d_hyp"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "st"
+       },
+       "key": "d_state"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "st"
+       },
+       "key": "s_drop"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     },
+     {
+      "type": "Exists",
+      "source": {
+       "type": "Neighbours",
+       "node": {
+        "type": "Var",
+        "name": "m"
+       },
+       "edge_type": "has_step",
+       "any_type": false
+      },
+      "var_name": "st2",
+      "predicate": {
+       "type": "And",
+       "items": [
+        {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "st2"
+          },
+          "key": "sig"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "st"
+          },
+          "key": "sig"
+         }
+        },
+        {
+         "type": "Lt",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "st2"
+          },
+          "key": "epoch"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "st"
+          },
+          "key": "epoch"
+         }
+        }
+       ]
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "st",
+     "futile",
+     1.0
+    ]
+   ]
+  },
+  {
+   "name": "fr_accumulate",
+   "area": "retina",
+   "order": 1,
+   "latency_class": "hard_realtime",
+   "comment": "frustration = Sum over has_step of Times(futile, Ashr(frust_unit, age/half_life)) -- the 215000 gs_grievance_from_slights leaky scale2 accumulator, restricted to FUTILE steps. Idempotent (pure function of immutable Step facts + adapter-advanced now_epoch).",
+   "match": [
+    [
+     "hub",
+     "has_frustration_params",
+     "gp"
+    ],
+    [
+     "hub",
+     "has_frustration",
+     "m"
+    ]
+   ],
+   "where": {
+    "type": "Eq",
+    "a": {
+     "type": "Attr",
+     "node": {
+      "type": "Var",
+      "name": "gp"
+     },
+     "key": "enabled"
+    },
+    "b": {
+     "type": "Lit",
+     "value": 1.0
+    }
+   },
+   "effects": [
+    [
+     "set_attr",
+     "m",
+     "frustration",
+     {
+      "__term__": {
+       "type": "Sum",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "m"
+        },
+        "edge_type": "has_step",
+        "any_type": false
+       },
+       "var_name": "st",
+       "value": {
+        "type": "Times",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "st"
+          },
+          "key": "futile"
+         },
+         {
+          "type": "Ashr",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "gp"
+           },
+           "key": "frust_unit"
+          },
+          "b": {
+           "type": "IDiv",
+           "a": {
+            "type": "Minus",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "m"
+             },
+             "key": "now_epoch"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "st"
+             },
+             "key": "epoch"
+            }
+           },
+           "b": {
+            "type": "Max",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 1.0
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "gp"
+              },
+              "key": "half_life"
+             }
+            ]
+           }
+          }
+         }
+        ]
+       }
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "fr_break",
+   "area": "retina",
+   "order": 2,
+   "latency_class": "hard_realtime",
+   "comment": "The emotional STOP: frustration crossing frustration_thresh sets break_now/hit_frustration/action_tendency=STOP/emotion_code=1. The adapter mechanically reads break_now and stops the loop. NO Python decides the stop -- this rule does.",
+   "match": [
+    [
+     "hub",
+     "has_frustration_params",
+     "gp"
+    ],
+    [
+     "hub",
+     "has_frustration",
+     "m"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "gp"
+       },
+       "key": "enabled"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Gte",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "m"
+       },
+       "key": "frustration"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "gp"
+       },
+       "key": "frustration_thresh"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "m",
+     "break_now",
+     1.0
+    ],
+    [
+     "set_attr",
+     "m",
+     "hit_frustration",
+     1.0
+    ],
+    [
+     "set_attr",
+     "m",
+     "action_tendency",
+     "STOP"
+    ],
+    [
+     "set_attr",
+     "m",
+     "emotion_code",
+     1.0
+    ]
+   ]
+  }
+ ]
+}

@@ -1,0 +1,125 @@
+{
+  "id": "integer_dct_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "DCT",
+  "in_microtheory": "video_coding_theory",
+  "description": "The integer DCT decomposed into its sub-mechanisms. Real-number DCT is an analytic transform; what shipping codecs implement is an INTEGER approximation chosen for: byte-exact decoder agreement, no floating-point hardware needed, near-identical compression to the analytic DCT. H.264's 4×4 transform uses a tiny scaled integer matrix; H.265's 4×8×16×32 family uses orthonormal integer matrices; AV1 adds ADST + IDTX; VVC adds DST-7 and DCT-8.",
+  "sub_mechanisms": [
+    {
+      "name": "integer_basis_matrix",
+      "definition": "A small integer-valued matrix that approximates the analytic DCT basis. H.264's 4x4 matrix has rows {[1,1,1,1], [2,1,-1,-2], [1,-1,-1,1], [1,-2,2,-1]}. Multiplying by source samples gives integer coefficients.",
+      "why": "Integer math is byte-exact across decoders, hardware-cheap (no FPU), and ABI-stable. The chosen integers are scaled approximations of the analytic DCT basis vectors; the scaling is absorbed into the quantisation step.",
+      "category": "integer_dct_mechanism"
+    },
+    {
+      "name": "separable_2d_transform",
+      "definition": "The 2D DCT is computed as two 1D DCTs: first apply the basis matrix to each row of the block, then apply the (transposed) basis to each column of the result. This is mathematically identical to a full 2D DCT but O(N) cheaper.",
+      "why": "Separability turns N^4 multiplications into 2*N^3. For 8x8 blocks: 512 vs 4096 multiplies — 8x speedup. Every shipping codec uses separable transforms. Non-separable transforms (LFNST in VVC) appear only as secondary stages on a few coefficients.",
+      "category": "integer_dct_mechanism"
+    },
+    {
+      "name": "butterfly_decomposition",
+      "definition": "Express the N-point DCT as O(N log N) butterfly operations rather than O(N^2) matrix-multiply. Each butterfly is a pair of additions and subtractions, optionally with a constant multiplication.",
+      "why": "Reduces compute from O(N^2) to O(N log N). For 8x8: from 64 multiplies per row to ~24. The butterfly structure also vectorises well — SIMD lanes process multiple butterflies in parallel.",
+      "category": "integer_dct_mechanism"
+    },
+    {
+      "name": "absorbed_scaling",
+      "definition": "Because the integer basis matrix is a scaled approximation of the true DCT, the inverse + quantisation step must compensate. The scaling factor is folded into the quantisation step size table.",
+      "why": "Avoids a separate scaling stage after transform. The quantiser was going to multiply by some step size anyway; folding the basis-matrix scaling in costs zero extra ops. The decoder's dequantisation table inverse-scales symmetrically.",
+      "category": "integer_dct_mechanism"
+    },
+    {
+      "name": "fixed_point_arithmetic",
+      "definition": "Computation uses Q-format fixed-point: integers conceptually represent fractional values via an implicit scale factor (e.g., Q15 = divide by 2^15 for fractional value). All additions and multiplications maintain the Q-format.",
+      "why": "Fixed-point gives floating-point's range with integer hardware. The implicit scale factor is tracked in code, not in the data — the bits stored are pure integers. Standardised Q-formats across encoder and decoder ensure byte-exact agreement.",
+      "category": "integer_dct_mechanism"
+    },
+    {
+      "name": "transform_size_4x4",
+      "definition": "H.264's smallest transform: 4x4 integer DCT. Each MB has 16 luma 4x4 blocks. Transform matrix is tiny and exact-integer.",
+      "why": "4x4 minimises the post-quantisation 'energy spreading' that creates block artefacts. Smaller blocks track local detail better; larger blocks pack flat regions efficiently. H.264 fixed 4x4 as the floor; H.265+ extends to 4x4, 8x8, 16x16, 32x32 (and 64x64 in some variants).",
+      "category": "integer_dct_mechanism"
+    },
+    {
+      "name": "transform_size_selection",
+      "definition": "Per-block choice of which transform size to apply, signalled in the bitstream. Picked by encoder via R-D cost evaluation: smaller transforms for edges/detail, larger for flat regions.",
+      "why": "Block size matches local content statistics. Small blocks on textured regions preserve detail; large blocks on smooth regions concentrate energy into one coefficient, saving entropy-coding bits. Per-block adaptive selection is one of the larger wins from H.265 onwards.",
+      "category": "integer_dct_mechanism"
+    },
+    {
+      "name": "transform_skip_mode",
+      "definition": "Bypass the transform entirely: send raw residual samples directly to the entropy coder. Available in HEVC SCC, AV1, VVC for screen-content blocks.",
+      "why": "Sharp edges (text, UI) have sparse residuals that the DCT DECOMPACTS — the transform hurts compression. Skipping reverts to direct coefficient coding which entropy-codes the sparse residual better. AV1 calls this IDTX (identity transform).",
+      "category": "integer_dct_mechanism"
+    },
+    {
+      "name": "matrix_orthonormality",
+      "definition": "H.265's integer transforms are orthonormal (rows are mutually orthogonal, each with unit norm under integer arithmetic). H.264's are not orthonormal — they're scaled by 1, sqrt(2/5), 1, sqrt(2/5) — and the scaling is absorbed.",
+      "why": "Orthonormal transforms are self-inverse (no separate inverse table) and have the same scaling as the analytic DCT. H.265 chose this for cleaner implementation; H.264's scaling-absorbed approach has slightly fewer ops but more complex code paths.",
+      "category": "integer_dct_mechanism"
+    },
+    {
+      "name": "secondary_transform_LFNST",
+      "definition": "VVC's Low-Frequency Non-Separable Transform: a small (4x4 or 8x8) non-separable transform applied to the top-left low-frequency coefficients AFTER the primary transform.",
+      "why": "Primary separable transforms can't decorrelate non-axis-aligned residual energy (diagonal edges). LFNST cleans up that residual at low cost. ~2% of VVC's total gain over HEVC. The non-separability is the point — separable transforms are blind to off-axis structure.",
+      "category": "integer_dct_mechanism"
+    },
+    {
+      "name": "IDCT_byte_exact",
+      "definition": "The inverse integer DCT is spec-defined exactly: encoder and decoder must produce byte-identical reconstructed samples for the same input coefficients. Standardised down to the last shift and clip.",
+      "why": "Decoder consistency at scale: a stream encoded with one encoder must decode identically across millions of decoders. Floating-point arithmetic can't guarantee this; integer arithmetic can, but only if every shift / clip / rounding rule is spec-locked.",
+      "category": "integer_dct_mechanism"
+    },
+    {
+      "name": "rounding_offset_in_normalisation",
+      "definition": "After integer transform + scaling, a constant rounding offset is added before the final shift-right: e.g., (x + (1 << (shift - 1))) >> shift, achieving round-to-nearest.",
+      "why": "Plain integer shift truncates (rounds toward zero), creating bias. The rounding offset gives round-to-nearest behaviour with one extra add. Spec-defined exactly — both encoder and decoder must use the same offset to remain byte-exact.",
+      "category": "integer_dct_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "integer_approximation_preserves_compression",
+      "if": ["a transform's integer basis is a uniformly-scaled approximation of the analytic basis"],
+      "then": ["compression efficiency is nearly identical to the analytic transform"],
+      "why": "The DCT's compression power comes from its energy compaction property, which is approximately preserved under uniform scaling. Small deviations from orthogonality cost at most a few percent compression efficiency, recovered by the quantiser's tuning.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "separable_2d_transform_amortises_cost",
+      "if": ["a 2D transform's basis is separable"],
+      "then": ["compute drops from O(N^4) to O(N^3) (or O(N^2 log N) with butterfly)"],
+      "why": "Separability means the 2D transform is two 1D transforms: row-pass then column-pass. The full 2D matrix multiply is replaced by 2N 1D operations. This is the difference between intractable and fast.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "absorbed_scaling_avoids_separate_normalisation",
+      "if": ["the transform's basis scaling is folded into the quantisation step"],
+      "then": ["no separate post-transform normalisation is needed"],
+      "why": "Both stages multiply by a scalar; combining them saves a pass over the coefficients. Standard codec optimisation; the scaling tables are pre-computed and stored alongside the quantisation tables.",
+      "soundness_category": "algebraic_law"
+    },
+    {
+      "name": "transform_size_selection_matches_local_statistics",
+      "if": ["block content varies in spatial frequency content"],
+      "then": ["per-block adaptive transform size beats fixed size"],
+      "why": "Edge regions need small transforms to preserve detail; flat regions need large transforms to concentrate energy. Adaptive selection costs a few signalling bits but saves many residual bits. H.265 onwards extracts ~10-15% gain from this alone.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "byte_exact_inverse_required_for_decoder_consistency",
+      "if": ["multiple decoders may decode the same stream"],
+      "then": ["the integer inverse transform must be byte-exact across all of them"],
+      "why": "Floating-point can't be byte-exact across compilers/hardware. Integer math can, but only if every rounding / shift / clip is specified. The spec locks the IDCT down to the last operation; encoders that drift produce undecodable streams.",
+      "soundness_category": "referential_transparency"
+    },
+    {
+      "name": "transform_skip_when_residual_is_already_sparse",
+      "if": ["a block's residual is sparse with sharp edges"],
+      "then": ["transform skip outperforms DCT"],
+      "why": "DCT concentrates smooth energy into few coefficients but DECOMPACTS sharp-edge energy across many. For sparse-edge residuals, raw coefficient coding is more bit-efficient than the transformed result. Screen content's natural mode.",
+      "soundness_category": "extensional_equivalence"
+    }
+  ]
+}

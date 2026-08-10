@@ -1,0 +1,591 @@
+{
+  "id": "discourse_argument",
+  "version": "1.0.0",
+  "depends_on": [
+    "dialogue_intertext",
+    "event_reasoning"
+  ],
+  "description": "Discourse coherence (RST clause->clause relations = within-text dialogue relations, connective-typed) and argument (Toulmin claim/evidence/warrant; sound iff the warrant licenses a firing implication; named fallacies for circular/ad-hominem/affirming-the-consequent). Both compose existing machinery: the relation classifier + the inference engine + suspect-witness belief.",
+  "microtheory": {
+    "name": "discourse_argument",
+    "description": "RST coherence + argument validity"
+  },
+  "nodes": [
+    {
+      "local_id": 1,
+      "type": "Concept",
+      "attrs": {
+        "name": "discourse_coherence",
+        "description": "RST: relations BETWEEN adjacent clauses in one text \u2014 the DIALOGUE-relation faculty with the speaker held constant. The same relation classifier types clause->clause edges as cause/contrast/concession/elaboration/sequence from connectives (because/but/although/for-example/then) + referent-overlap (shared roles->elaboration). The monologue sibling of conversational coherence; output = a nucleus/satellite tree over clauses."
+      }
+    },
+    {
+      "local_id": 2,
+      "type": "Concept",
+      "attrs": {
+        "name": "argument",
+        "description": "A coherence relation with a TRUTH OBLIGATION, one level above RST. A Toulmin Frame (claim/evidence/warrant \u2014 three role-slots, same Frame machinery as semantic roles); VALIDITY = the warrant licenses an Implication that actually fires under the inference engine; FALLACY = the relation asserts support but no valid Implication connects evidence to claim, scored by the believe/refute (suspect-witness) rule. Argument = RST-relation + entailment-check + belief-scoring."
+      }
+    },
+    {
+      "local_id": 3,
+      "type": "Principle",
+      "attrs": {
+        "name": "rst_is_dialogue_within",
+        "head": "discourse/argument",
+        "body": "discourse coherence is the dialogue relation with one speaker; reuse the relation classifier, just widen the domain to clause->clause inside a paragraph"
+      }
+    },
+    {
+      "local_id": 4,
+      "type": "Principle",
+      "attrs": {
+        "name": "argument_composes",
+        "head": "discourse/argument",
+        "body": "argument adds nothing new: Toulmin frame + the warrant-licenses-an-implication entailment check + suspect-witness belief-scoring; circular = warrant==claim, ad hominem = evidence about the person not the proposition, affirming-the-consequent = wrong implication direction"
+      }
+    }
+  ],
+  "edges": [],
+  "rules": [
+    {
+      "name": "classify_rst",
+      "match": [
+        [
+          "r",
+          "relates",
+          "c2"
+        ]
+      ],
+      "where": {
+        "type": "Lit",
+        "value": true
+      },
+      "effects": [
+        [
+          "set_attr",
+          "r",
+          "relation",
+          {
+            "__term__": {
+              "type": "IfThenElse",
+              "cond": {
+                "type": "Or",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "r"
+                      },
+                      "key": "conn"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "because"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "r"
+                      },
+                      "key": "conn"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "since"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "r"
+                      },
+                      "key": "conn"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "so"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "r"
+                      },
+                      "key": "conn"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "therefore"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "r"
+                      },
+                      "key": "conn"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "thus"
+                    }
+                  }
+                ]
+              },
+              "then": {
+                "type": "Lit",
+                "value": "cause"
+              },
+              "other": {
+                "type": "IfThenElse",
+                "cond": {
+                  "type": "Or",
+                  "items": [
+                    {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "r"
+                        },
+                        "key": "conn"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": "but"
+                      }
+                    },
+                    {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "r"
+                        },
+                        "key": "conn"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": "however"
+                      }
+                    },
+                    {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "r"
+                        },
+                        "key": "conn"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": "yet"
+                      }
+                    },
+                    {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "r"
+                        },
+                        "key": "conn"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": "whereas"
+                      }
+                    }
+                  ]
+                },
+                "then": {
+                  "type": "Lit",
+                  "value": "contrast"
+                },
+                "other": {
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Or",
+                    "items": [
+                      {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "r"
+                          },
+                          "key": "conn"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": "although"
+                        }
+                      },
+                      {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "r"
+                          },
+                          "key": "conn"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": "though"
+                        }
+                      },
+                      {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "r"
+                          },
+                          "key": "conn"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": "despite"
+                        }
+                      }
+                    ]
+                  },
+                  "then": {
+                    "type": "Lit",
+                    "value": "concession"
+                  },
+                  "other": {
+                    "type": "IfThenElse",
+                    "cond": {
+                      "type": "Or",
+                      "items": [
+                        {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "r"
+                            },
+                            "key": "conn"
+                          },
+                          "b": {
+                            "type": "Lit",
+                            "value": "for_example"
+                          }
+                        },
+                        {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "r"
+                            },
+                            "key": "conn"
+                          },
+                          "b": {
+                            "type": "Lit",
+                            "value": "eg"
+                          }
+                        },
+                        {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "r"
+                            },
+                            "key": "conn"
+                          },
+                          "b": {
+                            "type": "Lit",
+                            "value": "such_as"
+                          }
+                        },
+                        {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "r"
+                            },
+                            "key": "conn"
+                          },
+                          "b": {
+                            "type": "Lit",
+                            "value": "namely"
+                          }
+                        }
+                      ]
+                    },
+                    "then": {
+                      "type": "Lit",
+                      "value": "elaboration"
+                    },
+                    "other": {
+                      "type": "IfThenElse",
+                      "cond": {
+                        "type": "Or",
+                        "items": [
+                          {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "r"
+                              },
+                              "key": "conn"
+                            },
+                            "b": {
+                              "type": "Lit",
+                              "value": "then"
+                            }
+                          },
+                          {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "r"
+                              },
+                              "key": "conn"
+                            },
+                            "b": {
+                              "type": "Lit",
+                              "value": "after"
+                            }
+                          },
+                          {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "r"
+                              },
+                              "key": "conn"
+                            },
+                            "b": {
+                              "type": "Lit",
+                              "value": "next"
+                            }
+                          },
+                          {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "r"
+                              },
+                              "key": "conn"
+                            },
+                            "b": {
+                              "type": "Lit",
+                              "value": "later"
+                            }
+                          },
+                          {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "r"
+                              },
+                              "key": "conn"
+                            },
+                            "b": {
+                              "type": "Lit",
+                              "value": "first"
+                            }
+                          }
+                        ]
+                      },
+                      "then": {
+                        "type": "Lit",
+                        "value": "sequence"
+                      },
+                      "other": {
+                        "type": "IfThenElse",
+                        "cond": {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "r"
+                            },
+                            "key": "overlap"
+                          },
+                          "b": {
+                            "type": "Lit",
+                            "value": 1
+                          }
+                        },
+                        "then": {
+                          "type": "Lit",
+                          "value": "elaboration"
+                        },
+                        "other": {
+                          "type": "Lit",
+                          "value": "continuation"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "classify_argument",
+      "match": [
+        [
+          "g",
+          "has_claim",
+          "c"
+        ]
+      ],
+      "where": {
+        "type": "Lit",
+        "value": true
+      },
+      "effects": [
+        [
+          "set_attr",
+          "g",
+          "verdict",
+          {
+            "__term__": {
+              "type": "IfThenElse",
+              "cond": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "g"
+                  },
+                  "key": "warrant_circular"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 1
+                }
+              },
+              "then": {
+                "type": "Lit",
+                "value": "FALLACY: circular (begs the question)"
+              },
+              "other": {
+                "type": "IfThenElse",
+                "cond": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "g"
+                    },
+                    "key": "evidence_ad_hominem"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": 1
+                  }
+                },
+                "then": {
+                  "type": "Lit",
+                  "value": "FALLACY: ad hominem"
+                },
+                "other": {
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "g"
+                      },
+                      "key": "affirms_consequent"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": 1
+                    }
+                  },
+                  "then": {
+                    "type": "Lit",
+                    "value": "FALLACY: affirming the consequent"
+                  },
+                  "other": {
+                    "type": "IfThenElse",
+                    "cond": {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "g"
+                        },
+                        "key": "warrant_licenses"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 1
+                      }
+                    },
+                    "then": {
+                      "type": "Lit",
+                      "value": "SOUND (valid warrant)"
+                    },
+                    "other": {
+                      "type": "Lit",
+                      "value": "unsupported (no valid warrant connects evidence to claim)"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      ]
+    }
+  ]
+}

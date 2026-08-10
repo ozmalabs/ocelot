@@ -1,0 +1,118 @@
+{
+  "id": "threading_deep_dive_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "M_N_threading",
+  "in_microtheory": "operating_systems",
+  "description": "M:N threading + modern runtime threading decomposed. Go's goroutines + GMP model. Java's virtual threads (Project Loom). Erlang's BEAM. The shared insight: many lightweight tasks multiplexed onto few kernel threads via a runtime scheduler that handles blocking. The mechanisms: park/unpark, work stealing, netpoller for I/O, preemption tricks, stack management.",
+  "sub_mechanisms": [
+    {
+      "name": "goroutine",
+      "definition": "Go's user-space lightweight thread. Tiny initial stack (2 KB); grows on demand. Scheduled by Go runtime, not OS.",
+      "why": "Cheap: millions of goroutines on a single process. The Go runtime's scheduler maps them to OS threads. The unit of concurrency in Go programs.",
+      "category": "mn_threading_mechanism"
+    },
+    {
+      "name": "Go_GMP_model",
+      "definition": "G = goroutine, M = OS thread, P = processor (logical scheduling slot). P holds a run queue of G; M executes G via P. ~GOMAXPROCS Ps total.",
+      "why": "Scales threading to many goroutines on few cores. P is the unit of parallelism (one runnable G per P at a time). M may detach from P during blocking syscalls; another M picks up the P.",
+      "category": "mn_threading_mechanism"
+    },
+    {
+      "name": "goroutine_park_unpark",
+      "definition": "park: G stops running, M can pick up another G. unpark: G becomes runnable again, queued on a P.",
+      "why": "Cooperative scheduling primitive. Blocking on channel = park; channel send to waiter = unpark. Cost: ~50-100ns per pair. Foundation of all Go synchronisation.",
+      "category": "mn_threading_mechanism"
+    },
+    {
+      "name": "netpoller",
+      "definition": "Per-runtime poll mechanism (epoll on Linux, kqueue on BSD) that wakes goroutines blocked on I/O.",
+      "why": "Lets blocking-style I/O (n, err := conn.Read(buf)) run on millions of goroutines without each consuming an OS thread. The poller handles all sockets in one goroutine; ready sockets' goroutines wake up. Foundation of Go's network performance.",
+      "category": "mn_threading_mechanism"
+    },
+    {
+      "name": "preemptive_goroutine_scheduling",
+      "definition": "Go 1.14+: compiler inserts preemption checks at function calls; long-running CPU-bound goroutines can be preempted by SIGURG signal.",
+      "why": "Pre-1.14: tight loops with no function calls could starve other goroutines. Post-1.14: asynchronous preemption handles this. Critical for fair scheduling.",
+      "category": "mn_threading_mechanism"
+    },
+    {
+      "name": "goroutine_stack_growth",
+      "definition": "Initial stack: 2 KB. On stack overflow check, runtime allocates larger stack + copies current frames.",
+      "why": "Lets million-goroutine workloads fit in memory. Trade-off: copy cost on growth (mitigated by exponential expansion + segmented stacks in some versions). Stack scanning during GC: roots include all goroutine stacks.",
+      "category": "mn_threading_mechanism"
+    },
+    {
+      "name": "virtual_thread_loom",
+      "definition": "JVM's Project Loom (Java 21+): lightweight threads scheduled on a small pool of carrier threads.",
+      "why": "Java's response to Go's goroutines + Kotlin's coroutines. Same code style (blocking I/O) works without blocking OS threads. Continuations (also added) are the underlying primitive.",
+      "category": "mn_threading_mechanism"
+    },
+    {
+      "name": "continuation",
+      "definition": "Captured execution state (program counter + stack frames) that can be resumed. Loom's foundation.",
+      "why": "Lets a virtual thread suspend + resume on any code line. Implementation: stack frames moved to heap on yield; restored on resume. Generalises threading to first-class continuations (Scheme's call/cc was first; Loom brings it to JVM).",
+      "category": "mn_threading_mechanism"
+    },
+    {
+      "name": "Erlang_BEAM_scheduler",
+      "definition": "Erlang's runtime uses N schedulers (typically one per core). Each schedules N actors (processes in BEAM terminology). Pre-emptive within actor (counts reductions).",
+      "why": "Designed for telecom: 100K+ actors per node. Strong isolation between actors (no shared state — only message passing). Reduction-based preemption ensures fairness even within long computations.",
+      "category": "mn_threading_mechanism"
+    },
+    {
+      "name": "actor_model",
+      "definition": "Concurrency model: actors are isolated units communicating only via messages. No shared mutable state.",
+      "why": "Eliminates many concurrency bugs (no shared state = no data races). Erlang, Akka (Scala/Java), Pony all use this. Cost: message-passing overhead vs shared memory. Different trade than goroutines (which share memory).",
+      "category": "mn_threading_mechanism"
+    },
+    {
+      "name": "async_runtime_tokio",
+      "definition": "Rust's tokio: async runtime with multi-threaded scheduler. Tasks are stateful async fns; runtime polls them when ready.",
+      "why": "Different model from Go: cooperative multitasking via async/await. No preemption — task yields at .await points. Tasks are typically smaller than goroutines (no per-task stack); scheduling is more explicit.",
+      "category": "mn_threading_mechanism"
+    },
+    {
+      "name": "task_polling",
+      "definition": "Async runtimes poll a task's future. Future returns Pending (not ready) or Ready (with value). Runtime suspends Pending tasks until wake notification.",
+      "why": "The async model's core mechanism. Different from threading: no thread is 'blocked' — the task is paused as a state machine. Wakers connect external events (I/O completion) back to runtime.",
+      "category": "mn_threading_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "M_N_threading_amortises_thread_creation",
+      "if": ["a runtime multiplexes many user-tasks onto few OS threads"],
+      "then": ["per-task creation + switching cost is amortised"],
+      "why": "OS thread create: ~50µs. Goroutine create: ~1µs. Switching: OS thread context switch ~1-2µs; goroutine switch ~100ns. Million-task workloads tractable only with M:N.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "netpoller_unblocks_blocking_style_IO",
+      "if": ["I/O syscalls would block the OS thread"],
+      "then": ["the runtime intercepts + parks the goroutine until I/O ready"],
+      "why": "Go's net.Conn.Read looks blocking but doesn't block the OS thread. Runtime registers interest via epoll; OS thread picks up another goroutine. When ready, the original goroutine is woken. Enables blocking-style code at non-blocking cost.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "preemption_prevents_cpu_bound_starvation",
+      "if": ["a long CPU-bound task runs in a cooperative runtime"],
+      "then": ["without preemption, other tasks starve"],
+      "why": "Cooperative scheduling assumes tasks yield. CPU-bound tasks don't. Go 1.14 added asynchronous preemption via signals; Loom uses similar tricks. Without it, single misbehaving task hangs the runtime.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "actor_isolation_eliminates_data_races",
+      "if": ["actors only communicate via message passing"],
+      "then": ["data races are impossible by construction"],
+      "why": "No shared state = no concurrent writes = no races. Erlang's reliability story rests on this. Cost: copying data on message send. Tradeoff: eliminates whole bug class at the cost of some overhead.",
+      "soundness_category": "referential_transparency"
+    },
+    {
+      "name": "async_task_lighter_than_goroutine",
+      "if": ["a task is purely state-machine-driven (no stack needed)"],
+      "then": ["it has lower memory footprint than a stackful thread/goroutine"],
+      "why": "Async task: small state (current state machine variant). Goroutine: ≥2 KB initial stack + bookkeeping. Async runtime supports more concurrent tasks at the cost of more explicit code (await markers).",
+      "soundness_category": "cost_equivalence"
+    }
+  ]
+}

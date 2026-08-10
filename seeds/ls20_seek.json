@@ -1,0 +1,1086 @@
+{
+ "id": "ls20_seek",
+ "version": "1.0.0",
+ "depends_on": [
+  "ls20_planning",
+  "ls20_flash"
+ ],
+ "area": "retina",
+ "description": "ls20 THE GAME IS COMMUNICATING (block 227000): the flash is a SIGN, not a fact with a built-in meaning. POSIT multiple candidate meanings (Posit Hypothesis nodes) from a GENERAL communicative vocabulary (sg_mint_posits); TEST by acting+residual (sg_want_test probe as-is -> sg_refute/sg_confirm, the 221/222 sd-loop applied to a sign); ACT on the confirmed meaning (sg_act_requirement -> transform_required -> sk_seek the only-other salient shape -> sk_pass). Controls: cycling (no interp), hardcode_reward (fixed wrong posit), no_test (posits but never tests). Guarded on game.seek_on==1 (default-OFF, byte-identical) + game.arm. Integer-native; no Rust; reuses shape_decode_loop (217) + onset (223) + quanta_navigation (220) + ls20_frustration (226) + the substrate's hypothesis mint/confirm/revise pattern.",
+ "microtheory": {
+  "name": "ls20_seek",
+  "description": "The game is a communicative partner; its signs mean nothing until interpreted. The agent posits candidate meanings, tests them by acting, confirms the one whose prediction survives the residual, and acts on it \u2014 seek the only-other salient shape, apply, pass. The interpretation is discovered; every decision is a rule."
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [],
+ "rules": [
+  {
+   "name": "sg_mint_posits",
+   "comment": "POSIT: mint a Posit Hypothesis per known communicative meaning (dedup). The flash is a SIGN with many candidate meanings; none is hardcoded.",
+   "match": [
+    [
+     "g",
+     "has_ping",
+     "p"
+    ],
+    [
+     "g",
+     "knows_meaning",
+     "sm"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "seek_on"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       {
+        "type": "Or",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "g"
+           },
+           "key": "arm"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "semiosis"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "g"
+           },
+           "key": "arm"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "no_test"
+          }
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "flash_present"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "g"
+        },
+        "edge_type": "has_posit",
+        "any_type": false
+       },
+       "var_name": "q2",
+       "predicate": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "q2"
+         },
+         "key": "meaning"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "sm"
+         },
+         "key": "meaning"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "q",
+     "Posit",
+     {
+      "meaning": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "sm"
+        },
+        "key": "meaning"
+       }
+      },
+      "pred_accept": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "sm"
+        },
+        "key": "pred_accept"
+       }
+      },
+      "pred_harm": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "sm"
+        },
+        "key": "pred_harm"
+       }
+      },
+      "implies_change": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "sm"
+        },
+        "key": "implies_change"
+       }
+      },
+      "status": {
+       "__term__": {
+        "type": "Lit",
+        "value": "open"
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "g",
+     "has_posit",
+     "q"
+    ]
+   ]
+  },
+  {
+   "name": "sg_want_test",
+   "comment": "TEST(want): open posits + no observation yet -> probe the block AS-IS to discriminate the posits. Routing is execution; the want is a rule.",
+   "match": [
+    [
+     "g",
+     "has_ping",
+     "p"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "seek_on"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "arm"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "semiosis"
+        }
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "test_observed"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     },
+     {
+      "type": "Exists",
+      "source": {
+       "type": "Neighbours",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "edge_type": "has_posit",
+       "any_type": false
+      },
+      "var_name": "q2",
+      "predicate": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "q2"
+        },
+        "key": "status"
+       },
+       "b": {
+        "type": "Lit",
+        "value": "open"
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "g",
+     "waypoint",
+     "goal"
+    ],
+    [
+     "set_attr",
+     "g",
+     "wp_r",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "goal_r"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "g",
+     "wp_c",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "goal_c"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "sg_refute",
+   "comment": "REFUTE: an open Posit whose predicted (accept,harm) != observed -> refuted. The predict-and-residual test (221/222 sd-loop applied to a SIGN).",
+   "match": [
+    [
+     "g",
+     "has_posit",
+     "q"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "seek_on"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "arm"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "semiosis"
+        }
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "test_observed"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "q"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "open"
+      }
+     },
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "q"
+          },
+          "key": "pred_accept"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "g"
+          },
+          "key": "observed_accept"
+         }
+        }
+       },
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "q"
+          },
+          "key": "pred_harm"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "g"
+          },
+          "key": "observed_harm"
+         }
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "q",
+     "status",
+     "refuted"
+    ]
+   ]
+  },
+  {
+   "name": "sg_confirm",
+   "comment": "CONFIRM: an open Posit whose predicted (accept,harm) == observed -> confirmed. The surviving meaning is the DISCOVERED interpretation.",
+   "match": [
+    [
+     "g",
+     "has_posit",
+     "q"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "seek_on"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "arm"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "semiosis"
+        }
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "test_observed"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "q"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "open"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "q"
+       },
+       "key": "pred_accept"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "observed_accept"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "q"
+       },
+       "key": "pred_harm"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "observed_harm"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "q",
+     "status",
+     "confirmed"
+    ]
+   ]
+  },
+  {
+   "name": "sg_act_requirement",
+   "comment": "ACT: a CONFIRMED posit implying an unmet condition -> transform_required=1 (the discovered meaning drives the seek). NO hardcoded flash->requirement.",
+   "match": [
+    [
+     "g",
+     "has_posit",
+     "q"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "seek_on"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "arm"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "semiosis"
+        }
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "q"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "confirmed"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "q"
+       },
+       "key": "implies_change"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "g",
+     "transform_required",
+     1.0
+    ],
+    [
+     "set_attr",
+     "g",
+     "salient_seek",
+     1.0
+    ],
+    [
+     "set_attr",
+     "g",
+     "affect",
+     "surprise_orient"
+    ],
+    [
+     "set_attr",
+     "g",
+     "confirmed_meaning",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "q"
+       },
+       "key": "meaning"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "sk_seek",
+   "comment": "SEEK: transform_required (DISCOVERED) -> route to the only-other salient shape whose key matches the recognised required transform.",
+   "match": [
+    [
+     "g",
+     "has_station",
+     "s"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "seek_on"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "arm"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "semiosis"
+        }
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "transform_required"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "symbol_matches_goal"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "s"
+       },
+       "key": "key"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "req_key"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "s"
+       },
+       "key": "used"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "g",
+     "waypoint",
+     "station"
+    ],
+    [
+     "set_attr",
+     "g",
+     "wp_r",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "s"
+       },
+       "key": "r"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "g",
+     "wp_c",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "s"
+       },
+       "key": "c"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "sk_pass",
+   "comment": "PASS: carried shape matches the requirement -> route to the block and pass.",
+   "match": [
+    [
+     "g",
+     "has_ping",
+     "p"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "seek_on"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "arm"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "semiosis"
+        }
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "symbol_matches_goal"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "g",
+     "waypoint",
+     "goal"
+    ],
+    [
+     "set_attr",
+     "g",
+     "wp_r",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "goal_r"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "g",
+     "wp_c",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "goal_c"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "sg_hardcode_reward",
+   "comment": "CONTROL: hardcode the flash = reward (collect as-is) -> route to the block, never transform. Never discovers requirement; never passes.",
+   "match": [
+    [
+     "g",
+     "has_ping",
+     "p"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "seek_on"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "arm"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "hardcode_reward"
+        }
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "flash_present"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "g",
+     "confirmed_meaning",
+     "reward"
+    ],
+    [
+     "set_attr",
+     "g",
+     "waypoint",
+     "goal"
+    ],
+    [
+     "set_attr",
+     "g",
+     "wp_r",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "goal_r"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "g",
+     "wp_c",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "goal_c"
+      }
+     }
+    ]
+   ]
+  }
+ ]
+}

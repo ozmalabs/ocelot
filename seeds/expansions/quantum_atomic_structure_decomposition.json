@@ -1,0 +1,118 @@
+{
+  "id": "quantum_atomic_structure_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "atomic_structure_orbitals",
+  "in_microtheory": "materials_chemistry",
+  "description": "Quantum atomic structure decomposed. Schrodinger equation, quantum numbers, orbital shapes, Hund's rule, Pauli exclusion, term symbols, spin-orbit coupling, atomic spectra, ionization energies.",
+  "sub_mechanisms": [
+    {
+      "name": "schrodinger_atomic",
+      "definition": "Hψ = Eψ. Time-independent. Exact for H atom; numerical for multi-electron.",
+      "why": "Foundation of quantum chemistry. ψ² gives probability density. Energy quantised by boundary conditions.",
+      "category": "quantum_atomic_mechanism"
+    },
+    {
+      "name": "principal_quantum_number_n",
+      "definition": "n = 1, 2, 3... Determines energy + size of orbital.",
+      "why": "Energy levels: E = -13.6/n² eV for H. Shell number. Foundation.",
+      "category": "quantum_atomic_mechanism"
+    },
+    {
+      "name": "angular_momentum_l",
+      "definition": "l = 0 to n-1. Determines orbital shape: s (0), p (1), d (2), f (3).",
+      "why": "Subshell. s spherical, p dumbbell, d cloverleaf. Foundation of orbital geometry.",
+      "category": "quantum_atomic_mechanism"
+    },
+    {
+      "name": "magnetic_ml_quantum",
+      "definition": "ml = -l to +l. Determines orbital orientation. p_x, p_y, p_z.",
+      "why": "Spatial degeneracy. 3 p orbitals, 5 d orbitals. Foundation of bonding directionality.",
+      "category": "quantum_atomic_mechanism"
+    },
+    {
+      "name": "spin_ms",
+      "definition": "Intrinsic angular momentum. ms = +1/2 or -1/2.",
+      "why": "Pauli exclusion: each orbital max 2 electrons (opposite spin). Foundation of multi-electron atoms.",
+      "category": "quantum_atomic_mechanism"
+    },
+    {
+      "name": "Hund_rule",
+      "definition": "Maximum multiplicity. Electrons fill degenerate orbitals singly before pairing.",
+      "why": "Predicts ground state. Carbon: 2 unpaired in 2p (not paired). Affects magnetic + spectral properties.",
+      "category": "quantum_atomic_mechanism"
+    },
+    {
+      "name": "Pauli_exclusion",
+      "definition": "No two electrons in same atom can have all four quantum numbers identical.",
+      "why": "Foundation. Without: all electrons in 1s. Periodic table consequence. Determines chemistry.",
+      "category": "quantum_atomic_mechanism"
+    },
+    {
+      "name": "shielding_effective_Z",
+      "definition": "Inner electrons shield outer from nucleus. Z_eff < Z.",
+      "why": "Slater's rules estimate. Explains periodic trends: across row Z_eff increases → atoms smaller.",
+      "category": "quantum_atomic_mechanism"
+    },
+    {
+      "name": "ionization_energy",
+      "definition": "Energy to remove electron. First IE removes loosest. Increases across row, decreases down.",
+      "why": "Periodic property. Noble gases highest (stable). Alkali metals lowest (lose easily). Reactivity predictor.",
+      "category": "quantum_atomic_mechanism"
+    },
+    {
+      "name": "electron_affinity",
+      "definition": "Energy released on electron capture. Halogens most exothermic.",
+      "why": "Predicts ion formation. F + e⁻ → F⁻ releases ~328 kJ/mol. Foundation of ionic bonding.",
+      "category": "quantum_atomic_mechanism"
+    },
+    {
+      "name": "electronegativity_Pauling",
+      "definition": "Atom's electron-pulling power in bond. F = 4.0 (max), Cs = 0.7.",
+      "why": "Predicts bond polarity. Difference > 1.7: ionic. < 0.4: nonpolar covalent. Standard tool.",
+      "category": "quantum_atomic_mechanism"
+    },
+    {
+      "name": "atomic_spectra_emission",
+      "definition": "Transitions emit photons. ΔE = hν. Each element has unique fingerprint spectrum.",
+      "why": "Hydrogen Balmer (visible), Lyman (UV), Paschen (IR). Element ID from spectra. Foundation of astronomy + analytical chem.",
+      "category": "quantum_atomic_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "quantum_numbers_completely_specify_electron",
+      "if": ["all four quantum numbers given"],
+      "then": ["electron state fully specified"],
+      "why": "n, l, ml, ms unique per electron (Pauli). Determines energy + spatial distribution + spin. Foundation.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "electronegativity_difference_predicts_bond_type",
+      "if": ["ΔEN > 1.7"],
+      "then": ["bond is ionic"],
+      "why": "0.4-1.7 polar covalent; < 0.4 nonpolar. NaCl ΔEN=2.1 ionic. CH4 ΔEN=0.4 nonpolar. Universal predictor.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "ionization_periodic_across_row",
+      "if": ["element moves left to right in periodic table"],
+      "then": ["ionization energy generally increases"],
+      "why": "Z_eff increases; size shrinks; harder to remove electron. Exceptions at p-orbital half-filling (Hund stability).",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "Hund_rule_minimum_energy_configuration",
+      "if": ["filling degenerate orbitals"],
+      "then": ["each orbital singly first, then pair"],
+      "why": "Minimises electron repulsion. C: 2s²2p² has 2 unpaired in different p orbitals. Standard ground state prediction.",
+      "soundness_category": "algebraic_law"
+    },
+    {
+      "name": "spectroscopy_fingerprints_elements",
+      "if": ["element's emission spectrum is recorded"],
+      "then": ["element uniquely identified"],
+      "why": "Each element has characteristic line spectrum from quantised transitions. Foundation of analytical spectroscopy, helium discovered in Sun's spectrum.",
+      "soundness_category": "referential_transparency"
+    }
+  ]
+}

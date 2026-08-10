@@ -1,0 +1,455 @@
+{
+  "id": "comprehension_goals",
+  "version": "1.0.0",
+  "depends_on": [],
+  "description": "The comprehension gaps the creator+jabberwock identified, seeded as understand-drive CapabilityAxes (situation model, inference, semantic roles, discourse coherence, event/causal, theory of mind, argument/logic, modality/scope). Each axis is investigated_by an Operator whose runner grounds that gap concepts via the on-disk teachers and measures coverage; the understand Drive picks the highest-shortfall gap, the loop grounds it, banks, and shifts.",
+  "microtheory": {
+    "name": "comprehension_world",
+    "description": "autonomous comprehension-gap investigation"
+  },
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "Microtheory",
+      "attrs": {
+        "name": "comprehension_world",
+        "domain": "comprehension"
+      }
+    },
+    {
+      "local_id": 1,
+      "type": "Operator",
+      "attrs": {
+        "name": "understand_situation_model",
+        "runner": "ground_situation_model",
+        "metric": "situation_model_coverage",
+        "target": 0.6,
+        "concepts": [
+          "situation model",
+          "entity",
+          "state",
+          "event",
+          "mental model"
+        ],
+        "comment": "read the concepts of situation_model via the teachers; measure coverage"
+      }
+    },
+    {
+      "local_id": 2,
+      "type": "Operator",
+      "attrs": {
+        "name": "understand_inference",
+        "runner": "ground_inference",
+        "metric": "inference_coverage",
+        "target": 0.6,
+        "concepts": [
+          "inference",
+          "entailment",
+          "implication",
+          "presupposition",
+          "deduction"
+        ],
+        "comment": "read the concepts of inference via the teachers; measure coverage"
+      }
+    },
+    {
+      "local_id": 3,
+      "type": "Operator",
+      "attrs": {
+        "name": "understand_semantic_roles",
+        "runner": "ground_semantic_roles",
+        "metric": "semantic_roles_coverage",
+        "target": 0.6,
+        "concepts": [
+          "semantic role",
+          "agent",
+          "patient",
+          "predicate",
+          "thematic role"
+        ],
+        "comment": "read the concepts of semantic_roles via the teachers; measure coverage"
+      }
+    },
+    {
+      "local_id": 4,
+      "type": "Operator",
+      "attrs": {
+        "name": "understand_discourse_coherence",
+        "runner": "ground_discourse_coherence",
+        "metric": "discourse_coherence_coverage",
+        "target": 0.6,
+        "concepts": [
+          "discourse",
+          "coherence",
+          "elaboration",
+          "contrast",
+          "cause"
+        ],
+        "comment": "read the concepts of discourse_coherence via the teachers; measure coverage"
+      }
+    },
+    {
+      "local_id": 5,
+      "type": "Operator",
+      "attrs": {
+        "name": "understand_event_causal",
+        "runner": "ground_event_causal",
+        "metric": "event_causal_coverage",
+        "target": 0.6,
+        "concepts": [
+          "event",
+          "causality",
+          "sequence",
+          "plot",
+          "consequence"
+        ],
+        "comment": "read the concepts of event_causal via the teachers; measure coverage"
+      }
+    },
+    {
+      "local_id": 6,
+      "type": "Operator",
+      "attrs": {
+        "name": "understand_theory_of_mind",
+        "runner": "ground_theory_of_mind",
+        "metric": "theory_of_mind_coverage",
+        "target": 0.6,
+        "concepts": [
+          "belief",
+          "intention",
+          "knowledge",
+          "perspective",
+          "common ground"
+        ],
+        "comment": "read the concepts of theory_of_mind via the teachers; measure coverage"
+      }
+    },
+    {
+      "local_id": 7,
+      "type": "Operator",
+      "attrs": {
+        "name": "understand_argument_logic",
+        "runner": "ground_argument_logic",
+        "metric": "argument_logic_coverage",
+        "target": 0.6,
+        "concepts": [
+          "argument",
+          "claim",
+          "evidence",
+          "premise",
+          "fallacy"
+        ],
+        "comment": "read the concepts of argument_logic via the teachers; measure coverage"
+      }
+    },
+    {
+      "local_id": 8,
+      "type": "Operator",
+      "attrs": {
+        "name": "understand_modality_scope",
+        "runner": "ground_modality_scope",
+        "metric": "modality_scope_coverage",
+        "target": 0.6,
+        "concepts": [
+          "modality",
+          "possibility",
+          "necessity",
+          "negation",
+          "quantifier"
+        ],
+        "comment": "read the concepts of modality_scope via the teachers; measure coverage"
+      }
+    },
+    {
+      "local_id": 9,
+      "type": "CapabilityAxis",
+      "attrs": {
+        "is_axis": 1.0,
+        "capability_keys": [
+          "understand",
+          "situation_model"
+        ],
+        "saturation": 0.0,
+        "shortfall": 0.9,
+        "min_order": 1.0,
+        "investigated_count": 0,
+        "mf_stall": 0
+      }
+    },
+    {
+      "local_id": 10,
+      "type": "CapabilityAxis",
+      "attrs": {
+        "is_axis": 1.0,
+        "capability_keys": [
+          "understand",
+          "inference"
+        ],
+        "saturation": 0.0,
+        "shortfall": 0.86,
+        "min_order": 1.0,
+        "investigated_count": 0,
+        "mf_stall": 0
+      }
+    },
+    {
+      "local_id": 11,
+      "type": "CapabilityAxis",
+      "attrs": {
+        "is_axis": 1.0,
+        "capability_keys": [
+          "understand",
+          "semantic_roles"
+        ],
+        "saturation": 0.0,
+        "shortfall": 0.82,
+        "min_order": 1.0,
+        "investigated_count": 0,
+        "mf_stall": 0
+      }
+    },
+    {
+      "local_id": 12,
+      "type": "CapabilityAxis",
+      "attrs": {
+        "is_axis": 1.0,
+        "capability_keys": [
+          "understand",
+          "discourse_coherence"
+        ],
+        "saturation": 0.0,
+        "shortfall": 0.78,
+        "min_order": 1.0,
+        "investigated_count": 0,
+        "mf_stall": 0
+      }
+    },
+    {
+      "local_id": 13,
+      "type": "CapabilityAxis",
+      "attrs": {
+        "is_axis": 1.0,
+        "capability_keys": [
+          "understand",
+          "event_causal"
+        ],
+        "saturation": 0.0,
+        "shortfall": 0.74,
+        "min_order": 1.0,
+        "investigated_count": 0,
+        "mf_stall": 0
+      }
+    },
+    {
+      "local_id": 14,
+      "type": "CapabilityAxis",
+      "attrs": {
+        "is_axis": 1.0,
+        "capability_keys": [
+          "understand",
+          "theory_of_mind"
+        ],
+        "saturation": 0.0,
+        "shortfall": 0.7,
+        "min_order": 1.0,
+        "investigated_count": 0,
+        "mf_stall": 0
+      }
+    },
+    {
+      "local_id": 15,
+      "type": "CapabilityAxis",
+      "attrs": {
+        "is_axis": 1.0,
+        "capability_keys": [
+          "understand",
+          "argument_logic"
+        ],
+        "saturation": 0.0,
+        "shortfall": 0.66,
+        "min_order": 1.0,
+        "investigated_count": 0,
+        "mf_stall": 0
+      }
+    },
+    {
+      "local_id": 16,
+      "type": "CapabilityAxis",
+      "attrs": {
+        "is_axis": 1.0,
+        "capability_keys": [
+          "understand",
+          "modality_scope"
+        ],
+        "saturation": 0.0,
+        "shortfall": 0.62,
+        "min_order": 1.0,
+        "investigated_count": 0,
+        "mf_stall": 0
+      }
+    }
+  ],
+  "edges": [
+    {
+      "src": {
+        "local": 9
+      },
+      "tgt": {
+        "local": 1
+      },
+      "type": "investigated_by",
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 1
+      },
+      "tgt": {
+        "local": 0
+      },
+      "type": "applies_in",
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 10
+      },
+      "tgt": {
+        "local": 2
+      },
+      "type": "investigated_by",
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 2
+      },
+      "tgt": {
+        "local": 0
+      },
+      "type": "applies_in",
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 11
+      },
+      "tgt": {
+        "local": 3
+      },
+      "type": "investigated_by",
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 3
+      },
+      "tgt": {
+        "local": 0
+      },
+      "type": "applies_in",
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 12
+      },
+      "tgt": {
+        "local": 4
+      },
+      "type": "investigated_by",
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 4
+      },
+      "tgt": {
+        "local": 0
+      },
+      "type": "applies_in",
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 13
+      },
+      "tgt": {
+        "local": 5
+      },
+      "type": "investigated_by",
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 5
+      },
+      "tgt": {
+        "local": 0
+      },
+      "type": "applies_in",
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 14
+      },
+      "tgt": {
+        "local": 6
+      },
+      "type": "investigated_by",
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 6
+      },
+      "tgt": {
+        "local": 0
+      },
+      "type": "applies_in",
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 15
+      },
+      "tgt": {
+        "local": 7
+      },
+      "type": "investigated_by",
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 7
+      },
+      "tgt": {
+        "local": 0
+      },
+      "type": "applies_in",
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 16
+      },
+      "tgt": {
+        "local": 8
+      },
+      "type": "investigated_by",
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 8
+      },
+      "tgt": {
+        "local": 0
+      },
+      "type": "applies_in",
+      "attrs": {}
+    }
+  ],
+  "rules": []
+}

@@ -1,0 +1,49 @@
+{
+  "id": "counterfactual_experiment",
+  "version": "1.0.0",
+  "depends_on": ["generative_world_model"],
+  "capability_keys": ["counterfactual_experiment", "hypothesis_test_modality"],
+  "description": "Routes self-tests whose evidence domain is the graph into the existing detached, ungrounded cognition loop. External dispatch remains reserved for tests that explicitly require a world or interaction replay. An imagined result is retained as counterfactual evidence and never promoted to grounded truth by this seed.",
+  "nodes": [],
+  "edges": [],
+  "productions": [
+    {"provenance": "seed:counterfactual_experiment:request-experiment", "src": {"type": "ImagineRequest", "var": "request"}, "edge_type": "rehearses_experiment", "tgt": {"type": "Experiment", "var": "experiment"}},
+    {"provenance": "seed:counterfactual_experiment:experiment-request", "src": {"type": "Experiment", "var": "experiment"}, "edge_type": "has_counterfactual_request", "tgt": {"type": "ImagineRequest", "var": "request"}},
+    {"provenance": "seed:counterfactual_experiment:experiment-evidence", "src": {"type": "Experiment", "var": "experiment"}, "edge_type": "has_counterfactual_evidence", "tgt": {"type": "Imagination", "var": "imagination"}}
+  ],
+  "rules": [
+    {
+      "name": "ce_rehearse_graph_native_hypothesis",
+      "area": "default_mode",
+      "order": 3,
+      "latency_class": "best_effort",
+      "match": [["axis", "tested_by", "experiment"], ["experiment", "has_delta", "delta"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "experiment"}, "key": "status"}, "b": {"type": "Lit", "value": "counterfactual_requested"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "experiment"}, "key": "epistemic_scope"}, "b": {"type": "Lit", "value": "graph_counterfactual"}},
+        {"type": "Not", "arg": {"type": "Exists", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "experiment"}, "edge_type": "has_counterfactual_request", "any_type": false}, "var_name": "prior", "predicate": {"type": "Lit", "value": true}}}
+      ]},
+      "effects": [
+        ["add_node", "request", "ImagineRequest", {"status": "requested", "kind": "self_experiment", "hypothesis_template": "{}", "why": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "experiment"}, "key": "hypothesis"}}}],
+        ["add_edge", "request", "focuses_on_axis", "axis"],
+        ["add_edge", "request", "rehearses_experiment", "experiment"],
+        ["add_edge", "experiment", "has_counterfactual_request", "request"],
+        ["set_attr", "experiment", "status", "counterfactual_running"]
+      ]
+    },
+    {
+      "name": "ce_retain_imagination_as_non_oracular_evidence",
+      "area": "learning",
+      "order": 4,
+      "latency_class": "soft_realtime",
+      "match": [["request", "rehearses_experiment", "experiment"], ["request", "produced_imagination", "imagination"]],
+      "where": {"type": "Not", "arg": {"type": "Exists", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "experiment"}, "edge_type": "has_counterfactual_evidence", "any_type": false}, "var_name": "prior", "predicate": {"type": "Eq", "a": {"type": "Var", "name": "prior"}, "b": {"type": "Var", "name": "imagination"}}}},
+      "effects": [
+        ["add_edge", "experiment", "has_counterfactual_evidence", "imagination"],
+        ["set_attr", "experiment", "status", "counterfactual_done"],
+        ["set_attr", "experiment", "evidence_kind", "imagined"],
+        ["set_attr", "experiment", "requires_external_validation", 1]
+      ]
+    }
+  ]
+}

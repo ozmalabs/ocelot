@@ -1,0 +1,73 @@
+{
+  "id": "reading_reform_ingest",
+  "version": "1.0.0",
+  "depends_on": ["reading_cortices"],
+  "description": "BLIND-SPOT CLOSURE R8 (reform components reach the situation model, 2026-07-12). `reform_overcomplex_clause` (seeds/reading_aperture.json) + its mechanical executor (`reading_drive._execute_pending_reforms`) already decompose an over-complex SentenceParse into component `part_of`/marker predications and record them as `reform_predications` -- but, deliberately deferred at that wave, those components never reached the SmEntity/SmEvent situation model itself (only the parse node's own JSON attr). THIS seed closes that gap the SAME two-stage way reform_pending/reform_done already works: a rule DECIDES a completed reform's components belong in the model (`ingest_reform_components`, marking `reform_ingest_pending` on the SentenceParse once `reform_done=1`), and the mechanical executor (`reading_drive._execute_pending_reform_ingests`, run both opportunistically inside `_shim_monitoring` and via this seed's ALWAYS-ON `reform_ingest_reflex` -- mirroring `reading_reform_reflex.json`'s own two-call-site rationale, since the SAME 'material-triggered dispatch can settle before the rule fires' race applies one level up) mints the real graph structure: a `part_of` predication mints a real `part_of` EDGE between two SmEntity nodes via the EXISTING `inference_generation._mint_part_of` mechanical idiom (part_of is not a change-of-state verb `situation_model_reader.ingest_predication` would otherwise mint), stamped `from_reform=1` on the part SmEntity for provenance; any other reform predication (a compound-tail marker) is handed to `coref_entities.resolve_and_ingest`, the SAME reused entity/event minting path the live reading spine already uses. Guarded by `reform_ingested` (the `kin_monitored`/`reform_done` idiom applied one level up) -- exactly-once, and the once-per-sentence `kin_monitored` KINSHIP guard is UNTOUCHED (it reads `resolved_predications`, never `reform_predications`, so re-ingesting the reform's components never re-triggers or duplicates a kinship scan).",
+  "microtheory": {
+    "name": "reading_reform_ingest",
+    "description": "a standing rule + reflex that mechanically re-ingests a completed reform's decomposed component predications into the flow's own situation model."
+  },
+  "nodes": [],
+  "edges": [],
+  "productions": [],
+  "rules": [
+    {
+      "name": "ingest_reform_components",
+      "comment": "DECISION: a SentenceParse whose reform has already completed (`reform_done=1`) has its components RE-INGESTED into the situation model -- marks `reform_ingest_pending=1`, the SAME pending/done handoff `reform_overcomplex_clause` itself uses one stage earlier. Mint-once (both Not guards).",
+      "match": [
+        ["sp", "is_sentence_parse", "sp"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "sp"}, "key": "reform_done"},
+            "b": {"type": "Lit", "value": 1.0}
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {"type": "Attr", "node": {"type": "Var", "name": "sp"}, "key": "reform_ingest_pending"},
+              "b": {"type": "Lit", "value": 1.0}
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {"type": "Attr", "node": {"type": "Var", "name": "sp"}, "key": "reform_ingested"},
+              "b": {"type": "Lit", "value": 1.0}
+            }
+          }
+        ]
+      },
+      "effects": [
+        ["set_attr", "sp", "reform_ingest_pending", 1.0]
+      ]
+    }
+  ],
+  "reflexes": [
+    {
+      "name": "reform_ingest_reflex",
+      "stimulus": {
+        "type": "Exists",
+        "source": {"type": "NodesOfType", "node_type": "SentenceParse"},
+        "var_name": "sp",
+        "predicate": {
+          "type": "And",
+          "items": [
+            {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "sp"}, "key": "reform_ingest_pending"},
+             "b": {"type": "Lit", "value": 1.0}},
+            {"type": "Not", "arg": {"type": "Eq",
+              "a": {"type": "Attr", "node": {"type": "Var", "name": "sp"}, "key": "reform_ingested"},
+              "b": {"type": "Lit", "value": 1.0}}}
+          ]
+        }
+      },
+      "response": "reform_ingest_advance",
+      "refractory_ticks": 0
+    }
+  ]
+}

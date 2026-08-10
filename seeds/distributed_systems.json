@@ -1,0 +1,734 @@
+{
+ "id": "distributed_systems",
+ "version": "0.1.0",
+ "depends_on": [
+  "compiler_theory",
+  "databases_and_storage",
+  "network_protocols"
+ ],
+ "description": "Distributed systems as graph-resident theory. Beyond what databases_and_storage covers (consensus, replication, CAP, sharding): microservices architecture, service mesh, resilience patterns (circuit breaker, bulkhead, retry+backoff), saga/event-sourcing/CQRS, distributed tracing (OpenTelemetry), service discovery, load balancing, distributed transactions (2PC, TCC), logical time (Lamport, vector, hybrid), failure detection (heartbeat, gossip, phi accrual), idempotency, delivery semantics (at-most/at-least/exactly-once), rate limiting, distributed locking, chaos engineering, SRE (SLA/SLO/SLI/error budgets), observability. The mechanisms by which independent processes cooperate at scale despite network unreliability.",
+ "category_inheritance": "genlMt → compiler_theory + databases_and_storage + network_protocols. Distributed-system correctness arguments map to compiler_theory equivalence vocabulary: idempotency is referential transparency (multiple delivery same as one); eventual consistency is denotational equivalence in the limit; saga compensations are algebraic inverse operations.",
+ "concepts": [
+  {
+   "name": "monolith_vs_microservices",
+   "definition": "Monolith: single deployable unit. Microservices: many small deployables, network-connected.",
+   "why": "Different tradeoffs. Monolith: simpler deploy + local calls + atomic refactor. Microservices: independent scaling + tech diversity + team autonomy + network failure modes. Most modern systems are somewhere on the spectrum.",
+   "category": "architecture"
+  },
+  {
+   "name": "fallacies_of_distributed_computing",
+   "definition": "Peter Deutsch's 8 fallacies: network is reliable, latency is zero, bandwidth is infinite, network is secure, topology doesn't change, one administrator, transport cost is zero, network is homogeneous.",
+   "why": "Each false. Designing as if they're true produces fragile systems. Distributed code must explicitly handle: failures, latency, partial information, security, evolution.",
+   "category": "architecture"
+  },
+  {
+   "name": "service_mesh",
+   "definition": "Infrastructure layer for service-to-service communication. Sidecar proxy per service + control plane. Istio, Linkerd, Consul Connect.",
+   "why": "Standardise: mTLS, retry policy, circuit breaking, observability across all services without per-service code. Cost: complexity, sidecar resource overhead. Production-grade since ~2020.",
+   "category": "architecture"
+  },
+  {
+   "name": "sidecar_pattern",
+   "definition": "Co-located helper process. App container + sidecar container in same pod. Sidecar handles cross-cutting concerns (TLS, telemetry).",
+   "why": "Service mesh's deployment unit. Sidecar transparent to app. Cost: per-pod resource overhead. Alternative: shared libraries (per-language work).",
+   "category": "architecture"
+  },
+  {
+   "name": "API_gateway",
+   "definition": "Single entry point for client requests. Handles auth, routing, rate limiting, transformation. Kong, AWS API Gateway, Tyk.",
+   "why": "Centralise concerns for external traffic. Internal traffic via service mesh. Both patterns coexist in mature systems.",
+   "category": "architecture"
+  },
+  {
+   "name": "BFF_backend_for_frontend",
+   "definition": "Per-client-type backend layer. Mobile BFF vs web BFF aggregate microservices per UI needs.",
+   "why": "Avoids exposing internal microservices to clients. UI-specific data shaping. Common when different clients (web/mobile/IoT) need different data shapes.",
+   "category": "architecture"
+  },
+  {
+   "name": "circuit_breaker",
+   "definition": "Wrap remote call. After N failures within window: open circuit; subsequent calls fail fast without attempting. After timeout: half-open (try one); close on success.",
+   "why": "Prevent cascading failure: if downstream is dead, don't waste resources trying. Hystrix popularised; resilience4j, Polly modern implementations. Service mesh provides natively.",
+   "category": "resilience"
+  },
+  {
+   "name": "bulkhead_pattern",
+   "definition": "Isolate failure domains. Separate thread pools / connection pools / instances per dependency or tenant.",
+   "why": "Failure in one bulkhead doesn't sink others. Slow dependency consuming all threads = total outage; bulkheads contain. Ship's hull analogy.",
+   "category": "resilience"
+  },
+  {
+   "name": "retry_with_backoff",
+   "definition": "Transient failure: wait + retry. Exponential backoff: 100ms, 200ms, 400ms, ... + jitter to avoid thundering herd.",
+   "why": "Many failures are transient (load spike, brief partition). Retry recovers. Cost: amplifies load if downstream broken. Combined with circuit breaker.",
+   "category": "resilience"
+  },
+  {
+   "name": "jitter",
+   "definition": "Random component added to backoff. Avoid synchronised retries from many clients.",
+   "why": "Without jitter: clients retry at same instants → thundering herd → cause the next failure. Full jitter: random(0, backoff). Equal jitter: backoff/2 + random(0, backoff/2). Standard practice.",
+   "category": "resilience"
+  },
+  {
+   "name": "timeout_propagation",
+   "definition": "Context-aware deadline. Request enters with deadline; passed through service calls; each call respects remaining budget.",
+   "why": "Without: long downstream call leaves client thinking failed but work continues; resources wasted. With: cascading cancellation. gRPC's context.Deadline standard.",
+   "category": "resilience"
+  },
+  {
+   "name": "fail_fast_principle",
+   "definition": "Detect failure early; don't continue degraded. Health check fail → remove from rotation; bad config → refuse to start.",
+   "why": "Silent degradation is worst case (broken but appears healthy). Explicit failure is observable + recoverable. SRE practice.",
+   "category": "resilience"
+  },
+  {
+   "name": "graceful_degradation",
+   "definition": "Reduce functionality under stress rather than fail entirely. Disable expensive features under load.",
+   "why": "Partial service > no service. E.g., search works but personalization fallback to popular items. Designed-in vs reactive.",
+   "category": "resilience"
+  },
+  {
+   "name": "saga_pattern",
+   "definition": "Sequence of local transactions with compensating transactions to undo on failure. Distributed transaction alternative to 2PC.",
+   "why": "2PC blocks; sagas don't. Long-running business processes. Cost: compensations are not always cleanly invertible (charged credit card, sent email). Modern: orchestration vs choreography flavours.",
+   "category": "consistency_pattern"
+  },
+  {
+   "name": "saga_choreography",
+   "definition": "Each service reacts to events; emits own events. No central coordinator.",
+   "why": "Decoupled but distributed logic; hard to reason about. Each service knows only its piece. Good for simple flows; debugging complex flows is hard.",
+   "category": "consistency_pattern"
+  },
+  {
+   "name": "saga_orchestration",
+   "definition": "Central orchestrator drives saga. Calls services; on failure, calls compensations.",
+   "why": "Centralised logic = easier to reason about. Cost: orchestrator is critical service. Tools: AWS Step Functions, Temporal, Camunda.",
+   "category": "consistency_pattern"
+  },
+  {
+   "name": "event_sourcing",
+   "definition": "Persist sequence of events instead of current state. Current state = replay events.",
+   "why": "Audit log built in. Time travel: reconstruct state at any point. Cost: query against current state requires projection. Used in financial systems, complex domains.",
+   "category": "consistency_pattern"
+  },
+  {
+   "name": "CQRS",
+   "definition": "Command Query Responsibility Segregation. Separate write model (commands) from read model (queries).",
+   "why": "Optimise each independently. Often paired with event sourcing. Write model = events; read models = projections for specific queries. Cost: eventual consistency between write + read.",
+   "category": "consistency_pattern"
+  },
+  {
+   "name": "two_phase_commit_2PC",
+   "definition": "Distributed transaction protocol. Phase 1: prepare (all participants vote). Phase 2: commit or abort (coordinator decides).",
+   "why": "ACID across multiple resources. Blocks indefinitely if coordinator fails after prepare. Used in XA transactions; modern systems prefer sagas + idempotency.",
+   "category": "consistency_pattern"
+  },
+  {
+   "name": "TCC_try_confirm_cancel",
+   "definition": "Three-phase pattern. Try: reserve resources. Confirm: commit. Cancel: release reservations.",
+   "why": "Saga variant with explicit reservation phase. Better than 2PC (no blocking) but requires application-level support. Used in payment + booking systems.",
+   "category": "consistency_pattern"
+  },
+  {
+   "name": "idempotency_distributed",
+   "definition": "Operation produces same result regardless of how many times executed. Tied to idempotency key.",
+   "why": "Necessary for at-least-once delivery + safe retries. Client sends key; server detects duplicate. Stripe's API exemplar.",
+   "category": "consistency_pattern"
+  },
+  {
+   "name": "exactly_once_semantics",
+   "definition": "Each operation executes exactly once despite failures. Hard in general; achievable with constraints.",
+   "why": "Idempotency + at-least-once = effectively-once. Pure exactly-once impossible without coordination. Kafka's 'exactly once' is producer idempotency + transactional offsets.",
+   "category": "consistency_pattern"
+  },
+  {
+   "name": "at_most_once_delivery",
+   "definition": "Message delivered zero or one times. Lost messages possible; duplicates not.",
+   "why": "Default for fire-and-forget (UDP). Use case: metrics, telemetry where loss acceptable.",
+   "category": "consistency_pattern"
+  },
+  {
+   "name": "at_least_once_delivery",
+   "definition": "Message delivered one or more times. Duplicates possible; loss not.",
+   "why": "Default for most reliable messaging (Kafka, SQS). Requires idempotent consumers. Most common production choice.",
+   "category": "consistency_pattern"
+  },
+  {
+   "name": "lamport_timestamp",
+   "definition": "Logical clock: increment on local event, max(local, received)+1 on receive. Defines partial order.",
+   "why": "Distributed system has no global time. Lamport timestamps order causally-related events. Cannot detect concurrency. Foundation of distributed time.",
+   "category": "logical_time"
+  },
+  {
+   "name": "vector_clock",
+   "definition": "Each node has counter; on send, includes whole vector; on receive, max element-wise + increment own.",
+   "why": "Captures causality + concurrency (vectors incomparable = concurrent events). More info than Lamport at cost of size O(N) nodes. Used in Dynamo, Voldemort.",
+   "category": "logical_time"
+  },
+  {
+   "name": "hybrid_logical_clock",
+   "definition": "HLC. Combine physical time + logical counter. Bounded drift from physical clock.",
+   "why": "Lamport doesn't relate to wall clock. HLC: physical time-ish + logical for tie-breaking. Used in CockroachDB, YugabyteDB. Practical compromise.",
+   "category": "logical_time"
+  },
+  {
+   "name": "NTP_clock_sync",
+   "definition": "Network Time Protocol. Synchronise clocks via stratum hierarchy. Typical drift ~1-50ms.",
+   "why": "Best-effort wall-clock sync. Insufficient for ordering events (clocks drift). Spanner uses TrueTime (atomic clocks + GPS) for tight bounds; few systems can.",
+   "category": "logical_time"
+  },
+  {
+   "name": "TrueTime_Spanner",
+   "definition": "Google Spanner's bounded-uncertainty clock API. Returns interval [earliest, latest] with bounded uncertainty.",
+   "why": "Tight bounds (~7ms uncertainty) via GPS + atomic clocks. Enables external consistency. Other systems (CockroachDB) emulate with HLC + larger uncertainty.",
+   "category": "logical_time"
+  },
+  {
+   "name": "heartbeat_failure_detection",
+   "definition": "Periodic 'I'm alive' message. Receiver suspects failure after N missed.",
+   "why": "Simple. Threshold tradeoff: too tight = false positives; too loose = slow detection. Most basic failure detector.",
+   "category": "failure_detection"
+  },
+  {
+   "name": "gossip_protocol",
+   "definition": "Each node periodically gossips state to random peers. State spreads exponentially.",
+   "why": "Scalable failure detection + state dissemination. O(log N) rounds to converge. Used in Cassandra, Consul, Dynamo.",
+   "category": "failure_detection"
+  },
+  {
+   "name": "phi_accrual_failure_detector",
+   "definition": "Continuous probability of failure rather than binary up/down. φ value rises as heartbeats overdue.",
+   "why": "Better than threshold-based: app decides what φ level triggers action. Used in Cassandra, Akka. Adapts to network latency variability.",
+   "category": "failure_detection"
+  },
+  {
+   "name": "SWIM_protocol",
+   "definition": "Scalable Weakly-consistent Infection-style process group Membership. Direct probe + indirect probe via peers.",
+   "why": "Used in Hashicorp Serf, Memberlist, Consul. Better failure detection accuracy than naive heartbeat. Subgossiping spreads membership info.",
+   "category": "failure_detection"
+  },
+  {
+   "name": "service_discovery",
+   "definition": "Mechanism for services to find each other. DNS-based (Kubernetes), key-value (Consul, etcd), registry (Eureka).",
+   "why": "Hardcoded endpoints don't survive scaling/restart/migration. Discovery dynamic. K8s DNS-based standard for Kubernetes; service mesh extends.",
+   "category": "service_communication"
+  },
+  {
+   "name": "load_balancer_L4",
+   "definition": "Layer 4 (TCP) load balancing. Distribute connections; no payload inspection.",
+   "why": "Fast, simple, protocol-agnostic. Used for high throughput. Cost: can't route based on HTTP headers, URL. AWS NLB, Linux IPVS.",
+   "category": "service_communication"
+  },
+  {
+   "name": "load_balancer_L7",
+   "definition": "Layer 7 (HTTP) load balancing. Inspect headers, route by path/host/header. SSL termination.",
+   "why": "Smart routing: canary deploys, A/B tests, version pinning. Envoy, Nginx, HAProxy, AWS ALB. Slower than L4; functionality justifies.",
+   "category": "service_communication"
+  },
+  {
+   "name": "consistent_hashing_distributed",
+   "definition": "Hash ring distributes load. Adding/removing nodes moves O(1/N) keys.",
+   "why": "Already in databases_and_storage; here as distributed system pattern. Foundation of distributed caches, load balancers, sharded systems.",
+   "category": "service_communication"
+  },
+  {
+   "name": "sticky_session",
+   "definition": "Load balancer routes same client to same backend. Cookie-based or IP-based.",
+   "why": "When backend has session state. Cost: uneven load, dies with backend. Modern: prefer stateless backends + shared session store (Redis).",
+   "category": "service_communication"
+  },
+  {
+   "name": "liveness_probe",
+   "definition": "Periodic 'is this instance healthy enough to keep running?' check. Failure → restart.",
+   "why": "K8s standard. Catches deadlocks, deep failures. Cost: aggressive probe = restart loops. Tune to actual recovery time.",
+   "category": "service_communication"
+  },
+  {
+   "name": "readiness_probe",
+   "definition": "'Is this instance ready to serve traffic?' check. Failure → remove from load balancer (don't restart).",
+   "why": "Slow startup (cache warm-up, DB connection). Without readiness: traffic routed before ready → errors. K8s readiness gates LB.",
+   "category": "service_communication"
+  },
+  {
+   "name": "graceful_shutdown",
+   "definition": "On shutdown signal: stop accepting new requests, drain in-flight, then exit.",
+   "why": "Abrupt shutdown = in-flight requests fail. Graceful: K8s sends SIGTERM, waits terminationGracePeriodSeconds, then SIGKILL. Standard pattern.",
+   "category": "service_communication"
+  },
+  {
+   "name": "rate_limiting_token_bucket",
+   "definition": "Token bucket: tokens added at rate R, max capacity C. Each request consumes a token; reject if empty.",
+   "why": "Allows bursts (up to C) while limiting sustained rate (R). Standard algorithm. Used in API gateways, load balancers.",
+   "category": "service_communication"
+  },
+  {
+   "name": "rate_limiting_leaky_bucket",
+   "definition": "Leaky bucket: incoming requests queue; processed at constant rate. Overflow = drop.",
+   "why": "Smooths output (vs token bucket allowing bursts). Used where downstream can't handle bursts. Different tradeoffs from token bucket.",
+   "category": "service_communication"
+  },
+  {
+   "name": "distributed_rate_limiting",
+   "definition": "Rate limit across cluster of API gateways. Redis-based counter + atomic INCR + TTL.",
+   "why": "Local rate limit per node lets cluster exceed global limit by N. Centralised counter expensive. Compromise: distributed approximations (Redis cell, sliding window log).",
+   "category": "service_communication"
+  },
+  {
+   "name": "backpressure",
+   "definition": "Downstream signals 'slow down' to upstream. Bounded queues; refuse work when full.",
+   "why": "Without: queue grows unboundedly, memory exhaustion, cascading failure. With: caller deals with rejection (retry, drop, alternate path). Reactive streams' core principle.",
+   "category": "service_communication"
+  },
+  {
+   "name": "distributed_locking_Redlock",
+   "definition": "Redlock algorithm: lock acquired on majority of N Redis instances. Antirez 2016.",
+   "why": "Popular pattern. Controversial: Kleppmann argues unsafe for protecting state. Safer use: advisory locks (efficiency, not correctness). Use ZooKeeper/etcd for safety-critical.",
+   "category": "service_communication"
+  },
+  {
+   "name": "distributed_tracing",
+   "definition": "Track requests as they flow through services. Each service adds span; spans assembled into trace.",
+   "why": "Debug performance, follow request paths. OpenTelemetry standard. Jaeger, Tempo, Zipkin backends. Critical for microservices observability.",
+   "category": "observability"
+  },
+  {
+   "name": "trace_context_propagation",
+   "definition": "Trace ID + span ID + sampling decision passed in headers. W3C Trace Context standard.",
+   "why": "Without propagation, can't connect spans across services. Standard headers: traceparent, tracestate. Frameworks auto-propagate.",
+   "category": "observability"
+  },
+  {
+   "name": "structured_logging",
+   "definition": "Logs as key-value records (JSON), not free-form text. Searchable + filterable.",
+   "why": "Grep on text doesn't scale. Structured: query by user_id, request_id, level. Modern: include trace_id for cross-system correlation. Loki, Elasticsearch, CloudWatch query.",
+   "category": "observability"
+  },
+  {
+   "name": "metrics_prometheus_style",
+   "definition": "Time-series numeric measurements. Counter, gauge, histogram. Scraped or pushed.",
+   "why": "Aggregate behaviour at scale. Logs answer 'what happened to this request'; metrics answer 'how is the system overall'. Prometheus + Grafana standard.",
+   "category": "observability"
+  },
+  {
+   "name": "three_pillars_observability",
+   "definition": "Logs (events), metrics (numbers), traces (causal chains). Distinct but complementary.",
+   "why": "Each answers different questions. Modern observability stacks integrate all three. OpenTelemetry unifying API. Tempo + Loki + Mimir (Grafana) example stack.",
+   "category": "observability"
+  },
+  {
+   "name": "SLO",
+   "definition": "Service Level Objective. Target reliability (99.9% availability, p99 < 200ms). Measured over rolling window.",
+   "why": "Quantitative reliability goal. Not 100% (cost-prohibitive). Drives engineering priorities. Google SRE book popularised.",
+   "category": "SRE"
+  },
+  {
+   "name": "SLA",
+   "definition": "Service Level Agreement. Contractual reliability commitment with penalties. SLO is internal target; SLA is external promise.",
+   "why": "SLA typically looser than SLO (buffer). SLO breach = engineering action; SLA breach = legal action. Distinction matters.",
+   "category": "SRE"
+  },
+  {
+   "name": "SLI",
+   "definition": "Service Level Indicator. Measured metric backing the SLO. e.g. successful_requests / total_requests.",
+   "why": "SLO needs measurement. SLI = the measurement. Common SLIs: availability, latency, throughput, error rate. Choose carefully — what you measure becomes what you optimise.",
+   "category": "SRE"
+  },
+  {
+   "name": "error_budget",
+   "definition": "1 - SLO = allowed unreliability. 99.9% SLO = 0.1% error budget = ~43 minutes/month.",
+   "why": "Quantifies risk tolerance. Spent budget = freeze risky changes. Unused = OK to ship faster. Aligns SRE + dev incentives.",
+   "category": "SRE"
+  },
+  {
+   "name": "RED_method",
+   "definition": "Rate, Errors, Duration. Three metrics per service. Tom Wilkie's framework.",
+   "why": "Simple per-service dashboard. Rate: requests/sec. Errors: % failed. Duration: latency distribution. Good for request-driven services.",
+   "category": "SRE"
+  },
+  {
+   "name": "USE_method",
+   "definition": "Utilization, Saturation, Errors. Per resource (CPU, disk, network). Brendan Gregg.",
+   "why": "Resource-centric view. Complementary to RED (per-service). Both used together for full picture.",
+   "category": "SRE"
+  },
+  {
+   "name": "chaos_engineering",
+   "definition": "Deliberately inject failures in production. Verify system handles. Netflix Chaos Monkey originated.",
+   "why": "Reveal hidden failure modes before they happen organically. Discipline: run experiments, observe, fix, repeat. Mature SRE practice.",
+   "category": "SRE"
+  },
+  {
+   "name": "blast_radius_limitation",
+   "definition": "Scope of impact when something goes wrong. Cells, canaries, gradual rollouts limit.",
+   "why": "Bad deploy to 100% = total outage. Cells (subset of traffic) → blast radius bounded. Standard production safety.",
+   "category": "SRE"
+  },
+  {
+   "name": "canary_deployment",
+   "definition": "Roll out new version to small subset (5%). Monitor metrics. Expand or roll back.",
+   "why": "Limit blast radius of bad code. Catches issues affecting real traffic. Standard rollout pattern. Service mesh + LB support.",
+   "category": "SRE"
+  },
+  {
+   "name": "blue_green_deployment",
+   "definition": "Two identical environments. Switch traffic from blue to green atomically. Roll back by switching back.",
+   "why": "Zero-downtime + fast rollback. Cost: double resources during deploy. Less granular than canary (all-or-nothing).",
+   "category": "SRE"
+  },
+  {
+   "name": "feature_flag",
+   "definition": "Runtime toggle to enable/disable code path. LaunchDarkly, Unleash, GrowthBook.",
+   "why": "Decouple deploy from release. Test in production safely. Rollback without redeploy. Trunk-based development enabler.",
+   "category": "SRE"
+  },
+  {
+   "name": "blameless_postmortem",
+   "definition": "Incident analysis focused on systems + processes, not individual fault. Document timeline + root cause + actions.",
+   "why": "Fear of blame hides information. Blameless = honesty + better lessons. Google SRE + Etsy popularised. Standard mature engineering practice.",
+   "category": "SRE"
+  },
+  {
+   "name": "distributed_cache_pattern",
+   "definition": "Shared cache across application instances. Reduce DB load + cross-service computation.",
+   "why": "Redis, Memcached. Patterns: cache-aside (app manages), write-through (cache transparent to app), write-behind (async write to DB).",
+   "category": "scaling"
+  },
+  {
+   "name": "cache_aside_pattern",
+   "definition": "App reads cache; on miss reads DB + populates cache. Writes invalidate cache.",
+   "why": "Simple. App controls when to cache. Cost: race conditions on invalidation. Standard caching pattern.",
+   "category": "scaling"
+  },
+  {
+   "name": "write_through_cache",
+   "definition": "Writes go to cache + DB synchronously. Cache always consistent with DB.",
+   "why": "Read consistency guarantee. Cost: write latency = both stores. Used where read-after-write matters.",
+   "category": "scaling"
+  },
+  {
+   "name": "write_behind_cache",
+   "definition": "Writes to cache; async flush to DB. Lower write latency, possible loss on cache failure.",
+   "why": "Throughput at cost of durability. Used for non-critical writes (analytics, logs). Background flush controls DB load.",
+   "category": "scaling"
+  },
+  {
+   "name": "cache_invalidation_problem",
+   "definition": "'There are only two hard things in CS: cache invalidation, naming things, and off-by-one errors.' Phil Karlton.",
+   "why": "Stale cache = wrong data. TTL is approximate. Event-based invalidation is complex. Pragmatic: short TTL + accept some staleness.",
+   "category": "scaling"
+  },
+  {
+   "name": "CDN_edge_caching",
+   "definition": "Cache at network edge (close to users). CloudFront, Cloudflare, Fastly.",
+   "why": "Reduce latency + origin load. Static assets default. Increasingly dynamic content cached at edge with custom logic (Cloudflare Workers).",
+   "category": "scaling"
+  },
+  {
+   "name": "geo_replication",
+   "definition": "Replicate data + services across regions. Primary-replica or active-active.",
+   "why": "Locality (lower latency for distant users) + DR (region failure tolerance). Cost: cross-region replication latency, conflict resolution if active-active.",
+   "category": "scaling"
+  },
+  {
+   "name": "multi_region_failover",
+   "definition": "Failover from primary region to secondary on region failure. DNS-based (Route 53), application-level.",
+   "why": "Cloud region failures happen (AWS US-EAST-1 multiple times). Multi-region serves availability. Cost: complexity + replication cost.",
+   "category": "scaling"
+  },
+  {
+   "name": "anycast_routing",
+   "definition": "Same IP announced from multiple locations. BGP routes traffic to nearest.",
+   "why": "Global load distribution + DDoS mitigation. Cloudflare, Google DNS use heavily. Network-level optimization invisible to apps.",
+   "category": "scaling"
+  },
+  {
+   "name": "DNS_based_load_balancing",
+   "definition": "DNS returns different IPs based on geography, health, weights. Route 53 traffic policies, Cloudflare DNS.",
+   "why": "Coarse-grained (DNS TTL caching) but global. Often combined with anycast + L7 LB. Different layer of load distribution.",
+   "category": "scaling"
+  },
+  {
+   "name": "horizontal_vs_vertical_scaling",
+   "definition": "Horizontal: add more instances. Vertical: bigger instance.",
+   "why": "Vertical has limits + single point of failure. Horizontal scales further + fault tolerant. Vertical simpler. Modern: horizontal preferred when possible.",
+   "category": "scaling"
+  },
+  {
+   "name": "stateless_design",
+   "definition": "Service holds no client state between requests. State in DB / cache / token.",
+   "why": "Enables horizontal scaling: any instance handles any request. Loss of instance loses nothing. Auto-scaling friendly. Foundation of modern microservices.",
+   "category": "scaling"
+  },
+  {
+   "name": "messaging_queue_pattern",
+   "definition": "Producer → queue → consumer. Decouple time + load. Kafka, RabbitMQ, SQS.",
+   "why": "Async processing. Bursts absorbed by queue. Consumer can be slower than producer temporarily. Foundation of event-driven architecture.",
+   "category": "messaging"
+  },
+  {
+   "name": "pub_sub_pattern",
+   "definition": "Publishers send to topic; multiple subscribers receive. Decoupled.",
+   "why": "Fan-out. Many consumers for same event. Kafka topics, RabbitMQ exchanges, Redis pub/sub. Common for event-driven systems.",
+   "category": "messaging"
+  },
+  {
+   "name": "dead_letter_queue",
+   "definition": "Messages that consumers can't process moved to DLQ. Investigate without blocking main queue.",
+   "why": "Poison message blocks queue if retried forever. DLQ separates. Manual triage or automated processing. Standard pattern.",
+   "category": "messaging"
+  }
+ ],
+ "rules": [
+  {
+   "name": "circuit_breaker_prevents_cascading_failure",
+   "if": [
+    "a downstream dependency is failing"
+   ],
+   "then": [
+    "circuit breaker prevents wasted work + caller can fail fast"
+   ],
+   "why": "Without: keep trying, threads blocked waiting, eventually thread pool exhausted, cascading outage. With: open circuit fails immediately, threads return, system stable. Standard resilience pattern.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "idempotency_required_for_at_least_once",
+   "if": [
+    "delivery is at-least-once"
+   ],
+   "then": [
+    "consumer must be idempotent"
+   ],
+   "why": "At-least-once: duplicates expected. Non-idempotent consumer: duplicate = wrong state (charged twice, sent twice). Idempotency key + check enables safe retries. Kafka + SQS systems live here.",
+   "soundness_category": "referential_transparency"
+  },
+  {
+   "name": "exactly_once_via_idempotency_at_least_once",
+   "if": [
+    "consumer is idempotent + delivery is at-least-once"
+   ],
+   "then": [
+    "effective semantics is exactly-once"
+   ],
+   "why": "Pure exactly-once impossible. Idempotency reduces to: 'do the work; duplicate doesn't matter'. Effectively exactly-once from observer's view. Modern Kafka, Stripe's API exemplify.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "jitter_prevents_thundering_herd",
+   "if": [
+    "many clients retry with deterministic backoff"
+   ],
+   "then": [
+    "retries synchronise + amplify load"
+   ],
+   "why": "All clients hit 'wait 1s, try again' simultaneously. Add random jitter → spread retries → smoother load. Standard. AWS exponential backoff doc recommends.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "timeout_propagation_avoids_wasted_work",
+   "if": [
+    "request deadlines propagate through service calls"
+   ],
+   "then": [
+    "downstream stops work when client gave up"
+   ],
+   "why": "Without: client times out at 1s; downstream continues for 5s; resources wasted. With: each call checks remaining budget. gRPC context standard. Critical for high-throughput systems.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "graceful_shutdown_required_for_zero_downtime",
+   "if": [
+    "service handles in-flight requests on shutdown"
+   ],
+   "then": [
+    "rolling deploys can be zero-downtime"
+   ],
+   "why": "Without: SIGTERM kills in-flight requests; clients see errors. With: stop accepting + drain + exit. K8s + LB combine: deregister from LB → wait → SIGTERM → wait → SIGKILL.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "saga_replaces_2PC_for_long_processes",
+   "if": [
+    "transaction spans services + cannot block for hours"
+   ],
+   "then": [
+    "saga pattern outperforms 2PC"
+   ],
+   "why": "2PC blocks during prepare-commit. Long-running business processes can't lock for hours. Saga: per-step + compensations. Cost: not truly atomic; failure cases more complex.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "event_sourcing_preserves_history",
+   "if": [
+    "state is reconstructed from events"
+   ],
+   "then": [
+    "audit log + time travel come free"
+   ],
+   "why": "Current state is a derived view. Events are source of truth. Replay to any point: 'what was state on Friday?'. Cost: queries against current state need projections. Foundation in financial + regulated systems.",
+   "soundness_category": "referential_transparency"
+  },
+  {
+   "name": "CQRS_decouples_read_write_optimisation",
+   "if": [
+    "read patterns differ significantly from write"
+   ],
+   "then": [
+    "separate read + write models outperform unified"
+   ],
+   "why": "Single model serves both: compromises on both. Separate: writes optimised for consistency; reads optimised for query patterns (denormalised, multi-table joins precomputed). Cost: eventual consistency between models.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "vector_clocks_capture_concurrency",
+   "if": [
+    "events compared with vector clocks"
+   ],
+   "then": [
+    "concurrent vs causal relationships are detectable"
+   ],
+   "why": "Lamport timestamps order but lose concurrency (everything appears ordered). Vector clocks: incomparable vectors = concurrent. Necessary for conflict detection in eventually-consistent systems.",
+   "soundness_category": "algebraic_law"
+  },
+  {
+   "name": "physical_clocks_unreliable_for_ordering",
+   "if": [
+    "events ordered by wall clock timestamps"
+   ],
+   "then": [
+    "clock skew breaks ordering"
+   ],
+   "why": "NTP has ms-level drift; events within window have wrong relative order. Use logical time (Lamport, vector, HLC) for causal ordering. Wall clock acceptable only with TrueTime-style bounded uncertainty.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "gossip_scales_to_huge_clusters",
+   "if": [
+    "membership + state must propagate across thousands of nodes"
+   ],
+   "then": [
+    "gossip protocol outperforms broadcast"
+   ],
+   "why": "Broadcast: O(N) per update; gossip: O(log N) rounds to converge, O(1) per node per round. Cassandra: 1000s of nodes via gossip. Eventually consistent state.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "Redlock_unsafe_for_correctness_critical_locking",
+   "if": [
+    "distributed lock protects shared-state correctness"
+   ],
+   "then": [
+    "Redlock is not safe enough"
+   ],
+   "why": "Kleppmann's critique: process pause + clock skew can violate mutual exclusion. Acceptable for advisory locks (efficiency). For correctness, use Raft-based (etcd, ZooKeeper) with fencing tokens.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "trace_context_required_for_microservice_debugging",
+   "if": [
+    "request crosses multiple services"
+   ],
+   "then": [
+    "distributed tracing is required to understand behaviour"
+   ],
+   "why": "Single-server: stack trace shows everything. Microservices: each service is a stack trace. Trace context links them. OpenTelemetry standardising. Critical for production microservices.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "structured_logs_correlate_via_request_id",
+   "if": [
+    "logs include request ID propagated across services"
+   ],
+   "then": [
+    "full request flow is queryable"
+   ],
+   "why": "Free-form logs: grep + hope. Structured + request ID: query 'all logs for request X across all services'. Foundation of microservice debugging.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "SLO_drives_engineering_priority",
+   "if": [
+    "error budget is exhausted"
+   ],
+   "then": [
+    "risky changes are blocked until reliability improves"
+   ],
+   "why": "Error budget left → ship faster. Budget spent → focus on reliability. Aligns dev (ship features) + SRE (preserve reliability) incentives via shared metric. Google SRE practice.",
+   "soundness_category": "referential_transparency"
+  },
+  {
+   "name": "canary_limits_blast_radius",
+   "if": [
+    "deploys go to 5% before 100%"
+   ],
+   "then": [
+    "bad code affects 5% of traffic before being caught"
+   ],
+   "why": "Vs. full deploy: bad code affects 100%. Cost: deploy slower. Modern: automated canary analysis (Spinnaker, Argo Rollouts) detects regressions + rolls back automatically.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "chaos_engineering_reveals_hidden_failures",
+   "if": [
+    "chaos experiments run in production"
+   ],
+   "then": [
+    "latent failure modes surface before causing outages"
+   ],
+   "why": "Production has failure modes test environments don't. Chaos Monkey (Netflix): kill instances. Failure simulation reveals: missing timeouts, unbounded retries, untested fallbacks. SRE practice.",
+   "soundness_category": "referential_transparency"
+  },
+  {
+   "name": "cache_aside_simple_but_races_possible",
+   "if": [
+    "cache-aside is used"
+   ],
+   "then": [
+    "concurrent writes can produce stale cache"
+   ],
+   "why": "Two clients: A reads (miss), A reads DB, [B writes DB + invalidates cache], A populates cache with old value. Cache stale until next invalidation. Standard race; mitigations: short TTL, double-check, distributed locks.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "anycast_routes_to_nearest_PoP",
+   "if": [
+    "service announces same IP from multiple PoPs"
+   ],
+   "then": [
+    "BGP routes traffic to nearest PoP"
+   ],
+   "why": "Network-level load balancing + latency optimisation. Cloudflare global DNS: 1.1.1.1 anycast across 300+ cities. Each user → nearest. Failure: BGP withdraws + reroutes.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "stateless_services_horizontally_scalable",
+   "if": [
+    "service holds no session state"
+   ],
+   "then": [
+    "any instance can serve any request"
+   ],
+   "why": "State elsewhere (DB, cache, JWT). Add/remove instances freely. Auto-scaling works naturally. Load balancing simple (no sticky sessions). Foundation of cloud-native.",
+   "soundness_category": "referential_transparency"
+  },
+  {
+   "name": "dead_letter_queue_isolates_poison_messages",
+   "if": [
+    "a message persistently fails processing"
+   ],
+   "then": [
+    "DLQ prevents it from blocking the main queue"
+   ],
+   "why": "Without DLQ: retry forever, queue stuck. With DLQ: after N retries, move to DLQ for investigation. Main queue continues. Standard messaging pattern (SQS, Kafka with retry topics).",
+   "soundness_category": "extensional_equivalence"
+  }
+ ],
+ "exclusions": [],
+ "parent_mt": "computer_architecture",
+ "relations": [
+  {
+   "src": "distributed_systems",
+   "edge": "genlMt",
+   "tgt": "compiler_theory"
+  }
+ ]
+}

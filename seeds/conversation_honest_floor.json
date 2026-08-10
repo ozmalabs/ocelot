@@ -1,0 +1,76 @@
+{
+  "id": "conversation_honest_floor",
+  "version": "1.2.0",
+  "depends_on": ["conversation_reply"],
+  "description": "Graph-native honest floor when no other rule minted a text-bearing reply for a turn that expects one. The adapter never authors prose — this rule speaks the agent's honest minimum. v1.2.0 (blind-spot closure R6): a THIRD deferral guard, mirroring the existing answer_topic/answer_attachment ones, defers whenever a Goal{kind:answer_interlocutor_meta} exists for this message (seeds/first_person_routing.json::route_first_person_question_to_interlocutor) — a bare first-person question the graph routed to the interlocutor reader must not also get the bare floor reply.",
+  "nodes": [],
+  "edges": [],
+  "productions": [],
+  "rules": [
+    {
+      "name": "reply_honest_floor",
+      "match": [
+        ["agent", "received", "m"],
+        ["m", "has_intent", "i"],
+        ["i", "expects_response", "r"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "from"}, "b": {"type": "Lit", "value": "interlocutor"}},
+          {"type": "Not", "arg": {"type": "Exists", "source": {"type": "InNeighbours", "node": {"type": "Var", "name": "m"}, "edge_type": "responds_to"}, "var_name": "out",
+            "predicate": {"type": "And", "items": [
+              {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "out"}, "key": "from"}, "b": {"type": "Lit", "value": "agent"}},
+              {"type": "Or", "items": [
+                {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "out"}, "key": "text"}, "b": {"type": "Lit", "value": null}}},
+                {"type": "Exists", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "out"}, "edge_type": "has_speech_act"}, "var_name": "sa",
+                  "predicate": {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "sa"}, "key": "name"}, "b": {"type": "Lit", "value": "answer"}}}}
+              ]}
+            ]}}},
+          {"type": "Not", "arg": {"type": "And", "items": [
+            {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "adjacency_replied_act"}, "b": {"type": "Lit", "value": null}}},
+            {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "adjacency_replied_act"}, "b": {"type": "Lit", "value": "answer"}}}
+          ]}},
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "honest_floor_replied"}, "b": {"type": "Lit", "value": 1.0}}},
+          {"type": "Not", "arg": {"type": "Exists", "source": {"type": "Filter",
+            "source": {"type": "Neighbours", "node": {"type": "Var", "name": "agent"}, "edge_type": "has_goal"},
+            "var_name": "g",
+            "predicate": {"type": "And", "items": [
+              {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "kind"}, "b": {"type": "Lit", "value": "answer_topic"}},
+              {"type": "Exists", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "g"}, "edge_type": "comprehends"}, "var_name": "gm",
+                "predicate": {"type": "Eq", "a": {"type": "Var", "name": "gm"}, "b": {"type": "Var", "name": "m"}}}
+            ]}},
+            "var_name": "g", "predicate": {"type": "Lit", "value": true}}},
+          {"type": "Not", "arg": {"type": "Exists", "source": {"type": "Filter",
+            "source": {"type": "Neighbours", "node": {"type": "Var", "name": "agent"}, "edge_type": "has_goal"},
+            "var_name": "g2",
+            "predicate": {"type": "And", "items": [
+              {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "g2"}, "key": "kind"}, "b": {"type": "Lit", "value": "answer_attachment"}},
+              {"type": "Exists", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "g2"}, "edge_type": "comprehends"}, "var_name": "gm2",
+                "predicate": {"type": "Eq", "a": {"type": "Var", "name": "gm2"}, "b": {"type": "Var", "name": "m"}}}
+            ]}},
+            "var_name": "g2", "predicate": {"type": "Lit", "value": true}}},
+          {"type": "Not", "arg": {"type": "Exists", "source": {"type": "Filter",
+            "source": {"type": "Neighbours", "node": {"type": "Var", "name": "agent"}, "edge_type": "has_goal"},
+            "var_name": "g3",
+            "predicate": {"type": "And", "items": [
+              {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "g3"}, "key": "kind"}, "b": {"type": "Lit", "value": "answer_interlocutor_meta"}},
+              {"type": "Exists", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "g3"}, "edge_type": "comprehends"}, "var_name": "gm3",
+                "predicate": {"type": "Eq", "a": {"type": "Var", "name": "gm3"}, "b": {"type": "Var", "name": "m"}}}
+            ]}},
+            "var_name": "g3", "predicate": {"type": "Lit", "value": true}}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "m", "honest_floor_replied", 1.0],
+        ["add_node", "reply", "Message", {
+          "from": "agent",
+          "floor": 1.0,
+          "text": {"__term__": {"type": "Lit", "value": "I don't hold that."}}
+        }],
+        ["add_edge", "reply", "responds_to", "m"],
+        ["add_edge", "agent", "sent", "reply"]
+      ]
+    }
+  ]
+}

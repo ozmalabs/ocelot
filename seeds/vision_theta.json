@@ -1,0 +1,406 @@
+{
+  "id": "vision_theta",
+  "version": "1.0.0",
+  "depends_on": [
+    "vision_waves",
+    "vision_onoff"
+  ],
+  "description": "RUNG 8B -- THETA IS NOT GCAL's THETA. Rung 8 stopped at the PROTOCOL 1 calibration gate: an IDEAL split-Gabor scored OSI 0.1290 on the composed pathway vs 1.0000 on rung 6's own, so the probe was blind and no arm was interpretable. Its measured cause: theta is an EMA of the cell's own drive on the FORMATIVE input, and rung 7's retina is a predictive coder, so waves are cheap (act 0.861) while an out-of-distribution grating is expensive (act 1.902, 2.21x) -- theta lands at 0.774, BELOW the probe drive, and the iceberg never bites. THE DIAGNOSIS THIS SEED ACTS ON IS A FIDELITY CLAIM, not a parameter search: rung 6's oo_sunit_adapt_theta CITES GCAL and implements something structurally different. GCAL (Stevens et al. 2013, Eqs 7-8) integrates the error between an EMA of the cell's OUTPUT and a SETPOINT mu; rung 6's rule low-pass-FOLLOWS the INPUT drive and regulates nothing. A follower is scale-LOCKED to the ensemble it last saw; a setpoint regulator has an operating point BY CONSTRUCTION (theta moves until mean output = mu, so with mu small theta necessarily sits high in the response distribution and only the phase-peaks of well-driven orientations cross -- that IS Priebe & Ferster's iceberg, obtained by construction rather than by luck). THE REFRAME THIS FORCES ON THE ARC'S OWN INSTRUMENT: rung 6's 1.0000 was LUCK -- its probe drive (5.120) happened to sit just BELOW its formative drive (5.317), so theta=5.430 sliced the top; rung 8's 0.1290 is the same instrument being unlucky. This seed keeps GCAL's PLACEMENT (which rung 6 got right, and which is why theta cannot flip dw's sign) and restores GCAL's SETPOINT (which rung 6 dropped). theta_mode=0.0 DEFAULT => this seed is INERT and every result committed before it reproduces byte-identically (PROTOCOL 9). seeds/vision_onoff.json and seeds/vision_lateral.json are NOT edited (PROTOCOL 11.4; rung 8's 'compose, don't modify'): the GCAL arm sets rung 6's existing homeo=0, which PINS its EMA rule -- its own documented meaning -- so the two theta rules can never both fire. Every arm is a flag on a params node: the agent's own configuration, never a Python code path (PROTOCOL 0). Pre-registered in VISION_RUNG8B_PREREG.md BEFORE any run.",
+  "microtheory": "vision",
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "ThetaParams",
+      "attrs": {
+        "name": "default",
+        "theta_mode": 0.0,
+        "theta_adapt": 0.0,
+        "theta_mu": 0.024,
+        "theta_beta": 0.991,
+        "theta_lambda": 0.01,
+        "comment": "ALL knobs are GRAPH DATA (PROTOCOL 0). theta_mode: 0 (DEFAULT) = this seed is INERT -- rung 6's EMA-of-drive theta runs untouched and every committed result reproduces byte-identically (PROTOCOL 9); 1 = GCAL's setpoint homeostat (Eqs 7-8), and the arm must ALSO set rung 6's homeo=0 so its EMA rule is pinned and the two can never both fire. theta_adapt: 1 = theta adapts; 0 = theta is PINNED. The measurement protocol is adapt -> FREEZE -> measure: theta equilibrates on the ensemble being responded to, then theta_adapt=0 pins it, and only then does the probe run, so the probe never chases theta (rung 6's discipline, kept). This is ADAPTATION, not training -- weights stay frozen throughout (verified max|dw| = 0.000e+00), and it is separable ONLY because GCAL's placement means theta cannot flip dw's sign. theta_mu / theta_beta / theta_lambda: GCAL's PUBLISHED constants (0.024 / 0.991 / 0.01), LITERAL and UNMODIFIED, ONE set for both pathways -- moving mu after seeing a score is the parameter search the pre-registration forbids. THE KNOWN RISK, stated in advance: GCAL's mu lives in THEIR response units (L1-normalised weights, inputs in [0,1], so eta in [0,1] and mu means 'fire at 2.4% of maximum'); our weights are NOT normalised (Miller subtractive, wmax=2.0) and act runs ~0.86-5.3, so the literal constant may be far too sparse. If it fails by FLOOR INFLATION that is a RESULT pointing at GC -- GCAL's OTHER letter, divisive contrast-gain control, whose stated purpose is 'reduce presynaptic drive variance across patterns', verbatim the 2.21x rung 8 measured -- and NOT a prompt to re-tune mu."
+      }
+    }
+  ],
+  "edges": [],
+  "productions": [],
+  "rules": [
+    {
+      "name": "th_track_rbar",
+      "comment": "GCAL Eq 7 (Stevens, Law, Antolik & Bednar 2013), VISION_PRIOR_ART.md 2.2: rbar <- beta*rbar + (1-beta)*rate. THE SIGNAL IS THE CELL'S OUTPUT (the post-threshold rate), NOT its input drive. This is the half rung 6 dropped: oo_sunit_adapt_theta tracks `act` (the PRE-threshold drive), which makes it a low-pass FOLLOWER of its input with no setpoint, not a homeostat. A follower's fixed point is theta = E[act | whatever ensemble it last saw], so it is scale-LOCKED to the formative input and cannot transfer to a probe whose drive differs (rung 8 measured 2.21x, and the iceberg never bit). Phase-guarded on rate_step == step so rbar can only move AFTER this step's rate has been read (rung 6's own guard pattern, unchanged).",
+      "match_type": "SUnit",
+      "match": [
+        [
+          "r",
+          "has_sunit",
+          "u"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "PickUnique",
+                "source": {
+                  "type": "NodesOfType",
+                  "node_type": "OnOffParams"
+                }
+              },
+              "key": "onoff"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0.5
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "PickUnique",
+                "source": {
+                  "type": "NodesOfType",
+                  "node_type": "ThetaParams"
+                }
+              },
+              "key": "theta_mode"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0.5
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "PickUnique",
+                "source": {
+                  "type": "NodesOfType",
+                  "node_type": "ThetaParams"
+                }
+              },
+              "key": "theta_adapt"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0.5
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "u"
+              },
+              "key": "rbar_step"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "r"
+              },
+              "key": "step"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "u"
+              },
+              "key": "rate_step"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "r"
+              },
+              "key": "step"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "u",
+          "rbar",
+          {
+            "__term__": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Times",
+                  "items": [
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "PickUnique",
+                        "source": {
+                          "type": "NodesOfType",
+                          "node_type": "ThetaParams"
+                        }
+                      },
+                      "key": "theta_beta"
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "u"
+                      },
+                      "key": "rbar"
+                    }
+                  ]
+                },
+                {
+                  "type": "Times",
+                  "items": [
+                    {
+                      "type": "Minus",
+                      "a": {
+                        "type": "Lit",
+                        "value": 1.0
+                      },
+                      "b": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "PickUnique",
+                          "source": {
+                            "type": "NodesOfType",
+                            "node_type": "ThetaParams"
+                          }
+                        },
+                        "key": "theta_beta"
+                      }
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "u"
+                      },
+                      "key": "rate"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "u",
+          "rbar_step",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "r"
+              },
+              "key": "step"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "th_adapt_gcal",
+      "comment": "GCAL Eq 8: theta <- theta + lambda*(rbar - mu). THE ERROR TERM IS A DEVIATION FROM A SETPOINT mu, which is what makes this a homeostat: theta integrates until the cell's mean OUTPUT equals mu, so the operating point is defined by mu on ANY ensemble, at ANY drive scale. Rung 6 took GCAL's PLACEMENT (on the activation function, outside the learning rule, where theta cannot flip dw's sign -- structurally unable to annihilate, unlike BCM) and that placement is CORRECT and kept; what it dropped was the SETPOINT, and rung 8's I.1 named the consequence exactly: 'nothing there pins its SCALE across distributions'. mu IS what pins it. Constants are GCAL's PUBLISHED values (beta 0.991, lambda 0.01, mu 0.024), used literal and unmodified, ONE set for both pathways -- a fitted constant could rescue at most one of two pathways whose drives differ 6x. Phase-guarded on rbar_step == step so theta moves only after rbar has been updated this step.",
+      "match_type": "SUnit",
+      "match": [
+        [
+          "r",
+          "has_sunit",
+          "u"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "PickUnique",
+                "source": {
+                  "type": "NodesOfType",
+                  "node_type": "OnOffParams"
+                }
+              },
+              "key": "onoff"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0.5
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "PickUnique",
+                "source": {
+                  "type": "NodesOfType",
+                  "node_type": "ThetaParams"
+                }
+              },
+              "key": "theta_mode"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0.5
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "PickUnique",
+                "source": {
+                  "type": "NodesOfType",
+                  "node_type": "ThetaParams"
+                }
+              },
+              "key": "theta_adapt"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0.5
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "u"
+              },
+              "key": "theta_step"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "r"
+              },
+              "key": "step"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "u"
+              },
+              "key": "rbar_step"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "r"
+              },
+              "key": "step"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "u",
+          "theta",
+          {
+            "__term__": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "u"
+                  },
+                  "key": "theta"
+                },
+                {
+                  "type": "Times",
+                  "items": [
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "PickUnique",
+                        "source": {
+                          "type": "NodesOfType",
+                          "node_type": "ThetaParams"
+                        }
+                      },
+                      "key": "theta_lambda"
+                    },
+                    {
+                      "type": "Minus",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "u"
+                        },
+                        "key": "rbar"
+                      },
+                      "b": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "PickUnique",
+                          "source": {
+                            "type": "NodesOfType",
+                            "node_type": "ThetaParams"
+                          }
+                        },
+                        "key": "theta_mu"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "u",
+          "theta_step",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "r"
+              },
+              "key": "step"
+            }
+          }
+        ]
+      ]
+    }
+  ]
+}

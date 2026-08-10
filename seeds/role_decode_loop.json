@@ -1,0 +1,82 @@
+{
+  "id": "role_decode_loop",
+  "version": "0.1.0",
+  "depends_on": [
+    "event_role_frames"
+  ],
+  "description": "The role-growth rungs of the event-grounding sd-loop (Phase 3 of the graph-native event grounding: the Jabberwock grows its own argument roles). MIRRORS seeds/shape_decode_loop.json one level up: where that loop grows a CapabilityAxis from an unmatched shape residual, this loop grows a RoleFrame (a participant argument role) from an unmatched PARTICIPANT residual. The residual is an ANIMATE PP participant (WordNet animacy + the VerbNet prep->role table, precomputed on the EventClause as obl_animate/obl_role_ok/obl_canon_head) that NO RoleFrame in the event_roles codebook captured -- _ground_event marks it (role_residual=1, residual_head=<head>) as a mechanical residual OBSERVATION (I/O), and these rules DECIDE the growth: rf_mint_role mints a RoleFrame back from the residual (the thematic-oblique role, re-derived as graph data -- the earlier Python oblique patch now GROWN by the agent) + bumps codebook_epoch; rf_recognize clears a residual once a covering RoleFrame exists (no double-mint); rf_redecode re-arms a minted clause on codebook growth (the tick-driven re-decode, the same idiom sd_redecode uses). With the oblique RoleFrame present by default the residual never fires, so the corpus is byte-identical; the growth is demonstrated by booting WITHOUT the oblique RoleFrame (tests/test_role_growth_migrated.py): the animate PP is a residual, the agent mints the role, re-decode captures the dog. Loaded idempotently by reading_collapse._ensure_role_decode_loop via the Rust load_seed_manifest, guarded by a Seed{id:'role_decode_loop'} node.",
+  "microtheory": {
+    "name": "role_decode_loop",
+    "description": "an uncaptured animate participant is a residual; a novel argument role is minted from it via the sd loop, exactly as a CapabilityAxis is minted from an unmatched shape."
+  },
+  "nodes": [],
+  "edges": [],
+  "productions": [],
+  "rules": [
+    {
+      "name": "rf_mint_role",
+      "comment": "GROW: an EventClause carrying a role residual (role_residual==1 -- an animate PP participant _ground_event observed but no RoleFrame emitted) and no role_minted edge yet (fixpoint safety) mints a RoleFrame back from it, PROVIDED no grown_oblique RoleFrame already exists (dedup -- one growth suffices; later clauses are then captured by it and never mark a residual). The minted RoleFrame is the thematic-oblique role re-derived as graph data: head_attr obl_canon_head + the oblique guard (animate + role-typed PP head distinct from subj/obj). Bumps codebook_epoch (Plus) so rf_redecode re-arms minted clauses, exactly as grow_part_library bumps it in the shape loop.",
+      "match_type": "EventClause",
+      "match": [["ag", "has_clause", "clause"]],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "clause"}, "key": "role_residual"}, "b": {"type": "Lit", "value": 1.0}},
+          {"type": "Eq", "a": {"type": "Count", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "clause"}, "edge_type": "role_minted"}}, "b": {"type": "Lit", "value": 0}},
+          {"type": "Not", "arg": {"type": "Exists", "source": {"type": "NodesOfType", "node_type": "RoleFrame"}, "var_name": "rf2", "predicate": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "rf2"}, "key": "role"}, "b": {"type": "Lit", "value": "grown_oblique"}}}}
+        ]
+      },
+      "effects": [
+        ["add_node", "rf", "RoleFrame", {
+          "codebook": "event_roles",
+          "kind": "role_emit",
+          "role": "grown_oblique",
+          "head_attr": "obl_canon_head",
+          "minted_from_residual": {"__term__": {"type": "Lit", "value": 1.0}},
+          "guard_json": "{\"type\":\"And\",\"items\":[{\"type\":\"Not\",\"arg\":{\"type\":\"Eq\",\"a\":{\"type\":\"Attr\",\"node\":{\"type\":\"Var\",\"name\":\"c\"},\"key\":\"obl_canon_head\"},\"b\":{\"type\":\"Lit\",\"value\":\"\"}}},{\"type\":\"Not\",\"arg\":{\"type\":\"Lt\",\"a\":{\"type\":\"Attr\",\"node\":{\"type\":\"Var\",\"name\":\"c\"},\"key\":\"obl_animate\"},\"b\":{\"type\":\"Lit\",\"value\":1.0}}},{\"type\":\"Not\",\"arg\":{\"type\":\"Lt\",\"a\":{\"type\":\"Attr\",\"node\":{\"type\":\"Var\",\"name\":\"c\"},\"key\":\"obl_role_ok\"},\"b\":{\"type\":\"Lit\",\"value\":1.0}}},{\"type\":\"Not\",\"arg\":{\"type\":\"Eq\",\"a\":{\"type\":\"Attr\",\"node\":{\"type\":\"Var\",\"name\":\"c\"},\"key\":\"obl_canon_head\"},\"b\":{\"type\":\"Attr\",\"node\":{\"type\":\"Var\",\"name\":\"c\"},\"key\":\"r_subj\"}}},{\"type\":\"Not\",\"arg\":{\"type\":\"Eq\",\"a\":{\"type\":\"Attr\",\"node\":{\"type\":\"Var\",\"name\":\"c\"},\"key\":\"obl_canon_head\"},\"b\":{\"type\":\"Attr\",\"node\":{\"type\":\"Var\",\"name\":\"c\"},\"key\":\"r_obj\"}}}]}",
+          "source": "role_residual"
+        }],
+        ["add_edge", "clause", "role_minted", "rf"],
+        ["set_attr", "ag", "codebook_epoch", {"__term__": {"type": "Plus", "items": [{"type": "Attr", "node": {"type": "Var", "name": "ag"}, "key": "codebook_epoch"}, {"type": "Lit", "value": 1}]}}],
+        ["set_attr", "clause", "role_residual", {"__term__": {"type": "Lit", "value": 0.0}}],
+        ["set_attr", "clause", "status_role", "minted"]
+      ]
+    },
+    {
+      "name": "rf_recognize",
+      "comment": "COVERED branch: an EventClause that marked a role residual but for which a grown_oblique RoleFrame now EXISTS (minted this fixpoint by rf_mint_role, or already present) is recognized -- clear its residual so it does not re-mint, and stamp status_role=recognized. This is the role analogue of sd_recognize (residual now explained by the grown codebook).",
+      "match_type": "EventClause",
+      "match": [["ag", "has_clause", "clause"]],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "clause"}, "key": "role_residual"}, "b": {"type": "Lit", "value": 1.0}},
+          {"type": "Exists", "source": {"type": "NodesOfType", "node_type": "RoleFrame"}, "var_name": "rf3", "predicate": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "rf3"}, "key": "role"}, "b": {"type": "Lit", "value": "grown_oblique"}}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "clause", "role_residual", {"__term__": {"type": "Lit", "value": 0.0}}],
+        ["set_attr", "clause", "status_role", "recognized"]
+      ]
+    },
+    {
+      "name": "rf_redecode",
+      "comment": "Codebook GROWTH closes the loop: a minted/recognized clause whose role_epoch lags the Agent's codebook_epoch (bumped by rf_mint_role) re-arms -- it stamps the current epoch so a subsequent re-ground reruns the RoleFrame consult against the grown codebook. This is the role analogue of sd_redecode; the actual re-ground is _ground_event's next invocation (mechanical), the same tick-driven idiom the shape loop uses. Guarded on status_role so a plain (never-residual) clause never matches.",
+      "match_type": "EventClause",
+      "match": [["ag", "has_clause", "clause"]],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Or", "items": [
+            {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "clause"}, "key": "status_role"}, "b": {"type": "Lit", "value": "minted"}},
+            {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "clause"}, "key": "status_role"}, "b": {"type": "Lit", "value": "recognized"}}
+          ]},
+          {"type": "Lt", "a": {"type": "Attr", "node": {"type": "Var", "name": "clause"}, "key": "role_epoch"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "ag"}, "key": "codebook_epoch"}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "clause", "role_epoch", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "ag"}, "key": "codebook_epoch"}}]
+      ]
+    }
+  ]
+}

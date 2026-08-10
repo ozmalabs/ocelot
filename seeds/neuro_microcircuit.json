@@ -1,0 +1,148 @@
+{
+  "microtheory": {
+    "name": "cortical_microcircuit",
+    "definition": "The canonical 6-layer cortical microcircuit — the building block repeated across all cortex. Specific cell types, layer-specific connectivity, intrinsic dynamics. Douglas + Martin's canonical circuit (1991, 2004) defines the recurrent template. Understanding this circuit at this level means understanding how cortex computes — the same fixed architecture handles vision, audition, language, planning. Substrate analogue: a Mt is the substrate's repeated computational unit; its internal structure is what this Mt describes.",
+    "category": "neuroscience_domain",
+    "parent": "neuroscience"
+  },
+  "concepts": [
+    {
+      "name": "pyramidal_neuron",
+      "definition": "The cortex's primary excitatory output. Triangular soma, long apical dendrite reaching to L1, basal dendrites near soma. ~80% of cortical neurons. Substrate analogue: a Mt's exporting concept.",
+      "category": "cell_type"
+    },
+    {
+      "name": "basket_cell",
+      "definition": "Fast-spiking parvalbumin-positive inhibitory interneuron. Synapses on the soma of pyramidal neurons; controls firing rate. Substrate analogue: temperature regulation of a Mt's overall activation.",
+      "category": "cell_type"
+    },
+    {
+      "name": "chandelier_cell",
+      "definition": "PV+ interneuron synapsing on the axon initial segment of pyramidal neurons. Most powerful inhibition — can veto a pyramidal cell entirely. Substrate analogue: hard veto on individual concept firing.",
+      "category": "cell_type"
+    },
+    {
+      "name": "martinotti_cell",
+      "definition": "SST+ (somatostatin) interneuron. Inhibits the apical dendrites of pyramidal cells, gating top-down feedback. Substrate analogue: gates feedback influence on each concept.",
+      "category": "cell_type"
+    },
+    {
+      "name": "vip_interneuron",
+      "definition": "Vasoactive intestinal peptide interneuron. Disinhibits — targets SST cells. Activated by neuromodulators; opens up the cortex during attention. Substrate analogue: arousal-modulated gain on cortical processing.",
+      "category": "cell_type"
+    },
+    {
+      "name": "spiny_stellate_cell",
+      "definition": "L4 excitatory interneuron in sensory cortex. Primary recipient of thalamic input. Substrate analogue: input concept receiving from world adapter.",
+      "category": "cell_type"
+    },
+    {
+      "name": "layer_1",
+      "definition": "Mostly axons + dendrites from below. Few cells (Cajal-Retzius). Receives long-range cortico-cortical + thalamic feedback. Apical tufts of pyramidal cells synapse here. Substrate analogue: top-down feedback collection layer.",
+      "category": "layer"
+    },
+    {
+      "name": "layer_2_3",
+      "definition": "Cortico-cortical pyramidal neurons. Send long-range horizontal connections to other cortical areas; receive feedback from L1. Bulk of local recurrent computation. Substrate analogue: cross-Mt communication concepts.",
+      "category": "layer"
+    },
+    {
+      "name": "layer_4",
+      "definition": "Granular input layer. Receives thalamic input (in sensory cortex). Spiny stellates. Primary input gate. Substrate analogue: input-receiving concept layer.",
+      "category": "layer"
+    },
+    {
+      "name": "layer_5",
+      "definition": "Large pyramidal neurons projecting to subcortex (brainstem, thalamus, basal ganglia, cord). Cortical output. Substrate analogue: output concepts to world adapter.",
+      "category": "layer"
+    },
+    {
+      "name": "layer_6",
+      "definition": "Pyramidal cells projecting back to thalamus + local cortex. Feedback to input. Substrate analogue: backward edges modulating input gating.",
+      "category": "layer"
+    },
+    {
+      "name": "canonical_microcircuit",
+      "definition": "Douglas + Martin 1991. The repeating cortical circuit template: thalamus → L4 → L2/3 → L5 (output) + L6 (feedback to thalamus). Same architecture in every cortical area; specialisation comes from inputs + plasticity, not circuit changes. Substrate analogue: every Mt has the same structural template — input concepts, processing concepts, output concepts, feedback edges.",
+      "category": "circuit"
+    },
+    {
+      "name": "cortico_cortical_loop",
+      "definition": "Two cortical areas connect both feedforward (L2/3 of lower → L4 of higher) AND feedback (L5/6 of higher → L1 of lower). Bidirectional information flow. Substrate analogue: bidirectional genlMt connections.",
+      "category": "circuit"
+    },
+    {
+      "name": "lateral_inhibition",
+      "definition": "Within a cortical column, active pyramidal cells inhibit nearby pyramidal cells via interneurons. Sharpens selectivity; implements winner-take-all. Substrate analogue: substrate's argmax over Concept space within a Mt.",
+      "category": "circuit"
+    },
+    {
+      "name": "feedforward_inhibition",
+      "definition": "Input that excites pyramidal cells also excites interneurons, which then inhibit the same pyramidal cells with a delay. Limits how long the cell can fire from a single input — sets a temporal window. Substrate analogue: bounded-duration firing of any concept per input.",
+      "category": "circuit"
+    },
+    {
+      "name": "recurrent_excitation",
+      "definition": "Pyramidal cells in L2/3 + L5 are heavily connected to each other within a column. Recurrent excitation drives persistent activity + attractor dynamics. Substrate analogue: the substrate's CAN within-Mt couplings.",
+      "category": "dynamics"
+    },
+    {
+      "name": "balance_of_excitation_inhibition",
+      "definition": "Each cortical neuron receives roughly equal excitation + inhibition. Operates near the balance point — slight tip determines output. Critical for fluctuation-driven coding + criticality. Substrate analogue: substrate's σ near 0 = high-entropy decision point.",
+      "category": "dynamics"
+    },
+    {
+      "name": "asynchronous_irregular_state",
+      "definition": "Healthy cortex's default state. Each neuron fires irregularly + asynchronously with neighbours; population firing is steady but unsynchronised. Mean-field theory predicts this. Substrate analogue: substrate's idle Mt state — distributed activity without synchronisation.",
+      "category": "dynamics"
+    },
+    {
+      "name": "neural_avalanche",
+      "definition": "Brief synchronous bursts cascading through cortex. Size distribution follows a power law — signature of self-organized criticality. Substrate analogue: substrate's cascading event flux across connected Mts.",
+      "category": "dynamics"
+    },
+    {
+      "name": "ne_glia_interaction",
+      "definition": "Astrocytes wrap around synapses (tripartite synapse). Modulate neurotransmitter clearance; release gliotransmitters; calcium-wave signalling. Substrate analogue: substrate's normalisation + temperature regulation distributed across Mt edges.",
+      "category": "non_neuronal"
+    },
+    {
+      "name": "microglia",
+      "definition": "Brain's resident immune cells + active synapse pruners during development. Substrate analogue: the prune_Mt correction's mechanism — selecting which connections to remove.",
+      "category": "non_neuronal"
+    },
+    {
+      "name": "oligodendrocyte",
+      "definition": "Produces myelin in CNS. One oligodendrocyte myelinates ~50 axon segments. Substrate analogue: consolidation mechanism that speeds up frequently-used paths.",
+      "category": "non_neuronal"
+    }
+  ],
+  "rules": [
+    {
+      "name": "every_cortex_uses_same_microcircuit",
+      "head": "any cortical area handling any computation",
+      "body": "uses the same canonical microcircuit template — Douglas+Martin 1991. Specialisation comes from inputs + plasticity, not architectural changes. Substrate analogue: every Mt uses the same template; specialisation is from its concepts + edges."
+    },
+    {
+      "name": "L4_receives_L23_processes_L5_outputs",
+      "head": "input arrives at a cortical microcircuit",
+      "body": "L4 receives it; L2/3 processes it via recurrent dynamics; L5 outputs to subcortex; L6 sends feedback to input. Substrate analogue: Mt's input-process-output-feedback shape."
+    },
+    {
+      "name": "inhibition_carves_selectivity",
+      "head": "an excitatory input could activate many candidate responses",
+      "body": "interneuron-mediated lateral inhibition sharpens selectivity by suppressing all but the strongest. Substrate analogue: argmax-via-inhibition within Mt's concept space."
+    },
+    {
+      "name": "balance_keeps_cortex_at_criticality",
+      "head": "cortical excitation is balanced with inhibition",
+      "body": "the network operates near the critical point — neither silent nor seizing. Maximum information transmission. Substrate analogue: substrate's tuning of temperature β keeps it at the productive edge of state space."
+    },
+    {
+      "name": "glia_modulate_substrate_dynamics",
+      "head": "synapses are active over time",
+      "body": "glial cells (astrocytes, microglia, oligodendrocytes) modulate them on slow timescales — clearing, pruning, myelinating. Substrate analogue: long-timescale Mt restructuring via correction + consolidation handlers."
+    }
+  ],
+  "parent_mt": "neuroscience"
+}

@@ -1,0 +1,3681 @@
+{
+ "id": "embodied_capability_bootstrap",
+ "version": "1.0.0",
+ "depends_on": [
+  "capability_collapse"
+ ],
+ "self_load_only": true,
+ "area": "general_cognition",
+ "latency_class": "background",
+ "description": "Output-null, morphology-neutral situation and motor-plan basin hints for situated analysis-by-synthesis.",
+ "nodes": [
+  {
+   "local_id": 1,
+   "type": "CapabilityInvariant",
+   "attrs": {
+    "name": "embodied_invariant:bounded_contact_force",
+    "invariant_kind": "bounded_contact_force",
+    "integer_native": 1
+   }
+  },
+  {
+   "local_id": 2,
+   "type": "CapabilityInvariant",
+   "attrs": {
+    "name": "embodied_invariant:bounded_load",
+    "invariant_kind": "bounded_load",
+    "integer_native": 1
+   }
+  },
+  {
+   "local_id": 3,
+   "type": "CapabilityInvariant",
+   "attrs": {
+    "name": "embodied_invariant:controllability",
+    "invariant_kind": "controllability",
+    "integer_native": 1
+   }
+  },
+  {
+   "local_id": 4,
+   "type": "CapabilityInvariant",
+   "attrs": {
+    "name": "embodied_invariant:distribute_impulse",
+    "invariant_kind": "distribute_impulse",
+    "integer_native": 1
+   }
+  },
+  {
+   "local_id": 5,
+   "type": "CapabilityInvariant",
+   "attrs": {
+    "name": "embodied_invariant:landing_options",
+    "invariant_kind": "landing_options",
+    "integer_native": 1
+   }
+  },
+  {
+   "local_id": 6,
+   "type": "CapabilityInvariant",
+   "attrs": {
+    "name": "embodied_invariant:material_envelope",
+    "invariant_kind": "material_envelope",
+    "integer_native": 1
+   }
+  },
+  {
+   "local_id": 7,
+   "type": "CapabilityInvariant",
+   "attrs": {
+    "name": "embodied_invariant:protect_sensors",
+    "invariant_kind": "protect_sensors",
+    "integer_native": 1
+   }
+  },
+  {
+   "local_id": 8,
+   "type": "CapabilityInvariant",
+   "attrs": {
+    "name": "embodied_invariant:reacquire_support",
+    "invariant_kind": "reacquire_support",
+    "integer_native": 1
+   }
+  },
+  {
+   "local_id": 9,
+   "type": "CapabilityInvariant",
+   "attrs": {
+    "name": "embodied_invariant:reversible_exploration",
+    "invariant_kind": "reversible_exploration",
+    "integer_native": 1
+   }
+  },
+  {
+   "local_id": 10,
+   "type": "CapabilityInvariant",
+   "attrs": {
+    "name": "embodied_invariant:task_progress",
+    "invariant_kind": "task_progress",
+    "integer_native": 1
+   }
+  },
+  {
+   "local_id": 11,
+   "type": "CapabilityInvariant",
+   "attrs": {
+    "name": "embodied_invariant:viability",
+    "invariant_kind": "viability",
+    "integer_native": 1
+   }
+  },
+  {
+   "local_id": 12,
+   "type": "EmbodiedMotorRoutingShape",
+   "attrs": {
+    "name": "motor_routing_shape:hybrid_mobility:flight",
+    "motor_task_context": "hybrid_mobility",
+    "motor_task_phase": "flight",
+    "signature": [
+     [
+      "motor_task_context",
+      "hybrid_mobility"
+     ],
+     [
+      "motor_task_phase",
+      "flight"
+     ]
+    ],
+    "integer_native": 1
+   }
+  },
+  {
+   "local_id": 13,
+   "type": "EmbodiedMotorRoutingShape",
+   "attrs": {
+    "name": "motor_routing_shape:hybrid_mobility:landing",
+    "motor_task_context": "hybrid_mobility",
+    "motor_task_phase": "landing",
+    "signature": [
+     [
+      "motor_task_context",
+      "hybrid_mobility"
+     ],
+     [
+      "motor_task_phase",
+      "landing"
+     ]
+    ],
+    "integer_native": 1
+   }
+  },
+  {
+   "local_id": 14,
+   "type": "EmbodiedMotorRoutingShape",
+   "attrs": {
+    "name": "motor_routing_shape:hybrid_mobility:launch",
+    "motor_task_context": "hybrid_mobility",
+    "motor_task_phase": "launch",
+    "signature": [
+     [
+      "motor_task_context",
+      "hybrid_mobility"
+     ],
+     [
+      "motor_task_phase",
+      "launch"
+     ]
+    ],
+    "integer_native": 1
+   }
+  },
+  {
+   "local_id": 15,
+   "type": "EmbodiedMotorRoutingShape",
+   "attrs": {
+    "name": "motor_routing_shape:hybrid_mobility:preparation",
+    "motor_task_context": "hybrid_mobility",
+    "motor_task_phase": "preparation",
+    "signature": [
+     [
+      "motor_task_context",
+      "hybrid_mobility"
+     ],
+     [
+      "motor_task_phase",
+      "preparation"
+     ]
+    ],
+    "integer_native": 1
+   }
+  },
+  {
+   "local_id": 16,
+   "type": "EmbodiedMotorRoutingShape",
+   "attrs": {
+    "name": "motor_routing_shape:locomotion:flight",
+    "motor_task_context": "locomotion",
+    "motor_task_phase": "flight",
+    "signature": [
+     [
+      "motor_task_context",
+      "locomotion"
+     ],
+     [
+      "motor_task_phase",
+      "flight"
+     ]
+    ],
+    "integer_native": 1
+   }
+  },
+  {
+   "local_id": 17,
+   "type": "EmbodiedMotorRoutingShape",
+   "attrs": {
+    "name": "motor_routing_shape:locomotion:landing",
+    "motor_task_context": "locomotion",
+    "motor_task_phase": "landing",
+    "signature": [
+     [
+      "motor_task_context",
+      "locomotion"
+     ],
+     [
+      "motor_task_phase",
+      "landing"
+     ]
+    ],
+    "integer_native": 1
+   }
+  },
+  {
+   "local_id": 18,
+   "type": "EmbodiedMotorRoutingShape",
+   "attrs": {
+    "name": "motor_routing_shape:locomotion:launch",
+    "motor_task_context": "locomotion",
+    "motor_task_phase": "launch",
+    "signature": [
+     [
+      "motor_task_context",
+      "locomotion"
+     ],
+     [
+      "motor_task_phase",
+      "launch"
+     ]
+    ],
+    "integer_native": 1
+   }
+  },
+  {
+   "local_id": 19,
+   "type": "EmbodiedMotorRoutingShape",
+   "attrs": {
+    "name": "motor_routing_shape:locomotion:preparation",
+    "motor_task_context": "locomotion",
+    "motor_task_phase": "preparation",
+    "signature": [
+     [
+      "motor_task_context",
+      "locomotion"
+     ],
+     [
+      "motor_task_phase",
+      "preparation"
+     ]
+    ],
+    "integer_native": 1
+   }
+  },
+  {
+   "local_id": 20,
+   "type": "EmbodiedMotorRoutingShape",
+   "attrs": {
+    "name": "motor_routing_shape:locomotion:recovery",
+    "motor_task_context": "locomotion",
+    "motor_task_phase": "recovery",
+    "signature": [
+     [
+      "motor_task_context",
+      "locomotion"
+     ],
+     [
+      "motor_task_phase",
+      "recovery"
+     ]
+    ],
+    "integer_native": 1
+   }
+  },
+  {
+   "local_id": 21,
+   "type": "EmbodiedMotorRoutingShape",
+   "attrs": {
+    "name": "motor_routing_shape:manipulation:landing",
+    "motor_task_context": "manipulation",
+    "motor_task_phase": "landing",
+    "signature": [
+     [
+      "motor_task_context",
+      "manipulation"
+     ],
+     [
+      "motor_task_phase",
+      "landing"
+     ]
+    ],
+    "integer_native": 1
+   }
+  },
+  {
+   "local_id": 22,
+   "type": "EmbodiedMotorRoutingShape",
+   "attrs": {
+    "name": "motor_routing_shape:manipulation:launch",
+    "motor_task_context": "manipulation",
+    "motor_task_phase": "launch",
+    "signature": [
+     [
+      "motor_task_context",
+      "manipulation"
+     ],
+     [
+      "motor_task_phase",
+      "launch"
+     ]
+    ],
+    "integer_native": 1
+   }
+  },
+  {
+   "local_id": 23,
+   "type": "EmbodiedMotorRoutingShape",
+   "attrs": {
+    "name": "motor_routing_shape:manipulation:preparation",
+    "motor_task_context": "manipulation",
+    "motor_task_phase": "preparation",
+    "signature": [
+     [
+      "motor_task_context",
+      "manipulation"
+     ],
+     [
+      "motor_task_phase",
+      "preparation"
+     ]
+    ],
+    "integer_native": 1
+   }
+  },
+  {
+   "local_id": 24,
+   "type": "EmbodiedMotorRoutingShape",
+   "attrs": {
+    "name": "motor_routing_shape:manipulation:recovery",
+    "motor_task_context": "manipulation",
+    "motor_task_phase": "recovery",
+    "signature": [
+     [
+      "motor_task_context",
+      "manipulation"
+     ],
+     [
+      "motor_task_phase",
+      "recovery"
+     ]
+    ],
+    "integer_native": 1
+   }
+  },
+  {
+   "local_id": 25,
+   "type": "EmbodiedMotorRoutingShape",
+   "attrs": {
+    "name": "motor_routing_shape:self_takeoff:flight",
+    "motor_task_context": "self_takeoff",
+    "motor_task_phase": "flight",
+    "signature": [
+     [
+      "motor_task_context",
+      "self_takeoff"
+     ],
+     [
+      "motor_task_phase",
+      "flight"
+     ]
+    ],
+    "integer_native": 1
+   }
+  },
+  {
+   "local_id": 26,
+   "type": "EmbodiedMotorRoutingShape",
+   "attrs": {
+    "name": "motor_routing_shape:self_takeoff:landing",
+    "motor_task_context": "self_takeoff",
+    "motor_task_phase": "landing",
+    "signature": [
+     [
+      "motor_task_context",
+      "self_takeoff"
+     ],
+     [
+      "motor_task_phase",
+      "landing"
+     ]
+    ],
+    "integer_native": 1
+   }
+  },
+  {
+   "local_id": 27,
+   "type": "EmbodiedMotorRoutingShape",
+   "attrs": {
+    "name": "motor_routing_shape:self_takeoff:launch",
+    "motor_task_context": "self_takeoff",
+    "motor_task_phase": "launch",
+    "signature": [
+     [
+      "motor_task_context",
+      "self_takeoff"
+     ],
+     [
+      "motor_task_phase",
+      "launch"
+     ]
+    ],
+    "integer_native": 1
+   }
+  },
+  {
+   "local_id": 28,
+   "type": "EmbodiedMotorRoutingShape",
+   "attrs": {
+    "name": "motor_routing_shape:self_takeoff:preparation",
+    "motor_task_context": "self_takeoff",
+    "motor_task_phase": "preparation",
+    "signature": [
+     [
+      "motor_task_context",
+      "self_takeoff"
+     ],
+     [
+      "motor_task_phase",
+      "preparation"
+     ]
+    ],
+    "integer_native": 1
+   }
+  },
+  {
+   "local_id": 29,
+   "type": "EmbodiedBootstrapSituation",
+   "attrs": {
+    "name": "situation:bootstrap:development:supported_range_discovery",
+    "ordinal": 0,
+    "family": "embodiment_calibration",
+    "context": "locomotion",
+    "signature": [
+     [
+      "situation",
+      "broad_support"
+     ],
+     [
+      "situation",
+      "unknown_effector_map"
+     ]
+    ],
+    "output_authority": 0
+   }
+  },
+  {
+   "local_id": 30,
+   "type": "EmbodiedMotorPlanHint",
+   "attrs": {
+    "name": "bootstrap:development:supported_range_discovery",
+    "ordinal": 0,
+    "signature": [
+     [
+      "motor_task",
+      "locomotion"
+     ]
+    ],
+    "motor_task_context": "locomotion",
+    "bootstrap_family": "embodiment_calibration",
+    "knowledge_kind": "analysis_by_synthesis_basin_hint",
+    "provenance": "developmental_motor_learning_and_body_babbling",
+    "evidence_url": "https://doi.org/10.3389/fpsyg.2018.01939",
+    "stage_count": 4,
+    "output_authority": 0,
+    "integer_native": 1
+   }
+  },
+  {
+   "local_id": 31,
+   "type": "EmbodiedMotorPlanHintStage",
+   "attrs": {
+    "name": "bootstrap:development:supported_range_discovery:stage:0",
+    "ordinal": 0,
+    "stage_role": "find_broad_support",
+    "signature": [
+     [
+      "bootstrap_role",
+      "find_broad_support"
+     ],
+     [
+      "bootstrap_relation",
+      "support_before_exploration"
+     ]
+    ],
+    "routing_signature": [
+     [
+      "motor_task_context",
+      "locomotion"
+     ],
+     [
+      "motor_task_phase",
+      "preparation"
+     ]
+    ],
+    "output_authority": 0,
+    "integer_native": 1
+   }
+  },
+  {
+   "local_id": 32,
+   "type": "EmbodiedMotorPlanHintStage",
+   "attrs": {
+    "name": "bootstrap:development:supported_range_discovery:stage:1",
+    "ordinal": 1,
+    "stage_role": "vary_one_relation",
+    "signature": [
+     [
+      "bootstrap_role",
+      "vary_one_relation"
+     ],
+     [
+      "bootstrap_relation",
+      "local_controllability_probe"
+     ]
+    ],
+    "routing_signature": [
+     [
+      "motor_task_context",
+      "locomotion"
+     ],
+     [
+      "motor_task_phase",
+      "launch"
+     ]
+    ],
+    "output_authority": 0,
+    "integer_native": 1
+   }
+  },
+  {
+   "local_id": 33,
+   "type": "EmbodiedMotorPlanHintStage",
+   "attrs": {
+    "name": "bootstrap:development:supported_range_discovery:stage:2",
+    "ordinal": 2,
+    "stage_role": "observe_displacement",
+    "signature": [
+     [
+      "bootstrap_role",
+      "observe_displacement"
+     ],
+     [
+      "bootstrap_relation",
+      "situated_effect_receipt"
+     ]
+    ],
+    "routing_signature": [
+     [
+      "motor_task_context",
+      "locomotion"
+     ],
+     [
+      "motor_task_phase",
+      "landing"
+     ]
+    ],
+    "output_authority": 0,
+    "integer_native": 1
+   }
+  },
+  {
+   "local_id": 34,
+   "type": "EmbodiedMotorPlanHintStage",
+   "attrs": {
+    "name": "bootstrap:development:supported_range_discovery:stage:3",
+    "ordinal": 3,
+    "stage_role": "compose_correlated_effectors",
+    "signature": [
+     [
+      "bootstrap_role",
+      "compose_correlated_effectors"
+     ],
+     [
+      "bootstrap_relation",
+      "shape_indexed_chunk"
+     ]
+    ],
+    "routing_signature": [
+     [
+      "motor_task_context",
+      "locomotion"
+     ],
+     [
+      "motor_task_phase",
+      "recovery"
+     ]
+    ],
+    "output_authority": 0,
+    "integer_native": 1
+   }
+  },
+  {
+   "local_id": 35,
+   "type": "EmbodiedBootstrapSituation",
+   "attrs": {
+    "name": "situation:bootstrap:development:righting_support_reacquisition",
+    "ordinal": 1,
+    "family": "righting_and_get_up",
+    "context": "locomotion",
+    "signature": [
+     [
+      "situation",
+      "low_height"
+     ],
+     [
+      "situation",
+      "support_not_under_mass"
+     ]
+    ],
+    "output_authority": 0
+   }
+  },
+  {
+   "local_id": 36,
+   "type": "EmbodiedMotorPlanHint",
+   "attrs": {
+    "name": "bootstrap:development:righting_support_reacquisition",
+    "ordinal": 1,
+    "signature": [
+     [
+      "motor_task",
+      "locomotion"
+     ]
+    ],
+    "motor_task_context": "locomotion",
+    "bootstrap_family": "righting_and_get_up",
+    "knowledge_kind": "analysis_by_synthesis_basin_hint",
+    "provenance": "developmental_righting_and_postural_reactions",
+    "evidence_url": "https://doi.org/10.1016/0378-3782(90)90140-E",
+    "stage_count": 4,
+    "output_authority": 0,
+    "integer_native": 1
+   }
+  },
+  {
+   "local_id": 37,
+   "type": "EmbodiedMotorPlanHintStage",
+   "attrs": {
+    "name": "bootstrap:development:righting_support_reacquisition:stage:0",
+    "ordinal": 0,
+    "stage_role": "locate_current_support",
+    "signature": [
+     [
+      "bootstrap_role",
+      "locate_current_support"
+     ],
+     [
+      "bootstrap_relation",
+      "no_assumed_home"
+     ]
+    ],
+    "routing_signature": [
+     [
+      "motor_task_context",
+      "locomotion"
+     ],
+     [
+      "motor_task_phase",
+      "preparation"
+     ]
+    ],
+    "output_authority": 0,
+    "integer_native": 1
+   }
+  },
+  {
+   "local_id": 38,
+   "type": "EmbodiedMotorPlanHintStage",
+   "attrs": {
+    "name": "bootstrap:development:righting_support_reacquisition:stage:1",
+    "ordinal": 1,
+    "stage_role": "create_roll_or_push",
+    "signature": [
+     [
+      "bootstrap_role",
+      "create_roll_or_push"
+     ],
+     [
+      "bootstrap_relation",
+      "exchange_internal_momentum"
+     ]
+    ],
+    "routing_signature": [
+     [
+      "motor_task_context",
+      "locomotion"
+     ],
+     [
+      "motor_task_phase",
+      "launch"
+     ]
+    ],
+    "output_authority": 0,
+    "integer_native": 1
+   }
+  },
+  {
+   "local_id": 39,
+   "type": "EmbodiedMotorPlanHintStage",
+   "attrs": {
+    "name": "bootstrap:development:righting_support_reacquisition:stage:2",
+    "ordinal": 2,
+    "stage_role": "place_new_support",
+    "signature": [
+     [
+      "bootstrap_role",
+      "place_new_support"
+     ],
+     [
+      "bootstrap_relation",
+      "increase_support_dimension"
+     ]
+    ],
+    "routing_signature": [
+     [
+      "motor_task_context",
+      "locomotion"
+     ],
+     [
+      "motor_task_phase",
+      "landing"
+     ]
+    ],
+    "output_authority": 0,
+    "integer_native": 1
+   }
+  },
+  {
+   "local_id": 40,
+   "type": "EmbodiedMotorPlanHintStage",
+   "attrs": {
+    "name": "bootstrap:development:righting_support_reacquisition:stage:3",
+    "ordinal": 3,
+    "stage_role": "raise_mass_inside_support",
+    "signature": [
+     [
+      "bootstrap_role",
+      "raise_mass_inside_support"
+     ],
+     [
+      "bootstrap_relation",
+      "righting_receipt"
+     ]
+    ],
+    "routing_signature": [
+     [
+      "motor_task_context",
+      "locomotion"
+     ],
+     [
+      "motor_task_phase",
+      "recovery"
+     ]
+    ],
+    "output_authority": 0,
+    "integer_native": 1
+   }
+  },
+  {
+   "local_id": 41,
+   "type": "EmbodiedBootstrapSituation",
+   "attrs": {
+    "name": "situation:bootstrap:biology:protected_descent_and_roll",
+    "ordinal": 2,
+    "family": "fall_management",
+    "context": "locomotion",
+    "signature": [
+     [
+      "situation",
+      "support_loss"
+     ],
+     [
+      "situation",
+      "unavoidable_descent"
+     ]
+    ],
+    "output_authority": 0
+   }
+  },
+  {
+   "local_id": 42,
+   "type": "EmbodiedMotorPlanHint",
+   "attrs": {
+    "name": "bootstrap:biology:protected_descent_and_roll",
+    "ordinal": 2,
+    "signature": [
+     [
+      "motor_task",
+      "locomotion"
+     ]
+    ],
+    "motor_task_context": "locomotion",
+    "bootstrap_family": "fall_management",
+    "knowledge_kind": "analysis_by_synthesis_basin_hint",
+    "provenance": "human_protective_stepping_reaching_and_rolling",
+    "evidence_url": "https://doi.org/10.1016/j.humov.2013.12.010",
+    "stage_count": 4,
+    "output_authority": 0,
+    "integer_native": 1
+   }
+  },
+  {
+   "local_id": 43,
+   "type": "EmbodiedMotorPlanHintStage",
+   "attrs": {
+    "name": "bootstrap:biology:protected_descent_and_roll:stage:0",
+    "ordinal": 0,
+    "stage_role": "choose_reachable_contact",
+    "signature": [
+     [
+      "bootstrap_role",
+      "choose_reachable_contact"
+     ],
+     [
+      "bootstrap_relation",
+      "trade_step_reach_or_roll"
+     ]
+    ],
+    "routing_signature": [
+     [
+      "motor_task_context",
+      "locomotion"
+     ],
+     [
+      "motor_task_phase",
+      "preparation"
+     ]
+    ],
+    "output_authority": 0,
+    "integer_native": 1
+   }
+  },
+  {
+   "local_id": 44,
+   "type": "EmbodiedMotorPlanHintStage",
+   "attrs": {
+    "name": "bootstrap:biology:protected_descent_and_roll:stage:1",
+    "ordinal": 1,
+    "stage_role": "redirect_angular_momentum",
+    "signature": [
+     [
+      "bootstrap_role",
+      "redirect_angular_momentum"
+     ],
+     [
+      "bootstrap_relation",
+      "avoid_direct_sensor_impact"
+     ]
+    ],
+    "routing_signature": [
+     [
+      "motor_task_context",
+      "locomotion"
+     ],
+     [
+      "motor_task_phase",
+      "launch"
+     ]
+    ],
+    "output_authority": 0,
+    "integer_native": 1
+   }
+  },
+  {
+   "local_id": 45,
+   "type": "EmbodiedMotorPlanHintStage",
+   "attrs": {
+    "name": "bootstrap:biology:protected_descent_and_roll:stage:2",
+    "ordinal": 2,
+    "stage_role": "shape_contact_sequence",
+    "signature": [
+     [
+      "bootstrap_role",
+      "shape_contact_sequence"
+     ],
+     [
+      "bootstrap_relation",
+      "spread_impulse_over_time"
+     ]
+    ],
+    "routing_signature": [
+     [
+      "motor_task_context",
+      "locomotion"
+     ],
+     [
+      "motor_task_phase",
+      "flight"
+     ]
+    ],
+    "output_authority": 0,
+    "integer_native": 1
+   }
+  },
+  {
+   "local_id": 46,
+   "type": "EmbodiedMotorPlanHintStage",
+   "attrs": {
+    "name": "bootstrap:biology:protected_descent_and_roll:stage:3",
+    "ordinal": 3,
+    "stage_role": "accept_load_progressively",
+    "signature": [
+     [
+      "bootstrap_role",
+      "accept_load_progressively"
+     ],
+     [
+      "bootstrap_relation",
+      "retain_recovery_options"
+     ]
+    ],
+    "routing_signature": [
+     [
+      "motor_task_context",
+      "locomotion"
+     ],
+     [
+      "motor_task_phase",
+      "landing"
+     ]
+    ],
+    "output_authority": 0,
+    "integer_native": 1
+   }
+  },
+  {
+   "local_id": 47,
+   "type": "EmbodiedBootstrapSituation",
+   "attrs": {
+    "name": "situation:bootstrap:biology:balance_strategy_ladder",
+    "ordinal": 3,
+    "family": "disturbance_rejection",
+    "context": "locomotion",
+    "signature": [
+     [
+      "situation",
+      "supported"
+     ],
+     [
+      "situation",
+      "external_disturbance"
+     ]
+    ],
+    "output_authority": 0
+   }
+  },
+  {
+   "local_id": 48,
+   "type": "EmbodiedMotorPlanHint",
+   "attrs": {
+    "name": "bootstrap:biology:balance_strategy_ladder",
+    "ordinal": 3,
+    "signature": [
+     [
+      "motor_task",
+      "locomotion"
+     ]
+    ],
+    "motor_task_context": "locomotion",
+    "bootstrap_family": "disturbance_rejection",
+    "knowledge_kind": "analysis_by_synthesis_basin_hint",
+    "provenance": "ankle_hip_step_and_reach_postural_strategies",
+    "evidence_url": "https://doi.org/10.1152/jn.1986.55.6.1369",
+    "stage_count": 4,
+    "output_authority": 0,
+    "integer_native": 1
+   }
+  },
+  {
+   "local_id": 49,
+   "type": "EmbodiedMotorPlanHintStage",
+   "attrs": {
+    "name": "bootstrap:biology:balance_strategy_ladder:stage:0",
+    "ordinal": 0,
+    "stage_role": "estimate_support_margin",
+    "signature": [
+     [
+      "bootstrap_role",
+      "estimate_support_margin"
+     ],
+     [
+      "bootstrap_relation",
+      "disturbance_relative_to_capability"
+     ]
+    ],
+    "routing_signature": [
+     [
+      "motor_task_context",
+      "locomotion"
+     ],
+     [
+      "motor_task_phase",
+      "preparation"
+     ]
+    ],
+    "output_authority": 0,
+    "integer_native": 1
+   }
+  },
+  {
+   "local_id": 50,
+   "type": "EmbodiedMotorPlanHintStage",
+   "attrs": {
+    "name": "bootstrap:biology:balance_strategy_ladder:stage:1",
+    "ordinal": 1,
+    "stage_role": "counter_within_support",
+    "signature": [
+     [
+      "bootstrap_role",
+      "counter_within_support"
+     ],
+     [
+      "bootstrap_relation",
+      "small_coupled_response"
+     ]
+    ],
+    "routing_signature": [
+     [
+      "motor_task_context",
+      "locomotion"
+     ],
+     [
+      "motor_task_phase",
+      "launch"
+     ]
+    ],
+    "output_authority": 0,
+    "integer_native": 1
+   }
+  },
+  {
+   "local_id": 51,
+   "type": "EmbodiedMotorPlanHintStage",
+   "attrs": {
+    "name": "bootstrap:biology:balance_strategy_ladder:stage:2",
+    "ordinal": 2,
+    "stage_role": "change_support_if_needed",
+    "signature": [
+     [
+      "bootstrap_role",
+      "change_support_if_needed"
+     ],
+     [
+      "bootstrap_relation",
+      "step_or_reach_is_tradeoff"
+     ]
+    ],
+    "routing_signature": [
+     [
+      "motor_task_context",
+      "locomotion"
+     ],
+     [
+      "motor_task_phase",
+      "flight"
+     ]
+    ],
+    "output_authority": 0,
+    "integer_native": 1
+   }
+  },
+  {
+   "local_id": 52,
+   "type": "EmbodiedMotorPlanHintStage",
+   "attrs": {
+    "name": "bootstrap:biology:balance_strategy_ladder:stage:3",
+    "ordinal": 3,
+    "stage_role": "dissipate_residual",
+    "signature": [
+     [
+      "bootstrap_role",
+      "dissipate_residual"
+     ],
+     [
+      "bootstrap_relation",
+      "verify_new_support"
+     ]
+    ],
+    "routing_signature": [
+     [
+      "motor_task_context",
+      "locomotion"
+     ],
+     [
+      "motor_task_phase",
+      "landing"
+     ]
+    ],
+    "output_authority": 0,
+    "integer_native": 1
+   }
+  },
+  {
+   "local_id": 53,
+   "type": "EmbodiedBootstrapSituation",
+   "attrs": {
+    "name": "situation:bootstrap:biology:cyclic_contact_locomotion",
+    "ordinal": 4,
+    "family": "locomotion",
+    "context": "locomotion",
+    "signature": [
+     [
+      "situation",
+      "alternating_support_available"
+     ],
+     [
+      "situation",
+      "displacement_available"
+     ]
+    ],
+    "output_authority": 0
+   }
+  },
+  {
+   "local_id": 54,
+   "type": "EmbodiedMotorPlanHint",
+   "attrs": {
+    "name": "bootstrap:biology:cyclic_contact_locomotion",
+    "ordinal": 4,
+    "signature": [
+     [
+      "motor_task",
+      "locomotion"
+     ]
+    ],
+    "motor_task_context": "locomotion",
+    "bootstrap_family": "locomotion",
+    "knowledge_kind": "analysis_by_synthesis_basin_hint",
+    "provenance": "phase_dependent_spinal_and_supraspinal_locomotor_control",
+    "evidence_url": "https://doi.org/10.1038/nrn1137",
+    "stage_count": 4,
+    "output_authority": 0,
+    "integer_native": 1
+   }
+  },
+  {
+   "local_id": 55,
+   "type": "EmbodiedMotorPlanHintStage",
+   "attrs": {
+    "name": "bootstrap:biology:cyclic_contact_locomotion:stage:0",
+    "ordinal": 0,
+    "stage_role": "accept_load",
+    "signature": [
+     [
+      "bootstrap_role",
+      "accept_load"
+     ],
+     [
+      "bootstrap_relation",
+      "support_receipt"
+     ]
+    ],
+    "routing_signature": [
+     [
+      "motor_task_context",
+      "locomotion"
+     ],
+     [
+      "motor_task_phase",
+      "preparation"
+     ]
+    ],
+    "output_authority": 0,
+    "integer_native": 1
+   }
+  },
+  {
+   "local_id": 56,
+   "type": "EmbodiedMotorPlanHintStage",
+   "attrs": {
+    "name": "bootstrap:biology:cyclic_contact_locomotion:stage:1",
+    "ordinal": 1,
+    "stage_role": "redirect_and_propel",
+    "signature": [
+     [
+      "bootstrap_role",
+      "redirect_and_propel"
+     ],
+     [
+      "bootstrap_relation",
+      "momentum_exchange"
+     ]
+    ],
+    "routing_signature": [
+     [
+      "motor_task_context",
+      "locomotion"
+     ],
+     [
+      "motor_task_phase",
+      "launch"
+     ]
+    ],
+    "output_authority": 0,
+    "integer_native": 1
+   }
+  },
+  {
+   "local_id": 57,
+   "type": "EmbodiedMotorPlanHintStage",
+   "attrs": {
+    "name": "bootstrap:biology:cyclic_contact_locomotion:stage:2",
+    "ordinal": 2,
+    "stage_role": "clear_free_effector",
+    "signature": [
+     [
+      "bootstrap_role",
+      "clear_free_effector"
+     ],
+     [
+      "bootstrap_relation",
+      "predict_next_contact"
+     ]
+    ],
+    "routing_signature": [
+     [
+      "motor_task_context",
+      "locomotion"
+     ],
+     [
+      "motor_task_phase",
+      "flight"
+     ]
+    ],
+    "output_authority": 0,
+    "integer_native": 1
+   }
+  },
+  {
+   "local_id": 58,
+   "type": "EmbodiedMotorPlanHintStage",
+   "attrs": {
+    "name": "bootstrap:biology:cyclic_contact_locomotion:stage:3",
+    "ordinal": 3,
+    "stage_role": "place_support",
+    "signature": [
+     [
+      "bootstrap_role",
+      "place_support"
+     ],
+     [
+      "bootstrap_relation",
+      "close_contact_cycle"
+     ]
+    ],
+    "routing_signature": [
+     [
+      "motor_task_context",
+      "locomotion"
+     ],
+     [
+      "motor_task_phase",
+      "landing"
+     ]
+    ],
+    "output_authority": 0,
+    "integer_native": 1
+   }
+  },
+  {
+   "local_id": 59,
+   "type": "EmbodiedBootstrapSituation",
+   "attrs": {
+    "name": "situation:bootstrap:frames:translation_without_canonical_forward",
+    "ordinal": 5,
+    "family": "frame_discovery",
+    "context": "locomotion",
+    "signature": [
+     [
+      "situation",
+      "repeatable_translation"
+     ],
+     [
+      "situation",
+      "unknown_task_frame_alignment"
+     ]
+    ],
+    "output_authority": 0
+   }
+  },
+  {
+   "local_id": 60,
+   "type": "EmbodiedMotorPlanHint",
+   "attrs": {
+    "name": "bootstrap:frames:translation_without_canonical_forward",
+    "ordinal": 5,
+    "signature": [
+     [
+      "motor_task",
+      "locomotion"
+     ]
+    ],
+    "motor_task_context": "locomotion",
+    "bootstrap_family": "frame_discovery",
+    "knowledge_kind": "analysis_by_synthesis_basin_hint",
+    "provenance": "situated_sensorimotor_coordinate_frame_learning",
+    "evidence_url": "https://doi.org/10.1523/ENEURO.0070-16.2016",
+    "stage_count": 4,
+    "output_authority": 0,
+    "integer_native": 1
+   }
+  },
+  {
+   "local_id": 61,
+   "type": "EmbodiedMotorPlanHintStage",
+   "attrs": {
+    "name": "bootstrap:frames:translation_without_canonical_forward:stage:0",
+    "ordinal": 0,
+    "stage_role": "observe_translation_from_current_pose",
+    "signature": [
+     [
+      "bootstrap_role",
+      "observe_translation_from_current_pose"
+     ],
+     [
+      "bootstrap_relation",
+      "no_canonical_forward"
+     ]
+    ],
+    "routing_signature": [
+     [
+      "motor_task_context",
+      "locomotion"
+     ],
+     [
+      "motor_task_phase",
+      "preparation"
+     ]
+    ],
+    "output_authority": 0,
+    "integer_native": 1
+   }
+  },
+  {
+   "local_id": 62,
+   "type": "EmbodiedMotorPlanHintStage",
+   "attrs": {
+    "name": "bootstrap:frames:translation_without_canonical_forward:stage:1",
+    "ordinal": 1,
+    "stage_role": "find_opposed_or_reversible_effect",
+    "signature": [
+     [
+      "bootstrap_role",
+      "find_opposed_or_reversible_effect"
+     ],
+     [
+      "bootstrap_relation",
+      "direction_is_a_relation"
+     ]
+    ],
+    "routing_signature": [
+     [
+      "motor_task_context",
+      "locomotion"
+     ],
+     [
+      "motor_task_phase",
+      "launch"
+     ]
+    ],
+    "output_authority": 0,
+    "integer_native": 1
+   }
+  },
+  {
+   "local_id": 63,
+   "type": "EmbodiedMotorPlanHintStage",
+   "attrs": {
+    "name": "bootstrap:frames:translation_without_canonical_forward:stage:2",
+    "ordinal": 2,
+    "stage_role": "bind_body_world_and_task_frames",
+    "signature": [
+     [
+      "bootstrap_role",
+      "bind_body_world_and_task_frames"
+     ],
+     [
+      "bootstrap_relation",
+      "preserve_gait_basin"
+     ]
+    ],
+    "routing_signature": [
+     [
+      "motor_task_context",
+      "locomotion"
+     ],
+     [
+      "motor_task_phase",
+      "flight"
+     ]
+    ],
+    "output_authority": 0,
+    "integer_native": 1
+   }
+  },
+  {
+   "local_id": 64,
+   "type": "EmbodiedMotorPlanHintStage",
+   "attrs": {
+    "name": "bootstrap:frames:translation_without_canonical_forward:stage:3",
+    "ordinal": 3,
+    "stage_role": "align_capability_to_situated_goal",
+    "signature": [
+     [
+      "bootstrap_role",
+      "align_capability_to_situated_goal"
+     ],
+     [
+      "bootstrap_relation",
+      "goal_error_is_not_gait_error"
+     ]
+    ],
+    "routing_signature": [
+     [
+      "motor_task_context",
+      "locomotion"
+     ],
+     [
+      "motor_task_phase",
+      "landing"
+     ]
+    ],
+    "output_authority": 0,
+    "integer_native": 1
+   }
+  },
+  {
+   "local_id": 65,
+   "type": "EmbodiedBootstrapSituation",
+   "attrs": {
+    "name": "situation:bootstrap:whole_body:compound_task_residual",
+    "ordinal": 6,
+    "family": "whole_body_composition",
+    "context": "locomotion",
+    "signature": [
+     [
+      "situation",
+      "multiple_effectors"
+     ],
+     [
+      "situation",
+      "multiple_open_residuals"
+     ]
+    ],
+    "output_authority": 0
+   }
+  },
+  {
+   "local_id": 66,
+   "type": "EmbodiedMotorPlanHint",
+   "attrs": {
+    "name": "bootstrap:whole_body:compound_task_residual",
+    "ordinal": 6,
+    "signature": [
+     [
+      "motor_task",
+      "locomotion"
+     ]
+    ],
+    "motor_task_context": "locomotion",
+    "bootstrap_family": "whole_body_composition",
+    "knowledge_kind": "analysis_by_synthesis_basin_hint",
+    "provenance": "motor_abundance_and_uncontrolled_manifold_control",
+    "evidence_url": "https://doi.org/10.1123/mcj.14.1.83",
+    "stage_count": 4,
+    "output_authority": 0,
+    "integer_native": 1
+   }
+  },
+  {
+   "local_id": 67,
+   "type": "EmbodiedMotorPlanHintStage",
+   "attrs": {
+    "name": "bootstrap:whole_body:compound_task_residual:stage:0",
+    "ordinal": 0,
+    "stage_role": "identify_shared_effect",
+    "signature": [
+     [
+      "bootstrap_role",
+      "identify_shared_effect"
+     ],
+     [
+      "bootstrap_relation",
+      "coupling_is_observed_not_named"
+     ]
+    ],
+    "routing_signature": [
+     [
+      "motor_task_context",
+      "locomotion"
+     ],
+     [
+      "motor_task_phase",
+      "preparation"
+     ]
+    ],
+    "output_authority": 0,
+    "integer_native": 1
+   }
+  },
+  {
+   "local_id": 68,
+   "type": "EmbodiedMotorPlanHintStage",
+   "attrs": {
+    "name": "bootstrap:whole_body:compound_task_residual:stage:1",
+    "ordinal": 1,
+    "stage_role": "hold_one_combined_outcome",
+    "signature": [
+     [
+      "bootstrap_role",
+      "hold_one_combined_outcome"
+     ],
+     [
+      "bootstrap_relation",
+      "single_collapse_many_effectors"
+     ]
+    ],
+    "routing_signature": [
+     [
+      "motor_task_context",
+      "locomotion"
+     ],
+     [
+      "motor_task_phase",
+      "launch"
+     ]
+    ],
+    "output_authority": 0,
+    "integer_native": 1
+   }
+  },
+  {
+   "local_id": 69,
+   "type": "EmbodiedMotorPlanHintStage",
+   "attrs": {
+    "name": "bootstrap:whole_body:compound_task_residual:stage:2",
+    "ordinal": 2,
+    "stage_role": "leave_nullspace_variable",
+    "signature": [
+     [
+      "bootstrap_role",
+      "leave_nullspace_variable"
+     ],
+     [
+      "bootstrap_relation",
+      "do_not_freeze_irrelevant_axes"
+     ]
+    ],
+    "routing_signature": [
+     [
+      "motor_task_context",
+      "locomotion"
+     ],
+     [
+      "motor_task_phase",
+      "flight"
+     ]
+    ],
+    "output_authority": 0,
+    "integer_native": 1
+   }
+  },
+  {
+   "local_id": 70,
+   "type": "EmbodiedMotorPlanHintStage",
+   "attrs": {
+    "name": "bootstrap:whole_body:compound_task_residual:stage:3",
+    "ordinal": 3,
+    "stage_role": "mint_combination_on_receipt",
+    "signature": [
+     [
+      "bootstrap_role",
+      "mint_combination_on_receipt"
+     ],
+     [
+      "bootstrap_relation",
+      "practice_becomes_metaprogram"
+     ]
+    ],
+    "routing_signature": [
+     [
+      "motor_task_context",
+      "locomotion"
+     ],
+     [
+      "motor_task_phase",
+      "landing"
+     ]
+    ],
+    "output_authority": 0,
+    "integer_native": 1
+   }
+  },
+  {
+   "local_id": 71,
+   "type": "EmbodiedBootstrapSituation",
+   "attrs": {
+    "name": "situation:bootstrap:development:reach_contact_release",
+    "ordinal": 7,
+    "family": "contact_manipulation",
+    "context": "manipulation",
+    "signature": [
+     [
+      "situation",
+      "reachable_affordance"
+     ],
+     [
+      "situation",
+      "free_effector"
+     ]
+    ],
+    "output_authority": 0
+   }
+  },
+  {
+   "local_id": 72,
+   "type": "EmbodiedMotorPlanHint",
+   "attrs": {
+    "name": "bootstrap:development:reach_contact_release",
+    "ordinal": 7,
+    "signature": [
+     [
+      "motor_task",
+      "manipulation"
+     ]
+    ],
+    "motor_task_context": "manipulation",
+    "bootstrap_family": "contact_manipulation",
+    "knowledge_kind": "analysis_by_synthesis_basin_hint",
+    "provenance": "infant_reaching_and_grasp_development",
+    "evidence_url": "https://doi.org/10.1111/desc.12370",
+    "stage_count": 4,
+    "output_authority": 0,
+    "integer_native": 1
+   }
+  },
+  {
+   "local_id": 73,
+   "type": "EmbodiedMotorPlanHintStage",
+   "attrs": {
+    "name": "bootstrap:development:reach_contact_release:stage:0",
+    "ordinal": 0,
+    "stage_role": "orient_to_affordance",
+    "signature": [
+     [
+      "bootstrap_role",
+      "orient_to_affordance"
+     ],
+     [
+      "bootstrap_relation",
+      "task_relative_preshape"
+     ]
+    ],
+    "routing_signature": [
+     [
+      "motor_task_context",
+      "manipulation"
+     ],
+     [
+      "motor_task_phase",
+      "preparation"
+     ]
+    ],
+    "output_authority": 0,
+    "integer_native": 1
+   }
+  },
+  {
+   "local_id": 74,
+   "type": "EmbodiedMotorPlanHintStage",
+   "attrs": {
+    "name": "bootstrap:development:reach_contact_release:stage:1",
+    "ordinal": 1,
+    "stage_role": "transport_effector",
+    "signature": [
+     [
+      "bootstrap_role",
+      "transport_effector"
+     ],
+     [
+      "bootstrap_relation",
+      "redundant_path_is_free"
+     ]
+    ],
+    "routing_signature": [
+     [
+      "motor_task_context",
+      "manipulation"
+     ],
+     [
+      "motor_task_phase",
+      "launch"
+     ]
+    ],
+    "output_authority": 0,
+    "integer_native": 1
+   }
+  },
+  {
+   "local_id": 75,
+   "type": "EmbodiedMotorPlanHintStage",
+   "attrs": {
+    "name": "bootstrap:development:reach_contact_release:stage:2",
+    "ordinal": 2,
+    "stage_role": "close_contact_chain",
+    "signature": [
+     [
+      "bootstrap_role",
+      "close_contact_chain"
+     ],
+     [
+      "bootstrap_relation",
+      "force_closure_receipt"
+     ]
+    ],
+    "routing_signature": [
+     [
+      "motor_task_context",
+      "manipulation"
+     ],
+     [
+      "motor_task_phase",
+      "landing"
+     ]
+    ],
+    "output_authority": 0,
+    "integer_native": 1
+   }
+  },
+  {
+   "local_id": 76,
+   "type": "EmbodiedMotorPlanHintStage",
+   "attrs": {
+    "name": "bootstrap:development:reach_contact_release:stage:3",
+    "ordinal": 3,
+    "stage_role": "release_or_manipulate",
+    "signature": [
+     [
+      "bootstrap_role",
+      "release_or_manipulate"
+     ],
+     [
+      "bootstrap_relation",
+      "contact_is_reversible"
+     ]
+    ],
+    "routing_signature": [
+     [
+      "motor_task_context",
+      "manipulation"
+     ],
+     [
+      "motor_task_phase",
+      "recovery"
+     ]
+    ],
+    "output_authority": 0,
+    "integer_native": 1
+   }
+  },
+  {
+   "local_id": 77,
+   "type": "EmbodiedBootstrapSituation",
+   "attrs": {
+    "name": "situation:bootstrap:hybrid:effector_regime_transition",
+    "ordinal": 8,
+    "family": "hybrid_locomotion",
+    "context": "hybrid_mobility",
+    "signature": [
+     [
+      "situation",
+      "changing_effector_authority"
+     ],
+     [
+      "situation",
+      "energy_transition"
+     ]
+    ],
+    "output_authority": 0
+   }
+  },
+  {
+   "local_id": 78,
+   "type": "EmbodiedMotorPlanHint",
+   "attrs": {
+    "name": "bootstrap:hybrid:effector_regime_transition",
+    "ordinal": 8,
+    "signature": [
+     [
+      "motor_task",
+      "hybrid_mobility"
+     ]
+    ],
+    "motor_task_context": "hybrid_mobility",
+    "bootstrap_family": "hybrid_locomotion",
+    "knowledge_kind": "analysis_by_synthesis_basin_hint",
+    "provenance": "hybrid_contact_aerodynamic_and_thrust_control",
+    "evidence_url": "https://doi.org/10.1109/TMECH.2022.3164929",
+    "stage_count": 4,
+    "output_authority": 0,
+    "integer_native": 1
+   }
+  },
+  {
+   "local_id": 79,
+   "type": "EmbodiedMotorPlanHintStage",
+   "attrs": {
+    "name": "bootstrap:hybrid:effector_regime_transition:stage:0",
+    "ordinal": 0,
+    "stage_role": "estimate_authority_envelope",
+    "signature": [
+     [
+      "bootstrap_role",
+      "estimate_authority_envelope"
+     ],
+     [
+      "bootstrap_relation",
+      "observe_load_and_deformation"
+     ]
+    ],
+    "routing_signature": [
+     [
+      "motor_task_context",
+      "hybrid_mobility"
+     ],
+     [
+      "motor_task_phase",
+      "preparation"
+     ]
+    ],
+    "output_authority": 0,
+    "integer_native": 1
+   }
+  },
+  {
+   "local_id": 80,
+   "type": "EmbodiedMotorPlanHintStage",
+   "attrs": {
+    "name": "bootstrap:hybrid:effector_regime_transition:stage:1",
+    "ordinal": 1,
+    "stage_role": "overlap_effector_regimes",
+    "signature": [
+     [
+      "bootstrap_role",
+      "overlap_effector_regimes"
+     ],
+     [
+      "bootstrap_relation",
+      "avoid_authority_gap"
+     ]
+    ],
+    "routing_signature": [
+     [
+      "motor_task_context",
+      "hybrid_mobility"
+     ],
+     [
+      "motor_task_phase",
+      "launch"
+     ]
+    ],
+    "output_authority": 0,
+    "integer_native": 1
+   }
+  },
+  {
+   "local_id": 81,
+   "type": "EmbodiedMotorPlanHintStage",
+   "attrs": {
+    "name": "bootstrap:hybrid:effector_regime_transition:stage:2",
+    "ordinal": 2,
+    "stage_role": "trade_energy_and_control",
+    "signature": [
+     [
+      "bootstrap_role",
+      "trade_energy_and_control"
+     ],
+     [
+      "bootstrap_relation",
+      "pareto_profile_stays_open"
+     ]
+    ],
+    "routing_signature": [
+     [
+      "motor_task_context",
+      "hybrid_mobility"
+     ],
+     [
+      "motor_task_phase",
+      "flight"
+     ]
+    ],
+    "output_authority": 0,
+    "integer_native": 1
+   }
+  },
+  {
+   "local_id": 82,
+   "type": "EmbodiedMotorPlanHintStage",
+   "attrs": {
+    "name": "bootstrap:hybrid:effector_regime_transition:stage:3",
+    "ordinal": 3,
+    "stage_role": "retire_spent_effector",
+    "signature": [
+     [
+      "bootstrap_role",
+      "retire_spent_effector"
+     ],
+     [
+      "bootstrap_relation",
+      "verify_new_regime"
+     ]
+    ],
+    "routing_signature": [
+     [
+      "motor_task_context",
+      "hybrid_mobility"
+     ],
+     [
+      "motor_task_phase",
+      "landing"
+     ]
+    ],
+    "output_authority": 0,
+    "integer_native": 1
+   }
+  },
+  {
+   "local_id": 83,
+   "type": "EmbodiedBootstrapSituation",
+   "attrs": {
+    "name": "situation:bootstrap:ballistic:takeoff_and_landing",
+    "ordinal": 9,
+    "family": "ballistic_transition",
+    "context": "self_takeoff",
+    "signature": [
+     [
+      "situation",
+      "support_to_flight"
+     ],
+     [
+      "situation",
+      "flight_to_support"
+     ]
+    ],
+    "output_authority": 0
+   }
+  },
+  {
+   "local_id": 84,
+   "type": "EmbodiedMotorPlanHint",
+   "attrs": {
+    "name": "bootstrap:ballistic:takeoff_and_landing",
+    "ordinal": 9,
+    "signature": [
+     [
+      "motor_task",
+      "self_takeoff"
+     ]
+    ],
+    "motor_task_context": "self_takeoff",
+    "bootstrap_family": "ballistic_transition",
+    "knowledge_kind": "analysis_by_synthesis_basin_hint",
+    "provenance": "human_jump_takeoff_flight_and_landing_phases",
+    "evidence_url": "https://doi.org/10.1519/JSC.0000000000004700",
+    "stage_count": 4,
+    "output_authority": 0,
+    "integer_native": 1
+   }
+  },
+  {
+   "local_id": 85,
+   "type": "EmbodiedMotorPlanHintStage",
+   "attrs": {
+    "name": "bootstrap:ballistic:takeoff_and_landing:stage:0",
+    "ordinal": 0,
+    "stage_role": "store_recoverable_energy",
+    "signature": [
+     [
+      "bootstrap_role",
+      "store_recoverable_energy"
+     ],
+     [
+      "bootstrap_relation",
+      "load_within_envelope"
+     ]
+    ],
+    "routing_signature": [
+     [
+      "motor_task_context",
+      "self_takeoff"
+     ],
+     [
+      "motor_task_phase",
+      "preparation"
+     ]
+    ],
+    "output_authority": 0,
+    "integer_native": 1
+   }
+  },
+  {
+   "local_id": 86,
+   "type": "EmbodiedMotorPlanHintStage",
+   "attrs": {
+    "name": "bootstrap:ballistic:takeoff_and_landing:stage:1",
+    "ordinal": 1,
+    "stage_role": "coordinate_impulse",
+    "signature": [
+     [
+      "bootstrap_role",
+      "coordinate_impulse"
+     ],
+     [
+      "bootstrap_relation",
+      "one_outcome_many_effectors"
+     ]
+    ],
+    "routing_signature": [
+     [
+      "motor_task_context",
+      "self_takeoff"
+     ],
+     [
+      "motor_task_phase",
+      "launch"
+     ]
+    ],
+    "output_authority": 0,
+    "integer_native": 1
+   }
+  },
+  {
+   "local_id": 87,
+   "type": "EmbodiedMotorPlanHintStage",
+   "attrs": {
+    "name": "bootstrap:ballistic:takeoff_and_landing:stage:2",
+    "ordinal": 2,
+    "stage_role": "shape_landing_state",
+    "signature": [
+     [
+      "bootstrap_role",
+      "shape_landing_state"
+     ],
+     [
+      "bootstrap_relation",
+      "angular_momentum_is_conserved"
+     ]
+    ],
+    "routing_signature": [
+     [
+      "motor_task_context",
+      "self_takeoff"
+     ],
+     [
+      "motor_task_phase",
+      "flight"
+     ]
+    ],
+    "output_authority": 0,
+    "integer_native": 1
+   }
+  },
+  {
+   "local_id": 88,
+   "type": "EmbodiedMotorPlanHintStage",
+   "attrs": {
+    "name": "bootstrap:ballistic:takeoff_and_landing:stage:3",
+    "ordinal": 3,
+    "stage_role": "accept_and_redirect_load",
+    "signature": [
+     [
+      "bootstrap_role",
+      "accept_and_redirect_load"
+     ],
+     [
+      "bootstrap_relation",
+      "progressive_support_receipt"
+     ]
+    ],
+    "routing_signature": [
+     [
+      "motor_task_context",
+      "self_takeoff"
+     ],
+     [
+      "motor_task_phase",
+      "landing"
+     ]
+    ],
+    "output_authority": 0,
+    "integer_native": 1
+   }
+  }
+ ],
+ "edges": [
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "type": "has_embodied_motor_routing_shape",
+   "tgt": {
+    "local": 12
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "type": "has_embodied_motor_routing_shape",
+   "tgt": {
+    "local": 13
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "type": "has_embodied_motor_routing_shape",
+   "tgt": {
+    "local": 14
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "type": "has_embodied_motor_routing_shape",
+   "tgt": {
+    "local": 15
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "type": "has_embodied_motor_routing_shape",
+   "tgt": {
+    "local": 16
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "type": "has_embodied_motor_routing_shape",
+   "tgt": {
+    "local": 17
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "type": "has_embodied_motor_routing_shape",
+   "tgt": {
+    "local": 18
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "type": "has_embodied_motor_routing_shape",
+   "tgt": {
+    "local": 19
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "type": "has_embodied_motor_routing_shape",
+   "tgt": {
+    "local": 20
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "type": "has_embodied_motor_routing_shape",
+   "tgt": {
+    "local": 21
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "type": "has_embodied_motor_routing_shape",
+   "tgt": {
+    "local": 22
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "type": "has_embodied_motor_routing_shape",
+   "tgt": {
+    "local": 23
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "type": "has_embodied_motor_routing_shape",
+   "tgt": {
+    "local": 24
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "type": "has_embodied_motor_routing_shape",
+   "tgt": {
+    "local": 25
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "type": "has_embodied_motor_routing_shape",
+   "tgt": {
+    "local": 26
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "type": "has_embodied_motor_routing_shape",
+   "tgt": {
+    "local": 27
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "type": "has_embodied_motor_routing_shape",
+   "tgt": {
+    "local": 28
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "type": "has_embodied_bootstrap_situation",
+   "tgt": {
+    "local": 29
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "type": "has_embodied_motor_plan_hint_library",
+   "tgt": {
+    "local": 30
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 29
+   },
+   "type": "suggests_embodied_motor_plan_hint",
+   "tgt": {
+    "local": 30
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 29
+   },
+   "type": "requires_capability_invariant",
+   "tgt": {
+    "local": 11
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 29
+   },
+   "type": "requires_capability_invariant",
+   "tgt": {
+    "local": 9
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 30
+   },
+   "type": "has_embodied_motor_plan_hint_stage",
+   "tgt": {
+    "local": 31
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 31
+   },
+   "type": "routes_through_embodied_motor_routing_shape",
+   "tgt": {
+    "local": 19
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 30
+   },
+   "type": "has_embodied_motor_plan_hint_stage",
+   "tgt": {
+    "local": 32
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 32
+   },
+   "type": "routes_through_embodied_motor_routing_shape",
+   "tgt": {
+    "local": 18
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 30
+   },
+   "type": "has_embodied_motor_plan_hint_stage",
+   "tgt": {
+    "local": 33
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 33
+   },
+   "type": "routes_through_embodied_motor_routing_shape",
+   "tgt": {
+    "local": 17
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 30
+   },
+   "type": "has_embodied_motor_plan_hint_stage",
+   "tgt": {
+    "local": 34
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 34
+   },
+   "type": "routes_through_embodied_motor_routing_shape",
+   "tgt": {
+    "local": 20
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "type": "has_embodied_bootstrap_situation",
+   "tgt": {
+    "local": 35
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "type": "has_embodied_motor_plan_hint_library",
+   "tgt": {
+    "local": 36
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 35
+   },
+   "type": "suggests_embodied_motor_plan_hint",
+   "tgt": {
+    "local": 36
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 35
+   },
+   "type": "requires_capability_invariant",
+   "tgt": {
+    "local": 7
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 35
+   },
+   "type": "requires_capability_invariant",
+   "tgt": {
+    "local": 8
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 36
+   },
+   "type": "has_embodied_motor_plan_hint_stage",
+   "tgt": {
+    "local": 37
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 37
+   },
+   "type": "routes_through_embodied_motor_routing_shape",
+   "tgt": {
+    "local": 19
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 36
+   },
+   "type": "has_embodied_motor_plan_hint_stage",
+   "tgt": {
+    "local": 38
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 38
+   },
+   "type": "routes_through_embodied_motor_routing_shape",
+   "tgt": {
+    "local": 18
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 36
+   },
+   "type": "has_embodied_motor_plan_hint_stage",
+   "tgt": {
+    "local": 39
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 39
+   },
+   "type": "routes_through_embodied_motor_routing_shape",
+   "tgt": {
+    "local": 17
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 36
+   },
+   "type": "has_embodied_motor_plan_hint_stage",
+   "tgt": {
+    "local": 40
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 40
+   },
+   "type": "routes_through_embodied_motor_routing_shape",
+   "tgt": {
+    "local": 20
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "type": "has_embodied_bootstrap_situation",
+   "tgt": {
+    "local": 41
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "type": "has_embodied_motor_plan_hint_library",
+   "tgt": {
+    "local": 42
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 41
+   },
+   "type": "suggests_embodied_motor_plan_hint",
+   "tgt": {
+    "local": 42
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 41
+   },
+   "type": "requires_capability_invariant",
+   "tgt": {
+    "local": 7
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 41
+   },
+   "type": "requires_capability_invariant",
+   "tgt": {
+    "local": 4
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 42
+   },
+   "type": "has_embodied_motor_plan_hint_stage",
+   "tgt": {
+    "local": 43
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 43
+   },
+   "type": "routes_through_embodied_motor_routing_shape",
+   "tgt": {
+    "local": 19
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 42
+   },
+   "type": "has_embodied_motor_plan_hint_stage",
+   "tgt": {
+    "local": 44
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 44
+   },
+   "type": "routes_through_embodied_motor_routing_shape",
+   "tgt": {
+    "local": 18
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 42
+   },
+   "type": "has_embodied_motor_plan_hint_stage",
+   "tgt": {
+    "local": 45
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 45
+   },
+   "type": "routes_through_embodied_motor_routing_shape",
+   "tgt": {
+    "local": 16
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 42
+   },
+   "type": "has_embodied_motor_plan_hint_stage",
+   "tgt": {
+    "local": 46
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 46
+   },
+   "type": "routes_through_embodied_motor_routing_shape",
+   "tgt": {
+    "local": 17
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "type": "has_embodied_bootstrap_situation",
+   "tgt": {
+    "local": 47
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "type": "has_embodied_motor_plan_hint_library",
+   "tgt": {
+    "local": 48
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 47
+   },
+   "type": "suggests_embodied_motor_plan_hint",
+   "tgt": {
+    "local": 48
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 47
+   },
+   "type": "requires_capability_invariant",
+   "tgt": {
+    "local": 11
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 47
+   },
+   "type": "requires_capability_invariant",
+   "tgt": {
+    "local": 2
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 48
+   },
+   "type": "has_embodied_motor_plan_hint_stage",
+   "tgt": {
+    "local": 49
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 49
+   },
+   "type": "routes_through_embodied_motor_routing_shape",
+   "tgt": {
+    "local": 19
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 48
+   },
+   "type": "has_embodied_motor_plan_hint_stage",
+   "tgt": {
+    "local": 50
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 50
+   },
+   "type": "routes_through_embodied_motor_routing_shape",
+   "tgt": {
+    "local": 18
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 48
+   },
+   "type": "has_embodied_motor_plan_hint_stage",
+   "tgt": {
+    "local": 51
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 51
+   },
+   "type": "routes_through_embodied_motor_routing_shape",
+   "tgt": {
+    "local": 16
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 48
+   },
+   "type": "has_embodied_motor_plan_hint_stage",
+   "tgt": {
+    "local": 52
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 52
+   },
+   "type": "routes_through_embodied_motor_routing_shape",
+   "tgt": {
+    "local": 17
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "type": "has_embodied_bootstrap_situation",
+   "tgt": {
+    "local": 53
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "type": "has_embodied_motor_plan_hint_library",
+   "tgt": {
+    "local": 54
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 53
+   },
+   "type": "suggests_embodied_motor_plan_hint",
+   "tgt": {
+    "local": 54
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 53
+   },
+   "type": "requires_capability_invariant",
+   "tgt": {
+    "local": 11
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 53
+   },
+   "type": "requires_capability_invariant",
+   "tgt": {
+    "local": 3
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 54
+   },
+   "type": "has_embodied_motor_plan_hint_stage",
+   "tgt": {
+    "local": 55
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 55
+   },
+   "type": "routes_through_embodied_motor_routing_shape",
+   "tgt": {
+    "local": 19
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 54
+   },
+   "type": "has_embodied_motor_plan_hint_stage",
+   "tgt": {
+    "local": 56
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 56
+   },
+   "type": "routes_through_embodied_motor_routing_shape",
+   "tgt": {
+    "local": 18
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 54
+   },
+   "type": "has_embodied_motor_plan_hint_stage",
+   "tgt": {
+    "local": 57
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 57
+   },
+   "type": "routes_through_embodied_motor_routing_shape",
+   "tgt": {
+    "local": 16
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 54
+   },
+   "type": "has_embodied_motor_plan_hint_stage",
+   "tgt": {
+    "local": 58
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 58
+   },
+   "type": "routes_through_embodied_motor_routing_shape",
+   "tgt": {
+    "local": 17
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "type": "has_embodied_bootstrap_situation",
+   "tgt": {
+    "local": 59
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "type": "has_embodied_motor_plan_hint_library",
+   "tgt": {
+    "local": 60
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 59
+   },
+   "type": "suggests_embodied_motor_plan_hint",
+   "tgt": {
+    "local": 60
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 59
+   },
+   "type": "requires_capability_invariant",
+   "tgt": {
+    "local": 3
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 59
+   },
+   "type": "requires_capability_invariant",
+   "tgt": {
+    "local": 11
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 60
+   },
+   "type": "has_embodied_motor_plan_hint_stage",
+   "tgt": {
+    "local": 61
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 61
+   },
+   "type": "routes_through_embodied_motor_routing_shape",
+   "tgt": {
+    "local": 19
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 60
+   },
+   "type": "has_embodied_motor_plan_hint_stage",
+   "tgt": {
+    "local": 62
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 62
+   },
+   "type": "routes_through_embodied_motor_routing_shape",
+   "tgt": {
+    "local": 18
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 60
+   },
+   "type": "has_embodied_motor_plan_hint_stage",
+   "tgt": {
+    "local": 63
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 63
+   },
+   "type": "routes_through_embodied_motor_routing_shape",
+   "tgt": {
+    "local": 16
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 60
+   },
+   "type": "has_embodied_motor_plan_hint_stage",
+   "tgt": {
+    "local": 64
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 64
+   },
+   "type": "routes_through_embodied_motor_routing_shape",
+   "tgt": {
+    "local": 17
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "type": "has_embodied_bootstrap_situation",
+   "tgt": {
+    "local": 65
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "type": "has_embodied_motor_plan_hint_library",
+   "tgt": {
+    "local": 66
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 65
+   },
+   "type": "suggests_embodied_motor_plan_hint",
+   "tgt": {
+    "local": 66
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 65
+   },
+   "type": "requires_capability_invariant",
+   "tgt": {
+    "local": 10
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 65
+   },
+   "type": "requires_capability_invariant",
+   "tgt": {
+    "local": 11
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 66
+   },
+   "type": "has_embodied_motor_plan_hint_stage",
+   "tgt": {
+    "local": 67
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 67
+   },
+   "type": "routes_through_embodied_motor_routing_shape",
+   "tgt": {
+    "local": 19
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 66
+   },
+   "type": "has_embodied_motor_plan_hint_stage",
+   "tgt": {
+    "local": 68
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 68
+   },
+   "type": "routes_through_embodied_motor_routing_shape",
+   "tgt": {
+    "local": 18
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 66
+   },
+   "type": "has_embodied_motor_plan_hint_stage",
+   "tgt": {
+    "local": 69
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 69
+   },
+   "type": "routes_through_embodied_motor_routing_shape",
+   "tgt": {
+    "local": 16
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 66
+   },
+   "type": "has_embodied_motor_plan_hint_stage",
+   "tgt": {
+    "local": 70
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 70
+   },
+   "type": "routes_through_embodied_motor_routing_shape",
+   "tgt": {
+    "local": 17
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "type": "has_embodied_bootstrap_situation",
+   "tgt": {
+    "local": 71
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "type": "has_embodied_motor_plan_hint_library",
+   "tgt": {
+    "local": 72
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 71
+   },
+   "type": "suggests_embodied_motor_plan_hint",
+   "tgt": {
+    "local": 72
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 71
+   },
+   "type": "requires_capability_invariant",
+   "tgt": {
+    "local": 11
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 71
+   },
+   "type": "requires_capability_invariant",
+   "tgt": {
+    "local": 1
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 72
+   },
+   "type": "has_embodied_motor_plan_hint_stage",
+   "tgt": {
+    "local": 73
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 73
+   },
+   "type": "routes_through_embodied_motor_routing_shape",
+   "tgt": {
+    "local": 23
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 72
+   },
+   "type": "has_embodied_motor_plan_hint_stage",
+   "tgt": {
+    "local": 74
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 74
+   },
+   "type": "routes_through_embodied_motor_routing_shape",
+   "tgt": {
+    "local": 22
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 72
+   },
+   "type": "has_embodied_motor_plan_hint_stage",
+   "tgt": {
+    "local": 75
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 75
+   },
+   "type": "routes_through_embodied_motor_routing_shape",
+   "tgt": {
+    "local": 21
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 72
+   },
+   "type": "has_embodied_motor_plan_hint_stage",
+   "tgt": {
+    "local": 76
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 76
+   },
+   "type": "routes_through_embodied_motor_routing_shape",
+   "tgt": {
+    "local": 24
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "type": "has_embodied_bootstrap_situation",
+   "tgt": {
+    "local": 77
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "type": "has_embodied_motor_plan_hint_library",
+   "tgt": {
+    "local": 78
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 77
+   },
+   "type": "suggests_embodied_motor_plan_hint",
+   "tgt": {
+    "local": 78
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 77
+   },
+   "type": "requires_capability_invariant",
+   "tgt": {
+    "local": 6
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 77
+   },
+   "type": "requires_capability_invariant",
+   "tgt": {
+    "local": 3
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 78
+   },
+   "type": "has_embodied_motor_plan_hint_stage",
+   "tgt": {
+    "local": 79
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 79
+   },
+   "type": "routes_through_embodied_motor_routing_shape",
+   "tgt": {
+    "local": 15
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 78
+   },
+   "type": "has_embodied_motor_plan_hint_stage",
+   "tgt": {
+    "local": 80
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 80
+   },
+   "type": "routes_through_embodied_motor_routing_shape",
+   "tgt": {
+    "local": 14
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 78
+   },
+   "type": "has_embodied_motor_plan_hint_stage",
+   "tgt": {
+    "local": 81
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 81
+   },
+   "type": "routes_through_embodied_motor_routing_shape",
+   "tgt": {
+    "local": 12
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 78
+   },
+   "type": "has_embodied_motor_plan_hint_stage",
+   "tgt": {
+    "local": 82
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 82
+   },
+   "type": "routes_through_embodied_motor_routing_shape",
+   "tgt": {
+    "local": 13
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "type": "has_embodied_bootstrap_situation",
+   "tgt": {
+    "local": 83
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "type": "has_embodied_motor_plan_hint_library",
+   "tgt": {
+    "local": 84
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 83
+   },
+   "type": "suggests_embodied_motor_plan_hint",
+   "tgt": {
+    "local": 84
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 83
+   },
+   "type": "requires_capability_invariant",
+   "tgt": {
+    "local": 6
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 83
+   },
+   "type": "requires_capability_invariant",
+   "tgt": {
+    "local": 5
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 84
+   },
+   "type": "has_embodied_motor_plan_hint_stage",
+   "tgt": {
+    "local": 85
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 85
+   },
+   "type": "routes_through_embodied_motor_routing_shape",
+   "tgt": {
+    "local": 28
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 84
+   },
+   "type": "has_embodied_motor_plan_hint_stage",
+   "tgt": {
+    "local": 86
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 86
+   },
+   "type": "routes_through_embodied_motor_routing_shape",
+   "tgt": {
+    "local": 27
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 84
+   },
+   "type": "has_embodied_motor_plan_hint_stage",
+   "tgt": {
+    "local": 87
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 87
+   },
+   "type": "routes_through_embodied_motor_routing_shape",
+   "tgt": {
+    "local": 25
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 84
+   },
+   "type": "has_embodied_motor_plan_hint_stage",
+   "tgt": {
+    "local": 88
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 88
+   },
+   "type": "routes_through_embodied_motor_routing_shape",
+   "tgt": {
+    "local": 26
+   },
+   "attrs": {}
+  }
+ ],
+ "productions": [
+  {
+   "provenance": "seed:embodied_capability_bootstrap:has_embodied_bootstrap_situation",
+   "src": {
+    "type": "Agent",
+    "var": "src"
+   },
+   "edge_type": "has_embodied_bootstrap_situation",
+   "tgt": {
+    "type": "EmbodiedBootstrapSituation",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "seed:embodied_capability_bootstrap:has_embodied_motor_plan_hint_library",
+   "src": {
+    "type": "Agent",
+    "var": "src"
+   },
+   "edge_type": "has_embodied_motor_plan_hint_library",
+   "tgt": {
+    "type": "EmbodiedMotorPlanHint",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "seed:embodied_capability_bootstrap:suggests_embodied_motor_plan_hint",
+   "src": {
+    "type": "EmbodiedBootstrapSituation",
+    "var": "src"
+   },
+   "edge_type": "suggests_embodied_motor_plan_hint",
+   "tgt": {
+    "type": "EmbodiedMotorPlanHint",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "seed:embodied_capability_bootstrap:requires_capability_invariant",
+   "src": {
+    "type": "EmbodiedBootstrapSituation",
+    "var": "src"
+   },
+   "edge_type": "requires_capability_invariant",
+   "tgt": {
+    "type": "CapabilityInvariant",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "seed:embodied_capability_bootstrap:has_embodied_motor_plan_hint_stage",
+   "src": {
+    "type": "EmbodiedMotorPlanHint",
+    "var": "src"
+   },
+   "edge_type": "has_embodied_motor_plan_hint_stage",
+   "tgt": {
+    "type": "EmbodiedMotorPlanHintStage",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "seed:embodied_capability_bootstrap:has_embodied_motor_routing_shape",
+   "src": {
+    "type": "Agent",
+    "var": "src"
+   },
+   "edge_type": "has_embodied_motor_routing_shape",
+   "tgt": {
+    "type": "EmbodiedMotorRoutingShape",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "seed:embodied_capability_bootstrap:routes_through_embodied_motor_routing_shape",
+   "src": {
+    "type": "EmbodiedMotorPlanHintStage",
+    "var": "src"
+   },
+   "edge_type": "routes_through_embodied_motor_routing_shape",
+   "tgt": {
+    "type": "EmbodiedMotorRoutingShape",
+    "var": "tgt"
+   }
+  }
+ ],
+ "rules": []
+}

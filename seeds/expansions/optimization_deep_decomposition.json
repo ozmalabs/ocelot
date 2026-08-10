@@ -1,0 +1,118 @@
+{
+  "id": "optimization_deep_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "convex_optimization",
+  "in_microtheory": "mathematics",
+  "description": "Optimization decomposed. Lagrange duality, semi-definite programming, second-order cone programming, interior point methods, ADMM, proximal methods, stochastic optimization, Nesterov acceleration, non-convex optimization landscapes.",
+  "sub_mechanisms": [
+    {
+      "name": "Lagrange_duality",
+      "definition": "Min f(x) s.t. g(x) ≤ 0 → dual problem max min L(x,λ) = f(x) + λg(x).",
+      "why": "Foundation constrained optimization. Strong duality under Slater's condition. SVM derivation.",
+      "category": "opt_deep_mechanism"
+    },
+    {
+      "name": "weak_strong_duality",
+      "definition": "Dual ≤ primal (weak). Equality under convexity + constraint qualification (strong).",
+      "why": "Foundation. Gap zero in convex case. Used to bound primal + verify optimality.",
+      "category": "opt_deep_mechanism"
+    },
+    {
+      "name": "SDP_semidefinite",
+      "definition": "Min trace(CX) s.t. trace(A_i X) = b_i, X positive semidefinite.",
+      "why": "Foundation. Generalises LP + QP. MaxCut, SDP relaxations. Convex.",
+      "category": "opt_deep_mechanism"
+    },
+    {
+      "name": "interior_point_methods",
+      "definition": "Barrier function pushes iterates away from boundary. Polynomial-time for LP + SDP.",
+      "why": "Karmarkar 1984. Modern LP/SDP solvers. Polynomial worst-case.",
+      "category": "opt_deep_mechanism"
+    },
+    {
+      "name": "ADMM",
+      "definition": "Alternating Direction Method of Multipliers. Splits problem into easier subproblems.",
+      "why": "Foundation. Big data + distributed optimization. ML at scale. Boyd's book canonical.",
+      "category": "opt_deep_mechanism"
+    },
+    {
+      "name": "proximal_operator",
+      "definition": "prox_f(v) = argmin_x f(x) + (1/2)‖x-v‖². Generalised gradient.",
+      "why": "Foundation. Handles non-smooth functions. ISTA, FISTA for L1-regularised.",
+      "category": "opt_deep_mechanism"
+    },
+    {
+      "name": "stochastic_gradient_descent_math",
+      "definition": "Use noisy gradient estimate. E[ĝ] = ∇f.",
+      "why": "Foundation ML. Scales to large datasets. Convergence rates well-studied.",
+      "category": "opt_deep_mechanism"
+    },
+    {
+      "name": "Nesterov_acceleration",
+      "definition": "Add momentum term. Accelerated rate O(1/k²) for convex smooth.",
+      "why": "Optimal first-order method. Foundation. Adam + similar borrow ideas.",
+      "category": "opt_deep_mechanism"
+    },
+    {
+      "name": "mirror_descent",
+      "definition": "Generalises GD using Bregman divergences. Adapted geometry.",
+      "why": "Foundation. Exponential weights for online learning. Better for high-dim.",
+      "category": "opt_deep_mechanism"
+    },
+    {
+      "name": "non_convex_landscape",
+      "definition": "Saddle points, local minima, plateaus. NP-hard general.",
+      "why": "Foundation. Deep networks non-convex but trainable. Loss landscape research.",
+      "category": "opt_deep_mechanism"
+    },
+    {
+      "name": "frank_wolfe_method",
+      "definition": "Linear oracle minimises over feasible set. Update direction.",
+      "why": "Foundation. Convex constraint set with cheap linear minimisation. No projection step.",
+      "category": "opt_deep_mechanism"
+    },
+    {
+      "name": "saddle_point_problems",
+      "definition": "Min-max problems. GAN training. Extragradient + similar methods.",
+      "why": "Foundation. Different from minimisation. Convergence subtle. Modern ML.",
+      "category": "opt_deep_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "strong_duality_holds_for_convex_Slater",
+      "if": ["convex problem + Slater's condition (strict interior)"],
+      "then": ["strong duality holds (no duality gap)"],
+      "why": "Foundation. Dual solution equals primal. Standard verification of optimality via KKT.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "Nesterov_optimal_first_order",
+      "if": ["convex smooth function minimised by first-order method"],
+      "then": ["Nesterov acceleration achieves optimal O(1/k²) rate"],
+      "why": "Foundation. Lower bound matches. Gradient descent only O(1/k). Universal in ML.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "SGD_unbiased_gradient_converges",
+      "if": ["stochastic gradient has E[ĝ] = ∇f + bounded variance"],
+      "then": ["SGD converges in expectation"],
+      "why": "Foundation ML. Robbins-Monro. Rate depends on step size schedule. Universal.",
+      "soundness_category": "algebraic_law"
+    },
+    {
+      "name": "interior_point_polynomial_LP",
+      "if": ["LP solved with interior point method"],
+      "then": ["polynomial time guaranteed"],
+      "why": "Karmarkar's breakthrough. Simplex exponential worst case (Klee-Minty). IPM modern default.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "non_convex_local_global_gap",
+      "if": ["function non-convex"],
+      "then": ["local minimum may not be global"],
+      "why": "Fundamental. Deep learning landscape: many local minima, mostly good. Theory active research.",
+      "soundness_category": "denotational_equivalence"
+    }
+  ]
+}

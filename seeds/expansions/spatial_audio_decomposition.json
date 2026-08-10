@@ -1,0 +1,111 @@
+{
+  "id": "spatial_audio_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "spatial_audio",
+  "in_microtheory": "audio_coding_theory",
+  "description": "Spatial audio formats decomposed. From simple stereo through 5.1/7.1 channel surround, to object-based (Dolby Atmos), and listener-position-independent (Ambisonics, NeRF-style soundfields). The compression problem is two-fold: encode the spatial structure efficiently AND remain renderable on diverse playback systems (headphones, soundbars, full 7.1 setups).",
+  "sub_mechanisms": [
+    {
+      "name": "channel_based_5_1",
+      "definition": "Six discrete channels: Left, Right, Center, LFE (subwoofer), Left Surround, Right Surround. Pre-mixed for a specific 5-speaker + sub layout.",
+      "why": "Standard for movie soundtracks since the 1990s. Decoder routing is trivial: each channel goes to its named speaker. Pre-mixed means no per-listener adjustment; render exactly as authored.",
+      "category": "spatial_audio_mechanism"
+    },
+    {
+      "name": "channel_based_7_1",
+      "definition": "Eight channels: 5.1 + Left Back + Right Back. Extends 5.1's surround imaging with additional rear channels.",
+      "why": "More precise surround imaging than 5.1. Same architecture (pre-mixed channels, fixed speaker layout) but more spatial resolution behind the listener. Common in modern movie soundtracks.",
+      "category": "spatial_audio_mechanism"
+    },
+    {
+      "name": "dolby_atmos_objects",
+      "definition": "Object-based audio: each sound source (dialog, footsteps, ambient music) is a separate object with associated position metadata. Renderer places objects in 3D for the playback system.",
+      "why": "Mix-once, render-everywhere. The mix engineer places objects in 3D; playback (headphones, soundbar, full Atmos cinema) renders them appropriately. No pre-mixed compromise; each playback system gets a tailored render.",
+      "category": "spatial_audio_mechanism"
+    },
+    {
+      "name": "object_metadata",
+      "definition": "Per-object metadata: 3D position (x, y, z), size, gain, time-varying trajectory. Encoded as a small parameter stream.",
+      "why": "Metadata is small (~kbps) compared to audio (~hundreds of kbps). The architectural insight: encode WHERE separately from WHAT, letting playback system optimise the spatial render.",
+      "category": "spatial_audio_mechanism"
+    },
+    {
+      "name": "bed_channels_plus_objects",
+      "definition": "Atmos and similar formats use a combination: 'bed' channels (background music, ambience) plus discrete objects (dialog, effects). The bed is channel-based; objects are object-based.",
+      "why": "Hybrid efficiency: high-channel-count background audio is cheap as bed channels; discrete sound effects benefit from object-based positioning. Combined coding handles both ends of the spectrum.",
+      "category": "spatial_audio_mechanism"
+    },
+    {
+      "name": "ambisonics_first_order",
+      "definition": "Four channels (W, X, Y, Z) encoding a soundfield as spherical harmonics. W is omnidirectional; X, Y, Z encode directional information.",
+      "why": "Listener-position-independent: the soundfield is fully encoded. Renderer extracts the appropriate render for any output (headphones via HRTF, stereo, 5.1, 7.1, etc.). Used in 360° VR audio because the listener orientation can change.",
+      "category": "spatial_audio_mechanism"
+    },
+    {
+      "name": "ambisonics_higher_order",
+      "definition": "Higher-order ambisonics (HOA) uses 9 channels (2nd order), 16 channels (3rd), 25 channels (4th). Each order adds finer spatial resolution.",
+      "why": "First-order ambisonics has limited spatial resolution (everything is somewhat fuzzy). Higher orders sharpen the imaging. Bit cost scales as order squared; quality gains diminish. 3rd order is common for VR; higher for research.",
+      "category": "spatial_audio_mechanism"
+    },
+    {
+      "name": "binaural_rendering",
+      "definition": "Conversion of multi-channel or object-based audio to 2-channel headphone output, using HRTF filters to position virtual speakers in 3D.",
+      "why": "Headphones are stereo only but need to render spatial content. HRTF-based binaural rendering places virtual speakers around the listener's head, capturing inter-aural time/level differences. Quality depends heavily on HRTF accuracy.",
+      "category": "spatial_audio_mechanism"
+    },
+    {
+      "name": "personalised_HRTF",
+      "definition": "HRTFs measured for individual listeners (via camera-based ear measurement or anthropometric models). More accurate than generic HRTFs.",
+      "why": "Generic HRTFs work but lack the precision of per-listener filters. Apple Spatial Audio uses iPhone camera measurements to approximate per-listener HRTFs; some research uses full anechoic-chamber measurements. Quality gain is substantial.",
+      "category": "spatial_audio_mechanism"
+    },
+    {
+      "name": "lfe_low_frequency_effects",
+      "definition": "Dedicated subwoofer channel (0.1 in 5.1, 7.1, Atmos). Carries only bass content (typically below 120 Hz) but at higher peak SPL.",
+      "why": "Bass is omnidirectional (HVS can't localise low frequencies). A separate channel + dedicated woofer optimises bass reproduction without requiring full-range surround speakers. The '.1' notation reflects this special-purpose channel.",
+      "category": "spatial_audio_mechanism"
+    },
+    {
+      "name": "atmos_height_channels",
+      "definition": "Atmos adds vertical positioning: ceiling speakers or upfiring speakers in soundbars. Objects can be positioned above the listener (rain on the roof, helicopters).",
+      "why": "Vertical localisation adds immersion. 5.1/7.1 are 2D (ear-level only); Atmos extends to 3D. The vertical positioning is what defines Atmos as 'immersive' vs 'surround' audio.",
+      "category": "spatial_audio_mechanism"
+    },
+    {
+      "name": "codec_independent_spatial_metadata",
+      "definition": "Spatial metadata (Atmos object positions, Ambisonics matrices) is carried independently of the audio codec. The codec can be AAC, AC-3, Opus, DTS, etc.",
+      "why": "Same architecture as HDR metadata over video codecs: metadata is small and codec-agnostic. The spatial format works regardless of which underlying compression codec carries the audio. Same insight; different vertical.",
+      "category": "spatial_audio_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "object_based_audio_renders_per_playback_system",
+      "if": ["audio is encoded as objects + metadata"],
+      "then": ["each playback system gets a tailored render"],
+      "why": "Pre-mixed channels embed a specific render (this 5.1 mix is for 5.1 systems). Object-based delays the render until playback, letting it match the actual setup. Headphones get binaural; soundbars get virtual surround; cinema gets full Atmos. Same mix, multiple renders.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "ambisonics_separates_capture_from_render",
+      "if": ["a soundfield is encoded as spherical harmonics"],
+      "then": ["it can be rendered to any output regardless of original capture geometry"],
+      "why": "Ambisonics encodes the soundfield itself, not a render of it. The renderer decodes for the specific output. Used in VR because the listener's orientation rotates the rendered soundfield in real-time — only possible with soundfield-level encoding.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "hrtf_accuracy_determines_binaural_quality",
+      "if": ["binaural rendering uses a generic HRTF"],
+      "then": ["spatial imaging accuracy is limited compared to personalised HRTF"],
+      "why": "HRTFs vary substantially between individuals (head size, ear shape, torso). Generic HRTFs are 'average' — work OK for many but mismatch many others. Personalised HRTFs are more accurate. Apple's camera-based personalisation is a deployable compromise.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "metadata_separation_enables_codec_agnostic_spatial_audio",
+      "if": ["spatial metadata is independent of audio compression"],
+      "then": ["the same spatial format works across all codecs"],
+      "why": "Decoupling metadata from compression is the standard architectural move (HDR in video, Atmos in audio). Object positions don't compress further; the audio they reference does. Independence lets each evolve separately.",
+      "soundness_category": "referential_transparency"
+    }
+  ]
+}

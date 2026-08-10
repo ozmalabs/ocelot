@@ -1,0 +1,118 @@
+{
+  "id": "calculus_analysis_deep_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "differential_equations",
+  "in_microtheory": "mathematics",
+  "description": "Calculus + analysis decomposed. ODE existence-uniqueness, PDE classification (elliptic/parabolic/hyperbolic), Sobolev spaces, distributions, Fourier theory, Laplace transform, calculus of variations, Lagrangian + Hamiltonian mechanics, gauge theory math.",
+  "sub_mechanisms": [
+    {
+      "name": "Picard_existence_uniqueness",
+      "definition": "Lipschitz continuity of f guarantees unique solution to y' = f(t,y).",
+      "why": "Foundation. Determines whether ODE well-posed. Standard theorem.",
+      "category": "calc_analysis_deep_mechanism"
+    },
+    {
+      "name": "PDE_classification",
+      "definition": "Elliptic (Laplace), parabolic (heat), hyperbolic (wave). By discriminant.",
+      "why": "Foundation. Different behaviour: elliptic equilibrium, parabolic diffusion, hyperbolic propagation.",
+      "category": "calc_analysis_deep_mechanism"
+    },
+    {
+      "name": "Sobolev_spaces",
+      "definition": "W^{k,p}: functions with k weak derivatives in L^p. Generalize smoothness.",
+      "why": "Foundation of modern PDE theory. Weak solutions. Hilbert space H^k = W^{k,2}.",
+      "category": "calc_analysis_deep_mechanism"
+    },
+    {
+      "name": "distributions_Schwartz",
+      "definition": "Generalised functions. Linear functionals on test functions. Dirac delta.",
+      "why": "Foundation. Handles non-smooth functions rigorously. Foundation of distribution theory.",
+      "category": "calc_analysis_deep_mechanism"
+    },
+    {
+      "name": "Fourier_series_convergence",
+      "definition": "Periodic L² function = Σ c_n e^{inx}. Converges in L² (Riesz-Fischer).",
+      "why": "Foundation. Convergence: L² always; pointwise (Carleson). Foundation harmonic analysis.",
+      "category": "calc_analysis_deep_mechanism"
+    },
+    {
+      "name": "Fourier_transform_math",
+      "definition": "F(ξ) = ∫f(x)e^{-2πiξx} dx. Plancherel: L² isometry.",
+      "why": "Foundation. Already in engineering signals; here mathematical theory. Quantum mechanics.",
+      "category": "calc_analysis_deep_mechanism"
+    },
+    {
+      "name": "calculus_of_variations",
+      "definition": "Minimise functional ∫L(y, y', x) dx. Euler-Lagrange equation: ∂L/∂y - d/dx(∂L/∂y') = 0.",
+      "why": "Foundation. Brachistochrone, geodesics. Foundation of mechanics, optimal control.",
+      "category": "calc_analysis_deep_mechanism"
+    },
+    {
+      "name": "Lagrangian_mechanics",
+      "definition": "L = T - V. Path minimising ∫L dt = physical trajectory.",
+      "why": "Foundation classical mechanics. Generalises Newton. Foundation of QFT.",
+      "category": "calc_analysis_deep_mechanism"
+    },
+    {
+      "name": "Hamiltonian_mechanics",
+      "definition": "H = T + V. Equations: q̇ = ∂H/∂p, ṗ = -∂H/∂q. Phase space.",
+      "why": "Foundation. Conservation laws via Noether. Bridge to QM (Schrödinger ↔ Heisenberg).",
+      "category": "calc_analysis_deep_mechanism"
+    },
+    {
+      "name": "Noether_theorem",
+      "definition": "Continuous symmetry of action → conservation law. Time translation → energy.",
+      "why": "Foundation modern physics. Connects symmetry to conservation. Universal.",
+      "category": "calc_analysis_deep_mechanism"
+    },
+    {
+      "name": "Stokes_theorem_general",
+      "definition": "∫_M dω = ∫_{∂M} ω. Generalises FTC + Green + Stokes + divergence.",
+      "why": "Foundation. Differential forms. Unifies vector calculus theorems. Universal.",
+      "category": "calc_analysis_deep_mechanism"
+    },
+    {
+      "name": "spectral_theorem_operators",
+      "definition": "Self-adjoint compact operator on Hilbert space: complete orthonormal eigenbasis.",
+      "why": "Foundation QM. Generalises finite-dim spectral theorem. Foundation functional analysis.",
+      "category": "calc_analysis_deep_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "Lipschitz_guarantees_unique_solution",
+      "if": ["ODE has Lipschitz right side"],
+      "then": ["unique solution exists locally"],
+      "why": "Picard-Lindelöf theorem. Foundation. Many physical systems Lipschitz, hence deterministic.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "PDE_type_determines_method",
+      "if": ["PDE classified as elliptic, parabolic, or hyperbolic"],
+      "then": ["solution method choice follows"],
+      "why": "Elliptic: BVP, FEM, multigrid. Parabolic: IVP + BVP, Crank-Nicolson. Hyperbolic: characteristic, MUSCL. Foundation.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "Fourier_diagonalizes_translation_invariant",
+      "if": ["operator translation-invariant on R^n"],
+      "then": ["Fourier transform diagonalizes it"],
+      "why": "Foundation. Linear PDEs with constant coefficients soluble via Fourier. Foundation of signal processing.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "Euler_Lagrange_for_extremals",
+      "if": ["functional ∫L dx to be extremized"],
+      "then": ["Euler-Lagrange equation gives necessary condition"],
+      "why": "Foundation of calculus of variations. Geodesics, mechanics, optimal control. Universal.",
+      "soundness_category": "algebraic_law"
+    },
+    {
+      "name": "Noether_symmetry_conservation",
+      "if": ["continuous symmetry of Lagrangian action"],
+      "then": ["corresponding conservation law exists"],
+      "why": "Time-translation → energy. Space → momentum. Rotation → angular momentum. Foundation modern physics.",
+      "soundness_category": "algebraic_law"
+    }
+  ]
+}

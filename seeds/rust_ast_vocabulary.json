@@ -1,0 +1,44 @@
+{
+  "id": "rust_ast_vocabulary",
+  "version": "0.1.0",
+  "description": "Vocabulary for the agent's AST-graph design surface. When the agent composes a Rust source file, it does so by composing graph nodes of these types; the world adapter (RustRuntimeWorld.render_ast_to_source) walks the graph and emits source. This vocabulary names the AST shape so the agent's introspection can see it. The world's render rules are mechanical translations of each node type to a source fragment.",
+  "depends_on": [],
+  "concepts": [
+    {
+      "name": "RustSource",
+      "definition": "Root of a Rust source file. Has `has_item` edges to RustItem-class nodes (RustFn, RustEnumVariant, RustRaw, RustLine, RustMatchArm). The world renders by concatenating each child's rendered source in edge order.",
+      "category": "ast_root"
+    },
+    {
+      "name": "RustRaw",
+      "definition": "Verbatim escape hatch. Attribute `text` is emitted as-is. Used when the agent's vocabulary doesn't have a specialised node type for what it wants to express; the agent composes the literal Rust string.",
+      "category": "ast_node"
+    },
+    {
+      "name": "RustLine",
+      "definition": "A single line of Rust. Attribute `text` is emitted with a trailing newline. Like RustRaw but adds the newline so the agent doesn't have to remember.",
+      "category": "ast_node"
+    },
+    {
+      "name": "RustEnumVariant",
+      "definition": "A variant declaration inside an enum. Attribute `name` is the variant name; `has_field` edges point to RustRaw nodes whose text is one field declaration (e.g. 'text: TermIdx'). The world emits '    {name} { {fields} },'.",
+      "category": "ast_node"
+    },
+    {
+      "name": "RustMatchArm",
+      "definition": "A match arm inside a match expression. Attribute `pattern` is the pattern text; either attribute `body` carries the arm body directly, or `has_stmt` edges point to statement nodes that compose the body. The world emits '        {pattern} => {body},'.",
+      "category": "ast_node"
+    },
+    {
+      "name": "RustFn",
+      "definition": "A function declaration. Attribute `name`; optional `return_type`; `has_param` edges point to RustRaw nodes (each with one param's 'name: Type'); `has_stmt` edges point to RustStmt nodes that compose the body. The world emits 'fn {name}({params}) -> {return_type} { {body} }'.",
+      "category": "ast_node"
+    },
+    {
+      "name": "RustStmt",
+      "definition": "A single statement inside a function body. Attribute `text` is the statement; trailing semicolon added if missing. The world emits the indented statement followed by newline.",
+      "category": "ast_node"
+    }
+  ],
+  "rules": []
+}

@@ -1,0 +1,118 @@
+{
+  "id": "dram_operation_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "DRAM",
+  "in_microtheory": "computer_architecture",
+  "description": "DRAM operation decomposed at the physical level. Rows, columns, banks, ranks, channels — the actual structure the memory controller talks to. Activation, read/write, precharge timing. Refresh requirements. Row hammer as physical reality. The memory controller's scheduling problem: maximise row-buffer hits, balance bank-level parallelism, hit refresh deadlines.",
+  "sub_mechanisms": [
+    {
+      "name": "dram_cell_capacitor",
+      "definition": "Each DRAM cell is a capacitor + transistor. Capacitor stores charge (1 or 0); transistor gates access. ~6F² per cell on modern nodes.",
+      "why": "Tiny per bit (vs SRAM's 6 transistors). Lets DRAM densities reach 16-32 Gbit per chip. The capacitor leakage forces refresh; the single-transistor access enables compact array layouts.",
+      "category": "dram_mechanism"
+    },
+    {
+      "name": "row_activation",
+      "definition": "ACT command: select a row by raising its wordline. The whole row's cells discharge into the bitlines; sense amplifiers latch the values into the row buffer. Takes ~15 ns (tRCD).",
+      "why": "Slowest operation in DRAM. Once activated, all columns in the row are accessible quickly. Programs that activate many rows pay this cost repeatedly.",
+      "category": "dram_mechanism"
+    },
+    {
+      "name": "column_read_write",
+      "definition": "RD/WR command: select a column within the active row; transfer to/from the bus. ~5 ns (CAS latency).",
+      "why": "Fast operation when the row is active. Modern bursts transfer 8 columns per command (BL8 in DDR), amortising the command overhead. Sequential access patterns benefit dramatically.",
+      "category": "dram_mechanism"
+    },
+    {
+      "name": "precharge",
+      "definition": "PRE command: write the row buffer back to the array, drop the wordline. Required before activating a different row in the same bank. ~15 ns (tRP).",
+      "why": "The row buffer holds the active row; you can't activate another row in the same bank without precharging first. Random-row accesses pay tRP + tRCD ≈ 30 ns; sequential same-row accesses pay only CAS latency.",
+      "category": "dram_mechanism"
+    },
+    {
+      "name": "dram_bank",
+      "definition": "DRAM is partitioned into banks (8-32 per chip). Each bank has its own activated row + row buffer. Banks are independent.",
+      "why": "Bank-level parallelism: multiple outstanding requests to different banks proceed in parallel. While bank 0 is being activated, bank 1 can be doing reads. Memory controller schedules to maximise BLP.",
+      "category": "dram_mechanism"
+    },
+    {
+      "name": "dram_rank",
+      "definition": "A rank is a set of DRAM chips on a DIMM that share the same control signals (CS, CKE, etc.) and are accessed in parallel. Typically 8 chips per rank for x8 DRAMs on a 64-bit bus.",
+      "why": "Sharing chips amortises pin overhead per byte. Multiple ranks per DIMM let the controller switch between ranks (avoiding bank conflicts) — small extra parallelism at cost of higher capacitive load.",
+      "category": "dram_mechanism"
+    },
+    {
+      "name": "dram_channel",
+      "definition": "A channel is the path from the memory controller to a set of DIMMs. Modern CPUs: 2-8 channels per socket. Channels are fully independent.",
+      "why": "Total bandwidth = channels × bandwidth per channel. DDR5-6400 per channel = ~50 GB/s; 8 channels = 400 GB/s. Workloads need parallel allocators / NUMA-aware code to use this bandwidth.",
+      "category": "dram_mechanism"
+    },
+    {
+      "name": "row_buffer",
+      "definition": "The sense amplifier array holding the currently-active row's contents. Behaves as a fast local cache for the active row.",
+      "why": "Once activated, the row buffer is effectively SRAM — fast access until the next activation. Workloads that touch nearby addresses (same row) get row-buffer hits at low latency.",
+      "category": "dram_mechanism"
+    },
+    {
+      "name": "dram_refresh",
+      "definition": "REF command: refreshes a batch of rows. Each row must be refreshed every ~64 ms (or ~32 ms in high-temperature mode). Memory controller schedules refreshes in the background.",
+      "why": "DRAM cells leak; without refresh, data is lost in ms. Refresh interrupts normal access; modern DRAMs use fine-grained refresh (refresh small groups, not whole chips) to minimise impact. Refresh overhead: ~3-5% of total bandwidth.",
+      "category": "dram_mechanism"
+    },
+    {
+      "name": "row_hammer_attack",
+      "definition": "Repeatedly activating one row causes adjacent rows to leak faster (cell-to-cell coupling), eventually flipping bits. Demonstrated on DDR3/DDR4/DDR5.",
+      "why": "Cells in adjacent rows are electrically close. Frequent activation creates fluctuating fields; charge leaks faster. A few ms of hammering at sufficient rate flips bits in adjacent rows. Used in security exploits (escalating to kernel privileges via page-table corruption).",
+      "category": "dram_mechanism"
+    },
+    {
+      "name": "target_row_refresh_mitigation",
+      "definition": "TRR: DRAM internally counts activations per row; when a row is hammered, refreshes its neighbours.",
+      "why": "Hardware mitigation for row hammer. Implementations vary in effectiveness; researchers have found bypasses for many TRR schemes. The arms race between attacks (multi-row hammering, blacksmith) and defences continues.",
+      "category": "dram_mechanism"
+    },
+    {
+      "name": "memory_controller_scheduling",
+      "definition": "Memory controller queues incoming requests, schedules them to maximise throughput: row-buffer hits first, FR-FCFS (first-ready, first-come-first-served), respect timing constraints (tRCD, tRP, tFAW).",
+      "why": "Naive FIFO scheduling wastes bandwidth on row-switch overhead. FR-FCFS prioritises requests hitting the active row + first-arrival. Modern controllers further optimise: open-row vs closed-row policy, write batching, refresh scheduling. The MC is one of the highest-IPC chips in the system.",
+      "category": "dram_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "row_buffer_hit_amortises_activation",
+      "if": ["successive accesses target the same DRAM row"],
+      "then": ["only the first pays the row activation cost"],
+      "why": "Activate is ~15 ns; column read is ~5 ns. After activation, the row buffer serves all columns at column-read speed. Sequential access patterns are 3x faster than random across rows.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "bank_level_parallelism_hides_serialised_operations",
+      "if": ["multiple outstanding requests target different banks"],
+      "then": ["the operations overlap across banks"],
+      "why": "Each bank's activation/precharge is independent. Memory controllers issue multiple ACT commands in parallel. Wide-bank DRAMs (HBM has 16 banks per pseudo-channel) achieve massive BLP. Single-bank workloads are throughput-limited even at high core count.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "refresh_overhead_proportional_to_capacity",
+      "if": ["DRAM capacity grows but refresh interval is fixed"],
+      "then": ["refresh overhead grows proportionally"],
+      "why": "Total refresh work = rows / refresh_interval. As DRAMs get denser (more rows per chip), refresh time grows. Modern DDR5 schedules fine-grained refresh to keep overhead at ~3-5%. Extreme densities may need new refresh schemes (subarray-level refresh).",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "row_hammer_violates_isolation",
+      "if": ["adjacent DRAM rows electrically interfere"],
+      "then": ["accessing one row can corrupt another row's data"],
+      "why": "Cell capacitors aren't perfectly isolated; activation drives wordline fields that couple into adjacent rows. Sufficient activation rate breaks the assumption that addresses are independent. The hardware model 'my row is mine' is violated under sustained pathological access patterns.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "memory_controller_scheduling_dominates_random_access_perf",
+      "if": ["the workload has random access patterns"],
+      "then": ["memory controller scheduling determines effective bandwidth"],
+      "why": "Random access has frequent row switches; bad scheduling pays activation cost on every access. Smart MCs reorder + batch to maximise BLP and row-buffer hits. The MC is silicon-implemented but the scheduling algorithm matters as much as the channel bandwidth.",
+      "soundness_category": "cost_equivalence"
+    }
+  ]
+}

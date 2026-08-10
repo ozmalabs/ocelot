@@ -1,0 +1,119 @@
+{
+  "id": "llm_inference_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "KV_cache",
+  "in_microtheory": "machine_learning",
+  "description": "LLM inference optimisation decomposed. The mechanics of serving production LLMs at scale. KV cache management (paged attention, prefix caching). Continuous batching. Speculative decoding. Tensor parallelism, pipeline parallelism. vLLM, TGI, SGLang as production serving systems.",
+  "sub_mechanisms": [
+    {
+      "name": "prefill_phase",
+      "definition": "Process input prompt: compute K, V for all input tokens in parallel. One forward pass.",
+      "why": "Embarrassingly parallel: all tokens visible. Compute-bound (matmul). Output: KV cache populated; sample first output token.",
+      "category": "llm_serve_mechanism"
+    },
+    {
+      "name": "decode_phase",
+      "definition": "Generate tokens one at a time. Each step: append new token to context, compute attention using KV cache.",
+      "why": "Sequential: each token depends on previous. Memory-bound: dominated by reading KV cache. Different optimisation profile than prefill.",
+      "category": "llm_serve_mechanism"
+    },
+    {
+      "name": "KV_cache_memory_size",
+      "definition": "Per request: 2 × layers × heads × head_dim × seq_len × precision. Typical: 1-10 MB per token.",
+      "why": "LLaMA-70B: ~80 KB per token per request. 4K context: ~320 MB per request. Memory dominates LLM serving cost. KV cache management is the central problem.",
+      "category": "llm_serve_mechanism"
+    },
+    {
+      "name": "paged_attention",
+      "definition": "vLLM: KV cache stored in fixed-size pages. Each request's logical pages map to physical pages.",
+      "why": "Like OS virtual memory. Eliminates fragmentation: short + long requests share pool efficiently. ~2x throughput vs naive KV management.",
+      "category": "llm_serve_mechanism"
+    },
+    {
+      "name": "prefix_caching",
+      "definition": "Cache KV for shared prompt prefixes across requests. System prompts, RAG context.",
+      "why": "Common prefix → reused KV. Skip prefill for shared part. 5-10x speedup when many requests share system prompt. Production-essential.",
+      "category": "llm_serve_mechanism"
+    },
+    {
+      "name": "continuous_batching",
+      "definition": "Dynamic batch: new requests join + finished requests leave at each iteration step.",
+      "why": "Static batching: must wait for slowest request. Continuous: GPU always full. ~3x throughput vs static. Standard in vLLM, TGI, SGLang.",
+      "category": "llm_serve_mechanism"
+    },
+    {
+      "name": "speculative_decoding",
+      "definition": "Small draft model proposes K tokens; large target verifies in parallel. Accept matched tokens; reject from first mismatch.",
+      "why": "Target's parallel forward pass over K tokens cheaper than K sequential. 2-3x decode speedup when draft accuracy >70%. Used in production.",
+      "category": "llm_serve_mechanism"
+    },
+    {
+      "name": "tensor_parallelism",
+      "definition": "Split each layer across GPUs: each holds slice of weights; all-reduce for cross-slice communication.",
+      "why": "Larger-than-single-GPU models. LLaMA-70B fits across 4 GPUs via TP. Communication-heavy: NVLink needed for efficient TP.",
+      "category": "llm_serve_mechanism"
+    },
+    {
+      "name": "pipeline_parallelism",
+      "definition": "Split layers across GPUs: each holds contiguous block. Tokens flow through pipeline.",
+      "why": "Less communication than TP. Cost: bubble (some GPUs idle during transitions). Hybrid TP+PP standard for very large models.",
+      "category": "llm_serve_mechanism"
+    },
+    {
+      "name": "weight_quantization_inference",
+      "definition": "Reduce inference weight precision: GPTQ (4-bit), AWQ (4-bit), Marlin (4-bit fused).",
+      "why": "Smaller model fits in memory; faster matmul. <1% quality loss on 4-bit. Standard for production deployment + consumer hardware.",
+      "category": "llm_serve_mechanism"
+    },
+    {
+      "name": "chunked_prefill",
+      "definition": "Split long prefill into chunks; interleave with decode steps from other requests.",
+      "why": "Long prefill blocks decode requests. Chunking lets system serve mix. vLLM, SGLang implement. Tradeoffs in scheduling complexity.",
+      "category": "llm_serve_mechanism"
+    },
+    {
+      "name": "streaming_token_output",
+      "definition": "Send tokens to client as they're generated. Lower TTFT (time to first token) perception.",
+      "why": "User UX: see partial output immediately. Server-Sent Events (SSE) protocol standard. ChatGPT, Claude, all chatbot UIs use this.",
+      "category": "llm_serve_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "KV_cache_memory_dominates_LLM_serving",
+      "if": ["model serves multiple concurrent long-context requests"],
+      "then": ["KV cache memory + bandwidth dominate"],
+      "why": "LLaMA-70B 4K context: 320 MB per request. 100 requests: 32 GB. KV cache > model weights. Memory bound; not compute bound. Driving force behind PagedAttention + efficient KV management.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "continuous_batching_3x_static_batching",
+      "definition": "Continuous batching keeps GPU 80-90% utilised vs static 30-50%.",
+      "if": ["batching is dynamic instead of fixed"],
+      "then": ["throughput is ~3x higher at similar latency"],
+      "why": "Static: padded to longest, wait for slowest. Continuous: each iteration step decides. Per-iteration scheduling overhead; gains massive in heterogeneous workloads. Standard since vLLM 2023.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "paged_attention_eliminates_KV_fragmentation",
+      "if": ["KV cache uses fixed-size pages with logical-to-physical mapping"],
+      "then": ["memory utilisation approaches 100%"],
+      "why": "Without paging: each request reserves max length even if it ends short. With paging: only used pages occupied. ~2x effective memory; ~2x throughput. vLLM's central innovation.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "prefix_caching_amortises_system_prompts",
+      "if": ["requests share common prompt prefix"],
+      "then": ["KV cache for prefix is computed once + shared"],
+      "why": "System prompt 1K tokens × 100 requests = 100K prefill tokens normally. With prefix caching: 1K total. 100x speedup for the prefill phase on shared prefix. RAG + tool-use deployments depend on this.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "speculative_decoding_2x_decode_when_draft_accurate",
+      "if": ["draft model agrees with target ≥70% of tokens"],
+      "then": ["speculative decoding gives ~2x decode speedup"],
+      "why": "K-token speculation: target verifies K in parallel forward pass. If 7 of 10 accepted: ~7 tokens per target forward. Free wins for matched tokens. Production: small model (1-7B) drafting for large (70B+) target.",
+      "soundness_category": "cost_equivalence"
+    }
+  ]
+}

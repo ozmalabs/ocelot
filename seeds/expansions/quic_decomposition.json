@@ -1,0 +1,118 @@
+{
+  "id": "quic_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "QUIC",
+  "in_microtheory": "network_protocols",
+  "description": "QUIC decomposed. The first new general-purpose transport since TCP. UDP-based to traverse middleboxes that drop unknown L4 protocols. Encryption is mandatory and integrated (no plaintext like TCP+TLS). Streams multiplex independently — no TCP-style HOL. Connection migration survives IP changes. Packet numbers are independent of stream offsets. The protocol Google built then shepherded through IETF.",
+  "sub_mechanisms": [
+    {
+      "name": "QUIC_over_UDP",
+      "definition": "QUIC packets are UDP datagrams. The QUIC protocol logic + reliability + congestion control runs in user space (typically).",
+      "why": "TCP can't be modified — middleboxes ossified its semantics. UDP is opaque to middleboxes — any new transport over UDP can do what it wants. Trade-off: must reimplement reliability + congestion control in user space.",
+      "category": "quic_mechanism"
+    },
+    {
+      "name": "connection_ID",
+      "definition": "Each QUIC connection has connection IDs (one per direction). Subsequent packets carry the connection ID; receiver identifies the connection without relying on the 5-tuple.",
+      "why": "Connection survives IP changes. Mobile client switches from Wi-Fi to cellular: 5-tuple changes; with TCP, connection drops; with QUIC, packets keep flowing because connection ID is unchanged.",
+      "category": "quic_mechanism"
+    },
+    {
+      "name": "encrypted_long_header",
+      "definition": "Initial QUIC packets use a long header containing version, connection IDs, packet number. Header is partially encrypted; payload fully encrypted with TLS 1.3 keys.",
+      "why": "TLS 1.3 is baked into QUIC. Version negotiation happens in the long header. After handshake, packets use the short header (just connection ID + packet number).",
+      "category": "quic_mechanism"
+    },
+    {
+      "name": "encrypted_short_header",
+      "definition": "Post-handshake packets: 1-byte fixed header + connection ID + packet number + encrypted payload. Minimal overhead.",
+      "why": "After handshake, no need for the long header's overhead. Short header is ~10 bytes vs ~25 for long header. Per-packet efficiency for the common case.",
+      "category": "quic_mechanism"
+    },
+    {
+      "name": "stream_frames",
+      "definition": "QUIC's data unit. Each stream frame: stream ID + offset + data. Multiple stream frames can appear in one packet.",
+      "why": "Streams multiplex independently. Frame's stream ID + offset uniquely identifies the data position. Different streams can be in different packets; loss of one packet only affects the stream IDs in that packet.",
+      "category": "quic_mechanism"
+    },
+    {
+      "name": "per_stream_reliability",
+      "definition": "Each stream is reliable independently. Loss of stream A's packet retransmits only stream A's data; streams B-Z continue delivering.",
+      "why": "Solves TCP's HOL blocking. Per-stream reliability is what HTTP/2 needed but couldn't get from TCP. The single biggest QUIC architectural win.",
+      "category": "quic_mechanism"
+    },
+    {
+      "name": "packet_number_independent_of_data",
+      "definition": "QUIC packet numbers monotonically increase per packet (not per byte like TCP sequence numbers). A retransmitted packet gets a NEW packet number.",
+      "why": "TCP's same-sequence-number-for-retransmit makes RTT calculation ambiguous (was the ACK for the original or the retransmit?). QUIC's monotonic numbers give unambiguous RTT measurement — better congestion control input.",
+      "category": "quic_mechanism"
+    },
+    {
+      "name": "ACK_frame_with_ranges",
+      "definition": "QUIC ACKs are SACK-like by default: report ranges of received packet numbers. Builds in the SACK functionality TCP added as an extension.",
+      "why": "Selective ACK without the legacy of optional support. Sender always gets precise loss info. Native selective recovery without negotiation.",
+      "category": "quic_mechanism"
+    },
+    {
+      "name": "0RTT_data",
+      "definition": "After a previous connection, client caches the server's transport parameters + TLS PSK. On reconnect, can send application data with the first packet.",
+      "why": "Zero handshake latency for repeat visits. Critical for mobile + frequent-reconnection patterns. Same replay concerns as TLS 1.3 0-RTT.",
+      "category": "quic_mechanism"
+    },
+    {
+      "name": "connection_migration",
+      "definition": "When client's IP/port changes (mobile network change), client sends a new packet with the existing connection ID from the new address. Server verifies path then continues.",
+      "why": "Mobile devices roam between networks constantly (Wi-Fi to cellular, cellular tower changes). TCP would drop; QUIC continues. The defining mobile-friendly property.",
+      "category": "quic_mechanism"
+    },
+    {
+      "name": "path_validation",
+      "definition": "Before accepting a new connection migration, server sends a challenge packet to the new client address; verifies the response.",
+      "why": "Without verification, attackers could redirect traffic to themselves by spoofing migration. Challenge-response prevents this — attacker must control the new path. Standard cryptographic challenge.",
+      "category": "quic_mechanism"
+    },
+    {
+      "name": "amplification_limit",
+      "definition": "Before path validation, server cannot send more than ~3x the bytes client sent. Limits DDoS reflection potential.",
+      "why": "Without this, an attacker could spoof a client's IP, send small QUIC handshake, server responds with huge certificate chain to victim. 3x cap means amplification ratio is bounded. Network-friendly default.",
+      "category": "quic_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "UDP_substrate_avoids_middlebox_ossification",
+      "if": ["a new transport runs over UDP"],
+      "then": ["middleboxes treat it as opaque and don't constrain its evolution"],
+      "why": "TCP packets are deeply inspected by middleboxes (firewalls, IDS, NATs); they reject anomalous TCP. UDP has minimal middlebox parsing — datagrams pass through. QUIC chose UDP precisely because middleboxes can't (yet) interfere.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "per_stream_reliability_eliminates_HOL",
+      "if": ["streams are reliable independently of each other"],
+      "then": ["loss on one stream doesn't block others"],
+      "why": "TCP+HTTP/2's HOL blocking comes from TCP's single-stream reliability. Per-stream reliability in QUIC: stream A's lost packet retransmits affect only stream A's progress. Streams B-Z keep delivering data immediately.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "connection_ID_enables_migration",
+      "if": ["connection identity is independent of IP/port"],
+      "then": ["connection survives endpoint network changes"],
+      "why": "TCP's identity is the 5-tuple. Change any element, the connection is a different one (to TCP). QUIC's connection ID survives 5-tuple changes. Mobile devices switching networks no longer drop connections — the user experience win.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "unambiguous_RTT_via_unique_packet_numbers",
+      "if": ["each packet has a unique number, including retransmits"],
+      "then": ["RTT measurement is unambiguous"],
+      "why": "TCP's retransmits reuse sequence numbers, creating retransmission ambiguity (Karn's algorithm: don't use ambiguous RTTs). QUIC's unique packet numbers always give clean RTT samples. Better congestion control input.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "user_space_implementation_enables_rapid_iteration",
+      "if": ["the protocol implementation runs in user space"],
+      "then": ["updates ship via application updates, not kernel updates"],
+      "why": "TCP changes require kernel updates → years to deploy. QUIC's user-space implementations (Cloudflare quiche, Google's, Microsoft's MsQuic) deploy with browser/server updates — weeks. Critical for the protocol's rapid evolution.",
+      "soundness_category": "cost_equivalence"
+    }
+  ]
+}

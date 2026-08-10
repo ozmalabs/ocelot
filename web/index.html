@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>jabberwock</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header id="topbar">
+    <div class="brand">
+      <span class="brand-mark">&sect;</span>
+      <span class="brand-name">jabberwock</span>
+    </div>
+    <div id="status-bar" class="status-bar">
+      <span class="conn-dot" id="conn-dot" data-state="connecting"></span>
+      <span id="conn-label">connecting&hellip;</span>
+      <span class="sep">&middot;</span>
+      <span>uptime <b id="stat-uptime">&mdash;</b></span>
+      <span class="sep">&middot;</span>
+      <span>ticks <b id="stat-ticks">&mdash;</b></span>
+      <span class="sep">&middot;</span>
+      <span>nodes <b id="stat-nodes">&mdash;</b></span>
+      <span class="sep">&middot;</span>
+      <span>booted from <b id="stat-booted">&mdash;</b></span>
+      <span class="sep">&middot;</span>
+      <span>checkpoint <b id="stat-checkpoint">&mdash;</b></span>
+    </div>
+    <div id="runtime-status-bar" class="runtime-status-bar" aria-label="external runtime status">
+      <span>host <b id="runtime-state" data-state="unknown">&mdash;</b></span>
+      <span class="sep">&middot;</span>
+      <span>cognition <b id="runtime-tick">&mdash;</b></span>
+      <span class="sep">&middot;</span>
+      <span>last tick <b id="runtime-tick-age">&mdash;</b></span>
+      <span class="sep">&middot;</span>
+      <span>work <b id="runtime-work">&mdash;</b></span>
+      <span class="sep">&middot;</span>
+      <span>node snapshot <b id="runtime-nodes">&mdash;</b></span>
+      <span class="sep">&middot;</span>
+      <span>host actions <b id="runtime-actions">&mdash;</b></span>
+      <span class="sep">&middot;</span>
+      <span>last action <b id="runtime-last-action">&mdash;</b></span>
+      <span id="runtime-error-wrap" class="runtime-error hidden">
+        <span class="sep">&middot;</span>
+        <span>error <b id="runtime-error">&mdash;</b></span>
+      </span>
+    </div>
+  </header>
+
+  <main id="layout">
+    <aside id="sessions-panel">
+      <div class="panel-head">
+        <div class="tab-row">
+          <button id="tab-sessions" type="button" class="tab-btn active" data-tab="sessions">sessions</button>
+          <button id="tab-proposals" type="button" class="tab-btn" data-tab="proposals">proposals</button>
+          <button id="tab-concerns" type="button" class="tab-btn" data-tab="concerns">concerns</button>
+        </div>
+        <button id="sessions-refresh" type="button" title="refresh">&#8635;</button>
+      </div>
+      <div id="sessions-list" class="sessions-list">
+        <p class="muted">loading&hellip;</p>
+      </div>
+      <div id="auto-approve-panel" class="auto-approve-panel hidden">
+        <div class="auto-approve-row">
+          <label class="aa-toggle">
+            <input type="checkbox" id="aa-enabled" />
+            <span>auto-approve self-extension</span>
+          </label>
+          <span id="aa-paused-badge" class="badge badge-restart hidden">paused &middot; restart to resume</span>
+        </div>
+        <div class="auto-approve-meta small muted">
+          <span>installs/hr <b id="aa-rate">&mdash;</b></span>
+          <span class="sep">&middot;</span>
+          <span>additive-only <b id="aa-additive">&mdash;</b></span>
+          <span class="sep">&middot;</span>
+          <span title="allowed_semantics_kinds">kinds <b id="aa-kinds">&mdash;</b></span>
+        </div>
+        <div class="auto-approve-warn small">
+          &#9888; lets the jabberwock modify its own runtime without a per-change human click,
+          subject to the guardrails above (and to every hard guardrail
+          <code>install_proposal</code> always re-checks).
+        </div>
+      </div>
+      <div id="proposals-list" class="sessions-list hidden">
+        <p class="muted">loading&hellip;</p>
+      </div>
+      <div id="concerns-list" class="sessions-list hidden">
+        <p class="muted">loading&hellip;</p>
+      </div>
+    </aside>
+
+    <section id="chat-panel">
+      <div class="panel-head">
+        <h2>chat</h2>
+        <span class="muted small">click a reply to inspect its graph trace or flag a fix</span>
+      </div>
+      <div id="chat-log" class="chat-log" aria-live="polite"></div>
+      <form id="chat-form" class="chat-form" autocomplete="off">
+        <label class="chat-attach-btn" title="attach a file">
+          <input id="chat-file" type="file" hidden />
+          <span aria-hidden="true">&#128206;</span>
+        </label>
+        <input id="chat-input" type="text" autocomplete="off" placeholder="say something to the jabberwock&hellip;" />
+        <button type="submit">send</button>
+      </form>
+      <div id="chat-attach-name" class="chat-attach-name muted small hidden"></div>
+    </section>
+
+    <aside id="enroll-panel">
+      <div class="panel-head">
+        <h2>teach a word</h2>
+        <span class="muted small">caregiver enrollment &mdash; the jabberwock recognises it itself next time</span>
+      </div>
+      <form id="enroll-form" class="enroll-form" autocomplete="off">
+        <input id="enroll-label" type="text" autocomplete="off" placeholder="word&hellip;" />
+        <div class="enroll-audio-row">
+          <input id="enroll-file" type="file" accept="audio/*" />
+          <button id="enroll-record" type="button" title="record from the mic">&#9679; record</button>
+        </div>
+        <button id="enroll-submit" type="submit">teach it</button>
+      </form>
+      <div id="enroll-status" class="muted small" aria-live="polite"></div>
+      <div id="enroll-log" class="enroll-log"></div>
+    </aside>
+  </main>
+
+  <div id="detail-overlay" class="detail-overlay hidden">
+    <div class="detail-panel">
+      <div class="panel-head">
+        <h2 id="detail-title">session</h2>
+        <button id="detail-close" type="button" title="close">&#10005;</button>
+      </div>
+      <div id="detail-body" class="detail-body"></div>
+    </div>
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

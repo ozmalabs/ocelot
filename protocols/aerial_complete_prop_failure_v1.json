@@ -1,0 +1,49 @@
+{
+  "protocol": "aerial_complete_prop_failure_v1",
+  "status": "diagnostic_failure_case",
+  "simulator": "gym-pybullet-drones",
+  "vehicle": "Crazyflie 2.x",
+  "seed": 21,
+  "steps": 120,
+  "goal": [
+    0.75,
+    0.75,
+    1.0
+  ],
+  "babble_samples_per_actuator": 2,
+  "action_duration_seconds": 0.25,
+  "enable_yaw_actuators": true,
+  "angular_stability_weight": 0.1,
+  "damage": {
+    "kind": "broken_propeller",
+    "onset_action": 70,
+    "thrust_retention": [
+      1.0,
+      0.0,
+      1.0,
+      1.0
+    ],
+    "torque_retention": [
+      1.0,
+      0.0,
+      1.0,
+      1.0
+    ],
+    "model": "complete loss of one propeller's averaged thrust and reaction torque at unchanged motor RPM"
+  },
+  "conditions": [
+    "adaptive_flight",
+    "frozen_flight"
+  ],
+  "forced_action_controls": {
+    "tokens": [
+      "flight_actuator_000",
+      "flight_actuator_005",
+      "flight_actuator_007",
+      "flight_actuator_008"
+    ],
+    "actions": 8,
+    "purpose": "test whether any immediate existing hover, climb, or counter-yaw reflex can prevent impact"
+  },
+  "comparison": "same established pre-failure flight, graph, simulator seed, goal, action alphabet, and hidden total propeller loss"
+}

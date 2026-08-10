@@ -1,0 +1,38 @@
+{
+ "id": "lm_learn",
+ "version": "1.0.0",
+ "depends_on": [],
+ "description": "Learn a bigram language model from an observed CORPUS, as graph data. The agent observes a stream of transition tokens (Obs --prev--> Concept(a), --cur--> Concept(b)) and a Bigram skeleton (Bigram --from--> a, --to--> b; a --has_outbg--> Bigram). tally_bigram joins each new Obs to its Bigram through the shared symbols and tallies it as a DISTINCT edge (no shared counter to race on). count_bigram materialises count = Count(tallied); total_from sums a's outgoing counts; bigram_logp normalises to a smoothed log-probability logp = log(count+a) - log(total+a*A). The learned LM is then graph data (Bigram.logp) the decode reads. All counting/normalisation is Rules; the host only streams the corpus and reads logp back.",
+ "microtheory": {"name": "lm_learn", "description": "count corpus bigrams and normalise to a log-prob LM, graph-native"},
+ "nodes": [], "edges": [], "productions": [],
+ "rules": [
+  {
+   "name": "tally_bigram",
+   "match": [["o", "prev", "a"], ["o", "cur", "b"], ["bg", "from", "a"], ["bg", "to", "b"]],
+   "where": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "o"}, "key": "counted"}, "b": {"type": "Lit", "value": 0.0}},
+   "effects": [["add_edge", "bg", "tallied", "o"], ["set_attr", "o", "counted", 1.0]]
+  },
+  {
+   "name": "count_bigram",
+   "match": [["bg", "from", "a"]],
+   "effects": [["set_attr", "bg", "count", {"__term__":
+      {"type": "Count", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "bg"}, "edge_type": "tallied", "any_type": false}}}]]
+  },
+  {
+   "name": "total_from",
+   "match": [["a", "has_outbg", "bg"]],
+   "effects": [["set_attr", "a", "out_total", {"__term__":
+      {"type": "Sum", "var_name": "g", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "a"}, "edge_type": "has_outbg", "any_type": false},
+       "value": {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "count"}}}]]
+  },
+  {
+   "name": "bigram_logp",
+   "match": [["bg", "from", "a"]],
+   "effects": [["set_attr", "bg", "logp", {"__term__":
+      {"type": "Plus", "items": [
+        {"type": "Log", "arg": {"type": "Plus", "items": [{"type": "Attr", "node": {"type": "Var", "name": "bg"}, "key": "count"}, {"type": "Attr", "node": {"type": "Var", "name": "bg"}, "key": "alpha"}]}},
+        {"type": "Neg", "arg": {"type": "Log", "arg": {"type": "Plus", "items": [{"type": "Attr", "node": {"type": "Var", "name": "a"}, "key": "out_total"}, {"type": "Attr", "node": {"type": "Var", "name": "bg"}, "key": "alphaA"}]}}}
+      ]}}]]
+  }
+ ]
+}

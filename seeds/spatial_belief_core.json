@@ -1,0 +1,537 @@
+{
+ "id": "spatial_belief_core",
+ "version": "1.0.0",
+ "self_load_only": true,
+ "depends_on": [
+  "cognitive_areas"
+ ],
+ "area": "spatial",
+ "description": "World-agnostic persistent occupancy belief from self-location and seen free/wall observations. Unknown is absence; walking is authoritative. Worlds supply only vision, proprioception and affordances.",
+ "microtheory": {
+  "name": "spatial_belief_core",
+  "description": "observation -> persistent free/wall belief"
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [
+  {
+   "provenance": "seed:spatial:observation",
+   "src": {
+    "type": "WorldInstance",
+    "var": "space"
+   },
+   "edge_type": "observed",
+   "tgt": {
+    "type": "ObsCell",
+    "var": "obs"
+   }
+  },
+  {
+   "provenance": "seed:spatial:belief",
+   "src": {
+    "type": "WorldInstance",
+    "var": "space"
+   },
+   "edge_type": "has_cell",
+   "tgt": {
+    "type": "Cell",
+    "var": "cell"
+   }
+  }
+ ],
+ "rules": [
+  {
+   "name": "spatial_belief_free_new",
+   "area": "spatial",
+   "order": 1,
+   "latency_class": "soft_realtime",
+   "match": [
+    [
+     "space",
+     "observed",
+     "obs"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "space"
+       },
+       "key": "spatial_belief"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "src"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "walk"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "src"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "seen_free"
+        }
+       }
+      ]
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "space"
+        },
+        "edge_type": "has_cell",
+        "any_type": false
+       },
+       "var_name": "cell2",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "cell2"
+            },
+            "key": "pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 0
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "obs"
+            },
+            "key": "pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 0
+           }
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "cell2"
+            },
+            "key": "pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 1
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "obs"
+            },
+            "key": "pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 1
+           }
+          }
+         }
+        ]
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "cell",
+     "Cell",
+     {
+      "world_type": "Cell",
+      "pose": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "pose"
+       }
+      },
+      "value": 0.0
+     }
+    ],
+    [
+     "add_edge",
+     "space",
+     "has_cell",
+     "cell",
+     {}
+    ]
+   ]
+  },
+  {
+   "name": "spatial_belief_wall_new",
+   "area": "spatial",
+   "order": 1,
+   "latency_class": "soft_realtime",
+   "match": [
+    [
+     "space",
+     "observed",
+     "obs"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "space"
+       },
+       "key": "spatial_belief"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "src"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "seen_wall"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "space"
+        },
+        "edge_type": "has_cell",
+        "any_type": false
+       },
+       "var_name": "cell2",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "cell2"
+            },
+            "key": "pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 0
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "obs"
+            },
+            "key": "pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 0
+           }
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "cell2"
+            },
+            "key": "pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 1
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "obs"
+            },
+            "key": "pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 1
+           }
+          }
+         }
+        ]
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "cell",
+     "Cell",
+     {
+      "world_type": "Cell",
+      "pose": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "pose"
+       }
+      },
+      "value": 1.0
+     }
+    ],
+    [
+     "add_edge",
+     "space",
+     "has_cell",
+     "cell",
+     {}
+    ]
+   ]
+  },
+  {
+   "name": "spatial_belief_walk_corrects_wall",
+   "area": "spatial",
+   "order": 1,
+   "latency_class": "soft_realtime",
+   "match": [
+    [
+     "space",
+     "observed",
+     "obs"
+    ],
+    [
+     "space",
+     "has_cell",
+     "cell"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "space"
+       },
+       "key": "spatial_belief"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "src"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "walk"
+      }
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "IndexAt",
+         "seq": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "obs"
+          },
+          "key": "pose"
+         },
+         "index": {
+          "type": "Lit",
+          "value": 0
+         }
+        },
+        "b": {
+         "type": "IndexAt",
+         "seq": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "cell"
+          },
+          "key": "pose"
+         },
+         "index": {
+          "type": "Lit",
+          "value": 0
+         }
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "IndexAt",
+         "seq": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "obs"
+          },
+          "key": "pose"
+         },
+         "index": {
+          "type": "Lit",
+          "value": 1
+         }
+        },
+        "b": {
+         "type": "IndexAt",
+         "seq": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "cell"
+          },
+          "key": "pose"
+         },
+         "index": {
+          "type": "Lit",
+          "value": 1
+         }
+        }
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "cell"
+       },
+       "key": "value"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr_if_different",
+     "cell",
+     "value",
+     0.0
+    ]
+   ]
+  }
+ ]
+}

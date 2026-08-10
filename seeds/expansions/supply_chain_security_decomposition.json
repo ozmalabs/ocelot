@@ -1,0 +1,124 @@
+{
+  "id": "supply_chain_security_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "supply_chain_attack",
+  "in_microtheory": "security_and_cryptography",
+  "description": "Software supply chain security decomposed. SBOM (SPDX, CycloneDX). Sigstore (cosign, Rekor transparency log). SLSA framework levels. Reproducible builds. Dependency vulnerability scanning. Typosquatting + namespace attacks. The mechanisms by which downstream consumers verify upstream integrity.",
+  "sub_mechanisms": [
+    {
+      "name": "SBOM_inventory",
+      "definition": "List of components, versions, sources for a software artifact. SPDX or CycloneDX format.",
+      "why": "Inventory enables vulnerability response. Log4Shell: who has vulnerable log4j? SBOM answers immediately. US executive order 14028 mandates for federal software.",
+      "category": "supply_chain_mechanism"
+    },
+    {
+      "name": "SPDX_format",
+      "definition": "Linux Foundation SBOM standard. JSON/YAML/RDF. Standard fields for component identification + relationships.",
+      "why": "Cross-tool interoperability. License compliance use case + security. Slow to adopt but increasingly required.",
+      "category": "supply_chain_mechanism"
+    },
+    {
+      "name": "CycloneDX_format",
+      "definition": "OWASP SBOM standard. JSON/XML. Designed for security use case + machine readability.",
+      "why": "More security-focused than SPDX. Vulnerabilities, services, dependency relationships. Growing adoption.",
+      "category": "supply_chain_mechanism"
+    },
+    {
+      "name": "Sigstore_cosign",
+      "definition": "Open-source signing infrastructure for software artifacts. cosign signs container images, files. Free certificates via Fulcio CA.",
+      "why": "Lowers barrier to signing. OIDC-based identity (sign as your GitHub account). Adopted by Kubernetes, npm, PyPI.",
+      "category": "supply_chain_mechanism"
+    },
+    {
+      "name": "Rekor_transparency_log",
+      "definition": "Append-only public log of signatures. Cryptographic merkle tree. Detect compromised signing keys.",
+      "why": "Like Certificate Transparency for signatures. Public log means attacks visible. If your key signed something you didn't, log proves it.",
+      "category": "supply_chain_mechanism"
+    },
+    {
+      "name": "SLSA_level_1",
+      "definition": "Documented build process. Provenance of how artifact built.",
+      "why": "Baseline transparency. Foundation for higher levels. Most projects can achieve.",
+      "category": "supply_chain_mechanism"
+    },
+    {
+      "name": "SLSA_level_2",
+      "definition": "Tamper-resistant build platform. Authenticated provenance.",
+      "why": "Hosted CI (GitHub Actions, GitLab CI) typically meets. Build platform itself trusted. Many open-source projects achieving.",
+      "category": "supply_chain_mechanism"
+    },
+    {
+      "name": "SLSA_level_3",
+      "definition": "Source + build platform meet security standards. Provenance non-forgeable.",
+      "why": "Higher bar. Requires hardened build infrastructure. Google, Microsoft major projects targeting.",
+      "category": "supply_chain_mechanism"
+    },
+    {
+      "name": "SLSA_level_4",
+      "definition": "Hermetic, reproducible builds. Two-party review of changes.",
+      "why": "Aspirational for most. Tor + Debian + Bitcoin Core target. Strongest guarantee but most cost.",
+      "category": "supply_chain_mechanism"
+    },
+    {
+      "name": "reproducible_builds",
+      "definition": "Same source produces byte-identical output regardless of who/when/where built.",
+      "why": "Allow third-party verification: 'I built from source, got same bytes — this binary matches source'. Debian + Tor pursuing. Hard but achievable.",
+      "category": "supply_chain_mechanism"
+    },
+    {
+      "name": "dependency_vulnerability_scanning",
+      "definition": "Automated tools comparing dependency versions to known CVEs. Snyk, Dependabot, Renovate.",
+      "why": "Massive automation. GitHub Dependabot opens PRs for vulnerable deps. Integration into dev workflow critical for keeping up with disclosed vulnerabilities.",
+      "category": "supply_chain_mechanism"
+    },
+    {
+      "name": "typosquatting",
+      "definition": "Publish malicious package with name similar to legitimate (request → reqeusts). Catches typos.",
+      "why": "Common npm + PyPI attack. Mitigation: package allowlists, automated detection (registry-side), code review.",
+      "category": "supply_chain_mechanism"
+    },
+    {
+      "name": "dependency_confusion",
+      "definition": "Internal package name unregistered on public registry. Attacker publishes; build tools prefer public version.",
+      "why": "Alex Birsan 2021: 35 major companies compromised. Mitigation: scoped namespaces, explicit registry config, private mirrors.",
+      "category": "supply_chain_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "SBOM_enables_rapid_vulnerability_response",
+      "if": ["new vulnerability disclosed (e.g., Log4Shell)"],
+      "then": ["SBOM enables instant query: which systems are affected"],
+      "why": "Without SBOM: weeks of manual audit. With SBOM: SQL query against inventory. Log4Shell demonstrated need; industry now adopting.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "transparency_log_detects_signing_key_compromise",
+      "if": ["signatures are published to transparency log"],
+      "then": ["unauthorized signatures are publicly visible"],
+      "why": "If attacker steals signing key + uses, log shows. Owner notices their key signed something they didn't. Same idea as Certificate Transparency for TLS certs.",
+      "soundness_category": "referential_transparency"
+    },
+    {
+      "name": "reproducible_builds_enable_third_party_verification",
+      "if": ["builds are reproducible from source"],
+      "then": ["anyone can verify binary matches the source"],
+      "why": "Without reproducibility, only build server knows. With it, anyone can rebuild + compare. Foundation of trust: 'don't trust me, trust the source you can verify'.",
+      "soundness_category": "referential_transparency"
+    },
+    {
+      "name": "dependency_confusion_via_namespace_collision",
+      "if": ["internal package name not registered publicly"],
+      "then": ["attacker can register publicly + supply chain compromise occurs"],
+      "why": "Build tools' precedence rules typically prefer higher version, often from public registry. Mitigation: register all internal package names publicly (defensive), scope namespaces, explicit registry config.",
+      "soundness_category": "referential_transparency"
+    },
+    {
+      "name": "SLSA_levels_provide_supply_chain_maturity_model",
+      "if": ["a project targets specific SLSA level"],
+      "then": ["it has clear practices to implement and verify"],
+      "why": "Maturity model approach. L1 documentation; L4 hermetic + reproducible. Concrete checklist. Google's Bcrypt + many CNCF projects publish their SLSA level.",
+      "soundness_category": "cost_equivalence"
+    }
+  ]
+}

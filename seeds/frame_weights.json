@@ -1,0 +1,286 @@
+{
+  "id": "frame_weights",
+  "version": "1.0.0",
+  "depends_on": [],
+  "description": "RUN 30 -- WEIGHTS AS EDGES, A FRAME AS N DIMENSIONS WITH RELATIVE WEIGHTING (creator directive, verbatim: 'all weights are not vectors, they are edges to other nodes -- weights are relative, order n and log scaled' + 'a frame is N dimensions/axes with relative weighting'). This is a REPRESENTATION REFORM of run 29's `arrangement_codebook.py` (`relation_weights` as a Python-mutated dict attr, invisible to run_rules -- the metric WAS cognition, a CLAUDE.md violation in spirit). A character-grain codebook quantum's arrangement signature is now a FRAME: one Dimension-like axis node (type FrameAxis, DISTINCT from domains/frame.py's own shared-vocabulary `Dimension` type -- see that module's own docstring: its Dimension nodes are explicitly meant to be REUSED ACROSS frames, e.g. 'ethics'/'philosophy' as a shared concept; a character quantum's own 'rel:0:x' axis is NOT a shared concept, it is intrinsically LOCAL to that one quantum's own reliability, so a FrameAxis node belongs to exactly one Frame via 'in_dim', never looked up by name globally) per relation key, reachable from the quantum's own Frame node (`domains/frame.py`'s own Frame node TYPE is reused -- 'a set of dimensions with relative weighting' fits this exactly; only the axis vocabulary differs, for the reason above) via the SAME `in_dim` edge convention that module already establishes. The axis's own `log_weight` attr is the log-scaled reliability (mirrors frame.py's own documented workaround: substrate_rs does not expose per-edge attrs for read-back, so the weight is mirrored on the node the edge points at -- the SAME choice frame.py's own module docstring makes). This seed carries the two rules that make weight DYNAMICS graph-resident: `fw_update` (an axis's weight changes ONLY when a graph rule reads an AxisEvidence node the adapter wrote and recomputes the value inside a held Term) and `fw_pool` (the shared/pooled frame across every held quantum, by relation kind, is likewise a rule-computed log-additive combination, never a Python dict-math reduction). Construction of a quantum's own Frame + axis nodes at MINT time (`domains/character_compose.py::grow_character_quantum`) stays Python -- graph DATA EMISSION from an already-decided composed signature, the same class of 'legal seed-builder work' every other grow_*_quantum install path in this codebase already performs (CLAUDE.md: 'a default library is a seed manifest the Rust loader installs, never Python that builds it' -- the axis SET is exactly that, installed once at mint time from already-known relation keys, never re-decided afterward).",
+  "microtheory": {
+    "name": "frame_weights",
+    "description": "weight = log-scaled relative reliability, stored as a FrameAxis node attr and updated ONLY by graph rules reading evidence data; a frame is the set of a quantum's own axes (or, pooled, one axis per relation kind across every held quantum) with that relative log-weighting."
+  },
+  "nodes": [],
+  "edges": [],
+  "productions": [],
+  "rules": [
+    {
+      "name": "fw_update",
+      "comment": "RUN 30 representation reform: a weight is not a Python-mutated scalar in a dict attr, it is a log-scaled FrameAxis node attr, updated ONLY by this rule from AxisEvidence graph data the adapter writes mechanically ('axis X agreed/disagreed this rep'). Guarded by ev.applied (idempotence -- fires exactly once per evidence node, mirrors shape_decode_loop.json's transform_checked/dim_checked convention). The update recomputes run 29's own EMA-toward-bound formula (w'=(1-step)*w+step*target) via Exp(log_weight) -> affine combination -> Log(...), so the value stored is always log(weight) and the arithmetic that decides the new weight runs inside this Term, never in Python -- Python only compares two already-fetched scalars to decide agree/disagree (mechanical evidence translation, the same class of comparison homework_loop._resolved_key's own family-root equality check already uses) and writes the AxisEvidence node; this rule is the only place a new log_weight value is computed.",
+      "match_type": "AxisEvidence",
+      "match": [
+        [
+          "axis",
+          "has_evidence",
+          "ev"
+        ]
+      ],
+      "where": {
+        "type": "Not",
+        "arg": {
+          "type": "Eq",
+          "a": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "ev"
+            },
+            "key": "applied"
+          },
+          "b": {
+            "type": "Lit",
+            "value": 1
+          }
+        }
+      },
+      "effects": [
+        [
+          "set_attr_if_different",
+          "axis",
+          "log_weight",
+          {
+            "__term__": {
+              "type": "Log",
+              "arg": {
+                "type": "Plus",
+                "items": [
+                  {
+                    "type": "Times",
+                    "items": [
+                      {
+                        "type": "Lit",
+                        "value": 0.85
+                      },
+                      {
+                        "type": "Exp",
+                        "arg": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "axis"
+                          },
+                          "key": "log_weight"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "Times",
+                    "items": [
+                      {
+                        "type": "Lit",
+                        "value": 0.15
+                      },
+                      {
+                        "type": "IfThenElse",
+                        "cond": {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "ev"
+                            },
+                            "key": "agree"
+                          },
+                          "b": {
+                            "type": "Lit",
+                            "value": 1.0
+                          }
+                        },
+                        "then": {
+                          "type": "Lit",
+                          "value": 1.0
+                        },
+                        "other": {
+                          "type": "Lit",
+                          "value": 0.1
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "ev",
+          "applied",
+          1
+        ]
+      ]
+    },
+    {
+      "name": "fw_pool",
+      "comment": "RUN 30 shared frame: pools every held quantum's own per-axis reliability by relation KIND into the pooled Frame's own axis nodes -- log-additive evidence combination (Sum of Exp(log_weight) over every quantum-scope FrameAxis sharing this pooled axis's own 'kind', divided by Count, then Log(...) back) run as ONE held Term inside run_rules, never `sum(ws)/len(ws)` in Python. Guarded on a PoolRequest marker node (match_type-indexed: the enumeration is over PoolRequest nodes, not FrameAxis nodes, so this rule costs nothing when no pool refresh was asked for) with 'applied' idempotence, the same convention fw_update uses for AxisEvidence.",
+      "match_type": "PoolRequest",
+      "match": [
+        [
+          "axis",
+          "requested_by",
+          "req"
+        ]
+      ],
+      "where": {
+        "type": "Not",
+        "arg": {
+          "type": "Eq",
+          "a": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "req"
+            },
+            "key": "applied"
+          },
+          "b": {
+            "type": "Lit",
+            "value": 1
+          }
+        }
+      },
+      "effects": [
+        [
+          "set_attr_if_different",
+          "axis",
+          "log_weight",
+          {
+            "__term__": {
+              "type": "Log",
+              "arg": {
+                "type": "Div",
+                "a": {
+                  "type": "Sum",
+                  "source": {
+                    "type": "Filter",
+                    "source": {
+                      "type": "NodesOfType",
+                      "node_type": "FrameAxis"
+                    },
+                    "var_name": "a3",
+                    "predicate": {
+                      "type": "And",
+                      "items": [
+                        {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "a3"
+                            },
+                            "key": "kind"
+                          },
+                          "b": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "axis"
+                            },
+                            "key": "kind"
+                          }
+                        },
+                        {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "a3"
+                            },
+                            "key": "scope"
+                          },
+                          "b": {
+                            "type": "Lit",
+                            "value": "quantum"
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  "var_name": "a3",
+                  "value": {
+                    "type": "Exp",
+                    "arg": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "a3"
+                      },
+                      "key": "log_weight"
+                    }
+                  }
+                },
+                "b": {
+                  "type": "Count",
+                  "source": {
+                    "type": "Filter",
+                    "source": {
+                      "type": "NodesOfType",
+                      "node_type": "FrameAxis"
+                    },
+                    "var_name": "a2",
+                    "predicate": {
+                      "type": "And",
+                      "items": [
+                        {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "a2"
+                            },
+                            "key": "kind"
+                          },
+                          "b": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "axis"
+                            },
+                            "key": "kind"
+                          }
+                        },
+                        {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "a2"
+                            },
+                            "key": "scope"
+                          },
+                          "b": {
+                            "type": "Lit",
+                            "value": "quantum"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "req",
+          "applied",
+          1
+        ]
+      ]
+    }
+  ]
+}

@@ -1,0 +1,72 @@
+{
+ "id": "abandon_on_stuck",
+ "version": "1.0.0",
+ "depends_on": [],
+ "description": "abandon_goal_on_no_movement: a committed goal yielding no avatar movement for K turns is abandoned + inhibited + released, so the nav retargets a reachable frontier cell instead of pressing a blocked direction. Keyed on movement (nav_stuck), reliable with stable perception.",
+ "nodes": [],
+ "edges": [],
+ "productions": [],
+ "concepts": [],
+ "rules": [
+  {
+   "name": "abandon_goal_on_no_movement",
+   "match": [
+    [
+     "game",
+     "committed_goal",
+     "G"
+    ]
+   ],
+   "where": {
+    "type": "Gte",
+    "a": {
+     "type": "Plus",
+     "items": [
+      {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "game"
+       },
+       "key": "nav_stuck"
+      },
+      {
+       "type": "Lit",
+       "value": 0
+      }
+     ]
+    },
+    "b": {
+     "type": "Lit",
+     "value": 4.0
+    }
+   },
+   "effects": [
+    [
+     "set_attr",
+     "G",
+     "abandoned",
+     1.0
+    ],
+    [
+     "set_attr",
+     "G",
+     "unreachable",
+     1.0
+    ],
+    [
+     "set_attr",
+     "G",
+     "committed",
+     0.0
+    ],
+    [
+     "del_edge",
+     "game",
+     "committed_goal",
+     "G"
+    ]
+   ]
+  }
+ ]
+}

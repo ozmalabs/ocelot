@@ -1,0 +1,961 @@
+{
+ "id": "conversation_self_reply",
+ "version": "1.3.0",
+ "depends_on": [
+  "self_processes",
+  "gap_awareness"
+ ],
+ "_self_report_instruction_note": "v1.2.0: the ORPHANED self-report instruction verbs (describe/tell/report/explain/say/show/state/list/account/summarise/summarize -- previously only handled by the dead-code Python path domains/conversation_action.act_on_instruction, unreachable from converse()) are re-homed graph-natively: each is a held Concept{instruction_route:'self_report'} below (teach-extensible, like every instruction route -- see comprehend_instruction v2.0.0), and instruction_self_report_identity routes a REFLEXIVE self-report instruction ('describe yourself', 'tell me about yourself' -- the predicate Mention resolves to a self_report route Concept AND a mention resolves to the reflexive 'yourself'/'yourselves' Concept, gap_awareness's held self-words) to the SAME substrate-identity account reply_self_identity speaks, minting Goal{kind:report_self}. DELIBERATELY NARROW: a possessive-object self-report ('show me your gaps', 'list your limitations') is NOT claimed here -- the reflexive-vs-possessive distinction is the same discriminator the topic-route possessive guard uses -- so those turns flow to the unhandled-instruction gap pipeline (gap_awareness v1.6.0) instead of a misleading identity reply. A NON-self self-report instruction ('summarise the report', 'tell me about the moon') has no reflexive mention, is not claimed, and files a gap likewise.",
+ "nodes": [
+  {
+   "local_id": 1,
+   "type": "Concept",
+   "attrs": {
+    "name": "describe",
+    "instruction_route": "self_report",
+    "description": "instruction verb: self-report / description request"
+   }
+  },
+  {
+   "local_id": 2,
+   "type": "Concept",
+   "attrs": {
+    "name": "tell",
+    "instruction_route": "self_report",
+    "description": "instruction verb: self-report / description request"
+   }
+  },
+  {
+   "local_id": 3,
+   "type": "Concept",
+   "attrs": {
+    "name": "report",
+    "instruction_route": "self_report",
+    "description": "instruction verb: self-report / description request"
+   }
+  },
+  {
+   "local_id": 4,
+   "type": "Concept",
+   "attrs": {
+    "name": "explain",
+    "instruction_route": "self_report",
+    "description": "instruction verb: self-report / description request"
+   }
+  },
+  {
+   "local_id": 5,
+   "type": "Concept",
+   "attrs": {
+    "name": "say",
+    "instruction_route": "self_report",
+    "description": "instruction verb: self-report / description request"
+   }
+  },
+  {
+   "local_id": 6,
+   "type": "Concept",
+   "attrs": {
+    "name": "show",
+    "instruction_route": "self_report",
+    "description": "instruction verb: self-report / description request"
+   }
+  },
+  {
+   "local_id": 7,
+   "type": "Concept",
+   "attrs": {
+    "name": "state",
+    "instruction_route": "self_report",
+    "description": "instruction verb: self-report / description request"
+   }
+  },
+  {
+   "local_id": 8,
+   "type": "Concept",
+   "attrs": {
+    "name": "list",
+    "instruction_route": "self_report",
+    "description": "instruction verb: self-report / description request"
+   }
+  },
+  {
+   "local_id": 9,
+   "type": "Concept",
+   "attrs": {
+    "name": "account",
+    "instruction_route": "self_report",
+    "description": "instruction verb: self-report / description request"
+   }
+  },
+  {
+   "local_id": 10,
+   "type": "Concept",
+   "attrs": {
+    "name": "summarise",
+    "instruction_route": "self_report",
+    "description": "instruction verb: self-report / description request"
+   }
+  },
+  {
+   "local_id": 11,
+   "type": "Concept",
+   "attrs": {
+    "name": "summarize",
+    "instruction_route": "self_report",
+    "description": "instruction verb: self-report / description request"
+   }
+  }
+ ],
+ "edges": [],
+ "productions": [],
+ "rules": [
+  {
+   "name": "reply_self_process_account",
+   "match": [
+    [
+     "agent",
+     "received",
+     "m"
+    ],
+    [
+     "agent",
+     "holds_self_process",
+     "sp"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "m"
+       },
+       "key": "comp_dispatch_meta"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "self_process"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "sp"
+       },
+       "key": "process"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "m"
+       },
+       "key": "comp_meta_arg"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "m"
+        },
+        "key": "self_replied"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "m",
+     "self_replied",
+     1.0
+    ],
+    [
+     "add_node",
+     "reply",
+     "Message",
+     {
+      "from": "agent",
+      "text": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "sp"
+        },
+        "key": "account"
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "reply",
+     "responds_to",
+     "m"
+    ],
+    [
+     "add_edge",
+     "agent",
+     "sent",
+     "reply"
+    ]
+   ]
+  },
+  {
+   "name": "reply_self_identity",
+   "match": [
+    [
+     "agent",
+     "received",
+     "m"
+    ],
+    [
+     "agent",
+     "operates_in",
+     "mt"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "m"
+       },
+       "key": "comp_dispatch_meta"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "self_identity"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "mt"
+        },
+        "key": "substrate_name"
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "m"
+        },
+        "key": "self_replied"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "m"
+        },
+        "key": "attachment_pending"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "m"
+        },
+        "key": "topic_pending"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "m",
+     "self_replied",
+     1.0
+    ],
+    [
+     "add_node",
+     "reply",
+     "Message",
+     {
+      "from": "agent",
+      "text": {
+       "__term__": {
+        "type": "StringConcat",
+        "parts": [
+         {
+          "type": "Lit",
+          "value": "I am "
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "mt"
+          },
+          "key": "substrate_name"
+         },
+         {
+          "type": "Lit",
+          "value": "."
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "reply",
+     "responds_to",
+     "m"
+    ],
+    [
+     "add_edge",
+     "agent",
+     "sent",
+     "reply"
+    ]
+   ]
+  },
+  {
+   "name": "reply_self_kind_denial",
+   "match": [
+    [
+     "agent",
+     "received",
+     "m"
+    ],
+    [
+     "agent",
+     "operates_in",
+     "mt"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "m"
+       },
+       "key": "comp_dispatch_meta"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "self_kind"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "mt"
+        },
+        "key": "substrate_name"
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "m"
+        },
+        "key": "self_replied"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "m",
+     "self_replied",
+     1.0
+    ],
+    [
+     "add_node",
+     "reply",
+     "Message",
+     {
+      "from": "agent",
+      "text": {
+       "__term__": {
+        "type": "StringConcat",
+        "parts": [
+         {
+          "type": "Lit",
+          "value": "No. I am "
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "mt"
+          },
+          "key": "substrate_name"
+         },
+         {
+          "type": "Lit",
+          "value": ". I am not a "
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "m"
+          },
+          "key": "comp_kind_phrase"
+         },
+         {
+          "type": "Lit",
+          "value": " \u2014 I am a graph-native agent running in Rust, not a "
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "m"
+          },
+          "key": "comp_kind_phrase"
+         },
+         {
+          "type": "Lit",
+          "value": "."
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "reply",
+     "responds_to",
+     "m"
+    ],
+    [
+     "add_edge",
+     "agent",
+     "sent",
+     "reply"
+    ]
+   ]
+  },
+  {
+   "name": "instruction_self_report_identity",
+   "match": [
+    [
+     "agent",
+     "received",
+     "m"
+    ],
+    [
+     "agent",
+     "operates_in",
+     "mt"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "m"
+       },
+       "key": "comp_kind"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "instruction"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "m"
+       },
+       "key": "from"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "interlocutor"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "mt"
+        },
+        "key": "substrate_name"
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "m"
+        },
+        "key": "comprehended"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      }
+     },
+     {
+      "type": "Exists",
+      "source": {
+       "type": "Neighbours",
+       "node": {
+        "type": "Var",
+        "name": "m"
+       },
+       "edge_type": "has_mention"
+      },
+      "var_name": "vm",
+      "predicate": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "vm"
+        },
+        "edge_type": "refers_to"
+       },
+       "var_name": "vc",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "TypeOf",
+           "node": {
+            "type": "Var",
+            "name": "vc"
+           }
+          },
+          "b": {
+           "type": "Lit",
+           "value": "Concept"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "vc"
+           },
+           "key": "name"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "m"
+           },
+           "key": "comp_predicate"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "vc"
+           },
+           "key": "instruction_route"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "self_report"
+          }
+         }
+        ]
+       }
+      }
+     },
+     {
+      "type": "Exists",
+      "source": {
+       "type": "Neighbours",
+       "node": {
+        "type": "Var",
+        "name": "m"
+       },
+       "edge_type": "has_mention"
+      },
+      "var_name": "rm",
+      "predicate": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "rm"
+        },
+        "edge_type": "refers_to"
+       },
+       "var_name": "rc",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "TypeOf",
+           "node": {
+            "type": "Var",
+            "name": "rc"
+           }
+          },
+          "b": {
+           "type": "Lit",
+           "value": "Concept"
+          }
+         },
+         {
+          "type": "In",
+          "member": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "rc"
+           },
+           "key": "name"
+          },
+          "container": {
+           "type": "Lit",
+           "value": [
+            "yourself",
+            "yourselves"
+           ]
+          }
+         }
+        ]
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "m",
+     "comprehended",
+     1.0
+    ],
+    [
+     "set_attr",
+     "m",
+     "self_replied",
+     1.0
+    ],
+    [
+     "add_node",
+     "g",
+     "Goal",
+     {
+      "kind": "report_self",
+      "status": "active",
+      "source": "conversation",
+      "predicate": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "m"
+        },
+        "key": "comp_predicate"
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "agent",
+     "has_goal",
+     "g"
+    ],
+    [
+     "add_edge",
+     "g",
+     "comprehends",
+     "m"
+    ],
+    [
+     "add_edge",
+     "m",
+     "comprehended_by",
+     "g"
+    ],
+    [
+     "add_node",
+     "reply",
+     "Message",
+     {
+      "from": "agent",
+      "text": {
+       "__term__": {
+        "type": "StringConcat",
+        "parts": [
+         {
+          "type": "Lit",
+          "value": "I am "
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "mt"
+          },
+          "key": "substrate_name"
+         },
+         {
+          "type": "Lit",
+          "value": ", a graph-native agent running in Rust. Ask me what I can do, how I work, or about a topic I hold."
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "reply",
+     "responds_to",
+     "m"
+    ],
+    [
+     "add_edge",
+     "agent",
+     "sent",
+     "reply"
+    ]
+   ]
+  },
+  {
+   "name": "reply_self_account_miss",
+   "match": [
+    [
+     "agent",
+     "received",
+     "m"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "m"
+       },
+       "key": "comp_dispatch_path"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "honest_self"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "m"
+       },
+       "key": "self_account_unresolved"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "m"
+        },
+        "key": "self_replied"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "m",
+     "self_replied",
+     1.0
+    ],
+    [
+     "add_node",
+     "reply",
+     "Message",
+     {
+      "from": "agent",
+      "text": {
+       "__term__": {
+        "type": "StringConcat",
+        "parts": [
+         {
+          "type": "Lit",
+          "value": "I can't say precisely how I "
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "m"
+          },
+          "key": "self_account_topic"
+         },
+         {
+          "type": "Lit",
+          "value": "."
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "reply",
+     "responds_to",
+     "m"
+    ],
+    [
+     "add_edge",
+     "agent",
+     "sent",
+     "reply"
+    ]
+   ]
+  }
+ ]
+}

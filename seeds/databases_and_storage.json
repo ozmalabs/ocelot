@@ -1,0 +1,936 @@
+{
+ "id": "databases_and_storage",
+ "version": "0.1.0",
+ "depends_on": [
+  "compiler_theory"
+ ],
+ "description": "Databases + storage formats as graph-resident theory. Relational + NoSQL + OLAP + vector + time-series + graph + search systems. Storage engines (B+ tree from data_structures_algorithms, LSM-tree, WAL, MVCC). Query processing (parser, planner, optimizer, vectorized execution). Replication + sharding + distributed consensus. PLUS storage formats: text (CSV, JSON, YAML, TOML, XML), binary (Parquet, ORC, Avro, Arrow, Protobuf, MessagePack, BSON, Cap'n Proto, FlatBuffers), table formats (Iceberg, Delta Lake, Hudi), compression (Snappy, LZ4, Zstd), encoding (RLE, dictionary, delta). The mechanisms that determine how data is stored, queried, and exchanged at every layer.",
+ "category_inheritance": "genlMt → compiler_theory. ACID guarantees map directly to compiler_theory's equivalence vocabulary: Atomicity is referential transparency (all-or-nothing observable); Consistency is denotational equivalence (constraints preserved); Isolation is extensional equivalence (committed reads); Durability is the persistence-aware variant of these.",
+ "concepts": [
+  {
+   "name": "relational_model",
+   "definition": "Codd 1970. Data as tables (relations) of rows (tuples) with typed columns (attributes). Operations via relational algebra: select, project, join, union.",
+   "why": "Mathematical foundation. SQL is its query language. Lasting power: tables + joins handle most data needs; the relational calculus has clear semantics. Still dominant in OLTP after 50+ years.",
+   "category": "foundation"
+  },
+  {
+   "name": "ACID",
+   "definition": "Atomicity (all-or-nothing), Consistency (constraints preserved), Isolation (concurrent transactions don't interfere), Durability (committed data survives crash).",
+   "why": "Transactional guarantees. Each letter rules out a different class of bug. Modern systems weaken some letters for performance (eventual consistency, weaker isolation levels) but ACID is the baseline.",
+   "category": "foundation"
+  },
+  {
+   "name": "BASE",
+   "definition": "Basically Available, Soft state, Eventually consistent. NoSQL's alternative to ACID. Trades consistency for availability + partition tolerance.",
+   "why": "CAP forces a choice when networks partition. BASE accepts temporary inconsistency for survivability. Cassandra, DynamoDB design around this. The eventually-consistent shop has different bug classes than the ACID shop.",
+   "category": "foundation"
+  },
+  {
+   "name": "CAP_theorem",
+   "definition": "Brewer 2000 / Gilbert+Lynch 2002. In presence of network Partitions, system must choose between Consistency + Availability. Can't have all three.",
+   "why": "Distributed system design constraint. Partitions happen (even rarely); system must have a chosen response. CP systems (Spanner, etcd) refuse writes during partition; AP systems (Cassandra, Dynamo) accept writes that may conflict later.",
+   "category": "foundation"
+  },
+  {
+   "name": "PACELC_theorem",
+   "definition": "Extension of CAP: under Partitions, choose Availability or Consistency; Else (no partition), choose Latency or Consistency.",
+   "why": "CAP is binary; PACELC captures the everyday trade-off. Even without partitions, strong consistency adds latency. Most systems make different choices in normal vs partition modes.",
+   "category": "foundation"
+  },
+  {
+   "name": "transaction",
+   "definition": "Logical unit of database work. BEGIN; ... COMMIT (or ROLLBACK). Either all operations succeed or none do.",
+   "why": "Atomicity boundary. Lets app code reason as if executing alone. The transactional API is the contract; isolation level determines how strict that contract is under concurrency.",
+   "category": "transaction_mgmt"
+  },
+  {
+   "name": "serializable_isolation",
+   "definition": "Strongest standard isolation. Result of concurrent transactions equals some serial order of them.",
+   "why": "Strong, intuitive. Application code can ignore concurrency. Cost: most expensive to enforce — either heavy locking or aggressive retry under MVCC. Postgres SSI (serializable snapshot isolation) is the modern approach.",
+   "category": "transaction_mgmt"
+  },
+  {
+   "name": "repeatable_read",
+   "definition": "Reads within a transaction see consistent snapshot. Phantom reads possible (range queries may see newly-inserted rows).",
+   "why": "Common default (MySQL InnoDB). Stronger than read-committed; cheaper than serializable. Phantom anomaly is subtle — most apps don't hit it.",
+   "category": "transaction_mgmt"
+  },
+  {
+   "name": "read_committed",
+   "definition": "Reads see only committed data. Within a transaction, each read may return different values.",
+   "why": "Postgres default. Cheap to implement (MVCC just snapshots at each statement). Common application bugs from non-repeatable reads in long transactions.",
+   "category": "transaction_mgmt"
+  },
+  {
+   "name": "read_uncommitted",
+   "definition": "Reads see uncommitted data. Dirty reads possible. Rarely used in practice.",
+   "why": "Cheapest to implement. Reading rollback-able data is generally a bug. Default in some legacy systems; banned in many modern ones.",
+   "category": "transaction_mgmt"
+  },
+  {
+   "name": "snapshot_isolation",
+   "definition": "Reader sees consistent snapshot from transaction start. Writers don't block readers; readers don't block writers.",
+   "why": "MVCC's natural offering. Most modern databases (Postgres, Oracle, SQL Server) implement this. Not fully serializable (write skew anomaly possible) but very practical.",
+   "category": "transaction_mgmt"
+  },
+  {
+   "name": "write_skew_anomaly",
+   "definition": "Two transactions read overlapping data, write disjoint data, both commit — but together violate a constraint.",
+   "why": "Snapshot isolation's main weakness. Classic example: doctor on-call schedule with constraint 'at least 1 doctor on call'. Two transactions each set a doctor off-call. SSI in Postgres detects this; older snapshot isolation doesn't.",
+   "category": "transaction_mgmt"
+  },
+  {
+   "name": "two_phase_locking",
+   "definition": "2PL: transactions acquire locks before access, release at commit. Strict 2PL holds all locks until commit.",
+   "why": "Classic concurrency control. Provides serializability. Cost: lock waits + deadlock. Modern MVCC avoids most locks but uses 2PL for predicate locks + foreign-key checks.",
+   "category": "transaction_mgmt"
+  },
+  {
+   "name": "MVCC",
+   "definition": "Multi-Version Concurrency Control. Writes create new versions; readers see version visible at transaction start. Old versions vacuumed after no transaction needs them.",
+   "why": "Postgres + Oracle + SQL Server all use MVCC. Readers never block writers. Cost: storage for old versions; vacuum overhead. The reason 'reads don't block writes' in most modern databases.",
+   "category": "transaction_mgmt"
+  },
+  {
+   "name": "write_ahead_log",
+   "definition": "WAL: log changes before applying to data files. On crash, replay WAL to recover. Foundation of durability.",
+   "why": "Sequential writes are fast (no seeks); data writes can be batched. Crash safety + group commit + replication all build on WAL. Every modern OLTP database uses WAL.",
+   "category": "storage_engine"
+  },
+  {
+   "name": "checkpointing",
+   "definition": "Periodic flush of in-memory dirty pages to disk; truncate WAL up to that point. Bounds recovery time on crash.",
+   "why": "Without checkpoint, WAL grows unboundedly. After checkpoint, WAL only needs to cover changes since checkpoint. Trade-off: frequent checkpoints = small WAL but more I/O.",
+   "category": "storage_engine"
+  },
+  {
+   "name": "LSM_tree",
+   "definition": "Log-Structured Merge tree. Writes go to memory + WAL. Periodically flushed as immutable sorted files. Compaction merges files.",
+   "why": "Optimised for write throughput. Sequential writes everywhere; no in-place updates. Trade-off: reads may need to check multiple files. Used by Cassandra, RocksDB, LevelDB, HBase.",
+   "category": "storage_engine"
+  },
+  {
+   "name": "memtable",
+   "definition": "LSM tree's in-memory writable component. Skip list or B-tree. Writes go here + WAL; flushed to disk when full.",
+   "why": "Fast in-memory writes. Sorted for fast point + range queries. Skip list common because lock-free + concurrent inserts work well.",
+   "category": "storage_engine"
+  },
+  {
+   "name": "SSTable",
+   "definition": "Sorted String Table. Immutable on-disk file: sorted keys + values + index. LSM tree's persistent component.",
+   "why": "Random reads via index; range scans via sorted layout; bulk-write via sorted memtable flush. The on-disk artifact LSM trees produce.",
+   "category": "storage_engine"
+  },
+  {
+   "name": "compaction",
+   "definition": "Periodic merge of SSTables: removes overwritten keys, deletes tombstones, produces fewer + larger files.",
+   "why": "Without compaction, read path checks more + more files. With compaction, read amplification stays bounded. Strategies: leveled (tight) vs tiered (loose). Write amplification trade.",
+   "category": "storage_engine"
+  },
+  {
+   "name": "write_amplification",
+   "definition": "Ratio of bytes written to storage / bytes of logical data. LSM compaction rewrites data multiple times.",
+   "why": "Affects SSD wear + performance. Leveled compaction: high WA but low SA. Tiered: low WA but high SA. RocksDB tunables let you pick.",
+   "category": "storage_engine"
+  },
+  {
+   "name": "read_amplification",
+   "definition": "Ratio of bytes read from storage / bytes of logical data needed. LSM reads may check multiple SSTables.",
+   "why": "Bloom filters mitigate (skip SSTables not containing the key). Leveled compaction (low file overlap) also helps. Trade against WA.",
+   "category": "storage_engine"
+  },
+  {
+   "name": "space_amplification",
+   "definition": "Ratio of storage used / logical data size. Multiple versions + overwritten keys + tombstones inflate.",
+   "why": "Compaction reclaims space. Tiered compaction has higher SA than leveled. Important for cost-sensitive deployments (cloud storage).",
+   "category": "storage_engine"
+  },
+  {
+   "name": "bloom_filter_DB",
+   "definition": "In LSM databases: per-SSTable bloom filter. If filter says 'not present', skip the SSTable. Reduces read amp.",
+   "why": "Memory-efficient way to skip SSTables. ~10 bits/key gives <1% false positive. Critical for LSM read performance.",
+   "category": "storage_engine"
+  },
+  {
+   "name": "page_oriented_storage",
+   "definition": "B+ tree-based databases: data stored in fixed-size pages (typically 4-16 KB). In-place updates.",
+   "why": "Postgres, MySQL, Oracle, SQL Server. Random reads efficient; range scans efficient via leaf-linked B+ tree. Random writes more expensive (must rewrite whole page).",
+   "category": "storage_engine"
+  },
+  {
+   "name": "query_parser",
+   "definition": "Translates SQL text to AST. Handles syntax errors. Output: parse tree representing the query structure.",
+   "why": "First step in execution. Tools: hand-written (Postgres) or generated (yacc/bison). Determines what SQL dialect is supported.",
+   "category": "query_processing"
+  },
+  {
+   "name": "query_planner",
+   "definition": "Transforms parse tree into logical plan: relational algebra operations + their order.",
+   "why": "Same query can be executed many ways. Planner explores options. Output is plan tree the optimizer then costs + selects.",
+   "category": "query_processing"
+  },
+  {
+   "name": "query_optimizer",
+   "definition": "Selects the best execution plan based on cost estimates. Considers join orders, index choices, predicates, parallelism.",
+   "why": "Bad optimizer = slow queries. Postgres planner is well-tuned; Oracle's is sophisticated; query speed often dominated by optimizer quality.",
+   "category": "query_processing"
+  },
+  {
+   "name": "cost_based_optimization",
+   "definition": "CBO: assign cost (estimated runtime) to each plan; pick cheapest. Uses table statistics (row counts, value distributions).",
+   "why": "Statistics drive cost estimates. Out-of-date stats give wrong plans. Standard in modern databases. ANALYZE refreshes stats.",
+   "category": "query_processing"
+  },
+  {
+   "name": "query_execution_engine",
+   "definition": "Executes the chosen plan. Volcano model (iterator-based) or vectorized (batch-based).",
+   "why": "Volcano: one row at a time, function call per row. Vectorized: thousands of rows per call. Vectorized is 10-100x faster on OLAP; volcano fine for OLTP.",
+   "category": "query_processing"
+  },
+  {
+   "name": "volcano_iterator_model",
+   "definition": "Each operator implements next() returning one tuple. Pipeline = chain of next() calls.",
+   "why": "Conceptually simple. Memory-efficient. Per-tuple overhead (function call, virtual dispatch) is the cost. Used in row-oriented OLTP databases.",
+   "category": "query_processing"
+  },
+  {
+   "name": "vectorized_execution",
+   "definition": "Operators process batches of values (vectors). One function call processes thousands of rows.",
+   "why": "10-100x faster than Volcano on analytics. Cache-friendly, SIMD-friendly, branch-predictor-friendly. Used in ClickHouse, DuckDB, modern OLAP engines.",
+   "category": "query_processing"
+  },
+  {
+   "name": "hash_join",
+   "definition": "Build hash table from smaller (build) side; probe with larger (probe) side. O(N+M).",
+   "why": "Most common join algorithm. Memory-bound: build side must fit in memory (or spill to disk). Standard for equality joins.",
+   "category": "query_processing"
+  },
+  {
+   "name": "sort_merge_join",
+   "definition": "Sort both sides on join key, then merge. O(N log N + M log M) if not already sorted.",
+   "why": "When inputs already sorted (e.g., from index scan), beats hash join. Memory-efficient — only need merge buffers. Standard in MPP databases.",
+   "category": "query_processing"
+  },
+  {
+   "name": "nested_loop_join",
+   "definition": "For each outer row, scan inner for matches. O(N*M).",
+   "why": "Best for tiny inputs or when no index. Worst for large inputs. Modern optimizers usually avoid except for small sides.",
+   "category": "query_processing"
+  },
+  {
+   "name": "primary_index",
+   "definition": "Clustered index: table rows stored in index order. PRIMARY KEY in most databases.",
+   "why": "Range scans on primary key are sequential. Random insert may cause page splits. MySQL InnoDB always clusters by PK; Postgres optionally clusters via CLUSTER.",
+   "category": "index"
+  },
+  {
+   "name": "secondary_index",
+   "definition": "Non-clustered: index points to row locations (PK or RowID). Lookup = index probe + row fetch.",
+   "why": "Multiple secondary indexes per table. Each adds storage + write overhead. Reads via index are fast for selective predicates.",
+   "category": "index"
+  },
+  {
+   "name": "covering_index",
+   "definition": "Index includes all columns the query needs — no row fetch required. INCLUDE clause in SQL Server, INCLUDE in PostgreSQL 11+.",
+   "why": "Eliminates random I/O of row fetches. Read-only queries hit index alone. Cost: more storage per index. Standard optimization for hot read paths.",
+   "category": "index"
+  },
+  {
+   "name": "composite_index",
+   "definition": "Index on multiple columns. Leftmost-prefix rule: index on (a,b,c) supports queries on a, (a,b), (a,b,c) — not on just b or c.",
+   "why": "Multi-column predicates benefit from one index instead of intersecting two. Column order matters; put most-selective + most-filtered first.",
+   "category": "index"
+  },
+  {
+   "name": "hash_index",
+   "definition": "Hash table mapping value to row location. O(1) point lookups; no range scans.",
+   "why": "Faster than B-tree for point lookups. Useless for ranges. Postgres has hash indexes; less common than B-tree because B-tree handles both well enough.",
+   "category": "index"
+  },
+  {
+   "name": "inverted_index",
+   "definition": "Maps term to list of documents containing it. Foundation of full-text search.",
+   "why": "Lucene, Elasticsearch, Postgres GIN. Critical for keyword search. Trade-off: writes are expensive (update every term's posting list).",
+   "category": "index"
+  },
+  {
+   "name": "spatial_index",
+   "definition": "R-tree, R*-tree, Hilbert R-tree, or geohash-based. Indexes spatial extents for range queries.",
+   "why": "GIS, mapping, spatial joins. Postgres PostGIS uses GiST. Without, spatial queries are full scans.",
+   "category": "index"
+  },
+  {
+   "name": "bitmap_index",
+   "definition": "One bitmap per distinct value: bit i = 1 iff row i has that value. Compressed for storage.",
+   "why": "Excellent for OLAP on low-cardinality columns (gender, country). Boolean ops on bitmaps are fast (AND, OR). Used in Oracle, Druid, ClickHouse.",
+   "category": "index"
+  },
+  {
+   "name": "primary_replica_replication",
+   "definition": "One primary accepts writes; replicas async or sync replay. Reads can scale via replicas.",
+   "why": "Simple, widely deployed. Postgres streaming replication, MySQL replication. Failure mode: primary down → manual or automated failover.",
+   "category": "replication"
+  },
+  {
+   "name": "synchronous_replication",
+   "definition": "Primary waits for replica acknowledgment before committing. Stronger durability; higher latency.",
+   "why": "Zero data loss on primary failure. Cost: every commit blocks on slowest sync replica. Sync to 1 of N (synchronous_commit = on) is common compromise.",
+   "category": "replication"
+  },
+  {
+   "name": "asynchronous_replication",
+   "definition": "Primary commits without waiting. Replica catches up later.",
+   "why": "Fast writes. Cost: failover may lose recent writes (replication lag). Default in many setups; trade-off accepted for latency.",
+   "category": "replication"
+  },
+  {
+   "name": "multi_primary",
+   "definition": "Multiple nodes accept writes. Must resolve conflicts when same data updated on multiple primaries.",
+   "why": "Higher write throughput + survives single-primary failure. Cost: conflict resolution complexity (last-write-wins, CRDTs, application-level). Cassandra, DynamoDB.",
+   "category": "replication"
+  },
+  {
+   "name": "quorum_replication",
+   "definition": "Writes require W acknowledgments; reads require R. If W+R > N (replica count), reads see latest write.",
+   "why": "Tunable consistency. R=W=1: AP. R+W > N: strong reads. Cassandra, Dynamo. Quorum-based reads tolerate node failures.",
+   "category": "replication"
+  },
+  {
+   "name": "Raft_consensus",
+   "definition": "Distributed consensus algorithm (Ongaro 2014). Leader election + log replication. Easier to understand than Paxos.",
+   "why": "Used in etcd, Consul, TiKV, CockroachDB, MongoDB replication. Strong consistency over replicated state. Decade of production hardening.",
+   "category": "replication"
+  },
+  {
+   "name": "Paxos_consensus",
+   "definition": "Lamport 1998. Classical consensus algorithm. Multi-Paxos optimises sequential commands.",
+   "why": "Google's Spanner, Megastore use Paxos variants. Theoretical foundation. Notoriously hard to understand correctly — Raft is the practical heir.",
+   "category": "replication"
+  },
+  {
+   "name": "hash_sharding",
+   "definition": "Shard = hash(key) mod N. Distributes keys uniformly across shards.",
+   "term": {
+    "type": "Eq",
+    "a": {
+     "type": "Lit",
+     "value": "Shard"
+    },
+    "b": {
+     "type": "Lit",
+     "value": "hash(key) mod N"
+    }
+   },
+   "why": "Even load distribution. Simple. Cost: range queries hit all shards. Used by Cassandra, DynamoDB. Resharding is painful (re-hash everything).",
+   "category": "sharding"
+  },
+  {
+   "name": "range_sharding",
+   "definition": "Shards own contiguous key ranges. Lookup = find which range contains the key.",
+   "why": "Range queries efficient. Hot-range problem (e.g., timestamp prefix → all writes to latest shard). HBase, MongoDB, CockroachDB use this.",
+   "category": "sharding"
+  },
+  {
+   "name": "consistent_hashing",
+   "definition": "Hash ring: nodes + keys placed on virtual ring. Key goes to next clockwise node. Adding/removing node moves few keys.",
+   "why": "Resharding is cheap: just shift ownership. Cassandra, DynamoDB, Memcached. Foundation of distributed key-value stores.",
+   "category": "sharding"
+  },
+  {
+   "name": "directory_based_sharding",
+   "definition": "Lookup table maps key (or range) to shard. Centralised metadata.",
+   "why": "Flexible assignment. Cost: directory lookup overhead + central point of state. Vitess, ProxySQL.",
+   "category": "sharding"
+  },
+  {
+   "name": "PostgreSQL",
+   "definition": "Open-source ORDBMS. MVCC + WAL + B+ tree + cost-based optimizer + extensible.",
+   "why": "Production OLTP standard. Strong SQL compliance, sophisticated planner, extensible types/operators. Used in everything from startups to AWS Aurora.",
+   "category": "relational_db"
+  },
+  {
+   "name": "MySQL_InnoDB",
+   "definition": "MySQL with InnoDB engine. Clustered B+ tree on PK, MVCC via undo log, row-level locking.",
+   "why": "Web-scale OLTP. Simpler than Postgres in some ways (locking model, replication setup) but with quirks (silent type coercion). Largest deployed OLTP database.",
+   "category": "relational_db"
+  },
+  {
+   "name": "SQLite",
+   "definition": "Embedded library. Single-file database. ACID via WAL.",
+   "why": "World's most-deployed database (every smartphone). Single-process, but rich SQL. Used as application file format.",
+   "category": "relational_db"
+  },
+  {
+   "name": "Redis",
+   "definition": "In-memory key-value store with rich data types (string, list, set, hash, sorted set, stream). Single-threaded for most ops.",
+   "why": "Cache + simple queue + leaderboard primitives. Persistence (RDB snapshots + AOF log). Sub-millisecond latency. Standard 'fast tier' in modern stacks.",
+   "category": "nosql_kv"
+  },
+  {
+   "name": "Memcached",
+   "definition": "Distributed in-memory cache. Strings only. No persistence. LRU eviction.",
+   "why": "Predates Redis. Multi-threaded. Simpler API. Often beats Redis on pure caching workloads but lacks Redis's data types.",
+   "category": "nosql_kv"
+  },
+  {
+   "name": "DynamoDB",
+   "definition": "AWS managed NoSQL: key-value + document. Hash sharding, tunable consistency.",
+   "why": "Serverless: pay per request, auto-scale. Predictable latency at any scale. Trade-off: limited query patterns (no SQL, complex queries via secondary indexes).",
+   "category": "nosql_kv"
+  },
+  {
+   "name": "MongoDB",
+   "definition": "Document database. BSON storage. Schema-less. Replica sets + sharding.",
+   "why": "Flexible schema attracts developers. Mature ecosystem. Criticized for early durability defaults (fixed); modern MongoDB is solid for many workloads.",
+   "category": "nosql_doc"
+  },
+  {
+   "name": "Cassandra",
+   "definition": "Wide-column store. LSM-based. Multi-primary replication via consistent hashing + quorum.",
+   "why": "Write-optimised. Scales linearly. AP system. Used at Apple, Netflix, Discord. Operationally complex; rewards expertise.",
+   "category": "nosql_columnfamily"
+  },
+  {
+   "name": "HBase",
+   "definition": "BigTable-inspired wide-column store. HDFS-based. Region-split + range sharding.",
+   "why": "Hadoop ecosystem. CP system (strong consistency). Used at Facebook (Messages), Pinterest. Less popular post-cloud-native era.",
+   "category": "nosql_columnfamily"
+  },
+  {
+   "name": "RocksDB",
+   "definition": "LSM-tree-based embedded key-value store. Forked from LevelDB by Facebook. Highly tunable.",
+   "why": "Used as storage engine inside many databases: TiKV, CockroachDB, Yugabyte, MySQL MyRocks. Production-grade LSM implementation.",
+   "category": "nosql_kv"
+  },
+  {
+   "name": "etcd",
+   "definition": "Distributed key-value store. Raft-based. Strong consistency. Kubernetes' configuration store.",
+   "why": "Reliable coordination. Watch API for change notifications. Smaller scope than Zookeeper but cleaner API. K8s scale = etcd scale.",
+   "category": "nosql_kv"
+  },
+  {
+   "name": "ClickHouse",
+   "definition": "Columnar OLAP. Vectorized execution. MergeTree (LSM-like). SQL.",
+   "why": "Yandex-developed. Best-in-class scan-heavy analytical query performance. Sub-second on billion-row aggregations. Self-hosted alternative to BigQuery/Snowflake.",
+   "category": "olap"
+  },
+  {
+   "name": "DuckDB",
+   "definition": "Embedded analytical database. Vectorized execution. Reads Parquet, CSV, JSON directly.",
+   "why": "Process-embedded analytics. Pandas alternative for OLAP. No server, no setup. Increasingly popular for local data analysis.",
+   "category": "olap"
+  },
+  {
+   "name": "Snowflake",
+   "definition": "Cloud data warehouse. Separates storage + compute. Auto-scaling, multi-cluster.",
+   "why": "Pioneered storage-compute separation in cloud DW. Pay for compute on demand; data lives in object store. SaaS dominance.",
+   "category": "olap"
+  },
+  {
+   "name": "BigQuery",
+   "definition": "Google's cloud DW. Serverless. Columnar storage. Dremel-based execution.",
+   "why": "True serverless: no infra. Scales to PB. Pricing per query. Used heavily for Google-scale analytics.",
+   "category": "olap"
+  },
+  {
+   "name": "Redshift",
+   "definition": "AWS columnar DW. ParAccel-derived. Cluster-based (Redshift Provisioned) or serverless.",
+   "why": "AWS's DW. Tight integration with S3, IAM. Mature; predates Snowflake. Migration target from on-prem Oracle/Teradata.",
+   "category": "olap"
+  },
+  {
+   "name": "Apache_Spark",
+   "definition": "Distributed compute framework. DataFrames + SQL + streaming + ML. Reads everything.",
+   "why": "ETL workhorse. Not a database per se but processes data at scale. Databricks productionised it. Foundation of many data platforms.",
+   "category": "olap"
+  },
+  {
+   "name": "Trino_Presto",
+   "definition": "Distributed SQL query engine. Federates queries across many data sources.",
+   "why": "Query Parquet on S3 + Postgres + Cassandra in one SQL. Trino (forked from Presto) at Starburst; Presto at Facebook. Lakehouse query layer.",
+   "category": "olap"
+  },
+  {
+   "name": "Apache_Kafka",
+   "definition": "Distributed log + streaming platform. Partitioned, replicated, durable.",
+   "why": "Event streaming standard. Connects services (pub/sub), feeds streaming compute (Kafka Streams, Flink), buffers between systems. Production scale: trillions of messages/day.",
+   "category": "streaming"
+  },
+  {
+   "name": "Apache_Flink",
+   "definition": "Stream processing. Stateful, exactly-once semantics. Windowing, CEP.",
+   "why": "Production streaming standard for stateful workloads. Used at Netflix, Uber. Spark Streaming alternative with better latency characteristics.",
+   "category": "streaming"
+  },
+  {
+   "name": "Pinecone",
+   "definition": "Managed vector database. HNSW + IVF for approximate nearest neighbour search.",
+   "why": "Embedding-based search (RAG, recommendations). Filter + ANN combined. SaaS; competitors Weaviate, Qdrant, Milvus, Chroma are open-source.",
+   "category": "vector_db"
+  },
+  {
+   "name": "Qdrant",
+   "definition": "Open-source vector database. Rust. HNSW. Payload filtering.",
+   "why": "Self-hostable. Strong performance. Growing in popularity for RAG infrastructure. Filter-while-search optimisation.",
+   "category": "vector_db"
+  },
+  {
+   "name": "pgvector",
+   "definition": "Postgres extension for vector similarity. IVFFlat + HNSW indexes.",
+   "why": "Use existing Postgres for vector search. No separate DB. Quality competitive with specialised vector DBs for moderate scale.",
+   "category": "vector_db"
+  },
+  {
+   "name": "InfluxDB",
+   "definition": "Time-series database. Optimised for high-cardinality timestamped data. Custom storage engine (TSM).",
+   "why": "Monitoring + IoT. Compression on time-series (delta + RLE). Tag-based filtering. Standard for time-series workloads.",
+   "category": "timeseries"
+  },
+  {
+   "name": "Prometheus",
+   "definition": "Pull-based monitoring + TSDB. Custom storage. PromQL.",
+   "why": "Kubernetes ecosystem standard. Scrape-based collection. Local storage typically + remote write for long-term.",
+   "category": "timeseries"
+  },
+  {
+   "name": "TimescaleDB",
+   "definition": "Postgres extension for time-series. Hypertables (auto-partitioned by time).",
+   "why": "SQL on time-series. Continues to leverage Postgres ecosystem. Compression, continuous aggregates.",
+   "category": "timeseries"
+  },
+  {
+   "name": "Neo4j",
+   "definition": "Property graph database. Cypher query language. Native graph storage.",
+   "why": "Standard graph DB. Used for fraud detection, recommendations, knowledge graphs. ACID transactions on graphs.",
+   "category": "graph_db"
+  },
+  {
+   "name": "Elasticsearch",
+   "definition": "Distributed search engine. Lucene-based. JSON documents + inverted indexes.",
+   "why": "Full-text search + log analytics standard. ELK stack. Forked to OpenSearch (AWS) after license change.",
+   "category": "search"
+  },
+  {
+   "name": "CSV",
+   "definition": "Comma-Separated Values. Plain text. Each row a line; fields comma-separated.",
+   "why": "Ubiquitous interchange. Human-readable. Limitations: no typing, quoting/escaping edge cases, Excel localisation chaos (semicolons in some locales).",
+   "category": "text_format"
+  },
+  {
+   "name": "JSON",
+   "definition": "JavaScript Object Notation. Structured: objects, arrays, strings, numbers, booleans, null.",
+   "why": "Web's data lingua franca. Self-describing. Limitations: no native binary, no integers vs floats distinction, comments unsupported in strict JSON.",
+   "category": "text_format"
+  },
+  {
+   "name": "JSONL_NDJSON",
+   "definition": "JSON Lines: one JSON value per line. Streaming-friendly: parse line-by-line without loading whole file.",
+   "why": "Log files, streaming APIs. Easy to split + parallelise. Standard for line-oriented data exchange. Most LLM training datasets use JSONL.",
+   "category": "text_format"
+  },
+  {
+   "name": "YAML",
+   "definition": "Human-friendly serialisation. Indentation-based structure. Comments supported. Anchors + references.",
+   "why": "Configuration files (Kubernetes, Ansible, CI). More readable than JSON for nested config. Pitfalls: whitespace-sensitive, the Norway problem (NO parsed as false), too many ways to express same data.",
+   "category": "text_format"
+  },
+  {
+   "name": "TOML",
+   "definition": "Tom's Obvious, Minimal Language. Configuration format. Inspired by INI but typed.",
+   "why": "Rust's Cargo, Python's pyproject.toml. Less ambiguous than YAML. Easier than JSON for human editing of config. Won the modern config wars.",
+   "category": "text_format"
+  },
+  {
+   "name": "XML",
+   "definition": "eXtensible Markup Language. Tags + attributes. Schema languages (XSD, DTD, Relax NG).",
+   "why": "Once dominant; now mostly legacy (SOAP, ATOM). Verbose. Still important for old enterprise + scientific data. JSON replaced it for new web APIs.",
+   "category": "text_format"
+  },
+  {
+   "name": "Parquet",
+   "definition": "Columnar storage format. Apache project. Compressed + encoded per column. Row groups for parallelism.",
+   "why": "De facto standard for big data lake storage. Reads only needed columns; high compression; works with any tool (Spark, Trino, DuckDB, Pandas). Often 10x smaller than CSV.",
+   "category": "binary_format"
+  },
+  {
+   "name": "ORC",
+   "definition": "Optimised Row Columnar. Apache (Hive heritage). Similar to Parquet but with stronger stats + light indexes.",
+   "why": "Hive ecosystem favourite. Slightly better compression than Parquet on some workloads. Less broad tool support outside Hive/Hadoop world.",
+   "category": "binary_format"
+  },
+  {
+   "name": "Apache_Avro",
+   "definition": "Row-oriented binary format. Schema embedded with data. Schema evolution.",
+   "why": "Kafka standard schema format. Compact, fast to encode/decode. Schema evolution rules let producer/consumer versions disagree gracefully.",
+   "category": "binary_format"
+  },
+  {
+   "name": "Apache_Arrow",
+   "definition": "In-memory columnar format + zero-copy. Cross-language: Python, R, Java, Rust, Go.",
+   "why": "Inter-process / inter-language data sharing without serialisation cost. Pandas → DuckDB → Spark via Arrow with no copies. Foundation of modern data tools.",
+   "category": "binary_format"
+  },
+  {
+   "name": "MessagePack",
+   "definition": "Binary serialisation. JSON-like data model. Compact (often 50% smaller than JSON).",
+   "why": "Better than JSON for size + speed. Less tool support than Protobuf. Used in Redis cluster bus, some RPC systems.",
+   "category": "binary_format"
+  },
+  {
+   "name": "BSON",
+   "definition": "Binary JSON. MongoDB's internal format. Extends JSON with binary types + dates + ObjectIds.",
+   "why": "MongoDB storage + wire format. Self-describing. Optimised for in-place updates (length prefixes). Limited to MongoDB ecosystem.",
+   "category": "binary_format"
+  },
+  {
+   "name": "CBOR",
+   "definition": "Concise Binary Object Representation. IETF RFC 8949. JSON-like data model, binary encoding.",
+   "why": "Used in COSE (signed objects), IoT (constrained devices), WebAuthn. Self-describing. Less hyped than MessagePack but increasingly standard.",
+   "category": "binary_format"
+  },
+  {
+   "name": "Capn_Proto",
+   "definition": "Cap'n Proto: binary format with zero-parse-time access. Read field = pointer dereference. No deserialisation.",
+   "why": "Mmap'd files act as objects. Used in Cloudflare Workers, Sandstorm. Speed advantage substantial when data already in memory.",
+   "category": "binary_format"
+  },
+  {
+   "name": "FlatBuffers",
+   "definition": "Google's zero-copy binary format. Similar in goals to Cap'n Proto.",
+   "why": "Used in TensorFlow Lite, game engines. Reading fields requires no allocation. Schema evolution via field IDs.",
+   "category": "binary_format"
+  },
+  {
+   "name": "HDF5",
+   "definition": "Hierarchical Data Format 5. Scientific + numerical data. Datasets + groups + attributes.",
+   "why": "Scientific computing standard (NumPy, climate models, neutron scattering). Chunked storage + compression. Less common in 'web data' world.",
+   "category": "binary_format"
+  },
+  {
+   "name": "Apache_Iceberg",
+   "definition": "Open table format. Metadata layer over Parquet/ORC/Avro files. ACID via snapshot isolation, schema evolution, time travel.",
+   "why": "Lakehouse architecture. Brings DB-like guarantees to data lakes. Engine-agnostic (Spark, Trino, Flink, Snowflake all support). Standard for modern data lakes.",
+   "category": "table_format"
+  },
+  {
+   "name": "Delta_Lake",
+   "definition": "Open table format. Originated at Databricks. ACID transactions + time travel + DML on data lake.",
+   "why": "Databricks Lakehouse foundation. Similar capabilities to Iceberg. Stronger Spark integration; competing with Iceberg for industry standard.",
+   "category": "table_format"
+  },
+  {
+   "name": "Apache_Hudi",
+   "definition": "Open table format with focus on streaming + CDC ingestion. Copy-on-write + merge-on-read tables.",
+   "why": "Strong upsert support. Uber-originated. MoR good for high-frequency updates. Less mindshare than Iceberg/Delta but unique capabilities.",
+   "category": "table_format"
+  },
+  {
+   "name": "Snappy",
+   "definition": "Google fast compression. Optimised for speed over ratio.",
+   "why": "Default in Parquet, BigTable, Hadoop. Fast enough to use everywhere. Compression ratio ~2x; speed ~500 MB/s decode.",
+   "category": "compression"
+  },
+  {
+   "name": "LZ4",
+   "definition": "Very fast compression. ~3-4 GB/s decode.",
+   "why": "When speed matters more than ratio. Used in Kafka, ClickHouse, some Parquet files. Almost free decode cost.",
+   "category": "compression"
+  },
+  {
+   "name": "Zstandard",
+   "definition": "Modern general-purpose compression by Facebook. Tunable speed/ratio. Dictionary support.",
+   "why": "Often best Pareto frontier (better ratio at same speed as Snappy/LZ4). Default in newer formats. Facebook uses for both storage + RPC compression.",
+   "category": "compression"
+  },
+  {
+   "name": "gzip_bzip2",
+   "definition": "Classic compression. gzip: fast deflate-based. bzip2: slower but better ratio.",
+   "why": "Universal compatibility. Default for many tools (gz, tar.gz). Modern alternatives (zstd) beat both on speed/ratio Pareto, but gzip is everywhere.",
+   "category": "compression"
+  },
+  {
+   "name": "Brotli",
+   "definition": "Google compression for web. Better ratio than gzip at similar speed.",
+   "why": "HTTP content encoding (Content-Encoding: br). Default in modern browsers. Static asset compression standard.",
+   "category": "compression"
+  },
+  {
+   "name": "run_length_encoding",
+   "definition": "RLE: replace runs of same value with (value, count). 'AAAA' → (A,4).",
+   "why": "Excellent on sparse columns (mostly zeros) or sorted data (e.g., sorted timestamps where dates repeat). Often combined with bitpacking.",
+   "category": "encoding"
+  },
+  {
+   "name": "dictionary_encoding",
+   "definition": "Replace values with indexes into a dictionary of distinct values. Compact for low-cardinality columns.",
+   "why": "Standard in Parquet. Categorical columns (status, country, gender) become 1-2 bytes per row instead of multi-byte strings. Combined with bitpacking for further compression.",
+   "category": "encoding"
+  },
+  {
+   "name": "bit_packing",
+   "definition": "Pack values into the minimum number of bits. E.g., values in [0, 7] need 3 bits each.",
+   "why": "After dictionary encoding, small integers can be bit-packed for further size reduction. Used heavily in Parquet for low-cardinality columns.",
+   "category": "encoding"
+  },
+  {
+   "name": "delta_encoding",
+   "definition": "Store differences from previous value. Run of increasing timestamps: store first + small deltas.",
+   "why": "Time-series + sorted columns compress dramatically. Combined with RLE + bitpacking. Standard in time-series databases (Gorilla, Beringei).",
+   "category": "encoding"
+  },
+  {
+   "name": "frame_of_reference",
+   "definition": "FOR: subtract minimum from each value; encode small offsets. Useful when values cluster around a value.",
+   "why": "Page-level optimization. Saves bits when all values in a page have similar magnitudes. Common in OLAP storage engines.",
+   "category": "encoding"
+  },
+  {
+   "name": "schema_evolution",
+   "definition": "Ability to change schema (add/remove/rename columns) without breaking old data or consumers.",
+   "why": "Long-lived data outlives schemas. Avro embeds schema with data; Parquet stores schema in footer; Protobuf uses field numbers. Different formats have different evolution rules.",
+   "category": "format_concept"
+  }
+ ],
+ "rules": [
+  {
+   "name": "ACID_isolation_guarantees_concurrency_safety",
+   "if": [
+    "a database provides serializable isolation"
+   ],
+   "then": [
+    "application code can ignore concurrency entirely"
+   ],
+   "why": "Strongest isolation means executions appear serial. Apps can be written single-threaded-style. Cost: lock overhead or aggressive retry. Weaker isolation levels require app-level care.",
+   "soundness_category": "referential_transparency"
+  },
+  {
+   "name": "CAP_forces_choice_during_partition",
+   "if": [
+    "network partition occurs"
+   ],
+   "then": [
+    "system must choose between consistency and availability"
+   ],
+   "why": "Brewer's theorem. AP systems accept writes that may conflict (Cassandra, Dynamo). CP systems refuse writes until partition heals (etcd, Spanner). Real systems have specific behaviour modes for partition.",
+   "soundness_category": "algebraic_law"
+  },
+  {
+   "name": "WAL_enables_durability_with_sequential_writes",
+   "if": [
+    "changes are logged before applying"
+   ],
+   "then": [
+    "sequential WAL writes provide durability without random data file writes"
+   ],
+   "why": "Random writes are slow (seeks). Sequential WAL writes are fast (no seeks). Data file writes can be batched + async. Universal in modern OLTP databases.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "LSM_optimises_writes_via_sequential_IO",
+   "if": [
+    "all writes go to memory + appended WAL + flushed sequentially"
+   ],
+   "then": [
+    "write throughput scales with disk sequential bandwidth"
+   ],
+   "why": "Random writes (B-tree updates) limited by disk seeks. LSM converts everything to sequential. Cost: read amplification, write amplification from compaction. Trade for write-heavy workloads.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "MVCC_eliminates_reader_writer_contention",
+   "if": [
+    "writers create new versions and readers see snapshot"
+   ],
+   "then": [
+    "readers never block writers and vice versa"
+   ],
+   "why": "Without MVCC: readers acquire shared locks; writers wait. With MVCC: readers use existing versions; writers create new. Cost: storage for old versions + vacuum overhead. The reason modern Postgres reads don't block.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "cost_based_optimisation_requires_accurate_statistics",
+   "if": [
+    "query optimizer chooses plans by estimated cost"
+   ],
+   "then": [
+    "stale statistics produce bad plans"
+   ],
+   "why": "Estimates depend on row counts + value distributions. Stale stats give wrong estimates → wrong join orders, wrong index choices. ANALYZE refreshes. Periodic auto-analyze is standard.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "vectorized_execution_beats_volcano_on_analytics",
+   "if": [
+    "queries scan large amounts of data"
+   ],
+   "then": [
+    "vectorized execution is 10-100x faster than Volcano"
+   ],
+   "why": "Volcano: function call per tuple = high overhead. Vectorized: batch of tuples per call = SIMD + cache-friendly + branch-predictor-friendly. ClickHouse vs OLTP-style engines on analytical queries.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "hash_join_default_for_equality",
+   "if": [
+    "a join is equality-based and at least one side fits in memory"
+   ],
+   "then": [
+    "hash join is typically the fastest algorithm"
+   ],
+   "why": "Build hash table once; probe by hash. O(N+M). Sort-merge wins when inputs already sorted; nested loop wins for tiny inputs. Default in cost-based optimizers.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "covering_index_eliminates_row_fetch",
+   "if": [
+    "index includes all columns the query needs"
+   ],
+   "then": [
+    "query reads only the index, no row fetch"
+   ],
+   "why": "Plain index lookup: index probe + random row fetch (slow). Covering index: just index probe. Read-only queries on heavy-filter columns benefit dramatically.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "primary_index_clusters_row_storage",
+   "if": [
+    "a table has a clustered (primary) index"
+   ],
+   "then": [
+    "rows are stored in primary key order"
+   ],
+   "why": "Range scans on PK are sequential I/O. MySQL InnoDB always clusters by PK. Postgres optionally via CLUSTER. Affects table organisation; choose PK wisely.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "quorum_provides_tunable_consistency",
+   "if": [
+    "W + R > N replicas"
+   ],
+   "then": [
+    "reads see latest writes"
+   ],
+   "why": "Any read intersects any write in at least one replica. Dynamo/Cassandra implement. Tuning W + R lets app trade latency for consistency.",
+   "soundness_category": "algebraic_law"
+  },
+  {
+   "name": "Raft_provides_strong_consistency_via_log_replication",
+   "if": [
+    "majority of nodes acknowledge log entries before commit"
+   ],
+   "then": [
+    "committed entries are durable + serially ordered"
+   ],
+   "why": "Leader serialises operations into log. Replicates to majority. Any subsequent leader sees majority of log → no committed entry lost. Foundation of modern distributed databases.",
+   "soundness_category": "referential_transparency"
+  },
+  {
+   "name": "consistent_hashing_minimises_resharding_movement",
+   "if": [
+    "nodes + keys placed on a hash ring"
+   ],
+   "then": [
+    "adding/removing one node moves O(1/N) keys"
+   ],
+   "why": "Hash ring's contiguous ownership: each node owns a range. Adding a node steals from neighbours only. Beats hash mod N (which moves O(1 - 1/N) keys on resharding).",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "columnar_storage_beats_row_for_analytics",
+   "if": [
+    "queries scan few columns over many rows"
+   ],
+   "then": [
+    "columnar storage outperforms row storage"
+   ],
+   "why": "Row format: read whole row, use few fields. Column: read only needed columns. Reduces I/O proportionally. Plus columns compress better (similar values). Standard for OLAP.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "row_storage_beats_columnar_for_OLTP",
+   "if": [
+    "transactions update or insert whole rows"
+   ],
+   "then": [
+    "row storage outperforms columnar"
+   ],
+   "why": "Updating a row in columnar = update many columns = many seeks. Row format = one write. Transactional workloads (Postgres, MySQL) use row storage; analytical (ClickHouse, Snowflake) use columnar.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "Parquet_compression_via_columnar_encoding_stack",
+   "if": [
+    "data is stored columnar with dictionary + RLE + bitpacking + Snappy/Zstd"
+   ],
+   "then": [
+    "Parquet files are typically 5-10x smaller than CSV"
+   ],
+   "why": "Each layer compresses the previous: dictionary turns strings to small ints; RLE collapses runs; bitpacking minimises bits; final compression cleans up. The stack effect is the Parquet advantage.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "Arrow_zero_copy_eliminates_serialisation",
+   "if": [
+    "data is in Arrow format"
+   ],
+   "then": [
+    "passing between processes / languages requires no serialisation"
+   ],
+   "why": "Arrow's in-memory layout is standardised + columnar. Python → DuckDB → Spark via Arrow IPC = no copy, just pointer handoff. Foundation of modern data stack interop.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "table_formats_bring_ACID_to_data_lakes",
+   "if": [
+    "a metadata layer (Iceberg, Delta, Hudi) sits on top of Parquet/ORC files"
+   ],
+   "then": [
+    "lake gets ACID transactions, time travel, schema evolution"
+   ],
+   "why": "Raw Parquet files have no ACID — concurrent writers corrupt. Table formats add manifests + snapshots. Atomic commits via metadata pointer swap. Lakehouse = DW capabilities on lake economics.",
+   "soundness_category": "referential_transparency"
+  },
+  {
+   "name": "JSON_self_describing_but_verbose",
+   "if": [
+    "data is JSON"
+   ],
+   "then": [
+    "it's universally parseable but ~2-5x bigger than binary equivalents"
+   ],
+   "why": "Field names + string representation of numbers + structural characters (braces, commas, quotes). Cost: 2-5x size + 10-100x slower parse vs Parquet/Avro/Protobuf. Trade for human readability + universal support.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "schema_evolution_requires_format_aware_design",
+   "if": [
+    "data outlives any single application version"
+   ],
+   "then": [
+    "schema evolution rules of the format determine forward/backward compat"
+   ],
+   "why": "Avro: writer's schema + reader's schema. Protobuf: field numbers. Parquet: schema in footer + nullable for new columns. Adding columns is easy; renaming is hard. Format choice locks in evolution constraints.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "compression_throughput_tradeoff_per_workload",
+   "if": [
+    "the workload's bottleneck is CPU vs I/O"
+   ],
+   "then": [
+    "compression algorithm choice differs"
+   ],
+   "why": "I/O-bound: higher compression saves bytes (Zstd, Brotli). CPU-bound: faster decompression (LZ4, Snappy). Cloud storage costs favor compression; in-memory ops favor speed.",
+   "soundness_category": "cost_equivalence"
+  }
+ ],
+ "exclusions": [],
+ "parent_mt": "data_structures_algorithms",
+ "relations": [
+  {
+   "src": "databases_and_storage",
+   "edge": "genlMt",
+   "tgt": "compiler_theory"
+  }
+ ]
+}

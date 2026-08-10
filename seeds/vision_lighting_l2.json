@@ -1,0 +1,2914 @@
+{
+ "id": "vision_lighting_l2",
+ "version": "1.0.0",
+ "depends_on": [
+  "vision_lighting"
+ ],
+ "description": "ADVANCED LIGHTING RUNG L2 -- SPATIALLY-VARYING ILLUMINANT (RETINEX). T3 crossed lighting-invariance for the exact-integer-ratio GLOBAL diagonal illuminant and L1 widened it to REAL-VALUED GLOBAL gains; BOTH REFUSE a spatially-varying scene as out-of-class (0/20, measured twice). L2 makes that case ADMISSIBLE by Land's Retinex first step: reflectance is recovered from SPATIAL RATIOS of neighbouring cone activity. The anchor is LOCALIZED -- l2_locale_stats reads a per-channel max/min/count over the LOCALE's own membership (Neighbours(loc,'in_locale'), hub-scoped, never a global grab), l2_pair mints the test<->reference locale pairing AS A RULE (an Eq(pos,pos) join across compares_to; the adapter draws no cross-frame edge), l2_slowvar DISCOVERS non-circularly whether the field is slowly varying at each locale (REPORTED, NOT a gate -- its worst-case envelope is strictly more conservative than the exact verdict, measured), and l2_recognize renders the held prototype at the LOCAL illuminant estimate a_loc/pa_loc and admits within ONE LATTICE STEP -- so the illuminant field cancels LOCALLY, with NO global estimate and NO path integration. l2_refuse makes a refusal a POSITIVE datum; l2_recognize_globalanchor is the ABLATION CONTROL (the spatial-ratio step removed, global anchor restored, everything else identical, always computed on the SAME graph so the contrast is one measurement); l2_ncand records the candidate count INSIDE the bound so the bound's discriminativeness is reported rather than assumed (rung L1b's lesson). NO NEW RUST and NO NEW CONSTANT: the bound is L1's OWN falls-out ONE LATTICE STEP, inherited unchanged and valid at locale grain because the locale contains its own centre; the admission envelope is L1's tighter MIN clause, localized. 'Slowly varying' itself falls out -- the admissible per-adjacency variation is the lattice step over the frame's own measured dynamic range, so the TOTAL admissible field variation grows with scene extent. BOUNDED: a SLOWLY-VARYING SINGLE illuminant field via LOCAL ratios. Global illuminant inference (L3), shadow-vs-reflectance edge ATTRIBUTION (L4) and MULTI-ILLUMINANT scenes are NOT solved; reflectance is GIVEN at the abstract cone-triple grain; adjacency is GIVEN not grown; spatial registration at LOCALE grain is GIVEN (strictly stronger than T3/L1's frame-level assumption) while IDENTITY correspondence is NOT. Flag-gated on LightingL2Params.lighting_l2, OFF by default (sec 9 -- default 0 => byte-identical, seed inert), read ABSENCE-TOLERANTLY via MaxOver(default 0), never PickUnique. See VISION_LIGHTING_L2_PREREG.md.",
+ "microtheory": {
+  "id": "vision_lighting_l2_mt",
+  "label": "spatially-varying illuminant: reflectance from LOCAL spatial ratios, the field discounted per locale rather than per frame"
+ },
+ "nodes": [
+  {
+   "local_id": 0,
+   "type": "LightingL2Params",
+   "attrs": {
+    "lighting_l2": 0.0
+   }
+  }
+ ],
+ "edges": [],
+ "productions": [],
+ "rules": [
+  {
+   "name": "l2_frame_stats",
+   "comment": "The frame's OWN GLOBAL per-channel anchor, written into an L2-only attribute namespace (l2f_a*). It exists SOLELY to feed the ablation control arm (l2_recognize_globalanchor), so that the LOCAL-vs-GLOBAL contrast -- the measurement that decides whether the spatial-ratio step is LOAD-BEARING or decorative (sec 13.2) -- is read from ONE graph in ONE run rather than from two experiments. Computed here rather than read from L1's l1_a* so that L2 does not depend on L1's flag being on, and so that L2 never writes or reads a T3/L1 attribute. Hub-scoped by Neighbours(frame,'has_surface') -- never a global NodesOfType grab (sec 12.1). The l2f_done guard makes it fire once per frame so run_rules converges. Flag-gated, OFF by default (sec 9).",
+   "match": [
+    [
+     "frame",
+     "has_surface",
+     "anysurf"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "MaxOver",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "LightingL2Params"
+       },
+       "var_name": "lp",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "lp"
+        },
+        "key": "lighting_l2"
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "frame"
+       },
+       "key": "l2f_done"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "frame",
+     "l2f_aL",
+     {
+      "__term__": {
+       "type": "MaxOver",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "frame"
+        },
+        "edge_type": "has_surface",
+        "any_type": false
+       },
+       "var_name": "w",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "w"
+        },
+        "key": "cL"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "frame",
+     "l2f_aM",
+     {
+      "__term__": {
+       "type": "MaxOver",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "frame"
+        },
+        "edge_type": "has_surface",
+        "any_type": false
+       },
+       "var_name": "w",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "w"
+        },
+        "key": "cM"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "frame",
+     "l2f_aS",
+     {
+      "__term__": {
+       "type": "MaxOver",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "frame"
+        },
+        "edge_type": "has_surface",
+        "any_type": false
+       },
+       "var_name": "w",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "w"
+        },
+        "key": "cS"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "frame",
+     "l2f_done",
+     {
+      "__term__": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "l2_locale_stats",
+   "comment": "THE LOCAL ANCHOR. Per-channel MaxOver / MinOver and the Count over the LOCALE's own membership -- Neighbours(loc,'in_locale'), the locale's own population, never a global grab (sec 12.1). This is the entire difference between L2 and T3/L1: T3 and L1 read ONE anchor for the WHOLE FRAME, so a spatially-varying field makes that single anchor wrong everywhere except where it was measured; L2 reads an anchor PER LOCALE, so a slowly-varying field is discounted where it is observed. The locale CONTAINS ITS OWN CENTRE (the adapter links the centre surface into its own locale), which is what preserves L1's r/a <= 1 -- the property its ONE-LATTICE-STEP bound is derived from -- verbatim at locale grain. The MIN is carried because the admission clause built on it accumulates only TWO roundings; the COUNT is read from the DATA. Matched through an in_locale edge so the rule only ever sees a locale that HAS a population (an empty MaxOver would read as a lookup, sec 1.1). The l2_loc_done guard makes it fire once per locale so run_rules converges. Flag-gated, OFF by default (sec 9).",
+   "match": [
+    [
+     "loc",
+     "in_locale",
+     "anysurf"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "MaxOver",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "LightingL2Params"
+       },
+       "var_name": "lp",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "lp"
+        },
+        "key": "lighting_l2"
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "loc"
+       },
+       "key": "l2_loc_done"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "loc",
+     "l2_aL",
+     {
+      "__term__": {
+       "type": "MaxOver",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "loc"
+        },
+        "edge_type": "in_locale",
+        "any_type": false
+       },
+       "var_name": "w",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "w"
+        },
+        "key": "cL"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "loc",
+     "l2_aM",
+     {
+      "__term__": {
+       "type": "MaxOver",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "loc"
+        },
+        "edge_type": "in_locale",
+        "any_type": false
+       },
+       "var_name": "w",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "w"
+        },
+        "key": "cM"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "loc",
+     "l2_aS",
+     {
+      "__term__": {
+       "type": "MaxOver",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "loc"
+        },
+        "edge_type": "in_locale",
+        "any_type": false
+       },
+       "var_name": "w",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "w"
+        },
+        "key": "cS"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "loc",
+     "l2_mL",
+     {
+      "__term__": {
+       "type": "MinOver",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "loc"
+        },
+        "edge_type": "in_locale",
+        "any_type": false
+       },
+       "var_name": "w",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "w"
+        },
+        "key": "cL"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "loc",
+     "l2_mM",
+     {
+      "__term__": {
+       "type": "MinOver",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "loc"
+        },
+        "edge_type": "in_locale",
+        "any_type": false
+       },
+       "var_name": "w",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "w"
+        },
+        "key": "cM"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "loc",
+     "l2_mS",
+     {
+      "__term__": {
+       "type": "MinOver",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "loc"
+        },
+        "edge_type": "in_locale",
+        "any_type": false
+       },
+       "var_name": "w",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "w"
+        },
+        "key": "cS"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "loc",
+     "l2_n",
+     {
+      "__term__": {
+       "type": "Count",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "loc"
+        },
+        "edge_type": "in_locale",
+        "any_type": false
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "loc",
+     "l2_loc_done",
+     {
+      "__term__": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "l2_pair",
+   "comment": "THE PAIRING IS THE GRAPH'S DECISION, NOT THE ADAPTER'S. A three-pattern JOIN -- the test frame's compares_to reference, the test frame's locales, the reference frame's locales -- closed by Eq on the `pos` the adapter supplied as WORLD LAYOUT (the same class of mechanical ingest as the cone triple itself). The adapter draws NO cross-frame locale edge; this rule mints the locale_pairs edge from position data. WHAT THIS ASSUMES, DECLARED: the two frames are SPATIALLY REGISTERED at LOCALE grain -- strictly stronger than T3/L1's frame-level compares_to, and stated as a BOUND in VISION_LIGHTING_L2_PREREG.md sec 1. WHAT IT DOES NOT ASSUME: which surface is which MATERIAL. Identity correspondence is exactly what l2_recognize has to decide, and nothing here supplies it. The l2_paired guard makes the mint idempotent so run_rules converges (a repeated add_edge would not). Flag-gated, OFF by default (sec 9).",
+   "match": [
+    [
+     "frame",
+     "compares_to",
+     "ref"
+    ],
+    [
+     "frame",
+     "has_locale",
+     "loc"
+    ],
+    [
+     "ref",
+     "has_locale",
+     "rloc"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "MaxOver",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "LightingL2Params"
+       },
+       "var_name": "lp",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "lp"
+        },
+        "key": "lighting_l2"
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "loc"
+       },
+       "key": "l2_paired"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "loc"
+       },
+       "key": "l2_loc_done"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "rloc"
+       },
+       "key": "l2_loc_done"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "loc"
+       },
+       "key": "pos"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "rloc"
+       },
+       "key": "pos"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_edge",
+     "loc",
+     "locale_pairs",
+     "rloc"
+    ],
+    [
+     "set_attr",
+     "loc",
+     "l2_raL",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "rloc"
+       },
+       "key": "l2_aL"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "loc",
+     "l2_raM",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "rloc"
+       },
+       "key": "l2_aM"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "loc",
+     "l2_raS",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "rloc"
+       },
+       "key": "l2_aS"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "loc",
+     "l2_rmL",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "rloc"
+       },
+       "key": "l2_mL"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "loc",
+     "l2_rmM",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "rloc"
+       },
+       "key": "l2_mM"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "loc",
+     "l2_rmS",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "rloc"
+       },
+       "key": "l2_mS"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "loc",
+     "l2_paired",
+     {
+      "__term__": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "l2_slowvar",
+   "comment": "DISCOVERS, WITHOUT ANY SURFACE CORRESPONDENCE, whether the illuminant field is SLOWLY VARYING at this locale: the locale's own illuminant estimate must agree with EVERY spatially adjacent locale's to within one lattice step of rendered displacement, plus the two half-step roundings the two anchors carry. Quantification is Not(Exists a neighbour that violates it on any channel), so it is a genuine 'for all neighbours'. IT IS REPORTED, NOT USED AS A GATE, AND THAT IS A MEASURED DECISION TAKEN BEFORE THE CONFIRMATORY RUN, NOT A CONVENIENCE (see VISION_LIGHTING_L2_PREREG.md, AMENDMENT 1). Its envelope is WORST-CASE over the locale -- it bounds the displacement of the LARGEST prototype the locale could contain (p <= ra) -- whereas l2_recognize measures the displacement of the ACTUAL surface against the ACTUAL candidate. So the clause is STRICTLY MORE CONSERVATIVE than the exact test it would precede, and a necessary-condition pre-filter that is TIGHTER than the exact test it precedes does not filter -- it discards rows the exact test correctly accepts (measured: it admits 4/12 locales where the verdict is 12/12 correct at rho=1.010). Using it as a gate would buy nothing and cost recall, so it ships as the DISCOVERY it is: a non-circular, per-locale statement about the FIELD, readable alongside the recognition it does not gate. Flag-gated, OFF by default (sec 9).",
+   "match": [
+    [
+     "frame",
+     "has_locale",
+     "loc"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "MaxOver",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "LightingL2Params"
+       },
+       "var_name": "lp",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "lp"
+        },
+        "key": "lighting_l2"
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "loc"
+       },
+       "key": "l2_slowvar"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "loc"
+       },
+       "key": "l2_paired"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "loc"
+        },
+        "edge_type": "locale_adj",
+        "any_type": false
+       },
+       "var_name": "q",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Gt",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "q"
+           },
+           "key": "l2_paired"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0.5
+          }
+         },
+         {
+          "type": "Not",
+          "arg": {
+           "type": "And",
+           "items": [
+            {
+             "type": "Lte",
+             "a": {
+              "type": "Abs",
+              "arg": {
+               "type": "Minus",
+               "a": {
+                "type": "Times",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "loc"
+                  },
+                  "key": "l2_aL"
+                 },
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "q"
+                  },
+                  "key": "l2_raL"
+                 }
+                ]
+               },
+               "b": {
+                "type": "Times",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "loc"
+                  },
+                  "key": "l2_raL"
+                 },
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "q"
+                  },
+                  "key": "l2_aL"
+                 }
+                ]
+               }
+              }
+             },
+             "b": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Times",
+                "items": [
+                 {
+                  "type": "Lit",
+                  "value": 1.0
+                 },
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "q"
+                  },
+                  "key": "l2_raL"
+                 }
+                ]
+               },
+               {
+                "type": "Times",
+                "items": [
+                 {
+                  "type": "Lit",
+                  "value": 0.5
+                 },
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "q"
+                  },
+                  "key": "l2_raL"
+                 }
+                ]
+               },
+               {
+                "type": "Times",
+                "items": [
+                 {
+                  "type": "Lit",
+                  "value": 0.5
+                 },
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "loc"
+                  },
+                  "key": "l2_raL"
+                 }
+                ]
+               }
+              ]
+             }
+            },
+            {
+             "type": "Lte",
+             "a": {
+              "type": "Abs",
+              "arg": {
+               "type": "Minus",
+               "a": {
+                "type": "Times",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "loc"
+                  },
+                  "key": "l2_aM"
+                 },
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "q"
+                  },
+                  "key": "l2_raM"
+                 }
+                ]
+               },
+               "b": {
+                "type": "Times",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "loc"
+                  },
+                  "key": "l2_raM"
+                 },
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "q"
+                  },
+                  "key": "l2_aM"
+                 }
+                ]
+               }
+              }
+             },
+             "b": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Times",
+                "items": [
+                 {
+                  "type": "Lit",
+                  "value": 1.0
+                 },
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "q"
+                  },
+                  "key": "l2_raM"
+                 }
+                ]
+               },
+               {
+                "type": "Times",
+                "items": [
+                 {
+                  "type": "Lit",
+                  "value": 0.5
+                 },
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "q"
+                  },
+                  "key": "l2_raM"
+                 }
+                ]
+               },
+               {
+                "type": "Times",
+                "items": [
+                 {
+                  "type": "Lit",
+                  "value": 0.5
+                 },
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "loc"
+                  },
+                  "key": "l2_raM"
+                 }
+                ]
+               }
+              ]
+             }
+            },
+            {
+             "type": "Lte",
+             "a": {
+              "type": "Abs",
+              "arg": {
+               "type": "Minus",
+               "a": {
+                "type": "Times",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "loc"
+                  },
+                  "key": "l2_aS"
+                 },
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "q"
+                  },
+                  "key": "l2_raS"
+                 }
+                ]
+               },
+               "b": {
+                "type": "Times",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "loc"
+                  },
+                  "key": "l2_raS"
+                 },
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "q"
+                  },
+                  "key": "l2_aS"
+                 }
+                ]
+               }
+              }
+             },
+             "b": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Times",
+                "items": [
+                 {
+                  "type": "Lit",
+                  "value": 1.0
+                 },
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "q"
+                  },
+                  "key": "l2_raS"
+                 }
+                ]
+               },
+               {
+                "type": "Times",
+                "items": [
+                 {
+                  "type": "Lit",
+                  "value": 0.5
+                 },
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "q"
+                  },
+                  "key": "l2_raS"
+                 }
+                ]
+               },
+               {
+                "type": "Times",
+                "items": [
+                 {
+                  "type": "Lit",
+                  "value": 0.5
+                 },
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "loc"
+                  },
+                  "key": "l2_raS"
+                 }
+                ]
+               }
+              ]
+             }
+            }
+           ]
+          }
+         }
+        ]
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "loc",
+     "l2_slowvar",
+     {
+      "__term__": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "l2_recognize",
+   "comment": "THE SPATIALLY-VARYING LIGHTING INVARIANT. A surface is recognized iff (a) its locale has been PAIRED with its reference counterpart and (b) the best candidate in the reference frame's held codebook, RENDERED at the LOCAL illuminant estimate ghat_loc = a_loc/pa_loc, lies within ONE LATTICE STEP of the observation on every channel. The illuminant FIELD cancels locally; what it leaves fixed is the invariant. l2_ncand RECORDS THE NUMBER OF CANDIDATES INSIDE THE BOUND. That is not decoration: rung L1b measured that a landed rung's bound never bound -- two or more candidates sat inside it in 63/63 of its headline regime -- and it was INVISIBLE because only the winner's residual had been reported. Counting the admissible set makes this rung's bound auditable from its own results, and makes the silent-Argmin hazard reportable rather than latent. THE BOUND IS NOT TUNED AND NOT NEW: it is L1's ONE LATTICE STEP, inherited unchanged, and it holds at locale grain because the locale contains its own centre. MinOver carries an explicit NO_CANDIDATE default so an EMPTY codebook REFUSES rather than silently admitting (sec 1.1). Flag-gated, OFF by default (sec 9).",
+   "match": [
+    [
+     "frame",
+     "has_surface",
+     "R"
+    ],
+    [
+     "R",
+     "sits_in",
+     "loc"
+    ],
+    [
+     "frame",
+     "compares_to",
+     "ref"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "MaxOver",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "LightingL2Params"
+       },
+       "var_name": "lp",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "lp"
+        },
+        "key": "lighting_l2"
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "loc"
+       },
+       "key": "l2_paired"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lte",
+      "a": {
+       "type": "MinOver",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "ref"
+        },
+        "edge_type": "has_identity",
+        "any_type": false
+       },
+       "var_name": "cand",
+       "value": {
+        "type": "Max",
+        "items": [
+         {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "R"
+            },
+            "key": "cL"
+           },
+           "b": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "cand"
+              },
+              "key": "pL"
+             },
+             {
+              "type": "Div",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "loc"
+               },
+               "key": "l2_aL"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "loc"
+               },
+               "key": "l2_raL"
+              }
+             }
+            ]
+           }
+          }
+         },
+         {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "R"
+            },
+            "key": "cM"
+           },
+           "b": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "cand"
+              },
+              "key": "pM"
+             },
+             {
+              "type": "Div",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "loc"
+               },
+               "key": "l2_aM"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "loc"
+               },
+               "key": "l2_raM"
+              }
+             }
+            ]
+           }
+          }
+         },
+         {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "R"
+            },
+            "key": "cS"
+           },
+           "b": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "cand"
+              },
+              "key": "pS"
+             },
+             {
+              "type": "Div",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "loc"
+               },
+               "key": "l2_aS"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "loc"
+               },
+               "key": "l2_raS"
+              }
+             }
+            ]
+           }
+          }
+         }
+        ]
+       },
+       "default": {
+        "type": "Lit",
+        "value": 1000000000.0
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "R",
+     "l2_recognized",
+     {
+      "__term__": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "R",
+     "l2_id",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Argmin",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "ref"
+         },
+         "edge_type": "has_identity",
+         "any_type": false
+        },
+        "var_name": "cand",
+        "value": {
+         "type": "Max",
+         "items": [
+          {
+           "type": "Abs",
+           "arg": {
+            "type": "Minus",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "cL"
+            },
+            "b": {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "cand"
+               },
+               "key": "pL"
+              },
+              {
+               "type": "Div",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "loc"
+                },
+                "key": "l2_aL"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "loc"
+                },
+                "key": "l2_raL"
+               }
+              }
+             ]
+            }
+           }
+          },
+          {
+           "type": "Abs",
+           "arg": {
+            "type": "Minus",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "cM"
+            },
+            "b": {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "cand"
+               },
+               "key": "pM"
+              },
+              {
+               "type": "Div",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "loc"
+                },
+                "key": "l2_aM"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "loc"
+                },
+                "key": "l2_raM"
+               }
+              }
+             ]
+            }
+           }
+          },
+          {
+           "type": "Abs",
+           "arg": {
+            "type": "Minus",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "cS"
+            },
+            "b": {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "cand"
+               },
+               "key": "pS"
+              },
+              {
+               "type": "Div",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "loc"
+                },
+                "key": "l2_aS"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "loc"
+                },
+                "key": "l2_raS"
+               }
+              }
+             ]
+            }
+           }
+          }
+         ]
+        },
+        "default": {
+         "type": "Lit",
+         "value": 0.0
+        }
+       },
+       "key": "sid_key"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "R",
+     "l2_resid",
+     {
+      "__term__": {
+       "type": "MinOver",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "ref"
+        },
+        "edge_type": "has_identity",
+        "any_type": false
+       },
+       "var_name": "cand",
+       "value": {
+        "type": "Max",
+        "items": [
+         {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "R"
+            },
+            "key": "cL"
+           },
+           "b": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "cand"
+              },
+              "key": "pL"
+             },
+             {
+              "type": "Div",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "loc"
+               },
+               "key": "l2_aL"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "loc"
+               },
+               "key": "l2_raL"
+              }
+             }
+            ]
+           }
+          }
+         },
+         {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "R"
+            },
+            "key": "cM"
+           },
+           "b": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "cand"
+              },
+              "key": "pM"
+             },
+             {
+              "type": "Div",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "loc"
+               },
+               "key": "l2_aM"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "loc"
+               },
+               "key": "l2_raM"
+              }
+             }
+            ]
+           }
+          }
+         },
+         {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "R"
+            },
+            "key": "cS"
+           },
+           "b": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "cand"
+              },
+              "key": "pS"
+             },
+             {
+              "type": "Div",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "loc"
+               },
+               "key": "l2_aS"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "loc"
+               },
+               "key": "l2_raS"
+              }
+             }
+            ]
+           }
+          }
+         }
+        ]
+       },
+       "default": {
+        "type": "Lit",
+        "value": 1000000000.0
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "R",
+     "l2_ncand",
+     {
+      "__term__": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "ref"
+         },
+         "edge_type": "has_identity",
+         "any_type": false
+        },
+        "var_name": "cand",
+        "predicate": {
+         "type": "Lte",
+         "a": {
+          "type": "Max",
+          "items": [
+           {
+            "type": "Abs",
+            "arg": {
+             "type": "Minus",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cL"
+             },
+             "b": {
+              "type": "Times",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "cand"
+                },
+                "key": "pL"
+               },
+               {
+                "type": "Div",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "loc"
+                 },
+                 "key": "l2_aL"
+                },
+                "b": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "loc"
+                 },
+                 "key": "l2_raL"
+                }
+               }
+              ]
+             }
+            }
+           },
+           {
+            "type": "Abs",
+            "arg": {
+             "type": "Minus",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cM"
+             },
+             "b": {
+              "type": "Times",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "cand"
+                },
+                "key": "pM"
+               },
+               {
+                "type": "Div",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "loc"
+                 },
+                 "key": "l2_aM"
+                },
+                "b": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "loc"
+                 },
+                 "key": "l2_raM"
+                }
+               }
+              ]
+             }
+            }
+           },
+           {
+            "type": "Abs",
+            "arg": {
+             "type": "Minus",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "R"
+              },
+              "key": "cS"
+             },
+             "b": {
+              "type": "Times",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "cand"
+                },
+                "key": "pS"
+               },
+               {
+                "type": "Div",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "loc"
+                 },
+                 "key": "l2_aS"
+                },
+                "b": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "loc"
+                 },
+                 "key": "l2_raS"
+                }
+               }
+              ]
+             }
+            }
+           }
+          ]
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1.0
+         }
+        }
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "R",
+     "l2_status",
+     {
+      "__term__": {
+       "type": "Lit",
+       "value": "l2_recognized"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "l2_refuse",
+   "comment": "Marks l2_status='l2_refused' for a surface whose locale was admitted but whose best rendered candidate exceeds the lattice-step bound. This exists so a REFUSAL IS A POSITIVE DATUM: sec 1.1's dead-arm lesson is that an absence is indistinguishable from an inert mechanism unless the mechanism can be shown to fire at all. With this rule the floors (noise, novel material, fast-varying fields) report l2_refused rather than merely leaving l2_recognized at its 0 init, so 'refused' and 'never ran' are distinguishable in the readback. It is the exact complement of l2_recognize's bound clause, so the two rules partition the surfaces whose locale was admitted. Flag-gated, OFF by default (sec 9).",
+   "match": [
+    [
+     "frame",
+     "has_surface",
+     "R"
+    ],
+    [
+     "R",
+     "sits_in",
+     "loc"
+    ],
+    [
+     "frame",
+     "compares_to",
+     "ref"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "MaxOver",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "LightingL2Params"
+       },
+       "var_name": "lp",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "lp"
+        },
+        "key": "lighting_l2"
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "loc"
+       },
+       "key": "l2_paired"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "R"
+       },
+       "key": "l2_recognized"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Lte",
+       "a": {
+        "type": "MinOver",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "ref"
+         },
+         "edge_type": "has_identity",
+         "any_type": false
+        },
+        "var_name": "cand",
+        "value": {
+         "type": "Max",
+         "items": [
+          {
+           "type": "Abs",
+           "arg": {
+            "type": "Minus",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "cL"
+            },
+            "b": {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "cand"
+               },
+               "key": "pL"
+              },
+              {
+               "type": "Div",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "loc"
+                },
+                "key": "l2_aL"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "loc"
+                },
+                "key": "l2_raL"
+               }
+              }
+             ]
+            }
+           }
+          },
+          {
+           "type": "Abs",
+           "arg": {
+            "type": "Minus",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "cM"
+            },
+            "b": {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "cand"
+               },
+               "key": "pM"
+              },
+              {
+               "type": "Div",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "loc"
+                },
+                "key": "l2_aM"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "loc"
+                },
+                "key": "l2_raM"
+               }
+              }
+             ]
+            }
+           }
+          },
+          {
+           "type": "Abs",
+           "arg": {
+            "type": "Minus",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "cS"
+            },
+            "b": {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "cand"
+               },
+               "key": "pS"
+              },
+              {
+               "type": "Div",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "loc"
+                },
+                "key": "l2_aS"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "loc"
+                },
+                "key": "l2_raS"
+               }
+              }
+             ]
+            }
+           }
+          }
+         ]
+        },
+        "default": {
+         "type": "Lit",
+         "value": 1000000000.0
+        }
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "R",
+     "l2_status",
+     {
+      "__term__": {
+       "type": "Lit",
+       "value": "l2_refused"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "R",
+     "l2_resid",
+     {
+      "__term__": {
+       "type": "MinOver",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "ref"
+        },
+        "edge_type": "has_identity",
+        "any_type": false
+       },
+       "var_name": "cand",
+       "value": {
+        "type": "Max",
+        "items": [
+         {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "R"
+            },
+            "key": "cL"
+           },
+           "b": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "cand"
+              },
+              "key": "pL"
+             },
+             {
+              "type": "Div",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "loc"
+               },
+               "key": "l2_aL"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "loc"
+               },
+               "key": "l2_raL"
+              }
+             }
+            ]
+           }
+          }
+         },
+         {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "R"
+            },
+            "key": "cM"
+           },
+           "b": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "cand"
+              },
+              "key": "pM"
+             },
+             {
+              "type": "Div",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "loc"
+               },
+               "key": "l2_aM"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "loc"
+               },
+               "key": "l2_raM"
+              }
+             }
+            ]
+           }
+          }
+         },
+         {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "R"
+            },
+            "key": "cS"
+           },
+           "b": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "cand"
+              },
+              "key": "pS"
+             },
+             {
+              "type": "Div",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "loc"
+               },
+               "key": "l2_aS"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "loc"
+               },
+               "key": "l2_raS"
+              }
+             }
+            ]
+           }
+          }
+         }
+        ]
+       },
+       "default": {
+        "type": "Lit",
+        "value": 1000000000.0
+       }
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "l2_recognize_globalanchor",
+   "comment": "THE ABLATION ARM: the spatial-ratio step REMOVED, and NOTHING ELSE CHANGED. Identical to l2_recognize term-for-term except that ghat is formed from the FRAME's GLOBAL anchor (l2f_a*) instead of the LOCALE's (l2_a*) -- the same codebook, the same render, the same L-infinity verdict, the same inherited ONE-LATTICE-STEP bound, the same Argmin. It writes its own l2g_* namespace and is ALWAYS computed when the flag is on, so the LOCAL-vs-GLOBAL contrast is read from ONE graph in ONE run: that is what makes 'the ratios are load-bearing' a MEASUREMENT (sec 13.2's max|on - off|) rather than two experiments compared by hand. It is gated by exactly the same thing l2_recognize is -- its own verdict against the same inherited bound -- so the ablation is the honest no-mechanism condition (sec 6), differing in the ANCHOR and in nothing else. AND IT MUST BE SHOWN ALIVE (sec 1.1 clause 4): under a UNIFORM gain the global anchor IS the right anchor, so this arm scores full marks there. An ablation arm that is merely dead scores a perfect collapse and means nothing. Flag-gated, OFF by default (sec 9).",
+   "match": [
+    [
+     "frame",
+     "has_surface",
+     "R"
+    ],
+    [
+     "frame",
+     "compares_to",
+     "ref"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "MaxOver",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "LightingL2Params"
+       },
+       "var_name": "lp",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "lp"
+        },
+        "key": "lighting_l2"
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "frame"
+       },
+       "key": "l2f_done"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ref"
+       },
+       "key": "l2f_done"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lte",
+      "a": {
+       "type": "MinOver",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "ref"
+        },
+        "edge_type": "has_identity",
+        "any_type": false
+       },
+       "var_name": "cand",
+       "value": {
+        "type": "Max",
+        "items": [
+         {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "R"
+            },
+            "key": "cL"
+           },
+           "b": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "cand"
+              },
+              "key": "pL"
+             },
+             {
+              "type": "Div",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "frame"
+               },
+               "key": "l2f_aL"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "ref"
+               },
+               "key": "l2f_aL"
+              }
+             }
+            ]
+           }
+          }
+         },
+         {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "R"
+            },
+            "key": "cM"
+           },
+           "b": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "cand"
+              },
+              "key": "pM"
+             },
+             {
+              "type": "Div",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "frame"
+               },
+               "key": "l2f_aM"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "ref"
+               },
+               "key": "l2f_aM"
+              }
+             }
+            ]
+           }
+          }
+         },
+         {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "R"
+            },
+            "key": "cS"
+           },
+           "b": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "cand"
+              },
+              "key": "pS"
+             },
+             {
+              "type": "Div",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "frame"
+               },
+               "key": "l2f_aS"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "ref"
+               },
+               "key": "l2f_aS"
+              }
+             }
+            ]
+           }
+          }
+         }
+        ]
+       },
+       "default": {
+        "type": "Lit",
+        "value": 1000000000.0
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "R",
+     "l2g_recognized",
+     {
+      "__term__": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "R",
+     "l2g_id",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Argmin",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "ref"
+         },
+         "edge_type": "has_identity",
+         "any_type": false
+        },
+        "var_name": "cand",
+        "value": {
+         "type": "Max",
+         "items": [
+          {
+           "type": "Abs",
+           "arg": {
+            "type": "Minus",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "cL"
+            },
+            "b": {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "cand"
+               },
+               "key": "pL"
+              },
+              {
+               "type": "Div",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "frame"
+                },
+                "key": "l2f_aL"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "ref"
+                },
+                "key": "l2f_aL"
+               }
+              }
+             ]
+            }
+           }
+          },
+          {
+           "type": "Abs",
+           "arg": {
+            "type": "Minus",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "cM"
+            },
+            "b": {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "cand"
+               },
+               "key": "pM"
+              },
+              {
+               "type": "Div",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "frame"
+                },
+                "key": "l2f_aM"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "ref"
+                },
+                "key": "l2f_aM"
+               }
+              }
+             ]
+            }
+           }
+          },
+          {
+           "type": "Abs",
+           "arg": {
+            "type": "Minus",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "cS"
+            },
+            "b": {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "cand"
+               },
+               "key": "pS"
+              },
+              {
+               "type": "Div",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "frame"
+                },
+                "key": "l2f_aS"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "ref"
+                },
+                "key": "l2f_aS"
+               }
+              }
+             ]
+            }
+           }
+          }
+         ]
+        },
+        "default": {
+         "type": "Lit",
+         "value": 0.0
+        }
+       },
+       "key": "sid_key"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "R",
+     "l2g_resid",
+     {
+      "__term__": {
+       "type": "MinOver",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "ref"
+        },
+        "edge_type": "has_identity",
+        "any_type": false
+       },
+       "var_name": "cand",
+       "value": {
+        "type": "Max",
+        "items": [
+         {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "R"
+            },
+            "key": "cL"
+           },
+           "b": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "cand"
+              },
+              "key": "pL"
+             },
+             {
+              "type": "Div",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "frame"
+               },
+               "key": "l2f_aL"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "ref"
+               },
+               "key": "l2f_aL"
+              }
+             }
+            ]
+           }
+          }
+         },
+         {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "R"
+            },
+            "key": "cM"
+           },
+           "b": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "cand"
+              },
+              "key": "pM"
+             },
+             {
+              "type": "Div",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "frame"
+               },
+               "key": "l2f_aM"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "ref"
+               },
+               "key": "l2f_aM"
+              }
+             }
+            ]
+           }
+          }
+         },
+         {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "R"
+            },
+            "key": "cS"
+           },
+           "b": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "cand"
+              },
+              "key": "pS"
+             },
+             {
+              "type": "Div",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "frame"
+               },
+               "key": "l2f_aS"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "ref"
+               },
+               "key": "l2f_aS"
+              }
+             }
+            ]
+           }
+          }
+         }
+        ]
+       },
+       "default": {
+        "type": "Lit",
+        "value": 1000000000.0
+       }
+      }
+     }
+    ]
+   ]
+  }
+ ]
+}

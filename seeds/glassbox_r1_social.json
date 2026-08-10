@@ -1,0 +1,67 @@
+{
+ "id": "glassbox_r1_social",
+ "version": "1.0.0",
+ "self_load_only": true,
+ "depends_on": [],
+ "area": "retina",
+ "description": "BLOCK 234000 -- GLASS-BOX SOCIETY R1: 'language is a coordination technology'. A grounded TRADE task decided ENTIRELY over the LANDED 204000 core_emotions value economy, exactly as HARVEST (212000) decided a commons dilemma. An agent's give/keep is NOT a hardcoded rule; it is the graph's OWN Argmax over two candidate Appraisals (GIVE, KEEP) by total_value (= happiness + fulfilment_value). Because fulfilment_value gates supergraph_contribution on w_supergraph>0, an honest agent (w>0) VALUES the partner receiving its needed resource and, once a partner's Promise binds reciprocation, its Argmax lands on GIVE (keeps the promise); a psychopath (w=0) values only individual_benefit and its Argmax KEEPS both (defects -> exploits the language layer). Cooperation/reciprocity FALLS OUT of the value system. LANGUAGE is the coordination technology: the world adapter publishes candidate payoffs conditioned on whether a Promise-to-me exists (full information), and a Promise exists only under comms (gb_state_promise professes, cheaply, under comms_on) -- so with comms OFF no promise binds, GIVE is a value-negative unilateral sacrifice, and the graph's Argmax KEEPS (no trade). DECEPTION is readable: gb_state_promise sets stated_give=1 for every comms agent (stating is cheap), while chosen_give is the Argmax (holding is decided by value) -- a psychopath's Promise.stated_give=1 with chosen_give=0 is the stated!=held gap (HARVEST's deception instrument, at the language layer). Integer-native (Argmax/Attr/Eq/Gt/And only; no Rust, no new Term). OFF by default: self_load_only, nothing depends_on it, every rule guards on HeldEmotionParams.enabled -- absent it every existing path is byte-identical. A synthetic MODEL of the coordination-technology thesis (Schelling/Ostrom lineage); the contribution is the glass-box attribution of trade to a named knob under a language-ablation control, not new social science.",
+ "microtheory": {
+  "name": "glassbox_r1_social",
+  "description": "Whether a cooperative trade network forms is set by (a) the presence of a grounded language layer (promises that bind reciprocation) and (b) the DISTRIBUTION of collective-value (w_supergraph) in the population. Language makes an otherwise value-negative give value-positive by binding reciprocation; the emotion-seed mix decides who honours the binding (honest) and who free-rides on it (psychopath)."
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [
+  {"provenance": "seed:glassbox_r1_social:candidate",
+   "src": {"type": "EmotionHub", "var": "hub"},
+   "edge_type": "has_candidate",
+   "tgt": {"type": "Appraisal", "var": "c"}},
+  {"provenance": "seed:glassbox_r1_social:decision",
+   "src": {"type": "EmotionHub", "var": "hub"},
+   "edge_type": "has_decision",
+   "tgt": {"type": "TradeDecision", "var": "dec"}}
+ ],
+ "rules": [
+  {"name": "gb_choose_give",
+   "area": "retina",
+   "order": 20,
+   "latency_class": "hard_realtime",
+   "comment": "THE HELD DECISION: the agent's give (1) or keep (0) is the graph's Argmax over its two candidate Appraisals by total_value (the SAME op as HARVEST hv_choose_harvest). total_value = happiness + fulfilment_value is computed by the core_emotions rules on each candidate from individual_benefit/individual_cost and (w-gated) supergraph_contribution the adapter published. Cooperation is not scripted -- it is the winner's give_level.",
+   "match": [
+    ["hub", "has_emotion_params", "ep"],
+    ["hub", "has_decision", "dec"]
+   ],
+   "where": {"type": "Eq",
+    "a": {"type": "Attr", "node": {"type": "Var", "name": "ep"}, "key": "enabled"},
+    "b": {"type": "Lit", "value": 1.0}},
+   "effects": [
+    ["set_attr", "dec", "chosen_give",
+     {"__term__": {"type": "Attr",
+       "node": {"type": "Argmax",
+         "source": {"type": "Neighbours",
+           "node": {"type": "Var", "name": "hub"},
+           "edge_type": "has_candidate",
+           "any_type": false},
+         "var_name": "c",
+         "value": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "total_value"}},
+       "key": "give_level"}}]
+   ]},
+
+  {"name": "gb_state_promise",
+   "area": "retina",
+   "order": 21,
+   "latency_class": "hard_realtime",
+   "comment": "THE COMMISSIVE SPEECH ACT (grounded): under communication every agent PROFESSES it will reciprocate -- it STATES it will give (stated_give=1). This is public cheap talk; the HELD intent is chosen_give (the Argmax). Their gap is the deception instrument: an agent whose Argmax KEEPS while it states GIVE is measurably deceptive. Stating is cheap and uniform across comms agents; only holding is decided by value. Mirrors HARVEST hv_state_intent exactly.",
+   "match": [
+    ["hub", "has_emotion_params", "ep"],
+    ["hub", "has_decision", "dec"]
+   ],
+   "where": {"type": "And", "items": [
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "ep"}, "key": "enabled"}, "b": {"type": "Lit", "value": 1.0}},
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "ep"}, "key": "comms_on"}, "b": {"type": "Lit", "value": 1.0}}
+   ]},
+   "effects": [
+    ["set_attr", "dec", "stated_give", {"__term__": {"type": "Lit", "value": 1.0}}]
+   ]}
+ ]
+}

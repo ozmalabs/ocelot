@@ -1,0 +1,118 @@
+{
+  "id": "table_formats_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "Apache_Iceberg",
+  "in_microtheory": "databases_and_storage",
+  "description": "Lakehouse table formats decomposed. Iceberg / Delta Lake / Hudi internals. Manifest files, snapshots, schema evolution, time travel, ACID via atomic commit, hidden partitioning. The mechanisms that bring database guarantees to Parquet-on-S3 data lakes.",
+  "sub_mechanisms": [
+    {
+      "name": "manifest_file",
+      "definition": "Iceberg/Delta: metadata file listing data files (Parquet) in a snapshot. Plus stats + partition info per file.",
+      "why": "Engines read manifest to know what files exist. No directory listing needed. Stats enable predicate pushdown at manifest level. Foundation of metadata-driven query planning.",
+      "category": "table_format_mechanism"
+    },
+    {
+      "name": "snapshot",
+      "definition": "Atomic point-in-time view of table. References specific manifest files. Each commit creates new snapshot.",
+      "why": "Time travel: query previous snapshots. ACID: atomic snapshot pointer swap. Cleanup: drop old snapshots when no longer needed. The transaction unit in lakehouse table formats.",
+      "category": "table_format_mechanism"
+    },
+    {
+      "name": "atomic_commit_pointer_swap",
+      "definition": "Commit = atomically swap 'current snapshot' pointer. In S3: rename file (S3 'rename' is copy + delete, requires CAS).",
+      "why": "How lakehouses get ACID without locking. New snapshot pre-staged; pointer swap is single atomic op. Failed swap → rollback. Concurrent writers detected via CAS failure.",
+      "category": "table_format_mechanism"
+    },
+    {
+      "name": "time_travel_queries",
+      "definition": "SELECT ... FROM table FOR VERSION AS OF snapshot_id. Reader picks specific manifest.",
+      "why": "Debug history, audit, restore. Cost: old snapshots' files retained (cleanup configurable). Used heavily for ML reproducibility, regulatory audit, data quality investigation.",
+      "category": "table_format_mechanism"
+    },
+    {
+      "name": "schema_evolution",
+      "definition": "Add/remove/rename columns without rewriting data. New schema in next manifest; readers reconcile.",
+      "why": "Tables outlive their schemas. Schema evolution = no rewrite required. Field IDs (Iceberg) or ordinal positions (Delta) link physical Parquet to logical column.",
+      "category": "table_format_mechanism"
+    },
+    {
+      "name": "iceberg_hidden_partitioning",
+      "definition": "Partition spec separate from column values. Engine derives partition automatically. Querying doesn't require knowing partition.",
+      "why": "Pre-Iceberg Hive tables: partition was a directory name; queries had to filter on partition column. Hidden partitioning: filter on event_time → engine derives day partition automatically. Cleaner semantics.",
+      "category": "table_format_mechanism"
+    },
+    {
+      "name": "delta_log_transaction",
+      "definition": "Delta Lake: JSON commit log in _delta_log/. Each commit appends one JSON file describing changes.",
+      "why": "Append-only commit log. Reader replays to reconstruct state. Periodic checkpoints (Parquet snapshots of state) bound replay length. Inspired by database WAL pattern.",
+      "category": "table_format_mechanism"
+    },
+    {
+      "name": "hudi_copy_on_write",
+      "definition": "Hudi CoW table: updates rewrite affected Parquet files. Snapshots reference different file versions.",
+      "why": "Simple to query: each snapshot is a set of Parquet files. Cost: rewrite cost on updates. Suited for low-update-frequency analytics.",
+      "category": "table_format_mechanism"
+    },
+    {
+      "name": "hudi_merge_on_read",
+      "definition": "Hudi MoR table: updates written to log files; merged with base Parquet at read time (or async compaction).",
+      "why": "Write-friendly: append to log file. Read penalty: merge log with base. Compaction periodically materialises merged Parquet. Streaming-ingest friendly.",
+      "category": "table_format_mechanism"
+    },
+    {
+      "name": "vacuum_old_files",
+      "definition": "Periodic cleanup: drop files no longer referenced by any retained snapshot. Configurable retention.",
+      "why": "Old snapshots' files accumulate. Without cleanup, storage grows unboundedly. Retention tradeoff: longer = more time-travel + more cost.",
+      "category": "table_format_mechanism"
+    },
+    {
+      "name": "engine_interoperability",
+      "definition": "Iceberg + Delta + Hudi readable/writable by multiple engines: Spark, Trino, Flink, Snowflake, Databricks, DuckDB.",
+      "why": "Format ≠ engine. Lakehouse premise: open format + plural engines. Iceberg has broadest engine support; Delta has best Spark integration; Hudi has best streaming.",
+      "category": "table_format_mechanism"
+    },
+    {
+      "name": "metadata_table_inspection",
+      "definition": "Special metadata tables expose snapshots, manifests, history, schema. SELECT * FROM table.snapshots.",
+      "why": "Operational + debug visibility. See what's in your table without engine-specific tools. Format-defined; works across engines.",
+      "category": "table_format_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "atomic_pointer_swap_provides_ACID_on_lake",
+      "if": ["table state is identified by single metadata pointer"],
+      "then": ["atomic pointer swap provides commit semantics"],
+      "why": "S3 + lake storage has no transactional API. Atomic rename (or CAS) of single file gives single-writer semantics. Failed swap = retry. The lakehouse trick: ACID without database server.",
+      "soundness_category": "referential_transparency"
+    },
+    {
+      "name": "snapshot_isolation_via_manifest_immutability",
+      "if": ["each snapshot references specific immutable manifests"],
+      "then": ["readers see consistent table state for snapshot's lifetime"],
+      "why": "Reader picks snapshot at query start; manifest files immutable; reader's view is consistent. Writers create new snapshots without affecting in-flight readers. Same MVCC pattern as relational DBs.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "time_travel_enables_reproducibility",
+      "if": ["snapshots are retained"],
+      "then": ["historical queries return same results"],
+      "why": "ML model trained on snapshot X — reproducible by querying snapshot X. Audit query 'as of last quarter' returns exactly what was visible then. Critical for regulated industries + reproducible ML.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "open_format_decouples_storage_from_compute",
+      "if": ["table format is open standard"],
+      "then": ["data + compute scale independently"],
+      "why": "Iceberg + Delta + Hudi: data sits on S3 (any size). Compute (Spark, Trino, etc.) attaches as needed. The Snowflake-style separation, but with no vendor lock-in. Foundation of modern lakehouse.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "MoR_better_for_streaming_CoW_for_analytics",
+      "if": ["workload has high write rate (streaming, CDC)"],
+      "then": ["MoR (Hudi-style) outperforms CoW"],
+      "why": "CoW rewrites Parquet on each update — expensive at high write rate. MoR appends to log file; merges at read. Compaction batches the merge. Hudi's design point.",
+      "soundness_category": "cost_equivalence"
+    }
+  ]
+}

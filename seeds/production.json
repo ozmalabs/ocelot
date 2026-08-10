@@ -1,0 +1,66 @@
+{
+  "id": "production",
+  "version": "1.0.0",
+  "depends_on": [
+    "semantic_roles"
+  ],
+  "description": "Production = the inverse of the comprehension stack (PROJECT vs LIFT): fix a deictic origin + voice, take an intended meaning (situation-model state / stance), realize events as clauses (inverse of semantic-role extraction, active/passive = role promotion), and apply a figure operator forward (displace L->F), with the voice histogram selecting which figure. Correct iff the round-trip reads back.",
+  "microtheory": {
+    "name": "production",
+    "description": "generation: structure -> text (inverse of reading)"
+  },
+  "nodes": [
+    {
+      "local_id": 1,
+      "type": "Concept",
+      "attrs": {
+        "name": "production",
+        "description": "The PROJECT arm of the projection/LIFT duality and the inverse of the whole comprehension stack: reading is LIFT (surface -> view-independent situation model); production is forward projection \u2014 structure run through a chosen viewpoint until it lands as surface text. Every faculty run in reverse: reading RECOVERS which displacement was applied and undoes it; production CHOOSES a displacement and APPLIES it forward, from a literal core out to the displaced surface."
+      }
+    },
+    {
+      "local_id": 2,
+      "type": "Concept",
+      "attrs": {
+        "name": "surface_realization",
+        "description": "The inverse of semantic-role extraction: a role-tuple -> surface order + inserted function words. The deictic ORIGIN (person/tense/POV) is the viewpoint fixed before projecting; the active/passive choice is just which role is promoted to the topical front under that viewpoint (agent-front=active; theme-front + by-phrase=passive)."
+      }
+    },
+    {
+      "local_id": 3,
+      "type": "Concept",
+      "attrs": {
+        "name": "figurative_production",
+        "description": "Apply a figure operator FORWARD \u2014 the inverse of figure-recovery: metaphor swaps in a cross-domain vehicle, simile leaves the +like/as bridge, hyperbole pushes a scalar up, understatement negates the opposite, irony asserts the context-opposed value. Each is a small displacement of a literal L into a figurative F."
+      }
+    },
+    {
+      "local_id": 4,
+      "type": "Concept",
+      "attrs": {
+        "name": "voice_as_generator",
+        "description": "Voice was defined as the OPERATOR that generates paths; in production it is RUN, not read. The voice figure-histogram is a generator: it weights which figure displacement fires (a dry voice weights understatement/irony, an exuberant one hyperbole/metaphor). The operator selects the displacement, the histogram weights it, the origin frames it, and the role-tuple supplies the literal payload it displaces \u2014 that is what makes voice a real generator."
+      }
+    },
+    {
+      "local_id": 5,
+      "type": "Principle",
+      "attrs": {
+        "name": "production_is_inverse_lift",
+        "head": "production",
+        "body": "production is forward projection (PROJECT) where comprehension is LIFT; each step is a Term/Rule already held, pointed the other way \u2014 viewpoint node, voice operator, role-promotion rule, figure kernel composed forward"
+      }
+    },
+    {
+      "local_id": 6,
+      "type": "Principle",
+      "attrs": {
+        "name": "production_round_trip",
+        "head": "production",
+        "body": "production is correct iff it is the clean INVERSE of reading, measured by reading: read back the produced text with the comprehension stack and check LIFT recovers the intended situation-model state AND re-identifies the voice from its figure-histogram; a mismatch IS the gradient (over-displaced / lost a role / wrong voice) to re-aim and re-project"
+      }
+    }
+  ],
+  "edges": [],
+  "rules": []
+}

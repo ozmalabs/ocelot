@@ -1,0 +1,782 @@
+{
+ "id": "composer_comprehension_find_graph",
+ "version": "1.0.0",
+ "depends_on": [
+  "composer_comprehension_graph"
+ ],
+ "description": "GRAPH-RESIDENT: _compose_comprehension_rule's 'find' and 'find+constrain' branches as TWO meta-rules (kept out of composer_comprehension_graph.json, whose pilot seed test pins exactly one Rule node). find_meta fires on a wants_find_rule trigger (2 minted rules, closed stopword set); find_c_meta fires on a wants_find_constrained_rule trigger (3 minted rules, POS/governance-driven target/constraint split, no stopword list) -- structurally mirrors the Python branches' priority (find+constrain is more specific and is dispatched via its OWN distinct trigger edge, not a flag on the plain find trigger, so both stay independently testable).",
+ "nodes": [
+  {
+   "local_id": 1,
+   "type": "Rule",
+   "attrs": {
+    "id": "compose_find_directive_graph",
+    "match": [
+     [
+      "agent",
+      "wants_find_rule",
+      "cr"
+     ]
+    ],
+    "where": {
+     "type": "Lt",
+     "a": {
+      "type": "Plus",
+      "items": [
+       {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "cr"
+        },
+        "key": "composed"
+       },
+       {
+        "type": "Lit",
+        "value": 0.0
+       }
+      ]
+     },
+     "b": {
+      "type": "Lit",
+      "value": 0.5
+     }
+    },
+    "effect": [
+     [
+      "add_node",
+      "rn0",
+      "Rule",
+      {
+       "minted": 0.0
+      }
+     ],
+     [
+      "set_attr",
+      "rn0",
+      "id",
+      {
+       "__term__": {
+        "type": "StringConcat",
+        "parts": [
+         {
+          "type": "Lit",
+          "value": "comprehend_find_directive_"
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "cr"
+          },
+          "key": "tag"
+         }
+        ]
+       }
+      }
+     ],
+     [
+      "set_attr",
+      "rn0",
+      "match",
+      [
+       [
+        "m",
+        "has_mention",
+        "dirmention"
+       ]
+      ]
+     ],
+     [
+      "set_attr",
+      "rn0",
+      "where",
+      {
+       "type": "And",
+       "items": [
+        {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "dirmention"
+          },
+          "key": "text"
+         },
+         "b": {
+          "type": "Lit",
+          "value": "find"
+         }
+        },
+        {
+         "type": "Not",
+         "arg": {
+          "type": "Exists",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "m"
+           },
+           "edge_type": "mint_goal"
+          },
+          "var_name": "_i",
+          "predicate": {
+           "type": "Lit",
+           "value": true
+          }
+         }
+        }
+       ]
+      }
+     ],
+     [
+      "set_attr",
+      "rn0",
+      "effect",
+      [
+       [
+        "add_node",
+        "goal",
+        "Goal",
+        {
+         "kind": "find",
+         "status": "active"
+        }
+       ],
+       [
+        "add_edge",
+        "m",
+        "mint_goal",
+        "goal"
+       ]
+      ]
+     ],
+     [
+      "set_rule_clause",
+      {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "rn0"
+        },
+        "key": "id"
+       }
+      },
+      "__mint__",
+      {
+       "__term__": {
+        "type": "Var",
+        "name": "rn0"
+       }
+      }
+     ],
+     [
+      "add_node",
+      "rn1",
+      "Rule",
+      {
+       "minted": 0.0
+      }
+     ],
+     [
+      "set_attr",
+      "rn1",
+      "id",
+      {
+       "__term__": {
+        "type": "StringConcat",
+        "parts": [
+         {
+          "type": "Lit",
+          "value": "bind_find_target_"
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "cr"
+          },
+          "key": "tag"
+         }
+        ]
+       }
+      }
+     ],
+     [
+      "set_attr",
+      "rn1",
+      "match",
+      [
+       [
+        "m",
+        "mint_goal",
+        "goal"
+       ],
+       [
+        "m",
+        "has_mention",
+        "cm"
+       ]
+      ]
+     ],
+     [
+      "set_attr",
+      "rn1",
+      "where",
+      {
+       "type": "And",
+       "items": [
+        {
+         "type": "Not",
+         "arg": {
+          "type": "In",
+          "member": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "cm"
+           },
+           "key": "text"
+          },
+          "container": {
+           "type": "Lit",
+           "value": [
+            "find",
+            "the",
+            "a",
+            "an",
+            "to",
+            "for",
+            "of",
+            "on",
+            "is",
+            "are",
+            "me",
+            "please",
+            "go",
+            "navigate",
+            "about",
+            "page",
+            "site",
+            "web"
+           ]
+          }
+         }
+        }
+       ]
+      }
+     ],
+     [
+      "set_attr",
+      "rn1",
+      "effect",
+      [
+       [
+        "add_edge",
+        "goal",
+        "wants",
+        "cm"
+       ]
+      ]
+     ],
+     [
+      "set_rule_clause",
+      {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "rn1"
+        },
+        "key": "id"
+       }
+      },
+      "__mint__",
+      {
+       "__term__": {
+        "type": "Var",
+        "name": "rn1"
+       }
+      }
+     ],
+     [
+      "set_attr",
+      "cr",
+      "composed",
+      1.0
+     ]
+    ]
+   }
+  },
+  {
+   "local_id": 2,
+   "type": "Rule",
+   "attrs": {
+    "id": "compose_find_directive_structured_graph",
+    "match": [
+     [
+      "agent",
+      "wants_find_constrained_rule",
+      "cr"
+     ]
+    ],
+    "where": {
+     "type": "Lt",
+     "a": {
+      "type": "Plus",
+      "items": [
+       {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "cr"
+        },
+        "key": "composed"
+       },
+       {
+        "type": "Lit",
+        "value": 0.0
+       }
+      ]
+     },
+     "b": {
+      "type": "Lit",
+      "value": 0.5
+     }
+    },
+    "effect": [
+     [
+      "add_node",
+      "rn0",
+      "Rule",
+      {
+       "minted": 0.0
+      }
+     ],
+     [
+      "set_attr",
+      "rn0",
+      "id",
+      {
+       "__term__": {
+        "type": "StringConcat",
+        "parts": [
+         {
+          "type": "Lit",
+          "value": "comprehend_find_directive_structured_"
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "cr"
+          },
+          "key": "tag"
+         }
+        ]
+       }
+      }
+     ],
+     [
+      "set_attr",
+      "rn0",
+      "match",
+      [
+       [
+        "m",
+        "has_mention",
+        "dirmention"
+       ]
+      ]
+     ],
+     [
+      "set_attr",
+      "rn0",
+      "where",
+      {
+       "type": "And",
+       "items": [
+        {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "dirmention"
+          },
+          "key": "text"
+         },
+         "b": {
+          "type": "Lit",
+          "value": "find"
+         }
+        },
+        {
+         "type": "Not",
+         "arg": {
+          "type": "Exists",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "m"
+           },
+           "edge_type": "mint_goal"
+          },
+          "var_name": "_i",
+          "predicate": {
+           "type": "Lit",
+           "value": true
+          }
+         }
+        }
+       ]
+      }
+     ],
+     [
+      "set_attr",
+      "rn0",
+      "effect",
+      [
+       [
+        "add_node",
+        "goal",
+        "Goal",
+        {
+         "kind": "find",
+         "status": "active"
+        }
+       ],
+       [
+        "add_edge",
+        "m",
+        "mint_goal",
+        "goal"
+       ]
+      ]
+     ],
+     [
+      "set_rule_clause",
+      {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "rn0"
+        },
+        "key": "id"
+       }
+      },
+      "__mint__",
+      {
+       "__term__": {
+        "type": "Var",
+        "name": "rn0"
+       }
+      }
+     ],
+     [
+      "add_node",
+      "rn1",
+      "Rule",
+      {
+       "minted": 0.0
+      }
+     ],
+     [
+      "set_attr",
+      "rn1",
+      "id",
+      {
+       "__term__": {
+        "type": "StringConcat",
+        "parts": [
+         {
+          "type": "Lit",
+          "value": "bind_find_target_structured_"
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "cr"
+          },
+          "key": "tag"
+         }
+        ]
+       }
+      }
+     ],
+     [
+      "set_attr",
+      "rn1",
+      "match",
+      [
+       [
+        "m",
+        "mint_goal",
+        "goal"
+       ],
+       [
+        "m",
+        "has_mention",
+        "cm"
+       ]
+      ]
+     ],
+     [
+      "set_attr",
+      "rn1",
+      "where",
+      {
+       "type": "And",
+       "items": [
+        {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "cm"
+          },
+          "key": "role"
+         },
+         "b": {
+          "type": "Lit",
+          "value": "content"
+         }
+        },
+        {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "cm"
+          },
+          "key": "pos"
+         },
+         "b": {
+          "type": "Lit",
+          "value": "noun"
+         }
+        },
+        {
+         "type": "Not",
+         "arg": {
+          "type": "In",
+          "member": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "cm"
+           },
+           "key": "gov_prep"
+          },
+          "container": {
+           "type": "Lit",
+           "value": [
+            "near",
+            "next to",
+            "beside",
+            "adjacent to",
+            "close to"
+           ]
+          }
+         }
+        }
+       ]
+      }
+     ],
+     [
+      "set_attr",
+      "rn1",
+      "effect",
+      [
+       [
+        "add_edge",
+        "goal",
+        "wants",
+        "cm"
+       ]
+      ]
+     ],
+     [
+      "set_rule_clause",
+      {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "rn1"
+        },
+        "key": "id"
+       }
+      },
+      "__mint__",
+      {
+       "__term__": {
+        "type": "Var",
+        "name": "rn1"
+       }
+      }
+     ],
+     [
+      "add_node",
+      "rn2",
+      "Rule",
+      {
+       "minted": 0.0
+      }
+     ],
+     [
+      "set_attr",
+      "rn2",
+      "id",
+      {
+       "__term__": {
+        "type": "StringConcat",
+        "parts": [
+         {
+          "type": "Lit",
+          "value": "bind_find_constraint_structured_"
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "cr"
+          },
+          "key": "tag"
+         }
+        ]
+       }
+      }
+     ],
+     [
+      "set_attr",
+      "rn2",
+      "match",
+      [
+       [
+        "m",
+        "mint_goal",
+        "goal"
+       ],
+       [
+        "m",
+        "has_mention",
+        "cm"
+       ]
+      ]
+     ],
+     [
+      "set_attr",
+      "rn2",
+      "where",
+      {
+       "type": "And",
+       "items": [
+        {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "cm"
+          },
+          "key": "role"
+         },
+         "b": {
+          "type": "Lit",
+          "value": "content"
+         }
+        },
+        {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "cm"
+          },
+          "key": "pos"
+         },
+         "b": {
+          "type": "Lit",
+          "value": "noun"
+         }
+        },
+        {
+         "type": "In",
+         "member": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "cm"
+          },
+          "key": "gov_prep"
+         },
+         "container": {
+          "type": "Lit",
+          "value": [
+           "near",
+           "next to",
+           "beside",
+           "adjacent to",
+           "close to"
+          ]
+         }
+        }
+       ]
+      }
+     ],
+     [
+      "set_attr",
+      "rn2",
+      "effect",
+      [
+       [
+        "add_edge",
+        "goal",
+        "constrained_by",
+        "cm"
+       ]
+      ]
+     ],
+     [
+      "set_rule_clause",
+      {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "rn2"
+        },
+        "key": "id"
+       }
+      },
+      "__mint__",
+      {
+       "__term__": {
+        "type": "Var",
+        "name": "rn2"
+       }
+      }
+     ],
+     [
+      "set_attr",
+      "cr",
+      "composed",
+      1.0
+     ]
+    ]
+   }
+  }
+ ],
+ "edges": [],
+ "productions": []
+}

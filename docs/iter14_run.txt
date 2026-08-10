@@ -1,0 +1,60 @@
+LibriSpeech dev-clean: 2703 utts total
+using 12 speakers x <= 24 utts = 288 utts; codebook K=48; landmark min_sep=3 smooth=2
+
+Perception + framing...
+  framed 288 utts (0s)
+  distinct words 1525  chance ~0.0007
+
+================================================================
+(1) WITHIN-SPEAKER full-DTW on continuous chunks of the SAME word
+    per-lever ablation; shuffle-controlled
+================================================================
+
+[BEFORE_corpusTP_raw]  (0s)
+  chunks/word 0.61  mean chunk frames 13.3  within-answerable 1466
+  WITHIN-speaker NN-acc = 0.025  (n=40, pool=350)  [shuffle 0.111]
+  intra/inter SEPARATION = +0.014  (intra DTW 5.473 < inter 5.550?  n_intra=1017, n_inter=1017)
+  SEPARATION shuffle ctrl = +0.055  WARN
+
+[AFTER_landmark_mean_raw]  (0s)
+  chunks/word 0.60  mean chunk frames 13.6  within-answerable 1186
+  WITHIN-speaker NN-acc = 0.132  (n=38, pool=350)  [shuffle 0.125]
+  intra/inter SEPARATION = +0.114  (intra DTW 3.620 < inter 4.087?  n_intra=625, n_inter=625)
+  SEPARATION shuffle ctrl = -0.033  OK collapses
+
+[AFTER_landmark_syllable_raw]  (0s)
+  chunks/word 0.81  mean chunk frames 10.1  within-answerable 2026
+  WITHIN-speaker NN-acc = 0.071  (n=28, pool=350)  [shuffle 0.000]
+  intra/inter SEPARATION = +0.080  (intra DTW 4.051 < inter 4.402?  n_intra=1337, n_inter=1337)
+  SEPARATION shuffle ctrl = -0.023  OK collapses
+
+[AFTER_landmark_syllable_rateinv]  (0s)
+  chunks/word 0.81  mean chunk frames 8.0  within-answerable 2026
+  WITHIN-speaker NN-acc = 0.071  (n=28, pool=350)  [shuffle 0.000]
+  intra/inter SEPARATION = +0.095  (intra DTW 3.395 < inter 3.754?  n_intra=1337, n_inter=1337)
+  SEPARATION shuffle ctrl = -0.018  OK collapses
+
+[ABLATE_corpusTP_rateinv]  (0s)
+  chunks/word 0.61  mean chunk frames 8.0  within-answerable 1466
+  WITHIN-speaker NN-acc = 0.025  (n=40, pool=350)  [shuffle 0.000]
+  intra/inter SEPARATION = +0.049  (intra DTW 4.035 < inter 4.244?  n_intra=1017, n_inter=1017)
+  SEPARATION shuffle ctrl = +0.078  WARN
+
+================================================================
+WITHIN-SPEAKER CONSISTENCY SUMMARY
+    (SEPARATION is the well-powered metric, ~1000 paired distances;
+     NN-acc is reported but n=28-45 queries -> noisy at this scale)
+================================================================
+  lever                               NN-acc  SEPARATION
+  BEFORE (corpus-TP, raw)              0.025      +0.014
+  + rate-inv repr only (ablation)      0.025      +0.049
+  landmark mean-gate (raw)             0.132      +0.114
+  landmark syllable-gate (raw)         0.071      +0.080
+  landmark syllable + rate-inv         0.071      +0.095
+
+  best AFTER separation = +0.114  (vs BEFORE +0.014)
+  best AFTER NN-acc     = 0.132  (vs BEFORE 0.025; FSDD isolated digits within ~0.78)
+
+  >>> within-speaker segmentation consistency: PARTIAL (real but does not close)
+
+Within-speaker did not close (>0.5) -> cross-speaker / recognition NOT run (would not be informative). Report the residual above.

@@ -1,0 +1,12 @@
+{
+  "dataset": "MBPP (Mostly Basic Python Problems), sanitized split",
+  "source_url": "https://raw.githubusercontent.com/google-research/google-research/master/mbpp/sanitized-mbpp.json",
+  "fetched": "2026-07-31",
+  "fetched_by": "arc2 Q0 orchestrator (vendored before agent launch so both Q0 tracks share one fixture)",
+  "license": "CC-BY-4.0 (per google-research/mbpp README)",
+  "citation": "Austin et al., 'Program Synthesis with Large Language Models', 2021, arXiv:2108.07732",
+  "n_tasks": 427,
+  "record_keys": ["code", "prompt", "source_file", "task_id", "test_imports", "test_list"],
+  "split_convention_note": "Canonical MBPP split is by task_id: 1-10 few-shot, 11-510 test, 511-600 validation, 601-974 train. The sanitized subset carries the same task_ids; the arc-2 prereg (Q0-B) fixes the exact train/test rule used here and the contamination gate enforces it as a LIST.",
+  "contamination_rule": "test-split prompt text and reference code must never enter any codebook entry, cue vocabulary, bigram table, or taught shape; reference `code` fields of TEST tasks are never read by any learning path — verdicts come from test_list asserts only."
+}

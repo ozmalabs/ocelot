@@ -1,0 +1,116 @@
+{
+ "id": "navigation_modes",
+ "version": "1.0.0",
+ "depends_on": [],
+ "description": "The CONCEPTS the agent holds to understand that navigation has several modes (frontier_seek / mover_avoid / pocket_escape) and to actively choose between them by shape (winner-take-all over situation-driven activations) + the NavMode competitor nodes. The CHOOSING rules (activation -> Argmax winner -> mode-gated select) live in grid_navigation.",
+ "nodes": [
+  {
+   "local_id": 0,
+   "type": "Concept",
+   "attrs": {
+    "name": "navigation_mode",
+    "definition": "a policy for choosing the avatar's next move, suited to one situation; navigation has several such modes and the agent regulates movement by selecting the one its situation fits",
+    "category": "navigation"
+   }
+  },
+  {
+   "local_id": 1,
+   "type": "Concept",
+   "attrs": {
+    "name": "navigation_mode_selection",
+    "definition": "actively choose between navigation modes: each competing mode has an activation the current situation drives, and the agent selects the WINNER by argmax to gate behaviour; a winner-take-all competition that regulates which movement policy is active",
+    "category": "navigation"
+   }
+  },
+  {
+   "local_id": 2,
+   "type": "Concept",
+   "attrs": {
+    "name": "frontier_seek",
+    "definition": "navigation mode (the default explorer): head for the nearest unexplored reachable cell; its activation is high while the avatar makes progress, covering new ground each move",
+    "category": "navigation"
+   }
+  },
+  {
+   "local_id": 3,
+   "type": "Concept",
+   "attrs": {
+    "name": "mover_avoid",
+    "definition": "navigation mode (the patient one): when the reachable frontier churns because objects are moving, do not chase the fresh cells the movers vacate; hold the committed goal until movement settles; its activation is high when frontier flux is high",
+    "category": "navigation"
+   }
+  },
+  {
+   "local_id": 4,
+   "type": "Concept",
+   "attrs": {
+    "name": "pocket_escape",
+    "definition": "navigation mode (the prober): when confined with no new coverage for several moves, stop seeking the unreachable frontier; retry blocked directions and push for the region edge to break out; its activation is high when the no-progress count is high",
+    "category": "navigation"
+   }
+  },
+  {
+   "local_id": 5,
+   "type": "Concept",
+   "attrs": {
+    "name": "coverage_progress",
+    "definition": "situation signal: how many new cells the avatar covers per move; low progress means confinement",
+    "category": "navigation"
+   }
+  },
+  {
+   "local_id": 6,
+   "type": "Concept",
+   "attrs": {
+    "name": "confinement",
+    "definition": "situation signal: consecutive moves with no new coverage; the avatar is walled into a pocket",
+    "category": "navigation"
+   }
+  },
+  {
+   "local_id": 7,
+   "type": "Concept",
+   "attrs": {
+    "name": "frontier_flux",
+    "definition": "situation signal: how much the reachable frontier changes move to move because objects are moving",
+    "category": "navigation"
+   }
+  },
+  {
+   "local_id": 8,
+   "type": "NavMode",
+   "attrs": {
+    "name": "frontier_seek",
+    "activation": 0.0
+   }
+  },
+  {
+   "local_id": 9,
+   "type": "NavMode",
+   "attrs": {
+    "name": "mover_avoid",
+    "activation": 0.0
+   }
+  },
+  {
+   "local_id": 10,
+   "type": "NavMode",
+   "attrs": {
+    "name": "pocket_escape",
+    "activation": 0.0
+   }
+  },
+  {
+   "type": "NavMode",
+   "attrs": {
+    "name": "feature_pursuit",
+    "activation": 0.0
+   },
+   "local_id": 11
+  }
+ ],
+ "edges": [],
+ "productions": [],
+ "concepts": [],
+ "rules": []
+}

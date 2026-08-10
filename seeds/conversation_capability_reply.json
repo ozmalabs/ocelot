@@ -1,0 +1,113 @@
+{
+  "id": "conversation_capability_reply",
+  "version": "1.0.0",
+  "depends_on": ["conversation_capability_route", "movement_affordances"],
+  "description": "Graph-native replies for polar capability questions. After conversation_capability_route mints Goal{kind:answer_capability|answer_imagine}, THESE rules read held HeldCapability accounts (movement_affordances seed) and mint an agent outbound Message — never the adapter's retired 'no body' floor. Unknown verbs file a capability gap (SelfConcern) and answer honestly that the agent cannot yet say.",
+  "nodes": [],
+  "edges": [],
+  "productions": [],
+  "rules": [
+    {
+      "name": "reply_held_capability",
+      "match": [
+        ["agent", "has_goal", "g"],
+        ["g", "comprehends", "m"],
+        ["agent", "received", "m"],
+        ["agent", "holds_capability", "cap"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "kind"}, "b": {"type": "Lit", "value": "answer_capability"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "cap"}, "key": "verb"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "comp_verb"}},
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "capability_replied"}, "b": {"type": "Lit", "value": 1.0}}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "m", "capability_replied", 1.0],
+        ["add_node", "reply", "Message", {
+          "from": "agent",
+          "text": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "cap"}, "key": "account"}}
+        }],
+        ["add_edge", "reply", "responds_to", "m"],
+        ["add_edge", "agent", "sent", "reply"]
+      ]
+    },
+    {
+      "name": "reply_imagine_capability",
+      "match": [
+        ["agent", "has_goal", "g"],
+        ["g", "comprehends", "m"],
+        ["agent", "received", "m"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "kind"}, "b": {"type": "Lit", "value": "answer_imagine"}},
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "imagine_replied"}, "b": {"type": "Lit", "value": 1.0}}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "m", "imagine_replied", 1.0],
+        ["add_node", "reply", "Message", {
+          "from": "agent",
+          "text": {"__term__": {"type": "StringConcat", "parts": [
+            {"type": "Lit", "value": "Imagining I had "},
+            {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "assumption"},
+            {"type": "Lit", "value": ": yes, I could "},
+            {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "verb"},
+            {"type": "Lit", "value": "."}
+          ]}}
+        }],
+        ["add_edge", "reply", "responds_to", "m"],
+        ["add_edge", "agent", "sent", "reply"]
+      ]
+    },
+    {
+      "name": "note_capability_gap",
+      "match": [
+        ["agent", "has_goal", "g"],
+        ["g", "comprehends", "m"],
+        ["agent", "received", "m"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "kind"}, "b": {"type": "Lit", "value": "answer_capability"}},
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "capability_replied"}, "b": {"type": "Lit", "value": 1.0}}},
+          {"type": "Not", "arg": {"type": "Exists", "source": {"type": "Filter",
+            "source": {"type": "Neighbours", "node": {"type": "Var", "name": "agent"}, "edge_type": "holds_capability"},
+            "var_name": "cap2",
+            "predicate": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "cap2"}, "key": "verb"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "comp_verb"}}},
+            "var_name": "cap2", "predicate": {"type": "Lit", "value": true}}},
+          {"type": "Not", "arg": {"type": "Exists", "source": {"type": "NodesOfType", "node_type": "SelfConcern"}, "var_name": "sc2",
+            "predicate": {"type": "And", "items": [
+              {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "sc2"}, "key": "kind"}, "b": {"type": "Lit", "value": "capability_gap"}},
+              {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "sc2"}, "key": "content"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "comp_verb"}}
+            ]}}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "m", "capability_replied", 1.0],
+        ["add_node", "sc", "SelfConcern", {
+          "status": "noted",
+          "source": "implicit",
+          "kind": "capability_gap",
+          "content": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "comp_verb"}}
+        }],
+        ["add_edge", "agent", "has_self_concern", "sc"],
+        ["add_edge", "sc", "about_message", "m"],
+        ["add_node", "reply", "Message", {
+          "from": "agent",
+          "text": {"__term__": {"type": "StringConcat", "parts": [
+            {"type": "Lit", "value": "I can't say yet whether I can "},
+            {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "comp_verb"},
+            {"type": "Lit", "value": "."}
+          ]}}
+        }],
+        ["add_edge", "reply", "responds_to", "m"],
+        ["add_edge", "agent", "sent", "reply"]
+      ]
+    }
+  ]
+}

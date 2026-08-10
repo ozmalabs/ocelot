@@ -1,0 +1,95 @@
+{
+ "id": "principal_axes",
+ "version": "1.0.0",
+ "depends_on": [],
+ "description": "STEP 2: discover the natural frame's AXES + dimensionality from the learned control displacement vectors. The clustering is the jabberwock-AUTHORED Rust primitive principal_axes(region) (deterministic, no fixpoint race); this seed keeps only the graph-native self-region derivation that tells the primitive which region is the controllable locus.",
+ "microtheory": {
+  "name": "principal_axes",
+  "description": "discover the minimal independent basis (axes + N) over the control displacement vectors via the authored primitive; the frame is inferred, not given"
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [],
+ "rules": [
+  {
+   "name": "mark_self",
+   "comment": "the self region = the one with max respond_votes; gates axis discovery",
+   "match": [
+    [
+     "sr",
+     "responds_via",
+     "cr"
+    ]
+   ],
+   "where": {
+    "type": "Lit",
+    "value": true
+   },
+   "effects": [
+    [
+     "set_attr",
+     "sr",
+     "is_self",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Eq",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "sr"
+           },
+           "key": "respond_votes"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        },
+        "b": {
+         "type": "MaxOver",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "Region"
+         },
+         "var_name": "rr",
+         "value": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "rr"
+            },
+            "key": "respond_votes"
+           },
+           {
+            "type": "Lit",
+            "value": 0.0
+           }
+          ]
+         }
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": 1.0
+       },
+       "other": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      }
+     }
+    ]
+   ]
+  }
+ ]
+}

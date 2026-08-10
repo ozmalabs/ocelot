@@ -1,0 +1,106 @@
+{
+  "id": "deblocking_filter_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "deblocking_filter",
+  "in_microtheory": "video_coding_theory",
+  "description": "The in-loop deblocking filter decomposed into its sub-mechanisms. The filter's job: smooth block boundaries where quantisation has created visible discontinuities, without blurring genuine edges. The trick: distinguish quantisation noise from real image structure by computing boundary strength from coding decisions (intra/inter, residual presence, MV difference) and modulating filter strength accordingly.",
+  "sub_mechanisms": [
+    {
+      "name": "boundary_strength",
+      "definition": "An integer (typically 0-2 for H.264 or 0-3 for H.265) computed per 4-sample boundary between two adjacent blocks. Bs = 0 means no filtering; higher Bs means stronger filtering.",
+      "why": "Coding-decision-derived signal: if either block is intra-coded, or has non-zero residual, or has MV difference > threshold, Bs is non-zero. These conditions ARE the conditions where quantisation creates artefacts. The filter doesn't need to detect artefacts — it knows when they exist.",
+      "category": "deblocking_mechanism"
+    },
+    {
+      "name": "quantisation_parameter_average",
+      "definition": "Local QP averaged across the boundary (mean of QP_left and QP_right, sometimes with offsets per slice type). Modulates filter strength alongside Bs.",
+      "why": "Higher QP means coarser quantisation means larger blocking artefacts. The filter scales its strength to QP so that low-QP (high-quality) streams aren't over-smoothed and high-QP (low-quality) streams get aggressive deblocking.",
+      "category": "deblocking_mechanism"
+    },
+    {
+      "name": "alpha_beta_thresholds",
+      "definition": "Two thresholds derived from QP: alpha controls whether filtering activates at all (intra-block jump must exceed alpha); beta controls smoothness check (intra-block variance must be below beta).",
+      "why": "alpha distinguishes real edges (large jump, should be preserved) from blocking artefacts (small jump, should be smoothed). beta distinguishes flat blocks (good filter candidates) from textured blocks (filtering would blur detail). Both thresholds are QP-scaled tables in the spec.",
+      "category": "deblocking_mechanism"
+    },
+    {
+      "name": "edge_detection_check",
+      "definition": "Per-boundary test: if |p0 - q0| < alpha AND |p1 - p0| < beta AND |q1 - q0| < beta, then this is a blocking artefact, not a real edge. Filter activates.",
+      "why": "The three conditions distinguish quantisation discontinuities (small magnitude, smooth on both sides) from genuine image edges (large magnitude or texture). False positives blur real edges; false negatives leave artefacts. The spec's threshold tables are tuned for ~5% false-positive rate.",
+      "category": "deblocking_mechanism"
+    },
+    {
+      "name": "filter_strength_selection",
+      "definition": "Choice between strong (4-tap or 5-tap) and weak (3-tap) filter based on second-order smoothness checks across the boundary. Strong filter smooths up to 3 samples on each side; weak filter modifies only 1-2.",
+      "why": "Strong filter on textured regions blurs detail; weak filter on flat regions leaves artefacts. Adaptive strength selection (smooth-check passes → strong; fails → weak) gets the best of both. The check is cheap (a few additions and comparisons) compared to the filtering itself.",
+      "category": "deblocking_mechanism"
+    },
+    {
+      "name": "luma_chroma_separation",
+      "definition": "Luma and chroma boundaries are filtered separately, with chroma using simpler/weaker filters (no boundary-strength variation, only deblocked when Bs ≥ 2).",
+      "why": "Chroma is subsampled (4:2:0) and the human visual system tolerates more chroma blurring than luma. Simpler chroma filter saves compute (~25% of total deblocking time) at no perceptual cost.",
+      "category": "deblocking_mechanism"
+    },
+    {
+      "name": "horizontal_then_vertical_pass",
+      "definition": "Two-pass filtering: first all vertical boundaries (left-right neighbours), then all horizontal boundaries (top-bottom neighbours). Each pass reads from the post-previous-pass buffer.",
+      "why": "Separable processing simplifies implementation: each pass is a 1D filter, vectorisable per row or column. Filter ordering matters at corners; standard order is vertical first by convention. The two passes commute well enough that ordering is mostly a perceptual nit.",
+      "category": "deblocking_mechanism"
+    },
+    {
+      "name": "clip_to_neighbourhood",
+      "definition": "After filter computation, each modified sample is clipped to within a tc-derived range of its original value, where tc is a per-Bs, per-QP threshold from the spec.",
+      "why": "Prevents the filter from over-smoothing — even at high Bs, no single sample can be modified by more than tc. Bounds the worst-case visual artefact when the boundary-strength heuristic is wrong. tc is small (typically 1-7); clipping is cheap.",
+      "category": "deblocking_mechanism"
+    },
+    {
+      "name": "in_loop_reference_consistency",
+      "definition": "The filter operates on the RECONSTRUCTION buffer that becomes the reference for subsequent inter prediction. Encoder and decoder must apply byte-identical filtering.",
+      "why": "If encoder and decoder disagree on filter output, the reference frames diverge, prediction breaks, and the bitstream is undecodable. This is referential transparency at codec scale — the filter is spec-defined exactly so all decoders produce the same bits.",
+      "category": "deblocking_mechanism"
+    },
+    {
+      "name": "deblocking_filter_disable_flag",
+      "definition": "A slice-level flag that lets the encoder turn deblocking off (or partially off via filter_offset / disable_filter_idc).",
+      "why": "On sharp content (screen capture, animation, low-noise live action), deblocking can do more harm than good. Letting the encoder disable it saves the per-frame compute and the small accuracy loss the filter introduces on already-clean content.",
+      "category": "deblocking_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "boundary_strength_derives_filter_decisions",
+      "if": ["a block boundary has Bs > 0"],
+      "then": ["filtering activates with strength proportional to Bs"],
+      "why": "Bs is computed from coding decisions (intra/inter, residual, MV difference) that correlate with quantisation-artefact presence. Coding-decision-derived signal beats sample-derived signal because it knows WHY the artefact exists.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "thresholds_separate_artefact_from_edge",
+      "if": ["alpha and beta thresholds are correctly tuned"],
+      "then": ["filter activates on quantisation discontinuities but not real edges"],
+      "why": "The (alpha, beta) pair encodes a heuristic about natural-image statistics: real edges have large magnitude jumps AND consistent gradients on both sides; quantisation artefacts have small jumps with smooth interiors. Threshold tables in the spec are tuned over decades of subjective testing.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "clipping_bounds_worst_case_misfilter",
+      "if": ["each filtered sample is clipped to its original value ± tc"],
+      "then": ["worst-case visual error from a bad filter decision is bounded by tc"],
+      "why": "The heuristics can be wrong; clipping ensures that even when they are, the damage is limited. tc is small enough that a misfiltered edge looks blurred by ~1 quantisation step at worst — invisible at normal viewing distance.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "in_loop_position_enforces_decoder_consistency",
+      "if": ["the deblocking filter is in the reconstruction loop"],
+      "then": ["encoder and decoder must produce byte-identical filtered samples"],
+      "why": "Subsequent inter prediction reads from the filtered reference. Any disagreement compounds across frames into total decoder drift. The spec defines filter behaviour exactly — no choice in the math.",
+      "soundness_category": "referential_transparency"
+    },
+    {
+      "name": "luma_chroma_asymmetry_matches_hvs",
+      "if": ["chroma is subsampled and the HVS tolerates more chroma blur"],
+      "then": ["simpler chroma filter is appropriate"],
+      "why": "Spending equal compute on chroma deblocking would burn cycles for invisible improvement. The asymmetric strategy matches the HVS asymmetry; it's a perceptual-budget allocation, not a quality compromise.",
+      "soundness_category": "cost_equivalence"
+    }
+  ]
+}

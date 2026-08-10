@@ -1,0 +1,118 @@
+{
+  "id": "political_philosophy_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "Rawls_veil_ignorance",
+  "in_microtheory": "philosophy",
+  "description": "Political philosophy decomposed. Social contract (Hobbes, Locke, Rousseau), liberalism (classical + modern), libertarianism (Nozick), communitarianism, Marxism, anarchism, democratic theory, justice (distributive, retributive), rights, freedom (negative + positive).",
+  "sub_mechanisms": [
+    {
+      "name": "Hobbes_social_contract",
+      "definition": "Leviathan 1651. State of nature: war of all against all. Surrender freedoms to sovereign for peace.",
+      "why": "Foundation modern political philosophy. Absolute sovereignty justified by security. Influence: realism in IR.",
+      "category": "political_phil_mechanism"
+    },
+    {
+      "name": "Locke_natural_rights",
+      "definition": "Two Treatises 1689. Life, liberty, property pre-political. Government legitimate by consent + protection of rights.",
+      "why": "Foundation liberalism + American founding. Property rights central. Influence: classical liberalism.",
+      "category": "political_phil_mechanism"
+    },
+    {
+      "name": "Rousseau_general_will",
+      "definition": "Social Contract 1762. Legitimate authority via general will. Direct democracy ideal.",
+      "why": "Foundation participatory democracy. Critic of representative. Influence: revolution + populism.",
+      "category": "political_phil_mechanism"
+    },
+    {
+      "name": "Mill_liberalism",
+      "definition": "On Liberty 1859. Harm principle: limit liberty only to prevent harm to others.",
+      "why": "Foundation modern liberalism. Tyranny of majority. Influence: free speech + privacy.",
+      "category": "political_phil_mechanism"
+    },
+    {
+      "name": "Nozick_libertarianism",
+      "definition": "Anarchy State + Utopia 1974. Minimal state (night-watchman). Taxation = forced labor.",
+      "why": "Foundation libertarianism. Rights as side-constraints. Counter to Rawls. Influence: free market politics.",
+      "category": "political_phil_mechanism"
+    },
+    {
+      "name": "communitarianism",
+      "definition": "Self situated in community + tradition. Sandel, MacIntyre, Walzer.",
+      "why": "Critique of liberal individualism. Influence: civic republicanism. Modern: contested neutrality.",
+      "category": "political_phil_mechanism"
+    },
+    {
+      "name": "Marx_historical_materialism",
+      "definition": "History driven by material/economic conditions. Class struggle. Capitalism alienates labor.",
+      "why": "Foundation Marxism. Influence: social science, political movements. Critical theory descendant.",
+      "category": "political_phil_mechanism"
+    },
+    {
+      "name": "anarchism_theory",
+      "definition": "No legitimate authority. Bakunin, Kropotkin (mutual aid). Modern: Chomsky.",
+      "why": "Radical anti-state. Different from libertarianism: also anti-capitalist (left anarchism). Foundation many movements.",
+      "category": "political_phil_mechanism"
+    },
+    {
+      "name": "freedom_negative_positive",
+      "definition": "Berlin: negative = freedom from interference. Positive = freedom to self-realise.",
+      "why": "Two Concepts of Liberty 1958. Foundation political philosophy. Cold war context but enduring.",
+      "category": "political_phil_mechanism"
+    },
+    {
+      "name": "deliberative_democracy",
+      "definition": "Habermas: legitimacy via public deliberation. Rational discourse central.",
+      "why": "Modern democratic theory. Foundation discourse ethics. Critique of mere voting. Influence: civic engagement.",
+      "category": "political_phil_mechanism"
+    },
+    {
+      "name": "global_justice",
+      "definition": "Pogge, Singer: justice across borders. Cosmopolitanism + nationalism.",
+      "why": "Modern issue. Foundation effective altruism. Tension: special obligations to compatriots vs universal.",
+      "category": "political_phil_mechanism"
+    },
+    {
+      "name": "intersectionality",
+      "definition": "Crenshaw: multiple identities intersect. Black women's experience not reducible to race + gender separately.",
+      "why": "Foundation modern feminism + critical theory. Influence: identity politics. Modern movements use.",
+      "category": "political_phil_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "social_contract_justifies_state",
+      "if": ["state legitimate"],
+      "then": ["justifies via consent to surrender some freedoms"],
+      "why": "Hobbes, Locke, Rousseau, Rawls all use. Cost: actual consent never given. Hypothetical contract more defensible.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "harm_principle_limits_state",
+      "if": ["activity harms only self"],
+      "then": ["state should not interfere (Mill)"],
+      "why": "Foundation liberalism. Critics: 'self-regarding' often affects others. Modern: drug policy, prostitution debates.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "Nozick_taxation_problematic",
+      "if": ["libertarian framework (Nozick)"],
+      "then": ["taxation beyond minimal state = injustice"],
+      "why": "Rights as side-constraints. Forced labor analogy. Counter to Rawls. Modern: libertarian politics. Critics: many.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "Rawls_vs_Nozick_distributive_justice",
+      "if": ["theory of distributive justice"],
+      "then": ["Rawls (egalitarian) vs Nozick (libertarian) defines spectrum"],
+      "why": "Foundation contemporary political philosophy. Two influential opposing frameworks. Modern: progressive vs libertarian politics.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "deliberation_legitimates_decisions",
+      "if": ["decision result of public deliberation"],
+      "then": ["legitimacy enhanced (Habermas)"],
+      "why": "Reasons exchanged; all affected participated. Beyond voting. Modern: epistemic democracy. Tension: scale of mass democracy.",
+      "soundness_category": "extensional_equivalence"
+    }
+  ]
+}

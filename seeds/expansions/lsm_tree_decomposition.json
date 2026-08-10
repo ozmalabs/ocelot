@@ -1,0 +1,118 @@
+{
+  "id": "lsm_tree_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "LSM_tree",
+  "in_microtheory": "databases_and_storage",
+  "description": "LSM-tree internals decomposed. RocksDB / LevelDB / Cassandra / HBase architecture. MemTable + immutable memtable + WAL + L0...Ln SSTables. Leveled vs tiered compaction. Bloom filters. Block cache. Read/write/space amplification trade-offs.",
+  "sub_mechanisms": [
+    {
+      "name": "active_memtable",
+      "definition": "In-memory writable structure. Concurrent skip list typical. Sorted; supports point + range queries.",
+      "why": "Fast in-memory writes. Skip list permits concurrent insertion without locks. Size-bounded; flushed to L0 SSTable when full.",
+      "category": "lsm_mechanism"
+    },
+    {
+      "name": "immutable_memtable",
+      "definition": "When active memtable fills, becomes immutable + new active created. Background thread flushes immutable to L0.",
+      "why": "Decouples write absorption from flush. Active memtable always accepts writes; flushes happen async. Pause-free behaviour for write path.",
+      "category": "lsm_mechanism"
+    },
+    {
+      "name": "L0_SSTables",
+      "definition": "Level 0: flush output. SSTables here may overlap in key ranges (each flush is independent).",
+      "why": "Direct memtable flush. Reads must check all L0 SSTables (overlap). Bloom filters per SSTable filter out misses. L0 → L1 compaction merges + sorts.",
+      "category": "lsm_mechanism"
+    },
+    {
+      "name": "leveled_compaction",
+      "definition": "Each level Ln has non-overlapping SSTables. Compacting Ln file picks overlapping Ln+1 files; merges into new Ln+1 files.",
+      "why": "Tight read amplification: each level contributes ≤ 1 SSTable to check. Cost: write amplification ~10x (each level's data rewritten). RocksDB default for read-heavy workloads.",
+      "category": "lsm_mechanism"
+    },
+    {
+      "name": "tiered_compaction",
+      "definition": "Each level has multiple SSTables (potentially overlapping). Compaction triggers when N similar-sized SSTables accumulate.",
+      "why": "Lower write amplification (~3x vs 10x). Cost: higher read amplification + space amplification. Used in Cassandra default, RocksDB for write-heavy workloads.",
+      "category": "lsm_mechanism"
+    },
+    {
+      "name": "compaction_priority",
+      "definition": "Decides which SSTables to compact next. Strategies: oldest first, smallest first, file age.",
+      "why": "Affects how compaction debt accumulates. Bad choice = compaction lag = ballooning read amp. RocksDB exposes pluggable strategies.",
+      "category": "lsm_mechanism"
+    },
+    {
+      "name": "tombstone",
+      "definition": "Deletion marker. DELETE inserts a tombstone; reads return 'not found'. Tombstones removed during compaction.",
+      "why": "LSM can't physically delete in-place. Tombstones propagate through compaction. Long-lived tombstones (range deletes) hurt performance — read paths must skip them.",
+      "category": "lsm_mechanism"
+    },
+    {
+      "name": "block_cache",
+      "definition": "In-memory cache of recently-read SSTable blocks (typically 4-64 KB). LRU + optional pinning.",
+      "why": "Hot data stays in memory. RocksDB's BlockBasedTable has block cache + index cache + filter cache. Hit rate dominates read performance.",
+      "category": "lsm_mechanism"
+    },
+    {
+      "name": "level_size_multiplier",
+      "definition": "Ln target size = L0 size × multiplier^n. Typically 10x. Caps tree depth + bounds read amp.",
+      "why": "Geometric level growth: 64 MB L0, 640 MB L1, 6.4 GB L2, etc. Caps levels logarithmically. RocksDB tunable; default 10.",
+      "category": "lsm_mechanism"
+    },
+    {
+      "name": "bloom_filter_per_sstable",
+      "definition": "Per-SSTable bloom filter. ~10 bits per key gives <1% false positive.",
+      "why": "Critical for read performance. Each SSTable lookup first checks bloom; skip if 'definitely not present'. Without, every read would touch every SSTable.",
+      "category": "lsm_mechanism"
+    },
+    {
+      "name": "merge_iterator",
+      "definition": "Read path: heap-merge iterators over memtable + each SSTable. Returns next key from any source.",
+      "why": "Range queries traverse all sources simultaneously. Heap ensures correct order. Latest version wins on duplicate keys.",
+      "category": "lsm_mechanism"
+    },
+    {
+      "name": "manifest_log",
+      "definition": "Persistent log of SSTable additions + deletions + level metadata. Recovers consistent state on restart.",
+      "why": "Tracks which SSTables exist. Crash safety: replay manifest to find current state. Without it, restart would need to scan all files.",
+      "category": "lsm_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "LSM_optimises_writes_at_read_cost",
+      "if": ["all writes are append + sequential flush"],
+      "then": ["write throughput maximised but read may check multiple files"],
+      "why": "Sequential writes are fast (no seeks). LSM never updates in place. Cost: reads check memtable + L0 + L1...Ln. Bloom filters + compaction keep read amp bounded.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "leveled_vs_tiered_trades_WA_for_RA_SA",
+      "if": ["the workload is write-heavy"],
+      "then": ["tiered compaction beats leveled (lower WA)"],
+      "why": "Tiered: write each level data fewer times. Leveled: each level data rewritten ~10x. Read penalty: tiered has more files per level → more bloom checks. Pick based on workload mix.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "bloom_filter_essential_for_LSM_reads",
+      "if": ["bloom filters per SSTable are absent or poorly tuned"],
+      "then": ["read amplification grows linearly with SSTable count"],
+      "why": "Without bloom: read must check every SSTable's index. With 10 SSTables, 10x cost. With bloom: 'not present' eliminates most before index lookup. Bloom is the difference between viable + unviable LSM.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "tombstone_lifetime_affects_query_performance",
+      "if": ["range deletes create many tombstones"],
+      "then": ["range queries pay cost to skip them"],
+      "why": "Each tombstone in the merge iterator must be traversed. Long-lived tombstones (haven't compacted away) accumulate. Cassandra's range delete is famous performance gotcha.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "level_size_multiplier_bounds_depth",
+      "if": ["each level is M times the previous"],
+      "then": ["tree depth is log_M(total_size / L0_size)"],
+      "why": "M=10, total=100GB, L0=64MB → ~3 levels. Geometric levels bound depth logarithmically. Read amp = O(levels) = O(log total_size). RocksDB default makes 10-level trees rare.",
+      "soundness_category": "algebraic_law"
+    }
+  ]
+}

@@ -1,0 +1,373 @@
+{
+  "id": "foveal_predictive_coding",
+  "version": "1.0.0",
+  "depends_on": [
+    "reflex_net",
+    "allocentric_world_view"
+  ],
+  "description": "Default-off predictive coding for a dense foveal tensor. A fixed, shared four-field retinal encoder compresses each 8x8 native-detail tile into a small population code. A graph-resident self-training decoder learns the inverse by the existing local surprise-collapse rule. AllocentricWorldViewCell nodes retain earned latent priors across saccades. The adapter reports prediction error but cannot allocate attention: graph rules spend a bounded settlement budget on the unique largest decoder residual, bootstrap an unpredicted grounded surface only when residual evidence is absent, refuse exact score ties, and hand only graph-selected examples to the decoder. Unknown pixels remain absent through an explicit prediction mask.",
+  "microtheory": {
+    "name": "foveal_predictive_coding",
+    "description": "allocentric latent prediction, residual-gated foveal settlement, and local decoder plasticity"
+  },
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "FovealPredictiveParams",
+      "attrs": {
+        "enabled": 0.0,
+        "tile_width": 8,
+        "tile_height": 8,
+        "latent_dim": 4,
+        "settlement_budget": 4,
+        "photon_scale": 255.0
+      }
+    },
+    {
+      "local_id": 1,
+      "type": "NetworkAssemblage",
+      "attrs": {
+        "apparatus_role": "foveal_tile_encoder",
+        "input_dim": 64,
+        "output_dim": 4,
+        "origin": "seeded_retinal_receptive_fields"
+      }
+    },
+    {
+      "local_id": 2,
+      "type": "AssemblageStep",
+      "attrs": {
+        "order": 0,
+        "dim_behavior": "transform"
+      }
+    },
+    {
+      "local_id": 3,
+      "type": "WeightTensor",
+      "attrs": {
+        "role": "W1",
+        "constructed_by": "retinal_quadrant_receptive_fields",
+        "data": [
+          [0.0625, 0.0625, 0.0625, 0.0625, 0.0, 0.0, 0.0, 0.0, 0.0625, 0.0625, 0.0625, 0.0625, 0.0, 0.0, 0.0, 0.0, 0.0625, 0.0625, 0.0625, 0.0625, 0.0, 0.0, 0.0, 0.0, 0.0625, 0.0625, 0.0625, 0.0625, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+          [0.0, 0.0, 0.0, 0.0, 0.0625, 0.0625, 0.0625, 0.0625, 0.0, 0.0, 0.0, 0.0, 0.0625, 0.0625, 0.0625, 0.0625, 0.0, 0.0, 0.0, 0.0, 0.0625, 0.0625, 0.0625, 0.0625, 0.0, 0.0, 0.0, 0.0, 0.0625, 0.0625, 0.0625, 0.0625, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+          [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0625, 0.0625, 0.0625, 0.0625, 0.0, 0.0, 0.0, 0.0, 0.0625, 0.0625, 0.0625, 0.0625, 0.0, 0.0, 0.0, 0.0, 0.0625, 0.0625, 0.0625, 0.0625, 0.0, 0.0, 0.0, 0.0, 0.0625, 0.0625, 0.0625, 0.0625, 0.0, 0.0, 0.0, 0.0],
+          [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0625, 0.0625, 0.0625, 0.0625, 0.0, 0.0, 0.0, 0.0, 0.0625, 0.0625, 0.0625, 0.0625, 0.0, 0.0, 0.0, 0.0, 0.0625, 0.0625, 0.0625, 0.0625, 0.0, 0.0, 0.0, 0.0, 0.0625, 0.0625, 0.0625, 0.0625]
+        ]
+      }
+    },
+    {
+      "local_id": 4,
+      "type": "WeightTensor",
+      "attrs": {
+        "role": "b1",
+        "data": [0.0, 0.0, 0.0, 0.0]
+      }
+    },
+    {
+      "local_id": 5,
+      "type": "WeightTensor",
+      "attrs": {
+        "role": "W2",
+        "data": [
+          [1.0, 0.0, 0.0, 0.0],
+          [0.0, 1.0, 0.0, 0.0],
+          [0.0, 0.0, 1.0, 0.0],
+          [0.0, 0.0, 0.0, 1.0]
+        ]
+      }
+    },
+    {
+      "local_id": 6,
+      "type": "WeightTensor",
+      "attrs": {
+        "role": "b2",
+        "data": [0.0, 0.0, 0.0, 0.0]
+      }
+    },
+    {
+      "local_id": 7,
+      "type": "NetworkAssemblage",
+      "attrs": {
+        "apparatus_role": "foveal_tile_decoder",
+        "input_dim": 4,
+        "output_dim": 64,
+        "origin": "self_training_predictive_decoder"
+      }
+    },
+    {
+      "local_id": 8,
+      "type": "AssemblageStep",
+      "attrs": {
+        "order": 0,
+        "dim_behavior": "transform"
+      }
+    },
+    {
+      "local_id": 9,
+      "type": "WeightTensor",
+      "attrs": {
+        "role": "W1",
+        "data": [
+          [1.0, 0.0, 0.0, 0.0],
+          [0.0, 1.0, 0.0, 0.0],
+          [0.0, 0.0, 1.0, 0.0],
+          [0.0, 0.0, 0.0, 1.0]
+        ]
+      }
+    },
+    {
+      "local_id": 10,
+      "type": "WeightTensor",
+      "attrs": {
+        "role": "b1",
+        "data": [0.0, 0.0, 0.0, 0.0]
+      }
+    },
+    {
+      "local_id": 11,
+      "type": "WeightTensor",
+      "attrs": {
+        "role": "W2",
+        "data": [
+          [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0],
+          [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0],
+          [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0],
+          [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0],
+          [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0],
+          [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0],
+          [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0],
+          [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0],
+          [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0],
+          [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0],
+          [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0],
+          [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0],
+          [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0],
+          [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0],
+          [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0],
+          [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0]
+        ]
+      }
+    },
+    {
+      "local_id": 12,
+      "type": "WeightTensor",
+      "attrs": {
+        "role": "b2",
+        "data": [
+          0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+          0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+          0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+          0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+          0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+          0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+          0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+          0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+        ]
+      }
+    },
+    {
+      "local_id": 13,
+      "type": "ReflexNet",
+      "attrs": {
+        "name": "foveal_predictive_decoder",
+        "status": "plastic_decoder",
+        "enabled": 0.0,
+        "eta": 0.08,
+        "converge_tol": 0.0001
+      }
+    }
+  ],
+  "edges": [
+    {
+      "src": {"role": "agent_root"},
+      "type": "has_foveal_predictive_params",
+      "tgt": {"local": 0},
+      "attrs": {}
+    },
+    {"src": {"local": 1}, "type": "has_step", "tgt": {"local": 2}, "attrs": {}},
+    {"src": {"local": 2}, "type": "has_weight", "tgt": {"local": 3}, "attrs": {}},
+    {"src": {"local": 2}, "type": "has_weight", "tgt": {"local": 4}, "attrs": {}},
+    {"src": {"local": 2}, "type": "has_weight", "tgt": {"local": 5}, "attrs": {}},
+    {"src": {"local": 2}, "type": "has_weight", "tgt": {"local": 6}, "attrs": {}},
+    {"src": {"local": 7}, "type": "has_step", "tgt": {"local": 8}, "attrs": {}},
+    {"src": {"local": 8}, "type": "has_weight", "tgt": {"local": 9}, "attrs": {}},
+    {"src": {"local": 8}, "type": "has_weight", "tgt": {"local": 10}, "attrs": {}},
+    {"src": {"local": 8}, "type": "has_weight", "tgt": {"local": 11}, "attrs": {}},
+    {"src": {"local": 8}, "type": "has_weight", "tgt": {"local": 12}, "attrs": {}},
+    {"src": {"local": 13}, "type": "net_assemblage", "tgt": {"local": 7}, "attrs": {}}
+  ],
+  "productions": [
+    {
+      "provenance": "seed:foveal_predictive_coding:agent-params",
+      "src": {"type": "Agent", "var": "agent"},
+      "edge_type": "has_foveal_predictive_params",
+      "tgt": {"type": "FovealPredictiveParams", "var": "params"}
+    },
+    {
+      "provenance": "seed:foveal_predictive_coding:agent-exposure",
+      "src": {"type": "Agent", "var": "agent"},
+      "edge_type": "has_foveal_exposure",
+      "tgt": {"type": "FovealExposure", "var": "exposure"}
+    },
+    {
+      "provenance": "seed:foveal_predictive_coding:exposure-assessment",
+      "src": {"type": "FovealExposure", "var": "exposure"},
+      "edge_type": "has_foveal_tile_assessment",
+      "tgt": {"type": "FovealTileAssessment", "var": "assessment"}
+    },
+    {
+      "provenance": "seed:foveal_predictive_coding:assessment-world",
+      "src": {"type": "FovealTileAssessment", "var": "assessment"},
+      "edge_type": "grounds_in_world_view",
+      "tgt": {"type": "AllocentricWorldViewCell", "var": "cell"}
+    }
+  ],
+  "rules": [
+    {
+      "name": "foveal_settle_largest_predicted_residual",
+      "area": "vision",
+      "order": 70,
+      "latency_class": "hard_realtime",
+      "comment": "Prediction error, not raw frame change, allocates the earned-detail path. ArgminUnique over negative residual is an exact-tie-refusing Argmax. Only a current, allocentrically grounded assessment can win.",
+      "match": [
+        ["agent", "has_foveal_predictive_params", "params"],
+        ["agent", "has_foveal_exposure", "exposure"],
+        ["exposure", "has_foveal_tile_assessment", "assessment"],
+        ["assessment", "grounds_in_world_view", "cell"],
+        ["assessment", "observes", "decoder"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "params"}, "key": "enabled"}, "b": {"type": "Lit", "value": 1.0}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "assessment"}, "key": "status"}, "b": {"type": "Lit", "value": "raw"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "assessment"}, "key": "prediction_present"}, "b": {"type": "Lit", "value": 1.0}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "assessment"}, "key": "source_epoch"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "exposure"}, "key": "source_epoch"}},
+          {"type": "Lt", "a": {"type": "Attr", "node": {"type": "Var", "name": "exposure"}, "key": "settled_count"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "params"}, "key": "settlement_budget"}},
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "cell"}, "key": "foveal_latent_epoch"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "exposure"}, "key": "source_epoch"}}},
+          {
+            "type": "Eq",
+            "a": {"type": "Var", "name": "assessment"},
+            "b": {
+              "type": "ArgminUnique",
+              "source": {
+                "type": "Filter",
+                "source": {"type": "Neighbours", "node": {"type": "Var", "name": "exposure"}, "edge_type": "has_foveal_tile_assessment"},
+                "var_name": "candidate",
+                "predicate": {
+                  "type": "And",
+                  "items": [
+                    {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "status"}, "b": {"type": "Lit", "value": "raw"}},
+                    {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "world_grounded"}, "b": {"type": "Lit", "value": 1.0}},
+                    {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "prediction_present"}, "b": {"type": "Lit", "value": 1.0}}
+                  ]
+                }
+              },
+              "var_name": "candidate",
+              "value": {
+                "type": "Minus",
+                "a": {"type": "Lit", "value": 0.0},
+                "b": {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "predicted_residual"}
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        ["set_attr", "cell", "foveal_latent", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "assessment"}, "key": "latent"}}],
+        ["set_attr", "cell", "foveal_latent_epoch", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "assessment"}, "key": "source_epoch"}}],
+        ["set_attr", "cell", "foveal_latent_confidence", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "assessment"}, "key": "world_confidence"}}],
+        ["set_attr", "assessment", "settlement_reason", "predicted_residual"],
+        ["set_attr", "assessment", "settlement_order", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "exposure"}, "key": "settled_count"}}],
+        ["net_collapse", "decoder", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "assessment"}, "key": "input_vec"}}, {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "assessment"}, "key": "target"}}, {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "decoder"}, "key": "eta"}}],
+        ["set_attr", "assessment", "status", "consumed"],
+        ["set_attr", "exposure", "settled_count", {"__term__": {"type": "Plus", "items": [{"type": "Attr", "node": {"type": "Var", "name": "exposure"}, "key": "settled_count"}, {"type": "Lit", "value": 1}]}}]
+      ]
+    },
+    {
+      "name": "foveal_bootstrap_unpredicted_surface",
+      "area": "vision",
+      "order": 71,
+      "latency_class": "hard_realtime",
+      "comment": "A grounded surface with no latent prior can earn one. This is explicitly a bootstrap path, not a fabricated prediction; it is considered only after the prediction-residual rule and uses measured within-tile information mass.",
+      "match": [
+        ["agent", "has_foveal_predictive_params", "params"],
+        ["agent", "has_foveal_exposure", "exposure"],
+        ["exposure", "has_foveal_tile_assessment", "assessment"],
+        ["assessment", "grounds_in_world_view", "cell"],
+        ["assessment", "observes", "decoder"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "params"}, "key": "enabled"}, "b": {"type": "Lit", "value": 1.0}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "assessment"}, "key": "status"}, "b": {"type": "Lit", "value": "raw"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "assessment"}, "key": "prediction_present"}, "b": {"type": "Lit", "value": 0.0}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "assessment"}, "key": "source_epoch"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "exposure"}, "key": "source_epoch"}},
+          {"type": "Lt", "a": {"type": "Attr", "node": {"type": "Var", "name": "exposure"}, "key": "settled_count"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "params"}, "key": "settlement_budget"}},
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "cell"}, "key": "foveal_latent_epoch"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "exposure"}, "key": "source_epoch"}}},
+          {
+            "type": "Eq",
+            "a": {"type": "Var", "name": "assessment"},
+            "b": {
+              "type": "ArgminUnique",
+              "source": {
+                "type": "Filter",
+                "source": {"type": "Neighbours", "node": {"type": "Var", "name": "exposure"}, "edge_type": "has_foveal_tile_assessment"},
+                "var_name": "candidate",
+                "predicate": {
+                  "type": "And",
+                  "items": [
+                    {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "status"}, "b": {"type": "Lit", "value": "raw"}},
+                    {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "world_grounded"}, "b": {"type": "Lit", "value": 1.0}},
+                    {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "prediction_present"}, "b": {"type": "Lit", "value": 0.0}}
+                  ]
+                }
+              },
+              "var_name": "candidate",
+              "value": {
+                "type": "Minus",
+                "a": {"type": "Lit", "value": 0.0},
+                "b": {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "information_mass"}
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        ["set_attr", "cell", "foveal_latent", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "assessment"}, "key": "latent"}}],
+        ["set_attr", "cell", "foveal_latent_epoch", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "assessment"}, "key": "source_epoch"}}],
+        ["set_attr", "cell", "foveal_latent_confidence", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "assessment"}, "key": "world_confidence"}}],
+        ["set_attr", "assessment", "settlement_reason", "unpredicted_surface"],
+        ["set_attr", "assessment", "settlement_order", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "exposure"}, "key": "settled_count"}}],
+        ["net_collapse", "decoder", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "assessment"}, "key": "input_vec"}}, {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "assessment"}, "key": "target"}}, {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "decoder"}, "key": "eta"}}],
+        ["set_attr", "assessment", "status", "consumed"],
+        ["set_attr", "exposure", "settled_count", {"__term__": {"type": "Plus", "items": [{"type": "Attr", "node": {"type": "Var", "name": "exposure"}, "key": "settled_count"}, {"type": "Lit", "value": 1}]}}]
+      ]
+    },
+    {
+      "name": "foveal_defer_duplicate_surface_tile",
+      "area": "vision",
+      "order": 72,
+      "latency_class": "hard_realtime",
+      "comment": "Once one tile has refreshed an allocentric support this exposure, retire other raw tiles grounded in the same support. This prevents a broad support from monopolising the bounded budget.",
+      "match": [
+        ["agent", "has_foveal_predictive_params", "params"],
+        ["agent", "has_foveal_exposure", "exposure"],
+        ["exposure", "has_foveal_tile_assessment", "assessment"],
+        ["assessment", "grounds_in_world_view", "cell"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "params"}, "key": "enabled"}, "b": {"type": "Lit", "value": 1.0}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "assessment"}, "key": "status"}, "b": {"type": "Lit", "value": "raw"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "cell"}, "key": "foveal_latent_epoch"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "exposure"}, "key": "source_epoch"}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "assessment", "status", "same_surface_deferred"]
+      ]
+    }
+  ]
+}

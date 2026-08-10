@@ -1,0 +1,55 @@
+{
+  "microtheory": {
+    "name": "music_theory",
+    "definition": "Formal organization of pitch + rhythm + harmony in music. Scales, modes, chord progressions, voice leading, counterpoint, form. The structural grammar underlying Western (and other) music traditions. Substrate analogue: hierarchical pattern grammar over substrate's pitch + timing representations.",
+    "category": "audio_domain",
+    "parent": "audio_music_foundation"
+  },
+  "concepts": [
+    {"name": "major_scale", "definition": "Whole-whole-half-whole-whole-whole-half intervals. C-D-E-F-G-A-B. Foundation of Western tonality. Substrate analogue: substrate's most-common pitch template.", "category": "scale"},
+    {"name": "minor_scale", "definition": "Whole-half-whole-whole-half-whole-whole. Natural, harmonic, melodic variants. Substrate analogue: substrate's secondary pitch template.", "category": "scale"},
+    {"name": "pentatonic_scale", "definition": "5 pitches per octave. Major (C-D-E-G-A) + minor variants. Foundation of many traditions; emotionally neutral. Substrate analogue: substrate's universal scale prior.", "category": "scale"},
+    {"name": "chromatic_scale", "definition": "All 12 semitones in succession. Substrate analogue: substrate's exhaustive pitch enumeration.", "category": "scale"},
+    {"name": "whole_tone_scale", "definition": "Six pitches in whole-tone steps. Impressionist + jazz. Substrate analogue: substrate's symmetric scale prior.", "category": "scale"},
+    {"name": "modes", "definition": "Ionian (major), Dorian, Phrygian, Lydian, Mixolydian, Aeolian (natural minor), Locrian. Different starting points of major scale. Substrate analogue: substrate's contextual scale prior.", "category": "scale"},
+
+    {"name": "interval_types", "definition": "Perfect (unison, 4th, 5th, octave), major/minor (2nd, 3rd, 6th, 7th), augmented, diminished. Substrate analogue: substrate's relational pitch concepts.", "category": "intervals"},
+    {"name": "consonant_intervals", "definition": "Octave + perfect 5th + perfect 4th + major/minor 3rd + 6th. Stable, resolved. Substrate analogue: substrate's low-frustration multi-pitch states.", "category": "intervals"},
+    {"name": "dissonant_intervals", "definition": "Major/minor 2nd + 7th + tritone (augmented 4th). Unstable, demanding resolution. Substrate analogue: substrate's high-frustration multi-pitch states.", "category": "intervals"},
+    {"name": "tritone", "definition": "Augmented 4th / diminished 5th. Six semitones. Highest tension. 'Devil in music' in medieval times. Substrate analogue: substrate's maximally-frustrated dyad.", "category": "intervals"},
+
+    {"name": "triad", "definition": "Three-note chord. Major (1-3-5), minor (1-♭3-5), augmented (1-3-#5), diminished (1-♭3-♭5). Substrate analogue: substrate's basic harmonic primitive.", "category": "chord"},
+    {"name": "seventh_chord", "definition": "Triad + 7th. Major7, minor7, dominant7, diminished7, half-diminished. Substrate analogue: substrate's extended harmonic state.", "category": "chord"},
+    {"name": "chord_inversion", "definition": "Same chord with different bass note. Root position vs first/second/third inversion. Substrate analogue: substrate's harmonic-class-with-bass-permutation.", "category": "chord"},
+    {"name": "voicing", "definition": "How chord pitches are distributed across registers + instruments. Substrate analogue: substrate's chord-state spatial pattern.", "category": "chord"},
+    {"name": "extended_chord", "definition": "9th, 11th, 13th chords. Adds color tones above the 7th. Jazz vocabulary. Substrate analogue: substrate's high-dimensional harmonic state.", "category": "chord"},
+
+    {"name": "tonic", "definition": "First scale degree; home pitch. Resolution point. Substrate analogue: substrate's central basin attractor.", "category": "function"},
+    {"name": "dominant", "definition": "Fifth scale degree. Drives toward tonic. V→I cadence. Substrate analogue: substrate's expectation-buildup state.", "category": "function"},
+    {"name": "subdominant", "definition": "Fourth scale degree. Pre-dominant — predecessor in IV→V→I. Substrate analogue: substrate's harmonic-prep state.", "category": "function"},
+    {"name": "leading_tone", "definition": "Seventh scale degree, half-step below tonic. Pulls strongly to tonic. Substrate analogue: substrate's maximum-tension-to-tonic state.", "category": "function"},
+    {"name": "tonal_hierarchy", "definition": "Krumhansl 1990. Within a key: tonic > dominant > mediant > others. Listener-learned. Substrate analogue: substrate's per-key probability distribution over pitch classes.", "category": "function"},
+
+    {"name": "cadence", "definition": "Harmonic + melodic formula closing a phrase. Authentic (V-I), plagal (IV-I), half (X-V), deceptive (V-vi). Substrate analogue: substrate's expected phrase-ending pattern.", "category": "harmony"},
+    {"name": "chord_progression", "definition": "Sequence of chords forming harmonic motion. I-IV-V-I; ii-V-I; pop progressions. Substrate analogue: substrate's harmonic-state-sequence template.", "category": "harmony"},
+    {"name": "voice_leading", "definition": "How individual lines move between chords. Smooth voice leading minimizes motion + avoids parallel 5ths/octaves. Substrate analogue: substrate's minimum-change harmonic transition.", "category": "harmony"},
+    {"name": "modulation", "definition": "Movement from one key to another. Through pivot chord, common tone, or direct. Substrate analogue: substrate's basin-attractor handoff.", "category": "harmony"},
+    {"name": "secondary_dominant", "definition": "V of X — temporary dominant pulling toward a non-tonic chord. Tonicization. Substrate analogue: substrate's local-attractor formation within a larger basin.", "category": "harmony"},
+
+    {"name": "counterpoint_species", "definition": "Fux 1725. 1st = note-against-note, 2nd = 2:1, 3rd = 4:1, 4th = syncopation, 5th = florid. Bach's mastery. Substrate analogue: substrate's parallel pattern grammar.", "category": "counterpoint"},
+    {"name": "fugue", "definition": "Imitative counterpoint. Subject + answer + countersubject + episodes + development. Substrate analogue: substrate's pattern-transformation grammar.", "category": "counterpoint"},
+    {"name": "invertible_counterpoint", "definition": "Lines that work whether one is above or below the other. Substrate analogue: substrate's voice-symmetric harmonic relations.", "category": "counterpoint"},
+
+    {"name": "form", "definition": "Large-scale structural organization. Binary, ternary, rondo, sonata, theme-and-variations. Substrate analogue: substrate's hierarchical temporal segmentation.", "category": "form"},
+    {"name": "sonata_form", "definition": "Exposition + development + recapitulation. Classical period dominant form. Substrate analogue: substrate's statement-conflict-resolution narrative structure.", "category": "form"},
+    {"name": "song_form", "definition": "Verse + chorus + bridge variants. AABA, ABABCB. Substrate analogue: substrate's repetition-with-variation grammar.", "category": "form"}
+  ],
+  "rules": [
+    {"name": "tonal_hierarchy_predicts_pitch_expectation", "head": "the substrate hears music in a key", "body": "the next pitch is more likely tonic + dominant than dissonant pitches. Krumhansl 1990 — substrate's key-conditioned pitch prior."},
+    {"name": "cadences_close_phrases_via_resolution", "head": "the substrate hears a chord progression building tension", "body": "an authentic cadence (V-I) resolves the tension; substrate's harmonic-completion mechanism. Half-cadences leave it open."},
+    {"name": "voice_leading_prefers_minimum_motion", "head": "the substrate processes a chord-to-chord transition", "body": "smooth voice leading (small intervals, common tones held) is perceived as natural; large jumps + parallel 5ths/octaves are perceived as primitive. Substrate's optimal transition is minimum-change."},
+    {"name": "consonance_dissonance_drives_harmonic_progression", "head": "the substrate hears a dissonant chord", "body": "it expects resolution to consonance. Resolution + delay create musical narrative. Substrate's harmonic expectation = consonance-seeking."},
+    {"name": "modulation_shifts_basin_to_new_key", "head": "the substrate's tonal-hierarchy basin matches one key", "body": "modulation moves it to a new basin via shared chord (pivot) or direct shift. Substrate's basin-attractor handoff under harmonic context change."},
+    {"name": "form_organizes_at_multiple_scales", "head": "the substrate processes an extended musical work", "body": "it tracks structure at note/beat/phrase/section/movement levels simultaneously. Hierarchical segmentation. Substrate's multi-scale temporal pattern recognition."}
+  ]
+}

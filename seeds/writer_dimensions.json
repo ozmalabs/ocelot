@@ -1,0 +1,294 @@
+{
+ "id": "writer_dimensions",
+ "version": "1.0.0",
+ "depends_on": [],
+ "description": "S3 (scratchpad/HANDWRITING_DESIGN.md, creator directive 2026-07-02 'the physical limits of the writer become implied dimensions'): the writer's body (slant/shear, curvature cap, size, tremor) never appears as a feature of any SINGLE stroke -- it IMPLIES a dimension because the residual it causes is COHERENT ACROSS EVERYTHING THAT HAND PRODUCES. Rung-2-at-the-writer-grain: pool the pose-read Transform nodes domains/ink_decode.py mints per recognized ink span (TransformDecode against the canonical-pose stroke codebook -- orientation/position/scale deltas, 'free from the decode') by writer; >=3 agreeing orient_delta values become a held WriterStyle quantum coordinate (wd_infer_writer). No new Rust -- rules over EXISTING Transform nodes, exactly like quanta_navigation.json's own rule-authoring conventions (Computed effects, add_node_if_absent for dedup races). The ink twin of the speech speaker dimension (VTLN precedent) and glyph_motor_world.write_with_hand's own nuisance model (rotation/shear/scale/jitter) is already the writer-dimension generator set this rule discovers post hoc from the decode.",
+ "microtheory": {
+  "name": "writer_dimensions",
+  "description": "pooled per-writer pose-transform coherence -> a held WriterStyle quantum coordinate"
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [],
+ "rules": [
+  {
+   "name": "wd_infer_writer",
+   "comment": "S3 (HANDWRITING_DESIGN.md): 'the writer's physical limits become IMPLIED dimensions' -- per-stroke a pose delta is noise, but POOLED across everything one writer's hand produced it is a coherent quantum coordinate (the ink twin of the speech speaker/VTLN dimension). Match: w -wrote_transform-> t, a DIRECT shortcut edge domains/ink_decode.py stamps at ingest time alongside the causal writer->ink->stroke->transform provenance chain (has_span/has_transform -- a DIFFERENT edge type DELIBERATELY: see domains/ink_decode.py's module docstring, two incoming edges of the SAME type on one Transform node, one from the Stroke and one from the Writer, empirically breaks the rule engine's match for that edge type entirely) -- a query-convenience denormalization, not new information, so this WHERE clause stays a single Neighbours hop instead of composing a 3-hop graph traversal Term. Guard: t is a successfully-READ pose Transform (domains/ink_decode.py's direct TransformDecode-with-pose call, source='ink_pose_read' -- `explained` OR the exact-match `identity` case, see is_read(); the honest-unexplained fallback, whose orient_delta defaults to 0.0 misleadingly, is excluded) not yet marked explained_by_writer (idempotency), AND at least 3 of the SAME writer's successfully-read Transforms (t2, via the SAME wrote_transform pool, itself included) agree on orient_delta -- 'pool >= 3 same-writer Transforms with agreeing pose_o deltas'. mints (add_node_if_absent, dedup key = writer name + orient_delta -- a genuinely NEW writer/orient_delta pair inserts once, a repeat firing for the SAME pair is a no-op, never cross-writer pollution since 'writer' is part of the key) a WriterStyle{orient_delta} node, edges w -has_style-> ws and t -explained_by-> ws, and marks t explained_by_writer=1 so it never re-fires. scale_delta is set as a SEPARATE plain set_attr (informational payload, not part of the dedup key -- scale noise across instances must not fragment one writer's style into several).",
+   "match": [
+    [
+     "w",
+     "wrote_transform",
+     "t"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "t"
+         },
+         "key": "explained"
+        },
+        "b": {
+         "type": "Lit",
+         "value": true
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "t"
+         },
+         "key": "identity"
+        },
+        "b": {
+         "type": "Lit",
+         "value": true
+        }
+       }
+      ]
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "t"
+        },
+        "key": "explained_by_writer"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1
+       }
+      }
+     },
+     {
+      "type": "Gte",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "w"
+         },
+         "edge_type": "wrote_transform",
+         "any_type": false
+        },
+        "var_name": "t2",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Or",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "t2"
+              },
+              "key": "explained"
+             },
+             "b": {
+              "type": "Lit",
+              "value": true
+             }
+            },
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "t2"
+              },
+              "key": "identity"
+             },
+             "b": {
+              "type": "Lit",
+              "value": true
+             }
+            }
+           ]
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "t2"
+            },
+            "key": "orient_delta"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "t"
+            },
+            "key": "orient_delta"
+           }
+          }
+         ]
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 3
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node_if_absent",
+     "ws",
+     "WriterStyle",
+     {
+      "writer": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "w"
+        },
+        "key": "name"
+       }
+      },
+      "orient_delta": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "t"
+        },
+        "key": "orient_delta"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "ws",
+     "scale_delta",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "t"
+       },
+       "key": "scale_delta"
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "w",
+     "has_style",
+     "ws"
+    ],
+    [
+     "add_edge",
+     "t",
+     "explained_by",
+     "ws"
+    ],
+    [
+     "set_attr",
+     "t",
+     "explained_by_writer",
+     1
+    ]
+   ]
+  },
+  {
+   "name": "wd_infer_writer_family",
+   "comment": "REFINEMENT RUNG item 5 (scratchpad/HANDWRITING_DESIGN.md, the Omniglot gate's '10-styles/hand' finding): wd_infer_writer above pools ALL of one writer's pose-read Transforms together regardless of WHICH stroke family produced them -- across many DIFFERENT families a writer's measured orient_delta is dominated by each family's own arbitrary canonical-pose reference heading, not the writer's own bias, so it fragments into many small clusters (empirically ~10 distinct-orient_delta styles/hand on real Omniglot ink) instead of cohering. 'A real hand is a family of implied dimensions, not one slant': pool orient_delta PER (writer, recognized-quantum-family) instead -- comparing the SAME shape to itself across repeated instances is a much more stable estimate of the writer's own bias than comparing across unrelated shapes. `t.base` already carries the recognized family name (domains/ink_decode.py's _install_pose_transform stores TransformDecode's own 'base' field on every Transform node, fine/coarse/dtw tier alike) -- no new Rust, no new edge type into Transform (only the EXISTING wrote_transform match; the known engine gotcha, CLAUDE.md, is about two INCOMING edges of the SAME type on one node, not an extra WHERE predicate over an already-matched edge). Guard: SAME as wd_infer_writer PLUS t2.base==t.base in the pooling Filter -- >=3 of the SAME writer's successfully-read Transforms recognized as the SAME family agree on orient_delta. Mints (add_node_if_absent, dedup key = writer + family + orient_delta) a WriterStyle{writer,family,orient_delta} node, DISTINCT edge types (has_family_style / explained_by_family, deliberately not has_style/explained_by -- see module description's gotcha note) so this NEVER collides with wd_infer_writer's own global-pool bookkeeping on the SAME Transform node; wd_infer_writer's global pooling stays live as the secondary/fallback report the design calls for ('Keep the global pooling as a secondary report'). A DIFFERENT idempotency flag (explained_by_writer_family) so a Transform can be marked by BOTH rules independently.",
+   "match": [
+    ["w", "wrote_transform", "t"]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Or",
+      "items": [
+       {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "t"}, "key": "explained"}, "b": {"type": "Lit", "value": true}},
+       {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "t"}, "key": "identity"}, "b": {"type": "Lit", "value": true}}
+      ]
+     },
+     {
+      "type": "Not",
+      "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "t"}, "key": "explained_by_writer_family"}, "b": {"type": "Lit", "value": 1}}
+     },
+     {
+      "type": "Not",
+      "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "t"}, "key": "base"}, "b": {"type": "Lit", "value": null}}
+     },
+     {
+      "type": "Gte",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {"type": "Neighbours", "node": {"type": "Var", "name": "w"}, "edge_type": "wrote_transform", "any_type": false},
+        "var_name": "t2",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Or",
+           "items": [
+            {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "t2"}, "key": "explained"}, "b": {"type": "Lit", "value": true}},
+            {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "t2"}, "key": "identity"}, "b": {"type": "Lit", "value": true}}
+           ]
+          },
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "t2"}, "key": "orient_delta"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "t"}, "key": "orient_delta"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "t2"}, "key": "base"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "t"}, "key": "base"}}
+         ]
+        }
+       }
+      },
+      "b": {"type": "Lit", "value": 3}
+     }
+    ]
+   },
+   "effects": [
+    ["add_node_if_absent", "wsf", "WriterStyle",
+     {
+      "writer": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "w"}, "key": "name"}},
+      "family": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "t"}, "key": "base"}},
+      "orient_delta": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "t"}, "key": "orient_delta"}}
+     }
+    ],
+    ["set_attr", "wsf", "scale_delta", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "t"}, "key": "scale_delta"}}],
+    ["add_edge", "w", "has_family_style", "wsf"],
+    ["add_edge", "t", "explained_by_family", "wsf"],
+    ["set_attr", "t", "explained_by_writer_family", 1]
+   ]
+  }
+ ]
+}

@@ -1,0 +1,87 @@
+{
+  "id": "bdof_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "bidirectional_optical_flow",
+  "in_microtheory": "video_coding_theory",
+  "description": "VVC's Bidirectional Optical Flow (BDOF) decomposed. When a block is bi-predicted from two reference frames, BDOF refines the prediction using the gradient information already available. The refinement assumes local optical flow: if the prediction from reference 0 has a small displacement (vx, vy) from the true sample, then the prediction from reference 1 (in the opposite direction) has the opposite displacement. Solving for (vx, vy) from gradient and signal differences gives a sub-pixel refinement without any new MV signalling.",
+  "sub_mechanisms": [
+    {
+      "name": "bdof_applicability",
+      "definition": "BDOF is applied per 4x4 sub-block within bi-predicted CUs, when the two reference frames are in opposite temporal directions (one past, one future).",
+      "why": "Opposite-direction predictions are the case where the optical-flow assumption holds: an object moves from reference 0 to reference 1, passing through the current frame. Same-direction bi-prediction (e.g., both past) doesn't satisfy this geometry.",
+      "category": "bdof_mechanism"
+    },
+    {
+      "name": "horizontal_gradient_computation",
+      "definition": "For each sub-block sample, compute horizontal gradient of both predictors: Gx_0(x,y) = (P_0(x+1,y) - P_0(x-1,y))/2, and similarly for predictor 1.",
+      "why": "Gradient indicates local image direction. Optical-flow refinement says: if the predictor differs from the true sample, it does so along the gradient direction. Pre-computed gradients let the refinement solve a small linear system per sub-block.",
+      "category": "bdof_mechanism"
+    },
+    {
+      "name": "vertical_gradient_computation",
+      "definition": "Symmetric to horizontal: Gy = (P(x,y+1) - P(x,y-1))/2 for both predictors.",
+      "why": "Same insight as horizontal gradient, vertical axis. Together they define the local gradient vector at each sample.",
+      "category": "bdof_mechanism"
+    },
+    {
+      "name": "displacement_solve",
+      "definition": "For each 4x4 sub-block, solve a 2x2 linear system to find (vx, vy) that minimises the weighted error between (P_0 + vx*Gx_0 + vy*Gy_0) and (P_1 - vx*Gx_1 - vy*Gy_1).",
+      "why": "Linear system has closed-form solution via 2x2 matrix inversion. The constraint v is the same for both predictors but oppositely-signed is the optical-flow assumption — moving toward reference 0 means moving away from reference 1.",
+      "category": "bdof_mechanism"
+    },
+    {
+      "name": "refined_prediction",
+      "definition": "Final BDOF prediction: P_bdof(x,y) = (P_0(x,y) + P_1(x,y))/2 + (vx * (Gx_0 - Gx_1) + vy * (Gy_0 - Gy_1))/2.",
+      "why": "Adds a 1st-order Taylor correction to the basic average. The correction term uses the gradient difference and the solved displacement to refine each sample. Provides sub-pixel accuracy without any additional MV bits.",
+      "category": "bdof_mechanism"
+    },
+    {
+      "name": "early_termination_SAD_check",
+      "definition": "If the SAD between P_0 and P_1 is below a threshold, the two predictors are already nearly identical and BDOF is skipped.",
+      "why": "When predictors agree, refinement does nothing useful. Early termination saves the gradient computation + linear solve for sub-blocks where they wouldn't help.",
+      "category": "bdof_mechanism"
+    },
+    {
+      "name": "luma_only_application",
+      "definition": "BDOF is applied to luma only, never chroma.",
+      "why": "Chroma is subsampled (4:2:0) so per-sample optical-flow accuracy gains less. Skipping chroma saves ~25% of BDOF compute at zero perceptual cost.",
+      "category": "bdof_mechanism"
+    },
+    {
+      "name": "no_signalling_overhead",
+      "definition": "BDOF requires no explicit signalling — when a block is bi-predicted with opposite-direction references, BDOF activates automatically (subject to early termination).",
+      "why": "Zero signalling cost is the win: BDOF is pure decode-side refinement. Encoder doesn't need to know what BDOF will produce; it gets a slightly better prediction for free.",
+      "category": "bdof_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "optical_flow_assumption_enables_correction",
+      "if": ["predictors are from opposite-direction references"],
+      "then": ["a single displacement vector explains both their offsets from the true sample"],
+      "why": "Brightness-constancy assumption: an object moving through frames has consistent samples. The reference-frame predictions sample slightly off from the true sample; the offset is in opposite directions for past vs future references. One displacement vector explains both.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "decoder_side_refinement_costs_no_bits",
+      "if": ["refinement is derived from already-available decoder state"],
+      "then": ["it requires no bitstream signalling"],
+      "why": "BDOF uses only the two predictors (already computed for bi-prediction) and their gradients (cheap to compute). The encoder doesn't transmit anything for BDOF; the decoder runs the same algorithm and gets the same refinement. Zero-bit improvement.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "early_termination_avoids_useless_work",
+      "if": ["the two predictors are nearly identical"],
+      "then": ["BDOF refinement provides negligible improvement and can be skipped"],
+      "why": "Refinement scales with the gradient difference between predictors. When predictors agree, gradient differences are tiny, refinement is tiny, and the linear solve becomes numerical noise. Skipping such blocks saves compute at zero quality cost.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "luma_focus_matches_perceptual_priority",
+      "if": ["chroma is subsampled and perceptually less critical"],
+      "then": ["BDOF on luma only captures most of the gain"],
+      "why": "Same insight as in deblocking and ALF: HVS sees luma detail more than chroma detail. Skipping chroma is a free perceptual win.",
+      "soundness_category": "cost_equivalence"
+    }
+  ]
+}

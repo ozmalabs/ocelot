@@ -1,0 +1,630 @@
+{
+  "id": "optic_flow_spatial_grounding",
+  "version": "1.0.0",
+  "depends_on": [],
+  "description": "Generic oracle-free spatial evidence from event-retinal flow and proprioceptive/efference calibration. A current RetinalSalience cell is range-bearing only when it belongs to the dominant rigid flow (residual near zero), a same-epoch RetinalMotionPercept is coherent, the eye translated, and self-rotation is below a graph-data gate. Range is translation_per_source_epoch * focal_cells / flow_cells_per_source_epoch. The graph emits uncertainty-carrying OpticRangeEvidence and an explicit per-epoch OpticFlowAssessment; it never writes occupancy, walls, free cells, or task/world-specific policy. Static, rotation-confounded, and non-rigid/adversarial motion are refusals. Matching HeldPredictionResidual photometry is attached without changing the geometric verdict.",
+  "microtheory": {
+    "name": "optic_flow_spatial_grounding",
+    "description": "rigid event flow plus efference copy yields uncertain surface-range evidence"
+  },
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "OpticFlowGroundingParams",
+      "attrs": {
+        "enabled": 1.0,
+        "min_translation_world_per_source_epoch": 0.000001,
+        "min_flow_cells_per_source_epoch": 0.000001,
+        "min_coherence": 0.75,
+        "max_rotation_deg_per_source_epoch": 2.0,
+        "max_nonrigid_residual_cells_per_source_epoch": 0.25,
+        "range_sigma_floor_world": 1.0
+      }
+    }
+  ],
+  "edges": [
+    {
+      "src": {"role": "agent_root"},
+      "type": "has_optic_flow_grounding_params",
+      "tgt": {"local": 0},
+      "attrs": {}
+    }
+  ],
+  "productions": [
+    {
+      "provenance": "seed:optic_flow_spatial_grounding:params",
+      "src": {"type": "Agent", "var": "agent"},
+      "edge_type": "has_optic_flow_grounding_params",
+      "tgt": {"type": "OpticFlowGroundingParams", "var": "params"}
+    },
+    {
+      "provenance": "seed:optic_flow_spatial_grounding:motion",
+      "src": {"type": "Agent", "var": "agent"},
+      "edge_type": "perceives_motion",
+      "tgt": {"type": "RetinalMotionPercept", "var": "motion"}
+    },
+    {
+      "provenance": "seed:optic_flow_spatial_grounding:salience",
+      "src": {"type": "Agent", "var": "agent"},
+      "edge_type": "perceives_salience",
+      "tgt": {"type": "RetinalSalience", "var": "salience"}
+    },
+    {
+      "provenance": "seed:optic_flow_spatial_grounding:assessment",
+      "src": {"type": "Agent", "var": "agent"},
+      "edge_type": "assesses_optic_flow",
+      "tgt": {"type": "OpticFlowAssessment", "var": "assessment"}
+    },
+    {
+      "provenance": "seed:optic_flow_spatial_grounding:evidence",
+      "src": {"type": "Agent", "var": "agent"},
+      "edge_type": "holds_spatial_evidence",
+      "tgt": {"type": "OpticRangeEvidence", "var": "evidence"}
+    },
+    {
+      "provenance": "seed:optic_flow_spatial_grounding:evidence-salience",
+      "src": {"type": "OpticRangeEvidence", "var": "evidence"},
+      "edge_type": "based_on_salience",
+      "tgt": {"type": "RetinalSalience", "var": "salience"}
+    }
+  ],
+  "rules": [
+    {
+      "name": "optic_flow_assessment_begin_epoch",
+      "area": "spatial",
+      "order": 0,
+      "latency_class": "hard_realtime",
+      "comment": "Every settled optic epoch starts with an explicit refusal. Later rules may replace it only with evidence supported by rigid translation. Absence of optic structure therefore stays an honest refusal, never a guessed range.",
+      "match": [
+        ["agent", "has_optic_flow_grounding_params", "params"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "params"}, "key": "enabled"},
+            "b": {"type": "Lit", "value": 1.0}
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {"type": "Var", "name": "agent"},
+                "edge_type": "assesses_optic_flow"
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "Eq",
+                "a": {"type": "Attr", "node": {"type": "Var", "name": "old"}, "key": "sensor_epoch"},
+                "b": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "vision_settled_epoch"}
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "assessment",
+          "OpticFlowAssessment",
+          {
+            "sensor_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {"type": "Var", "name": "agent"},
+                "key": "vision_settled_epoch"
+              }
+            },
+            "status": "refused",
+            "reason": "no_rigid_translation",
+            "evidence_count": 0.0,
+            "source_epoch_delta": {
+              "__term__": {
+                "type": "Attr",
+                "node": {"type": "Var", "name": "agent"},
+                "key": "optic_source_epoch_delta"
+              }
+            },
+            "range_unit": "world_units",
+            "flow_unit": "retinal_cells_per_source_epoch"
+          }
+        ],
+        ["add_edge", "agent", "assesses_optic_flow", "assessment", {}]
+      ]
+    },
+    {
+      "name": "optic_flow_assessment_retire_stale",
+      "area": "spatial",
+      "order": 0,
+      "latency_class": "hard_realtime",
+      "match": [
+        ["agent", "assesses_optic_flow", "assessment"]
+      ],
+      "where": {
+        "type": "Not",
+        "arg": {
+          "type": "Eq",
+          "a": {"type": "Attr", "node": {"type": "Var", "name": "assessment"}, "key": "sensor_epoch"},
+          "b": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "vision_settled_epoch"}
+        }
+      },
+      "effects": [
+        ["del_node", "assessment"]
+      ]
+    },
+    {
+      "name": "optic_flow_evidence_retire_stale",
+      "area": "spatial",
+      "order": 0,
+      "latency_class": "hard_realtime",
+      "match": [
+        ["agent", "holds_spatial_evidence", "evidence"]
+      ],
+      "where": {
+        "type": "Not",
+        "arg": {
+          "type": "Eq",
+          "a": {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "sensor_epoch"},
+          "b": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "vision_settled_epoch"}
+        }
+      },
+      "effects": [
+        ["del_node", "evidence"]
+      ]
+    },
+    {
+      "name": "optic_flow_refuse_no_translation",
+      "area": "spatial",
+      "order": 1,
+      "latency_class": "hard_realtime",
+      "match": [
+        ["agent", "has_optic_flow_grounding_params", "params"],
+        ["agent", "assesses_optic_flow", "assessment"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "assessment"}, "key": "sensor_epoch"},
+            "b": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "vision_settled_epoch"}
+          },
+          {
+            "type": "Lte",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "optic_translation_world_per_source_epoch"},
+            "b": {"type": "Attr", "node": {"type": "Var", "name": "params"}, "key": "min_translation_world_per_source_epoch"}
+          }
+        ]
+      },
+      "effects": [
+        ["set_attr_if_different", "assessment", "status", "refused"],
+        ["set_attr_if_different", "assessment", "reason", "no_translation"]
+      ]
+    },
+    {
+      "name": "optic_flow_refuse_rotation",
+      "area": "spatial",
+      "order": 1,
+      "latency_class": "hard_realtime",
+      "match": [
+        ["agent", "has_optic_flow_grounding_params", "params"],
+        ["agent", "assesses_optic_flow", "assessment"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "assessment"}, "key": "sensor_epoch"},
+            "b": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "vision_settled_epoch"}
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Abs",
+              "arg": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "optic_rotation_deg_per_source_epoch"}
+            },
+            "b": {"type": "Attr", "node": {"type": "Var", "name": "params"}, "key": "max_rotation_deg_per_source_epoch"}
+          }
+        ]
+      },
+      "effects": [
+        ["set_attr_if_different", "assessment", "status", "refused"],
+        ["set_attr_if_different", "assessment", "reason", "rotation_confounded"]
+      ]
+    },
+    {
+      "name": "optic_flow_note_nonrigid",
+      "area": "spatial",
+      "order": 2,
+      "latency_class": "hard_realtime",
+      "match": [
+        ["agent", "has_optic_flow_grounding_params", "params"],
+        ["agent", "assesses_optic_flow", "assessment"],
+        ["agent", "perceives_salience", "salience"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "assessment"}, "key": "sensor_epoch"},
+            "b": {"type": "Attr", "node": {"type": "Var", "name": "salience"}, "key": "sensor_epoch"}
+          },
+          {
+            "type": "Gt",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "salience"}, "key": "residual_salience"},
+            "b": {"type": "Attr", "node": {"type": "Var", "name": "params"}, "key": "max_nonrigid_residual_cells_per_source_epoch"}
+          }
+        ]
+      },
+      "effects": [
+        ["set_attr_if_different", "assessment", "has_nonrigid_motion", 1.0],
+        ["set_attr_if_different", "assessment", "reason", "nonrigid_motion"]
+      ]
+    },
+    {
+      "name": "optic_flow_mint_rigid_range_evidence",
+      "area": "spatial",
+      "order": 3,
+      "latency_class": "hard_realtime",
+      "comment": "Only dominant rigid-flow cells produce range. All gates are editable graph data. focal_cells is a calibrated ingress fact (for a pinhole eye, half retinal width / tan(horizontal_fov/2)); no 90-degree FOV is silently assumed.",
+      "match": [
+        ["agent", "has_optic_flow_grounding_params", "params"],
+        ["agent", "perceives_motion", "motion"],
+        ["agent", "perceives_salience", "salience"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "params"}, "key": "enabled"},
+            "b": {"type": "Lit", "value": 1.0}
+          },
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "motion"}, "key": "sensor_epoch"},
+            "b": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "vision_settled_epoch"}
+          },
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "salience"}, "key": "sensor_epoch"},
+            "b": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "vision_settled_epoch"}
+          },
+          {
+            "type": "Gt",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "optic_translation_world_per_source_epoch"},
+            "b": {"type": "Attr", "node": {"type": "Var", "name": "params"}, "key": "min_translation_world_per_source_epoch"}
+          },
+          {
+            "type": "Lte",
+            "a": {
+              "type": "Abs",
+              "arg": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "optic_rotation_deg_per_source_epoch"}
+            },
+            "b": {"type": "Attr", "node": {"type": "Var", "name": "params"}, "key": "max_rotation_deg_per_source_epoch"}
+          },
+          {
+            "type": "Gt",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "motion"}, "key": "coherence"},
+            "b": {"type": "Attr", "node": {"type": "Var", "name": "params"}, "key": "min_coherence"}
+          },
+          {
+            "type": "Gt",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "salience"}, "key": "raw_salience"},
+            "b": {"type": "Attr", "node": {"type": "Var", "name": "params"}, "key": "min_flow_cells_per_source_epoch"}
+          },
+          {
+            "type": "Lte",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "salience"}, "key": "residual_salience"},
+            "b": {"type": "Attr", "node": {"type": "Var", "name": "params"}, "key": "max_nonrigid_residual_cells_per_source_epoch"}
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {"type": "Var", "name": "agent"},
+                "edge_type": "holds_spatial_evidence"
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "Exists",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {"type": "Var", "name": "old"},
+                  "edge_type": "based_on_salience"
+                },
+                "var_name": "basis",
+                "predicate": {
+                  "type": "Eq",
+                  "a": {"type": "Var", "name": "basis"},
+                  "b": {"type": "Var", "name": "salience"}
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "evidence",
+          "OpticRangeEvidence",
+          {
+            "sensor_epoch": {
+              "__term__": {"type": "Attr", "node": {"type": "Var", "name": "salience"}, "key": "sensor_epoch"}
+            },
+            "column_index": {
+              "__term__": {"type": "Attr", "node": {"type": "Var", "name": "salience"}, "key": "column_index"}
+            },
+            "row_index": {
+              "__term__": {"type": "Attr", "node": {"type": "Var", "name": "salience"}, "key": "row_index"}
+            },
+            "bearing_rad": {
+              "__term__": {
+                "type": "Plus",
+                "items": [
+                  {
+                    "type": "Times",
+                    "items": [
+                      {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "optic_pose_angle_deg"},
+                      {"type": "Lit", "value": 0.017453292519943295}
+                    ]
+                  },
+                  {"type": "Attr", "node": {"type": "Var", "name": "salience"}, "key": "gaze_az"}
+                ]
+              }
+            },
+            "range_world": {
+              "__term__": {
+                "type": "Div",
+                "a": {
+                  "type": "Times",
+                  "items": [
+                    {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "optic_translation_world_per_source_epoch"},
+                    {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "optic_focal_cells"}
+                  ]
+                },
+                "b": {"type": "Attr", "node": {"type": "Var", "name": "salience"}, "key": "raw_salience"}
+              }
+            },
+            "x_world": {
+              "__term__": {
+                "type": "Plus",
+                "items": [
+                  {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "optic_pose_x_world"},
+                  {
+                    "type": "Times",
+                    "items": [
+                      {
+                        "type": "Div",
+                        "a": {
+                          "type": "Times",
+                          "items": [
+                            {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "optic_translation_world_per_source_epoch"},
+                            {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "optic_focal_cells"}
+                          ]
+                        },
+                        "b": {"type": "Attr", "node": {"type": "Var", "name": "salience"}, "key": "raw_salience"}
+                      },
+                      {
+                        "type": "Cos",
+                        "arg": {
+                          "type": "Plus",
+                          "items": [
+                            {
+                              "type": "Times",
+                              "items": [
+                                {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "optic_pose_angle_deg"},
+                                {"type": "Lit", "value": 0.017453292519943295}
+                              ]
+                            },
+                            {"type": "Attr", "node": {"type": "Var", "name": "salience"}, "key": "gaze_az"}
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            "y_world": {
+              "__term__": {
+                "type": "Plus",
+                "items": [
+                  {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "optic_pose_y_world"},
+                  {
+                    "type": "Times",
+                    "items": [
+                      {
+                        "type": "Div",
+                        "a": {
+                          "type": "Times",
+                          "items": [
+                            {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "optic_translation_world_per_source_epoch"},
+                            {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "optic_focal_cells"}
+                          ]
+                        },
+                        "b": {"type": "Attr", "node": {"type": "Var", "name": "salience"}, "key": "raw_salience"}
+                      },
+                      {
+                        "type": "Sin",
+                        "arg": {
+                          "type": "Plus",
+                          "items": [
+                            {
+                              "type": "Times",
+                              "items": [
+                                {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "optic_pose_angle_deg"},
+                                {"type": "Lit", "value": 0.017453292519943295}
+                              ]
+                            },
+                            {"type": "Attr", "node": {"type": "Var", "name": "salience"}, "key": "gaze_az"}
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            "range_sigma_world": {
+              "__term__": {
+                "type": "Max",
+                "items": [
+                  {"type": "Attr", "node": {"type": "Var", "name": "params"}, "key": "range_sigma_floor_world"},
+                  {
+                    "type": "Times",
+                    "items": [
+                      {
+                        "type": "Div",
+                        "a": {
+                          "type": "Times",
+                          "items": [
+                            {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "optic_translation_world_per_source_epoch"},
+                            {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "optic_focal_cells"}
+                          ]
+                        },
+                        "b": {"type": "Attr", "node": {"type": "Var", "name": "salience"}, "key": "raw_salience"}
+                      },
+                      {
+                        "type": "Minus",
+                        "a": {"type": "Lit", "value": 1.0},
+                        "b": {"type": "Attr", "node": {"type": "Var", "name": "motion"}, "key": "coherence"}
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            "confidence": {
+              "__term__": {"type": "Attr", "node": {"type": "Var", "name": "motion"}, "key": "coherence"}
+            },
+            "confidence_kind": "rigid_flow_fit_conditional",
+            "flow_cells_per_source_epoch": {
+              "__term__": {"type": "Attr", "node": {"type": "Var", "name": "salience"}, "key": "raw_salience"}
+            },
+            "translation_world_per_source_epoch": {
+              "__term__": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "optic_translation_world_per_source_epoch"}
+            },
+            "source_epoch_delta": {
+              "__term__": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "optic_source_epoch_delta"}
+            },
+            "range_unit": "world_units",
+            "range_sigma_kind": "flow_fit_lower_bound",
+            "flow_unit": "retinal_cells_per_source_epoch",
+            "topology_kind": "visible_surface_support",
+            "occupancy_commit": 0.0,
+            "rigidity_scope": "dominant_field_assumption",
+            "dominant_motion_ambiguity": 1.0,
+            "oracle_free": 1.0
+          }
+        ],
+        ["add_edge", "agent", "holds_spatial_evidence", "evidence", {}],
+        ["add_edge", "evidence", "based_on_salience", "salience", {}],
+        ["add_edge", "evidence", "supported_by_motion", "motion", {}]
+      ]
+    },
+    {
+      "name": "optic_flow_attach_held_photometry",
+      "area": "spatial",
+      "order": 4,
+      "latency_class": "hard_realtime",
+      "comment": "Held prediction supplies appearance/change evidence at the already-grounded retinal coordinate. It cannot mint range and cannot turn a refusal into occupancy.",
+      "match": [
+        ["agent", "holds_spatial_evidence", "evidence"],
+        ["evidence", "based_on_salience", "salience"],
+        ["agent", "perceives_prediction_residual", "held"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "held"}, "key": "sensor_epoch"},
+            "b": {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "sensor_epoch"}
+          },
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "held"}, "key": "column_index"},
+            "b": {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "column_index"}
+          },
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "held"}, "key": "row_index"},
+            "b": {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "row_index"}
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr_if_different",
+          "evidence",
+          "prediction_residual_quanta",
+          {
+            "__term__": {"type": "Attr", "node": {"type": "Var", "name": "held"}, "key": "prediction_residual_quanta"}
+          }
+        ],
+        [
+          "set_attr_if_different",
+          "evidence",
+          "observed_quanta",
+          {
+            "__term__": {"type": "Attr", "node": {"type": "Var", "name": "held"}, "key": "observed_quanta"}
+          }
+        ],
+        ["set_attr_if_different", "evidence", "photometry_unit", "photon_count_quanta"],
+        ["add_edge", "evidence", "supported_by_photometry", "held", {}]
+      ]
+    },
+    {
+      "name": "optic_flow_assessment_supported",
+      "area": "spatial",
+      "order": 5,
+      "latency_class": "hard_realtime",
+      "match": [
+        ["agent", "assesses_optic_flow", "assessment"],
+        ["agent", "holds_spatial_evidence", "evidence"]
+      ],
+      "where": {
+        "type": "Eq",
+        "a": {"type": "Attr", "node": {"type": "Var", "name": "assessment"}, "key": "sensor_epoch"},
+        "b": {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "sensor_epoch"}
+      },
+      "effects": [
+        ["set_attr_if_different", "assessment", "status", "supported"],
+        ["set_attr_if_different", "assessment", "reason", ""],
+        [
+          "set_attr_if_different",
+          "assessment",
+          "evidence_count",
+          {
+            "__term__": {
+              "type": "Count",
+              "source": {
+                "type": "Filter",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {"type": "Var", "name": "agent"},
+                  "edge_type": "holds_spatial_evidence"
+                },
+                "var_name": "current",
+                "predicate": {
+                  "type": "Eq",
+                  "a": {"type": "Attr", "node": {"type": "Var", "name": "current"}, "key": "sensor_epoch"},
+                  "b": {"type": "Attr", "node": {"type": "Var", "name": "assessment"}, "key": "sensor_epoch"}
+                }
+              }
+            }
+          }
+        ]
+      ]
+    }
+  ]
+}

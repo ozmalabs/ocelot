@@ -1,0 +1,210 @@
+{
+ "id": "retinal_onset",
+ "version": "1.0.0",
+ "self_load_only": true,
+ "depends_on": [
+  "photon_retina"
+ ],
+ "area": "retina",
+ "description": "Event-native visual onset. The visual analog of the cochlear-nucleus onset stage (runners/dsl/src/cochlear_nucleus.rs detect_onsets): a discrete RetinalOnsetEvent is MINTED for a column when its rod receptor's transduced drive departs its OWN adapting floor (the receptor's `adaptation`) by an adapting-threshold in dB, with a refractory. The dB departure is computed in Rust by the `photon_transduce_onset` task kind (a byte-identical peer of `photon_transduce` that appends output[3] = 20*log10((caught+eps)/(adaptation+eps))); this rule thresholds it and enforces the refractory. Each event carries the column index, the departure magnitude, and the receptor's OWN input_epoch (its own clock) — NOT a shared frame index. OFF by default: the rule cannot fire unless a RetinaOnsetParams node exists (created by the adapter only when the onset path is enabled).",
+ "microtheory": {
+  "name": "retinal_onset",
+  "description": "adapting-floor drive departure -> discrete per-column visual onset events"
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [
+  {
+   "provenance": "seed:retinal_onset:retina-onset-params",
+   "src": {
+    "type": "Retina",
+    "var": "retina"
+   },
+   "edge_type": "has_onset_params",
+   "tgt": {
+    "type": "RetinaOnsetParams",
+    "var": "params"
+   }
+  },
+  {
+   "provenance": "seed:retinal_onset:column-onset-event",
+   "src": {
+    "type": "RetinalColumn",
+    "var": "column"
+   },
+   "edge_type": "has_onset_event",
+   "tgt": {
+    "type": "RetinalOnsetEvent",
+    "var": "event"
+   }
+  }
+ ],
+ "rules": [
+  {
+   "name": "retinal_mint_onset",
+   "area": "retina",
+   "order": 2,
+   "latency_class": "hard_realtime",
+   "match": [
+    [
+     "retina",
+     "has_column",
+     "column"
+    ],
+    [
+     "column",
+     "rod_receptor",
+     "rod"
+    ],
+    [
+     "rod",
+     "has_task",
+     "task"
+    ],
+    [
+     "retina",
+     "has_onset_params",
+     "params"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {"type": "Var", "name": "task"},
+       "key": "kind"
+      },
+      "b": {"type": "Lit", "value": "photon_transduce_onset"}
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {"type": "Var", "name": "task"},
+       "key": "status"
+      },
+      "b": {"type": "Lit", "value": "done"}
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {"type": "Var", "name": "task"},
+        "key": "onset_seen"
+       },
+       "b": {"type": "Lit", "value": 1.0}
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "IndexAt",
+       "seq": {
+        "type": "Attr",
+        "node": {"type": "Var", "name": "task"},
+        "key": "output"
+       },
+       "index": {"type": "Lit", "value": 3}
+      },
+      "b": {
+       "type": "Attr",
+       "node": {"type": "Var", "name": "params"},
+       "key": "threshold_db"
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Minus",
+       "a": {
+        "type": "Attr",
+        "node": {"type": "Var", "name": "rod"},
+        "key": "input_epoch"
+       },
+       "b": {
+        "type": "Attr",
+        "node": {"type": "Var", "name": "column"},
+        "key": "last_onset_epoch"
+       }
+      },
+      "b": {
+       "type": "Attr",
+       "node": {"type": "Var", "name": "params"},
+       "key": "refractory_epochs"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "event",
+     "RetinalOnsetEvent",
+     {
+      "column_index": {
+       "__term__": {
+        "type": "Attr",
+        "node": {"type": "Var", "name": "column"},
+        "key": "index"
+       }
+      },
+      "magnitude_db": {
+       "__term__": {
+        "type": "IndexAt",
+        "seq": {
+         "type": "Attr",
+         "node": {"type": "Var", "name": "task"},
+         "key": "output"
+        },
+        "index": {"type": "Lit", "value": 3}
+       }
+      },
+      "epoch": {
+       "__term__": {
+        "type": "Attr",
+        "node": {"type": "Var", "name": "rod"},
+        "key": "input_epoch"
+       }
+      },
+      "logical_time": {
+       "__term__": {
+        "type": "Attr",
+        "node": {"type": "Var", "name": "rod"},
+        "key": "input_epoch"
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "column",
+     "has_onset_event",
+     "event"
+    ],
+    [
+     "set_attr",
+     "column",
+     "last_onset_epoch",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {"type": "Var", "name": "rod"},
+       "key": "input_epoch"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "task",
+     "onset_seen",
+     1.0
+    ]
+   ]
+  }
+ ]
+}

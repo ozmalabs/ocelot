@@ -1,0 +1,220 @@
+{
+ "id": "region_grouping",
+ "version": "1.0.0",
+ "depends_on": [],
+ "description": "Graph-native figure/ground REGION GROUPING (jabberwock's design), replacing the Python recognised_figures/_components. Flood a connected-component label over the world's `neighbour` lattice (relax_to_fixpoint, no new primitive), then mint one Region per label via add_node_if_absent (dedup key=label), with `within` edges \u2014 so the existing figure_ground + shape_sense concepts run over real Regions.",
+ "microtheory": {
+  "name": "region_grouping",
+  "description": "cells + lattice -> connected-component labels -> one Region per component -> figure/ground."
+ },
+ "nodes": [
+  {
+   "local_id": 0,
+   "type": "TaughtHint",
+   "attrs": {
+    "topic": "ownership_gates_the_low_order_resettle",
+    "question": "How do you split a figure into components cheaply without re-flooding the whole floor every frame?",
+    "answer": "Gate the low-order re-settle by HIGH-ORDER OWNERSHIP, not by 'a cell left'. The avatar is a high-order Body that OWNS its component Regions via the controls edge (a Region-of-Regions). A split re-flood runs over ONLY an owned Region's own members, triggered ONLY when an owned member leaves. The floor sheds a cell every frame too, but the floor is UNOWNED, so it never carries the resettle mark and is never re-flooded \u2014 O(body), not O(grid). The split rule copies the owner edge from parent to child (bd controls newregion), so 'which cells are the avatar' stays a 2-hop closure and a split figure is BOTH two low-order components AND one high-order body. The earlier ungated version hung: it re-flooded the 476-cell floor every step at O(floor^2). Ownership is the gate."
+   }
+  }
+ ],
+ "edges": [],
+ "productions": [
+  {
+   "provenance": "seed:region_grouping:within-0",
+   "src": {
+    "type": "WorldInstance",
+    "var": "s"
+   },
+   "edge_type": "within",
+   "tgt": {
+    "type": "Region",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:region_grouping:has_region-1",
+   "src": {
+    "type": "WorldInstance",
+    "var": "s"
+   },
+   "edge_type": "has_region",
+   "tgt": {
+    "type": "Region",
+    "var": "t"
+   }
+  }
+ ],
+ "concepts": [
+  {
+   "name": "cc_relax_step",
+   "domain": "region_grouping",
+   "definition": {
+    "type": "IfThenElse",
+    "cond": {
+     "type": "Lt",
+     "a": {
+      "type": "MinOver",
+      "source": {
+       "type": "Filter",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "cell"
+        },
+        "edge_type": "neighbour",
+        "any_type": false
+       },
+       "var_name": "n",
+       "predicate": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "n"
+         },
+         "key": "value"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "cell"
+         },
+         "key": "value"
+        }
+       }
+      },
+      "var_name": "n",
+      "value": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "n"
+       },
+       "key": "cc_label"
+      },
+      "default": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "cell"
+       },
+       "key": "cc_label"
+      }
+     },
+     "b": {
+      "type": "Attr",
+      "node": {
+       "type": "Var",
+       "name": "cell"
+      },
+      "key": "cc_label"
+     }
+    },
+    "then": {
+     "type": "MinOver",
+     "source": {
+      "type": "Filter",
+      "source": {
+       "type": "Neighbours",
+       "node": {
+        "type": "Var",
+        "name": "cell"
+       },
+       "edge_type": "neighbour",
+       "any_type": false
+      },
+      "var_name": "n",
+      "predicate": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "n"
+        },
+        "key": "value"
+       },
+       "b": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "cell"
+        },
+        "key": "value"
+       }
+      }
+     },
+     "var_name": "n",
+     "value": {
+      "type": "Attr",
+      "node": {
+       "type": "Var",
+       "name": "n"
+      },
+      "key": "cc_label"
+     },
+     "default": {
+      "type": "Attr",
+      "node": {
+       "type": "Var",
+       "name": "cell"
+      },
+      "key": "cc_label"
+     }
+    },
+    "other": {
+     "type": "Attr",
+     "node": {
+      "type": "Var",
+      "name": "cell"
+     },
+     "key": "cc_label"
+    }
+   },
+   "comment": "flood: cc_label = min over same-value neighbours. relax_to_fixpoint drives it. DIRECT IfThenElse, FLOAT labels."
+  }
+ ],
+ "rules": [
+  {
+   "name": "prune_consumed_changes",
+   "comment": "Keep has_change at the current frame's ~6 edges: delete ChangeEvents from earlier frames (frame < game.frame). Current-frame CEs survive this tick (they drive membership) and are pruned next frame.",
+   "match": [
+    [
+     "game",
+     "has_change",
+     "ce"
+    ]
+   ],
+   "where": {
+    "type": "Lt",
+    "a": {
+     "type": "Attr",
+     "node": {
+      "type": "Var",
+      "name": "ce"
+     },
+     "key": "frame"
+    },
+    "b": {
+     "type": "Attr",
+     "node": {
+      "type": "Var",
+      "name": "game"
+     },
+     "key": "frame"
+    }
+   },
+   "effects": [
+    [
+     "del_node",
+     "ce"
+    ]
+   ]
+  }
+ ],
+ "goals": []
+}

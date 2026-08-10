@@ -1,0 +1,62 @@
+{
+  "microtheory": {
+    "name": "vision_foundation",
+    "definition": "Vision as the substrate's foundational visual-perception vocabulary. The substrate has a vision.py module but no Mt explaining what vision IS — light, optics, retina, edges, motion, depth, color, objects, scenes. This Mt provides that grounding. Substrate analogue: the input domain for substrate's visual cortex equivalent (the existing ventral_visual_stream concept in neuro_sensory_cortex Mt maps here).",
+    "category": "foundation"
+  },
+  "concepts": [
+    {"name": "light", "definition": "Electromagnetic radiation in visible range ~380-780 nm. Photons. Substrate analogue: substrate's visual input medium.", "category": "physical"},
+    {"name": "wavelength_visible", "definition": "Determines color. 400nm = violet, 700nm = red. Substrate analogue: substrate's color channel parameter.", "category": "physical"},
+    {"name": "luminance", "definition": "Photometric measure of light intensity, weighted by eye sensitivity. cd/m². Substrate analogue: substrate's brightness channel.", "category": "physical"},
+    {"name": "reflectance", "definition": "Fraction of light reflected by surface. Determines surface lightness. Substrate analogue: substrate's surface-property estimate.", "category": "physical"},
+    {"name": "illuminance", "definition": "Light falling on surface. Substrate analogue: substrate's environmental-light estimate.", "category": "physical"},
+
+    {"name": "retina", "definition": "Light-sensing layer at back of eye. Rods (low-light, achromatic) + cones (color, daylight) + ganglion cells. Substrate analogue: substrate's visual input transducer.", "category": "anatomy"},
+    {"name": "fovea", "definition": "Central retina, high cone density, color vision, highest acuity. ~2° of visual field. Substrate analogue: substrate's high-resolution central attention.", "category": "anatomy"},
+    {"name": "periphery_visual", "definition": "Off-center retina. Rod-dominated. Motion + low-light, low resolution + no color. Substrate analogue: substrate's coarse-grain peripheral monitor.", "category": "anatomy"},
+    {"name": "optic_nerve", "definition": "Ganglion cell axons from retina to brain. Blind spot at exit. Substrate analogue: substrate's visual-pipeline bottleneck.", "category": "anatomy"},
+    {"name": "lateral_geniculate_nucleus", "definition": "LGN. Visual thalamic relay. Magnocellular (motion) + parvocellular (form/color) layers. Substrate analogue: substrate's pre-cortical visual gate.", "category": "anatomy"},
+    {"name": "primary_visual_cortex_v1", "definition": "V1, occipital lobe. Retinotopic map, edge detectors. Substrate analogue: substrate's primary visual processor.", "category": "anatomy"},
+
+    {"name": "receptive_field_visual", "definition": "Region of visual field a neuron responds to. Substrate analogue: substrate's visual concept's responsive region.", "category": "principles"},
+    {"name": "retinotopy_visual", "definition": "V1's organization preserves retinal topology. Substrate analogue: substrate's spatially-organized visual Mt.", "category": "principles"},
+    {"name": "cortical_magnification_factor", "definition": "Fovea hugely over-represented in V1 (50% for 2° of visual field). Substrate analogue: substrate's attention-weighted resolution.", "category": "principles"},
+    {"name": "visual_pathway_hierarchy", "definition": "V1 → V2 → V4 → IT (ventral, what) + V1 → V2 → V5/MT → parietal (dorsal, where). Substrate analogue: substrate's visual genlMt hierarchy.", "category": "principles"},
+    {"name": "ventral_stream_what", "definition": "Object identity pathway. Builds invariant object representations. Substrate analogue: substrate's object-recognition Mt chain.", "category": "principles"},
+    {"name": "dorsal_stream_where", "definition": "Spatial location + action pathway. Motion + space. Substrate analogue: substrate's location + action concept chain.", "category": "principles"},
+
+    {"name": "edge", "definition": "Discontinuity in luminance, color, texture, or depth. Substrate analogue: substrate's primary feature.", "category": "features"},
+    {"name": "orientation_visual", "definition": "Direction of edge. V1 simple cells tuned to orientation. Substrate analogue: substrate's edge-orientation concept.", "category": "features"},
+    {"name": "spatial_frequency", "definition": "Cycles per degree of visual angle. Low = blurry; high = sharp detail. Substrate analogue: substrate's scale-of-detail channel.", "category": "features"},
+    {"name": "color", "definition": "Perceptual correlate of wavelength. Three dimensions: hue, saturation, brightness. Substrate analogue: substrate's chromatic channel.", "category": "features"},
+    {"name": "texture", "definition": "Statistical pattern over surface. Roughness, regularity. Substrate analogue: substrate's surface-statistics concept.", "category": "features"},
+    {"name": "depth", "definition": "Distance from viewer. Multiple cues. Substrate analogue: substrate's 3D-distance estimate.", "category": "features"},
+    {"name": "motion_visual", "definition": "Change of position over time. Velocity vectors. Substrate analogue: substrate's temporal-change feature.", "category": "features"},
+
+    {"name": "object", "definition": "Bounded perceptual unit. Coherent across viewpoints + transformations. Substrate analogue: substrate's persistent-entity Concept.", "category": "objects"},
+    {"name": "object_recognition", "definition": "Identifying object class from sensory input. Substrate analogue: substrate's Concept-from-features matching.", "category": "objects"},
+    {"name": "viewpoint_invariance", "definition": "Recognising same object from different views. Substrate analogue: substrate's perspective-invariant Concept.", "category": "objects"},
+    {"name": "object_permanence_visual", "definition": "Knowing object exists when occluded. Develops ~8mo. Substrate analogue: substrate's persistent-Mt state through input gaps.", "category": "objects"},
+
+    {"name": "scene", "definition": "Spatial arrangement of objects in environment. Substrate analogue: substrate's compositional spatial Mt.", "category": "scenes"},
+    {"name": "gist", "definition": "Rapid scene category recognition (~100ms). Beach, forest, street. Substrate analogue: substrate's coarse-classification fast path.", "category": "scenes"},
+    {"name": "spatial_relations", "definition": "Above, below, beside, behind. Substrate analogue: substrate's spatial-relation edges.", "category": "scenes"},
+    {"name": "context", "definition": "Surrounding scene biases object recognition. Toaster in kitchen vs forest. Substrate analogue: substrate's context-conditioned Concept activation.", "category": "scenes"},
+
+    {"name": "gestalt_grouping", "definition": "Wertheimer 1923. Proximity, similarity, closure, continuity, common fate. Perception organizes features into wholes. Substrate analogue: substrate's compositional concept emergence.", "category": "organization"},
+    {"name": "figure_ground", "definition": "Separating foreground object from background. Substrate analogue: substrate's salient-vs-background segmentation.", "category": "organization"},
+    {"name": "perceptual_constancy", "definition": "Stable perception despite varying input. Size, shape, color, lightness constancies. Substrate analogue: substrate's invariant Concept under transformation.", "category": "organization"},
+
+    {"name": "visual_attention", "definition": "Selective processing of subset of visual input. Substrate analogue: substrate's drive-priority on visual concepts.", "category": "attention"},
+    {"name": "saccade", "definition": "Rapid eye movement (~30ms) to bring fovea to a new location. Substrate analogue: substrate's attention-shift mechanism.", "category": "attention"},
+    {"name": "fixation", "definition": "Period between saccades. ~200ms. Substrate analogue: substrate's sustained-attention dwell.", "category": "attention"},
+    {"name": "smooth_pursuit", "definition": "Slow eye movement tracking moving target. Substrate analogue: substrate's continuous-attention tracking.", "category": "attention"}
+  ],
+  "rules": [
+    {"name": "visual_hierarchy_builds_invariance", "head": "the substrate's visual pipeline processes input from V1 upward", "body": "each level builds invariance to nuisance variables (position, scale, viewpoint). High-level neurons respond invariantly to object identity. Substrate's hierarchical abstraction."},
+    {"name": "cortical_magnification_reflects_behavioural_importance", "head": "the substrate allocates visual processing resources", "body": "behaviourally important regions (fovea) get disproportionate cortex. Substrate's attention-weighted allocation."},
+    {"name": "context_biases_object_recognition", "head": "the substrate recognises an object", "body": "scene context primes consistent categories + suppresses inconsistent ones. Substrate's context-conditioned Concept activation."},
+    {"name": "gestalt_grouping_organizes_features", "head": "the substrate processes multiple visual features", "body": "it groups them by proximity, similarity, closure, continuity, common fate. Substrate's compositional emergence."},
+    {"name": "saccades_redirect_high_acuity_processing", "head": "the substrate's peripheral vision detects something interesting", "body": "a saccade brings the fovea + high-acuity processing to that location. Substrate's attention-redirect mechanism."}
+  ]
+}

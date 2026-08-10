@@ -1,0 +1,55 @@
+{
+  "id": "semantic_tropes",
+  "version": "1.0.0",
+  "depends_on": ["narrative_tropes"],
+  "description": "SEMANTIC TROPES ARE THE CONTENT-RELATION MORALS a story instantiates -- one axis ACROSS from narrative_tropes' ARC-SHAPE tropes. Where narrative_tropes decodes a trope from the ARC STRUCTURE (does the arc carry a problem/resolution role? an indirect causal edge? a plural affected entity?), this codebook decodes a trope from the PARTICIPANT-RELATION PATTERN read off the situation model's own already-committed events (WHO acts on WHOM, in what order, and the outcome valence -- which protagonist ends acting/gaining vs passive). The distinction is the whole point of this seed: a structural learned trope (LEARNED_PROBLEM / LEARNED_INCREMENTAL) is COARSE -- it names a shape, not a moral. A semantic trope names the moral from the CONTENT RELATION: A spares B then B saves A = RECIPROCITY (a kindness is repaid); A uses praise then A takes B's thing = FLATTERY/DECEPTION; A stores in plenty then A consumes its own store while B idled = FORESIGHT. Every content token (REVERSAL / SPEECH_DEED / STORE_CONSUME / ...) is a MECHANICAL existence check over the children SmEvents' own idx_protagonist/arg1/verb-lexname (the SAME 'mechanical signal -> single-token skeleton' shape narrative_tropes' _build_tokens uses, one axis across), NEVER a moral-name literal -- the SEMANTIC-TROPE NAME is always the winning ShapeSignatureSemanticTrope's own `name`/`theme` attr, read off ShapeDecode's own set-cover `plan`. `label_candidates` supplies TV Tropes search phrases (domains/tropes_teacher.py's corpus, used ONLY to attach a citable name to an already-decided trope). A content token no seeded pattern covers is a RESIDUAL that mints a LEARNED ShapeSignatureSemanticTrope quantum FROM that residual content relation (the sd_mint_quantum precedent, one axis across from narrative_tropes' structural learned quantum) -- dynamic quantization at the CONTENT level. The REVERSAL token reuses nested_reading's own RETURN_ACTION reversal (an earlier deed A->B, a later reversed deed B->A over the same pair, DEEDS not words -- verb.communication is excluded so a mutual-flattery exchange is NOT mistaken for a returned kindness); `valence` is this schema's held moral-valence characterization (mutual / asymmetric / split), read off verbatim, cross-checked against the computed protagonist outcome (who acts last / gains vs who is left passive).",
+  "microtheory": {
+    "name": "semantic_tropes",
+    "description": "The content-relation moral (reciprocity/flattery/foresight) a story's participant-relation pattern + outcome valence instantiates, decoded by ShapeDecode set-cover against a dedicated ShapeSignatureSemanticTrope codebook -- one axis ACROSS from narrative_tropes' arc-shape tropes, and grown by the sd_mint_quantum loop at the content level."
+  },
+  "nodes": [
+    {
+      "local_id": 1,
+      "type": "ShapeSignatureSemanticTrope",
+      "attrs": {
+        "name": "RECIPROCITY",
+        "kind": "semantic_trope",
+        "signature": "[[\"REVERSAL\"]]",
+        "theme": "a kindness is repaid",
+        "valence": "mutual",
+        "line": "A kindness is repaid -- the one who was spared returns the deed. Gratitude: the mercy an actor gives comes back as a rescue when the roles reverse. Read off the cross-episode role-reversal (an earlier deed A->B, a later reversed deed B->A over the same pair), not the arc shape.",
+        "label_candidates": "[\"LaserGuidedKarma\", \"PayItForward\", \"TitForTat\"]",
+        "note": "The content token REVERSAL: an earlier SmEvent carries a non-communication DEED (agent=A, patient=B) and a later SmEvent the REVERSED deed (agent=B, patient=A) over the same two entities -- the actor/recipient role-reversal that IS reciprocity. Words are excluded (verb.communication), so a mutual-flattery exchange never reads as a returned kindness. The moral is the CONTENT RELATION (who returns whose deed), not the arc's problem/resolution shape."
+      }
+    },
+    {
+      "local_id": 2,
+      "type": "ShapeSignatureSemanticTrope",
+      "attrs": {
+        "name": "FLATTERY",
+        "kind": "semantic_trope",
+        "signature": "[[\"SPEECH_DEED\"]]",
+        "theme": "flattery is used to gain another's loss",
+        "valence": "asymmetric",
+        "line": "Flattery is bait -- an actor uses honeyed words on another, then converts the talk into a deed that gains at the other's expense. Do not trust a flatterer; the praise is a means, not a tribute. Read off the same agent doing a communication act to a second party then a non-communication deed, the flatterer ending as the one who acts/gains while the flattered is left passive.",
+        "label_candidates": "[\"ManipulativeBastard\", \"HoneyTrap\", \"Flattery\"]",
+        "note": "The content token SPEECH_DEED: ONE agent A performs a verb.communication SmEvent directed at another entity B, then a LATER non-communication eventive SmEvent -- talk converted into a deed. The asymmetric valence (A acts/gains, B passive) is read off which protagonist is the final actor. The moral is the CONTENT RELATION (praise-as-means), not the arc shape."
+      }
+    },
+    {
+      "local_id": 3,
+      "type": "ShapeSignatureSemanticTrope",
+      "attrs": {
+        "name": "FORESIGHT",
+        "kind": "semantic_trope",
+        "signature": "[[\"STORE_CONSUME\"]]",
+        "theme": "the provident outlast the idle",
+        "valence": "split",
+        "line": "Provide in the plenty for the lean time -- the one who stores in season consumes its own store when the hardship comes, while the idle one is left with nothing. Foresight outlasts idleness. Read off one agent doing a verb.possession (store) deed over an object and later a verb.consumption deed over the SAME object, the split valence (provider survives, idler passive) confirmed by which protagonist is the final actor.",
+        "label_candidates": "[\"CrazyPrepared\", \"ProperlyParanoid\"]",
+        "note": "The content token STORE_CONSUME: ONE agent A performs a verb.possession SmEvent over object X and a LATER verb.consumption SmEvent over the SAME object X -- provision then consumption of its own store. The split valence (provider met, idler thwarted) is read off the final-actor outcome. The moral is the CONTENT RELATION (store-then-consume-own), not the arc shape."
+      }
+    }
+  ],
+  "edges": []
+}

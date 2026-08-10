@@ -1,0 +1,451 @@
+{
+  "id": "figure_ground",
+  "version": "1.0.0",
+  "depends_on": [
+    "perception_core"
+  ],
+  "description": "The agent's SELF-COMPOSED figure/ground understanding as native concept definitions (registered for Holds): is_region / region_touches_boundary / bbox_inside_play atoms, composed into background_region (the ground), bounded_area (a THING), in_play. Passability = understanding bounds: a bound is impassable by default; the bounded_area is navigable. Ported from domains/figure_ground_concepts.py (CuriousAgent interface) to native register_concept Term-JSON.",
+  "concepts": [
+    {
+      "name": "is_region",
+      "domain": "space",
+      "definition": {
+        "type": "Gte",
+        "a": {
+          "type": "Count",
+          "source": {
+            "type": "InNeighbours",
+            "node": {
+              "type": "Var",
+              "name": "x"
+            },
+            "edge_type": "within"
+          }
+        },
+        "b": {
+          "type": "Lit",
+          "value": 1
+        }
+      },
+      "comment": "atom: a Location with >=1 member cell (within-edge). Perceptual."
+    },
+    {
+      "name": "region_touches_boundary",
+      "domain": "space",
+      "definition": {
+        "type": "Exists",
+        "source": {
+          "type": "InNeighbours",
+          "node": {
+            "type": "Var",
+            "name": "x"
+          },
+          "edge_type": "within"
+        },
+        "var_name": "c",
+        "predicate": {
+          "type": "Or",
+          "items": [
+            {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "c"
+                },
+                "key": "row"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 0
+              }
+            },
+            {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "c"
+                },
+                "key": "row"
+              },
+              "b": {
+                "type": "Var",
+                "name": "ymax"
+              }
+            },
+            {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "c"
+                },
+                "key": "col"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 0
+              }
+            },
+            {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "c"
+                },
+                "key": "col"
+              },
+              "b": {
+                "type": "Var",
+                "name": "xmax"
+              }
+            }
+          ]
+        }
+      },
+      "comment": "atom: some member cell sits on the world's edge (row/col at an extremity; ymax/xmax bound at eval). Perceptual."
+    },
+    {
+      "name": "bbox_inside_play",
+      "domain": "space",
+      "definition": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Gte",
+            "a": {
+              "type": "MinOver",
+              "source": {
+                "type": "InNeighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "x"
+                },
+                "edge_type": "within"
+              },
+              "var_name": "c",
+              "value": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "c"
+                },
+                "key": "row"
+              },
+              "default": {
+                "type": "Lit",
+                "value": 0
+              }
+            },
+            "b": {
+              "type": "Var",
+              "name": "pminrow"
+            }
+          },
+          {
+            "type": "Lte",
+            "a": {
+              "type": "MaxOver",
+              "source": {
+                "type": "InNeighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "x"
+                },
+                "edge_type": "within"
+              },
+              "var_name": "c",
+              "value": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "c"
+                },
+                "key": "row"
+              },
+              "default": {
+                "type": "Lit",
+                "value": 0
+              }
+            },
+            "b": {
+              "type": "Var",
+              "name": "pmaxrow"
+            }
+          },
+          {
+            "type": "Gte",
+            "a": {
+              "type": "MinOver",
+              "source": {
+                "type": "InNeighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "x"
+                },
+                "edge_type": "within"
+              },
+              "var_name": "c",
+              "value": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "c"
+                },
+                "key": "col"
+              },
+              "default": {
+                "type": "Lit",
+                "value": 0
+              }
+            },
+            "b": {
+              "type": "Var",
+              "name": "pmincol"
+            }
+          },
+          {
+            "type": "Lte",
+            "a": {
+              "type": "MaxOver",
+              "source": {
+                "type": "InNeighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "x"
+                },
+                "edge_type": "within"
+              },
+              "var_name": "c",
+              "value": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "c"
+                },
+                "key": "col"
+              },
+              "default": {
+                "type": "Lit",
+                "value": 0
+              }
+            },
+            "b": {
+              "type": "Var",
+              "name": "pmaxcol"
+            }
+          }
+        ]
+      },
+      "comment": "atom: the region's bounding box sits inside the play area's bbox (play bbox bound at eval). Perceptual."
+    },
+    {
+      "name": "background_region",
+      "domain": "space",
+      "definition": {
+        "type": "Holds",
+        "concept": "region_touches_boundary",
+        "node": {
+          "type": "Var",
+          "name": "x"
+        }
+      },
+      "comment": "the GROUND: a region that touches the world's boundary."
+    },
+    {
+      "name": "bounded_area",
+      "domain": "space",
+      "definition": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Holds",
+            "concept": "is_region",
+            "node": {
+              "type": "Var",
+              "name": "x"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Holds",
+              "concept": "background_region",
+              "node": {
+                "type": "Var",
+                "name": "x"
+              }
+            }
+          }
+        ]
+      },
+      "comment": "a THING: is_region AND NOT background_region \u2014 a bounded interior area. The navigable area the avatar is in is the bounded_area; its bounds are impassable by default (testable, not required)."
+    },
+    {
+      "name": "in_play",
+      "domain": "space",
+      "definition": {
+        "type": "Holds",
+        "concept": "bbox_inside_play",
+        "node": {
+          "type": "Var",
+          "name": "x"
+        }
+      },
+      "comment": "enclosed by the play area."
+    },
+    {
+      "name": "cell_in_region",
+      "domain": "space",
+      "definition": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Gte",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "x"
+              },
+              "key": "row"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "y"
+              },
+              "key": "minrow"
+            }
+          },
+          {
+            "type": "Lte",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "x"
+              },
+              "key": "row"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "y"
+              },
+              "key": "maxrow"
+            }
+          },
+          {
+            "type": "Gte",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "x"
+              },
+              "key": "col"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "y"
+              },
+              "key": "mincol"
+            }
+          },
+          {
+            "type": "Lte",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "x"
+              },
+              "key": "col"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "y"
+              },
+              "key": "maxcol"
+            }
+          }
+        ]
+      },
+      "comment": "binary (cell x, region y): the cell's position falls within the region's measured bounds. The bounds-containment that lets a perceived figure become a region the figure/ground concepts evaluate over \u2014 composition, not a Python grouping or a new primitive."
+    },
+    {
+      "name": "shares_edge",
+      "domain": "space",
+      "definition": {
+        "type": "Eq",
+        "a": {
+          "type": "Plus",
+          "items": [
+            {
+              "type": "Abs",
+              "arg": {
+                "type": "Minus",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "x"
+                  },
+                  "key": "row"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "y"
+                  },
+                  "key": "row"
+                }
+              }
+            },
+            {
+              "type": "Abs",
+              "arg": {
+                "type": "Minus",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "x"
+                  },
+                  "key": "col"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "y"
+                  },
+                  "key": "col"
+                }
+              }
+            }
+          ]
+        },
+        "b": {
+          "type": "Lit",
+          "value": 1
+        }
+      },
+      "comment": "binary (cell x, cell y): the cells are adjacent (Manhattan distance 1, 4-connectivity). GESTALT PROXIMITY grounded \u2014 the order-N 'shared edges' that form the routable graph. Precise/local (diagonals do NOT share an edge), unlike bbox containment. Pairs with the figure/ground covering node: parts share edges, the covering node covers the whole."
+    }
+  ]
+}

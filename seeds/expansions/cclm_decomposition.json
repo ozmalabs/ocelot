@@ -1,0 +1,106 @@
+{
+  "id": "cclm_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "chroma_from_luma",
+  "in_microtheory": "video_coding_theory",
+  "description": "VVC's Cross-Component Linear Model (CCLM) decomposed. Same insight as AV1's CFL — luma and chroma edges align in YCbCr, so chroma can be predicted from co-located reconstructed luma via a linear model. CCLM derives the linear model's slope and intercept from already-decoded neighbour samples (no per-block signalling needed). Three variants: CCLM-LT (use top + left neighbours), CCLM-L (left only), CCLM-T (top only).",
+  "sub_mechanisms": [
+    {
+      "name": "linear_model_form",
+      "definition": "Predicted chroma sample C(x,y) = a * Y_down(x,y) + b, where Y_down is the down-sampled co-located luma, a is the model slope, b is the intercept.",
+      "why": "Linear model is the simplest non-trivial relationship between luma and chroma. Captures the dominant correlation (chroma edges follow luma edges) at minimal compute (one multiply + one add per sample).",
+      "category": "cclm_mechanism"
+    },
+    {
+      "name": "luma_downsampling",
+      "definition": "In 4:2:0 content, luma has 4 samples per chroma sample. CCLM downsamples luma to the chroma grid via a fixed [1, 2, 1]/4 filter or a 6-tap filter, depending on profile.",
+      "why": "Chroma is at half resolution; we need a co-located luma sample per chroma sample. The downsampling filter is spec-defined so encoder and decoder agree. [1,2,1] is simple and effective; 6-tap is sharper for high-detail content.",
+      "category": "cclm_mechanism"
+    },
+    {
+      "name": "model_derivation_from_neighbours",
+      "definition": "Slope a = (max_C - min_C) / (max_Y - min_Y), intercept b = min_C - a * min_Y, where (max_Y, max_C) and (min_Y, min_C) are the largest and smallest co-located neighbour pairs.",
+      "why": "Slope-intercept derivation from 2 extreme samples is robust and cheap: no division required (precomputed lookup table), no matrix solve. The extremes capture the line through the dominant correlation; less robust than least squares but much cheaper.",
+      "category": "cclm_mechanism"
+    },
+    {
+      "name": "two_sample_extreme_method",
+      "definition": "Use only 2 extreme samples (max and min by luma value) from the neighbour set, not all neighbours.",
+      "why": "Full least-squares would need a 2x2 matrix solve and division. Two-sample extreme method is comparable in quality on natural images while being much cheaper. VVC's adoption of this method (over least-squares) was driven by hardware constraints.",
+      "category": "cclm_mechanism"
+    },
+    {
+      "name": "CCLM_LT_mode",
+      "definition": "Use both top and left neighbour samples for model derivation.",
+      "why": "More neighbours = more samples to find extremes from = more robust model. Default mode for typical blocks where both neighbours are available.",
+      "category": "cclm_mechanism"
+    },
+    {
+      "name": "CCLM_L_mode",
+      "definition": "Use only left neighbour samples (top samples ignored even if available).",
+      "why": "When top neighbours are from a different content region (vertical edge between block and top neighbour), they'd bias the model. Left-only mode lets the encoder dodge the bad correlation. Particularly useful at vertical scene boundaries.",
+      "category": "cclm_mechanism"
+    },
+    {
+      "name": "CCLM_T_mode",
+      "definition": "Use only top neighbour samples (left samples ignored).",
+      "why": "Symmetric counterpart to CCLM-L; for blocks where left neighbours are unreliable (horizontal scene boundary).",
+      "category": "cclm_mechanism"
+    },
+    {
+      "name": "MMLM_extension",
+      "definition": "Multi-Mode Linear Model: instead of one linear model for the whole block, split neighbours by luma value into two groups, derive separate (a, b) for each, apply per-sample depending on which group the luma value falls in.",
+      "why": "Some blocks have bimodal chroma-luma relationships (e.g., a foreground object with one chroma trend, background with another). MMLM captures this with two linear models without explicit segmentation.",
+      "category": "cclm_mechanism"
+    },
+    {
+      "name": "shared_division_table",
+      "definition": "The (max_C - min_C) / (max_Y - min_Y) division is performed via a precomputed lookup table indexed by (max_Y - min_Y), avoiding actual division.",
+      "why": "Division is expensive on most hardware. A small lookup table (1KB or less) gives sufficient accuracy for CCLM at zero division cost. Standard codec optimisation.",
+      "category": "cclm_mechanism"
+    },
+    {
+      "name": "signalling_cost",
+      "definition": "CCLM mode selection is 1-2 bits within the chroma intra mode signalling (CCLM-LT vs CCLM-L vs CCLM-T plus 'no CCLM' fallback to standard chroma intra modes).",
+      "why": "Per-block CCLM choice is cheap to signal. The linear-model parameters themselves are derived (not signalled), so the only cost is which neighbours to use.",
+      "category": "cclm_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "luma_chroma_correlation_enables_linear_prediction",
+      "if": ["YCbCr content's chroma edges align with luma edges"],
+      "then": ["a linear chroma=f(luma) model is a good predictor"],
+      "why": "YCbCr is an orthogonal-ish color space; image content has edges from object boundaries that span luma and chroma identically. The relationship is approximately linear over local neighbourhoods (constant slope/intercept), making a 2-parameter model adequate.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "extreme_sample_method_trades_robustness_for_speed",
+      "if": ["a linear model must be derived in hardware-constrained time"],
+      "then": ["the 2-extreme-sample method beats least-squares on cost without significant quality loss"],
+      "why": "Least-squares needs O(N) operations per sample plus a matrix inversion. The 2-extreme method needs O(N) operations to find extremes plus a table lookup. Quality difference is ~0.1% bitrate on natural content; hardware cost difference is significant.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "neighbour_subset_modes_handle_boundary_cases",
+      "if": ["the block sits at a content boundary where one neighbour direction is unreliable"],
+      "then": ["CCLM-L or CCLM-T captures only the trustworthy direction"],
+      "why": "Bad neighbours bias the linear model toward the wrong slope/intercept. Mode flexibility lets the encoder reject the bad neighbours via R-D cost rather than always-use-everything.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "MMLM_captures_bimodal_content",
+      "if": ["a block has bimodal luma-chroma relationships"],
+      "then": ["two linear models outperform one"],
+      "why": "Bimodal content (foreground vs background) has different correlation lines. One model averages them poorly; two models capture each line separately. Cheap extension via a luma-threshold-based split point.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "derived_parameters_save_signalling",
+      "if": ["model parameters are derivable from neighbour samples"],
+      "then": ["no per-block signalling is needed for the model itself"],
+      "why": "Encoder and decoder run the same derivation rule. Only the MODE (which neighbours to use) needs signalling. The parameters (a, b) are derived deterministically. Substantial bit savings vs explicit signalling.",
+      "soundness_category": "cost_equivalence"
+    }
+  ]
+}

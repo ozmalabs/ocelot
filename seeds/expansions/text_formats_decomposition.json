@@ -1,0 +1,124 @@
+{
+  "id": "text_formats_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "CSV",
+  "in_microtheory": "databases_and_storage",
+  "description": "Text formats decomposed: CSV, JSON, YAML, TOML, XML. Their actual semantics, quoting + escaping rules, type systems, common pitfalls, and modern variants (JSONL, JSON5, JSONLD, YAML 1.1 vs 1.2, etc.).",
+  "sub_mechanisms": [
+    {
+      "name": "CSV_quoting",
+      "definition": "Field containing comma, quote, or newline must be quoted. Internal quotes doubled. RFC 4180.",
+      "why": "Embed delimiters safely. Different tools differ on edge cases (Excel uses comma sometimes, semicolon in EU locales). Most-debated text format spec — many incompatible 'CSV' dialects exist.",
+      "category": "text_format_mechanism"
+    },
+    {
+      "name": "CSV_header_optional",
+      "definition": "First row may or may not contain column names. No way to tell from data alone — context required.",
+      "why": "Source of many parsing bugs. Some tools assume header; others assume data. Sniffer heuristics (csv.Sniffer in Python) try to detect. Best practice: always have header.",
+      "category": "text_format_mechanism"
+    },
+    {
+      "name": "CSV_type_inference",
+      "definition": "All values are strings. Reader infers types: '1' → int, '1.0' → float, 'true' → bool, '' → null/empty.",
+      "why": "Type inference is brittle: '01' (zip code) becomes int, dropping leading zero. Dates parsed differently per locale. Best practice: explicit schema or schema-on-read with strict types.",
+      "category": "text_format_mechanism"
+    },
+    {
+      "name": "JSON_data_model",
+      "definition": "Object (key-value), array, string, number, boolean, null. No date, no binary, no integer/float distinction.",
+      "why": "Simple + universal. Number type ambiguity (1.0 vs 1) is JSON's biggest data-quality issue. Lossy round-trip for large integers (JavaScript's 53-bit float limit).",
+      "category": "text_format_mechanism"
+    },
+    {
+      "name": "JSON_parsing_streaming",
+      "definition": "Standard JSON requires whole document for valid parse. Streaming parsers (SAX-style) emit events as they go.",
+      "why": "Large JSON documents (gigabytes) can't fit in memory. Streaming parsers (jq, ijson) emit events; consumer assembles. Trade memory for added complexity.",
+      "category": "text_format_mechanism"
+    },
+    {
+      "name": "JSONL_NDJSON_streaming",
+      "definition": "JSON Lines: one JSON value per line. Streaming-friendly by construction.",
+      "why": "Each line parsed independently. Append-only friendly (log lines). Standard for log files, streaming pipelines, ML training datasets. The 'fixed' JSON for big-data context.",
+      "category": "text_format_mechanism"
+    },
+    {
+      "name": "JSON_schema",
+      "definition": "Standard for describing JSON structure (RFC 8927). $schema URL, type, properties, required, format keywords.",
+      "why": "Validation + documentation. OpenAPI / Swagger uses for API specs. Helps catch mismatches early. Without it, JSON is structurally untyped.",
+      "category": "text_format_mechanism"
+    },
+    {
+      "name": "YAML_indentation_significance",
+      "definition": "YAML uses indentation (like Python) to denote nesting. Tabs disallowed by most parsers.",
+      "why": "Human-readable structure. Whitespace bugs: mixing tabs + spaces, inconsistent indentation. Single source of YAML reliability issues in production (Kubernetes manifests).",
+      "category": "text_format_mechanism"
+    },
+    {
+      "name": "YAML_norway_problem",
+      "definition": "Norway's country code 'NO' parses as boolean false in YAML 1.1. Same for 'YES', 'ON', 'OFF'.",
+      "why": "YAML 1.1's eager boolean parsing. Fixed in YAML 1.2 (only true/false/yes/no, lowercase). Many parsers still default to 1.1. Type-confused values in data is the issue.",
+      "category": "text_format_mechanism"
+    },
+    {
+      "name": "YAML_anchors_aliases",
+      "definition": "&name = anchor; *name = alias to it. << = merge key for object inheritance.",
+      "why": "DRY in config: reuse definitions. Powerful but easy to abuse. Some implementations don't support them; tools differ. Best practice: limit use.",
+      "category": "text_format_mechanism"
+    },
+    {
+      "name": "TOML_syntax",
+      "definition": "Sections with [name], key = value. Strict types (string, integer, float, bool, date, array, table). Multiline strings via triple-quote.",
+      "why": "INI-like clarity + JSON-like typing. Rust's Cargo.toml, Python's pyproject.toml. Less ambiguous than YAML; more readable than JSON for config. Won modern config format wars.",
+      "category": "text_format_mechanism"
+    },
+    {
+      "name": "XML_attributes_vs_elements",
+      "definition": "XML: <elem attr='value'>content</elem>. Same data expressible as <elem><attr>value</attr></elem>. Design choice.",
+      "why": "Persistent debate: attributes for metadata, elements for content; or always elements; or always attributes. Schema (XSD) constrains. Modern XML usage diminishing in favor of JSON.",
+      "category": "text_format_mechanism"
+    },
+    {
+      "name": "XML_namespaces",
+      "definition": "Prefix:localName for disambiguation. xmlns:soap='...' declares namespace mapping.",
+      "why": "Mix XML schemas from different sources. SOAP uses heavily. Parsers must handle namespace resolution. Important historically; less so in modern microservice JSON world.",
+      "category": "text_format_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "CSV_universal_but_lossy_typing",
+      "if": ["data exchange uses CSV"],
+      "then": ["type information must be conveyed out-of-band"],
+      "why": "CSV has no types — everything is text. Receiver parses based on assumed schema. Numeric strings, dates, NULLs all ambiguous. Production systems use Parquet / JSON / Avro to avoid this.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "JSONL_streaming_friendly",
+      "if": ["data is per-record JSON Lines"],
+      "then": ["it can be processed line-by-line without loading all at once"],
+      "why": "Each line is independent JSON value. Process millions of lines with constant memory. JSON (single document) requires whole-file load. The streaming choice for big-data JSON.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "YAML_complexity_causes_bugs",
+      "if": ["YAML is used for configuration with many edge cases"],
+      "then": ["subtle parsing differences cause bugs"],
+      "why": "Indentation, boolean coercion, anchors, multiple specs (1.1 vs 1.2). Same YAML parses differently in different tools. Best practice: minimal YAML, use schemas, prefer TOML/JSON for new config.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "JSON_number_precision_loss",
+      "if": ["JSON contains integers > 2^53"],
+      "then": ["JavaScript parsers lose precision (silently)"],
+      "why": "JavaScript numbers are 64-bit float. Integers up to 2^53 representable exactly; beyond that, rounded. JSON spec allows arbitrary precision but practical parsers don't. Work-around: large integers as strings.",
+      "soundness_category": "referential_transparency"
+    },
+    {
+      "name": "TOML_for_config_won_over_YAML",
+      "if": ["a new tool needs configuration format"],
+      "then": ["TOML is increasingly the chosen default"],
+      "why": "Rust ecosystem (Cargo) standardised on TOML. Python (pyproject.toml). Many new tools follow. Reasons: less ambiguous than YAML, more readable than JSON, type-rich. The 2020s config trend.",
+      "soundness_category": "extensional_equivalence"
+    }
+  ]
+}

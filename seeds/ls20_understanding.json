@@ -1,0 +1,1566 @@
+{
+ "id": "ls20_understanding",
+ "version": "1.0.0",
+ "depends_on": [
+  "shape_decode_loop"
+ ],
+ "area": "retina",
+ "description": "ls20 UNDERSTANDING (block 221000): winning is a SIDE EFFECT of understanding. The curiosity drive (uh_probe_pick, Argmin visits -- least-modelled first, NO goal/win term) routes the agent to probe stations; the 217000 sd-loop recognises each station's transform; uh_mint/uh_confirm/uh_revise build a station->transform MODEL by predict-and-residual (uh_predict is the prediction, the residual is the surprise); uh_deliver_route consults the LEARNED model so winning FALLS OUT. The win_bound (wb_*) control optimises goal-reach directly (Argmin distance-to-goal) with no persistent model -- the labelled baseline the reframe is measured against. Guarded on understand_on==1 (default-OFF, byte-identical otherwise), the arm, and the tick phase. Integer-native; no Rust; reuses the existing shape_decode_loop.",
+ "microtheory": {
+  "name": "ls20_understanding",
+  "description": "Understand the mechanic; winning is downstream. Curiosity routes to the under-modelled; predict-and-residual grows the model; the goal is never an objective function -- only a thing to model and, once understood, to satisfy as a consequence."
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [],
+ "rules": [
+  {
+   "name": "uh_probe_pick",
+   "comment": "CURIOSITY: probe the least-observed station (Argmin visits). Novelty drive -- NO goal/win objective. One station per pick cycle.",
+   "match": [
+    [
+     "g",
+     "has_station",
+     "s"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "understand_on"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "arm"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "understand"
+        }
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "phase"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "pick"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "g"
+        },
+        "edge_type": "probing",
+        "any_type": false
+       },
+       "var_name": "p",
+       "predicate": {
+        "type": "Lit",
+        "value": true
+       }
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Var",
+       "name": "s"
+      },
+      "b": {
+       "type": "Argmin",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "g"
+        },
+        "edge_type": "has_station",
+        "any_type": false
+       },
+       "var_name": "C",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "C"
+        },
+        "key": "visits"
+       },
+       "default": null
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_edge",
+     "g",
+     "probing",
+     "s"
+    ],
+    [
+     "set_attr",
+     "g",
+     "probe_r",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "s"
+       },
+       "key": "r"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "g",
+     "probe_c",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "s"
+       },
+       "key": "c"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "uh_predict",
+   "comment": "TEST(predict): the probed station's hypothesis key is the predicted effect. Unmodelled -> stays 'none' (adapter preset).",
+   "match": [
+    [
+     "g",
+     "probing",
+     "s"
+    ],
+    [
+     "s",
+     "has_hyp",
+     "h"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "understand_on"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "arm"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "understand"
+        }
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "phase"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "predict"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "g",
+     "predicted_key",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "h"
+       },
+       "key": "key"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "uh_mint",
+   "comment": "RESIDUAL->MODEL: first observation of an unmodelled station mints a Hypothesis carrying the recognised transform as its prediction. add_node_if_absent guards against a double-mint.",
+   "match": [
+    [
+     "g",
+     "probing",
+     "s"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "understand_on"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "arm"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "understand"
+        }
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "phase"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "observe"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "s"
+        },
+        "edge_type": "has_hyp",
+        "any_type": false
+       },
+       "var_name": "h",
+       "predicate": {
+        "type": "Lit",
+        "value": true
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node_if_absent",
+     "hyp",
+     "Hypothesis",
+     {
+      "key": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "g"
+        },
+        "key": "observed_key"
+       }
+      },
+      "conf": 1.0,
+      "kind": "station_effect"
+     }
+    ],
+    [
+     "add_edge",
+     "s",
+     "has_hyp",
+     "hyp"
+    ],
+    [
+     "add_edge",
+     "g",
+     "minted",
+     "hyp"
+    ]
+   ]
+  },
+  {
+   "name": "uh_confirm",
+   "comment": "RESIDUAL->COMPRESS: predicted key == observed key -> the hypothesis is confirmed (conf += 1). Zero-residual = learning.",
+   "match": [
+    [
+     "g",
+     "probing",
+     "s"
+    ],
+    [
+     "s",
+     "has_hyp",
+     "h"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "understand_on"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "arm"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "understand"
+        }
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "phase"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "observe"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "h"
+       },
+       "key": "key"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "observed_key"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "h",
+     "conf",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "h"
+         },
+         "key": "conf"
+        },
+        {
+         "type": "Lit",
+         "value": 1.0
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "uh_revise",
+   "comment": "RESIDUAL->REVISE: predicted key != observed key -> the hypothesis was wrong; revise to the observed key, reset conf.",
+   "match": [
+    [
+     "g",
+     "probing",
+     "s"
+    ],
+    [
+     "s",
+     "has_hyp",
+     "h"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "understand_on"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "arm"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "understand"
+        }
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "phase"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "observe"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "h"
+        },
+        "key": "key"
+       },
+       "b": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "g"
+        },
+        "key": "observed_key"
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "h",
+     "key",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "observed_key"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "h",
+     "conf",
+     1.0
+    ]
+   ]
+  },
+  {
+   "name": "uh_advance",
+   "comment": "advance the investigation: visits += 1, release the probing edge so the next Argmin(visits) picks a fresher station.",
+   "match": [
+    [
+     "g",
+     "probing",
+     "s"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "understand_on"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "arm"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "understand"
+        }
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "phase"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "advance"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "s",
+     "visits",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "s"
+         },
+         "key": "visits"
+        },
+        {
+         "type": "Lit",
+         "value": 1.0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "del_edge",
+     "g",
+     "probing",
+     "s"
+    ]
+   ]
+  },
+  {
+   "name": "uh_deliver_route",
+   "comment": "WIN AS SIDE EFFECT: the station the LEARNED model says applies the required transform (h.key == req_key). Model lookup, not search.",
+   "match": [
+    [
+     "g",
+     "has_station",
+     "s"
+    ],
+    [
+     "s",
+     "has_hyp",
+     "h"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "understand_on"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "arm"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "understand"
+        }
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "phase"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "deliver"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "symbol_matches_goal"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "h"
+       },
+       "key": "key"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "req_key"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "s"
+       },
+       "key": "used"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "g",
+     "waypoint",
+     "station"
+    ],
+    [
+     "set_attr",
+     "g",
+     "wp_r",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "s"
+       },
+       "key": "r"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "g",
+     "wp_c",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "s"
+       },
+       "key": "c"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "uh_deliver_goal",
+   "comment": "WIN AS SIDE EFFECT: carried matches goal -> route to the goal cell and deliver (the terminal act of the understood model).",
+   "match": [
+    [
+     "g",
+     "has_ping",
+     "p"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "understand_on"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "arm"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "understand"
+        }
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "phase"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "deliver"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "symbol_matches_goal"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "g",
+     "waypoint",
+     "goal"
+    ],
+    [
+     "set_attr",
+     "g",
+     "wp_r",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "goal_r"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "g",
+     "wp_c",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "goal_c"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "uh_level_start",
+   "comment": "on a new level the agent releases its stale attention; the learned model persists (understanding carries across levels).",
+   "match": [
+    [
+     "g",
+     "probing",
+     "s"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "understand_on"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "arm"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "understand"
+        }
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "phase"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "level_start"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "del_edge",
+     "g",
+     "probing",
+     "s"
+    ]
+   ]
+  },
+  {
+   "name": "wb_level_start",
+   "comment": "CONTROL: on a new level the win-bound agent releases its attention (it holds no model to carry -- it re-searches).",
+   "match": [
+    [
+     "g",
+     "probing",
+     "s"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "understand_on"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "arm"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "win_bound"
+        }
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "phase"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "level_start"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "del_edge",
+     "g",
+     "probing",
+     "s"
+    ]
+   ]
+  },
+  {
+   "name": "wb_probe_pick",
+   "comment": "CONTROL (win-bound baseline): pick the unvisited station NEAREST THE GOAL (the win-objective). No model -> re-search every level.",
+   "match": [
+    [
+     "g",
+     "has_station",
+     "s"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "understand_on"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "arm"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "win_bound"
+        }
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "phase"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "pick"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "g"
+        },
+        "edge_type": "probing",
+        "any_type": false
+       },
+       "var_name": "p",
+       "predicate": {
+        "type": "Lit",
+        "value": true
+       }
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "s"
+       },
+       "key": "visited"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Var",
+       "name": "s"
+      },
+      "b": {
+       "type": "Argmin",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "edge_type": "has_station",
+         "any_type": false
+        },
+        "var_name": "C",
+        "predicate": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "C"
+          },
+          "key": "visited"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        }
+       },
+       "var_name": "C",
+       "value": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "C"
+            },
+            "key": "r"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "g"
+            },
+            "key": "goal_r"
+           }
+          }
+         },
+         {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "C"
+            },
+            "key": "c"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "g"
+            },
+            "key": "goal_c"
+           }
+          }
+         }
+        ]
+       },
+       "default": null
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_edge",
+     "g",
+     "probing",
+     "s"
+    ],
+    [
+     "set_attr",
+     "g",
+     "waypoint",
+     "station"
+    ],
+    [
+     "set_attr",
+     "g",
+     "wp_r",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "s"
+       },
+       "key": "r"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "g",
+     "wp_c",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "s"
+       },
+       "key": "c"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "wb_deliver_goal",
+   "comment": "CONTROL: carried matches goal -> deliver (win-bound terminal).",
+   "match": [
+    [
+     "g",
+     "has_ping",
+     "p"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "understand_on"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "arm"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "win_bound"
+        }
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "phase"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "deliver"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "symbol_matches_goal"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "g",
+     "waypoint",
+     "goal"
+    ],
+    [
+     "set_attr",
+     "g",
+     "wp_r",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "goal_r"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "g",
+     "wp_c",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "goal_c"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "wb_advance",
+   "comment": "CONTROL: mark the station visited (win-bound learns nothing persistent), release the probe so the next-nearest is picked.",
+   "match": [
+    [
+     "g",
+     "probing",
+     "s"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "understand_on"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "arm"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "win_bound"
+        }
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "phase"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "advance"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "s",
+     "visited",
+     1.0
+    ],
+    [
+     "del_edge",
+     "g",
+     "probing",
+     "s"
+    ]
+   ]
+  }
+ ]
+}

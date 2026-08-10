@@ -1,0 +1,72 @@
+{
+  "id": "inferior_colliculus",
+  "version": "1.0.0",
+  "depends_on": [
+    "cochlear_nucleus"
+  ],
+  "description": "Modulation-rate analysis above the cochlear nucleus. ModulationChannel + ModulationEvent + SyllableNucleus node types. The 4-8 Hz modulation channel carries syllable rate; cross-band peaks there are syllable-nucleus events.",
+  "nodes": [],
+  "edges": [],
+  "productions": [
+    {
+      "src": {
+        "type": "AudioStream",
+        "var": "src"
+      },
+      "edge_type": "has_modulation_channel",
+      "tgt": {
+        "type": "ModulationChannel",
+        "var": "tgt"
+      },
+      "provenance": "ic:stream_mod_channel"
+    },
+    {
+      "src": {
+        "type": "AudioStream",
+        "var": "src"
+      },
+      "edge_type": "has_modulation_event",
+      "tgt": {
+        "type": "ModulationEvent",
+        "var": "tgt"
+      },
+      "provenance": "ic:stream_mod_event"
+    },
+    {
+      "src": {
+        "type": "AudioStream",
+        "var": "src"
+      },
+      "edge_type": "has_syllable_nucleus",
+      "tgt": {
+        "type": "SyllableNucleus",
+        "var": "tgt"
+      },
+      "provenance": "ic:stream_syllable"
+    },
+    {
+      "src": {
+        "type": "ModulationEvent",
+        "var": "src"
+      },
+      "edge_type": "from_channel",
+      "tgt": {
+        "type": "ModulationChannel",
+        "var": "tgt"
+      },
+      "provenance": "ic:event_from_channel"
+    },
+    {
+      "src": {
+        "type": "SyllableNucleus",
+        "var": "src"
+      },
+      "edge_type": "contributed_by",
+      "tgt": {
+        "type": "ModulationEvent",
+        "var": "tgt"
+      },
+      "provenance": "ic:syllable_member"
+    }
+  ]
+}

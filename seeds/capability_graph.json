@@ -1,0 +1,2785 @@
+{
+ "id": "capability_graph",
+ "version": "1.0.0",
+ "depends_on": [],
+ "description": "CORE-NESS IS A MEASURED, DYNAMIC PROPERTY OF THE CAPABILITY GRAPH, NOT AN ENUM. A capability is a node with an own_proficiency (how trained the skill itself is); composes_on edges say which capabilities it is built through. Two flows are computed to fixpoint by run_rules: (1) LEVERAGE = recursive value-weighted centrality (a capability's worth includes the leverage of everything that composes on it) -> foundational, widely-depended-on skills score high; core-ness is a region on this axis (blob<peripheral<core), and it MOVES: as dependents accrue a skill climbs blob->core (and can demote), so 'core' is measured, never a flag. (2) EFFECTIVE CAPABILITY = own_proficiency MULTIPLIED by the effective capability of every foundation it composes on -> a skill is bottlenecked, multiplicatively, by its core. This is why mastered core competencies MULTIPLY into any new domain: a thin domain layer (low own_prof) on mastered high-leverage core reaches expert-approaching effective capability, because the product is dominated by the (mastered) core, while a domain expert who ground out the domain on ordinary core is dragged down multiplicatively (0.8^k). The generalist with mastered core approaches the specialist. Leverage also modulates the sufficiency throttle: low-leverage -> ~0.9 and move on (competent-man); high-leverage core -> threshold toward 1.0, never done. All graph data on the existing spine; no Rust.",
+ "microtheory": {
+  "name": "capability_graph",
+  "definition": "The agent's model of its own competence structure. Capability nodes + composes_on edges; leverage (recursive centrality, backward) and effective capability (multiplicative composition, forward) computed to fixpoint. Core-ness is measured leverage, dynamic. Mastery of high-leverage core multiplies into every domain built on it \u2014 the generalist-approaches-expert law.",
+  "category": "foundation"
+ },
+ "concepts": [
+  {
+   "name": "core_is_measured_leverage_not_enum",
+   "definition": "Core-ness is a capability's recursive leverage-centrality on the composes_on graph (value-weighted: a capability depended on by high-leverage capabilities is itself high-leverage), NOT a hardcoded category. 'core' / 'peripheral' / 'blob' are regions on the continuous leverage axis, derived. A core:bool flag would be the boundary-as-a-self_part-bool anti-pattern; leverage-centrality is the graph-native measure the agent computes about itself from its own composition graph.",
+   "category": "invariant"
+  },
+  {
+   "name": "leverage_is_dynamic",
+   "definition": "A capability's leverage MOVES. A blob is low-leverage for two reasons at once \u2014 not yet dependable enough to build on, and nothing built on it. As it is mastered (becomes dependable) and used (dependents accrue) its centrality climbs, and past thresholds it re-prices blob->peripheral->core. Bidirectional: a capability whose dependents wither, or that a better substrate displaces, demotes. Measured continuously as the graph rewires \u2014 never relabelled by hand.",
+   "category": "invariant"
+  },
+  {
+   "name": "capability_is_multiplicative_composition",
+   "definition": "Effective capability = own_proficiency * PRODUCT of the effective capabilities of the foundations a skill composes on. Composed capability is the PRODUCT, not the sum, of its parts, so a weak link anywhere drags the whole \u2014 and the gap between competence (0.9^k) and mastery (0.99^k) widens exponentially with composition depth k. This is the compounding-error wall: competent-per-step fails over long chains; mastery of the core is the base of the exponent for everything built on it.",
+   "category": "invariant"
+  },
+  {
+   "name": "generalist_approaches_expert",
+   "definition": "Because capability is multiplicative composition, mastered core competencies MULTIPLY into any new domain: a thin domain layer (low own_proficiency) on mastered high-leverage core reaches effective capability limited only by the thin layer, not dragged down by the core \u2014 while a domain expert who mastered the domain on ordinary core is multiplicatively penalised (own_prof_domain * 0.8^k). The deeper the composition, the more the generalist with mastered core overtakes the specialist. This is why passing familiarity with a field, on a maxed core, starts you near expert working level.",
+   "category": "invariant"
+  },
+  {
+   "name": "sufficiency_is_leverage_modulated",
+   "definition": "The competent-man sufficiency throttle ('~90%, then move on') is correct for a low-leverage blob and catastrophic for a high-leverage core skill. So the threshold is f(leverage): low leverage -> ~0.9 (don't over-invest a blob); high leverage -> toward 1.0 (never done, keep mastering, because the returns compound multiplicatively downstream). One measured quantity \u2014 leverage \u2014 governs both what to master and when to stop.",
+   "category": "invariant"
+  },
+  {
+   "name": "mastery_of_low_leverage_is_brittle",
+   "definition": "A domain expert's advantage collapses the moment they step into a SURROUNDING area \u2014 well observed (chess masters hold no edge on random boards, Chase & Simon; experts over-apply domain heuristics off-distribution, Einstellung; hedgehogs forecast worse than foxes off-turf). The model predicts it exactly: the expert poured mastery into LOW-leverage, domain-private nodes (depended on only within the domain), so those nodes have NO composes_on edges into the neighbouring domain \u2014 off-domain the expert falls back to ORDINARY core and effective capability drops massively, often below a generalist who mastered the HIGH-leverage core that composes into the neighbour too. Leverage IS the transfer predictor: mastery of a high-leverage node transfers everywhere it is composed-on; mastery of a low-leverage node is brittle, stranded in its domain. This is why the optimal policy (the leverage-modulated sufficiency) invests mastery in high-leverage core, not low-leverage towers.",
+   "category": "invariant"
+  },
+  {
+   "name": "expertise_is_a_structure_not_a_label",
+   "definition": "Knowing someone is 'an expert in domain D' is not enough \u2014 expertise is a STRUCTURE, not a scalar. Two experts with identical effective capability in D can have opposite capability graphs: one a brittle tower of low-leverage domain-private skills, one the same domain skill consolidated onto generic high-leverage stacks. The discriminator is GENERICITY \u2014 the mean leverage of the foundations the mastery routes through \u2014 which eff_cap(D) alone cannot show. Genericity predicts transfer: equal home competence, opposite off-domain behaviour. You must know HOW they are expert, not merely that they are.",
+   "category": "invariant"
+  },
+  {
+   "name": "expert_at_being_expert_is_consolidate_to_generic",
+   "definition": "The highest meta-skill is being an expert at BECOMING expert: when mastering a domain, decompose it (via shape-matching, 'this domain skill is like generic X') and consolidate the mastery onto GENERIC, high-leverage stacks rather than domain-private towers. The resulting domain expertise is high-genericity \u2014 it transfers to surrounding areas instead of collapsing at the boundary. This policy is itself maximally high-leverage: it applies to mastering ANY domain, so it composes into everything. It is why a generalist's domain expertise is not brittle \u2014 it was never really domain-private.",
+   "category": "invariant"
+  },
+  {
+   "name": "magic_is_tom_residual",
+   "definition": "'Magic' is the residual of a failed theory-of-mind: the part of another agent's competence you cannot reconstruct by simulating them on your own capabilities. You model others by shape-matching their operation onto skills you hold; what won't match is surprise, and felt as magic. It is measurable \u2014 legibility(observer->target) = how much of the target's competence the observer can account for \u2014 and magic = 1 - legibility.",
+   "category": "invariant"
+  },
+  {
+   "name": "legibility_is_asymmetric",
+   "definition": "Legibility flows down the genericity gradient and is GATED by the observer's mind-modelling core (ToM + shape-matching, the highest-leverage generics). A high-genericity observer can model a specialist partially \u2014 low content overlap, but structural credit from holding the meta-skill ('a deep tower I can't replicate'). A tower expert who consolidated the modelling core away finds the generalist near-pure magic ('I can't even represent how you do that'), and finds most people magic. Hence both directions of incomprehension: the specialist is opaque to the observer who can't see the hidden tower ('how does this apparently useless person do X?'), and the generalist is opaque to the specialist who lacks the toolkit to model minds at all.",
+   "category": "invariant"
+  },
+  {
+   "name": "new_frame_is_dimensional_transform",
+   "definition": "The real finding of the capability arc: for a sufficiently meta-skilled individual, a new frame requires only DIMENSIONAL TRANSFORMS of held generic shapes and almost no new actual skills. Capability is multiplicative composition over shapes; genericity holds those shapes across frames; so entering a new domain is a change of coordinates (sd-ladder rung 2, transform-in-basis; occasionally rung 3, infer-the-dimension), not the minting of new structure (rung 4). new_skill_fraction -> 0 as genericity rises. What reads as a generalist's 'magic' fluency in a new field is exactly this: they are transforming skills they already hold, not acquiring new ones. This lands the whole model back on the substrate's founding loop, dynamic quantization.",
+   "category": "invariant"
+  },
+  {
+   "name": "one_cost_model_three_grains",
+   "definition": "The whole model is one profiling-guided optimiser, and the tier-up decision is ONE cost model read at three grains. worth = value - cost, act when worth clears a margin and the thing is hot enough: compile a hot Term (L2 JIT: HotCounter vs threshold, worth its code_size_bytes), admit a hot reflex net (net-economy: residual - cost > admit_margin over the ledger window), master a hot capability (this rule: leverage - cost > tier_margin, hot enough). Same profiler (rule_costs / HotCounter), same cost model, from Term to mind. Mastery is optimisation; the hot central capability is the inner loop worth compiling.",
+   "category": "invariant"
+  },
+  {
+   "name": "proficiency_correctness_needs_an_oracle",
+   "definition": "Two dimensions of how good a skill is, both measured. EFFICIENCY (cheaper per firing => more optimised, the JIT's notion) comes free from the cost counters. CORRECTNESS (does it produce right answers) needs an ORACLE: a CapabilityTrial judged supported/refuted against ground truth \u2014 the reflex-net judge (regression-free AND faster) generalised to any capability. correctness = supported-rate feeds own_prof so effective capability reflects rightness, not just cheapness. There is no oracle-free correctness; the agent measures the hit-rate its oracle (cognition, the slow path, the environment) reports \u2014 exactly as a reflex net is judged against the cognition it caches.",
+   "category": "invariant"
+  },
+  {
+   "name": "correctness_accrues_from_a_standing_oracle",
+   "definition": "Correctness need not be hand-supplied: a standing oracle already runs inside run_rules. The reflex-net judge (supported iff regression-free AND faster vs the cognition it caches) verdicts every trial as the graph ticks; cap_harvest_reflex_verdict turns those verdicts into CapabilityTrials, so a net's correctness -> own_prof accrues live from real judging. The pattern generalises: wherever a capability's firing is judged against ground truth in the loop, correctness flows into the self-model continuously.",
+   "category": "invariant"
+  }
+ ],
+ "nodes": [
+  {
+   "local_id": 0,
+   "type": "CapabilityPolicy",
+   "attrs": {
+    "kind": "capability_policy",
+    "damping": 0.6,
+    "suff_base": 0.9,
+    "suff_slope": 0.03,
+    "suff_cap": 0.999,
+    "core_leverage": 3.0,
+    "periph_leverage": 1.6,
+    "description": "Tweakable knobs for the capability graph. damping: how far dependent-leverage propagates up the composes_on DAG. suff_base/suff_slope/suff_cap: the leverage->sufficiency-threshold curve (base at leverage 1, rising by slope per unit leverage, capped). core_leverage/periph_leverage: the region cutoffs on the leverage axis. Editing this singleton re-prices the whole self-model with zero code.",
+    "legibility_structural_base": 0.35,
+    "cost_weight": 0.01,
+    "tier_margin": 2.5,
+    "min_hotness": 1.0
+   }
+  }
+ ],
+ "edges": [],
+ "productions": [
+  {
+   "src": {
+    "type": "CapabilityRoot",
+    "var": "s"
+   },
+   "edge_type": "has_capability",
+   "tgt": {
+    "type": "Capability",
+    "var": "t"
+   },
+   "provenance": "capability_graph:has_capability"
+  },
+  {
+   "src": {
+    "type": "Capability",
+    "var": "s"
+   },
+   "edge_type": "composes_on",
+   "tgt": {
+    "type": "Capability",
+    "var": "t"
+   },
+   "provenance": "capability_graph:composes_on"
+  },
+  {
+   "src": {
+    "type": "Agent",
+    "var": "s"
+   },
+   "edge_type": "owns",
+   "tgt": {
+    "type": "Capability",
+    "var": "t"
+   },
+   "provenance": "capability_graph:owns"
+  },
+  {
+   "src": {
+    "type": "ModelAttempt",
+    "var": "s"
+   },
+   "edge_type": "observer",
+   "tgt": {
+    "type": "Agent",
+    "var": "t"
+   },
+   "provenance": "capability_graph:observer"
+  },
+  {
+   "src": {
+    "type": "ModelAttempt",
+    "var": "s"
+   },
+   "edge_type": "target",
+   "tgt": {
+    "type": "Capability",
+    "var": "t"
+   },
+   "provenance": "capability_graph:target"
+  },
+  {
+   "src": {
+    "type": "Frame",
+    "var": "s"
+   },
+   "edge_type": "requires",
+   "tgt": {
+    "type": "Capability",
+    "var": "t"
+   },
+   "provenance": "capability_graph:requires"
+  },
+  {
+   "src": {
+    "type": "FrameAcquisition",
+    "var": "s"
+   },
+   "edge_type": "by",
+   "tgt": {
+    "type": "Agent",
+    "var": "t"
+   },
+   "provenance": "capability_graph:acq_by"
+  },
+  {
+   "src": {
+    "type": "FrameAcquisition",
+    "var": "s"
+   },
+   "edge_type": "into",
+   "tgt": {
+    "type": "Frame",
+    "var": "t"
+   },
+   "provenance": "capability_graph:acq_into"
+  },
+  {
+   "src": {
+    "type": "CapabilityTrial",
+    "var": "s"
+   },
+   "edge_type": "trial_of",
+   "tgt": {
+    "type": "Capability",
+    "var": "t"
+   },
+   "provenance": "capability_graph:trial_of"
+  }
+ ],
+ "rules": [
+  {
+   "name": "cap_leverage_propagate",
+   "comment": "LEVERAGE (backward recursive centrality). leverage(B) = own_value(B) + damping * sum over the dependents that compose_on B of their leverage. Fires while it changes; converges up the composes_on DAG. Foundational, widely-depended-on capabilities accumulate high leverage \u2014 that is core-ness, measured.",
+   "match": [
+    [
+     "root",
+     "has_capability",
+     "cap"
+    ]
+   ],
+   "where": {
+    "type": "Not",
+    "arg": {
+     "type": "Eq",
+     "a": {
+      "type": "Attr",
+      "node": {
+       "type": "Var",
+       "name": "cap"
+      },
+      "key": "leverage"
+     },
+     "b": {
+      "type": "Plus",
+      "items": [
+       {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "cap"
+        },
+        "key": "own_value"
+       },
+       {
+        "type": "Times",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Pick",
+           "source": {
+            "type": "NodesOfType",
+            "node_type": "CapabilityPolicy"
+           }
+          },
+          "key": "damping"
+         },
+         {
+          "type": "Sum",
+          "source": {
+           "type": "InNeighbours",
+           "node": {
+            "type": "Var",
+            "name": "cap"
+           },
+           "edge_type": "composes_on",
+           "any_type": false
+          },
+          "var_name": "dep",
+          "value": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "dep"
+           },
+           "key": "leverage"
+          }
+         }
+        ]
+       }
+      ]
+     }
+    }
+   },
+   "effects": [
+    [
+     "set_attr",
+     "cap",
+     "leverage",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "cap"
+         },
+         "key": "own_value"
+        },
+        {
+         "type": "Times",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Pick",
+            "source": {
+             "type": "NodesOfType",
+             "node_type": "CapabilityPolicy"
+            }
+           },
+           "key": "damping"
+          },
+          {
+           "type": "Sum",
+           "source": {
+            "type": "InNeighbours",
+            "node": {
+             "type": "Var",
+             "name": "cap"
+            },
+            "edge_type": "composes_on",
+            "any_type": false
+           },
+           "var_name": "dep",
+           "value": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "dep"
+            },
+            "key": "leverage"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "cap_effective_compose",
+   "comment": "EFFECTIVE CAPABILITY (forward multiplicative composition). eff_cap(A) = own_prof(A) * PROD over the foundations A composes_on of their eff_cap. A skill is bottlenecked multiplicatively by its core. Prod over no foundations = 1, so a foundational skill's eff_cap is its own proficiency. This is the transfer law: mastered core multiplies into thin new domains.",
+   "match": [
+    [
+     "root",
+     "has_capability",
+     "cap"
+    ]
+   ],
+   "where": {
+    "type": "Not",
+    "arg": {
+     "type": "Eq",
+     "a": {
+      "type": "Attr",
+      "node": {
+       "type": "Var",
+       "name": "cap"
+      },
+      "key": "eff_cap"
+     },
+     "b": {
+      "type": "Times",
+      "items": [
+       {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "cap"
+        },
+        "key": "own_prof"
+       },
+       {
+        "type": "Prod",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "cap"
+         },
+         "edge_type": "composes_on",
+         "any_type": false
+        },
+        "var_name": "f",
+        "value": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "f"
+         },
+         "key": "eff_cap"
+        }
+       }
+      ]
+     }
+    }
+   },
+   "effects": [
+    [
+     "set_attr",
+     "cap",
+     "eff_cap",
+     {
+      "__term__": {
+       "type": "Times",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "cap"
+         },
+         "key": "own_prof"
+        },
+        {
+         "type": "Prod",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "cap"
+          },
+          "edge_type": "composes_on",
+          "any_type": false
+         },
+         "var_name": "f",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "f"
+          },
+          "key": "eff_cap"
+         }
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "cap_sufficiency_from_leverage",
+   "comment": "The sufficiency throttle threshold as a function of leverage: ~suff_base at leverage 1 (a blob \u2014 good enough, move on), rising toward suff_cap as leverage grows (a core skill \u2014 never done). The competent-man drive with its constant replaced by the measured leverage.",
+   "match": [
+    [
+     "root",
+     "has_capability",
+     "cap"
+    ]
+   ],
+   "where": {
+    "type": "Not",
+    "arg": {
+     "type": "Eq",
+     "a": {
+      "type": "Attr",
+      "node": {
+       "type": "Var",
+       "name": "cap"
+      },
+      "key": "sufficiency"
+     },
+     "b": {
+      "type": "Min",
+      "items": [
+       {
+        "type": "Attr",
+        "node": {
+         "type": "Pick",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "CapabilityPolicy"
+         }
+        },
+        "key": "suff_cap"
+       },
+       {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Pick",
+           "source": {
+            "type": "NodesOfType",
+            "node_type": "CapabilityPolicy"
+           }
+          },
+          "key": "suff_base"
+         },
+         {
+          "type": "Times",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Pick",
+             "source": {
+              "type": "NodesOfType",
+              "node_type": "CapabilityPolicy"
+             }
+            },
+            "key": "suff_slope"
+           },
+           {
+            "type": "Minus",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "cap"
+             },
+             "key": "leverage"
+            },
+            "b": {
+             "type": "Lit",
+             "value": 1.0
+            }
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    }
+   },
+   "effects": [
+    [
+     "set_attr",
+     "cap",
+     "sufficiency",
+     {
+      "__term__": {
+       "type": "Min",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Pick",
+          "source": {
+           "type": "NodesOfType",
+           "node_type": "CapabilityPolicy"
+          }
+         },
+         "key": "suff_cap"
+        },
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Pick",
+            "source": {
+             "type": "NodesOfType",
+             "node_type": "CapabilityPolicy"
+            }
+           },
+           "key": "suff_base"
+          },
+          {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Pick",
+              "source": {
+               "type": "NodesOfType",
+               "node_type": "CapabilityPolicy"
+              }
+             },
+             "key": "suff_slope"
+            },
+            {
+             "type": "Minus",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "cap"
+              },
+              "key": "leverage"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 1.0
+             }
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "cap_stage_from_leverage",
+   "comment": "The core/peripheral/blob REGION derived from leverage (>= core_leverage -> core; >= periph_leverage -> peripheral; else blob). A computed label on the continuous axis, not a set flag; it moves as leverage moves.",
+   "match": [
+    [
+     "root",
+     "has_capability",
+     "cap"
+    ]
+   ],
+   "where": {
+    "type": "Not",
+    "arg": {
+     "type": "Eq",
+     "a": {
+      "type": "Attr",
+      "node": {
+       "type": "Var",
+       "name": "cap"
+      },
+      "key": "stage"
+     },
+     "b": {
+      "type": "IfThenElse",
+      "cond": {
+       "type": "Gte",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "cap"
+        },
+        "key": "leverage"
+       },
+       "b": {
+        "type": "Attr",
+        "node": {
+         "type": "Pick",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "CapabilityPolicy"
+         }
+        },
+        "key": "core_leverage"
+       }
+      },
+      "then": {
+       "type": "Lit",
+       "value": "core"
+      },
+      "other": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gte",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "cap"
+         },
+         "key": "leverage"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Pick",
+          "source": {
+           "type": "NodesOfType",
+           "node_type": "CapabilityPolicy"
+          }
+         },
+         "key": "periph_leverage"
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": "peripheral"
+       },
+       "other": {
+        "type": "Lit",
+        "value": "blob"
+       }
+      }
+     }
+    }
+   },
+   "effects": [
+    [
+     "set_attr",
+     "cap",
+     "stage",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gte",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "cap"
+         },
+         "key": "leverage"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Pick",
+          "source": {
+           "type": "NodesOfType",
+           "node_type": "CapabilityPolicy"
+          }
+         },
+         "key": "core_leverage"
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": "core"
+       },
+       "other": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Gte",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "cap"
+          },
+          "key": "leverage"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Pick",
+           "source": {
+            "type": "NodesOfType",
+            "node_type": "CapabilityPolicy"
+           }
+          },
+          "key": "periph_leverage"
+         }
+        },
+        "then": {
+         "type": "Lit",
+         "value": "peripheral"
+        },
+        "other": {
+         "type": "Lit",
+         "value": "blob"
+        }
+       }
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "cap_genericity",
+   "comment": "GENERICITY = the mean leverage of the foundations a capability composes on \u2014 HOW, not just how-much. High genericity = domain mastery consolidated onto generic, high-leverage stacks (transfers off-domain); low genericity = a domain-private tower (brittle). Two capabilities with identical eff_cap can differ sharply in genericity, and it predicts which survives a step into a surrounding area. Empty foundations -> 0.",
+   "match": [
+    [
+     "root",
+     "has_capability",
+     "cap"
+    ]
+   ],
+   "where": {
+    "type": "Not",
+    "arg": {
+     "type": "Eq",
+     "a": {
+      "type": "Attr",
+      "node": {
+       "type": "Var",
+       "name": "cap"
+      },
+      "key": "genericity"
+     },
+     "b": {
+      "type": "IfThenElse",
+      "cond": {
+       "type": "Gt",
+       "a": {
+        "type": "Count",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "cap"
+         },
+         "edge_type": "composes_on",
+         "any_type": false
+        }
+       },
+       "b": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      },
+      "then": {
+       "type": "Div",
+       "a": {
+        "type": "Sum",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "cap"
+         },
+         "edge_type": "composes_on",
+         "any_type": false
+        },
+        "var_name": "f",
+        "value": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "f"
+         },
+         "key": "leverage"
+        }
+       },
+       "b": {
+        "type": "Count",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "cap"
+         },
+         "edge_type": "composes_on",
+         "any_type": false
+        }
+       }
+      },
+      "other": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     }
+    }
+   },
+   "effects": [
+    [
+     "set_attr",
+     "cap",
+     "genericity",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gt",
+        "a": {
+         "type": "Count",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "cap"
+          },
+          "edge_type": "composes_on",
+          "any_type": false
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.0
+        }
+       },
+       "then": {
+        "type": "Div",
+        "a": {
+         "type": "Sum",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "cap"
+          },
+          "edge_type": "composes_on",
+          "any_type": false
+         },
+         "var_name": "f",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "f"
+          },
+          "key": "leverage"
+         }
+        },
+        "b": {
+         "type": "Count",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "cap"
+          },
+          "edge_type": "composes_on",
+          "any_type": false
+         }
+        }
+       },
+       "other": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "cap_model_legibility",
+   "comment": "MAGIC = ToM residual. When an observer models a target's competence, legibility = meta_capacity(observer) * (structural_base + (1-structural_base)*content_overlap). content_overlap = fraction of the target competence's foundations whose SHAPE the observer also holds (can reconstruct); meta_capacity = the eff_cap of the observer's own mind-modelling core (shape 'modelling_core' \u2014 the ToM/shape-matching faculty). The whole thing is GATED multiplicatively by meta_capacity: a tower expert who consolidated the modelling core away finds EVERYONE magic (legibility ->0) regardless of content. magic = 1 - legibility. Asymmetric: a high-genericity observer reads a specialist partially (structural credit, low content); the specialist reads the generalist as near-pure magic (no meta-skill to represent them at all).",
+   "match": [
+    [
+     "m",
+     "observer",
+     "O"
+    ],
+    [
+     "m",
+     "target",
+     "T"
+    ]
+   ],
+   "where": {
+    "type": "Not",
+    "arg": {
+     "type": "Eq",
+     "a": {
+      "type": "Attr",
+      "node": {
+       "type": "Var",
+       "name": "m"
+      },
+      "key": "magic"
+     },
+     "b": {
+      "type": "Minus",
+      "a": {
+       "type": "Lit",
+       "value": 1.0
+      },
+      "b": {
+       "type": "Times",
+       "items": [
+        {
+         "type": "MaxOver",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "O"
+          },
+          "edge_type": "owns",
+          "any_type": false
+         },
+         "var_name": "c",
+         "value": {
+          "type": "IfThenElse",
+          "cond": {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "c"
+            },
+            "key": "shape"
+           },
+           "b": {
+            "type": "Lit",
+            "value": "modelling_core"
+           }
+          },
+          "then": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "c"
+           },
+           "key": "eff_cap"
+          },
+          "other": {
+           "type": "Lit",
+           "value": 0.0
+          }
+         },
+         "default": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        },
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Pick",
+            "source": {
+             "type": "NodesOfType",
+             "node_type": "CapabilityPolicy"
+            }
+           },
+           "key": "legibility_structural_base"
+          },
+          {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Minus",
+             "a": {
+              "type": "Lit",
+              "value": 1.0
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Pick",
+               "source": {
+                "type": "NodesOfType",
+                "node_type": "CapabilityPolicy"
+               }
+              },
+              "key": "legibility_structural_base"
+             }
+            },
+            {
+             "type": "IfThenElse",
+             "cond": {
+              "type": "Gt",
+              "a": {
+               "type": "Count",
+               "source": {
+                "type": "Neighbours",
+                "node": {
+                 "type": "Var",
+                 "name": "T"
+                },
+                "edge_type": "composes_on",
+                "any_type": false
+               }
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0.0
+              }
+             },
+             "then": {
+              "type": "Div",
+              "a": {
+               "type": "Sum",
+               "source": {
+                "type": "Neighbours",
+                "node": {
+                 "type": "Var",
+                 "name": "T"
+                },
+                "edge_type": "composes_on",
+                "any_type": false
+               },
+               "var_name": "f",
+               "value": {
+                "type": "IfThenElse",
+                "cond": {
+                 "type": "Exists",
+                 "source": {
+                  "type": "Neighbours",
+                  "node": {
+                   "type": "Var",
+                   "name": "O"
+                  },
+                  "edge_type": "owns",
+                  "any_type": false
+                 },
+                 "var_name": "c",
+                 "predicate": {
+                  "type": "Eq",
+                  "a": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "c"
+                   },
+                   "key": "shape"
+                  },
+                  "b": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "f"
+                   },
+                   "key": "shape"
+                  }
+                 }
+                },
+                "then": {
+                 "type": "Lit",
+                 "value": 1.0
+                },
+                "other": {
+                 "type": "Lit",
+                 "value": 0.0
+                }
+               }
+              },
+              "b": {
+               "type": "Count",
+               "source": {
+                "type": "Neighbours",
+                "node": {
+                 "type": "Var",
+                 "name": "T"
+                },
+                "edge_type": "composes_on",
+                "any_type": false
+               }
+              }
+             },
+             "other": {
+              "type": "Lit",
+              "value": 0.0
+             }
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     }
+    }
+   },
+   "effects": [
+    [
+     "set_attr",
+     "m",
+     "content_overlap",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gt",
+        "a": {
+         "type": "Count",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "T"
+          },
+          "edge_type": "composes_on",
+          "any_type": false
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.0
+        }
+       },
+       "then": {
+        "type": "Div",
+        "a": {
+         "type": "Sum",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "T"
+          },
+          "edge_type": "composes_on",
+          "any_type": false
+         },
+         "var_name": "f",
+         "value": {
+          "type": "IfThenElse",
+          "cond": {
+           "type": "Exists",
+           "source": {
+            "type": "Neighbours",
+            "node": {
+             "type": "Var",
+             "name": "O"
+            },
+            "edge_type": "owns",
+            "any_type": false
+           },
+           "var_name": "c",
+           "predicate": {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "c"
+             },
+             "key": "shape"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "f"
+             },
+             "key": "shape"
+            }
+           }
+          },
+          "then": {
+           "type": "Lit",
+           "value": 1.0
+          },
+          "other": {
+           "type": "Lit",
+           "value": 0.0
+          }
+         }
+        },
+        "b": {
+         "type": "Count",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "T"
+          },
+          "edge_type": "composes_on",
+          "any_type": false
+         }
+        }
+       },
+       "other": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "m",
+     "meta_capacity",
+     {
+      "__term__": {
+       "type": "MaxOver",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "O"
+        },
+        "edge_type": "owns",
+        "any_type": false
+       },
+       "var_name": "c",
+       "value": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "c"
+          },
+          "key": "shape"
+         },
+         "b": {
+          "type": "Lit",
+          "value": "modelling_core"
+         }
+        },
+        "then": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "c"
+         },
+         "key": "eff_cap"
+        },
+        "other": {
+         "type": "Lit",
+         "value": 0.0
+        }
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "m",
+     "legibility",
+     {
+      "__term__": {
+       "type": "Times",
+       "items": [
+        {
+         "type": "MaxOver",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "O"
+          },
+          "edge_type": "owns",
+          "any_type": false
+         },
+         "var_name": "c",
+         "value": {
+          "type": "IfThenElse",
+          "cond": {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "c"
+            },
+            "key": "shape"
+           },
+           "b": {
+            "type": "Lit",
+            "value": "modelling_core"
+           }
+          },
+          "then": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "c"
+           },
+           "key": "eff_cap"
+          },
+          "other": {
+           "type": "Lit",
+           "value": 0.0
+          }
+         },
+         "default": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        },
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Pick",
+            "source": {
+             "type": "NodesOfType",
+             "node_type": "CapabilityPolicy"
+            }
+           },
+           "key": "legibility_structural_base"
+          },
+          {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Minus",
+             "a": {
+              "type": "Lit",
+              "value": 1.0
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Pick",
+               "source": {
+                "type": "NodesOfType",
+                "node_type": "CapabilityPolicy"
+               }
+              },
+              "key": "legibility_structural_base"
+             }
+            },
+            {
+             "type": "IfThenElse",
+             "cond": {
+              "type": "Gt",
+              "a": {
+               "type": "Count",
+               "source": {
+                "type": "Neighbours",
+                "node": {
+                 "type": "Var",
+                 "name": "T"
+                },
+                "edge_type": "composes_on",
+                "any_type": false
+               }
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0.0
+              }
+             },
+             "then": {
+              "type": "Div",
+              "a": {
+               "type": "Sum",
+               "source": {
+                "type": "Neighbours",
+                "node": {
+                 "type": "Var",
+                 "name": "T"
+                },
+                "edge_type": "composes_on",
+                "any_type": false
+               },
+               "var_name": "f",
+               "value": {
+                "type": "IfThenElse",
+                "cond": {
+                 "type": "Exists",
+                 "source": {
+                  "type": "Neighbours",
+                  "node": {
+                   "type": "Var",
+                   "name": "O"
+                  },
+                  "edge_type": "owns",
+                  "any_type": false
+                 },
+                 "var_name": "c",
+                 "predicate": {
+                  "type": "Eq",
+                  "a": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "c"
+                   },
+                   "key": "shape"
+                  },
+                  "b": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "f"
+                   },
+                   "key": "shape"
+                  }
+                 }
+                },
+                "then": {
+                 "type": "Lit",
+                 "value": 1.0
+                },
+                "other": {
+                 "type": "Lit",
+                 "value": 0.0
+                }
+               }
+              },
+              "b": {
+               "type": "Count",
+               "source": {
+                "type": "Neighbours",
+                "node": {
+                 "type": "Var",
+                 "name": "T"
+                },
+                "edge_type": "composes_on",
+                "any_type": false
+               }
+              }
+             },
+             "other": {
+              "type": "Lit",
+              "value": 0.0
+             }
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "m",
+     "magic",
+     {
+      "__term__": {
+       "type": "Minus",
+       "a": {
+        "type": "Lit",
+        "value": 1.0
+       },
+       "b": {
+        "type": "Times",
+        "items": [
+         {
+          "type": "MaxOver",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "O"
+           },
+           "edge_type": "owns",
+           "any_type": false
+          },
+          "var_name": "c",
+          "value": {
+           "type": "IfThenElse",
+           "cond": {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "c"
+             },
+             "key": "shape"
+            },
+            "b": {
+             "type": "Lit",
+             "value": "modelling_core"
+            }
+           },
+           "then": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "c"
+            },
+            "key": "eff_cap"
+           },
+           "other": {
+            "type": "Lit",
+            "value": 0.0
+           }
+          },
+          "default": {
+           "type": "Lit",
+           "value": 0.0
+          }
+         },
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Pick",
+             "source": {
+              "type": "NodesOfType",
+              "node_type": "CapabilityPolicy"
+             }
+            },
+            "key": "legibility_structural_base"
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Minus",
+              "a": {
+               "type": "Lit",
+               "value": 1.0
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Pick",
+                "source": {
+                 "type": "NodesOfType",
+                 "node_type": "CapabilityPolicy"
+                }
+               },
+               "key": "legibility_structural_base"
+              }
+             },
+             {
+              "type": "IfThenElse",
+              "cond": {
+               "type": "Gt",
+               "a": {
+                "type": "Count",
+                "source": {
+                 "type": "Neighbours",
+                 "node": {
+                  "type": "Var",
+                  "name": "T"
+                 },
+                 "edge_type": "composes_on",
+                 "any_type": false
+                }
+               },
+               "b": {
+                "type": "Lit",
+                "value": 0.0
+               }
+              },
+              "then": {
+               "type": "Div",
+               "a": {
+                "type": "Sum",
+                "source": {
+                 "type": "Neighbours",
+                 "node": {
+                  "type": "Var",
+                  "name": "T"
+                 },
+                 "edge_type": "composes_on",
+                 "any_type": false
+                },
+                "var_name": "f",
+                "value": {
+                 "type": "IfThenElse",
+                 "cond": {
+                  "type": "Exists",
+                  "source": {
+                   "type": "Neighbours",
+                   "node": {
+                    "type": "Var",
+                    "name": "O"
+                   },
+                   "edge_type": "owns",
+                   "any_type": false
+                  },
+                  "var_name": "c",
+                  "predicate": {
+                   "type": "Eq",
+                   "a": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "c"
+                    },
+                    "key": "shape"
+                   },
+                   "b": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "f"
+                    },
+                    "key": "shape"
+                   }
+                  }
+                 },
+                 "then": {
+                  "type": "Lit",
+                  "value": 1.0
+                 },
+                 "other": {
+                  "type": "Lit",
+                  "value": 0.0
+                 }
+                }
+               },
+               "b": {
+                "type": "Count",
+                "source": {
+                 "type": "Neighbours",
+                 "node": {
+                  "type": "Var",
+                  "name": "T"
+                 },
+                 "edge_type": "composes_on",
+                 "any_type": false
+                }
+               }
+              },
+              "other": {
+               "type": "Lit",
+               "value": 0.0
+              }
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "cap_frame_acquisition",
+   "comment": "THE COST OF A NEW FRAME, decomposed. Entering a frame requires a set of base-shapes. For each, if the agent already holds that base-shape in SOME frame, acquiring it here is a DIMENSIONAL TRANSFORM (rung 2 of the sd ladder \u2014 a change of coordinates, no new skill); only base-shapes it holds nowhere are genuinely NEW skills (rung 4 \u2014 mint novelty). new_skills = #base-shapes held nowhere; transforms = the rest; new_skill_fraction = new_skills/total. For a high-genericity (meta-skilled) agent that holds the generic base-shapes, a new frame costs almost no new skills \u2014 it is nearly all transforms. This lands the capability graph back on dynamic quantization: a new frame is a transform of held shape, not new structure.",
+   "match": [
+    [
+     "acq",
+     "by",
+     "ag"
+    ],
+    [
+     "acq",
+     "into",
+     "frame"
+    ]
+   ],
+   "where": {
+    "type": "Not",
+    "arg": {
+     "type": "Eq",
+     "a": {
+      "type": "Attr",
+      "node": {
+       "type": "Var",
+       "name": "acq"
+      },
+      "key": "new_skill_fraction"
+     },
+     "b": {
+      "type": "IfThenElse",
+      "cond": {
+       "type": "Gt",
+       "a": {
+        "type": "Count",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "frame"
+         },
+         "edge_type": "requires",
+         "any_type": false
+        }
+       },
+       "b": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      },
+      "then": {
+       "type": "Div",
+       "a": {
+        "type": "Count",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "frame"
+          },
+          "edge_type": "requires",
+          "any_type": false
+         },
+         "var_name": "r",
+         "predicate": {
+          "type": "Not",
+          "arg": {
+           "type": "Exists",
+           "source": {
+            "type": "Neighbours",
+            "node": {
+             "type": "Var",
+             "name": "ag"
+            },
+            "edge_type": "owns",
+            "any_type": false
+           },
+           "var_name": "c",
+           "predicate": {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "c"
+             },
+             "key": "base_shape"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "r"
+             },
+             "key": "base_shape"
+            }
+           }
+          }
+         }
+        }
+       },
+       "b": {
+        "type": "Count",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "frame"
+         },
+         "edge_type": "requires",
+         "any_type": false
+        }
+       }
+      },
+      "other": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     }
+    }
+   },
+   "effects": [
+    [
+     "set_attr",
+     "acq",
+     "new_skills",
+     {
+      "__term__": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "frame"
+         },
+         "edge_type": "requires",
+         "any_type": false
+        },
+        "var_name": "r",
+        "predicate": {
+         "type": "Not",
+         "arg": {
+          "type": "Exists",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "ag"
+           },
+           "edge_type": "owns",
+           "any_type": false
+          },
+          "var_name": "c",
+          "predicate": {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "c"
+            },
+            "key": "base_shape"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "r"
+            },
+            "key": "base_shape"
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "acq",
+     "transforms",
+     {
+      "__term__": {
+       "type": "Minus",
+       "a": {
+        "type": "Count",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "frame"
+         },
+         "edge_type": "requires",
+         "any_type": false
+        }
+       },
+       "b": {
+        "type": "Count",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "frame"
+          },
+          "edge_type": "requires",
+          "any_type": false
+         },
+         "var_name": "r",
+         "predicate": {
+          "type": "Not",
+          "arg": {
+           "type": "Exists",
+           "source": {
+            "type": "Neighbours",
+            "node": {
+             "type": "Var",
+             "name": "ag"
+            },
+            "edge_type": "owns",
+            "any_type": false
+           },
+           "var_name": "c",
+           "predicate": {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "c"
+             },
+             "key": "base_shape"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "r"
+             },
+             "key": "base_shape"
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "acq",
+     "new_skill_fraction",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gt",
+        "a": {
+         "type": "Count",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "frame"
+          },
+          "edge_type": "requires",
+          "any_type": false
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.0
+        }
+       },
+       "then": {
+        "type": "Div",
+        "a": {
+         "type": "Count",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "frame"
+           },
+           "edge_type": "requires",
+           "any_type": false
+          },
+          "var_name": "r",
+          "predicate": {
+           "type": "Not",
+           "arg": {
+            "type": "Exists",
+            "source": {
+             "type": "Neighbours",
+             "node": {
+              "type": "Var",
+              "name": "ag"
+             },
+             "edge_type": "owns",
+             "any_type": false
+            },
+            "var_name": "c",
+            "predicate": {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "c"
+              },
+              "key": "base_shape"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "r"
+              },
+              "key": "base_shape"
+             }
+            }
+           }
+          }
+         }
+        },
+        "b": {
+         "type": "Count",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "frame"
+          },
+          "edge_type": "requires",
+          "any_type": false
+         }
+        }
+       },
+       "other": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "cap_tier_up",
+   "comment": "THE ONE COST MODEL, at the capability grain. worth = value - cost = leverage - cost_weight*cost (measured time footprint); tier_up = worth clears tier_margin AND the capability is hot enough (hotness >= min_hotness). This is the SAME decision the net-economy makes to ADMIT a reflex net (net_residual - net_cost - footprint > admit_margin, over the ledger window) and the SAME the L2 JIT makes to COMPILE a hot Term (HotCounter >= threshold, worth its code_size_bytes) \u2014 one profiler, one cost model, read at three grains: compile a hot Term, admit a hot net, MASTER a hot capability.",
+   "match": [
+    [
+     "root",
+     "has_capability",
+     "cap"
+    ]
+   ],
+   "where": {
+    "type": "Not",
+    "arg": {
+     "type": "Eq",
+     "a": {
+      "type": "Attr",
+      "node": {
+       "type": "Var",
+       "name": "cap"
+      },
+      "key": "worth"
+     },
+     "b": {
+      "type": "Minus",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "cap"
+       },
+       "key": "leverage"
+      },
+      "b": {
+       "type": "Times",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Pick",
+          "source": {
+           "type": "NodesOfType",
+           "node_type": "CapabilityPolicy"
+          }
+         },
+         "key": "cost_weight"
+        },
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "cap"
+         },
+         "key": "cost"
+        }
+       ]
+      }
+     }
+    }
+   },
+   "effects": [
+    [
+     "set_attr",
+     "cap",
+     "worth",
+     {
+      "__term__": {
+       "type": "Minus",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "cap"
+        },
+        "key": "leverage"
+       },
+       "b": {
+        "type": "Times",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Pick",
+           "source": {
+            "type": "NodesOfType",
+            "node_type": "CapabilityPolicy"
+           }
+          },
+          "key": "cost_weight"
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "cap"
+          },
+          "key": "cost"
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "cap",
+     "tier_up",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Gt",
+          "a": {
+           "type": "Minus",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "cap"
+            },
+            "key": "leverage"
+           },
+           "b": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Pick",
+               "source": {
+                "type": "NodesOfType",
+                "node_type": "CapabilityPolicy"
+               }
+              },
+              "key": "cost_weight"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "cap"
+              },
+              "key": "cost"
+             }
+            ]
+           }
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Pick",
+            "source": {
+             "type": "NodesOfType",
+             "node_type": "CapabilityPolicy"
+            }
+           },
+           "key": "tier_margin"
+          }
+         },
+         {
+          "type": "Gte",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "cap"
+           },
+           "key": "hotness"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Pick",
+            "source": {
+             "type": "NodesOfType",
+             "node_type": "CapabilityPolicy"
+            }
+           },
+           "key": "min_hotness"
+          }
+         }
+        ]
+       },
+       "then": {
+        "type": "Lit",
+        "value": 1.0
+       },
+       "other": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "cap_correctness_from_trials",
+   "comment": "CORRECTNESS proficiency \u2014 the per-capability success oracle, the reflex-net supported/refuted judge generalised to any capability. A CapabilityTrial -trial_of-> cap carries a verdict ('supported'/'refuted') set by whatever oracle applies (for a reflex net, reflex_trial_judge: regression-free AND faster; for a general capability, cognition or the environment). correctness = supported/(supported+refuted). When judged trials exist this becomes the capability's own_prof, so effective capability reflects whether the skill produces RIGHT answers, not just cheap ones. Honest: correctness is defined relative to an external oracle \u2014 there is no oracle-free correctness; this measures the hit-rate the oracle reports.",
+   "match": [
+    [
+     "tr",
+     "trial_of",
+     "cap"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Count",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "InNeighbours",
+           "node": {
+            "type": "Var",
+            "name": "cap"
+           },
+           "edge_type": "trial_of",
+           "any_type": false
+          },
+          "var_name": "t",
+          "predicate": {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "t"
+            },
+            "key": "verdict"
+           },
+           "b": {
+            "type": "Lit",
+            "value": "supported"
+           }
+          }
+         }
+        },
+        {
+         "type": "Count",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "InNeighbours",
+           "node": {
+            "type": "Var",
+            "name": "cap"
+           },
+           "edge_type": "trial_of",
+           "any_type": false
+          },
+          "var_name": "t",
+          "predicate": {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "t"
+            },
+            "key": "verdict"
+           },
+           "b": {
+            "type": "Lit",
+            "value": "refuted"
+           }
+          }
+         }
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "cap"
+        },
+        "key": "own_prof"
+       },
+       "b": {
+        "type": "Div",
+        "a": {
+         "type": "Count",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "InNeighbours",
+           "node": {
+            "type": "Var",
+            "name": "cap"
+           },
+           "edge_type": "trial_of",
+           "any_type": false
+          },
+          "var_name": "t",
+          "predicate": {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "t"
+            },
+            "key": "verdict"
+           },
+           "b": {
+            "type": "Lit",
+            "value": "supported"
+           }
+          }
+         }
+        },
+        "b": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Count",
+           "source": {
+            "type": "Filter",
+            "source": {
+             "type": "InNeighbours",
+             "node": {
+              "type": "Var",
+              "name": "cap"
+             },
+             "edge_type": "trial_of",
+             "any_type": false
+            },
+            "var_name": "t",
+            "predicate": {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "t"
+              },
+              "key": "verdict"
+             },
+             "b": {
+              "type": "Lit",
+              "value": "supported"
+             }
+            }
+           }
+          },
+          {
+           "type": "Count",
+           "source": {
+            "type": "Filter",
+            "source": {
+             "type": "InNeighbours",
+             "node": {
+              "type": "Var",
+              "name": "cap"
+             },
+             "edge_type": "trial_of",
+             "any_type": false
+            },
+            "var_name": "t",
+            "predicate": {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "t"
+              },
+              "key": "verdict"
+             },
+             "b": {
+              "type": "Lit",
+              "value": "refuted"
+             }
+            }
+           }
+          }
+         ]
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "cap",
+     "correctness",
+     {
+      "__term__": {
+       "type": "Div",
+       "a": {
+        "type": "Count",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "InNeighbours",
+          "node": {
+           "type": "Var",
+           "name": "cap"
+          },
+          "edge_type": "trial_of",
+          "any_type": false
+         },
+         "var_name": "t",
+         "predicate": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "t"
+           },
+           "key": "verdict"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "supported"
+          }
+         }
+        }
+       },
+       "b": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Count",
+          "source": {
+           "type": "Filter",
+           "source": {
+            "type": "InNeighbours",
+            "node": {
+             "type": "Var",
+             "name": "cap"
+            },
+            "edge_type": "trial_of",
+            "any_type": false
+           },
+           "var_name": "t",
+           "predicate": {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "t"
+             },
+             "key": "verdict"
+            },
+            "b": {
+             "type": "Lit",
+             "value": "supported"
+            }
+           }
+          }
+         },
+         {
+          "type": "Count",
+          "source": {
+           "type": "Filter",
+           "source": {
+            "type": "InNeighbours",
+            "node": {
+             "type": "Var",
+             "name": "cap"
+            },
+            "edge_type": "trial_of",
+            "any_type": false
+           },
+           "var_name": "t",
+           "predicate": {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "t"
+             },
+             "key": "verdict"
+            },
+            "b": {
+             "type": "Lit",
+             "value": "refuted"
+            }
+           }
+          }
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "cap",
+     "own_prof",
+     {
+      "__term__": {
+       "type": "Div",
+       "a": {
+        "type": "Count",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "InNeighbours",
+          "node": {
+           "type": "Var",
+           "name": "cap"
+          },
+          "edge_type": "trial_of",
+          "any_type": false
+         },
+         "var_name": "t",
+         "predicate": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "t"
+           },
+           "key": "verdict"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "supported"
+          }
+         }
+        }
+       },
+       "b": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Count",
+          "source": {
+           "type": "Filter",
+           "source": {
+            "type": "InNeighbours",
+            "node": {
+             "type": "Var",
+             "name": "cap"
+            },
+            "edge_type": "trial_of",
+            "any_type": false
+           },
+           "var_name": "t",
+           "predicate": {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "t"
+             },
+             "key": "verdict"
+            },
+            "b": {
+             "type": "Lit",
+             "value": "supported"
+            }
+           }
+          }
+         },
+         {
+          "type": "Count",
+          "source": {
+           "type": "Filter",
+           "source": {
+            "type": "InNeighbours",
+            "node": {
+             "type": "Var",
+             "name": "cap"
+            },
+            "edge_type": "trial_of",
+            "any_type": false
+           },
+           "var_name": "t",
+           "predicate": {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "t"
+             },
+             "key": "verdict"
+            },
+            "b": {
+             "type": "Lit",
+             "value": "refuted"
+            }
+           }
+          }
+         }
+        ]
+       }
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "cap_harvest_reflex_verdict",
+   "comment": "THE STANDING ORACLE, wired into run_rules. reflex_trial_judge / reflex_trial_refuted already judge a reflex net's firings supported/refuted against cognition (the slow path it caches) DURING run_rules. This rule harvests each judged ReflexTrial into a CapabilityTrial -trial_of-> the reflex net (once, harvested guard), so the net's correctness accrues continuously from real judging \u2014 no hand-supplied trials. The reflex-net judge IS the oracle; this bridges its verdicts into the capability graph's own_prof.",
+   "match": [
+    [
+     "trial",
+     "for_reflex",
+     "rn"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "trial"
+         },
+         "key": "verdict"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "supported"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "trial"
+         },
+         "key": "verdict"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "refuted"
+        }
+       }
+      ]
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "trial"
+        },
+        "key": "harvested"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "ct",
+     "CapabilityTrial",
+     {
+      "verdict": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "trial"
+        },
+        "key": "verdict"
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "ct",
+     "trial_of",
+     "rn"
+    ],
+    [
+     "set_attr",
+     "trial",
+     "harvested",
+     1.0
+    ]
+   ]
+  }
+ ]
+}

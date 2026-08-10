@@ -1,0 +1,93 @@
+{
+  "id": "hadamard_transform_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "SAD_SSD_SATD",
+  "in_microtheory": "video_coding_theory",
+  "description": "The Hadamard transform decomposed. SATD (Sum of Absolute Transformed Differences) is the residual ME cost function used in fine-grained encoder search. It applies a Hadamard transform to the residual block, then sums absolute values of the resulting coefficients. The Hadamard transform itself is a tiny binary-valued (only ±1) decorrelating transform — fast to compute, decent approximation to the DCT's energy-compaction behaviour. The SATD cost correlates with post-transform-coding bitcost ~3x better than SAD.",
+  "sub_mechanisms": [
+    {
+      "name": "hadamard_basis_pm_one",
+      "definition": "The Hadamard transform's basis matrix uses only ±1 values. The 2x2 Hadamard matrix is [[1, 1], [1, -1]]; larger sizes are recursive tensor products.",
+      "why": "Multiplication by ±1 is just addition/subtraction — no actual multiplies. Compute cost is O(N log N) additions for a 1D Hadamard, ~5x cheaper than DCT-2 of the same size. The basis is orthogonal but not perfectly diagonalising for AR(1) signals.",
+      "category": "hadamard_mechanism"
+    },
+    {
+      "name": "recursive_kronecker_construction",
+      "definition": "The 2^N x 2^N Hadamard matrix H_2N is constructed as the Kronecker product of H_2 with itself N times: H_4 = H_2 ⊗ H_2, H_8 = H_2 ⊗ H_4, etc.",
+      "why": "Recursive construction means a 1D Hadamard of size 2^N can be computed via N stages of butterfly operations, each pairing samples and computing sum + difference. The butterfly structure is identical to the FFT but with ±1 weights instead of complex roots.",
+      "category": "hadamard_mechanism"
+    },
+    {
+      "name": "satd_computation_steps",
+      "definition": "SATD(residual) = sum_{i,j} |Hadamard(residual)[i,j]|. The 2D Hadamard is applied (row pass + column pass), then absolute values are summed.",
+      "why": "Sum of absolute values approximates the L1 norm of the transformed residual. L1 of transformed coefficients correlates with post-quantisation entropy better than L1 of raw residual (= SAD).",
+      "category": "hadamard_mechanism"
+    },
+    {
+      "name": "satd_vs_sad_correlation_quality",
+      "definition": "SATD's correlation with actual bit cost (after transform + quantisation + entropy coding) is ~0.85; SAD's is ~0.6.",
+      "why": "The actual encoder process IS transform + quantise + entropy code. SATD captures the first stage exactly (Hadamard ≈ DCT for energy compaction purposes); SAD doesn't. Higher correlation = better mode/MV selection at the same evaluation count.",
+      "category": "hadamard_mechanism"
+    },
+    {
+      "name": "satd_butterfly_implementation",
+      "definition": "For an 8x8 block: 8 1D Hadamards per row + 8 per column = 16 butterfly chains, each chain being log2(8) = 3 stages of additions/subtractions. Total: ~192 add/sub operations for 8x8 SATD.",
+      "why": "Cheap enough to run on every candidate MV in fine-grained ME search. ~3x slower than SAD (which has 64 add/sub for the same block) but pays for itself by needing 2-3x fewer candidate evaluations.",
+      "category": "hadamard_mechanism"
+    },
+    {
+      "name": "hadamard_size_constraints",
+      "definition": "Hadamard exists only for power-of-2 sizes (and Hadamard conjecture sizes like 4k). Codec usage is 2x2, 4x4, 8x8 — exactly matching the block sizes ME operates on.",
+      "why": "Codec block sizes are already power-of-2; Hadamard fits naturally. For non-power-of-2 sizes, ME uses SAD or pads + uses larger Hadamard. The matching has no cost.",
+      "category": "hadamard_mechanism"
+    },
+    {
+      "name": "preserves_orthogonality",
+      "definition": "The Hadamard transform is orthogonal: its inverse is its transpose times 1/N. This is a property of the ±1 basis being mutually orthogonal.",
+      "why": "Orthogonality means the L2 norm is preserved (Parseval). The L1 norm (SATD) is NOT preserved but is BOUNDED by sqrt(N) * L2. This gives SATD a reliable upper bound on the residual's total energy, useful as a cost function.",
+      "category": "hadamard_mechanism"
+    },
+    {
+      "name": "satd_in_subpel_refinement",
+      "definition": "After integer-pel ME picks a candidate, sub-pel refinement uses SATD to choose among the 8 surrounding fractional positions. Integer-pel often uses cheaper SAD.",
+      "why": "Sub-pel refinement candidates differ in tiny ways; SAD can't distinguish them. SATD's higher fidelity lets the encoder pick the right fractional position. Cost is acceptable because sub-pel refinement only evaluates 8-9 candidates.",
+      "category": "hadamard_mechanism"
+    },
+    {
+      "name": "alternative_walsh_hadamard",
+      "definition": "Walsh-Hadamard is a permutation of Hadamard's rows that orders them by 'sequency' (number of sign changes). Some encoders use it instead of standard Hadamard.",
+      "why": "Sequency ordering puts low-frequency coefficients first (like DCT's natural order). This matters when the residual has strong low-frequency content; standard Hadamard's row ordering is arbitrary. Equivalent in compute cost.",
+      "category": "hadamard_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "hadamard_compute_cost_dominated_by_additions",
+      "if": ["the basis matrix uses only ±1 values"],
+      "then": ["transform compute is O(N log N) additions with zero multiplications"],
+      "why": "Multiplication by ±1 is a sign flip + add. Modern hardware does additions much faster than multiplications. Hadamard is the cheapest decorrelating transform of its size.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "transformed_l1_correlates_with_entropy_code_cost",
+      "if": ["transformed residual has L1 norm = SATD"],
+      "then": ["SATD correlates with the actual post-transform entropy-code cost"],
+      "why": "Transform decorrelates; quantisation removes most energy; entropy coder spends bits roughly proportional to L1 of surviving coefficients. SATD captures step 1 cheaply; the correlation with the full pipeline is ~0.85 on natural content.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "satd_pays_off_in_fine_search",
+      "if": ["candidate evaluations are expensive but few"],
+      "then": ["SATD's higher fidelity beats SAD's lower cost"],
+      "why": "In sub-pel refinement, only 8-9 candidates are evaluated. SAD vs SATD compute difference is small; SAD's quality loss is large. Total compute is dominated by the IMC step (interpolation for sub-pel positions), not the cost function evaluation.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "hadamard_for_codec_block_sizes_no_padding_cost",
+      "if": ["codec block sizes are powers of 2"],
+      "then": ["Hadamard fits without padding"],
+      "why": "All H.264/H.265/AV1/VVC block sizes are 4x4, 8x8, 16x16, etc. Hadamard's power-of-2 size constraint is naturally satisfied. No padding overhead.",
+      "soundness_category": "cost_equivalence"
+    }
+  ]
+}

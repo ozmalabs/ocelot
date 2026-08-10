@@ -1,0 +1,154 @@
+========================================================================
+STEP 1 HVPT ACCEPT — grown-under-variability vs frozen-cohort front-end
+========================================================================
+FSDD: 240 recordings, 6 speakers, 10 digits
+speakers (voices): ['george', 'jackson', 'lucas', 'nicolas', 'theo', 'yweweler']
+
+--- REAL-SPEAKER HVPT: held-out voice = george ---
+  patch inventory: seed 25 -> grown 33 (+8 survived cross-voice)
+  held-out utterances: 40  train utterances: 200
+  same-word margin (held-out)  FROZEN +0.1144   GROWN +0.1592   (Δ +0.0448)
+  recognition 1-NN pooled      FROZEN 0.150   GROWN 0.125   (Δ -0.025)
+  recognition 1-NN flat        FROZEN 0.300   GROWN 0.625   (Δ +0.325)
+    ablation no-warp+seed bank   1NN-pool 0.200  1NN-flat 0.525  margin +0.1471
+    control  no-warp+ALL cands   1NN-pool 0.075  1NN-flat 0.650  margin +0.1546  (inv 57)
+
+--- REAL-SPEAKER HVPT: held-out voice = george [SHUFFLE control] ---
+  patch inventory: seed 25 -> grown 35 (+10 survived cross-voice)
+  held-out utterances: 40  train utterances: 200
+  same-word margin (held-out)  FROZEN +0.1144   GROWN +0.1616   (Δ +0.0472)
+  recognition 1-NN pooled      FROZEN 0.150   GROWN 0.150   (Δ +0.000)
+  recognition 1-NN flat        FROZEN 0.300   GROWN 0.625   (Δ +0.325)
+    ablation no-warp+seed bank   1NN-pool 0.200  1NN-flat 0.525  margin +0.1471
+    control  no-warp+ALL cands   1NN-pool 0.075  1NN-flat 0.650  margin +0.1546  (inv 57)
+
+--- REAL-SPEAKER HVPT: held-out voice = jackson ---
+  patch inventory: seed 25 -> grown 34 (+9 survived cross-voice)
+  held-out utterances: 40  train utterances: 200
+  same-word margin (held-out)  FROZEN +0.1786   GROWN +0.1083   (Δ -0.0703)
+  recognition 1-NN pooled      FROZEN 0.250   GROWN 0.100   (Δ -0.150)
+  recognition 1-NN flat        FROZEN 0.600   GROWN 0.625   (Δ +0.025)
+    ablation no-warp+seed bank   1NN-pool 0.175  1NN-flat 0.525  margin +0.1161
+    control  no-warp+ALL cands   1NN-pool 0.100  1NN-flat 0.600  margin +0.1229  (inv 57)
+
+--- REAL-SPEAKER HVPT: held-out voice = jackson [SHUFFLE control] ---
+  patch inventory: seed 25 -> grown 36 (+11 survived cross-voice)
+  held-out utterances: 40  train utterances: 200
+  same-word margin (held-out)  FROZEN +0.1786   GROWN +0.1127   (Δ -0.0659)
+  recognition 1-NN pooled      FROZEN 0.250   GROWN 0.150   (Δ -0.100)
+  recognition 1-NN flat        FROZEN 0.600   GROWN 0.625   (Δ +0.025)
+    ablation no-warp+seed bank   1NN-pool 0.175  1NN-flat 0.525  margin +0.1161
+    control  no-warp+ALL cands   1NN-pool 0.100  1NN-flat 0.600  margin +0.1229  (inv 57)
+
+--- REAL-SPEAKER HVPT: held-out voice = lucas ---
+  patch inventory: seed 25 -> grown 33 (+8 survived cross-voice)
+  held-out utterances: 40  train utterances: 200
+  same-word margin (held-out)  FROZEN +0.0994   GROWN +0.1721   (Δ +0.0727)
+  recognition 1-NN pooled      FROZEN 0.225   GROWN 0.125   (Δ -0.100)
+  recognition 1-NN flat        FROZEN 0.225   GROWN 0.300   (Δ +0.075)
+    ablation no-warp+seed bank   1NN-pool 0.075  1NN-flat 0.400  margin +0.1687
+    control  no-warp+ALL cands   1NN-pool 0.125  1NN-flat 0.275  margin +0.1723  (inv 57)
+
+--- REAL-SPEAKER HVPT: held-out voice = lucas [SHUFFLE control] ---
+  patch inventory: seed 25 -> grown 38 (+13 survived cross-voice)
+  held-out utterances: 40  train utterances: 200
+  same-word margin (held-out)  FROZEN +0.0994   GROWN +0.1653   (Δ +0.0659)
+  recognition 1-NN pooled      FROZEN 0.225   GROWN 0.100   (Δ -0.125)
+  recognition 1-NN flat        FROZEN 0.225   GROWN 0.350   (Δ +0.125)
+    ablation no-warp+seed bank   1NN-pool 0.075  1NN-flat 0.400  margin +0.1687
+    control  no-warp+ALL cands   1NN-pool 0.125  1NN-flat 0.275  margin +0.1723  (inv 57)
+
+--- REAL-SPEAKER HVPT: held-out voice = nicolas ---
+  patch inventory: seed 25 -> grown 33 (+8 survived cross-voice)
+  held-out utterances: 40  train utterances: 200
+  same-word margin (held-out)  FROZEN +0.1224   GROWN +0.1883   (Δ +0.0659)
+  recognition 1-NN pooled      FROZEN 0.125   GROWN 0.225   (Δ +0.100)
+  recognition 1-NN flat        FROZEN 0.350   GROWN 0.550   (Δ +0.200)
+    ablation no-warp+seed bank   1NN-pool 0.100  1NN-flat 0.625  margin +0.1929
+    control  no-warp+ALL cands   1NN-pool 0.175  1NN-flat 0.600  margin +0.1887  (inv 57)
+
+--- REAL-SPEAKER HVPT: held-out voice = nicolas [SHUFFLE control] ---
+  patch inventory: seed 25 -> grown 36 (+11 survived cross-voice)
+  held-out utterances: 40  train utterances: 200
+  same-word margin (held-out)  FROZEN +0.1224   GROWN +0.1766   (Δ +0.0542)
+  recognition 1-NN pooled      FROZEN 0.125   GROWN 0.200   (Δ +0.075)
+  recognition 1-NN flat        FROZEN 0.350   GROWN 0.550   (Δ +0.200)
+    ablation no-warp+seed bank   1NN-pool 0.100  1NN-flat 0.625  margin +0.1929
+    control  no-warp+ALL cands   1NN-pool 0.175  1NN-flat 0.600  margin +0.1887  (inv 57)
+
+--- REAL-SPEAKER HVPT: held-out voice = theo ---
+  patch inventory: seed 25 -> grown 36 (+11 survived cross-voice)
+  held-out utterances: 40  train utterances: 200
+  same-word margin (held-out)  FROZEN +0.1989   GROWN +0.2558   (Δ +0.0570)
+  recognition 1-NN pooled      FROZEN 0.125   GROWN 0.125   (Δ +0.000)
+  recognition 1-NN flat        FROZEN 0.375   GROWN 0.450   (Δ +0.075)
+    ablation no-warp+seed bank   1NN-pool 0.150  1NN-flat 0.475  margin +0.2470
+    control  no-warp+ALL cands   1NN-pool 0.125  1NN-flat 0.425  margin +0.2570  (inv 57)
+
+--- REAL-SPEAKER HVPT: held-out voice = theo [SHUFFLE control] ---
+  patch inventory: seed 25 -> grown 39 (+14 survived cross-voice)
+  held-out utterances: 40  train utterances: 200
+  same-word margin (held-out)  FROZEN +0.1989   GROWN +0.2565   (Δ +0.0576)
+  recognition 1-NN pooled      FROZEN 0.125   GROWN 0.150   (Δ +0.025)
+  recognition 1-NN flat        FROZEN 0.375   GROWN 0.425   (Δ +0.050)
+    ablation no-warp+seed bank   1NN-pool 0.150  1NN-flat 0.475  margin +0.2470
+    control  no-warp+ALL cands   1NN-pool 0.125  1NN-flat 0.425  margin +0.2570  (inv 57)
+
+--- REAL-SPEAKER HVPT: held-out voice = yweweler ---
+  patch inventory: seed 25 -> grown 35 (+10 survived cross-voice)
+  held-out utterances: 40  train utterances: 200
+  same-word margin (held-out)  FROZEN +0.0626   GROWN +0.1042   (Δ +0.0416)
+  recognition 1-NN pooled      FROZEN 0.250   GROWN 0.100   (Δ -0.150)
+  recognition 1-NN flat        FROZEN 0.425   GROWN 0.525   (Δ +0.100)
+    ablation no-warp+seed bank   1NN-pool 0.150  1NN-flat 0.475  margin +0.0987
+    control  no-warp+ALL cands   1NN-pool 0.175  1NN-flat 0.500  margin +0.1134  (inv 57)
+
+--- REAL-SPEAKER HVPT: held-out voice = yweweler [SHUFFLE control] ---
+  patch inventory: seed 25 -> grown 36 (+11 survived cross-voice)
+  held-out utterances: 40  train utterances: 200
+  same-word margin (held-out)  FROZEN +0.0626   GROWN +0.1039   (Δ +0.0413)
+  recognition 1-NN pooled      FROZEN 0.250   GROWN 0.100   (Δ -0.150)
+  recognition 1-NN flat        FROZEN 0.425   GROWN 0.525   (Δ +0.100)
+    ablation no-warp+seed bank   1NN-pool 0.150  1NN-flat 0.475  margin +0.0987
+    control  no-warp+ALL cands   1NN-pool 0.175  1NN-flat 0.500  margin +0.1134  (inv 57)
+
+PERSONA source: george, 40 base digit recordings
+personas (voices): ['pip', 'ada', 'milo', 'bertram', 'quinn']  (held-out: quinn)
+
+--- PERSONA HVPT (agent-generated voices): held-out voice = quinn ---
+  patch inventory: seed 25 -> grown 36 (+11 survived cross-voice)
+  held-out utterances: 40  train utterances: 160
+  same-word margin (held-out)  FROZEN +0.0978   GROWN +0.1386   (Δ +0.0407)
+  recognition 1-NN pooled      FROZEN 0.750   GROWN 0.175   (Δ -0.575)
+  recognition 1-NN flat        FROZEN 1.000   GROWN 1.000   (Δ +0.000)
+    ablation no-warp+seed bank   1NN-pool 0.100  1NN-flat 1.000  margin +0.1347
+    control  no-warp+ALL cands   1NN-pool 0.100  1NN-flat 1.000  margin +0.1366  (inv 57)
+
+--- PERSONA HVPT (agent-generated voices): held-out voice = quinn [SHUFFLE control] ---
+  patch inventory: seed 25 -> grown 37 (+12 survived cross-voice)
+  held-out utterances: 40  train utterances: 160
+  same-word margin (held-out)  FROZEN +0.0978   GROWN +0.1354   (Δ +0.0375)
+  recognition 1-NN pooled      FROZEN 0.750   GROWN 0.200   (Δ -0.550)
+  recognition 1-NN flat        FROZEN 1.000   GROWN 1.000   (Δ +0.000)
+    ablation no-warp+seed bank   1NN-pool 0.100  1NN-flat 1.000  margin +0.1347
+    control  no-warp+ALL cands   1NN-pool 0.100  1NN-flat 1.000  margin +0.1366  (inv 57)
+
+========================================================================
+VERDICT (mean over held-out voices)
+========================================================================
+
+REAL-SPEAKER HVPT (LOSO over 6 FSDD speakers):
+  same-word margin   FROZEN +0.1294  GROWN +0.1646  (Δ +0.0353)
+  1-NN pooled        FROZEN 0.188   GROWN 0.133   (Δ -0.054)
+  1-NN flat          FROZEN 0.379   GROWN 0.513   (Δ +0.133)
+  ABLATION no-warp+seed bank   margin +0.1618  1NN-pool 0.142  1NN-flat 0.504   (isolates: drop cohort warp, keep 25 patches)
+  CONTROL  no-warp+ALL cands   margin +0.1681  1NN-pool 0.129  1NN-flat 0.508   (selector must beat unselected accretion)
+  SHUFFLE control    GROWN-margin +0.1628  1NN-pool 0.142  1NN-flat 0.517  (grown should beat its own shuffle)
+  patches added (mean): 9.0 / round-budget
+
+PERSONA HVPT (agent-generated voices, held-out persona):
+  same-word margin   FROZEN +0.0978  GROWN +0.1386  (Δ +0.0407)
+  1-NN pooled        FROZEN 0.750   GROWN 0.175   (Δ -0.575)
+  SHUFFLE control    GROWN-1NN-pool 0.200
+
+(grown = NO cohort warp + accreted patches selected by cross-voice survival; frozen = VTLN-to-cohort-canonical + fixed 25-patch bank)

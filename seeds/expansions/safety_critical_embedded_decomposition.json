@@ -1,0 +1,118 @@
+{
+  "id": "safety_critical_embedded_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "ISO_26262_automotive",
+  "in_microtheory": "embedded_iot_realtime",
+  "description": "Safety-critical embedded decomposed. V-model development, requirements traceability, MISRA C rules, static analysis, certified RTOSes, AUTOSAR, FMEA + FTA, hardware diagnostic coverage, safety case construction.",
+  "sub_mechanisms": [
+    {
+      "name": "V_model_development",
+      "definition": "Requirements → architecture → design → code (left of V). Unit test → integration → system → acceptance (right).",
+      "why": "Each left side has corresponding test on right. Bidirectional traceability. Standard for DO-178C, ISO 26262.",
+      "category": "safety_critical_mechanism"
+    },
+    {
+      "name": "requirements_traceability",
+      "definition": "Every requirement traces to design + code + test. Every code element traces back.",
+      "why": "Auditors verify completeness. No code without requirement = dead code. No requirement without test = unverified. Tools (DOORS, Polarion) enforce.",
+      "category": "safety_critical_mechanism"
+    },
+    {
+      "name": "MISRA_C_rules",
+      "definition": "Forbid recursion, dynamic alloc, gotos, multiple returns. ~150 rules. MISRA-C:2012 current.",
+      "why": "Eliminate undefined behaviour + risky constructs. Static analysis enforces. Standard automotive + aerospace.",
+      "category": "safety_critical_mechanism"
+    },
+    {
+      "name": "static_analysis_tools",
+      "definition": "Polyspace, Coverity, LDRA, CodeSonar. Detect undefined behaviour, dead code, MISRA violations.",
+      "why": "Catches bugs before runtime. Mathematical reasoning about all paths. Required for certification.",
+      "category": "safety_critical_mechanism"
+    },
+    {
+      "name": "structural_code_coverage",
+      "definition": "Statement coverage, branch coverage, MC/DC (Modified Condition/Decision Coverage).",
+      "why": "DO-178C Level A requires MC/DC. Each condition in boolean expression independently exercised. Drives test design.",
+      "category": "safety_critical_mechanism"
+    },
+    {
+      "name": "AUTOSAR_classic",
+      "definition": "Automotive Open System Architecture. Layered SW: BSW (basic), RTE, application. Standard interfaces.",
+      "why": "Industry standard for ECUs. Decouples app from MCU specifics. Cost: complexity, conformance. Used by every automotive OEM.",
+      "category": "safety_critical_mechanism"
+    },
+    {
+      "name": "AUTOSAR_adaptive",
+      "definition": "Adaptive AUTOSAR. POSIX-based for high-performance (ADAS, infotainment). Service-oriented.",
+      "why": "Classic too rigid for high-compute. Adaptive: Linux + middleware. Used in autonomous driving stacks.",
+      "category": "safety_critical_mechanism"
+    },
+    {
+      "name": "FMEA_failure_mode_analysis",
+      "definition": "Failure Mode + Effects Analysis. Systematic enumeration of failures + consequences.",
+      "why": "Drives requirements: 'what if sensor X dies?'. Catches scenarios not from happy path. ISO 26262 requires.",
+      "category": "safety_critical_mechanism"
+    },
+    {
+      "name": "fault_tree_analysis",
+      "definition": "FTA: top-down analysis. Top event → contributing failures combined via AND/OR.",
+      "why": "Quantify failure probability. Identify single points of failure. Complementary to FMEA (which is bottom-up).",
+      "category": "safety_critical_mechanism"
+    },
+    {
+      "name": "diagnostic_coverage",
+      "definition": "Fraction of failures detected by diagnostics. Higher = better safety integrity.",
+      "why": "Hardware DC contributes to SIL/ASIL. CRC on flash, EDAC on RAM, signature monitoring. Per-component analysis.",
+      "category": "safety_critical_mechanism"
+    },
+    {
+      "name": "safety_case",
+      "definition": "Structured argument that system is acceptably safe. GSN (Goal Structuring Notation).",
+      "why": "Demonstrates safety reasoning to regulators. Top goal → sub-goals → evidence. Standard for certification.",
+      "category": "safety_critical_mechanism"
+    },
+    {
+      "name": "certified_RTOS",
+      "definition": "RTOS pre-certified for DO-178C / ISO 26262. SafeRTOS (FreeRTOS variant), VxWorks Certified, PikeOS.",
+      "why": "Certifying own RTOS infeasible. Use pre-certified + leverage their evidence. Cost: licensing $$$.",
+      "category": "safety_critical_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "MISRA_compliance_required_for_ASIL_C_D",
+      "if": ["software is ASIL C or D"],
+      "then": ["MISRA C compliance is effectively required"],
+      "why": "MISRA eliminates undefined behaviour + risky constructs. Auditors expect. Static analysis tools verify. Standard practice.",
+      "soundness_category": "referential_transparency"
+    },
+    {
+      "name": "MC_DC_for_DO_178C_Level_A",
+      "if": ["software is DO-178C Level A (catastrophic failure)"],
+      "then": ["Modified Condition/Decision Coverage required"],
+      "why": "Each condition in boolean expression must independently affect outcome. Stronger than branch coverage. Drives test design for safety-critical avionics.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "certified_RTOS_saves_certification_effort",
+      "if": ["application requires certified OS"],
+      "then": ["pre-certified RTOS dramatically reduces cost"],
+      "why": "Certifying RTOS from scratch: years + millions. Pre-certified: leverage existing evidence. Standard buy-vs-build choice for safety-critical.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "FMEA_drives_requirements_completeness",
+      "if": ["FMEA is systematically performed"],
+      "then": ["safety requirements cover failure scenarios"],
+      "why": "Happy-path-only requirements miss failures. FMEA: 'sensor disconnected? short circuit? bias?'. Each becomes safety requirement. Standard ISO 26262.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "diagnostic_coverage_determines_SIL_ASIL",
+      "if": ["hardware has X% diagnostic coverage"],
+      "then": ["it qualifies for specific SIL/ASIL level"],
+      "why": "ISO 26262 + IEC 61508 tables: SIL/ASIL determined by failure rate × coverage. Higher coverage = higher integrity. Standard certification path.",
+      "soundness_category": "denotational_equivalence"
+    }
+  ]
+}

@@ -1,0 +1,1500 @@
+{
+  "id": "compositional_chunking",
+  "version": "1.0.0",
+  "depends_on": [
+    "lexical_access"
+  ],
+  "description": "Recurring sign sequences become compositional AcousticSigns. Rust chunk_discovery Op tracks BigramObservation counts; a graph Rule promotes a bigram into a sign once its count crosses threshold. Compositional signs then fire as runtime Utterances when the bigram pattern recurs. Recursion is free: compositional signs are AcousticSigns, so phrases-of-phrases emerge by the same mechanism.",
+  "nodes": [
+    {
+      "local_id": 6,
+      "type": "Rule",
+      "attrs": {
+        "effect": {
+          "__tuple__": [
+            {
+              "__tuple__": [
+                "set_attr",
+                "b",
+                "count",
+                {
+                  "__term__": {
+                    "items": {
+                      "__tuple__": [
+                        {
+                          "key": "count",
+                          "node": {
+                            "name": "b",
+                            "type": "Var"
+                          },
+                          "type": "Attr"
+                        },
+                        {
+                          "type": "Lit",
+                          "value": 1
+                        }
+                      ]
+                    },
+                    "type": "Plus"
+                  }
+                }
+              ]
+            },
+            {
+              "__tuple__": [
+                "set_attr",
+                "utt_a",
+                "bigram_counted",
+                true
+              ]
+            }
+          ]
+        },
+        "id": "count_bigram_existing",
+        "match": {
+          "__tuple__": [
+            {
+              "__tuple__": [
+                "utt_b",
+                "follows",
+                "utt_a"
+              ]
+            },
+            {
+              "__tuple__": [
+                "utt_a",
+                "heard_as",
+                "sign_a"
+              ]
+            },
+            {
+              "__tuple__": [
+                "utt_b",
+                "heard_as",
+                "sign_b"
+              ]
+            },
+            {
+              "__tuple__": [
+                "b",
+                "first_sign",
+                "sign_a"
+              ]
+            },
+            {
+              "__tuple__": [
+                "b",
+                "second_sign",
+                "sign_b"
+              ]
+            },
+            {
+              "__tuple__": [
+                "lex",
+                "has_entry",
+                "sign_a"
+              ]
+            },
+            {
+              "__tuple__": [
+                "lex",
+                "regulated_by",
+                "cap"
+              ]
+            }
+          ]
+        },
+        "where": {
+          "items": {
+            "__tuple__": [
+              {
+                "a": {
+                  "key": "mode",
+                  "node": {
+                    "name": "cap",
+                    "type": "Var"
+                  },
+                  "type": "Attr"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "active"
+                },
+                "type": "Eq"
+              },
+              {
+                "arg": {
+                  "a": {
+                    "key": "bigram_counted",
+                    "node": {
+                      "name": "utt_a",
+                      "type": "Var"
+                    },
+                    "type": "Attr"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": true
+                  },
+                  "type": "Eq"
+                },
+                "type": "Not"
+              },
+              {
+                "arg": {
+                  "a": {
+                    "key": "composed",
+                    "node": {
+                      "name": "utt_a",
+                      "type": "Var"
+                    },
+                    "type": "Attr"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": true
+                  },
+                  "type": "Eq"
+                },
+                "type": "Not"
+              },
+              {
+                "arg": {
+                  "a": {
+                    "key": "composed",
+                    "node": {
+                      "name": "utt_b",
+                      "type": "Var"
+                    },
+                    "type": "Attr"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": true
+                  },
+                  "type": "Eq"
+                },
+                "type": "Not"
+              }
+            ]
+          },
+          "type": "And"
+        }
+      }
+    },
+    {
+      "local_id": 7,
+      "type": "Rule",
+      "attrs": {
+        "effect": {
+          "__tuple__": [
+            {
+              "__tuple__": [
+                "add_node",
+                "b",
+                "BigramObservation",
+                {
+                  "count": 1
+                }
+              ]
+            },
+            {
+              "__tuple__": [
+                "add_edge",
+                "b",
+                "first_sign",
+                "sign_a"
+              ]
+            },
+            {
+              "__tuple__": [
+                "add_edge",
+                "b",
+                "second_sign",
+                "sign_b"
+              ]
+            },
+            {
+              "__tuple__": [
+                "add_edge",
+                "lex",
+                "tracks_bigram",
+                "b"
+              ]
+            },
+            {
+              "__tuple__": [
+                "set_attr",
+                "utt_a",
+                "bigram_counted",
+                true
+              ]
+            }
+          ]
+        },
+        "id": "count_bigram_new",
+        "match": {
+          "__tuple__": [
+            {
+              "__tuple__": [
+                "utt_b",
+                "follows",
+                "utt_a"
+              ]
+            },
+            {
+              "__tuple__": [
+                "utt_a",
+                "heard_as",
+                "sign_a"
+              ]
+            },
+            {
+              "__tuple__": [
+                "utt_b",
+                "heard_as",
+                "sign_b"
+              ]
+            },
+            {
+              "__tuple__": [
+                "lex",
+                "has_entry",
+                "sign_a"
+              ]
+            },
+            {
+              "__tuple__": [
+                "lex",
+                "regulated_by",
+                "cap"
+              ]
+            }
+          ]
+        },
+        "where": {
+          "items": {
+            "__tuple__": [
+              {
+                "a": {
+                  "key": "mode",
+                  "node": {
+                    "name": "cap",
+                    "type": "Var"
+                  },
+                  "type": "Attr"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "active"
+                },
+                "type": "Eq"
+              },
+              {
+                "arg": {
+                  "a": {
+                    "key": "bigram_counted",
+                    "node": {
+                      "name": "utt_a",
+                      "type": "Var"
+                    },
+                    "type": "Attr"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": true
+                  },
+                  "type": "Eq"
+                },
+                "type": "Not"
+              },
+              {
+                "arg": {
+                  "a": {
+                    "key": "composed",
+                    "node": {
+                      "name": "utt_a",
+                      "type": "Var"
+                    },
+                    "type": "Attr"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": true
+                  },
+                  "type": "Eq"
+                },
+                "type": "Not"
+              },
+              {
+                "arg": {
+                  "a": {
+                    "key": "composed",
+                    "node": {
+                      "name": "utt_b",
+                      "type": "Var"
+                    },
+                    "type": "Attr"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": true
+                  },
+                  "type": "Eq"
+                },
+                "type": "Not"
+              },
+              {
+                "arg": {
+                  "predicate": {
+                    "container": {
+                      "edge_type": "second_sign",
+                      "node": {
+                        "name": "cand",
+                        "type": "Var"
+                      },
+                      "type": "Neighbours"
+                    },
+                    "member": {
+                      "name": "sign_b",
+                      "type": "Var"
+                    },
+                    "type": "In"
+                  },
+                  "source": {
+                    "edge_type": "first_sign",
+                    "node": {
+                      "name": "sign_a",
+                      "type": "Var"
+                    },
+                    "type": "InNeighbours"
+                  },
+                  "type": "Exists",
+                  "var_name": "cand"
+                },
+                "type": "Not"
+              }
+            ]
+          },
+          "type": "And"
+        }
+      }
+    },
+    {
+      "local_id": 8,
+      "type": "Rule",
+      "attrs": {
+        "effect": {
+          "__tuple__": [
+            {
+              "__tuple__": [
+                "add_node",
+                "sign",
+                "AcousticSign",
+                {
+                  "composed": true,
+                  "hearings": 0,
+                  "promoted_at_count": {
+                    "__term__": {
+                      "key": "count",
+                      "node": {
+                        "name": "b",
+                        "type": "Var"
+                      },
+                      "type": "Attr"
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "__tuple__": [
+                "add_edge",
+                "sign",
+                "first_component",
+                "first"
+              ]
+            },
+            {
+              "__tuple__": [
+                "add_edge",
+                "sign",
+                "second_component",
+                "second"
+              ]
+            },
+            {
+              "__tuple__": [
+                "add_edge",
+                "lex",
+                "has_entry",
+                "sign"
+              ]
+            },
+            {
+              "__tuple__": [
+                "add_edge",
+                "b",
+                "promoted_to",
+                "sign"
+              ]
+            },
+            {
+              "__tuple__": [
+                "set_attr",
+                "b",
+                "promoted",
+                true
+              ]
+            }
+          ]
+        },
+        "id": "promote_bigram_to_sign",
+        "match": {
+          "__tuple__": [
+            {
+              "__tuple__": [
+                "lex",
+                "has_entry",
+                "first"
+              ]
+            },
+            {
+              "__tuple__": [
+                "lex",
+                "regulated_by",
+                "cap"
+              ]
+            },
+            {
+              "__tuple__": [
+                "b",
+                "first_sign",
+                "first"
+              ]
+            },
+            {
+              "__tuple__": [
+                "b",
+                "second_sign",
+                "second"
+              ]
+            }
+          ]
+        },
+        "where": {
+          "items": {
+            "__tuple__": [
+              {
+                "a": {
+                  "key": "mode",
+                  "node": {
+                    "name": "cap",
+                    "type": "Var"
+                  },
+                  "type": "Attr"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "active"
+                },
+                "type": "Eq"
+              },
+              {
+                "a": {
+                  "key": "count",
+                  "node": {
+                    "name": "b",
+                    "type": "Var"
+                  },
+                  "type": "Attr"
+                },
+                "b": {
+                  "key": "promotion_threshold",
+                  "node": {
+                    "name": "lex",
+                    "type": "Var"
+                  },
+                  "type": "Attr"
+                },
+                "type": "Gte"
+              },
+              {
+                "arg": {
+                  "a": {
+                    "key": "promoted",
+                    "node": {
+                      "name": "b",
+                      "type": "Var"
+                    },
+                    "type": "Attr"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": true
+                  },
+                  "type": "Eq"
+                },
+                "type": "Not"
+              }
+            ]
+          },
+          "type": "And"
+        }
+      }
+    },
+    {
+      "local_id": 9,
+      "type": "Rule",
+      "attrs": {
+        "effect": {
+          "__tuple__": [
+            {
+              "__tuple__": [
+                "add_node",
+                "utt_c",
+                "Utterance",
+                {
+                  "composed": true,
+                  "duration_s": {
+                    "__term__": {
+                      "a": {
+                        "key": "end_time_s",
+                        "node": {
+                          "name": "utt_b",
+                          "type": "Var"
+                        },
+                        "type": "Attr"
+                      },
+                      "b": {
+                        "key": "start_time_s",
+                        "node": {
+                          "name": "utt_a",
+                          "type": "Var"
+                        },
+                        "type": "Attr"
+                      },
+                      "type": "Minus"
+                    }
+                  },
+                  "end_time_s": {
+                    "__term__": {
+                      "key": "end_time_s",
+                      "node": {
+                        "name": "utt_b",
+                        "type": "Var"
+                      },
+                      "type": "Attr"
+                    }
+                  },
+                  "start_time_s": {
+                    "__term__": {
+                      "key": "start_time_s",
+                      "node": {
+                        "name": "utt_a",
+                        "type": "Var"
+                      },
+                      "type": "Attr"
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "__tuple__": [
+                "add_edge",
+                "utt_c",
+                "from_stream",
+                "stream"
+              ]
+            },
+            {
+              "__tuple__": [
+                "add_edge",
+                "utt_c",
+                "heard_as",
+                "sign"
+              ]
+            },
+            {
+              "__tuple__": [
+                "set_attr",
+                "sign",
+                "hearings",
+                {
+                  "__term__": {
+                    "items": {
+                      "__tuple__": [
+                        {
+                          "key": "hearings",
+                          "node": {
+                            "name": "sign",
+                            "type": "Var"
+                          },
+                          "type": "Attr"
+                        },
+                        {
+                          "type": "Lit",
+                          "value": 1
+                        }
+                      ]
+                    },
+                    "type": "Plus"
+                  }
+                }
+              ]
+            },
+            {
+              "__tuple__": [
+                "set_attr",
+                "utt_a",
+                "composed_emitted",
+                true
+              ]
+            }
+          ]
+        },
+        "id": "compose_utterance",
+        "match": {
+          "__tuple__": [
+            {
+              "__tuple__": [
+                "utt_b",
+                "follows",
+                "utt_a"
+              ]
+            },
+            {
+              "__tuple__": [
+                "utt_a",
+                "from_stream",
+                "stream"
+              ]
+            },
+            {
+              "__tuple__": [
+                "utt_a",
+                "heard_as",
+                "sign_a"
+              ]
+            },
+            {
+              "__tuple__": [
+                "utt_b",
+                "heard_as",
+                "sign_b"
+              ]
+            },
+            {
+              "__tuple__": [
+                "sign",
+                "first_component",
+                "sign_a"
+              ]
+            },
+            {
+              "__tuple__": [
+                "sign",
+                "second_component",
+                "sign_b"
+              ]
+            },
+            {
+              "__tuple__": [
+                "lex",
+                "regulated_by",
+                "cap"
+              ]
+            }
+          ]
+        },
+        "where": {
+          "items": {
+            "__tuple__": [
+              {
+                "arg": {
+                  "a": {
+                    "key": "mode",
+                    "node": {
+                      "name": "cap",
+                      "type": "Var"
+                    },
+                    "type": "Attr"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": "off"
+                  },
+                  "type": "Eq"
+                },
+                "type": "Not"
+              },
+              {
+                "arg": {
+                  "a": {
+                    "key": "composed_emitted",
+                    "node": {
+                      "name": "utt_a",
+                      "type": "Var"
+                    },
+                    "type": "Attr"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": true
+                  },
+                  "type": "Eq"
+                },
+                "type": "Not"
+              },
+              {
+                "arg": {
+                  "a": {
+                    "key": "composed",
+                    "node": {
+                      "name": "utt_a",
+                      "type": "Var"
+                    },
+                    "type": "Attr"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": true
+                  },
+                  "type": "Eq"
+                },
+                "type": "Not"
+              },
+              {
+                "arg": {
+                  "a": {
+                    "key": "composed",
+                    "node": {
+                      "name": "utt_b",
+                      "type": "Var"
+                    },
+                    "type": "Attr"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": true
+                  },
+                  "type": "Eq"
+                },
+                "type": "Not"
+              }
+            ]
+          },
+          "type": "And"
+        }
+      }
+    },
+    {
+      "local_id": 10,
+      "type": "Rule",
+      "attrs": {
+        "effect": {
+          "__tuple__": [
+            {
+              "__tuple__": [
+                "set_attr",
+                "lex",
+                "promotion_threshold",
+                {
+                  "__term__": {
+                    "items": {
+                      "__tuple__": [
+                        {
+                          "key": "promotion_threshold",
+                          "node": {
+                            "name": "lex",
+                            "type": "Var"
+                          },
+                          "type": "Attr"
+                        },
+                        {
+                          "key": "step",
+                          "node": {
+                            "name": "tp",
+                            "type": "Var"
+                          },
+                          "type": "Attr"
+                        }
+                      ]
+                    },
+                    "type": "Plus"
+                  }
+                }
+              ]
+            },
+            {
+              "__tuple__": [
+                "set_attr",
+                "lex",
+                "promotion_tuned_at_n_bigrams",
+                {
+                  "__term__": {
+                    "source": {
+                      "edge_type": "tracks_bigram",
+                      "node": {
+                        "name": "lex",
+                        "type": "Var"
+                      },
+                      "type": "Neighbours"
+                    },
+                    "type": "Count"
+                  }
+                }
+              ]
+            },
+            {
+              "__tuple__": [
+                "set_attr",
+                "lex",
+                "last_promotion_tune_direction",
+                "raise"
+              ]
+            }
+          ]
+        },
+        "id": "tune_promotion_threshold_raise",
+        "match": {
+          "__tuple__": [
+            {
+              "__tuple__": [
+                "lex",
+                "has_tunable",
+                "tp"
+              ]
+            }
+          ]
+        },
+        "where": {
+          "items": {
+            "__tuple__": [
+              {
+                "a": {
+                  "source": {
+                    "edge_type": "tracks_bigram",
+                    "node": {
+                      "name": "lex",
+                      "type": "Var"
+                    },
+                    "type": "Neighbours"
+                  },
+                  "type": "Count"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 30
+                },
+                "type": "Gte"
+              },
+              {
+                "a": {
+                  "key": "promotion_threshold",
+                  "node": {
+                    "name": "lex",
+                    "type": "Var"
+                  },
+                  "type": "Attr"
+                },
+                "b": {
+                  "key": "max",
+                  "node": {
+                    "name": "tp",
+                    "type": "Var"
+                  },
+                  "type": "Attr"
+                },
+                "type": "Lt"
+              },
+              {
+                "a": {
+                  "a": {
+                    "source": {
+                      "predicate": {
+                        "a": {
+                          "key": "promoted",
+                          "node": {
+                            "name": "b",
+                            "type": "Var"
+                          },
+                          "type": "Attr"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": true
+                        },
+                        "type": "Eq"
+                      },
+                      "source": {
+                        "edge_type": "tracks_bigram",
+                        "node": {
+                          "name": "lex",
+                          "type": "Var"
+                        },
+                        "type": "Neighbours"
+                      },
+                      "type": "Filter",
+                      "var_name": "b"
+                    },
+                    "type": "Count"
+                  },
+                  "b": {
+                    "source": {
+                      "edge_type": "tracks_bigram",
+                      "node": {
+                        "name": "lex",
+                        "type": "Var"
+                      },
+                      "type": "Neighbours"
+                    },
+                    "type": "Count"
+                  },
+                  "type": "Div"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 0.5
+                },
+                "type": "Gte"
+              },
+              {
+                "a": {
+                  "key": "attr_name",
+                  "node": {
+                    "name": "tp",
+                    "type": "Var"
+                  },
+                  "type": "Attr"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "promotion_threshold"
+                },
+                "type": "Eq"
+              },
+              {
+                "items": {
+                  "__tuple__": [
+                    {
+                      "arg": {
+                        "key": "promotion_tuned_at_n_bigrams",
+                        "node": {
+                          "name": "lex",
+                          "type": "Var"
+                        },
+                        "type": "Attr"
+                      },
+                      "type": "Not"
+                    },
+                    {
+                      "a": {
+                        "a": {
+                          "source": {
+                            "edge_type": "tracks_bigram",
+                            "node": {
+                              "name": "lex",
+                              "type": "Var"
+                            },
+                            "type": "Neighbours"
+                          },
+                          "type": "Count"
+                        },
+                        "b": {
+                          "key": "promotion_tuned_at_n_bigrams",
+                          "node": {
+                            "name": "lex",
+                            "type": "Var"
+                          },
+                          "type": "Attr"
+                        },
+                        "type": "Minus"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 50
+                      },
+                      "type": "Gte"
+                    }
+                  ]
+                },
+                "type": "Or"
+              }
+            ]
+          },
+          "type": "And"
+        }
+      }
+    },
+    {
+      "local_id": 11,
+      "type": "Rule",
+      "attrs": {
+        "effect": {
+          "__tuple__": [
+            {
+              "__tuple__": [
+                "set_attr",
+                "lex",
+                "promotion_threshold",
+                {
+                  "__term__": {
+                    "a": {
+                      "key": "promotion_threshold",
+                      "node": {
+                        "name": "lex",
+                        "type": "Var"
+                      },
+                      "type": "Attr"
+                    },
+                    "b": {
+                      "key": "step",
+                      "node": {
+                        "name": "tp",
+                        "type": "Var"
+                      },
+                      "type": "Attr"
+                    },
+                    "type": "Minus"
+                  }
+                }
+              ]
+            },
+            {
+              "__tuple__": [
+                "set_attr",
+                "lex",
+                "promotion_tuned_at_n_bigrams",
+                {
+                  "__term__": {
+                    "source": {
+                      "edge_type": "tracks_bigram",
+                      "node": {
+                        "name": "lex",
+                        "type": "Var"
+                      },
+                      "type": "Neighbours"
+                    },
+                    "type": "Count"
+                  }
+                }
+              ]
+            },
+            {
+              "__tuple__": [
+                "set_attr",
+                "lex",
+                "last_promotion_tune_direction",
+                "lower"
+              ]
+            }
+          ]
+        },
+        "id": "tune_promotion_threshold_lower",
+        "match": {
+          "__tuple__": [
+            {
+              "__tuple__": [
+                "lex",
+                "has_tunable",
+                "tp"
+              ]
+            }
+          ]
+        },
+        "where": {
+          "items": {
+            "__tuple__": [
+              {
+                "a": {
+                  "source": {
+                    "edge_type": "tracks_bigram",
+                    "node": {
+                      "name": "lex",
+                      "type": "Var"
+                    },
+                    "type": "Neighbours"
+                  },
+                  "type": "Count"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 30
+                },
+                "type": "Gte"
+              },
+              {
+                "a": {
+                  "key": "promotion_threshold",
+                  "node": {
+                    "name": "lex",
+                    "type": "Var"
+                  },
+                  "type": "Attr"
+                },
+                "b": {
+                  "key": "min",
+                  "node": {
+                    "name": "tp",
+                    "type": "Var"
+                  },
+                  "type": "Attr"
+                },
+                "type": "Gte"
+              },
+              {
+                "a": {
+                  "a": {
+                    "source": {
+                      "predicate": {
+                        "a": {
+                          "key": "promoted",
+                          "node": {
+                            "name": "b",
+                            "type": "Var"
+                          },
+                          "type": "Attr"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": true
+                        },
+                        "type": "Eq"
+                      },
+                      "source": {
+                        "edge_type": "tracks_bigram",
+                        "node": {
+                          "name": "lex",
+                          "type": "Var"
+                        },
+                        "type": "Neighbours"
+                      },
+                      "type": "Filter",
+                      "var_name": "b"
+                    },
+                    "type": "Count"
+                  },
+                  "b": {
+                    "source": {
+                      "edge_type": "tracks_bigram",
+                      "node": {
+                        "name": "lex",
+                        "type": "Var"
+                      },
+                      "type": "Neighbours"
+                    },
+                    "type": "Count"
+                  },
+                  "type": "Div"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 0.05
+                },
+                "type": "Lte"
+              },
+              {
+                "a": {
+                  "key": "attr_name",
+                  "node": {
+                    "name": "tp",
+                    "type": "Var"
+                  },
+                  "type": "Attr"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "promotion_threshold"
+                },
+                "type": "Eq"
+              },
+              {
+                "items": {
+                  "__tuple__": [
+                    {
+                      "arg": {
+                        "key": "promotion_tuned_at_n_bigrams",
+                        "node": {
+                          "name": "lex",
+                          "type": "Var"
+                        },
+                        "type": "Attr"
+                      },
+                      "type": "Not"
+                    },
+                    {
+                      "a": {
+                        "a": {
+                          "source": {
+                            "edge_type": "tracks_bigram",
+                            "node": {
+                              "name": "lex",
+                              "type": "Var"
+                            },
+                            "type": "Neighbours"
+                          },
+                          "type": "Count"
+                        },
+                        "b": {
+                          "key": "promotion_tuned_at_n_bigrams",
+                          "node": {
+                            "name": "lex",
+                            "type": "Var"
+                          },
+                          "type": "Attr"
+                        },
+                        "type": "Minus"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 50
+                      },
+                      "type": "Gte"
+                    }
+                  ]
+                },
+                "type": "Or"
+              }
+            ]
+          },
+          "type": "And"
+        }
+      }
+    },
+    {
+      "local_id": 12,
+      "type": "Rule",
+      "attrs": {
+        "effect": {
+          "__tuple__": [
+            {
+              "__tuple__": [
+                "del_edge",
+                "utt_b",
+                "follows",
+                "utt_a"
+              ]
+            }
+          ]
+        },
+        "id": "gc_follows_when_assessed",
+        "match": {
+          "__tuple__": [
+            {
+              "__tuple__": [
+                "cap",
+                "has_assessment",
+                "a"
+              ]
+            },
+            {
+              "__tuple__": [
+                "utt_b",
+                "follows",
+                "utt_a"
+              ]
+            }
+          ]
+        },
+        "where": {
+          "items": {
+            "__tuple__": [
+              {
+                "a": {
+                  "key": "kind",
+                  "node": {
+                    "name": "a",
+                    "type": "Var"
+                  },
+                  "type": "Attr"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "compute_pressure"
+                },
+                "type": "Eq"
+              },
+              {
+                "a": {
+                  "key": "cause",
+                  "node": {
+                    "name": "a",
+                    "type": "Var"
+                  },
+                  "type": "Attr"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "follows_pile_unbounded"
+                },
+                "type": "Eq"
+              }
+            ]
+          },
+          "type": "And"
+        }
+      }
+    },
+    {
+      "local_id": 13,
+      "type": "Rule",
+      "attrs": {
+        "effect": {
+          "__tuple__": [
+            {
+              "__tuple__": [
+                "del_node",
+                "utt"
+              ]
+            }
+          ]
+        },
+        "id": "gc_utterances_when_assessed",
+        "match": {
+          "__tuple__": [
+            {
+              "__tuple__": [
+                "cap",
+                "has_assessment",
+                "a"
+              ]
+            },
+            {
+              "__tuple__": [
+                "utt",
+                "from_stream",
+                "stream"
+              ]
+            }
+          ]
+        },
+        "where": {
+          "items": {
+            "__tuple__": [
+              {
+                "a": {
+                  "key": "kind",
+                  "node": {
+                    "name": "a",
+                    "type": "Var"
+                  },
+                  "type": "Attr"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "compute_pressure"
+                },
+                "type": "Eq"
+              },
+              {
+                "a": {
+                  "key": "cause",
+                  "node": {
+                    "name": "a",
+                    "type": "Var"
+                  },
+                  "type": "Attr"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "utterance_pile_unbounded"
+                },
+                "type": "Eq"
+              }
+            ]
+          },
+          "type": "And"
+        }
+      }
+    }
+  ],
+  "edges": [],
+  "productions": [
+    {
+      "src": {
+        "type": "AcousticLexicon",
+        "var": "src"
+      },
+      "edge_type": "tracks_bigram",
+      "tgt": {
+        "type": "BigramObservation",
+        "var": "tgt"
+      },
+      "provenance": "compositional_chunking:lex_tracks_bigram"
+    },
+    {
+      "src": {
+        "type": "AcousticSign",
+        "var": "src"
+      },
+      "edge_type": "first_component",
+      "tgt": {
+        "type": "AcousticSign",
+        "var": "tgt"
+      },
+      "provenance": "compositional_chunking:sign_first_comp"
+    },
+    {
+      "src": {
+        "type": "AcousticSign",
+        "var": "src"
+      },
+      "edge_type": "second_component",
+      "tgt": {
+        "type": "AcousticSign",
+        "var": "tgt"
+      },
+      "provenance": "compositional_chunking:sign_second_comp"
+    },
+    {
+      "src": {
+        "type": "BigramObservation",
+        "var": "src"
+      },
+      "edge_type": "first_sign",
+      "tgt": {
+        "type": "AcousticSign",
+        "var": "tgt"
+      },
+      "provenance": "compositional_chunking:bigram_first"
+    },
+    {
+      "src": {
+        "type": "BigramObservation",
+        "var": "src"
+      },
+      "edge_type": "promoted_to",
+      "tgt": {
+        "type": "AcousticSign",
+        "var": "tgt"
+      },
+      "provenance": "compositional_chunking:bigram_promoted_to"
+    },
+    {
+      "src": {
+        "type": "BigramObservation",
+        "var": "src"
+      },
+      "edge_type": "second_sign",
+      "tgt": {
+        "type": "AcousticSign",
+        "var": "tgt"
+      },
+      "provenance": "compositional_chunking:bigram_second"
+    },
+    {
+      "src": {
+        "type": "Utterance",
+        "var": "src"
+      },
+      "edge_type": "follows",
+      "tgt": {
+        "type": "Utterance",
+        "var": "tgt"
+      },
+      "provenance": "compositional_chunking:utterance_follows"
+    }
+  ]
+}

@@ -1,0 +1,1790 @@
+{
+ "id": "vision_onoff",
+ "version": "1.0.0",
+ "depends_on": [
+  "vision_waves"
+ ],
+ "description": "RUNG 6 \u2014 THE SIGNED SIMPLE LAYER via an ON/OFF RETINAL SPLIT. Rung 5 measured why the Units have no orientation-selective RESPONSE (OSI 0.004 vs an ideal Gabor's 1.000): Oja on non-negative input keeps weights strictly positive (frac(w<0)=0.0000), so the response is DC-dominated and the oriented structure that IS in the weights never reaches it (GABOR vs GABOR+DC: identical anisotropy 0.8672, OSI 1.0000 vs 0.0000). Biology does not force the sign into the WEIGHT \u2014 it splits the RETINA into ON and OFF pathways and keeps synapses sign-constant (Dale), so the effective RF w+ - w- is signed while every weight stays >= 0. One wave field drives BOTH channels (stage II cholinergic waves are not segregated; Gjorgjieva 2009 has burst-timing driving ON/OFF segregation), so aligned adjacent ON/OFF subregions (Hubel & Wiesel; Reid & Alonso) are an OUTCOME to grow, never an input. Learning is Miller & MacKay's subtractive normalisation, the canonical rule for exactly this: it projects out the uniform/DC mode that multiplicative/divisive normalisation (our Oja == GCAL's, to first order) preserves. onoff=0 by DEFAULT so every committed result reproduces byte-identically.",
+ "microtheory": {
+  "name": "vision_onoff",
+  "description": "the sign comes from the PATHWAY, not the weight: one wave field -> two non-negative retinal channels (ON: x, OFF: 1-x) -> a cortical cell with non-negative weights whose EFFECTIVE receptive field w+ - w- is signed; subtractive normalisation projects out the DC mode so the signed, oriented mode is the only one that can grow."
+ },
+ "nodes": [
+  {
+   "local_id": 0,
+   "type": "OnOffParams",
+   "attrs": {
+    "name": "default",
+    "onoff": 0.0,
+    "split": 1.0,
+    "subnorm": 1.0,
+    "frozen": 0.0,
+    "oo_eta": 0.0005,
+    "oo_wmax": 2.0,
+    "theta_rate": 0.05,
+    "homeo": 1.0,
+    "comment": "ALL knobs are GRAPH DATA (PROTOCOL 0) \u2014 every ablation is the agent's own configuration, never a Python code path. onoff: 0 (DEFAULT) = the layer is inert, so every committed result reproduces byte-identically (PROTOCOL 9). split: 1 = OFF cells invert (x_OFF = 1-x), the SIGNED pathway; 0 = OFF behaves as ON (x_OFF = x) = a SINGLE non-negative channel = rung 5's condition. The control changes ONLY the sign \u2014 identical anatomy, identical synapse count, identical rules \u2014 because rung 4 learned the hard way that an ablation which also removes anatomy is not null. subnorm: 1 = Miller & MacKay subtractive normalisation; 0 = plain Oja (predicted to collapse to the uniform mode). frozen: 1 = A REAL FREEZE gating every learning rule here. THE BUG IT FIXES: `oja=0` IS NOT A FREEZE \u2014 bh_potentiate / bh_depress / bh_scale are each gated on WaveParams.oja==0.0, so oja=0 switches the OTHER learning rule ON (measured: |dw| up to 47.9 across a single probe, driving three different hand-set poolings to one attractor). A probe must never train what it measures. oo_eta: 5e-4, the regime rung 2's Oja check measured as stable (2e-3 diverges; the eta*y^2 < 1 bound). theta_rate: the EMA timescale of the spike threshold (theta <- theta + theta_rate*(act - theta)), a timescale, not a tuned optimum. homeo: 1 = the threshold adapts; 0 = it is pinned (the no-threshold arm \u2014 measured to give the ideal split-Gabor OSI 0.0006, i.e. no selectivity at all). oo_wmax: the saturating upper bound. In Miller's model the bounds are not a safety rail \u2014 saturation is the symmetry-breaking that makes subregions SEGREGATE rather than rest at the mean."
+   }
+  }
+ ],
+ "edges": [],
+ "productions": [
+  {
+   "src": {
+    "type": "Retina",
+    "var": "a"
+   },
+   "edge_type": "has_bipolar",
+   "tgt": {
+    "type": "Bipolar",
+    "var": "b"
+   },
+   "provenance": "seed:vision_onoff:has_bipolar"
+  },
+  {
+   "src": {
+    "type": "RetinaCell",
+    "var": "a"
+   },
+   "edge_type": "drives",
+   "tgt": {
+    "type": "Bipolar",
+    "var": "b"
+   },
+   "provenance": "seed:vision_onoff:drives"
+  },
+  {
+   "src": {
+    "type": "Bipolar",
+    "var": "a"
+   },
+   "edge_type": "oo_pre",
+   "tgt": {
+    "type": "OOSynapse",
+    "var": "b"
+   },
+   "provenance": "seed:vision_onoff:oo_pre"
+  },
+  {
+   "src": {
+    "type": "OOSynapse",
+    "var": "a"
+   },
+   "edge_type": "oo_post",
+   "tgt": {
+    "type": "SUnit",
+    "var": "b"
+   },
+   "provenance": "seed:vision_onoff:oo_post"
+  },
+  {
+   "src": {
+    "type": "Retina",
+    "var": "a"
+   },
+   "edge_type": "has_sunit",
+   "tgt": {
+    "type": "SUnit",
+    "var": "b"
+   },
+   "provenance": "seed:vision_onoff:has_sunit"
+  }
+ ],
+ "rules": [
+  {
+   "name": "oo_bipolar_burst",
+   "comment": "THE SIGNED PATHWAY. ON (polarity>0) bursts iff its RetinaCell burst within WaveParams.window_steps; OFF bursts iff it did NOT (x_OFF = 1 - x_ON). Both channels are NON-NEGATIVE and both are driven by the SAME wave field \u2014 segregation is what the Units must GROW, not what they are handed. The sign inversion is retinal (mGluR6 in ON bipolars), which is why cortical weights can stay >= 0 (Dale) while the EFFECTIVE RF w+ - w- is signed. `split=0` collapses OFF onto ON (x_OFF = x) = a single non-negative channel = rung 5's condition, with identical anatomy and identical synapse count, so the ablation isolates the SIGN and nothing else. Phase-guarded by bstep so it fires once per cell per step and oo_sunit_activate cannot race it.",
+   "match_type": "Bipolar",
+   "match": [
+    [
+     "r",
+     "has_bipolar",
+     "b"
+    ],
+    [
+     "c",
+     "drives",
+     "b"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "OnOffParams"
+        }
+       },
+       "key": "onoff"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "b"
+       },
+       "key": "bstep"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "b",
+     "bursting",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gt",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "b"
+         },
+         "key": "polarity"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.0
+        }
+       },
+       "then": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Lte",
+         "a": {
+          "type": "Minus",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "r"
+           },
+           "key": "step"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "c"
+           },
+           "key": "last_burst"
+          }
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "PickUnique",
+           "source": {
+            "type": "NodesOfType",
+            "node_type": "WaveParams"
+           }
+          },
+          "key": "window_steps"
+         }
+        },
+        "then": {
+         "type": "Lit",
+         "value": 1.0
+        },
+        "other": {
+         "type": "Lit",
+         "value": 0.0
+        }
+       },
+       "other": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Gt",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "PickUnique",
+           "source": {
+            "type": "NodesOfType",
+            "node_type": "OnOffParams"
+           }
+          },
+          "key": "split"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0.5
+         }
+        },
+        "then": {
+         "type": "Minus",
+         "a": {
+          "type": "Lit",
+          "value": 1.0
+         },
+         "b": {
+          "type": "IfThenElse",
+          "cond": {
+           "type": "Lte",
+           "a": {
+            "type": "Minus",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "r"
+             },
+             "key": "step"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "c"
+             },
+             "key": "last_burst"
+            }
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "PickUnique",
+             "source": {
+              "type": "NodesOfType",
+              "node_type": "WaveParams"
+             }
+            },
+            "key": "window_steps"
+           }
+          },
+          "then": {
+           "type": "Lit",
+           "value": 1.0
+          },
+          "other": {
+           "type": "Lit",
+           "value": 0.0
+          }
+         }
+        },
+        "other": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Lte",
+          "a": {
+           "type": "Minus",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "r"
+            },
+            "key": "step"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "c"
+            },
+            "key": "last_burst"
+           }
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "PickUnique",
+            "source": {
+             "type": "NodesOfType",
+             "node_type": "WaveParams"
+            }
+           },
+           "key": "window_steps"
+          }
+         },
+         "then": {
+          "type": "Lit",
+          "value": 1.0
+         },
+         "other": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        }
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "b",
+     "bstep",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "oo_sunit_activate",
+   "comment": "The signed simple cell's drive: sum of NON-NEGATIVE weights over BOTH channels = SUM (w+ - w-) x + SUM w-. The DC that rung 5 measured as an inescapable multiplier (baseline/act = 1.011) is now an additive constant, and the modulated part is a SIGNED filter. Guarded on every presynaptic Bipolar having already burst this step, so the fixpoint cannot read a stale channel.",
+   "match_type": "SUnit",
+   "match": [
+    [
+     "r",
+     "has_sunit",
+     "u"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "OnOffParams"
+        }
+       },
+       "key": "onoff"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "act_step"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "InNeighbours",
+        "node": {
+         "type": "Var",
+         "name": "u"
+        },
+        "edge_type": "oo_post",
+        "any_type": false
+       },
+       "var_name": "sy",
+       "predicate": {
+        "type": "Lt",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Pick",
+          "source": {
+           "type": "InNeighbours",
+           "node": {
+            "type": "Var",
+            "name": "sy"
+           },
+           "edge_type": "oo_pre",
+           "any_type": false
+          }
+         },
+         "key": "bstep"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "r"
+         },
+         "key": "step"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "u",
+     "act",
+     {
+      "__term__": {
+       "type": "Fold",
+       "source": {
+        "type": "InNeighbours",
+        "node": {
+         "type": "Var",
+         "name": "u"
+        },
+        "edge_type": "oo_post",
+        "any_type": false
+       },
+       "var_name": "sy",
+       "acc_name": "acc",
+       "init": {
+        "type": "Lit",
+        "value": 0.0
+       },
+       "body": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Var",
+          "name": "acc"
+         },
+         {
+          "type": "Times",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "sy"
+            },
+            "key": "weight"
+           },
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Pick",
+             "source": {
+              "type": "InNeighbours",
+              "node": {
+               "type": "Var",
+               "name": "sy"
+              },
+              "edge_type": "oo_pre",
+              "any_type": false
+             }
+            },
+            "key": "bursting"
+           }
+          ]
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "u",
+     "act_step",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "oo_sunit_rate",
+   "comment": "THE ICEBERG (Priebe & Ferster 2008): a simple cell's orientation selectivity in the FIRING RATE comes from thresholding a signed membrane potential. Measured at calibration: WITHOUT this, the ideal split-Gabor scores OSI 0.0006 \u2014 the OFF channel's tonic drive (SUM w- = 5.613) sits above the signal (~2.3), so act never reaches 0 at any orientation, rectification never bites, and F0 is flat (5.120 at 0 deg vs 5.055 at 90 deg). WITH it, the same cell scores OSI 1.0000. The split makes the FILTER signed; the threshold is what makes the RESPONSE signed. Deliberately NOT gated by `frozen` \u2014 a frozen cell must still respond or the probe measures silence.",
+   "match_type": "SUnit",
+   "match": [
+    [
+     "r",
+     "has_sunit",
+     "u"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "OnOffParams"
+        }
+       },
+       "key": "onoff"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "rate_step"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "act_step"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "u",
+     "rate",
+     {
+      "__term__": {
+       "type": "Max",
+       "items": [
+        {
+         "type": "Minus",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "u"
+          },
+          "key": "act"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "u"
+          },
+          "key": "theta"
+         }
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "u",
+     "rate_step",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "oo_sunit_adapt_theta",
+   "comment": "GCAL's homeostatic threshold, in GCAL's PLACE (VISION_PRIOR_ART.md): on the activation function, OUTSIDE the learning rule, where it cannot flip dw's sign \u2014 structurally unable to annihilate, unlike BCM whose threshold does flip the sign and converged to death (0.004). theta is an EMA of the cell's own act, so it adapts to whatever tonic drive the OFF channel happens to impose rather than being hand-set. Guarded on rate_step==step so it can only move AFTER this step's rate has been read (no race), and gated by `frozen` because adaptation is plasticity: a probe must never let theta chase the probe.",
+   "match_type": "SUnit",
+   "match": [
+    [
+     "r",
+     "has_sunit",
+     "u"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "OnOffParams"
+        }
+       },
+       "key": "onoff"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "OnOffParams"
+        }
+       },
+       "key": "frozen"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "OnOffParams"
+        }
+       },
+       "key": "homeo"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "theta_step"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "rate_step"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "u",
+     "theta",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "u"
+         },
+         "key": "theta"
+        },
+        {
+         "type": "Times",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "PickUnique",
+            "source": {
+             "type": "NodesOfType",
+             "node_type": "OnOffParams"
+            }
+           },
+           "key": "theta_rate"
+          },
+          {
+           "type": "Minus",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "u"
+            },
+            "key": "act"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "u"
+            },
+            "key": "theta"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "u",
+     "theta_step",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "oo_sunit_burst_winner",
+   "comment": "WTA over SUnits by act. Competition is the symmetry-breaking that makes the population differentiate rather than converge on one component; the pooling layer's LACK of it is what rung 5 diagnosed as its positive control's failure.",
+   "match_type": "SUnit",
+   "match": [
+    [
+     "r",
+     "has_sunit",
+     "u"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "OnOffParams"
+        }
+       },
+       "key": "onoff"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "burst_step"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "rate_step"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "rate"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Var",
+       "name": "u"
+      },
+      "b": {
+       "type": "Argmax",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "r"
+        },
+        "edge_type": "has_sunit",
+        "any_type": false
+       },
+       "var_name": "u2",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "u2"
+        },
+        "key": "rate"
+       },
+       "default": null
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "u",
+     "bursting",
+     1.0
+    ],
+    [
+     "set_attr",
+     "u",
+     "burst_step",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "u",
+     "last_burst",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "oo_sunit_xbar",
+   "comment": "Subtractive normalisation, phase 1 (Miller & MacKay 1994), applied PER CHANNEL. A single pooled mean is exactly 0.5 here (ON and OFF are complementary), which does not center EITHER channel when the waves are sparse (ON ~19.5% / OFF ~80.5%): the rule then drifts systematically, every OFF weight saturates to wmax and every ON to 0, and the RF collapses to a uniform one-polarity BLOB \u2014 measured as drift 0.005 -> 0.526, clumpiness -> 1.000, OSI decaying 0.40 -> 0.167. Centering each pathway on its OWN mean makes SUM_ON dw = 0 and SUM_OFF dw = 0 independently, so no systematic drift exists in either channel and only real covariance structure can grow. Miller's model never hits this because its ON/OFF layers are symmetric by construction; sparse waves are not.",
+   "match_type": "SUnit",
+   "match": [
+    [
+     "r",
+     "has_sunit",
+     "u"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "OnOffParams"
+        }
+       },
+       "key": "onoff"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "OnOffParams"
+        }
+       },
+       "key": "frozen"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "OnOffParams"
+        }
+       },
+       "key": "subnorm"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "bursting"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "rate_step"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "xbar_step"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "u",
+     "xbar_on",
+     {
+      "__term__": {
+       "type": "Div",
+       "a": {
+        "type": "Fold",
+        "source": {
+         "type": "InNeighbours",
+         "node": {
+          "type": "Var",
+          "name": "u"
+         },
+         "edge_type": "oo_post",
+         "any_type": false
+        },
+        "var_name": "sy",
+        "acc_name": "acc",
+        "init": {
+         "type": "Lit",
+         "value": 0.0
+        },
+        "body": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Var",
+           "name": "acc"
+          },
+          {
+           "type": "IfThenElse",
+           "cond": {
+            "type": "Gt",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "sy"
+             },
+             "key": "polarity"
+            },
+            "b": {
+             "type": "Lit",
+             "value": 0.0
+            }
+           },
+           "then": {
+            "type": "Attr",
+            "node": {
+             "type": "Pick",
+             "source": {
+              "type": "InNeighbours",
+              "node": {
+               "type": "Var",
+               "name": "sy"
+              },
+              "edge_type": "oo_pre",
+              "any_type": false
+             }
+            },
+            "key": "bursting"
+           },
+           "other": {
+            "type": "Lit",
+            "value": 0.0
+           }
+          }
+         ]
+        }
+       },
+       "b": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "u"
+        },
+        "key": "n_on"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "u",
+     "xbar_off",
+     {
+      "__term__": {
+       "type": "Div",
+       "a": {
+        "type": "Fold",
+        "source": {
+         "type": "InNeighbours",
+         "node": {
+          "type": "Var",
+          "name": "u"
+         },
+         "edge_type": "oo_post",
+         "any_type": false
+        },
+        "var_name": "sy",
+        "acc_name": "acc",
+        "init": {
+         "type": "Lit",
+         "value": 0.0
+        },
+        "body": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Var",
+           "name": "acc"
+          },
+          {
+           "type": "IfThenElse",
+           "cond": {
+            "type": "Gt",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "sy"
+             },
+             "key": "polarity"
+            },
+            "b": {
+             "type": "Lit",
+             "value": 0.0
+            }
+           },
+           "then": {
+            "type": "Lit",
+            "value": 0.0
+           },
+           "other": {
+            "type": "Attr",
+            "node": {
+             "type": "Pick",
+             "source": {
+              "type": "InNeighbours",
+              "node": {
+               "type": "Var",
+               "name": "sy"
+              },
+              "edge_type": "oo_pre",
+              "any_type": false
+             }
+            },
+            "key": "bursting"
+           }
+          }
+         ]
+        }
+       },
+       "b": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "u"
+        },
+        "key": "n_off"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "u",
+     "xbar_step",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "step"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "oo_learn_sub",
+   "comment": "dw = eta*y*(x - xbar) then clip to [0, wmax]. Subtractive => SUM dw = 0 => the DC/uniform mode cannot grow, so the only mode left to grow is the SIGNED one (w+ vs w- differentiating by location) \u2014 which is exactly the ON/OFF subregion structure Hubel & Wiesel's simple cells have. Clipping at 0 is Dale's law; clipping at wmax is the saturation that makes it segregate rather than settle at the mean. Local: reads only this synapse, its pre Bipolar, and its post SUnit's own totals.",
+   "match_type": "OOSynapse",
+   "match": [
+    [
+     "b",
+     "oo_pre",
+     "sy"
+    ],
+    [
+     "sy",
+     "oo_post",
+     "u"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "OnOffParams"
+        }
+       },
+       "key": "onoff"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "OnOffParams"
+        }
+       },
+       "key": "frozen"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "OnOffParams"
+        }
+       },
+       "key": "subnorm"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "sy"
+       },
+       "key": "touched"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "xbar_step"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "bursting"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "sy",
+     "weight",
+     {
+      "__term__": {
+       "type": "Min",
+       "items": [
+        {
+         "type": "Max",
+         "items": [
+          {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "sy"
+             },
+             "key": "weight"
+            },
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "PickUnique",
+                "source": {
+                 "type": "NodesOfType",
+                 "node_type": "OnOffParams"
+                }
+               },
+               "key": "oo_eta"
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "u"
+               },
+               "key": "rate"
+              },
+              {
+               "type": "Minus",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Pick",
+                 "source": {
+                  "type": "InNeighbours",
+                  "node": {
+                   "type": "Var",
+                   "name": "sy"
+                  },
+                  "edge_type": "oo_pre",
+                  "any_type": false
+                 }
+                },
+                "key": "bursting"
+               },
+               "b": {
+                "type": "IfThenElse",
+                "cond": {
+                 "type": "Gt",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "sy"
+                  },
+                  "key": "polarity"
+                 },
+                 "b": {
+                  "type": "Lit",
+                  "value": 0.0
+                 }
+                },
+                "then": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "u"
+                 },
+                 "key": "xbar_on"
+                },
+                "other": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "u"
+                 },
+                 "key": "xbar_off"
+                }
+               }
+              }
+             ]
+            }
+           ]
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        },
+        {
+         "type": "Attr",
+         "node": {
+          "type": "PickUnique",
+          "source": {
+           "type": "NodesOfType",
+           "node_type": "OnOffParams"
+          }
+         },
+         "key": "oo_wmax"
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "sy",
+     "touched",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "xbar_step"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "oo_learn_oja",
+   "comment": "Plain Oja on the signed input: w <- w(1 - eta*y^2) + eta*y*x. The MULTIPLICATIVE stabiliser (== GCAL's divisive normalisation to first order, VISION_PRIOR_ART.md) \u2014 which Miller & MacKay 1994 show preserves the uniform mode and therefore cannot segregate ON from OFF. Run as the `subnorm=0` arm so the prediction is measured, not asserted.",
+   "match_type": "OOSynapse",
+   "match": [
+    [
+     "b",
+     "oo_pre",
+     "sy"
+    ],
+    [
+     "sy",
+     "oo_post",
+     "u"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "OnOffParams"
+        }
+       },
+       "key": "onoff"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "OnOffParams"
+        }
+       },
+       "key": "frozen"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "OnOffParams"
+        }
+       },
+       "key": "subnorm"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "sy"
+       },
+       "key": "touched"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "rate_step"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "bursting"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "sy",
+     "weight",
+     {
+      "__term__": {
+       "type": "Max",
+       "items": [
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "sy"
+             },
+             "key": "weight"
+            },
+            {
+             "type": "Minus",
+             "a": {
+              "type": "Lit",
+              "value": 1.0
+             },
+             "b": {
+              "type": "Times",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "PickUnique",
+                 "source": {
+                  "type": "NodesOfType",
+                  "node_type": "OnOffParams"
+                 }
+                },
+                "key": "oo_eta"
+               },
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "u"
+                },
+                "key": "rate"
+               },
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "u"
+                },
+                "key": "rate"
+               }
+              ]
+             }
+            }
+           ]
+          },
+          {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "PickUnique",
+              "source": {
+               "type": "NodesOfType",
+               "node_type": "OnOffParams"
+              }
+             },
+             "key": "oo_eta"
+            },
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "u"
+             },
+             "key": "rate"
+            },
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Pick",
+              "source": {
+               "type": "InNeighbours",
+               "node": {
+                "type": "Var",
+                "name": "sy"
+               },
+               "edge_type": "oo_pre",
+               "any_type": false
+              }
+             },
+             "key": "bursting"
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "sy",
+     "touched",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "u"
+       },
+       "key": "rate_step"
+      }
+     }
+    ]
+   ]
+  }
+ ]
+}

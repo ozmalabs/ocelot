@@ -1,0 +1,94 @@
+{
+ "id": "code_write_constructions",
+ "version": "1.0.0",
+ "depends_on": [],
+ "description": "CODE-3 (writing is reading reversed): the WRITE-side twin of seeds/code_constructions.json. Each ShapeSignature{kind:'code_write_construction'} carries a ONE-token trigger (a single content word mechanically extracted from an NL function-writing request -- domains/code_writing.py._content_tokens, the write-side analogue of code_reading.py._root_marker: fixed text prep, not a decision) as its signature, plus a ground_template holding a Term-tree RECIPE (placeholder Var names a/b/items -- the function's eventual argument names), an ordered args list, and an English desc used verbatim as the written function's docstring lead sentence. compose_function_from_request decodes the request's content-word skeleton against this codebook via the SAME Rust ShapeDecode Term reflective_faculty.compose_design_for_goal already runs for code READING and English-clause reading -- the construction with the best shape_fit wins; a request with no positive-fit construction honestly abstains ('I don't hold a shape for that yet'), never approximated. A SMALL starter vocabulary (larger/smaller/sum/product/absolute-value/average of two numbers; total/count over a list) -- growing it is CODE-4's.",
+ "microtheory": {
+  "name": "code_write_constructions",
+  "description": "writing a function from an NL request is ShapeDecode over a request-construction codebook, symmetric with code_constructions' read side"
+ },
+ "nodes": [
+  {
+   "local_id": 1,
+   "type": "ShapeSignature",
+   "attrs": {
+    "name": "max_of_two",
+    "kind": "code_write_construction",
+    "signature": "[[\"LARGER\"]]",
+    "ground_template": "{\"desc\": \"returns the larger of two numbers\", \"term\": {\"type\": \"IfThenElse\", \"cond\": {\"type\": \"Gt\", \"a\": {\"type\": \"Var\", \"name\": \"a\"}, \"b\": {\"type\": \"Var\", \"name\": \"b\"}}, \"then\": {\"type\": \"Var\", \"name\": \"a\"}, \"other\": {\"type\": \"Var\", \"name\": \"b\"}}, \"args\": [\"a\", \"b\"], \"mode\": \"code_write\"}"
+   }
+  },
+  {
+   "local_id": 2,
+   "type": "ShapeSignature",
+   "attrs": {
+    "name": "min_of_two",
+    "kind": "code_write_construction",
+    "signature": "[[\"SMALLER\"]]",
+    "ground_template": "{\"desc\": \"returns the smaller of two numbers\", \"term\": {\"type\": \"IfThenElse\", \"cond\": {\"type\": \"Lt\", \"a\": {\"type\": \"Var\", \"name\": \"a\"}, \"b\": {\"type\": \"Var\", \"name\": \"b\"}}, \"then\": {\"type\": \"Var\", \"name\": \"a\"}, \"other\": {\"type\": \"Var\", \"name\": \"b\"}}, \"args\": [\"a\", \"b\"], \"mode\": \"code_write\"}"
+   }
+  },
+  {
+   "local_id": 3,
+   "type": "ShapeSignature",
+   "attrs": {
+    "name": "sum_of_two",
+    "kind": "code_write_construction",
+    "signature": "[[\"SUM\"]]",
+    "ground_template": "{\"desc\": \"returns the sum of two numbers\", \"term\": {\"type\": \"Plus\", \"items\": [{\"type\": \"Var\", \"name\": \"a\"}, {\"type\": \"Var\", \"name\": \"b\"}]}, \"args\": [\"a\", \"b\"], \"mode\": \"code_write\"}"
+   }
+  },
+  {
+   "local_id": 4,
+   "type": "ShapeSignature",
+   "attrs": {
+    "name": "product_of_two",
+    "kind": "code_write_construction",
+    "signature": "[[\"PRODUCT\"]]",
+    "ground_template": "{\"desc\": \"returns the product of two numbers\", \"term\": {\"type\": \"Times\", \"items\": [{\"type\": \"Var\", \"name\": \"a\"}, {\"type\": \"Var\", \"name\": \"b\"}]}, \"args\": [\"a\", \"b\"], \"mode\": \"code_write\"}"
+   }
+  },
+  {
+   "local_id": 5,
+   "type": "ShapeSignature",
+   "attrs": {
+    "name": "abs_value",
+    "kind": "code_write_construction",
+    "signature": "[[\"ABSOLUTE\"]]",
+    "ground_template": "{\"desc\": \"returns the absolute value of a number\", \"term\": {\"type\": \"Abs\", \"arg\": {\"type\": \"Var\", \"name\": \"a\"}}, \"args\": [\"a\"], \"mode\": \"code_write\"}"
+   }
+  },
+  {
+   "local_id": 6,
+   "type": "ShapeSignature",
+   "attrs": {
+    "name": "average_of_two",
+    "kind": "code_write_construction",
+    "signature": "[[\"AVERAGE\"]]",
+    "ground_template": "{\"desc\": \"returns the average of two numbers\", \"term\": {\"type\": \"Div\", \"a\": {\"type\": \"Plus\", \"items\": [{\"type\": \"Var\", \"name\": \"a\"}, {\"type\": \"Var\", \"name\": \"b\"}]}, \"b\": {\"type\": \"Lit\", \"value\": 2}}, \"args\": [\"a\", \"b\"], \"mode\": \"code_write\"}"
+   }
+  },
+  {
+   "local_id": 7,
+   "type": "ShapeSignature",
+   "attrs": {
+    "name": "total_of_list",
+    "kind": "code_write_construction",
+    "signature": "[[\"TOTAL\"]]",
+    "ground_template": "{\"desc\": \"returns the total of a list of numbers\", \"term\": {\"type\": \"Fold\", \"source\": {\"type\": \"Var\", \"name\": \"items\"}, \"var_name\": \"x\", \"acc_name\": \"acc\", \"init\": {\"type\": \"Lit\", \"value\": 0}, \"body\": {\"type\": \"Plus\", \"items\": [{\"type\": \"Var\", \"name\": \"acc\"}, {\"type\": \"Var\", \"name\": \"x\"}]}}, \"args\": [\"items\"], \"mode\": \"code_write\"}"
+   }
+  },
+  {
+   "local_id": 8,
+   "type": "ShapeSignature",
+   "attrs": {
+    "name": "count_of_list",
+    "kind": "code_write_construction",
+    "signature": "[[\"COUNT\"]]",
+    "ground_template": "{\"desc\": \"returns the count of items in a list\", \"term\": {\"type\": \"Fold\", \"source\": {\"type\": \"Var\", \"name\": \"items\"}, \"var_name\": \"x\", \"acc_name\": \"acc\", \"init\": {\"type\": \"Lit\", \"value\": 0}, \"body\": {\"type\": \"Plus\", \"items\": [{\"type\": \"Var\", \"name\": \"acc\"}, {\"type\": \"Lit\", \"value\": 1}]}}, \"args\": [\"items\"], \"mode\": \"code_write\"}"
+   }
+  }
+ ],
+ "edges": [],
+ "productions": []
+}

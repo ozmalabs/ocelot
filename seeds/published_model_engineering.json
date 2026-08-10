@@ -1,0 +1,632 @@
+{
+  "id": "published_model_engineering",
+  "version": "1.0.0",
+  "depends_on": ["learning_core"],
+  "description": "Graph-native deterministic understanding and proof-carrying modification of published computational models. Published operators, parameters, tensor partitions, and source control flow are explicit graph IR. Rules derive mechanisms from dependencies, construct algebraic transformations, discharge structural proof obligations, and author exact reversible patches. No behavioral search or fitted probe is involved.",
+  "microtheory": {
+    "name": "published_model_engineering",
+    "description": "program understanding, algebraic model surgery, and proof-carrying enhancement"
+  },
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "ModelSignalVocabulary",
+      "attrs": {
+        "identifier": "no_speech_prob",
+        "role": "absence_evidence"
+      }
+    },
+    {
+      "local_id": 1,
+      "type": "ModelSignalVocabulary",
+      "attrs": {
+        "identifier": "avg_logprob",
+        "role": "content_confidence"
+      }
+    },
+    {
+      "local_id": 2,
+      "type": "ModelSignalVocabulary",
+      "attrs": {
+        "identifier": "should_skip",
+        "role": "abstention_decision"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "src": {"role": "agent_root"},
+      "type": "holds_model_signal_vocabulary",
+      "tgt": {"local": 0},
+      "attrs": {}
+    },
+    {
+      "src": {"role": "agent_root"},
+      "type": "holds_model_signal_vocabulary",
+      "tgt": {"local": 1},
+      "attrs": {}
+    },
+    {
+      "src": {"role": "agent_root"},
+      "type": "holds_model_signal_vocabulary",
+      "tgt": {"local": 2},
+      "attrs": {}
+    }
+  ],
+  "productions": [
+    {"provenance": "seed:published_model_engineering:agent-model", "src": {"type": "Agent", "var": "agent"}, "edge_type": "understands_external_model", "tgt": {"type": "ExternalModel", "var": "model"}},
+    {"provenance": "seed:published_model_engineering:model-operator", "src": {"type": "ExternalModel", "var": "model"}, "edge_type": "has_model_operator", "tgt": {"type": "ModelOperator", "var": "operator"}},
+    {"provenance": "seed:published_model_engineering:operator-parent", "src": {"type": "ModelOperator", "var": "operator"}, "edge_type": "nested_in_model_operator", "tgt": {"type": "ModelOperator", "var": "parent"}},
+    {"provenance": "seed:published_model_engineering:model-parameter", "src": {"type": "ExternalModel", "var": "model"}, "edge_type": "has_model_parameter", "tgt": {"type": "ModelParameter", "var": "parameter"}},
+    {"provenance": "seed:published_model_engineering:operator-parameter", "src": {"type": "ModelOperator", "var": "operator"}, "edge_type": "owns_model_parameter", "tgt": {"type": "ModelParameter", "var": "parameter"}},
+    {"provenance": "seed:published_model_engineering:model-partition", "src": {"type": "ExternalModel", "var": "model"}, "edge_type": "has_model_partition", "tgt": {"type": "ModelInputPartition", "var": "partition"}},
+    {"provenance": "seed:published_model_engineering:partition-operator", "src": {"type": "ModelInputPartition", "var": "partition"}, "edge_type": "partition_of_model_operator", "tgt": {"type": "ModelOperator", "var": "operator"}},
+    {"provenance": "seed:published_model_engineering:partition-parameter", "src": {"type": "ModelInputPartition", "var": "partition"}, "edge_type": "controls_columns_of_parameter", "tgt": {"type": "ModelParameter", "var": "parameter"}},
+    {"provenance": "seed:published_model_engineering:model-affordance", "src": {"type": "ExternalModel", "var": "model"}, "edge_type": "has_engineering_affordance", "tgt": {"type": "ModelEngineeringAffordance", "var": "affordance"}},
+    {"provenance": "seed:published_model_engineering:affordance-partition", "src": {"type": "ModelEngineeringAffordance", "var": "affordance"}, "edge_type": "can_transform_model_partition", "tgt": {"type": "ModelInputPartition", "var": "partition"}},
+    {"provenance": "seed:published_model_engineering:affordance-parameter", "src": {"type": "ModelEngineeringAffordance", "var": "affordance"}, "edge_type": "can_modify_model_parameter", "tgt": {"type": "ModelParameter", "var": "parameter"}},
+    {"provenance": "seed:published_model_engineering:model-output-class", "src": {"type": "ExternalModel", "var": "model"}, "edge_type": "has_model_output_class", "tgt": {"type": "ModelOutputClass", "var": "class"}},
+    {"provenance": "seed:published_model_engineering:class-operator", "src": {"type": "ModelOutputClass", "var": "class"}, "edge_type": "output_class_of_operator", "tgt": {"type": "ModelOperator", "var": "operator"}},
+    {"provenance": "seed:published_model_engineering:class-weight", "src": {"type": "ModelOutputClass", "var": "class"}, "edge_type": "controls_weight_row", "tgt": {"type": "ModelParameter", "var": "parameter"}},
+    {"provenance": "seed:published_model_engineering:class-bias", "src": {"type": "ModelOutputClass", "var": "class"}, "edge_type": "controls_bias_element", "tgt": {"type": "ModelParameter", "var": "parameter"}},
+    {"provenance": "seed:published_model_engineering:model-signal", "src": {"type": "ExternalModel", "var": "model"}, "edge_type": "has_program_signal", "tgt": {"type": "ProgramSignal", "var": "signal"}},
+    {"provenance": "seed:published_model_engineering:model-guard", "src": {"type": "ExternalModel", "var": "model"}, "edge_type": "has_program_guard", "tgt": {"type": "ProgramGuard", "var": "guard"}},
+    {"provenance": "seed:published_model_engineering:model-assignment", "src": {"type": "ExternalModel", "var": "model"}, "edge_type": "has_program_assignment", "tgt": {"type": "ProgramAssignment", "var": "assignment"}},
+    {"provenance": "seed:published_model_engineering:assignment-write", "src": {"type": "ProgramAssignment", "var": "assignment"}, "edge_type": "writes_program_signal", "tgt": {"type": "ProgramSignal", "var": "signal"}},
+    {"provenance": "seed:published_model_engineering:assignment-read", "src": {"type": "ProgramAssignment", "var": "assignment"}, "edge_type": "reads_program_signal", "tgt": {"type": "ProgramSignal", "var": "signal"}},
+    {"provenance": "seed:published_model_engineering:guard-read", "src": {"type": "ProgramGuard", "var": "guard"}, "edge_type": "reads_program_signal", "tgt": {"type": "ProgramSignal", "var": "signal"}},
+    {"provenance": "seed:published_model_engineering:guard-assignment", "src": {"type": "ProgramGuard", "var": "guard"}, "edge_type": "controls_program_assignment", "tgt": {"type": "ProgramAssignment", "var": "assignment"}},
+    {"provenance": "seed:published_model_engineering:assignment-order", "src": {"type": "ProgramAssignment", "var": "earlier"}, "edge_type": "followed_by_same_target_assignment", "tgt": {"type": "ProgramAssignment", "var": "later"}},
+    {"provenance": "seed:published_model_engineering:agent-vocabulary", "src": {"type": "Agent", "var": "agent"}, "edge_type": "holds_model_signal_vocabulary", "tgt": {"type": "ModelSignalVocabulary", "var": "vocabulary"}},
+    {"provenance": "seed:published_model_engineering:model-mechanism", "src": {"type": "ExternalModel", "var": "model"}, "edge_type": "has_derived_model_mechanism", "tgt": {"type": "ModelMechanismExplanation", "var": "mechanism"}},
+    {"provenance": "seed:published_model_engineering:mechanism-primary", "src": {"type": "ModelMechanismExplanation", "var": "mechanism"}, "edge_type": "uses_primary_assignment", "tgt": {"type": "ProgramAssignment", "var": "assignment"}},
+    {"provenance": "seed:published_model_engineering:mechanism-override", "src": {"type": "ModelMechanismExplanation", "var": "mechanism"}, "edge_type": "uses_override_assignment", "tgt": {"type": "ProgramAssignment", "var": "assignment"}},
+    {"provenance": "seed:published_model_engineering:mechanism-guard", "src": {"type": "ModelMechanismExplanation", "var": "mechanism"}, "edge_type": "uses_control_guard", "tgt": {"type": "ProgramGuard", "var": "guard"}},
+    {"provenance": "seed:published_model_engineering:mechanism-absence", "src": {"type": "ModelMechanismExplanation", "var": "mechanism"}, "edge_type": "uses_absence_signal", "tgt": {"type": "ProgramSignal", "var": "signal"}},
+    {"provenance": "seed:published_model_engineering:mechanism-confidence", "src": {"type": "ModelMechanismExplanation", "var": "mechanism"}, "edge_type": "uses_confidence_signal", "tgt": {"type": "ProgramSignal", "var": "signal"}},
+    {"provenance": "seed:published_model_engineering:mechanism-decision", "src": {"type": "ModelMechanismExplanation", "var": "mechanism"}, "edge_type": "uses_decision_signal", "tgt": {"type": "ProgramSignal", "var": "signal"}},
+    {"provenance": "seed:published_model_engineering:mechanism-transform", "src": {"type": "ModelMechanismExplanation", "var": "mechanism"}, "edge_type": "justifies_source_transformation", "tgt": {"type": "SourceModelTransformation", "var": "transformation"}},
+    {"provenance": "seed:published_model_engineering:transform-assignment", "src": {"type": "SourceModelTransformation", "var": "transformation"}, "edge_type": "replaces_program_assignment", "tgt": {"type": "ProgramAssignment", "var": "assignment"}},
+    {"provenance": "seed:published_model_engineering:transform-signal", "src": {"type": "SourceModelTransformation", "var": "transformation"}, "edge_type": "preserves_program_signal", "tgt": {"type": "ProgramSignal", "var": "signal"}},
+    {"provenance": "seed:published_model_engineering:transform-obligation", "src": {"type": "SourceModelTransformation", "var": "transformation"}, "edge_type": "has_proof_obligation", "tgt": {"type": "ModelProofObligation", "var": "obligation"}},
+    {"provenance": "seed:published_model_engineering:agent-goal", "src": {"type": "Agent", "var": "agent"}, "edge_type": "has_model_enhancement_goal", "tgt": {"type": "ModelEnhancementGoal", "var": "goal"}},
+    {"provenance": "seed:published_model_engineering:goal-partition", "src": {"type": "ModelEnhancementGoal", "var": "goal"}, "edge_type": "targets_model_partition", "tgt": {"type": "ModelInputPartition", "var": "partition"}},
+    {"provenance": "seed:published_model_engineering:goal-class-a", "src": {"type": "ModelEnhancementGoal", "var": "goal"}, "edge_type": "swaps_output_class_a", "tgt": {"type": "ModelOutputClass", "var": "class"}},
+    {"provenance": "seed:published_model_engineering:goal-class-b", "src": {"type": "ModelEnhancementGoal", "var": "goal"}, "edge_type": "swaps_output_class_b", "tgt": {"type": "ModelOutputClass", "var": "class"}},
+    {"provenance": "seed:published_model_engineering:goal-derivation", "src": {"type": "ModelEnhancementGoal", "var": "goal"}, "edge_type": "has_deterministic_derivation", "tgt": {"type": "DeterministicModelDerivation", "var": "derivation"}},
+    {"provenance": "seed:published_model_engineering:derivation-partition", "src": {"type": "DeterministicModelDerivation", "var": "derivation"}, "edge_type": "transforms_model_partition", "tgt": {"type": "ModelInputPartition", "var": "partition"}},
+    {"provenance": "seed:published_model_engineering:derivation-operator", "src": {"type": "DeterministicModelDerivation", "var": "derivation"}, "edge_type": "uses_model_operator", "tgt": {"type": "ModelOperator", "var": "operator"}},
+    {"provenance": "seed:published_model_engineering:derivation-parameter", "src": {"type": "DeterministicModelDerivation", "var": "derivation"}, "edge_type": "uses_model_parameter", "tgt": {"type": "ModelParameter", "var": "parameter"}},
+    {"provenance": "seed:published_model_engineering:derivation-class-a", "src": {"type": "DeterministicModelDerivation", "var": "derivation"}, "edge_type": "transforms_output_class_a", "tgt": {"type": "ModelOutputClass", "var": "class"}},
+    {"provenance": "seed:published_model_engineering:derivation-class-b", "src": {"type": "DeterministicModelDerivation", "var": "derivation"}, "edge_type": "transforms_output_class_b", "tgt": {"type": "ModelOutputClass", "var": "class"}},
+    {"provenance": "seed:published_model_engineering:derivation-weight", "src": {"type": "DeterministicModelDerivation", "var": "derivation"}, "edge_type": "uses_classifier_weight", "tgt": {"type": "ModelParameter", "var": "parameter"}},
+    {"provenance": "seed:published_model_engineering:derivation-bias", "src": {"type": "DeterministicModelDerivation", "var": "derivation"}, "edge_type": "uses_classifier_bias", "tgt": {"type": "ModelParameter", "var": "parameter"}},
+    {"provenance": "seed:published_model_engineering:derivation-obligation", "src": {"type": "DeterministicModelDerivation", "var": "derivation"}, "edge_type": "has_proof_obligation", "tgt": {"type": "ModelProofObligation", "var": "obligation"}},
+    {"provenance": "seed:published_model_engineering:goal-patch", "src": {"type": "ModelEnhancementGoal", "var": "goal"}, "edge_type": "authored_deterministic_model_patch", "tgt": {"type": "DeterministicModelPatch", "var": "patch"}},
+    {"provenance": "seed:published_model_engineering:patch-parameter", "src": {"type": "DeterministicModelPatch", "var": "patch"}, "edge_type": "modifies_model_parameter", "tgt": {"type": "ModelParameter", "var": "parameter"}},
+    {"provenance": "seed:published_model_engineering:patch-derivation", "src": {"type": "DeterministicModelPatch", "var": "patch"}, "edge_type": "justified_by_deterministic_derivation", "tgt": {"type": "DeterministicModelDerivation", "var": "derivation"}}
+  ],
+  "rules": [
+    {
+      "name": "published_model_assigns_signal_semantics",
+      "area": "model_understanding",
+      "order": 83,
+      "latency_class": "deliberative",
+      "match": [["agent", "holds_model_signal_vocabulary", "vocabulary"], ["agent", "understands_external_model", "model"], ["model", "has_program_signal", "signal"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "signal"}, "key": "role"}, "b": {"type": "Lit", "value": "unclassified"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "signal"}, "key": "identifier"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "vocabulary"}, "key": "identifier"}}
+      ]},
+      "effects": [
+        ["set_attr", "signal", "role", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "vocabulary"}, "key": "role"}}],
+        ["set_attr", "signal", "semantic_provenance", "graph_vocabulary_join"]
+      ]
+    },
+    {
+      "name": "published_model_derives_exact_engineering_affordance",
+      "area": "model_understanding",
+      "order": 84,
+      "latency_class": "deliberative",
+      "match": [
+        ["model", "has_model_partition", "partition"],
+        ["partition", "partition_of_model_operator", "operator"],
+        ["partition", "controls_columns_of_parameter", "parameter"]
+      ],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "operator"}, "key": "output_is_affine_in_partition"}, "b": {"type": "Lit", "value": 1.0}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "operator"}, "key": "partition_layout"}, "b": {"type": "Lit", "value": "contiguous_concatenation"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "partition"}, "key": "exclusive_contiguous_slice"}, "b": {"type": "Lit", "value": 1.0}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "partition"}, "key": "engineering_affordance_derived"}, "b": {"type": "Lit", "value": 1.0}}}
+      ]},
+      "effects": [
+        ["add_node", "affordance", "ModelEngineeringAffordance", {
+          "capability": "exact_additive_partition_scaling",
+          "scope": "all_inputs",
+          "requires_training": 0.0,
+          "requires_behavioral_search": 0.0,
+          "reversible": 1.0,
+          "theorem": "scale the partition by scaling its corresponding output-projection columns",
+          "provenance_kind": "graph_derived_from_operator_equation"
+        }],
+        ["add_edge", "model", "has_engineering_affordance", "affordance", {}],
+        ["add_edge", "affordance", "can_transform_model_partition", "partition", {}],
+        ["add_edge", "affordance", "can_modify_model_parameter", "parameter", {}],
+        ["set_attr", "partition", "engineering_affordance_derived", 1.0]
+      ]
+    },
+    {
+      "name": "published_model_derives_confidence_override_mechanism",
+      "area": "model_understanding",
+      "order": 84,
+      "latency_class": "deliberative",
+      "match": [
+        ["agent", "understands_external_model", "model"],
+        ["model", "has_program_assignment", "primary"],
+        ["primary", "followed_by_same_target_assignment", "override"],
+        ["primary", "writes_program_signal", "decision"],
+        ["override", "writes_program_signal", "decision"],
+        ["primary", "reads_program_signal", "absence"],
+        ["guard", "controls_program_assignment", "override"],
+        ["guard", "reads_program_signal", "confidence"]
+      ],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "decision"}, "key": "role"}, "b": {"type": "Lit", "value": "abstention_decision"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "absence"}, "key": "role"}, "b": {"type": "Lit", "value": "absence_evidence"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "confidence"}, "key": "role"}, "b": {"type": "Lit", "value": "content_confidence"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "override"}, "key": "value_kind"}, "b": {"type": "Lit", "value": "literal_false"}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "override"}, "key": "mechanism_explained"}, "b": {"type": "Lit", "value": 1.0}}}
+      ]},
+      "effects": [
+        ["add_node", "mechanism", "ModelMechanismExplanation", {
+          "mechanism_kind": "confidence_cancels_abstention",
+          "status": "derived",
+          "explanation": "absence evidence first sets abstention, then a later content-confidence guard can force abstention false",
+          "derivation_kind": "deterministic_control_flow",
+          "counterexample_class": "absence_evidence_high_and_content_confidence_high",
+          "provenance_kind": "graph_derived_from_program_dependencies"
+        }],
+        ["add_node", "transformation", "SourceModelTransformation", {
+          "transformation_kind": "preserve_prior_boolean",
+          "status": "awaiting_proof",
+          "target_identifier": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "decision"}, "key": "identifier"}},
+          "target_line": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "override"}, "key": "line"}},
+          "source_path": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "override"}, "key": "source_path"}},
+          "source_sha256": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "override"}, "key": "source_sha256"}},
+          "target_source_segment": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "override"}, "key": "source_segment"}},
+          "guarantee": "later content confidence cannot negate already-established absence evidence",
+          "provenance_kind": "graph_authored_from_control_flow_derivation"
+        }],
+        ["add_node", "obligation_order", "ModelProofObligation", {"kind": "same_target_sequential_override", "status": "pending"}],
+        ["add_node", "obligation_roles", "ModelProofObligation", {"kind": "semantic_roles_grounded", "status": "pending"}],
+        ["add_node", "obligation_local", "ModelProofObligation", {"kind": "single_assignment_locality", "status": "pending"}],
+        ["add_edge", "model", "has_derived_model_mechanism", "mechanism", {}],
+        ["add_edge", "mechanism", "uses_primary_assignment", "primary", {}],
+        ["add_edge", "mechanism", "uses_override_assignment", "override", {}],
+        ["add_edge", "mechanism", "uses_control_guard", "guard", {}],
+        ["add_edge", "mechanism", "uses_absence_signal", "absence", {}],
+        ["add_edge", "mechanism", "uses_confidence_signal", "confidence", {}],
+        ["add_edge", "mechanism", "uses_decision_signal", "decision", {}],
+        ["add_edge", "mechanism", "justifies_source_transformation", "transformation", {}],
+        ["add_edge", "transformation", "replaces_program_assignment", "override", {}],
+        ["add_edge", "transformation", "preserves_program_signal", "decision", {}],
+        ["add_edge", "transformation", "has_proof_obligation", "obligation_order", {}],
+        ["add_edge", "transformation", "has_proof_obligation", "obligation_roles", {}],
+        ["add_edge", "transformation", "has_proof_obligation", "obligation_local", {}],
+        ["set_attr", "override", "mechanism_explained", 1.0]
+      ]
+    },
+    {
+      "name": "published_model_derives_exact_partition_transform",
+      "area": "model_engineering",
+      "order": 85,
+      "latency_class": "deliberative",
+      "match": [
+        ["agent", "has_model_enhancement_goal", "goal"],
+        ["goal", "targets_model_partition", "partition"],
+        ["partition", "partition_of_model_operator", "operator"],
+        ["partition", "controls_columns_of_parameter", "parameter"]
+      ],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "goal"}, "key": "status"}, "b": {"type": "Lit", "value": "requested"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "goal"}, "key": "intent"}, "b": {"type": "Lit", "value": "scale_additive_partition"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "operator"}, "key": "output_is_affine_in_partition"}, "b": {"type": "Lit", "value": 1.0}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "operator"}, "key": "partition_layout"}, "b": {"type": "Lit", "value": "contiguous_concatenation"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "partition"}, "key": "bounds_valid"}, "b": {"type": "Lit", "value": 1.0}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "partition"}, "key": "exclusive_contiguous_slice"}, "b": {"type": "Lit", "value": 1.0}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "parameter"}, "key": "hash_state"}, "b": {"type": "Lit", "value": "observed"}}
+      ]},
+      "effects": [
+        ["add_node", "derivation", "DeterministicModelDerivation", {
+          "status": "awaiting_proof",
+          "theorem": "scaling head h by a is exactly equivalent for every input to scaling columns [start,end) of W_o by a",
+          "equation_before": "y=sum_i W_i h_i+b",
+          "equation_after": "y_prime=y+(a-1)W_h h_h",
+          "unaffected_domain": "all non-target partitions and output bias",
+          "derivation_kind": "affine_partition_decomposition",
+          "provenance_kind": "graph_derived_algebra"
+        }],
+        ["add_node", "obligation_layout", "ModelProofObligation", {"kind": "partition_layout_complete", "status": "pending"}],
+        ["add_node", "obligation_affine", "ModelProofObligation", {"kind": "output_affine_in_target_partition", "status": "pending"}],
+        ["add_node", "obligation_identity", "ModelProofObligation", {"kind": "source_parameter_identity", "status": "pending"}],
+        ["add_node", "obligation_revert", "ModelProofObligation", {"kind": "original_columns_sufficient_for_reversal", "status": "pending"}],
+        ["add_edge", "goal", "has_deterministic_derivation", "derivation", {}],
+        ["add_edge", "derivation", "transforms_model_partition", "partition", {}],
+        ["add_edge", "derivation", "uses_model_operator", "operator", {}],
+        ["add_edge", "derivation", "uses_model_parameter", "parameter", {}],
+        ["add_edge", "derivation", "has_proof_obligation", "obligation_layout", {}],
+        ["add_edge", "derivation", "has_proof_obligation", "obligation_affine", {}],
+        ["add_edge", "derivation", "has_proof_obligation", "obligation_identity", {}],
+        ["add_edge", "derivation", "has_proof_obligation", "obligation_revert", {}],
+        ["set_attr", "goal", "status", "derived"]
+      ]
+    },
+    {
+      "name": "published_model_derives_exact_class_swap",
+      "area": "model_engineering",
+      "order": 85,
+      "latency_class": "deliberative",
+      "match": [
+        ["agent", "has_model_enhancement_goal", "goal"],
+        ["goal", "swaps_output_class_a", "class_a"],
+        ["goal", "swaps_output_class_b", "class_b"],
+        ["class_a", "output_class_of_operator", "operator"],
+        ["class_b", "output_class_of_operator", "operator"],
+        ["class_a", "controls_weight_row", "weight"],
+        ["class_b", "controls_weight_row", "weight"],
+        ["class_a", "controls_bias_element", "bias"],
+        ["class_b", "controls_bias_element", "bias"]
+      ],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "goal"}, "key": "status"}, "b": {"type": "Lit", "value": "requested"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "goal"}, "key": "intent"}, "b": {"type": "Lit", "value": "swap_output_classes"}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "class_a"}, "key": "class_index"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "class_b"}, "key": "class_index"}}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "class_a"}, "key": "row_bounds_valid"}, "b": {"type": "Lit", "value": 1.0}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "class_b"}, "key": "row_bounds_valid"}, "b": {"type": "Lit", "value": 1.0}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "operator"}, "key": "operator_kind"}, "b": {"type": "Lit", "value": "affine"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "operator"}, "key": "output_semantics"}, "b": {"type": "Lit", "value": "class_logits"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "weight"}, "key": "rank"}, "b": {"type": "Lit", "value": 2.0}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "bias"}, "key": "rank"}, "b": {"type": "Lit", "value": 1.0}}
+      ]},
+      "effects": [
+        ["add_node", "derivation", "DeterministicModelDerivation", {
+          "status": "awaiting_proof",
+          "theorem": "permuting two affine output rows and bias elements permutes exactly those two logits for every input",
+          "equation_before": "y=W x+b",
+          "equation_after": "y_prime=P y=(P W)x+P b",
+          "update_equation": "Delta_W=(e_a-e_b)(W_b-W_a)^T",
+          "update_rank": 1.0,
+          "unaffected_domain": "all non-swapped output logits for all inputs",
+          "derivation_kind": "affine_output_permutation",
+          "provenance_kind": "graph_derived_algebra"
+        }],
+        ["add_node", "obligation_rows", "ModelProofObligation", {"kind": "distinct_classifier_rows", "status": "pending"}],
+        ["add_node", "obligation_affine", "ModelProofObligation", {"kind": "affine_classifier_output", "status": "pending"}],
+        ["add_node", "obligation_weight", "ModelProofObligation", {"kind": "classifier_weight_identity", "status": "pending"}],
+        ["add_node", "obligation_bias", "ModelProofObligation", {"kind": "classifier_bias_identity", "status": "pending"}],
+        ["add_node", "obligation_revert", "ModelProofObligation", {"kind": "class_swap_is_involution", "status": "pending"}],
+        ["add_edge", "goal", "has_deterministic_derivation", "derivation", {}],
+        ["add_edge", "derivation", "transforms_output_class_a", "class_a", {}],
+        ["add_edge", "derivation", "transforms_output_class_b", "class_b", {}],
+        ["add_edge", "derivation", "uses_model_operator", "operator", {}],
+        ["add_edge", "derivation", "uses_classifier_weight", "weight", {}],
+        ["add_edge", "derivation", "uses_classifier_bias", "bias", {}],
+        ["add_edge", "derivation", "has_proof_obligation", "obligation_rows", {}],
+        ["add_edge", "derivation", "has_proof_obligation", "obligation_affine", {}],
+        ["add_edge", "derivation", "has_proof_obligation", "obligation_weight", {}],
+        ["add_edge", "derivation", "has_proof_obligation", "obligation_bias", {}],
+        ["add_edge", "derivation", "has_proof_obligation", "obligation_revert", {}],
+        ["set_attr", "goal", "status", "derived"]
+      ]
+    },
+    {
+      "name": "published_model_proves_source_assignment_order",
+      "area": "model_engineering",
+      "order": 86,
+      "latency_class": "deliberative",
+      "match": [
+        ["mechanism", "justifies_source_transformation", "transformation"],
+        ["transformation", "has_proof_obligation", "obligation"],
+        ["mechanism", "uses_primary_assignment", "primary"],
+        ["mechanism", "uses_override_assignment", "override"],
+        ["primary", "followed_by_same_target_assignment", "override"]
+      ],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obligation"}, "key": "kind"}, "b": {"type": "Lit", "value": "same_target_sequential_override"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obligation"}, "key": "status"}, "b": {"type": "Lit", "value": "pending"}}
+      ]},
+      "effects": [["set_attr", "obligation", "status", "proved"], ["set_attr", "obligation", "proof_kind", "program_order_witness"]]
+    },
+    {
+      "name": "published_model_proves_source_signal_roles",
+      "area": "model_engineering",
+      "order": 86,
+      "latency_class": "deliberative",
+      "match": [
+        ["mechanism", "justifies_source_transformation", "transformation"],
+        ["transformation", "has_proof_obligation", "obligation"],
+        ["mechanism", "uses_absence_signal", "absence"],
+        ["mechanism", "uses_confidence_signal", "confidence"],
+        ["mechanism", "uses_decision_signal", "decision"]
+      ],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obligation"}, "key": "kind"}, "b": {"type": "Lit", "value": "semantic_roles_grounded"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obligation"}, "key": "status"}, "b": {"type": "Lit", "value": "pending"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "absence"}, "key": "role"}, "b": {"type": "Lit", "value": "absence_evidence"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "confidence"}, "key": "role"}, "b": {"type": "Lit", "value": "content_confidence"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "decision"}, "key": "role"}, "b": {"type": "Lit", "value": "abstention_decision"}}
+      ]},
+      "effects": [["set_attr", "obligation", "status", "proved"], ["set_attr", "obligation", "proof_kind", "semantic_vocabulary_witness"]]
+    },
+    {
+      "name": "published_model_proves_source_edit_locality",
+      "area": "model_engineering",
+      "order": 86,
+      "latency_class": "deliberative",
+      "match": [
+        ["transformation", "has_proof_obligation", "obligation"],
+        ["transformation", "replaces_program_assignment", "assignment"],
+        ["transformation", "preserves_program_signal", "signal"],
+        ["assignment", "writes_program_signal", "signal"]
+      ],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obligation"}, "key": "kind"}, "b": {"type": "Lit", "value": "single_assignment_locality"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obligation"}, "key": "status"}, "b": {"type": "Lit", "value": "pending"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "assignment"}, "key": "value_kind"}, "b": {"type": "Lit", "value": "literal_false"}}
+      ]},
+      "effects": [["set_attr", "obligation", "status", "proved"], ["set_attr", "obligation", "proof_kind", "assignment_write_witness"]]
+    },
+    {
+      "name": "published_model_proves_partition_layout",
+      "area": "model_engineering",
+      "order": 86,
+      "latency_class": "deliberative",
+      "match": [
+        ["derivation", "has_proof_obligation", "obligation"],
+        ["derivation", "transforms_model_partition", "partition"],
+        ["derivation", "uses_model_operator", "operator"],
+        ["partition", "partition_of_model_operator", "operator"]
+      ],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obligation"}, "key": "kind"}, "b": {"type": "Lit", "value": "partition_layout_complete"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obligation"}, "key": "status"}, "b": {"type": "Lit", "value": "pending"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "partition"}, "key": "bounds_valid"}, "b": {"type": "Lit", "value": 1.0}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "partition"}, "key": "exclusive_contiguous_slice"}, "b": {"type": "Lit", "value": 1.0}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "operator"}, "key": "partition_layout"}, "b": {"type": "Lit", "value": "contiguous_concatenation"}}
+      ]},
+      "effects": [["set_attr", "obligation", "status", "proved"], ["set_attr", "obligation", "proof_kind", "tensor_partition_witness"]]
+    },
+    {
+      "name": "published_model_proves_affine_partition",
+      "area": "model_engineering",
+      "order": 86,
+      "latency_class": "deliberative",
+      "match": [
+        ["derivation", "has_proof_obligation", "obligation"],
+        ["derivation", "uses_model_operator", "operator"]
+      ],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obligation"}, "key": "kind"}, "b": {"type": "Lit", "value": "output_affine_in_target_partition"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obligation"}, "key": "status"}, "b": {"type": "Lit", "value": "pending"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "operator"}, "key": "output_is_affine_in_partition"}, "b": {"type": "Lit", "value": 1.0}}
+      ]},
+      "effects": [["set_attr", "obligation", "status", "proved"], ["set_attr", "obligation", "proof_kind", "operator_equation_witness"]]
+    },
+    {
+      "name": "published_model_proves_parameter_identity",
+      "area": "model_engineering",
+      "order": 86,
+      "latency_class": "deliberative",
+      "match": [
+        ["derivation", "has_proof_obligation", "obligation"],
+        ["derivation", "uses_model_parameter", "parameter"]
+      ],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obligation"}, "key": "kind"}, "b": {"type": "Lit", "value": "source_parameter_identity"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obligation"}, "key": "status"}, "b": {"type": "Lit", "value": "pending"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "parameter"}, "key": "hash_state"}, "b": {"type": "Lit", "value": "observed"}}
+      ]},
+      "effects": [["set_attr", "obligation", "status", "proved"], ["set_attr", "obligation", "proof_kind", "content_hash_witness"]]
+    },
+    {
+      "name": "published_model_proves_reversible_slice",
+      "area": "model_engineering",
+      "order": 86,
+      "latency_class": "deliberative",
+      "match": [
+        ["derivation", "has_proof_obligation", "obligation"],
+        ["derivation", "transforms_model_partition", "partition"],
+        ["derivation", "uses_model_parameter", "parameter"],
+        ["partition", "controls_columns_of_parameter", "parameter"]
+      ],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obligation"}, "key": "kind"}, "b": {"type": "Lit", "value": "original_columns_sufficient_for_reversal"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obligation"}, "key": "status"}, "b": {"type": "Lit", "value": "pending"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "partition"}, "key": "exclusive_contiguous_slice"}, "b": {"type": "Lit", "value": 1.0}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "parameter"}, "key": "rank"}, "b": {"type": "Lit", "value": 2.0}}
+      ]},
+      "effects": [["set_attr", "obligation", "status", "proved"], ["set_attr", "obligation", "proof_kind", "saved_column_slice_witness"]]
+    },
+    {
+      "name": "published_model_proves_distinct_classifier_rows",
+      "area": "model_engineering",
+      "order": 86,
+      "latency_class": "deliberative",
+      "match": [
+        ["derivation", "has_proof_obligation", "obligation"],
+        ["derivation", "transforms_output_class_a", "class_a"],
+        ["derivation", "transforms_output_class_b", "class_b"]
+      ],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obligation"}, "key": "kind"}, "b": {"type": "Lit", "value": "distinct_classifier_rows"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obligation"}, "key": "status"}, "b": {"type": "Lit", "value": "pending"}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "class_a"}, "key": "class_index"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "class_b"}, "key": "class_index"}}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "class_a"}, "key": "row_bounds_valid"}, "b": {"type": "Lit", "value": 1.0}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "class_b"}, "key": "row_bounds_valid"}, "b": {"type": "Lit", "value": 1.0}}
+      ]},
+      "effects": [["set_attr", "obligation", "status", "proved"], ["set_attr", "obligation", "proof_kind", "classifier_row_witness"]]
+    },
+    {
+      "name": "published_model_proves_affine_classifier_output",
+      "area": "model_engineering",
+      "order": 86,
+      "latency_class": "deliberative",
+      "match": [
+        ["derivation", "has_proof_obligation", "obligation"],
+        ["derivation", "uses_model_operator", "operator"]
+      ],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obligation"}, "key": "kind"}, "b": {"type": "Lit", "value": "affine_classifier_output"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obligation"}, "key": "status"}, "b": {"type": "Lit", "value": "pending"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "operator"}, "key": "operator_kind"}, "b": {"type": "Lit", "value": "affine"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "operator"}, "key": "output_semantics"}, "b": {"type": "Lit", "value": "class_logits"}}
+      ]},
+      "effects": [["set_attr", "obligation", "status", "proved"], ["set_attr", "obligation", "proof_kind", "affine_equation_witness"]]
+    },
+    {
+      "name": "published_model_proves_classifier_weight_identity",
+      "area": "model_engineering",
+      "order": 86,
+      "latency_class": "deliberative",
+      "match": [
+        ["derivation", "has_proof_obligation", "obligation"],
+        ["derivation", "uses_classifier_weight", "parameter"]
+      ],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obligation"}, "key": "kind"}, "b": {"type": "Lit", "value": "classifier_weight_identity"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obligation"}, "key": "status"}, "b": {"type": "Lit", "value": "pending"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "parameter"}, "key": "hash_state"}, "b": {"type": "Lit", "value": "observed"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "parameter"}, "key": "rank"}, "b": {"type": "Lit", "value": 2.0}}
+      ]},
+      "effects": [["set_attr", "obligation", "status", "proved"], ["set_attr", "obligation", "proof_kind", "weight_content_hash_witness"]]
+    },
+    {
+      "name": "published_model_proves_classifier_bias_identity",
+      "area": "model_engineering",
+      "order": 86,
+      "latency_class": "deliberative",
+      "match": [
+        ["derivation", "has_proof_obligation", "obligation"],
+        ["derivation", "uses_classifier_bias", "parameter"]
+      ],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obligation"}, "key": "kind"}, "b": {"type": "Lit", "value": "classifier_bias_identity"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obligation"}, "key": "status"}, "b": {"type": "Lit", "value": "pending"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "parameter"}, "key": "hash_state"}, "b": {"type": "Lit", "value": "observed"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "parameter"}, "key": "rank"}, "b": {"type": "Lit", "value": 1.0}}
+      ]},
+      "effects": [["set_attr", "obligation", "status", "proved"], ["set_attr", "obligation", "proof_kind", "bias_content_hash_witness"]]
+    },
+    {
+      "name": "published_model_proves_class_swap_involution",
+      "area": "model_engineering",
+      "order": 86,
+      "latency_class": "deliberative",
+      "match": [
+        ["derivation", "has_proof_obligation", "obligation"],
+        ["derivation", "transforms_output_class_a", "class_a"],
+        ["derivation", "transforms_output_class_b", "class_b"]
+      ],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obligation"}, "key": "kind"}, "b": {"type": "Lit", "value": "class_swap_is_involution"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obligation"}, "key": "status"}, "b": {"type": "Lit", "value": "pending"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "derivation"}, "key": "update_rank"}, "b": {"type": "Lit", "value": 1.0}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "class_a"}, "key": "class_index"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "class_b"}, "key": "class_index"}}}
+      ]},
+      "effects": [["set_attr", "obligation", "status", "proved"], ["set_attr", "obligation", "proof_kind", "permutation_involution_witness"]]
+    },
+    {
+      "name": "published_model_proves_source_transformation",
+      "area": "model_engineering",
+      "order": 87,
+      "latency_class": "deliberative",
+      "match": [["mechanism", "justifies_source_transformation", "transformation"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "transformation"}, "key": "status"}, "b": {"type": "Lit", "value": "awaiting_proof"}},
+        {"type": "Not", "arg": {"type": "Exists", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "transformation"}, "edge_type": "has_proof_obligation"}, "var_name": "obligation", "predicate": {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obligation"}, "key": "status"}, "b": {"type": "Lit", "value": "proved"}}}}}
+      ]},
+      "effects": [
+        ["set_attr", "transformation", "status", "proved"],
+        ["set_attr", "transformation", "proof_complete", 1.0]
+      ]
+    },
+    {
+      "name": "published_model_authors_proved_parameter_patch",
+      "area": "model_engineering",
+      "order": 88,
+      "latency_class": "deliberative",
+      "match": [
+        ["agent", "has_model_enhancement_goal", "goal"],
+        ["goal", "has_deterministic_derivation", "derivation"],
+        ["goal", "targets_model_partition", "partition"],
+        ["partition", "controls_columns_of_parameter", "parameter"]
+      ],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "goal"}, "key": "status"}, "b": {"type": "Lit", "value": "derived"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "derivation"}, "key": "status"}, "b": {"type": "Lit", "value": "awaiting_proof"}},
+        {"type": "Not", "arg": {"type": "Exists", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "derivation"}, "edge_type": "has_proof_obligation"}, "var_name": "obligation", "predicate": {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obligation"}, "key": "status"}, "b": {"type": "Lit", "value": "proved"}}}}}
+      ]},
+      "effects": [
+        ["add_node", "patch", "DeterministicModelPatch", {
+          "status": "proved",
+          "transformation_kind": "scale_parameter_columns",
+          "parameter_name": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "parameter"}, "key": "name"}},
+          "source_parameter_sha256": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "parameter"}, "key": "content_sha256"}},
+          "start": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "partition"}, "key": "start"}},
+          "end": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "partition"}, "key": "end"}},
+          "factor": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "goal"}, "key": "factor"}},
+          "equivalence_scope": "all_inputs",
+          "unaffected_domain": "all_non_target_input_columns_and_bias",
+          "reversible": 1.0,
+          "provenance_kind": "graph_authored_proof_carrying_patch"
+        }],
+        ["add_edge", "goal", "authored_deterministic_model_patch", "patch", {}],
+        ["add_edge", "patch", "modifies_model_parameter", "parameter", {}],
+        ["add_edge", "patch", "justified_by_deterministic_derivation", "derivation", {}],
+        ["set_attr", "derivation", "status", "proved"],
+        ["set_attr", "goal", "status", "patch_authored"]
+      ]
+    },
+    {
+      "name": "published_model_authors_proved_class_swap_patch",
+      "area": "model_engineering",
+      "order": 88,
+      "latency_class": "deliberative",
+      "match": [
+        ["agent", "has_model_enhancement_goal", "goal"],
+        ["goal", "has_deterministic_derivation", "derivation"],
+        ["derivation", "transforms_output_class_a", "class_a"],
+        ["derivation", "transforms_output_class_b", "class_b"],
+        ["derivation", "uses_classifier_weight", "weight"],
+        ["derivation", "uses_classifier_bias", "bias"]
+      ],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "goal"}, "key": "status"}, "b": {"type": "Lit", "value": "derived"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "derivation"}, "key": "status"}, "b": {"type": "Lit", "value": "awaiting_proof"}},
+        {"type": "Not", "arg": {"type": "Exists", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "derivation"}, "edge_type": "has_proof_obligation"}, "var_name": "obligation", "predicate": {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obligation"}, "key": "status"}, "b": {"type": "Lit", "value": "proved"}}}}}
+      ]},
+      "effects": [
+        ["add_node", "patch", "DeterministicModelPatch", {
+          "status": "proved",
+          "transformation_kind": "swap_affine_output_rows",
+          "weight_parameter_name": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "weight"}, "key": "name"}},
+          "bias_parameter_name": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "bias"}, "key": "name"}},
+          "source_weight_sha256": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "weight"}, "key": "content_sha256"}},
+          "source_bias_sha256": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "bias"}, "key": "content_sha256"}},
+          "class_a_index": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "class_a"}, "key": "class_index"}},
+          "class_b_index": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "class_b"}, "key": "class_index"}},
+          "update_rank": 1.0,
+          "equivalence_scope": "all_inputs",
+          "unaffected_domain": "all_non_swapped_output_logits",
+          "reversible": 1.0,
+          "provenance_kind": "graph_authored_proof_carrying_patch"
+        }],
+        ["add_edge", "goal", "authored_deterministic_model_patch", "patch", {}],
+        ["add_edge", "patch", "modifies_model_parameter", "weight", {}],
+        ["add_edge", "patch", "modifies_model_parameter", "bias", {}],
+        ["add_edge", "patch", "justified_by_deterministic_derivation", "derivation", {}],
+        ["set_attr", "derivation", "status", "proved"],
+        ["set_attr", "goal", "status", "patch_authored"]
+      ]
+    }
+  ]
+}

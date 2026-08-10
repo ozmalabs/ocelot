@@ -1,0 +1,1018 @@
+{
+ "id": "ls20_percell",
+ "version": "1.0.0",
+ "depends_on": [
+  "shape_decode_loop"
+ ],
+ "area": "retina",
+ "description": "ls20 PER-CELL live mechanic (block 222000): the richer model that attacks 221000's trivially-converging aggregate-count residual. Each ACTION carries a Hypothesis{key, region_colour, gen, k, dr, dc, subst} -- the full 217000 Transform{dim,delta} the agent DISCOVERED by sd-loop recognition of the observed object before->after, plus the region-selector (object colour). pc_probe_pick routes to the least-observed action (Argmin visits, NO win term); pc_predict/pc_mint/pc_confirm/pc_revise grow the model by predict-and-residual. The adapter applies the graph-held Transform to the CURRENT frame to predict the per-cell next frame; the residual is scored on the CHANGE-SET (which cells change to what value), NEVER raw accuracy. NO action->transform table -- the map is minted from observation. Guarded on percell_on==1 (default-OFF, byte-identical otherwise), the arm, and the tick phase. Integer-native; no Rust; reuses the existing shape_decode_loop.",
+ "microtheory": {
+  "name": "ls20_percell",
+  "description": "Predict WHICH cells change and to WHAT value: action x current-frame -> per-cell next-frame. The mechanic is a discovered per-action Transform applied to the current frame; surprise is the per-cell change-set residual."
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [],
+ "rules": [
+  {
+   "name": "pc_probe_pick",
+   "comment": "CURIOSITY: probe the least-observed action (Argmin visits). Novelty drive -- NO goal/win objective. One action per cycle.",
+   "match": [
+    [
+     "g",
+     "has_action",
+     "a"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "percell_on"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "arm"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "percell"
+        }
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "phase"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "pick"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "g"
+        },
+        "edge_type": "probing",
+        "any_type": false
+       },
+       "var_name": "p",
+       "predicate": {
+        "type": "Lit",
+        "value": true
+       }
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Var",
+       "name": "a"
+      },
+      "b": {
+       "type": "Argmin",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "g"
+        },
+        "edge_type": "has_action",
+        "any_type": false
+       },
+       "var_name": "C",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "C"
+        },
+        "key": "visits"
+       },
+       "default": null
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_edge",
+     "g",
+     "probing",
+     "a"
+    ],
+    [
+     "set_attr",
+     "g",
+     "probe_action",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "a"
+       },
+       "key": "name"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "pc_attend",
+   "comment": "LIVE: attend the environment-dictated action (probing edge to the action whose name == game.attend_action). One at a time.",
+   "match": [
+    [
+     "g",
+     "has_action",
+     "a"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "percell_on"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "arm"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "percell"
+        }
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "phase"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "attend"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "g"
+        },
+        "edge_type": "probing",
+        "any_type": false
+       },
+       "var_name": "p",
+       "predicate": {
+        "type": "Lit",
+        "value": true
+       }
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "a"
+       },
+       "key": "name"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "attend_action"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_edge",
+     "g",
+     "probing",
+     "a"
+    ]
+   ]
+  },
+  {
+   "name": "pc_predict",
+   "comment": "TEST(predict): the probed action's hypothesis key is the predicted effect. Unmodelled -> stays 'none' (adapter preset).",
+   "match": [
+    [
+     "g",
+     "probing",
+     "a"
+    ],
+    [
+     "a",
+     "has_hyp",
+     "h"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "percell_on"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "arm"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "percell"
+        }
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "phase"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "predict"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "g",
+     "predicted_key",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "h"
+       },
+       "key": "key"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "pc_mint",
+   "comment": "RESIDUAL->MODEL: first observation of an unmodelled action mints a Hypothesis carrying the sd-loop-recognised Transform spec. add_node_if_absent guards against a double-mint.",
+   "match": [
+    [
+     "g",
+     "probing",
+     "a"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "percell_on"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "arm"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "percell"
+        }
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "phase"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "observe"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "a"
+        },
+        "edge_type": "has_hyp",
+        "any_type": false
+       },
+       "var_name": "h",
+       "predicate": {
+        "type": "Lit",
+        "value": true
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node_if_absent",
+     "hyp",
+     "Hypothesis",
+     {
+      "key": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "g"
+        },
+        "key": "observed_key"
+       }
+      },
+      "region_colour": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "g"
+        },
+        "key": "obs_region"
+       }
+      },
+      "gen": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "g"
+        },
+        "key": "obs_gen"
+       }
+      },
+      "k": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "g"
+        },
+        "key": "obs_k"
+       }
+      },
+      "dr": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "g"
+        },
+        "key": "obs_dr"
+       }
+      },
+      "dc": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "g"
+        },
+        "key": "obs_dc"
+       }
+      },
+      "subst": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "g"
+        },
+        "key": "obs_subst"
+       }
+      },
+      "conf": 1.0,
+      "confirmed_epoch": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "g"
+        },
+        "key": "obs_epoch"
+       }
+      },
+      "kind": "action_effect"
+     }
+    ],
+    [
+     "add_edge",
+     "a",
+     "has_hyp",
+     "hyp"
+    ],
+    [
+     "add_edge",
+     "g",
+     "minted",
+     "hyp"
+    ]
+   ]
+  },
+  {
+   "name": "pc_confirm",
+   "comment": "RESIDUAL->COMPRESS: predicted key == observed key -> the hypothesis is confirmed (conf += 1). Zero-residual = learning.",
+   "match": [
+    [
+     "g",
+     "probing",
+     "a"
+    ],
+    [
+     "a",
+     "has_hyp",
+     "h"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "percell_on"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "arm"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "percell"
+        }
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "phase"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "observe"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "h"
+       },
+       "key": "key"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "observed_key"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "h"
+        },
+        "key": "confirmed_epoch"
+       },
+       "b": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "g"
+        },
+        "key": "obs_epoch"
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "h",
+     "conf",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "h"
+         },
+         "key": "conf"
+        },
+        {
+         "type": "Lit",
+         "value": 1.0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "h",
+     "confirmed_epoch",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "obs_epoch"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "pc_revise",
+   "comment": "RESIDUAL->REVISE: predicted key != observed key -> the hypothesis was wrong; revise to the observed Transform spec, reset conf.",
+   "match": [
+    [
+     "g",
+     "probing",
+     "a"
+    ],
+    [
+     "a",
+     "has_hyp",
+     "h"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "percell_on"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "arm"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "percell"
+        }
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "phase"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "observe"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "h"
+        },
+        "key": "key"
+       },
+       "b": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "g"
+        },
+        "key": "observed_key"
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "h",
+     "key",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "observed_key"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "h",
+     "region_colour",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "obs_region"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "h",
+     "gen",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "obs_gen"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "h",
+     "k",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "obs_k"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "h",
+     "dr",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "obs_dr"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "h",
+     "dc",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "obs_dc"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "h",
+     "subst",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "obs_subst"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "h",
+     "conf",
+     1.0
+    ],
+    [
+     "set_attr",
+     "h",
+     "confirmed_epoch",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "obs_epoch"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "pc_advance",
+   "comment": "advance the investigation: visits += 1, release the probing edge so the next Argmin(visits) picks a fresher action.",
+   "match": [
+    [
+     "g",
+     "probing",
+     "a"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "percell_on"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "arm"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "percell"
+        }
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "phase"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "advance"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "a",
+     "visits",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "a"
+         },
+         "key": "visits"
+        },
+        {
+         "type": "Lit",
+         "value": 1.0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "del_edge",
+     "g",
+     "probing",
+     "a"
+    ]
+   ]
+  }
+ ]
+}

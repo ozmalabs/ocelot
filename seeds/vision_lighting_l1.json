@@ -1,0 +1,2125 @@
+{
+ "id": "vision_lighting_l1",
+ "version": "1.0.0",
+ "depends_on": [
+  "vision_lighting"
+ ],
+ "description": "ADVANCED LIGHTING RUNG L1 -- REAL-VALUED ILLUMINANT GAINS. T3 crossed lighting-invariance for the EXACT-RENDERING (integer-ratio) diagonal illuminant class and REFUSED real gains, NAMING the resolution-derived identifiability bound rather than building it. L1 BUILDS it by continuous pose's mechanism transposed from rotation to gain: the illuminant gain is a CONTINUOUS parameter in the CROSS-FRAME MAP (never an in-frame coordinate -- the surfaces' cones stay integers), the held prototype is RENDERED at that continuous gain onto the stepped integer lattice, and recognition is decided by a CONTINUOUS VERDICT (the L-infinity residual) over a proposal from the DISCRETE codebook T3's integer li_mint minted: BINS PROPOSE, CONTINUOUS DECIDES. l1_frame_stats reads the frame's OWN anchor/sum/min/count hub-scoped via Neighbours, into an L1-only attr namespace so T3's arm is readable from the SAME graph; l1_inclass replaces T3's exact order-statistic equality with the ROUNDING ENVELOPE THE LATTICE IMPLIES (a sum clause and a tighter min clause, both necessary, both derived) and mints an IlluminantL1 holding the REAL gain; l1_recognize admits iff the best rendered candidate is within ONE LATTICE STEP; l1_refuse makes a refusal a POSITIVE datum. NO NEW RUST: reuses Div/Times/Minus/Abs/Max/Plus/Lte/MinOver/MaxOver/Argmin/Sum/Count/Neighbours + run_rules. NO MAGIC NUMBER: the bound is ONE LATTICE STEP, falling out as 1/2 (the observation's rounding) + 1/2*(r/a) with r/a <= 1 BY THE DEFINITION OF THE ANCHOR AS THE MAXIMUM -- the analogue of continuous pose's sqrt(2)/2; every envelope term is a half-step rounding scaled by its own cross-multiplier; n is COUNTED from the data. The bound is pinned to OBSERVATIONAL RESOLUTION and to nothing else, so it MUST fail at a dimming gain where distinct materials render onto the same lattice points -- that failure is the measurement. BOUNDED: the GLOBAL diagonal class only. Spatially-varying illuminant / Retinex, global illuminant inference, shadow-vs-reflectance edges and multi-illuminant scenes are NOT solved, only REFUSED; reflectance is GIVEN at the abstract cone-triple grain. Flag-gated on LightingL1Params.lighting_l1, OFF by default (sec 9 -- default 0 => byte-identical, seed inert), read ABSENCE-TOLERANTLY via MaxOver(default 0), never PickUnique. See VISION_LIGHTING_L1_PREREG.md.",
+ "microtheory": {
+  "id": "vision_lighting_l1_mt",
+  "label": "real-valued illuminant gains: the gain as a continuous cross-frame parameter, rendered to the stepped lattice and decided by a continuous verdict pinned to resolution"
+ },
+ "nodes": [
+  {
+   "local_id": 0,
+   "type": "LightingL1Params",
+   "attrs": {
+    "lighting_l1": 0.0
+   }
+  }
+ ],
+ "edges": [],
+ "productions": [],
+ "rules": [
+  {
+   "name": "l1_frame_stats",
+   "comment": "The frame's OWN per-channel order statistics for L1: the ANCHOR l1_a_ch = MaxOver(frame's surfaces, c_ch), the SUM l1_s_ch, the MIN l1_m_ch, and the surface COUNT l1_n. Scoped by Neighbours(frame,'has_surface') -- the frame's own population, NOT a global NodesOfType grab (sec 12.1). Written into an L1-ONLY attribute namespace so NO T3 attribute is ever written by L1: T3's exact arm and L1's continuous arm are then readable from ONE graph in ONE run, which is what makes the CONTINUOUS-DECIDES contrast a measurement rather than two separate experiments. The anchor is the frame's MEASURED dynamic-range ceiling (no constant introduced); the MIN is carried because the min-based in-class clause accumulates only TWO roundings where the sum-based clause accumulates n, giving a tighter falls-out envelope; the COUNT is read from the DATA and is what makes the sum envelope's n a measured quantity rather than a magic number. Matched through a surface edge so the rule only ever sees a frame that HAS a population. The l1_stats_done guard makes it fire once per frame so run_rules converges. Flag-gated, OFF by default (sec 9).",
+   "match": [
+    [
+     "frame",
+     "has_surface",
+     "anysurf"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "MaxOver",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "LightingL1Params"
+       },
+       "var_name": "lp",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "lp"
+        },
+        "key": "lighting_l1"
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "frame"
+       },
+       "key": "l1_stats_done"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "frame",
+     "l1_aL",
+     {
+      "__term__": {
+       "type": "MaxOver",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "frame"
+        },
+        "edge_type": "has_surface",
+        "any_type": false
+       },
+       "var_name": "w",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "w"
+        },
+        "key": "cL"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "frame",
+     "l1_aM",
+     {
+      "__term__": {
+       "type": "MaxOver",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "frame"
+        },
+        "edge_type": "has_surface",
+        "any_type": false
+       },
+       "var_name": "w",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "w"
+        },
+        "key": "cM"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "frame",
+     "l1_aS",
+     {
+      "__term__": {
+       "type": "MaxOver",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "frame"
+        },
+        "edge_type": "has_surface",
+        "any_type": false
+       },
+       "var_name": "w",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "w"
+        },
+        "key": "cS"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "frame",
+     "l1_sL",
+     {
+      "__term__": {
+       "type": "Sum",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "frame"
+        },
+        "edge_type": "has_surface",
+        "any_type": false
+       },
+       "var_name": "w",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "w"
+        },
+        "key": "cL"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "frame",
+     "l1_sM",
+     {
+      "__term__": {
+       "type": "Sum",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "frame"
+        },
+        "edge_type": "has_surface",
+        "any_type": false
+       },
+       "var_name": "w",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "w"
+        },
+        "key": "cM"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "frame",
+     "l1_sS",
+     {
+      "__term__": {
+       "type": "Sum",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "frame"
+        },
+        "edge_type": "has_surface",
+        "any_type": false
+       },
+       "var_name": "w",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "w"
+        },
+        "key": "cS"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "frame",
+     "l1_mL",
+     {
+      "__term__": {
+       "type": "MinOver",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "frame"
+        },
+        "edge_type": "has_surface",
+        "any_type": false
+       },
+       "var_name": "w",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "w"
+        },
+        "key": "cL"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "frame",
+     "l1_mM",
+     {
+      "__term__": {
+       "type": "MinOver",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "frame"
+        },
+        "edge_type": "has_surface",
+        "any_type": false
+       },
+       "var_name": "w",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "w"
+        },
+        "key": "cM"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "frame",
+     "l1_mS",
+     {
+      "__term__": {
+       "type": "MinOver",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "frame"
+        },
+        "edge_type": "has_surface",
+        "any_type": false
+       },
+       "var_name": "w",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "w"
+        },
+        "key": "cS"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "frame",
+     "l1_n",
+     {
+      "__term__": {
+       "type": "Count",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "frame"
+        },
+        "edge_type": "has_surface",
+        "any_type": false
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "frame",
+     "l1_stats_done",
+     {
+      "__term__": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "l1_inclass",
+   "comment": "DISCOVERS whether the lighting change between this frame and its reference is in the GLOBAL DIAGONAL class, now at REAL-VALUED gains. T3's li_inclass demands EXACT integer cross-multiplication, which a rounded real gain breaks -- that is precisely why T3 measured 0/12 at gains 1.5/2.5/3.3/7.5. This rule replaces the exact equality with the ROUNDING ENVELOPE THE LATTICE ITSELF IMPLIES: the displacement of the order-statistic identity is a sum of half-lattice-step roundings, each scaled by its own cross-multiplier, and nothing more. TWO clauses must hold on ALL THREE channels -- the SUM clause (T3's own statistic, envelope 1/2*(ref_s + n*ref_a), loose because the sum accumulates n roundings) and the tighter MIN clause (envelope 1/2*(ref_m + ref_a), only two roundings). NO TOLERANCE IS TUNED: every 1/2 is the maximum displacement of a single round(), and n is COUNTED from the data. Holds => mint an IlluminantL1 carrying the REAL per-channel gain Div(l1_a, ref.l1_a). A REAL number is CORRECT here and is not a violation of the frame/continuum invariant: the gain is a CROSS-FRAME MAP, never an in-frame coordinate -- the surfaces' cones stay integers. This is exactly how continuous pose holds a real theta inside Rotate. Fails => nothing minted, l1_inclass stays 0, l1_recognize cannot fire: a spatially-varying (multi-illuminant) change is REFUSED, not force-normalised. Flag-gated, OFF by default (sec 9).",
+   "match": [
+    [
+     "frame",
+     "compares_to",
+     "ref"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "MaxOver",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "LightingL1Params"
+       },
+       "var_name": "lp",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "lp"
+        },
+        "key": "lighting_l1"
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "frame"
+       },
+       "key": "l1_inclass"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "frame"
+       },
+       "key": "l1_stats_done"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ref"
+       },
+       "key": "l1_stats_done"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lte",
+      "a": {
+       "type": "Abs",
+       "arg": {
+        "type": "Minus",
+        "a": {
+         "type": "Times",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "frame"
+           },
+           "key": "l1_aL"
+          },
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "ref"
+           },
+           "key": "l1_sL"
+          }
+         ]
+        },
+        "b": {
+         "type": "Times",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "frame"
+           },
+           "key": "l1_sL"
+          },
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "ref"
+           },
+           "key": "l1_aL"
+          }
+         ]
+        }
+       }
+      },
+      "b": {
+       "type": "Times",
+       "items": [
+        {
+         "type": "Lit",
+         "value": 0.5
+        },
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "ref"
+           },
+           "key": "l1_sL"
+          },
+          {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "frame"
+             },
+             "key": "l1_n"
+            },
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "ref"
+             },
+             "key": "l1_aL"
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     },
+     {
+      "type": "Lte",
+      "a": {
+       "type": "Abs",
+       "arg": {
+        "type": "Minus",
+        "a": {
+         "type": "Times",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "frame"
+           },
+           "key": "l1_aM"
+          },
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "ref"
+           },
+           "key": "l1_sM"
+          }
+         ]
+        },
+        "b": {
+         "type": "Times",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "frame"
+           },
+           "key": "l1_sM"
+          },
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "ref"
+           },
+           "key": "l1_aM"
+          }
+         ]
+        }
+       }
+      },
+      "b": {
+       "type": "Times",
+       "items": [
+        {
+         "type": "Lit",
+         "value": 0.5
+        },
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "ref"
+           },
+           "key": "l1_sM"
+          },
+          {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "frame"
+             },
+             "key": "l1_n"
+            },
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "ref"
+             },
+             "key": "l1_aM"
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     },
+     {
+      "type": "Lte",
+      "a": {
+       "type": "Abs",
+       "arg": {
+        "type": "Minus",
+        "a": {
+         "type": "Times",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "frame"
+           },
+           "key": "l1_aS"
+          },
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "ref"
+           },
+           "key": "l1_sS"
+          }
+         ]
+        },
+        "b": {
+         "type": "Times",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "frame"
+           },
+           "key": "l1_sS"
+          },
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "ref"
+           },
+           "key": "l1_aS"
+          }
+         ]
+        }
+       }
+      },
+      "b": {
+       "type": "Times",
+       "items": [
+        {
+         "type": "Lit",
+         "value": 0.5
+        },
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "ref"
+           },
+           "key": "l1_sS"
+          },
+          {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "frame"
+             },
+             "key": "l1_n"
+            },
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "ref"
+             },
+             "key": "l1_aS"
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     },
+     {
+      "type": "Lte",
+      "a": {
+       "type": "Abs",
+       "arg": {
+        "type": "Minus",
+        "a": {
+         "type": "Times",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "frame"
+           },
+           "key": "l1_aL"
+          },
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "ref"
+           },
+           "key": "l1_mL"
+          }
+         ]
+        },
+        "b": {
+         "type": "Times",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "frame"
+           },
+           "key": "l1_mL"
+          },
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "ref"
+           },
+           "key": "l1_aL"
+          }
+         ]
+        }
+       }
+      },
+      "b": {
+       "type": "Times",
+       "items": [
+        {
+         "type": "Lit",
+         "value": 0.5
+        },
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "ref"
+           },
+           "key": "l1_mL"
+          },
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "ref"
+           },
+           "key": "l1_aL"
+          }
+         ]
+        }
+       ]
+      }
+     },
+     {
+      "type": "Lte",
+      "a": {
+       "type": "Abs",
+       "arg": {
+        "type": "Minus",
+        "a": {
+         "type": "Times",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "frame"
+           },
+           "key": "l1_aM"
+          },
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "ref"
+           },
+           "key": "l1_mM"
+          }
+         ]
+        },
+        "b": {
+         "type": "Times",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "frame"
+           },
+           "key": "l1_mM"
+          },
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "ref"
+           },
+           "key": "l1_aM"
+          }
+         ]
+        }
+       }
+      },
+      "b": {
+       "type": "Times",
+       "items": [
+        {
+         "type": "Lit",
+         "value": 0.5
+        },
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "ref"
+           },
+           "key": "l1_mM"
+          },
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "ref"
+           },
+           "key": "l1_aM"
+          }
+         ]
+        }
+       ]
+      }
+     },
+     {
+      "type": "Lte",
+      "a": {
+       "type": "Abs",
+       "arg": {
+        "type": "Minus",
+        "a": {
+         "type": "Times",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "frame"
+           },
+           "key": "l1_aS"
+          },
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "ref"
+           },
+           "key": "l1_mS"
+          }
+         ]
+        },
+        "b": {
+         "type": "Times",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "frame"
+           },
+           "key": "l1_mS"
+          },
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "ref"
+           },
+           "key": "l1_aS"
+          }
+         ]
+        }
+       }
+      },
+      "b": {
+       "type": "Times",
+       "items": [
+        {
+         "type": "Lit",
+         "value": 0.5
+        },
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "ref"
+           },
+           "key": "l1_mS"
+          },
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "ref"
+           },
+           "key": "l1_aS"
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "ill",
+     "IlluminantL1",
+     {
+      "gL": {
+       "__term__": {
+        "type": "Div",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "frame"
+         },
+         "key": "l1_aL"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "ref"
+         },
+         "key": "l1_aL"
+        }
+       }
+      },
+      "gM": {
+       "__term__": {
+        "type": "Div",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "frame"
+         },
+         "key": "l1_aM"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "ref"
+         },
+         "key": "l1_aM"
+        }
+       }
+      },
+      "gS": {
+       "__term__": {
+        "type": "Div",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "frame"
+         },
+         "key": "l1_aS"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "ref"
+         },
+         "key": "l1_aS"
+        }
+       }
+      },
+      "minted": {
+       "__term__": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "frame",
+     "has_illuminant_l1",
+     "ill"
+    ],
+    [
+     "set_attr",
+     "frame",
+     "l1_inclass",
+     {
+      "__term__": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "l1_recognize",
+   "comment": "THE REAL-GAIN LIGHTING INVARIANT. A surface in a TEST frame is recognized iff (a) the frame's lighting change was DISCOVERED in-class under the rounding envelope, and (b) the BEST candidate in the reference frame's own held codebook, RENDERED at the continuous cross-frame gain, lies within ONE LATTICE STEP of the observation on every channel. BINS PROPOSE, CONTINUOUS DECIDES: the proposal set is the DISCRETE codebook T3's integer li_mint produced; the decision is the CONTINUOUS rendered residual. The guard is Lte(MinOver(...), LATTICE_STEP) and the effect names the winner with Argmin over the SAME source and the SAME value -- continuous pose's cp_recognize shape exactly, which is the precedent that an Argmin (unlike a Pick(Filter(...))) does apply its value expression in effect position. MinOver carries an explicit NO_CANDIDATE default so an EMPTY codebook REFUSES rather than silently admitting (an absent population must never read as a match, sec 1.1). THE BOUND IS NOT TUNED: 1.0 is ONE STEP OF THE INTEGER LATTICE, derived as 1/2 (the observation's own rounding) + 1/2*(r/a) with r/a <= 1 BY THE DEFINITION OF THE ANCHOR AS THE FRAME'S MAXIMUM -- the analogue of continuous pose's sqrt(2)/2 half-diagonal. It is therefore pinned to OBSERVATIONAL RESOLUTION and to nothing else, and it MUST fail when the resolution is inadequate: at a dimming gain distinct materials render onto the same lattice points and no verdict can separate what the steps did not record. That failure is the measurement, not a defect. Flag-gated, OFF by default (sec 9).",
+   "match": [
+    [
+     "frame",
+     "has_surface",
+     "R"
+    ],
+    [
+     "frame",
+     "compares_to",
+     "ref"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "MaxOver",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "LightingL1Params"
+       },
+       "var_name": "lp",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "lp"
+        },
+        "key": "lighting_l1"
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "frame"
+       },
+       "key": "l1_inclass"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "frame"
+       },
+       "key": "l1_stats_done"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lte",
+      "a": {
+       "type": "MinOver",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "ref"
+        },
+        "edge_type": "has_identity",
+        "any_type": false
+       },
+       "var_name": "cand",
+       "value": {
+        "type": "Max",
+        "items": [
+         {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "R"
+            },
+            "key": "cL"
+           },
+           "b": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "cand"
+              },
+              "key": "pL"
+             },
+             {
+              "type": "Div",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "frame"
+               },
+               "key": "l1_aL"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "cand"
+               },
+               "key": "paL"
+              }
+             }
+            ]
+           }
+          }
+         },
+         {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "R"
+            },
+            "key": "cM"
+           },
+           "b": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "cand"
+              },
+              "key": "pM"
+             },
+             {
+              "type": "Div",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "frame"
+               },
+               "key": "l1_aM"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "cand"
+               },
+               "key": "paM"
+              }
+             }
+            ]
+           }
+          }
+         },
+         {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "R"
+            },
+            "key": "cS"
+           },
+           "b": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "cand"
+              },
+              "key": "pS"
+             },
+             {
+              "type": "Div",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "frame"
+               },
+               "key": "l1_aS"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "cand"
+               },
+               "key": "paS"
+              }
+             }
+            ]
+           }
+          }
+         }
+        ]
+       },
+       "default": {
+        "type": "Lit",
+        "value": 1000000000.0
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "R",
+     "l1_recognized",
+     {
+      "__term__": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "R",
+     "l1_id",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Argmin",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "ref"
+         },
+         "edge_type": "has_identity",
+         "any_type": false
+        },
+        "var_name": "cand",
+        "value": {
+         "type": "Max",
+         "items": [
+          {
+           "type": "Abs",
+           "arg": {
+            "type": "Minus",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "cL"
+            },
+            "b": {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "cand"
+               },
+               "key": "pL"
+              },
+              {
+               "type": "Div",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "frame"
+                },
+                "key": "l1_aL"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "cand"
+                },
+                "key": "paL"
+               }
+              }
+             ]
+            }
+           }
+          },
+          {
+           "type": "Abs",
+           "arg": {
+            "type": "Minus",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "cM"
+            },
+            "b": {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "cand"
+               },
+               "key": "pM"
+              },
+              {
+               "type": "Div",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "frame"
+                },
+                "key": "l1_aM"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "cand"
+                },
+                "key": "paM"
+               }
+              }
+             ]
+            }
+           }
+          },
+          {
+           "type": "Abs",
+           "arg": {
+            "type": "Minus",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "cS"
+            },
+            "b": {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "cand"
+               },
+               "key": "pS"
+              },
+              {
+               "type": "Div",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "frame"
+                },
+                "key": "l1_aS"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "cand"
+                },
+                "key": "paS"
+               }
+              }
+             ]
+            }
+           }
+          }
+         ]
+        },
+        "default": {
+         "type": "Lit",
+         "value": 0.0
+        }
+       },
+       "key": "sid_key"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "R",
+     "l1_resid",
+     {
+      "__term__": {
+       "type": "MinOver",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "ref"
+        },
+        "edge_type": "has_identity",
+        "any_type": false
+       },
+       "var_name": "cand",
+       "value": {
+        "type": "Max",
+        "items": [
+         {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "R"
+            },
+            "key": "cL"
+           },
+           "b": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "cand"
+              },
+              "key": "pL"
+             },
+             {
+              "type": "Div",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "frame"
+               },
+               "key": "l1_aL"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "cand"
+               },
+               "key": "paL"
+              }
+             }
+            ]
+           }
+          }
+         },
+         {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "R"
+            },
+            "key": "cM"
+           },
+           "b": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "cand"
+              },
+              "key": "pM"
+             },
+             {
+              "type": "Div",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "frame"
+               },
+               "key": "l1_aM"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "cand"
+               },
+               "key": "paM"
+              }
+             }
+            ]
+           }
+          }
+         },
+         {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "R"
+            },
+            "key": "cS"
+           },
+           "b": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "cand"
+              },
+              "key": "pS"
+             },
+             {
+              "type": "Div",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "frame"
+               },
+               "key": "l1_aS"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "cand"
+               },
+               "key": "paS"
+              }
+             }
+            ]
+           }
+          }
+         }
+        ]
+       },
+       "default": {
+        "type": "Lit",
+        "value": 1000000000.0
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "R",
+     "l1_status",
+     {
+      "__term__": {
+       "type": "Lit",
+       "value": "l1_recognized"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "l1_refuse",
+   "comment": "Marks l1_status='l1_refused' for a surface in an IN-CLASS frame whose best rendered candidate exceeds the lattice-step bound. This exists so a REFUSAL IS A POSITIVE DATUM: sec 1.1's dead-arm lesson is that an absence is indistinguishable from an inert mechanism unless the mechanism can be shown to fire at all. With this rule the floors (noise, novel material, low-resolution gains) report l1_refused rather than merely leaving l1_recognized at its 0 init, so 'refused' and 'never ran' are distinguishable in the readback. It is the exact complement of l1_recognize's guard, so the two rules partition the in-class surfaces. Flag-gated, OFF by default (sec 9).",
+   "match": [
+    [
+     "frame",
+     "has_surface",
+     "R"
+    ],
+    [
+     "frame",
+     "compares_to",
+     "ref"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "MaxOver",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "LightingL1Params"
+       },
+       "var_name": "lp",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "lp"
+        },
+        "key": "lighting_l1"
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "frame"
+       },
+       "key": "l1_inclass"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "frame"
+       },
+       "key": "l1_stats_done"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "R"
+       },
+       "key": "l1_recognized"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Lte",
+       "a": {
+        "type": "MinOver",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "ref"
+         },
+         "edge_type": "has_identity",
+         "any_type": false
+        },
+        "var_name": "cand",
+        "value": {
+         "type": "Max",
+         "items": [
+          {
+           "type": "Abs",
+           "arg": {
+            "type": "Minus",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "cL"
+            },
+            "b": {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "cand"
+               },
+               "key": "pL"
+              },
+              {
+               "type": "Div",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "frame"
+                },
+                "key": "l1_aL"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "cand"
+                },
+                "key": "paL"
+               }
+              }
+             ]
+            }
+           }
+          },
+          {
+           "type": "Abs",
+           "arg": {
+            "type": "Minus",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "cM"
+            },
+            "b": {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "cand"
+               },
+               "key": "pM"
+              },
+              {
+               "type": "Div",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "frame"
+                },
+                "key": "l1_aM"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "cand"
+                },
+                "key": "paM"
+               }
+              }
+             ]
+            }
+           }
+          },
+          {
+           "type": "Abs",
+           "arg": {
+            "type": "Minus",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "R"
+             },
+             "key": "cS"
+            },
+            "b": {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "cand"
+               },
+               "key": "pS"
+              },
+              {
+               "type": "Div",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "frame"
+                },
+                "key": "l1_aS"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "cand"
+                },
+                "key": "paS"
+               }
+              }
+             ]
+            }
+           }
+          }
+         ]
+        },
+        "default": {
+         "type": "Lit",
+         "value": 1000000000.0
+        }
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "R",
+     "l1_status",
+     {
+      "__term__": {
+       "type": "Lit",
+       "value": "l1_refused"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "R",
+     "l1_resid",
+     {
+      "__term__": {
+       "type": "MinOver",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "ref"
+        },
+        "edge_type": "has_identity",
+        "any_type": false
+       },
+       "var_name": "cand",
+       "value": {
+        "type": "Max",
+        "items": [
+         {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "R"
+            },
+            "key": "cL"
+           },
+           "b": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "cand"
+              },
+              "key": "pL"
+             },
+             {
+              "type": "Div",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "frame"
+               },
+               "key": "l1_aL"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "cand"
+               },
+               "key": "paL"
+              }
+             }
+            ]
+           }
+          }
+         },
+         {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "R"
+            },
+            "key": "cM"
+           },
+           "b": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "cand"
+              },
+              "key": "pM"
+             },
+             {
+              "type": "Div",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "frame"
+               },
+               "key": "l1_aM"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "cand"
+               },
+               "key": "paM"
+              }
+             }
+            ]
+           }
+          }
+         },
+         {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "R"
+            },
+            "key": "cS"
+           },
+           "b": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "cand"
+              },
+              "key": "pS"
+             },
+             {
+              "type": "Div",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "frame"
+               },
+               "key": "l1_aS"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "cand"
+               },
+               "key": "paS"
+              }
+             }
+            ]
+           }
+          }
+         }
+        ]
+       },
+       "default": {
+        "type": "Lit",
+        "value": 1000000000.0
+       }
+      }
+     }
+    ]
+   ]
+  }
+ ]
+}

@@ -1,0 +1,183 @@
+{
+  "microtheory": {
+    "name": "semantics_linguistics",
+    "definition": "Meaning in language. How forms map to concepts + truth conditions. Frege/Russell/Tarski formal semantics, Montague grammar, situation semantics, frame semantics (Fillmore), prototype theory (Rosch), distributional semantics, conceptual semantics. Substrate analogue: the mapping from substrate's lexical realizations to its Concept graph.",
+    "category": "linguistics_domain",
+    "parent": "linguistics_foundation"
+  },
+  "concepts": [
+    {
+      "name": "sense_reference",
+      "definition": "Frege 1892. Sense (Sinn) = mode of presentation; Reference (Bedeutung) = what's picked out. 'Morning star' + 'evening star' have different senses, same reference (Venus). Substrate analogue: substrate's name vs Concept distinction.",
+      "category": "foundation"
+    },
+    {
+      "name": "intension_extension",
+      "definition": "Intension = meaning; Extension = set of things referred to. 'Renate' intension = creature with kidney; extension = same as 'cordate' (heart-bearer). Substrate analogue: substrate's Concept definition vs Concept instances.",
+      "term": {
+        "type": "Eq",
+        "a": {
+          "type": "Lit",
+          "value": "Intension"
+        },
+        "b": {
+          "type": "Lit",
+          "value": "meaning"
+        }
+      },
+      "category": "foundation"
+    },
+    {
+      "name": "truth_conditions",
+      "definition": "What the world must be like for a sentence to be true. Wittgenstein's Tractatus. Substrate analogue: substrate's predicate's basin condition.",
+      "category": "foundation"
+    },
+    {
+      "name": "compositionality",
+      "definition": "Frege's principle. Meaning of complex expression determined by meanings of parts + how they combine. Substrate analogue: substrate's Term-tree evaluation = compositional.",
+      "category": "foundation"
+    },
+    {
+      "name": "lexical_semantics",
+      "definition": "Word meaning. Sense relations, polysemy, vagueness, ambiguity. Substrate analogue: substrate's Concept attribute semantics.",
+      "category": "lexical"
+    },
+    {
+      "name": "polysemy",
+      "definition": "One word, multiple related senses. 'Foot' = body part / mountain base / unit of measure. Substrate analogue: substrate's multi-edge Concept.",
+      "category": "lexical"
+    },
+    {
+      "name": "homonymy",
+      "definition": "Same form, unrelated meanings. 'Bank' = financial vs river. Substrate analogue: substrate's coincident lexical realizations.",
+      "category": "lexical"
+    },
+    {
+      "name": "synonymy",
+      "definition": "Different forms, same meaning. 'Begin' / 'commence'. Usually only partial. Substrate analogue: substrate's parallel-edge Concepts.",
+      "category": "lexical"
+    },
+    {
+      "name": "antonymy",
+      "definition": "Opposed meanings. Gradable (hot/cold), complementary (alive/dead), reverse (buy/sell). Substrate analogue: substrate's anti-correlated Concepts.",
+      "category": "lexical"
+    },
+    {
+      "name": "hyponymy",
+      "definition": "Subset relation. Robin is a hyponym of bird. Substrate analogue: substrate's genlMt-like Concept hierarchy.",
+      "category": "lexical"
+    },
+    {
+      "name": "meronymy",
+      "definition": "Part-whole. Wheel is a meronym of car. Substrate analogue: substrate's part-of edge.",
+      "category": "lexical"
+    },
+    {
+      "name": "formal_semantics",
+      "definition": "Montague 1973. Semantics via logic + type theory + lambda calculus. Compositional bottom-up meaning derivation. Substrate analogue: substrate's typed compositional evaluation.",
+      "category": "formal"
+    },
+    {
+      "name": "model_theoretic_semantics",
+      "definition": "Tarski 1933. Sentence interpreted relative to a model (domain + relations). Truth value computed compositionally. Substrate analogue: substrate's Term evaluated against graph state.",
+      "category": "formal"
+    },
+    {
+      "name": "possible_worlds_semantics",
+      "definition": "Kripke 1959. Necessity = true in all worlds; possibility = true in some. Substrate analogue: substrate's modal Mt-state evaluation.",
+      "category": "formal"
+    },
+    {
+      "name": "quantifier_scope",
+      "definition": "Every student read some book — universal over existential (each student potentially different book) or vice versa. Ambiguity. Substrate analogue: substrate's nested quantification.",
+      "category": "formal"
+    },
+    {
+      "name": "frame_semantics",
+      "definition": "Fillmore 1976. Meaning structured by knowledge frames. 'Buy' invokes commercial-transaction frame with buyer, seller, goods, money. FrameNet. Substrate analogue: substrate's Mt-as-frame structure.",
+      "category": "cognitive"
+    },
+    {
+      "name": "prototype_theory",
+      "definition": "Rosch 1973. Categories organized around prototypes. Robin is a more prototypical bird than penguin. Graded membership. Substrate analogue: substrate's category-with-graded-membership.",
+      "category": "cognitive"
+    },
+    {
+      "name": "image_schema",
+      "definition": "Johnson 1987, Lakoff. Embodied abstract structures (container, path, force) underlying meaning. Substrate analogue: substrate's primitive grounding structures.",
+      "category": "cognitive"
+    },
+    {
+      "name": "conceptual_metaphor",
+      "definition": "Lakoff + Johnson 1980. Abstract concepts structured by mapping from concrete domains. ARGUMENT IS WAR. Substrate analogue: substrate's analogical_transfer faculty.",
+      "category": "cognitive"
+    },
+    {
+      "name": "construction_meaning",
+      "definition": "Goldberg. Constructions carry meaning independent of constituent words. 'X V'd Y to oblivion' is X caused-by-V-ing Y to be obliterated. Substrate analogue: substrate's compositional Mt-pattern meaning.",
+      "category": "cognitive"
+    },
+    {
+      "name": "distributional_hypothesis",
+      "definition": "Harris 1954, Firth 1957. Words with similar distributions have similar meanings. Foundation of word embeddings. Substrate analogue: substrate's distributional Concept-similarity.",
+      "category": "distributional"
+    },
+    {
+      "name": "word_embedding",
+      "definition": "Dense vector representation. Mikolov 2013 (word2vec), Pennington 2014 (GloVe). Captures distributional + analogical relationships. Substrate analogue: substrate's Concept-as-feature-vector.",
+      "category": "distributional"
+    },
+    {
+      "name": "vector_space_semantics",
+      "definition": "Words as vectors. Similarity = cosine. Analogies via vector arithmetic (king - man + woman ≈ queen). Substrate analogue: substrate's high-dimensional Concept embedding.",
+      "category": "distributional"
+    },
+    {
+      "name": "presupposition",
+      "definition": "Background assumption taken for granted. 'The king of France is bald' presupposes there is a king. Substrate analogue: substrate's required-context concept.",
+      "category": "context"
+    },
+    {
+      "name": "entailment",
+      "definition": "Logical consequence. 'John runs' entails 'John moves'. Substrate analogue: substrate's rule chain.",
+      "category": "context"
+    },
+    {
+      "name": "implicature",
+      "definition": "Inferred but not entailed. 'Some students passed' implicates not all. Substrate analogue: substrate's default-inference.",
+      "category": "context"
+    },
+    {
+      "name": "lexical_aspect",
+      "definition": "Vendler 1957. State, activity, accomplishment, achievement. 'Know' is stative; 'build a house' is accomplishment. Substrate analogue: substrate's temporal-shape concept attribute.",
+      "category": "aspect"
+    }
+  ],
+  "rules": [
+    {
+      "name": "compositionality_constrains_meaning_derivation",
+      "head": "the substrate computes the meaning of a complex expression",
+      "body": "the result is a function of constituent meanings + composition rules — not arbitrary. Frege. Substrate's Term-tree evaluation honours this."
+    },
+    {
+      "name": "context_resolves_lexical_ambiguity",
+      "head": "the substrate encounters a polysemous word",
+      "body": "the surrounding context selects the contextually-appropriate sense. Substrate's context-conditioned Concept selection."
+    },
+    {
+      "name": "frame_invocation_enables_inference",
+      "head": "the substrate recognises a frame-evoking expression",
+      "body": "the full frame structure becomes available for inference. 'Buy' brings buyer/seller/goods/money. Substrate's Mt-as-frame invocation."
+    },
+    {
+      "name": "distributional_similarity_predicts_substitutability",
+      "head": "two words have similar distributional profiles",
+      "body": "they are similar in meaning + often substitutable. Substrate's distributional Concept comparison."
+    },
+    {
+      "name": "implicature_arises_from_cooperation_violation",
+      "head": "the substrate hears 'some students passed'",
+      "body": "Gricean Quantity maxim says speakers say as much as relevant — therefore not all passed. Substrate's Gricean inference."
+    }
+  ]
+}

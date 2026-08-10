@@ -1,0 +1,17 @@
+{
+  "id": "invention_management",
+  "version": "0.1.0",
+  "depends_on": ["speech_development"],
+  "description": "Configuration the agent boots with for managing how readily it invents new phonological features (the invention_balance_threshold on its DevelopmentRoot). invention_balance_threshold is the starting bar (lower = invent more readily). invention_eps is the churn/settle cutoff on predicate movement. plateau_window is how many consecutive churn-with-impasses cycles count as the deadlock that forces easing. impasse_threshold is the recent-impasse level that counts as persistent disagreement. invention_floor/invention_ceiling bound the threshold. deadlock_ease_step/stable_ease_step are how much to lower it on a deadlock / clean coarse-feature signal; gentle_raise_step is how much to nudge it up while detectors are still settling. All dials live here, not in Python — the manage_feature_invention rule reads them off the root.",
+  "development_root": {
+    "invention_balance_threshold": 0.7,
+    "invention_eps": 1e-06,
+    "plateau_window": 4,
+    "impasse_threshold": 1.0,
+    "invention_floor": 0.3,
+    "invention_ceiling": 0.9,
+    "deadlock_ease_step": 0.15,
+    "stable_ease_step": 0.1,
+    "gentle_raise_step": 0.02
+  }
+}

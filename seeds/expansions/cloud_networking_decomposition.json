@@ -1,0 +1,118 @@
+{
+  "id": "cloud_networking_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "AWS_VPC",
+  "in_microtheory": "cloud_infrastructure",
+  "description": "Cloud networking decomposed. VPC design patterns, subnet sizing, route tables, NAT cost optimization, PrivateLink architecture, Transit Gateway scaling, AWS Cloud WAN, multi-region peering.",
+  "sub_mechanisms": [
+    {
+      "name": "VPC_CIDR_planning",
+      "definition": "Choose CIDR for VPC. Larger = more IPs but harder to peer (overlap). RFC 1918 ranges.",
+      "why": "Future-proof: hard to expand once chosen. Avoid overlap with future peers. /16 typical for VPC; /24 per subnet common.",
+      "category": "cloud_net_mechanism"
+    },
+    {
+      "name": "public_vs_private_subnet",
+      "definition": "Public: route to IGW (internet). Private: route via NAT (outbound only) or VPC endpoints.",
+      "why": "App servers private; LBs in public. Databases private. Standard 3-tier pattern. Public IPs only on what needs them.",
+      "category": "cloud_net_mechanism"
+    },
+    {
+      "name": "NAT_gateway_cost",
+      "definition": "~$0.045/hour + $0.045/GB processed. Major cost driver for chatty private workloads.",
+      "why": "Calling AWS APIs from private subnet = NAT cost. VPC endpoints eliminate. Common 'wait, why is this so expensive?' bill investigation.",
+      "category": "cloud_net_mechanism"
+    },
+    {
+      "name": "VPC_endpoint_gateway",
+      "definition": "Endpoints for S3 + DynamoDB. Route table entries. Free.",
+      "why": "Avoid NAT for S3/DDB traffic. No data charges. Should always be enabled. Older gateway endpoint type.",
+      "category": "cloud_net_mechanism"
+    },
+    {
+      "name": "VPC_endpoint_interface_PrivateLink",
+      "definition": "ENI in your VPC with private DNS. Access AWS services + 3rd-party services. Hourly + data.",
+      "why": "More services than gateway endpoints. Lower data charge than NAT. Slightly higher than gateway endpoints.",
+      "category": "cloud_net_mechanism"
+    },
+    {
+      "name": "Transit_Gateway_hub",
+      "definition": "Hub for many VPC + VPN + Direct Connect attachments. Transitive routing.",
+      "why": "Replaces N×N peering at ~4+ VPCs. ~$36/mo + per-GB. Standard for enterprise multi-VPC.",
+      "category": "cloud_net_mechanism"
+    },
+    {
+      "name": "Cloud_WAN",
+      "definition": "AWS Cloud WAN: managed global network. Multi-region TGW orchestration with policy.",
+      "why": "Beyond TGW: cross-region built-in. Policy-driven (intent-based). Modern alternative for global enterprises.",
+      "category": "cloud_net_mechanism"
+    },
+    {
+      "name": "VPC_peering_non_transitive",
+      "definition": "A↔B + B↔C does not give A↔C. Each pair needs explicit peer.",
+      "why": "Common architecture mistake. TGW solves transitive. Or full mesh peering (N² complexity).",
+      "category": "cloud_net_mechanism"
+    },
+    {
+      "name": "Direct_Connect_AWS",
+      "definition": "Dedicated network link AWS ↔ on-premises. Low latency, predictable.",
+      "why": "Hybrid cloud baseline. VPN over internet variable; Direct Connect dedicated. Hundreds Mbps to 100 Gbps. Costs $$$$.",
+      "category": "cloud_net_mechanism"
+    },
+    {
+      "name": "AWS_Global_Accelerator",
+      "definition": "Anycast IPs + AWS network. Steer traffic into AWS backbone closer to user.",
+      "why": "Better routing than open internet. Faster + more reliable. Used for global apps. Compared to CloudFront: GA is L4, CF is L7 + caching.",
+      "category": "cloud_net_mechanism"
+    },
+    {
+      "name": "cross_region_VPC_peering",
+      "definition": "Peer VPCs across regions. AWS backbone, not internet.",
+      "why": "Multi-region apps. Lower latency than VPN. Standard for active-active deployments.",
+      "category": "cloud_net_mechanism"
+    },
+    {
+      "name": "AWS_PrivateLink_3rd_party",
+      "definition": "Vendor exposes service via PrivateLink. Customer accesses without internet.",
+      "why": "Datadog, Snowflake, MongoDB all offer PrivateLink. Better security + no NAT cost. Standard for SaaS in regulated environments.",
+      "category": "cloud_net_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "VPC_endpoints_critical_for_cost",
+      "if": ["VPC has chatty AWS API workloads"],
+      "then": ["VPC endpoints save thousands monthly vs NAT"],
+      "why": "Per-GB NAT charge × TB of API traffic = thousands. Endpoints: same access without NAT data charges. Standard cost optimisation.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "TGW_economical_at_4_plus_VPCs",
+      "if": ["4 or more VPCs need full connectivity"],
+      "then": ["Transit Gateway cheaper than peering mesh"],
+      "why": "N(N-1)/2 peerings: management complexity grows. TGW: linear with N attachments. Cost crossover ~$80/mo (TGW vs peering free at low count).",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "PrivateLink_eliminates_internet_for_SaaS",
+      "if": ["SaaS vendor offers PrivateLink"],
+      "then": ["traffic stays on AWS network"],
+      "why": "Without: VPC → NAT → internet → vendor. With: VPC → PrivateLink → vendor. Lower latency, lower cost, better security. Standard for regulated industries.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "subnet_sizing_for_future_growth",
+      "if": ["VPC needs to grow"],
+      "then": ["initial CIDR must accommodate"],
+      "why": "Can't easily expand CIDR after creation. Overlap with future peers/TGW = blocked. Plan with 4-10x current need. Common mistake: /24 VPC, run out fast.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "cross_AZ_data_transfer_charges",
+      "if": ["traffic crosses AZ boundary"],
+      "then": ["data transfer cost applies (~$0.01/GB)"],
+      "why": "Not free even within VPC. Multi-AZ HA costs data transfer. Topology-aware routing (zone-aware Kafka, Cassandra) keeps in-AZ when possible.",
+      "soundness_category": "cost_equivalence"
+    }
+  ]
+}

@@ -1,0 +1,889 @@
+{
+ "id": "embedded_iot_realtime",
+ "version": "0.1.0",
+ "depends_on": [
+  "compiler_theory",
+  "operating_systems",
+  "computer_architecture",
+  "network_protocols"
+ ],
+ "description": "Embedded systems + IoT + real-time as graph-resident theory. Critical to the agent's eventual embodied form: tight sensorimotor loops, resource constraints, determinism guarantees, fault tolerance. Beyond what operating_systems covered (scheduling, sync primitives) and computer_architecture (caches, pipelines): hard/soft/firm real-time, WCET, RT schedulability (RMS, EDF, DM), RTOSes (FreeRTOS, Zephyr, VxWorks, QNX, PREEMPT_RT), microcontrollers (Cortex-M, RISC-V, ESP32, STM32), bare-metal programming (memory-mapped IO, DMA, registers), interrupt handling, power management, peripherals (I2C, SPI, UART, ADC, DAC, PWM), IoT protocols (MQTT, CoAP, BLE, Zigbee, Thread, Matter, LoRaWAN, NB-IoT), real-time communication (TSN, CAN, EtherCAT, OPC UA, DDS), robotics middleware (ROS2, micro-ROS), sensor fusion (Kalman, particle filters), embedded ML (TinyML, TFLite Micro), safety-critical (DO-178C, ISO 26262, ASIL, MISRA C), fault tolerance (TMR, lockstep, watchdog). The constraints that determine what an embodied agent can actually do.",
+ "category_inheritance": "genlMt → compiler_theory + operating_systems + computer_architecture + network_protocols. Determinism guarantees map directly to compiler_theory equivalence vocabulary: WCET = cost equivalence with bounds; real-time correctness = referential transparency (output depends only on input + bounded time, not on other factors); safety-critical guarantees = denotational equivalence under all input conditions.",
+ "concepts": [
+  {
+   "name": "hard_realtime",
+   "definition": "Missing a deadline = system failure. Pacemaker, airbag, flight control, ABS brakes.",
+   "why": "Safety-critical. Late = wrong. Worst-case must be guaranteed. Cannot be a probabilistic system — every deadline always met. Foundation of safety-critical embedded.",
+   "category": "foundation"
+  },
+  {
+   "name": "soft_realtime",
+   "definition": "Missing deadlines degrades quality but not safety. Video frame drops, audio glitches, game frame rate.",
+   "why": "Best-effort timing. Occasional misses acceptable. Most consumer real-time systems. Different correctness criterion than hard RT.",
+   "category": "foundation"
+  },
+  {
+   "name": "firm_realtime",
+   "definition": "Late results have zero value but no safety consequences. Stock trading, video conferencing late frames.",
+   "why": "Late = dropped, not used. Between hard + soft. Some occasional misses tolerable but lateness yields no benefit.",
+   "category": "foundation"
+  },
+  {
+   "name": "determinism",
+   "definition": "Same input + same state → same output + same timing. Predictable behaviour.",
+   "why": "Foundation of RT analysis. Non-determinism (caches, branch prediction, DRAM refresh) hurts RT predictability. Critical for safety.",
+   "category": "foundation"
+  },
+  {
+   "name": "worst_case_execution_time",
+   "definition": "WCET: maximum possible execution time of a code path. Computed via static analysis or measured.",
+   "why": "RT scheduling assumes WCETs. Tight bound → tight schedule. Loose bound → wasted CPU. WCET analysis is its own field.",
+   "category": "foundation"
+  },
+  {
+   "name": "jitter",
+   "definition": "Variation in latency between events. Caused by interrupts, cache misses, GC pauses, scheduler decisions.",
+   "why": "RT systems care about both mean + worst-case + jitter. Audio: low jitter for synchronisation. Control loops: jitter affects stability.",
+   "category": "foundation"
+  },
+  {
+   "name": "latency_RT",
+   "definition": "Time from event to response. Interrupt latency, scheduling latency, communication latency.",
+   "why": "RT system end-to-end metric. Stack: HW latency + ISR + OS schedule + task execution + output. Each layer contributes; all must be bounded.",
+   "category": "foundation"
+  },
+  {
+   "name": "FreeRTOS",
+   "definition": "Open-source RTOS. Tiny (~10 KB). Preemptive priority scheduling + cooperative. Used in millions of devices.",
+   "why": "De facto MCU RTOS. AWS-stewarded since 2017. Tasks, queues, semaphores, mutexes, software timers. Standard for ARM Cortex-M projects.",
+   "category": "rtos"
+  },
+  {
+   "name": "Zephyr",
+   "definition": "Linux Foundation RTOS. POSIX-like API, scalable from 8-bit to 64-bit. Strong network + Bluetooth stacks.",
+   "why": "Modern open RTOS. Better networking + drivers than FreeRTOS. Increasing adoption (Nordic, Intel, NXP backed).",
+   "category": "rtos"
+  },
+  {
+   "name": "VxWorks",
+   "definition": "Commercial RTOS. Wind River. Used in Mars rovers, Boeing 787, industrial control.",
+   "why": "Aerospace + industrial standard. Hard RT certified for DO-178C. Mature ecosystem; license cost = enterprise.",
+   "category": "rtos"
+  },
+  {
+   "name": "QNX",
+   "definition": "Microkernel RTOS. BlackBerry. Used in cars (CarPlay backend), medical, industrial.",
+   "why": "Microkernel architecture: drivers + filesystems in userspace. Fault tolerance via isolation. Automotive standard.",
+   "category": "rtos"
+  },
+  {
+   "name": "PREEMPT_RT",
+   "definition": "Linux kernel patch making it preemptible everywhere. Bounded scheduling latencies.",
+   "why": "Linux for RT. Mainlined incrementally since 2004. Real-time Linux for industrial + audio + robotics. Maintained by Linux Foundation Real-Time Linux project.",
+   "category": "rtos"
+  },
+  {
+   "name": "rate_monotonic_scheduling",
+   "definition": "RMS: priority = inverse of period. Higher frequency tasks get higher priority. Optimal for fixed priorities.",
+   "why": "Liu + Layland 1973. Provably optimal among fixed-priority schedulers. Schedulability via utilisation bound. Foundation of RT scheduling theory.",
+   "category": "rt_scheduling"
+  },
+  {
+   "name": "earliest_deadline_first",
+   "definition": "EDF: task with closest deadline runs next. Dynamic priorities.",
+   "why": "Optimal among all schedulers: schedulable iff total utilisation ≤ 1. Cost: priority changes per release. Less used than RMS in practice (harder to analyse).",
+   "category": "rt_scheduling"
+  },
+  {
+   "name": "deadline_monotonic",
+   "definition": "DM: priority = inverse of relative deadline. Variant of RMS for tasks with deadline < period.",
+   "why": "Generalises RMS. Optimal for fixed priority when deadlines ≤ periods. Used when deadlines aren't tied to release periods.",
+   "category": "rt_scheduling"
+  },
+  {
+   "name": "schedulability_analysis",
+   "definition": "Prove that a task set meets all deadlines under given scheduler. Response time analysis (RTA), utilisation bound.",
+   "why": "RT system must be proven schedulable. RTA: iteratively compute worst-case response time per task. UB: simpler but conservative.",
+   "category": "rt_scheduling"
+  },
+  {
+   "name": "priority_inheritance_RT",
+   "definition": "Already in OS Mt. Critical in RT: low-priority task holding mutex inherits high-priority task's priority. Prevents unbounded priority inversion.",
+   "why": "Mars Pathfinder famous bug (1997): priority inversion crashed rover. Fix: priority inheritance. Standard RT primitive.",
+   "category": "rt_scheduling"
+  },
+  {
+   "name": "priority_ceiling_protocol",
+   "definition": "Mutex has ceiling = max priority of any task using it. Task holding mutex runs at ceiling.",
+   "term": {
+    "type": "Eq",
+    "a": {
+     "type": "Lit",
+     "value": "Mutex has ceiling"
+    },
+    "b": {
+     "type": "Lit",
+     "value": "max priority of any task using it"
+    }
+   },
+   "why": "Prevents deadlock + bounded priority inversion. More predictable than priority inheritance. Used in safety-critical RT.",
+   "category": "rt_scheduling"
+  },
+  {
+   "name": "rate_monotonic_utilisation_bound",
+   "definition": "U_max(n) = n × (2^(1/n) - 1). For n tasks, set schedulable if utilisation ≤ this bound. Converges to ln(2) ≈ 0.693.",
+   "why": "Quick schedulability check. Sufficient but not necessary. RTA gives tight bound; UB is conservative.",
+   "category": "rt_scheduling"
+  },
+  {
+   "name": "interrupt_service_routine",
+   "definition": "ISR: function called by hardware interrupt. Runs in interrupt context (can't sleep, restricted API).",
+   "why": "Hardware async events handled here. Keep short: just acknowledge + signal task. Long ISRs delay other interrupts.",
+   "category": "interrupt_handling"
+  },
+  {
+   "name": "interrupt_latency",
+   "definition": "Time from interrupt assertion to first ISR instruction. Hardware + (current critical section).",
+   "why": "Critical RT metric. Cortex-M3+ has ~12 cycle deterministic interrupt entry. Disabling interrupts adds to worst case.",
+   "category": "interrupt_handling"
+  },
+  {
+   "name": "interrupt_top_bottom_half",
+   "definition": "Top half (ISR): minimal, acknowledge hardware. Bottom half (deferred): heavy processing.",
+   "why": "Linux convention. ISR enables interrupts quickly; tasklet/workqueue does the work. Pattern in all RT-aware systems.",
+   "category": "interrupt_handling"
+  },
+  {
+   "name": "nested_vectored_interrupt_controller",
+   "definition": "NVIC: Cortex-M interrupt controller. Hardware-prioritised, nested interrupts, tail-chaining.",
+   "why": "Deterministic interrupt entry. Tail-chaining: back-to-back interrupts skip stack save/restore. Hardware advantage of Cortex-M.",
+   "category": "interrupt_handling"
+  },
+  {
+   "name": "ARM_Cortex_M",
+   "definition": "32-bit MCU family. M0 (low power, basic), M3 (general), M4F (DSP + FPU), M7 (performance), M33 (security TrustZone).",
+   "why": "Dominant 32-bit MCU. STM32, nRF, MKL, RP2040 all Cortex-M. Standard instruction set (ARMv7-M, v8-M). Well-supported tooling.",
+   "category": "microcontroller"
+  },
+  {
+   "name": "RISC_V_embedded",
+   "definition": "Open ISA. RV32E (embedded, 16 registers), RV32I (full), with optional extensions.",
+   "why": "No license fees. ESP32-C3, GD32V, BL602, Bouffalo, Alibaba T-Head. Growing market share. Modular ISA fits embedded.",
+   "category": "microcontroller"
+  },
+  {
+   "name": "ESP32",
+   "definition": "Espressif. Xtensa or RISC-V cores. Wi-Fi + Bluetooth integrated. Cheap (<$5).",
+   "why": "IoT workhorse. Wide community. Trade: large for what it is (256 KB SRAM typical), power-hungry vs pure Cortex-M.",
+   "category": "microcontroller"
+  },
+  {
+   "name": "STM32",
+   "definition": "ST Microelectronics Cortex-M family. Vast peripherals + variants.",
+   "why": "Most popular Cortex-M family. Comprehensive HAL + IDE (STM32Cube). Industry standard for ARM MCUs.",
+   "category": "microcontroller"
+  },
+  {
+   "name": "AVR_8_bit",
+   "definition": "Atmel/Microchip 8-bit. Arduino UNO is ATmega328. Simple, well-understood.",
+   "why": "Education + hobby. Slower + smaller than ARM but lower complexity. Legacy + entry-level products.",
+   "category": "microcontroller"
+  },
+  {
+   "name": "RP2040",
+   "definition": "Raspberry Pi Foundation. Dual Cortex-M0+, PIO (Programmable IO).",
+   "why": "Modern hobby + commercial. PIO is unique: state machines for custom bit-banging at hardware speed. Used in many products.",
+   "category": "microcontroller"
+  },
+  {
+   "name": "memory_mapped_IO",
+   "definition": "Hardware peripheral registers appear as memory addresses. Read/write to address = control hardware.",
+   "why": "Foundation of bare-metal. No special instruction; just pointer access. volatile keyword critical (compiler must not optimise).",
+   "category": "bare_metal"
+  },
+  {
+   "name": "DMA_controller",
+   "definition": "Direct Memory Access. Peripheral ↔ memory transfer without CPU.",
+   "why": "Critical for performance + RT. CPU free for other work. DMA: setup once, transfer many. Standard for fast peripherals (SPI, I2S, ADC).",
+   "category": "bare_metal"
+  },
+  {
+   "name": "bootloader",
+   "definition": "Initial code that loads main application. Verifies + may update firmware.",
+   "why": "Foundation of safe firmware update. Bootloader is rarely updated; application can be. Patterns: A/B partitions, rollback on failure.",
+   "category": "bare_metal"
+  },
+  {
+   "name": "watchdog_timer",
+   "definition": "Hardware timer; resets MCU if not periodically 'kicked'. Forces reset on hang.",
+   "why": "Last-resort recovery. Task stuck → no kick → reset → recover. Critical for unattended embedded.",
+   "category": "bare_metal"
+  },
+  {
+   "name": "linker_script",
+   "definition": "Maps program sections to memory regions. .text → FLASH, .data → RAM init, .bss → RAM zero.",
+   "why": "Embedded needs explicit memory layout. Reserved regions for bootloader, application, EEPROM emulation. Different from desktop linkers.",
+   "category": "bare_metal"
+  },
+  {
+   "name": "GPIO",
+   "definition": "General Purpose Input/Output. Digital pins, configurable direction + pull-up/down.",
+   "why": "Most basic peripheral. LED, button, custom signalling. Foundation of physical world interaction. Atomic register access matters.",
+   "category": "peripherals"
+  },
+  {
+   "name": "I2C",
+   "definition": "Two-wire serial bus. Multi-master, addressable slaves. Speed up to 5 MHz.",
+   "why": "Standard for sensors, EEPROMs, displays. 7-bit address space. Bidirectional. Pull-up resistors required.",
+   "category": "peripherals"
+  },
+  {
+   "name": "SPI",
+   "definition": "Synchronous serial bus. 4 wires: CLK, MOSI, MISO, CS. Faster than I2C (10+ MHz).",
+   "why": "Storage (flash), displays, fast sensors. Full-duplex. Multiple slaves via separate CS lines. No addressing.",
+   "category": "peripherals"
+  },
+  {
+   "name": "UART",
+   "definition": "Universal Async Receiver/Transmitter. 2 wires + ground. No clock; configurable baud rate.",
+   "why": "Console + GPS + GSM modules. Simplest serial. Hardware FIFOs reduce CPU load. Common debug interface.",
+   "category": "peripherals"
+  },
+  {
+   "name": "ADC_resolution",
+   "definition": "Analog-to-Digital Converter. 8 to 24 bit. Sampling rate kHz to MHz.",
+   "why": "Read analog sensors (voltage, current, temperature). Resolution + reference voltage determine accuracy. Standard MCU peripheral.",
+   "category": "peripherals"
+  },
+  {
+   "name": "DAC",
+   "definition": "Digital-to-Analog Converter. Outputs analog voltage.",
+   "why": "Audio, analog control signals. PWM often substitutes for DAC. True DAC for precise analog output.",
+   "category": "peripherals"
+  },
+  {
+   "name": "PWM",
+   "definition": "Pulse Width Modulation. Variable duty cycle digital signal.",
+   "why": "Motor speed control, LED brightness, fake DAC. Simple + powerful. Hardware timers generate. ESC for motors uses PWM.",
+   "category": "peripherals"
+  },
+  {
+   "name": "static_memory_allocation",
+   "definition": "All memory determined at compile time. No malloc/free.",
+   "why": "Required in hard RT + safety-critical. No fragmentation, predictable. Worst-case memory usage knowable. MISRA C forbids dynamic alloc.",
+   "category": "embedded_memory"
+  },
+  {
+   "name": "memory_pool",
+   "definition": "Pre-allocated array of fixed-size blocks. Allocate from pool, return to pool.",
+   "why": "Bounded allocation time. No fragmentation. Standard pattern when need dynamic-like alloc with RT bounds.",
+   "category": "embedded_memory"
+  },
+  {
+   "name": "stack_overflow_protection",
+   "definition": "Detect stack overflow via guard word, MMU/MPU, or canary. Trigger reset before corruption.",
+   "why": "Embedded stacks tiny (KB). Recursion + deep call chains = overflow = corruption = mysterious crash. MPU regions catch.",
+   "category": "embedded_memory"
+  },
+  {
+   "name": "memory_protection_unit",
+   "definition": "MPU: simpler than MMU. Permission regions, no virtual memory.",
+   "why": "Cortex-M has MPU not MMU. Protect kernel from app, app from itself. Required for some safety certifications.",
+   "category": "embedded_memory"
+  },
+  {
+   "name": "low_power_modes",
+   "definition": "Sleep, deep sleep, stop, standby. CPU off, RAM retained or off, peripherals selectively on.",
+   "why": "Battery + energy-harvesting devices. Sleep majority of time; wake on event. nRF52: μA in deep sleep.",
+   "category": "power_management"
+  },
+  {
+   "name": "wake_on_interrupt",
+   "definition": "MCU sleeps; peripheral interrupt wakes. Common: timer, GPIO, communication.",
+   "why": "Event-driven low power. Wake → process → sleep. Average current = peak × duty cycle. Foundation of energy-constrained design.",
+   "category": "power_management"
+  },
+  {
+   "name": "energy_harvesting",
+   "definition": "Solar, vibration, thermal, RF. Generate microwatts. Buffer + use when threshold met.",
+   "why": "Self-powered IoT. No batteries to replace. Trade: very limited compute budget (microjoules per operation).",
+   "category": "power_management"
+  },
+  {
+   "name": "MQTT_pubsub",
+   "definition": "Publish-subscribe over TCP. Broker-based. Topics with hierarchy. QoS 0/1/2.",
+   "why": "IoT messaging standard. Lightweight (compared to HTTP). Used in Home Assistant, AWS IoT Core, many products. RFC 3.1.1 + v5.",
+   "category": "iot_protocols"
+  },
+  {
+   "name": "MQTT_QoS_levels",
+   "definition": "QoS 0: at-most-once. QoS 1: at-least-once. QoS 2: exactly-once.",
+   "why": "Application controls reliability. QoS 2 expensive (4-way handshake). QoS 1 common default.",
+   "category": "iot_protocols"
+  },
+  {
+   "name": "CoAP",
+   "definition": "Constrained Application Protocol. RESTful over UDP. RFC 7252.",
+   "why": "Like HTTP but tiny. Multicast support. Resource discovery. Designed for constrained devices + 6LoWPAN networks.",
+   "category": "iot_protocols"
+  },
+  {
+   "name": "LwM2M",
+   "definition": "Lightweight M2M. Device management protocol on CoAP. OMA standard.",
+   "why": "Standard IoT device management: register, query, control, firmware update. Used heavily in cellular IoT (NB-IoT, LTE-M).",
+   "category": "iot_protocols"
+  },
+  {
+   "name": "BLE_GATT",
+   "definition": "Bluetooth Low Energy Generic Attribute Profile. Services + characteristics. Low-power radio.",
+   "why": "Wearables, smart home, beacons. ~5 mW peak. iOS + Android native support. Mesh, Audio extensions.",
+   "category": "iot_protocols"
+  },
+  {
+   "name": "Zigbee",
+   "definition": "IEEE 802.15.4-based mesh networking. 2.4 GHz. Low power.",
+   "why": "Smart home (Hue, Ikea, SmartThings). Mesh extends range. Self-healing. Largely superseded by Thread + Matter.",
+   "category": "iot_protocols"
+  },
+  {
+   "name": "Thread",
+   "definition": "IPv6-based mesh on 802.15.4. Designed for home IoT. Connected Home Alliance.",
+   "why": "Foundation of Matter. IPv6 native. Self-healing mesh. Border routers bridge to IP networks. Modern Zigbee successor.",
+   "category": "iot_protocols"
+  },
+  {
+   "name": "Matter",
+   "definition": "Smart home standard. CHIP (Connected Home over IP). Runs over Thread + Wi-Fi. Connectivity Standards Alliance.",
+   "why": "Apple, Google, Amazon, Samsung consortium. Unified smart home. Vendor-agnostic. Industry consolidation move.",
+   "category": "iot_protocols"
+  },
+  {
+   "name": "6LoWPAN",
+   "definition": "IPv6 over Low-Power Wireless Personal Area Networks. Header compression for 802.15.4.",
+   "why": "Foundation: IP networks reaching tiny devices. Header compression critical (IPv6 = 40 bytes; 802.15.4 frame = 127 bytes). Used in Thread.",
+   "category": "iot_protocols"
+  },
+  {
+   "name": "LoRaWAN",
+   "definition": "Long Range WAN. Sub-GHz, license-free ISM bands. km range, ~1 kbps.",
+   "why": "Wide-area low-power. Battery years. Cost: low throughput, often gateway-dependent. Used for sensors, asset tracking.",
+   "category": "low_power_wireless"
+  },
+  {
+   "name": "NB_IoT_LTE_M",
+   "definition": "Cellular IoT. NB-IoT: ultra-low data, deep coverage. LTE-M: higher data, mobility.",
+   "why": "Cellular operators offer. Global coverage. Cost: SIM, subscription. Used for asset tracking, smart meters, agriculture.",
+   "category": "low_power_wireless"
+  },
+  {
+   "name": "Sigfox",
+   "definition": "Proprietary LPWAN. Tiny messages (12 bytes), 140/day uplink. Free-ish.",
+   "why": "Pure low-data use cases. Network operator-led. Coverage limited; declining vs LoRaWAN.",
+   "category": "low_power_wireless"
+  },
+  {
+   "name": "CAN_bus",
+   "definition": "Controller Area Network. Differential pair, message-based, arbitration via ID priority.",
+   "why": "Automotive standard. 1 Mbps classic, 5 Mbps CAN FD. Deterministic message delivery. Used in robotics, industrial too.",
+   "category": "rt_communication"
+  },
+  {
+   "name": "LIN_bus",
+   "definition": "Local Interconnect Network. Single-wire, master-slave. Cheaper than CAN.",
+   "why": "Automotive: window switches, sensors. Slower (20 kbps). CAN where speed needed; LIN where cost.",
+   "category": "rt_communication"
+  },
+  {
+   "name": "FlexRay",
+   "definition": "Automotive bus. Time-triggered + event-triggered. 10 Mbps.",
+   "why": "X-by-wire (drive-by-wire, brake-by-wire). Deterministic timing. Used in safety-critical automotive. Increasingly displaced by Ethernet.",
+   "category": "rt_communication"
+  },
+  {
+   "name": "Time_Sensitive_Networking_TSN",
+   "definition": "IEEE 802.1 standards adding determinism to Ethernet. Time-aware shaping, frame preemption, redundancy.",
+   "why": "Standard Ethernet + determinism. Industrial automation, automotive, professional audio. Modern alternative to specialised RT buses.",
+   "category": "rt_communication"
+  },
+  {
+   "name": "EtherCAT",
+   "definition": "Industrial Ethernet protocol. On-the-fly processing — slaves modify packet as it passes.",
+   "why": "Microsecond-level industrial control. Beckhoff. Common in motion control, robotics. Determinism + speed.",
+   "category": "rt_communication"
+  },
+  {
+   "name": "PROFINET",
+   "definition": "Industrial Ethernet by Siemens. Various profiles (basic to ultra-low latency).",
+   "why": "Industrial automation. Real-time variants. Largest deployed industrial Ethernet.",
+   "category": "rt_communication"
+  },
+  {
+   "name": "OPC_UA",
+   "definition": "Open Platform Communications - Unified Architecture. Industrial M2M. Built-in security + info model.",
+   "why": "Industry 4.0 / IIoT data layer. Vendor-neutral. Server-client + pub/sub. Standard for industrial integration.",
+   "category": "rt_communication"
+  },
+  {
+   "name": "DDS_data_distribution",
+   "definition": "Data Distribution Service. Real-time pub/sub. Decentralised. QoS-rich.",
+   "why": "Foundation of ROS2. Used in defense, aerospace, industrial. RTI Connext, eProsima Fast DDS, OpenDDS. Strong typing + discovery.",
+   "category": "rt_communication"
+  },
+  {
+   "name": "ROS2",
+   "definition": "Robot Operating System v2. Nodes + topics + services + actions + parameters. Over DDS.",
+   "why": "Standard robotics middleware. Distributed: nodes communicate via DDS. Versus ROS1: real-time-capable, multi-platform. Industry direction.",
+   "category": "robotics"
+  },
+  {
+   "name": "micro_ROS",
+   "definition": "ROS2 for microcontrollers. Client library runs on MCU; agent bridges to ROS2 network.",
+   "why": "Microcontroller can be a ROS2 node. Use cases: sensors, actuators with rich semantics. Cortex-M3+ minimum.",
+   "category": "robotics"
+  },
+  {
+   "name": "ROS2_QoS_profiles",
+   "definition": "Per-topic QoS: history, reliability, durability, deadline, liveliness, latency budget.",
+   "why": "Fine-grained reliability. Best-effort for sensor streams; reliable for commands. Tunable per requirements.",
+   "category": "robotics"
+  },
+  {
+   "name": "URDF_robot_description",
+   "definition": "Unified Robot Description Format. XML describing robot's links + joints + kinematics.",
+   "why": "Standard robotics model format. Used by ROS for visualisation, planning, simulation. URDF + meshes describe physical robot.",
+   "category": "robotics"
+  },
+  {
+   "name": "IMU",
+   "definition": "Inertial Measurement Unit. Accelerometer + gyroscope (+ magnetometer = 9-DOF).",
+   "why": "Foundation of motion sensing. Drones, robots, AR/VR, fitness. Bias drift over time = fusion required.",
+   "category": "sensors_actuators"
+  },
+  {
+   "name": "LIDAR",
+   "definition": "Light Detection and Ranging. Pulsed laser distance. 2D or 3D point clouds.",
+   "why": "Autonomous vehicles, mapping, robotics. mm precision. Cost: expensive (declining). Solid-state vs mechanical scanning.",
+   "category": "sensors_actuators"
+  },
+  {
+   "name": "time_of_flight_sensor",
+   "definition": "ToF: measures distance via light reflection time. mm-cm resolution.",
+   "why": "Phone cameras (portrait mode), robot proximity, gesture recognition. Cheaper than LIDAR; limited range (few meters).",
+   "category": "sensors_actuators"
+  },
+  {
+   "name": "rotary_encoder",
+   "definition": "Sensor measuring shaft rotation. Incremental (counts) or absolute (knows position).",
+   "why": "Motor feedback, robotic joints. Quadrature: 2 signals 90° offset = direction + position. Foundation of closed-loop motor control.",
+   "category": "sensors_actuators"
+  },
+  {
+   "name": "event_camera",
+   "definition": "Pixel-level async sensor. Each pixel reports brightness change events.",
+   "why": "Microsecond temporal resolution, low power, sparse data. Different paradigm vs frame cameras. Used in fast robotics, neuromorphic.",
+   "category": "sensors_actuators"
+  },
+  {
+   "name": "BLDC_motor",
+   "definition": "Brushless DC motor. Electronic commutation via ESC. High efficiency + power density.",
+   "why": "Drones, e-bikes, modern robotics. ESCs (Electronic Speed Controllers) drive. Requires position feedback (sensored) or back-EMF (sensorless).",
+   "category": "sensors_actuators"
+  },
+  {
+   "name": "servo_motor",
+   "definition": "Motor with built-in position feedback + control. Move to specified angle.",
+   "why": "Hobby robotics, RC. PWM controlled. Simple to use. Limited torque + speed; not for high power.",
+   "category": "sensors_actuators"
+  },
+  {
+   "name": "stepper_motor",
+   "definition": "Motor that moves in fixed angular steps. Open-loop position control possible.",
+   "why": "3D printers, CNC, precise positioning. No feedback needed (if not lost steps). Higher torque at low speed than servo.",
+   "category": "sensors_actuators"
+  },
+  {
+   "name": "Kalman_filter",
+   "definition": "Recursive state estimator. Combines prediction + measurement weighted by uncertainty.",
+   "why": "Sensor fusion foundation. IMU + GPS, vision + IMU. Optimal for Gaussian-linear systems. Extended (EKF) + Unscented (UKF) for non-linear.",
+   "category": "sensor_fusion"
+  },
+  {
+   "name": "complementary_filter",
+   "definition": "Simple sensor fusion: weighted sum of high-pass + low-pass filtered signals.",
+   "why": "Cheaper than Kalman. IMU attitude: low-pass accelerometer + high-pass gyro integration. Good enough for many applications.",
+   "category": "sensor_fusion"
+  },
+  {
+   "name": "particle_filter",
+   "definition": "Monte Carlo state estimation. Many sample states; resampled based on observations.",
+   "why": "Non-linear, non-Gaussian. Localization (Monte Carlo Localization in robotics). Cost: many particles.",
+   "category": "sensor_fusion"
+  },
+  {
+   "name": "TinyML",
+   "definition": "Machine learning on MCUs (kB RAM). TensorFlow Lite Micro, edge-impulse, MicroTVM.",
+   "why": "Inference at extreme edge. Wake word detection, anomaly detection, gesture recognition. Quantised models, fixed-point math.",
+   "category": "embedded_ml"
+  },
+  {
+   "name": "TFLite_Micro",
+   "definition": "TF Lite for Microcontrollers. Few-KB runtime. No allocator (static memory).",
+   "why": "Standard for MCU ML. Supports Cortex-M, ESP32, etc. Kernels optimised per platform. CMSIS-NN underneath on ARM.",
+   "category": "embedded_ml"
+  },
+  {
+   "name": "ML_quantization_embedded",
+   "definition": "Float32 weights → int8 (or int4). 4-8x smaller. Hardware-friendly (no FPU needed).",
+   "why": "Critical for embedded. Cortex-M0/M3 have no FPU. Int8 inference much faster + smaller. Cost: ~1-2% accuracy.",
+   "category": "embedded_ml"
+  },
+  {
+   "name": "DO_178C_avionics",
+   "definition": "Software considerations in airborne systems. DALs (Design Assurance Levels) A-E.",
+   "why": "FAA-mandated for avionics. Level A (catastrophic failure) most rigorous. Drives V&V process for flight software.",
+   "category": "safety_critical"
+  },
+  {
+   "name": "ISO_26262_automotive",
+   "definition": "Functional safety of road vehicle electrical/electronic systems. ASIL A-D.",
+   "why": "Automotive equivalent of DO-178C. ASIL D (highest risk: brakes, steering) most rigorous. Standard for OEMs + Tier 1.",
+   "category": "safety_critical"
+  },
+  {
+   "name": "IEC_61508",
+   "definition": "Functional safety of electrical/electronic/programmable electronic safety-related systems. SIL 1-4.",
+   "why": "Industrial parent standard. Process industry (refineries, plants). SIL determines required risk reduction.",
+   "category": "safety_critical"
+  },
+  {
+   "name": "ASIL_levels",
+   "definition": "Automotive Safety Integrity Levels. QM (no requirement) → A → B → C → D. Determined by severity + exposure + controllability.",
+   "why": "Drives every architectural decision. ASIL D: full redundancy + extensive analysis. QM: standard quality process. Cost grows with ASIL.",
+   "category": "safety_critical"
+  },
+  {
+   "name": "MISRA_C",
+   "definition": "C coding standard for safety-critical. Forbid + restrict language features. Static analysis enforced.",
+   "why": "Forbids dynamic alloc, recursion, gotos. Avoids undefined behaviour. Automotive + aerospace requirement.",
+   "category": "safety_critical"
+  },
+  {
+   "name": "formal_verification_embedded",
+   "definition": "Mathematical proof of code correctness. Frama-C, CompCert, seL4.",
+   "why": "Highest assurance. seL4 microkernel formally verified. CompCert verified C compiler. Used where bugs cannot exist (medical, aerospace).",
+   "category": "safety_critical"
+  },
+  {
+   "name": "triple_modular_redundancy",
+   "definition": "TMR: 3 identical units, vote on output. 2-out-of-3 majority.",
+   "why": "Hardware fault tolerance. Voter is critical path. SpaceX Dragon (3x flight computers), space (radiation). Cost: 3x hardware.",
+   "category": "fault_tolerance"
+  },
+  {
+   "name": "lockstep_CPUs",
+   "definition": "Two CPUs execute same instructions. Outputs compared each cycle. Mismatch = fault.",
+   "why": "Hardware fault detection. ARM Cortex-R lockstep. ASIL D requirement. Cost: 2x compute for fault detection.",
+   "category": "fault_tolerance"
+  },
+  {
+   "name": "watchdog_kick_pattern",
+   "definition": "Periodic 'I'm alive' signal to watchdog timer. Missing kick = reset.",
+   "why": "Last-resort recovery. Different from heartbeat (network): hardware-level. Independent of software state.",
+   "category": "fault_tolerance"
+  },
+  {
+   "name": "diagnostic_trouble_codes",
+   "definition": "DTCs: standard error codes. OBD-II in cars. Logged + reported.",
+   "why": "Field diagnostics. Mechanic reads DTC → knows issue. Embedded systems log + transmit. Foundation of automotive maintenance.",
+   "category": "fault_tolerance"
+  },
+  {
+   "name": "fail_safe_design",
+   "definition": "On failure, system enters known-safe state. Brakes lock open, valves close, robots stop.",
+   "why": "Foundation of safety-critical. Failure inevitable; bound consequences. Drives mechanical + control design.",
+   "category": "safety_critical"
+  },
+  {
+   "name": "Yocto_embedded_linux",
+   "definition": "Build system for custom embedded Linux distros. BitBake recipes + layers.",
+   "why": "Reproducible custom Linux. Industrial + commercial embedded. Trade: steep learning curve. Industry standard for embedded Linux.",
+   "category": "embedded_linux"
+  },
+  {
+   "name": "Buildroot",
+   "definition": "Simpler embedded Linux build system. Makefile-based. Faster than Yocto for simpler use cases.",
+   "why": "Smaller projects + faster iteration. No layered architecture; rebuild whole config. Easier learning curve.",
+   "category": "embedded_linux"
+  },
+  {
+   "name": "PREEMPT_RT_Linux",
+   "definition": "Kernel patch making Linux preemptible. Bounded latencies (typically tens of µs).",
+   "why": "Linux for soft RT + many hard RT. Industrial control, audio production, robotics. Mainlining ongoing; full inclusion expected 2024-2025.",
+   "category": "embedded_linux"
+  }
+ ],
+ "rules": [
+  {
+   "name": "hard_RT_requires_worst_case_bounded",
+   "if": [
+    "a system has hard real-time deadlines"
+   ],
+   "then": [
+    "WCET must be bounded + system designed for worst case"
+   ],
+   "why": "Average behaviour irrelevant; worst case = correctness. Caches + branch prediction + DRAM refresh add jitter; must be analysed or eliminated.",
+   "soundness_category": "referential_transparency"
+  },
+  {
+   "name": "RMS_optimal_for_fixed_priority",
+   "if": [
+    "fixed-priority scheduler + periodic tasks + deadline=period"
+   ],
+   "then": [
+    "rate-monotonic priority assignment is optimal"
+   ],
+   "why": "Liu + Layland 1973. If RMS can't schedule, no fixed-priority assignment can. Foundation of RT scheduling theory.",
+   "soundness_category": "algebraic_law"
+  },
+  {
+   "name": "EDF_optimal_among_all_schedulers",
+   "if": [
+    "a task set has total utilisation ≤ 1"
+   ],
+   "then": [
+    "EDF schedules it"
+   ],
+   "why": "Earliest Deadline First: optimal in single-processor preemptive scheduling. Cost: dynamic priorities, harder analysis. RMS easier to analyse + reason about.",
+   "soundness_category": "algebraic_law"
+  },
+  {
+   "name": "priority_inheritance_bounds_priority_inversion",
+   "if": [
+    "mutexes use priority inheritance"
+   ],
+   "then": [
+    "priority inversion is bounded by critical section duration"
+   ],
+   "why": "Without: low-priority task holding mutex blocks high-priority indefinitely. With inheritance: holder runs at high priority until release. Mars Pathfinder fix.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "static_allocation_required_for_safety_critical",
+   "if": [
+    "software targets safety-critical certification"
+   ],
+   "then": [
+    "dynamic memory allocation is prohibited"
+   ],
+   "why": "malloc: bounded time? Fragmentation? OOM? Cannot prove. Static: all sizes known at compile, no fragmentation possible. MISRA C + DO-178C requirement.",
+   "soundness_category": "referential_transparency"
+  },
+  {
+   "name": "interrupt_latency_dominates_response_time",
+   "if": [
+    "a task is interrupt-driven"
+   ],
+   "then": [
+    "interrupt latency is in critical path"
+   ],
+   "why": "Time from event to handler: HW + (interrupts disabled) + entry. Cortex-M deterministic entry; disabling interrupts adds. Critical sections matter.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "DMA_enables_RT_throughput",
+   "if": [
+    "peripheral throughput exceeds CPU per-byte service time"
+   ],
+   "then": [
+    "DMA is required"
+   ],
+   "why": "CPU servicing every byte: limited throughput. DMA: peripheral ↔ memory autonomously. CPU free for other work. Standard for fast peripherals.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "MCU_choice_balances_constraints",
+   "if": [
+    "choosing MCU for product"
+   ],
+   "then": [
+    "balance power + cost + peripherals + tooling"
+   ],
+   "why": "Cortex-M0: cheap, low power. M4F: DSP capability. M7: speed. ESP32: Wi-Fi/BT integrated. RISC-V: no fees. Choice cascades through firmware design.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "MQTT_for_publish_subscribe_IoT",
+   "if": [
+    "devices report telemetry + receive commands"
+   ],
+   "then": [
+    "MQTT outperforms HTTP for IoT"
+   ],
+   "why": "HTTP: per-request overhead, polling-based. MQTT: persistent connection, pub/sub, lighter framing. Standard IoT messaging. AWS IoT Core, Azure IoT Hub.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "BLE_for_low_power_proximate",
+   "if": [
+    "device communicates with phone or nearby gateway"
+   ],
+   "then": [
+    "BLE is the standard"
+   ],
+   "why": "Native phone support. Low power. 10m range typical. Wearables, sensors, beacons. Bluetooth 5+ adds mesh + audio.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "Matter_unifies_smart_home",
+   "if": [
+    "building smart home device"
+   ],
+   "then": [
+    "Matter is the universal target"
+   ],
+   "why": "Apple, Google, Amazon, Samsung all support. Customers expect cross-ecosystem. Trade: complexity + maturity (early days). Industry direction.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "LoRaWAN_for_long_range_low_data",
+   "if": [
+    "sensors are kilometres apart + send small data infrequently"
+   ],
+   "then": [
+    "LoRaWAN is appropriate"
+   ],
+   "why": "Battery years. Public + private networks (TTN, Helium). Cost: low throughput, latency. Trade-off for asset tracking, agriculture.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "CAN_for_automotive_robustness",
+   "if": [
+    "robust real-time messaging in noisy electrical environment"
+   ],
+   "then": [
+    "CAN bus is standard"
+   ],
+   "why": "Differential signalling, prioritised arbitration, fault detection. Decades of automotive deployment. Used in robotics + industrial too.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "DDS_real_time_publish_subscribe",
+   "if": [
+    "robotic or industrial system needs distributed pub-sub with QoS"
+   ],
+   "then": [
+    "DDS is the standard"
+   ],
+   "why": "Strong typing, rich QoS, decentralised discovery. ROS2 foundation. Industrial deployment. Trade: complexity vs MQTT.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "Kalman_filter_optimal_for_Gaussian_linear",
+   "if": [
+    "state + measurement noise are Gaussian + system is linear"
+   ],
+   "then": [
+    "Kalman filter is the optimal estimator"
+   ],
+   "why": "Mathematically provable optimal. Extended Kalman handles non-linear by linearising. Foundation of sensor fusion.",
+   "soundness_category": "algebraic_law"
+  },
+  {
+   "name": "complementary_filter_pragmatic_alternative",
+   "if": [
+    "compute is constrained + Gaussian assumption acceptable"
+   ],
+   "then": [
+    "complementary filter works almost as well as Kalman"
+   ],
+   "why": "Much cheaper. IMU attitude: weighted combination of integrated gyro + accelerometer tilt. Many drones use; good enough.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "quantization_critical_for_MCU_ML",
+   "if": [
+    "ML inference on Cortex-M0/M3 (no FPU)"
+   ],
+   "then": [
+    "int8 quantization required for practical performance"
+   ],
+   "why": "Float emulated = 10-100x slower. Int8 native + fast. Quality loss ~1-2%. CMSIS-NN, TFLite Micro all expect quantized models.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "watchdog_required_for_unattended_operation",
+   "if": [
+    "embedded system runs unattended"
+   ],
+   "then": [
+    "watchdog timer is mandatory"
+   ],
+   "why": "Software bugs + hardware glitches happen. Without watchdog: system hangs forever. With: hardware reset = recovery. Universal embedded practice.",
+   "soundness_category": "referential_transparency"
+  },
+  {
+   "name": "MISRA_C_required_for_automotive",
+   "if": [
+    "software targets automotive ASIL B+"
+   ],
+   "then": [
+    "MISRA C compliance required"
+   ],
+   "why": "Forbids constructs prone to undefined behaviour + hard to verify. Static analysis enforces. Audited. Standard automotive requirement.",
+   "soundness_category": "referential_transparency"
+  },
+  {
+   "name": "TMR_for_radiation_environments",
+   "if": [
+    "system operates in radiation (space, nuclear)"
+   ],
+   "then": [
+    "Triple Modular Redundancy required for compute"
+   ],
+   "why": "Single Event Upsets flip memory bits + corrupt computation. TMR: 3 units vote = majority correct. SpaceX Dragon, JPL spacecraft.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "lockstep_for_ASIL_D",
+   "if": [
+    "safety-critical compute (ASIL D)"
+   ],
+   "then": [
+    "lockstep CPUs detect transient faults"
+   ],
+   "why": "Two CPUs execute identically; voter compares each cycle. Mismatch = fault → safe state. Cortex-R lockstep. Standard for steering, brakes.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "fail_safe_design_bounds_failure_consequences",
+   "if": [
+    "system designed with fail-safe state"
+   ],
+   "then": [
+    "failure has known bounded consequence"
+   ],
+   "why": "Without: failure → unknown state. With: failure → defined safe state (motor off, valve closed, brakes locked). Foundation of safety engineering.",
+   "soundness_category": "referential_transparency"
+  },
+  {
+   "name": "formal_verification_for_zero_bug_requirements",
+   "if": [
+    "bugs are unacceptable (medical, aerospace, kernel)"
+   ],
+   "then": [
+    "formal verification is the path"
+   ],
+   "why": "Testing finds bugs; verification proves their absence. seL4 microkernel, CompCert compiler. Cost: 10-50x development effort. Used where justified.",
+   "soundness_category": "referential_transparency"
+  }
+ ],
+ "exclusions": [],
+ "parent_mt": "operating_systems",
+ "relations": [
+  {
+   "src": "embedded_iot_realtime",
+   "edge": "genlMt",
+   "tgt": "compiler_theory"
+  }
+ ]
+}

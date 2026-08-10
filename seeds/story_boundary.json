@@ -1,0 +1,106 @@
+{
+  "id": "story_boundary",
+  "version": "1.0.0",
+  "depends_on": ["reading_constructions"],
+  "description": "STORY BOUNDARY = COLLAPSE OVER A STORY-BOUNDARY CODEBOOK, one level up from narrative_structure's per-sentence story-grammar-ROLE collapse. Where narrative_structure decodes the ROLE of ONE sentence in a character's goal-pursuit chain, this codebook decodes whether a SEAM between two adjacent sentences is a STORY BOUNDARY -- the seam at which a real story's NESTED structure (episodes inside an arc, a tale inside a frame) splits into StoryUnit sub-trees. Each inter-sentence seam is turned into a SINGLE-TOKEN skeleton by a mechanical graph read (does sentence_i carry a TELLING/speech marker opening a reported narrative? does sentence_j LEAD with a TEMPORAL-SHIFT episode marker recognised against the held TEMPORAL_SHIFT MarkerClass forms? do the already-minted NarrativeRole nodes show a resolution/consequence role at/before the seam followed by a fresh setup/problem role after it -- an arc discontinuity?), and that ONE token is decoded against this codebook exactly the way narrative_structure.decode_slot decodes a slot token against ShapeSignatureNarrative -- the BOUNDARY VERDICT is always the winning ShapeSignatureStoryBoundary's own `boundary` attr, never a Python if/else naming the boundary, and NEVER a paragraph/blank-line/regex splitter. A seam whose token no schema covers (SEAM_NONE) mints NOTHING -- the discriminative null that keeps a single-arc story ONE unit (precision-safe). The TEMPORAL_SHIFT / TELL MarkerClass nodes are NOT construction-identity markers (not in reading_collapse._SKELETON/_GLUE), so they stay CONTENT inside a read_clause skeleton -- adding them perturbs no existing construction decode; they only give the seam decoder recognised marker data.",
+  "microtheory": {
+    "name": "story_boundary",
+    "description": "A story's nested structure (episodes in an arc, a tale in a frame) recognised as a StoryUnit tree by ShapeDecode over a dedicated ShapeSignatureStoryBoundary codebook of inter-sentence seams -- one level up from narrative_structure's per-sentence role collapse, itself one level up from coherence relations and clause constructions."
+  },
+  "nodes": [
+    {
+      "local_id": 1,
+      "type": "MarkerClass",
+      "attrs": {
+        "cls": "TEMPORAL_SHIFT",
+        "forms": [
+          "some time later",
+          "some time after",
+          "one day",
+          "the next day",
+          "the following day",
+          "the next morning",
+          "later that day",
+          "later that night",
+          "years later",
+          "years passed",
+          "many years later",
+          "long after",
+          "long afterward",
+          "soon after",
+          "meanwhile",
+          "later",
+          "afterward",
+          "afterwards",
+          "eventually",
+          "at last"
+        ],
+        "note": "TEMPORAL-SHIFT episode-marker class: leading discourse markers that open a NEW narrative episode (a jump forward in story time). Recognised at the LEADING position of a sentence (single or multi-word leading n-gram match against these held forms -- recognition against graph data, not a regex). DELIBERATELY EXCLUDES the within-episode sequence connective 'then' (its own THEN class): 'Then an idea came to him.' is one episode's next beat, NOT an episode seam -- including it would false-split a single-arc story (the crow). NOT in reading_collapse._SKELETON/_GLUE, so it stays content inside a clause skeleton and perturbs no construction decode."
+      }
+    },
+    {
+      "local_id": 2,
+      "type": "MarkerClass",
+      "attrs": {
+        "cls": "TELL",
+        "forms": [
+          "told",
+          "tell",
+          "tells",
+          "telling",
+          "said",
+          "say",
+          "says",
+          "saying",
+          "spoke",
+          "speak",
+          "speaks",
+          "recounted",
+          "recount",
+          "recounts",
+          "related",
+          "relates",
+          "narrated",
+          "narrates",
+          "whispered",
+          "whispers"
+        ],
+        "note": "TELLING/speech marker-class: a verb of relating a narrative (told/said/recounted/related/narrated). A sentence carrying one opens an EMBEDDED narrative (a tale inside a frame): the seam that FOLLOWS the telling sentence is a story boundary and the reported sentences form a nested StoryUnit. HONEST LIMIT: presence of a telling verb is the tractable, precise signal in a controlled corpus; it does NOT by itself recognise where the embedded tale CLOSES (that is protagonist/topic re-establishment -- the markerless signal MOVE 2a does not fully close). NOT in reading_collapse._SKELETON/_GLUE -- stays content in a clause skeleton."
+      }
+    },
+    {
+      "local_id": 3,
+      "type": "ShapeSignatureStoryBoundary",
+      "attrs": {
+        "name": "temporal_shift",
+        "kind": "story_boundary",
+        "boundary": "temporal_shift",
+        "signature": "[[\"TEMPORAL_SHIFT\"]]",
+        "note": "The seam BEFORE a sentence that leads with a TEMPORAL_SHIFT episode marker ('Some time later, ...', 'One day, ...', 'The next day, ...'): a jump forward in story time that opens a new episode -- the episode seam of a two-episode (or multi-episode) fable. The single most reliable, precise boundary signal: a recognised leading marker, read off the held TEMPORAL_SHIFT MarkerClass forms."
+      }
+    },
+    {
+      "local_id": 4,
+      "type": "ShapeSignatureStoryBoundary",
+      "attrs": {
+        "name": "embedded_narrative",
+        "kind": "story_boundary",
+        "boundary": "embedded_narrative",
+        "signature": "[[\"EMBEDDED_NARRATIVE\"]]",
+        "note": "The seam AFTER a sentence carrying a TELLING/speech marker ('He told the children ...', 'She said, ...'): the reported sentences that follow are an embedded tale nested inside the frame. Recognised off the held TELL MarkerClass. The embedded unit is tagged 'embedded'; where it CLOSES (return to the frame protagonist) is the markerless residual MOVE 2a records honestly rather than guesses."
+      }
+    },
+    {
+      "local_id": 5,
+      "type": "ShapeSignatureStoryBoundary",
+      "attrs": {
+        "name": "arc_discontinuity",
+        "kind": "story_boundary",
+        "boundary": "arc_discontinuity",
+        "signature": "[[\"ARC_DISCONTINUITY\"]]",
+        "note": "The seam where the already-minted NarrativeRole arc shows a RESOLUTION or CONSEQUENCE role at/before the seam followed by a fresh SETUP or PROBLEM role after it -- a prior arc resolved, a new arc begun: an episode seam read off the story-grammar arc narrative_structure.recognize_narrative_structure already committed, never re-derived. REPRESENTATION-BOUND: fires only when the upstream comprehension has minted NarrativeRole nodes; a bare story_tree run over raw text (no prior arc) cannot see it. The honest structural counterpart to the surface TEMPORAL_SHIFT marker."
+      }
+    }
+  ],
+  "edges": []
+}

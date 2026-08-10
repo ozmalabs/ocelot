@@ -1,0 +1,48 @@
+{
+  "microtheory": {
+    "name": "color_vision",
+    "definition": "How color is sensed + represented. Cone photoreceptors, opponent processing, color spaces, color constancy. Substrate analogue: substrate's chromatic processing channel.",
+    "category": "vision_domain",
+    "parent": "vision_foundation"
+  },
+  "concepts": [
+    {"name": "trichromacy", "definition": "Young + Helmholtz. Three cone types (S, M, L) tuned to short, medium, long wavelengths. Three channels capture full color gamut. Substrate analogue: substrate's three primary color channels.", "category": "fundamentals"},
+    {"name": "cone_photoreceptor", "definition": "S (419nm peak, blue), M (530nm, green), L (560nm, red). Substrate analogue: substrate's wavelength-selective sensors.", "category": "fundamentals"},
+    {"name": "metamer", "definition": "Different spectral compositions producing identical perceived color. Why three primaries suffice. Substrate analogue: substrate's many-to-one color mapping.", "category": "fundamentals"},
+    {"name": "spectral_sensitivity", "definition": "Cone response curve vs wavelength. Substrate analogue: substrate's color-channel response curve.", "category": "fundamentals"},
+
+    {"name": "opponent_process_theory", "definition": "Hering 1892. Three opponent channels: red-green, blue-yellow, black-white. Cannot perceive reddish-green or bluish-yellow. Substrate analogue: substrate's contrast-channel pairs.", "category": "opponent"},
+    {"name": "color_opponency_neural", "definition": "LGN + V1 neurons compute opponent signals: (L-M), (S - (L+M)/2). Substrate analogue: substrate's chromatic-contrast computation.", "category": "opponent"},
+    {"name": "color_afterimage", "definition": "Stare at red, see green afterimage. Opponent channel adaptation. Substrate analogue: substrate's opponent-channel hysteresis.", "category": "opponent"},
+
+    {"name": "hue", "definition": "The color name dimension. Red, orange, yellow, green, blue, violet. Circular. Substrate analogue: substrate's chromatic-angle.", "category": "dimensions"},
+    {"name": "saturation", "definition": "Color purity / intensity. From gray (zero) to spectral (maximum). Substrate analogue: substrate's chromatic-magnitude.", "category": "dimensions"},
+    {"name": "brightness", "definition": "Perceived luminance. Substrate analogue: substrate's luminance channel.", "category": "dimensions"},
+
+    {"name": "color_space", "definition": "Coordinate system for representing colors. RGB, HSV, CIE Lab, XYZ. Different ones for different purposes. Substrate analogue: substrate's color-coordinate representations.", "category": "spaces"},
+    {"name": "rgb_color_space", "definition": "Red, green, blue additive primaries. Used in displays. Substrate analogue: substrate's display color encoding.", "category": "spaces"},
+    {"name": "cmyk_color_space", "definition": "Cyan, magenta, yellow, key (black) subtractive. Used in print. Substrate analogue: substrate's reflective-medium color.", "category": "spaces"},
+    {"name": "hsv_color_space", "definition": "Hue, saturation, value. Perceptually-organized. Used in selection interfaces. Substrate analogue: substrate's perceptual color organization.", "category": "spaces"},
+    {"name": "cie_lab", "definition": "Perceptually uniform color space. L = lightness, a/b = chromatic axes. Substrate analogue: substrate's perceptually-uniform color encoding.", "category": "spaces"},
+
+    {"name": "color_constancy", "definition": "Same object appears similar color under different illumination. Retinex theory (Land). Brain discounts illumination. Substrate analogue: substrate's illumination-invariant color.", "category": "constancy"},
+    {"name": "retinex_theory", "definition": "Land 1964. Color depends on spatial comparison across image. Substrate analogue: substrate's contextual color computation.", "category": "constancy"},
+    {"name": "lightness_constancy", "definition": "Same surface appears same lightness under different illumination. Substrate analogue: substrate's lightness-from-reflectance estimate.", "category": "constancy"},
+
+    {"name": "color_deficiency", "definition": "Anomalous trichromacy (most common) + dichromacy (one cone missing) + monochromacy (rare). Protanopia (L), deuteranopia (M), tritanopia (S). Substrate analogue: substrate's per-instance sensor variation.", "category": "individual"},
+    {"name": "tetrachromacy", "definition": "Four cone types. Rare in humans (~2% women carriers); common in birds + reptiles. Substrate analogue: substrate's extended chromatic range.", "category": "individual"},
+
+    {"name": "color_naming_universals", "definition": "Berlin + Kay 1969. Cross-culturally, color terms emerge in fixed order: black/white → red → green/yellow → blue → brown → others. Substrate analogue: substrate's perceptual-category prior.", "category": "linguistic"},
+    {"name": "categorical_color_perception", "definition": "Boundaries between color categories sharper than within. Influenced by language. Substrate analogue: substrate's category-warped representation.", "category": "linguistic"},
+
+    {"name": "memory_color", "definition": "Stored color associations for familiar objects (yellow banana, red tomato). Bias actual perception. Substrate analogue: substrate's prior-biased color recognition.", "category": "high_level"},
+    {"name": "color_for_object", "definition": "Color carries object identity info. Yellow → banana. Substrate analogue: substrate's color-Concept binding.", "category": "high_level"}
+  ],
+  "rules": [
+    {"name": "trichromacy_reduces_spectrum_to_three_channels", "head": "the substrate processes color input", "body": "wavelength is reduced to three channels (S, M, L cone responses). Higher-dimensional spectral info is lost. Substrate's three-channel chromatic encoding."},
+    {"name": "opponent_processing_organizes_color", "head": "the substrate processes color past primary cones", "body": "opponent channels (red-green, blue-yellow, black-white) emerge. Cannot perceive reddish-green. Substrate's opponent organization."},
+    {"name": "color_constancy_via_spatial_comparison", "head": "the substrate sees a colored object under varying illumination", "body": "spatial comparison (Retinex) discounts illumination + preserves surface color identity. Substrate's illumination-invariant color."},
+    {"name": "language_warps_color_categorization", "head": "the substrate has learned color terms", "body": "the categorical boundaries become sharper at named-color borders. Whorf effect. Substrate's language-warped categories."},
+    {"name": "memory_color_biases_perception", "head": "the substrate sees a familiar object", "body": "its expected color (yellow banana) biases the percept toward the memorized hue. Substrate's prior-modulated perception."}
+  ]
+}

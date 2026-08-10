@@ -1,0 +1,1142 @@
+{
+ "id": "seizure_dynamics",
+ "version": "1.1.0",
+ "self_load_only": true,
+ "depends_on": [
+  "cognitive_areas"
+ ],
+ "area": "scheduler",
+ "description": "DEFAULT-OFF tunable seizure capability for the real engine. Adds a combinational settlement rule over a CognitiveArea lattice: overload regeneration (positive feedback, gain alpha, DEFAULT 0), a give/shed valve (give-dial), local dissipation budget, lateral symmetric diffusion over projects_to, and (V2) an EXCITATORY-RECRUITMENT coupling (gain g_rec, DEFAULT 0) over a separate `recruits` edge type: an over-threshold (ictal) neighbour injects g_rec*max(0,residual-c_gen) into this area, non-conservatively (gain-bearing, degree-scaling) -- the pro-ictal counterpart to the protective diffusive g. Writes next_residual; the engine's fold_clock_edge commits it. INERT unless an area carries a sz_managed_by edge to a SeizureConfig with sz_enabled=1 -> normal cognition byte-identical when absent/off. No new Rust Term.",
+ "microtheory": {
+  "name": "seizure_dynamics",
+  "description": "un-dissipated synchronous residual as a give-failure of async settlement (glass-box, tunable, default off)"
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [
+  {
+   "provenance": "seed:seizure_dynamics:area-config",
+   "src": {
+    "type": "CognitiveArea",
+    "var": "area"
+   },
+   "edge_type": "sz_managed_by",
+   "tgt": {
+    "type": "SeizureConfig",
+    "var": "cfg"
+   }
+  }
+ ],
+ "rules": [
+  {
+   "name": "sz_settle_next_residual",
+   "area": "scheduler",
+   "order": 5,
+   "latency_class": "best_effort",
+   "match": [
+    [
+     "area",
+     "sz_managed_by",
+     "cfg"
+    ]
+   ],
+   "where": {
+    "type": "Eq",
+    "a": {
+     "type": "Attr",
+     "node": {
+      "type": "Var",
+      "name": "cfg"
+     },
+     "key": "sz_enabled"
+    },
+    "b": {
+     "type": "Lit",
+     "value": 1.0
+    }
+   },
+   "effects": [
+    [
+     "set_attr_if_different",
+     "area",
+     "next_residual",
+     {
+      "__term__": {
+       "type": "Max",
+       "items": [
+        {
+         "type": "Lit",
+         "value": 0.0
+        },
+        {
+         "type": "Min",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "cfg"
+           },
+           "key": "r_max"
+          },
+          {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Max",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.0
+              },
+              {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "area"
+                   },
+                   "key": "residual"
+                  },
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "area"
+                   },
+                   "key": "drive"
+                  },
+                  {
+                   "type": "Times",
+                   "items": [
+                    {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "cfg"
+                     },
+                     "key": "alpha"
+                    },
+                    {
+                     "type": "Min",
+                     "items": [
+                      {
+                       "type": "Max",
+                       "items": [
+                        {
+                         "type": "Lit",
+                         "value": 0.0
+                        },
+                        {
+                         "type": "Minus",
+                         "a": {
+                          "type": "Attr",
+                          "node": {
+                           "type": "Var",
+                           "name": "area"
+                          },
+                          "key": "residual"
+                         },
+                         "b": {
+                          "type": "Attr",
+                          "node": {
+                           "type": "Var",
+                           "name": "cfg"
+                          },
+                          "key": "c_gen"
+                         }
+                        }
+                       ]
+                      },
+                      {
+                       "type": "Attr",
+                       "node": {
+                        "type": "Var",
+                        "name": "cfg"
+                       },
+                       "key": "gen_cap"
+                      }
+                     ]
+                    }
+                   ]
+                  }
+                 ]
+                },
+                {
+                 "type": "Neg",
+                 "arg": {
+                  "type": "Times",
+                  "items": [
+                   {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "area"
+                    },
+                    "key": "ticking"
+                   },
+                   {
+                    "type": "Min",
+                    "items": [
+                     {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "cfg"
+                      },
+                      "key": "budget"
+                     },
+                     {
+                      "type": "Plus",
+                      "items": [
+                       {
+                        "type": "Attr",
+                        "node": {
+                         "type": "Var",
+                         "name": "area"
+                        },
+                        "key": "residual"
+                       },
+                       {
+                        "type": "Attr",
+                        "node": {
+                         "type": "Var",
+                         "name": "area"
+                        },
+                        "key": "drive"
+                       },
+                       {
+                        "type": "Times",
+                        "items": [
+                         {
+                          "type": "Attr",
+                          "node": {
+                           "type": "Var",
+                           "name": "cfg"
+                          },
+                          "key": "alpha"
+                         },
+                         {
+                          "type": "Min",
+                          "items": [
+                           {
+                            "type": "Max",
+                            "items": [
+                             {
+                              "type": "Lit",
+                              "value": 0.0
+                             },
+                             {
+                              "type": "Minus",
+                              "a": {
+                               "type": "Attr",
+                               "node": {
+                                "type": "Var",
+                                "name": "area"
+                               },
+                               "key": "residual"
+                              },
+                              "b": {
+                               "type": "Attr",
+                               "node": {
+                                "type": "Var",
+                                "name": "cfg"
+                               },
+                               "key": "c_gen"
+                              }
+                             }
+                            ]
+                           },
+                           {
+                            "type": "Attr",
+                            "node": {
+                             "type": "Var",
+                             "name": "cfg"
+                            },
+                            "key": "gen_cap"
+                           }
+                          ]
+                         }
+                        ]
+                       }
+                      ]
+                     }
+                    ]
+                   }
+                  ]
+                 }
+                },
+                {
+                 "type": "Neg",
+                 "arg": {
+                  "type": "Times",
+                  "items": [
+                   {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "cfg"
+                    },
+                    "key": "give"
+                   },
+                   {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "area"
+                    },
+                    "key": "ticking"
+                   },
+                   {
+                    "type": "Max",
+                    "items": [
+                     {
+                      "type": "Lit",
+                      "value": 0.0
+                     },
+                     {
+                      "type": "Minus",
+                      "a": {
+                       "type": "Plus",
+                       "items": [
+                        {
+                         "type": "Attr",
+                         "node": {
+                          "type": "Var",
+                          "name": "area"
+                         },
+                         "key": "residual"
+                        },
+                        {
+                         "type": "Attr",
+                         "node": {
+                          "type": "Var",
+                          "name": "area"
+                         },
+                         "key": "drive"
+                        },
+                        {
+                         "type": "Times",
+                         "items": [
+                          {
+                           "type": "Attr",
+                           "node": {
+                            "type": "Var",
+                            "name": "cfg"
+                           },
+                           "key": "alpha"
+                          },
+                          {
+                           "type": "Min",
+                           "items": [
+                            {
+                             "type": "Max",
+                             "items": [
+                              {
+                               "type": "Lit",
+                               "value": 0.0
+                              },
+                              {
+                               "type": "Minus",
+                               "a": {
+                                "type": "Attr",
+                                "node": {
+                                 "type": "Var",
+                                 "name": "area"
+                                },
+                                "key": "residual"
+                               },
+                               "b": {
+                                "type": "Attr",
+                                "node": {
+                                 "type": "Var",
+                                 "name": "cfg"
+                                },
+                                "key": "c_gen"
+                               }
+                              }
+                             ]
+                            },
+                            {
+                             "type": "Attr",
+                             "node": {
+                              "type": "Var",
+                              "name": "cfg"
+                             },
+                             "key": "gen_cap"
+                            }
+                           ]
+                          }
+                         ]
+                        }
+                       ]
+                      },
+                      "b": {
+                       "type": "Attr",
+                       "node": {
+                        "type": "Var",
+                        "name": "cfg"
+                       },
+                       "key": "c_gen"
+                      }
+                     }
+                    ]
+                   }
+                  ]
+                 }
+                }
+               ]
+              }
+             ]
+            },
+            {
+             "type": "Neg",
+             "arg": {
+              "type": "Times",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "cfg"
+                },
+                "key": "g"
+               },
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "area"
+                },
+                "key": "ticking"
+               },
+               {
+                "type": "Max",
+                "items": [
+                 {
+                  "type": "Lit",
+                  "value": 0.0
+                 },
+                 {
+                  "type": "Plus",
+                  "items": [
+                   {
+                    "type": "Plus",
+                    "items": [
+                     {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "area"
+                      },
+                      "key": "residual"
+                     },
+                     {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "area"
+                      },
+                      "key": "drive"
+                     },
+                     {
+                      "type": "Times",
+                      "items": [
+                       {
+                        "type": "Attr",
+                        "node": {
+                         "type": "Var",
+                         "name": "cfg"
+                        },
+                        "key": "alpha"
+                       },
+                       {
+                        "type": "Min",
+                        "items": [
+                         {
+                          "type": "Max",
+                          "items": [
+                           {
+                            "type": "Lit",
+                            "value": 0.0
+                           },
+                           {
+                            "type": "Minus",
+                            "a": {
+                             "type": "Attr",
+                             "node": {
+                              "type": "Var",
+                              "name": "area"
+                             },
+                             "key": "residual"
+                            },
+                            "b": {
+                             "type": "Attr",
+                             "node": {
+                              "type": "Var",
+                              "name": "cfg"
+                             },
+                             "key": "c_gen"
+                            }
+                           }
+                          ]
+                         },
+                         {
+                          "type": "Attr",
+                          "node": {
+                           "type": "Var",
+                           "name": "cfg"
+                          },
+                          "key": "gen_cap"
+                         }
+                        ]
+                       }
+                      ]
+                     }
+                    ]
+                   },
+                   {
+                    "type": "Neg",
+                    "arg": {
+                     "type": "Times",
+                     "items": [
+                      {
+                       "type": "Attr",
+                       "node": {
+                        "type": "Var",
+                        "name": "area"
+                       },
+                       "key": "ticking"
+                      },
+                      {
+                       "type": "Min",
+                       "items": [
+                        {
+                         "type": "Attr",
+                         "node": {
+                          "type": "Var",
+                          "name": "cfg"
+                         },
+                         "key": "budget"
+                        },
+                        {
+                         "type": "Plus",
+                         "items": [
+                          {
+                           "type": "Attr",
+                           "node": {
+                            "type": "Var",
+                            "name": "area"
+                           },
+                           "key": "residual"
+                          },
+                          {
+                           "type": "Attr",
+                           "node": {
+                            "type": "Var",
+                            "name": "area"
+                           },
+                           "key": "drive"
+                          },
+                          {
+                           "type": "Times",
+                           "items": [
+                            {
+                             "type": "Attr",
+                             "node": {
+                              "type": "Var",
+                              "name": "cfg"
+                             },
+                             "key": "alpha"
+                            },
+                            {
+                             "type": "Min",
+                             "items": [
+                              {
+                               "type": "Max",
+                               "items": [
+                                {
+                                 "type": "Lit",
+                                 "value": 0.0
+                                },
+                                {
+                                 "type": "Minus",
+                                 "a": {
+                                  "type": "Attr",
+                                  "node": {
+                                   "type": "Var",
+                                   "name": "area"
+                                  },
+                                  "key": "residual"
+                                 },
+                                 "b": {
+                                  "type": "Attr",
+                                  "node": {
+                                   "type": "Var",
+                                   "name": "cfg"
+                                  },
+                                  "key": "c_gen"
+                                 }
+                                }
+                               ]
+                              },
+                              {
+                               "type": "Attr",
+                               "node": {
+                                "type": "Var",
+                                "name": "cfg"
+                               },
+                               "key": "gen_cap"
+                              }
+                             ]
+                            }
+                           ]
+                          }
+                         ]
+                        }
+                       ]
+                      }
+                     ]
+                    }
+                   },
+                   {
+                    "type": "Neg",
+                    "arg": {
+                     "type": "Times",
+                     "items": [
+                      {
+                       "type": "Attr",
+                       "node": {
+                        "type": "Var",
+                        "name": "cfg"
+                       },
+                       "key": "give"
+                      },
+                      {
+                       "type": "Attr",
+                       "node": {
+                        "type": "Var",
+                        "name": "area"
+                       },
+                       "key": "ticking"
+                      },
+                      {
+                       "type": "Max",
+                       "items": [
+                        {
+                         "type": "Lit",
+                         "value": 0.0
+                        },
+                        {
+                         "type": "Minus",
+                         "a": {
+                          "type": "Plus",
+                          "items": [
+                           {
+                            "type": "Attr",
+                            "node": {
+                             "type": "Var",
+                             "name": "area"
+                            },
+                            "key": "residual"
+                           },
+                           {
+                            "type": "Attr",
+                            "node": {
+                             "type": "Var",
+                             "name": "area"
+                            },
+                            "key": "drive"
+                           },
+                           {
+                            "type": "Times",
+                            "items": [
+                             {
+                              "type": "Attr",
+                              "node": {
+                               "type": "Var",
+                               "name": "cfg"
+                              },
+                              "key": "alpha"
+                             },
+                             {
+                              "type": "Min",
+                              "items": [
+                               {
+                                "type": "Max",
+                                "items": [
+                                 {
+                                  "type": "Lit",
+                                  "value": 0.0
+                                 },
+                                 {
+                                  "type": "Minus",
+                                  "a": {
+                                   "type": "Attr",
+                                   "node": {
+                                    "type": "Var",
+                                    "name": "area"
+                                   },
+                                   "key": "residual"
+                                  },
+                                  "b": {
+                                   "type": "Attr",
+                                   "node": {
+                                    "type": "Var",
+                                    "name": "cfg"
+                                   },
+                                   "key": "c_gen"
+                                  }
+                                 }
+                                ]
+                               },
+                               {
+                                "type": "Attr",
+                                "node": {
+                                 "type": "Var",
+                                 "name": "cfg"
+                                },
+                                "key": "gen_cap"
+                               }
+                              ]
+                             }
+                            ]
+                           }
+                          ]
+                         },
+                         "b": {
+                          "type": "Attr",
+                          "node": {
+                           "type": "Var",
+                           "name": "cfg"
+                          },
+                          "key": "c_gen"
+                         }
+                        }
+                       ]
+                      }
+                     ]
+                    }
+                   }
+                  ]
+                 }
+                ]
+               }
+              ]
+             }
+            },
+            {
+             "type": "Sum",
+             "source": {
+              "type": "Neighbours",
+              "node": {
+               "type": "Var",
+               "name": "area"
+              },
+              "edge_type": "projects_to",
+              "any_type": false
+             },
+             "var_name": "nb",
+             "value": {
+              "type": "Times",
+              "items": [
+               {
+                "type": "Lit",
+                "value": 0.25
+               },
+               {
+                "type": "Times",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "cfg"
+                  },
+                  "key": "g"
+                 },
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "nb"
+                  },
+                  "key": "ticking"
+                 },
+                 {
+                  "type": "Max",
+                  "items": [
+                   {
+                    "type": "Lit",
+                    "value": 0.0
+                   },
+                   {
+                    "type": "Plus",
+                    "items": [
+                     {
+                      "type": "Plus",
+                      "items": [
+                       {
+                        "type": "Attr",
+                        "node": {
+                         "type": "Var",
+                         "name": "nb"
+                        },
+                        "key": "residual"
+                       },
+                       {
+                        "type": "Times",
+                        "items": [
+                         {
+                          "type": "Attr",
+                          "node": {
+                           "type": "Var",
+                           "name": "cfg"
+                          },
+                          "key": "alpha"
+                         },
+                         {
+                          "type": "Min",
+                          "items": [
+                           {
+                            "type": "Max",
+                            "items": [
+                             {
+                              "type": "Lit",
+                              "value": 0.0
+                             },
+                             {
+                              "type": "Minus",
+                              "a": {
+                               "type": "Attr",
+                               "node": {
+                                "type": "Var",
+                                "name": "nb"
+                               },
+                               "key": "residual"
+                              },
+                              "b": {
+                               "type": "Attr",
+                               "node": {
+                                "type": "Var",
+                                "name": "cfg"
+                               },
+                               "key": "c_gen"
+                              }
+                             }
+                            ]
+                           },
+                           {
+                            "type": "Attr",
+                            "node": {
+                             "type": "Var",
+                             "name": "cfg"
+                            },
+                            "key": "gen_cap"
+                           }
+                          ]
+                         }
+                        ]
+                       }
+                      ]
+                     },
+                     {
+                      "type": "Neg",
+                      "arg": {
+                       "type": "Times",
+                       "items": [
+                        {
+                         "type": "Attr",
+                         "node": {
+                          "type": "Var",
+                          "name": "nb"
+                         },
+                         "key": "ticking"
+                        },
+                        {
+                         "type": "Min",
+                         "items": [
+                          {
+                           "type": "Attr",
+                           "node": {
+                            "type": "Var",
+                            "name": "cfg"
+                           },
+                           "key": "budget"
+                          },
+                          {
+                           "type": "Plus",
+                           "items": [
+                            {
+                             "type": "Attr",
+                             "node": {
+                              "type": "Var",
+                              "name": "nb"
+                             },
+                             "key": "residual"
+                            },
+                            {
+                             "type": "Times",
+                             "items": [
+                              {
+                               "type": "Attr",
+                               "node": {
+                                "type": "Var",
+                                "name": "cfg"
+                               },
+                               "key": "alpha"
+                              },
+                              {
+                               "type": "Min",
+                               "items": [
+                                {
+                                 "type": "Max",
+                                 "items": [
+                                  {
+                                   "type": "Lit",
+                                   "value": 0.0
+                                  },
+                                  {
+                                   "type": "Minus",
+                                   "a": {
+                                    "type": "Attr",
+                                    "node": {
+                                     "type": "Var",
+                                     "name": "nb"
+                                    },
+                                    "key": "residual"
+                                   },
+                                   "b": {
+                                    "type": "Attr",
+                                    "node": {
+                                     "type": "Var",
+                                     "name": "cfg"
+                                    },
+                                    "key": "c_gen"
+                                   }
+                                  }
+                                 ]
+                                },
+                                {
+                                 "type": "Attr",
+                                 "node": {
+                                  "type": "Var",
+                                  "name": "cfg"
+                                 },
+                                 "key": "gen_cap"
+                                }
+                               ]
+                              }
+                             ]
+                            }
+                           ]
+                          }
+                         ]
+                        }
+                       ]
+                      }
+                     },
+                     {
+                      "type": "Neg",
+                      "arg": {
+                       "type": "Times",
+                       "items": [
+                        {
+                         "type": "Attr",
+                         "node": {
+                          "type": "Var",
+                          "name": "cfg"
+                         },
+                         "key": "give"
+                        },
+                        {
+                         "type": "Attr",
+                         "node": {
+                          "type": "Var",
+                          "name": "nb"
+                         },
+                         "key": "ticking"
+                        },
+                        {
+                         "type": "Max",
+                         "items": [
+                          {
+                           "type": "Lit",
+                           "value": 0.0
+                          },
+                          {
+                           "type": "Minus",
+                           "a": {
+                            "type": "Plus",
+                            "items": [
+                             {
+                              "type": "Attr",
+                              "node": {
+                               "type": "Var",
+                               "name": "nb"
+                              },
+                              "key": "residual"
+                             },
+                             {
+                              "type": "Times",
+                              "items": [
+                               {
+                                "type": "Attr",
+                                "node": {
+                                 "type": "Var",
+                                 "name": "cfg"
+                                },
+                                "key": "alpha"
+                               },
+                               {
+                                "type": "Min",
+                                "items": [
+                                 {
+                                  "type": "Max",
+                                  "items": [
+                                   {
+                                    "type": "Lit",
+                                    "value": 0.0
+                                   },
+                                   {
+                                    "type": "Minus",
+                                    "a": {
+                                     "type": "Attr",
+                                     "node": {
+                                      "type": "Var",
+                                      "name": "nb"
+                                     },
+                                     "key": "residual"
+                                    },
+                                    "b": {
+                                     "type": "Attr",
+                                     "node": {
+                                      "type": "Var",
+                                      "name": "cfg"
+                                     },
+                                     "key": "c_gen"
+                                    }
+                                   }
+                                  ]
+                                 },
+                                 {
+                                  "type": "Attr",
+                                  "node": {
+                                   "type": "Var",
+                                   "name": "cfg"
+                                  },
+                                  "key": "gen_cap"
+                                 }
+                                ]
+                               }
+                              ]
+                             }
+                            ]
+                           },
+                           "b": {
+                            "type": "Attr",
+                            "node": {
+                             "type": "Var",
+                             "name": "cfg"
+                            },
+                            "key": "c_gen"
+                           }
+                          }
+                         ]
+                        }
+                       ]
+                      }
+                     }
+                    ]
+                   }
+                  ]
+                 }
+                ]
+               }
+              ]
+             }
+            },
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "cfg"
+               },
+               "key": "g_rec"
+              },
+              {
+               "type": "Sum",
+               "source": {
+                "type": "Neighbours",
+                "node": {
+                 "type": "Var",
+                 "name": "area"
+                },
+                "edge_type": "recruits",
+                "any_type": false
+               },
+               "var_name": "rn",
+               "value": {
+                "type": "Times",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "rn"
+                  },
+                  "key": "ticking"
+                 },
+                 {
+                  "type": "Max",
+                  "items": [
+                   {
+                    "type": "Lit",
+                    "value": 0.0
+                   },
+                   {
+                    "type": "Minus",
+                    "a": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "rn"
+                     },
+                     "key": "residual"
+                    },
+                    "b": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "cfg"
+                     },
+                     "key": "c_gen"
+                    }
+                   }
+                  ]
+                 }
+                ]
+               }
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  }
+ ]
+}

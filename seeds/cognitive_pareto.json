@@ -1,0 +1,636 @@
+{
+ "id": "cognitive_pareto",
+ "version": "1.2.0",
+ "depends_on": [],
+ "area": "cognitive_pareto",
+ "latency_class": "soft_realtime",
+ "description": "Domain-independent relational Pareto comparison by declared ordinal or graph-identified Goal dimension, plus counterexample-based goal revision with integer-native cognition.",
+ "nodes": [],
+ "edges": [],
+ "productions": [
+  {
+   "provenance": "cognitive_pareto:profile_candidate",
+   "src": {
+    "type": "ParetoProfile",
+    "var": "src"
+   },
+   "edge_type": "has_pareto_candidate",
+   "tgt": {
+    "type": "ParetoCandidate",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "cognitive_pareto:profile_dimension",
+   "src": {
+    "type": "ParetoProfile",
+    "var": "src"
+   },
+   "edge_type": "has_pareto_dimension",
+   "tgt": {
+    "type": "ParetoDimension",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "cognitive_pareto:candidate_value",
+   "src": {
+    "type": "ParetoCandidate",
+    "var": "src"
+   },
+   "edge_type": "has_pareto_value",
+   "tgt": {
+    "type": "ParetoValue",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "cognitive_pareto:value_dimension",
+   "src": {
+    "type": "ParetoValue",
+    "var": "src"
+   },
+   "edge_type": "measures_pareto_dimension",
+   "tgt": {
+    "type": "ParetoDimension",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "cognitive_pareto:value_goal",
+   "src": {
+    "type": "ParetoValue",
+    "var": "src"
+   },
+   "edge_type": "measures_goal",
+   "tgt": {
+    "type": "Goal",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "cognitive_pareto:dominance",
+   "src": {
+    "type": "ParetoCandidate",
+    "var": "src"
+   },
+   "edge_type": "dominates_pareto_candidate",
+   "tgt": {
+    "type": "ParetoCandidate",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "cognitive_pareto:dominated_by",
+   "src": {
+    "type": "ParetoCandidate",
+    "var": "src"
+   },
+   "edge_type": "is_dominated_by_pareto_candidate",
+   "tgt": {
+    "type": "ParetoCandidate",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "cognitive_pareto:audit_goal",
+   "src": {
+    "type": "ParetoProfile",
+    "var": "src"
+   },
+   "edge_type": "audits_goal",
+   "tgt": {
+    "type": "Goal",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "cognitive_pareto:incumbent",
+   "src": {
+    "type": "ParetoProfile",
+    "var": "src"
+   },
+   "edge_type": "has_incumbent_pareto_candidate",
+   "tgt": {
+    "type": "ParetoCandidate",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "cognitive_pareto:revision",
+   "src": {
+    "type": "ParetoProfile",
+    "var": "src"
+   },
+   "edge_type": "has_goal_revision_request",
+   "tgt": {
+    "type": "GoalRevisionRequest",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "cognitive_pareto:revision_goal",
+   "src": {
+    "type": "GoalRevisionRequest",
+    "var": "src"
+   },
+   "edge_type": "about_goal",
+   "tgt": {
+    "type": "Goal",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "cognitive_pareto:revision_candidate",
+   "src": {
+    "type": "GoalRevisionRequest",
+    "var": "src"
+   },
+   "edge_type": "proposed_by_pareto_candidate",
+   "tgt": {
+    "type": "ParetoCandidate",
+    "var": "tgt"
+   }
+  }
+ ],
+ "rules": [
+  {
+   "name": "cp_recognize_relational_dominance",
+   "area": "cognitive_pareto",
+   "latency_class": "soft_realtime",
+   "comment": "Find a concrete counterexample to a candidate without collapsing incomparable objectives into a scalar.",
+   "match": [
+    [
+     "profile",
+     "has_pareto_candidate",
+     "candidate"
+    ],
+    [
+     "profile",
+     "has_pareto_candidate",
+     "alternative"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Or",
+       "items": [
+        {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "profile"
+          },
+          "key": "pareto_suspended"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1
+         }
+        },
+        {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "profile"
+          },
+          "key": "status"
+         },
+         "b": {
+          "type": "Lit",
+          "value": "continued"
+         }
+        },
+        {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "profile"
+          },
+          "key": "status"
+         },
+         "b": {
+          "type": "Lit",
+          "value": "replan_required"
+         }
+        },
+        {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "profile"
+          },
+          "key": "status"
+         },
+         "b": {
+          "type": "Lit",
+          "value": "selected"
+         }
+        }
+       ]
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Var",
+        "name": "candidate"
+       },
+       "b": {
+        "type": "Var",
+        "name": "alternative"
+       }
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "candidate"
+        },
+        "edge_type": "is_dominated_by_pareto_candidate"
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "ParetoDominates",
+      "candidate": {
+       "type": "Var",
+       "name": "candidate"
+      },
+      "alternative": {
+       "type": "Var",
+       "name": "alternative"
+      },
+      "dimension_count": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "profile"
+       },
+       "key": "dimension_count"
+      },
+      "value_edge": "has_pareto_value",
+      "measure_edge": "measures_goal",
+      "dimension_key": "dimension_ordinal",
+      "verified_key": "verified",
+      "signed_value_key": "signed_value"
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_edge",
+     "alternative",
+     "dominates_pareto_candidate",
+     "candidate"
+    ],
+    [
+     "add_edge",
+     "candidate",
+     "is_dominated_by_pareto_candidate",
+     "alternative"
+    ],
+    [
+     "set_attr",
+     "candidate",
+     "dominated",
+     1
+    ]
+   ]
+  },
+  {
+   "name": "cp_retract_stale_relational_dominance",
+   "area": "cognitive_pareto",
+   "latency_class": "soft_realtime",
+   "comment": "Withdraw a dominance counterexample that its own values no longer support. Recognition caches a witness and stops re-scanning, which is sound only while the candidates are immutable; on a learning frontier the cache empties the frontier and halts selection.",
+   "match": [
+    [
+     "profile",
+     "has_pareto_candidate",
+     "candidate"
+    ],
+    [
+     "profile",
+     "has_pareto_candidate",
+     "alternative"
+    ],
+    [
+     "candidate",
+     "is_dominated_by_pareto_candidate",
+     "alternative"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Or",
+       "items": [
+        {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "profile"
+          },
+          "key": "pareto_suspended"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1
+         }
+        },
+        {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "profile"
+          },
+          "key": "status"
+         },
+         "b": {
+          "type": "Lit",
+          "value": "continued"
+         }
+        },
+        {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "profile"
+          },
+          "key": "status"
+         },
+         "b": {
+          "type": "Lit",
+          "value": "replan_required"
+         }
+        },
+        {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "profile"
+          },
+          "key": "status"
+         },
+         "b": {
+          "type": "Lit",
+          "value": "selected"
+         }
+        }
+       ]
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Var",
+        "name": "candidate"
+       },
+       "b": {
+        "type": "Var",
+        "name": "alternative"
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "ParetoDominates",
+       "candidate": {
+        "type": "Var",
+        "name": "candidate"
+       },
+       "alternative": {
+        "type": "Var",
+        "name": "alternative"
+       },
+       "dimension_count": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "profile"
+        },
+        "key": "dimension_count"
+       },
+       "value_edge": "has_pareto_value",
+       "measure_edge": "measures_goal",
+       "dimension_key": "dimension_ordinal",
+       "verified_key": "verified",
+       "signed_value_key": "signed_value"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "del_edge",
+     "candidate",
+     "is_dominated_by_pareto_candidate",
+     "alternative"
+    ],
+    [
+     "del_edge",
+     "alternative",
+     "dominates_pareto_candidate",
+     "candidate"
+    ]
+   ]
+  },
+  {
+   "name": "cp_settle_dominated_flag_from_surviving_counterexamples",
+   "area": "cognitive_pareto",
+   "latency_class": "soft_realtime",
+   "comment": "Restate `dominated` from the surviving counterexamples so the flag cannot outlive the edges it summarises.",
+   "match": [
+    [
+     "profile",
+     "has_pareto_candidate",
+     "candidate"
+    ]
+   ],
+   "where": {
+    "type": "Lit",
+    "value": true
+   },
+   "effects": [
+    [
+     "set_attr",
+     "candidate",
+     "dominated",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gt",
+        "a": {
+         "type": "Count",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "candidate"
+          },
+          "edge_type": "is_dominated_by_pareto_candidate"
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": 1
+       },
+       "other": {
+        "type": "Lit",
+        "value": 0
+       }
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "cp_falsify_dominated_incumbent_goal",
+   "area": "cognitive_pareto",
+   "latency_class": "soft_realtime",
+   "comment": "A dominating alternative is evidence that the incumbent goal is wrong relative to its own objective basis. Request revision; never silently replace the goal.",
+   "match": [
+    [
+     "profile",
+     "audits_goal",
+     "goal"
+    ],
+    [
+     "profile",
+     "has_incumbent_pareto_candidate",
+     "incumbent"
+    ],
+    [
+     "incumbent",
+     "is_dominated_by_pareto_candidate",
+     "alternative"
+    ]
+   ],
+   "where": {
+    "type": "Not",
+    "arg": {
+     "type": "Exists",
+     "source": {
+      "type": "Filter",
+      "source": {
+       "type": "Neighbours",
+       "node": {
+        "type": "Var",
+        "name": "profile"
+       },
+       "edge_type": "has_goal_revision_request"
+      },
+      "var_name": "request",
+      "predicate": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "request"
+        },
+        "edge_type": "proposed_by_pareto_candidate"
+       },
+       "var_name": "known_alternative",
+       "predicate": {
+        "type": "Eq",
+        "a": {
+         "type": "Var",
+         "name": "known_alternative"
+        },
+        "b": {
+         "type": "Var",
+         "name": "alternative"
+        }
+       }
+      }
+     },
+     "var_name": "known_request",
+     "predicate": {
+      "type": "Lit",
+      "value": true
+     }
+    }
+   },
+   "effects": [
+    [
+     "add_node",
+     "request",
+     "GoalRevisionRequest",
+     {
+      "status": "requested",
+      "reason": "pareto_counterexample",
+      "verified": 1
+     }
+    ],
+    [
+     "add_edge",
+     "profile",
+     "has_goal_revision_request",
+     "request"
+    ],
+    [
+     "add_edge",
+     "request",
+     "about_goal",
+     "goal"
+    ],
+    [
+     "add_edge",
+     "request",
+     "proposed_by_pareto_candidate",
+     "alternative"
+    ],
+    [
+     "set_attr",
+     "goal",
+     "pareto_status",
+     "dominated"
+    ]
+   ]
+  }
+ ]
+}

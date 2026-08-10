@@ -1,0 +1,118 @@
+{
+  "id": "memory_reclaim_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "OOM_killer",
+  "in_microtheory": "operating_systems",
+  "description": "OS-level memory management decomposed. Anon vs file pages. kswapd background reclaim. Direct reclaim. Page tables, swap, zswap. The OOM killer's scoring algorithm. Why agents get killed under memory pressure + how to influence the outcome.",
+  "sub_mechanisms": [
+    {
+      "name": "anonymous_pages",
+      "definition": "Memory not backed by a file: heap, stack, anonymous mmap. Must be saved to swap if reclaimed.",
+      "why": "Heap + stack is anon. Can't just drop — would lose data. Reclaim writes to swap. No swap = anon pages can't be reclaimed (only OOM-killed).",
+      "category": "reclaim_mechanism"
+    },
+    {
+      "name": "file_backed_pages",
+      "definition": "Memory backed by a file: page cache, executable text, mmap'd files. Reclaimable by dropping (if clean) or writing back (if dirty).",
+      "why": "Cheap to reclaim: just discard. Source from disk on next access. The 'free' memory shown by free(1) is mostly reclaimable file-backed pages.",
+      "category": "reclaim_mechanism"
+    },
+    {
+      "name": "kswapd",
+      "definition": "Per-NUMA-node kernel thread that reclaims pages in the background when free memory falls below watermarks.",
+      "why": "Proactive reclaim avoids waiting for memory at allocation time. Wakes when free pages < watermark_low; sleeps when > watermark_high. Keeps the system responsive under moderate pressure.",
+      "category": "reclaim_mechanism"
+    },
+    {
+      "name": "direct_reclaim",
+      "definition": "Synchronous reclaim during page allocation. If kswapd can't keep up, the allocator itself reclaims pages.",
+      "why": "Last resort before allocation failure. Visible as latency spikes in applications. PSI exposes time spent in direct reclaim. Mitigate by tuning vm.watermark_scale_factor (start kswapd earlier).",
+      "category": "reclaim_mechanism"
+    },
+    {
+      "name": "watermark_min_low_high",
+      "definition": "Per-zone watermarks: min (allocator failure threshold), low (kswapd wakes), high (kswapd stops). kswapd reclaims until > high.",
+      "why": "Hysteresis: avoid kswapd thrashing. The gap between low + high is configurable. Larger gap = less thrashing but coarser response.",
+      "category": "reclaim_mechanism"
+    },
+    {
+      "name": "page_LRU_lists",
+      "definition": "Two-list LRU per zone: active + inactive. Pages promoted from inactive to active on second reference. Reclaim from inactive list.",
+      "why": "Avoids reclaiming recently-accessed pages. Working set lives in active list; truly cold pages in inactive. Approximates true LRU at much lower cost (no list manipulation on every access).",
+      "category": "reclaim_mechanism"
+    },
+    {
+      "name": "shrinker_callbacks",
+      "definition": "Kernel subsystems register shrinkers: callbacks to free their caches under pressure. dcache, inode cache, slab caches.",
+      "why": "Reclaim isn't just user pages — kernel caches grow too. Shrinkers let each subsystem decide how much to free. Called proportionally to memory pressure.",
+      "category": "reclaim_mechanism"
+    },
+    {
+      "name": "swap_to_disk",
+      "definition": "Anon pages written to swap partition or file when reclaimed. Restored on next access (page fault → swap-in).",
+      "why": "Extends virtual memory beyond RAM. Cost: disk-level latency for swapped-in pages. Most modern systems use swap conservatively — too much swap = thrashing + system unresponsive.",
+      "category": "reclaim_mechanism"
+    },
+    {
+      "name": "zswap_compressed_swap",
+      "definition": "Compress anon pages in RAM as a 'swap cache' before writing to disk. zstd or LZ4 compression.",
+      "why": "Trade compute for capacity. 50% compression effectively doubles usable RAM for anon-heavy workloads. Default on many distros; particularly useful on memory-constrained containers/VMs.",
+      "category": "reclaim_mechanism"
+    },
+    {
+      "name": "OOM_score_adj",
+      "definition": "Per-process tunable: -1000 (never kill) to +1000 (kill first). Added to oom_score (RSS-based) to influence killer choice.",
+      "why": "User-settable OOM victim preference. systemd services can have OOMScoreAdjust= setting. Critical services get -500 or lower; sacrificial work gets +500.",
+      "category": "reclaim_mechanism"
+    },
+    {
+      "name": "OOM_killer_algorithm",
+      "definition": "On OOM: iterate processes; pick highest oom_score (with adj). Kill it. Repeat if still OOM.",
+      "why": "Heuristic: kill largest-uses-most. Often correct (biggest process freed = most memory). Wrong on some workloads (kill the database). Pre-emptive userspace OOM (oomd, earlyoom) lets policy override the kernel's heuristic.",
+      "category": "reclaim_mechanism"
+    },
+    {
+      "name": "memory_cgroup_OOM",
+      "definition": "When a cgroup's memory.max is breached, OOM-killer kills within the cgroup, not system-wide.",
+      "why": "Container memory limit reached → kill in container, not host's processes. memory.oom.group lets the whole cgroup be killed (useful for distributed-systems-aware workloads).",
+      "category": "reclaim_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "kswapd_proactive_reclaim_avoids_allocation_stalls",
+      "if": ["kswapd keeps free memory above the low watermark"],
+      "then": ["allocations succeed without direct reclaim"],
+      "why": "Direct reclaim blocks the allocating process. kswapd's background reclaim keeps memory ready. Tuning watermark_scale_factor higher gives more buffer at the cost of running kswapd more eagerly.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "anon_without_swap_uncreclaimable",
+      "if": ["system has no swap and is anon-heavy"],
+      "then": ["anon pages can't be reclaimed; only file pages free up"],
+      "why": "Anon pages have nowhere to go without swap. Heap, stack stay in RAM until process exits. Heavy anon allocation under memory pressure → OOM faster than systems with swap. Container with no swap + memory.max = brittle.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "OOM_score_adj_lets_admin_override_heuristic",
+      "if": ["a critical process has oom_score_adj = -500"],
+      "then": ["it's much less likely to be killed than larger processes"],
+      "why": "oom_score_adj effectively reduces oom_score by adj * (memory_size / 1000). Critical processes at -500 require very high RSS share to be killed. Standard production tuning for important daemons.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "page_LRU_approximates_true_LRU_cheaply",
+      "if": ["pages reside in active or inactive lists"],
+      "then": ["frequently-accessed pages are protected from reclaim"],
+      "why": "True LRU requires moving each accessed page to MRU position — expensive. Two-list LRU just needs to mark accessed; second access promotes. Approximates LRU at constant per-access cost.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "memory_cgroup_OOM_contains_blast_radius",
+      "if": ["a cgroup hits memory.max"],
+      "then": ["OOM-kill happens within the cgroup, not system-wide"],
+      "why": "Without per-cgroup OOM, runaway container would trigger host-wide OOM-kill, possibly killing other services. Per-cgroup containment isolates the failure. Critical for multi-tenant hosts (Kubernetes nodes).",
+      "soundness_category": "referential_transparency"
+    }
+  ]
+}

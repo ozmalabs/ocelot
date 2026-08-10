@@ -1,0 +1,54 @@
+{
+  "id": "interlocutor_trust",
+  "version": "1.0.0",
+  "depends_on": ["jabberwock_creator"],
+  "description": "STRUCTURAL evidence for self-report reliability (course correction 2026-07-11: 'the agent's own origin/self-account seeds record that its substrate was derived from its creator's introspection... that is independent STRUCTURAL evidence (not a self-report) justifying high self-report reliability for the creator's party once self-identified... never a hardcoded Python special case, and it must still be revisable'). creator_self_report_reliability fires when the CURRENT addressee (agent -addressee-> ip, task 1's live wiring) has self-identified with a name whose normalized key (interlocutor_model._consolidate's `name_key`, a mechanical text form, NOT a decision) resolves BY GRAPH LOOKUP to a held Concept in the jabberwock_creator identity seed's own 'creator' category -- data-driven, never a literal name compared in Python. Sets self_report_reliability=0.9 (high, reflecting the STRUCTURAL fact that this substrate's design carries decades of that specific person's introspection -- see seeds/jabberwock_creator.json's `origin_is_decades_of_care` concept) + self_report_reliability_source='creator_origin', which domains.interlocutor_model.effective_reliability then treats as a direct override (independent structural evidence outranks a population shape-prior). REVISABLE: the guard only checks the source hasn't ALREADY been stamped 'creator_origin' -- a human could still overwrite the attr directly (no other rule currently does; this is deliberately the ONLY writer, so the belief is stable but not architecturally frozen).",
+  "nodes": [
+    {
+      "local_id": 1,
+      "type": "Concept",
+      "attrs": {"name": "matthew", "definition": "Alias of matthew_parslow (seeds/jabberwock_creator.json) for casual self-identification (\"I am Matthew\" gives only a first name) -- SEED DATA, not a hardcoded Python name check. Recognised by the SAME creator_self_report_reliability rule via name_key equality.", "category": "creator"}
+    },
+    {
+      "local_id": 2,
+      "type": "Concept",
+      "attrs": {"name": "matt", "definition": "Alias of matthew_parslow (seeds/jabberwock_creator.json), short form. SEED DATA, not a hardcoded Python name check.", "category": "creator"}
+    }
+  ],
+  "edges": [],
+  "productions": [],
+  "rules": [
+    {
+      "name": "creator_self_report_reliability",
+      "match": [
+        ["agent", "addressee", "ip"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Not", "arg": {"type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "ip"}, "key": "self_report_reliability_source"},
+            "b": {"type": "Lit", "value": "creator_origin"}}},
+          {"type": "Not", "arg": {"type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "ip"}, "key": "name_key"},
+            "b": {"type": "Lit", "value": null}}},
+          {"type": "Exists",
+            "source": {"type": "NodesOfType", "node_type": "Concept"},
+            "var_name": "cc",
+            "predicate": {"type": "And", "items": [
+              {"type": "Eq",
+                "a": {"type": "Attr", "node": {"type": "Var", "name": "cc"}, "key": "name"},
+                "b": {"type": "Attr", "node": {"type": "Var", "name": "ip"}, "key": "name_key"}},
+              {"type": "Eq",
+                "a": {"type": "Attr", "node": {"type": "Var", "name": "cc"}, "key": "category"},
+                "b": {"type": "Lit", "value": "creator"}}
+            ]}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "ip", "self_report_reliability", 0.9],
+        ["set_attr", "ip", "self_report_reliability_source", "creator_origin"]
+      ]
+    }
+  ]
+}

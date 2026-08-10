@@ -1,0 +1,118 @@
+{
+  "id": "rdma_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "RDMA",
+  "in_microtheory": "network_protocols",
+  "description": "Remote Direct Memory Access decomposed. NIC reads/writes remote memory without involving the remote CPU. Verbs API (libibverbs, RDMA-CM). Queue pairs as the connection primitive. Memory regions + protection. Send / receive vs RDMA operations (read, write, atomic). RoCE vs InfiniBand. DCQCN for congestion control. Used in HPC, distributed storage, NVMe-oF, NVIDIA's NCCL for AI training.",
+  "sub_mechanisms": [
+    {
+      "name": "verbs_API",
+      "definition": "User-space library (libibverbs) for posting work to RDMA NICs. Queue pairs, completion queues, memory registration.",
+      "why": "Standard interface across vendors. Applications call verbs to submit work; NIC processes it directly via doorbell mechanism. No kernel involvement on the data path.",
+      "category": "rdma_mechanism"
+    },
+    {
+      "name": "queue_pair",
+      "definition": "QP: an RDMA connection primitive. Has a send queue + receive queue. Multiple QPs per process possible.",
+      "why": "Connections are explicit data structures, not opaque OS objects. Application controls QP state, attributes, transport (RC, UC, UD). Direct access enables minimal-overhead communication.",
+      "category": "rdma_mechanism"
+    },
+    {
+      "name": "memory_region_registration",
+      "definition": "Application registers a buffer with the NIC: pins it in physical memory, gets a memory handle (rkey + lkey) for RDMA operations.",
+      "why": "NIC must DMA directly to/from the buffer. Pinning prevents OS from swapping it out mid-transfer. Registration is expensive (~ms for large regions) so applications register once + reuse.",
+      "category": "rdma_mechanism"
+    },
+    {
+      "name": "send_receive_operation",
+      "definition": "Two-sided: sender posts SEND, receiver pre-posts RECV. NIC matches them; data transferred to RECV buffer. Receiver's CPU is notified via completion.",
+      "why": "Familiar message-passing semantics. Receiver knows about each transfer. Used for control messages, small data. Not zero-copy on receive side (must pre-post buffers; specific buffer matched at send time).",
+      "category": "rdma_mechanism"
+    },
+    {
+      "name": "RDMA_write_operation",
+      "definition": "One-sided: sender posts WRITE with remote address + rkey. NIC writes directly to remote memory. Remote CPU is not notified (unless WRITE_WITH_IMM).",
+      "why": "Zero CPU involvement on receive side. Fastest mode: ~1-2μs latency for small messages on InfiniBand. Used for bulk transfers, distributed memory systems, AllReduce.",
+      "category": "rdma_mechanism"
+    },
+    {
+      "name": "RDMA_read_operation",
+      "definition": "One-sided: sender posts READ with remote address + rkey. NIC reads from remote memory + delivers to local buffer.",
+      "why": "Polling remote state without remote CPU. Used in distributed data structures, key-value stores (FaRM, RAMCloud). One-RTT remote read with no remote side intervention.",
+      "category": "rdma_mechanism"
+    },
+    {
+      "name": "RDMA_atomic_operations",
+      "definition": "Atomic Compare-and-Swap + Fetch-Add on remote memory. NIC implements these atomically.",
+      "why": "Distributed locks, counters, queues without remote CPU coordination. Performance vs CPU-based alternatives can be 10x+. Limited to 8-byte values; 64-bit atomic only.",
+      "category": "rdma_mechanism"
+    },
+    {
+      "name": "completion_queue",
+      "definition": "CQ: queue of completion events. Each posted work request generates a completion when done. Application polls or waits.",
+      "why": "Async work model: post + check completion. CQ entries report success/failure + identifying info. Polling for completion gives sub-microsecond latency; waiting blocks until notified.",
+      "category": "rdma_mechanism"
+    },
+    {
+      "name": "reliable_connection_transport",
+      "definition": "RC transport: reliable, ordered, connection-oriented. Like TCP but in hardware. Default for most RDMA applications.",
+      "why": "Familiar semantics. NIC handles retransmits, ordering, congestion. The 'easy' mode for application developers. Connection setup is per-pair, so scales O(N²) for full mesh.",
+      "category": "rdma_mechanism"
+    },
+    {
+      "name": "unreliable_datagram_transport",
+      "definition": "UD transport: connectionless, unreliable. Like UDP but in hardware. One QP can send to many destinations.",
+      "why": "Scaling: N QPs for N hosts instead of N×(N-1)/2. Used by NCCL (NVIDIA collective communication for AI training) for AllReduce trees. Application handles reliability.",
+      "category": "rdma_mechanism"
+    },
+    {
+      "name": "DCQCN_congestion_control",
+      "definition": "DataCenter QCN. Receiver detects congestion via ECN-marked packets, sends CNP (Congestion Notification Packet) to sender; sender adjusts rate.",
+      "why": "RDMA's no-CPU model means software TCP-style congestion control isn't viable. DCQCN runs in hardware on the NIC. Standard for RoCEv2 deployments; required for lossless Ethernet.",
+      "category": "rdma_mechanism"
+    },
+    {
+      "name": "PFC_priority_flow_control",
+      "definition": "Layer-2 flow control: receiver tells sender to pause sending on specific priority class. Used to make Ethernet lossless for RDMA traffic.",
+      "why": "RoCE requires near-lossless networks (packet loss causes go-back-N retransmits, killing throughput). PFC enables lossless behaviour on Ethernet. Configured per-priority so only RDMA traffic gets the lossless treatment.",
+      "category": "rdma_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "RDMA_write_bypasses_remote_CPU",
+      "if": ["sender posts RDMA WRITE to a registered remote memory region"],
+      "then": ["data is written without remote CPU involvement"],
+      "why": "NIC has the rkey + remote address; it issues DMA writes directly to the destination memory. Remote CPU is not interrupted, no kernel involvement. This is the perf win: 100 Gbps sustained without consuming a remote core.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "memory_registration_is_one_time_cost",
+      "if": ["a buffer is registered once and used many times"],
+      "then": ["the registration cost is amortised across operations"],
+      "why": "Registration pins the memory + sets up NIC's translation tables — ~ms cost. Done once per buffer. Subsequent operations use the cached registration. Hot-path operations cost <1μs; cold-path includes registration.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "UD_transport_scales_better_than_RC",
+      "if": ["a process communicates with N hosts"],
+      "then": ["UD's single QP outperforms RC's N QPs for scaling"],
+      "why": "RC requires N×(N-1)/2 QPs for full mesh. With N=10K hosts, that's 50M QPs — exceeds NIC + memory limits. UD: each host has one QP that sends to any destination. NCCL exploits this for tree-based AllReduce in 10K-GPU clusters.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "RoCE_requires_lossless_network",
+      "if": ["RoCE is deployed without PFC + DCQCN"],
+      "then": ["throughput collapses under loss"],
+      "why": "RDMA's go-back-N retransmit is brutal: one lost packet retransmits the entire window. Modern InfiniBand uses selective retransmit; RoCE typically doesn't. Lossless Ethernet (PFC) + active congestion control (DCQCN) are required for RoCE to perform.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "polling_outperforms_interrupts_for_low_latency",
+      "if": ["application polls the completion queue continuously"],
+      "then": ["latency to detect completion is microseconds"],
+      "why": "Interrupt-driven completion: ~5-10μs per event (interrupt handling + context switch). Polling: ~1μs. RDMA applications poll CQs on dedicated cores for sub-microsecond message latency. Costs CPU but gives the lowest possible latency.",
+      "soundness_category": "cost_equivalence"
+    }
+  ]
+}

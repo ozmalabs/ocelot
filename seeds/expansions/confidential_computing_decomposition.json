@@ -1,0 +1,118 @@
+{
+  "id": "confidential_computing_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "TEE_trusted_execution_environment",
+  "in_microtheory": "security_and_cryptography",
+  "description": "Confidential computing decomposed. TEE architectures: Intel SGX (deprecated), Intel TDX, AMD SEV-SNP, ARM CCA. Memory encryption + attestation + isolation. Confidential VMs in cloud (AWS Nitro, Azure CVM, GCP CVM). Use cases: data at rest, data in use, multi-party compute.",
+  "sub_mechanisms": [
+    {
+      "name": "TEE_isolation_boundary",
+      "definition": "Hardware-enforced separation between trusted code/data and host OS/hypervisor.",
+      "why": "Even compromised host OS can't read TEE memory. Different from VMs (host sees encrypted RAM). Fundamental confidential computing property.",
+      "category": "tee_mechanism"
+    },
+    {
+      "name": "Intel_SGX_enclave",
+      "definition": "Process-level TEE. App marks portions as enclave; CPU enforces isolation. Limited memory (~128 MB enclave).",
+      "why": "First widespread TEE (2015). Side-channel issues (Foreshadow, Spectre derivatives). Deprecated in client CPUs 2021. Server SGX continues.",
+      "category": "tee_mechanism"
+    },
+    {
+      "name": "Intel_TDX_VM",
+      "definition": "Trust Domain Extensions. VM-level TEE replacing SGX. Encrypted VMs invisible to hypervisor.",
+      "why": "Whole-VM model simpler than enclave model. Larger memory. AWS, Azure, GCP deploying. Modern Intel confidential computing default.",
+      "category": "tee_mechanism"
+    },
+    {
+      "name": "AMD_SEV_SNP",
+      "definition": "Secure Encrypted Virtualization - Secure Nested Paging. VM-level encryption + integrity. AMD EPYC.",
+      "why": "Cloud confidential VMs. SEV-SNP adds integrity protection over original SEV. Production-ready (3rd gen EPYC).",
+      "category": "tee_mechanism"
+    },
+    {
+      "name": "ARM_CCA",
+      "definition": "Confidential Compute Architecture. ARMv9 extension. Realm-based isolation.",
+      "why": "ARM's TEE story beyond TrustZone. Production deployment 2024+. Cloud + edge confidential computing.",
+      "category": "tee_mechanism"
+    },
+    {
+      "name": "memory_encryption_keys",
+      "definition": "CPU encrypts memory writes with per-VM/enclave key. Decrypts on read. Key never leaves CPU.",
+      "why": "Physical attacker (DIMM probe) gets ciphertext only. Host OS reading TEE memory gets garbage. Hardware root of trust.",
+      "category": "tee_mechanism"
+    },
+    {
+      "name": "remote_attestation",
+      "definition": "Hardware-signed proof of: what code is running, what config, what hash. Verifier validates signature + content.",
+      "why": "Foundation of confidential computing trust. Without attestation, can't verify what's actually executing. Critical: don't trust client's claim — trust signed measurement.",
+      "category": "tee_mechanism"
+    },
+    {
+      "name": "TEE_attestation_chain",
+      "definition": "Chain: TEE → CPU manufacturer (Intel/AMD) → root certificate. Proves TEE genuine + measurement correct.",
+      "why": "Trust anchored in hardware vendor. Manufacturer signs CPU's attestation key. Verifier walks chain to verified root. Standard PKI-style verification.",
+      "category": "tee_mechanism"
+    },
+    {
+      "name": "side_channel_vulnerabilities",
+      "definition": "TEE leaks information via timing, cache, power, EM. Spectre, Foreshadow, ZombieLoad.",
+      "why": "Ongoing concern. Each CPU generation patches discovered channels. Confidential computing trades hardware trust for software trust. Side channels are TEEs' main weakness.",
+      "category": "tee_mechanism"
+    },
+    {
+      "name": "confidential_VM_cloud",
+      "definition": "Cloud VM where customer data + code invisible to cloud provider. AWS Nitro, Azure CVM (TDX/SEV), GCP CVM.",
+      "why": "Cloud regulatory + trust use case. Healthcare, finance, government workloads. Customer doesn't trust cloud provider; CVM gives cryptographic isolation.",
+      "category": "tee_mechanism"
+    },
+    {
+      "name": "multi_party_compute_TEE",
+      "definition": "Multiple parties contribute encrypted data; TEE computes; only result revealed.",
+      "why": "Joint analytics without sharing raw data. Healthcare consortia, financial fraud detection. Alternative to cryptographic MPC (faster but trust hardware).",
+      "category": "tee_mechanism"
+    },
+    {
+      "name": "confidential_AI_inference",
+      "definition": "Model weights + user data both confidential. Used for privacy-preserving LLM inference.",
+      "why": "Cloud inference exposing user prompts to provider. Confidential VMs run inference; provider sees only ciphertext. Apple Private Cloud Compute uses this pattern.",
+      "category": "tee_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "TEE_protects_data_in_use",
+      "if": ["data is processed inside TEE"],
+      "then": ["host operator can't read or modify it"],
+      "why": "Memory encrypted with key only TEE knows. Different from at-rest encryption (decrypted in RAM normally). Different from in-transit (decrypted on receive). The 'in use' protection.",
+      "soundness_category": "referential_transparency"
+    },
+    {
+      "name": "attestation_required_for_trust",
+      "if": ["a relying party connects to a TEE"],
+      "then": ["it must verify attestation before sending sensitive data"],
+      "why": "Without attestation: malicious endpoint claiming to be TEE. With attestation: cryptographic proof of TEE genuine + running expected code. Foundation of TEE deployment patterns.",
+      "soundness_category": "referential_transparency"
+    },
+    {
+      "name": "side_channels_continue_to_emerge",
+      "if": ["a TEE has been deployed at scale"],
+      "then": ["new side channels will be discovered over time"],
+      "why": "Each TEE generation has discovered channels (Spectre/Meltdown/Foreshadow/MDS for Intel; many SEV bypasses). Mitigations patched but new ones found. TEEs are ongoing arms race.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "confidential_VM_easier_than_enclave",
+      "if": ["application is a normal VM workload"],
+      "then": ["confidential VM model (TDX, SEV-SNP) easier than enclave (SGX)"],
+      "why": "SGX requires app refactor: enclave / non-enclave split. CVM: existing VM image works. Modern cloud confidential computing trends toward CVM model.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "TEE_changes_trust_model_in_cloud",
+      "if": ["customer uses confidential VM"],
+      "then": ["cloud provider not in customer's trust boundary"],
+      "why": "Without CVM: provider has full access (debug, ops, support). With CVM: provider sees encrypted memory only. Regulated industries (healthcare, finance) increasingly require this.",
+      "soundness_category": "referential_transparency"
+    }
+  ]
+}

@@ -1,0 +1,118 @@
+{
+  "id": "k8s_core_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "kubernetes_pod",
+  "in_microtheory": "cloud_infrastructure",
+  "description": "Kubernetes core decomposed. Apiserver + etcd + scheduler + controller-manager + kubelet + kube-proxy. Pod lifecycle, init containers, sidecar containers, probes, resource requests/limits, QoS classes, scheduling decisions, preemption.",
+  "sub_mechanisms": [
+    {
+      "name": "kube_apiserver",
+      "definition": "REST API serving cluster state. Auth + admission + storage in etcd.",
+      "why": "Single source of truth. All components read/write through apiserver. Highly available via multiple replicas with shared etcd.",
+      "category": "k8s_core_mechanism"
+    },
+    {
+      "name": "etcd_cluster_store",
+      "definition": "Raft-based distributed KV. Stores all K8s objects. Strong consistency.",
+      "why": "Cluster state. Performance critical: API responsiveness depends on etcd. 3-5 node cluster typical. Backups essential.",
+      "category": "k8s_core_mechanism"
+    },
+    {
+      "name": "kube_scheduler",
+      "definition": "Watches for unscheduled pods; assigns to nodes based on resources + constraints + scoring.",
+      "why": "Decoupled from creation: pod created, scheduler binds. Pluggable via scheduler plugins. Default has good behaviour for general workloads.",
+      "category": "k8s_core_mechanism"
+    },
+    {
+      "name": "kubelet",
+      "definition": "Per-node agent. Reads pod specs from apiserver; manages container lifecycle via CRI.",
+      "why": "Talks to apiserver + container runtime. Reports node + pod status. Critical: kubelet down → node effectively dead.",
+      "category": "k8s_core_mechanism"
+    },
+    {
+      "name": "kube_proxy",
+      "definition": "Implements Service networking via iptables or IPVS. Distributes traffic to pod endpoints.",
+      "why": "L4 service routing. iptables: many rules at scale; IPVS: scales better. Per-node component; not in path of every packet on modern CNIs (some use eBPF replacing).",
+      "category": "k8s_core_mechanism"
+    },
+    {
+      "name": "init_container",
+      "definition": "Runs to completion before app container starts. Sequential.",
+      "why": "Setup tasks: DB migrations, config download, dependency wait. Failures block pod start. Different image from main container.",
+      "category": "k8s_core_mechanism"
+    },
+    {
+      "name": "sidecar_container_native",
+      "definition": "K8s 1.29+: restartPolicy=Always init container. Runs alongside main container; main can terminate without waiting.",
+      "why": "Standardised sidecar lifecycle. Before 1.29: regular container; ordering issues on shutdown. Native sidecar fixes.",
+      "category": "k8s_core_mechanism"
+    },
+    {
+      "name": "resource_requests_limits",
+      "definition": "Requests: scheduler reservation. Limits: enforced cap. Memory limit hit = OOMKilled.",
+      "why": "Requests determine scheduling; limits prevent runaway. Set both. CPU limits controversial (throttle vs no limit + monitor).",
+      "category": "k8s_core_mechanism"
+    },
+    {
+      "name": "QoS_classes",
+      "definition": "BestEffort (no requests/limits), Burstable (requests but no limits, or limits > requests), Guaranteed (limits = requests).",
+      "why": "Eviction order under pressure: BestEffort first, Burstable next, Guaranteed last. Important to know for production.",
+      "category": "k8s_core_mechanism"
+    },
+    {
+      "name": "preemption",
+      "definition": "Higher-priority pods evict lower-priority to be scheduled.",
+      "why": "PriorityClass with high value. Critical workloads guaranteed scheduling. Lower-priority pods rescheduled or stay pending.",
+      "category": "k8s_core_mechanism"
+    },
+    {
+      "name": "taints_tolerations",
+      "definition": "Taint on node = repel pods. Toleration on pod = allowed to schedule despite taint.",
+      "why": "Reserve nodes (GPU, special hardware). Default master node taint. Dedicated nodes for specific workloads.",
+      "category": "k8s_core_mechanism"
+    },
+    {
+      "name": "node_affinity",
+      "definition": "Pod prefers/requires nodes with matching labels. requiredDuringSchedulingIgnoredDuringExecution etc.",
+      "why": "Spread across AZs, prefer specific instance types, co-locate with specific workloads. Standard scheduling control.",
+      "category": "k8s_core_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "etcd_performance_caps_K8s_throughput",
+      "if": ["cluster has high object churn"],
+      "then": ["etcd performance is the bottleneck"],
+      "why": "Every K8s operation reads/writes etcd. Slow etcd = slow apiserver = slow everything. Tune: SSD, sufficient RAM, periodic compaction. Standard K8s operational concern.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "QoS_guaranteed_for_critical_workloads",
+      "if": ["workload must not be evicted under pressure"],
+      "then": ["Guaranteed QoS (requests = limits) required"],
+      "why": "BestEffort + Burstable evicted before Guaranteed. Critical databases, control planes → Guaranteed. Standard production pattern.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "memory_limit_OOMKills",
+      "if": ["pod uses more memory than limit"],
+      "then": ["kernel OOM-kills the process"],
+      "why": "Hard limit; no negotiation. Set conservatively + monitor. CPU limits throttle (slower); memory limits kill. Different fail modes.",
+      "soundness_category": "referential_transparency"
+    },
+    {
+      "name": "init_containers_for_dependencies",
+      "if": ["app needs setup before starting"],
+      "then": ["init container is the K8s idiom"],
+      "why": "Doesn't bloat app image. Sequential: A → B → main. Failure = pod restart. Standard pattern for migrations, config fetch, wait-for-DB.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "scheduler_constraints_cascade",
+      "if": ["pod has resource requests + affinity + tolerations"],
+      "then": ["available nodes = intersection of all constraints"],
+      "why": "All constraints must satisfy. Over-constrained = pending pod. Common debug: 'why won't this schedule?'. Tools: kubectl describe pod shows scheduler events.",
+      "soundness_category": "algebraic_law"
+    }
+  ]
+}

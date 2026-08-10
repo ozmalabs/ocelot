@@ -1,0 +1,145 @@
+{
+ "id": "lead",
+ "version": "1.0.0",
+ "depends_on": [
+  "seek_primitive"
+ ],
+ "description": "LEAD faculty the agent composed: a PREDICT producer it authored writes the mover's predicted-future cell onto the self; the held SEEK pursues it (compose via shared attr).",
+ "nodes": [],
+ "edges": [],
+ "productions": [],
+ "rules": [
+  {
+   "id": "lead_predict",
+   "match": [
+    [
+     "game",
+     "has_region",
+     "r"
+    ],
+    [
+     "game",
+     "has_region",
+     "m"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "axis_kind"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "controllable"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "m"
+       },
+       "key": "axis_kind"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "autonomous"
+      }
+     }
+    ]
+   },
+   "effect": [
+    [
+     "set_attr",
+     "r",
+     "tgt_r",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "m"
+         },
+         "key": "cy"
+        },
+        {
+         "type": "Times",
+         "items": [
+          {
+           "type": "Lit",
+           "value": 3
+          },
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "m"
+           },
+           "key": "drow"
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "r",
+     "tgt_c",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "m"
+         },
+         "key": "cx"
+        },
+        {
+         "type": "Times",
+         "items": [
+          {
+           "type": "Lit",
+           "value": 3
+          },
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "m"
+           },
+           "key": "dcol"
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "r",
+     "tgt_set",
+     1.0
+    ]
+   ]
+  }
+ ]
+}

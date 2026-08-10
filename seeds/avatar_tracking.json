@@ -1,0 +1,372 @@
+{
+ "id": "avatar_tracking",
+ "version": "1.0.0",
+ "depends_on": [
+  "region_grouping"
+ ],
+ "description": "The jabberwock's AGNOSTIC avatar tracking (value-preserving translation). Colour-keying FAILED live (the avatar's colour-aggregate was mostly static \u2014 a cursor moving through a recolouring field). FIX: ask PER CELL 'did your value leave you and reappear one-d away?' \u2014 the host emits an AvatarMotion node = the value-preserving-shifted cells (value left c AND arrived at c+d) for the action's known displacement d; these ARE the avatar, isolated from any field that recoloured IN PLACE (recolour never reappears at +d; a static cell never changes). No colour/size/cluster assumption. avatar_vps_track confirms+tracks (streak, centroid); avatar_bootstrap_confirm latches is_avatar at streak>=2. predicted_overlap stays authored but the VPS test is more direct (self-discriminating: overlap-at-no-shift is empty by construction).",
+ "nodes": [],
+ "edges": [],
+ "productions": [],
+ "concepts": [
+  {
+   "name": "predicted_overlap",
+   "domain": "perception",
+   "definition": {
+    "type": "Div",
+    "a": {
+     "type": "Sum",
+     "source": {
+      "type": "InNeighbours",
+      "node": {
+       "type": "Var",
+       "name": "prev"
+      },
+      "edge_type": "within"
+     },
+     "var_name": "p",
+     "value": {
+      "type": "Min",
+      "items": [
+       {
+        "type": "Count",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "InNeighbours",
+          "node": {
+           "type": "Var",
+           "name": "now"
+          },
+          "edge_type": "within"
+         },
+         "var_name": "q",
+         "predicate": {
+          "type": "And",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "q"
+             },
+             "key": "row"
+            },
+            "b": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "p"
+               },
+               "key": "row"
+              },
+              {
+               "type": "Var",
+               "name": "drow"
+              }
+             ]
+            }
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "q"
+             },
+             "key": "col"
+            },
+            "b": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "p"
+               },
+               "key": "col"
+              },
+              {
+               "type": "Var",
+               "name": "dcol"
+              }
+             ]
+            }
+           }
+          ]
+         }
+        }
+       },
+       {
+        "type": "Lit",
+        "value": 1
+       }
+      ]
+     }
+    },
+    "b": {
+     "type": "Count",
+     "source": {
+      "type": "InNeighbours",
+      "node": {
+       "type": "Var",
+       "name": "prev"
+      },
+      "edge_type": "within"
+     }
+    }
+   }
+  }
+ ],
+ "rules": [
+  {
+   "name": "avatar_vps_track",
+   "match": [
+    [
+     "am",
+     "of_game",
+     "game"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gte",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "am"
+         },
+         "key": "n"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "am"
+          },
+          "key": "tracked"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node_if_absent",
+     "cand",
+     "AvatarCandidate",
+     {
+      "rvalue": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "am"
+          },
+          "key": "rvalue"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "game",
+     "has_candidate",
+     "cand"
+    ],
+    [
+     "set_attr",
+     "cand",
+     "streak",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "cand"
+           },
+           "key": "streak"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        {
+         "type": "Lit",
+         "value": 1.0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "cand",
+     "cy",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "am"
+         },
+         "key": "cy"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "cand",
+     "cx",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "am"
+         },
+         "key": "cx"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "am",
+     "tracked",
+     1.0
+    ]
+   ]
+  },
+  {
+   "name": "avatar_bootstrap_confirm",
+   "match": [
+    [
+     "game",
+     "has_candidate",
+     "cand"
+    ]
+   ],
+   "where": null,
+   "effects": [
+    [
+     "set_attr",
+     "cand",
+     "is_avatar",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gte",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "cand"
+           },
+           "key": "streak"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 2.0
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": 1.0
+       },
+       "other": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      }
+     }
+    ]
+   ]
+  }
+ ]
+}

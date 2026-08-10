@@ -1,0 +1,551 @@
+{
+  "id": "sonority_valley",
+  "version": "1.0.0",
+  "depends_on": [
+    "cochlear_nucleus"
+  ],
+  "description": "Sonority-valley word-boundary detector. SonorityValley node type + has_sonority_valley edge. Per-stream Operation sums envelope buffers, finds deep minima of the smoothed total envelope, emits boundary nodes that lexical_access consumes in place of BroadbandOnset gap-clustering. Robust to continuous-speech inputs.",
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "Rule",
+      "attrs": {
+        "effect": {
+          "__tuple__": [
+            {
+              "__tuple__": [
+                "set_attr",
+                "sv",
+                "depth_threshold",
+                {
+                  "__term__": {
+                    "items": {
+                      "__tuple__": [
+                        {
+                          "key": "depth_threshold",
+                          "node": {
+                            "name": "sv",
+                            "type": "Var"
+                          },
+                          "type": "Attr"
+                        },
+                        {
+                          "key": "step",
+                          "node": {
+                            "name": "tp",
+                            "type": "Var"
+                          },
+                          "type": "Attr"
+                        }
+                      ]
+                    },
+                    "type": "Plus"
+                  }
+                }
+              ]
+            },
+            {
+              "__tuple__": [
+                "set_attr",
+                "sv",
+                "tuned_at_n_signs",
+                {
+                  "__term__": {
+                    "key": "n_signs",
+                    "node": {
+                      "name": "lex",
+                      "type": "Var"
+                    },
+                    "type": "Attr"
+                  }
+                }
+              ]
+            },
+            {
+              "__tuple__": [
+                "set_attr",
+                "sv",
+                "last_tune_direction",
+                "raise"
+              ]
+            }
+          ]
+        },
+        "id": "tune_sonority_raise",
+        "match": {
+          "__tuple__": [
+            {
+              "__tuple__": [
+                "sv",
+                "tunes",
+                "lex"
+              ]
+            },
+            {
+              "__tuple__": [
+                "sv",
+                "has_tunable",
+                "tp"
+              ]
+            }
+          ]
+        },
+        "where": {
+          "items": {
+            "__tuple__": [
+              {
+                "a": {
+                  "key": "kind",
+                  "node": {
+                    "name": "sv",
+                    "type": "Var"
+                  },
+                  "type": "Attr"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "sonority_valley"
+                },
+                "type": "Eq"
+              },
+              {
+                "a": {
+                  "key": "attr_name",
+                  "node": {
+                    "name": "tp",
+                    "type": "Var"
+                  },
+                  "type": "Attr"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "depth_threshold"
+                },
+                "type": "Eq"
+              },
+              {
+                "a": {
+                  "key": "n_signs",
+                  "node": {
+                    "name": "lex",
+                    "type": "Var"
+                  },
+                  "type": "Attr"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 30
+                },
+                "type": "Gte"
+              },
+              {
+                "a": {
+                  "key": "depth_threshold",
+                  "node": {
+                    "name": "sv",
+                    "type": "Var"
+                  },
+                  "type": "Attr"
+                },
+                "b": {
+                  "key": "max",
+                  "node": {
+                    "name": "tp",
+                    "type": "Var"
+                  },
+                  "type": "Attr"
+                },
+                "type": "Lt"
+              },
+              {
+                "a": {
+                  "a": {
+                    "source": {
+                      "predicate": {
+                        "a": {
+                          "key": "hearings",
+                          "node": {
+                            "name": "s",
+                            "type": "Var"
+                          },
+                          "type": "Attr"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": 1
+                        },
+                        "type": "Eq"
+                      },
+                      "source": {
+                        "edge_type": "has_entry",
+                        "node": {
+                          "name": "lex",
+                          "type": "Var"
+                        },
+                        "type": "Neighbours"
+                      },
+                      "type": "Filter",
+                      "var_name": "s"
+                    },
+                    "type": "Count"
+                  },
+                  "b": {
+                    "source": {
+                      "edge_type": "has_entry",
+                      "node": {
+                        "name": "lex",
+                        "type": "Var"
+                      },
+                      "type": "Neighbours"
+                    },
+                    "type": "Count"
+                  },
+                  "type": "Div"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 0.4
+                },
+                "type": "Gte"
+              },
+              {
+                "items": {
+                  "__tuple__": [
+                    {
+                      "arg": {
+                        "key": "tuned_at_n_signs",
+                        "node": {
+                          "name": "sv",
+                          "type": "Var"
+                        },
+                        "type": "Attr"
+                      },
+                      "type": "Not"
+                    },
+                    {
+                      "a": {
+                        "a": {
+                          "key": "n_signs",
+                          "node": {
+                            "name": "lex",
+                            "type": "Var"
+                          },
+                          "type": "Attr"
+                        },
+                        "b": {
+                          "key": "tuned_at_n_signs",
+                          "node": {
+                            "name": "sv",
+                            "type": "Var"
+                          },
+                          "type": "Attr"
+                        },
+                        "type": "Minus"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 20
+                      },
+                      "type": "Gte"
+                    }
+                  ]
+                },
+                "type": "Or"
+              }
+            ]
+          },
+          "type": "And"
+        }
+      }
+    },
+    {
+      "local_id": 1,
+      "type": "Rule",
+      "attrs": {
+        "effect": {
+          "__tuple__": [
+            {
+              "__tuple__": [
+                "set_attr",
+                "sv",
+                "depth_threshold",
+                {
+                  "__term__": {
+                    "a": {
+                      "key": "depth_threshold",
+                      "node": {
+                        "name": "sv",
+                        "type": "Var"
+                      },
+                      "type": "Attr"
+                    },
+                    "b": {
+                      "key": "step",
+                      "node": {
+                        "name": "tp",
+                        "type": "Var"
+                      },
+                      "type": "Attr"
+                    },
+                    "type": "Minus"
+                  }
+                }
+              ]
+            },
+            {
+              "__tuple__": [
+                "set_attr",
+                "sv",
+                "tuned_at_n_signs",
+                {
+                  "__term__": {
+                    "key": "n_signs",
+                    "node": {
+                      "name": "lex",
+                      "type": "Var"
+                    },
+                    "type": "Attr"
+                  }
+                }
+              ]
+            },
+            {
+              "__tuple__": [
+                "set_attr",
+                "sv",
+                "last_tune_direction",
+                "lower"
+              ]
+            }
+          ]
+        },
+        "id": "tune_sonority_lower",
+        "match": {
+          "__tuple__": [
+            {
+              "__tuple__": [
+                "sv",
+                "tunes",
+                "lex"
+              ]
+            },
+            {
+              "__tuple__": [
+                "sv",
+                "has_tunable",
+                "tp"
+              ]
+            }
+          ]
+        },
+        "where": {
+          "items": {
+            "__tuple__": [
+              {
+                "a": {
+                  "key": "kind",
+                  "node": {
+                    "name": "sv",
+                    "type": "Var"
+                  },
+                  "type": "Attr"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "sonority_valley"
+                },
+                "type": "Eq"
+              },
+              {
+                "a": {
+                  "key": "attr_name",
+                  "node": {
+                    "name": "tp",
+                    "type": "Var"
+                  },
+                  "type": "Attr"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "depth_threshold"
+                },
+                "type": "Eq"
+              },
+              {
+                "a": {
+                  "key": "n_signs",
+                  "node": {
+                    "name": "lex",
+                    "type": "Var"
+                  },
+                  "type": "Attr"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 30
+                },
+                "type": "Gte"
+              },
+              {
+                "a": {
+                  "key": "depth_threshold",
+                  "node": {
+                    "name": "sv",
+                    "type": "Var"
+                  },
+                  "type": "Attr"
+                },
+                "b": {
+                  "key": "min",
+                  "node": {
+                    "name": "tp",
+                    "type": "Var"
+                  },
+                  "type": "Attr"
+                },
+                "type": "Gte"
+              },
+              {
+                "a": {
+                  "a": {
+                    "source": {
+                      "edge_type": "has_entry",
+                      "node": {
+                        "name": "lex",
+                        "type": "Var"
+                      },
+                      "type": "Neighbours"
+                    },
+                    "type": "Sum",
+                    "value": {
+                      "key": "hearings",
+                      "node": {
+                        "name": "s",
+                        "type": "Var"
+                      },
+                      "type": "Attr"
+                    },
+                    "var_name": "s"
+                  },
+                  "b": {
+                    "source": {
+                      "edge_type": "has_entry",
+                      "node": {
+                        "name": "lex",
+                        "type": "Var"
+                      },
+                      "type": "Neighbours"
+                    },
+                    "type": "Count"
+                  },
+                  "type": "Div"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 200.0
+                },
+                "type": "Gte"
+              },
+              {
+                "items": {
+                  "__tuple__": [
+                    {
+                      "arg": {
+                        "key": "tuned_at_n_signs",
+                        "node": {
+                          "name": "sv",
+                          "type": "Var"
+                        },
+                        "type": "Attr"
+                      },
+                      "type": "Not"
+                    },
+                    {
+                      "a": {
+                        "a": {
+                          "key": "n_signs",
+                          "node": {
+                            "name": "lex",
+                            "type": "Var"
+                          },
+                          "type": "Attr"
+                        },
+                        "b": {
+                          "key": "tuned_at_n_signs",
+                          "node": {
+                            "name": "sv",
+                            "type": "Var"
+                          },
+                          "type": "Attr"
+                        },
+                        "type": "Minus"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 20
+                      },
+                      "type": "Gte"
+                    }
+                  ]
+                },
+                "type": "Or"
+              }
+            ]
+          },
+          "type": "And"
+        }
+      }
+    }
+  ],
+  "edges": [],
+  "productions": [
+    {
+      "src": {
+        "type": "AudioStream",
+        "var": "src"
+      },
+      "edge_type": "has_pipeline_entry",
+      "tgt": {
+        "type": "Operation",
+        "var": "tgt"
+      },
+      "provenance": "sonority_valley:stream_pipeline_entry"
+    },
+    {
+      "src": {
+        "type": "AudioStream",
+        "var": "src"
+      },
+      "edge_type": "has_sonority_valley",
+      "tgt": {
+        "type": "SonorityValley",
+        "var": "tgt"
+      },
+      "provenance": "sonority_valley:stream_valley"
+    },
+    {
+      "src": {
+        "type": "Operation",
+        "var": "src"
+      },
+      "edge_type": "feeds_into",
+      "tgt": {
+        "type": "Operation",
+        "var": "tgt"
+      },
+      "provenance": "sonority_valley:operation_feeds_into"
+    },
+    {
+      "src": {
+        "type": "Operation",
+        "var": "src"
+      },
+      "edge_type": "tunes",
+      "tgt": {
+        "type": "AcousticLexicon",
+        "var": "tgt"
+      },
+      "provenance": "sonority_valley:op_tunes_lexicon"
+    }
+  ]
+}

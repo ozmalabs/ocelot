@@ -1,0 +1,68 @@
+{
+  "id": "pragmatics",
+  "version": "1.0.0",
+  "depends_on": [
+    "narrative_convention",
+    "speech_science",
+    "prosody"
+  ],
+  "description": "The UTTERANCE as a situated communicative act, and the meaning that lives around the words rather than in them. An utterance is not a sentence: it is intent (a speech act) + propositional content (words/frames) + delivery (prosody) + context (common ground). Understanding is recovering the speaker's INTENDED meaning from all of these jointly and predictively (Gricean: infer what was meant, not just decode what was said); generation is realizing an intent forward into words + delivery. Several of these functions are example-grounded in the TV Tropes corpus (exemplar_tropes), served by the TropesTeacher.",
+  "concepts": [
+    {
+      "name": "speech_act",
+      "definition": "The action an utterance performs \u2014 asserting, asking, requesting, promising, warning, expressing. The same words can perform different acts ('it's cold in here' can be a statement or a request to shut the window); recovering the act is half of understanding the utterance.",
+      "category": "pragmatic_function",
+      "exemplar_tropes": [
+        "ArmorPiercingQuestion"
+      ]
+    },
+    {
+      "name": "illocutionary_force",
+      "definition": "The intended force of an utterance as distinct from its literal form \u2014 what the speaker is DOING with it. A rhetorical question has the force of an assertion; an indirect request has the force of a command. Force can diverge from form, and delivery (prosody) often carries the divergence.",
+      "category": "pragmatic_function",
+      "exemplar_tropes": [
+        "RhetoricalQuestionBlunder"
+      ]
+    },
+    {
+      "name": "implicature",
+      "definition": "Meaning conveyed beyond or around the literal content \u2014 what is suggested, hinted, or left to be inferred (Grice). 'Some of them came' implicates 'not all'; a suspiciously specific denial implicates its own opposite. The listener computes it from the assumption that the speaker is being cooperative.",
+      "category": "pragmatic_function",
+      "exemplar_tropes": [
+        "ExactWords",
+        "MetaphoricallyTrue",
+        "SuspiciouslySpecificDenial",
+        "GettingCrapPastTheRadar"
+      ]
+    },
+    {
+      "name": "presupposition",
+      "definition": "What an utterance takes for granted as already true \u2014 'have you stopped doing X' presupposes you were doing X. Survives negation and questioning; smuggles content in as background rather than asserting it.",
+      "category": "pragmatic_function"
+    },
+    {
+      "name": "common_ground",
+      "definition": "The shared context both parties assume \u2014 what each knows, what's been said, what's mutually evident. Utterances are designed against it (you say only what the other doesn't already have); tracking it is what lets an utterance be terse and still understood.",
+      "category": "pragmatic_function"
+    },
+    {
+      "name": "deixis",
+      "definition": "Reference that depends on the utterance's context \u2014 'I', 'you', 'here', 'now', 'this', 'tomorrow'. The same word points at different things per speaker/time/place; resolving it requires the context, not just the lexicon.",
+      "category": "pragmatic_function"
+    },
+    {
+      "name": "turn_taking",
+      "definition": "The structure of exchange \u2014 who holds the floor, when it passes, how overlaps and interruptions are managed. Conversation is jointly built; an utterance is shaped by its slot in the sequence (a response is understood relative to what it responds to).",
+      "category": "pragmatic_function",
+      "exemplar_tropes": [
+        "FinishingEachOthersSentences"
+      ]
+    },
+    {
+      "name": "repair",
+      "definition": "Detecting and fixing miscommunication \u2014 the speaker rephrases, the listener queries, a misunderstanding is corrected. The mechanism that keeps a conversation grounded when understanding fails; impasse-and-ask is its substrate-native form.",
+      "category": "pragmatic_function"
+    }
+  ],
+  "wiring_note": "Pragmatics depends_on speech_science + prosody DIRECTLY, not just transitively via narrative_convention. Speech acts ARE acts of speech: questions rise, commands clip, irony has prosodic signature. Conversational implicature depends on delivery. The substrate's pragmatic-meaning machinery shares vocabulary with both speech_science and the prosody layer."
+}

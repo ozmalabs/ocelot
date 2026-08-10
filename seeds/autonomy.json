@@ -1,0 +1,667 @@
+{
+ "id": "autonomy",
+ "version": "1.0.0",
+ "depends_on": [
+  "enact",
+  "discourse"
+ ],
+ "description": "FULL AUTONOMY (jabberwock's design): the never-satisfying UNDERSTAND drive's standing error, wired through mint/select/satisfy rules into the goal machinery, mints the next hill forever via the prose->action faculty. frontier_pick MIGRATED to graph data; plan-algebra (Fix/Branch/While/Seq) admissible for the [V2] execute reflex. goal_from_procedure CONSUMES plan_root->goaled_root at mint so a satisfied goal's drop isn't fought by a re-mint (clean graph-data sidestep of a rule-engine add/del-same-edge interaction); rearm_on_reset restores plan_root for penalty-free retry.",
+ "microtheory": {
+  "name": "autonomy",
+  "description": "perceive -> understand -> mint goals -> pursue (prose->action) -> learn (confirm/refute via reset) -> re-mint; the understand drive's error never reaches zero."
+ },
+ "nodes": [
+  {
+   "local_id": 0,
+   "type": "Drive",
+   "attrs": {
+    "name": "understand",
+    "frozen": true,
+    "setpoint": 0.0,
+    "measurement_key": "model_coverage",
+    "comment": "never-satisfying engine; frozen = can't erase its own reason to keep going (alignment-under-self-modification).",
+    "frontier_pick_term": "{\"type\": \"Argmax\", \"source\": {\"type\": \"NodesWhere\", \"node_type\": \"CapabilityAxis\", \"attr_key\": \"is_axis\", \"value\": {\"type\": \"Lit\", \"value\": 1.0}}, \"var_name\": \"x\", \"value\": {\"type\": \"Plus\", \"items\": [{\"type\": \"Times\", \"items\": [{\"type\": \"Minus\", \"a\": {\"type\": \"Lit\", \"value\": 1.0}, \"b\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"x\"}, \"key\": \"saturation\"}}, {\"type\": \"IfThenElse\", \"cond\": {\"type\": \"And\", \"items\": [{\"type\": \"Gt\", \"a\": {\"type\": \"Plus\", \"items\": [{\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"x\"}, \"key\": \"authoring_exhausted\"}, {\"type\": \"Lit\", \"value\": 0.0}]}, \"b\": {\"type\": \"Lit\", \"value\": 0.5}}, {\"type\": \"Gt\", \"a\": {\"type\": \"Plus\", \"items\": [{\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"x\"}, \"key\": \"mf_stall\"}, {\"type\": \"Lit\", \"value\": 0.0}]}, \"b\": {\"type\": \"Lit\", \"value\": 0.5}}]}, \"then\": {\"type\": \"Lit\", \"value\": 0.05}, \"other\": {\"type\": \"Lit\", \"value\": 1.0}}, {\"type\": \"Lit\", \"value\": 1000000000}]}, {\"type\": \"Times\", \"items\": [{\"type\": \"Count\", \"source\": {\"type\": \"Neighbours\", \"node\": {\"type\": \"Var\", \"name\": \"x\"}, \"edge_type\": \"unifies\", \"any_type\": false}}, {\"type\": \"Lit\", \"value\": 1000}, {\"type\": \"Minus\", \"a\": {\"type\": \"Lit\", \"value\": 1.0}, \"b\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"x\"}, \"key\": \"saturation\"}}]}, {\"type\": \"Minus\", \"a\": {\"type\": \"Lit\", \"value\": 0.0}, \"b\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"x\"}, \"key\": \"min_order\"}}, {\"type\": \"Times\", \"items\": [{\"type\": \"Minus\", \"a\": {\"type\": \"Lit\", \"value\": 1.0}, \"b\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"x\"}, \"key\": \"saturation\"}}, {\"type\": \"Div\", \"a\": {\"type\": \"Lit\", \"value\": 1.0}, \"b\": {\"type\": \"Plus\", \"items\": [{\"type\": \"Lit\", \"value\": 1.0}, {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"x\"}, \"key\": \"investigated_count\"}]}}, {\"type\": \"Lit\", \"value\": 1000}]}, {\"type\": \"IfThenElse\", \"cond\": {\"type\": \"Gte\", \"a\": {\"type\": \"Count\", \"source\": {\"type\": \"Neighbours\", \"node\": {\"type\": \"Var\", \"name\": \"x\"}, \"edge_type\": \"investigated_by\", \"any_type\": false}}, \"b\": {\"type\": \"Lit\", \"value\": 1}}, \"then\": {\"type\": \"Lit\", \"value\": 0.0}, \"other\": {\"type\": \"Lit\", \"value\": -1000000000.0}}]}, \"default\": null}"
+   }
+  }
+ ],
+ "edges": [],
+ "productions": [
+  {
+   "provenance": "seed:autonomy:body-0",
+   "src": {
+    "type": "PlanFix",
+    "var": "s"
+   },
+   "edge_type": "body",
+   "tgt": {
+    "type": "PlanAct",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:autonomy:body-1",
+   "src": {
+    "type": "PlanWhile",
+    "var": "s"
+   },
+   "edge_type": "body",
+   "tgt": {
+    "type": "PlanAct",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:autonomy:then-2",
+   "src": {
+    "type": "PlanBranch",
+    "var": "s"
+   },
+   "edge_type": "then",
+   "tgt": {
+    "type": "PlanAct",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:autonomy:else-3",
+   "src": {
+    "type": "PlanBranch",
+    "var": "s"
+   },
+   "edge_type": "else",
+   "tgt": {
+    "type": "PlanAct",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:autonomy:step-4",
+   "src": {
+    "type": "PlanSeq",
+    "var": "s"
+   },
+   "edge_type": "step",
+   "tgt": {
+    "type": "PlanAct",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:autonomy:plan_root-5",
+   "src": {
+    "type": "Procedure",
+    "var": "s"
+   },
+   "edge_type": "plan_root",
+   "tgt": {
+    "type": "PlanSeq",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:autonomy:plan_root-6",
+   "src": {
+    "type": "Procedure",
+    "var": "s"
+   },
+   "edge_type": "plan_root",
+   "tgt": {
+    "type": "PlanFix",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:autonomy:plan_root-7",
+   "src": {
+    "type": "Procedure",
+    "var": "s"
+   },
+   "edge_type": "plan_root",
+   "tgt": {
+    "type": "PlanAct",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:autonomy:goaled_root-8",
+   "src": {
+    "type": "Procedure",
+    "var": "s"
+   },
+   "edge_type": "goaled_root",
+   "tgt": {
+    "type": "PlanSeq",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:autonomy:goaled_root-9",
+   "src": {
+    "type": "Procedure",
+    "var": "s"
+   },
+   "edge_type": "goaled_root",
+   "tgt": {
+    "type": "PlanFix",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:autonomy:goaled_root-10",
+   "src": {
+    "type": "Procedure",
+    "var": "s"
+   },
+   "edge_type": "goaled_root",
+   "tgt": {
+    "type": "PlanAct",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:autonomy:frontier_pick-11",
+   "src": {
+    "type": "Agent",
+    "var": "s"
+   },
+   "edge_type": "frontier_pick",
+   "tgt": {
+    "type": "CapabilityAxis",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:autonomy:wants-12",
+   "src": {
+    "type": "Agent",
+    "var": "s"
+   },
+   "edge_type": "wants",
+   "tgt": {
+    "type": "CapabilityAxis",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:autonomy:wants-13",
+   "src": {
+    "type": "Agent",
+    "var": "s"
+   },
+   "edge_type": "wants",
+   "tgt": {
+    "type": "Procedure",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:autonomy:wants-14",
+   "src": {
+    "type": "Agent",
+    "var": "s"
+   },
+   "edge_type": "wants",
+   "tgt": {
+    "type": "Impasse",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:autonomy:surprised_by-15",
+   "src": {
+    "type": "Agent",
+    "var": "s"
+   },
+   "edge_type": "surprised_by",
+   "tgt": {
+    "type": "Impasse",
+    "var": "t"
+   }
+  }
+ ],
+ "concepts": [
+  {
+   "name": "frontier_pick",
+   "domain": "autonomy",
+   "definition": {
+    "type": "Argmax",
+    "source": {
+     "type": "NodesWhere",
+     "node_type": "CapabilityAxis",
+     "attr_key": "is_axis",
+     "value": {
+      "type": "Lit",
+      "value": 1.0
+     }
+    },
+    "var_name": "x",
+    "value": {
+     "type": "Plus",
+     "items": [
+      {
+       "type": "Minus",
+       "a": {
+        "type": "Times",
+        "items": [
+         {
+          "type": "Count",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "x"
+           },
+           "edge_type": "unifies",
+           "any_type": false
+          }
+         },
+         {
+          "type": "Lit",
+          "value": 1000
+         },
+         {
+          "type": "Minus",
+          "a": {
+           "type": "Lit",
+           "value": 1.0
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "x"
+           },
+           "key": "saturation"
+          }
+         }
+        ]
+       },
+       "b": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "x"
+        },
+        "key": "min_order"
+       }
+      },
+      {
+       "type": "Times",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "x"
+         },
+         "key": "shortfall"
+        },
+        {
+         "type": "Lit",
+         "value": 1000000000
+        }
+       ]
+      }
+     ]
+    },
+    "default": null
+   },
+   "comment": "MIGRATED: gap-ranking DECISION now graph data (was gap_prioritiser.pick_term, a Python builder)."
+  },
+  {
+   "name": "plan_satisfaction",
+   "domain": "autonomy",
+   "definition": {
+    "type": "Eq",
+    "a": {
+     "type": "Count",
+     "source": {
+      "type": "Filter",
+      "source": {
+       "type": "NodesOfType",
+       "node_type": "PlanAct"
+      },
+      "var_name": "a",
+      "predicate": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "a"
+        },
+        "key": "status"
+       },
+       "b": {
+        "type": "Lit",
+        "value": "pending"
+       }
+      }
+     }
+    },
+    "b": {
+     "type": "Lit",
+     "value": 0
+    }
+   },
+   "comment": "operational satisfaction-fold: a plan is done when no Act is pending."
+  }
+ ],
+ "rules": [
+  {
+   "name": "mint_goal_from_frontier",
+   "comment": "understand-drive standing error -> goal for the top frontier axis (materialized by the frontier_pick reflex as ag-frontier_pick->axis).",
+   "match": [
+    [
+     "ag",
+     "frontier_pick",
+     "ax"
+    ]
+   ],
+   "where": {
+    "type": "Lt",
+    "a": {
+     "type": "Count",
+     "source": {
+      "type": "Neighbours",
+      "node": {
+       "type": "Var",
+       "name": "ag"
+      },
+      "edge_type": "wants",
+      "any_type": false
+     }
+    },
+    "b": {
+     "type": "Lit",
+     "value": 1
+    }
+   },
+   "effects": [
+    [
+     "add_edge",
+     "ag",
+     "wants",
+     "ax"
+    ]
+   ]
+  },
+  {
+   "name": "mint_goal_from_surprise",
+   "comment": "goal from SURPRISE: an unresolved Impasse becomes something to understand.",
+   "match": [
+    [
+     "ag",
+     "surprised_by",
+     "imp"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "imp"
+        },
+        "key": "resolved"
+       },
+       "b": {
+        "type": "Lit",
+        "value": true
+       }
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "ag"
+         },
+         "edge_type": "wants",
+         "any_type": false
+        },
+        "var_name": "g",
+        "predicate": {
+         "type": "Eq",
+         "a": {
+          "type": "Var",
+          "name": "g"
+         },
+         "b": {
+          "type": "Var",
+          "name": "imp"
+         }
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_edge",
+     "ag",
+     "wants",
+     "imp"
+    ]
+   ]
+  },
+  {
+   "name": "satisfy_goal",
+   "comment": "drop a satisfied goal (cuts the frontier item).",
+   "match": [
+    [
+     "ag",
+     "wants",
+     "g"
+    ]
+   ],
+   "where": {
+    "type": "Eq",
+    "a": {
+     "type": "Attr",
+     "node": {
+      "type": "Var",
+      "name": "g"
+     },
+     "key": "satisfied"
+    },
+    "b": {
+     "type": "Lit",
+     "value": 1.0
+    }
+   },
+   "effects": [
+    [
+     "del_edge",
+     "ag",
+     "wants",
+     "g"
+    ]
+   ]
+  },
+  {
+   "name": "select_active_goal",
+   "comment": "mark one wanted goal active when none is (weight-ranked Argmax is the refinement).",
+   "match": [
+    [
+     "ag",
+     "wants",
+     "g"
+    ]
+   ],
+   "where": {
+    "type": "Lt",
+    "a": {
+     "type": "Count",
+     "source": {
+      "type": "Filter",
+      "source": {
+       "type": "Neighbours",
+       "node": {
+        "type": "Var",
+        "name": "ag"
+       },
+       "edge_type": "wants",
+       "any_type": false
+      },
+      "var_name": "x",
+      "predicate": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "x"
+        },
+        "key": "active"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      }
+     }
+    },
+    "b": {
+     "type": "Lit",
+     "value": 1
+    }
+   },
+   "effects": [
+    [
+     "set_attr",
+     "g",
+     "active",
+     {
+      "__term__": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "goal_from_procedure",
+   "comment": "wrap a parsed plan-tree root as a WANTED goal, CONSUMING plan_root->goaled_root so it mints exactly once (no fight with satisfy_goal).",
+   "match": [
+    [
+     "proc",
+     "plan_root",
+     "root"
+    ],
+    [
+     "ag",
+     "operates_in",
+     "w"
+    ]
+   ],
+   "where": null,
+   "effects": [
+    [
+     "del_edge",
+     "proc",
+     "plan_root",
+     "root"
+    ],
+    [
+     "add_edge",
+     "proc",
+     "goaled_root",
+     "root"
+    ],
+    [
+     "add_edge",
+     "ag",
+     "wants",
+     "proc"
+    ],
+    [
+     "set_attr",
+     "proc",
+     "satisfaction_via",
+     {
+      "__term__": {
+       "type": "Lit",
+       "value": "plan_satisfaction"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "rearm_on_reset",
+   "comment": "penalty-free retry: a RESET restores goaled_root->plan_root and clears satisfied, so goal_from_procedure re-mints.",
+   "match": [
+    [
+     "proc",
+     "goaled_root",
+     "root"
+    ],
+    [
+     "ag",
+     "operates_in",
+     "w"
+    ]
+   ],
+   "where": {
+    "type": "Eq",
+    "a": {
+     "type": "Attr",
+     "node": {
+      "type": "Var",
+      "name": "ag"
+     },
+     "key": "just_reset"
+    },
+    "b": {
+     "type": "Lit",
+     "value": 1.0
+    }
+   },
+   "effects": [
+    [
+     "del_edge",
+     "proc",
+     "goaled_root",
+     "root"
+    ],
+    [
+     "add_edge",
+     "proc",
+     "plan_root",
+     "root"
+    ],
+    [
+     "set_attr",
+     "proc",
+     "satisfied",
+     {
+      "__term__": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     }
+    ]
+   ]
+  }
+ ],
+ "goals": []
+}

@@ -1,0 +1,746 @@
+{
+ "id": "network_protocols",
+ "version": "0.1.0",
+ "depends_on": [
+  "compiler_theory"
+ ],
+ "description": "The agent's conceptual understanding of how computers communicate. Layered model from physical bits to application semantics. Ethernet/Wi-Fi at the link layer; IP/IPv6 + routing at network; TCP/UDP/QUIC at transport; HTTP/2/3, gRPC, WebSockets, MQTT, DNS at application. Modern additions: TLS 1.3, HTTP/3 over QUIC, eBPF/XDP, RDMA, kernel bypass. Datacenter fabric: VXLAN, ECMP, anycast, load balancing. The substrate's video/audio/architecture Mts compute; this Mt is how those computations exchange data with the world.",
+ "category_inheritance": "genlMt → compiler_theory. The protocol stack's correctness arguments (encoding/decoding round-trip, congestion-control fairness, security guarantees) map directly to compiler_theory's equivalence vocabulary: denotational (decoder reconstructs sender's intent), algebraic (semantic-preserving optimisation like header compression), referential transparency (handshake establishes mutual state for stateless lower layers), cost_equivalence (different congestion algorithms achieving the same goodput with different latency profiles).",
+ "concepts": [
+  {
+   "name": "layered_model",
+   "definition": "Networking is decomposed into independent layers (OSI 7-layer, TCP/IP 4-layer). Each layer provides services to the layer above by using services from the layer below, with a well-defined interface.",
+   "why": "Decoupling: changes to one layer don't ripple to others. Ethernet was replaced by Wi-Fi at L2 without rewriting TCP at L4. HTTP/3 changed L7 over QUIC without touching IP at L3. The abstraction is what made the Internet survive 50 years of hardware change.",
+   "category": "foundation"
+  },
+  {
+   "name": "OSI_seven_layer",
+   "definition": "Physical, Data Link, Network, Transport, Session, Presentation, Application. Conceptual reference; rarely all 7 layers map cleanly in practice.",
+   "why": "Pedagogical scaffolding. Session/Presentation rarely have a clean implementation analogue; TLS spans both. Useful for thinking about responsibility boundaries even when the implementation collapses them.",
+   "category": "foundation"
+  },
+  {
+   "name": "TCP_IP_four_layer",
+   "definition": "Link, Internet (IP), Transport (TCP/UDP), Application. The model the actual Internet was built on; what real protocols implement.",
+   "why": "Pragmatic split. Each layer maps to actual standards: Ethernet/Wi-Fi at link, IPv4/v6 at Internet, TCP/UDP/QUIC at transport, HTTP/DNS/SMTP at application. This is the model implementations follow.",
+   "category": "foundation"
+  },
+  {
+   "name": "encapsulation",
+   "definition": "Each layer wraps the payload of the layer above with its own header (and sometimes trailer). HTTP request becomes TCP segment becomes IP packet becomes Ethernet frame.",
+   "why": "Lower-layer headers are inert payload to higher layers. Each layer's processing only inspects its own header. Lets the same TCP implementation work over Ethernet, Wi-Fi, fiber, satellite without modification.",
+   "category": "foundation"
+  },
+  {
+   "name": "MTU_maximum_transmission_unit",
+   "definition": "The largest packet size the link layer will transmit without fragmentation. Ethernet: 1500 bytes; jumbo frames: 9000; loopback: 65535.",
+   "why": "Above MTU, IP fragments (or PMTU discovery negotiates). Fragmentation costs performance (multiple reassembly waits); fragmentation by middleboxes drops the connection. Path MTU discovery finds the minimum along the route.",
+   "category": "foundation"
+  },
+  {
+   "name": "MSS_maximum_segment_size",
+   "definition": "TCP's payload limit per segment. MSS = MTU − IP header − TCP header. Negotiated at connection setup via SYN options.",
+   "why": "TCP avoids fragmentation by capping segments below MTU. Modern stacks default to ~1460 bytes on Ethernet. Misnegotiated MSS (e.g., tunnel overhead unaccounted) causes massive performance regression.",
+   "category": "foundation"
+  },
+  {
+   "name": "packet",
+   "definition": "Self-contained unit of network data, with header (routing/control) and payload (data). At IP layer, the term is precise: an IP packet.",
+   "why": "Atomic unit for routing. Each packet is routed independently — no flow context at routers. The 'datagram' philosophy of IP: stateless routers, intelligence at endpoints.",
+   "category": "foundation"
+  },
+  {
+   "name": "frame",
+   "definition": "Layer-2 unit of transmission. Ethernet frame: preamble + MAC dest/src + EtherType + payload + CRC.",
+   "why": "Frames are what wires/Wi-Fi physically carry. The frame is the unit the NIC manipulates; the IP packet inside is delivered to the kernel only if the frame's MAC destination matches.",
+   "category": "foundation"
+  },
+  {
+   "name": "ethernet",
+   "definition": "Dominant L1/L2 wired networking standard. Frame format, MAC addressing, CSMA/CD (historical), full-duplex switched topology (modern).",
+   "why": "Ubiquitous: from 10 Mbps (1980s) to 400 Gbps (modern data centers). Same frame format across speeds. The 1500-byte MTU baked in by the IEEE 802.3 committee in the 1980s; jumbo frames (9 KB) for high-speed links never became universal.",
+   "category": "layer2_datalink"
+  },
+  {
+   "name": "MAC_address",
+   "definition": "48-bit hardware address of a network interface. First 24 bits identify manufacturer (OUI); last 24 are device-unique.",
+   "why": "L2 addressing. Each link-local segment uses MAC for delivery. Globally unique by manufacturer assignment (most of the time); some virtual machines randomise theirs.",
+   "category": "layer2_datalink"
+  },
+  {
+   "name": "ARP",
+   "definition": "Address Resolution Protocol. Maps IP addresses to MAC addresses on a local network. Broadcast 'who has IP X?'; target replies with MAC.",
+   "why": "L3-to-L2 binding. IP packets need a MAC dest to be put in a frame; ARP discovers it. Cached for ~minutes. Vulnerable to spoofing on untrusted networks; mitigated by static ARP, ARP inspection.",
+   "category": "layer2_datalink"
+  },
+  {
+   "name": "VLAN_tagging",
+   "definition": "802.1Q: insert a 4-byte tag into the Ethernet frame identifying which virtual LAN it belongs to. Switches enforce isolation between VLANs.",
+   "why": "Logical segmentation on shared physical infrastructure. Same switch can carry multiple isolated networks. Standard for multi-tenant data centers, VOIP isolation, guest Wi-Fi.",
+   "category": "layer2_datalink"
+  },
+  {
+   "name": "IPv4",
+   "definition": "Internet Protocol version 4. 32-bit addresses (4.3B total, depleted). 20-byte header. Variable-length options.",
+   "why": "The Internet's address layer for 40 years. Variable-length options + checksum dictated by 1981 hardware constraints. Fragmentation, TTL, ToS field all defined here. Address depletion drove NAT adoption + eventual IPv6.",
+   "category": "layer3_network"
+  },
+  {
+   "name": "IPv6",
+   "definition": "128-bit addresses (3.4 × 10^38 total). 40-byte fixed header. No fragmentation at routers (PMTU only). No checksum (relies on lower/upper layer).",
+   "why": "Address exhaustion of IPv4 forced this. Fixed header lets routers process at line rate. Adoption has been slow (~40% of major sites in 2024). Dual-stack deployment is the norm.",
+   "category": "layer3_network"
+  },
+  {
+   "name": "ICMP",
+   "definition": "Internet Control Message Protocol. Error reporting + diagnostic queries (ping, traceroute). Sits above IP but at L3.",
+   "why": "How the network tells you about itself. Destination unreachable, TTL exceeded, fragmentation needed — all ICMP. Blocked aggressively in some networks for security (DDoS amplification, scanning).",
+   "category": "layer3_network"
+  },
+  {
+   "name": "IP_routing",
+   "definition": "Per-packet decision: given destination IP, which interface should this packet be forwarded out? Based on the routing table.",
+   "why": "Distributed routing. Each router decides locally based on its routing table; tables are populated by routing protocols (BGP, OSPF). The 'next hop' is selected; the packet's TTL is decremented; on TTL=0, dropped + ICMP sent.",
+   "category": "routing"
+  },
+  {
+   "name": "BGP",
+   "definition": "Border Gateway Protocol. Inter-AS routing protocol of the Internet. Each Autonomous System announces what prefixes it can reach; neighbours propagate or filter.",
+   "why": "How the Internet routes globally. ~75,000 ASes; ~1M IPv4 prefixes. Policy-driven (not just shortest path) — peering and transit decisions encode business relationships. BGP hijacking is a real attack vector.",
+   "category": "routing"
+  },
+  {
+   "name": "OSPF",
+   "definition": "Open Shortest Path First. Intra-AS link-state routing. Each router floods its connectivity to all others; each computes shortest paths via Dijkstra.",
+   "why": "Convergence + redundancy in enterprise networks. Reacts quickly (sub-second) to link failures. Compared to RIP (distance-vector, slow), OSPF is the standard for medium-large enterprise networks.",
+   "category": "routing"
+  },
+  {
+   "name": "IS_IS",
+   "definition": "Intermediate System to Intermediate System. Link-state protocol used heavily by ISPs and very large enterprises. Similar to OSPF but with TLV-based encoding allowing easier extensions.",
+   "why": "Scales better than OSPF for very large networks. TLV format means new features (IPv6, traffic engineering) don't need protocol versioning. Quietly dominant in ISP backbones.",
+   "category": "routing"
+  },
+  {
+   "name": "NAT",
+   "definition": "Network Address Translation. Maps multiple private IPs (10.x.x.x, 192.168.x.x) to one public IP. Tracked by (source-port, dest-port, dest-IP) flow tuple.",
+   "why": "Worked around IPv4 exhaustion. Side effect: stateful middlebox required for inbound connections (the 'NAT problem' for P2P, VoIP). STUN/TURN are the workarounds.",
+   "category": "layer3_network"
+  },
+  {
+   "name": "NAT64",
+   "definition": "IPv6-only client to IPv4-only server: maps IPv6 destination to IPv4. Combined with DNS64 to synthesise IPv6 addresses for v4-only services.",
+   "why": "Transition mechanism for IPv6 adoption. Lets v6-only networks reach the legacy v4 Internet. Used by major mobile carriers (T-Mobile USA), large enterprises.",
+   "category": "layer3_network"
+  },
+  {
+   "name": "IP_fragmentation",
+   "definition": "Splitting a too-large IP packet into smaller fragments that fit MTU. Reassembled at the destination.",
+   "why": "Allows traversal of links with smaller MTU. But: middleboxes often drop fragments; reassembly is expensive at endpoints; fragments are a DDoS vector. PMTU discovery + DF-bit in IPv4 + IPv6's no-router-fragmentation policy steer away from fragmentation.",
+   "category": "layer3_network"
+  },
+  {
+   "name": "TCP",
+   "definition": "Transmission Control Protocol. Connection-oriented byte-stream over IP. Reliable, in-order, with congestion control. The workhorse of the Internet's application layer.",
+   "why": "Lets applications send bytes over an unreliable network and receive them in order. 50 years of evolution (slow start, fast retransmit, SACK, congestion algorithms). Cost: head-of-line blocking, three-way handshake latency, complexity.",
+   "category": "layer4_transport"
+  },
+  {
+   "name": "TCP_three_way_handshake",
+   "definition": "SYN → SYN-ACK → ACK. Both endpoints exchange initial sequence numbers and confirm the connection. One RTT of latency.",
+   "why": "Establishes shared state (sequence numbers, MSS, window size). Mitigates SYN floods (servers can use SYN cookies if needed). The handshake's 1 RTT was the latency floor for everything Internet before QUIC.",
+   "category": "layer4_transport"
+  },
+  {
+   "name": "TCP_congestion_control",
+   "definition": "Algorithm controlling how fast TCP sends. Adjusts congestion window (cwnd) based on ACKs, loss, RTT. Common: Reno, CUBIC (default on Linux), BBR (Google).",
+   "why": "Without it, the Internet would collapse under congestion. TCP self-limits to share bandwidth fairly. Different algorithms optimise differently: CUBIC for moderate-RTT WAN, BBR for high-BDP links, Reno/NewReno historical.",
+   "category": "layer4_transport"
+  },
+  {
+   "name": "TCP_slow_start",
+   "definition": "Initial growth phase. cwnd doubles per RTT until threshold reached. Then transitions to congestion avoidance (linear growth).",
+   "why": "Probes available bandwidth quickly without immediately overshooting. Doubling each RTT covers a wide bandwidth range in few RTTs. Initial cwnd was 1-4 segments historically; modern stacks use 10 (RFC 6928).",
+   "category": "layer4_transport"
+  },
+  {
+   "name": "TCP_fast_retransmit",
+   "definition": "On receiving 3 duplicate ACKs, sender immediately retransmits the missing segment (without waiting for retransmission timeout).",
+   "why": "Speeds up recovery: ~1 RTT instead of RTO (~200ms+). Avoids unnecessary congestion-window collapse. Standard in modern TCP stacks.",
+   "category": "layer4_transport"
+  },
+  {
+   "name": "TCP_selective_ack",
+   "definition": "SACK: receiver tells sender exactly which segments arrived. Sender retransmits only what's missing, not from the cumulative ACK point.",
+   "why": "Without SACK, lost packets in a window of 10 segments retransmit all 10. SACK retransmits only the lost ones. Substantial recovery throughput improvement; standard in modern TCP.",
+   "category": "layer4_transport"
+  },
+  {
+   "name": "TCP_window_scaling",
+   "definition": "Option that extends TCP receive window beyond 64 KB via scaling factor. Up to 1 GB possible.",
+   "why": "Original TCP's 16-bit window limited throughput on high-BDP links to ~600 Mbps over a ~100ms RTT path. Window scaling lifts this. Required for >1 Mbps connections over satellite or transcontinental links.",
+   "category": "layer4_transport"
+  },
+  {
+   "name": "head_of_line_blocking",
+   "definition": "TCP's byte-stream means an in-order delivery requirement. If segment N is lost, segments N+1, N+2, ... can't be delivered to the application until N retransmits.",
+   "why": "Single-stream applications: fine. Multi-stream (HTTP/2 multiplexed streams over one TCP): pathological. HOL was the primary motivation for QUIC, which moves multiplexing below the reliability layer.",
+   "category": "layer4_transport"
+  },
+  {
+   "name": "UDP",
+   "definition": "User Datagram Protocol. Connectionless, no reliability, no ordering, no congestion control. Bare minimum over IP.",
+   "why": "When you don't need TCP's reliability: DNS, real-time audio/video, gaming. Application provides reliability if needed. QUIC, WebRTC, custom protocols all build on UDP.",
+   "category": "layer4_transport"
+  },
+  {
+   "name": "QUIC",
+   "definition": "RFC 9000. Modern transport: UDP-based, encrypted by default (TLS 1.3), multiplexed streams without HOL blocking, connection migration. Foundation of HTTP/3.",
+   "why": "Solves TCP+TLS's problems: 1-RTT handshake (0-RTT for repeat), stream-level reliability (no HOL across streams), connection survives IP changes (laptop sleeps then wakes). Internet's first new transport in decades.",
+   "category": "layer4_transport"
+  },
+  {
+   "name": "SCTP",
+   "definition": "Stream Control Transmission Protocol. Multi-stream, message-oriented, supports multihoming. RFC 4960.",
+   "why": "Telecom signalling (SS7-over-IP), some research / niche use. Multi-stream avoids HOL blocking like QUIC; multihoming gives path redundancy. Limited adoption due to middlebox unfriendliness (NATs/firewalls drop unknown L4 protocols).",
+   "category": "layer4_transport"
+  },
+  {
+   "name": "TLS_1_3",
+   "definition": "Transport Layer Security 1.3 (RFC 8446). Removes obsolete crypto, mandates forward secrecy, 1-RTT handshake (0-RTT for resumption), shorter overall.",
+   "why": "Removes the historical insecure options that TLS 1.2 carried. 1-RTT vs TLS 1.2's 2-RTT shaves latency dramatically. Now the de facto standard; TLS 1.2 still common but TLS 1.0/1.1 deprecated.",
+   "category": "security"
+  },
+  {
+   "name": "TLS_handshake",
+   "definition": "Negotiation that establishes the encrypted channel: cipher suite selection, key exchange, server (and optionally client) authentication via certificates.",
+   "why": "Establishes trust + keys. TLS 1.3 does this in 1 RTT (vs 1.2's 2 RTT) by sending key share in the first message. Resumption via PSK enables 0-RTT for repeat visits.",
+   "category": "security"
+  },
+  {
+   "name": "X509_certificate",
+   "definition": "Public-key certificate format. Identifies a server (or person) by binding their public key to an identity (CN, SAN) via a Certificate Authority's signature.",
+   "why": "Trust on first use unworkable at Internet scale. CAs vouch for identities; browsers ship with trusted CA roots. CRL/OCSP/CT log all address revocation + transparency issues.",
+   "category": "security"
+  },
+  {
+   "name": "certificate_transparency",
+   "definition": "Public append-only logs of all issued certificates. CAs submit certs; browsers verify cert inclusion before trusting.",
+   "why": "Detects mis-issuance. Pre-CT, a rogue CA could issue google.com to itself silently. With CT, the certificate is publicly visible — Google or anyone can detect + revoke. Now mandatory for browser-trusted certs.",
+   "category": "security"
+  },
+  {
+   "name": "HTTPS",
+   "definition": "HTTP over TLS. RFC 2818 / 8446. Encrypted HTTP — confidentiality + authentication + integrity for web traffic.",
+   "why": "Now the default for the web (>95% of traffic). Browsers enforce mixed-content blocking, mark HTTP as insecure. Let's Encrypt made it free; CDNs made it easy.",
+   "category": "security"
+  },
+  {
+   "name": "HTTP_1_1",
+   "definition": "RFC 7230-7235. Text-based, stateless request-response. Connection: keep-alive for connection reuse; pipelining (mostly disabled in practice).",
+   "why": "The web's protocol for 25+ years. Simple, debuggable. Drawbacks: head-of-line blocking, header bloat, one request at a time per connection. HTTP/2 + /3 addressed these but HTTP/1.1 persists for compatibility.",
+   "category": "application_protocol"
+  },
+  {
+   "name": "HTTP_2",
+   "definition": "RFC 7540. Binary framing, multiplexed streams over one TCP connection, header compression (HPACK), server push, prioritisation.",
+   "why": "Faster web. Multiplexing avoids HTTP/1.1's connection-per-resource. HPACK compresses repeated headers (saving 30-90% on header bytes). But TCP-level HOL blocking remained — the motivation for HTTP/3.",
+   "category": "application_protocol"
+  },
+  {
+   "name": "HTTP_3",
+   "definition": "RFC 9114. HTTP/2 semantics over QUIC. No TCP HOL blocking, 0-RTT for repeat connections, connection migration.",
+   "why": "Major performance win for mobile web (where networks change frequently). The HTTP semantics are unchanged; the transport is. Adoption ~30% of major sites in 2024; CDNs (Cloudflare, Fastly) drive most of it.",
+   "category": "application_protocol"
+  },
+  {
+   "name": "HPACK_header_compression",
+   "definition": "HTTP/2's header compression algorithm. Static + dynamic dictionary of common headers; Huffman-coded values.",
+   "why": "HTTP headers repeat heavily (cookies, user-agent, etc.). HPACK exploits this with stateful compression. Per-connection state; reset on connection restart.",
+   "category": "application_protocol"
+  },
+  {
+   "name": "QPACK_header_compression",
+   "definition": "HTTP/3's header compression. Like HPACK but redesigned for QUIC's out-of-order delivery (HPACK assumed ordered HTTP/2 streams).",
+   "why": "HPACK's stateful dynamic table requires ordered delivery; QUIC streams arrive in any order. QPACK separates index updates from header references to allow out-of-order safety.",
+   "category": "application_protocol"
+  },
+  {
+   "name": "DNS",
+   "definition": "Domain Name System. Hierarchical name → IP mapping. Resolvers query authoritative servers; caching at every level.",
+   "why": "Internet's directory. Without DNS, every connection would need raw IPs. The hierarchy (.com, example, www) allows distributed authority. Average lookup: 20-50ms; cached: <1ms.",
+   "category": "naming_addressing"
+  },
+  {
+   "name": "DNS_recursive_resolver",
+   "definition": "Resolver that walks the DNS hierarchy on behalf of clients. Typical: ISP, public (8.8.8.8, 1.1.1.1), local (systemd-resolved).",
+   "why": "Clients don't traverse the DNS tree themselves; resolvers cache aggressively + handle iteration. The choice of resolver affects privacy (queries observed by ISP/Google/Cloudflare) and performance (cache locality).",
+   "category": "naming_addressing"
+  },
+  {
+   "name": "DNS_over_HTTPS",
+   "definition": "DoH (RFC 8484). DNS queries over HTTPS, on port 443. Indistinguishable from web traffic.",
+   "why": "Privacy: ISP can't see DNS queries (they're inside TLS). Bypass: censorship via DNS hijacking fails. Critics worry about centralisation to major DoH providers (Cloudflare, Google).",
+   "category": "naming_addressing"
+  },
+  {
+   "name": "DNS_over_TLS",
+   "definition": "DoT (RFC 7858). DNS queries over TLS, on dedicated port 853.",
+   "why": "Same privacy as DoH but distinguishable by port. Easier for network operators to block / monitor; some prefer this for management. DNS-over-QUIC (RFC 9250) is the further evolution.",
+   "category": "naming_addressing"
+  },
+  {
+   "name": "WebSocket",
+   "definition": "RFC 6455. Upgrade HTTP/1.1 connection to bidirectional binary/text messaging. Stays open for the application's lifetime.",
+   "why": "Pre-WebSocket, real-time web needed long-polling or Comet hacks. WebSocket enables persistent bidirectional channels. Used by chat, dashboards, games, collaboration tools. Layer-3 alternative: WebRTC data channels.",
+   "category": "application_protocol"
+  },
+  {
+   "name": "gRPC",
+   "definition": "Google's RPC framework over HTTP/2. Protocol Buffers for serialisation; stream-based; supports unary, server-streaming, client-streaming, bidirectional.",
+   "why": "Strongly typed, schema-defined, efficient (binary Protobuf vs JSON). Standard for microservices internal APIs. HTTP/2 multiplexing handles many concurrent requests; HTTP/3 variant adds QUIC benefits.",
+   "category": "application_protocol"
+  },
+  {
+   "name": "Protocol_Buffers",
+   "definition": "Google's binary serialisation format. Schema-defined (.proto files); compact; forward/backward compatible via numbered fields.",
+   "why": "Smaller than JSON, faster to parse, schema-evolutionary. The serialisation layer for gRPC, Kafka, many distributed systems. Schema-first approach catches incompatibility before runtime.",
+   "category": "application_protocol"
+  },
+  {
+   "name": "MQTT",
+   "definition": "Message Queueing Telemetry Transport (RFC). Lightweight publish/subscribe protocol over TCP. ~2-byte minimum overhead per message.",
+   "why": "Designed for constrained devices + unreliable links: IoT, mobile, sensor networks. Topic-based pub/sub; QoS levels (0/1/2). Standard for IoT messaging; competing with MQTT-SN over UDP for ultra-constrained devices.",
+   "category": "application_protocol"
+  },
+  {
+   "name": "AMQP",
+   "definition": "Advanced Message Queueing Protocol. Standard messaging protocol with exchanges, queues, routing, transactions.",
+   "why": "Enterprise messaging. More featureful than MQTT (transactions, complex routing). Used in RabbitMQ; superseded in many cases by Kafka or cloud-native (SQS, SNS) systems.",
+   "category": "application_protocol"
+  },
+  {
+   "name": "Kafka_protocol",
+   "definition": "Apache Kafka's wire protocol. Binary, request/response over TCP. Append-only log semantics + consumer groups for parallel consumption.",
+   "why": "Log-based messaging at scale (billions of messages/day per cluster). Used for event sourcing, stream processing, log aggregation. Protocol is intentionally simple; complexity lives in clients + coordination.",
+   "category": "application_protocol"
+  },
+  {
+   "name": "WebRTC",
+   "definition": "Real-Time Communication API for browsers. Establishes peer-to-peer media + data channels using STUN/TURN for NAT traversal.",
+   "why": "Browser-to-browser audio/video/data without a media server. Used in video conferencing (Google Meet, Discord native), gaming, file transfer. Complex to deploy through enterprise firewalls.",
+   "category": "application_protocol"
+  },
+  {
+   "name": "STUN_NAT_traversal",
+   "definition": "Session Traversal Utilities for NAT (RFC 8489). Discovers external IP/port of a client behind NAT.",
+   "why": "Lets two NAT'd clients learn each other's public addresses + attempt direct connection. Essential to WebRTC, P2P, BitTorrent, VoIP. Doesn't always work (symmetric NAT requires relay).",
+   "category": "application_protocol"
+  },
+  {
+   "name": "TURN_relay",
+   "definition": "Traversal Using Relays around NAT (RFC 8656). Relay server forwards traffic between peers when direct connection fails.",
+   "why": "Fallback when STUN-based hole punching can't work (symmetric NAT, restrictive firewalls). Costs bandwidth at relay; required for reliable WebRTC deployment in enterprise environments.",
+   "category": "application_protocol"
+  },
+  {
+   "name": "load_balancer_L4",
+   "definition": "Layer-4 LB: forwards based on TCP/UDP 4-tuple (src IP/port, dst IP/port). No inspection of higher-layer content.",
+   "why": "Fast (line rate), simple, but stateful (must track connection). HAProxy at L4, AWS NLB, F5. Standard for high-throughput non-HTTP traffic.",
+   "category": "datacenter_networking"
+  },
+  {
+   "name": "load_balancer_L7",
+   "definition": "Layer-7 LB: terminates connection, inspects HTTP request (path, headers, cookies), routes accordingly. Envoy, NGINX, ALB.",
+   "why": "Smart routing: path-based (/api/* to API servers), cookie-based (session affinity), feature-flag-based (canaries). Costs CPU (terminating TLS, parsing HTTP) but enables sophisticated traffic management.",
+   "category": "datacenter_networking"
+  },
+  {
+   "name": "anycast",
+   "definition": "Same IP address announced from multiple geographic locations. Routing protocols steer each client to the closest.",
+   "why": "DNS root servers (13 addresses, hundreds of physical instances), Cloudflare's network, CDNs all use anycast. Automatic failover (route withdrawal) + locality (closest server). Doesn't work for stateful protocols by itself; needs careful integration.",
+   "category": "datacenter_networking"
+  },
+  {
+   "name": "ECMP",
+   "definition": "Equal-Cost Multi-Path routing. Multiple equal-cost paths to a destination; routers hash flows across them for load balancing.",
+   "why": "Datacenter Clos topology relies on ECMP to spread traffic across many parallel paths. The hash is per-flow (not per-packet) to avoid TCP reordering. Critical for spine-leaf network throughput.",
+   "category": "datacenter_networking"
+  },
+  {
+   "name": "VXLAN",
+   "definition": "Virtual Extensible LAN. Layer-2 over UDP/IP encapsulation. Lets VMs / containers across racks appear on the same L2 network.",
+   "why": "Decouples logical (multi-tenant overlay) from physical (datacenter underlay). 24-bit VNI vs 12-bit VLAN allows 16M virtual networks. Standard for OpenStack Neutron, Kubernetes CNI plugins.",
+   "category": "datacenter_networking"
+  },
+  {
+   "name": "RDMA",
+   "definition": "Remote Direct Memory Access. NIC reads/writes remote memory directly, bypassing the remote CPU.",
+   "why": "Latencies of <2μs, ~100 Gbps bandwidth. Used in HPC, distributed storage, AI training (NCCL). Two flavours: InfiniBand (native), RoCE (over Ethernet).",
+   "category": "datacenter_networking"
+  },
+  {
+   "name": "RoCE",
+   "definition": "RDMA over Converged Ethernet. RDMA on standard Ethernet infrastructure. RoCEv1 (over L2), RoCEv2 (over UDP/IP).",
+   "why": "Datacenter operators get RDMA without InfiniBand. RoCEv2 routes through L3 — works in standard Ethernet networks with proper QoS / DCQCN congestion control.",
+   "category": "datacenter_networking"
+  },
+  {
+   "name": "InfiniBand",
+   "definition": "Native RDMA fabric. Native protocol stack, custom switches, custom HCAs (host channel adapters). 200-400 Gbps modern.",
+   "why": "HPC + AI training dominant interconnect. Lower latency than RoCE. Costs more; harder to integrate with general datacenter Ethernet. NVIDIA acquired Mellanox (the dominant IB vendor) — strategic for AI training fabrics.",
+   "category": "datacenter_networking"
+  },
+  {
+   "name": "DPDK",
+   "definition": "Data Plane Development Kit. User-space packet processing library. Bypasses the kernel networking stack for very high throughput.",
+   "why": "Linux kernel stack adds ~10μs latency + caps throughput around 10 Gbps per CPU. DPDK gives line-rate at 100 Gbps using polling, huge pages, no syscalls. Used in NFV (network function virtualisation), HFT, software switches (Open vSwitch DPDK).",
+   "category": "datacenter_networking"
+  },
+  {
+   "name": "XDP",
+   "definition": "eXpress Data Path. Run BPF programs at the NIC driver, before the kernel sk_buff allocation. Drop/redirect/modify packets at line rate.",
+   "why": "Compromise between kernel stack and full DPDK: keep kernel involved but skip its overhead for high-rate paths. Used for DDoS mitigation, in-kernel load balancing (Cilium, Katran).",
+   "category": "datacenter_networking"
+  },
+  {
+   "name": "service_mesh",
+   "definition": "Sidecar proxy injected next to each service. Handles service-to-service authentication, retries, load balancing, observability. Envoy, Linkerd.",
+   "why": "Microservices architectures need cross-service concerns: mTLS, retries, circuit breakers, tracing. Service mesh implements these uniformly without per-service code. Cost: latency overhead (~1-2 ms per hop), operational complexity.",
+   "category": "datacenter_networking"
+  },
+  {
+   "name": "BBR_congestion_control",
+   "definition": "Bottleneck Bandwidth and Round-trip propagation time. Models the bottleneck instead of treating loss as congestion. Maintains low queue → low latency.",
+   "why": "Loss-based congestion control (CUBIC, Reno) fills queues → high latency (bufferbloat). BBR estimates the bandwidth + RTT and rate-limits to match — no buffer build-up. Used by Google's CDN, YouTube; ~2-25x throughput improvement on lossy WANs.",
+   "category": "performance_mechanism"
+  },
+  {
+   "name": "CUBIC_congestion_control",
+   "definition": "Linux's default congestion control. Cubic growth function for window size — fast probe up to last-loss point, slower beyond.",
+   "why": "Replaced Reno on Linux ~2008. Performs better on high-BDP links. Loss-triggered backoff means it still suffers from bufferbloat in long fat networks. Now being increasingly replaced by BBR.",
+   "category": "performance_mechanism"
+  },
+  {
+   "name": "bufferbloat",
+   "definition": "Excessive queueing in network buffers causes high latency even at low utilisation. The bottleneck queue fills up; latency grows to seconds.",
+   "why": "Network operators over-provision buffers (RAM is cheap). Loss-based congestion control needs loss to back off — so it fills buffers before backing off. Result: 5+ second pings on saturated links. Fixed by BBR + CoDel queue management.",
+   "category": "performance_mechanism"
+  },
+  {
+   "name": "TSO_GSO_offload",
+   "definition": "TCP Segmentation Offload (TSO): hand large send buffers to the NIC, which splits into MTU-sized segments. GSO is software-level pre-split.",
+   "why": "Per-packet processing (header construction, checksum) is expensive at high speeds. Offloading to NIC cuts CPU. Modern NICs can sustain 100+ Gbps with TSO; without it, even high-end CPUs cap around 25 Gbps.",
+   "category": "performance_mechanism"
+  },
+  {
+   "name": "GRO_receive_offload",
+   "definition": "Generic Receive Offload. Coalesces consecutive packets in one flow into a single 'super-packet' for the kernel stack.",
+   "why": "Inverse of TSO. NIC delivers fewer-but-bigger packets to the stack; the stack processes fewer items per second. Critical for receiver-side high-throughput TCP.",
+   "category": "performance_mechanism"
+  },
+  {
+   "name": "RSS",
+   "definition": "Receive Side Scaling. NIC hashes incoming packets by 4-tuple to N receive queues; each queue routed to a different CPU.",
+   "why": "Single-queue NICs serialise all receive processing on one CPU — caps at ~5 Gbps. RSS spreads across cores. Critical for multi-tens-of-Gbps NICs. Hash must keep flows on same queue to avoid TCP reordering.",
+   "category": "performance_mechanism"
+  },
+  {
+   "name": "CDN",
+   "definition": "Content Delivery Network. Geographically distributed servers caching content close to users. Cloudflare, Akamai, Fastly, CloudFront.",
+   "why": "Latency: ~5ms RTT to a nearby CDN vs ~150ms to a US-based origin from Asia. Bandwidth: origin offload, edge serving. The Internet's actual performance layer for static content + much dynamic content.",
+   "category": "datacenter_networking"
+  },
+  {
+   "name": "DDoS",
+   "definition": "Distributed Denial of Service. Many distributed sources flooding a target. Volumetric (overwhelm bandwidth), protocol (exhaust connection tracking), application (expensive queries).",
+   "why": "Asymmetric: attackers reflect/amplify via misconfigured DNS, NTP, memcached etc. Defense involves CDN absorption + filtering, BGP blackholing, rate limiting. The single largest threat to Internet service availability.",
+   "category": "security"
+  },
+  {
+   "name": "BGP_hijacking",
+   "definition": "Maliciously (or accidentally) announcing IP prefixes you don't own. Traffic to those addresses routes to you instead of the legitimate owner.",
+   "why": "BGP has no built-in authentication. Famous incidents: Pakistan blocking YouTube globally (2008), Russian ISP hijacking credit-card processors (2017). Mitigation: RPKI, route filters, IRR validation.",
+   "category": "security"
+  },
+  {
+   "name": "RPKI",
+   "definition": "Resource Public Key Infrastructure. Cryptographically-signed assertions linking IP prefixes to ASes. RFC 6480.",
+   "why": "Lets ISPs filter BGP announcements: an AS claiming to own a prefix it doesn't own (per RPKI) gets dropped. Adoption: ~40% of routes signed in 2024; filtering by major networks growing. Slow but real progress on BGP security.",
+   "category": "security"
+  },
+  {
+   "name": "CoAP",
+   "definition": "Constrained Application Protocol (RFC 7252). HTTP-like but over UDP, optimised for constrained IoT devices. Binary headers, compact codes.",
+   "why": "MQTT competitor for IoT. HTTP-like semantics (GET/POST/etc.) but ~10 bytes overhead vs HTTP's hundreds. Used in low-power mesh networks; less common than MQTT in cloud-connected IoT.",
+   "category": "application_protocol"
+  },
+  {
+   "name": "protocol_versioning",
+   "definition": "How protocols evolve without breaking compatibility. HTTP's version header + content negotiation; gRPC's Protobuf field numbers; TLS's negotiated version.",
+   "why": "Decade-spanning compatibility requires planned evolution. Wrong choices (TLS 1.3 named because middleboxes broke on 'TLS 1.3' but accepted 'TLS 1.2') haunt protocols forever. Best-practice: design extensibility into the first version.",
+   "category": "protocol_design"
+  },
+  {
+   "name": "middlebox",
+   "definition": "Network device that inspects or modifies traffic in-flight: firewalls, NATs, load balancers, IDS/IPS, proxies.",
+   "why": "Middleboxes are a key reason protocols can't easily evolve. TLS 1.3 had to disguise itself as 1.2 to traverse middleboxes that rejected unknown versions. QUIC's encryption hides everything to dodge this.",
+   "category": "foundation"
+  },
+  {
+   "name": "MPTCP",
+   "definition": "Multipath TCP (RFC 8684). Single TCP connection spread across multiple network paths (Wi-Fi + cellular simultaneously).",
+   "why": "Mobile devices have multiple networks; falling back from one to another mid-flow is fragile. MPTCP uses both simultaneously, aggregating bandwidth + surviving single-path failure. Standard in iOS for Siri, Apple Maps.",
+   "category": "performance_mechanism"
+  },
+  {
+   "name": "EDF_envelope_data_format",
+   "definition": "How encoded payload is delimited within a stream. Length-prefixed (HTTP/2, gRPC), self-terminating (JSON, XML), framed (WebSocket).",
+   "why": "Stream protocols need to delineate logical messages. Length-prefix is fastest to parse; self-terminating tolerates legacy systems; framed gives structure for chunked transmission. Choice affects parser complexity + performance.",
+   "category": "protocol_design"
+  },
+  {
+   "name": "Wi_Fi_6",
+   "definition": "802.11ax. Up to 9.6 Gbps theoretical; OFDMA (multiple users in subchannels); MU-MIMO for downlink + uplink; TWT for power saving.",
+   "why": "Major upgrade from 802.11ac (Wi-Fi 5): better throughput in crowded environments via OFDMA; lower latency; more efficient for many clients. Standard since 2020; Wi-Fi 7 (802.11be) emerging in 2024.",
+   "category": "layer1_physical"
+  },
+  {
+   "name": "5G_cellular",
+   "definition": "5th generation cellular. Sub-6 GHz (low/mid bands) + mmWave (24-100 GHz). Peak 10-20 Gbps theoretical; <1ms latency theoretical.",
+   "why": "Designed for high-density urban + low-latency applications. mmWave gives huge bandwidth but short range; sub-6 is the everyday 5G most users get. Network slicing enables per-application QoS.",
+   "category": "layer1_physical"
+  }
+ ],
+ "rules": [
+  {
+   "name": "layering_decouples_evolution",
+   "if": [
+    "protocols are organised into layers with stable interfaces"
+   ],
+   "then": [
+    "each layer can evolve independently of others"
+   ],
+   "why": "Ethernet was replaced by Wi-Fi at L2 without touching IP. HTTP/3 changed L7 transport without touching IP. The layered model's value is precisely in this decoupling — what enables 50 years of Internet evolution.",
+   "soundness_category": "referential_transparency"
+  },
+  {
+   "name": "encapsulation_lets_higher_layers_be_transport_agnostic",
+   "if": [
+    "each layer treats lower-layer headers as opaque"
+   ],
+   "then": [
+    "the higher layer works over any compatible lower-layer protocol"
+   ],
+   "why": "Same TCP implementation works over Ethernet, Wi-Fi, satellite, fiber. The layer above doesn't know or care about the layer below's format — only its bandwidth, latency, MTU.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "TCP_provides_reliable_byte_stream_over_unreliable_packets",
+   "if": [
+    "TCP layer is interposed between application and IP"
+   ],
+   "then": [
+    "applications see a reliable in-order byte stream despite packet loss / reordering"
+   ],
+   "why": "TCP's sequence numbers + ACKs + retransmission + flow control implement reliability. The illusion of a perfect pipe over a lossy medium. The cost: latency on lost packets, head-of-line blocking.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "congestion_control_enables_fair_sharing",
+   "if": [
+    "all senders implement congestion control"
+   ],
+   "then": [
+    "available bandwidth is shared fairly without collapse"
+   ],
+   "why": "Without congestion control, every sender at full speed would cause router queue overflow + collapse (the 1986 congestion collapse). TCP's slow start + AIMD probes capacity then backs off on loss. The Internet's continued existence depends on near-universal congestion control compliance.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "head_of_line_blocking_motivated_QUIC",
+   "if": [
+    "multiple logical streams multiplex over one TCP connection"
+   ],
+   "then": [
+    "loss on one stream blocks the others until retransmit"
+   ],
+   "why": "HTTP/2 multiplexes streams over TCP; one lost packet on stream A blocks streams B-Z. QUIC moves stream multiplexing below the reliability layer (per-stream reliability) — loss on stream A doesn't affect B. This is QUIC's primary motivation.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "TLS_authenticates_endpoints_to_users",
+   "if": [
+    "TLS handshake completes with valid certificate"
+   ],
+   "then": [
+    "the user can be confident they're talking to the server identified by the certificate"
+   ],
+   "why": "Certificate binds domain name to public key via CA signature. CA's root key is in the browser. Successful handshake proves the server holds the private key for that certificate. The web's trust anchor.",
+   "soundness_category": "referential_transparency"
+  },
+  {
+   "name": "BBR_avoids_bufferbloat_via_bandwidth_modeling",
+   "if": [
+    "congestion control models bandwidth + RTT instead of reacting to loss"
+   ],
+   "then": [
+    "queues stay empty and latency stays low"
+   ],
+   "why": "Loss-based control needs to fill buffers to detect congestion. BBR estimates the bandwidth-delay product directly and limits to that — buffers stay empty. Eliminates bufferbloat on the sender side.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "anycast_enables_geographic_failover",
+   "if": [
+    "the same IP is announced from multiple sites"
+   ],
+   "then": [
+    "BGP routing automatically steers clients to the closest healthy site"
+   ],
+   "why": "Failed site stops announcing the prefix; other sites continue. Routing converges in seconds. No client-side change needed. The mechanism behind DNS root servers, modern CDNs.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "RDMA_bypasses_remote_CPU",
+   "if": [
+    "the local NIC writes directly to remote memory"
+   ],
+   "then": [
+    "the remote CPU is not involved in the data transfer"
+   ],
+   "why": "Traditional TCP receive involves kernel + copy from buffer to user. RDMA's NIC writes directly to the user's pinned buffer — zero CPU involvement on the receive side. Latency <2μs vs ~10μs for TCP; bandwidth saturates 100 Gbps without saturating one core.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "DNS_caching_reduces_lookup_latency",
+   "if": [
+    "DNS responses are cached at multiple levels (browser, OS, resolver, authoritative)"
+   ],
+   "then": [
+    "typical lookups complete in milliseconds, not the full hierarchy traversal"
+   ],
+   "why": "TTLs enable caching at every level. A cached browser lookup is microseconds; OS cached is hundreds of microseconds; resolver cached is single-digit milliseconds. Full hierarchical traversal is 50-200ms.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "middlebox_ossification_resists_protocol_evolution",
+   "if": [
+    "middleboxes parse and modify protocol headers"
+   ],
+   "then": [
+    "the protocol cannot evolve in ways middleboxes would reject"
+   ],
+   "why": "TLS 1.3 had to falsify its version number because middleboxes rejected unknown versions. QUIC's wire format is fully encrypted partly to prevent future ossification. Long-term concern: the more useful a protocol's middleboxes become, the harder the protocol is to upgrade.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "kernel_bypass_required_for_modern_NIC_speeds",
+   "if": [
+    "a NIC supports 100+ Gbps line rate"
+   ],
+   "then": [
+    "the Linux kernel network stack becomes a bottleneck"
+   ],
+   "why": "Per-packet processing overhead in the kernel (~1-5 μs) caps single-CPU throughput. DPDK/XDP bypass the per-packet kernel costs. RSS spreads load across cores. Without these, 100 Gbps NICs are largely wasted.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "header_compression_compounds_over_streams",
+   "if": [
+    "headers are stateful-compressed over a long-lived connection"
+   ],
+   "then": [
+    "repeated headers cost near-zero bytes after the first occurrence"
+   ],
+   "why": "Cookies, user-agent, accept-encoding repeat on every request. HPACK/QPACK's dynamic table makes the second occurrence reference the first. For multi-request sessions, savings are 70-90% of total header bytes.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "TCP_window_scaling_required_for_high_BDP",
+   "if": [
+    "bandwidth × RTT (BDP) exceeds 64 KB"
+   ],
+   "then": [
+    "window scaling is required to achieve line rate"
+   ],
+   "why": "TCP's 16-bit window holds at most 64 KB of unACKed data. Bandwidth × RTT (the in-flight requirement to keep the pipe full) is much larger on modern links: 1 Gbps × 100ms = 12.5 MB. Without window scaling, throughput collapses to ~6 Mbps.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "HTTPS_default_changed_web_threat_model",
+   "if": [
+    "HTTPS is the default for web traffic"
+   ],
+   "then": [
+    "network observers cannot read or modify content; only metadata leaks"
+   ],
+   "why": "Pre-2015 web was largely cleartext; coffee shops, ISPs, governments could see everything. Universal HTTPS (driven by Let's Encrypt + browser pressure) ended that — observers see only domain + size patterns. Encryption is the new default trust model.",
+   "soundness_category": "referential_transparency"
+  },
+  {
+   "name": "service_mesh_externalises_cross_service_concerns",
+   "if": [
+    "each service has a sidecar proxy handling mTLS / retries / observability"
+   ],
+   "then": [
+    "application code stays free of those cross-cutting concerns"
+   ],
+   "why": "Without service mesh, each microservice reimplements mTLS, retry logic, tracing, rate limiting. Service mesh handles them uniformly via sidecar (typically Envoy). Cost: ~1-2 ms per hop latency; benefit: consistent policy across hundreds of services.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "NAT_breaks_end_to_end_principle",
+   "if": [
+    "a connection traverses NAT"
+   ],
+   "then": [
+    "only outbound-initiated connections work; inbound requires explicit configuration"
+   ],
+   "why": "Inbound packets arrive at the NAT's public IP with no associated outbound flow; NAT has no idea where to forward them. Workarounds (UPnP, NAT-PMP, STUN, TURN) layer over this fundamental limitation. The end-to-end principle of the early Internet died with NAT.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "session_resumption_avoids_full_handshake",
+   "if": [
+    "the client has TLS session tickets from a previous connection"
+   ],
+   "then": [
+    "a 0-RTT or 1-RTT resumption replaces the full handshake"
+   ],
+   "why": "Full TLS handshake is 1 RTT (TLS 1.3) or 2 RTT (TLS 1.2). Resumption uses cached pre-shared keys; client can send app data immediately (0-RTT) or after one round-trip (1-RTT). Critical for repeat-visit page load latency.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "ECMP_hash_must_be_flow_consistent",
+   "if": [
+    "ECMP hash uses 5-tuple (src/dst IP, src/dst port, proto)"
+   ],
+   "then": [
+    "packets in the same flow always hash to the same path; no reordering"
+   ],
+   "why": "Per-packet hashing would round-robin packets across paths, causing TCP reordering (treated as loss → backoff). Per-flow hash keeps each flow on one path. Trade-off: a single elephant flow can't use multiple paths.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "DDoS_defense_requires_upstream_filtering",
+   "if": [
+    "volumetric DDoS exceeds target's bandwidth"
+   ],
+   "then": [
+    "filtering must happen upstream (ISP, CDN, scrubbing service)"
+   ],
+   "why": "If 100 Gbps attack hits a 10 Gbps link, the link is saturated regardless of what the target does. Upstream filtering (BGP blackholing, cloud DDoS protection) drops the attack before it reaches the constrained link. CDN-based DDoS protection (Cloudflare's anycast model) is the dominant approach.",
+   "soundness_category": "cost_equivalence"
+  }
+ ],
+ "exclusions": [],
+ "parent_mt": "computer_architecture",
+ "relations": [
+  {
+   "src": "network_protocols",
+   "edge": "genlMt",
+   "tgt": "compiler_theory"
+  }
+ ]
+}

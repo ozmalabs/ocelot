@@ -1,0 +1,138 @@
+{
+  "microtheory": {
+    "name": "basal_ganglia_circuit",
+    "definition": "Basal ganglia as action-selection + reinforcement-learning engine. Cortex → striatum → globus pallidus → thalamus → cortex loop. Direct + indirect pathways implement go/no-go decisions. Dopamine from VTA/SNc modulates striatal plasticity, encoding reward prediction error. This is the neural substrate of habit, skill, addiction, parkinsonism. Substrate analogue: ActionSpec dispatch + reinforcement of which corrections to fire.",
+    "category": "neuroscience_domain",
+    "parent": "neuroscience"
+  },
+  "concepts": [
+    {
+      "name": "striatum",
+      "definition": "Largest basal ganglia component. Input region. Two subdivisions: dorsal (caudate + putamen) for action; ventral (nucleus accumbens) for motivation + reward. ~95% medium spiny neurons. Substrate analogue: the input layer of ActionSpec selection.",
+      "category": "subregion"
+    },
+    {
+      "name": "globus_pallidus",
+      "definition": "Two subnuclei: GPi (internal) is the output; GPe (external) is part of the indirect pathway. Tonically active inhibition of thalamus that the striatum gates. Substrate analogue: default-inhibition that ActionSpec firing must overcome.",
+      "category": "subregion"
+    },
+    {
+      "name": "substantia_nigra",
+      "definition": "Midbrain. SNc (pars compacta) — dopamine neurons sending to striatum. SNr (pars reticulata) — GABAergic output similar to GPi. Lesion of SNc = Parkinson's. Substrate analogue: source of the reward-modulation signal.",
+      "category": "subregion"
+    },
+    {
+      "name": "ventral_tegmental_area",
+      "definition": "Midbrain dopamine source for the mesolimbic + mesocortical pathways. Reward, motivation, addiction. Substrate analogue: source of plasticity-modulation for the substrate's ActionSpec coverage.",
+      "category": "subregion"
+    },
+    {
+      "name": "subthalamic_nucleus",
+      "definition": "Small but critical relay in the indirect pathway. Excites GPi to prevent unwanted actions. Deep brain stimulation target for Parkinson's. Substrate analogue: action-prevention concepts in the substrate's action selection.",
+      "category": "subregion"
+    },
+    {
+      "name": "medium_spiny_neuron",
+      "definition": "Striatum's primary neuron. GABAergic. Two main classes: D1-receptor-expressing (direct pathway) + D2-receptor-expressing (indirect pathway). Their balance determines action selection. Substrate analogue: positive vs negative ActionSpec coverage attrs.",
+      "category": "cell_type"
+    },
+    {
+      "name": "direct_pathway",
+      "definition": "Striatum (D1) → GPi/SNr → thalamus → cortex. Disinhibits thalamus when activated; net effect: GO. Dopamine enhances D1 activity, biasing toward action. Substrate analogue: ActionSpec firing.",
+      "category": "pathway"
+    },
+    {
+      "name": "indirect_pathway",
+      "definition": "Striatum (D2) → GPe → STN → GPi/SNr → thalamus → cortex. Net effect: NO-GO (inhibition strengthened). Dopamine REDUCES D2 activity, removing the brake. Substrate analogue: ActionSpec rejection / blockade.",
+      "category": "pathway"
+    },
+    {
+      "name": "hyperdirect_pathway",
+      "definition": "Cortex → STN → GPi. Fast, generic 'stop' signal that aborts incipient actions. Substrate analogue: emergency abort mechanism for incorrect ActionSpec dispatches.",
+      "category": "pathway"
+    },
+    {
+      "name": "dopaminergic_rpe_signal",
+      "definition": "Schultz 1997. Dopamine neurons fire above baseline when outcome > expectation, below baseline when outcome < expectation. Encodes reward prediction error — the teaching signal for striatal plasticity. Substrate analogue: ΔF signal driving ActionSpec weight updates.",
+      "category": "learning"
+    },
+    {
+      "name": "striatal_plasticity",
+      "definition": "Cortico-striatal synapses follow Hebbian + dopamine-gated rules. Active corticostriatal synapses strengthen when dopamine spikes (positive RPE) and weaken when it dips (negative RPE). Substrate analogue: ActionSpec covers_correction strengthening when corrections succeed.",
+      "category": "learning"
+    },
+    {
+      "name": "actor_critic_architecture",
+      "definition": "Sutton + Barto's RL framework maps onto basal ganglia: dorsal striatum = actor (selects actions); ventral striatum = critic (evaluates states); dopamine = TD error signal between them. Substrate analogue: ActionSpec dispatcher + assessment cortex co-evolving via mutual updating.",
+      "category": "framework"
+    },
+    {
+      "name": "temporal_difference_learning",
+      "definition": "Sutton 1988. Update value estimates based on the difference between successive predictions: V(s_t) += α · [r + γV(s_{t+1}) - V(s_t)]. Dopamine encodes exactly this TD error. Substrate analogue: F_t+1 - F_t in the substrate's frustration dynamics.",
+      "category": "framework"
+    },
+    {
+      "name": "habit_formation",
+      "definition": "Repeated action-outcome pairings under reward shift control from prefrontal (deliberative) to dorsolateral striatum (habitual). Habits are fast, automatic, insensitive to outcome devaluation. Substrate analogue: ActionSpec usage growing into a default-fire from sustained successful firing history.",
+      "category": "function"
+    },
+    {
+      "name": "action_selection",
+      "definition": "When multiple actions are simultaneously possible, basal ganglia gates ONE through by disinhibiting its thalamo-cortical loop while keeping others inhibited. Winner-take-all over actions. Substrate analogue: the substrate's runtime_discovery selecting which FilterSpec/ActionSpec to fire given an event.",
+      "category": "function"
+    },
+    {
+      "name": "goal_directed_versus_habit",
+      "definition": "Two parallel systems for behaviour: goal-directed (outcome-sensitive, slow, prefrontal-ventral-striatal) and habitual (stimulus-response, fast, dorsolateral-striatal). They compete. Substrate analogue: deliberate ArchitectureCortex-driven correction vs FilterSpec auto-dispatch.",
+      "category": "function"
+    },
+    {
+      "name": "exploration_versus_exploitation",
+      "definition": "Dopamine tonic level shifts the explore-exploit balance. High tonic = explore; low tonic = exploit known good actions. Substrate analogue: curiosity-drive amplitude modulation.",
+      "category": "function"
+    },
+    {
+      "name": "parkinsonism",
+      "definition": "Degeneration of SNc dopamine neurons → striatal dopamine depletion → indirect pathway over-active → action initiation impaired (bradykinesia, tremor, rigidity). Levodopa replacement helps. Substrate analogue: what failure mode of the substrate would look like if its action_dispatch couldn't fire.",
+      "category": "pathology"
+    },
+    {
+      "name": "huntington_disease",
+      "definition": "Striatal medium spiny neurons degenerate (D2 first, then D1). Indirect pathway fails, then direct → uncontrolled movements (chorea), eventually rigidity. Substrate analogue: failure of action-inhibition before action-initiation.",
+      "category": "pathology"
+    },
+    {
+      "name": "addiction_dysregulation",
+      "definition": "Repeated drug-induced dopamine spikes hijack the striatal learning signal, over-strengthening drug-related cue-action associations. Substrate analogue: a buggy reward signal training the wrong ActionSpec to fire.",
+      "category": "pathology"
+    }
+  ],
+  "rules": [
+    {
+      "name": "basal_ganglia_select_actions_by_disinhibition",
+      "head": "multiple ActionSpecs are eligible for firing",
+      "body": "the basal ganglia analog (direct vs indirect pathway balance) selects ONE by disinhibiting its loop while keeping others suppressed. The substrate's runtime_discovery dispatch implements this — competition + selection."
+    },
+    {
+      "name": "dopamine_encodes_reward_prediction_error",
+      "head": "an action outcome differs from expectation",
+      "body": "the substrate's analog of dopamine (the ΔF signal) modulates the strength of the ActionSpec→event association. Better-than-expected outcomes strengthen; worse weaken. This is Sutton+Barto TD learning."
+    },
+    {
+      "name": "habits_form_through_repetition",
+      "head": "an ActionSpec fires successfully repeatedly",
+      "body": "the substrate's analog of dorsal-striatal habit learning transfers control from deliberate (cortex-mediated) to automatic. The action becomes default behaviour, outcome-insensitive. Substrate analogue: ActionSpec dispatch frequency growing into a default fire."
+    },
+    {
+      "name": "actor_and_critic_co_train",
+      "head": "an outcome is evaluated",
+      "body": "the actor (ActionSpec dispatcher) updates its action policy; the critic (assessment cortex) updates its value estimate. The TD error coordinates them via the dopamine analog. Two-system architecture."
+    },
+    {
+      "name": "explore_exploit_balance_via_tonic_dopamine",
+      "head": "the substrate is in an exploration-favoring state",
+      "body": "the analog of tonic dopamine is elevated, biasing toward novel ActionSpec dispatch; low tonic biases toward repeating known-good ActionSpecs. Substrate analogue: curiosity-drive amplitude as exploration parameter."
+    }
+  ],
+  "parent_mt": "neuroscience"
+}

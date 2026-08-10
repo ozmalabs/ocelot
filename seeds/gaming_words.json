@@ -1,0 +1,135 @@
+{
+  "id": "gaming_words",
+  "version": "1.0.0",
+  "depends_on": [
+    "gaming"
+  ],
+  "description": "The spoken words for each gaming concept (head noun + predicate verb, read by the agent from the concept's own name). A GamingLexicon holds them via has_word; the describe_utterance rules join by name. Words live here because Concept nodes whitelist their attrs.",
+  "nodes": [
+    {
+      "local_id": 1,
+      "type": "GamingLexicon",
+      "attrs": {
+        "name": "gaming_words"
+      }
+    },
+    {
+      "local_id": 10,
+      "type": "GamingWord",
+      "attrs": {
+        "name": "the_thing_i_control",
+        "noun": "thing",
+        "verb": "control"
+      }
+    },
+    {
+      "local_id": 11,
+      "type": "GamingWord",
+      "attrs": {
+        "name": "a_thing_that_moves_itself",
+        "noun": "thing",
+        "verb": "moves"
+      }
+    },
+    {
+      "local_id": 12,
+      "type": "GamingWord",
+      "attrs": {
+        "name": "a_thing_that_stays_put",
+        "noun": "thing",
+        "verb": "stays"
+      }
+    },
+    {
+      "local_id": 13,
+      "type": "GamingWord",
+      "attrs": {
+        "name": "a_counter",
+        "noun": "counter"
+      }
+    },
+    {
+      "local_id": 14,
+      "type": "GamingWord",
+      "attrs": {
+        "name": "a_barrier_i_cannot_pass",
+        "noun": "barrier",
+        "verb": "pass"
+      }
+    },
+    {
+      "local_id": 15,
+      "type": "GamingWord",
+      "attrs": {
+        "name": "a_way_i_can_pass",
+        "noun": "way",
+        "verb": "pass"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "src": {
+        "local": 1
+      },
+      "type": "has_word",
+      "tgt": {
+        "local": 10
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 1
+      },
+      "type": "has_word",
+      "tgt": {
+        "local": 11
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 1
+      },
+      "type": "has_word",
+      "tgt": {
+        "local": 12
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 1
+      },
+      "type": "has_word",
+      "tgt": {
+        "local": 13
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 1
+      },
+      "type": "has_word",
+      "tgt": {
+        "local": 14
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "local": 1
+      },
+      "type": "has_word",
+      "tgt": {
+        "local": 15
+      },
+      "attrs": {}
+    }
+  ],
+  "productions": [],
+  "concepts": [],
+  "rules": []
+}

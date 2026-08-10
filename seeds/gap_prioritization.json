@@ -1,0 +1,59 @@
+{
+  "id": "gap_prioritization",
+  "version": "1.0.0",
+  "depends_on": [],
+  "description": "THE GAP-PRIORITIZATION (SCHEDULING) DECISION as DATA. The jabberwock already DRIVES its fixes on BOTH dimensions -- efficiency (performance_self_improvement) and understanding (understanding_self_improvement): perceive a gap -> diagnose its shape (graph) -> select the fix (graph) -> verify (#2) -> apply. But when MULTIPLE gaps are perceived at once it did not yet DECIDE which to fix FIRST. This seed adds the SCHEDULING layer: given the perceived gaps, each carrying a MEASURED salience (efficiency: the latency-excess cold_ms - warm; understanding: the defect-severity), ORDER them most-salient-first and fix in that order -- and the ORDER comes OUT of the graph, not hardcoded Python. PRINCIPLE: salience = residual = surprise ('explore the under-compressed'); the biggest measured residual is fixed first. Cross-domain the raw magnitudes are not comparable (ms vs a 0..1 severity), so they are normalized per the agent's POLICY -- SaliencePolicyWeight nodes carrying a per-kind weight (graph data, tunable) -- stated honestly as a POLICY, NOT a false-universal metric. Two graph-resident Programs, the twins of perf_diagnose / route_pick: (1) salience_normalize reads a gap's raw salience + kind and multiplies by the policy weight for that kind (Times over an Argmin-picked SaliencePolicyWeight whose kind Eq the gap's kind -- the SAME Filter/Argmin/Attr shape perf_fix_pick uses); (2) gap_priority is an Argmax over the still-unordered agenda gaps (Filter CapabilityGap where in_agenda==1 And Not ordered==1) by their normalized salience, returning the MOST-salient one. Applied REPEATEDLY (Python marks the picked gap ordered and re-evaluates) the Program EMITS the whole order -- most-salient-first. The ORDER is the Program's output over the salience DATA: BOOST an understanding gap's salience above the efficiency gap's and the SAME Program yields a DIFFERENT order (that gap now first). Python only sequences the enactment; it never sorts the gaps.",
+  "microtheory": {
+    "name": "gap_prioritization",
+    "description": "the order in which perceived capability gaps are fixed: most-salient (biggest normalized measured residual) first. Salience is measured at the boundary; the normalization weights are a stated POLICY (graph data); the ORDER is the gap_priority Argmax Program's output, applied repeatedly."
+  },
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "SaliencePolicy",
+      "attrs": {
+        "name": "default_salience_policy",
+        "description": "cross-domain salience normalization: a per-kind weight brings the raw measured residuals (efficiency latency-excess in ms; understanding defect-severity in 0..1) onto a comparable scale. A POLICY, tunable by editing the SaliencePolicyWeight weights -- NOT a universal metric.",
+        "rationale": "efficiency salience is a latency-excess in MILLISECONDS (a cold one-time init is ~1400 ms -> huge); understanding salience is a 0..1 defect-severity. Un-normalized, ms always dwarfs severity for reasons of UNIT not IMPORTANCE. The per-kind weight is the agent's stated stance on how many ms of latency-excess trade for one unit of understanding-defect."
+      }
+    },
+    {
+      "local_id": 1,
+      "type": "SaliencePolicyWeight",
+      "attrs": {
+        "kind": "performance",
+        "weight": 0.001,
+        "priority": 1,
+        "rationale": "scale a latency-excess measured in ms down by 1/1000 so 1400 ms of one-time-init excess reads as ~1.4 normalized salience -- comparable to a ~1.0 understanding defect, and still (correctly) the most salient of the three."
+      }
+    },
+    {
+      "local_id": 2,
+      "type": "SaliencePolicyWeight",
+      "attrs": {
+        "kind": "understanding",
+        "weight": 1.0,
+        "priority": 2,
+        "rationale": "an understanding defect-severity is already a 0..1 residual (1 - min error-feature); keep it as-is (weight 1.0)."
+      }
+    },
+    {
+      "local_id": 3,
+      "type": "Program",
+      "attrs": {
+        "name": "salience_normalize",
+        "form": "term_tree",
+        "program": "{\"type\": \"Times\", \"items\": [{\"type\": \"Var\", \"name\": \"raw\"}, {\"type\": \"Attr\", \"key\": \"weight\", \"node\": {\"type\": \"Argmin\", \"source\": {\"type\": \"Filter\", \"source\": {\"type\": \"NodesOfType\", \"node_type\": \"SaliencePolicyWeight\"}, \"var_name\": \"w\", \"predicate\": {\"type\": \"Eq\", \"a\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"w\"}, \"key\": \"kind\"}, \"b\": {\"type\": \"Var\", \"name\": \"kind\"}}}, \"var_name\": \"x\", \"value\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"x\"}, \"key\": \"priority\"}, \"default\": null}}]}"
+      }
+    },
+    {
+      "local_id": 4,
+      "type": "Program",
+      "attrs": {
+        "name": "gap_priority",
+        "form": "term_tree",
+        "program": "{\"type\": \"Argmax\", \"source\": {\"type\": \"Filter\", \"source\": {\"type\": \"NodesOfType\", \"node_type\": \"CapabilityGap\"}, \"var_name\": \"c\", \"predicate\": {\"type\": \"And\", \"items\": [{\"type\": \"Eq\", \"a\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"c\"}, \"key\": \"in_agenda\"}, \"b\": {\"type\": \"Lit\", \"value\": 1.0}}, {\"type\": \"Not\", \"arg\": {\"type\": \"Eq\", \"a\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"c\"}, \"key\": \"ordered\"}, \"b\": {\"type\": \"Lit\", \"value\": 1.0}}}]}}, \"var_name\": \"x\", \"value\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"x\"}, \"key\": \"norm_salience\"}, \"default\": null}"
+      }
+    }
+  ]
+}

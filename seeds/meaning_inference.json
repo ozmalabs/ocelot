@@ -1,0 +1,2398 @@
+{
+ "id": "meaning_inference",
+ "version": "2.4.0",
+ "depends_on": [
+  "reading_review"
+ ],
+ "description": "INFER MEANING FROM CONTEXT for an OUT-OF-VOCABULARY filler, the FORWARD twin of reading_review's selectional-incoherence scorer -- as a GRAPH JOIN, not a Python membership test. `SelectionalClassPair` is the scalar-row normal form of one (verb_class -> requires_class) admission: 'a verb.emotion relation admits a noun.person subject' is ONE row, 'admits a noun.animal subject' is ANOTHER, so the rule below JOINS a PredicationSlot to a SelectionalClassPair by Eq(verb_class) AND Eq(slot) -- the graph join that replaces `if rel_class in verb_classes`. This is independent seed data (own node type) alongside reading_review's existing list-valued `SelectionalRestriction` -- that node type keeps its own shape untouched (its consumer, reading_review._predication_selectional_incoherence, is not touched by this seed). domains/meaning_inference.py's Python side is PURE ANNOTATION: for every grounded predication argument it writes `oov`/`is_pronoun` facts on the filler Concept (WordNet/closed-class reads -- capability, not decision) and an UNCONDITIONAL `PredicationSlot{slot, rel_verb_class, relation}` node (rel_verb_class is simply null for a non-verb relation like 'of' -- Python does not branch on that, the null just never joins). Three rules make the WHOLE decision, in Rust: `infer_sense_mint`/`infer_sense_combine` perform the join (gated on oov + not-pronoun + not-already-genuinely-grounded) and mint-or-raise-confidence an `InferredSense{term, sense_class, confidence, via, source, status, revisable}` per (term, sense_class) -- the SAME ReadingBelief shape reading_collapse._record_reading_belief already uses for the passive/stative collapse (idempotent; a later grounding supersedes it in ONE set_attr, `infer_sense_supersede`). `grounded` is a flag any grounding process (teach(), a future ground_unknowns pass, ...) may set on a Concept; this seed only reacts to it -- the placeholder Concept `_write_predications` mints for EVERY predication argument, known or not, never carries it, so it never falsely counts as 'known'. SLICE 2 adds DEFINITIONAL inference: an UNCONDITIONAL `Predication{relation, subj_name, genus_full, genus_head, subj_oov, genus_head_grounded, genus_head_class}` fact node -- written for EVERY predication with an object, pairing SUBJECT and OBJECT within one predication instance (the pairing PredicationSlot, one-argument-per-node, cannot express) -- feeds `infer_sense_from_definition`: an is_a predication (`Eq(relation,'is_a')` -- the RELATION SELECTION, a rule Eq, never a Python branch) whose subject is OOV and whose object's GENUS HEAD is grounded mints a HIGHER-confidence `InferredSense{source:'definition'}` straight from the in-situ definition ('A glimt is a lake.' -> glimt:noun.object via 'lake'; 'A florbin is a small bird.' -> florbin:noun.animal via genus_head 'bird'). Coexists with a selectional-sourced row for the same term as a separate, higher-confidence row -- no forced supersede between sources. SLICE 3 adds MORPHOLOGICAL inference: an OOV term's own SHAPE (not its syntactic context) carries a semantic class -- 'florbitis' names a disease STATE by the '-itis' suffix alone, with no verb or copula to lean on. `MorphemeClass{affix, position, sense_class, weight, affix_len, note}` is the scalar-row codebook (one row per (affix, position) admission, the SAME normal form as SelectionalClassPair); domains/meaning_inference.py writes an UNCONDITIONAL `AffixCandidate{affix, position, term, affix_len}` per every 2..6-char suffix and 2..4-char prefix of an OOV content-word filler's head (mechanical `str` slicing -- every candidate substring is emitted, none preferred) linked `agent -has_affix_candidate-> ac -affix_fills-> filler_concept` (a DEDICATED edge type, not `PredicationSlot`'s `fills` -- a Concept can hold many AffixCandidate in-edges at once, and the daemon's documented run_rules gotcha is 'two same-type incoming edges on one node can break matching for that edge type', so morphology gets its own edge type rather than risk sharing PredicationSlot's). `infer_sense_from_morphology` JOINS AffixCandidate to MorphemeClass by Eq(affix) AND Eq(position) -- the graph join that decides which slice of the word means something, gated on the SAME oov + not-pronoun + not-already-grounded guards slice 1 uses, deduped per (term, sense_class, source='morphology'). Weight is 0.45 -- BELOW selectional (0.6) and definition (0.9): shape-only evidence is the WEAKEST source, context beats bare morphology when both are present. AMBIGUOUS overlapping affixes of the SAME sense_class (e.g. '-ectomy' and its own tail '-tomy', both noun.act) resolve via an explicit LONGEST-MATCH guard: the rule abstains on a shorter same-class match when a longer same-class MorphemeClass ALSO matches an AffixCandidate on the same filler (a nested Exists/InNeighbours check over `affix_len`, a static per-row field -- not a Python decision). Affixes of DIFFERENT sense_class are never suppressed -- they coexist as separate rows, exactly like slice 1's multi-class admission. '-ium' is deliberately NOT seeded (reserved to demonstrate teach()-grown element/metal coverage via '-onium' -- the morphology-slice twin of slice 1's taught verb.motion coverage). SLICE 4 adds ANALOGY inference: the SAME unconditional Predication{relation,...} fact slice 2 already writes for every predication with an object ALSO carries relation=='similar' for an explicit comparison ('A glorb is like a pump.'/'A florx resembles a bird.' -- the reader's own comparative_like_cop/comparative_like constructions), so `infer_sense_from_analogy` needs NO adapter change at all: it is `infer_sense_from_definition`'s exact JOIN shape with ONE Eq swapped (Eq(relation,'similar') instead of Eq(relation,'is_a')) -- an OOV subject of an explicit-comparison predication whose compared-to OBJECT grounds mints InferredSense{source:'analogy', sense_class:genus_head_class, via:genus_head, confidence:0.7} -- BELOW a copular identity definition (0.9, 'A glimt IS a lake' asserts identity) but ABOVE mere selectional admission (0.6, a verb class merely ADMITS a filler): an authored simile is stronger evidence than a class-only admission, weaker than an assertion of identity. Coexists with definition/selectional/morphology rows for the same term as separate rows -- confidence orders them, no forced supersede. SLICE 4 STRETCH adds STRUCTURAL analogy (no explicit like/resembles cue): domains/meaning_inference.py's `annotate_relational_signatures` re-aggregates the ALREADY-WRITTEN PredicationSlot facts into `own_relations` (a term's own (slot, relation) subject-participation history) on every filler Concept, and holds a DEDICATED `ConceptSignature{name, signature, concept}` codebook entry per GROUNDED filler (its own relational profile + its held WordNet class) -- a codebook_type='ConceptSignature' distinct from the composer's own 'ShapeSignature' codebook, so ShapeDecode never cross-contaminates the two. `infer_sense_from_structural_analogy` decodes an OOV term's own multi-relation profile (>=2 distinct subject-relations, Gte(Count(...),2)) against that codebook via the held ShapeDecode Term; when exactly ONE grounded concept's signature FULLY explains it (empty residual AND a single-part plan -- Count(plan)==1, so the class is never a composed blend across multiple sources), that concept's class transfers, mined via DictGet/IndexAt on the SAME decode. Confidence 0.5: weaker than an authored simile (0.7, an explicit claim) and selectional admission (0.6, a coarse verb-class filter), but real, non-fabricated multi-relation structural evidence, so above bare morphology (0.45, shape alone).",
+ "microtheory": {
+  "name": "meaning_inference",
+  "description": "an OOV filler in a selectionally-restricted slot gets a provisional, revisable semantic type inferred from a held (verb_class -> requires_class) join, never a Python membership test"
+ },
+ "nodes": [
+  {
+   "local_id": 1,
+   "type": "SelectionalClassPair",
+   "attrs": {
+    "kind": "animate_subject",
+    "verb_class": "verb.cognition",
+    "slot": "subject",
+    "requires_class": "noun.person",
+    "weight": 0.6,
+    "note": "a verb.cognition relation (thinks/believes/knows/...) admits a noun.person subject."
+   }
+  },
+  {
+   "local_id": 2,
+   "type": "SelectionalClassPair",
+   "attrs": {
+    "kind": "animate_subject",
+    "verb_class": "verb.cognition",
+    "slot": "subject",
+    "requires_class": "noun.animal",
+    "weight": 0.6,
+    "note": "a verb.cognition relation also admits a noun.animal subject."
+   }
+  },
+  {
+   "local_id": 3,
+   "type": "SelectionalClassPair",
+   "attrs": {
+    "kind": "animate_subject",
+    "verb_class": "verb.emotion",
+    "slot": "subject",
+    "requires_class": "noun.person",
+    "weight": 0.6,
+    "note": "a verb.emotion relation (fears/loves/dreads/...) admits a noun.person subject."
+   }
+  },
+  {
+   "local_id": 4,
+   "type": "SelectionalClassPair",
+   "attrs": {
+    "kind": "animate_subject",
+    "verb_class": "verb.emotion",
+    "slot": "subject",
+    "requires_class": "noun.animal",
+    "weight": 0.6,
+    "note": "a verb.emotion relation also admits a noun.animal subject."
+   }
+  },
+  {
+   "local_id": 5,
+   "type": "MorphemeClass",
+   "attrs": {
+    "affix": "itis",
+    "position": "suffix",
+    "sense_class": "noun.state",
+    "weight": 0.45,
+    "affix_len": 4.0,
+    "note": "-itis names an inflammation/disease STATE (arthritis, bronchitis, appendicitis)."
+   }
+  },
+  {
+   "local_id": 6,
+   "type": "MorphemeClass",
+   "attrs": {
+    "affix": "ase",
+    "position": "suffix",
+    "sense_class": "noun.substance",
+    "weight": 0.45,
+    "affix_len": 3.0,
+    "note": "-ase names an ENZYME substance (protease, lactase, amylase)."
+   }
+  },
+  {
+   "local_id": 7,
+   "type": "MorphemeClass",
+   "attrs": {
+    "affix": "ectomy",
+    "position": "suffix",
+    "sense_class": "noun.act",
+    "weight": 0.45,
+    "affix_len": 6.0,
+    "note": "-ectomy names the surgical ACT of removal (appendectomy, tonsillectomy)."
+   }
+  },
+  {
+   "local_id": 8,
+   "type": "MorphemeClass",
+   "attrs": {
+    "affix": "tomy",
+    "position": "suffix",
+    "sense_class": "noun.act",
+    "weight": 0.45,
+    "affix_len": 4.0,
+    "note": "-tomy names the surgical ACT of cutting (tracheotomy, lobotomy) -- its tail overlaps -ectomy's; same sense_class, so the longest-match guard prefers -ectomy when both match one word, rather than minting a duplicate row."
+   }
+  },
+  {
+   "local_id": 9,
+   "type": "MorphemeClass",
+   "attrs": {
+    "affix": "ology",
+    "position": "suffix",
+    "sense_class": "noun.cognition",
+    "weight": 0.45,
+    "affix_len": 5.0,
+    "note": "-ology names a FIELD OF STUDY (biology, geology) -- a cognition/knowledge-domain noun."
+   }
+  },
+  {
+   "local_id": 10,
+   "type": "MorphemeClass",
+   "attrs": {
+    "affix": "un",
+    "position": "prefix",
+    "sense_class": "modifier.negation",
+    "weight": 0.45,
+    "affix_len": 2.0,
+    "note": "un- negates the base (unhappy, unknown) -- a negation modifier, not a noun class."
+   }
+  },
+  {
+   "local_id": 11,
+   "type": "MorphemeClass",
+   "attrs": {
+    "affix": "non",
+    "position": "prefix",
+    "sense_class": "modifier.negation",
+    "weight": 0.45,
+    "affix_len": 3.0,
+    "note": "non- negates the base (nonexistent, nonstarter) -- same negation class as un-."
+   }
+  }
+ ],
+ "edges": [
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "tgt": {
+    "local": 1
+   },
+   "attrs": {},
+   "type": "has_selectional_class_pair"
+  },
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "tgt": {
+    "local": 2
+   },
+   "attrs": {},
+   "type": "has_selectional_class_pair"
+  },
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "tgt": {
+    "local": 3
+   },
+   "attrs": {},
+   "type": "has_selectional_class_pair"
+  },
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "tgt": {
+    "local": 4
+   },
+   "attrs": {},
+   "type": "has_selectional_class_pair"
+  },
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "tgt": {
+    "local": 5
+   },
+   "attrs": {},
+   "type": "has_morpheme_class"
+  },
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "tgt": {
+    "local": 6
+   },
+   "attrs": {},
+   "type": "has_morpheme_class"
+  },
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "tgt": {
+    "local": 7
+   },
+   "attrs": {},
+   "type": "has_morpheme_class"
+  },
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "tgt": {
+    "local": 8
+   },
+   "attrs": {},
+   "type": "has_morpheme_class"
+  },
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "tgt": {
+    "local": 9
+   },
+   "attrs": {},
+   "type": "has_morpheme_class"
+  },
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "tgt": {
+    "local": 10
+   },
+   "attrs": {},
+   "type": "has_morpheme_class"
+  },
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "tgt": {
+    "local": 11
+   },
+   "attrs": {},
+   "type": "has_morpheme_class"
+  }
+ ],
+ "productions": [
+  {
+   "provenance": "seed:meaning_inference:has_predication_slot",
+   "src": {
+    "type": "Agent",
+    "var": "s"
+   },
+   "edge_type": "has_predication_slot",
+   "tgt": {
+    "type": "PredicationSlot",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:meaning_inference:fills",
+   "src": {
+    "type": "PredicationSlot",
+    "var": "s"
+   },
+   "edge_type": "fills",
+   "tgt": {
+    "type": "Concept",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:meaning_inference:has_selectional_class_pair",
+   "src": {
+    "type": "Agent",
+    "var": "s"
+   },
+   "edge_type": "has_selectional_class_pair",
+   "tgt": {
+    "type": "SelectionalClassPair",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:meaning_inference:has_inferred_sense",
+   "src": {
+    "type": "Agent",
+    "var": "s"
+   },
+   "edge_type": "has_inferred_sense",
+   "tgt": {
+    "type": "InferredSense",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:meaning_inference:resolves_ps",
+   "src": {
+    "type": "SlotResolution",
+    "var": "s"
+   },
+   "edge_type": "resolves_ps",
+   "tgt": {
+    "type": "PredicationSlot",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:meaning_inference:resolves_cp",
+   "src": {
+    "type": "SlotResolution",
+    "var": "s"
+   },
+   "edge_type": "resolves_cp",
+   "tgt": {
+    "type": "SelectionalClassPair",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:meaning_inference:has_predication_fact",
+   "src": {
+    "type": "Agent",
+    "var": "s"
+   },
+   "edge_type": "has_predication_fact",
+   "tgt": {
+    "type": "Predication",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:meaning_inference:subject_concept",
+   "src": {
+    "type": "Predication",
+    "var": "s"
+   },
+   "edge_type": "subject_concept",
+   "tgt": {
+    "type": "Concept",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:meaning_inference:has_morpheme_class",
+   "src": {
+    "type": "Agent",
+    "var": "s"
+   },
+   "edge_type": "has_morpheme_class",
+   "tgt": {
+    "type": "MorphemeClass",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:meaning_inference:has_affix_candidate",
+   "src": {
+    "type": "Agent",
+    "var": "s"
+   },
+   "edge_type": "has_affix_candidate",
+   "tgt": {
+    "type": "AffixCandidate",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:meaning_inference:affix_fills",
+   "src": {
+    "type": "AffixCandidate",
+    "var": "s"
+   },
+   "edge_type": "affix_fills",
+   "tgt": {
+    "type": "Concept",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:meaning_inference:has_concept_signature",
+   "src": {
+    "type": "Agent",
+    "var": "s"
+   },
+   "edge_type": "has_concept_signature",
+   "tgt": {
+    "type": "ConceptSignature",
+    "var": "t"
+   }
+  }
+ ],
+ "rules": [
+  {
+   "name": "infer_sense_mint",
+   "batch": false,
+   "match": [
+    [
+     "agent",
+     "has_predication_slot",
+     "ps"
+    ],
+    [
+     "ps",
+     "fills",
+     "fc"
+    ],
+    [
+     "agent",
+     "has_selectional_class_pair",
+     "cp"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ps"
+       },
+       "key": "rel_verb_class"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "cp"
+       },
+       "key": "verb_class"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ps"
+       },
+       "key": "slot"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "cp"
+       },
+       "key": "slot"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "fc"
+       },
+       "key": "oov"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "fc"
+        },
+        "key": "is_pronoun"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "Concept"
+       },
+       "var_name": "kc",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "kc"
+           },
+           "key": "name"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "fc"
+           },
+           "key": "name"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "kc"
+           },
+           "key": "grounded"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 1.0
+          }
+         }
+        ]
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "SlotResolution"
+       },
+       "var_name": "sr",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Exists",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "sr"
+           },
+           "edge_type": "resolves_ps"
+          },
+          "var_name": "x1",
+          "predicate": {
+           "type": "Eq",
+           "a": {
+            "type": "Var",
+            "name": "x1"
+           },
+           "b": {
+            "type": "Var",
+            "name": "ps"
+           }
+          }
+         },
+         {
+          "type": "Exists",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "sr"
+           },
+           "edge_type": "resolves_cp"
+          },
+          "var_name": "x2",
+          "predicate": {
+           "type": "Eq",
+           "a": {
+            "type": "Var",
+            "name": "x2"
+           },
+           "b": {
+            "type": "Var",
+            "name": "cp"
+           }
+          }
+         }
+        ]
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "InferredSense"
+       },
+       "var_name": "is2",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "is2"
+           },
+           "key": "term"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "fc"
+           },
+           "key": "name"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "is2"
+           },
+           "key": "sense_class"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "cp"
+           },
+           "key": "requires_class"
+          }
+         }
+        ]
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "sr",
+     "SlotResolution",
+     {}
+    ],
+    [
+     "add_edge",
+     "sr",
+     "resolves_ps",
+     "ps"
+    ],
+    [
+     "add_edge",
+     "sr",
+     "resolves_cp",
+     "cp"
+    ],
+    [
+     "add_node",
+     "is",
+     "InferredSense",
+     {
+      "term": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "fc"
+        },
+        "key": "name"
+       }
+      },
+      "sense_class": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "cp"
+        },
+        "key": "requires_class"
+       }
+      },
+      "confidence": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "cp"
+        },
+        "key": "weight"
+       }
+      },
+      "via": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "ps"
+        },
+        "key": "relation"
+       }
+      },
+      "source": "selectional",
+      "status": "active",
+      "revisable": 1.0
+     }
+    ],
+    [
+     "add_edge",
+     "agent",
+     "has_inferred_sense",
+     "is"
+    ]
+   ]
+  },
+  {
+   "name": "infer_sense_combine",
+   "batch": false,
+   "match": [
+    [
+     "agent",
+     "has_predication_slot",
+     "ps"
+    ],
+    [
+     "ps",
+     "fills",
+     "fc"
+    ],
+    [
+     "agent",
+     "has_selectional_class_pair",
+     "cp"
+    ],
+    [
+     "agent",
+     "has_inferred_sense",
+     "is"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ps"
+       },
+       "key": "rel_verb_class"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "cp"
+       },
+       "key": "verb_class"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ps"
+       },
+       "key": "slot"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "cp"
+       },
+       "key": "slot"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "fc"
+       },
+       "key": "oov"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "fc"
+        },
+        "key": "is_pronoun"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "Concept"
+       },
+       "var_name": "kc",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "kc"
+           },
+           "key": "name"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "fc"
+           },
+           "key": "name"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "kc"
+           },
+           "key": "grounded"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 1.0
+          }
+         }
+        ]
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "SlotResolution"
+       },
+       "var_name": "sr",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Exists",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "sr"
+           },
+           "edge_type": "resolves_ps"
+          },
+          "var_name": "x1",
+          "predicate": {
+           "type": "Eq",
+           "a": {
+            "type": "Var",
+            "name": "x1"
+           },
+           "b": {
+            "type": "Var",
+            "name": "ps"
+           }
+          }
+         },
+         {
+          "type": "Exists",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "sr"
+           },
+           "edge_type": "resolves_cp"
+          },
+          "var_name": "x2",
+          "predicate": {
+           "type": "Eq",
+           "a": {
+            "type": "Var",
+            "name": "x2"
+           },
+           "b": {
+            "type": "Var",
+            "name": "cp"
+           }
+          }
+         }
+        ]
+       }
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "is"
+       },
+       "key": "term"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "fc"
+       },
+       "key": "name"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "is"
+       },
+       "key": "sense_class"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "cp"
+       },
+       "key": "requires_class"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "is"
+        },
+        "key": "status"
+       },
+       "b": {
+        "type": "Lit",
+        "value": "superseded"
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "sr",
+     "SlotResolution",
+     {}
+    ],
+    [
+     "add_edge",
+     "sr",
+     "resolves_ps",
+     "ps"
+    ],
+    [
+     "add_edge",
+     "sr",
+     "resolves_cp",
+     "cp"
+    ],
+    [
+     "set_attr",
+     "is",
+     "confidence",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "is"
+         },
+         "key": "confidence"
+        },
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "cp"
+         },
+         "key": "weight"
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "is",
+     "via",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ps"
+       },
+       "key": "relation"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "infer_sense_supersede",
+   "batch": false,
+   "match": [
+    [
+     "agent",
+     "has_inferred_sense",
+     "is"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "is"
+        },
+        "key": "status"
+       },
+       "b": {
+        "type": "Lit",
+        "value": "superseded"
+       }
+      }
+     },
+     {
+      "type": "Exists",
+      "source": {
+       "type": "NodesOfType",
+       "node_type": "Concept"
+      },
+      "var_name": "kc",
+      "predicate": {
+       "type": "And",
+       "items": [
+        {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "kc"
+          },
+          "key": "name"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "is"
+          },
+          "key": "term"
+         }
+        },
+        {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "kc"
+          },
+          "key": "grounded"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1.0
+         }
+        }
+       ]
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "is",
+     "status",
+     "superseded"
+    ]
+   ]
+  },
+  {
+   "name": "infer_sense_from_definition",
+   "batch": false,
+   "match": [
+    [
+     "agent",
+     "has_predication_fact",
+     "pred"
+    ],
+    [
+     "pred",
+     "subject_concept",
+     "sc"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "pred"
+       },
+       "key": "relation"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "is_a"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "pred"
+       },
+       "key": "subj_oov"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "pred"
+       },
+       "key": "genus_head_grounded"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "Concept"
+       },
+       "var_name": "kc",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "kc"
+           },
+           "key": "name"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "sc"
+           },
+           "key": "name"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "kc"
+           },
+           "key": "grounded"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 1.0
+          }
+         }
+        ]
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "InferredSense"
+       },
+       "var_name": "is2",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "is2"
+           },
+           "key": "term"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "sc"
+           },
+           "key": "name"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "is2"
+           },
+           "key": "source"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "definition"
+          }
+         }
+        ]
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "is",
+     "InferredSense",
+     {
+      "term": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "sc"
+        },
+        "key": "name"
+       }
+      },
+      "sense_class": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "pred"
+        },
+        "key": "genus_head_class"
+       }
+      },
+      "genus": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "pred"
+        },
+        "key": "genus_full"
+       }
+      },
+      "via": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "pred"
+        },
+        "key": "genus_head"
+       }
+      },
+      "confidence": 0.9,
+      "source": "definition",
+      "status": "active",
+      "revisable": 1.0
+     }
+    ],
+    [
+     "add_edge",
+     "agent",
+     "has_inferred_sense",
+     "is"
+    ]
+   ]
+  },
+  {
+   "name": "infer_sense_from_morphology",
+   "batch": false,
+   "match": [
+    [
+     "agent",
+     "has_affix_candidate",
+     "ac"
+    ],
+    [
+     "ac",
+     "affix_fills",
+     "fc"
+    ],
+    [
+     "agent",
+     "has_morpheme_class",
+     "mc"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ac"
+       },
+       "key": "affix"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "mc"
+       },
+       "key": "affix"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ac"
+       },
+       "key": "position"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "mc"
+       },
+       "key": "position"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "fc"
+       },
+       "key": "oov"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "fc"
+        },
+        "key": "is_pronoun"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "Concept"
+       },
+       "var_name": "kc",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "kc"
+           },
+           "key": "name"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "fc"
+           },
+           "key": "name"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "kc"
+           },
+           "key": "grounded"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 1.0
+          }
+         }
+        ]
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "InferredSense"
+       },
+       "var_name": "is2",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "is2"
+           },
+           "key": "term"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "fc"
+           },
+           "key": "name"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "is2"
+           },
+           "key": "sense_class"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "mc"
+           },
+           "key": "sense_class"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "is2"
+           },
+           "key": "source"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "morphology"
+          }
+         }
+        ]
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "MorphemeClass"
+       },
+       "var_name": "mc2",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "mc2"
+           },
+           "key": "position"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "mc"
+           },
+           "key": "position"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "mc2"
+           },
+           "key": "sense_class"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "mc"
+           },
+           "key": "sense_class"
+          }
+         },
+         {
+          "type": "Gt",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "mc2"
+           },
+           "key": "affix_len"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "mc"
+           },
+           "key": "affix_len"
+          }
+         },
+         {
+          "type": "Exists",
+          "source": {
+           "type": "InNeighbours",
+           "node": {
+            "type": "Var",
+            "name": "fc"
+           },
+           "edge_type": "affix_fills"
+          },
+          "var_name": "ac2",
+          "predicate": {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "ac2"
+              },
+              "key": "affix"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "mc2"
+              },
+              "key": "affix"
+             }
+            },
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "ac2"
+              },
+              "key": "position"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "mc2"
+              },
+              "key": "position"
+             }
+            }
+           ]
+          }
+         }
+        ]
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "is",
+     "InferredSense",
+     {
+      "term": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "fc"
+        },
+        "key": "name"
+       }
+      },
+      "sense_class": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "mc"
+        },
+        "key": "sense_class"
+       }
+      },
+      "confidence": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "mc"
+        },
+        "key": "weight"
+       }
+      },
+      "via": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "mc"
+        },
+        "key": "affix"
+       }
+      },
+      "source": "morphology",
+      "status": "active",
+      "revisable": 1.0
+     }
+    ],
+    [
+     "add_edge",
+     "agent",
+     "has_inferred_sense",
+     "is"
+    ]
+   ]
+  },
+  {
+   "name": "infer_sense_from_analogy",
+   "batch": false,
+   "match": [
+    [
+     "agent",
+     "has_predication_fact",
+     "pred"
+    ],
+    [
+     "pred",
+     "subject_concept",
+     "sc"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "pred"
+       },
+       "key": "relation"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "similar"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "pred"
+       },
+       "key": "subj_oov"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "pred"
+       },
+       "key": "genus_head_grounded"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "Concept"
+       },
+       "var_name": "kc",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "kc"
+           },
+           "key": "name"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "sc"
+           },
+           "key": "name"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "kc"
+           },
+           "key": "grounded"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 1.0
+          }
+         }
+        ]
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "InferredSense"
+       },
+       "var_name": "is2",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "is2"
+           },
+           "key": "term"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "sc"
+           },
+           "key": "name"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "is2"
+           },
+           "key": "source"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "analogy"
+          }
+         }
+        ]
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "is",
+     "InferredSense",
+     {
+      "term": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "sc"
+        },
+        "key": "name"
+       }
+      },
+      "sense_class": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "pred"
+        },
+        "key": "genus_head_class"
+       }
+      },
+      "genus": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "pred"
+        },
+        "key": "genus_full"
+       }
+      },
+      "via": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "pred"
+        },
+        "key": "genus_head"
+       }
+      },
+      "confidence": 0.7,
+      "source": "analogy",
+      "status": "active",
+      "revisable": 1.0
+     }
+    ],
+    [
+     "add_edge",
+     "agent",
+     "has_inferred_sense",
+     "is"
+    ]
+   ]
+  },
+  {
+   "name": "infer_sense_from_structural_analogy",
+   "batch": false,
+   "match": [
+    [
+     "agent",
+     "has_predication_slot",
+     "ps"
+    ],
+    [
+     "ps",
+     "fills",
+     "fc"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "fc"
+       },
+       "key": "oov"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "fc"
+        },
+        "key": "is_pronoun"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Var",
+       "name": "ps"
+      },
+      "b": {
+       "type": "Argmin",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "PredicationSlot"
+        },
+        "var_name": "y",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "y"
+            },
+            "key": "slot"
+           },
+           "b": {
+            "type": "Lit",
+            "value": "subject"
+           }
+          },
+          {
+           "type": "In",
+           "member": {
+            "type": "Var",
+            "name": "fc"
+           },
+           "container": {
+            "type": "Neighbours",
+            "node": {
+             "type": "Var",
+             "name": "y"
+            },
+            "edge_type": "fills"
+           }
+          }
+         ]
+        }
+       },
+       "var_name": "z",
+       "value": {
+        "type": "Var",
+        "name": "z"
+       }
+      }
+     },
+     {
+      "type": "Gte",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "fc"
+        },
+        "key": "own_relations"
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 2
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "ShapeDecode",
+        "goal": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "fc"
+         },
+         "key": "own_relations"
+        },
+        "codebook_type": "ConceptSignature",
+        "beam": 3,
+        "max_steps": 8,
+        "cand_k": 3,
+        "wild_objects": false,
+        "field": "residual"
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "ShapeDecode",
+        "goal": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "fc"
+         },
+         "key": "own_relations"
+        },
+        "codebook_type": "ConceptSignature",
+        "beam": 3,
+        "max_steps": 8,
+        "cand_k": 3,
+        "wild_objects": false,
+        "field": "plan"
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "Concept"
+       },
+       "var_name": "kc",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "kc"
+           },
+           "key": "name"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "fc"
+           },
+           "key": "name"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "kc"
+           },
+           "key": "grounded"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 1.0
+          }
+         }
+        ]
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "InferredSense"
+       },
+       "var_name": "is2",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "is2"
+           },
+           "key": "term"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "fc"
+           },
+           "key": "name"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "is2"
+           },
+           "key": "source"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "structural"
+          }
+         }
+        ]
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "is",
+     "InferredSense",
+     {
+      "term": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "fc"
+        },
+        "key": "name"
+       }
+      },
+      "sense_class": {
+       "__term__": {
+        "type": "DictGet",
+        "dict": {
+         "type": "IndexAt",
+         "seq": {
+          "type": "ShapeDecode",
+          "goal": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "fc"
+           },
+           "key": "own_relations"
+          },
+          "codebook_type": "ConceptSignature",
+          "beam": 3,
+          "max_steps": 8,
+          "cand_k": 3,
+          "wild_objects": false,
+          "field": "plan"
+         },
+         "index": {
+          "type": "Lit",
+          "value": 0
+         }
+        },
+        "key": {
+         "type": "Lit",
+         "value": "source"
+        }
+       }
+      },
+      "via": {
+       "__term__": {
+        "type": "DictGet",
+        "dict": {
+         "type": "IndexAt",
+         "seq": {
+          "type": "ShapeDecode",
+          "goal": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "fc"
+           },
+           "key": "own_relations"
+          },
+          "codebook_type": "ConceptSignature",
+          "beam": 3,
+          "max_steps": 8,
+          "cand_k": 3,
+          "wild_objects": false,
+          "field": "plan"
+         },
+         "index": {
+          "type": "Lit",
+          "value": 0
+         }
+        },
+        "key": {
+         "type": "Lit",
+         "value": "part"
+        }
+       }
+      },
+      "confidence": 0.5,
+      "source": "structural",
+      "status": "active",
+      "revisable": 1.0
+     }
+    ],
+    [
+     "add_edge",
+     "agent",
+     "has_inferred_sense",
+     "is"
+    ]
+   ]
+  }
+ ]
+}

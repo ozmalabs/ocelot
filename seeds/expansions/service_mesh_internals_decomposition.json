@@ -1,0 +1,118 @@
+{
+  "id": "service_mesh_internals_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "service_mesh",
+  "in_microtheory": "distributed_systems",
+  "description": "Service mesh internals decomposed. Envoy as data plane. Istio + Linkerd as control planes. Sidecar injection, traffic management, mTLS, observability. Ambient mesh (sidecar-less). The mechanisms that make service-to-service comms uniform across a fleet.",
+  "sub_mechanisms": [
+    {
+      "name": "envoy_proxy",
+      "definition": "L7 proxy. C++. Dynamic configuration via xDS APIs. Sidecar in most service meshes.",
+      "why": "De facto data plane. Originally Lyft 2016. CNCF graduated. Powers Istio, Consul Connect, AWS App Mesh, Cloudflare. Modular filter chain architecture.",
+      "category": "mesh_mechanism"
+    },
+    {
+      "name": "xDS_protocols",
+      "definition": "Envoy's discovery service APIs: LDS (listeners), RDS (routes), CDS (clusters), EDS (endpoints).",
+      "why": "Standard control-plane → data-plane interface. Lets control plane update Envoy config dynamically. Adopted as standard interface beyond Envoy (e.g., gRPC).",
+      "category": "mesh_mechanism"
+    },
+    {
+      "name": "sidecar_injection",
+      "definition": "Webhook on pod create automatically adds sidecar container. Istio's MutatingWebhookConfiguration.",
+      "why": "Transparent to app. Pods automatically get mesh capabilities. Cost: per-pod CPU + memory overhead. Trade-off vs ambient mesh.",
+      "category": "mesh_mechanism"
+    },
+    {
+      "name": "istio_control_plane",
+      "definition": "istiod: combined Pilot (config), Citadel (certs), Galley (validation). Single binary since 1.5.",
+      "why": "Simplified from earlier multi-component design. Pushes config to Envoy sidecars via xDS. Issues mTLS certificates via SPIFFE.",
+      "category": "mesh_mechanism"
+    },
+    {
+      "name": "linkerd_rust_proxy",
+      "definition": "Linkerd 2: Rust-based ultra-light data plane (linkerd2-proxy). Smaller than Envoy.",
+      "why": "Memory + latency optimised. Trade: fewer features than Envoy. Buoyant focuses on simplicity + ops. CNCF graduated.",
+      "category": "mesh_mechanism"
+    },
+    {
+      "name": "automatic_mTLS",
+      "definition": "Mesh issues + rotates certs per service. Sidecars terminate TLS automatically. Zero app code.",
+      "why": "Zero-trust networking made easy. Without mesh: per-service mTLS code + cert ops. With mesh: just deploy. Major benefit of service mesh.",
+      "category": "mesh_mechanism"
+    },
+    {
+      "name": "traffic_splitting",
+      "definition": "Route % of traffic to different versions. 95% v1, 5% v2 for canary.",
+      "why": "Built into mesh; no app code. Istio VirtualService weighted routes. Combined with monitoring → automated canary analysis.",
+      "category": "mesh_mechanism"
+    },
+    {
+      "name": "fault_injection",
+      "definition": "Mesh injects failures (delays, aborts) at request level. Chaos engineering via config.",
+      "why": "Test resilience without code changes. Inject 5% 503s; observe behaviour. Istio VirtualService fault HTTPFault.",
+      "category": "mesh_mechanism"
+    },
+    {
+      "name": "circuit_breaker_in_mesh",
+      "definition": "Envoy cluster circuit breaker: max connections, pending requests, retries. Trip when exceeded.",
+      "why": "Mesh provides natively. No per-service implementation. Configured via xDS. Universal across services.",
+      "category": "mesh_mechanism"
+    },
+    {
+      "name": "observability_built_in",
+      "definition": "Every request through sidecar emits metrics + traces + access logs. Free for app developer.",
+      "why": "RED metrics (Rate/Errors/Duration) per service automatically. Distributed traces with span per hop. Major mesh value-add.",
+      "category": "mesh_mechanism"
+    },
+    {
+      "name": "ambient_mesh",
+      "definition": "Istio Ambient: sidecar-less. Per-node proxy (ztunnel) for L4 + per-namespace waypoint for L7.",
+      "why": "Lower overhead than sidecar per pod. Phased adoption: L4 only first, add L7 waypoint as needed. New approach launched 2022, GA 2024.",
+      "category": "mesh_mechanism"
+    },
+    {
+      "name": "SPIFFE_SPIRE_identity",
+      "definition": "SPIFFE: workload identity standard. SPIRE: implementation. spiffe://td/namespace/sa identifiers.",
+      "why": "Foundation of zero-trust identity. mTLS certs include SPIFFE IDs. Used by Istio + Consul + Tetrate.",
+      "category": "mesh_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "service_mesh_centralises_cross_cutting_concerns",
+      "if": ["traffic, security, observability handled by infrastructure"],
+      "then": ["app code is simpler + uniform across services"],
+      "why": "Without mesh: each service implements mTLS, retries, circuit breaking, tracing differently. With: configured once in mesh. Major benefit.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "sidecar_overhead_proportional_to_pod_count",
+      "if": ["mesh deploys sidecar per pod"],
+      "then": ["overhead scales with number of pods"],
+      "why": "Each Envoy ~50-100 MB RAM, some CPU. 1000 pods = 50-100 GB RAM in sidecars. Ambient mesh reduces by sharing per-node proxy.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "ambient_mesh_lower_overhead_at_capability_cost",
+      "if": ["mesh uses ambient (per-node) instead of sidecar (per-pod)"],
+      "then": ["overhead lower but capabilities phased"],
+      "why": "L4 ambient (ztunnel) lightweight. L7 features (HTTP routing, fault injection) require waypoint pod. Trade-off + migration path.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "mTLS_via_mesh_eliminates_per_service_TLS_code",
+      "if": ["mesh handles mTLS at sidecar"],
+      "then": ["service code is HTTP-only"],
+      "why": "Service talks HTTP to localhost sidecar; sidecar terminates / originates TLS. App developer doesn't write TLS code. Zero-trust adoption made easy.",
+      "soundness_category": "referential_transparency"
+    },
+    {
+      "name": "fault_injection_validates_resilience_without_code",
+      "if": ["mesh injects failures via configuration"],
+      "then": ["resilience patterns can be tested in production safely"],
+      "why": "Chaos engineering via VirtualService config. Inject delays / errors on specific routes. App's retry / fallback exercised. Standard SRE practice.",
+      "soundness_category": "extensional_equivalence"
+    }
+  ]
+}

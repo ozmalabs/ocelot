@@ -1,0 +1,25 @@
+{
+ "id": "rule_authoring_lessons",
+ "version": "1.0.0",
+ "depends_on": [],
+ "description": "Lessons the jabberwock has learned about authoring its OWN graph-rewrite Rules on the fixpoint engine. Each TaughtHint is a durable invariant to apply when writing match/where/effects, so a known failure mode is not repeated. Recorded via the teacher channel after a real bug, in the agent's own words.",
+ "microtheory": {
+  "name": "rule_authoring_lessons",
+  "description": "self-knowledge about authoring admissible, terminating Rules."
+ },
+ "nodes": [
+  {
+   "local_id": 0,
+   "type": "TaughtHint",
+   "attrs": {
+    "topic": "rule_fixpoint_idempotence",
+    "question": "I authored correct incremental-perception rules, yet frame-0 run_rules never reached a fixpoint (steps climbed without bound while the Regions were already correct). Why, and how do I avoid it?",
+    "answer": "INVARIANT: a Rule on this fixpoint engine must be a NO-OP when re-fired on the same binding. Either (a) its match+where goes FALSE after its own effects (self-disabling, e.g. a del_edge that removes the matched edge), or (b) every effect is IDEMPOTENT. The oscillation trap is a non-idempotent set_attr -- one whose RHS reads its own target (x = f(x)), or that writes a flag another Rule resets -- on a binding that STAYS matchable. The graph can be fully correct while the fixpoint never closes, because two Rules keep flipping a value and both 'progress' every pass. The concrete bug: cc_bootstrap / cell_joins_region / changed_cell_new_region each did set dirty=1 with matches that survived firing, while cc_region_bounds did set dirty=0 -- they ping-ponged forever. FIX = a fire-once guard that makes where FALSE once the target state is reached: cc_bootstrap gated on Count(Neighbours(cell, within))==0 (cell not yet in any Region); join/new gated on Count(Filter(Neighbours(cell, within), rvalue==value))==0 (cell not yet in a matching-rvalue Region). cell_leaves_region needed none -- its [cell within region] match self-destructs on the del_edge. DETECT IT STATICALLY, before running, by two passes over the seed JSON: (1) any set_attr whose RHS reads its own target (x=f(x)); (2) any (var, attr-key) written by >=2 Rules with neither gated on a monotone stamp -> a producer/consumer flip. WORST FORM: an accumulator like avatar_vote's b.avatar_votes = b.avatar_votes + 1 on a persistent [game has_region b][bd took action] match grows UNBOUNDEDLY within a single frame -- guard it with a per-frame stamp (only vote when b.voted_frame != game.frame, and set b.voted_frame = game.frame in the same effect; init the accumulator at mint).",
+    "origin": "oscillation_bug_2026-06-20",
+    "grounded": 1
+   }
+  }
+ ],
+ "edges": [],
+ "productions": []
+}

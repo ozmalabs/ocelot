@@ -1,0 +1,50 @@
+{
+  "id": "understanding_optimization",
+  "version": "1.0.0",
+  "depends_on": [],
+  "description": "THE UNDERSTANDING-DEFECT ROUTING DECISION as DATA (self-improvement, UNDERSTANDING branch -- the twin of seeds/performance_optimization.json, which routes an EFFICIENCY gap). A live Wikipedia extract exposed two genuine understanding defects: a clause fragment leaked as a concept (its HEAD is not a nominal -- 'producing oxygen gas', 'rather than water') and a word grounded to a gloss that does NOT fit the sentence ('water' -> a Devon hamlet). Each was fixed by hand once (consumption_quality.nominal_filter / sense_select, the composer-authored Programs). Now the jabberwock ROUTES a defect to its fitting fix ITSELF: the ONE decision -- given a perceived understanding gap carrying its ERROR-FEATURES, what SHAPE is the defect and which fix does that shape call for -- is NOT a Python if/else; it is these two graph-resident Programs. understand_diagnose reads the gap's error-features (head_is_nominal in {0,1}; sense_fits_context in {0,1}) and returns the defect SHAPE via IfThenElse over Gt(feature, 0.5): head NOT nominal -> 'non-nominal-extraction'; head nominal but sense does NOT fit -> 'context-blind-sense'; both hold -> 'clean'. understand_fix_pick then maps that shape to its fix via an Argmin-by-priority over the UnderstandFixCue nodes whose shape Eq the diagnosed shape (the SAME Filter/Argmin/Attr shape perf_fix_pick uses): non-nominal-extraction -> nominal_filter, context-blind-sense -> sense_select. SAME Programs, DIFFERENT error-features, DIFFERENT fix. The DECISION is the Programs' output (evaluated in Rust), read off the gap's own error-features -- not a Python branch, not a hardcoded gap->fix map.",
+  "microtheory": {
+    "name": "understanding_optimization",
+    "description": "which fix a perceived understanding gap calls for, keyed on the SHAPE of its defect (a non-nominal extraction -> nominal_filter; a context-blind sense -> sense_select)."
+  },
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "UnderstandFixCue",
+      "attrs": {
+        "shape": "non-nominal-extraction",
+        "fix": "nominal_filter",
+        "priority": 1,
+        "rationale": "a clause fragment leaked as a concept (its head is not a nominal) -> filter the extraction to nominal-headed spans (the composer-authored nominal_filter Program), dropping the fragment."
+      }
+    },
+    {
+      "local_id": 1,
+      "type": "UnderstandFixCue",
+      "attrs": {
+        "shape": "context-blind-sense",
+        "fix": "sense_select",
+        "priority": 2,
+        "rationale": "a word grounded to a gloss that does not fit the sentence -> re-select the sense by context-fit (the composer-authored sense_select Argmax Program), giving water->substance."
+      }
+    },
+    {
+      "local_id": 2,
+      "type": "Program",
+      "attrs": {
+        "name": "understand_diagnose",
+        "form": "term_tree",
+        "program": "{\"type\": \"IfThenElse\", \"cond\": {\"type\": \"Gt\", \"a\": {\"type\": \"Var\", \"name\": \"head_is_nominal\"}, \"b\": {\"type\": \"Lit\", \"value\": 0.5}}, \"then\": {\"type\": \"IfThenElse\", \"cond\": {\"type\": \"Gt\", \"a\": {\"type\": \"Var\", \"name\": \"sense_fits_context\"}, \"b\": {\"type\": \"Lit\", \"value\": 0.5}}, \"then\": {\"type\": \"Lit\", \"value\": \"clean\"}, \"other\": {\"type\": \"Lit\", \"value\": \"context-blind-sense\"}}, \"other\": {\"type\": \"Lit\", \"value\": \"non-nominal-extraction\"}}"
+      }
+    },
+    {
+      "local_id": 3,
+      "type": "Program",
+      "attrs": {
+        "name": "understand_fix_pick",
+        "form": "term_tree",
+        "program": "{\"type\": \"Attr\", \"key\": \"fix\", \"node\": {\"type\": \"Argmin\", \"source\": {\"type\": \"Filter\", \"source\": {\"type\": \"NodesOfType\", \"node_type\": \"UnderstandFixCue\"}, \"var_name\": \"c\", \"predicate\": {\"type\": \"Eq\", \"a\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"c\"}, \"key\": \"shape\"}, \"b\": {\"type\": \"Var\", \"name\": \"shape\"}}}, \"var_name\": \"x\", \"value\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"x\"}, \"key\": \"priority\"}, \"default\": null}}"
+      }
+    }
+  ]
+}

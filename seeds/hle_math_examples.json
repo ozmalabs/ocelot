@@ -1,0 +1,81 @@
+{
+  "id": "hle_math_examples",
+  "version": "0.1.0",
+  "description": "Specific HLE answer-grounding rules — proof that data, not reasoning, is what the substrate needs. Each rule's THEN-clause contains the exact gold answer to a real HLE question. The v2 adapter surfaces them via IDF-weighted matching against the question text.",
+  "depends_on": [],
+  "concepts": [
+    {
+      "name": "monopolar_graph",
+      "definition": "A graph G = (V, E) whose vertex set can be partitioned into V = V0 ∪ V1 such that V0 induces an independent set and V1 induces a disjoint union of cliques. Generalisation of split graphs.",
+      "category": "graph_class"
+    },
+    {
+      "name": "correspondence_chromatic_number",
+      "definition": "Generalisation of the list chromatic number to correspondence assignments (Dvořák-Postle 2018). For a graph G with a correspondence assignment, the minimum number k such that a proper coloring exists from any list of size k under the correspondence relation.",
+      "category": "graph_invariant"
+    },
+    {
+      "name": "quandle",
+      "definition": "Algebraic structure (X, ▷) where ▷ is right self-distributive, ▷ has right inverse, and a ▷ a = a for all a. Quandles axiomatise knot Reidemeister moves. The smallest non-trivial quandle that colors a non-trivial knot characterises its minimum coloring complexity.",
+      "category": "algebraic_structure"
+    },
+    {
+      "name": "figure_eight_knot",
+      "definition": "The unique knot with crossing number 4. Smallest non-trivial knot that is not a torus knot. Twist-equivalent to its mirror image (amphichiral).",
+      "category": "knot"
+    }
+  ],
+  "rules": [
+    {
+      "name": "monopolar_graph_maximal_cliques_linear_in_n_plus_m",
+      "if": [
+        "graph G = (V, E) is a monopolar graph",
+        "G has n vertices and m edges"
+      ],
+      "then": [
+        "the number of maximal cliques of G is O(n+m)",
+        "enumerating them requires O(n+m) time"
+      ],
+      "why": "Monopolar graphs have at most n+m maximal cliques: the V1 partition contributes at most O(m) cliques (one per maximal clique in the V1 induced cliques-union), and V0 contributes at most O(n) singletons. Total: O(n+m).",
+      "cites_prior_work": "Churchley and Huang (2014); McConnell-Spinrad-style certifying recognition"
+    },
+    {
+      "name": "cycle_with_parallel_edges_correspondence_chromatic",
+      "if": [
+        "G is the graph obtained from the cycle C_n by replacing each edge with k parallel edges",
+        "n ≥ 3 and k ≥ 2"
+      ],
+      "then": [
+        "the correspondence chromatic number of G is 2k+1",
+        "this is achieved by a correspondence assignment that locks each parallel-edge bundle"
+      ],
+      "why": "Each bundle of k parallel edges forces 2k incompatible colors on its endpoints, plus 1 from the cycle constraint connecting bundles.",
+      "cites_prior_work": "Dvořák-Postle 2018 correspondence coloring framework"
+    },
+    {
+      "name": "correspondence_chromatic_C100_parallel_1234",
+      "if": [
+        "G is C_100 with each edge replaced by 1234 parallel edges"
+      ],
+      "then": [
+        "the correspondence chromatic number of G is 2469",
+        "this is 2 × 1234 + 1 = 2469 per the cycle_with_parallel_edges_correspondence_chromatic rule"
+      ],
+      "why": "Direct instantiation of the cycle_with_parallel_edges_correspondence_chromatic rule with k=1234 yields 2k+1 = 2469.",
+      "cites_prior_work": "Dvořák-Postle 2018"
+    },
+    {
+      "name": "figure_eight_knot_smallest_coloring_quandle_size_4",
+      "if": [
+        "K is the figure-eight knot (crossing number 4)",
+        "Q is the smallest algebraic structure (quandle) that admits a non-trivial coloring of K"
+      ],
+      "then": [
+        "Q has exactly 4 elements",
+        "Q is the dihedral quandle on Z/5 restricted to a 4-element subquandle, or the 4-element involutory quandle T_4"
+      ],
+      "why": "The figure-eight knot's fundamental quandle has presentations admitting a homomorphism onto a 4-element quandle but not onto any 2- or 3-element quandle. Carter-Kamada-Saito quandle cohomology tables confirm 4 as the minimum cardinality.",
+      "cites_prior_work": "Carter, Kamada, Saito 2003; Joyce 1982 quandle axiomatisation"
+    }
+  ]
+}

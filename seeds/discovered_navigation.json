@@ -1,0 +1,738 @@
+{
+ "id": "discovered_navigation",
+ "version": "1.0.0",
+ "depends_on": [],
+ "description": "STEPS 3+5: navigate ENTIRELY in master_tick from the discovered frame. mark_dist + aim_goal derive the goal role from learned consequences (graph-native); pick_control_for_goal inverts the learned control basis toward it. No Python consumer, no grid, no hardcoded directions.",
+ "microtheory": {
+  "name": "discovered_navigation",
+  "description": "derive self+goal and choose the action by inverting the learned control basis, all in master_tick; navigation is frame-derived, not grid-assumed"
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [],
+ "rules": [
+  {
+   "name": "mark_dist",
+   "comment": "stamp distance-to-self on regions whose colour has a positive learned consequence (goal kinds). self + region both match-bound (no closure); goal kinds come from learning, nothing hardcoded.",
+   "match": [
+    [
+     "g",
+     "has_region",
+     "sr"
+    ],
+    [
+     "g",
+     "has_region",
+     "rr"
+    ],
+    [
+     "g",
+     "tracks_consequence",
+     "cm"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "sr"
+         },
+         "key": "is_self"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "rr"
+         },
+         "key": "is_self"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "cm"
+       },
+       "key": "rvalue"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "rr"
+       },
+       "key": "rvalue"
+      }
+     },
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Gt",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "cm"
+           },
+           "key": "value"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.3
+        }
+       },
+       {
+        "type": "Lt",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "cm"
+           },
+           "key": "tasted"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "rr",
+     "is_goal_kind",
+     1.0
+    ],
+    [
+     "set_attr",
+     "rr",
+     "dist_to_self",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Abs",
+         "arg": {
+          "type": "Minus",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "rr"
+             },
+             "key": "cy"
+            },
+            {
+             "type": "Lit",
+             "value": 0.0
+            }
+           ]
+          },
+          "b": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "sr"
+             },
+             "key": "cy"
+            },
+            {
+             "type": "Lit",
+             "value": 0.0
+            }
+           ]
+          }
+         }
+        },
+        {
+         "type": "Abs",
+         "arg": {
+          "type": "Minus",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "rr"
+             },
+             "key": "cx"
+            },
+            {
+             "type": "Lit",
+             "value": 0.0
+            }
+           ]
+          },
+          "b": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "sr"
+             },
+             "key": "cx"
+            },
+            {
+             "type": "Lit",
+             "value": 0.0
+            }
+           ]
+          }
+         }
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "aim_goal",
+   "comment": "goal centroid = nearest goal-kind region's centroid. The goal role, derived graph-natively.",
+   "match": [
+    [
+     "g",
+     "has_region",
+     "sr"
+    ]
+   ],
+   "where": {
+    "type": "Gt",
+    "a": {
+     "type": "Plus",
+     "items": [
+      {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "sr"
+       },
+       "key": "is_self"
+      },
+      {
+       "type": "Lit",
+       "value": 0.0
+      }
+     ]
+    },
+    "b": {
+     "type": "Lit",
+     "value": 0.5
+    }
+   },
+   "effects": [
+    [
+     "set_attr",
+     "g",
+     "goal_cy",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Argmin",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "Region"
+         },
+         "var_name": "rr",
+         "predicate": {
+          "type": "Gt",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "rr"
+             },
+             "key": "is_goal_kind"
+            },
+            {
+             "type": "Lit",
+             "value": 0.0
+            }
+           ]
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0.5
+          }
+         }
+        },
+        "var_name": "rr",
+        "value": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "rr"
+           },
+           "key": "dist_to_self"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        },
+        "default": {
+         "type": "Var",
+         "name": "sr"
+        }
+       },
+       "key": "cy"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "g",
+     "goal_cx",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Argmin",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "Region"
+         },
+         "var_name": "rr",
+         "predicate": {
+          "type": "Gt",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "rr"
+             },
+             "key": "is_goal_kind"
+            },
+            {
+             "type": "Lit",
+             "value": 0.0
+            }
+           ]
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0.5
+          }
+         }
+        },
+        "var_name": "rr",
+        "value": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "rr"
+           },
+           "key": "dist_to_self"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        },
+        "default": {
+         "type": "Var",
+         "name": "sr"
+        }
+       },
+       "key": "cx"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "pick_control_for_goal",
+   "comment": "chosen_control = the control whose LEARNED \u0394 dots most with the desired displacement to the goal. Frame-derived (no grid, no hardcoded directions); self found via is_self, goal via g.goal_cy/cx.",
+   "match": [
+    [
+     "g",
+     "has_region",
+     "sr"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "sr"
+         },
+         "key": "is_self"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Abs",
+         "arg": {
+          "type": "Minus",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "g"
+             },
+             "key": "goal_cy"
+            },
+            {
+             "type": "Lit",
+             "value": 0.0
+            }
+           ]
+          },
+          "b": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "sr"
+             },
+             "key": "cy"
+            },
+            {
+             "type": "Lit",
+             "value": 0.0
+            }
+           ]
+          }
+         }
+        },
+        {
+         "type": "Abs",
+         "arg": {
+          "type": "Minus",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "g"
+             },
+             "key": "goal_cx"
+            },
+            {
+             "type": "Lit",
+             "value": 0.0
+            }
+           ]
+          },
+          "b": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "sr"
+             },
+             "key": "cx"
+            },
+            {
+             "type": "Lit",
+             "value": 0.0
+            }
+           ]
+          }
+         }
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "g",
+     "chosen_control",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Argmax",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "sr"
+         },
+         "edge_type": "responds_via",
+         "any_type": false
+        },
+        "var_name": "cr",
+        "value": {
+         "type": "Dot",
+         "a": {
+          "type": "Vec",
+          "items": [
+           {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "cr"
+              },
+              "key": "dr"
+             },
+             {
+              "type": "Lit",
+              "value": 0.0
+             }
+            ]
+           },
+           {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "cr"
+              },
+              "key": "dc"
+             },
+             {
+              "type": "Lit",
+              "value": 0.0
+             }
+            ]
+           },
+           {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "cr"
+              },
+              "key": "dz"
+             },
+             {
+              "type": "Lit",
+              "value": 0.0
+             }
+            ]
+           }
+          ]
+         },
+         "b": {
+          "type": "Vec",
+          "items": [
+           {
+            "type": "Minus",
+            "a": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "g"
+               },
+               "key": "goal_cy"
+              },
+              {
+               "type": "Lit",
+               "value": 0.0
+              }
+             ]
+            },
+            "b": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "sr"
+               },
+               "key": "cy"
+              },
+              {
+               "type": "Lit",
+               "value": 0.0
+              }
+             ]
+            }
+           },
+           {
+            "type": "Minus",
+            "a": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "g"
+               },
+               "key": "goal_cx"
+              },
+              {
+               "type": "Lit",
+               "value": 0.0
+              }
+             ]
+            },
+            "b": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "sr"
+               },
+               "key": "cx"
+              },
+              {
+               "type": "Lit",
+               "value": 0.0
+              }
+             ]
+            }
+           },
+           {
+            "type": "Lit",
+            "value": 0.0
+           }
+          ]
+         }
+        },
+        "default": {
+         "type": "Var",
+         "name": "sr"
+        }
+       },
+       "key": "cname"
+      }
+     }
+    ]
+   ]
+  }
+ ]
+}

@@ -1,0 +1,118 @@
+{
+  "id": "signal_processing_engineering_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "Fourier_transform",
+  "in_microtheory": "engineering",
+  "description": "Engineering signal processing decomposed. DFT/FFT, windowing, spectral leakage, FIR/IIR design, anti-aliasing, oversampling, decimation, wavelets, time-frequency analysis (STFT, spectrogram).",
+  "sub_mechanisms": [
+    {
+      "name": "DFT_FFT",
+      "definition": "Discrete Fourier Transform: N-point spectrum from N samples. FFT: O(N log N) algorithm.",
+      "why": "Cooley-Tukey 1965. Foundation of digital spectral analysis. Speech, vibration, communications. Universal.",
+      "category": "dsp_mechanism"
+    },
+    {
+      "name": "windowing_spectral_leakage",
+      "definition": "Finite-length sample = multiplication by rectangular window. Spectrum convolved with sinc → leakage.",
+      "why": "Apparent energy in adjacent bins. Mitigations: Hanning, Hamming, Blackman windows. Trade: mainlobe width vs sidelobe attenuation.",
+      "category": "dsp_mechanism"
+    },
+    {
+      "name": "FIR_filter",
+      "definition": "Finite Impulse Response. y[n] = Σ b_k × x[n-k]. Always stable; linear phase possible.",
+      "why": "Audio, communications. Predictable phase (no group delay distortion). Cost: many taps for sharp transitions.",
+      "category": "dsp_mechanism"
+    },
+    {
+      "name": "IIR_filter",
+      "definition": "Infinite Impulse Response. y[n] = Σ b_k × x[n-k] - Σ a_k × y[n-k]. Recursive.",
+      "why": "Sharp filters with few coefficients. Cost: nonlinear phase, can be unstable. Used where computation tight + linear phase not needed.",
+      "category": "dsp_mechanism"
+    },
+    {
+      "name": "Butterworth_filter",
+      "definition": "Maximally flat passband. No ripple. Smooth rolloff.",
+      "why": "Standard analog + digital filter. Compromise between sharpness + phase response. Default choice when unsure.",
+      "category": "dsp_mechanism"
+    },
+    {
+      "name": "Chebyshev_filter",
+      "definition": "Ripple in passband (Type I) or stopband (Type II). Sharper transition than Butterworth.",
+      "why": "Steeper rolloff for same order. Trade: passband ripple. Used where sharp cutoff matters.",
+      "category": "dsp_mechanism"
+    },
+    {
+      "name": "elliptic_Cauer_filter",
+      "definition": "Ripple in both passband + stopband. Sharpest transition possible.",
+      "why": "Minimum order for given specifications. Cost: ripples + nonlinear phase. Used in critical applications.",
+      "category": "dsp_mechanism"
+    },
+    {
+      "name": "anti_aliasing_filter",
+      "definition": "Analog filter before ADC. Cutoff < Nyquist frequency.",
+      "why": "Removes above-Nyquist signals to prevent aliasing. Always required for sampling. Analog (not digital) since must precede ADC.",
+      "category": "dsp_mechanism"
+    },
+    {
+      "name": "oversampling_sigma_delta",
+      "definition": "ADC at high rate + decimate. Σ-Δ converters use feedback to noise-shape.",
+      "why": "Audio ADCs: 1-bit at MHz, decimated to 24-bit at 96 kHz. Anti-aliasing simpler. Modern standard.",
+      "category": "dsp_mechanism"
+    },
+    {
+      "name": "decimation_interpolation",
+      "definition": "Decimation: low-pass + downsample. Interpolation: upsample + low-pass.",
+      "why": "Sample rate conversion. Always-needed in mixed-rate systems. Polyphase implementations efficient.",
+      "category": "dsp_mechanism"
+    },
+    {
+      "name": "STFT_spectrogram",
+      "definition": "Short-Time Fourier Transform. FFT on overlapping windows. Time-frequency representation.",
+      "why": "Speech, music, vibration analysis. Trade-off: window length = time vs frequency resolution. Foundation of audio analysis.",
+      "category": "dsp_mechanism"
+    },
+    {
+      "name": "wavelet_transform",
+      "definition": "Decompose into wavelets (localised in time + frequency). Multiresolution.",
+      "why": "Better than STFT for transient detection. Used in compression (JPEG 2000), denoising. Multiple bases.",
+      "category": "dsp_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "FIR_chosen_for_linear_phase",
+      "if": ["application requires linear phase"],
+      "then": ["FIR is the design choice"],
+      "why": "Linear phase: all frequencies delayed equally. No phase distortion. Audio, image processing. FIR achievable; IIR can't (Butterworth has zero phase only as analog).",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "windowing_required_for_finite_samples",
+      "if": ["spectrum computed from finite signal segment"],
+      "then": ["window function reduces spectral leakage"],
+      "why": "Rectangular window: sinc spectrum, high leakage. Hanning: lower leakage. Foundation of practical spectral analysis.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "anti_aliasing_required_before_sampling",
+      "if": ["analog signal contains above-Nyquist content"],
+      "then": ["analog anti-alias filter mandatory"],
+      "why": "Above Nyquist aliases into baseband indistinguishably. Anti-alias removes. Must be analog (preceding ADC). Universal requirement.",
+      "soundness_category": "referential_transparency"
+    },
+    {
+      "name": "oversampling_simplifies_anti_aliasing",
+      "if": ["ADC oversamples by factor M"],
+      "then": ["analog anti-alias filter requirements relaxed"],
+      "why": "Wider transition band. Cheap RC filter sufficient instead of complex multipole. Modern ADCs leverage. Audio: Σ-Δ universal.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "STFT_resolution_tradeoff",
+      "if": ["short window used"],
+      "then": ["good time resolution, poor frequency"],
+      "why": "Heisenberg-like uncertainty for time-frequency. Long window = fine frequency, blurred time. Wavelets adaptive. Fundamental limit.",
+      "soundness_category": "algebraic_law"
+    }
+  ]
+}

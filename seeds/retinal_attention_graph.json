@@ -1,0 +1,1121 @@
+{
+  "id": "retinal_attention_graph",
+  "version": "1.0.0",
+  "depends_on": [
+    "fovea_salience_bridge"
+  ],
+  "description": "Generic event-native retinal attention over the main cognition graph. Every Agent -perceives_salience-> RetinalSalience projection becomes one FoveaCandidate on a dedicated FoveaResolver. The unchanged fovea_salience_bridge rule supplies the weighted Gamma-admissibility decision: ArgminUnique over Neg(Log(residual_salience)+goal_logweight), so the greatest positive residual wins and an exact tie is refused rather than broken arbitrarily. The winner is projected onto the Agent as a current-epoch allocentric unit direction and a dimensionless residual/field-mean contrast for motor_core. Direction is composed graph-natively as radians(my_angle) + gaze_az (the live photon eye publishes gaze in radians) with Cos/Sin; Python performs no winner selection, normalization, or coordinate decision. Candidates older than vision_settled_epoch are deleted by a graph rule, bounding the pool. This faculty contains no task- or world-specific nouns.",
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "FoveaResolver",
+      "attrs": {
+        "purpose": "retinal_attention",
+        "goal_logweight_default": 0.0
+      }
+    }
+  ],
+  "edges": [
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_retinal_attention_resolver",
+      "tgt": {
+        "local": 0
+      },
+      "attrs": {}
+    }
+  ],
+  "productions": [
+    {
+      "provenance": "seed:retinal_attention_graph:agent-resolver",
+      "src": {
+        "type": "Agent",
+        "var": "agent"
+      },
+      "edge_type": "has_retinal_attention_resolver",
+      "tgt": {
+        "type": "FoveaResolver",
+        "var": "resolver"
+      }
+    },
+    {
+      "provenance": "seed:retinal_attention_graph:agent-salience",
+      "src": {
+        "type": "Agent",
+        "var": "agent"
+      },
+      "edge_type": "perceives_salience",
+      "tgt": {
+        "type": "RetinalSalience",
+        "var": "salience"
+      }
+    },
+    {
+      "provenance": "seed:retinal_attention_graph:candidate-evidence",
+      "src": {
+        "type": "FoveaCandidate",
+        "var": "candidate"
+      },
+      "edge_type": "based_on_salience",
+      "tgt": {
+        "type": "RetinalSalience",
+        "var": "salience"
+      }
+    }
+  ],
+  "rules": [
+    {
+      "name": "retinal_attention_reset_epoch",
+      "area": "attention",
+      "order": 0,
+      "latency_class": "hard_realtime",
+      "comment": "Open each settled sensor epoch OR changed current-epoch candidate set in a refusing state. A later rule may replace these attrs only when the existing fovea resolver marks one unique current-epoch candidate. Tracking candidate count makes a late same-epoch tie clear an earlier answer before it can be reconsidered. Therefore an empty field, all-inadmissible field, or exact tie leaves an explicit refusal rather than retaining yesterday's direction.",
+      "match": [
+        [
+          "agent",
+          "has_retinal_attention_resolver",
+          "resolver"
+        ]
+      ],
+      "where": {
+        "type": "Or",
+        "items": [
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "agent"
+                },
+                "key": "attention_sensor_epoch"
+              },
+              "b": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "agent"
+                },
+                "key": "vision_settled_epoch"
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "agent"
+                },
+                "key": "attention_candidate_count"
+              },
+              "b": {
+                "type": "Count",
+                "source": {
+                  "type": "Filter",
+                  "source": {
+                    "type": "Neighbours",
+                    "node": {
+                      "type": "Var",
+                      "name": "resolver"
+                    },
+                    "edge_type": "has_candidate"
+                  },
+                  "var_name": "k",
+                  "predicate": {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "k"
+                      },
+                      "key": "candidate_epoch"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "agent"
+                      },
+                      "key": "vision_settled_epoch"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "agent",
+          "attention_sensor_epoch",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "agent"
+              },
+              "key": "vision_settled_epoch"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "agent",
+          "attention_salience",
+          0.0
+        ],
+        [
+          "set_attr",
+          "agent",
+          "attention_raw_salience",
+          0.0
+        ],
+        [
+          "set_attr",
+          "agent",
+          "attention_residual_salience",
+          0.0
+        ],
+        [
+          "set_attr",
+          "agent",
+          "attention_x",
+          0.0
+        ],
+        [
+          "set_attr",
+          "agent",
+          "attention_y",
+          0.0
+        ],
+        [
+          "set_attr",
+          "agent",
+          "attention_az",
+          0.0
+        ],
+        [
+          "set_attr",
+          "agent",
+          "attention_el",
+          0.0
+        ],
+        [
+          "set_attr",
+          "agent",
+          "attention_column_index",
+          -1
+        ],
+        [
+          "set_attr",
+          "agent",
+          "attention_row_index",
+          -1
+        ],
+        [
+          "set_attr",
+          "agent",
+          "attention_refused",
+          1.0
+        ],
+        [
+          "set_attr",
+          "agent",
+          "attention_candidate_count",
+          {
+            "__term__": {
+              "type": "Count",
+              "source": {
+                "type": "Filter",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {
+                    "type": "Var",
+                    "name": "resolver"
+                  },
+                  "edge_type": "has_candidate"
+                },
+                "var_name": "k",
+                "predicate": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "k"
+                    },
+                    "key": "candidate_epoch"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "agent"
+                    },
+                    "key": "vision_settled_epoch"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "retinal_attention_admit_projection",
+      "area": "attention",
+      "order": 1,
+      "latency_class": "hard_realtime",
+      "comment": "Consume EVERY projected retinal-salience edge exactly once per source epoch by minting a corresponding fovea candidate. residual_salience is the bottom-up evidence consumed by fovea_salience_bridge; raw_salience is retained for introspection. Positive residual and equality with the settled epoch are the declared admissibility constraints. Zero/negative and stale projections are still consumed, but enter as on_valid=0 and therefore cannot enter the bridge's weighted fold.",
+      "match": [
+        [
+          "agent",
+          "has_retinal_attention_resolver",
+          "resolver"
+        ],
+        [
+          "agent",
+          "perceives_salience",
+          "salience"
+        ]
+      ],
+      "where": {
+        "type": "Not",
+        "arg": {
+          "type": "Eq",
+          "a": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "salience"
+            },
+            "key": "attention_candidate_epoch"
+          },
+          "b": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "salience"
+            },
+            "key": "sensor_epoch"
+          }
+        }
+      },
+      "effects": [
+        [
+          "add_node",
+          "candidate",
+          "FoveaCandidate",
+          {
+            "purpose": "retinal_attention",
+            "candidate_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "salience"
+                },
+                "key": "sensor_epoch"
+              }
+            },
+            "column_index": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "salience"
+                },
+                "key": "column_index"
+              }
+            },
+            "row_index": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "salience"
+                },
+                "key": "row_index"
+              }
+            },
+            "n_az": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "salience"
+                },
+                "key": "n_az"
+              }
+            },
+            "n_el": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "salience"
+                },
+                "key": "n_el"
+              }
+            },
+            "gaze_az": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "salience"
+                },
+                "key": "gaze_az"
+              }
+            },
+            "gaze_el": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "salience"
+                },
+                "key": "gaze_el"
+              }
+            },
+            "raw_salience": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "salience"
+                },
+                "key": "raw_salience"
+              }
+            },
+            "residual_salience": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "salience"
+                },
+                "key": "residual_salience"
+              }
+            },
+            "salience": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "salience"
+                },
+                "key": "residual_salience"
+              }
+            },
+            "goal_logweight": 0.0,
+            "on_valid": {
+              "__term__": {
+                "type": "IfThenElse",
+                "cond": {
+                  "type": "And",
+                  "items": [
+                    {
+                      "type": "Gt",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "salience"
+                        },
+                        "key": "residual_salience"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 0.0
+                      }
+                    },
+                    {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "salience"
+                        },
+                        "key": "sensor_epoch"
+                      },
+                      "b": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "agent"
+                        },
+                        "key": "vision_settled_epoch"
+                      }
+                    }
+                  ]
+                },
+                "then": {
+                  "type": "Lit",
+                  "value": 1.0
+                },
+                "other": {
+                  "type": "Lit",
+                  "value": 0.0
+                }
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "resolver",
+          "has_candidate",
+          "candidate",
+          {}
+        ],
+        [
+          "add_edge",
+          "candidate",
+          "based_on_salience",
+          "salience",
+          {}
+        ],
+        [
+          "set_attr",
+          "salience",
+          "attention_candidate_epoch",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "salience"
+              },
+              "key": "sensor_epoch"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "resolver",
+          "attention_selection_dirty",
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "retinal_attention_retire_stale_candidate",
+      "area": "attention",
+      "order": 2,
+      "latency_class": "hard_realtime",
+      "comment": "Bound attention memory to the live sensor epoch. Candidate identity is transient evidence, not held perceptual memory; persistent visual hypotheses live in their own faculty. Deleting a candidate also deletes its has_candidate and based_on_salience edges transactionally.",
+      "match": [
+        [
+          "agent",
+          "has_retinal_attention_resolver",
+          "resolver"
+        ],
+        [
+          "resolver",
+          "has_candidate",
+          "candidate"
+        ]
+      ],
+      "where": {
+        "type": "Lt",
+        "a": {
+          "type": "Attr",
+          "node": {
+            "type": "Var",
+            "name": "candidate"
+          },
+          "key": "candidate_epoch"
+        },
+        "b": {
+          "type": "Attr",
+          "node": {
+            "type": "Var",
+            "name": "agent"
+          },
+          "key": "vision_settled_epoch"
+        }
+      },
+      "effects": [
+        [
+          "del_node",
+          "candidate"
+        ]
+      ]
+    },
+    {
+      "name": "retinal_attention_clear_nonwinner_mark",
+      "area": "attention",
+      "order": 5,
+      "latency_class": "hard_realtime",
+      "comment": "fovea_salience_bridge is intentionally monotone for its original one-shot resolver: it only sets is_fovea=1. A live retinal pool can gain another projection within the same sensor epoch, so admission marks the resolver dirty and this rule clears EVERY prior mark before the unchanged bridge resolves the revised whole pool. The following finalize rule lowers the dirty bit; on the next fixpoint pass a unique revised winner is marked again, while an exact tie remains unmarked.",
+      "match": [
+        [
+          "agent",
+          "has_retinal_attention_resolver",
+          "resolver"
+        ],
+        [
+          "resolver",
+          "has_candidate",
+          "candidate"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "is_fovea"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "resolver"
+              },
+              "key": "attention_selection_dirty"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "candidate",
+          "is_fovea",
+          0.0
+        ]
+      ]
+    },
+    {
+      "name": "retinal_attention_finalize_revised_pool",
+      "area": "attention",
+      "order": 6,
+      "latency_class": "hard_realtime",
+      "comment": "Close the candidate-pool revision only after the order-5 invalidation sweep. The next fixed-point pass lets the unchanged fovea resolver mark the revised pool's unique winner, if one exists.",
+      "match": [
+        [
+          "agent",
+          "has_retinal_attention_resolver",
+          "resolver"
+        ]
+      ],
+      "where": {
+        "type": "Eq",
+        "a": {
+          "type": "Attr",
+          "node": {
+            "type": "Var",
+            "name": "resolver"
+          },
+          "key": "attention_selection_dirty"
+        },
+        "b": {
+          "type": "Lit",
+          "value": 1.0
+        }
+      },
+      "effects": [
+        [
+          "set_attr",
+          "resolver",
+          "attention_selection_dirty",
+          0.0
+        ]
+      ]
+    },
+    {
+      "name": "retinal_attention_publish_unique_winner",
+      "area": "attention",
+      "order": 10,
+      "latency_class": "hard_realtime",
+      "comment": "Read only the unchanged fovea bridge's is_fovea verdict and publish the unique current-epoch winner. attention_x/y are an allocentric unit direction at radians(my_angle_degrees) + gaze_az_radians, composed entirely as graph Terms. attention_salience is the dimensionless winning residual divided by the current field's mean residual, preserving motor_core's established contrast contract; attention_residual_salience retains the physical cells/epoch score for introspection.",
+      "match": [
+        [
+          "agent",
+          "has_retinal_attention_resolver",
+          "resolver"
+        ],
+        [
+          "resolver",
+          "has_candidate",
+          "candidate"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "is_fovea"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "on_valid"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "candidate_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "agent"
+              },
+              "key": "vision_settled_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Var",
+              "name": "candidate"
+            },
+            "b": {
+              "type": "ArgminUnique",
+              "source": {
+                "type": "Filter",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {
+                    "type": "Var",
+                    "name": "resolver"
+                  },
+                  "edge_type": "has_candidate"
+                },
+                "var_name": "k",
+                "predicate": {
+                  "type": "And",
+                  "items": [
+                    {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "k"
+                        },
+                        "key": "on_valid"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 1.0
+                      }
+                    },
+                    {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "k"
+                        },
+                        "key": "candidate_epoch"
+                      },
+                      "b": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "agent"
+                        },
+                        "key": "vision_settled_epoch"
+                      }
+                    }
+                  ]
+                }
+              },
+              "var_name": "k",
+              "value": {
+                "type": "Neg",
+                "arg": {
+                  "type": "Plus",
+                  "items": [
+                    {
+                      "type": "Log",
+                      "arg": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "k"
+                        },
+                        "key": "salience"
+                      }
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "k"
+                      },
+                      "key": "goal_logweight"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "agent",
+          "attention_x",
+          {
+            "__term__": {
+              "type": "Cos",
+              "arg": {
+                "type": "Plus",
+                "items": [
+                  {
+                    "type": "Times",
+                    "items": [
+                      {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "agent"
+                        },
+                        "key": "my_angle"
+                      },
+                      {
+                        "type": "Lit",
+                        "value": 0.017453292519943295
+                      }
+                    ]
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "candidate"
+                    },
+                    "key": "gaze_az"
+                  }
+                ]
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "agent",
+          "attention_y",
+          {
+            "__term__": {
+              "type": "Sin",
+              "arg": {
+                "type": "Plus",
+                "items": [
+                  {
+                    "type": "Times",
+                    "items": [
+                      {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "agent"
+                        },
+                        "key": "my_angle"
+                      },
+                      {
+                        "type": "Lit",
+                        "value": 0.017453292519943295
+                      }
+                    ]
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "candidate"
+                    },
+                    "key": "gaze_az"
+                  }
+                ]
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "agent",
+          "attention_az",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "gaze_az"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "agent",
+          "attention_el",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "gaze_el"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "agent",
+          "attention_salience",
+          {
+            "__term__": {
+              "type": "Div",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "candidate"
+                },
+                "key": "residual_salience"
+              },
+              "b": {
+                "type": "Max",
+                "items": [
+                  {
+                    "type": "Lit",
+                    "value": 1e-06
+                  },
+                  {
+                    "type": "Div",
+                    "a": {
+                      "type": "Sum",
+                      "source": {
+                        "type": "Filter",
+                        "source": {
+                          "type": "Neighbours",
+                          "node": {
+                            "type": "Var",
+                            "name": "resolver"
+                          },
+                          "edge_type": "has_candidate"
+                        },
+                        "var_name": "k",
+                        "predicate": {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "k"
+                            },
+                            "key": "candidate_epoch"
+                          },
+                          "b": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "agent"
+                            },
+                            "key": "vision_settled_epoch"
+                          }
+                        }
+                      },
+                      "var_name": "k",
+                      "value": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "k"
+                        },
+                        "key": "residual_salience"
+                      }
+                    },
+                    "b": {
+                      "type": "Count",
+                      "source": {
+                        "type": "Filter",
+                        "source": {
+                          "type": "Neighbours",
+                          "node": {
+                            "type": "Var",
+                            "name": "resolver"
+                          },
+                          "edge_type": "has_candidate"
+                        },
+                        "var_name": "k",
+                        "predicate": {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "k"
+                            },
+                            "key": "candidate_epoch"
+                          },
+                          "b": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "agent"
+                            },
+                            "key": "vision_settled_epoch"
+                          }
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "agent",
+          "attention_residual_salience",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "residual_salience"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "agent",
+          "attention_raw_salience",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "raw_salience"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "agent",
+          "attention_column_index",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "column_index"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "agent",
+          "attention_row_index",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "row_index"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "agent",
+          "attention_sensor_epoch",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "candidate_epoch"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "agent",
+          "attention_refused",
+          0.0
+        ]
+      ]
+    }
+  ]
+}

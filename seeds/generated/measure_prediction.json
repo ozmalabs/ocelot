@@ -1,0 +1,164 @@
+{
+  "id": "measure_prediction",
+  "version": "1.0.0",
+  "rules": [
+    {
+      "id": "measure_prediction",
+      "name": "measure_prediction",
+      "match": [
+        [
+          "h",
+          "observes",
+          "o"
+        ]
+      ],
+      "where": {
+        "type": "Not",
+        "arg": {
+          "type": "Eq",
+          "a": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "o"
+            },
+            "key": "last_frame"
+          },
+          "b": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "o"
+            },
+            "key": "frame"
+          }
+        }
+      },
+      "effects": [
+        [
+          "add_node",
+          "mc",
+          "MeasuredCapability",
+          {
+            "is_measured": 1.0,
+            "measured": {
+              "__term__": {
+                "type": "Div",
+                "a": {
+                  "type": "Lit",
+                  "value": 1.0
+                },
+                "b": {
+                  "type": "Plus",
+                  "items": [
+                    {
+                      "type": "Lit",
+                      "value": 1.0
+                    },
+                    {
+                      "type": "Max",
+                      "items": [
+                        {
+                          "type": "Minus",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "o"
+                            },
+                            "key": "value"
+                          },
+                          "b": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "o"
+                            },
+                            "key": "pred"
+                          }
+                        },
+                        {
+                          "type": "Minus",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "o"
+                            },
+                            "key": "pred"
+                          },
+                          "b": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "o"
+                            },
+                            "key": "value"
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            },
+            "target": 0.9,
+            "synth_pending": 1,
+            "cap_sig": [
+              "predict_observable"
+            ],
+            "capability_keys": [
+              "predict_observable"
+            ],
+            "metric": "predictive_accuracy",
+            "note": "live prediction-minus-observation, banked in the heartbeat",
+            "origin": "jabberwock:live_predictive_measure",
+            "composed_by": "agent"
+          }
+        ],
+        [
+          "add_edge",
+          "mc",
+          "mc_self",
+          "mc"
+        ],
+        [
+          "add_edge",
+          "mc",
+          "measures_obs",
+          "o"
+        ],
+        [
+          "set_attr",
+          "o",
+          "pred",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "o"
+              },
+              "key": "value"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "o",
+          "last_frame",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "o"
+              },
+              "key": "frame"
+            }
+          }
+        ]
+      ]
+    }
+  ]
+}

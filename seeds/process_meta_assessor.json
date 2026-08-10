@@ -1,0 +1,23 @@
+{
+  "id": "process_meta_assessor",
+  "version": "0.1.0",
+  "depends_on": ["meta_monitor"],
+  "description": "Dials for the PROCESS-LEVEL meta-assessor over a research loop (domains/process_meta_assessor.py). The unit is an ITERATION (not feature-mints), and there are TWO payoff channels: a PROBE channel (the speech outcome — recognition margin over unigram) and a FIXER channel (loop-autonomy capabilities gained). probe_target is the value the probe must CROSS to count as a win (0.0 = parity with unigram; below it the probe is failing). The DOMAIN_SPINNING rule flags the probe channel spinning when effort rose across the window while the probe stayed below probe_target throughout; FIXER_PROGRESS records when the fixer channel rose (do NOT flag — compounding capability); BELOW_FRONTIER flags any iteration whose pick_rank is downstream of frontier_rank; FIX_THE_OUTCOME flags any iteration adding <= fixer_flat_band capability that did not move its source (moved_source=0). frontier_rank places the current bottleneck in the upstream->downstream pipeline ordering. All of it is data here, not Python; the rules are general predicates over these dials with no session-specific constants.",
+  "research_loop_root": {
+    "probe_target": 0.0,
+    "fixer_flat_band": 0.0,
+    "frontier_level": "none",
+    "frontier_rank": 999.0,
+    "loop_issue": "none",
+    "fixer_progressing": 0,
+    "loop_eval_pending": 0
+  },
+  "pipeline_levels": {
+    "_note": "Reference upstream->downstream ranks for the speech pipeline so pick_rank / frontier_rank are legible. Smaller = more upstream (perception); larger = more downstream (recognition). These are the ordering the BELOW_FRONTIER rule compares; the world adapter sets frontier_rank from the agent's own frontier flag (perception_self_assessment) and pick_rank from which level an iteration targeted.",
+    "perception_units": 1.0,
+    "segmentation": 2.0,
+    "speaker_normalization": 3.0,
+    "feature_extraction": 4.0,
+    "recognition": 5.0
+  }
+}

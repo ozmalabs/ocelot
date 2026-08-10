@@ -1,0 +1,47 @@
+{
+  "microtheory": {
+    "name": "psychoacoustics",
+    "definition": "How humans perceive sound. Masking, critical bands, pitch perception, loudness scaling, sound localization, timbre perception. The bridge between acoustics + auditory cortex. Substrate analogue: directly describes what the substrate's cochlear pipeline + auditory_cortex compute.",
+    "category": "audio_domain",
+    "parent": "audio_music_foundation"
+  },
+  "concepts": [
+    {"name": "critical_band", "definition": "Fletcher 1940. Bandwidth around a tone within which other tones interact (mask, beat). ~100 Hz wide at low frequencies, ~20% of center frequency at high. Maps onto basilar membrane regions. Substrate analogue: substrate's gammatone bandwidth — designed to match critical bands.", "category": "frequency"},
+    {"name": "bark_scale", "definition": "Zwicker 1961. Perceptual frequency scale: 1 Bark = 1 critical band. ~24 Barks span audible range. Substrate analogue: substrate's gammatone channel spacing.", "category": "frequency"},
+    {"name": "erb_scale", "definition": "Moore + Glasberg 1983. Equivalent Rectangular Bandwidth — refined Bark. ERB(f) = 24.7(0.00437f + 1). Substrate analogue: substrate's gammatone bandwidth formula.", "category": "frequency"},
+    {"name": "mel_scale", "definition": "Stevens 1937. Perceptual pitch scale. 1000 mel = 1000 Hz; doubles for pitch perceived as doubled. Linear below 500 Hz, log above. Substrate analogue: substrate's pitch normalization.", "category": "frequency"},
+
+    {"name": "absolute_threshold", "definition": "Minimum SPL at which a tone is detectable. Most sensitive ~2-4 kHz. Substrate analogue: substrate's per-channel input gating threshold.", "category": "loudness"},
+    {"name": "equal_loudness_contour", "definition": "Fletcher + Munson 1933, refined ISO 226. Curves of equal-perceived-loudness across frequency at different intensities. Low + high frequencies need more SPL for same loudness. Substrate analogue: substrate's frequency-weighted loudness integration.", "category": "loudness"},
+    {"name": "phon", "definition": "Loudness level — SPL of equally-loud 1kHz tone. 1kHz tone @ 40dB SPL = 40 phon. Substrate analogue: substrate's normalized loudness output.", "category": "loudness"},
+    {"name": "sone", "definition": "Subjective loudness. 1 sone = 40 phon = 1 kHz @ 40 dB SPL. Doubles per 10 phon. Stevens' power law. Substrate analogue: substrate's perceptual-loudness output.", "category": "loudness"},
+
+    {"name": "simultaneous_masking", "definition": "Tone masked by simultaneous noise/tone in same critical band. Spectral masking. Substrate analogue: substrate's within-channel competition.", "category": "masking"},
+    {"name": "temporal_masking", "definition": "Forward masking (after sound) + backward masking (before sound). Within ~200ms. Substrate analogue: substrate's channel temporal recovery.", "category": "masking"},
+    {"name": "comodulation_masking_release", "definition": "Hall 1984. Adding off-frequency noise can REDUCE masking when modulation pattern is shared. Substrate analogue: substrate's cross-channel grouping by common envelope.", "category": "masking"},
+
+    {"name": "pitch_perception_models", "definition": "Two main: place theory (basilar membrane location, Helmholtz) vs temporal theory (firing periodicity, Wever). Modern view: complementary. Substrate analogue: substrate's pitch detector combines place + periodicity.", "category": "pitch"},
+    {"name": "missing_fundamental", "definition": "Perceive pitch of F0 even when F0 is filtered out — brain reconstructs from harmonics. Schouten 1940. Refutes pure-place theory. Substrate analogue: substrate's harmonic-template-driven pitch.", "category": "pitch"},
+    {"name": "virtual_pitch", "definition": "Pitch perceived at F0 from harmonic stack. Terhardt's template theory. Substrate analogue: substrate's harmonic-pattern matching.", "category": "pitch"},
+    {"name": "pitch_chroma", "definition": "Two octave-related notes share chroma + height. Helix model of pitch (Shepard). Substrate analogue: substrate's octave-modular pitch representation.", "category": "pitch"},
+    {"name": "shepard_tone", "definition": "Octave-spaced sinusoids with envelope. Produces endless ascending illusion. Substrate analogue: substrate's pitch-helix decoupling demo.", "category": "pitch"},
+
+    {"name": "interaural_time_difference", "definition": "ITD. Sound from right reaches right ear ~0.7ms before left. Used for localization below ~1.5 kHz. Substrate analogue: substrate's bilateral arrival-time comparator.", "category": "localization"},
+    {"name": "interaural_level_difference", "definition": "ILD. Head shadow makes ipsilateral ear louder. Used above ~1.5 kHz where wavelength < head. Substrate analogue: substrate's bilateral amplitude comparator.", "category": "localization"},
+    {"name": "head_related_transfer_function", "definition": "HRTF. Spectral filtering by pinna + head + torso. Encodes elevation + front-back. Highly individualized. Substrate analogue: substrate's per-source spectral signature.", "category": "localization"},
+    {"name": "precedence_effect", "definition": "Wallach + Newman + Rosenzweig 1949. Source perceived at the direction of FIRST arrival; later reflections suppress spatial info. Substrate analogue: substrate's first-arrival prioritization.", "category": "localization"},
+
+    {"name": "auditory_scene_analysis", "definition": "Bregman 1990. Cortex parses overlapping sounds into separate streams. Simultaneous (vertical) + sequential (horizontal) grouping. Substrate analogue: substrate's source-stream separation.", "category": "scene"},
+    {"name": "stream_segregation", "definition": "Sequential sounds form streams based on pitch proximity, timbre, location. Substrate analogue: substrate's temporal stream grouping.", "category": "scene"},
+    {"name": "cocktail_party_problem", "definition": "Cherry 1953. Separating one conversation from many. Computational neuroscience challenge. Substrate analogue: substrate's source-isolation problem.", "category": "scene"},
+    {"name": "schema_based_grouping", "definition": "Top-down familiar pattern recognition aids source separation. Substrate analogue: substrate's Mt-driven expectations biasing scene analysis.", "category": "scene"}
+  ],
+  "rules": [
+    {"name": "critical_bands_define_perceptual_resolution", "head": "the substrate processes spectral information", "body": "frequency resolution is limited by critical band width — within a critical band, components interact + mask. Substrate's gammatone bandwidth implements this."},
+    {"name": "equal_loudness_compensation_required", "head": "the substrate computes perceived loudness from spectrum", "body": "low + high frequencies need higher SPL for same perceived loudness. Fletcher + Munson. Substrate's loudness integration must frequency-weight."},
+    {"name": "pitch_combines_place_and_periodicity", "head": "the substrate detects pitch of a complex tone", "body": "it uses both spectral peak locations (place) and temporal firing patterns (periodicity). Missing fundamental shows neither alone is sufficient."},
+    {"name": "itd_and_ild_complement_for_localization", "head": "the substrate localizes a sound source", "body": "ITD dominates below ~1.5kHz; ILD dominates above. Both required for full azimuth resolution. Substrate's bilateral processing."},
+    {"name": "precedence_effect_suppresses_echo_localization", "head": "the substrate receives a direct sound followed by reflections within 30ms", "body": "it localizes to the first arrival; the reflections color but don't separately localize. Substrate's echo-robust localization."},
+    {"name": "scene_analysis_uses_grouping_principles", "head": "the substrate processes multiple overlapping sound sources", "body": "it groups by harmonic relations + common onset + common location + common modulation. Bregman 1990 ASA. Substrate's source-stream segregation."}
+  ]
+}

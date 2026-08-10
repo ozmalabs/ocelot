@@ -1,0 +1,601 @@
+{
+  "id": "doom_operate",
+  "version": "1.0.0",
+  "self_load_only": true,
+  "depends_on": [],
+  "area": "vision",
+  "description": "The ACT half of door operation (block 210000): recognising an operable feature (209000) SETS A MOVEMENT GOAL (MovementGoal moves_toward the region); rules pursue it (steer/advance) and fire USE ONCE on arrival (in range + faced + fine-recognised). The DECISION is the rules; the adapter writes sensors + presses the button the graph names. OFF by default (OperateParams gate); does NOT touch the 211000 geometry channel.",
+  "microtheory": "perception",
+  "nodes": [],
+  "edges": [],
+  "productions": [
+    {
+      "provenance": "seed:operate:params",
+      "src": {
+        "type": "WorldInstance",
+        "var": "game"
+      },
+      "edge_type": "has_operate_params",
+      "tgt": {
+        "type": "OperateParams",
+        "var": "p"
+      }
+    },
+    {
+      "provenance": "seed:operate:region",
+      "src": {
+        "type": "WorldInstance",
+        "var": "game"
+      },
+      "edge_type": "has_perceived_region",
+      "tgt": {
+        "type": "PerceivedRegion",
+        "var": "R"
+      }
+    },
+    {
+      "provenance": "seed:operate:mgoal",
+      "src": {
+        "type": "WorldInstance",
+        "var": "game"
+      },
+      "edge_type": "has_movement_goal",
+      "tgt": {
+        "type": "MovementGoal",
+        "var": "G"
+      }
+    },
+    {
+      "provenance": "seed:operate:toward",
+      "src": {
+        "type": "MovementGoal",
+        "var": "G"
+      },
+      "edge_type": "moves_toward",
+      "tgt": {
+        "type": "PerceivedRegion",
+        "var": "R"
+      }
+    }
+  ],
+  "rules": [
+    {
+      "name": "op_mint_move",
+      "area": "vision",
+      "order": 7,
+      "latency_class": "deferred",
+      "match": [
+        [
+          "game",
+          "has_operate_params",
+          "p"
+        ],
+        [
+          "game",
+          "has_perceived_region",
+          "R"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "p"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "R"
+              },
+              "key": "recognised_family"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "operable_feature"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "R"
+                },
+                "key": "mg_minted"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 1.0
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "G",
+          "MovementGoal",
+          {
+            "kind": "approach_operate",
+            "status": "seeking",
+            "used": 0.0,
+            "motor_action": "none"
+          }
+        ],
+        [
+          "add_edge",
+          "game",
+          "has_movement_goal",
+          "G"
+        ],
+        [
+          "add_edge",
+          "G",
+          "moves_toward",
+          "R"
+        ],
+        [
+          "set_attr",
+          "R",
+          "mg_minted",
+          {
+            "__term__": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "op_steer",
+      "area": "vision",
+      "order": 8,
+      "latency_class": "deferred",
+      "match": [
+        [
+          "game",
+          "has_operate_params",
+          "p"
+        ],
+        [
+          "game",
+          "has_movement_goal",
+          "G"
+        ],
+        [
+          "G",
+          "moves_toward",
+          "R"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "p"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "G"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "seeking"
+            }
+          },
+          {
+            "type": "Gte",
+            "a": {
+              "type": "Abs",
+              "arg": {
+                "type": "Minus",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "R"
+                  },
+                  "key": "col"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "p"
+                  },
+                  "key": "center"
+                }
+              }
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "p"
+              },
+              "key": "face_tol"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "G",
+          "motor_action",
+          {
+            "__term__": {
+              "type": "IfThenElse",
+              "cond": {
+                "type": "Gt",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "R"
+                  },
+                  "key": "col"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "p"
+                  },
+                  "key": "center"
+                }
+              },
+              "then": {
+                "type": "Lit",
+                "value": "turn_right"
+              },
+              "other": {
+                "type": "Lit",
+                "value": "turn_left"
+              }
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "op_advance",
+      "area": "vision",
+      "order": 8,
+      "latency_class": "deferred",
+      "match": [
+        [
+          "game",
+          "has_operate_params",
+          "p"
+        ],
+        [
+          "game",
+          "has_movement_goal",
+          "G"
+        ],
+        [
+          "G",
+          "moves_toward",
+          "R"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "p"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "G"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "seeking"
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Abs",
+              "arg": {
+                "type": "Minus",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "R"
+                  },
+                  "key": "col"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "p"
+                  },
+                  "key": "center"
+                }
+              }
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "p"
+              },
+              "key": "face_tol"
+            }
+          },
+          {
+            "type": "Gte",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "R"
+              },
+              "key": "fwd_progress"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "p"
+              },
+              "key": "block_thresh"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "G",
+          "motor_action",
+          {
+            "__term__": {
+              "type": "Lit",
+              "value": "forward"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "op_use",
+      "area": "vision",
+      "order": 9,
+      "latency_class": "deferred",
+      "match": [
+        [
+          "game",
+          "has_operate_params",
+          "p"
+        ],
+        [
+          "game",
+          "has_movement_goal",
+          "G"
+        ],
+        [
+          "G",
+          "moves_toward",
+          "R"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "p"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "G"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "seeking"
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Abs",
+              "arg": {
+                "type": "Minus",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "R"
+                  },
+                  "key": "col"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "p"
+                  },
+                  "key": "center"
+                }
+              }
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "p"
+              },
+              "key": "face_tol"
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "R"
+              },
+              "key": "fwd_progress"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "p"
+              },
+              "key": "block_thresh"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "R"
+              },
+              "key": "recognised"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "G"
+                },
+                "key": "used"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 1.0
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "G",
+          "motor_action",
+          {
+            "__term__": {
+              "type": "Lit",
+              "value": "use"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "G",
+          "used",
+          {
+            "__term__": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "G",
+          "status",
+          {
+            "__term__": {
+              "type": "Lit",
+              "value": "operated"
+            }
+          }
+        ]
+      ]
+    }
+  ]
+}

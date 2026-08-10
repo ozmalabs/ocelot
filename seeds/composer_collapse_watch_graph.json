@@ -1,0 +1,509 @@
+{
+ "id": "composer_collapse_watch_graph",
+ "version": "1.0.0",
+ "depends_on": [],
+ "description": "GRAPH-RESIDENT: TIER 4 COGNITION (the graph's own model of its total collapse, domains/collapse_model.py's CollapseModel, USED by the agent -- not just measured) authored by the jabberwock via the composer (CLAUDE.md discipline: no hand-written agent rule). domains/collapse_model.py's predict_collapse is the MECHANICAL machinery (structural fixed-point/volatile-frontier enumeration + a bounded tier-3 forward-look) -- pure host measurement, never an agent decision, per that module's own docstring. domains/collapse_watch.py's scan_and_predict is the mechanical host hook that calls it periodically and wires `agent -has_collapse_model-> model` so the freshly-minted CollapseModel is exposed to the rule engine as a matchable edge (the SAME idiom domains/reflective_faculty.py's ensure_grounding_gap_edges uses to expose an already-computed GroundingGap flag). THIS seed is the agent's OWN decision about WHAT TO DO with the model, mirroring composer_grounding_guard_graph.json / composer_escalation_gate_graph.json / composer_imagination_graph.json's dual-process- arbitration shape exactly: mints THREE rules from an agent -wants_collapse_watch_rule-> ComposeRequest trigger (ground_concern's 'predict' relation head, seeds/relation_vocabulary.json's new collapse_watch cue + seeds/composer_dispatch.json's new ComposerCue, priority 20). (1) attend_frontier_<tag> is WHOLE-GRAPH META-SALIENCE: every node in the CollapseModel's own volatile_frontier sample (still collapsing -- an Observation/CapabilityAxis/Impasse/Goal not yet at a terminal status) gets an outgoing agent -attends_frontier-> node edge, guarded by that edge's own absence (never a set_attr on the frontier node itself). This is salience at the META level -- over the WHOLE collapse -- distinct from seeds/residual_salience.json's PER-AXIS salience (tier 2, frame-locked). (2) recognize_self_<tag> is the reflexive read: every node in the CollapseModel's own fixed_point sample (frozen_drive/frozen_seed/frozen_rule -- the frozen core domains/frozen_core.py proves unreachable -- PLUS the other structurally- settled categories) gets an outgoing agent -recognizes_as_self-> node edge, guarded the same way -- and, critically, NEVER set_attr's the matched node: the frozen Drive/Seed/RuleSummary nodes stay untouched by this rule, satisfying CLAUDE.md's 'reads fixed points, does not mutate the frozen Drive' discipline, and honouring domains/collapse_model.py's own self-inclusion invariant ('a CollapseModel node's own attrs are never mutated again after minting') by never touching cm's attrs either. (3) predict_intervene_<tag> is THE INTEGRATION HEADLINE: converged=false on the CollapseModel (the bounded forward-look predicts the volatile frontier grows without bound) mints an Impasse{kind:predicted_divergence} + agent -surprised_by-> impasse -- wired BOTH -about_model-> the CollapseModel (the honest link) AND -about_axis-> the SAME CollapseModel (piggy-backing composer_imagination_graph.json's own engage_imagine_cost_worth_<tag> rule: its kind-guard was widened, in this same change, from a single Eq to an Or of two Eq arms so a predicted_divergence-kind Impasse ALSO engages tier-3 imagination, not only seeds/autonomy.json's standing mint_goal_from_surprise -- which fires regardless of kind and needs no change at all). The un-checked add_edge target type is not schema-enforced by the engine (graph.insert_edge has no gate for rule-authored effects -- verified against runners/dsl/src/rewrite.rs's Effect::AddEdge handler), so reusing about_axis/focuses_on_axis with a CollapseModel target resolves correctly through domains/imagination_dispatch.py's existing `_resolve_focus` (which only needs a valid node id via that edge, never checks the target's TYPE) without touching that file. Re-fire is guarded by cm's own OUTGOING `escalated_divergence` edge (never a set_attr on cm, for the same self-inclusion reason). A converged=true CollapseModel never matches this rule's where-guard at all -- discriminative by construction, not by a second rule remembering to do nothing. Trust is the default (a converging graph is left alone); escalating to active cognition is what a genuinely PREDICTED divergence earns, BEFORE the runaway plays out.",
+ "nodes": [
+  {
+   "local_id": 1,
+   "type": "Rule",
+   "attrs": {
+    "id": "compose_collapse_watch_graph",
+    "match": [
+     [
+      "agent",
+      "wants_collapse_watch_rule",
+      "cr"
+     ]
+    ],
+    "where": {
+     "type": "Lt",
+     "a": {
+      "type": "Plus",
+      "items": [
+       {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "cr"
+        },
+        "key": "composed"
+       },
+       {
+        "type": "Lit",
+        "value": 0.0
+       }
+      ]
+     },
+     "b": {
+      "type": "Lit",
+      "value": 0.5
+     }
+    },
+    "effect": [
+     [
+      "add_node",
+      "rn0",
+      "Rule",
+      {
+       "minted": 0.0
+      }
+     ],
+     [
+      "set_attr",
+      "rn0",
+      "id",
+      {
+       "__term__": {
+        "type": "StringConcat",
+        "parts": [
+         {
+          "type": "Lit",
+          "value": "attend_frontier_"
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "cr"
+          },
+          "key": "tag"
+         }
+        ]
+       }
+      }
+     ],
+     [
+      "set_attr",
+      "rn0",
+      "match",
+      [
+       [
+        "ag",
+        "has_collapse_model",
+        "cm"
+       ],
+       [
+        "cm",
+        "volatile_frontier",
+        "vn"
+       ]
+      ]
+     ],
+     [
+      "set_attr",
+      "rn0",
+      "where",
+      {
+       "type": "Lt",
+       "a": {
+        "type": "Count",
+        "source": {
+         "type": "InNeighbours",
+         "node": {
+          "type": "Var",
+          "name": "vn"
+         },
+         "edge_type": "attends_frontier",
+         "any_type": false
+        }
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1
+       }
+      }
+     ],
+     [
+      "set_attr",
+      "rn0",
+      "effect",
+      [
+       [
+        "add_edge",
+        "ag",
+        "attends_frontier",
+        "vn",
+        {}
+       ]
+      ]
+     ],
+     [
+      "set_rule_clause",
+      {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "rn0"
+        },
+        "key": "id"
+       }
+      },
+      "__mint__",
+      {
+       "__term__": {
+        "type": "Var",
+        "name": "rn0"
+       }
+      }
+     ],
+     [
+      "add_node",
+      "rn1",
+      "Rule",
+      {
+       "minted": 0.0
+      }
+     ],
+     [
+      "set_attr",
+      "rn1",
+      "id",
+      {
+       "__term__": {
+        "type": "StringConcat",
+        "parts": [
+         {
+          "type": "Lit",
+          "value": "recognize_self_"
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "cr"
+          },
+          "key": "tag"
+         }
+        ]
+       }
+      }
+     ],
+     [
+      "set_attr",
+      "rn1",
+      "match",
+      [
+       [
+        "ag",
+        "has_collapse_model",
+        "cm"
+       ],
+       [
+        "cm",
+        "fixed_point",
+        "fp"
+       ]
+      ]
+     ],
+     [
+      "set_attr",
+      "rn1",
+      "where",
+      {
+       "type": "Lt",
+       "a": {
+        "type": "Count",
+        "source": {
+         "type": "InNeighbours",
+         "node": {
+          "type": "Var",
+          "name": "fp"
+         },
+         "edge_type": "recognizes_as_self",
+         "any_type": false
+        }
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1
+       }
+      }
+     ],
+     [
+      "set_attr",
+      "rn1",
+      "effect",
+      [
+       [
+        "add_edge",
+        "ag",
+        "recognizes_as_self",
+        "fp",
+        {}
+       ]
+      ]
+     ],
+     [
+      "set_rule_clause",
+      {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "rn1"
+        },
+        "key": "id"
+       }
+      },
+      "__mint__",
+      {
+       "__term__": {
+        "type": "Var",
+        "name": "rn1"
+       }
+      }
+     ],
+     [
+      "add_node",
+      "rn2",
+      "Rule",
+      {
+       "minted": 0.0
+      }
+     ],
+     [
+      "set_attr",
+      "rn2",
+      "id",
+      {
+       "__term__": {
+        "type": "StringConcat",
+        "parts": [
+         {
+          "type": "Lit",
+          "value": "predict_intervene_"
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "cr"
+          },
+          "key": "tag"
+         }
+        ]
+       }
+      }
+     ],
+     [
+      "set_attr",
+      "rn2",
+      "match",
+      [
+       [
+        "ag",
+        "has_collapse_model",
+        "cm"
+       ]
+      ]
+     ],
+     [
+      "set_attr",
+      "rn2",
+      "where",
+      {
+       "type": "And",
+       "items": [
+        {
+         "type": "Not",
+         "arg": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "cm"
+           },
+           "key": "converged"
+          },
+          "b": {
+           "type": "Lit",
+           "value": true
+          }
+         }
+        },
+        {
+         "type": "Lt",
+         "a": {
+          "type": "Count",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "cm"
+           },
+           "edge_type": "escalated_divergence",
+           "any_type": false
+          }
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1
+         }
+        }
+       ]
+      }
+     ],
+     [
+      "set_attr",
+      "rn2",
+      "effect",
+      [
+       [
+        "add_node",
+        "mi",
+        "Impasse",
+        {
+         "resolved": false,
+         "kind": "predicted_divergence",
+         "order": 0,
+         "acted_order": 0,
+         "why": "the whole-graph CollapseModel predicts the volatile frontier will grow without bound (converged=false) -- escalate to active cognition BEFORE the runaway plays out, not only after"
+        }
+       ],
+       [
+        "add_edge",
+        "ag",
+        "surprised_by",
+        "mi"
+       ],
+       [
+        "add_edge",
+        "mi",
+        "about_model",
+        "cm"
+       ],
+       [
+        "add_edge",
+        "mi",
+        "about_axis",
+        "cm"
+       ],
+       [
+        "add_edge",
+        "cm",
+        "escalated_divergence",
+        "mi"
+       ]
+      ]
+     ],
+     [
+      "set_rule_clause",
+      {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "rn2"
+        },
+        "key": "id"
+       }
+      },
+      "__mint__",
+      {
+       "__term__": {
+        "type": "Var",
+        "name": "rn2"
+       }
+      }
+     ],
+     [
+      "set_attr",
+      "cr",
+      "composed",
+      1.0
+     ]
+    ]
+   }
+  }
+ ],
+ "edges": [],
+ "productions": [
+  {
+   "provenance": "seed:composer_collapse_watch_graph:has_collapse_model",
+   "src": {
+    "type": "Agent",
+    "var": "s"
+   },
+   "edge_type": "has_collapse_model",
+   "tgt": {
+    "type": "CollapseModel",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:composer_collapse_watch_graph:attends_frontier",
+   "src": {
+    "type": "Agent",
+    "var": "s"
+   },
+   "edge_type": "attends_frontier",
+   "tgt": {
+    "type": "Unknown",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:composer_collapse_watch_graph:recognizes_as_self",
+   "src": {
+    "type": "Agent",
+    "var": "s"
+   },
+   "edge_type": "recognizes_as_self",
+   "tgt": {
+    "type": "Unknown",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:composer_collapse_watch_graph:surprised_by",
+   "src": {
+    "type": "Agent",
+    "var": "s"
+   },
+   "edge_type": "surprised_by",
+   "tgt": {
+    "type": "Impasse",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:composer_collapse_watch_graph:about_model",
+   "src": {
+    "type": "Impasse",
+    "var": "s"
+   },
+   "edge_type": "about_model",
+   "tgt": {
+    "type": "CollapseModel",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:composer_collapse_watch_graph:about_axis",
+   "src": {
+    "type": "Impasse",
+    "var": "s"
+   },
+   "edge_type": "about_axis",
+   "tgt": {
+    "type": "CollapseModel",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:composer_collapse_watch_graph:escalated_divergence",
+   "src": {
+    "type": "CollapseModel",
+    "var": "s"
+   },
+   "edge_type": "escalated_divergence",
+   "tgt": {
+    "type": "Impasse",
+    "var": "t"
+   }
+  }
+ ]
+}

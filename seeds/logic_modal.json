@@ -1,0 +1,55 @@
+{
+  "microtheory": {
+    "name": "modal_logic",
+    "definition": "Logic of necessity + possibility. Kripke semantics, accessibility relations, modal systems (K, T, S4, S5), temporal logic, epistemic logic, deontic logic, doxastic logic. Substrate analogue: substrate's reasoning about possibility + necessity across Mt-states.",
+    "category": "logic_domain",
+    "parent": "logic_foundation"
+  },
+  "concepts": [
+    {"name": "modal_operator", "definition": "□ (necessarily), ◇ (possibly). Box + diamond. Substrate analogue: substrate's modal-status concept.", "category": "operators"},
+    {"name": "necessity", "definition": "True in all possible worlds. □P. Substrate analogue: substrate's basin-invariant truth.", "category": "operators"},
+    {"name": "possibility", "definition": "True in some possible world. ◇P. Substrate analogue: substrate's basin-satisfiable truth.", "category": "operators"},
+    {"name": "modal_duality", "definition": "□P ≡ ¬◇¬P. Necessity is impossibility of contrary. Substrate analogue: substrate's modal-conversion.", "category": "operators"},
+
+    {"name": "kripke_semantics", "definition": "Kripke 1959. Models = (W, R, V). Worlds + accessibility relation + valuation. □P true at w iff P true at all w' accessible from w. Substrate analogue: substrate's basin-network semantics.", "category": "semantics"},
+    {"name": "possible_world", "definition": "Way the world could be. Modal logic primitive. Substrate analogue: substrate's possible Mt-state.", "category": "semantics"},
+    {"name": "accessibility_relation", "definition": "R between worlds. wRw' = w' is possible-relative-to w. Different modal systems by R's properties. Substrate analogue: substrate's basin-reachability.", "category": "semantics"},
+    {"name": "model_modal", "definition": "Kripke model. (W, R, V) where V assigns truth-values per world. Substrate analogue: substrate's branching state-graph.", "category": "semantics"},
+
+    {"name": "modal_system_k", "definition": "Weakest normal modal logic. Only axiom: □(P→Q) → (□P → □Q). Substrate analogue: substrate's minimal modal reasoning.", "category": "systems"},
+    {"name": "modal_system_t", "definition": "K + (□P → P). Reflexive R: everything actual is possible. Substrate analogue: substrate's grounded modality.", "category": "systems"},
+    {"name": "modal_system_s4", "definition": "T + (□P → □□P). Transitive R: necessities are necessarily necessary. Substrate analogue: substrate's stable modality.", "category": "systems"},
+    {"name": "modal_system_s5", "definition": "T + (◇P → □◇P). R is equivalence relation. Strongest standard. Substrate analogue: substrate's collapsed modality.", "category": "systems"},
+
+    {"name": "rigid_designator_modal", "definition": "Kripke. Term referring to same thing in all possible worlds. Names are rigid. Substrate analogue: substrate's persistent-Concept across basins.", "category": "reference"},
+    {"name": "transworld_identity", "definition": "Same individual across possible worlds. Counterpart theory (Lewis) denies strict identity. Substrate analogue: substrate's Mt-identity across states.", "category": "reference"},
+    {"name": "essentialism", "definition": "Some properties necessary to objects. Water is necessarily H2O. Substrate analogue: substrate's required-Concept properties.", "category": "reference"},
+
+    {"name": "temporal_logic", "definition": "Modal with temporal operators. F (future), P (past), G (always), H (always was). Prior. Substrate analogue: substrate's temporal-relation reasoning.", "category": "applications"},
+    {"name": "ltl", "definition": "Linear Temporal Logic. Time as linear sequence. Used in verification. Substrate analogue: substrate's sequential-state reasoning.", "category": "applications"},
+    {"name": "ctl", "definition": "Computation Tree Logic. Time as branching. Substrate analogue: substrate's branching-future reasoning.", "category": "applications"},
+
+    {"name": "epistemic_logic", "definition": "Modal with knowledge operator K. KP = agent knows P. Hintikka 1962. Substrate analogue: substrate's knowledge reasoning.", "category": "applications"},
+    {"name": "knowledge_axioms", "definition": "Axiom T: KP → P (knowledge is factive). Axiom 4: KP → KKP (positive introspection). Axiom 5: ¬KP → K¬KP (negative introspection). Substrate analogue: substrate's introspective principles.", "category": "applications"},
+    {"name": "common_knowledge_logic", "definition": "Everyone knows everyone knows ... arbitrary depth. Coordination problems require it. Substrate analogue: substrate's shared-common-ground.", "category": "applications"},
+    {"name": "muddy_children_puzzle", "definition": "Classic common knowledge puzzle. After n announcements, the n muddy children know they're muddy. Substrate analogue: substrate's iterated reasoning.", "category": "applications"},
+
+    {"name": "deontic_logic", "definition": "Modal with obligation O + permission P. Reasoning about norms. Substrate analogue: substrate's normative reasoning.", "category": "applications"},
+    {"name": "obligation", "definition": "Must do. OP. Substrate analogue: substrate's required-action.", "category": "applications"},
+    {"name": "permission_deontic", "definition": "May do. PP. Substrate analogue: substrate's allowed-action.", "category": "applications"},
+    {"name": "deontic_paradoxes", "definition": "Ross's paradox, Chisholm's paradox, etc. Difficulties of formalizing norms. Substrate analogue: substrate's normative-inference problems.", "category": "applications"},
+
+    {"name": "doxastic_logic", "definition": "Modal with belief operator B. BP = agent believes P. Weaker than K. Substrate analogue: substrate's belief reasoning.", "category": "applications"},
+    {"name": "belief_versus_knowledge", "definition": "Knowledge requires truth; belief doesn't. KP → BP, not vice versa. Substrate analogue: substrate's σ-vs-truth distinction.", "category": "applications"},
+
+    {"name": "dynamic_logic", "definition": "Modal with program operators [α]. After executing α, P. Hoare logic style. Substrate analogue: substrate's action-effect reasoning.", "category": "applications"},
+    {"name": "modal_logic_program_verification", "definition": "Use modal logics to specify + verify programs. Pnueli. Substrate analogue: substrate's behavior-verification."}
+  ],
+  "rules": [
+    {"name": "necessity_distributes_over_implication", "head": "the substrate accepts □(P→Q) and □P", "body": "it can conclude □Q. Modal modus ponens. Axiom K."},
+    {"name": "reflexive_accessibility_grounds_actuality", "head": "the substrate uses reflexive accessibility relation", "body": "every necessary truth is actually true. □P → P. System T."},
+    {"name": "knowledge_implies_truth", "head": "the substrate KNOWS that P", "body": "P must be true. Knowledge is factive. Hintikka. Substrate's K-T axiom."},
+    {"name": "rigid_designation_supports_modal_identity", "head": "the substrate uses a rigid designator", "body": "the term picks out the same entity in every possible world. Kripke. Substrate's persistent Concept across basins."},
+    {"name": "temporal_logic_handles_time_reasoning", "head": "the substrate reasons about temporal sequences", "body": "temporal modal operators (F, P, G, H) provide the language. LTL or CTL by structure."}
+  ]
+}

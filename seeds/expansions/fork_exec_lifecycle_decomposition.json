@@ -1,0 +1,118 @@
+{
+  "id": "fork_exec_lifecycle_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "fork",
+  "in_microtheory": "operating_systems",
+  "description": "Process lifecycle decomposed. fork's COW + fd inheritance + signal-handler-reset semantics. exec's image replacement. wait/waitpid + zombies. Signal handling around fork. posix_spawn as the modern alternative. The fork-exec pattern + its modern alternatives.",
+  "sub_mechanisms": [
+    {
+      "name": "fork_copy_on_write",
+      "definition": "fork() doesn't actually copy memory; marks both processes' pages as read-only. First write triggers fault → kernel allocates a private copy.",
+      "why": "Cheap fork even for large processes. Cost only paid for pages actually modified. Most modern apps that fork+exec never modify memory in the child (exec replaces it). Effective zero-cost fork in common case.",
+      "category": "lifecycle_mechanism"
+    },
+    {
+      "name": "fork_fd_inheritance",
+      "definition": "Child inherits parent's open file descriptors. fd table is copied; underlying file descriptions are shared.",
+      "why": "Foundation of pipe-based pipelines: parent creates pipe, forks, child has both ends. Allows fds to be set up before exec. CLOEXEC flag on fd marks it for closing on exec.",
+      "category": "lifecycle_mechanism"
+    },
+    {
+      "name": "fork_signal_state",
+      "definition": "Child inherits parent's signal handlers but pending signals are not inherited. Signal mask is preserved.",
+      "why": "Predictable signal behavior: handlers set up in parent are active in child. Pending signals not inherited prevents accidental double-delivery. Standard POSIX semantics.",
+      "category": "lifecycle_mechanism"
+    },
+    {
+      "name": "exec_image_replacement",
+      "definition": "execve loads a new program into the calling process: replaces text + heap + stack + memory mappings. PID + fds (without CLOEXEC) preserved.",
+      "why": "Clean transition from one program to another in the same process. Lets a parent set up the environment (cwd, fds, env vars), then exec the desired program. fork+exec is the Unix idiom for spawning.",
+      "category": "lifecycle_mechanism"
+    },
+    {
+      "name": "CLOEXEC_flag",
+      "definition": "Per-fd flag: if set, the fd is closed automatically on exec. Set via open(O_CLOEXEC) or fcntl(F_SETFD, FD_CLOEXEC).",
+      "why": "Prevents fd leaks across exec: child shouldn't inherit fds the parent uses internally. Best practice: open with O_CLOEXEC by default. Pre-CLOEXEC, manual fcntl was required (race conditions on threaded programs).",
+      "category": "lifecycle_mechanism"
+    },
+    {
+      "name": "wait_exit_status",
+      "definition": "wait/waitpid returns child's exit status: 8-bit exit code (from main return or exit()) or signal that killed it.",
+      "why": "Parent's communication channel with child completion. WIFEXITED + WEXITSTATUS macros interpret. Bash's $? captures this. waitpid's WNOHANG flag enables non-blocking polling.",
+      "category": "lifecycle_mechanism"
+    },
+    {
+      "name": "orphan_process",
+      "definition": "Process whose parent has exited. Reparented to init (PID 1) which waits for it.",
+      "why": "Prevents zombies when parents die first. init is responsible for reaping orphans. In containers, the PID-1 process plays this role (problems if it doesn't, hence tini, dumb-init).",
+      "category": "lifecycle_mechanism"
+    },
+    {
+      "name": "double_fork_daemon_pattern",
+      "definition": "Daemonisation: fork; in child setsid + fork again; in grandchild do work. Original parent reaped by init via the intermediate child's exit.",
+      "why": "Grandchild is fully detached: no session, no terminal, reaped by init. Without double fork, daemon could acquire a controlling TTY (unwanted). Modern systemd handles daemon setup; manual double-fork persists in legacy code.",
+      "category": "lifecycle_mechanism"
+    },
+    {
+      "name": "process_credentials",
+      "definition": "Per-process UID/GID + supplementary groups + effective/real/saved variants. Determine permission for file access + syscalls.",
+      "why": "User identity carried through process tree. setuid/setgid syscalls change them (with restrictions). suid bit on executables runs the program as the file's owner.",
+      "category": "lifecycle_mechanism"
+    },
+    {
+      "name": "posix_spawn",
+      "definition": "Single syscall combining fork + exec atomically. posix_spawn(&pid, path, file_actions, attrp, argv, envp).",
+      "why": "Avoids fork's COW cost when child immediately execs (the common case). On Linux, posix_spawn uses vfork-style optimisation internally. Faster + simpler than fork+exec for spawn use cases.",
+      "category": "lifecycle_mechanism"
+    },
+    {
+      "name": "vfork",
+      "definition": "Legacy syscall: like fork but child shares parent's address space. Parent suspended until child execs or exits.",
+      "why": "Avoid COW page table setup. Dangerous: child can corrupt parent's memory. Mostly superseded by posix_spawn + Linux's optimised fork. Used in some embedded contexts.",
+      "category": "lifecycle_mechanism"
+    },
+    {
+      "name": "clone_syscall",
+      "definition": "Linux-specific: like fork but with fine-grained control over what's shared (memory, fds, signal handlers, etc.). The underlying primitive for pthread + container creation.",
+      "why": "Same syscall for: thread (share everything), container (new namespaces), process (share little). Flag bits control sharing per resource. fork is clone with default flags; pthread_create is clone with CLONE_VM|CLONE_FILES|CLONE_THREAD.",
+      "category": "lifecycle_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "COW_makes_fork_cheap_when_child_execs",
+      "if": ["child immediately calls exec without writing memory"],
+      "then": ["fork's cost is just the page table copy"],
+      "why": "No actual page copies. Page table setup is O(memory size in PTEs) — for typical processes, hundreds of μs. The 'COW + exec' idiom is what makes Unix process creation tractable.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "posix_spawn_beats_fork_exec_when_combined",
+      "if": ["fork is immediately followed by exec"],
+      "then": ["posix_spawn is faster"],
+      "why": "fork sets up COW for memory that exec immediately discards. posix_spawn skips the COW setup. On large processes (modern JVMs, browsers), the difference is dramatic. Modern Python's subprocess uses posix_spawn when possible.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "wait_required_to_prevent_zombies",
+      "if": ["a process forks children but never waits"],
+      "then": ["zombies accumulate"],
+      "why": "Exited but unwaited children stay in the process table holding only PID + exit status. Each is tiny but they exhaust PIDs. Long-running daemons must wait or SIGCHLD-handle correctly.",
+      "soundness_category": "referential_transparency"
+    },
+    {
+      "name": "CLOEXEC_prevents_fd_leak_to_child",
+      "if": ["a file descriptor is marked CLOEXEC"],
+      "then": ["it's closed automatically on exec"],
+      "why": "Without CLOEXEC, all fds the parent had open are visible to the child. Security risk (child could access parent's resources) + resource leak (file remains open). Best practice: open with O_CLOEXEC by default.",
+      "soundness_category": "referential_transparency"
+    },
+    {
+      "name": "clone_unifies_threading_and_process_creation",
+      "if": ["fork is clone with default flags and pthread_create is clone with shared flags"],
+      "then": ["the OS treats threading + forking as a single primitive"],
+      "why": "Linux's clone exposes all the sharing dimensions. fork: share nothing (process). pthread_create: share memory/fds/signal handlers (thread). Containers: share or unshare namespaces. One mechanism, many use cases.",
+      "soundness_category": "extensional_equivalence"
+    }
+  ]
+}

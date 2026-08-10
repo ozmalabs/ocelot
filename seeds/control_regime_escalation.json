@@ -1,0 +1,7430 @@
+{
+ "id": "control_regime_escalation",
+ "version": "7.11.0",
+ "depends_on": [
+  "cognitive_pareto"
+ ],
+ "area": "control_regime_escalation",
+ "latency_class": "soft_realtime",
+ "description": "Expected-evidence absence is a first-class residual at the control grain, and it opens a deliberation over a Pareto frontier of consumer-declared, Pareto-INCOMPARABLE regimes (docs/regime_pareto_frontier_prereg.md) rather than climbing a total-order ladder.  The general half of the metastability fix (docs/metastable_regime_escalation.md): a regime that promises evidence and delivers none inside its horizon is escalated instead of replayed forever; WHICH regime it escalates to is the shared embodied_pareto_profile primitive's relational dominance plus one explicit, declared selection policy -- never a smuggled scalar.",
+ "microtheory": {
+  "name": "control_regime_escalation",
+  "description": "no expected evidence inside the horizon -> mint a ControlRegimeImpasse -> open a deliberation over a fresh Pareto frontier of the consumer's declared regimes -> publish the frontier member the declared situational policy prefers.  The domain defines evidence, regime semantics, and the per-axis achievable-margin formulas."
+ },
+ "nodes": [
+  {
+   "local_id": 1,
+   "type": "ControlOrderSample",
+   "attrs": {
+    "name": "control_regime_channel_sample",
+    "signature": "[[\"m\", 0]]",
+    "kind": "faculty",
+    "faculty": "control_regime_channel_sample",
+    "dim_types": [
+     "pred",
+     "coord:v"
+    ]
+   }
+  }
+ ],
+ "edges": [],
+ "productions": [
+  {
+   "provenance": "seed:control_regime_escalation:has_regime_channel",
+   "src": {
+    "type": "EmbodiedMotorProgramEpisode",
+    "var": "s"
+   },
+   "edge_type": "has_regime_channel",
+   "tgt": {
+    "type": "ControlRegimeChannel",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:control_regime_escalation:holds_regime_transition",
+   "src": {
+    "type": "Agent",
+    "var": "s"
+   },
+   "edge_type": "holds_regime_transition",
+   "tgt": {
+    "type": "ControlRegimeTransition",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:control_regime_escalation:transition_about_control_regime",
+   "src": {
+    "type": "ControlRegimeTransition",
+    "var": "s"
+   },
+   "edge_type": "about_control_regime",
+   "tgt": {
+    "type": "EmbodiedMotorProgramEpisode",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:control_regime_escalation:has_control_regime_residual",
+   "src": {
+    "type": "Agent",
+    "var": "s"
+   },
+   "edge_type": "has_control_regime_residual",
+   "tgt": {
+    "type": "ControlRegimeResidual",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:control_regime_escalation:residual_about_control_regime",
+   "src": {
+    "type": "ControlRegimeResidual",
+    "var": "s"
+   },
+   "edge_type": "about_control_regime",
+   "tgt": {
+    "type": "EmbodiedMotorProgramEpisode",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:control_regime_escalation:holds_control_regime",
+   "src": {
+    "type": "Agent",
+    "var": "s"
+   },
+   "edge_type": "holds_control_regime",
+   "tgt": {
+    "type": "EmbodiedMotorProgramEpisode",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:control_regime_escalation:has_control_regime_impasse",
+   "src": {
+    "type": "Agent",
+    "var": "s"
+   },
+   "edge_type": "has_control_regime_impasse",
+   "tgt": {
+    "type": "ControlRegimeImpasse",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:control_regime_escalation:about_control_regime",
+   "src": {
+    "type": "ControlRegimeImpasse",
+    "var": "s"
+   },
+   "edge_type": "about_control_regime",
+   "tgt": {
+    "type": "EmbodiedMotorProgramEpisode",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:control_regime_escalation:deliberates_over_pareto_profile",
+   "src": {
+    "type": "EmbodiedMotorProgramEpisode",
+    "var": "s"
+   },
+   "edge_type": "deliberates_over_pareto_profile",
+   "tgt": {
+    "type": "ParetoProfile",
+    "var": "t"
+   }
+  }
+ ],
+ "rules": [
+  {
+   "name": "cre_integrate_evidence_absence",
+   "area": "control_regime_escalation",
+   "latency_class": "soft_realtime",
+   "order": -51,
+   "batch": false,
+   "match": [
+    [
+     "agent",
+     "holds_control_regime",
+     "regime"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "regime"
+         },
+         "key": "regime_monitor_enabled"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Gt",
+       "a": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "regime"
+          },
+          "key": "regime_terminal"
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       },
+       "b": {
+        "type": "Lit",
+        "value": 0.5
+       }
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "regime"
+         },
+         "key": "regime_clock_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "regime"
+         },
+         "key": "regime_absence_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "regime",
+     "regime_absence_integral",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Not",
+        "arg": {
+         "type": "Lt",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "regime"
+            },
+            "key": "regime_evidence_seq"
+           },
+           {
+            "type": "Lit",
+            "value": 0.0
+           }
+          ]
+         },
+         "b": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "regime"
+            },
+            "key": "regime_absence_seq"
+           },
+           {
+            "type": "Lit",
+            "value": 0.0
+           }
+          ]
+         }
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": 0.0
+       },
+       "other": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "regime"
+            },
+            "key": "regime_absence_integral"
+           },
+           {
+            "type": "Lit",
+            "value": 0.0
+           }
+          ]
+         },
+         {
+          "type": "Min",
+          "items": [
+           {
+            "type": "Max",
+            "items": [
+             {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "regime"
+                },
+                "key": "regime_urgency"
+               },
+               {
+                "type": "Lit",
+                "value": 0.0
+               }
+              ]
+             },
+             {
+              "type": "Lit",
+              "value": 1.0
+             }
+            ]
+           },
+           {
+            "type": "Lit",
+            "value": 100.0
+           }
+          ]
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "regime",
+     "regime_absence_seq",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "regime"
+         },
+         "key": "regime_clock_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "cre_publish_spend_authority",
+   "area": "control_regime_escalation",
+   "latency_class": "soft_realtime",
+   "order": -46.05,
+   "batch": false,
+   "match": [
+    [
+     "agent",
+     "holds_control_regime",
+     "regime"
+    ]
+   ],
+   "where": {
+    "type": "Gt",
+    "a": {
+     "type": "Plus",
+     "items": [
+      {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "regime"
+       },
+       "key": "regime_monitor_enabled"
+      },
+      {
+       "type": "Lit",
+       "value": 0.0
+      }
+     ]
+    },
+    "b": {
+     "type": "Lit",
+     "value": 0.5
+    }
+   },
+   "effects": [
+    [
+     "set_attr",
+     "regime",
+     "regime_rung_high_water",
+     {
+      "__term__": {
+       "type": "Max",
+       "items": [
+        {
+         "type": "Max",
+         "items": [
+          {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "regime"
+             },
+             "key": "regime_viability_rung"
+            },
+            {
+             "type": "Lit",
+             "value": 0.0
+            }
+           ]
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        },
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "regime"
+           },
+           "key": "regime_rung_high_water"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "regime",
+     "regime_spend_floor",
+     {
+      "__term__": {
+       "type": "Max",
+       "items": [
+        {
+         "type": "Minus",
+         "a": {
+          "type": "Max",
+          "items": [
+           {
+            "type": "Max",
+            "items": [
+             {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "regime"
+                },
+                "key": "regime_viability_rung"
+               },
+               {
+                "type": "Lit",
+                "value": 0.0
+               }
+              ]
+             },
+             {
+              "type": "Lit",
+              "value": 0.0
+             }
+            ]
+           },
+           {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "regime"
+              },
+              "key": "regime_rung_high_water"
+             },
+             {
+              "type": "Lit",
+              "value": 0.0
+             }
+            ]
+           }
+          ]
+         },
+         "b": {
+          "type": "IfThenElse",
+          "cond": {
+           "type": "Gt",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "regime"
+              },
+              "key": "regime_rung_decade"
+             },
+             {
+              "type": "Lit",
+              "value": 0.0
+             }
+            ]
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0.0
+           }
+          },
+          "then": {
+           "type": "IDiv",
+           "a": {
+            "type": "Max",
+            "items": [
+             {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "regime"
+                },
+                "key": "regime_goal_worth_log"
+               },
+               {
+                "type": "Lit",
+                "value": 0.0
+               }
+              ]
+             },
+             {
+              "type": "Lit",
+              "value": 0.0
+             }
+            ]
+           },
+           "b": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "regime"
+              },
+              "key": "regime_rung_decade"
+             },
+             {
+              "type": "Lit",
+              "value": 0.0
+             }
+            ]
+           }
+          },
+          "other": {
+           "type": "Lit",
+           "value": 0.0
+          }
+         }
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "regime",
+     "regime_budget_exhausted",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Lt",
+        "a": {
+         "type": "Max",
+         "items": [
+          {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "regime"
+             },
+             "key": "regime_viability_rung"
+            },
+            {
+             "type": "Lit",
+             "value": 0.0
+            }
+           ]
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        },
+        "b": {
+         "type": "Max",
+         "items": [
+          {
+           "type": "Minus",
+           "a": {
+            "type": "Max",
+            "items": [
+             {
+              "type": "Max",
+              "items": [
+               {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "regime"
+                  },
+                  "key": "regime_viability_rung"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0.0
+                 }
+                ]
+               },
+               {
+                "type": "Lit",
+                "value": 0.0
+               }
+              ]
+             },
+             {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "regime"
+                },
+                "key": "regime_rung_high_water"
+               },
+               {
+                "type": "Lit",
+                "value": 0.0
+               }
+              ]
+             }
+            ]
+           },
+           "b": {
+            "type": "IfThenElse",
+            "cond": {
+             "type": "Gt",
+             "a": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "regime"
+                },
+                "key": "regime_rung_decade"
+               },
+               {
+                "type": "Lit",
+                "value": 0.0
+               }
+              ]
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0.0
+             }
+            },
+            "then": {
+             "type": "IDiv",
+             "a": {
+              "type": "Max",
+              "items": [
+               {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "regime"
+                  },
+                  "key": "regime_goal_worth_log"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0.0
+                 }
+                ]
+               },
+               {
+                "type": "Lit",
+                "value": 0.0
+               }
+              ]
+             },
+             "b": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "regime"
+                },
+                "key": "regime_rung_decade"
+               },
+               {
+                "type": "Lit",
+                "value": 0.0
+               }
+              ]
+             }
+            },
+            "other": {
+             "type": "Lit",
+             "value": 0.0
+            }
+           }
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": 1.0
+       },
+       "other": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "regime",
+     "regime_info_spend_floor",
+     {
+      "__term__": {
+       "type": "Max",
+       "items": [
+        {
+         "type": "Minus",
+         "a": {
+          "type": "Max",
+          "items": [
+           {
+            "type": "Max",
+            "items": [
+             {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "regime"
+                },
+                "key": "regime_viability_rung"
+               },
+               {
+                "type": "Lit",
+                "value": 0.0
+               }
+              ]
+             },
+             {
+              "type": "Lit",
+              "value": 0.0
+             }
+            ]
+           },
+           {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "regime"
+              },
+              "key": "regime_rung_high_water"
+             },
+             {
+              "type": "Lit",
+              "value": 0.0
+             }
+            ]
+           }
+          ]
+         },
+         "b": {
+          "type": "IfThenElse",
+          "cond": {
+           "type": "Gt",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "regime"
+              },
+              "key": "regime_rung_decade"
+             },
+             {
+              "type": "Lit",
+              "value": 0.0
+             }
+            ]
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0.0
+           }
+          },
+          "then": {
+           "type": "IDiv",
+           "a": {
+            "type": "Max",
+            "items": [
+             {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "regime"
+                },
+                "key": "regime_information_worth_log"
+               },
+               {
+                "type": "Lit",
+                "value": 0.0
+               }
+              ]
+             },
+             {
+              "type": "Lit",
+              "value": 0.0
+             }
+            ]
+           },
+           "b": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "regime"
+              },
+              "key": "regime_rung_decade"
+             },
+             {
+              "type": "Lit",
+              "value": 0.0
+             }
+            ]
+           }
+          },
+          "other": {
+           "type": "Lit",
+           "value": 0.0
+          }
+         }
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "regime",
+     "regime_info_budget_exhausted",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Lt",
+        "a": {
+         "type": "Max",
+         "items": [
+          {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "regime"
+             },
+             "key": "regime_viability_rung"
+            },
+            {
+             "type": "Lit",
+             "value": 0.0
+            }
+           ]
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        },
+        "b": {
+         "type": "Max",
+         "items": [
+          {
+           "type": "Minus",
+           "a": {
+            "type": "Max",
+            "items": [
+             {
+              "type": "Max",
+              "items": [
+               {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "regime"
+                  },
+                  "key": "regime_viability_rung"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0.0
+                 }
+                ]
+               },
+               {
+                "type": "Lit",
+                "value": 0.0
+               }
+              ]
+             },
+             {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "regime"
+                },
+                "key": "regime_rung_high_water"
+               },
+               {
+                "type": "Lit",
+                "value": 0.0
+               }
+              ]
+             }
+            ]
+           },
+           "b": {
+            "type": "IfThenElse",
+            "cond": {
+             "type": "Gt",
+             "a": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "regime"
+                },
+                "key": "regime_rung_decade"
+               },
+               {
+                "type": "Lit",
+                "value": 0.0
+               }
+              ]
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0.0
+             }
+            },
+            "then": {
+             "type": "IDiv",
+             "a": {
+              "type": "Max",
+              "items": [
+               {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "regime"
+                  },
+                  "key": "regime_information_worth_log"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0.0
+                 }
+                ]
+               },
+               {
+                "type": "Lit",
+                "value": 0.0
+               }
+              ]
+             },
+             "b": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "regime"
+                },
+                "key": "regime_rung_decade"
+               },
+               {
+                "type": "Lit",
+                "value": 0.0
+               }
+              ]
+             }
+            },
+            "other": {
+             "type": "Lit",
+             "value": 0.0
+            }
+           }
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": 1.0
+       },
+       "other": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "regime",
+     "regime_spend_authorised",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gt",
+        "a": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Gt",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "regime"
+             },
+             "key": "regime_rung_decade"
+            },
+            {
+             "type": "Lit",
+             "value": 0.0
+            }
+           ]
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0.0
+          }
+         },
+         "then": {
+          "type": "IDiv",
+          "a": {
+           "type": "Max",
+           "items": [
+            {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "regime"
+               },
+               "key": "regime_goal_worth_log"
+              },
+              {
+               "type": "Lit",
+               "value": 0.0
+              }
+             ]
+            },
+            {
+             "type": "Lit",
+             "value": 0.0
+            }
+           ]
+          },
+          "b": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "regime"
+             },
+             "key": "regime_rung_decade"
+            },
+            {
+             "type": "Lit",
+             "value": 0.0
+            }
+           ]
+          }
+         },
+         "other": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.0
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": 1.0
+       },
+       "other": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "regime",
+     "regime_worth_in_rungs",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gt",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "regime"
+           },
+           "key": "regime_rung_decade"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.0
+        }
+       },
+       "then": {
+        "type": "IDiv",
+        "a": {
+         "type": "Max",
+         "items": [
+          {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "regime"
+             },
+             "key": "regime_goal_worth_log"
+            },
+            {
+             "type": "Lit",
+             "value": 0.0
+            }
+           ]
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        },
+        "b": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "regime"
+           },
+           "key": "regime_rung_decade"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        }
+       },
+       "other": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "regime",
+     "regime_info_worth_in_rungs",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gt",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "regime"
+           },
+           "key": "regime_rung_decade"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.0
+        }
+       },
+       "then": {
+        "type": "IDiv",
+        "a": {
+         "type": "Max",
+         "items": [
+          {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "regime"
+             },
+             "key": "regime_information_worth_log"
+            },
+            {
+             "type": "Lit",
+             "value": 0.0
+            }
+           ]
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        },
+        "b": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "regime"
+           },
+           "key": "regime_rung_decade"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        }
+       },
+       "other": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "cre_project_region_reachability",
+   "area": "control_regime_escalation",
+   "latency_class": "soft_realtime",
+   "order": -49.67,
+   "batch": false,
+   "match": [
+    [
+     "agent",
+     "holds_control_regime",
+     "regime"
+    ],
+    [
+     "regime",
+     "has_regime_region",
+     "region"
+    ],
+    [
+     "regime",
+     "has_regime_channel",
+     "channel"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "regime"
+         },
+         "key": "regime_monitor_enabled"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "region"
+         },
+         "key": "region_axis_ordinal"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "channel"
+         },
+         "key": "channel_axis_ordinal"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "region",
+     "region_inside",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gt",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "region"
+           },
+           "key": "region_gap"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.0
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": 0.0
+       },
+       "other": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "region",
+     "region_actions",
+     {
+      "__term__": {
+       "type": "IDiv",
+       "a": {
+        "type": "Min",
+        "items": [
+         {
+          "type": "IfThenElse",
+          "cond": {
+           "type": "Gt",
+           "a": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "region"
+                },
+                "key": "region_gap"
+               },
+               {
+                "type": "Lit",
+                "value": 0.0
+               }
+              ]
+             },
+             {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "channel"
+                },
+                "key": "channel_rate_measured"
+               },
+               {
+                "type": "Lit",
+                "value": 0.0
+               }
+              ]
+             }
+            ]
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0.0
+           }
+          },
+          "then": {
+           "type": "Div",
+           "a": {
+            "type": "Max",
+            "items": [
+             {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "region"
+                },
+                "key": "region_gap"
+               },
+               {
+                "type": "Lit",
+                "value": 0.0
+               }
+              ]
+             },
+             {
+              "type": "Times",
+              "items": [
+               {
+                "type": "Lit",
+                "value": -1.0
+               },
+               {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "region"
+                  },
+                  "key": "region_gap"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0.0
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           },
+           "b": {
+            "type": "Max",
+            "items": [
+             {
+              "type": "Max",
+              "items": [
+               {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "channel"
+                  },
+                  "key": "channel_rate_measured"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0.0
+                 }
+                ]
+               },
+               {
+                "type": "Times",
+                "items": [
+                 {
+                  "type": "Lit",
+                  "value": -1.0
+                 },
+                 {
+                  "type": "Plus",
+                  "items": [
+                   {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "channel"
+                    },
+                    "key": "channel_rate_measured"
+                   },
+                   {
+                    "type": "Lit",
+                    "value": 0.0
+                   }
+                  ]
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "type": "Lit",
+              "value": 1e-06
+             }
+            ]
+           }
+          },
+          "other": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "channel"
+             },
+             "key": "channel_horizon"
+            },
+            {
+             "type": "Lit",
+             "value": 0.0
+            }
+           ]
+          }
+         },
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "channel"
+            },
+            "key": "channel_horizon"
+           },
+           {
+            "type": "Lit",
+            "value": 0.0
+           }
+          ]
+         }
+        ]
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "cre_project_channel_assisted_clock",
+   "area": "control_regime_escalation",
+   "latency_class": "soft_realtime",
+   "order": -49.68,
+   "batch": false,
+   "match": [
+    [
+     "agent",
+     "holds_control_regime",
+     "regime"
+    ],
+    [
+     "regime",
+     "has_regime_channel",
+     "channel"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "regime"
+         },
+         "key": "regime_monitor_enabled"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "channel"
+         },
+         "key": "channel_rate_measured"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "channel",
+     "channel_clock_assisted",
+     {
+      "__term__": {
+       "type": "IDiv",
+       "a": {
+        "type": "Min",
+        "items": [
+         {
+          "type": "Times",
+          "items": [
+           {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "channel"
+              },
+              "key": "channel_actions_to_transition"
+             },
+             {
+              "type": "Lit",
+              "value": 0.0
+             }
+            ]
+           },
+           {
+            "type": "Div",
+            "a": {
+             "type": "Max",
+             "items": [
+              {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "channel"
+                 },
+                 "key": "channel_rate_measured"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0.0
+                }
+               ]
+              },
+              {
+               "type": "Lit",
+               "value": 1e-06
+              }
+             ]
+            },
+            "b": {
+             "type": "Max",
+             "items": [
+              {
+               "type": "Minus",
+               "a": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "channel"
+                  },
+                  "key": "channel_rate_measured"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0.0
+                 }
+                ]
+               },
+               "b": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "channel"
+                  },
+                  "key": "channel_authority_measured"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0.0
+                 }
+                ]
+               }
+              },
+              {
+               "type": "Lit",
+               "value": 1e-06
+              }
+             ]
+            }
+           }
+          ]
+         },
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "channel"
+            },
+            "key": "channel_horizon"
+           },
+           {
+            "type": "Lit",
+            "value": 0.0
+           }
+          ]
+         }
+        ]
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "cre_note_regime_evidence_absence",
+   "area": "control_regime_escalation",
+   "latency_class": "soft_realtime",
+   "order": -50,
+   "batch": false,
+   "match": [
+    [
+     "agent",
+     "holds_control_regime",
+     "regime"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "regime"
+         },
+         "key": "regime_monitor_enabled"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Gt",
+       "a": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "regime"
+          },
+          "key": "regime_terminal"
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       },
+       "b": {
+        "type": "Lit",
+        "value": 0.5
+       }
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "regime"
+         },
+         "key": "regime_absence_integral"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Min",
+       "items": [
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "regime"
+           },
+           "key": "regime_evidence_horizon_actions"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        },
+        {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Gt",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "regime"
+             },
+             "key": "regime_actions_to_act"
+            },
+            {
+             "type": "Lit",
+             "value": 0.0
+            }
+           ]
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0.0
+          }
+         },
+         "then": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "regime"
+            },
+            "key": "regime_actions_to_act"
+           },
+           {
+            "type": "Lit",
+            "value": 0.0
+           }
+          ]
+         },
+         "other": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "regime"
+            },
+            "key": "regime_evidence_horizon_actions"
+           },
+           {
+            "type": "Lit",
+            "value": 0.0
+           }
+          ]
+         }
+        }
+       ]
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Gt",
+       "a": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "regime"
+          },
+          "key": "regime_escalation_requested"
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       },
+       "b": {
+        "type": "Lit",
+        "value": 0.5
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Gt",
+       "a": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "regime"
+          },
+          "key": "regime_deliberating"
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       },
+       "b": {
+        "type": "Lit",
+        "value": 0.5
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "regime",
+     "regime_deliberating",
+     1.0
+    ],
+    [
+     "set_attr",
+     "regime",
+     "regime_deliberation_opened_seq",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "regime"
+         },
+         "key": "regime_clock_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "regime",
+     "regime_deliberation_integral",
+     0.0
+    ],
+    [
+     "add_node",
+     "impasse",
+     "ControlRegimeImpasse",
+     {
+      "kind": "evidence_absence",
+      "at_clock_seq": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "regime"
+          },
+          "key": "regime_clock_seq"
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       }
+      },
+      "from_ordinal": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "regime"
+          },
+          "key": "regime_ordinal"
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       }
+      },
+      "evidence_gap_actions": {
+       "__term__": {
+        "type": "Minus",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "regime"
+           },
+           "key": "regime_clock_seq"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        },
+        "b": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "regime"
+           },
+           "key": "regime_evidence_seq"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        }
+       }
+      },
+      "resolved": 0.0
+     }
+    ],
+    [
+     "add_edge",
+     "agent",
+     "has_control_regime_impasse",
+     "impasse"
+    ],
+    [
+     "add_edge",
+     "impasse",
+     "about_control_regime",
+     "regime"
+    ],
+    [
+     "set_attr",
+     "regime",
+     "regime_escalation_requested",
+     1.0
+    ],
+    [
+     "add_node",
+     "pareto_profile",
+     "ParetoProfile",
+     {
+      "context": "control_regime_escalation",
+      "dimension_count": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "regime"
+          },
+          "key": "regime_pareto_dimension_count"
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       }
+      },
+      "candidate_count": 0.0,
+      "minted_seq": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "regime"
+          },
+          "key": "regime_clock_seq"
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "regime",
+     "deliberates_over_pareto_profile",
+     "pareto_profile"
+    ],
+    [
+     "add_node",
+     "regime_goal",
+     "Goal",
+     {
+      "kind": "hold_control_regime",
+      "held_ordinal": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "regime"
+          },
+          "key": "regime_ordinal"
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       }
+      },
+      "minted_seq": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "regime"
+          },
+          "key": "regime_clock_seq"
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       }
+      },
+      "verified": 1
+     }
+    ],
+    [
+     "add_edge",
+     "pareto_profile",
+     "audits_goal",
+     "regime_goal"
+    ],
+    [
+     "set_attr",
+     "regime",
+     "regime_pareto_minted_seq",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "regime"
+         },
+         "key": "regime_clock_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "cre_abandon_stale_deliberation",
+   "area": "control_regime_escalation",
+   "latency_class": "soft_realtime",
+   "order": -49.5,
+   "batch": false,
+   "match": [
+    [
+     "agent",
+     "holds_control_regime",
+     "regime"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "regime"
+         },
+         "key": "regime_monitor_enabled"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "regime"
+         },
+         "key": "regime_deliberating"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "regime"
+         },
+         "key": "regime_actions_to_act"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "regime"
+         },
+         "key": "regime_deliberation_integral"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "regime"
+         },
+         "key": "regime_actions_to_act"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "regime",
+     "regime_deliberating",
+     0.0
+    ],
+    [
+     "set_attr",
+     "regime",
+     "regime_escalation_requested",
+     0.0
+    ],
+    [
+     "set_attr",
+     "regime",
+     "regime_deliberation_stale_count",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "regime"
+           },
+           "key": "regime_deliberation_stale_count"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        },
+        {
+         "type": "Lit",
+         "value": 1.0
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "cre_advance_regime_deliberation",
+   "area": "control_regime_escalation",
+   "latency_class": "soft_realtime",
+   "order": -50,
+   "batch": false,
+   "match": [
+    [
+     "agent",
+     "holds_control_regime",
+     "regime"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "regime"
+         },
+         "key": "regime_deliberating"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "regime"
+         },
+         "key": "regime_clock_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "regime"
+         },
+         "key": "regime_deliberation_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "regime",
+     "regime_deliberation_integral",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "regime"
+           },
+           "key": "regime_deliberation_integral"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        },
+        {
+         "type": "Min",
+         "items": [
+          {
+           "type": "Max",
+           "items": [
+            {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "regime"
+               },
+               "key": "regime_urgency"
+              },
+              {
+               "type": "Lit",
+               "value": 0.0
+              }
+             ]
+            },
+            {
+             "type": "Lit",
+             "value": 1.0
+            }
+           ]
+          },
+          {
+           "type": "Lit",
+           "value": 100.0
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "regime",
+     "regime_deliberation_seq",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "regime"
+         },
+         "key": "regime_clock_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "cre_accumulate_channel_samples",
+   "area": "control_regime_escalation",
+   "latency_class": "soft_realtime",
+   "order": -49.8,
+   "batch": false,
+   "match": [
+    [
+     "agent",
+     "holds_control_regime",
+     "regime"
+    ],
+    [
+     "regime",
+     "has_regime_channel",
+     "channel"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "regime"
+         },
+         "key": "regime_monitor_enabled"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "channel"
+         },
+         "key": "channel_sample_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "channel"
+         },
+         "key": "channel_history_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "channel",
+     "channel_transition_history",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gt",
+        "a": {
+         "type": "Count",
+         "source": {
+          "type": "Append",
+          "seq": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "channel"
+           },
+           "key": "channel_transition_history"
+          },
+          "item": {
+           "type": "IDiv",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "channel"
+              },
+              "key": "channel_crossing"
+             },
+             {
+              "type": "Lit",
+              "value": 0.0
+             }
+            ]
+           },
+           "b": {
+            "type": "Lit",
+            "value": 1.0
+           }
+          }
+         }
+        },
+        "b": {
+         "type": "Max",
+         "items": [
+          {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "channel"
+             },
+             "key": "channel_history_window"
+            },
+            {
+             "type": "Lit",
+             "value": 0.0
+            }
+           ]
+          },
+          {
+           "type": "Lit",
+           "value": 4.0
+          }
+         ]
+        }
+       },
+       "then": {
+        "type": "ListDrop",
+        "list": {
+         "type": "Append",
+         "seq": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "channel"
+          },
+          "key": "channel_transition_history"
+         },
+         "item": {
+          "type": "IDiv",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "channel"
+             },
+             "key": "channel_crossing"
+            },
+            {
+             "type": "Lit",
+             "value": 0.0
+            }
+           ]
+          },
+          "b": {
+           "type": "Lit",
+           "value": 1.0
+          }
+         }
+        },
+        "index": {
+         "type": "Lit",
+         "value": 0.0
+        }
+       },
+       "other": {
+        "type": "Append",
+        "seq": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "channel"
+         },
+         "key": "channel_transition_history"
+        },
+        "item": {
+         "type": "IDiv",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "channel"
+            },
+            "key": "channel_crossing"
+           },
+           {
+            "type": "Lit",
+            "value": 0.0
+           }
+          ]
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1.0
+         }
+        }
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "channel",
+     "channel_option_history",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gt",
+        "a": {
+         "type": "Count",
+         "source": {
+          "type": "Append",
+          "seq": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "channel"
+           },
+           "key": "channel_option_history"
+          },
+          "item": {
+           "type": "IDiv",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "channel"
+              },
+              "key": "channel_option_crossing"
+             },
+             {
+              "type": "Lit",
+              "value": 0.0
+             }
+            ]
+           },
+           "b": {
+            "type": "Lit",
+            "value": 1.0
+           }
+          }
+         }
+        },
+        "b": {
+         "type": "Max",
+         "items": [
+          {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "channel"
+             },
+             "key": "channel_history_window"
+            },
+            {
+             "type": "Lit",
+             "value": 0.0
+            }
+           ]
+          },
+          {
+           "type": "Lit",
+           "value": 4.0
+          }
+         ]
+        }
+       },
+       "then": {
+        "type": "ListDrop",
+        "list": {
+         "type": "Append",
+         "seq": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "channel"
+          },
+          "key": "channel_option_history"
+         },
+         "item": {
+          "type": "IDiv",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "channel"
+             },
+             "key": "channel_option_crossing"
+            },
+            {
+             "type": "Lit",
+             "value": 0.0
+            }
+           ]
+          },
+          "b": {
+           "type": "Lit",
+           "value": 1.0
+          }
+         }
+        },
+        "index": {
+         "type": "Lit",
+         "value": 0.0
+        }
+       },
+       "other": {
+        "type": "Append",
+        "seq": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "channel"
+         },
+         "key": "channel_option_history"
+        },
+        "item": {
+         "type": "IDiv",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "channel"
+            },
+            "key": "channel_option_crossing"
+           },
+           {
+            "type": "Lit",
+            "value": 0.0
+           }
+          ]
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1.0
+         }
+        }
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "channel",
+     "channel_sample_spacing",
+     {
+      "__term__": {
+       "type": "IDiv",
+       "a": {
+        "type": "Max",
+        "items": [
+         {
+          "type": "Minus",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "channel"
+             },
+             "key": "channel_sample_seq"
+            },
+            {
+             "type": "Lit",
+             "value": 0.0
+            }
+           ]
+          },
+          "b": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "channel"
+             },
+             "key": "channel_history_seq"
+            },
+            {
+             "type": "Lit",
+             "value": 0.0
+            }
+           ]
+          }
+         },
+         {
+          "type": "Lit",
+          "value": 1.0
+         }
+        ]
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "channel",
+     "channel_history_seq",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "channel"
+         },
+         "key": "channel_sample_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "cre_ratchet_channel_reserve",
+   "area": "control_regime_escalation",
+   "latency_class": "soft_realtime",
+   "order": -49.75,
+   "batch": false,
+   "match": [
+    [
+     "agent",
+     "holds_control_regime",
+     "regime"
+    ],
+    [
+     "regime",
+     "has_regime_channel",
+     "channel"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "regime"
+         },
+         "key": "regime_monitor_enabled"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "channel"
+         },
+         "key": "channel_history_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "channel"
+         },
+         "key": "channel_reserve_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "channel",
+     "channel_reserve_held",
+     {
+      "__term__": {
+       "type": "IDiv",
+       "a": {
+        "type": "Max",
+        "items": [
+         {
+          "type": "Min",
+          "items": [
+           {
+            "type": "IfThenElse",
+            "cond": {
+             "type": "Gt",
+             "a": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "channel"
+                },
+                "key": "channel_reserve_initialised"
+               },
+               {
+                "type": "Lit",
+                "value": 0.0
+               }
+              ]
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0.5
+             }
+            },
+            "then": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "channel"
+               },
+               "key": "channel_reserve_held"
+              },
+              {
+               "type": "Lit",
+               "value": 0.0
+              }
+             ]
+            },
+            "other": {
+             "type": "IfThenElse",
+             "cond": {
+              "type": "Gt",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "channel"
+                 },
+                 "key": "channel_reserve_ceiling"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0.0
+                }
+               ]
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0.0
+              }
+             },
+             "then": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "channel"
+                },
+                "key": "channel_reserve_ceiling"
+               },
+               {
+                "type": "Lit",
+                "value": 0.0
+               }
+              ]
+             },
+             "other": {
+              "type": "Max",
+              "items": [
+               {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "channel"
+                  },
+                  "key": "channel_horizon"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0.0
+                 }
+                ]
+               },
+               {
+                "type": "Lit",
+                "value": 1.0
+               }
+              ]
+             }
+            }
+           },
+           {
+            "type": "IfThenElse",
+            "cond": {
+             "type": "Gt",
+             "a": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "channel"
+                },
+                "key": "channel_reserve_measured"
+               },
+               {
+                "type": "Lit",
+                "value": 0.0
+               }
+              ]
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0.5
+             }
+            },
+            "then": {
+             "type": "Max",
+             "items": [
+              {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "channel"
+                 },
+                 "key": "channel_reserve_actions"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0.0
+                }
+               ]
+              },
+              {
+               "type": "Lit",
+               "value": 0.0
+              }
+             ]
+            },
+            "other": {
+             "type": "Minus",
+             "a": {
+              "type": "IfThenElse",
+              "cond": {
+               "type": "Gt",
+               "a": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "channel"
+                  },
+                  "key": "channel_reserve_initialised"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0.0
+                 }
+                ]
+               },
+               "b": {
+                "type": "Lit",
+                "value": 0.5
+               }
+              },
+              "then": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "channel"
+                 },
+                 "key": "channel_reserve_held"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0.0
+                }
+               ]
+              },
+              "other": {
+               "type": "IfThenElse",
+               "cond": {
+                "type": "Gt",
+                "a": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "channel"
+                   },
+                   "key": "channel_reserve_ceiling"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0.0
+                  }
+                 ]
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": 0.0
+                }
+               },
+               "then": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "channel"
+                  },
+                  "key": "channel_reserve_ceiling"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0.0
+                 }
+                ]
+               },
+               "other": {
+                "type": "Max",
+                "items": [
+                 {
+                  "type": "Plus",
+                  "items": [
+                   {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "channel"
+                    },
+                    "key": "channel_horizon"
+                   },
+                   {
+                    "type": "Lit",
+                    "value": 0.0
+                   }
+                  ]
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 1.0
+                 }
+                ]
+               }
+              }
+             },
+             "b": {
+              "type": "Max",
+              "items": [
+               {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "channel"
+                  },
+                  "key": "channel_sample_spacing"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0.0
+                 }
+                ]
+               },
+               {
+                "type": "Lit",
+                "value": 1.0
+               }
+              ]
+             }
+            }
+           }
+          ]
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "channel",
+     "channel_reserve_initialised",
+     1.0
+    ],
+    [
+     "set_attr",
+     "channel",
+     "channel_reserve_seq",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "channel"
+         },
+         "key": "channel_history_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "cre_project_channel_clocks",
+   "area": "control_regime_escalation",
+   "latency_class": "soft_realtime",
+   "order": -49.7,
+   "batch": false,
+   "match": [
+    [
+     "agent",
+     "holds_control_regime",
+     "regime"
+    ],
+    [
+     "regime",
+     "has_regime_channel",
+     "channel"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "regime"
+         },
+         "key": "regime_monitor_enabled"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "channel"
+         },
+         "key": "channel_history_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "channel"
+         },
+         "key": "channel_projected_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "channel",
+     "channel_actions_to_transition",
+     {
+      "__term__": {
+       "type": "Min",
+       "items": [
+        {
+         "type": "Max",
+         "items": [
+          {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "channel"
+             },
+             "key": "channel_horizon"
+            },
+            {
+             "type": "Lit",
+             "value": 0.0
+            }
+           ]
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        },
+        {
+         "type": "Min",
+         "items": [
+          {
+           "type": "Max",
+           "items": [
+            {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "channel"
+               },
+               "key": "channel_crossing"
+              },
+              {
+               "type": "Lit",
+               "value": 0.0
+              }
+             ]
+            },
+            {
+             "type": "Lit",
+             "value": 0.0
+            }
+           ]
+          },
+          {
+           "type": "Times",
+           "items": [
+            {
+             "type": "TimeInfer",
+             "sequence": {
+              "type": "MapList",
+              "source": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "channel"
+               },
+               "key": "channel_transition_history"
+              },
+              "var_name": "sample",
+              "value": {
+               "type": "Vec",
+               "items": [
+                {
+                 "type": "Vec",
+                 "items": [
+                  {
+                   "type": "Lit",
+                   "value": "m"
+                  },
+                  {
+                   "type": "Var",
+                   "name": "sample"
+                  }
+                 ]
+                }
+               ]
+              }
+             },
+             "codebook_type": "ControlOrderSample",
+             "max_b": 8,
+             "max_steps": 1024,
+             "robust": true,
+             "field": "crossing"
+            },
+            {
+             "type": "Max",
+             "items": [
+              {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "channel"
+                 },
+                 "key": "channel_sample_spacing"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0.0
+                }
+               ]
+              },
+              {
+               "type": "Lit",
+               "value": 1.0
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "channel",
+     "channel_actions_to_option_loss",
+     {
+      "__term__": {
+       "type": "Min",
+       "items": [
+        {
+         "type": "Min",
+         "items": [
+          {
+           "type": "Max",
+           "items": [
+            {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "channel"
+               },
+               "key": "channel_horizon"
+              },
+              {
+               "type": "Lit",
+               "value": 0.0
+              }
+             ]
+            },
+            {
+             "type": "Lit",
+             "value": 0.0
+            }
+           ]
+          },
+          {
+           "type": "Min",
+           "items": [
+            {
+             "type": "Max",
+             "items": [
+              {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "channel"
+                 },
+                 "key": "channel_option_crossing"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0.0
+                }
+               ]
+              },
+              {
+               "type": "Lit",
+               "value": 0.0
+              }
+             ]
+            },
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "TimeInfer",
+               "sequence": {
+                "type": "MapList",
+                "source": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "channel"
+                 },
+                 "key": "channel_option_history"
+                },
+                "var_name": "sample",
+                "value": {
+                 "type": "Vec",
+                 "items": [
+                  {
+                   "type": "Vec",
+                   "items": [
+                    {
+                     "type": "Lit",
+                     "value": "m"
+                    },
+                    {
+                     "type": "Var",
+                     "name": "sample"
+                    }
+                   ]
+                  }
+                 ]
+                }
+               },
+               "codebook_type": "ControlOrderSample",
+               "max_b": 8,
+               "max_steps": 1024,
+               "robust": true,
+               "field": "crossing"
+              },
+              {
+               "type": "Max",
+               "items": [
+                {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "channel"
+                   },
+                   "key": "channel_sample_spacing"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0.0
+                  }
+                 ]
+                },
+                {
+                 "type": "Lit",
+                 "value": 1.0
+                }
+               ]
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Gt",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "channel"
+             },
+             "key": "channel_reserve_initialised"
+            },
+            {
+             "type": "Lit",
+             "value": 0.0
+            }
+           ]
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0.5
+          }
+         },
+         "then": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "channel"
+            },
+            "key": "channel_reserve_held"
+           },
+           {
+            "type": "Lit",
+            "value": 0.0
+           }
+          ]
+         },
+         "other": {
+          "type": "IfThenElse",
+          "cond": {
+           "type": "Gt",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "channel"
+              },
+              "key": "channel_reserve_ceiling"
+             },
+             {
+              "type": "Lit",
+              "value": 0.0
+             }
+            ]
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0.0
+           }
+          },
+          "then": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "channel"
+             },
+             "key": "channel_reserve_ceiling"
+            },
+            {
+             "type": "Lit",
+             "value": 0.0
+            }
+           ]
+          },
+          "other": {
+           "type": "Max",
+           "items": [
+            {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "channel"
+               },
+               "key": "channel_horizon"
+              },
+              {
+               "type": "Lit",
+               "value": 0.0
+              }
+             ]
+            },
+            {
+             "type": "Lit",
+             "value": 1.0
+            }
+           ]
+          }
+         }
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "channel",
+     "channel_projected_seq",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "channel"
+         },
+         "key": "channel_history_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "cre_project_regime_clocks",
+   "area": "control_regime_escalation",
+   "latency_class": "soft_realtime",
+   "order": -49.65,
+   "batch": false,
+   "match": [
+    [
+     "agent",
+     "holds_control_regime",
+     "regime"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "regime"
+         },
+         "key": "regime_monitor_enabled"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "regime"
+         },
+         "key": "regime_clock_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "regime"
+         },
+         "key": "regime_clock_projection_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "regime",
+     "regime_actions_to_transition",
+     {
+      "__term__": {
+       "type": "MinOver",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "regime"
+        },
+        "edge_type": "has_regime_channel"
+       },
+       "var_name": "chan",
+       "value": {
+        "type": "IDiv",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "chan"
+             },
+             "key": "channel_actions_to_transition"
+            },
+            {
+             "type": "Lit",
+             "value": 0.0
+            }
+           ]
+          },
+          {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Min",
+             "items": [
+              {
+               "type": "Max",
+               "items": [
+                {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "chan"
+                   },
+                   "key": "channel_surrender_discount"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0.0
+                  }
+                 ]
+                },
+                {
+                 "type": "Lit",
+                 "value": 0.0
+                }
+               ]
+              },
+              {
+               "type": "Lit",
+               "value": 1.0
+              }
+             ]
+            },
+            {
+             "type": "Minus",
+             "a": {
+              "type": "Max",
+              "items": [
+               {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "regime"
+                  },
+                  "key": "regime_kind_horizon_actions"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0.0
+                 }
+                ]
+               },
+               {
+                "type": "Lit",
+                "value": 0.0
+               }
+              ]
+             },
+             "b": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "chan"
+                },
+                "key": "channel_actions_to_transition"
+               },
+               {
+                "type": "Lit",
+                "value": 0.0
+               }
+              ]
+             }
+            }
+           ]
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       "default": {
+        "type": "Max",
+        "items": [
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "regime"
+            },
+            "key": "regime_kind_horizon_actions"
+           },
+           {
+            "type": "Lit",
+            "value": 0.0
+           }
+          ]
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "regime",
+     "regime_actions_to_option_loss",
+     {
+      "__term__": {
+       "type": "MinOver",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "regime"
+        },
+        "edge_type": "has_regime_channel"
+       },
+       "var_name": "chan",
+       "value": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "chan"
+          },
+          "key": "channel_actions_to_option_loss"
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       },
+       "default": {
+        "type": "Max",
+        "items": [
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "regime"
+            },
+            "key": "regime_kind_horizon_actions"
+           },
+           {
+            "type": "Lit",
+            "value": 0.0
+           }
+          ]
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "regime",
+     "regime_actions_to_act",
+     {
+      "__term__": {
+       "type": "Min",
+       "items": [
+        {
+         "type": "MinOver",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "regime"
+          },
+          "edge_type": "has_regime_channel"
+         },
+         "var_name": "chan",
+         "value": {
+          "type": "IDiv",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "chan"
+               },
+               "key": "channel_actions_to_transition"
+              },
+              {
+               "type": "Lit",
+               "value": 0.0
+              }
+             ]
+            },
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Min",
+               "items": [
+                {
+                 "type": "Max",
+                 "items": [
+                  {
+                   "type": "Plus",
+                   "items": [
+                    {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "chan"
+                     },
+                     "key": "channel_surrender_discount"
+                    },
+                    {
+                     "type": "Lit",
+                     "value": 0.0
+                    }
+                   ]
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0.0
+                  }
+                 ]
+                },
+                {
+                 "type": "Lit",
+                 "value": 1.0
+                }
+               ]
+              },
+              {
+               "type": "Minus",
+               "a": {
+                "type": "Max",
+                "items": [
+                 {
+                  "type": "Plus",
+                  "items": [
+                   {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "regime"
+                    },
+                    "key": "regime_kind_horizon_actions"
+                   },
+                   {
+                    "type": "Lit",
+                    "value": 0.0
+                   }
+                  ]
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0.0
+                 }
+                ]
+               },
+               "b": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "chan"
+                  },
+                  "key": "channel_actions_to_transition"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0.0
+                 }
+                ]
+               }
+              }
+             ]
+            }
+           ]
+          },
+          "b": {
+           "type": "Lit",
+           "value": 1.0
+          }
+         },
+         "default": {
+          "type": "Max",
+          "items": [
+           {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "regime"
+              },
+              "key": "regime_kind_horizon_actions"
+             },
+             {
+              "type": "Lit",
+              "value": 0.0
+             }
+            ]
+           },
+           {
+            "type": "Lit",
+            "value": 0.0
+           }
+          ]
+         }
+        },
+        {
+         "type": "MinOver",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "regime"
+          },
+          "edge_type": "has_regime_channel"
+         },
+         "var_name": "chan",
+         "value": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "chan"
+            },
+            "key": "channel_actions_to_option_loss"
+           },
+           {
+            "type": "Lit",
+            "value": 0.0
+           }
+          ]
+         },
+         "default": {
+          "type": "Max",
+          "items": [
+           {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "regime"
+              },
+              "key": "regime_kind_horizon_actions"
+             },
+             {
+              "type": "Lit",
+              "value": 0.0
+             }
+            ]
+           },
+           {
+            "type": "Lit",
+            "value": 0.0
+           }
+          ]
+         }
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "regime",
+     "regime_reserve_actions",
+     {
+      "__term__": {
+       "type": "MinOver",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "regime"
+        },
+        "edge_type": "has_regime_channel"
+       },
+       "var_name": "chan",
+       "value": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Gt",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "chan"
+            },
+            "key": "channel_reserve_initialised"
+           },
+           {
+            "type": "Lit",
+            "value": 0.0
+           }
+          ]
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0.5
+         }
+        },
+        "then": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "chan"
+           },
+           "key": "channel_reserve_held"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        },
+        "other": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Gt",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "chan"
+             },
+             "key": "channel_reserve_ceiling"
+            },
+            {
+             "type": "Lit",
+             "value": 0.0
+            }
+           ]
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0.0
+          }
+         },
+         "then": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "chan"
+            },
+            "key": "channel_reserve_ceiling"
+           },
+           {
+            "type": "Lit",
+            "value": 0.0
+           }
+          ]
+         },
+         "other": {
+          "type": "Max",
+          "items": [
+           {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "chan"
+              },
+              "key": "channel_horizon"
+             },
+             {
+              "type": "Lit",
+              "value": 0.0
+             }
+            ]
+           },
+           {
+            "type": "Lit",
+            "value": 1.0
+           }
+          ]
+         }
+        }
+       },
+       "default": {
+        "type": "Max",
+        "items": [
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "regime"
+            },
+            "key": "regime_kind_horizon_actions"
+           },
+           {
+            "type": "Lit",
+            "value": 0.0
+           }
+          ]
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "regime",
+     "regime_clock_projection_seq",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "regime"
+         },
+         "key": "regime_clock_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "cre_note_projected_transition",
+   "area": "control_regime_escalation",
+   "latency_class": "soft_realtime",
+   "order": -49.6,
+   "batch": false,
+   "match": [
+    [
+     "agent",
+     "holds_control_regime",
+     "regime"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "regime"
+         },
+         "key": "regime_monitor_enabled"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "regime"
+         },
+         "key": "regime_actions_to_act"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "regime"
+         },
+         "key": "regime_evidence_horizon_actions"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Gt",
+       "a": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "regime"
+          },
+          "key": "regime_transition_noted"
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       },
+       "b": {
+        "type": "Lit",
+        "value": 0.5
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "transition",
+     "ControlRegimeTransition",
+     {
+      "kind": "projected_fixpoint_loss",
+      "actions_to_transition": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "regime"
+          },
+          "key": "regime_actions_to_transition"
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       }
+      },
+      "actions_to_option_loss": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "regime"
+          },
+          "key": "regime_actions_to_option_loss"
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       }
+      },
+      "actions_to_act": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "regime"
+          },
+          "key": "regime_actions_to_act"
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       }
+      },
+      "at_clock_seq": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "regime"
+          },
+          "key": "regime_clock_seq"
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       }
+      },
+      "verified": 1.0
+     }
+    ],
+    [
+     "add_edge",
+     "agent",
+     "holds_regime_transition",
+     "transition"
+    ],
+    [
+     "add_edge",
+     "transition",
+     "about_control_regime",
+     "regime"
+    ],
+    [
+     "set_attr",
+     "regime",
+     "regime_transition_noted",
+     1.0
+    ]
+   ]
+  },
+  {
+   "name": "cre_mark_incumbent_candidate",
+   "area": "control_regime_escalation",
+   "latency_class": "soft_realtime",
+   "order": -49.4,
+   "batch": false,
+   "match": [
+    [
+     "agent",
+     "holds_control_regime",
+     "regime"
+    ],
+    [
+     "regime",
+     "deliberates_over_pareto_profile",
+     "profile"
+    ],
+    [
+     "profile",
+     "has_pareto_candidate",
+     "candidate"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "profile"
+         },
+         "key": "minted_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "regime"
+         },
+         "key": "regime_pareto_minted_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "candidate"
+         },
+         "key": "candidate_regime_ordinal"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "regime"
+         },
+         "key": "regime_ordinal"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "profile"
+        },
+        "edge_type": "has_incumbent_pareto_candidate"
+       },
+       "var_name": "held",
+       "predicate": {
+        "type": "Eq",
+        "a": {
+         "type": "Var",
+         "name": "held"
+        },
+        "b": {
+         "type": "Var",
+         "name": "candidate"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_edge",
+     "profile",
+     "has_incumbent_pareto_candidate",
+     "candidate"
+    ]
+   ]
+  },
+  {
+   "name": "cre_publish_regime_pareto_verdict",
+   "area": "control_regime_escalation",
+   "latency_class": "soft_realtime",
+   "order": -49,
+   "batch": false,
+   "match": [
+    [
+     "agent",
+     "holds_control_regime",
+     "regime"
+    ],
+    [
+     "regime",
+     "deliberates_over_pareto_profile",
+     "profile"
+    ],
+    [
+     "profile",
+     "has_pareto_candidate",
+     "candidate"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "profile"
+         },
+         "key": "minted_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "regime"
+         },
+         "key": "regime_pareto_minted_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "regime"
+         },
+         "key": "regime_clock_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "regime"
+         },
+         "key": "regime_pareto_minted_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "regime"
+         },
+         "key": "regime_deliberating"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "regime"
+         },
+         "key": "regime_deliberation_integral"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     },
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Gt",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "regime"
+            },
+            "key": "regime_class_gate_enabled"
+           },
+           {
+            "type": "Lit",
+            "value": 0.0
+           }
+          ]
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0.5
+         }
+        }
+       },
+       {
+        "type": "Or",
+        "items": [
+         {
+          "type": "Not",
+          "arg": {
+           "type": "Gt",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "regime"
+              },
+              "key": "regime_actions_to_act"
+             },
+             {
+              "type": "Lit",
+              "value": 0.0
+             }
+            ]
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0.0
+           }
+          }
+         },
+         {
+          "type": "And",
+          "items": [
+           {
+            "type": "Lt",
+            "a": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "regime"
+               },
+               "key": "regime_actions_to_act"
+              },
+              {
+               "type": "Lit",
+               "value": 0.0
+              }
+             ]
+            },
+            "b": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "regime"
+               },
+               "key": "regime_evidence_horizon_actions"
+              },
+              {
+               "type": "Lit",
+               "value": 0.0
+              }
+             ]
+            }
+           },
+           {
+            "type": "Gt",
+            "a": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "candidate"
+               },
+               "key": "candidate_restores_basin"
+              },
+              {
+               "type": "Lit",
+               "value": 0.0
+              }
+             ]
+            },
+            "b": {
+             "type": "Lit",
+             "value": 0.5
+            }
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Gt",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "candidate"
+            },
+            "key": "candidate_requires_change"
+           },
+           {
+            "type": "Lit",
+            "value": 0.0
+           }
+          ]
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0.5
+         }
+        }
+       },
+       {
+        "type": "Gt",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "regime"
+           },
+           "key": "regime_change_required"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       }
+      ]
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Gt",
+       "a": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "candidate"
+          },
+          "key": "dominated"
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       },
+       "b": {
+        "type": "Lit",
+        "value": 0.5
+       }
+      }
+     },
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Gt",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "regime"
+            },
+            "key": "regime_change_required"
+           },
+           {
+            "type": "Lit",
+            "value": 0.0
+           }
+          ]
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0.5
+         }
+        }
+       },
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Eq",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "candidate"
+            },
+            "key": "candidate_regime_ordinal"
+           },
+           {
+            "type": "Lit",
+            "value": 0.0
+           }
+          ]
+         },
+         "b": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "regime"
+            },
+            "key": "regime_ordinal"
+           },
+           {
+            "type": "Lit",
+            "value": 0.0
+           }
+          ]
+         }
+        }
+       }
+      ]
+     },
+     {
+      "type": "Exists",
+      "source": {
+       "type": "Neighbours",
+       "node": {
+        "type": "Var",
+        "name": "profile"
+       },
+       "edge_type": "has_goal_revision_request"
+      },
+      "var_name": "request",
+      "predicate": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "request"
+        },
+        "edge_type": "proposed_by_pareto_candidate"
+       },
+       "var_name": "proposed",
+       "predicate": {
+        "type": "Eq",
+        "a": {
+         "type": "Var",
+         "name": "proposed"
+        },
+        "b": {
+         "type": "Var",
+         "name": "candidate"
+        }
+       }
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Var",
+       "name": "candidate"
+      },
+      "b": {
+       "type": "Argmax",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "profile"
+         },
+         "edge_type": "has_pareto_candidate"
+        },
+        "var_name": "peer",
+        "predicate": {
+         "type": "Not",
+         "arg": {
+          "type": "Gt",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "peer"
+             },
+             "key": "dominated"
+            },
+            {
+             "type": "Lit",
+             "value": 0.0
+            }
+           ]
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0.5
+          }
+         }
+        }
+       },
+       "var_name": "peer",
+       "value": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "peer"
+          },
+          "key": "regime_situational_priority_value"
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       },
+       "default": {
+        "type": "Var",
+        "name": "regime"
+       }
+      }
+     },
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Gt",
+        "a": {
+         "type": "MaxOver",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "profile"
+           },
+           "edge_type": "has_pareto_candidate"
+          },
+          "var_name": "peer",
+          "predicate": {
+           "type": "Not",
+           "arg": {
+            "type": "Gt",
+            "a": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "peer"
+               },
+               "key": "dominated"
+              },
+              {
+               "type": "Lit",
+               "value": 0.0
+              }
+             ]
+            },
+            "b": {
+             "type": "Lit",
+             "value": 0.5
+            }
+           }
+          }
+         },
+         "var_name": "peer",
+         "value": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "peer"
+            },
+            "key": "regime_situational_priority_value"
+           },
+           {
+            "type": "Lit",
+            "value": 0.0
+           }
+          ]
+         },
+         "default": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Lt",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "regime"
+            },
+            "key": "regime_deliberation_integral"
+           },
+           {
+            "type": "Lit",
+            "value": 0.0
+           }
+          ]
+         },
+         "b": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "regime"
+            },
+            "key": "regime_evidence_horizon_actions"
+           },
+           {
+            "type": "Lit",
+            "value": 0.0
+           }
+          ]
+         }
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "regime",
+     "regime_escalation_count",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Not",
+        "arg": {
+         "type": "Eq",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "candidate"
+            },
+            "key": "candidate_regime_ordinal"
+           },
+           {
+            "type": "Lit",
+            "value": 0.0
+           }
+          ]
+         },
+         "b": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "regime"
+            },
+            "key": "regime_ordinal"
+           },
+           {
+            "type": "Lit",
+            "value": 0.0
+           }
+          ]
+         }
+        }
+       },
+       "then": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "regime"
+            },
+            "key": "regime_escalation_count"
+           },
+           {
+            "type": "Lit",
+            "value": 0.0
+           }
+          ]
+         },
+         {
+          "type": "Lit",
+          "value": 1.0
+         }
+        ]
+       },
+       "other": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "regime"
+          },
+          "key": "regime_escalation_count"
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "regime",
+     "regime_ordinal",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "candidate"
+         },
+         "key": "candidate_regime_ordinal"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "regime",
+     "regime_terminal",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "candidate"
+         },
+         "key": "candidate_terminal"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "regime",
+     "regime_last_escalation_seq",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "regime"
+         },
+         "key": "regime_clock_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "regime",
+     "regime_last_verdict",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "candidate"
+         },
+         "key": "candidate_regime_ordinal"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "regime",
+     "regime_deliberating",
+     0.0
+    ],
+    [
+     "set_attr",
+     "regime",
+     "regime_deliberation_integral",
+     0.0
+    ],
+    [
+     "set_attr",
+     "regime",
+     "regime_evidence_seq",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "regime"
+         },
+         "key": "regime_clock_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "regime",
+     "regime_absence_integral",
+     0.0
+    ],
+    [
+     "set_attr",
+     "regime",
+     "regime_escalation_requested",
+     0.0
+    ]
+   ]
+  },
+  {
+   "name": "cre_publish_incumbent_stands",
+   "area": "control_regime_escalation",
+   "latency_class": "soft_realtime",
+   "order": -49,
+   "batch": false,
+   "match": [
+    [
+     "agent",
+     "holds_control_regime",
+     "regime"
+    ],
+    [
+     "regime",
+     "deliberates_over_pareto_profile",
+     "profile"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "profile"
+         },
+         "key": "minted_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "regime"
+         },
+         "key": "regime_pareto_minted_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "regime"
+         },
+         "key": "regime_clock_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "regime"
+           },
+           "key": "regime_pareto_minted_seq"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        },
+        {
+         "type": "Lit",
+         "value": 1.0
+        }
+       ]
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "regime"
+         },
+         "key": "regime_deliberating"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Lt",
+       "a": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "regime"
+          },
+          "key": "regime_deliberation_integral"
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       },
+       "b": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "regime"
+          },
+          "key": "regime_evidence_horizon_actions"
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "profile"
+        },
+        "edge_type": "has_goal_revision_request"
+       },
+       "var_name": "request",
+       "predicate": {
+        "type": "Lit",
+        "value": true
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "regime",
+     "regime_last_verdict",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "regime"
+         },
+         "key": "regime_ordinal"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "regime",
+     "regime_deliberating",
+     0.0
+    ],
+    [
+     "set_attr",
+     "regime",
+     "regime_deliberation_integral",
+     0.0
+    ],
+    [
+     "set_attr",
+     "regime",
+     "regime_evidence_seq",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "regime"
+         },
+         "key": "regime_clock_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "regime",
+     "regime_absence_integral",
+     0.0
+    ],
+    [
+     "set_attr",
+     "regime",
+     "regime_escalation_requested",
+     0.0
+    ]
+   ]
+  },
+  {
+   "name": "cre_close_inadmissible_deliberation",
+   "area": "control_regime_escalation",
+   "latency_class": "soft_realtime",
+   "order": -48.9,
+   "batch": false,
+   "match": [
+    [
+     "agent",
+     "holds_control_regime",
+     "regime"
+    ],
+    [
+     "regime",
+     "deliberates_over_pareto_profile",
+     "profile"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "profile"
+         },
+         "key": "minted_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "regime"
+         },
+         "key": "regime_pareto_minted_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "regime"
+         },
+         "key": "regime_clock_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "regime"
+           },
+           "key": "regime_pareto_minted_seq"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        },
+        {
+         "type": "Lit",
+         "value": 1.0
+        }
+       ]
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "regime"
+         },
+         "key": "regime_deliberating"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Lt",
+       "a": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "regime"
+          },
+          "key": "regime_deliberation_integral"
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       },
+       "b": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "regime"
+          },
+          "key": "regime_evidence_horizon_actions"
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       }
+      }
+     },
+     {
+      "type": "Exists",
+      "source": {
+       "type": "Neighbours",
+       "node": {
+        "type": "Var",
+        "name": "profile"
+       },
+       "edge_type": "has_goal_revision_request"
+      },
+      "var_name": "request",
+      "predicate": {
+       "type": "Lit",
+       "value": true
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "profile"
+        },
+        "edge_type": "has_goal_revision_request"
+       },
+       "var_name": "request",
+       "predicate": {
+        "type": "Exists",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "request"
+         },
+         "edge_type": "proposed_by_pareto_candidate"
+        },
+        "var_name": "proposal",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Not",
+           "arg": {
+            "type": "Gt",
+            "a": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "proposal"
+               },
+               "key": "dominated"
+              },
+              {
+               "type": "Lit",
+               "value": 0.0
+              }
+             ]
+            },
+            "b": {
+             "type": "Lit",
+             "value": 0.5
+            }
+           }
+          },
+          {
+           "type": "Or",
+           "items": [
+            {
+             "type": "Not",
+             "arg": {
+              "type": "Gt",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "proposal"
+                 },
+                 "key": "candidate_requires_change"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0.0
+                }
+               ]
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0.5
+              }
+             }
+            },
+            {
+             "type": "Gt",
+             "a": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "regime"
+                },
+                "key": "regime_change_required"
+               },
+               {
+                "type": "Lit",
+                "value": 0.0
+               }
+              ]
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0.5
+             }
+            }
+           ]
+          },
+          {
+           "type": "Or",
+           "items": [
+            {
+             "type": "Not",
+             "arg": {
+              "type": "Gt",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "regime"
+                 },
+                 "key": "regime_change_required"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0.0
+                }
+               ]
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0.5
+              }
+             }
+            },
+            {
+             "type": "Not",
+             "arg": {
+              "type": "Eq",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "proposal"
+                 },
+                 "key": "candidate_regime_ordinal"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0.0
+                }
+               ]
+              },
+              "b": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "regime"
+                 },
+                 "key": "regime_ordinal"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0.0
+                }
+               ]
+              }
+             }
+            }
+           ]
+          }
+         ]
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "regime",
+     "regime_last_verdict",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "regime"
+         },
+         "key": "regime_ordinal"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "regime",
+     "regime_deliberating",
+     0.0
+    ],
+    [
+     "set_attr",
+     "regime",
+     "regime_deliberation_integral",
+     0.0
+    ],
+    [
+     "set_attr",
+     "regime",
+     "regime_evidence_seq",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "regime"
+         },
+         "key": "regime_clock_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "regime",
+     "regime_absence_integral",
+     0.0
+    ],
+    [
+     "set_attr",
+     "regime",
+     "regime_escalation_requested",
+     0.0
+    ]
+   ]
+  },
+  {
+   "name": "cre_route_no_projected_transition_to_recalibration",
+   "area": "control_regime_escalation",
+   "latency_class": "soft_realtime",
+   "order": -48.9,
+   "batch": false,
+   "match": [
+    [
+     "agent",
+     "holds_control_regime",
+     "regime"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "regime"
+         },
+         "key": "regime_class_gate_enabled"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "regime"
+         },
+         "key": "regime_deliberating"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Lt",
+       "a": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "regime"
+          },
+          "key": "regime_deliberation_integral"
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       },
+       "b": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "regime"
+          },
+          "key": "regime_evidence_horizon_actions"
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Lt",
+       "a": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "regime"
+          },
+          "key": "regime_actions_to_act"
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       },
+       "b": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "regime"
+          },
+          "key": "regime_evidence_horizon_actions"
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "regime",
+     "regime_recalibration_requested",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "regime"
+         },
+         "key": "regime_clock_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "regime",
+     "regime_last_verdict",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "regime"
+         },
+         "key": "regime_ordinal"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "regime",
+     "regime_deliberating",
+     0.0
+    ],
+    [
+     "set_attr",
+     "regime",
+     "regime_deliberation_integral",
+     0.0
+    ],
+    [
+     "set_attr",
+     "regime",
+     "regime_evidence_seq",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "regime"
+         },
+         "key": "regime_clock_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "regime",
+     "regime_absence_integral",
+     0.0
+    ],
+    [
+     "set_attr",
+     "regime",
+     "regime_escalation_requested",
+     0.0
+    ]
+   ]
+  },
+  {
+   "name": "cre_close_gated_deliberation_without_verdict",
+   "area": "control_regime_escalation",
+   "latency_class": "soft_realtime",
+   "order": -48.85,
+   "batch": false,
+   "match": [
+    [
+     "agent",
+     "holds_control_regime",
+     "regime"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "regime"
+         },
+         "key": "regime_class_gate_enabled"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "regime"
+         },
+         "key": "regime_deliberating"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Lt",
+       "a": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "regime"
+          },
+          "key": "regime_deliberation_integral"
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       },
+       "b": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "regime"
+          },
+          "key": "regime_evidence_horizon_actions"
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       }
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "regime"
+         },
+         "key": "regime_actions_to_act"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "regime"
+         },
+         "key": "regime_evidence_horizon_actions"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "residual",
+     "ControlRegimeResidual",
+     {
+      "kind": "no_operating_condition_candidate",
+      "actions_to_act": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "regime"
+          },
+          "key": "regime_actions_to_act"
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       }
+      },
+      "at_clock_seq": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "regime"
+          },
+          "key": "regime_clock_seq"
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       }
+      },
+      "resolved": 0.0
+     }
+    ],
+    [
+     "add_edge",
+     "agent",
+     "has_control_regime_residual",
+     "residual"
+    ],
+    [
+     "add_edge",
+     "residual",
+     "about_control_regime",
+     "regime"
+    ],
+    [
+     "set_attr",
+     "regime",
+     "regime_last_verdict",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "regime"
+         },
+         "key": "regime_ordinal"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "regime",
+     "regime_deliberating",
+     0.0
+    ],
+    [
+     "set_attr",
+     "regime",
+     "regime_deliberation_integral",
+     0.0
+    ],
+    [
+     "set_attr",
+     "regime",
+     "regime_evidence_seq",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "regime"
+         },
+         "key": "regime_clock_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "regime",
+     "regime_absence_integral",
+     0.0
+    ],
+    [
+     "set_attr",
+     "regime",
+     "regime_escalation_requested",
+     0.0
+    ]
+   ]
+  }
+ ]
+}

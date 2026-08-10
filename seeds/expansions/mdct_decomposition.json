@@ -1,0 +1,111 @@
+{
+  "id": "mdct_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "MDCT",
+  "in_microtheory": "audio_coding_theory",
+  "description": "The Modified Discrete Cosine Transform (MDCT) decomposed. MDCT is the canonical perceptual-audio transform: DCT-IV applied to overlapping blocks with TDAC (Time-Domain Aliasing Cancellation) windowing. Perfect reconstruction at 50% overlap means no doubled-bitrate cost despite the overlap. Used by MP3 (576-pt hybrid), AAC (1024/128-pt), Vorbis, Opus's CELT mode.",
+  "sub_mechanisms": [
+    {
+      "name": "dct_iv_basis",
+      "definition": "MDCT is built on the Type-IV DCT: basis cos((2k+1)(2n+1)π/(4N)). Frequency-domain output of length N from time-domain input of length 2N (overlapping).",
+      "why": "DCT-IV has the property that its forward + inverse on overlapping windows produces aliasing in the time-domain output that exactly CANCELS across adjacent windows when summed. This is the mathematical underpinning of TDAC.",
+      "category": "mdct_mechanism"
+    },
+    {
+      "name": "fifty_percent_overlap",
+      "definition": "Successive MDCT blocks overlap by 50% — input window of length 2N produces output of length N; each input sample is part of TWO consecutive blocks.",
+      "why": "Without overlap, transform-boundary discontinuities cause coding artifacts. 50% overlap with proper windowing smooths the transitions. TDAC's perfect-reconstruction property only holds at exactly 50% overlap with sine-style windows.",
+      "category": "mdct_mechanism"
+    },
+    {
+      "name": "time_domain_aliasing_cancellation",
+      "definition": "TDAC: aliasing introduced by forward MDCT of each overlapped window exactly cancels when adjacent windows' inverse-MDCT outputs are overlap-added. The output is the input, sample-perfect.",
+      "why": "The mathematical magic that makes MDCT work for audio. Naively, downsampling by 2 (overlap) + transform would alias; TDAC's window+transform structure ensures the aliasing terms have opposite signs in adjacent windows and cancel exactly.",
+      "category": "mdct_mechanism"
+    },
+    {
+      "name": "sine_window",
+      "definition": "Standard MDCT window: w(n) = sin(π(n+0.5)/2N). Satisfies the Princen-Bradley condition: w(n)² + w(n+N)² = 1, required for perfect reconstruction.",
+      "why": "The simplest window satisfying TDAC. Smooth transitions reduce spectral leakage at block boundaries. Used by Vorbis, Opus CELT, and AAC's main window type.",
+      "category": "mdct_mechanism"
+    },
+    {
+      "name": "kaiser_bessel_window",
+      "definition": "AAC's alternative window: a Kaiser-Bessel-derived window with steeper transition than sine. Different perceptual trade-offs.",
+      "why": "Steeper transition → less spectral leakage but more pre/post-echo. AAC's KBD window is preferred for some content types; sine window for others. Per-block choice gives encoders content-adaptive flexibility.",
+      "category": "mdct_mechanism"
+    },
+    {
+      "name": "long_block_1024",
+      "definition": "AAC long block: 2048 input samples → 1024 output coefficients. Provides fine frequency resolution.",
+      "why": "Steady-state signals (sustained tones, instrumental music) benefit from fine frequency resolution. Long blocks have better spectral discrimination but spread quantisation noise across ~25 ms of time, vulnerable to pre-echo on transients.",
+      "category": "mdct_mechanism"
+    },
+    {
+      "name": "short_block_128",
+      "definition": "AAC short block: 256 input samples → 128 output coefficients. Used as a sequence of 8 short blocks within one 'short-block frame' to maintain bitstream structure.",
+      "why": "Transient signals (drums, percussion) need short blocks to limit pre-echo to ~3 ms. The 8-block grouping keeps the bitstream's frame structure consistent. Encoder switches based on transient detection.",
+      "category": "mdct_mechanism"
+    },
+    {
+      "name": "start_stop_windows",
+      "definition": "Transitional windows used when switching between long and short blocks. Half-long-shape, half-short-shape windows preserve TDAC across the size change.",
+      "why": "Direct long→short transitions would break TDAC. Start/stop windows are designed to be perfect-reconstruction-compatible with both adjacent block types. Cost: a small encoding latency to determine when to switch.",
+      "category": "mdct_mechanism"
+    },
+    {
+      "name": "mp3_hybrid_filterbank",
+      "definition": "MP3 first applies a 32-band polyphase filterbank, then an MDCT (18-pt long or 6-pt short) within each subband. 32 × 18 = 576 final coefficients per frame.",
+      "why": "MP3 inherited the polyphase from MPEG-1 Layer I/II, added MDCT for finer resolution within each subband. The two-stage approach is computationally heavier than pure MDCT but provides the band-aligned structure MP3 was designed around.",
+      "category": "mdct_mechanism"
+    },
+    {
+      "name": "fft_based_implementation",
+      "definition": "MDCT can be computed via an N-point FFT (via twiddle-factor multiplications) rather than the direct O(N²) DCT-IV matrix multiplication.",
+      "why": "FFT brings the cost from O(N²) to O(N log N). For N=1024 (AAC long), this is 100x faster. Standard implementation in all production codecs. Decoder-side IMDCT uses the same trick.",
+      "category": "mdct_mechanism"
+    },
+    {
+      "name": "spectral_envelope_concentration",
+      "definition": "MDCT concentrates the energy of natural audio signals into a small number of low-frequency coefficients. The high-frequency coefficients are typically much smaller in magnitude.",
+      "why": "Same insight as DCT for images: audio is mostly low-frequency. The energy concentration lets perceptual coders allocate more bits to low frequencies (where energy is) and fewer to high (where masking is also stronger).",
+      "category": "mdct_mechanism"
+    },
+    {
+      "name": "imdct_perfect_inverse",
+      "definition": "The inverse MDCT (IMDCT) outputs the original time-domain signal sample-for-sample, when TDAC and overlap-add are correctly applied.",
+      "why": "Lossless inverse (in the absence of quantisation) is the foundation of all MDCT-based codecs. Quantisation between MDCT and IMDCT is what introduces loss; the transform itself is information-preserving.",
+      "category": "mdct_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "fifty_percent_overlap_required_for_TDAC",
+      "if": ["MDCT uses 50% overlap with TDAC-compatible windows"],
+      "then": ["perfect reconstruction is achievable without redundancy"],
+      "why": "TDAC's mathematical structure requires exactly 50% overlap; lower overlap doesn't cancel aliasing, higher overlap is redundant (sends each sample more than twice). Princen-Bradley condition on windows formalises this.",
+      "soundness_category": "algebraic_law"
+    },
+    {
+      "name": "long_blocks_for_steady_state_short_for_transients",
+      "if": ["the signal contains a transient"],
+      "then": ["short MDCT blocks limit pre-echo to the transient's duration"],
+      "why": "Quantisation noise is spread across the temporal extent of the transform block. Long blocks spread it across ~25 ms (audible pre-echo before transients); short blocks confine it to ~3 ms (masked by the transient itself).",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "fft_implementation_amortises_cost",
+      "if": ["MDCT is computed via N-point FFT"],
+      "then": ["compute drops from O(N²) to O(N log N)"],
+      "why": "DCT-IV can be expressed as a complex FFT with pre/post multiplications. Same energy compaction at much lower compute cost. Universal in production codecs.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "window_choice_balances_leakage_and_transient_response",
+      "if": ["a codec must choose a transform window"],
+      "then": ["sine windows are simplest; KBD windows trade leakage for transient handling"],
+      "why": "Different windows have different time-frequency localisation. Sine is the smoothest; KBD has sharper transitions. Per-block adaptive choice (AAC) optimises per content; fixed choice (Vorbis sine, Opus sine) is simpler but slightly suboptimal.",
+      "soundness_category": "extensional_equivalence"
+    }
+  ]
+}

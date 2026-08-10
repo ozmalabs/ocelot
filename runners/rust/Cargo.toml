@@ -1,0 +1,22 @@
+[package]
+name = "recognise_frame"
+version = "0.1.0"
+edition = "2021"
+description = "Optimised binary recogniser for the graph-resident substrate's hottest path."
+license = "MIT OR Apache-2.0"
+
+[lib]
+name = "recognise_frame"
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+memchr = "2.7"           # SIMD substring search; same engine ripgrep uses.
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"         # JSON boundary at the FFI seam (matches substrate's persistence idiom).
+rustc-hash = "2"         # FxHashMap/FxHashSet: fastest non-cryptographic hashing for small int keys.
+
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+panic = "abort"

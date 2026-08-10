@@ -1,0 +1,47 @@
+{
+ "id": "operational_planning",
+ "version": "1.0.0",
+ "depends_on": [
+  "operational_capabilities"
+ ],
+ "description": "THE INSTRUCTION->PLAN DECISION LAYER as DATA (fixes meta-gaps 1/3/4). Two graph-resident Programs, the twins of control_kinds' classify_kind_family StringIndexOf-overlap Argmax: (1) capability_match is an Argmax over OperationalCapability by the OVERLAP score between a clause's content tokens (the has_token neighbours of the clause node bound as env `cl`) and each capability's token_blob (Count of clause tokens found as substrings, via StringIndexOf > -1) \u2014 it returns the best-matching operational capability, so 'bulk load' -> bulk_load, 'measure timing' -> measure_timing, 'other gaps' -> perceive_gaps, NOT an ink letter; (2) capability_match_score is that same overlap Count for ONE capability (env cl+cap), the numeric the parser reads to reject a zero-overlap pick (a mechanical boolean read, the twin of should_continue's 1.0/0.0). The clause->capability MATCH is the Argmax's output; the parser only sequences + reads. The if-then guard's threshold is a stated POLICY (FixWorthPolicy, graph data) the authored cond Term reads.",
+ "microtheory": {
+  "name": "operational_planning",
+  "description": "how a natural-language operational instruction becomes an ordered plan of capability-bound steps: each clause is matched to an OperationalCapability by the capability_match overlap Argmax; the order/nesting is graph structure; the executor enacts, never decides."
+ },
+ "nodes": [
+  {
+   "local_id": 0,
+   "type": "FixWorthPolicy",
+   "attrs": {
+    "name": "default_fix_worth_policy",
+    "threshold": 0.5,
+    "priority": 1,
+    "description": "the normalized-salience bar a perceived gap must clear for an if-then 'if it is worth fixing' guard to fire the fix substep. A stated POLICY (graph data, tunable), read by the authored cond Term (Gt(it.norm_salience, threshold)); NOT a Python literal."
+   }
+  },
+  {
+   "local_id": 1,
+   "type": "Program",
+   "attrs": {
+    "name": "capability_match",
+    "form": "term_tree",
+    "program": "{\"type\": \"Argmax\", \"source\": {\"type\": \"NodesOfType\", \"node_type\": \"OperationalCapability\"}, \"var_name\": \"cap\", \"value\": {\"type\": \"Count\", \"source\": {\"type\": \"Filter\", \"source\": {\"type\": \"Neighbours\", \"node\": {\"type\": \"Var\", \"name\": \"cl\"}, \"edge_type\": \"has_token\"}, \"var_name\": \"t\", \"predicate\": {\"type\": \"Gt\", \"a\": {\"type\": \"StringIndexOf\", \"haystack\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"cap\"}, \"key\": \"token_blob\"}, \"needle\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"t\"}, \"key\": \"word\"}}, \"b\": {\"type\": \"Lit\", \"value\": -1.0}}}}, \"default\": null}"
+   }
+  },
+  {
+   "local_id": 2,
+   "type": "Program",
+   "attrs": {
+    "name": "capability_match_score",
+    "form": "term_tree",
+    "program": "{\"type\": \"Count\", \"source\": {\"type\": \"Filter\", \"source\": {\"type\": \"Neighbours\", \"node\": {\"type\": \"Var\", \"name\": \"cl\"}, \"edge_type\": \"has_token\"}, \"var_name\": \"t\", \"predicate\": {\"type\": \"Gt\", \"a\": {\"type\": \"StringIndexOf\", \"haystack\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"cap\"}, \"key\": \"token_blob\"}, \"needle\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"t\"}, \"key\": \"word\"}}, \"b\": {\"type\": \"Lit\", \"value\": -1.0}}}}"
+   }
+  }
+ ],
+ "edges": [],
+ "productions": [],
+ "concepts": [],
+ "rules": [],
+ "reflexes": []
+}

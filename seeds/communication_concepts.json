@@ -1,0 +1,1966 @@
+{
+ "_doc": "Core LANGUAGE-AGNOSTIC concepts of communication — a complete-enough SEMANTIC BASIS (NSM semantic primes + frame-semantic roles + Halliday/Searle speech functions) that the agent SEEDS and a specific language's grammar is then TAUGHT to map onto (renderer / W_j principle: one meaning, many serializations). The completeness is a BASIS claim, not a vocabulary one: finite primes + the composition grammar (the generator) express unbounded meaning. NO surface words — pure concepts + participant roles. Many primes also occur in domain seeds (psychology/logic_modal/...); the loader LINKS those into this basis rather than duplicating, so `communication` is the single grammar target.",
+ "microtheory": "communication",
+ "concepts": [
+  {
+   "name": "identity",
+   "kind": "stative_relation",
+   "gloss": "two referring expressions denote the SAME entity (equation). 'A is B' where A and B co-refer.",
+   "roles": [
+    "entity",
+    "equals"
+   ]
+  },
+  {
+   "name": "attribution",
+   "kind": "stative_relation",
+   "gloss": "an entity HAS a property/quality. 'X is P'.",
+   "roles": [
+    "entity",
+    "property"
+   ]
+  },
+  {
+   "name": "class_membership",
+   "kind": "stative_relation",
+   "gloss": "an entity is an INSTANCE of a kind (is-a). 'X is a K'.",
+   "roles": [
+    "instance",
+    "kind"
+   ]
+  },
+  {
+   "name": "definition",
+   "kind": "stative_relation",
+   "gloss": "the UNIVERSAL STRUCTURE OF A DEFINITION (Aristotelian genus-differentia): FRAME? REGISTER? TERM (definiendum) is-a GENUS that DIFFERENTIA. EVERY part carries MEANING — nothing is strippable. The GENUS is the broader concept the TERM is a kind of (the TERM's grounding parent / built_from = the HEAD NOUN of the predicate noun phrase after the copula 'is a/an/the'); a definition is thus a class_membership (the TERM is-a GENUS) carrying the extra grounding burden. The DIFFERENTIA is what distinguishes the TERM within the genus (a relative clause 'that/which ...', a participle 'used for ...', a prepositional tail 'of ...') and is OPTIONAL for grounding — you ground on the GENUS. The FRAME is a leading domain adjunct ('In mathematics,', 'In music,') naming WHICH WORLD/MICROTHEORY the concept is grounded in (manifold-in-mathematics vs manifold-in-plumbing are DIFFERENT groundings) — grounding is frame-relative, the frame says WHERE to ground (which Mt). The REGISTER is an epistemic adjunct ('roughly speaking,', 'formally,') naming HOW PRECISE/CONFIDENT the definition is — a hedge (roughly/loosely = APPROXIMATE, lower confidence) vs an exactness marker (formally/precisely = EXACT, full confidence): the epistemic-confidence band of the grounding. The FRAME and REGISTER are NOT stripped — they are COMPREHENDED into {frame, register} and the grounding USES them (attach in the frame's Mt, at the register's confidence). ONE structure parses ANY definitional sentence (a linguistic universal). 'In mathematics, roughly speaking, a manifold is a topological space that locally resembles Euclidean space' -> frame=mathematics, register=approximate, definiendum=manifold, genus=topological_space, differentia=the rest; ground manifold built_from topological_space IN the mathematics frame AT approximate confidence.",
+   "roles": [
+    "definiendum",
+    "genus",
+    "differentia",
+    "frame",
+    "register"
+   ],
+   "structure": {
+    "_doc": "The genus-differentia STRUCTURE as graph DATA the agent HOLDS — the markers comprehension reads to extract the genus AND the frame AND the register from ANY definitional sentence, generally (not a list of surface forms). A definition = FRAME-adjunct* REGISTER-adjunct* COPULA TERM=def, then GENUS_NP (head noun, optional adjectives) up to a DIFFERENTIA marker; the rest is differentia (a label, not required to ground). The leading comma-delimited adjuncts are NOT discarded: a FRAME adjunct ('in <field>' / 'in the field of <field>') -> frame=<field> (which Mt to ground in); a REGISTER adjunct (a hedge / exactness word) -> register=approximate|exact (the epistemic-confidence band). NOTHING stripped — every part is comprehended into structure.",
+    "copula": [
+     "is",
+     "are",
+     "is defined as",
+     "is called",
+     "refers to",
+     "means"
+    ],
+    "article": [
+     "a",
+     "an",
+     "the",
+     "this",
+     "that",
+     "these",
+     "those"
+    ],
+    "pronoun_predicate": [
+     "it",
+     "this",
+     "that",
+     "these",
+     "those",
+     "they",
+     "them",
+     "one",
+     "something",
+     "anything",
+     "he",
+     "she",
+     "i",
+     "you",
+     "we"
+    ],
+    "frame_markers": [
+     "in",
+     "within"
+    ],
+    "frame_phrase_skip": [
+     "the",
+     "field",
+     "of",
+     "domain",
+     "area",
+     "context",
+     "study",
+     "branch",
+     "discipline",
+     "subject"
+    ],
+    "register_markers": {
+     "roughly": "approximate",
+     "informally": "approximate",
+     "loosely": "approximate",
+     "broadly": "approximate",
+     "generally": "approximate",
+     "intuitively": "approximate",
+     "essentially": "approximate",
+     "basically": "approximate",
+     "simply": "approximate",
+     "speaking": "approximate",
+     "formally": "exact",
+     "precisely": "exact",
+     "technically": "exact",
+     "strictly": "exact",
+     "rigorously": "exact",
+     "exactly": "exact"
+    },
+    "differentia_markers": [
+     "that",
+     "which",
+     "who",
+     "whom",
+     "whose",
+     "where",
+     "when",
+     "used",
+     "with",
+     "for",
+     "of",
+     "in",
+     "on",
+     "from",
+     "to",
+     "having",
+     "containing",
+     "consisting",
+     "characterized",
+     "characterised",
+     "defined",
+     "similar",
+     "such",
+     "whereby",
+     "given",
+     "about",
+     "concerned",
+     "related",
+     "called",
+     "denoted",
+     "satisfying",
+     "equipped",
+     "endowed",
+     "together",
+     "between",
+     "among",
+     "over",
+     "under",
+     "above",
+     "below"
+    ],
+    "adjective_stop": [
+     ","
+    ],
+    "preamble_markers": [
+     "let",
+     "given",
+     "suppose",
+     "fix",
+     "consider",
+     "assume",
+     "take",
+     "write",
+     "denote"
+    ],
+    "preamble_copula": [
+     "be",
+     "is",
+     "are",
+     "to be"
+    ],
+    "connective_skip": [
+     "then",
+     "thus",
+     "so",
+     "hence",
+     "therefore",
+     "now"
+    ],
+    "constructive_copula": [
+     "consists of",
+     "consist of",
+     "is given by",
+     "is defined to be",
+     "is defined as"
+    ],
+    "constructive_markers": [
+     "together",
+     "equipped",
+     "endowed",
+     "consisting",
+     "comprising",
+     "comprised",
+     "consists",
+     "with"
+    ],
+    "_research_register_doc": "RESEARCH REGISTER (the dense 'Let X be Y. A Z is a W ...' prose) held as graph DATA. A PREAMBLE (a leading 'Let X be Y' / 'Given a W' / 'Suppose ...' / 'Fix ...' / 'Consider ...' clause or sentence, marked by preamble_markers) BINDS the context the definition ranges over (X is-a Y via preamble_copula) and is NOT the definition of the TERM — it is COMPREHENDED into bindings then SKIPPED to find the sentence that defines the headword. A connective_skip word ('then'/'thus') leads the term definition AFTER the preamble and is skipped to reach it. The CONSTRUCTIVE forms (constructive_copula 'consists of' / 'is given by'; constructive_markers 'together with' / 'equipped with') introduce the genus like 'is' does, the parts/structure tail kept as constructive differentia. NOTHING is stripped: the preamble bindings are returned as context. This is the research register, learned the SAME way as the genus-differentia / frame / register / notation — as constructions (graph data) the order-N comprehension applies.",
+    "partitive_hedges": {
+     "_doc": "A PARTITIVE HEDGE ('a kind of X' / 'a sort of X' / 'a type of X' / 'a form of X' / 'a variety of X' / 'a class of X' / 'a species of X') is BOTH a genus (head PAST the partitive: the genus is X, not 'kind') AND a register hedge (the partitive itself is approximate — it asserts membership softly). When the genus head is one of these partitive nouns followed by 'of <X>', comprehend genus=<X> AND register=approximate. NOTHING dropped: the partitive carries the hedge.",
+     "kind": "approximate",
+     "sort": "approximate",
+     "type": "approximate",
+     "form": "approximate",
+     "variety": "approximate",
+     "class": "approximate",
+     "species": "approximate",
+     "flavor": "approximate",
+     "flavour": "approximate"
+    },
+    "expected_slots": {
+     "_doc": "The GENERATIVE MODEL a competent reader holds of a definition — the slots EXPECTED, each read PRESENT | ABSENT | DIFFERENT against expectation. ABSENCE and DIFFERENCE are SIGNAL (prediction-error = information), not a null default. frame: a leading domain adjunct — ABSENT means inherited from the active discourse frame / universal (comprehended, not null); DIFFERENT from the term's known frame ('In music, a manifold ...' when the agent holds manifold-in-mathematics) = a SENSE-SHIFT (homonym, a distinct sense — do NOT overwrite). register: an epistemic adjunct/marker — ABSENT (unmarked) = the CANONICAL, asserted-as-fact case (EXACT, full confidence — a comprehended SIGNAL 'stated as definitional truth', not a missing value); PRESENT-and-a-hedge = a DEVIATION (APPROXIMATE, lower confidence). genus: the broader kind the term is-a — DIFFERENT from what the agent already holds for the term = SURPRISE (flag for re-evaluation, ground but do not silently overwrite a held grounding).",
+     "frame": {
+      "expected": true,
+      "absent_means": "inherited",
+      "different_means": "sense_shift"
+     },
+     "register": {
+      "expected": true,
+      "absent_means": "canonical",
+      "hedge_means": "hedged"
+     },
+     "genus": {
+      "expected": true,
+      "different_means": "surprise"
+     }
+    },
+    "register_band": {
+     "_doc": "REGISTER -> {status, confidence_band}. The UNMARKED case is the comprehended CANONICAL status (asserted as definitional truth) at FULL confidence — NOT a missing value. A hedge is a DEVIATION to APPROXIMATE at a lower band. A coarse ordered band (driven by held data, honest two-and-a-bit levels): canonical/exact/technical = 1.0 (full); approximate (roughly/loosely) = 0.85; informal (informally/intuitively) = 0.8.",
+     "canonical": {
+      "status": "canonical",
+      "confidence": 1.0
+     },
+     "exact": {
+      "status": "exact",
+      "confidence": 1.0
+     },
+     "technical": {
+      "status": "exact",
+      "confidence": 1.0
+     },
+     "approximate": {
+      "status": "hedged",
+      "confidence": 0.85
+     },
+     "informal": {
+      "status": "hedged",
+      "confidence": 0.8
+     }
+    },
+    "register_class": {
+     "_doc": "Map each register MARKER word to its register CLASS (the band key above). Exactness/technical markers -> exact (canonical-strength, but explicitly marked). Hedges -> approximate, except the softer 'informally/intuitively' -> informal (a slightly lower band). Absence of any marker is handled as 'canonical' by the comprehension (the unmarked asserted-fact case).",
+     "roughly": "approximate",
+     "loosely": "approximate",
+     "broadly": "approximate",
+     "generally": "approximate",
+     "essentially": "approximate",
+     "basically": "approximate",
+     "simply": "approximate",
+     "speaking": "approximate",
+     "informally": "informal",
+     "intuitively": "informal",
+     "formally": "exact",
+     "precisely": "exact",
+     "technically": "technical",
+     "strictly": "exact",
+     "rigorously": "exact",
+     "exactly": "exact"
+    },
+    "domain_mt_map": {
+     "_doc": "Resolve a FRAME name to a Microtheory: exact name-match first (handled in code), then this known-domain map (the frame field word -> the Mt name the agent is likely to hold). A coarse name-match — the honest remaining coarseness. If neither resolves, the frame is recorded + a genls toward the nearest held domain Mt rather than dropped.",
+     "math": "mathematics",
+     "maths": "mathematics",
+     "geometry": "mathematics",
+     "topology": "mathematics",
+     "algebra": "mathematics",
+     "arithmetic": "mathematics",
+     "calculus": "mathematics",
+     "physics": "physics",
+     "mechanics": "physics",
+     "chemistry": "chemistry",
+     "biology": "biology",
+     "computing": "computer_science",
+     "cs": "computer_science",
+     "music": "music",
+     "linguistics": "language",
+     "grammar": "language"
+    }
+   }
+  },
+  {
+   "name": "relation",
+   "kind": "stative_relation",
+   "gloss": "a relational role links an OWNER to a VALUE: the <relation> of <owner> is <value> (capital-of, author-of). The core of 'X is the N of Y'.",
+   "roles": [
+    "relation",
+    "owner",
+    "value"
+   ]
+  },
+  {
+   "name": "possession",
+   "kind": "stative_relation",
+   "gloss": "an entity HAS another entity. 'X has Y'.",
+   "roles": [
+    "possessor",
+    "possessed"
+   ]
+  },
+  {
+   "name": "existence",
+   "kind": "stative_relation",
+   "gloss": "an entity EXISTS (optionally somewhere). 'there is X'.",
+   "roles": [
+    "entity",
+    "location"
+   ]
+  },
+  {
+   "name": "location_state",
+   "kind": "stative_relation",
+   "gloss": "an entity is located AT a place (stative). 'X is at L'.",
+   "roles": [
+    "entity",
+    "place"
+   ]
+  },
+  {
+   "name": "part_whole",
+   "kind": "stative_relation",
+   "gloss": "an entity is a PART of a whole. 'X is part of Y'.",
+   "roles": [
+    "part",
+    "whole"
+   ]
+  },
+  {
+   "name": "cognition",
+   "kind": "mental_predicate",
+   "gloss": "an experiencer THINKS something (entertains a proposition). NSM THINK.",
+   "roles": [
+    "experiencer",
+    "content"
+   ]
+  },
+  {
+   "name": "knowledge",
+   "kind": "mental_predicate",
+   "gloss": "an experiencer KNOWS something (holds it as true/grounded). NSM KNOW.",
+   "roles": [
+    "experiencer",
+    "content"
+   ]
+  },
+  {
+   "name": "belief",
+   "kind": "mental_predicate",
+   "gloss": "an experiencer BELIEVES something (holds it likely, not certain).",
+   "roles": [
+    "experiencer",
+    "content"
+   ]
+  },
+  {
+   "name": "volition",
+   "kind": "mental_predicate",
+   "gloss": "an experiencer WANTS something/to-do. NSM WANT (+ DON'T WANT).",
+   "roles": [
+    "experiencer",
+    "content"
+   ]
+  },
+  {
+   "name": "sensation",
+   "kind": "mental_predicate",
+   "gloss": "an experiencer FEELS something (bodily/emotional). NSM FEEL.",
+   "roles": [
+    "experiencer",
+    "content"
+   ]
+  },
+  {
+   "name": "perception_visual",
+   "kind": "mental_predicate",
+   "gloss": "an experiencer SEES a stimulus. NSM SEE.",
+   "roles": [
+    "experiencer",
+    "stimulus"
+   ]
+  },
+  {
+   "name": "perception_auditory",
+   "kind": "mental_predicate",
+   "gloss": "an experiencer HEARS a stimulus. NSM HEAR.",
+   "roles": [
+    "experiencer",
+    "stimulus"
+   ]
+  },
+  {
+   "name": "communication_act",
+   "kind": "mental_predicate",
+   "gloss": "an agent SAYS words (to someone) — the basis of REPORTED SPEECH. NSM SAY/WORDS.",
+   "roles": [
+    "agent",
+    "content",
+    "recipient"
+   ]
+  },
+  {
+   "name": "signification",
+   "kind": "mental_predicate",
+   "gloss": "a sign MEANS a content (X means Y).",
+   "roles": [
+    "sign",
+    "content"
+   ]
+  },
+  {
+   "name": "source",
+   "kind": "epistemic",
+   "gloss": "the PROVENANCE of knowledge: knowledge comes FROM a source, and WHERE/WHO/HOW it came from is PART OF WHAT IT MEANS and how firmly it is held. A source has a GENRE (what kind of work it is), an AUTHORITY/VOICE (WHO speaks — a person, a community, a consensus), a MANNER/REGISTER (HOW it speaks), a RELIABILITY (the epistemic weight it lends what it grounds), and CONVENTIONS (HOW to read it). A competent reader knows what they are reading — the source frames the read AND sets the epistemic weight. Grounded in knowledge/belief (the epistemic cluster): a source is what an experiencer KNOWS something FROM. Provenance is part of grounding.",
+   "roles": [
+    "content",
+    "source",
+    "who",
+    "how",
+    "where",
+    "when"
+   ],
+   "built_from": [
+    "knowledge",
+    "belief"
+   ],
+   "combination": "from(content, source)"
+  },
+  {
+   "name": "reference_work",
+   "kind": "epistemic",
+   "gloss": "a SOURCE whose genre is a curated body of knowledge organised for LOOKUP (a dictionary, an encyclopedia, an atlas). A reference work is consulted, not read cover-to-cover; it is generally reliable for ESTABLISHED knowledge within its scope and weaker on the obscure/contested/recent. is-a source.",
+   "roles": [
+    "content",
+    "source"
+   ],
+   "built_from": [
+    "source"
+   ],
+   "combination": "isa(reference_work, source)",
+   "reliability": "reliable_for_established"
+  },
+  {
+   "name": "encyclopedia",
+   "kind": "epistemic",
+   "gloss": "a REFERENCE WORK that is a TERTIARY (not primary/original) reference of CONSENSUS / established knowledge, organised by TOPIC, written from a NEUTRAL point of view (NPOV), with claims CITED to sources. Each article's LEAD sentence DEFINES the topic; a leading 'In <field>,' scopes the domain; the bold term is the definiendum. Epistemic weight = consensus-tertiary: MORE than conjecture, ATTRIBUTED (not self-derived), reliable for established knowledge, weaker on obscure/recent/contested. is-a reference_work.",
+   "roles": [
+    "content",
+    "source"
+   ],
+   "built_from": [
+    "reference_work"
+   ],
+   "combination": "isa(encyclopedia, reference_work)",
+   "reliability": "consensus_tertiary",
+   "conventions": {
+    "_doc": "The CONVENTIONS of the encyclopedia genre held as graph DATA — the agent reads these to know HOW TO READ an article (the lead IS the definition; 'In <field>,' IS the domain frame) and WHAT EPISTEMIC WEIGHT to assign. NOT hardcoded in Python: the read consults this structure.",
+    "lead_defines": true,
+    "domain_preface": "In <field>,",
+    "bold_definiendum": true,
+    "npov": true,
+    "cited": true,
+    "genre": "encyclopedia",
+    "epistemic_status": "consensus",
+    "register": "encyclopedic"
+   }
+  },
+  {
+   "name": "wikipedia",
+   "kind": "epistemic",
+   "gloss": "the ENCYCLOPEDIA at en.wikipedia.org: crowd-edited (WHO = the editorial COMMUNITY / CONSENSUS, no single author), freely editable, generally reliable for ESTABLISHED knowledge and WEAKER on obscure/recent/contested topics (no expert gatekeeping). HOW = the encyclopedic register + the encyclopedia conventions (lead-defines, NPOV, cited). WHERE = the specific article (the location of the knowledge). WHEN = the structured-dump SNAPSHOT date — provenance has a time. is-a encyclopedia.",
+   "roles": [
+    "content",
+    "source"
+   ],
+   "built_from": [
+    "encyclopedia"
+   ],
+   "combination": "isa(wikipedia, encyclopedia)",
+   "reliability": "consensus_tertiary",
+   "provenance": {
+    "_doc": "The PROVENANCE template the agent attaches to everything it grounds by reading Wikipedia — WHERE/WHO/HOW/WHAT/WHEN + the source's epistemic status, read off this held concept (NOT hardcoded in Python). WHERE is filled per-article (the title); the rest is the held understanding of the source.",
+    "source": "wikipedia",
+    "genre": "encyclopedia",
+    "who": "editorial_consensus",
+    "how": "encyclopedic",
+    "when": "2024-09 structured-wikipedia enwiki snapshot",
+    "epistemic_status": "consensus",
+    "reliability": "consensus_tertiary"
+   }
+  },
+  {
+   "name": "temporal_entity",
+   "kind": "epistemic",
+   "gloss": "a SOURCE (or any entity) that has a HISTORY: it is not a static genre but an entity whose STATE (its name, owner, conventions, trust) CHANGES over a TIMELINE of dated EVENTS, each event a GROUNDED FACT carrying a WHEN and grounding in its own concepts. The CONTEXT of an artifact FROM such a source is NOT a flat tag but the GROUNDING CONE of the entity TIME-SLICED to the artifact's date — composed over the events with when <= the date. A 2015 artifact and a 2024 artifact from the SAME surface form DERIVE DIFFERENT contexts because a different set of events is in their cone. is-a source. Grounding is time-relative: the WHEN selects the entity's state.",
+   "roles": [
+    "content",
+    "source",
+    "when"
+   ],
+   "built_from": [
+    "source"
+   ],
+   "combination": "isa(temporal_entity, source)"
+  },
+  {
+   "name": "elon_musk",
+   "kind": "epistemic",
+   "gloss": "a person (entrepreneur) grounding in business/finance/politics — the acquirer and owner of Twitter/X from 2022. A grounded entity the source-entity's events pull in by following grounding edges.",
+   "roles": [],
+   "built_from": [
+    "agent"
+   ],
+   "combination": "isa(elon_musk, agent)"
+  },
+  {
+   "name": "acquisition",
+   "kind": "epistemic",
+   "gloss": "a FINANCE event: one party BUYS another (a transfer of ownership for money). Grounds in transfer + finance. The Musk acquisition of Twitter ($44B) is an instance.",
+   "roles": [
+    "agent",
+    "theme"
+   ],
+   "built_from": [
+    "transfer",
+    "finance"
+   ],
+   "combination": "isa(acquisition, transfer)"
+  },
+  {
+   "name": "finance",
+   "kind": "epistemic",
+   "gloss": "the domain of money, capital, valuation, debt — what a $44B acquisition grounds in. A grounded concept the acquisition event pulls into the cone.",
+   "roles": [],
+   "built_from": [
+    "value"
+   ],
+   "combination": "isa(finance, value)"
+  },
+  {
+   "name": "politics",
+   "kind": "epistemic",
+   "gloss": "the domain of power, governance, partisanship, public influence — what the owner's public role and the platform's moderation stance pull in. A grounded concept the trust-relevant events reach.",
+   "roles": [],
+   "built_from": [
+    "agent"
+   ],
+   "combination": "isa(politics, agent)"
+  },
+  {
+   "name": "public_trust",
+   "kind": "epistemic",
+   "gloss": "the EPISTEMIC weight a public audience extends to a source — how firmly its content is taken as reliable. Grounds in knowledge/belief. The trust-relevant events (moderation change, verification-for-pay, an AI-output incident) MOVE it; the source-context's trust is COMPOSED over those events up to the artifact's date, not a constant.",
+   "roles": [],
+   "built_from": [
+    "knowledge",
+    "belief"
+   ],
+   "combination": "isa(public_trust, knowledge)"
+  },
+  {
+   "name": "content_moderation",
+   "kind": "epistemic",
+   "gloss": "the REGIME by which a platform governs what may be posted/amplified — the gatekeeping that bears on how reliable its content is. A change to it is a TRUST-relevant event grounding in public_trust + politics.",
+   "roles": [],
+   "built_from": [
+    "public_trust"
+   ],
+   "combination": "isa(content_moderation, public_trust)"
+  },
+  {
+   "name": "verification_badge",
+   "kind": "epistemic",
+   "gloss": "a platform's IDENTITY-verification signal (a 'blue check'). When it shifts from vetted-identity to a PAID subscription, it stops certifying identity — a TRUST-relevant change grounding in public_trust.",
+   "roles": [],
+   "built_from": [
+    "public_trust"
+   ],
+   "combination": "isa(verification_badge, public_trust)"
+  },
+  {
+   "name": "ai_output_incident",
+   "kind": "epistemic",
+   "gloss": "an incident in which the platform's own AI produced extreme/harmful output (the Grok 'MechaHitler' incident, 2025-07) — a TRUST-relevant grounded event bearing on the platform's reliability/safety, grounding in public_trust + politics.",
+   "roles": [],
+   "built_from": [
+    "public_trust",
+    "politics"
+   ],
+   "combination": "isa(ai_output_incident, public_trust)"
+  },
+  {
+   "name": "twitter_x",
+   "kind": "epistemic",
+   "gloss": "the social-media platform founded 2006 as TWITTER, acquired by Elon Musk 2022-10 ($44B), renamed to X 2023-07. A TEMPORAL ENTITY: its NAME, OWNER, verification regime, moderation regime and public trust CHANGE across a dated TIMELINE of events (each a grounded fact). The CONTEXT of a post is the entity's grounding cone TIME-SLICED to the post's date — so a 2015 tweet and a 2024 X post DERIVE DIFFERENT contexts (different name/owner/implied-web/trust) from the SAME surface form. is-a temporal_entity (is-a source); built_from social_media_platform + public_square. The TIMELINE is the agent's INPUT (grounded facts); the context is DERIVED by composing the time-sliced cone — NO hand-fed reliability constant.",
+   "roles": [
+    "content",
+    "source",
+    "when"
+   ],
+   "built_from": [
+    "temporal_entity",
+    "social_media_platform",
+    "public_square"
+   ],
+   "combination": "isa(twitter_x, temporal_entity)",
+   "reliability": "self_published_variable",
+   "default_name": "Twitter",
+   "default_owner": "jack_dorsey",
+   "default_trust": "self_published",
+   "timeline": {
+    "_doc": "The TIMELINE of dated EVENTS — the agent's grounded-fact INPUTS. Each event has a WHEN (ISO date), a KIND, the concepts it GROUNDS IN (grounds_in — the agent follows these grounding edges to IMPLY the web: musk -> finance, politics; an acquisition -> finance; an incident -> public_trust), optional STATE it sets (sets_name / sets_owner — the entity's name/owner from that date), and a TRUST signal (trust_relevant + trust_dir: +1 raises, -1 lowers — the source-context's trust is COMPOSED over the trust-relevant in-cone events, NOT a hand-set number). The CONTEXT for a given WHEN composes the cone over the events with when <= that date.",
+    "events": [
+     {
+      "id": "twitter_founded",
+      "when": "2006-03-21",
+      "kind": "founding",
+      "label": "Twitter founded",
+      "grounds_in": [
+       "social_media_platform"
+      ],
+      "sets_name": "Twitter",
+      "sets_owner": "jack_dorsey",
+      "trust_relevant": false
+     },
+     {
+      "id": "musk_acquisition",
+      "when": "2022-10-27",
+      "kind": "acquisition",
+      "label": "Elon Musk acquires Twitter for $44B",
+      "grounds_in": [
+       "elon_musk",
+       "acquisition",
+       "finance",
+       "politics"
+      ],
+      "sets_owner": "elon_musk",
+      "trust_relevant": false
+     },
+     {
+      "id": "verification_change",
+      "when": "2023-04-01",
+      "kind": "verification_change",
+      "label": "blue check becomes a paid subscription (no longer certifies identity)",
+      "grounds_in": [
+       "verification_badge",
+       "public_trust"
+      ],
+      "trust_relevant": true,
+      "trust_dir": -1
+     },
+     {
+      "id": "moderation_change",
+      "when": "2023-06-01",
+      "kind": "moderation_change",
+      "label": "content-moderation / trust-and-safety pulled back",
+      "grounds_in": [
+       "content_moderation",
+       "public_trust",
+       "politics"
+      ],
+      "trust_relevant": true,
+      "trust_dir": -1
+     },
+     {
+      "id": "rename_to_x",
+      "when": "2023-07-23",
+      "kind": "rename",
+      "label": "Twitter renamed to X",
+      "grounds_in": [
+       "elon_musk"
+      ],
+      "sets_name": "X",
+      "trust_relevant": false
+     },
+     {
+      "id": "grok_mechahitler",
+      "when": "2025-07-08",
+      "kind": "ai_output_incident",
+      "label": "Grok (the platform AI) produces 'MechaHitler' extremist output",
+      "grounds_in": [
+       "ai_output_incident",
+       "public_trust",
+       "politics"
+      ],
+      "trust_relevant": true,
+      "trust_dir": -1
+     }
+    ]
+   }
+  },
+  {
+   "name": "social_media_platform",
+   "kind": "epistemic",
+   "gloss": "a platform on which any user PUBLISHES short messages to a public/social audience (self-published, no editorial gatekeeping). A source GENRE: content is self-published — generally LOW baseline reliability (an individual's claim, not an attested/consensus one), highly variable. Grounds in public_square.",
+   "roles": [
+    "content",
+    "source"
+   ],
+   "built_from": [
+    "public_square"
+   ],
+   "combination": "isa(social_media_platform, public_square)",
+   "reliability": "self_published_variable"
+  },
+  {
+   "name": "public_square",
+   "kind": "epistemic",
+   "gloss": "a shared public SPACE where anyone may speak to anyone — the agora. The thing a social-media platform IS, structurally (open, many-to-many, self-published). Grounds in communication_act (people SAY words to a public).",
+   "roles": [],
+   "built_from": [
+    "communication_act"
+   ],
+   "combination": "isa(public_square, communication_act)"
+  },
+  {
+   "name": "jack_dorsey",
+   "kind": "epistemic",
+   "gloss": "a person — Twitter's co-founder and the platform's owner/CEO in its founding era (pre-2022, before the Musk acquisition). The owner a pre-2022 tweet's context resolves to. is-a agent.",
+   "roles": [],
+   "built_from": [
+    "agent"
+   ],
+   "combination": "isa(jack_dorsey, agent)"
+  },
+  {
+   "name": "action",
+   "kind": "dynamic_predication",
+   "gloss": "an agent DOES something. NSM DO.",
+   "roles": [
+    "agent",
+    "patient"
+   ]
+  },
+  {
+   "name": "event",
+   "kind": "dynamic_predication",
+   "gloss": "something HAPPENS (an occurrence, no agent required). NSM HAPPEN.",
+   "roles": [
+    "theme"
+   ]
+  },
+  {
+   "name": "motion",
+   "kind": "dynamic_predication",
+   "gloss": "an entity MOVES (changes place). NSM MOVE.",
+   "roles": [
+    "theme",
+    "source",
+    "goal"
+   ]
+  },
+  {
+   "name": "transfer",
+   "kind": "dynamic_predication",
+   "gloss": "an agent gives a theme to a recipient.",
+   "roles": [
+    "agent",
+    "theme",
+    "recipient"
+   ]
+  },
+  {
+   "name": "change_of_state",
+   "kind": "dynamic_predication",
+   "gloss": "an entity BECOMES different (X becomes Y).",
+   "roles": [
+    "theme",
+    "result"
+   ]
+  },
+  {
+   "name": "creation",
+   "kind": "dynamic_predication",
+   "gloss": "an agent brings a theme into existence.",
+   "roles": [
+    "agent",
+    "theme"
+   ]
+  },
+  {
+   "name": "aspect_ongoing",
+   "kind": "aspect",
+   "gloss": "the situation is IN PROGRESS (imperfective/progressive).",
+   "roles": [
+    "situation"
+   ]
+  },
+  {
+   "name": "aspect_completed",
+   "kind": "aspect",
+   "gloss": "the situation is COMPLETE (perfective).",
+   "roles": [
+    "situation"
+   ]
+  },
+  {
+   "name": "aspect_habitual",
+   "kind": "aspect",
+   "gloss": "the situation RECURS as a rule (habitual).",
+   "roles": [
+    "situation"
+   ]
+  },
+  {
+   "name": "phase_begin",
+   "kind": "aspect",
+   "gloss": "the situation BEGINS (inchoative).",
+   "roles": [
+    "situation"
+   ]
+  },
+  {
+   "name": "phase_end",
+   "kind": "aspect",
+   "gloss": "the situation ENDS (cessative).",
+   "roles": [
+    "situation"
+   ]
+  },
+  {
+   "name": "possibility",
+   "kind": "modality",
+   "gloss": "it CAN/MAY be the case (epistemic/circumstantial possibility). NSM CAN/MAYBE.",
+   "roles": [
+    "scope"
+   ]
+  },
+  {
+   "name": "necessity",
+   "kind": "modality",
+   "gloss": "it MUST be the case (necessity).",
+   "roles": [
+    "scope"
+   ]
+  },
+  {
+   "name": "ability",
+   "kind": "modality",
+   "gloss": "an agent is ABLE to do something.",
+   "roles": [
+    "agent",
+    "scope"
+   ]
+  },
+  {
+   "name": "permission",
+   "kind": "modality",
+   "gloss": "an agent is ALLOWED to do something (deontic).",
+   "roles": [
+    "agent",
+    "scope"
+   ]
+  },
+  {
+   "name": "obligation",
+   "kind": "modality",
+   "gloss": "an agent SHOULD/MUST do something (deontic).",
+   "roles": [
+    "agent",
+    "scope"
+   ]
+  },
+  {
+   "name": "intention",
+   "kind": "modality",
+   "gloss": "an agent INTENDS/will do something.",
+   "roles": [
+    "agent",
+    "scope"
+   ]
+  },
+  {
+   "name": "time_now",
+   "kind": "temporal_relation",
+   "gloss": "the present moment. NSM NOW.",
+   "roles": []
+  },
+  {
+   "name": "time_before",
+   "kind": "temporal_relation",
+   "gloss": "A is BEFORE B (precedence). NSM BEFORE.",
+   "roles": [
+    "earlier",
+    "later"
+   ]
+  },
+  {
+   "name": "time_after",
+   "kind": "temporal_relation",
+   "gloss": "A is AFTER B. NSM AFTER.",
+   "roles": [
+    "later",
+    "earlier"
+   ]
+  },
+  {
+   "name": "time_during",
+   "kind": "temporal_relation",
+   "gloss": "A occurs WHILE/DURING B (overlap).",
+   "roles": [
+    "a",
+    "b"
+   ]
+  },
+  {
+   "name": "tense_past",
+   "kind": "temporal_relation",
+   "gloss": "the situation holds BEFORE now.",
+   "roles": [
+    "situation"
+   ]
+  },
+  {
+   "name": "tense_present",
+   "kind": "temporal_relation",
+   "gloss": "the situation holds AT now.",
+   "roles": [
+    "situation"
+   ]
+  },
+  {
+   "name": "tense_future",
+   "kind": "temporal_relation",
+   "gloss": "the situation holds AFTER now.",
+   "roles": [
+    "situation"
+   ]
+  },
+  {
+   "name": "duration",
+   "kind": "temporal_relation",
+   "gloss": "the situation lasts for an amount of time (long/short).",
+   "roles": [
+    "situation",
+    "amount"
+   ]
+  },
+  {
+   "name": "frequency",
+   "kind": "temporal_relation",
+   "gloss": "how often the situation recurs.",
+   "roles": [
+    "situation",
+    "amount"
+   ]
+  },
+  {
+   "name": "space_here",
+   "kind": "spatial_relation",
+   "gloss": "the location of the speaker (proximal place). NSM HERE.",
+   "roles": []
+  },
+  {
+   "name": "space_above",
+   "kind": "spatial_relation",
+   "gloss": "figure is ABOVE ground. NSM ABOVE.",
+   "roles": [
+    "figure",
+    "ground"
+   ]
+  },
+  {
+   "name": "space_below",
+   "kind": "spatial_relation",
+   "gloss": "figure is BELOW ground. NSM BELOW.",
+   "roles": [
+    "figure",
+    "ground"
+   ]
+  },
+  {
+   "name": "space_near",
+   "kind": "spatial_relation",
+   "gloss": "figure is NEAR ground (proximity). NSM NEAR/FAR.",
+   "roles": [
+    "figure",
+    "ground"
+   ]
+  },
+  {
+   "name": "space_inside",
+   "kind": "spatial_relation",
+   "gloss": "figure is INSIDE ground (containment). NSM INSIDE.",
+   "roles": [
+    "figure",
+    "ground"
+   ]
+  },
+  {
+   "name": "space_contact",
+   "kind": "spatial_relation",
+   "gloss": "figure TOUCHES ground (contact). NSM TOUCH.",
+   "roles": [
+    "figure",
+    "ground"
+   ]
+  },
+  {
+   "name": "space_direction",
+   "kind": "spatial_relation",
+   "gloss": "a path toward/away from a ground (to/from).",
+   "roles": [
+    "theme",
+    "ground"
+   ]
+  },
+  {
+   "name": "comparison_more",
+   "kind": "degree",
+   "gloss": "X has MORE of a property than Y (comparative-greater). NSM MORE.",
+   "roles": [
+    "a",
+    "b",
+    "property"
+   ]
+  },
+  {
+   "name": "comparison_less",
+   "kind": "degree",
+   "gloss": "X has LESS of a property than Y.",
+   "roles": [
+    "a",
+    "b",
+    "property"
+   ]
+  },
+  {
+   "name": "comparison_equal",
+   "kind": "degree",
+   "gloss": "X and Y are EQUAL in a property (as ... as).",
+   "roles": [
+    "a",
+    "b",
+    "property"
+   ]
+  },
+  {
+   "name": "superlative",
+   "kind": "degree",
+   "gloss": "X has the MOST of a property in a set.",
+   "roles": [
+    "entity",
+    "property",
+    "set"
+   ]
+  },
+  {
+   "name": "intensifier",
+   "kind": "degree",
+   "gloss": "a property holds to a HIGH degree (very). NSM VERY.",
+   "roles": [
+    "property"
+   ]
+  },
+  {
+   "name": "similarity",
+   "kind": "degree",
+   "gloss": "X is LIKE Y (resemblance). NSM LIKE/AS.",
+   "roles": [
+    "a",
+    "b"
+   ]
+  },
+  {
+   "name": "sameness",
+   "kind": "degree",
+   "gloss": "X is THE SAME as Y. NSM THE SAME.",
+   "roles": [
+    "a",
+    "b"
+   ]
+  },
+  {
+   "name": "difference",
+   "kind": "degree",
+   "gloss": "X is OTHER than / different from Y. NSM OTHER/ELSE.",
+   "roles": [
+    "a",
+    "b"
+   ]
+  },
+  {
+   "name": "magnitude_big",
+   "kind": "degree",
+   "gloss": "an entity is BIG (large size/extent). NSM BIG.",
+   "roles": [
+    "entity"
+   ]
+  },
+  {
+   "name": "magnitude_small",
+   "kind": "degree",
+   "gloss": "an entity is SMALL. NSM SMALL.",
+   "roles": [
+    "entity"
+   ]
+  },
+  {
+   "name": "evaluation_good",
+   "kind": "evaluation",
+   "gloss": "something is GOOD (positive value). NSM GOOD.",
+   "roles": [
+    "entity"
+   ]
+  },
+  {
+   "name": "evaluation_bad",
+   "kind": "evaluation",
+   "gloss": "something is BAD (negative value). NSM BAD.",
+   "roles": [
+    "entity"
+   ]
+  },
+  {
+   "name": "truth_value",
+   "kind": "evaluation",
+   "gloss": "a proposition is TRUE / not-true. NSM TRUE.",
+   "roles": [
+    "proposition"
+   ]
+  },
+  {
+   "name": "agent",
+   "kind": "participant_role",
+   "gloss": "the doer/cause of an event.",
+   "roles": []
+  },
+  {
+   "name": "patient",
+   "kind": "participant_role",
+   "gloss": "the entity acted upon / undergoing change.",
+   "roles": []
+  },
+  {
+   "name": "theme",
+   "kind": "participant_role",
+   "gloss": "the entity in a state or being located/moved.",
+   "roles": []
+  },
+  {
+   "name": "experiencer",
+   "kind": "participant_role",
+   "gloss": "the entity having a mental/perceptual state.",
+   "roles": []
+  },
+  {
+   "name": "recipient",
+   "kind": "participant_role",
+   "gloss": "the entity that receives.",
+   "roles": []
+  },
+  {
+   "name": "instrument",
+   "kind": "participant_role",
+   "gloss": "the means by which.",
+   "roles": []
+  },
+  {
+   "name": "source",
+   "kind": "participant_role",
+   "gloss": "the origin/from.",
+   "roles": []
+  },
+  {
+   "name": "goal",
+   "kind": "participant_role",
+   "gloss": "the destination/to.",
+   "roles": []
+  },
+  {
+   "name": "owner",
+   "kind": "participant_role",
+   "gloss": "the possessor in a relational role (the of-argument).",
+   "roles": []
+  },
+  {
+   "name": "value",
+   "kind": "participant_role",
+   "gloss": "the filler/value of a relational role.",
+   "roles": []
+  },
+  {
+   "name": "property",
+   "kind": "participant_role",
+   "gloss": "the quality attributed to an entity.",
+   "roles": []
+  },
+  {
+   "name": "kind",
+   "kind": "participant_role",
+   "gloss": "the class an entity belongs to.",
+   "roles": []
+  },
+  {
+   "name": "deixis_speaker",
+   "kind": "deictic_substantive",
+   "gloss": "the speaker (I/me). NSM I.",
+   "roles": []
+  },
+  {
+   "name": "deixis_addressee",
+   "kind": "deictic_substantive",
+   "gloss": "the addressee (you). NSM YOU.",
+   "roles": []
+  },
+  {
+   "name": "indefinite_person",
+   "kind": "deictic_substantive",
+   "gloss": "an unspecified person (someone). NSM SOMEONE.",
+   "roles": []
+  },
+  {
+   "name": "indefinite_thing",
+   "kind": "deictic_substantive",
+   "gloss": "an unspecified thing (something). NSM SOMETHING.",
+   "roles": []
+  },
+  {
+   "name": "collective_people",
+   "kind": "deictic_substantive",
+   "gloss": "people (a plural human collective). NSM PEOPLE.",
+   "roles": []
+  },
+  {
+   "name": "deixis_proximal",
+   "kind": "deictic_substantive",
+   "gloss": "this (proximal demonstrative). NSM THIS.",
+   "roles": []
+  },
+  {
+   "name": "deixis_distal",
+   "kind": "deictic_substantive",
+   "gloss": "that (distal demonstrative).",
+   "roles": []
+  },
+  {
+   "name": "statement",
+   "kind": "speech_function",
+   "gloss": "assert a proposition as the case (assertive / give-information).",
+   "roles": [
+    "content"
+   ]
+  },
+  {
+   "name": "question",
+   "kind": "speech_function",
+   "gloss": "request information — a proposition with a queried slot (demand-information).",
+   "roles": [
+    "content",
+    "queried"
+   ]
+  },
+  {
+   "name": "request",
+   "kind": "speech_function",
+   "gloss": "direct another to bring about an action/answer (directive / demand-goods).",
+   "roles": [
+    "content"
+   ]
+  },
+  {
+   "name": "offer",
+   "kind": "speech_function",
+   "gloss": "commit the speaker to a future act for the addressee (commissive / offer-goods).",
+   "roles": [
+    "content"
+   ]
+  },
+  {
+   "name": "expressive",
+   "kind": "speech_function",
+   "gloss": "express a psychological state about a state of affairs (thank/apologise/exclaim).",
+   "roles": [
+    "content"
+   ]
+  },
+  {
+   "name": "negation",
+   "kind": "logical_operator",
+   "gloss": "it is NOT the case that. Reverses polarity. NSM NOT.",
+   "roles": [
+    "scope"
+   ]
+  },
+  {
+   "name": "conjunction",
+   "kind": "logical_operator",
+   "gloss": "both — A and B.",
+   "roles": [
+    "a",
+    "b"
+   ]
+  },
+  {
+   "name": "disjunction",
+   "kind": "logical_operator",
+   "gloss": "either — A or B.",
+   "roles": [
+    "a",
+    "b"
+   ]
+  },
+  {
+   "name": "conditional",
+   "kind": "logical_operator",
+   "gloss": "if A then B. NSM IF.",
+   "roles": [
+    "antecedent",
+    "consequent"
+   ]
+  },
+  {
+   "name": "cause",
+   "kind": "logical_operator",
+   "gloss": "A because B / B causes A. NSM BECAUSE.",
+   "roles": [
+    "effect",
+    "reason"
+   ]
+  },
+  {
+   "name": "definite_reference",
+   "kind": "reference",
+   "gloss": "a specific, identifiable entity (the).",
+   "roles": []
+  },
+  {
+   "name": "indefinite_reference",
+   "kind": "reference",
+   "gloss": "a non-specific / first-mention entity (a).",
+   "roles": []
+  },
+  {
+   "name": "universal_quantity",
+   "kind": "reference",
+   "gloss": "all / every. NSM ALL.",
+   "roles": []
+  },
+  {
+   "name": "existential_quantity",
+   "kind": "reference",
+   "gloss": "some / at least one. NSM SOME.",
+   "roles": []
+  },
+  {
+   "name": "singular_quantity",
+   "kind": "reference",
+   "gloss": "exactly one. NSM ONE.",
+   "roles": []
+  },
+  {
+   "name": "plural_quantity",
+   "kind": "reference",
+   "gloss": "more than one (many/few). NSM MANY/MUCH.",
+   "roles": []
+  },
+  {
+   "name": "oeis",
+   "kind": "epistemic",
+   "gloss": "the On-Line Encyclopedia of Integer Sequences (OEIS): a curated REFERENCE database of integer sequences, each with a prose definition/formula and its ground-truth values. Consulted by sequence-id (A-number) or by name. Authoritative + falsifiable for established integer sequences (the values verify any extracted formula). is-a reference_work.",
+   "roles": [
+    "content",
+    "source"
+   ],
+   "built_from": [
+    "reference_work"
+   ],
+   "combination": "isa(oeis, reference_work)",
+   "reliability": "consensus_tertiary",
+   "provenance": {
+    "_doc": "The PROVENANCE template the agent attaches to a fact it grounds by reading OEIS - WHERE/WHO/HOW/WHEN + the epistemic status, read off this held concept. WHERE is filled per-lookup (the A-number).",
+    "source": "oeis",
+    "genre": "integer-sequence reference database",
+    "who": "OEIS Foundation editorial review",
+    "how": "curated-with-ground-truth-values",
+    "when": "christopher/oeis dump (downloaded local slice)",
+    "epistemic_status": "consensus",
+    "reliability": "consensus_tertiary"
+   }
+  },
+  {
+   "name": "lmfdb",
+   "kind": "epistemic",
+   "gloss": "the L-functions and Modular Forms Database (LMFDB): a curated REFERENCE database of arithmetic objects (elliptic curves, modular forms, number fields, torsion subgroups). Consulted by object/field label. A database SCAN gives the EMPIRICAL/EXISTENCE maximum over the data (what is PRESENT); rigorous maximality (what exists ANYWHERE) is a classification theorem, read-cited separately. is-a reference_work.",
+   "roles": [
+    "content",
+    "source"
+   ],
+   "built_from": [
+    "reference_work"
+   ],
+   "combination": "isa(lmfdb, reference_work)",
+   "reliability": "consensus_tertiary",
+   "provenance": {
+    "_doc": "The PROVENANCE template the agent attaches to a fact it grounds by querying LMFDB - WHERE/WHO/HOW/WHEN + the epistemic status. WHERE is filled per-query (the field/object label). The fetched value is the EMPIRICAL max present in the database (existence), distinct from the rigorous classification maximum.",
+    "source": "lmfdb",
+    "genre": "arithmetic-object reference database",
+    "who": "LMFDB collaboration",
+    "how": "computed-and-curated database (empirical/existence over the data)",
+    "when": "lmfdb.org API (live fetch, cached slice)",
+    "epistemic_status": "consensus",
+    "reliability": "consensus_tertiary"
+   }
+  }
+ ],
+ "extra_nodes": [
+  {
+   "type": "SourceEvent",
+   "name": "grok_mechahitler",
+   "event_id": "grok_mechahitler",
+   "kind": "ai_output_incident",
+   "label": "Grok (the platform AI) produces 'MechaHitler' extremist output",
+   "origin": "communication_concepts",
+   "source": "twitter_x",
+   "trust_dir": -1,
+   "trust_relevant": 1,
+   "when": "2025-07-08"
+  },
+  {
+   "type": "SourceEvent",
+   "name": "moderation_change",
+   "event_id": "moderation_change",
+   "kind": "moderation_change",
+   "label": "content-moderation / trust-and-safety pulled back",
+   "origin": "communication_concepts",
+   "source": "twitter_x",
+   "trust_dir": -1,
+   "trust_relevant": 1,
+   "when": "2023-06-01"
+  },
+  {
+   "type": "SourceEvent",
+   "name": "musk_acquisition",
+   "event_id": "musk_acquisition",
+   "kind": "acquisition",
+   "label": "Elon Musk acquires Twitter for $44B",
+   "origin": "communication_concepts",
+   "sets_owner": "elon_musk",
+   "source": "twitter_x",
+   "when": "2022-10-27"
+  },
+  {
+   "type": "SourceEvent",
+   "name": "rename_to_x",
+   "event_id": "rename_to_x",
+   "kind": "rename",
+   "label": "Twitter renamed to X",
+   "origin": "communication_concepts",
+   "sets_name": "X",
+   "source": "twitter_x",
+   "when": "2023-07-23"
+  },
+  {
+   "type": "SourceEvent",
+   "name": "twitter_founded",
+   "event_id": "twitter_founded",
+   "kind": "founding",
+   "label": "Twitter founded",
+   "origin": "communication_concepts",
+   "sets_name": "Twitter",
+   "sets_owner": "jack_dorsey",
+   "source": "twitter_x",
+   "when": "2006-03-21"
+  },
+  {
+   "type": "SourceEvent",
+   "name": "verification_change",
+   "event_id": "verification_change",
+   "kind": "verification_change",
+   "label": "blue check becomes a paid subscription (no longer certifies identity)",
+   "origin": "communication_concepts",
+   "source": "twitter_x",
+   "trust_dir": -1,
+   "trust_relevant": 1,
+   "when": "2023-04-01"
+  }
+ ],
+ "relations": [
+  {
+   "src": "acquisition",
+   "edge": "built_from",
+   "tgt": "finance"
+  },
+  {
+   "src": "acquisition",
+   "edge": "built_from",
+   "tgt": "transfer"
+  },
+  {
+   "src": "acquisition",
+   "edge": "depends_on",
+   "tgt": "finance"
+  },
+  {
+   "src": "acquisition",
+   "edge": "depends_on",
+   "tgt": "transfer"
+  },
+  {
+   "src": "agent",
+   "edge": "grounds",
+   "tgt": "elon_musk"
+  },
+  {
+   "src": "agent",
+   "edge": "grounds",
+   "tgt": "jack_dorsey"
+  },
+  {
+   "src": "agent",
+   "edge": "grounds",
+   "tgt": "politics"
+  },
+  {
+   "src": "ai_output_incident",
+   "edge": "built_from",
+   "tgt": "politics"
+  },
+  {
+   "src": "ai_output_incident",
+   "edge": "built_from",
+   "tgt": "public_trust"
+  },
+  {
+   "src": "ai_output_incident",
+   "edge": "depends_on",
+   "tgt": "politics"
+  },
+  {
+   "src": "ai_output_incident",
+   "edge": "depends_on",
+   "tgt": "public_trust"
+  },
+  {
+   "src": "belief",
+   "edge": "grounds",
+   "tgt": "public_trust"
+  },
+  {
+   "src": "belief",
+   "edge": "grounds",
+   "tgt": "source"
+  },
+  {
+   "src": "communication_act",
+   "edge": "grounds",
+   "tgt": "public_square"
+  },
+  {
+   "src": "content_moderation",
+   "edge": "built_from",
+   "tgt": "public_trust"
+  },
+  {
+   "src": "content_moderation",
+   "edge": "depends_on",
+   "tgt": "public_trust"
+  },
+  {
+   "src": "elon_musk",
+   "edge": "built_from",
+   "tgt": "agent"
+  },
+  {
+   "src": "elon_musk",
+   "edge": "depends_on",
+   "tgt": "agent"
+  },
+  {
+   "src": "encyclopedia",
+   "edge": "built_from",
+   "tgt": "reference_work"
+  },
+  {
+   "src": "encyclopedia",
+   "edge": "depends_on",
+   "tgt": "reference_work"
+  },
+  {
+   "src": "encyclopedia",
+   "edge": "grounds",
+   "tgt": "wikipedia"
+  },
+  {
+   "src": "finance",
+   "edge": "built_from",
+   "tgt": "value"
+  },
+  {
+   "src": "finance",
+   "edge": "depends_on",
+   "tgt": "value"
+  },
+  {
+   "src": "finance",
+   "edge": "grounds",
+   "tgt": "acquisition"
+  },
+  {
+   "src": "grok_mechahitler",
+   "edge": "built_from",
+   "tgt": "ai_output_incident"
+  },
+  {
+   "src": "grok_mechahitler",
+   "edge": "built_from",
+   "tgt": "politics"
+  },
+  {
+   "src": "grok_mechahitler",
+   "edge": "built_from",
+   "tgt": "public_trust"
+  },
+  {
+   "src": "jack_dorsey",
+   "edge": "built_from",
+   "tgt": "agent"
+  },
+  {
+   "src": "jack_dorsey",
+   "edge": "depends_on",
+   "tgt": "agent"
+  },
+  {
+   "src": "knowledge",
+   "edge": "grounds",
+   "tgt": "public_trust"
+  },
+  {
+   "src": "knowledge",
+   "edge": "grounds",
+   "tgt": "source"
+  },
+  {
+   "src": "lmfdb",
+   "edge": "built_from",
+   "tgt": "reference_work"
+  },
+  {
+   "src": "lmfdb",
+   "edge": "depends_on",
+   "tgt": "reference_work"
+  },
+  {
+   "src": "moderation_change",
+   "edge": "built_from",
+   "tgt": "content_moderation"
+  },
+  {
+   "src": "moderation_change",
+   "edge": "built_from",
+   "tgt": "politics"
+  },
+  {
+   "src": "moderation_change",
+   "edge": "built_from",
+   "tgt": "public_trust"
+  },
+  {
+   "src": "musk_acquisition",
+   "edge": "built_from",
+   "tgt": "acquisition"
+  },
+  {
+   "src": "musk_acquisition",
+   "edge": "built_from",
+   "tgt": "elon_musk"
+  },
+  {
+   "src": "musk_acquisition",
+   "edge": "built_from",
+   "tgt": "finance"
+  },
+  {
+   "src": "musk_acquisition",
+   "edge": "built_from",
+   "tgt": "politics"
+  },
+  {
+   "src": "oeis",
+   "edge": "built_from",
+   "tgt": "reference_work"
+  },
+  {
+   "src": "oeis",
+   "edge": "depends_on",
+   "tgt": "reference_work"
+  },
+  {
+   "src": "politics",
+   "edge": "built_from",
+   "tgt": "agent"
+  },
+  {
+   "src": "politics",
+   "edge": "depends_on",
+   "tgt": "agent"
+  },
+  {
+   "src": "politics",
+   "edge": "grounds",
+   "tgt": "ai_output_incident"
+  },
+  {
+   "src": "public_square",
+   "edge": "built_from",
+   "tgt": "communication_act"
+  },
+  {
+   "src": "public_square",
+   "edge": "depends_on",
+   "tgt": "communication_act"
+  },
+  {
+   "src": "public_square",
+   "edge": "grounds",
+   "tgt": "social_media_platform"
+  },
+  {
+   "src": "public_square",
+   "edge": "grounds",
+   "tgt": "twitter_x"
+  },
+  {
+   "src": "public_trust",
+   "edge": "built_from",
+   "tgt": "belief"
+  },
+  {
+   "src": "public_trust",
+   "edge": "built_from",
+   "tgt": "knowledge"
+  },
+  {
+   "src": "public_trust",
+   "edge": "depends_on",
+   "tgt": "belief"
+  },
+  {
+   "src": "public_trust",
+   "edge": "depends_on",
+   "tgt": "knowledge"
+  },
+  {
+   "src": "public_trust",
+   "edge": "grounds",
+   "tgt": "ai_output_incident"
+  },
+  {
+   "src": "public_trust",
+   "edge": "grounds",
+   "tgt": "content_moderation"
+  },
+  {
+   "src": "public_trust",
+   "edge": "grounds",
+   "tgt": "verification_badge"
+  },
+  {
+   "src": "reference_work",
+   "edge": "built_from",
+   "tgt": "source"
+  },
+  {
+   "src": "reference_work",
+   "edge": "depends_on",
+   "tgt": "source"
+  },
+  {
+   "src": "reference_work",
+   "edge": "grounds",
+   "tgt": "encyclopedia"
+  },
+  {
+   "src": "reference_work",
+   "edge": "grounds",
+   "tgt": "lmfdb"
+  },
+  {
+   "src": "reference_work",
+   "edge": "grounds",
+   "tgt": "oeis"
+  },
+  {
+   "src": "rename_to_x",
+   "edge": "built_from",
+   "tgt": "elon_musk"
+  },
+  {
+   "src": "social_media_platform",
+   "edge": "built_from",
+   "tgt": "public_square"
+  },
+  {
+   "src": "social_media_platform",
+   "edge": "depends_on",
+   "tgt": "public_square"
+  },
+  {
+   "src": "social_media_platform",
+   "edge": "grounds",
+   "tgt": "twitter_x"
+  },
+  {
+   "src": "source",
+   "edge": "built_from",
+   "tgt": "belief"
+  },
+  {
+   "src": "source",
+   "edge": "built_from",
+   "tgt": "knowledge"
+  },
+  {
+   "src": "source",
+   "edge": "depends_on",
+   "tgt": "belief"
+  },
+  {
+   "src": "source",
+   "edge": "depends_on",
+   "tgt": "knowledge"
+  },
+  {
+   "src": "source",
+   "edge": "grounds",
+   "tgt": "reference_work"
+  },
+  {
+   "src": "source",
+   "edge": "grounds",
+   "tgt": "temporal_entity"
+  },
+  {
+   "src": "temporal_entity",
+   "edge": "built_from",
+   "tgt": "source"
+  },
+  {
+   "src": "temporal_entity",
+   "edge": "depends_on",
+   "tgt": "source"
+  },
+  {
+   "src": "temporal_entity",
+   "edge": "grounds",
+   "tgt": "twitter_x"
+  },
+  {
+   "src": "transfer",
+   "edge": "grounds",
+   "tgt": "acquisition"
+  },
+  {
+   "src": "twitter_founded",
+   "edge": "built_from",
+   "tgt": "social_media_platform"
+  },
+  {
+   "src": "twitter_x",
+   "edge": "built_from",
+   "tgt": "public_square"
+  },
+  {
+   "src": "twitter_x",
+   "edge": "built_from",
+   "tgt": "social_media_platform"
+  },
+  {
+   "src": "twitter_x",
+   "edge": "built_from",
+   "tgt": "temporal_entity"
+  },
+  {
+   "src": "twitter_x",
+   "edge": "depends_on",
+   "tgt": "public_square"
+  },
+  {
+   "src": "twitter_x",
+   "edge": "depends_on",
+   "tgt": "social_media_platform"
+  },
+  {
+   "src": "twitter_x",
+   "edge": "depends_on",
+   "tgt": "temporal_entity"
+  },
+  {
+   "src": "twitter_x",
+   "edge": "has_event",
+   "tgt": "grok_mechahitler"
+  },
+  {
+   "src": "twitter_x",
+   "edge": "has_event",
+   "tgt": "moderation_change"
+  },
+  {
+   "src": "twitter_x",
+   "edge": "has_event",
+   "tgt": "musk_acquisition"
+  },
+  {
+   "src": "twitter_x",
+   "edge": "has_event",
+   "tgt": "rename_to_x"
+  },
+  {
+   "src": "twitter_x",
+   "edge": "has_event",
+   "tgt": "twitter_founded"
+  },
+  {
+   "src": "twitter_x",
+   "edge": "has_event",
+   "tgt": "verification_change"
+  },
+  {
+   "src": "value",
+   "edge": "grounds",
+   "tgt": "finance"
+  },
+  {
+   "src": "verification_badge",
+   "edge": "built_from",
+   "tgt": "public_trust"
+  },
+  {
+   "src": "verification_badge",
+   "edge": "depends_on",
+   "tgt": "public_trust"
+  },
+  {
+   "src": "verification_change",
+   "edge": "built_from",
+   "tgt": "public_trust"
+  },
+  {
+   "src": "verification_change",
+   "edge": "built_from",
+   "tgt": "verification_badge"
+  },
+  {
+   "src": "wikipedia",
+   "edge": "built_from",
+   "tgt": "encyclopedia"
+  },
+  {
+   "src": "wikipedia",
+   "edge": "depends_on",
+   "tgt": "encyclopedia"
+  }
+ ]
+}

@@ -1,0 +1,46 @@
+{
+  "microtheory": {
+    "name": "visual_perception",
+    "definition": "Low-level visual processing — edge detection, contrast, spatial frequency, brightness, lateral inhibition, adaptation. The early-vision foundation. Substrate analogue: substrate's primary visual feature extraction.",
+    "category": "vision_domain",
+    "parent": "vision_foundation"
+  },
+  "concepts": [
+    {"name": "luminance_contrast", "definition": "Difference in brightness between regions. Weber's law: detection threshold proportional to background level. Substrate analogue: substrate's relative-brightness feature.", "category": "contrast"},
+    {"name": "simultaneous_contrast", "definition": "Surrounding context affects perceived brightness/color of target. Substrate analogue: substrate's context-modulated perception.", "category": "contrast"},
+    {"name": "michelson_contrast", "definition": "(L_max - L_min) / (L_max + L_min). Measure for periodic patterns. Substrate analogue: substrate's pattern-strength measure.", "category": "contrast"},
+    {"name": "weber_law", "definition": "ΔI/I = constant. Smaller absolute differences detectable at low intensity. Substrate analogue: substrate's logarithmic-sensitivity scaling.", "category": "contrast"},
+
+    {"name": "edge_detection", "definition": "Finding boundaries in luminance or color. Sobel, Canny, Marr-Hildreth operators. V1 simple cells. Substrate analogue: substrate's edge-feature extraction.", "category": "edges"},
+    {"name": "marr_hildreth_operator", "definition": "Laplacian of Gaussian. Zero-crossings = edges. Marr 1980. Substrate analogue: substrate's classic edge detector.", "category": "edges"},
+    {"name": "gabor_filter", "definition": "Gaussian × sinusoid. Models V1 simple cell receptive fields. Joint optimum for spatial + frequency localization. Substrate analogue: substrate's spatial-frequency channel.", "category": "edges"},
+
+    {"name": "lateral_inhibition", "definition": "Active neurons inhibit neighbours. Sharpens edges, creates Mach bands. Substrate analogue: substrate's argmax-via-inhibition.", "category": "early"},
+    {"name": "mach_bands", "definition": "Illusory bright/dark bands at luminance steps. Caused by lateral inhibition. Substrate analogue: substrate's edge-enhanced perception.", "category": "early"},
+    {"name": "center_surround_receptive_field", "definition": "Ganglion cell RF: excitatory center + inhibitory surround (or vice versa). Detects local contrast. Substrate analogue: substrate's local-contrast feature.", "category": "early"},
+
+    {"name": "spatial_frequency_channels", "definition": "Visual system decomposes input into multiple spatial-frequency bands. Each like a band-pass filter. Substrate analogue: substrate's multi-scale feature pyramid.", "category": "early"},
+    {"name": "contrast_sensitivity_function", "definition": "CSF. Sensitivity vs spatial frequency. Peak ~4 cycles/deg, falls at high + low. Substrate analogue: substrate's frequency-channel gain.", "category": "early"},
+
+    {"name": "adaptation_visual", "definition": "Sensitivity decreases with sustained exposure. Light/dark adaptation, contrast, motion, orientation. Substrate analogue: substrate's σ-damping for repeated input.", "category": "dynamics"},
+    {"name": "afterimage", "definition": "Persistent percept after stimulus removed. Negative (color afterimage) typical. Substrate analogue: substrate's hysteresis effect.", "category": "dynamics"},
+    {"name": "flicker_fusion", "definition": "Rate above which discrete flashes appear continuous. ~60 Hz. Substrate analogue: substrate's temporal-integration limit.", "category": "dynamics"},
+    {"name": "temporal_summation", "definition": "Brief stimuli summed over ~100ms for detection. Bloch's law. Substrate analogue: substrate's temporal-integration window.", "category": "dynamics"},
+
+    {"name": "binocular_disparity", "definition": "Slight difference between left + right eye views. Cue to depth. Substrate analogue: substrate's cross-channel depth signal.", "category": "depth"},
+    {"name": "stereopsis", "definition": "Depth from disparity. Random-dot stereograms (Julesz 1971). Substrate analogue: substrate's disparity-based 3D estimate.", "category": "depth"},
+    {"name": "motion_parallax", "definition": "Near objects move faster across retina than far ones during self-motion. Substrate analogue: substrate's motion-based depth cue.", "category": "depth"},
+    {"name": "monocular_depth_cues", "definition": "Occlusion, relative size, linear perspective, atmospheric perspective, accommodation, shading. Substrate analogue: substrate's single-channel depth estimates.", "category": "depth"},
+
+    {"name": "visual_acuity", "definition": "Ability to resolve fine detail. Snellen chart standard. 20/20 = 1 arc-min resolution. Substrate analogue: substrate's resolution limit.", "category": "limits"},
+    {"name": "diffraction_limit", "definition": "Pupil diameter sets ultimate optical resolution. ~30 arc-sec. Substrate analogue: substrate's hardware-imposed precision limit.", "category": "limits"},
+    {"name": "hyperacuity", "definition": "Some tasks (vernier alignment) achieve sub-cone-spacing resolution via interpolation. Substrate analogue: substrate's super-resolution mechanism.", "category": "limits"}
+  ],
+  "rules": [
+    {"name": "lateral_inhibition_sharpens_edges", "head": "the substrate processes a luminance edge", "body": "lateral inhibition between adjacent channels amplifies the contrast. Mach bands. Substrate's edge-sharpening mechanism."},
+    {"name": "weber_law_scales_detection_threshold", "head": "the substrate detects luminance change", "body": "the just-noticeable difference is proportional to background level. ΔI/I = constant. Substrate's relative-difference sensitivity."},
+    {"name": "spatial_frequency_channels_decompose_input", "head": "the substrate processes a complex image", "body": "it's decomposed into multiple spatial-frequency bands processed in parallel. Substrate's multi-scale pyramid."},
+    {"name": "adaptation_normalizes_responses", "head": "the substrate processes sustained input", "body": "sensitivity decreases — adaptation. Restores when input changes. Substrate's input-history-dependent gain."},
+    {"name": "binocular_disparity_yields_depth", "head": "the substrate has two slightly displaced views of a scene", "body": "the binocular disparity directly maps to depth. Substrate's stereoscopic depth."}
+  ]
+}

@@ -1,0 +1,1955 @@
+{
+  "id": "llvm_passes",
+  "version": "0.1.0",
+  "depends_on": [
+    "llvm_ir"
+  ],
+  "description": "First slice of LLVM IR transformation passes. Each entry is a concise transformation-rule spec (Phase 3 of LLVM_LEARNING.md) that compiles via domains/llvm_pass_compiler.py:install_transformation_rule into a substrate-native RewriteRule.",
+  "source": "LLVM_LEARNING.md Phase 3; LangRef instruction semantics for the predicates.",
+  "ir_encoding_version": "phase3_2026-06",
+  "passes": [
+    {
+      "kind": "transformation",
+      "name": "constfold_add",
+      "doc": "add(c1, c2) where both are integer constants → fold to c1 + c2. Replaces every use of the add's result with the new constant, deletes the add.",
+      "match": [
+        ["?inst", "uses_op0", "?v1"],
+        ["?inst", "uses_op1", "?v2"],
+        ["?inst", "produces", "?old"]
+      ],
+      "where": {
+        "all": [
+          {"type_of": "?inst", "is": "LLVMInstruction"},
+          {"attr": ["?inst", "opcode"], "eq": "add"},
+          {"type_of": "?v1", "is": "LLVMConstant"},
+          {"type_of": "?v2", "is": "LLVMConstant"}
+        ]
+      },
+      "effect": [
+        {"add_node": {
+          "var": "?new_const",
+          "type": "LLVMConstant",
+          "attrs": {
+            "value": {"add": [
+              {"attr": ["?v1", "value"]},
+              {"attr": ["?v2", "value"]}
+            ]},
+            "type": {"attr": ["?v1", "type"]}
+          }
+        }},
+        {"replace_value": {"old": "?old", "new": "?new_const"}},
+        {"delete": "?inst"}
+      ]
+    },
+
+    {
+      "kind": "transformation",
+      "name": "constfold_sub",
+      "doc": "sub(c1, c2) where both are integer constants → fold to c1 - c2.",
+      "match": [
+        ["?inst", "uses_op0", "?v1"],
+        ["?inst", "uses_op1", "?v2"],
+        ["?inst", "produces", "?old"]
+      ],
+      "where": {
+        "all": [
+          {"type_of": "?inst", "is": "LLVMInstruction"},
+          {"attr": ["?inst", "opcode"], "eq": "sub"},
+          {"type_of": "?v1", "is": "LLVMConstant"},
+          {"type_of": "?v2", "is": "LLVMConstant"}
+        ]
+      },
+      "effect": [
+        {"add_node": {
+          "var": "?new_const",
+          "type": "LLVMConstant",
+          "attrs": {
+            "value": {"sub": [
+              {"attr": ["?v1", "value"]},
+              {"attr": ["?v2", "value"]}
+            ]},
+            "type": {"attr": ["?v1", "type"]}
+          }
+        }},
+        {"replace_value": {"old": "?old", "new": "?new_const"}},
+        {"delete": "?inst"}
+      ]
+    },
+
+    {
+      "kind": "transformation",
+      "name": "constfold_mul",
+      "doc": "mul(c1, c2) where both are integer constants → fold to c1 * c2.",
+      "match": [
+        ["?inst", "uses_op0", "?v1"],
+        ["?inst", "uses_op1", "?v2"],
+        ["?inst", "produces", "?old"]
+      ],
+      "where": {
+        "all": [
+          {"type_of": "?inst", "is": "LLVMInstruction"},
+          {"attr": ["?inst", "opcode"], "eq": "mul"},
+          {"type_of": "?v1", "is": "LLVMConstant"},
+          {"type_of": "?v2", "is": "LLVMConstant"}
+        ]
+      },
+      "effect": [
+        {"add_node": {
+          "var": "?new_const",
+          "type": "LLVMConstant",
+          "attrs": {
+            "value": {"mul": [
+              {"attr": ["?v1", "value"]},
+              {"attr": ["?v2", "value"]}
+            ]},
+            "type": {"attr": ["?v1", "type"]}
+          }
+        }},
+        {"replace_value": {"old": "?old", "new": "?new_const"}},
+        {"delete": "?inst"}
+      ]
+    },
+
+    {
+      "kind": "transformation",
+      "name": "identity_add_zero_right",
+      "doc": "add X, 0 → X. The zero constant on the right is the additive identity; the result is just X.",
+      "match": [
+        ["?inst", "uses_op0", "?v1"],
+        ["?inst", "uses_op1", "?v2"],
+        ["?inst", "produces", "?old"]
+      ],
+      "where": {
+        "all": [
+          {"type_of": "?inst", "is": "LLVMInstruction"},
+          {"attr": ["?inst", "opcode"], "eq": "add"},
+          {"type_of": "?v2", "is": "LLVMConstant"},
+          {"attr": ["?v2", "value"], "eq": 0}
+        ]
+      },
+      "effect": [
+        {"replace_value": {"old": "?old", "new": "?v1"}},
+        {"delete": "?inst"}
+      ]
+    },
+
+    {
+      "kind": "transformation",
+      "name": "identity_add_zero_left",
+      "doc": "add 0, X → X. Symmetric to identity_add_zero_right.",
+      "match": [
+        ["?inst", "uses_op0", "?v1"],
+        ["?inst", "uses_op1", "?v2"],
+        ["?inst", "produces", "?old"]
+      ],
+      "where": {
+        "all": [
+          {"type_of": "?inst", "is": "LLVMInstruction"},
+          {"attr": ["?inst", "opcode"], "eq": "add"},
+          {"type_of": "?v1", "is": "LLVMConstant"},
+          {"attr": ["?v1", "value"], "eq": 0}
+        ]
+      },
+      "effect": [
+        {"replace_value": {"old": "?old", "new": "?v2"}},
+        {"delete": "?inst"}
+      ]
+    },
+
+    {
+      "kind": "transformation",
+      "name": "identity_mul_one_right",
+      "doc": "mul X, 1 → X. The one constant on the right is the multiplicative identity.",
+      "match": [
+        ["?inst", "uses_op0", "?v1"],
+        ["?inst", "uses_op1", "?v2"],
+        ["?inst", "produces", "?old"]
+      ],
+      "where": {
+        "all": [
+          {"type_of": "?inst", "is": "LLVMInstruction"},
+          {"attr": ["?inst", "opcode"], "eq": "mul"},
+          {"type_of": "?v2", "is": "LLVMConstant"},
+          {"attr": ["?v2", "value"], "eq": 1}
+        ]
+      },
+      "effect": [
+        {"replace_value": {"old": "?old", "new": "?v1"}},
+        {"delete": "?inst"}
+      ]
+    },
+
+    {
+      "kind": "transformation",
+      "name": "identity_mul_zero_right",
+      "doc": "mul X, 0 → 0. The zero absorbs the product; the result is the zero constant.",
+      "match": [
+        ["?inst", "uses_op0", "?v1"],
+        ["?inst", "uses_op1", "?v2"],
+        ["?inst", "produces", "?old"]
+      ],
+      "where": {
+        "all": [
+          {"type_of": "?inst", "is": "LLVMInstruction"},
+          {"attr": ["?inst", "opcode"], "eq": "mul"},
+          {"type_of": "?v2", "is": "LLVMConstant"},
+          {"attr": ["?v2", "value"], "eq": 0}
+        ]
+      },
+      "effect": [
+        {"replace_value": {"old": "?old", "new": "?v2"}},
+        {"delete": "?inst"}
+      ]
+    },
+
+    {
+      "kind": "transformation",
+      "name": "identity_sub_self",
+      "doc": "sub X, X → 0. Subtracting a value from itself is the zero constant.",
+      "match": [
+        ["?inst", "uses_op0", "?x"],
+        ["?inst", "uses_op1", "?x"],
+        ["?inst", "produces", "?old"]
+      ],
+      "where": {
+        "all": [
+          {"type_of": "?inst", "is": "LLVMInstruction"},
+          {"attr": ["?inst", "opcode"], "eq": "sub"}
+        ]
+      },
+      "effect": [
+        {"add_node": {
+          "var": "?zero",
+          "type": "LLVMConstant",
+          "attrs": {"value": 0}
+        }},
+        {"replace_value": {"old": "?old", "new": "?zero"}},
+        {"delete": "?inst"}
+      ]
+    },
+
+    {
+      "kind": "transformation",
+      "name": "identity_sub_zero",
+      "doc": "sub X, 0 → X. Subtracting zero is the additive identity.",
+      "match": [
+        ["?inst", "uses_op0", "?v1"],
+        ["?inst", "uses_op1", "?v2"],
+        ["?inst", "produces", "?old"]
+      ],
+      "where": {
+        "all": [
+          {"type_of": "?inst", "is": "LLVMInstruction"},
+          {"attr": ["?inst", "opcode"], "eq": "sub"},
+          {"type_of": "?v2", "is": "LLVMConstant"},
+          {"attr": ["?v2", "value"], "eq": 0}
+        ]
+      },
+      "effect": [
+        {"replace_value": {"old": "?old", "new": "?v1"}},
+        {"delete": "?inst"}
+      ]
+    },
+
+    {
+      "kind": "transformation",
+      "name": "identity_mul_one_left",
+      "doc": "mul 1, X → X. Symmetric to identity_mul_one_right.",
+      "match": [
+        ["?inst", "uses_op0", "?v1"],
+        ["?inst", "uses_op1", "?v2"],
+        ["?inst", "produces", "?old"]
+      ],
+      "where": {
+        "all": [
+          {"type_of": "?inst", "is": "LLVMInstruction"},
+          {"attr": ["?inst", "opcode"], "eq": "mul"},
+          {"type_of": "?v1", "is": "LLVMConstant"},
+          {"attr": ["?v1", "value"], "eq": 1}
+        ]
+      },
+      "effect": [
+        {"replace_value": {"old": "?old", "new": "?v2"}},
+        {"delete": "?inst"}
+      ]
+    },
+
+    {
+      "kind": "transformation",
+      "name": "identity_mul_zero_left",
+      "doc": "mul 0, X → 0. Symmetric to identity_mul_zero_right.",
+      "match": [
+        ["?inst", "uses_op0", "?v1"],
+        ["?inst", "uses_op1", "?v2"],
+        ["?inst", "produces", "?old"]
+      ],
+      "where": {
+        "all": [
+          {"type_of": "?inst", "is": "LLVMInstruction"},
+          {"attr": ["?inst", "opcode"], "eq": "mul"},
+          {"type_of": "?v1", "is": "LLVMConstant"},
+          {"attr": ["?v1", "value"], "eq": 0}
+        ]
+      },
+      "effect": [
+        {"replace_value": {"old": "?old", "new": "?v1"}},
+        {"delete": "?inst"}
+      ]
+    },
+
+    {
+      "kind": "transformation",
+      "name": "identity_and_self",
+      "doc": "and X, X → X. Bitwise AND is idempotent on identical operands.",
+      "match": [
+        ["?inst", "uses_op0", "?x"],
+        ["?inst", "uses_op1", "?x"],
+        ["?inst", "produces", "?old"]
+      ],
+      "where": {
+        "all": [
+          {"type_of": "?inst", "is": "LLVMInstruction"},
+          {"attr": ["?inst", "opcode"], "eq": "and"}
+        ]
+      },
+      "effect": [
+        {"replace_value": {"old": "?old", "new": "?x"}},
+        {"delete": "?inst"}
+      ]
+    },
+
+    {
+      "kind": "transformation",
+      "name": "identity_or_self",
+      "doc": "or X, X → X. Bitwise OR is idempotent on identical operands.",
+      "match": [
+        ["?inst", "uses_op0", "?x"],
+        ["?inst", "uses_op1", "?x"],
+        ["?inst", "produces", "?old"]
+      ],
+      "where": {
+        "all": [
+          {"type_of": "?inst", "is": "LLVMInstruction"},
+          {"attr": ["?inst", "opcode"], "eq": "or"}
+        ]
+      },
+      "effect": [
+        {"replace_value": {"old": "?old", "new": "?x"}},
+        {"delete": "?inst"}
+      ]
+    },
+
+    {
+      "kind": "transformation",
+      "name": "identity_and_zero_right",
+      "doc": "and X, 0 → 0. Zero absorbs bitwise AND.",
+      "match": [
+        ["?inst", "uses_op0", "?v1"],
+        ["?inst", "uses_op1", "?v2"],
+        ["?inst", "produces", "?old"]
+      ],
+      "where": {
+        "all": [
+          {"type_of": "?inst", "is": "LLVMInstruction"},
+          {"attr": ["?inst", "opcode"], "eq": "and"},
+          {"type_of": "?v2", "is": "LLVMConstant"},
+          {"attr": ["?v2", "value"], "eq": 0}
+        ]
+      },
+      "effect": [
+        {"replace_value": {"old": "?old", "new": "?v2"}},
+        {"delete": "?inst"}
+      ]
+    },
+
+    {
+      "kind": "transformation",
+      "name": "identity_and_zero_left",
+      "doc": "and 0, X → 0. Symmetric to identity_and_zero_right.",
+      "match": [
+        ["?inst", "uses_op0", "?v1"],
+        ["?inst", "uses_op1", "?v2"],
+        ["?inst", "produces", "?old"]
+      ],
+      "where": {
+        "all": [
+          {"type_of": "?inst", "is": "LLVMInstruction"},
+          {"attr": ["?inst", "opcode"], "eq": "and"},
+          {"type_of": "?v1", "is": "LLVMConstant"},
+          {"attr": ["?v1", "value"], "eq": 0}
+        ]
+      },
+      "effect": [
+        {"replace_value": {"old": "?old", "new": "?v1"}},
+        {"delete": "?inst"}
+      ]
+    },
+
+    {
+      "kind": "transformation",
+      "name": "identity_or_zero_right",
+      "doc": "or X, 0 → X. Zero is the bitwise-OR identity.",
+      "match": [
+        ["?inst", "uses_op0", "?v1"],
+        ["?inst", "uses_op1", "?v2"],
+        ["?inst", "produces", "?old"]
+      ],
+      "where": {
+        "all": [
+          {"type_of": "?inst", "is": "LLVMInstruction"},
+          {"attr": ["?inst", "opcode"], "eq": "or"},
+          {"type_of": "?v2", "is": "LLVMConstant"},
+          {"attr": ["?v2", "value"], "eq": 0}
+        ]
+      },
+      "effect": [
+        {"replace_value": {"old": "?old", "new": "?v1"}},
+        {"delete": "?inst"}
+      ]
+    },
+
+    {
+      "kind": "transformation",
+      "name": "identity_or_zero_left",
+      "doc": "or 0, X → X. Symmetric to identity_or_zero_right.",
+      "match": [
+        ["?inst", "uses_op0", "?v1"],
+        ["?inst", "uses_op1", "?v2"],
+        ["?inst", "produces", "?old"]
+      ],
+      "where": {
+        "all": [
+          {"type_of": "?inst", "is": "LLVMInstruction"},
+          {"attr": ["?inst", "opcode"], "eq": "or"},
+          {"type_of": "?v1", "is": "LLVMConstant"},
+          {"attr": ["?v1", "value"], "eq": 0}
+        ]
+      },
+      "effect": [
+        {"replace_value": {"old": "?old", "new": "?v2"}},
+        {"delete": "?inst"}
+      ]
+    },
+
+    {
+      "kind": "transformation",
+      "name": "identity_xor_self",
+      "doc": "xor X, X → 0. Bitwise XOR of identical operands is zero.",
+      "match": [
+        ["?inst", "uses_op0", "?x"],
+        ["?inst", "uses_op1", "?x"],
+        ["?inst", "produces", "?old"]
+      ],
+      "where": {
+        "all": [
+          {"type_of": "?inst", "is": "LLVMInstruction"},
+          {"attr": ["?inst", "opcode"], "eq": "xor"}
+        ]
+      },
+      "effect": [
+        {"add_node": {
+          "var": "?zero",
+          "type": "LLVMConstant",
+          "attrs": {"value": 0}
+        }},
+        {"replace_value": {"old": "?old", "new": "?zero"}},
+        {"delete": "?inst"}
+      ]
+    },
+
+    {
+      "kind": "transformation",
+      "name": "identity_xor_zero_right",
+      "doc": "xor X, 0 → X. Zero is the bitwise-XOR identity.",
+      "match": [
+        ["?inst", "uses_op0", "?v1"],
+        ["?inst", "uses_op1", "?v2"],
+        ["?inst", "produces", "?old"]
+      ],
+      "where": {
+        "all": [
+          {"type_of": "?inst", "is": "LLVMInstruction"},
+          {"attr": ["?inst", "opcode"], "eq": "xor"},
+          {"type_of": "?v2", "is": "LLVMConstant"},
+          {"attr": ["?v2", "value"], "eq": 0}
+        ]
+      },
+      "effect": [
+        {"replace_value": {"old": "?old", "new": "?v1"}},
+        {"delete": "?inst"}
+      ]
+    },
+
+    {
+      "kind": "transformation",
+      "name": "identity_xor_zero_left",
+      "doc": "xor 0, X → X. Symmetric to identity_xor_zero_right.",
+      "match": [
+        ["?inst", "uses_op0", "?v1"],
+        ["?inst", "uses_op1", "?v2"],
+        ["?inst", "produces", "?old"]
+      ],
+      "where": {
+        "all": [
+          {"type_of": "?inst", "is": "LLVMInstruction"},
+          {"attr": ["?inst", "opcode"], "eq": "xor"},
+          {"type_of": "?v1", "is": "LLVMConstant"},
+          {"attr": ["?v1", "value"], "eq": 0}
+        ]
+      },
+      "effect": [
+        {"replace_value": {"old": "?old", "new": "?v2"}},
+        {"delete": "?inst"}
+      ]
+    },
+
+    {
+      "kind": "transformation",
+      "name": "identity_shl_zero",
+      "doc": "shl X, 0 → X. Shifting left by zero bits is the identity.",
+      "match": [
+        ["?inst", "uses_op0", "?v1"],
+        ["?inst", "uses_op1", "?v2"],
+        ["?inst", "produces", "?old"]
+      ],
+      "where": {
+        "all": [
+          {"type_of": "?inst", "is": "LLVMInstruction"},
+          {"attr": ["?inst", "opcode"], "eq": "shl"},
+          {"type_of": "?v2", "is": "LLVMConstant"},
+          {"attr": ["?v2", "value"], "eq": 0}
+        ]
+      },
+      "effect": [
+        {"replace_value": {"old": "?old", "new": "?v1"}},
+        {"delete": "?inst"}
+      ]
+    },
+
+    {
+      "kind": "transformation",
+      "name": "identity_lshr_zero",
+      "doc": "lshr X, 0 → X. Logical shift right by zero bits is the identity.",
+      "match": [
+        ["?inst", "uses_op0", "?v1"],
+        ["?inst", "uses_op1", "?v2"],
+        ["?inst", "produces", "?old"]
+      ],
+      "where": {
+        "all": [
+          {"type_of": "?inst", "is": "LLVMInstruction"},
+          {"attr": ["?inst", "opcode"], "eq": "lshr"},
+          {"type_of": "?v2", "is": "LLVMConstant"},
+          {"attr": ["?v2", "value"], "eq": 0}
+        ]
+      },
+      "effect": [
+        {"replace_value": {"old": "?old", "new": "?v1"}},
+        {"delete": "?inst"}
+      ]
+    },
+
+    {
+      "kind": "transformation",
+      "name": "identity_ashr_zero",
+      "doc": "ashr X, 0 → X. Arithmetic shift right by zero bits is the identity.",
+      "match": [
+        ["?inst", "uses_op0", "?v1"],
+        ["?inst", "uses_op1", "?v2"],
+        ["?inst", "produces", "?old"]
+      ],
+      "where": {
+        "all": [
+          {"type_of": "?inst", "is": "LLVMInstruction"},
+          {"attr": ["?inst", "opcode"], "eq": "ashr"},
+          {"type_of": "?v2", "is": "LLVMConstant"},
+          {"attr": ["?v2", "value"], "eq": 0}
+        ]
+      },
+      "effect": [
+        {"replace_value": {"old": "?old", "new": "?v1"}},
+        {"delete": "?inst"}
+      ]
+    },
+
+    {
+      "kind": "transformation",
+      "name": "constfold_and",
+      "doc": "and(c1, c2) where both are integer constants → fold to c1 & c2.",
+      "match": [
+        ["?inst", "uses_op0", "?v1"],
+        ["?inst", "uses_op1", "?v2"],
+        ["?inst", "produces", "?old"]
+      ],
+      "where": {
+        "all": [
+          {"type_of": "?inst", "is": "LLVMInstruction"},
+          {"attr": ["?inst", "opcode"], "eq": "and"},
+          {"type_of": "?v1", "is": "LLVMConstant"},
+          {"type_of": "?v2", "is": "LLVMConstant"}
+        ]
+      },
+      "effect": [
+        {"add_node": {
+          "var": "?new_const",
+          "type": "LLVMConstant",
+          "attrs": {
+            "value": {"bit_and": [
+              {"attr": ["?v1", "value"]},
+              {"attr": ["?v2", "value"]}
+            ]},
+            "type": {"attr": ["?v1", "type"]}
+          }
+        }},
+        {"replace_value": {"old": "?old", "new": "?new_const"}},
+        {"delete": "?inst"}
+      ]
+    },
+
+    {
+      "kind": "transformation",
+      "name": "constfold_or",
+      "doc": "or(c1, c2) where both are integer constants → fold to c1 | c2.",
+      "match": [
+        ["?inst", "uses_op0", "?v1"],
+        ["?inst", "uses_op1", "?v2"],
+        ["?inst", "produces", "?old"]
+      ],
+      "where": {
+        "all": [
+          {"type_of": "?inst", "is": "LLVMInstruction"},
+          {"attr": ["?inst", "opcode"], "eq": "or"},
+          {"type_of": "?v1", "is": "LLVMConstant"},
+          {"type_of": "?v2", "is": "LLVMConstant"}
+        ]
+      },
+      "effect": [
+        {"add_node": {
+          "var": "?new_const",
+          "type": "LLVMConstant",
+          "attrs": {
+            "value": {"bit_or": [
+              {"attr": ["?v1", "value"]},
+              {"attr": ["?v2", "value"]}
+            ]},
+            "type": {"attr": ["?v1", "type"]}
+          }
+        }},
+        {"replace_value": {"old": "?old", "new": "?new_const"}},
+        {"delete": "?inst"}
+      ]
+    },
+
+    {
+      "kind": "transformation",
+      "name": "constfold_xor",
+      "doc": "xor(c1, c2) where both are integer constants → fold to c1 ^ c2.",
+      "match": [
+        ["?inst", "uses_op0", "?v1"],
+        ["?inst", "uses_op1", "?v2"],
+        ["?inst", "produces", "?old"]
+      ],
+      "where": {
+        "all": [
+          {"type_of": "?inst", "is": "LLVMInstruction"},
+          {"attr": ["?inst", "opcode"], "eq": "xor"},
+          {"type_of": "?v1", "is": "LLVMConstant"},
+          {"type_of": "?v2", "is": "LLVMConstant"}
+        ]
+      },
+      "effect": [
+        {"add_node": {
+          "var": "?new_const",
+          "type": "LLVMConstant",
+          "attrs": {
+            "value": {"bit_xor": [
+              {"attr": ["?v1", "value"]},
+              {"attr": ["?v2", "value"]}
+            ]},
+            "type": {"attr": ["?v1", "type"]}
+          }
+        }},
+        {"replace_value": {"old": "?old", "new": "?new_const"}},
+        {"delete": "?inst"}
+      ]
+    },
+
+    {
+      "kind": "transformation",
+      "name": "constfold_shl",
+      "doc": "shl(c1, c2) where both are integer constants → fold to c1 << c2. b ∉ [0,63] → 0 (substrate convention; LLVM defines as poison).",
+      "match": [
+        ["?inst", "uses_op0", "?v1"],
+        ["?inst", "uses_op1", "?v2"],
+        ["?inst", "produces", "?old"]
+      ],
+      "where": {
+        "all": [
+          {"type_of": "?inst", "is": "LLVMInstruction"},
+          {"attr": ["?inst", "opcode"], "eq": "shl"},
+          {"type_of": "?v1", "is": "LLVMConstant"},
+          {"type_of": "?v2", "is": "LLVMConstant"}
+        ]
+      },
+      "effect": [
+        {"add_node": {
+          "var": "?new_const",
+          "type": "LLVMConstant",
+          "attrs": {
+            "value": {"shl": [
+              {"attr": ["?v1", "value"]},
+              {"attr": ["?v2", "value"]}
+            ]},
+            "type": {"attr": ["?v1", "type"]}
+          }
+        }},
+        {"replace_value": {"old": "?old", "new": "?new_const"}},
+        {"delete": "?inst"}
+      ]
+    },
+
+    {
+      "kind": "transformation",
+      "name": "constfold_lshr",
+      "doc": "lshr(c1, c2) where both are integer constants → fold to (unsigned)c1 >> c2. Logical shift fills with zeros.",
+      "match": [
+        ["?inst", "uses_op0", "?v1"],
+        ["?inst", "uses_op1", "?v2"],
+        ["?inst", "produces", "?old"]
+      ],
+      "where": {
+        "all": [
+          {"type_of": "?inst", "is": "LLVMInstruction"},
+          {"attr": ["?inst", "opcode"], "eq": "lshr"},
+          {"type_of": "?v1", "is": "LLVMConstant"},
+          {"type_of": "?v2", "is": "LLVMConstant"}
+        ]
+      },
+      "effect": [
+        {"add_node": {
+          "var": "?new_const",
+          "type": "LLVMConstant",
+          "attrs": {
+            "value": {"lshr": [
+              {"attr": ["?v1", "value"]},
+              {"attr": ["?v2", "value"]}
+            ]},
+            "type": {"attr": ["?v1", "type"]}
+          }
+        }},
+        {"replace_value": {"old": "?old", "new": "?new_const"}},
+        {"delete": "?inst"}
+      ]
+    },
+
+    {
+      "kind": "transformation",
+      "name": "constfold_ashr",
+      "doc": "ashr(c1, c2) where both are integer constants → fold to c1 >> c2 (sign-extending). Arithmetic shift preserves the sign bit.",
+      "match": [
+        ["?inst", "uses_op0", "?v1"],
+        ["?inst", "uses_op1", "?v2"],
+        ["?inst", "produces", "?old"]
+      ],
+      "where": {
+        "all": [
+          {"type_of": "?inst", "is": "LLVMInstruction"},
+          {"attr": ["?inst", "opcode"], "eq": "ashr"},
+          {"type_of": "?v1", "is": "LLVMConstant"},
+          {"type_of": "?v2", "is": "LLVMConstant"}
+        ]
+      },
+      "effect": [
+        {"add_node": {
+          "var": "?new_const",
+          "type": "LLVMConstant",
+          "attrs": {
+            "value": {"ashr": [
+              {"attr": ["?v1", "value"]},
+              {"attr": ["?v2", "value"]}
+            ]},
+            "type": {"attr": ["?v1", "type"]}
+          }
+        }},
+        {"replace_value": {"old": "?old", "new": "?new_const"}},
+        {"delete": "?inst"}
+      ]
+    },
+
+    {
+      "kind": "transformation",
+      "name": "dce_add",
+      "doc": "Pure add with no uses → delete. Add is side-effect-free; if no instruction consumes its result, removing it preserves observable behavior.",
+      "match": [
+        ["?inst", "uses_op0", "?op0"],
+        ["?inst", "uses_op1", "?op1"],
+        ["?inst", "produces", "?value"]
+      ],
+      "where": {
+        "all": [
+          {"type_of": "?inst", "is": "LLVMInstruction"},
+          {"attr": ["?inst", "opcode"], "eq": "add"},
+          {"count_in": ["?value", "uses_op0"], "eq": 0},
+          {"count_in": ["?value", "uses_op1"], "eq": 0}
+        ]
+      },
+      "effect": [
+        {"delete": "?inst"}
+      ]
+    },
+
+    {
+      "kind": "transformation",
+      "name": "dce_sub",
+      "doc": "Pure sub with no uses → delete.",
+      "match": [
+        ["?inst", "uses_op0", "?op0"],
+        ["?inst", "uses_op1", "?op1"],
+        ["?inst", "produces", "?value"]
+      ],
+      "where": {
+        "all": [
+          {"type_of": "?inst", "is": "LLVMInstruction"},
+          {"attr": ["?inst", "opcode"], "eq": "sub"},
+          {"count_in": ["?value", "uses_op0"], "eq": 0},
+          {"count_in": ["?value", "uses_op1"], "eq": 0}
+        ]
+      },
+      "effect": [
+        {"delete": "?inst"}
+      ]
+    },
+
+    {
+      "kind": "transformation",
+      "name": "dce_mul",
+      "doc": "Pure mul with no uses → delete.",
+      "match": [
+        ["?inst", "uses_op0", "?op0"],
+        ["?inst", "uses_op1", "?op1"],
+        ["?inst", "produces", "?value"]
+      ],
+      "where": {
+        "all": [
+          {"type_of": "?inst", "is": "LLVMInstruction"},
+          {"attr": ["?inst", "opcode"], "eq": "mul"},
+          {"count_in": ["?value", "uses_op0"], "eq": 0},
+          {"count_in": ["?value", "uses_op1"], "eq": 0}
+        ]
+      },
+      "effect": [
+        {"delete": "?inst"}
+      ]
+    },
+
+    {
+      "kind": "transformation",
+      "name": "dce_and",
+      "doc": "Pure and with no uses → delete.",
+      "match": [
+        ["?inst", "uses_op0", "?op0"],
+        ["?inst", "uses_op1", "?op1"],
+        ["?inst", "produces", "?value"]
+      ],
+      "where": {
+        "all": [
+          {"type_of": "?inst", "is": "LLVMInstruction"},
+          {"attr": ["?inst", "opcode"], "eq": "and"},
+          {"count_in": ["?value", "uses_op0"], "eq": 0},
+          {"count_in": ["?value", "uses_op1"], "eq": 0}
+        ]
+      },
+      "effect": [
+        {"delete": "?inst"}
+      ]
+    },
+
+    {
+      "kind": "transformation",
+      "name": "dce_or",
+      "doc": "Pure or with no uses → delete.",
+      "match": [
+        ["?inst", "uses_op0", "?op0"],
+        ["?inst", "uses_op1", "?op1"],
+        ["?inst", "produces", "?value"]
+      ],
+      "where": {
+        "all": [
+          {"type_of": "?inst", "is": "LLVMInstruction"},
+          {"attr": ["?inst", "opcode"], "eq": "or"},
+          {"count_in": ["?value", "uses_op0"], "eq": 0},
+          {"count_in": ["?value", "uses_op1"], "eq": 0}
+        ]
+      },
+      "effect": [
+        {"delete": "?inst"}
+      ]
+    },
+
+    {
+      "kind": "transformation",
+      "name": "dce_xor",
+      "doc": "Pure xor with no uses → delete.",
+      "match": [
+        ["?inst", "uses_op0", "?op0"],
+        ["?inst", "uses_op1", "?op1"],
+        ["?inst", "produces", "?value"]
+      ],
+      "where": {
+        "all": [
+          {"type_of": "?inst", "is": "LLVMInstruction"},
+          {"attr": ["?inst", "opcode"], "eq": "xor"},
+          {"count_in": ["?value", "uses_op0"], "eq": 0},
+          {"count_in": ["?value", "uses_op1"], "eq": 0}
+        ]
+      },
+      "effect": [
+        {"delete": "?inst"}
+      ]
+    },
+
+    {
+      "kind": "transformation",
+      "name": "dce_shl",
+      "doc": "Pure shl with no uses → delete.",
+      "match": [
+        ["?inst", "uses_op0", "?op0"],
+        ["?inst", "uses_op1", "?op1"],
+        ["?inst", "produces", "?value"]
+      ],
+      "where": {
+        "all": [
+          {"type_of": "?inst", "is": "LLVMInstruction"},
+          {"attr": ["?inst", "opcode"], "eq": "shl"},
+          {"count_in": ["?value", "uses_op0"], "eq": 0},
+          {"count_in": ["?value", "uses_op1"], "eq": 0}
+        ]
+      },
+      "effect": [
+        {"delete": "?inst"}
+      ]
+    },
+
+    {
+      "kind": "transformation",
+      "name": "dce_lshr",
+      "doc": "Pure lshr with no uses → delete.",
+      "match": [
+        ["?inst", "uses_op0", "?op0"],
+        ["?inst", "uses_op1", "?op1"],
+        ["?inst", "produces", "?value"]
+      ],
+      "where": {
+        "all": [
+          {"type_of": "?inst", "is": "LLVMInstruction"},
+          {"attr": ["?inst", "opcode"], "eq": "lshr"},
+          {"count_in": ["?value", "uses_op0"], "eq": 0},
+          {"count_in": ["?value", "uses_op1"], "eq": 0}
+        ]
+      },
+      "effect": [
+        {"delete": "?inst"}
+      ]
+    },
+
+    {
+      "kind": "transformation",
+      "name": "dce_ashr",
+      "doc": "Pure ashr with no uses → delete.",
+      "match": [
+        ["?inst", "uses_op0", "?op0"],
+        ["?inst", "uses_op1", "?op1"],
+        ["?inst", "produces", "?value"]
+      ],
+      "where": {
+        "all": [
+          {"type_of": "?inst", "is": "LLVMInstruction"},
+          {"attr": ["?inst", "opcode"], "eq": "ashr"},
+          {"count_in": ["?value", "uses_op0"], "eq": 0},
+          {"count_in": ["?value", "uses_op1"], "eq": 0}
+        ]
+      },
+      "effect": [
+        {"delete": "?inst"}
+      ]
+    },
+
+    {
+      "kind": "transformation",
+      "name": "strength_reduce_mul_by_2",
+      "doc": "mul X, 2 → shl X, 1. Multiplication by 2 lowers to single-cycle shift-left — same value, cheaper to execute on every modern ISA.",
+      "match": [
+        ["?inst", "uses_op0", "?x"],
+        ["?inst", "uses_op1", "?c"],
+        ["?inst", "produces", "?value"]
+      ],
+      "where": {
+        "all": [
+          {"type_of": "?inst", "is": "LLVMInstruction"},
+          {"attr": ["?inst", "opcode"], "eq": "mul"},
+          {"type_of": "?c", "is": "LLVMConstant"},
+          {"attr": ["?c", "value"], "eq": 2}
+        ]
+      },
+      "effect": [
+        {"add_node": {"var": "?shift_amt", "type": "LLVMConstant",
+                      "attrs": {"value": 1, "type": {"attr": ["?c", "type"]}}}},
+        {"del_edge": ["?inst", "uses_op1", "?c"]},
+        {"add_edge": ["?inst", "uses_op1", "?shift_amt"]},
+        {"set_attr": ["?inst", "opcode", "shl"]}
+      ]
+    },
+
+    {
+      "kind": "transformation",
+      "name": "strength_reduce_mul_by_4",
+      "doc": "mul X, 4 → shl X, 2.",
+      "match": [
+        ["?inst", "uses_op0", "?x"],
+        ["?inst", "uses_op1", "?c"],
+        ["?inst", "produces", "?value"]
+      ],
+      "where": {
+        "all": [
+          {"type_of": "?inst", "is": "LLVMInstruction"},
+          {"attr": ["?inst", "opcode"], "eq": "mul"},
+          {"type_of": "?c", "is": "LLVMConstant"},
+          {"attr": ["?c", "value"], "eq": 4}
+        ]
+      },
+      "effect": [
+        {"add_node": {"var": "?shift_amt", "type": "LLVMConstant",
+                      "attrs": {"value": 2, "type": {"attr": ["?c", "type"]}}}},
+        {"del_edge": ["?inst", "uses_op1", "?c"]},
+        {"add_edge": ["?inst", "uses_op1", "?shift_amt"]},
+        {"set_attr": ["?inst", "opcode", "shl"]}
+      ]
+    },
+
+    {
+      "kind": "transformation",
+      "name": "strength_reduce_mul_by_8",
+      "doc": "mul X, 8 → shl X, 3.",
+      "match": [
+        ["?inst", "uses_op0", "?x"],
+        ["?inst", "uses_op1", "?c"],
+        ["?inst", "produces", "?value"]
+      ],
+      "where": {
+        "all": [
+          {"type_of": "?inst", "is": "LLVMInstruction"},
+          {"attr": ["?inst", "opcode"], "eq": "mul"},
+          {"type_of": "?c", "is": "LLVMConstant"},
+          {"attr": ["?c", "value"], "eq": 8}
+        ]
+      },
+      "effect": [
+        {"add_node": {"var": "?shift_amt", "type": "LLVMConstant",
+                      "attrs": {"value": 3, "type": {"attr": ["?c", "type"]}}}},
+        {"del_edge": ["?inst", "uses_op1", "?c"]},
+        {"add_edge": ["?inst", "uses_op1", "?shift_amt"]},
+        {"set_attr": ["?inst", "opcode", "shl"]}
+      ]
+    },
+
+    {
+      "kind": "transformation",
+      "name": "strength_reduce_mul_by_16",
+      "doc": "mul X, 16 → shl X, 4.",
+      "match": [
+        ["?inst", "uses_op0", "?x"],
+        ["?inst", "uses_op1", "?c"],
+        ["?inst", "produces", "?value"]
+      ],
+      "where": {
+        "all": [
+          {"type_of": "?inst", "is": "LLVMInstruction"},
+          {"attr": ["?inst", "opcode"], "eq": "mul"},
+          {"type_of": "?c", "is": "LLVMConstant"},
+          {"attr": ["?c", "value"], "eq": 16}
+        ]
+      },
+      "effect": [
+        {"add_node": {"var": "?shift_amt", "type": "LLVMConstant",
+                      "attrs": {"value": 4, "type": {"attr": ["?c", "type"]}}}},
+        {"del_edge": ["?inst", "uses_op1", "?c"]},
+        {"add_edge": ["?inst", "uses_op1", "?shift_amt"]},
+        {"set_attr": ["?inst", "opcode", "shl"]}
+      ]
+    },
+
+    {
+      "kind": "transformation",
+      "name": "cse_add",
+      "doc": "Common subexpression elimination for add. Two add instructions with the same operands produce the same value — keep one, rewire uses of the other to it, delete the duplicate.",
+      "match": [
+        ["?inst1", "uses_op0", "?x"],
+        ["?inst1", "uses_op1", "?y"],
+        ["?inst1", "produces", "?val1"],
+        ["?inst2", "uses_op0", "?x"],
+        ["?inst2", "uses_op1", "?y"],
+        ["?inst2", "produces", "?val2"]
+      ],
+      "where": {
+        "all": [
+          {"type_of": "?inst1", "is": "LLVMInstruction"},
+          {"type_of": "?inst2", "is": "LLVMInstruction"},
+          {"attr": ["?inst1", "opcode"], "eq": "add"},
+          {"attr": ["?inst2", "opcode"], "eq": "add"},
+          {"not_eq_vars": ["?inst1", "?inst2"]}
+        ]
+      },
+      "effect": [
+        {"replace_value": {"old": "?val2", "new": "?val1"}},
+        {"delete": "?inst2"}
+      ]
+    },
+
+    {
+      "kind": "transformation",
+      "name": "cse_sub",
+      "doc": "CSE for sub.",
+      "match": [
+        ["?inst1", "uses_op0", "?x"],
+        ["?inst1", "uses_op1", "?y"],
+        ["?inst1", "produces", "?val1"],
+        ["?inst2", "uses_op0", "?x"],
+        ["?inst2", "uses_op1", "?y"],
+        ["?inst2", "produces", "?val2"]
+      ],
+      "where": {
+        "all": [
+          {"type_of": "?inst1", "is": "LLVMInstruction"},
+          {"type_of": "?inst2", "is": "LLVMInstruction"},
+          {"attr": ["?inst1", "opcode"], "eq": "sub"},
+          {"attr": ["?inst2", "opcode"], "eq": "sub"},
+          {"not_eq_vars": ["?inst1", "?inst2"]}
+        ]
+      },
+      "effect": [
+        {"replace_value": {"old": "?val2", "new": "?val1"}},
+        {"delete": "?inst2"}
+      ]
+    },
+
+    {
+      "kind": "transformation",
+      "name": "cse_mul",
+      "doc": "CSE for mul.",
+      "match": [
+        ["?inst1", "uses_op0", "?x"],
+        ["?inst1", "uses_op1", "?y"],
+        ["?inst1", "produces", "?val1"],
+        ["?inst2", "uses_op0", "?x"],
+        ["?inst2", "uses_op1", "?y"],
+        ["?inst2", "produces", "?val2"]
+      ],
+      "where": {
+        "all": [
+          {"type_of": "?inst1", "is": "LLVMInstruction"},
+          {"type_of": "?inst2", "is": "LLVMInstruction"},
+          {"attr": ["?inst1", "opcode"], "eq": "mul"},
+          {"attr": ["?inst2", "opcode"], "eq": "mul"},
+          {"not_eq_vars": ["?inst1", "?inst2"]}
+        ]
+      },
+      "effect": [
+        {"replace_value": {"old": "?val2", "new": "?val1"}},
+        {"delete": "?inst2"}
+      ]
+    },
+
+    {
+      "kind": "transformation",
+      "name": "cse_and",
+      "doc": "CSE for bitwise and.",
+      "match": [
+        ["?inst1", "uses_op0", "?x"],
+        ["?inst1", "uses_op1", "?y"],
+        ["?inst1", "produces", "?val1"],
+        ["?inst2", "uses_op0", "?x"],
+        ["?inst2", "uses_op1", "?y"],
+        ["?inst2", "produces", "?val2"]
+      ],
+      "where": {
+        "all": [
+          {"type_of": "?inst1", "is": "LLVMInstruction"},
+          {"type_of": "?inst2", "is": "LLVMInstruction"},
+          {"attr": ["?inst1", "opcode"], "eq": "and"},
+          {"attr": ["?inst2", "opcode"], "eq": "and"},
+          {"not_eq_vars": ["?inst1", "?inst2"]}
+        ]
+      },
+      "effect": [
+        {"replace_value": {"old": "?val2", "new": "?val1"}},
+        {"delete": "?inst2"}
+      ]
+    },
+
+    {
+      "kind": "transformation",
+      "name": "cse_or",
+      "doc": "CSE for bitwise or.",
+      "match": [
+        ["?inst1", "uses_op0", "?x"],
+        ["?inst1", "uses_op1", "?y"],
+        ["?inst1", "produces", "?val1"],
+        ["?inst2", "uses_op0", "?x"],
+        ["?inst2", "uses_op1", "?y"],
+        ["?inst2", "produces", "?val2"]
+      ],
+      "where": {
+        "all": [
+          {"type_of": "?inst1", "is": "LLVMInstruction"},
+          {"type_of": "?inst2", "is": "LLVMInstruction"},
+          {"attr": ["?inst1", "opcode"], "eq": "or"},
+          {"attr": ["?inst2", "opcode"], "eq": "or"},
+          {"not_eq_vars": ["?inst1", "?inst2"]}
+        ]
+      },
+      "effect": [
+        {"replace_value": {"old": "?val2", "new": "?val1"}},
+        {"delete": "?inst2"}
+      ]
+    },
+
+    {
+      "kind": "transformation",
+      "name": "cse_xor",
+      "doc": "CSE for bitwise xor.",
+      "match": [
+        ["?inst1", "uses_op0", "?x"],
+        ["?inst1", "uses_op1", "?y"],
+        ["?inst1", "produces", "?val1"],
+        ["?inst2", "uses_op0", "?x"],
+        ["?inst2", "uses_op1", "?y"],
+        ["?inst2", "produces", "?val2"]
+      ],
+      "where": {
+        "all": [
+          {"type_of": "?inst1", "is": "LLVMInstruction"},
+          {"type_of": "?inst2", "is": "LLVMInstruction"},
+          {"attr": ["?inst1", "opcode"], "eq": "xor"},
+          {"attr": ["?inst2", "opcode"], "eq": "xor"},
+          {"not_eq_vars": ["?inst1", "?inst2"]}
+        ]
+      },
+      "effect": [
+        {"replace_value": {"old": "?val2", "new": "?val1"}},
+        {"delete": "?inst2"}
+      ]
+    },
+
+    {
+      "kind": "transformation",
+      "name": "reassoc_add",
+      "doc": "(a + b) + c → a + (b + c). Right-associate chains of pure-binary adds so constants migrate to the inner position where constfold can attack them. Requires the intermediate result to have only one use (the outer add); otherwise reassociation would change values seen elsewhere.",
+      "match": [
+        ["?inner", "uses_op0", "?a"],
+        ["?inner", "uses_op1", "?b"],
+        ["?inner", "produces", "?t"],
+        ["?outer", "uses_op0", "?t"],
+        ["?outer", "uses_op1", "?c"],
+        ["?outer", "produces", "?r"]
+      ],
+      "where": {
+        "all": [
+          {"type_of": "?inner", "is": "LLVMInstruction"},
+          {"type_of": "?outer", "is": "LLVMInstruction"},
+          {"attr": ["?inner", "opcode"], "eq": "add"},
+          {"attr": ["?outer", "opcode"], "eq": "add"},
+          {"count_in": ["?t", "uses_op0"], "eq": 1},
+          {"count_in": ["?t", "uses_op1"], "eq": 0}
+        ]
+      },
+      "effect": [
+        {"del_edge": ["?inner", "uses_op0", "?a"]},
+        {"del_edge": ["?inner", "uses_op1", "?b"]},
+        {"add_edge": ["?inner", "uses_op0", "?b"]},
+        {"add_edge": ["?inner", "uses_op1", "?c"]},
+        {"del_edge": ["?outer", "uses_op0", "?t"]},
+        {"del_edge": ["?outer", "uses_op1", "?c"]},
+        {"add_edge": ["?outer", "uses_op0", "?a"]},
+        {"add_edge": ["?outer", "uses_op1", "?t"]}
+      ]
+    },
+
+    {
+      "kind": "transformation",
+      "name": "reassoc_mul",
+      "doc": "(a * b) * c → a * (b * c). Multiplication is associative.",
+      "match": [
+        ["?inner", "uses_op0", "?a"],
+        ["?inner", "uses_op1", "?b"],
+        ["?inner", "produces", "?t"],
+        ["?outer", "uses_op0", "?t"],
+        ["?outer", "uses_op1", "?c"],
+        ["?outer", "produces", "?r"]
+      ],
+      "where": {
+        "all": [
+          {"type_of": "?inner", "is": "LLVMInstruction"},
+          {"type_of": "?outer", "is": "LLVMInstruction"},
+          {"attr": ["?inner", "opcode"], "eq": "mul"},
+          {"attr": ["?outer", "opcode"], "eq": "mul"},
+          {"count_in": ["?t", "uses_op0"], "eq": 1},
+          {"count_in": ["?t", "uses_op1"], "eq": 0}
+        ]
+      },
+      "effect": [
+        {"del_edge": ["?inner", "uses_op0", "?a"]},
+        {"del_edge": ["?inner", "uses_op1", "?b"]},
+        {"add_edge": ["?inner", "uses_op0", "?b"]},
+        {"add_edge": ["?inner", "uses_op1", "?c"]},
+        {"del_edge": ["?outer", "uses_op0", "?t"]},
+        {"del_edge": ["?outer", "uses_op1", "?c"]},
+        {"add_edge": ["?outer", "uses_op0", "?a"]},
+        {"add_edge": ["?outer", "uses_op1", "?t"]}
+      ]
+    },
+
+    {
+      "kind": "transformation",
+      "name": "reassoc_and",
+      "doc": "(a & b) & c → a & (b & c). Bitwise AND is associative.",
+      "match": [
+        ["?inner", "uses_op0", "?a"],
+        ["?inner", "uses_op1", "?b"],
+        ["?inner", "produces", "?t"],
+        ["?outer", "uses_op0", "?t"],
+        ["?outer", "uses_op1", "?c"],
+        ["?outer", "produces", "?r"]
+      ],
+      "where": {
+        "all": [
+          {"type_of": "?inner", "is": "LLVMInstruction"},
+          {"type_of": "?outer", "is": "LLVMInstruction"},
+          {"attr": ["?inner", "opcode"], "eq": "and"},
+          {"attr": ["?outer", "opcode"], "eq": "and"},
+          {"count_in": ["?t", "uses_op0"], "eq": 1},
+          {"count_in": ["?t", "uses_op1"], "eq": 0}
+        ]
+      },
+      "effect": [
+        {"del_edge": ["?inner", "uses_op0", "?a"]},
+        {"del_edge": ["?inner", "uses_op1", "?b"]},
+        {"add_edge": ["?inner", "uses_op0", "?b"]},
+        {"add_edge": ["?inner", "uses_op1", "?c"]},
+        {"del_edge": ["?outer", "uses_op0", "?t"]},
+        {"del_edge": ["?outer", "uses_op1", "?c"]},
+        {"add_edge": ["?outer", "uses_op0", "?a"]},
+        {"add_edge": ["?outer", "uses_op1", "?t"]}
+      ]
+    },
+
+    {
+      "kind": "transformation",
+      "name": "reassoc_or",
+      "doc": "(a | b) | c → a | (b | c). Bitwise OR is associative.",
+      "match": [
+        ["?inner", "uses_op0", "?a"],
+        ["?inner", "uses_op1", "?b"],
+        ["?inner", "produces", "?t"],
+        ["?outer", "uses_op0", "?t"],
+        ["?outer", "uses_op1", "?c"],
+        ["?outer", "produces", "?r"]
+      ],
+      "where": {
+        "all": [
+          {"type_of": "?inner", "is": "LLVMInstruction"},
+          {"type_of": "?outer", "is": "LLVMInstruction"},
+          {"attr": ["?inner", "opcode"], "eq": "or"},
+          {"attr": ["?outer", "opcode"], "eq": "or"},
+          {"count_in": ["?t", "uses_op0"], "eq": 1},
+          {"count_in": ["?t", "uses_op1"], "eq": 0}
+        ]
+      },
+      "effect": [
+        {"del_edge": ["?inner", "uses_op0", "?a"]},
+        {"del_edge": ["?inner", "uses_op1", "?b"]},
+        {"add_edge": ["?inner", "uses_op0", "?b"]},
+        {"add_edge": ["?inner", "uses_op1", "?c"]},
+        {"del_edge": ["?outer", "uses_op0", "?t"]},
+        {"del_edge": ["?outer", "uses_op1", "?c"]},
+        {"add_edge": ["?outer", "uses_op0", "?a"]},
+        {"add_edge": ["?outer", "uses_op1", "?t"]}
+      ]
+    },
+
+    {
+      "kind": "transformation",
+      "name": "reassoc_xor",
+      "doc": "(a ^ b) ^ c → a ^ (b ^ c). Bitwise XOR is associative.",
+      "match": [
+        ["?inner", "uses_op0", "?a"],
+        ["?inner", "uses_op1", "?b"],
+        ["?inner", "produces", "?t"],
+        ["?outer", "uses_op0", "?t"],
+        ["?outer", "uses_op1", "?c"],
+        ["?outer", "produces", "?r"]
+      ],
+      "where": {
+        "all": [
+          {"type_of": "?inner", "is": "LLVMInstruction"},
+          {"type_of": "?outer", "is": "LLVMInstruction"},
+          {"attr": ["?inner", "opcode"], "eq": "xor"},
+          {"attr": ["?outer", "opcode"], "eq": "xor"},
+          {"count_in": ["?t", "uses_op0"], "eq": 1},
+          {"count_in": ["?t", "uses_op1"], "eq": 0}
+        ]
+      },
+      "effect": [
+        {"del_edge": ["?inner", "uses_op0", "?a"]},
+        {"del_edge": ["?inner", "uses_op1", "?b"]},
+        {"add_edge": ["?inner", "uses_op0", "?b"]},
+        {"add_edge": ["?inner", "uses_op1", "?c"]},
+        {"del_edge": ["?outer", "uses_op0", "?t"]},
+        {"del_edge": ["?outer", "uses_op1", "?c"]},
+        {"add_edge": ["?outer", "uses_op0", "?a"]},
+        {"add_edge": ["?outer", "uses_op1", "?t"]}
+      ]
+    },
+
+    {
+      "kind": "transformation",
+      "name": "constfold_icmp_eq",
+      "doc": "icmp eq c1, c2 → 1 if c1 == c2 else 0. Comparison of two integer constants folds to an i1 constant.",
+      "match": [
+        ["?inst", "uses_op0", "?v1"],
+        ["?inst", "uses_op1", "?v2"],
+        ["?inst", "produces", "?old"]
+      ],
+      "where": {
+        "all": [
+          {"type_of": "?inst", "is": "LLVMInstruction"},
+          {"attr": ["?inst", "opcode"], "eq": "icmp_eq"},
+          {"type_of": "?v1", "is": "LLVMConstant"},
+          {"type_of": "?v2", "is": "LLVMConstant"}
+        ]
+      },
+      "effect": [
+        {"add_node": {
+          "var": "?new_const",
+          "type": "LLVMConstant",
+          "attrs": {
+            "value": {"if_then_else": {
+              "cond": {"eq": [{"attr": ["?v1", "value"]}, {"attr": ["?v2", "value"]}]},
+              "then": 1,
+              "other": 0
+            }},
+            "type": "i1"
+          }
+        }},
+        {"replace_value": {"old": "?old", "new": "?new_const"}},
+        {"delete": "?inst"}
+      ]
+    },
+
+    {
+      "kind": "transformation",
+      "name": "constfold_icmp_ne",
+      "doc": "icmp ne c1, c2 → 1 if c1 != c2 else 0.",
+      "match": [
+        ["?inst", "uses_op0", "?v1"],
+        ["?inst", "uses_op1", "?v2"],
+        ["?inst", "produces", "?old"]
+      ],
+      "where": {
+        "all": [
+          {"type_of": "?inst", "is": "LLVMInstruction"},
+          {"attr": ["?inst", "opcode"], "eq": "icmp_ne"},
+          {"type_of": "?v1", "is": "LLVMConstant"},
+          {"type_of": "?v2", "is": "LLVMConstant"}
+        ]
+      },
+      "effect": [
+        {"add_node": {
+          "var": "?new_const",
+          "type": "LLVMConstant",
+          "attrs": {
+            "value": {"if_then_else": {
+              "cond": {"eq": [{"attr": ["?v1", "value"]}, {"attr": ["?v2", "value"]}]},
+              "then": 0,
+              "other": 1
+            }},
+            "type": "i1"
+          }
+        }},
+        {"replace_value": {"old": "?old", "new": "?new_const"}},
+        {"delete": "?inst"}
+      ]
+    },
+
+    {
+      "kind": "transformation",
+      "name": "constfold_icmp_slt",
+      "doc": "icmp slt c1, c2 → 1 if c1 < c2 else 0 (signed compare).",
+      "match": [
+        ["?inst", "uses_op0", "?v1"],
+        ["?inst", "uses_op1", "?v2"],
+        ["?inst", "produces", "?old"]
+      ],
+      "where": {
+        "all": [
+          {"type_of": "?inst", "is": "LLVMInstruction"},
+          {"attr": ["?inst", "opcode"], "eq": "icmp_slt"},
+          {"type_of": "?v1", "is": "LLVMConstant"},
+          {"type_of": "?v2", "is": "LLVMConstant"}
+        ]
+      },
+      "effect": [
+        {"add_node": {
+          "var": "?new_const",
+          "type": "LLVMConstant",
+          "attrs": {
+            "value": {"if_then_else": {
+              "cond": {"lt": [{"attr": ["?v1", "value"]}, {"attr": ["?v2", "value"]}]},
+              "then": 1,
+              "other": 0
+            }},
+            "type": "i1"
+          }
+        }},
+        {"replace_value": {"old": "?old", "new": "?new_const"}},
+        {"delete": "?inst"}
+      ]
+    },
+
+    {
+      "kind": "transformation",
+      "name": "constfold_icmp_sle",
+      "doc": "icmp sle c1, c2 → 1 if c1 <= c2 else 0 (signed compare).",
+      "match": [
+        ["?inst", "uses_op0", "?v1"],
+        ["?inst", "uses_op1", "?v2"],
+        ["?inst", "produces", "?old"]
+      ],
+      "where": {
+        "all": [
+          {"type_of": "?inst", "is": "LLVMInstruction"},
+          {"attr": ["?inst", "opcode"], "eq": "icmp_sle"},
+          {"type_of": "?v1", "is": "LLVMConstant"},
+          {"type_of": "?v2", "is": "LLVMConstant"}
+        ]
+      },
+      "effect": [
+        {"add_node": {
+          "var": "?new_const",
+          "type": "LLVMConstant",
+          "attrs": {
+            "value": {"if_then_else": {
+              "cond": {"le": [{"attr": ["?v1", "value"]}, {"attr": ["?v2", "value"]}]},
+              "then": 1,
+              "other": 0
+            }},
+            "type": "i1"
+          }
+        }},
+        {"replace_value": {"old": "?old", "new": "?new_const"}},
+        {"delete": "?inst"}
+      ]
+    },
+
+    {
+      "kind": "transformation",
+      "name": "constfold_icmp_sgt",
+      "doc": "icmp sgt c1, c2 → 1 if c1 > c2 else 0 (signed compare). Reduces to lt with operands swapped.",
+      "match": [
+        ["?inst", "uses_op0", "?v1"],
+        ["?inst", "uses_op1", "?v2"],
+        ["?inst", "produces", "?old"]
+      ],
+      "where": {
+        "all": [
+          {"type_of": "?inst", "is": "LLVMInstruction"},
+          {"attr": ["?inst", "opcode"], "eq": "icmp_sgt"},
+          {"type_of": "?v1", "is": "LLVMConstant"},
+          {"type_of": "?v2", "is": "LLVMConstant"}
+        ]
+      },
+      "effect": [
+        {"add_node": {
+          "var": "?new_const",
+          "type": "LLVMConstant",
+          "attrs": {
+            "value": {"if_then_else": {
+              "cond": {"lt": [{"attr": ["?v2", "value"]}, {"attr": ["?v1", "value"]}]},
+              "then": 1,
+              "other": 0
+            }},
+            "type": "i1"
+          }
+        }},
+        {"replace_value": {"old": "?old", "new": "?new_const"}},
+        {"delete": "?inst"}
+      ]
+    },
+
+    {
+      "kind": "transformation",
+      "name": "constfold_icmp_sge",
+      "doc": "icmp sge c1, c2 → 1 if c1 >= c2 else 0 (signed compare). Reduces to le with operands swapped.",
+      "match": [
+        ["?inst", "uses_op0", "?v1"],
+        ["?inst", "uses_op1", "?v2"],
+        ["?inst", "produces", "?old"]
+      ],
+      "where": {
+        "all": [
+          {"type_of": "?inst", "is": "LLVMInstruction"},
+          {"attr": ["?inst", "opcode"], "eq": "icmp_sge"},
+          {"type_of": "?v1", "is": "LLVMConstant"},
+          {"type_of": "?v2", "is": "LLVMConstant"}
+        ]
+      },
+      "effect": [
+        {"add_node": {
+          "var": "?new_const",
+          "type": "LLVMConstant",
+          "attrs": {
+            "value": {"if_then_else": {
+              "cond": {"le": [{"attr": ["?v2", "value"]}, {"attr": ["?v1", "value"]}]},
+              "then": 1,
+              "other": 0
+            }},
+            "type": "i1"
+          }
+        }},
+        {"replace_value": {"old": "?old", "new": "?new_const"}},
+        {"delete": "?inst"}
+      ]
+    },
+
+    {
+      "kind": "transformation",
+      "name": "identity_icmp_eq_self",
+      "doc": "icmp eq X, X → 1. Equality of a value with itself is always true.",
+      "match": [
+        ["?inst", "uses_op0", "?x"],
+        ["?inst", "uses_op1", "?x"],
+        ["?inst", "produces", "?old"]
+      ],
+      "where": {
+        "all": [
+          {"type_of": "?inst", "is": "LLVMInstruction"},
+          {"attr": ["?inst", "opcode"], "eq": "icmp_eq"}
+        ]
+      },
+      "effect": [
+        {"add_node": {
+          "var": "?true_const",
+          "type": "LLVMConstant",
+          "attrs": {"value": 1, "type": "i1"}
+        }},
+        {"replace_value": {"old": "?old", "new": "?true_const"}},
+        {"delete": "?inst"}
+      ]
+    },
+
+    {
+      "kind": "transformation",
+      "name": "identity_icmp_ne_self",
+      "doc": "icmp ne X, X → 0. A value is never not-equal to itself.",
+      "match": [
+        ["?inst", "uses_op0", "?x"],
+        ["?inst", "uses_op1", "?x"],
+        ["?inst", "produces", "?old"]
+      ],
+      "where": {
+        "all": [
+          {"type_of": "?inst", "is": "LLVMInstruction"},
+          {"attr": ["?inst", "opcode"], "eq": "icmp_ne"}
+        ]
+      },
+      "effect": [
+        {"add_node": {
+          "var": "?false_const",
+          "type": "LLVMConstant",
+          "attrs": {"value": 0, "type": "i1"}
+        }},
+        {"replace_value": {"old": "?old", "new": "?false_const"}},
+        {"delete": "?inst"}
+      ]
+    },
+
+    {
+      "kind": "transformation",
+      "name": "select_true_cond",
+      "doc": "select 1, a, b → a. When the condition is statically true, the select's result is the true branch — no need for the instruction.",
+      "match": [
+        ["?inst", "uses_op0", "?cond"],
+        ["?inst", "uses_op1", "?a"],
+        ["?inst", "uses_op2", "?b"],
+        ["?inst", "produces", "?old"]
+      ],
+      "where": {
+        "all": [
+          {"type_of": "?inst", "is": "LLVMInstruction"},
+          {"attr": ["?inst", "opcode"], "eq": "select"},
+          {"type_of": "?cond", "is": "LLVMConstant"},
+          {"attr": ["?cond", "value"], "eq": 1}
+        ]
+      },
+      "effect": [
+        {"replace_value": {"old": "?old", "new": "?a"}},
+        {"delete": "?inst"}
+      ]
+    },
+
+    {
+      "kind": "transformation",
+      "name": "select_false_cond",
+      "doc": "select 0, a, b → b. When the condition is statically false, the select's result is the false branch.",
+      "match": [
+        ["?inst", "uses_op0", "?cond"],
+        ["?inst", "uses_op1", "?a"],
+        ["?inst", "uses_op2", "?b"],
+        ["?inst", "produces", "?old"]
+      ],
+      "where": {
+        "all": [
+          {"type_of": "?inst", "is": "LLVMInstruction"},
+          {"attr": ["?inst", "opcode"], "eq": "select"},
+          {"type_of": "?cond", "is": "LLVMConstant"},
+          {"attr": ["?cond", "value"], "eq": 0}
+        ]
+      },
+      "effect": [
+        {"replace_value": {"old": "?old", "new": "?b"}},
+        {"delete": "?inst"}
+      ]
+    },
+
+    {
+      "kind": "transformation",
+      "name": "select_same_branches",
+      "doc": "select c, X, X → X. When both branches are the same SSA value, the condition doesn't matter — algebraic identity.",
+      "match": [
+        ["?inst", "uses_op0", "?cond"],
+        ["?inst", "uses_op1", "?x"],
+        ["?inst", "uses_op2", "?x"],
+        ["?inst", "produces", "?old"]
+      ],
+      "where": {
+        "all": [
+          {"type_of": "?inst", "is": "LLVMInstruction"},
+          {"attr": ["?inst", "opcode"], "eq": "select"}
+        ]
+      },
+      "effect": [
+        {"replace_value": {"old": "?old", "new": "?x"}},
+        {"delete": "?inst"}
+      ]
+    },
+
+    {
+      "kind": "transformation",
+      "name": "constfold_sdiv",
+      "doc": "sdiv c1, c2 → c1 / c2 (truncated toward zero). UB-PRESERVING: the where-clause REJECTS divisor == 0. LLVM's `sdiv` is undefined when the divisor is 0, so a folding pass that produced any value (including 0) for that case would replace defined-but-trapping behaviour with a concrete value, changing program semantics. We refuse to fire — the trap stays in the runtime where it belongs.",
+      "match": [
+        ["?inst", "uses_op0", "?v1"],
+        ["?inst", "uses_op1", "?v2"],
+        ["?inst", "produces", "?old"]
+      ],
+      "where": {
+        "all": [
+          {"type_of": "?inst", "is": "LLVMInstruction"},
+          {"attr": ["?inst", "opcode"], "eq": "sdiv"},
+          {"type_of": "?v1", "is": "LLVMConstant"},
+          {"type_of": "?v2", "is": "LLVMConstant"},
+          {"not": {"attr": ["?v2", "value"], "eq": 0}}
+        ]
+      },
+      "effect": [
+        {"add_node": {
+          "var": "?new_const",
+          "type": "LLVMConstant",
+          "attrs": {
+            "value": {"idiv": [
+              {"attr": ["?v1", "value"]},
+              {"attr": ["?v2", "value"]}
+            ]},
+            "type": {"attr": ["?v1", "type"]}
+          }
+        }},
+        {"replace_value": {"old": "?old", "new": "?new_const"}},
+        {"delete": "?inst"}
+      ]
+    },
+
+    {
+      "kind": "transformation",
+      "name": "constfold_srem",
+      "doc": "srem c1, c2 → c1 % c2 (sign follows dividend). UB-PRESERVING: same divisor-zero gate as sdiv.",
+      "match": [
+        ["?inst", "uses_op0", "?v1"],
+        ["?inst", "uses_op1", "?v2"],
+        ["?inst", "produces", "?old"]
+      ],
+      "where": {
+        "all": [
+          {"type_of": "?inst", "is": "LLVMInstruction"},
+          {"attr": ["?inst", "opcode"], "eq": "srem"},
+          {"type_of": "?v1", "is": "LLVMConstant"},
+          {"type_of": "?v2", "is": "LLVMConstant"},
+          {"not": {"attr": ["?v2", "value"], "eq": 0}}
+        ]
+      },
+      "effect": [
+        {"add_node": {
+          "var": "?new_const",
+          "type": "LLVMConstant",
+          "attrs": {
+            "value": {"irem": [
+              {"attr": ["?v1", "value"]},
+              {"attr": ["?v2", "value"]}
+            ]},
+            "type": {"attr": ["?v1", "type"]}
+          }
+        }},
+        {"replace_value": {"old": "?old", "new": "?new_const"}},
+        {"delete": "?inst"}
+      ]
+    },
+
+    {
+      "kind": "transformation",
+      "name": "identity_sdiv_one_right",
+      "doc": "sdiv X, 1 → X. Dividing by 1 is the identity.",
+      "match": [
+        ["?inst", "uses_op0", "?x"],
+        ["?inst", "uses_op1", "?v2"],
+        ["?inst", "produces", "?old"]
+      ],
+      "where": {
+        "all": [
+          {"type_of": "?inst", "is": "LLVMInstruction"},
+          {"attr": ["?inst", "opcode"], "eq": "sdiv"},
+          {"type_of": "?v2", "is": "LLVMConstant"},
+          {"attr": ["?v2", "value"], "eq": 1}
+        ]
+      },
+      "effect": [
+        {"replace_value": {"old": "?old", "new": "?x"}},
+        {"delete": "?inst"}
+      ]
+    },
+
+    {
+      "kind": "transformation",
+      "name": "dce_sdiv",
+      "doc": "Pure sdiv with no uses → delete. NOTE: even though sdiv can trap (div-by-zero is UB), the LLVM model considers an unobserved trap unobservable — if no instruction reads the result, the trap can be silently removed too. (Real LLVM is more conservative here in some modes; ours follows the IR's nominal semantics.)",
+      "match": [
+        ["?inst", "uses_op0", "?op0"],
+        ["?inst", "uses_op1", "?op1"],
+        ["?inst", "produces", "?value"]
+      ],
+      "where": {
+        "all": [
+          {"type_of": "?inst", "is": "LLVMInstruction"},
+          {"attr": ["?inst", "opcode"], "eq": "sdiv"},
+          {"count_in": ["?value", "uses_op0"], "eq": 0},
+          {"count_in": ["?value", "uses_op1"], "eq": 0}
+        ]
+      },
+      "effect": [
+        {"delete": "?inst"}
+      ]
+    },
+
+    {
+      "kind": "transformation",
+      "name": "dce_srem",
+      "doc": "Pure srem with no uses → delete.",
+      "match": [
+        ["?inst", "uses_op0", "?op0"],
+        ["?inst", "uses_op1", "?op1"],
+        ["?inst", "produces", "?value"]
+      ],
+      "where": {
+        "all": [
+          {"type_of": "?inst", "is": "LLVMInstruction"},
+          {"attr": ["?inst", "opcode"], "eq": "srem"},
+          {"count_in": ["?value", "uses_op0"], "eq": 0},
+          {"count_in": ["?value", "uses_op1"], "eq": 0}
+        ]
+      },
+      "effect": [
+        {"delete": "?inst"}
+      ]
+    },
+
+    {
+      "kind": "transformation",
+      "name": "fold_br_cond_true",
+      "doc": "br_cond with statically-true cond → unconditional br to the true target. Eliminates the cond operand and the false target — the false branch becomes unreachable, set up for subsequent dead-block elimination.",
+      "match": [
+        ["?inst", "uses_op0", "?cond"],
+        ["?inst", "uses_op1", "?t_bb"],
+        ["?inst", "uses_op2", "?f_bb"]
+      ],
+      "where": {
+        "all": [
+          {"type_of": "?inst", "is": "LLVMInstruction"},
+          {"attr": ["?inst", "opcode"], "eq": "br_cond"},
+          {"type_of": "?cond", "is": "LLVMConstant"},
+          {"attr": ["?cond", "value"], "eq": 1}
+        ]
+      },
+      "effect": [
+        {"set_attr": ["?inst", "opcode", "br"]},
+        {"del_edge": ["?inst", "uses_op0", "?cond"]},
+        {"del_edge": ["?inst", "uses_op1", "?t_bb"]},
+        {"del_edge": ["?inst", "uses_op2", "?f_bb"]},
+        {"add_edge": ["?inst", "uses_op0", "?t_bb"]}
+      ]
+    },
+
+    {
+      "kind": "transformation",
+      "name": "fold_br_cond_false",
+      "doc": "br_cond with statically-false cond → unconditional br to the false target.",
+      "match": [
+        ["?inst", "uses_op0", "?cond"],
+        ["?inst", "uses_op1", "?t_bb"],
+        ["?inst", "uses_op2", "?f_bb"]
+      ],
+      "where": {
+        "all": [
+          {"type_of": "?inst", "is": "LLVMInstruction"},
+          {"attr": ["?inst", "opcode"], "eq": "br_cond"},
+          {"type_of": "?cond", "is": "LLVMConstant"},
+          {"attr": ["?cond", "value"], "eq": 0}
+        ]
+      },
+      "effect": [
+        {"set_attr": ["?inst", "opcode", "br"]},
+        {"del_edge": ["?inst", "uses_op0", "?cond"]},
+        {"del_edge": ["?inst", "uses_op1", "?t_bb"]},
+        {"del_edge": ["?inst", "uses_op2", "?f_bb"]},
+        {"add_edge": ["?inst", "uses_op0", "?f_bb"]}
+      ]
+    },
+
+    {
+      "kind": "transformation",
+      "name": "eliminate_unreachable_bb",
+      "doc": "A basic block with no incoming branch references (not even from an unconditional br or a br_cond's true/false target edge) is unreachable. Delete it. The entry block — marked is_entry=true at parse time — is exempt: its reachability is the function's entry-point contract, not encoded by an edge.",
+      "match": [
+        ["?bb", "contains_inst", "?_any_inst"]
+      ],
+      "where": {
+        "all": [
+          {"type_of": "?bb", "is": "LLVMBasicBlock"},
+          {"attr": ["?bb", "is_entry"], "eq": false},
+          {"count_in": ["?bb", "uses_op0"], "eq": 0},
+          {"count_in": ["?bb", "uses_op1"], "eq": 0},
+          {"count_in": ["?bb", "uses_op2"], "eq": 0}
+        ]
+      },
+      "effect": [
+        {"delete": "?bb"}
+      ]
+    }
+  ]
+}

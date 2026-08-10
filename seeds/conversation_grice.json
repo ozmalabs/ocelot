@@ -1,0 +1,72 @@
+{
+  "id": "conversation_grice",
+  "version": "1.0.0",
+  "depends_on": [],
+  "description": "ONE consuming rule for the Gricean maxim vocabulary seeds/conversation.json has carried since the intent seed with zero readers: the maxim of QUANTITY ('do not make your contribution more informative than is required'). When a routed answer_topic Goal's HeldAnswer topic is a concept the CURRENT addressee (agent -addressee-> ad, task 1's told-status write) already holds in believed_concepts -- the agent already told THIS interlocutor this -- AND the triggering message carries no elaboration/continuation cue (the SAME held cue Concepts conversation_elaborate.json's serve_next_detail_chunk reads: more/elaborate/continue/further/else/expand -- an explicit 'tell me more' is a genuine re-ask, never a repeat), reply_topic_repeat_known fires INSTEAD of the plain reply_topic_from_held_answer: it marks the Goal repeats_known=1.0 (the datum) and mints the SAME HeldAnswer text prefixed 'As I mentioned, ' rather than repeating it flat. A FOURTH guard (course correction 2026-07-11, 'realistically, some humans barely have theory of mind'): the addressee's tom_capacity (domains.interlocutor_model.effective_tom_capacity, shape-prior-estimable, written per-turn by world_adapter._shadow_read_turn) must NOT be below 0.4 -- a low-ToM party's literal repeat is licensed as a GENUINE re-ask (falls through to the plain answer, unprefixed) rather than read as 'the prior answer was inadequate', since a low-ToM party is less likely to be tracking what it was already told. Missing tom_capacity (shadow_read off, or before the first shadow-read turn) fails OPEN (Lt against a missing attr is not true, so Not(Lt(...)) holds) -- the ORIGINAL three-guard behavior, unaffected. Installed BEFORE conversation_topic_reply so its set_attr m.topic_replied=1.0 is visible to reply_topic_from_held_answer's guard within the SAME run_rules pass -- exactly the topic_search*-before-conversation_topic_reply precedent world_adapter._ensure_comprehension_seeds documents. Two install paths both land this order: (a) a minimal/lazy boot uses _ensure_comprehension_seeds' explicit tuple order (this seed listed before conversation_topic_reply); (b) a FULL boot (boot_all.load_all_seeds) topologically installs seeds alphabetically-by-file-glob with no forcing dependency edge -- deliberately carries NO depends_on here (a depends_on:[conversation_topic_reply] edge would force the topological DFS to install conversation_topic_reply FIRST, inverting the needed order; verified live -- this is not a hypothetical), so 'conversation_grice' sorts before 'conversation_topic_reply' alphabetically, keeping it first. A turn this rule does NOT cover (no addressee yet, concept not yet told, or an elaboration cue present) falls through to the unchanged reply_topic_from_held_answer/reply_topic_unresolved pair -- byte-identical to today. This is the SAFE, minimal shipment: the datum (repeats_known) plus a prefix render, not a rewrite of the reply precedence ladder. A second, unrelated rule (wanted_by_answer_topic_from_addressee) closes a task-2 gap: answer_topic Goals are minted by conversation_topic_route.json's OWN rule (route_question_to_topic), not by any of the three Python mint sites domains.interlocutor_model.wanted_by is called from -- so a rule-minted Goal never got a requester edge. This is PURELY ADDITIVE enrichment (never blocks/changes the original route rule, fires in a later run_rules fixpoint round once both the Goal and the addressee edge exist, guarded so it never double-writes) -- the SAME task-2 provenance fact, for the ONE Goal kind Python doesn't mint directly.",
+  "nodes": [],
+  "edges": [],
+  "productions": [],
+  "rules": [
+    {
+      "name": "reply_topic_repeat_known",
+      "match": [
+        ["agent", "has_goal", "g"],
+        ["g", "comprehends", "m"],
+        ["agent", "received", "m"],
+        ["agent", "holds_answer", "ha"],
+        ["agent", "addressee", "ad"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "kind"}, "b": {"type": "Lit", "value": "answer_topic"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "ha"}, "key": "topic"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "concept"}},
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "topic_replied"}, "b": {"type": "Lit", "value": 1.0}}},
+          {"type": "In", "member": {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "concept"},
+           "container": {"type": "Attr", "node": {"type": "Var", "name": "ad"}, "key": "believed_concepts"}},
+          {"type": "Not", "arg": {"type": "Exists",
+            "source": {"type": "Neighbours", "node": {"type": "Var", "name": "m"}, "edge_type": "has_mention"},
+            "var_name": "mn",
+            "predicate": {"type": "In", "member": {"type": "Attr", "node": {"type": "Var", "name": "mn"}, "key": "text"},
+              "container": {"type": "Lit", "value": ["more", "elaborate", "continue", "further", "else", "expand"]}}}},
+          {"type": "Not", "arg": {"type": "Lt",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "ad"}, "key": "tom_capacity"},
+            "b": {"type": "Lit", "value": 0.4}}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "m", "topic_replied", 1.0],
+        ["set_attr", "g", "outcome", "resolved"],
+        ["set_attr", "g", "repeats_known", 1.0],
+        ["add_node", "reply", "Message", {
+          "from": "agent",
+          "text": {"__term__": {"type": "StringConcat", "parts": [
+            {"type": "Lit", "value": "As I mentioned, "},
+            {"type": "Attr", "node": {"type": "Var", "name": "ha"}, "key": "text"}
+          ]}}
+        }],
+        ["add_edge", "reply", "responds_to", "m"],
+        ["add_edge", "agent", "sent", "reply"]
+      ]
+    },
+    {
+      "name": "wanted_by_answer_topic_from_addressee",
+      "match": [
+        ["agent", "has_goal", "g"],
+        ["agent", "addressee", "ad"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "kind"}, "b": {"type": "Lit", "value": "answer_topic"}},
+          {"type": "Not", "arg": {"type": "Exists",
+            "source": {"type": "Neighbours", "node": {"type": "Var", "name": "g"}, "edge_type": "wanted_by"},
+            "var_name": "w", "predicate": {"type": "Lit", "value": true}}}
+        ]
+      },
+      "effects": [
+        ["add_edge", "g", "wanted_by", "ad"]
+      ]
+    }
+  ]
+}

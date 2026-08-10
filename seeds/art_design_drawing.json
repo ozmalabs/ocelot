@@ -1,0 +1,835 @@
+{
+ "id": "art_design_drawing",
+ "version": "0.1.0",
+ "depends_on": [
+  "compiler_theory",
+  "philosophy"
+ ],
+ "description": "Art + design + drawing as graph-resident theory. Visual + creative practice across drawing fundamentals (line, value, perspective), color theory (wheel, harmony, temperature), composition (thirds, golden ratio, focal points), anatomy + figure drawing, visual perception (gestalt, illusions), traditional + digital media, 3D + animation, typography, graphic design, UX/UI (Don Norman, heuristics, accessibility), design thinking, art history + movements, illustration styles, cinematography, photography (exposure triangle), industrial design, architecture, generative + procedural art, AI-assisted art. The visual/creative knowledge base for an embodied agent that produces or perceives images, designs, or creative work.",
+ "category_inheritance": "genlMt → compiler_theory + philosophy. Aesthetic judgements map to philosophy's aesthetics expansion; design constraints map to compiler_theory cost equivalence (functional satisfies constraints); style is denotational equivalence (different forms expressing same identity).",
+ "concepts": [
+  {
+   "name": "line_quality",
+   "definition": "Lines vary in weight, speed, character. Confident vs hesitant; thick vs thin; smooth vs broken.",
+   "why": "Foundation of drawing. Line quality conveys form, emotion, energy. Master draftsmen prized for line.",
+   "category": "drawing_fundamentals"
+  },
+  {
+   "name": "shape_form",
+   "definition": "Shape: 2D (circle, square). Form: 3D (sphere, cube). Drawing converts forms to shapes via projection.",
+   "why": "Foundation. All drawing simplifies forms to basic shapes. See spheres in faces, cylinders in arms.",
+   "category": "drawing_fundamentals"
+  },
+  {
+   "name": "value_tonal_range",
+   "definition": "Lightness/darkness. Black through white through grey. 9-step value scale common.",
+   "why": "Value carries form + depth more than color. B&W photos work; many master drawings monochrome. Foundation.",
+   "category": "drawing_fundamentals"
+  },
+  {
+   "name": "texture_visual_actual",
+   "definition": "Visual texture: implied surface. Actual texture: physical (relief, paint thickness).",
+   "why": "Adds richness + tactility. Hatching, stippling create implied texture. Material expression.",
+   "category": "drawing_fundamentals"
+  },
+  {
+   "name": "linear_perspective",
+   "definition": "Parallel lines converge at vanishing points. 1, 2, 3-point perspective.",
+   "why": "Foundation of realistic spatial depiction. Renaissance discovery (Brunelleschi). Sets up illusion of 3D space.",
+   "category": "drawing_fundamentals"
+  },
+  {
+   "name": "atmospheric_perspective",
+   "definition": "Distant objects lower contrast, cooler, hazier. Air interferes with sight.",
+   "why": "Adds depth without linear perspective. Landscape painting essential. Foreshortened mountains lighter, bluer.",
+   "category": "drawing_fundamentals"
+  },
+  {
+   "name": "foreshortening",
+   "definition": "Objects pointed toward viewer appear compressed. Arm extended toward camera appears short.",
+   "why": "Critical for figure drawing. Common mistake to draw 'what we know' instead of 'what we see'. Mastery distinguishes.",
+   "category": "drawing_fundamentals"
+  },
+  {
+   "name": "gesture_drawing",
+   "definition": "Quick (30s-2min) drawings capturing essence of pose, action, mood. Not detail.",
+   "why": "Foundation of figure drawing practice. Builds visual library. Develops eye + hand. Standard art education.",
+   "category": "drawing_fundamentals"
+  },
+  {
+   "name": "contour_drawing",
+   "definition": "Continuous outline. Blind contour: no looking at paper. Develops observation.",
+   "why": "Foundation exercise. Forces detailed seeing. Builds eye-hand connection.",
+   "category": "drawing_fundamentals"
+  },
+  {
+   "name": "color_wheel",
+   "definition": "Primary (R/Y/B), secondary (O/G/V), tertiary. Arranged circularly.",
+   "why": "Foundation of color theory. Relationships visualized: complementary across, analogous adjacent.",
+   "category": "color_theory"
+  },
+  {
+   "name": "complementary_colors",
+   "definition": "Opposite on color wheel. R-G, B-O, Y-V. Maximum visual contrast.",
+   "why": "Foundational for vibrant compositions. Mix to gray. Used for shadow temperature shifts.",
+   "category": "color_theory"
+  },
+  {
+   "name": "analogous_colors",
+   "definition": "Adjacent on color wheel. R-O-Y. Harmonious.",
+   "why": "Restful palettes. Found in nature: autumn leaves analogous. Standard for unified feel.",
+   "category": "color_theory"
+  },
+  {
+   "name": "color_temperature",
+   "definition": "Warm (R/O/Y) vs cool (B/G/V). Subjective but consistent.",
+   "why": "Foundation of color use. Warm advances; cool recedes. Light + shadow have temperature shifts.",
+   "category": "color_theory"
+  },
+  {
+   "name": "saturation_chroma",
+   "definition": "Intensity of color. Saturated vs dull/grey. Same hue different saturations.",
+   "why": "Often more important than hue. Subdued palettes use desaturated colors. Foundation.",
+   "category": "color_theory"
+  },
+  {
+   "name": "color_value_relationship",
+   "definition": "Each color has inherent value. Yellow = light; violet = dark.",
+   "why": "Critical for composition. Two equally bright colors not equally light. Squint to see value.",
+   "category": "color_theory"
+  },
+  {
+   "name": "subtractive_additive_color",
+   "definition": "Subtractive (CMY paint): mix to black. Additive (RGB light): mix to white.",
+   "why": "Different rules. Painters: subtractive. Screens: additive. Confusing across media.",
+   "category": "color_theory"
+  },
+  {
+   "name": "color_psychology",
+   "definition": "Colors evoke emotion + association. Red = passion/danger; blue = calm/sad; green = growth.",
+   "why": "Foundation of branding + emotional design. Cultural variations real. Not universal but strong.",
+   "category": "color_theory"
+  },
+  {
+   "name": "rule_of_thirds",
+   "definition": "Divide canvas in thirds horizontally + vertically. Place subjects at intersections.",
+   "why": "Simple compositional rule. Avoids dead-center stasis. Standard photo + painting starting point.",
+   "category": "composition"
+  },
+  {
+   "name": "golden_ratio_composition",
+   "definition": "φ ≈ 1.618. Spiral + rectangles often pleasing. Found in nature + classical art.",
+   "why": "Mathematical aesthetics. Da Vinci, Le Corbusier used. Cost: some claims overstated. Tool, not law.",
+   "category": "composition"
+  },
+  {
+   "name": "focal_point",
+   "definition": "Element to which eye is drawn. Contrast, isolation, leading lines create.",
+   "why": "Foundation of composition. Every image needs (usually) one. Multiple focal points = competition.",
+   "category": "composition"
+  },
+  {
+   "name": "leading_lines",
+   "definition": "Lines in image (real or implied) guide eye to focal point.",
+   "why": "Direct attention. Roads, fences, gazes serve. Universal compositional tool.",
+   "category": "composition"
+  },
+  {
+   "name": "balance_symmetry",
+   "definition": "Symmetric: mirror balance. Asymmetric: unequal but balanced (weighted).",
+   "why": "Symmetric formal + static. Asymmetric dynamic + organic. Choice sets mood.",
+   "category": "composition"
+  },
+  {
+   "name": "negative_space",
+   "definition": "Empty space around + between subjects. Active part of design.",
+   "why": "As important as positive forms. FedEx logo arrow in negative space. Foundation modern design.",
+   "category": "composition"
+  },
+  {
+   "name": "rhythm_repetition",
+   "definition": "Repeated elements create rhythm. Visual music.",
+   "why": "Pattern, sequence, variation. Foundation of design + architecture (columns). Hypnotic at extremes.",
+   "category": "composition"
+  },
+  {
+   "name": "human_proportions",
+   "definition": "Adult body ~7-8 head heights. Wingspan = height. Hands = chin to forehead.",
+   "why": "Foundation of figure drawing. Idealized canon ~8 heads. Realistic ~7. Children different.",
+   "category": "anatomy"
+  },
+  {
+   "name": "skeletal_landmarks",
+   "definition": "Bones visible at surface: clavicle, sternum, iliac crest, knees, elbows, ankles.",
+   "why": "Foundation of figure drawing. Bones don't change with muscle; reliable structure. Always start with skeleton.",
+   "category": "anatomy"
+  },
+  {
+   "name": "muscle_groups",
+   "definition": "Visible from outside: deltoids, biceps, pecs, abs, quads, gluteus, gastrocnemius.",
+   "why": "Above skeleton. Bulk varies. Action defines surface. Anatomy for artists vs medical.",
+   "category": "anatomy"
+  },
+  {
+   "name": "facial_proportions",
+   "definition": "Eyes at vertical center. Mouth 1/3 between nose + chin. Eye width = space between eyes.",
+   "why": "Foundation of portrait. Standard proportions; individual variations create likeness.",
+   "category": "anatomy"
+  },
+  {
+   "name": "hands_feet",
+   "definition": "Hand length ≈ face height. Foot length ≈ head height. Difficult to draw.",
+   "why": "Hardest body parts. Practice essential. Mass first, fingers/toes last.",
+   "category": "anatomy"
+  },
+  {
+   "name": "gestalt_principles",
+   "definition": "Proximity, similarity, closure, continuity, figure/ground. Visual grouping rules.",
+   "why": "Foundation of visual perception + design. Why we see groups of dots as figures. Wertheimer + others.",
+   "category": "visual_perception"
+  },
+  {
+   "name": "figure_ground",
+   "definition": "Object vs background distinction. Reversal: Rubin vase.",
+   "why": "Foundation of perception. Designers exploit reversal. Visual cognition: separating object from context.",
+   "category": "visual_perception"
+  },
+  {
+   "name": "optical_illusions",
+   "definition": "Perceptual phenomena where seeing differs from physical reality.",
+   "why": "Reveal visual processing. Used in art (Escher) + design (impossible objects). Standard psych examples.",
+   "category": "visual_perception"
+  },
+  {
+   "name": "afterimage_color",
+   "definition": "Staring at red then white surface: green afterimage. Complement.",
+   "why": "Cone fatigue. Explains complementary contrast. Painters use to find complement intuitively.",
+   "category": "visual_perception"
+  },
+  {
+   "name": "pencil_graphite",
+   "definition": "9H (hardest, lightest) to 9B (softest, darkest). HB middle.",
+   "why": "Foundation drawing medium. Build values with multiple grades. Cheap, accessible, reversible.",
+   "category": "traditional_media"
+  },
+  {
+   "name": "charcoal",
+   "definition": "Compressed or vine. Dark + dusty. Erases easily; needs fixative.",
+   "why": "Expressive, bold. Common in figure drawing. Quick, large gestures.",
+   "category": "traditional_media"
+  },
+  {
+   "name": "ink_drawing",
+   "definition": "Pen + ink, brush + ink. Permanent. Pure black; varied techniques.",
+   "why": "Crosshatching, stippling for value. Comics + illustration foundation. No undo demands precision.",
+   "category": "traditional_media"
+  },
+  {
+   "name": "watercolor",
+   "definition": "Pigment + water. Transparent. Wet-on-wet vs wet-on-dry. Layering ('glazing').",
+   "why": "Spontaneous, luminous. Difficult: can't fix mistakes (in traditional). Practice through happy accidents.",
+   "category": "traditional_media"
+  },
+  {
+   "name": "oil_painting",
+   "definition": "Pigment in oil. Slow-dry, blendable. Fat over lean rule.",
+   "why": "Workhorse traditional medium. Renaissance to now. Blend wet; layer over weeks.",
+   "category": "traditional_media"
+  },
+  {
+   "name": "acrylic_painting",
+   "definition": "Pigment in polymer. Fast-dry, water-thinnable. Hardy after dry.",
+   "why": "Modern alternative to oil. Quick. Can mimic watercolor (thin) or impasto (thick).",
+   "category": "traditional_media"
+  },
+  {
+   "name": "raster_image",
+   "definition": "Grid of pixels. Photoshop, GIMP. Resolution-dependent; scaling pixelates.",
+   "why": "Photography, painting. Foundation of digital images. PSD, PNG, JPG.",
+   "category": "digital_art"
+  },
+  {
+   "name": "vector_graphics",
+   "definition": "Mathematical curves + shapes. Illustrator, Inkscape. Scale infinitely.",
+   "why": "Logos, icons, typography. SVG, AI, EPS. Resolution-independent.",
+   "category": "digital_art"
+  },
+  {
+   "name": "layers_blend_modes",
+   "definition": "Stack of images. Blend modes: multiply, screen, overlay, etc. Non-destructive.",
+   "why": "Foundation digital painting. Allows iteration. Adjustment layers preserve original.",
+   "category": "digital_art"
+  },
+  {
+   "name": "digital_brushes",
+   "definition": "Stamps simulating brush, pencil, splatter, texture. Procedural or sampled.",
+   "why": "Modern digital painting. Procreate, Photoshop, Krita. Custom brushes create signature looks.",
+   "category": "digital_art"
+  },
+  {
+   "name": "graphics_tablet",
+   "definition": "Pressure-sensitive surface. Wacom, iPad + Pencil. Replaces mouse for natural drawing.",
+   "why": "Foundation of digital art workflow. Pressure varies line. Tilt for shading. Standard.",
+   "category": "digital_art"
+  },
+  {
+   "name": "3D_modeling_polygon",
+   "definition": "Vertices, edges, faces. Box modeling builds from primitives.",
+   "why": "Foundation of 3D. Blender, Maya, 3ds Max. Topology matters for animation. Quads preferred over tris.",
+   "category": "3D"
+  },
+  {
+   "name": "subdivision_surfaces",
+   "definition": "Smooth subdivided polygon mesh. Catmull-Clark algorithm.",
+   "why": "Foundation modern 3D modeling. Coarse mesh + subdiv = smooth surface. Pixar invented.",
+   "category": "3D"
+  },
+  {
+   "name": "sculpting_3D",
+   "definition": "Push/pull on high-poly mesh. ZBrush, Blender sculpt mode.",
+   "why": "Organic forms (characters, creatures). Like clay. Combined with retopology for animation.",
+   "category": "3D"
+  },
+  {
+   "name": "UV_mapping",
+   "definition": "Unwrap 3D surface to 2D. Determines how texture wraps.",
+   "why": "Texturing foundation. UV islands minimise stretching. Tedious but essential for textured 3D.",
+   "category": "3D"
+  },
+  {
+   "name": "rigging_skeleton",
+   "definition": "Armature + weights. Bones drive mesh deformation.",
+   "why": "Foundation of character animation. Weights painted per vertex. Inverse kinematics standard.",
+   "category": "3D"
+  },
+  {
+   "name": "PBR_materials",
+   "definition": "Physically-Based Rendering. Albedo, roughness, metallic, normal maps.",
+   "why": "Modern standard. Realistic light behavior. Same material under different lighting consistent.",
+   "category": "3D"
+  },
+  {
+   "name": "type_anatomy",
+   "definition": "Letterform parts: stem, bowl, counter, serif, terminal, ascender, descender.",
+   "why": "Foundation of typography. Vocabulary for discussing type. Designers must know.",
+   "category": "typography"
+  },
+  {
+   "name": "serif_sans_serif",
+   "definition": "Serif: small projections (Times, Garamond). Sans: without (Helvetica, Arial).",
+   "why": "Major typographic distinction. Serif traditional + body text; sans modern + headlines.",
+   "category": "typography"
+  },
+  {
+   "name": "kerning_tracking_leading",
+   "definition": "Kerning: space between specific pairs. Tracking: overall. Leading: line spacing.",
+   "why": "Foundation typesetting. Poor kerning amateur. Good typography invisible.",
+   "category": "typography"
+  },
+  {
+   "name": "typographic_hierarchy",
+   "definition": "Size, weight, color guide reader's eye. H1 > H2 > body text.",
+   "why": "Foundation of readable design. Without: wall of text, lost reader. With: scannable, navigable.",
+   "category": "typography"
+  },
+  {
+   "name": "type_classification",
+   "definition": "Old Style (Garamond), Transitional (Baskerville), Modern (Bodoni), Slab Serif (Rockwell), Sans-Serif (Helvetica), Script, Display.",
+   "why": "Vocabulary for choosing type. Historical lineage. Standard typography knowledge.",
+   "category": "typography"
+  },
+  {
+   "name": "grid_systems",
+   "definition": "Underlying structure of columns + rows. Modular grids, baseline grids.",
+   "why": "Foundation of layout. Swiss design movement. Bootstrap + modern web grids descendant.",
+   "category": "graphic_design"
+  },
+  {
+   "name": "brand_identity",
+   "definition": "Logo + colors + type + voice + imagery. Coherent identity system.",
+   "why": "Foundation of branding. Style guides ensure consistency. Brand book documents.",
+   "category": "graphic_design"
+  },
+  {
+   "name": "design_principles",
+   "definition": "Contrast, repetition, alignment, proximity (CRAP). Robin Williams basics.",
+   "why": "Foundation of graphic design. Easy to remember, hard to master. Every layout uses.",
+   "category": "graphic_design"
+  },
+  {
+   "name": "affordances_Norman",
+   "definition": "Properties suggesting use. Knob suggests turning; button suggests pressing.",
+   "why": "Foundation of UX. Don Norman's design of everyday things. Misaffordances = design failure.",
+   "category": "UX_UI"
+  },
+  {
+   "name": "Norman_seven_actions",
+   "definition": "Goal → intention → action plan → execution → perception → interpretation → evaluation.",
+   "why": "Standard model of interaction. Gulf of execution + gulf of evaluation. Foundation UX research.",
+   "category": "UX_UI"
+  },
+  {
+   "name": "Nielsen_heuristics",
+   "definition": "10 usability heuristics. Visibility of system status, match real world, user control, consistency, etc.",
+   "why": "Standard usability evaluation. Jakob Nielsen. Foundation of heuristic evaluation.",
+   "category": "UX_UI"
+  },
+  {
+   "name": "WCAG_accessibility",
+   "definition": "Web Content Accessibility Guidelines. A, AA, AAA conformance levels. Perceivable, Operable, Understandable, Robust.",
+   "why": "Foundation of inclusive design. Color contrast, alt text, keyboard navigation, ARIA. Legal requirement many jurisdictions.",
+   "category": "UX_UI"
+  },
+  {
+   "name": "design_thinking",
+   "definition": "Empathize, Define, Ideate, Prototype, Test. IDEO + Stanford d.school.",
+   "why": "Modern design process. Iterative, user-centered. Beyond design: applied to many fields.",
+   "category": "UX_UI"
+  },
+  {
+   "name": "Fitts_law",
+   "definition": "Time to acquire target ∝ distance / target size. log relationship.",
+   "why": "Foundation HCI. Target size matters more than distance. Big buttons at corners (infinite size).",
+   "category": "UX_UI"
+  },
+  {
+   "name": "Hicks_law",
+   "definition": "Decision time ∝ log(number of options).",
+   "why": "More options = slower decision. Limit menu items. Foundation of menu design.",
+   "category": "UX_UI"
+  },
+  {
+   "name": "Renaissance_perspective",
+   "definition": "~1400-1600. Linear perspective, anatomical accuracy, classical themes.",
+   "why": "Brunelleschi, Alberti, da Vinci, Michelangelo, Raphael. Foundation of Western art. Rediscovery of classical.",
+   "category": "art_history"
+  },
+  {
+   "name": "Baroque",
+   "definition": "~1600-1750. Drama, motion, contrast (chiaroscuro). Caravaggio, Bernini, Rembrandt.",
+   "why": "Counter-Reformation art. Theatrical. Influence: Hollywood lighting from Caravaggio.",
+   "category": "art_history"
+  },
+  {
+   "name": "Impressionism",
+   "definition": "~1860-1890. Plein air. Loose brushwork. Light + color over detail. Monet, Renoir, Degas.",
+   "why": "Break from academic. Influence of photography + Japanese prints. Foundation of modern art.",
+   "category": "art_history"
+  },
+  {
+   "name": "Post_Impressionism",
+   "definition": "~1885-1905. Beyond Impressionism: structure (Cézanne), symbol (Gauguin), emotion (Van Gogh).",
+   "why": "Bridge to modernism. Each post-Impressionist took different direction.",
+   "category": "art_history"
+  },
+  {
+   "name": "Cubism",
+   "definition": "Picasso + Braque ~1907. Multiple viewpoints simultaneously. Analytical → Synthetic.",
+   "why": "Foundation of 20th c. modernism. Influenced design, architecture. Conceptual revolution.",
+   "category": "art_history"
+  },
+  {
+   "name": "Abstract_Expressionism",
+   "definition": "~1940s-50s. Pollock, Rothko, de Kooning. New York School. Action painting + color fields.",
+   "why": "American art movement. Foundation post-war art. Influence: minimalism, contemporary.",
+   "category": "art_history"
+  },
+  {
+   "name": "Pop_Art",
+   "definition": "~1950s-60s. Mass culture imagery. Warhol, Lichtenstein. Comics, ads, products.",
+   "why": "High vs low art collapse. Influence: contemporary art + commercial. Foundation postmodernism.",
+   "category": "art_history"
+  },
+  {
+   "name": "Bauhaus",
+   "definition": "1919-1933 German school. Form follows function. Klee, Kandinsky taught.",
+   "why": "Foundation of modern design. Influence on architecture, graphic design, product design. Modernist canon.",
+   "category": "art_history"
+  },
+  {
+   "name": "twelve_animation_principles",
+   "definition": "Disney's 12 principles: squash + stretch, anticipation, staging, follow-through, etc.",
+   "why": "Foundation of animation. Frank + Ollie 'Illusion of Life'. Modern CG still uses.",
+   "category": "animation"
+  },
+  {
+   "name": "key_frames_inbetweens",
+   "definition": "Animator draws extremes (keys). Assistants fill in-between frames.",
+   "why": "Foundation of 2D animation production. Modern: 'tweening' automated in software.",
+   "category": "animation"
+  },
+  {
+   "name": "timing_spacing",
+   "definition": "Timing: how many frames. Spacing: how far between drawings. Mass + force expressed.",
+   "why": "Foundation of believable motion. Slow-in, slow-out from physics intuition.",
+   "category": "animation"
+  },
+  {
+   "name": "cinematography_basics",
+   "definition": "Shot types (wide, medium, close-up). Camera moves (pan, tilt, dolly). Lens choice.",
+   "why": "Visual language of film. Established conventions. Director's vocabulary.",
+   "category": "cinematography"
+  },
+  {
+   "name": "lighting_three_point",
+   "definition": "Key (main), fill (shadow softening), back (separation). Standard portrait lighting.",
+   "why": "Foundation of studio lighting. Photography + cinematography. Variations for mood.",
+   "category": "cinematography"
+  },
+  {
+   "name": "color_grading_film",
+   "definition": "Post-production color adjustment. Lift/gamma/gain, color wheels.",
+   "why": "Standard modern film look. Teal + orange popular. DaVinci Resolve standard tool.",
+   "category": "cinematography"
+  },
+  {
+   "name": "exposure_triangle",
+   "definition": "Aperture (f-stop), shutter speed, ISO. Trade-offs.",
+   "why": "Foundation of photography. Aperture: depth of field. Shutter: motion. ISO: noise.",
+   "category": "photography"
+  },
+  {
+   "name": "depth_of_field",
+   "definition": "Range of acceptable focus. Wide aperture = shallow DOF. Narrow = deep.",
+   "why": "Foundation of photographic look. Portrait: shallow blur background. Landscape: deep all sharp.",
+   "category": "photography"
+  },
+  {
+   "name": "industrial_design_DFM",
+   "definition": "Already in engineering. Design for Manufacturing. Draft, parting lines, uniform walls.",
+   "why": "Foundation of product design. Beauty + manufacturability.",
+   "category": "industrial_design"
+  },
+  {
+   "name": "ergonomics_anthropometry",
+   "definition": "Human factors + body measurements. Tool design fits hand.",
+   "why": "Foundation of usable product design. Keyboards, controls, seats sized to bodies.",
+   "category": "industrial_design"
+  },
+  {
+   "name": "modernist_architecture",
+   "definition": "Le Corbusier, Mies, Wright, Gropius. Form follows function. Glass, steel, concrete.",
+   "why": "20th c. architecture. International Style. Influence still dominant.",
+   "category": "architecture"
+  },
+  {
+   "name": "vernacular_architecture",
+   "definition": "Folk architecture adapted to local climate, materials, culture. Adobe, longhouses, stilt houses.",
+   "why": "Wisdom from millennia. Modern: passive design draws from. Foundation sustainable architecture.",
+   "category": "architecture"
+  },
+  {
+   "name": "sustainable_design",
+   "definition": "Reduce environmental impact. Passive heating, daylight, local materials, longevity.",
+   "why": "Modern requirement. LEED, BREEAM certifications. Foundation of contemporary practice.",
+   "category": "architecture"
+  },
+  {
+   "name": "generative_art",
+   "definition": "Art created via algorithm. Casey Reas (Processing), Manfred Mohr.",
+   "why": "Long history (1960s+). Foundation: art as system. Influence on modern AI art.",
+   "category": "generative"
+  },
+  {
+   "name": "procedural_textures",
+   "definition": "Mathematical generation: Perlin noise, fractals, Voronoi. Vs hand-painted.",
+   "why": "Foundation of game + 3D textures. Infinite variation. Parametric control.",
+   "category": "generative"
+  },
+  {
+   "name": "AI_image_generation",
+   "definition": "DALL-E, Stable Diffusion, Midjourney. Diffusion models from text prompts.",
+   "why": "2022+ revolution. Foundation: latent diffusion. Replaces some illustration work. Ethical + IP debates.",
+   "category": "generative"
+  },
+  {
+   "name": "style_transfer",
+   "definition": "Apply style of one image to content of another. Neural style transfer + diffusion ControlNet.",
+   "why": "Foundation of stylization. Influence: filters, AI art tools. Gatys 2015.",
+   "category": "generative"
+  },
+  {
+   "name": "illustration_style_realistic",
+   "definition": "Photorealism, hyperrealism. Detailed observation. Norman Rockwell, James Gurney.",
+   "why": "One end of stylistic spectrum. Heavy on rendering. Cost: time. Foundation skill of editorial illustration.",
+   "category": "illustration"
+  },
+  {
+   "name": "illustration_style_stylised",
+   "definition": "Simplification, exaggeration. Specific look (e.g., Mike Mignola noir).",
+   "why": "Most illustration not photorealistic. Style is identity. Editorial, books, animation.",
+   "category": "illustration"
+  },
+  {
+   "name": "anime_manga_style",
+   "definition": "Japanese style. Large eyes, simplified noses, distinctive proportions. Strong conventions.",
+   "why": "Global cultural force. Multiple sub-styles. Foundation of much modern illustration. Substyles: shoujo, shonen, seinen.",
+   "category": "illustration"
+  },
+  {
+   "name": "flat_design",
+   "definition": "No gradients, shadows, textures. Simple shapes, bold colors.",
+   "why": "Modern UI standard (post-iOS 7). Cleaner, faster to render. Foundation of contemporary digital design.",
+   "category": "illustration"
+  },
+  {
+   "name": "isometric_design",
+   "definition": "Equal angles 30° from horizontal. No perspective. Used in games + diagrams.",
+   "why": "Modern infographic style. Foundation of certain game looks (Habbo, Monument Valley aesthetic).",
+   "category": "illustration"
+  }
+ ],
+ "rules": [
+  {
+   "name": "value_dominates_color_for_form",
+   "if": [
+    "form must be conveyed"
+   ],
+   "then": [
+    "value carries it more than color"
+   ],
+   "why": "B&W photos work. Many master drawings monochrome. Color enriches but value defines. Squint to see values.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "linear_perspective_creates_depth_illusion",
+   "if": [
+    "parallel lines converge to vanishing point"
+   ],
+   "then": [
+    "depth illusion created on 2D surface"
+   ],
+   "why": "Renaissance discovery. Mathematical basis. Without: medieval flat painting. With: depth + space. Foundation of representational art.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "complementary_creates_vibrant_neutral",
+   "if": [
+    "complementary colors placed next to each other"
+   ],
+   "then": [
+    "maximum visual vibrancy; mixed they neutralise"
+   ],
+   "why": "Red-green chromatic clash. Or: dull each other when mixed. Foundation of color usage. Painters exploit.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "gestalt_grouping_inevitable",
+   "if": [
+    "visual elements satisfy gestalt principles"
+   ],
+   "then": [
+    "viewer perceives them as group"
+   ],
+   "why": "Proximity → group; similarity → set. Pre-attentive. Designer can't avoid. Foundation of visual perception.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "focal_point_requires_contrast",
+   "if": [
+    "element to be focal point"
+   ],
+   "then": [
+    "it must contrast with surroundings (color, value, isolation)"
+   ],
+   "why": "Eye drawn to difference. No contrast = no focus. Multiple high-contrast = compete. Foundation of composition.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "good_typography_invisible",
+   "if": [
+    "typography is well-set"
+   ],
+   "then": [
+    "reader doesn't notice it"
+   ],
+   "why": "Bad typography distracts (Comic Sans on tombstones). Good: reads effortlessly. Beatrice Warde 'crystal goblet'. Standard maxim.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "affordances_should_match_use",
+   "if": [
+    "object has affordance suggesting use"
+   ],
+   "then": [
+    "that use should be intended"
+   ],
+   "why": "Don Norman doors infamous. Push when handle suggests pull = design failure. Foundation of usability.",
+   "soundness_category": "referential_transparency"
+  },
+  {
+   "name": "Fitts_law_makes_corners_targets",
+   "if": [
+    "UI has corners + edges"
+   ],
+   "then": [
+    "corner targets effectively infinite (can't overshoot)"
+   ],
+   "why": "Distance × log(1/size). Edge = infinite size in one direction. macOS menu bar exploits. Foundation of UI design.",
+   "soundness_category": "algebraic_law"
+  },
+  {
+   "name": "WCAG_compliance_legally_required",
+   "if": [
+    "public-facing application in many jurisdictions"
+   ],
+   "then": [
+    "WCAG compliance required by law"
+   ],
+   "why": "ADA in US, EAA in EU, etc. Beyond ethics: legal liability. AA most common standard. Foundation modern web design.",
+   "soundness_category": "referential_transparency"
+  },
+  {
+   "name": "design_thinking_iterative",
+   "if": [
+    "design thinking process applied"
+   ],
+   "then": [
+    "prototype + test happens many times before final"
+   ],
+   "why": "Linear waterfall fails. Iteration reveals what users actually need. IDEO + Stanford d.school. Standard process.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "twelve_principles_make_animation_alive",
+   "if": [
+    "animation lacks principles (squash/stretch, anticipation, etc.)"
+   ],
+   "then": [
+    "it appears stiff + unconvincing"
+   ],
+   "why": "Disney 1930s codified. Frank + Ollie. Foundation of modern animation. CG still applies. Universal.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "exposure_triangle_balanced_choices",
+   "if": [
+    "photographer chooses settings"
+   ],
+   "then": [
+    "aperture + shutter + ISO trade off"
+   ],
+   "why": "More light needed: bigger aperture (less DOF) or longer shutter (motion blur) or higher ISO (noise). Choose by intent.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "ergonomic_design_fits_human_variation",
+   "if": [
+    "product used by humans"
+   ],
+   "then": [
+    "dimensions should accommodate 5-95th percentile range"
+   ],
+   "why": "Average person doesn't exist (Todd Rose). Design for distribution. Standard anthropometric tables. Foundation of inclusive design.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "form_follows_function_modernist_ideal",
+   "if": [
+    "modernist architecture or design"
+   ],
+   "then": [
+    "form should derive from function"
+   ],
+   "why": "Sullivan, Bauhaus, Le Corbusier. Ornament eschewed. Critics: pure functionalism alienating. Still influential.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "AI_image_generation_disrupts_illustration",
+   "if": [
+    "DALL-E + Midjourney + SD widely available"
+   ],
+   "then": [
+    "commercial illustration practice transforms"
+   ],
+   "why": "2022+. Cheap + fast images. Style copying ethical + legal issues. Foundation of post-AI creative industries.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "style_is_identity",
+   "if": [
+    "illustrator has distinctive style"
+   ],
+   "then": [
+    "it's their brand + value"
+   ],
+   "why": "Photorealism easy to commodity (AI does it). Distinctive style is identity. Mignola, Mike Allred recognised instantly. Foundation career.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "color_grading_creates_mood",
+   "if": [
+    "film color graded specific way"
+   ],
+   "then": [
+    "emotional tone shifts"
+   ],
+   "why": "Warm = nostalgic, cold = clinical, desaturated = bleak. Modern blockbuster: teal + orange. Standard director's tool.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "three_point_lighting_standard_portrait",
+   "if": [
+    "studio portrait photography"
+   ],
+   "then": [
+    "three-point lighting is standard starting point"
+   ],
+   "why": "Key + fill + back. Variations from there. Foundation of cinematic + commercial photography. Standard education.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "subdivision_smooths_low_poly",
+   "if": [
+    "coarse polygon mesh + subdivision modifier"
+   ],
+   "then": [
+    "smooth high-poly surface result"
+   ],
+   "why": "Catmull-Clark algorithm. Pixar invention. Standard 3D modeling. Edit coarse cage; smooth result.",
+   "soundness_category": "algebraic_law"
+  },
+  {
+   "name": "PBR_consistent_across_lighting",
+   "if": [
+    "material defined with PBR maps"
+   ],
+   "then": [
+    "it looks consistent in any lighting"
+   ],
+   "why": "Physical accuracy. Same material under bright sun + indoor light = recognisably same. Foundation modern 3D rendering.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "negative_space_active_design_element",
+   "if": [
+    "composition uses negative space deliberately"
+   ],
+   "then": [
+    "it works as positive design element"
+   ],
+   "why": "FedEx logo arrow. Reading typography depends on counters. Foundation of modern design. Hard for beginners.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "hierarchy_makes_content_scannable",
+   "if": [
+    "text + visuals have clear hierarchy"
+   ],
+   "then": [
+    "readers can scan + navigate"
+   ],
+   "why": "Without: wall of undifferentiated content. With: H1 to H6, weight, color. Foundation of editorial + web design.",
+   "soundness_category": "extensional_equivalence"
+  }
+ ],
+ "exclusions": [],
+ "parent_mt": "visual_cognition",
+ "relations": [
+  {
+   "src": "art_design_drawing",
+   "edge": "genlMt",
+   "tgt": "compiler_theory"
+  }
+ ]
+}

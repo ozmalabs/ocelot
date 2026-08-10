@@ -1,0 +1,386 @@
+{
+ "id": "dissipation_inference",
+ "version": "1.0.0",
+ "self_load_only": true,
+ "depends_on": [],
+ "area": "field",
+ "description": "SHARED DISSIPATIVE RELAXATION == MAP INFERENCE (block 197000). ONE integer dynamics, two frames differing only by a relabel. A field of FieldCell{val,obs,par} on 4-connected `adj` edges settles toward the minimum of E(x)=lam*\u03a3(x-obs)^2 + \u03a3_edges(x-x_j)^2 by RED-BLACK EXACT integer coordinate descent: the single `batch` rule df_relax updates only cells with par==phase, each to its conditional integer argmin cand=IDiv(2*(lam*obs+\u03a3nbr val)+den, 2*den), den=lam+deg. Non-adjacent same-colour cells make one half-sweep exact block coordinate descent, so the integer energy is monotone non-increasing to a fixed point (PHYSICS: 2nd-law dissipation; the free energy decreases, entropy is produced). RELABELED (val->MAP estimate, obs->noisy observation y, lam->likelihood precision, E->neg-log-posterior) the SAME run is MAP inference over a Gaussian MRF: the fixed point IS the MAP percept (COGNITION: denoising / filling-in). RelaxField.sign=-1 flips the SAME rule to reflected ascent (val<-2*val-cand), forcing E UP (anti-dissipative) -- and the percept recovery then diverges: break-one-breaks-both. OFF by default: fires only when a RelaxField{enabled=1} hub exists, which the measure adapter creates on opt-in; absent it, every existing path is byte-identical (FieldCell/RelaxField appear in no other graph). NO Rust, NO new Term.",
+ "microtheory": {
+  "name": "dissipation_inference",
+  "description": "Dissipative relaxation of a field to the minimum of a quadratic energy IS MAP inference over a Gaussian MRF; the two are one integer computation read in two frames (the Gibbs distribution is the posterior; equilibrium is the MAP percept)."
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [
+  {
+   "provenance": "seed:dissipation_inference:field-cell",
+   "src": {
+    "type": "RelaxField",
+    "var": "f"
+   },
+   "edge_type": "field_cell",
+   "tgt": {
+    "type": "FieldCell",
+    "var": "c"
+   }
+  },
+  {
+   "provenance": "seed:dissipation_inference:adjacency",
+   "src": {
+    "type": "FieldCell",
+    "var": "a"
+   },
+   "edge_type": "adj",
+   "tgt": {
+    "type": "FieldCell",
+    "var": "b"
+   }
+  }
+ ],
+ "rules": [
+  {
+   "name": "df_relax",
+   "batch": true,
+   "order": 0,
+   "match": [
+    [
+     "f",
+     "field_cell",
+     "c"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "f"
+       },
+       "key": "enabled"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "par"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "f"
+       },
+       "key": "phase"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "c",
+     "val",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gt",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "f"
+         },
+         "key": "sign"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.0
+        }
+       },
+       "then": {
+        "type": "IDiv",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Lit",
+             "value": 2.0
+            },
+            {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Times",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "f"
+                 },
+                 "key": "lam"
+                },
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "c"
+                 },
+                 "key": "obs"
+                }
+               ]
+              },
+              {
+               "type": "Sum",
+               "source": {
+                "type": "Neighbours",
+                "node": {
+                 "type": "Var",
+                 "name": "c"
+                },
+                "edge_type": "adj",
+                "any_type": false
+               },
+               "var_name": "j",
+               "value": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "j"
+                },
+                "key": "val"
+               }
+              }
+             ]
+            }
+           ]
+          },
+          {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "f"
+             },
+             "key": "lam"
+            },
+            {
+             "type": "Count",
+             "source": {
+              "type": "Neighbours",
+              "node": {
+               "type": "Var",
+               "name": "c"
+              },
+              "edge_type": "adj",
+              "any_type": false
+             }
+            }
+           ]
+          }
+         ]
+        },
+        "b": {
+         "type": "Times",
+         "items": [
+          {
+           "type": "Lit",
+           "value": 2.0
+          },
+          {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "f"
+             },
+             "key": "lam"
+            },
+            {
+             "type": "Count",
+             "source": {
+              "type": "Neighbours",
+              "node": {
+               "type": "Var",
+               "name": "c"
+              },
+              "edge_type": "adj",
+              "any_type": false
+             }
+            }
+           ]
+          }
+         ]
+        }
+       },
+       "other": {
+        "type": "Minus",
+        "a": {
+         "type": "Times",
+         "items": [
+          {
+           "type": "Lit",
+           "value": 2.0
+          },
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "c"
+           },
+           "key": "val"
+          }
+         ]
+        },
+        "b": {
+         "type": "IDiv",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 2.0
+             },
+             {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Times",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "f"
+                  },
+                  "key": "lam"
+                 },
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "c"
+                  },
+                  "key": "obs"
+                 }
+                ]
+               },
+               {
+                "type": "Sum",
+                "source": {
+                 "type": "Neighbours",
+                 "node": {
+                  "type": "Var",
+                  "name": "c"
+                 },
+                 "edge_type": "adj",
+                 "any_type": false
+                },
+                "var_name": "j",
+                "value": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "j"
+                 },
+                 "key": "val"
+                }
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "f"
+              },
+              "key": "lam"
+             },
+             {
+              "type": "Count",
+              "source": {
+               "type": "Neighbours",
+               "node": {
+                "type": "Var",
+                "name": "c"
+               },
+               "edge_type": "adj",
+               "any_type": false
+              }
+             }
+            ]
+           }
+          ]
+         },
+         "b": {
+          "type": "Times",
+          "items": [
+           {
+            "type": "Lit",
+            "value": 2.0
+           },
+           {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "f"
+              },
+              "key": "lam"
+             },
+             {
+              "type": "Count",
+              "source": {
+               "type": "Neighbours",
+               "node": {
+                "type": "Var",
+                "name": "c"
+               },
+               "edge_type": "adj",
+               "any_type": false
+              }
+             }
+            ]
+           }
+          ]
+         }
+        }
+       }
+      }
+     }
+    ]
+   ]
+  }
+ ]
+}

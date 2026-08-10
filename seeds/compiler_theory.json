@@ -1,0 +1,240 @@
+{
+  "id": "compiler_theory",
+  "version": "0.1.0",
+  "depends_on": [
+    "llvm_passes"
+  ],
+  "description": "Compiler-design concepts grounded in the structural rule families that the inference layer discovered from the installed LLVM passes. Each concept is an `OptimizationConcept` node carrying its name, an English definition, and the validity argument that explains WHY the transformation preserves semantics. The concept is wired to a `RuleFamily` node by matching fingerprints, so traversal from any RewriteRule (`member_of` → RuleFamily ← `instantiates` ← OptimizationConcept) lands on the named concept. The concepts here cover only the four families the current 29-pass seed yields; richer concept libraries can be added as more passes are installed.",
+  "concepts": [
+    {
+      "name": "constant_folding",
+      "family_fingerprint": "match=(uses_op0,uses_op1,produces)|rep_var=0|effects=(add_node,replace_value,del_node)|computed=1|typeof_const=2|value_eq=0|opcode_eq=1|use_count_zero=0",
+      "definition": "Evaluate a binary operation at compile time when both operands are constants. The dynamic computation is replaced with a pre-computed constant value.",
+      "validity_argument": "For any constants c1, c2 and pure binary operator op, the runtime value of op(c1, c2) is a constant. Replacing every use of the operation's result with the equivalent constant produces an identical observable program: the operation is pure (no side effects), and the substituted value is denotationally equal. The original instruction can then be deleted because nothing reads from it.",
+      "preconditions": [
+        "the operation is pure (no observable side effects)",
+        "both operands are statically known constants",
+        "the constants are reducible to a single result value in the target type"
+      ],
+      "category": "denotational_equivalence"
+    },
+
+    {
+      "name": "algebraic_identity_elimination",
+      "family_fingerprint": "match=(uses_op0,uses_op1,produces)|rep_var=0|effects=(replace_value,del_node)|computed=0|typeof_const=1|value_eq=1|opcode_eq=1|use_count_zero=0",
+      "definition": "Eliminate a binary operation when one operand is the identity element (or absorbing element) of the operator. The result is determined by algebra without needing the runtime computation.",
+      "validity_argument": "An operator op has identity element e iff for all x: op(x, e) = x. It has absorbing (annihilator) element a iff for all x: op(x, a) = a. When the substrate sees `op X c` with c statically equal to an identity or absorber, the instruction's result is algebraically determined: identity → X itself; absorber → c itself. Rewiring uses to the determined value and deleting the operation preserves program semantics by the same purity argument as constant folding, with the algebraic law standing in for the explicit op(c1, c2) computation.",
+      "preconditions": [
+        "the operation is pure",
+        "one operand is a statically known constant",
+        "that constant is an identity or absorber of the operator"
+      ],
+      "examples_by_op": {
+        "add": "add(X, 0) = X — 0 is the additive identity",
+        "mul": "mul(X, 1) = X (multiplicative identity); mul(X, 0) = 0 (additive absorber)",
+        "and": "and(X, -1) = X (universal); and(X, 0) = 0 (zero absorber)",
+        "or":  "or(X, 0) = X; or(X, -1) = -1",
+        "xor": "xor(X, 0) = X",
+        "shl/lshr/ashr": "shift_by(X, 0) = X — shifting by zero is the identity"
+      },
+      "category": "algebraic_law"
+    },
+
+    {
+      "name": "self_idempotence",
+      "family_fingerprint": "match=(uses_op0,uses_op1,produces)|rep_var=1|effects=(replace_value,del_node)|computed=0|typeof_const=0|value_eq=0|opcode_eq=1|use_count_zero=0",
+      "definition": "Eliminate a binary operation whose two operands are the same SSA value, when the operator is idempotent on identical inputs: op(X, X) = X.",
+      "validity_argument": "An operator op is idempotent iff for all x: op(x, x) = x. The substrate detects this by structural identity in the operand edges — both `uses_op0` and `uses_op1` target the same SSA value node. The result is the operand itself, so rewiring uses and deleting the instruction preserves semantics. No constant materialisation is needed; this is purely a rewire.",
+      "preconditions": [
+        "the operation is pure",
+        "both operands are the SAME SSA value (structurally identical)",
+        "the operator is idempotent on identical inputs"
+      ],
+      "examples_by_op": {
+        "and": "and(X, X) = X — bitwise AND is idempotent",
+        "or": "or(X, X) = X — bitwise OR is idempotent"
+      },
+      "category": "algebraic_law"
+    },
+
+    {
+      "name": "self_annihilation",
+      "family_fingerprint": "match=(uses_op0,uses_op1,produces)|rep_var=1|effects=(add_node,replace_value,del_node)|computed=0|typeof_const=0|value_eq=0|opcode_eq=1|use_count_zero=0",
+      "definition": "Replace a binary operation on two identical SSA values with a constant when the operator self-annihilates: op(X, X) = constant. The constant is materialised because no existing SSA value carries that meaning.",
+      "validity_argument": "Certain operators map identical operands to a specific constant: sub(X, X) = 0 (additive inverse), xor(X, X) = 0 (xor's self-inverse property over GF(2)). Like idempotence, the substrate detects this via structural identity in the operand edges; unlike idempotence, the result is not an operand but a NEW constant value that must be materialised in the graph. Once the constant exists, uses are rewired to it and the operation deleted. Semantics are preserved by the algebraic law.",
+      "preconditions": [
+        "the operation is pure",
+        "both operands are the SAME SSA value",
+        "the operator self-annihilates to a constant"
+      ],
+      "examples_by_op": {
+        "sub": "sub(X, X) = 0 — subtracting a value from itself yields zero",
+        "xor": "xor(X, X) = 0 — XOR over GF(2) is its own inverse"
+      },
+      "category": "algebraic_law"
+    },
+
+    {
+      "name": "algebraic_reassociation",
+      "family_fingerprint": "match=(uses_op0,uses_op1,produces,uses_op0,uses_op1,produces)|rep_var=1|effects=(del_edge,del_edge,add_edge,add_edge,del_edge,del_edge,add_edge,add_edge)|computed=0|typeof_const=0|value_eq=0|opcode_eq=1|use_count_zero=1",
+      "definition": "Rewrite (a op b) op c into a op (b op c) for an associative operator. The result is equal by the associativity law, but the new structure exposes the inner operands b and c to combination — a critical normalization step that enables constant folding, common subexpression elimination, and further algebraic simplification downstream.",
+      "validity_argument": "For an associative operator op, the law (a op b) op c = a op (b op c) holds for all values of a, b, c. The transformation preserves the result on every input. The substrate enforces a safety side-condition: the intermediate value (a op b) must have exactly one use (the outer instruction), otherwise reassociation would change the value seen by other observers — sound for the chain being rewritten, unsound for the rest of the program. With single-use enforced, the rewrite is a structural reshuffle that preserves all observable behaviour. Reassociation is a *normalization* pass — it doesn't reduce cost by itself, but by canonicalising chain shape it migrates constants and common subexpressions into positions where reductive passes (constfold, CSE) can attack them.",
+      "preconditions": [
+        "both instructions are pure",
+        "both use the same opcode",
+        "the opcode is associative",
+        "the intermediate value has exactly one use (no other consumers)"
+      ],
+      "examples_by_op": {
+        "add": "(x + 1) + 2 → x + (1 + 2) → x + 3 after constfold",
+        "mul": "(x * 2) * 3 → x * (2 * 3) → x * 6 after constfold",
+        "and/or/xor": "associative bitwise ops behave identically"
+      },
+      "category": "algebraic_law"
+    },
+
+    {
+      "name": "dead_block_elimination",
+      "family_fingerprint": "match=(contains_inst)|rep_var=0|effects=(del_node)|computed=0|typeof_const=0|value_eq=0|opcode_eq=0|use_count_zero=1",
+      "definition": "A basic block with no incoming branch references is unreachable — no execution path leads to it. Delete the block (and, in concert with orphan_instruction_elimination, its now-stranded contained instructions). This is the structural dual of dead_code_elimination, applied one level up: where DCE removes instructions whose value has no consumers, DBE removes basic blocks whose control flow has no predecessors.",
+      "validity_argument": "An unreachable basic block contributes nothing to any observable execution: by definition, no input ever reaches it, so its instructions never run and never affect program state. Removing it is extensionally equivalent — every input still produces the same observation, because every input's execution trace was the same in both forms. The entry block of a function is exempt from this rule: its reachability is the function's calling contract, not encoded by a branch edge. The substrate marks this with `is_entry=true` at parse time, and the rule's where-clause refuses to delete entries.",
+      "preconditions": [
+        "the block is not the function's entry block",
+        "no instruction in any reachable block branches to this block (via uses_op0 for br, or uses_op1/uses_op2 for br_cond)"
+      ],
+      "examples_by_op": {
+        "after_fold_br_cond": "After fold_br_cond_true/false collapses a constant-cond branch, the non-chosen target has lost its only incoming reference and becomes a candidate for this rule.",
+        "after_jump_threading": "(future) After jump threading short-circuits a chain of single-successor blocks, intermediate blocks may become unreachable too."
+      },
+      "category": "extensional_equivalence"
+    },
+
+    {
+      "name": "control_flow_constant_folding",
+      "family_fingerprint": "match=(uses_op0,uses_op1,uses_op2)|rep_var=0|effects=(set_attr,del_edge,del_edge,del_edge,add_edge)|computed=0|typeof_const=1|value_eq=1|opcode_eq=1|use_count_zero=0",
+      "definition": "When a conditional branch's condition is a statically known constant, the branch's choice is fixed — exactly one target is reachable. Rewrite the conditional branch as an unconditional branch to that target. The other branch's basic block becomes unreachable code, eligible for dead-block elimination in a subsequent pass.",
+      "validity_argument": "The denotational meaning of `br_cond(c, T, F)` is 'transfer control to T if c, else F'. When `c` is a statically known constant, that meaning collapses to a single unconditional transfer — exactly one of the two targets. Replacing the conditional with the unconditional form preserves the program's runtime behavior on every reachable execution. The control-flow change is denotationally identical to the original: every observation the program could produce after the branch is the same in both forms, because the unreachable branch's effects were never reachable to begin with. This is the constant-folding pattern applied to control structure — the same denotational argument as `select_constant_condition`, applied one level up the abstraction (branching control flow instead of selecting a value).",
+      "preconditions": [
+        "the condition operand is a statically known constant",
+        "the branch instruction is the BB's terminator"
+      ],
+      "examples_by_op": {
+        "br_cond_true": "br i1 true, label %then, label %else → br label %then",
+        "br_cond_false": "br i1 false, label %then, label %else → br label %else"
+      },
+      "category": "denotational_equivalence"
+    },
+
+    {
+      "name": "select_constant_condition",
+      "family_fingerprint": "match=(uses_op0,uses_op1,uses_op2,produces)|rep_var=0|effects=(replace_value,del_node)|computed=0|typeof_const=1|value_eq=1|opcode_eq=1|use_count_zero=0",
+      "definition": "When a `select` instruction's condition is a statically known constant, the result is statically determined to be one of the two value operands. The select can be eliminated by rewiring uses to that operand. select(1, a, b) → a; select(0, a, b) → b.",
+      "validity_argument": "The denotational meaning of `select(c, a, b)` is `a` when `c = true` and `b` when `c = false`. When the substrate sees `c` as an LLVMConstant with value 1 or 0, the meaning of select is statically determined to be one of its value operands. Rewiring uses of the select's result to the chosen operand is denotationally equivalent — every observer that would have read the select's value now reads exactly the value the select would have produced. The select instruction itself becomes dead and is deleted. This is the constant-folding pattern applied to a *control selection* primitive — the same denotational argument, but the result is one of the existing SSA values rather than a fresh constant.",
+      "preconditions": [
+        "the select's condition operand is a statically known constant",
+        "select itself is pure (no side effects)"
+      ],
+      "examples_by_op": {
+        "select_true": "select i1 true, i32 %a, i32 %b → %a (rewire uses, delete select)",
+        "select_false": "select i1 false, i32 %a, i32 %b → %b"
+      },
+      "category": "denotational_equivalence"
+    },
+
+    {
+      "name": "select_equal_branches",
+      "family_fingerprint": "match=(uses_op0,uses_op1,uses_op2,produces)|rep_var=1|effects=(replace_value,del_node)|computed=0|typeof_const=0|value_eq=0|opcode_eq=1|use_count_zero=0",
+      "definition": "When both value operands of a `select` are the SAME SSA value, the condition is irrelevant — the select always produces that value. Eliminate the select and rewire uses directly to the shared operand.",
+      "validity_argument": "The denotational meaning of `select(c, X, X)` is `X` regardless of `c` — both branches denote the same value, so picking either one yields the same result. The substrate detects structural identity of the two value operands (same SSA NodeID for `uses_op1` and `uses_op2`); when matched, rewiring uses of the select's result to `X` preserves every observable trace. This is the *idempotence* pattern from algebraic_law applied to select: when an operation's output is fixed regardless of one of its inputs, that input is irrelevant and the operation can be reduced.",
+      "preconditions": [
+        "both value operands are the SAME SSA value (structurally identical, not just equal in value)",
+        "select itself is pure"
+      ],
+      "examples_by_op": {
+        "select_same_branches": "select i1 %cond, i32 %x, i32 %x → %x (the condition becomes irrelevant)"
+      },
+      "category": "algebraic_law"
+    },
+
+    {
+      "name": "common_subexpression_elimination",
+      "family_fingerprint": "match=(uses_op0,uses_op1,produces,uses_op0,uses_op1,produces)|rep_var=1|effects=(replace_value,del_node)|computed=0|typeof_const=0|value_eq=0|opcode_eq=1|use_count_zero=0",
+      "definition": "Two pure instructions with the same operator and the same operands produce the same value. Keep one as canonical, rewire every use of the duplicate's result to point at the canonical's result, then delete the duplicate.",
+      "validity_argument": "A pure function applied to equal inputs produces equal outputs — the definition of *referential transparency*. The substrate detects structural identity in the substrate graph: two LLVMInstruction nodes whose `uses_op0` and `uses_op1` edges target the same SSA values, and whose `opcode` attrs match. Under purity, both `produces` LLVMValues denote the same value in the program's semantics. Substituting one for the other preserves every observable trace because they were never distinguishable to any observer. The instruction with no remaining uses is then deletable as dead code. This is the canonical purity optimization: redundant work is provably redundant when the operator is pure.",
+      "preconditions": [
+        "both instructions are pure (no side effects)",
+        "both instructions have the same opcode",
+        "both instructions have structurally identical operands (same SSA values, not just equal values)"
+      ],
+      "examples_by_op": {
+        "add": "if %a = add %x, %y and %b = add %x, %y, then every use of %b can be rewired to %a and the second add deleted",
+        "mul/and/or/xor/sub": "same shape — pure binary ops with identical operands yield identical values"
+      },
+      "category": "referential_transparency"
+    },
+
+    {
+      "name": "strength_reduction",
+      "family_fingerprint": "match=(uses_op0,uses_op1,produces)|rep_var=0|effects=(add_node,del_edge,add_edge,set_attr)|computed=1|typeof_const=1|value_eq=1|opcode_eq=1|use_count_zero=0",
+      "definition": "Replace an expensive operation with a cheaper one that computes the same value. The classical case: multiplication by a power of two is replaced with a shift by the corresponding bit-count.",
+      "validity_argument": "When constant `c` is a power of two (c = 2^k), the identity mul(X, c) = shl(X, k) holds for all X over the integers — both express \"shift X left by k bits\" in the value domain. The transformation preserves observable semantics by mathematical equality. The justification is dual: on the algebraic side, two distinct operators reduce to the same function over their input class; on the cost side, shl(X, k) executes in a single cycle on every modern ISA while mul has variable latency (2–5 cycles or more). The compiler trades the more general operator for the more specific cheaper one that happens to compute the same answer on this input class. Same value, less cost — the canonical engineering tradeoff that doesn't compromise correctness.",
+      "preconditions": [
+        "the operation is pure",
+        "the constant operand is a power of two",
+        "the result type tolerates the cheaper operator (e.g., target ISA supports shl on this width)"
+      ],
+      "examples_by_op": {
+        "mul_by_2": "mul X, 2 → shl X, 1",
+        "mul_by_4": "mul X, 4 → shl X, 2",
+        "mul_by_8": "mul X, 8 → shl X, 3",
+        "mul_by_2_to_k": "mul X, 2^k → shl X, k for any k"
+      },
+      "category": "cost_equivalence"
+    },
+
+    {
+      "name": "dead_code_elimination",
+      "family_fingerprint": "match=(uses_op0,uses_op1,produces)|rep_var=0|effects=(del_node)|computed=0|typeof_const=0|value_eq=0|opcode_eq=1|use_count_zero=1",
+      "definition": "Delete a pure instruction whose result has no users. The computation cannot affect program output because nothing observes its value and the operation has no side effects.",
+      "validity_argument": "A pure instruction's only contribution to program behavior is the value it produces; it has no side effects (no memory writes, no I/O, no control-flow consequences). The substrate detects death by checking the produced SSA value's in-degree on `uses_op0` and `uses_op1` — zero in both means no instruction reads from it. If nothing observes the value, the instruction's existence is unobservable: removing it preserves every observable trace the program can produce. This is extensional equivalence at its sharpest — two programs are equivalent if they produce the same outputs on all inputs, and a never-read computation cannot change any output.",
+      "preconditions": [
+        "the instruction is pure (no side effects)",
+        "the SSA value it produces has zero uses",
+        "deleting it cannot cascade into removing observed side effects"
+      ],
+      "examples_by_op": {
+        "add/sub/mul": "arithmetic ops are pure — safe to delete when unused",
+        "and/or/xor": "bitwise ops are pure — safe to delete when unused",
+        "shl/lshr/ashr": "shifts are pure — safe to delete when unused"
+      },
+      "category": "extensional_equivalence"
+    }
+  ],
+
+  "categories": {
+    "denotational_equivalence": {
+      "description": "A transformation that preserves a value's compile-time meaning. The transformed program produces the same denotation as the original. Constant folding is the canonical example: dynamic computation replaced with its known value.",
+      "soundness_principle": "If T(P) = P' and ⟦P⟧ = ⟦P'⟧, then T is denotationally sound."
+    },
+    "algebraic_law": {
+      "description": "A transformation justified by a universally quantified law of the operator's algebra (identity, absorber, idempotence, self-inverse, …). The law is the agent's evidence that the rewriting is sound for ALL values, not just the specific ones in a given program.",
+      "soundness_principle": "If for all x: f(x) = g(x), then a use of f may be replaced by a use of g — semantics are preserved by universal quantification."
+    },
+    "extensional_equivalence": {
+      "description": "A transformation justified by observation: if no observer can distinguish two programs by any sequence of inputs and outputs, they are extensionally equivalent. Internal computations that don't reach any observable output are eligible for removal — they exist but cannot matter.",
+      "soundness_principle": "If for all inputs i: observe(P, i) = observe(P', i), then P and P' are extensionally equivalent. A computation with no consumer cannot change any observation."
+    },
+    "cost_equivalence": {
+      "description": "A transformation that replaces an operator with a different, structurally cheaper operator that computes the same function on the relevant input class. The two operators are interchangeable in value but not in cost; the compiler picks the cheaper one. Validity rests on the algebraic equality holding for all inputs the transformation applies to (NOT for all inputs of either operator — only the constrained class).",
+      "soundness_principle": "If for all x in the matched input class C: f(x) = g(x), and cost(g) < cost(f), then a use of f over C may be replaced by a use of g — preserving value while reducing cost."
+    },
+    "referential_transparency": {
+      "description": "A transformation justified by purity: a pure function applied to equal inputs produces equal outputs. Two computations that share an operator and operands are indistinguishable in value, so one of them is redundant. This is the foundation of every functional-language optimization and the soundness ground for memoization, sharing, and CSE.",
+      "soundness_principle": "If f is pure and f(x) = f(y) for all argument-equivalence (x ≡ y), then two computations of f with structurally equal operands are interchangeable. Substituting one for the other preserves every observable trace because they were never distinguishable to any observer."
+    },
+    "ub_preservation": {
+      "description": "A *meta-principle* layered over every soundness category: an optimization may NEVER introduce defined behavior where the source program had undefined behavior. UB is not 'whatever happens'; it is a contract between source program and runtime that the runtime may exploit (trap, optimize away, fail loudly). A folding pass that materialised a concrete value for `sdiv 5, 0` would be giving the runtime *less* freedom than it had before — that's a real semantic change, not an optimization. Captured operationally in this substrate by where-clause guards: rules with potential-UB operations (sdiv, srem, …) require their where-clause to forbid the UB-triggering operand pattern.",
+      "soundness_principle": "If the source program has UB on some input class C, the transformed program must also have UB on C (or some superset). The optimization may NEVER reduce the UB set — that would replace a trapping behavior with a specific value, eliminating the runtime's right to trap or optimize. Operationally: gate every rule whose effect would produce a value for a UB-defined case behind a where-clause that excludes that case."
+    }
+  }
+}

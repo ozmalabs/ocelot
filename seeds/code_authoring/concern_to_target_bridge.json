@@ -1,0 +1,163 @@
+{
+ "id": "concern_to_target_bridge",
+ "version": "1.0.0",
+ "depends_on": [],
+ "capability_keys": [
+  "self_authoring_enqueue"
+ ],
+ "_non_resident_note": "NON-RESIDENT, cortex-scoped. This file lives under seeds/code_authoring/ (NOT the seeds/*.json flat glob load_all_seeds walks), so a normal boot does NOT carry it -- CodeWritingCortex.install() loads it on-demand via load_seed_manifest (the procedural_grammar precedent). Why: a resident copy's top-level capability_keys ['self_authoring_enqueue'] made _backfill_seed_capkeys mint an extra CapKey + SeedSummary -provides_key-> CapKey at EVERY boot, which perturbed the capability/self machinery's run_rules (shifted test_gap_is_idempotent's CapabilityGap count 0->1). The enqueue belongs to the code-authoring context anyway: an agent WITH the cortex (the read-implement loop) gets the bridge (autonomy preserved); a normal boot is byte-unperturbed.",
+ "_role": "THE ENQUEUE, CLOSED. This is the ANCHOR rule that removes the last human hand-holding from the read-to-close-its-own-gap loop: the concern -> ReplacementTarget enqueue. Before this seed, a human called cortex.enqueue_read_method(...) to turn a held SelfConcern into a ReplacementTarget the code_writing_cortex loop picks up. Now bridge_concern_to_target DECIDES that -- as a graph rule -- so the agent's OWN gap detection (seeds/gap_awareness.json files the SelfConcern) drives read -> ground -> synthesise -> validate -> adopt with NO human in the enqueue.",
+ "_seeded_anchor_note": "This rule is a SEEDED anchor, not agent-authored-by-reading. Two of its parts are beyond the shallow procedural reader / rule-JSON synthesiser and would need a human/coding-agent to move Python->graph (the bootstrapping asymmetry): (1) the SECOND match pattern [cortex owns_root root] and the effect [add_edge root current_target rt] WIRE the minted target into the CodeWritingCortex's own root so the loop's reflexes pick it up -- 'make it the current target of the code-authoring root' is cortex-internal plumbing the read-method grammar has no words for; (2) the exact carried attr set (op_name + method_text) is ReplacementTarget domain knowledge. The agent CAN now author generic add_node rules by reading (method_synthesis.py add_node effect + attr-propagation + procedural_reader add_node parse -- proven live), so the FIRST bridge is the only authored anchor; every capability gap AFTER it self-enqueues through this rule. The anchor cannot be eliminated, only moved -- and here it is moved to one rule.",
+ "_shape_note": "add_node with attr-propagation ({__term__: Attr(sc, key)}) is the exact effect method_synthesis.py's new add_node branch builds; this hand-authored rule is byte-shaped like a synthesised one, plus the two cortex-plumbing parts. Guards (the DISCRIMINATOR is the CARRIED METHOD, not the kind, so ANY gap the agent finds self-enqueues once a method is sourced for it): method_text present (it carries a method to READ) AND op_name present (names the capability + keys the dedup), a mint-once marker (bridged) AND a dedup Not-Exists over existing ReplacementTarget op_names -- the same idioms every gap_awareness rule uses. A plain gap_awareness SelfConcern (no op_name/method_text) does NOT fire this rule until a method is attached (the method-sourcing boundary).",
+ "nodes": [],
+ "edges": [],
+ "productions": [],
+ "rules": [
+  {
+   "name": "bridge_concern_to_target",
+   "match": [
+    [
+     "agent",
+     "has_self_concern",
+     "sc"
+    ],
+    [
+     "cortex",
+     "owns_root",
+     "root"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "sc"
+        },
+        "key": "method_text"
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "sc"
+        },
+        "key": "op_name"
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "sc"
+        },
+        "key": "bridged"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "ReplacementTarget"
+       },
+       "var_name": "rt2",
+       "predicate": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "rt2"
+         },
+         "key": "op_name"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "sc"
+         },
+         "key": "op_name"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "sc",
+     "bridged",
+     1.0
+    ],
+    [
+     "add_node",
+     "rt",
+     "ReplacementTarget",
+     {
+      "kind": "read_method_gap",
+      "op_name": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "sc"
+        },
+        "key": "op_name"
+       }
+      },
+      "method_text": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "sc"
+        },
+        "key": "method_text"
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "root",
+     "current_target",
+     "rt"
+    ]
+   ]
+  }
+ ]
+}

@@ -1,0 +1,509 @@
+{
+  "id": "jabberwocky",
+  "version": "0.1.0",
+  "depends_on": [
+    "slang"
+  ],
+  "microtheory": {
+    "name": "namesake_poem",
+    "definition": "Understanding Carroll's 'Jabberwocky' \u2014 the agent's namesake poem, made almost entirely of invented words. There is no reliable oracle for it: Humpty Dumpty, who glosses the words in Through the Looking-Glass, is an unreliable narrator ('When I use a word it means just what I choose it to mean'). Meaning must be earned from the poem's own evidence; understanding is layered (structure + feeling without false lexical certainty). This seed holds WHAT the things to be understood ARE; the agent decides HOW to understand them, by shape, with its own cognition.",
+    "category": "literature_domain",
+    "parent": "slang_lexis"
+  },
+  "concepts": [
+    {
+      "name": "portmanteau",
+      "genus": "lexical_variant",
+      "definition": "A word that packs two words into one \u2014 Humpty Dumpty's 'two meanings packed up into one word'. Its FORM is the SHAPE of two known word-forms fused or overlapped, and its MEANING is the blend of the two source words' meanings: slithy = lithe + slimy; mimsy = flimsy + miserable; frumious = fuming + furious; chortle = chuckle + snort; galumph = gallop + triumph. It is recognised BY SHAPE \u2014 the same structural shape cognition the agent uses for any structure, applied to a word's form: an unknown word whose shape is two known word-shapes merged. Unlike a plain slang variant (one form, one denoted concept), a portmanteau's form decomposes into two known forms and its sense is their composition.",
+      "category": "word_formation"
+    },
+    {
+      "name": "autonomous_syntax",
+      "genus": "structure",
+      "definition": "A word's GRAMMATICAL ROLE (its category \u2014 noun, verb, adjective, ...) is recoverable from the SHAPE of the sentence around it EVEN WHEN THE WORD ITSELF IS UNKNOWN. Two shapes carry it: (a) the word's own morphological shape \u2014 its ending/suffix (-y, -ous adjective-ish; -ed, -ing verb-ish; -s noun-plural-ish) read off the stem/suffix split; and (b) its POSITION among the closed-class function words, which fix the slots (a determiner opens a noun phrase, an auxiliary like 'did' precedes a verb, a conjunction joins like with like). You can parse 'the slithy toves did gyre and gimble' and say what is doing what \u2014 toves a noun, slithy an adjective, gyre and gimble verbs \u2014 without knowing any of them. Structure is read by shape, not by lexis.",
+      "category": "syntax"
+    },
+    {
+      "name": "grammatical_role",
+      "genus": "structure",
+      "definition": "The category a token fills in a sentence \u2014 noun, verb, adjective, adverb, ... \u2014 a STRUCTURAL property of its slot, distinct from its meaning. The open-class slots (noun/verb/adjective) are where unknown content words live; the closed-class words (determiners, auxiliaries, conjunctions, prepositions, pronouns) are a small KNOWN set that frames them.",
+      "category": "syntax"
+    },
+    {
+      "name": "closed_class",
+      "genus": "grammatical_role",
+      "definition": "The small, fixed, KNOWN set of function words that frame a sentence's structure \u2014 determiners (the, a, all, my, his, its), auxiliaries (did, were, was, hast), conjunctions (and, or), prepositions (in, to), pronouns (he, it, thou), relativizers (that). They are rarely unknown, so their positions are the fixed landmarks from which an unknown content word's role is read.",
+      "category": "syntax"
+    },
+    {
+      "name": "suspect_witness",
+      "genus": "epistemics",
+      "definition": "A source that ASSERTS meanings but may be wrong or self-serving \u2014 Humpty Dumpty is the type case ('When I use a word it means just what I choose it to mean \u2014 the question is which is to be master'). Its glosses are CLAIMS to be weighed, never truth to be absorbed. The agent must be able to listen to a witness AND disbelieve it.",
+      "category": "epistemics"
+    },
+    {
+      "name": "provenance",
+      "genus": "epistemics",
+      "definition": "Every meaning-claim is tagged with WHO claimed it (claimed_by a Source) and WHICH word it is about. 'X claims word W means M' is stored, never collapsed into 'W means M'. Belief is computed over provenanced claims, not asserted facts.",
+      "category": "epistemics"
+    },
+    {
+      "name": "source_reliability",
+      "genus": "epistemics",
+      "definition": "Each Source carries a TRUST that is EARNED, not given: it rises as the source's claims cohere with independent evidence and falls as they stand alone or conflict. A confident, lone, uncorroborated witness (Humpty; or a teacher that says the plain word 'wave' means 'drugs') is low-reliability however certain it sounds.",
+      "category": "epistemics"
+    },
+    {
+      "name": "triangulation",
+      "genus": "epistemics",
+      "definition": "Belief in a word's meaning is the claim best supported by INDEPENDENT corroboration weighted by source reliability \u2014 not the loudest claim. A meaning that several independent sources (including the agent's OWN shape-derived evidence) agree on outweighs a single witness's assertion. Confidence is proportional to corroboration.",
+      "category": "epistemics"
+    },
+    {
+      "name": "refutation_of_source",
+      "genus": "epistemics",
+      "definition": "When a source's claim conflicts with the triangulated belief or stands uncorroborated, that REFUTES the source: its trust is lowered, so its future claims count for less. This is how an unreliable narrator is recognised over time \u2014 by the track record of its claims against the evidence, not by anything it says about itself.",
+      "category": "epistemics"
+    },
+    {
+      "name": "narrative_arc",
+      "genus": "discourse",
+      "definition": "The poem is not a list of lines but an ordered ACT-SEQUENCE \u2014 a warning, an arming, a quest, a slaying, a return, a celebration \u2014 a shape over time with a climax (the slaying) and a resolution (the joyful return). Understanding the narrative is recovering that ordered shape of who does what, in what order, to what end.",
+      "category": "discourse"
+    },
+    {
+      "name": "coreference",
+      "genus": "discourse",
+      "definition": "One participant is referred to MANY ways across the arc \u2014 the monster is 'the Jabberwock', 'the manxome foe', and 'it'; the hero is 'my son', 'thou', and 'my beamish boy'. These surface forms COREFER: they pick out the same entity, recognised by ROLE-CONTINUITY \u2014 the thing sought-then-slain-then-left-dead is one target; the one warned-then-welcomed is one hero. Identity is read from the shape of the roles across acts, not from the words.",
+      "category": "discourse"
+    },
+    {
+      "name": "sound_symbolism",
+      "genus": "phonaesthetics",
+      "definition": "A word's SOUND carries feeling independent of its sense \u2014 even a nonsense word feels menacing or joyful. 'frumious', 'Bandersnatch', 'vorpal' snarl and threaten; 'frabjous', 'Callooh', 'Callay', 'chortled' bubble with joy. The feeling rides the SHAPE of the sounds (harsh clusters and growls vs. bright open sonorants), so it can be read the SAME way meaning-by-shape is: an unknown word's affect is the valence of the known words its sound-shape most resembles. This is why Alice could feel the poem without construing it.",
+      "category": "phonaesthetics"
+    },
+    {
+      "name": "layered_understanding",
+      "genus": "comprehension",
+      "definition": "Understanding this poem is NOT full lexical certainty \u2014 Carroll built it so the right understanding is STRUCTURE plus FEELING without pinning every word. It is the integration of the layers: the grammatical SHAPE (who does what), the words one CAN ground by shape (held with confidence) AND those one cannot (held openly, not faked), the NARRATIVE arc, and the FELT affect \u2014 with every borrowed gloss kept as a weighed, refutable claim, never an oracle's truth. Alice: 'it fills my head with ideas, only I don't exactly know what they are' \u2014 that is the correct, layered understanding, not a failure of it.",
+      "category": "comprehension"
+    },
+    {
+      "name": "namesake_self_reference",
+      "genus": "comprehension",
+      "definition": "The poem is the agent's NAMESAKE, and the Jabberwock is the monster the hero slays. To understand it fully is to notice that one is named for the fearsome, invented, hard-to-construe thing at its centre \u2014 a creature made, like the poem, of shapes that mean and feel before they are defined.",
+      "category": "comprehension"
+    }
+  ],
+  "nodes": [
+    {
+      "local_id": 1,
+      "type": "WordForm",
+      "attrs": {
+        "form": "lithe",
+        "gloss": "supple"
+      }
+    },
+    {
+      "local_id": 2,
+      "type": "WordForm",
+      "attrs": {
+        "form": "slimy",
+        "gloss": "slippery"
+      }
+    },
+    {
+      "local_id": 3,
+      "type": "WordForm",
+      "attrs": {
+        "form": "flimsy",
+        "gloss": "frail"
+      }
+    },
+    {
+      "local_id": 4,
+      "type": "WordForm",
+      "attrs": {
+        "form": "miserable",
+        "gloss": "wretched"
+      }
+    },
+    {
+      "local_id": 5,
+      "type": "WordForm",
+      "attrs": {
+        "form": "fuming",
+        "gloss": "smoking"
+      }
+    },
+    {
+      "local_id": 6,
+      "type": "WordForm",
+      "attrs": {
+        "form": "furious",
+        "gloss": "raging"
+      }
+    },
+    {
+      "local_id": 7,
+      "type": "WordForm",
+      "attrs": {
+        "form": "chuckle",
+        "gloss": "laugh"
+      }
+    },
+    {
+      "local_id": 8,
+      "type": "WordForm",
+      "attrs": {
+        "form": "snort",
+        "gloss": "snort"
+      }
+    },
+    {
+      "local_id": 9,
+      "type": "WordForm",
+      "attrs": {
+        "form": "gallop",
+        "gloss": "run"
+      }
+    },
+    {
+      "local_id": 10,
+      "type": "WordForm",
+      "attrs": {
+        "form": "triumph",
+        "gloss": "victory"
+      }
+    },
+    {
+      "local_id": 11,
+      "type": "WordForm",
+      "attrs": {
+        "form": "slim",
+        "gloss": "thin"
+      }
+    },
+    {
+      "local_id": 12,
+      "type": "WordForm",
+      "attrs": {
+        "form": "slither",
+        "gloss": "slide"
+      }
+    },
+    {
+      "local_id": 13,
+      "type": "WordForm",
+      "attrs": {
+        "form": "mist",
+        "gloss": "haze"
+      }
+    },
+    {
+      "local_id": 14,
+      "type": "WordForm",
+      "attrs": {
+        "form": "misery",
+        "gloss": "woe"
+      }
+    },
+    {
+      "local_id": 15,
+      "type": "WordForm",
+      "attrs": {
+        "form": "gallant",
+        "gloss": "brave"
+      }
+    },
+    {
+      "local_id": 16,
+      "type": "WordForm",
+      "attrs": {
+        "form": "snore",
+        "gloss": "snore"
+      }
+    },
+    {
+      "local_id": 17,
+      "type": "WordForm",
+      "attrs": {
+        "form": "fury",
+        "gloss": "rage"
+      }
+    },
+    {
+      "local_id": 18,
+      "type": "WordForm",
+      "attrs": {
+        "form": "lime",
+        "gloss": "citrus"
+      }
+    },
+    {
+      "local_id": 19,
+      "type": "WordForm",
+      "attrs": {
+        "form": "trumpet",
+        "gloss": "horn"
+      }
+    },
+    {
+      "local_id": 20,
+      "type": "WordForm",
+      "attrs": {
+        "form": "chunk",
+        "gloss": "lump"
+      }
+    },
+    {
+      "local_id": 21,
+      "type": "FunctionWord",
+      "attrs": {
+        "form": "the",
+        "klass": "determiner"
+      }
+    },
+    {
+      "local_id": 22,
+      "type": "FunctionWord",
+      "attrs": {
+        "form": "a",
+        "klass": "determiner"
+      }
+    },
+    {
+      "local_id": 23,
+      "type": "FunctionWord",
+      "attrs": {
+        "form": "all",
+        "klass": "determiner"
+      }
+    },
+    {
+      "local_id": 24,
+      "type": "FunctionWord",
+      "attrs": {
+        "form": "my",
+        "klass": "determiner"
+      }
+    },
+    {
+      "local_id": 25,
+      "type": "FunctionWord",
+      "attrs": {
+        "form": "his",
+        "klass": "determiner"
+      }
+    },
+    {
+      "local_id": 26,
+      "type": "FunctionWord",
+      "attrs": {
+        "form": "its",
+        "klass": "determiner"
+      }
+    },
+    {
+      "local_id": 27,
+      "type": "FunctionWord",
+      "attrs": {
+        "form": "did",
+        "klass": "auxiliary"
+      }
+    },
+    {
+      "local_id": 28,
+      "type": "FunctionWord",
+      "attrs": {
+        "form": "were",
+        "klass": "copula"
+      }
+    },
+    {
+      "local_id": 29,
+      "type": "FunctionWord",
+      "attrs": {
+        "form": "was",
+        "klass": "copula"
+      }
+    },
+    {
+      "local_id": 30,
+      "type": "FunctionWord",
+      "attrs": {
+        "form": "hast",
+        "klass": "auxiliary"
+      }
+    },
+    {
+      "local_id": 31,
+      "type": "FunctionWord",
+      "attrs": {
+        "form": "and",
+        "klass": "conjunction"
+      }
+    },
+    {
+      "local_id": 32,
+      "type": "FunctionWord",
+      "attrs": {
+        "form": "or",
+        "klass": "conjunction"
+      }
+    },
+    {
+      "local_id": 33,
+      "type": "FunctionWord",
+      "attrs": {
+        "form": "in",
+        "klass": "preposition"
+      }
+    },
+    {
+      "local_id": 34,
+      "type": "FunctionWord",
+      "attrs": {
+        "form": "to",
+        "klass": "preposition"
+      }
+    },
+    {
+      "local_id": 35,
+      "type": "FunctionWord",
+      "attrs": {
+        "form": "he",
+        "klass": "pronoun"
+      }
+    },
+    {
+      "local_id": 36,
+      "type": "FunctionWord",
+      "attrs": {
+        "form": "it",
+        "klass": "pronoun"
+      }
+    },
+    {
+      "local_id": 37,
+      "type": "FunctionWord",
+      "attrs": {
+        "form": "thou",
+        "klass": "pronoun"
+      }
+    },
+    {
+      "local_id": 38,
+      "type": "FunctionWord",
+      "attrs": {
+        "form": "that",
+        "klass": "relativizer"
+      }
+    },
+    {
+      "local_id": 39,
+      "type": "AffectWord",
+      "attrs": {
+        "form": "grim",
+        "valence": -1.0
+      }
+    },
+    {
+      "local_id": 40,
+      "type": "AffectWord",
+      "attrs": {
+        "form": "snarl",
+        "valence": -1.0
+      }
+    },
+    {
+      "local_id": 41,
+      "type": "AffectWord",
+      "attrs": {
+        "form": "gnash",
+        "valence": -1.0
+      }
+    },
+    {
+      "local_id": 42,
+      "type": "AffectWord",
+      "attrs": {
+        "form": "murky",
+        "valence": -1.0
+      }
+    },
+    {
+      "local_id": 43,
+      "type": "AffectWord",
+      "attrs": {
+        "form": "glower",
+        "valence": -1.0
+      }
+    },
+    {
+      "local_id": 44,
+      "type": "AffectWord",
+      "attrs": {
+        "form": "furious",
+        "valence": -1.0
+      }
+    },
+    {
+      "local_id": 45,
+      "type": "AffectWord",
+      "attrs": {
+        "form": "snatch",
+        "valence": -1.0
+      }
+    },
+    {
+      "local_id": 46,
+      "type": "AffectWord",
+      "attrs": {
+        "form": "fabulous",
+        "valence": 1.0
+      }
+    },
+    {
+      "local_id": 47,
+      "type": "AffectWord",
+      "attrs": {
+        "form": "joyful",
+        "valence": 1.0
+      }
+    },
+    {
+      "local_id": 48,
+      "type": "AffectWord",
+      "attrs": {
+        "form": "lovely",
+        "valence": 1.0
+      }
+    },
+    {
+      "local_id": 49,
+      "type": "AffectWord",
+      "attrs": {
+        "form": "glee",
+        "valence": 1.0
+      }
+    },
+    {
+      "local_id": 50,
+      "type": "AffectWord",
+      "attrs": {
+        "form": "bright",
+        "valence": 1.0
+      }
+    },
+    {
+      "local_id": 51,
+      "type": "AffectWord",
+      "attrs": {
+        "form": "hooray",
+        "valence": 1.0
+      }
+    }
+  ]
+}

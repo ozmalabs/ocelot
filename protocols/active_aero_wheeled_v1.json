@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "protocol": "active_aero_wheeled_v1",
+  "claim": "A fresh graph can identify factorized opaque effectors, synthesize simultaneous wheeled/aerodynamic motor programs without a Cartesian action lattice, detect a hidden complete surface failure from changed receipts, and rebuild the program from surviving groups.",
+  "plant": {
+    "morphology": "racecar_active_aero",
+    "simulator": "PyBullet",
+    "opaque_effector_groups": 6,
+    "commands_per_group": 3,
+    "materialized_compound_action_lattice": false,
+    "aerodynamic_model": "flow-squared external force at four body-relative application points with drag and actuator-energy receipts",
+    "qualification": "research plant, not a CFD or vehicle-certification model"
+  },
+  "run": {
+    "seed": 0,
+    "steps": 110,
+    "damage_onset_action": 60,
+    "broken_surface_index": 2,
+    "surface_retention_after_damage": 0.0
+  },
+  "gates": {
+    "pre_damage_program_uses_later_broken_group": true,
+    "exactly_one_graph_requested_recalibration": true,
+    "broken_surface_normal_load_model_after_recalibration": 0.0,
+    "post_recalibration_programs_exclude_broken_group": true,
+    "post_recalibration_compound_program_exists": true,
+    "minimum_observed_program_width": 2
+  },
+  "refusals": [
+    "No semantic actuator label may enter a graph model.",
+    "Python may translate and validate tokens but may not choose program members.",
+    "The result does not establish lap-time superiority, high-fidelity aerodynamics, or hardware safety."
+  ]
+}

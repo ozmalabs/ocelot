@@ -1,0 +1,124 @@
+{
+  "id": "tls_handshake_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "TLS_handshake",
+  "in_microtheory": "network_protocols",
+  "description": "TLS 1.3 handshake decomposed. The 1-RTT handshake replaced TLS 1.2's 2-RTT design by sending key shares in the first message. Resumption with PSK enables 0-RTT for repeat connections. Forward secrecy is mandatory. The handshake establishes mutual cryptographic context: cipher suite, ephemeral keys, server identity (via certificate), optionally client identity.",
+  "sub_mechanisms": [
+    {
+      "name": "client_hello_message",
+      "definition": "First TLS 1.3 message: client sends supported versions, cipher suites, key share (ephemeral public key), and optional extensions (SNI, ALPN, PSK identities).",
+      "why": "Key share + ciphers + extensions all in the first flight. Server can complete its half of the handshake without an extra round-trip. The fundamental 1-RTT enabler.",
+      "category": "tls_mechanism"
+    },
+    {
+      "name": "supported_versions_extension",
+      "definition": "Lists TLS versions the client supports. TLS 1.3 mandates this extension; legacy version field is set to 1.2 to dodge middleboxes.",
+      "why": "Middleboxes broke when seeing 'TLS 1.3' in the version field. Extension-based negotiation hides the actual version. Pragmatic concession to protocol ossification.",
+      "category": "tls_mechanism"
+    },
+    {
+      "name": "key_share_extension",
+      "definition": "Client's ephemeral public key for the proposed key-exchange group. Server picks one if matched; otherwise sends HelloRetryRequest specifying a usable group.",
+      "why": "Eliminates the round-trip TLS 1.2 needed to negotiate the group first then exchange keys. Client speculatively sends a key share for its preferred group; if server can't use it, one extra RTT.",
+      "category": "tls_mechanism"
+    },
+    {
+      "name": "server_hello_message",
+      "definition": "Server's response: selected version, cipher suite, server's key share. Encrypted records begin after this point.",
+      "why": "Server completes its key exchange + signals the chosen cipher. Everything after this is encrypted using the derived handshake keys. The handshake's privacy point.",
+      "category": "tls_mechanism"
+    },
+    {
+      "name": "ECDHE_key_exchange",
+      "definition": "Elliptic Curve Diffie-Hellman Ephemeral. Each side has an ephemeral key pair; shared secret is computed via curve point multiplication.",
+      "why": "Forward secrecy: ephemeral keys are discarded after the session. Future compromise of the server's long-term key doesn't expose past sessions. TLS 1.3 mandates this (no static RSA key exchange).",
+      "category": "tls_mechanism"
+    },
+    {
+      "name": "HKDF_key_derivation",
+      "definition": "HMAC-based Key Derivation Function. Derives multiple keys (handshake encryption, application encryption, exporter) from the master secret + transcript.",
+      "why": "One shared secret needs to produce multiple uses (client-write, server-write, handshake-traffic, application-traffic). HKDF-Expand-Label gives each use its own derived key with no risk of cross-use.",
+      "category": "tls_mechanism"
+    },
+    {
+      "name": "certificate_chain",
+      "definition": "Server sends its certificate + intermediate CA certificates. Client validates the chain up to a trusted root.",
+      "why": "Most certificates are issued by intermediate CAs; the trust root is the public root CA. Chain must be complete for client to walk from server cert to root. Missing intermediates is a common deployment issue.",
+      "category": "tls_mechanism"
+    },
+    {
+      "name": "certificate_verify_signature",
+      "definition": "Server signs the handshake transcript with its certificate's private key, proving it holds the key.",
+      "why": "Authenticates the server's identity. Without this, an attacker with the certificate but not the key could MITM. The signature commits to the entire handshake — attacker can't replay or tamper.",
+      "category": "tls_mechanism"
+    },
+    {
+      "name": "finished_message",
+      "definition": "Each side sends a MAC over the entire handshake transcript using a derived key. Both verify each other's Finished.",
+      "why": "Closes the loop: each side has proved knowledge of the shared secret + agreement on the handshake bytes. Detection of tampering anywhere in the handshake. Application data may follow.",
+      "category": "tls_mechanism"
+    },
+    {
+      "name": "PSK_session_resumption",
+      "definition": "After a TLS 1.3 handshake, server can send NewSessionTicket messages containing pre-shared keys + lifetimes. Client uses PSK in subsequent handshakes.",
+      "why": "Avoids the full certificate exchange + signature. PSK-based handshake is 1 RTT or 0 RTT (with early data). Critical for repeat-visit page load times.",
+      "category": "tls_mechanism"
+    },
+    {
+      "name": "zero_RTT_early_data",
+      "definition": "With PSK, client can send application data along with ClientHello. Server can process it before completing the handshake.",
+      "why": "Eliminates the handshake's last RTT. But replay vulnerable (server can't authenticate the data until handshake completes). Use only for idempotent requests. HTTP GET typically; never for state-changing operations.",
+      "category": "tls_mechanism"
+    },
+    {
+      "name": "AEAD_cipher",
+      "definition": "Authenticated Encryption with Associated Data. AES-GCM or ChaCha20-Poly1305. Encrypt + MAC in one operation.",
+      "why": "TLS 1.3 removed the older MAC-then-Encrypt schemes (BEAST, Lucky 13 vulnerabilities). AEAD is provably secure when used correctly. Single-pass encryption is faster on modern CPUs.",
+      "category": "tls_mechanism"
+    },
+    {
+      "name": "ALPN_protocol_negotiation",
+      "definition": "Application-Layer Protocol Negotiation: client lists protocols (h2, h3, http/1.1); server picks one.",
+      "why": "Lets HTTP/2 negotiate via TLS without an extra protocol upgrade. Same connection: HTTP/2 or HTTP/1.1 by mutual agreement. Required for HTTP/2 over TLS; HTTP/3 uses different mechanism (Alt-Svc).",
+      "category": "tls_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "speculative_key_share_eliminates_rtt",
+      "if": ["client sends key share with first message"],
+      "then": ["handshake completes in 1 RTT instead of 2"],
+      "why": "TLS 1.2 negotiated the group, then exchanged keys — 2 RTTs. TLS 1.3 speculates the group + sends keys; server confirms or requests retry. Most attempts use one of the common groups, so 1 RTT is achieved in practice.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "forward_secrecy_protects_past_sessions",
+      "if": ["key exchange uses ephemeral keys discarded after session"],
+      "then": ["future key compromise doesn't expose past sessions"],
+      "why": "ECDHE generates fresh ephemeral keys per handshake; they're never written to disk. Even if the server's long-term private key leaks tomorrow, today's session can't be decrypted. The standard property TLS 1.3 mandates.",
+      "soundness_category": "referential_transparency"
+    },
+    {
+      "name": "AEAD_eliminates_mac_then_encrypt_attacks",
+      "if": ["the cipher provides both confidentiality and authenticity in one operation"],
+      "then": ["MAC-then-Encrypt vulnerabilities (BEAST, Lucky 13) cannot occur"],
+      "why": "Pre-TLS 1.3 used MAC-then-Encrypt; bugs in implementations + protocol design enabled padding oracle attacks. AEAD's atomic construction is provably secure. TLS 1.3 mandates AEAD only.",
+      "soundness_category": "referential_transparency"
+    },
+    {
+      "name": "PSK_resumption_amortises_handshake_cost",
+      "if": ["client and server have a cached PSK"],
+      "then": ["future handshakes skip certificate validation + signature"],
+      "why": "Full handshake includes RSA/ECDSA signature verification (~100k cycles), certificate chain validation. PSK resumption skips these. Repeat-visit page load benefits substantially; major motivation for session caching.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "zero_RTT_safe_only_for_idempotent_operations",
+      "if": ["application data is sent with 0-RTT"],
+      "then": ["the data may be replayed by an attacker"],
+      "why": "Server can't distinguish a replayed 0-RTT message from the original until the handshake completes. For idempotent requests (HTTP GET), replay is harmless; for state-changing operations (POST that transfers money), replay is catastrophic. Use 0-RTT carefully.",
+      "soundness_category": "denotational_equivalence"
+    }
+  ]
+}

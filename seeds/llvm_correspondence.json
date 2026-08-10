@@ -1,0 +1,241 @@
+{
+ "id": "llvm_correspondence",
+ "version": "1.1.0",
+ "depends_on": [],
+ "description": "P2 LLVM-track correspondence table: LLVM opcode -> hub Program-IR Term-JSON templates ({\"__operand__\": N} placeholders), applied by the table-driven walker domains/prog_ir_llvm.py. Rows are LLVMOpcodeMap nodes the agent holds; kind in {expr, call, terminator, frontier}. Scope = exactly what domains/llvm_ir_io.py + llvm_ir_cfg.py produce and domains/llvm_ir_interp.py (the trusted agreement oracle) can execute; everything else is an honest blocker.",
+ "nodes": [
+  {
+   "local_id": 0,
+   "type": "LLVMOpcodeMap",
+   "attrs": {
+    "opcode": "add",
+    "kind": "expr",
+    "arity": 2,
+    "template": "{\"type\":\"Plus\",\"items\":[{\"__operand__\":0},{\"__operand__\":1}]}",
+    "note": "i64 wrap is the oracle's; DSL Plus is unwrapped — fixtures stay in range (documented divergence)."
+   }
+  },
+  {
+   "local_id": 1,
+   "type": "LLVMOpcodeMap",
+   "attrs": {
+    "opcode": "sub",
+    "kind": "expr",
+    "arity": 2,
+    "template": "{\"type\":\"Minus\",\"a\":{\"__operand__\":0},\"b\":{\"__operand__\":1}}"
+   }
+  },
+  {
+   "local_id": 2,
+   "type": "LLVMOpcodeMap",
+   "attrs": {
+    "opcode": "mul",
+    "kind": "expr",
+    "arity": 2,
+    "template": "{\"type\":\"Times\",\"items\":[{\"__operand__\":0},{\"__operand__\":1}]}"
+   }
+  },
+  {
+   "local_id": 3,
+   "type": "LLVMOpcodeMap",
+   "attrs": {
+    "opcode": "and",
+    "kind": "expr",
+    "arity": 2,
+    "template": "{\"type\":\"BitAnd\",\"a\":{\"__operand__\":0},\"b\":{\"__operand__\":1}}"
+   }
+  },
+  {
+   "local_id": 4,
+   "type": "LLVMOpcodeMap",
+   "attrs": {
+    "opcode": "or",
+    "kind": "expr",
+    "arity": 2,
+    "template": "{\"type\":\"BitOr\",\"a\":{\"__operand__\":0},\"b\":{\"__operand__\":1}}"
+   }
+  },
+  {
+   "local_id": 5,
+   "type": "LLVMOpcodeMap",
+   "attrs": {
+    "opcode": "xor",
+    "kind": "expr",
+    "arity": 2,
+    "template": "{\"type\":\"BitXor\",\"a\":{\"__operand__\":0},\"b\":{\"__operand__\":1}}"
+   }
+  },
+  {
+   "local_id": 6,
+   "type": "LLVMOpcodeMap",
+   "attrs": {
+    "opcode": "shl",
+    "kind": "expr",
+    "arity": 2,
+    "template": "{\"type\":\"Shl\",\"a\":{\"__operand__\":0},\"b\":{\"__operand__\":1}}",
+    "note": "Out-of-range count → 0 in BOTH engines (substrate convention; LLVM calls it poison). Exact agreement."
+   }
+  },
+  {
+   "local_id": 7,
+   "type": "LLVMOpcodeMap",
+   "attrs": {
+    "opcode": "lshr",
+    "kind": "expr",
+    "arity": 2,
+    "template": "{\"type\":\"Lshr\",\"a\":{\"__operand__\":0},\"b\":{\"__operand__\":1}}"
+   }
+  },
+  {
+   "local_id": 8,
+   "type": "LLVMOpcodeMap",
+   "attrs": {
+    "opcode": "ashr",
+    "kind": "expr",
+    "arity": 2,
+    "template": "{\"type\":\"Ashr\",\"a\":{\"__operand__\":0},\"b\":{\"__operand__\":1}}"
+   }
+  },
+  {
+   "local_id": 9,
+   "type": "LLVMOpcodeMap",
+   "attrs": {
+    "opcode": "sdiv",
+    "kind": "expr",
+    "arity": 2,
+    "template": "{\"type\":\"IDiv\",\"a\":{\"__operand__\":0},\"b\":{\"__operand__\":1}}",
+    "note": "Truncate-toward-zero: EXACT agreement with llvm_ir_interp on nonzero divisors. Divisor 0 is the documented P1 divergence: interp raises ZeroDivisionError (LLVM UB surfaced); IDiv returns silent 0. Fixtures avoid zero divisors."
+   }
+  },
+  {
+   "local_id": 10,
+   "type": "LLVMOpcodeMap",
+   "attrs": {
+    "opcode": "srem",
+    "kind": "expr",
+    "arity": 2,
+    "template": "{\"type\":\"IRem\",\"a\":{\"__operand__\":0},\"b\":{\"__operand__\":1}}",
+    "note": "Sign-of-dividend remainder: exact agreement on nonzero divisors; divisor 0 as sdiv (documented divergence, fixture-avoided)."
+   }
+  },
+  {
+   "local_id": 11,
+   "type": "LLVMOpcodeMap",
+   "attrs": {
+    "opcode": "icmp_eq",
+    "kind": "expr",
+    "arity": 2,
+    "template": "{\"type\":\"IfThenElse\",\"cond\":{\"type\":\"Eq\",\"a\":{\"__operand__\":0},\"b\":{\"__operand__\":1}},\"then\":{\"type\":\"Lit\",\"value\":1},\"other\":{\"type\":\"Lit\",\"value\":0}}"
+   }
+  },
+  {
+   "local_id": 12,
+   "type": "LLVMOpcodeMap",
+   "attrs": {
+    "opcode": "icmp_ne",
+    "kind": "expr",
+    "arity": 2,
+    "template": "{\"type\":\"IfThenElse\",\"cond\":{\"type\":\"Eq\",\"a\":{\"__operand__\":0},\"b\":{\"__operand__\":1}},\"then\":{\"type\":\"Lit\",\"value\":0},\"other\":{\"type\":\"Lit\",\"value\":1}}"
+   }
+  },
+  {
+   "local_id": 13,
+   "type": "LLVMOpcodeMap",
+   "attrs": {
+    "opcode": "icmp_slt",
+    "kind": "expr",
+    "arity": 2,
+    "template": "{\"type\":\"IfThenElse\",\"cond\":{\"type\":\"Lt\",\"a\":{\"__operand__\":0},\"b\":{\"__operand__\":1}},\"then\":{\"type\":\"Lit\",\"value\":1},\"other\":{\"type\":\"Lit\",\"value\":0}}"
+   }
+  },
+  {
+   "local_id": 14,
+   "type": "LLVMOpcodeMap",
+   "attrs": {
+    "opcode": "icmp_sle",
+    "kind": "expr",
+    "arity": 2,
+    "template": "{\"type\":\"IfThenElse\",\"cond\":{\"type\":\"Lte\",\"a\":{\"__operand__\":0},\"b\":{\"__operand__\":1}},\"then\":{\"type\":\"Lit\",\"value\":1},\"other\":{\"type\":\"Lit\",\"value\":0}}"
+   }
+  },
+  {
+   "local_id": 15,
+   "type": "LLVMOpcodeMap",
+   "attrs": {
+    "opcode": "icmp_sgt",
+    "kind": "expr",
+    "arity": 2,
+    "template": "{\"type\":\"IfThenElse\",\"cond\":{\"type\":\"Gt\",\"a\":{\"__operand__\":0},\"b\":{\"__operand__\":1}},\"then\":{\"type\":\"Lit\",\"value\":1},\"other\":{\"type\":\"Lit\",\"value\":0}}"
+   }
+  },
+  {
+   "local_id": 16,
+   "type": "LLVMOpcodeMap",
+   "attrs": {
+    "opcode": "icmp_sge",
+    "kind": "expr",
+    "arity": 2,
+    "template": "{\"type\":\"IfThenElse\",\"cond\":{\"type\":\"Gte\",\"a\":{\"__operand__\":0},\"b\":{\"__operand__\":1}},\"then\":{\"type\":\"Lit\",\"value\":1},\"other\":{\"type\":\"Lit\",\"value\":0}}"
+   }
+  },
+  {
+   "local_id": 17,
+   "type": "LLVMOpcodeMap",
+   "attrs": {
+    "opcode": "select",
+    "kind": "expr",
+    "arity": 3,
+    "template": "{\"type\":\"IfThenElse\",\"cond\":{\"type\":\"Eq\",\"a\":{\"__operand__\":0},\"b\":{\"type\":\"Lit\",\"value\":0}},\"then\":{\"__operand__\":2},\"other\":{\"__operand__\":1}}"
+   }
+  },
+  {
+   "local_id": 18,
+   "type": "LLVMOpcodeMap",
+   "attrs": {
+    "opcode": "ret",
+    "kind": "terminator",
+    "note": "→ ProgReturn(operand)."
+   }
+  },
+  {
+   "local_id": 19,
+   "type": "LLVMOpcodeMap",
+   "attrs": {
+    "opcode": "br",
+    "kind": "terminator",
+    "note": "Unconditional: the walker inlines the successor chain."
+   }
+  },
+  {
+   "local_id": 20,
+   "type": "LLVMOpcodeMap",
+   "attrs": {
+    "opcode": "br_cond",
+    "kind": "terminator",
+    "template": "{\"type\":\"Not\",\"arg\":{\"type\":\"Eq\",\"a\":{\"__operand__\":0},\"b\":{\"type\":\"Lit\",\"value\":0}}}",
+    "note": "→ ProgIfStmt cond (diamonds) or ProgWhile cond (single-latch loops; negated form when the true arm is the exit).",
+    "template_negated": "{\"type\":\"Eq\",\"a\":{\"__operand__\":0},\"b\":{\"type\":\"Lit\",\"value\":0}}"
+   }
+  },
+  {
+   "local_id": 21,
+   "type": "LLVMOpcodeMap",
+   "attrs": {
+    "opcode": "call",
+    "kind": "call",
+    "note": "→ ProgCallExtern{name: callee attr, args: uses_op*}. FRONTIER: neither parse_llvm_ir nor parse_llvm_cfg mints call instructions — this row lifts graph-built call nodes only; ProgEval evaluates them solely against declared oracles (extern:<name> trap otherwise)."
+   }
+  },
+  {
+   "local_id": 22,
+   "type": "LLVMOpcodeMap",
+   "attrs": {
+    "opcode": "phi",
+    "kind": "frontier",
+    "note": "P5 (v1.1.0): the dialect now SPEAKS phi (parse_llvm_cfg/interpret_cfg/emit_x86_64_cfg/prog_ir_to_llvm), and the resolution recipe this row documented is APPLIED STRUCTURALLY by the CFG lift — a phi is a ProgAssignVar of the incoming value on each incoming edge: loop-header phi -> init assign before the loop (entry edge) + latch assign at the end of the body; join phi -> an assign at the end of each arm (an empty arm materialises as orelse copies). The row stays kind:frontier because it governs the TABLE path only: a phi OUTSIDE the two structured patterns (arm interiors, loop bodies, ret/br blocks, single-block graphs) is still an honest blocker (unsupported_opcode:phi at the table, phi_outside_supported_pattern at the structurer), never a silent lift."
+   }
+  }
+ ],
+ "edges": [],
+ "productions": []
+}

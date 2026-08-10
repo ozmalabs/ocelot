@@ -1,0 +1,42 @@
+{
+  "id": "ear_control",
+  "version": "1.0.0",
+  "depends_on": [],
+  "description": "The jabberwock's SELF-DETECTION of its own ear band-limit (ask_jabberwock_ear, the agent's design). Its ear sample rate is graph-resident (EarConfig.fs); this seed lets the agent NOTICE when that ear under-samples its OWN cochlea and RAISE it itself, from evidence -- not handed to it. The TRIGGER is STRUCTURAL: the agent's cochlea spans up to max_band_fc (7500Hz), so an ear whose Nyquist is below that (fs < 2*max_band_fc) is feeding its own top filters under-sampled garbage. (The agent first proposed an EMPIRICAL 'dead top bands' signal, but testing showed the gammatone filters still respond above Nyquist via their skirts -- dead_band_ratio ~0.5 not ~0 -- so the empirical signal does not cleanly fire; the adapter still stamps it as a diagnostic WITNESS, but the reliable trigger is the structural cochlea-vs-Nyquist comparison.) The raise_ear RULE lifts the ear to its matched 16kHz (= 2*max_band_fc(7500)=15000 rounded to the standard rate), bumping bank_epoch so exemplars heard at the old rate are not mixed with the new. Decision in the graph; the adapter only resamples + senses.",
+  "microtheory": {
+    "name": "ear_control",
+    "description": "the agent owns its ear: detect its own band-limit (dead top bands) and raise its sample rate from evidence."
+  },
+  "nodes": [],
+  "edges": [],
+  "productions": [
+    {
+      "provenance": "seed:ear_control:has_ear_config",
+      "src": {"type": "Agent", "var": "a"},
+      "edge_type": "has_ear_config",
+      "tgt": {"type": "EarConfig", "var": "e"}
+    }
+  ],
+  "rules": [
+    {
+      "name": "raise_ear",
+      "comment": "The agent NOTICES its ear under-samples its own cochlea and RAISES it. Triggers when fs < 2*max_band_fc: its top cochlear filter (7500Hz) is above the ear's Nyquist (fs/2), so that filter is fed garbage -- a structural fact about its own apparatus, independent of how loud any speech is (this is why it beats the empirical dead-band signal, which the filter skirts muddy). The effect lifts the ear to its matched standard rate 16kHz (>= 2*max_band_fc=15000); since 16000 is not < 2*7500 the rule cannot re-fire. Bumping bank_epoch marks old-rate exemplars stale so 8k and 16k are never compared in one recognition.",
+      "match_type": "EarConfig",
+      "match": [["agent", "has_ear_config", "ec"]],
+      "where": {
+        "type": "Lt",
+        "a": {"type": "Attr", "node": {"type": "Var", "name": "ec"}, "key": "fs"},
+        "b": {"type": "Times", "items": [
+          {"type": "Lit", "value": 2.0},
+          {"type": "Attr", "node": {"type": "Var", "name": "ec"}, "key": "max_band_fc"}]}
+      },
+      "effects": [
+        ["set_attr", "ec", "fs", {"__term__": {"type": "Lit", "value": 16000}}],
+        ["set_attr", "ec", "bank_epoch",
+         {"__term__": {"type": "Plus", "items": [
+           {"type": "Attr", "node": {"type": "Var", "name": "ec"}, "key": "bank_epoch"},
+           {"type": "Lit", "value": 1}]}}]
+      ]
+    }
+  ]
+}

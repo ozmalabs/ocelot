@@ -1,0 +1,118 @@
+{
+  "id": "columnar_storage_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "vectorized_execution",
+  "in_microtheory": "databases_and_storage",
+  "description": "Columnar storage + vectorized execution decomposed. ClickHouse, DuckDB, Snowflake, BigQuery, Spark all use this. SIMD on columns, compression cascades, late materialisation, vectorized operators, columnar joins.",
+  "sub_mechanisms": [
+    {
+      "name": "row_vs_column_layout",
+      "definition": "Row: row1_col1 row1_col2 row1_col3 row2_col1 ... Column: col1_row1 col1_row2 col2_row1 col2_row2 ...",
+      "why": "Row format: read whole row. Column: read only needed columns. For analytical queries scanning few columns over many rows, column layout reduces I/O proportionally.",
+      "category": "columnar_mechanism"
+    },
+    {
+      "name": "SIMD_on_columns",
+      "definition": "Per-column dense layout → vectorisable. Add two columns: process 8 floats per AVX-256 instruction.",
+      "why": "Row format: integer column scattered among other types — no SIMD. Column format: contiguous floats → SIMD-friendly. ClickHouse uses heavily.",
+      "category": "columnar_mechanism"
+    },
+    {
+      "name": "column_compression",
+      "definition": "Similar values together compress better. Sorted column with run-length encoding can shrink dramatically.",
+      "why": "Same data; better compression. Combined with dictionary, RLE, bit-pack: 5-10x size reduction over row format. Foundation of OLAP storage economics.",
+      "category": "columnar_mechanism"
+    },
+    {
+      "name": "late_materialisation",
+      "definition": "Postpone reconstructing rows as long as possible. Operate on columns; assemble rows only at result.",
+      "why": "Avoid building tuples that get filtered out. Filter + aggregation done on columns; final result materialised once. Combined with vectorisation gives 10-100x speedup.",
+      "category": "columnar_mechanism"
+    },
+    {
+      "name": "vectorized_filter_operator",
+      "definition": "Process N-row batch: scalar predicate evaluated on N values; produces selection bitmap.",
+      "why": "Per-row: branch + check per iteration. Vectorised: SIMD evaluates 8 at once → 8x speedup. Bitmap drives subsequent operators.",
+      "category": "columnar_mechanism"
+    },
+    {
+      "name": "vectorized_aggregation",
+      "definition": "SUM, AVG, MIN, MAX computed over batch. SIMD reduction across N values.",
+      "why": "Hot OLAP operator. SIMD reduction in a few cycles per N values. ClickHouse + DuckDB get massive aggregate query speedups.",
+      "category": "columnar_mechanism"
+    },
+    {
+      "name": "vectorized_hash_join",
+      "definition": "Build phase: hash all build-side rows in vectorized batches. Probe phase: compute hashes for batch of probe rows; lookup; collect matches.",
+      "why": "Per-row: hash + lookup per iteration. Vectorised: prefetch hash table entries; batched lookups; fewer cache misses. 5-10x faster than scalar.",
+      "category": "columnar_mechanism"
+    },
+    {
+      "name": "selection_vector",
+      "definition": "Bitmap or integer array indicating which positions in a batch are 'alive' (passed filters).",
+      "why": "Avoid copying after filter. Subsequent operators apply only to alive positions. Standard mechanism in vectorized engines.",
+      "category": "columnar_mechanism"
+    },
+    {
+      "name": "ClickHouse_MergeTree",
+      "definition": "ClickHouse's storage engine: columnar parts + background merges. LSM-like for OLAP.",
+      "why": "ORDER BY clause defines part organisation. Inserts go to small parts; merges combine. Read paths efficiently leverage sort order.",
+      "category": "columnar_mechanism"
+    },
+    {
+      "name": "predicate_pushdown_columnar",
+      "definition": "Filter applied as early as possible; combined with column stats to skip blocks.",
+      "why": "Same as Parquet predicate pushdown but in execution context. Engine reads block stats; skips if filter incompatible; evaluates filter vectorized on surviving blocks.",
+      "category": "columnar_mechanism"
+    },
+    {
+      "name": "MPP_massively_parallel_processing",
+      "definition": "Distributed OLAP: data sharded across nodes; queries execute in parallel; results merged.",
+      "why": "Foundation of Snowflake, BigQuery, Redshift, Spark SQL. Combine columnar within node with parallelism across nodes. Critical for petabyte-scale.",
+      "category": "columnar_mechanism"
+    },
+    {
+      "name": "shuffle_in_distributed_columnar",
+      "definition": "Redistribute data across nodes for join or aggregation. Hash partition by join key.",
+      "why": "Distributed join needs both sides' matching rows on same node. Shuffle = network-cost expensive operation. Query optimizer minimises shuffles (e.g., broadcast small side).",
+      "category": "columnar_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "columnar_layout_wins_for_analytical_queries",
+      "if": ["query scans large data but uses few columns"],
+      "then": ["columnar layout reduces I/O proportionally to columns-used / columns-total"],
+      "why": "SELECT sum(amount) FROM 1B-row table with 50 columns: row = read 1B × 50 columns; column = read 1B × 1 column. 50x less I/O. Standard OLAP advantage over row stores.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "vectorized_execution_amortises_per_call_overhead",
+      "if": ["operator processes batches of N rows per call"],
+      "then": ["per-row call/dispatch overhead is amortised across N rows"],
+      "why": "Volcano per-row: ~10ns dispatch + ~10ns work = 20ns/row. Vectorised per-N: ~10ns dispatch + N × 1-2ns work. For N=1024: ~1ns/row. 20x speedup before SIMD.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "SIMD_compounds_vectorized_speedup",
+      "if": ["batch operations use SIMD instructions"],
+      "then": ["per-row cost drops further by SIMD width factor"],
+      "why": "AVX-256: 8 floats per instruction. Vectorized + SIMD: 1ns/row → 0.125ns/row. Total speedup over Volcano: 100x+. Critical for OLAP query latency.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "row_storage_OLTP_columnar_OLAP",
+      "if": ["workload is transactional (full-row updates)"],
+      "then": ["row storage is appropriate"],
+      "why": "Update row in columnar: touch many columns = many seeks. In row: one write. OLTP needs row. OLAP scans columns, gets compression bonus, wants columnar. Different stores for different workloads.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "MPP_shuffle_minimisation_dominates_distributed_perf",
+      "if": ["distributed query has multiple stages"],
+      "then": ["minimising shuffles dominates performance"],
+      "why": "Shuffle = network transfer across nodes. Far slower than local compute. Optimisers go to lengths to avoid (broadcast small joins, push aggregations down, partition tables to avoid shuffle). Single biggest distributed-query optimisation.",
+      "soundness_category": "cost_equivalence"
+    }
+  ]
+}

@@ -1,0 +1,304 @@
+{
+  "id": "writer_model",
+  "version": "1.0.0",
+  "depends_on": [
+    "error_recovery",
+    "authorial_voice"
+  ],
+  "description": "The second channel of errors: a charitable, ACCURATE writer-model. Error-types route to a weighted distribution over value-neutral Attribute nodes (device/attention/L2/region/education); the NO-WORTH-FROM-SURFACE gate is structural (no production draws a Worth edge from any surface feature); signature changes mean situation changes. Infer freely, moralise never.",
+  "microtheory": {
+    "name": "writer_model",
+    "description": "charitable accurate writer-situation model from errors"
+  },
+  "nodes": [
+    {
+      "local_id": 1,
+      "type": "ErrorType",
+      "attrs": {
+        "name": "adjacent_key"
+      }
+    },
+    {
+      "local_id": 2,
+      "type": "ErrorType",
+      "attrs": {
+        "name": "burst"
+      }
+    },
+    {
+      "local_id": 3,
+      "type": "ErrorType",
+      "attrs": {
+        "name": "grammar_systematic"
+      }
+    },
+    {
+      "local_id": 4,
+      "type": "ErrorType",
+      "attrs": {
+        "name": "motor_consistent"
+      }
+    },
+    {
+      "local_id": 5,
+      "type": "ErrorType",
+      "attrs": {
+        "name": "phonetic"
+      }
+    },
+    {
+      "local_id": 6,
+      "type": "ErrorType",
+      "attrs": {
+        "name": "transposition"
+      }
+    },
+    {
+      "local_id": 7,
+      "type": "Attribute",
+      "attrs": {
+        "name": "L2",
+        "kind": "value_neutral_signal"
+      }
+    },
+    {
+      "local_id": 8,
+      "type": "Attribute",
+      "attrs": {
+        "name": "device",
+        "kind": "value_neutral_signal"
+      }
+    },
+    {
+      "local_id": 9,
+      "type": "Attribute",
+      "attrs": {
+        "name": "distraction",
+        "kind": "value_neutral_signal"
+      }
+    },
+    {
+      "local_id": 10,
+      "type": "Attribute",
+      "attrs": {
+        "name": "education_level",
+        "kind": "value_neutral_signal"
+      }
+    },
+    {
+      "local_id": 11,
+      "type": "Attribute",
+      "attrs": {
+        "name": "emotional_state",
+        "kind": "value_neutral_signal"
+      }
+    },
+    {
+      "local_id": 12,
+      "type": "Attribute",
+      "attrs": {
+        "name": "region",
+        "kind": "value_neutral_signal"
+      }
+    },
+    {
+      "local_id": 13,
+      "type": "Concept",
+      "attrs": {
+        "name": "writer_model",
+        "description": "Errors carry a SECOND channel beyond the intended text: value-neutral SIGNAL that makes the model of the writer more accurate. Read the error SIGNATURE (type + burstiness) into a weighted DISTRIBUTION over Attribute hypotheses (device / attention / emotional-state / L2 / region / education-level) \u2014 keep them LIVE (meaning-vector), never collapse to the gate-keeping default \"uneducated\". Inferring an attribute (even less schooling, or on-a-phone) is legitimate; it is information, not insult."
+      }
+    },
+    {
+      "local_id": 14,
+      "type": "Concept",
+      "attrs": {
+        "name": "attribute_vs_worth",
+        "description": "Two layers on structurally DISTINCT kinds so they cannot blur: an Attribute node (education_level, L2, device, state) is signal you MAY infer and revise; a Worth/Status/Credibility edge is a different kind. THE GATE: no production derives a Worth edge from any surface/error feature \u2014 that single derivation is the only thing refused, never the attribute inference. Strict spelling/grammar were always the lever that converts \"less schooling\" or \"on a phone\" into a verdict of belonging; cutting the derivation edge disarms the lever."
+      }
+    },
+    {
+      "local_id": 15,
+      "type": "Principle",
+      "attrs": {
+        "name": "infer_freely_moralise_never",
+        "head": "writer model",
+        "body": "infer every attribute the evidence supports (a more accurate model), but draw NO worth/status/credibility from any surface feature; the inference is information, the moralisation is the gate"
+      }
+    },
+    {
+      "local_id": 16,
+      "type": "Principle",
+      "attrs": {
+        "name": "confound_is_first_class",
+        "head": "writer model",
+        "body": "store the confound as a fact: the same writer is fully accurate at a keyboard, so a motor-slip signature is evidence about the CHANNEL, not competence \u2014 collapsing it to a verdict is not only unjust but INACCURATE (it would mispredict the writer at a desk)"
+      }
+    },
+    {
+      "local_id": 17,
+      "type": "Principle",
+      "attrs": {
+        "name": "signature_change_is_situation_change",
+        "head": "writer model",
+        "body": "a shift in the error signature within one identity implies a change of SITUATION (clean->messy = phone/tired/upset; messy->clean = at a keyboard): the model moves the device/state attributes, not the person"
+      }
+    },
+    {
+      "local_id": 18,
+      "type": "Principle",
+      "attrs": {
+        "name": "distribution_not_default",
+        "head": "writer model",
+        "body": "weight the hypotheses by which error-type evidence actually fired and keep the distribution live; do NOT default-collapse to the unflattering hypothesis \u2014 adjacent-key slips load device, systematic article-drop loads L2, and neither is the gate-keeping prior"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "src": {
+        "local": 6
+      },
+      "tgt": {
+        "local": 8
+      },
+      "type": "routes_to",
+      "attrs": {
+        "weight": 0.55
+      }
+    },
+    {
+      "src": {
+        "local": 6
+      },
+      "tgt": {
+        "local": 9
+      },
+      "type": "routes_to",
+      "attrs": {
+        "weight": 0.3
+      }
+    },
+    {
+      "src": {
+        "local": 1
+      },
+      "tgt": {
+        "local": 8
+      },
+      "type": "routes_to",
+      "attrs": {
+        "weight": 0.55
+      }
+    },
+    {
+      "src": {
+        "local": 1
+      },
+      "tgt": {
+        "local": 9
+      },
+      "type": "routes_to",
+      "attrs": {
+        "weight": 0.3
+      }
+    },
+    {
+      "src": {
+        "local": 4
+      },
+      "tgt": {
+        "local": 8
+      },
+      "type": "routes_to",
+      "attrs": {
+        "weight": 0.75
+      }
+    },
+    {
+      "src": {
+        "local": 5
+      },
+      "tgt": {
+        "local": 7
+      },
+      "type": "routes_to",
+      "attrs": {
+        "weight": 0.3
+      }
+    },
+    {
+      "src": {
+        "local": 5
+      },
+      "tgt": {
+        "local": 12
+      },
+      "type": "routes_to",
+      "attrs": {
+        "weight": 0.2
+      }
+    },
+    {
+      "src": {
+        "local": 5
+      },
+      "tgt": {
+        "local": 10
+      },
+      "type": "routes_to",
+      "attrs": {
+        "weight": 0.2
+      }
+    },
+    {
+      "src": {
+        "local": 3
+      },
+      "tgt": {
+        "local": 7
+      },
+      "type": "routes_to",
+      "attrs": {
+        "weight": 0.4
+      }
+    },
+    {
+      "src": {
+        "local": 3
+      },
+      "tgt": {
+        "local": 12
+      },
+      "type": "routes_to",
+      "attrs": {
+        "weight": 0.2
+      }
+    },
+    {
+      "src": {
+        "local": 2
+      },
+      "tgt": {
+        "local": 9
+      },
+      "type": "routes_to",
+      "attrs": {
+        "weight": 0.4
+      }
+    },
+    {
+      "src": {
+        "local": 2
+      },
+      "tgt": {
+        "local": 11
+      },
+      "type": "routes_to",
+      "attrs": {
+        "weight": 0.2
+      }
+    }
+  ],
+  "rules": []
+}

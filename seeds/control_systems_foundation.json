@@ -1,0 +1,80 @@
+{
+  "microtheory": {
+    "name": "control_systems_foundation",
+    "definition": "Classical + modern control theory. Feedback, plants, controllers, stability, transfer functions, state-space, PID, frequency response, root locus, Nyquist + Bode + Lyapunov, nonlinear control. The mathematical framework for steering dynamical systems toward desired behavior. Grounds the feedback_control subsystem of Jabberwock's runner/brain design — the substrate's drives, corrections, regulators map directly onto controllers, error signals, and stability margins.",
+    "category": "foundation"
+  },
+  "concepts": [
+    {"name": "plant_control", "definition": "The system being controlled. Receives control input + produces output. Has dynamics. Substrate analogue: Jabberwock's Mt being regulated.", "category": "structural"},
+    {"name": "controller", "definition": "Component computing control input from error signal. Substrate analogue: Jabberwock's correction-firing handler.", "category": "structural"},
+    {"name": "setpoint", "definition": "Desired output value. Reference signal. Substrate analogue: Jabberwock's drive target.", "category": "structural"},
+    {"name": "process_variable", "definition": "Measured output of plant. Compared with setpoint. Substrate analogue: substrate's σ-state value.", "category": "structural"},
+    {"name": "error_signal", "definition": "e(t) = setpoint - process_variable. Drives controller. Substrate analogue: substrate's ΔF / frustration.", "category": "structural"},
+    {"name": "control_signal", "definition": "u(t) — controller's output to plant. Substrate analogue: substrate's correction action.", "category": "structural"},
+    {"name": "feedback_loop", "definition": "Closed loop: error → controller → plant → sensed output → error. Substrate analogue: substrate's drive-correction loop.", "category": "structural"},
+    {"name": "open_loop", "definition": "No feedback. Controller outputs based on setpoint alone. Brittle. Substrate analogue: substrate's seeded reflexes without correction.", "category": "structural"},
+    {"name": "closed_loop", "definition": "Feedback present. Self-correcting. Standard control architecture. Substrate analogue: substrate's full drive ensemble.", "category": "structural"},
+
+    {"name": "pid_control", "definition": "Proportional-Integral-Derivative. u(t) = Kp·e + Ki·∫e dt + Kd·de/dt. Workhorse of industrial control. ~95% of control loops worldwide. Substrate analogue: substrate's three-component correction drive.", "category": "pid"},
+    {"name": "proportional_term", "definition": "Kp·e. Responds to current error magnitude. Larger Kp → faster + more aggressive. Substrate analogue: substrate's immediate-correction strength.", "category": "pid"},
+    {"name": "integral_term", "definition": "Ki·∫e dt. Eliminates steady-state error. Accumulates persistent error. Substrate analogue: substrate's sustained-frustration accumulator.", "category": "pid"},
+    {"name": "derivative_term", "definition": "Kd·de/dt. Predictive — responds to rate of error change. Damps oscillation. Substrate analogue: substrate's anticipation handler.", "category": "pid"},
+    {"name": "ziegler_nichols_tuning", "definition": "1942. Empirical PID tuning: increase Kp until oscillation, then Kp ← 0.6·Ku, Ki ← 2Kp/Pu, Kd ← Kp·Pu/8. Substrate analogue: substrate's drive-coefficient empirical tuning.", "category": "pid"},
+    {"name": "integral_windup", "definition": "Integral term saturates during prolonged actuator limits. Causes overshoot. Anti-windup mechanisms reset. Substrate analogue: substrate's correction over-accumulation failure.", "category": "pid"},
+
+    {"name": "transfer_function", "definition": "G(s) = output(s)/input(s) in Laplace domain. Captures dynamics in single algebraic expression. Substrate analogue: substrate's input-output operator characterization.", "category": "classical"},
+    {"name": "laplace_transform", "definition": "F(s) = ∫₀^∞ f(t)e^{-st} dt. Transforms ODEs into algebraic equations. Foundation of classical control. Substrate analogue: substrate's frequency-domain analysis.", "category": "classical"},
+    {"name": "frequency_response", "definition": "How system responds to sinusoidal input at each frequency. Magnitude + phase per frequency. Substrate analogue: substrate's response across input timescales.", "category": "classical"},
+    {"name": "bode_plot", "definition": "Magnitude (dB) + phase vs log frequency. Visual stability + performance assessment. Substrate analogue: substrate's per-frequency response visualization.", "category": "classical"},
+    {"name": "nyquist_criterion", "definition": "Encirclement test for stability via Nyquist plot. Substrate analogue: substrate's loop-stability check.", "category": "classical"},
+    {"name": "root_locus", "definition": "How closed-loop poles move as gain varies. Tool for controller tuning. Substrate analogue: substrate's parameter-sweep stability analysis.", "category": "classical"},
+
+    {"name": "gain_margin", "definition": "How much gain can increase before instability. Stability robustness measure. dB. Substrate analogue: substrate's tolerance to drive amplification.", "category": "stability"},
+    {"name": "phase_margin", "definition": "Additional phase lag before instability at 0 dB crossover. Substrate analogue: substrate's delay tolerance.", "category": "stability"},
+    {"name": "stability_bibo", "definition": "Bounded-Input Bounded-Output stability. Standard for LTI systems. Substrate analogue: substrate's bounded response guarantee.", "category": "stability"},
+    {"name": "lyapunov_stability", "definition": "Lyapunov 1892. System stable iff there exists V(x) > 0 with dV/dt ≤ 0. Direct method for nonlinear stability. Substrate analogue: substrate's basin-attractor stability check.", "category": "stability"},
+    {"name": "lyapunov_function", "definition": "Energy-like scalar V(x) decreasing along trajectories. Proves stability without solving ODE. Substrate analogue: substrate's Hamiltonian as Lyapunov function.", "category": "stability"},
+    {"name": "asymptotic_stability", "definition": "Solutions converge to equilibrium as t → ∞. Stronger than mere stability. Substrate analogue: substrate's basin attraction.", "category": "stability"},
+    {"name": "exponential_stability", "definition": "||x(t)|| ≤ K·||x(0)||·e^{-λt}. Quantitative convergence rate. Substrate analogue: substrate's convergence rate bound.", "category": "stability"},
+
+    {"name": "state_space_model", "definition": "ẋ = Ax + Bu, y = Cx + Du. Modern (post-1960) standard. Multi-input multi-output capable. Substrate analogue: substrate's full-state representation.", "category": "state_space"},
+    {"name": "state_vector", "definition": "x ∈ R^n. Compact description of system memory. Substrate analogue: substrate's σ-vector.", "category": "state_space"},
+    {"name": "controllability", "definition": "Can reach any state from any other via control input. Kalman test: rank of controllability matrix = n. Substrate analogue: substrate's basin-reachability.", "category": "state_space"},
+    {"name": "observability", "definition": "Can determine state from output history. Dual of controllability. Substrate analogue: substrate's introspectability.", "category": "state_space"},
+    {"name": "duality_controllability_observability", "definition": "Kalman 1960. The two are mathematical duals. Substrate analogue: substrate's action-observation duality.", "category": "state_space"},
+    {"name": "pole_placement", "definition": "Choose feedback gain to place closed-loop poles at desired locations. Requires full controllability. Substrate analogue: substrate's equilibrium-design.", "category": "state_space"},
+
+    {"name": "linearization", "definition": "Approximate nonlinear system as linear near operating point via Taylor expansion. Foundation of local control. Substrate analogue: substrate's local-basin linearization.", "category": "nonlinear"},
+    {"name": "nonlinear_control", "definition": "Beyond LTI assumptions. Lyapunov methods, sliding mode, backstepping, feedback linearization. Substrate analogue: substrate's nonlinear dynamics.", "category": "nonlinear"},
+    {"name": "sliding_mode_control", "definition": "Drive system to sliding surface; stay on it. Robust to disturbance. Bang-bang character. Substrate analogue: substrate's hard-decision boundaries.", "category": "nonlinear"},
+    {"name": "feedback_linearization", "definition": "Cancel nonlinearity via feedback. Effective when model exact. Substrate analogue: substrate's nonlinearity-canceling correction.", "category": "nonlinear"},
+    {"name": "backstepping", "definition": "Recursive Lyapunov-based design. For systems with strict-feedback structure. Substrate analogue: substrate's nested-correction design.", "category": "nonlinear"},
+
+    {"name": "discrete_time_control", "definition": "Sampled-data control. Z-transform replaces Laplace. Substrate analogue: substrate's tick-discretized control.", "category": "digital"},
+    {"name": "z_transform", "definition": "X(z) = Σ x[n] z^{-n}. Discrete-time analog of Laplace. Substrate analogue: substrate's per-tick analysis.", "category": "digital"},
+    {"name": "zero_order_hold", "definition": "DAC reconstruction holding each sample constant. Adds delay. Substrate analogue: substrate's tick-period commitment.", "category": "digital"},
+    {"name": "aliasing_control", "definition": "Sampling above Nyquist required. High-frequency disturbances fold into baseband. Substrate analogue: substrate's tick-rate constraint.", "category": "digital"},
+
+    {"name": "disturbance_rejection", "definition": "Suppress effects of unmeasured disturbances. Loop gain at disturbance frequency determines suppression. Substrate analogue: substrate's noise-robust correction.", "category": "performance"},
+    {"name": "tracking_performance", "definition": "How well process variable follows setpoint changes. Rise time, settling time, overshoot, steady-state error. Substrate analogue: substrate's drive-target tracking.", "category": "performance"},
+    {"name": "robustness", "definition": "Performance under model uncertainty. Robust if maintains performance across parameter variation. Substrate analogue: substrate's prior-uncertainty tolerance.", "category": "performance"},
+    {"name": "settling_time", "definition": "Time to enter + remain within ε of setpoint. Performance metric. Substrate analogue: substrate's correction convergence time.", "category": "performance"},
+    {"name": "overshoot", "definition": "Maximum excursion beyond setpoint as fraction of step size. Substrate analogue: substrate's correction overcorrection.", "category": "performance"},
+
+    {"name": "feedforward_control", "definition": "Use measured disturbance directly. No feedback delay. Combined with feedback. Substrate analogue: substrate's anticipation contribution.", "category": "architectures"},
+    {"name": "cascade_control", "definition": "Inner loop nested in outer. Inner faster. Improves disturbance rejection. Substrate analogue: substrate's nested-correction hierarchy.", "category": "architectures"},
+    {"name": "ratio_control", "definition": "Maintain ratio between two variables. Process control common. Substrate analogue: substrate's coupled-variable maintenance.", "category": "architectures"},
+    {"name": "smith_predictor", "definition": "Model-based dead-time compensation. Eliminates effect of input-output delay. Substrate analogue: substrate's anticipation correction for delay.", "category": "architectures"},
+
+    {"name": "saturation_actuator", "definition": "Real actuators have limits. Saturation degrades performance + causes wind-up. Substrate analogue: substrate's correction-magnitude bound.", "category": "practical"},
+    {"name": "dead_zone", "definition": "Range where small inputs produce no output. Substrate analogue: substrate's threshold-below-which no action.", "category": "practical"},
+    {"name": "hysteresis", "definition": "Output depends on history. Common in actuators. Substrate analogue: substrate's state-dependent response.", "category": "practical"}
+  ],
+  "rules": [
+    {"name": "feedback_is_self_correction", "head": "Jabberwock builds a regulator", "body": "feedback (sensed-output → error → correction) is the foundational pattern. Open-loop control fails on disturbed or model-uncertain plants."},
+    {"name": "pid_handles_most_loops", "head": "Jabberwock designs a controller for a stable plant", "body": "PID is the default starting point. P alone for fast simple loops; PI for steady-state-error elimination; PID for predictive damping."},
+    {"name": "stability_required_for_useful_control", "head": "Jabberwock evaluates a control design", "body": "stability (Lyapunov, BIBO, or pole-placement) is a prerequisite. Unstable closed loop is worse than no control."},
+    {"name": "controllability_observability_dual", "head": "Jabberwock builds a state-feedback controller", "body": "controllability is required to place closed-loop poles. Observability is required if state must be estimated from output. Kalman 1960 — they're mathematical duals."},
+    {"name": "real_disturbances_drive_robustness_requirement", "head": "Jabberwock's controller will face real disturbances + model errors", "body": "robust design (gain margin > 6 dB, phase margin > 45°) is required to maintain performance under uncertainty."}
+  ]
+}

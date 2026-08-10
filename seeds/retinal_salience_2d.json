@@ -1,0 +1,140 @@
+{
+ "id": "retinal_salience_2d",
+ "version": "1.0.0",
+ "self_load_only": true,
+ "depends_on": [
+  "retinal_onset_2d"
+ ],
+ "area": "retina",
+ "description": "Per-area RESIDUAL salience on a 2-D az×el RETINA (the 2-D expansion of Rung 4, closing the 2-D loop after 166000). Salience is the RESIDUAL of the async onset-event stream AFTER the dominant coherent structure is explained -- the surprising cell whose motion is NOT accounted for by the DOMINANT common-fate motion (157000's egomotion-cancelled residual, now event-native AND 2-D). The 1-D retinal_residual_salience reads azimuth only, so a spatially-separated PURELY VERTICAL mover contributes NOTHING to its azimuth-only velocity and is ranked at the BACKGROUND level -- MISSED. The `retinal_residual_salience_2d` Rust task kind reduces events to one mean epoch per firing cell (col,row), groups cells into 8-connected components (the SAME grouping the 2-D carve uses), fits each component's 2-D velocity (v_az,v_el), picks the DOMINANT component (most cells; the coherent background) to define v_dom, and emits a fixed per-cell stride-3 layout [fired, raw_salience=|v_comp|, residual_salience=|v_comp - v_dom|] (the 2-D VECTOR-difference norm) at flat index row*n_az+col. This rule matches every RetinalColumn cell against the done 2-D salience task and mints ONE RetinalSalience node per FIRING cell (output[cell_index*3+0]==1.0) carrying both scores, once per cell-epoch via a salience2d_epoch guard. No threshold on the salience value -- the fovea's log-weighted admissibility grammar decides. OFF by default: the rule cannot fire unless a RetinaSalienceParams2d node exists (created by the adapter only when context['visual_salience'] AND context['retina_2d'] are set), and the adapter creates the 2-D salience task only then. The 1-D retinal_residual_salience kind + retinal_salience seed are byte-untouched.",
+ "microtheory": {
+  "name": "retinal_salience_2d",
+  "description": "2-D residual of the (az,el) onset-event stream after the dominant common-fate motion -> per-cell RetinalSalience"
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [
+  {
+   "provenance": "seed:retinal_salience_2d:retina-salience-params-2d",
+   "src": {"type": "Retina", "var": "retina"},
+   "edge_type": "has_salience_params_2d",
+   "tgt": {"type": "RetinaSalienceParams2d", "var": "sparams"}
+  },
+  {
+   "provenance": "seed:retinal_salience_2d:retina-salience-task-2d",
+   "src": {"type": "Retina", "var": "retina"},
+   "edge_type": "has_salience_task_2d",
+   "tgt": {"type": "CognitiveTask", "var": "task"}
+  },
+  {
+   "provenance": "seed:retinal_salience_2d:retina-retinal-salience-2d",
+   "src": {"type": "Retina", "var": "retina"},
+   "edge_type": "has_salience_2d",
+   "tgt": {"type": "RetinalSalience", "var": "sal"}
+  }
+ ],
+ "rules": [
+  {
+   "name": "retinal_mint_salience_2d",
+   "area": "retina",
+   "order": 4,
+   "latency_class": "hard_realtime",
+   "match": [
+    ["retina", "has_salience_params_2d", "sparams"],
+    ["retina", "has_column", "column"],
+    ["retina", "has_salience_task_2d", "task"]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "task"}, "key": "kind"},
+      "b": {"type": "Lit", "value": "retinal_residual_salience_2d"}
+     },
+     {
+      "type": "Eq",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "task"}, "key": "status"},
+      "b": {"type": "Lit", "value": "done"}
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {"type": "Attr", "node": {"type": "Var", "name": "column"}, "key": "salience2d_epoch"},
+       "b": {"type": "Attr", "node": {"type": "Var", "name": "task"}, "key": "input_epoch"}
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "IndexAt",
+       "seq": {"type": "Attr", "node": {"type": "Var", "name": "task"}, "key": "output"},
+       "index": {
+        "type": "Plus",
+        "items": [
+         {"type": "Times", "items": [
+          {"type": "Attr", "node": {"type": "Var", "name": "column"}, "key": "cell_index"},
+          {"type": "Lit", "value": 3}
+         ]},
+         {"type": "Lit", "value": 0}
+        ]
+       }
+      },
+      "b": {"type": "Lit", "value": 1.0}
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "sal",
+     "RetinalSalience",
+     {
+      "column_index": {"__term__": {
+       "type": "Attr", "node": {"type": "Var", "name": "column"}, "key": "col"
+      }},
+      "row_index": {"__term__": {
+       "type": "Attr", "node": {"type": "Var", "name": "column"}, "key": "row"
+      }},
+      "cell_index": {"__term__": {
+       "type": "Attr", "node": {"type": "Var", "name": "column"}, "key": "cell_index"
+      }},
+      "raw_salience": {"__term__": {
+       "type": "IndexAt",
+       "seq": {"type": "Attr", "node": {"type": "Var", "name": "task"}, "key": "output"},
+       "index": {"type": "Plus", "items": [
+        {"type": "Times", "items": [
+         {"type": "Attr", "node": {"type": "Var", "name": "column"}, "key": "cell_index"},
+         {"type": "Lit", "value": 3}
+        ]},
+        {"type": "Lit", "value": 1}
+       ]}
+      }},
+      "residual_salience": {"__term__": {
+       "type": "IndexAt",
+       "seq": {"type": "Attr", "node": {"type": "Var", "name": "task"}, "key": "output"},
+       "index": {"type": "Plus", "items": [
+        {"type": "Times", "items": [
+         {"type": "Attr", "node": {"type": "Var", "name": "column"}, "key": "cell_index"},
+         {"type": "Lit", "value": 3}
+        ]},
+        {"type": "Lit", "value": 2}
+       ]}
+      }},
+      "epoch": {"__term__": {
+       "type": "Attr", "node": {"type": "Var", "name": "task"}, "key": "input_epoch"
+      }}
+     }
+    ],
+    ["add_edge", "retina", "has_salience_2d", "sal"],
+    [
+     "set_attr",
+     "column",
+     "salience2d_epoch",
+     {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "task"}, "key": "input_epoch"}}
+    ]
+   ]
+  }
+ ]
+}

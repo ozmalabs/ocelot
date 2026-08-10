@@ -1,0 +1,152 @@
+{
+  "id": "goal_layers_default",
+  "version": "1.0.0",
+  "depends_on": [],
+  "self_load_only": true,
+  "description": "DEFAULT DATA (no rule) for the surface-inversion, temporal-conflict and named-trope goal layers, so they auto-fire on an article read WITHOUT a per-analysis teach. Ships ONLY graph DATA: the three MethodSpecs the agent AUTHORS each classify-by-join rule from, plus starter codebooks -- DistancingCue (surface content voiced at a distance / not the speaker's own stance), OpposingActionPair (support-then-undermine composite keys the temporal layer joins), and TropeSignature (the strategic-schema NAMES from the TVTropes vocabulary the named-trope layer joins). The RULES are DELIBERATELY NOT shipped here (each layer's _no_shipped_*_rule test asserts it): the only SurfaceInversionReading / TemporalConflictReading / TropeReading rules are the ones the agent authors at runtime from these method texts via its procedural_reader -> binding_resolver -> method_synthesis faculty (domains/actor_goals.ensure_*_rule). Codebooks are the agent's held, teach()-extensible data -- a new row grows coverage with zero code/rule change.",
+  "nodes": [
+    {
+      "local_id": 1,
+      "type": "MethodSpec",
+      "attrs": {
+        "name": "surface_inversion",
+        "text": "When an utterance phrase's phrase matches a distancing cue's phrase, classify a surface inversion reading."
+      }
+    },
+    {
+      "local_id": 2,
+      "type": "MethodSpec",
+      "attrs": {
+        "name": "temporal_conflict",
+        "text": "When an action pair fact's pair_key matches an opposing action pair's pair_key, classify a temporal conflict reading."
+      }
+    },
+    {
+      "local_id": 3,
+      "type": "MethodSpec",
+      "attrs": {
+        "name": "named_trope",
+        "text": "When a temporal conflict reading's pair_key matches a trope signature's pair_key, classify a trope reading."
+      }
+    },
+    {
+      "local_id": 10,
+      "type": "DistancingCue",
+      "attrs": {
+        "phrase": "so-called",
+        "reading": "surface-distanced-not-own-stance"
+      }
+    },
+    {
+      "local_id": 11,
+      "type": "DistancingCue",
+      "attrs": {
+        "phrase": "in his words",
+        "reading": "surface-distanced-not-own-stance"
+      }
+    },
+    {
+      "local_id": 12,
+      "type": "DistancingCue",
+      "attrs": {
+        "phrase": "the disgusting notion that",
+        "reading": "surface-distanced-not-own-stance"
+      }
+    },
+    {
+      "local_id": 13,
+      "type": "DistancingCue",
+      "attrs": {
+        "phrase": "supposedly",
+        "reading": "surface-distanced-not-own-stance"
+      }
+    },
+    {
+      "local_id": 14,
+      "type": "DistancingCue",
+      "attrs": {
+        "phrase": "he repeated the",
+        "reading": "surface-distanced-not-own-stance"
+      }
+    },
+    {
+      "local_id": 15,
+      "type": "DistancingCue",
+      "attrs": {
+        "phrase": "in her words",
+        "reading": "surface-distanced-not-own-stance"
+      }
+    },
+    {
+      "local_id": 20,
+      "type": "OpposingActionPair",
+      "attrs": {
+        "pair_key": "fund|oppose",
+        "note": "supports then undermines the same object -- a layered goal revealed across actions"
+      }
+    },
+    {
+      "local_id": 21,
+      "type": "OpposingActionPair",
+      "attrs": {
+        "pair_key": "support|block",
+        "note": "supports then undermines the same object -- a layered goal revealed across actions"
+      }
+    },
+    {
+      "local_id": 22,
+      "type": "OpposingActionPair",
+      "attrs": {
+        "pair_key": "promote|restrict",
+        "note": "supports then undermines the same object -- a layered goal revealed across actions"
+      }
+    },
+    {
+      "local_id": 23,
+      "type": "OpposingActionPair",
+      "attrs": {
+        "pair_key": "sponsor|ban",
+        "note": "supports then undermines the same object -- a layered goal revealed across actions"
+      }
+    },
+    {
+      "local_id": 30,
+      "type": "TropeSignature",
+      "attrs": {
+        "pair_key": "fund|oppose",
+        "trope": "Trojan Horse",
+        "gloss": "help/a gift carrying a hidden hostile payload -- support the thing, then undermine it"
+      }
+    },
+    {
+      "local_id": 31,
+      "type": "TropeSignature",
+      "attrs": {
+        "pair_key": "support|block",
+        "trope": "Trojan Horse",
+        "gloss": "help/a gift carrying a hidden hostile payload -- support the thing, then undermine it"
+      }
+    },
+    {
+      "local_id": 32,
+      "type": "TropeSignature",
+      "attrs": {
+        "pair_key": "promote|restrict",
+        "trope": "Bait and Switch",
+        "gloss": "offer/promote one thing, then deliver its restriction instead"
+      }
+    },
+    {
+      "local_id": 33,
+      "type": "TropeSignature",
+      "attrs": {
+        "pair_key": "sponsor|ban",
+        "trope": "False Flag Operation",
+        "gloss": "a hostile act disguised behind ostensible sponsorship/support"
+      }
+    }
+  ],
+  "edges": [],
+  "productions": [],
+  "rules": []
+}

@@ -1,0 +1,4456 @@
+{
+ "id": "cognitive_supervision",
+ "version": "3.0.0",
+ "depends_on": [
+  "dual_process_core",
+  "cognitive_pareto"
+ ],
+ "area": "general_cognition",
+ "latency_class": "hard_realtime",
+ "description": "Every active process pursues the existing generic order-N Goal tree under a renewable integer lease. Approximate time and prediction-envelope departures trigger a graph-native, per-goal marginal-efficiency check-in without scalarisation.",
+ "nodes": [
+  {
+   "local_id": 1,
+   "type": "AsyncDaemonCycleBudget",
+   "attrs": {
+    "status": "active",
+    "quantum_units": 1,
+    "observed_lease_generation": -1,
+    "adjustment_count": 0,
+    "integer_native": 1,
+    "output_authority": 0
+   }
+  },
+  {
+   "local_id": 2,
+   "type": "CognitiveSupervisionAnchor",
+   "attrs": {
+    "kind": "asynchronous_default_mode",
+    "integer_native": 1,
+    "output_authority": 0
+   }
+  }
+ ],
+ "edges": [
+  {
+   "src": {
+    "local": 2
+   },
+   "type": "has_async_daemon_cycle_budget",
+   "tgt": {
+    "local": 1
+   },
+   "attrs": {}
+  }
+ ],
+ "productions": [
+  {
+   "provenance": "cognitive_supervision:episode_process",
+   "src": {
+    "type": "Node",
+    "var": "src"
+   },
+   "edge_type": "has_cognitive_process",
+   "tgt": {
+    "type": "CognitiveProcess",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "cognitive_supervision:process_policy",
+   "src": {
+    "type": "CognitiveProcess",
+    "var": "src"
+   },
+   "edge_type": "governed_by_cognitive_supervision_policy",
+   "tgt": {
+    "type": "CognitiveSupervisionPolicy",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "cognitive_supervision:process_plan",
+   "src": {
+    "type": "CognitiveProcess",
+    "var": "src"
+   },
+   "edge_type": "supervises_learning_plan",
+   "tgt": {
+    "type": "LearningPlan",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "cognitive_supervision:process_step",
+   "src": {
+    "type": "CognitiveProcess",
+    "var": "src"
+   },
+   "edge_type": "supervises_learning_plan_step",
+   "tgt": {
+    "type": "LearningPlanStep",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "cognitive_supervision:process_capability",
+   "src": {
+    "type": "CognitiveProcess",
+    "var": "src"
+   },
+   "edge_type": "supervises_learning_capability",
+   "tgt": {
+    "type": "Node",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "cognitive_supervision:process_goal",
+   "src": {
+    "type": "CognitiveProcess",
+    "var": "src"
+   },
+   "edge_type": "pursues_goal",
+   "tgt": {
+    "type": "Goal",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "cognitive_supervision:supervised_goal",
+   "src": {
+    "type": "CognitiveProcess",
+    "var": "src"
+   },
+   "edge_type": "supervises_goal",
+   "tgt": {
+    "type": "Goal",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "cognitive_supervision:goal_subgoal",
+   "src": {
+    "type": "Goal",
+    "var": "src"
+   },
+   "edge_type": "has_subgoal",
+   "tgt": {
+    "type": "Goal",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "cognitive_supervision:process_goal_baseline",
+   "src": {
+    "type": "CognitiveProcess",
+    "var": "src"
+   },
+   "edge_type": "has_cognitive_goal_baseline",
+   "tgt": {
+    "type": "CognitiveGoalBaseline",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "cognitive_supervision:baseline_goal",
+   "src": {
+    "type": "CognitiveGoalBaseline",
+    "var": "src"
+   },
+   "edge_type": "measures_goal",
+   "tgt": {
+    "type": "Goal",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "cognitive_supervision:process_reference",
+   "src": {
+    "type": "CognitiveProcess",
+    "var": "src"
+   },
+   "edge_type": "has_reference_efficiency_window",
+   "tgt": {
+    "type": "CognitiveEfficiencyWindow",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "cognitive_supervision:process_signal",
+   "src": {
+    "type": "CognitiveProcess",
+    "var": "src"
+   },
+   "edge_type": "observes_process_signal",
+   "tgt": {
+    "type": "CognitiveProcessSignal",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "cognitive_supervision:process_checkin",
+   "src": {
+    "type": "CognitiveProcess",
+    "var": "src"
+   },
+   "edge_type": "has_cognitive_checkin",
+   "tgt": {
+    "type": "CognitiveCheckIn",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "cognitive_supervision:checkin_profile",
+   "src": {
+    "type": "CognitiveCheckIn",
+    "var": "src"
+   },
+   "edge_type": "has_efficiency_pareto_profile",
+   "tgt": {
+    "type": "ParetoProfile",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "cognitive_supervision:checkin_signal",
+   "src": {
+    "type": "CognitiveCheckIn",
+    "var": "src"
+   },
+   "edge_type": "triggered_by_process_signal",
+   "tgt": {
+    "type": "CognitiveProcessSignal",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "cognitive_supervision:continuation_process",
+   "src": {
+    "type": "SystemTwoEscalation",
+    "var": "src"
+   },
+   "edge_type": "continues_cognitive_process",
+   "tgt": {
+    "type": "CognitiveProcess",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "cognitive_supervision:checkin_process",
+   "src": {
+    "type": "SystemTwoEscalation",
+    "var": "src"
+   },
+   "edge_type": "checks_cognitive_process",
+   "tgt": {
+    "type": "CognitiveProcess",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "cognitive_supervision:residual_checkin",
+   "src": {
+    "type": "LearningPlanResidual",
+    "var": "src"
+   },
+   "edge_type": "raised_by_cognitive_checkin",
+   "tgt": {
+    "type": "CognitiveCheckIn",
+    "var": "tgt"
+   }
+  }
+ ],
+ "rules": [
+  {
+   "name": "cs_attach_renewable_lease_to_selected_cognitive_process",
+   "area": "cognitive_supervision",
+   "latency_class": "hard_realtime",
+   "batch": false,
+   "comment": "The process owns a strict integer lease and clock. The situated evidence window supplies an initial check-in span, not a global timeout.",
+   "match": [
+    [
+     "episode",
+     "has_self_directed_learning_plan",
+     "plan"
+    ],
+    [
+     "plan",
+     "has_selected_learning_plan_step",
+     "step"
+    ],
+    [
+     "step",
+     "plans_learning_capability",
+     "instance"
+    ],
+    [
+     "step",
+     "pursues_goal",
+     "goal"
+    ]
+   ],
+   "where": {
+    "type": "Eq",
+    "a": {
+     "type": "Count",
+     "source": {
+      "type": "Filter",
+      "source": {
+       "type": "Neighbours",
+       "node": {
+        "type": "Var",
+        "name": "episode"
+       },
+       "edge_type": "has_cognitive_process"
+      },
+      "var_name": "known_process",
+      "predicate": {
+       "type": "Eq",
+       "a": {
+        "type": "Count",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "known_process"
+          },
+          "edge_type": "supervises_learning_plan_step"
+         },
+         "var_name": "known_step",
+         "predicate": {
+          "type": "Eq",
+          "a": {
+           "type": "Var",
+           "name": "known_step"
+          },
+          "b": {
+           "type": "Var",
+           "name": "step"
+          }
+         }
+        }
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1
+       }
+      }
+     }
+    },
+    "b": {
+     "type": "Lit",
+     "value": 0
+    }
+   },
+   "effects": [
+    [
+     "add_node",
+     "policy",
+     "CognitiveSupervisionPolicy",
+     {
+      "enabled": 1,
+      "cognitive_epoch": 0,
+      "integer_native": 1,
+      "output_authority": 0
+     }
+    ],
+    [
+     "add_node",
+     "process",
+     "CognitiveProcess",
+     {
+      "status": "monitoring",
+      "kind": "self_directed_learning",
+      "order_n": 1,
+      "continuation_authority": 1,
+      "lease_generation": 0,
+      "renew_before_epoch": {
+       "__term__": {
+        "type": "Max",
+        "items": [
+         {
+          "type": "Lit",
+          "value": 1
+         },
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "episode"
+            },
+            "key": "development_evidence_window"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         }
+        ]
+       }
+      },
+      "last_checkin_epoch": 0,
+      "next_checkin_epoch": {
+       "__term__": {
+        "type": "Max",
+        "items": [
+         {
+          "type": "Lit",
+          "value": 1
+         },
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "episode"
+            },
+            "key": "development_evidence_window"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         }
+        ]
+       }
+      },
+      "checkin_span_units": {
+       "__term__": {
+        "type": "Max",
+        "items": [
+         {
+          "type": "Lit",
+          "value": 1
+         },
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "episode"
+            },
+            "key": "development_evidence_window"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         }
+        ]
+       }
+      },
+      "baseline_effort_units": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "step"
+          },
+          "key": "evidence_spent_units"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "checkin_count": 0,
+      "integer_native": 1,
+      "output_authority": 0
+     }
+    ],
+    [
+     "add_node",
+     "reference",
+     "CognitiveEfficiencyWindow",
+     {
+      "status": "reference",
+      "causal_yield_units": 0,
+      "information_gain_units": 0,
+      "failure_burden_units": 0,
+      "effort_units": 1,
+      "integer_native": 1,
+      "output_authority": 0
+     }
+    ],
+    [
+     "add_edge",
+     "episode",
+     "has_cognitive_process",
+     "process"
+    ],
+    [
+     "add_edge",
+     "process",
+     "governed_by_cognitive_supervision_policy",
+     "policy"
+    ],
+    [
+     "add_edge",
+     "process",
+     "has_reference_efficiency_window",
+     "reference"
+    ],
+    [
+     "add_edge",
+     "process",
+     "supervises_learning_plan",
+     "plan"
+    ],
+    [
+     "add_edge",
+     "process",
+     "supervises_learning_plan_step",
+     "step"
+    ],
+    [
+     "add_edge",
+     "process",
+     "supervises_learning_capability",
+     "instance"
+    ],
+    [
+     "add_edge",
+     "process",
+     "pursues_goal",
+     "goal"
+    ],
+    [
+     "add_edge",
+     "process",
+     "supervises_goal",
+     "goal"
+    ],
+    [
+     "set_attr",
+     "episode",
+     "cognitive_continuation_authority",
+     1
+    ]
+   ]
+  },
+  {
+   "name": "cs_follow_existing_goal_tree_to_arbitrary_depth",
+   "area": "cognitive_supervision",
+   "latency_class": "hard_realtime",
+   "batch": true,
+   "comment": "A subgoal is a Goal. Repeated fixpoint application therefore exposes every reachable order without a depth limit.",
+   "match": [
+    [
+     "process",
+     "supervises_goal",
+     "parent"
+    ],
+    [
+     "parent",
+     "has_subgoal",
+     "goal"
+    ]
+   ],
+   "where": {
+    "type": "Not",
+    "arg": {
+     "type": "Exists",
+     "source": {
+      "type": "Neighbours",
+      "node": {
+       "type": "Var",
+       "name": "process"
+      },
+      "edge_type": "supervises_goal"
+     },
+     "var_name": "known_goal",
+     "predicate": {
+      "type": "Eq",
+      "a": {
+       "type": "Var",
+       "name": "known_goal"
+      },
+      "b": {
+       "type": "Var",
+       "name": "goal"
+      }
+     }
+    }
+   },
+   "effects": [
+    [
+     "add_edge",
+     "process",
+     "supervises_goal",
+     "goal"
+    ]
+   ]
+  },
+  {
+   "name": "cs_baseline_each_goal_dimension_without_scalarising_tree",
+   "area": "cognitive_supervision",
+   "latency_class": "hard_realtime",
+   "batch": true,
+   "match": [
+    [
+     "process",
+     "supervises_goal",
+     "goal"
+    ]
+   ],
+   "where": {
+    "type": "Eq",
+    "a": {
+     "type": "Count",
+     "source": {
+      "type": "Filter",
+      "source": {
+       "type": "Neighbours",
+       "node": {
+        "type": "Var",
+        "name": "process"
+       },
+       "edge_type": "has_cognitive_goal_baseline"
+      },
+      "var_name": "known_baseline",
+      "predicate": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "known_baseline"
+        },
+        "edge_type": "measures_goal"
+       },
+       "var_name": "known_goal",
+       "predicate": {
+        "type": "Eq",
+        "a": {
+         "type": "Var",
+         "name": "known_goal"
+        },
+        "b": {
+         "type": "Var",
+         "name": "goal"
+        }
+       }
+      }
+     }
+    },
+    "b": {
+     "type": "Lit",
+     "value": 0
+    }
+   },
+   "effects": [
+    [
+     "add_node",
+     "baseline",
+     "CognitiveGoalBaseline",
+     {
+      "baseline_progress_units": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "goal"
+          },
+          "key": "progress_units"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "observed_progress_units": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "goal"
+          },
+          "key": "progress_units"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "previous_progress_units": 0,
+      "previous_effort_units": 1,
+      "baseline_generation": 0,
+      "integer_native": 1,
+      "output_authority": 0
+     }
+    ],
+    [
+     "add_edge",
+     "process",
+     "has_cognitive_goal_baseline",
+     "baseline"
+    ],
+    [
+     "add_edge",
+     "baseline",
+     "measures_goal",
+     "goal"
+    ]
+   ]
+  },
+  {
+   "name": "cs_observe_each_supervised_goal_progress",
+   "area": "cognitive_supervision",
+   "latency_class": "hard_realtime",
+   "batch": true,
+   "match": [
+    [
+     "process",
+     "has_cognitive_goal_baseline",
+     "baseline"
+    ],
+    [
+     "baseline",
+     "measures_goal",
+     "goal"
+    ]
+   ],
+   "where": {
+    "type": "Not",
+    "arg": {
+     "type": "Eq",
+     "a": {
+      "type": "Plus",
+      "items": [
+       {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "baseline"
+        },
+        "key": "observed_progress_units"
+       },
+       {
+        "type": "Lit",
+        "value": 0
+       }
+      ]
+     },
+     "b": {
+      "type": "Plus",
+      "items": [
+       {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "goal"
+        },
+        "key": "progress_units"
+       },
+       {
+        "type": "Lit",
+        "value": 0
+       }
+      ]
+     }
+    }
+   },
+   "effects": [
+    [
+     "set_attr",
+     "baseline",
+     "observed_progress_units",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "goal"
+         },
+         "key": "progress_units"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "cs_open_checkin_when_independent_cognitive_lease_is_due",
+   "area": "cognitive_supervision",
+   "latency_class": "hard_realtime",
+   "batch": false,
+   "match": [
+    [
+     "episode",
+     "has_self_directed_learning_plan",
+     "plan"
+    ],
+    [
+     "plan",
+     "has_selected_learning_plan_step",
+     "step"
+    ],
+    [
+     "step",
+     "plans_learning_capability",
+     "instance"
+    ],
+    [
+     "episode",
+     "has_cognitive_process",
+     "process"
+    ],
+    [
+     "process",
+     "supervises_learning_plan_step",
+     "step"
+    ],
+    [
+     "process",
+     "pursues_goal",
+     "goal"
+    ],
+    [
+     "process",
+     "governed_by_cognitive_supervision_policy",
+     "policy"
+    ],
+    [
+     "process",
+     "has_reference_efficiency_window",
+     "reference"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "process"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "monitoring"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Lt",
+       "a": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "policy"
+          },
+          "key": "cognitive_epoch"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       },
+       "b": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "process"
+          },
+          "key": "renew_before_epoch"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "checkin",
+     "CognitiveCheckIn",
+     {
+      "status": "open",
+      "reason": "approximate_time",
+      "epoch": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "policy"
+          },
+          "key": "cognitive_epoch"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "goal_progress_units": {
+       "__term__": {
+        "type": "Sum",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "process"
+         },
+         "edge_type": "has_cognitive_goal_baseline"
+        },
+        "var_name": "goal_baseline",
+        "value": {
+         "type": "Minus",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "goal_baseline"
+            },
+            "key": "observed_progress_units"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         "b": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "goal_baseline"
+            },
+            "key": "baseline_progress_units"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         }
+        }
+       }
+      },
+      "causal_yield_units": {
+       "__term__": {
+        "type": "Sum",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "process"
+         },
+         "edge_type": "has_cognitive_goal_baseline"
+        },
+        "var_name": "goal_baseline",
+        "value": {
+         "type": "Minus",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "goal_baseline"
+            },
+            "key": "observed_progress_units"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         "b": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "goal_baseline"
+            },
+            "key": "baseline_progress_units"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         }
+        }
+       }
+      },
+      "information_gain_units": 0,
+      "failure_burden_units": 0,
+      "effort_units": {
+       "__term__": {
+        "type": "Minus",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "step"
+           },
+           "key": "evidence_spent_units"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        "b": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "process"
+           },
+           "key": "baseline_effort_units"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        }
+       }
+      },
+      "lease_generation": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "process"
+          },
+          "key": "lease_generation"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "integer_native": 1,
+      "output_authority": 0
+     }
+    ],
+    [
+     "add_node",
+     "window",
+     "CognitiveEfficiencyWindow",
+     {
+      "status": "under_review",
+      "causal_yield_units": {
+       "__term__": {
+        "type": "Sum",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "process"
+         },
+         "edge_type": "has_cognitive_goal_baseline"
+        },
+        "var_name": "goal_baseline",
+        "value": {
+         "type": "Minus",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "goal_baseline"
+            },
+            "key": "observed_progress_units"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         "b": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "goal_baseline"
+            },
+            "key": "baseline_progress_units"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         }
+        }
+       }
+      },
+      "information_gain_units": 0,
+      "failure_burden_units": 0,
+      "effort_units": {
+       "__term__": {
+        "type": "Max",
+        "items": [
+         {
+          "type": "Lit",
+          "value": 1
+         },
+         {
+          "type": "Minus",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "step"
+             },
+             "key": "evidence_spent_units"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          },
+          "b": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "process"
+             },
+             "key": "baseline_effort_units"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          }
+         }
+        ]
+       }
+      },
+      "integer_native": 1,
+      "output_authority": 0
+     }
+    ],
+    [
+     "add_node",
+     "profile",
+     "ParetoProfile",
+     {
+      "kind": "marginal_cognitive_process_efficiency_checkin",
+      "status": "comparing",
+      "dimension_count": {
+       "__term__": {
+        "type": "Count",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "process"
+         },
+         "edge_type": "supervises_goal"
+        }
+       }
+      },
+      "scalarized": 0,
+      "integer_native": 1,
+      "output_authority": 0
+     }
+    ],
+    [
+     "add_node",
+     "current",
+     "ParetoCandidate",
+     {
+      "kind": "continue_current_cognitive_process",
+      "dominated": 0,
+      "verified": 1,
+      "integer_native": 1,
+      "output_authority": 0
+     }
+    ],
+    [
+     "add_node",
+     "prior",
+     "ParetoCandidate",
+     {
+      "kind": "previous_cognitive_efficiency_window",
+      "dominated": 0,
+      "verified": 1,
+      "integer_native": 1,
+      "output_authority": 0
+     }
+    ],
+    [
+     "add_node",
+     "pause",
+     "ParetoCandidate",
+     {
+      "kind": "pause_and_replan",
+      "dominated": 0,
+      "verified": 1,
+      "integer_native": 1,
+      "output_authority": 0
+     }
+    ],
+    [
+     "add_node",
+     "escalation",
+     "SystemTwoEscalation",
+     {
+      "status": "requested",
+      "reason": "cognitive_process_checkin",
+      "input_epoch": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "policy"
+          },
+          "key": "cognitive_epoch"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "lease_generation": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "process"
+          },
+          "key": "lease_generation"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "parallel_contexts": 1,
+      "integer_native": 1,
+      "output_authority": 0
+     }
+    ],
+    [
+     "add_node",
+     "task_supervision",
+     "SystemTwoTaskSet",
+     {
+      "area": "cognitive_supervision",
+      "enabled": 1,
+      "integer_native": 1
+     }
+    ],
+    [
+     "add_node",
+     "task_pareto",
+     "SystemTwoTaskSet",
+     {
+      "area": "cognitive_pareto",
+      "enabled": 1,
+      "integer_native": 1
+     }
+    ],
+    [
+     "add_edge",
+     "process",
+     "has_cognitive_checkin",
+     "checkin"
+    ],
+    [
+     "add_edge",
+     "checkin",
+     "reviews_efficiency_window",
+     "window"
+    ],
+    [
+     "add_edge",
+     "checkin",
+     "compares_reference_efficiency_window",
+     "reference"
+    ],
+    [
+     "add_edge",
+     "checkin",
+     "has_efficiency_pareto_profile",
+     "profile"
+    ],
+    [
+     "add_edge",
+     "profile",
+     "audits_goal",
+     "goal"
+    ],
+    [
+     "add_edge",
+     "profile",
+     "has_pareto_candidate",
+     "current"
+    ],
+    [
+     "add_edge",
+     "profile",
+     "has_pareto_candidate",
+     "prior"
+    ],
+    [
+     "add_edge",
+     "profile",
+     "has_pareto_candidate",
+     "pause"
+    ],
+    [
+     "add_edge",
+     "profile",
+     "has_incumbent_pareto_candidate",
+     "current"
+    ],
+    [
+     "add_edge",
+     "current",
+     "represents_cognitive_process",
+     "process"
+    ],
+    [
+     "add_edge",
+     "current",
+     "represents_efficiency_window",
+     "window"
+    ],
+    [
+     "add_edge",
+     "prior",
+     "represents_efficiency_window",
+     "reference"
+    ],
+    [
+     "add_edge",
+     "pause",
+     "proposes_pausing_cognitive_process",
+     "process"
+    ],
+    [
+     "add_edge",
+     "escalation",
+     "about_context",
+     "checkin"
+    ],
+    [
+     "add_edge",
+     "escalation",
+     "checks_cognitive_process",
+     "process"
+    ],
+    [
+     "add_edge",
+     "escalation",
+     "recruits_task_set",
+     "task_supervision"
+    ],
+    [
+     "add_edge",
+     "escalation",
+     "recruits_task_set",
+     "task_pareto"
+    ],
+    [
+     "set_attr",
+     "process",
+     "status",
+     "checking_in"
+    ],
+    [
+     "set_attr",
+     "process",
+     "continuation_authority",
+     0
+    ],
+    [
+     "set_attr",
+     "episode",
+     "cognitive_continuation_authority",
+     0
+    ]
+   ]
+  },
+  {
+   "name": "cs_open_checkin_on_explicit_expected_envelope_departure",
+   "area": "cognitive_supervision",
+   "latency_class": "hard_realtime",
+   "batch": false,
+   "match": [
+    [
+     "episode",
+     "has_self_directed_learning_plan",
+     "plan"
+    ],
+    [
+     "plan",
+     "has_selected_learning_plan_step",
+     "step"
+    ],
+    [
+     "step",
+     "plans_learning_capability",
+     "instance"
+    ],
+    [
+     "episode",
+     "has_cognitive_process",
+     "process"
+    ],
+    [
+     "process",
+     "supervises_learning_plan_step",
+     "step"
+    ],
+    [
+     "process",
+     "pursues_goal",
+     "goal"
+    ],
+    [
+     "process",
+     "governed_by_cognitive_supervision_policy",
+     "policy"
+    ],
+    [
+     "process",
+     "has_reference_efficiency_window",
+     "reference"
+    ],
+    [
+     "process",
+     "observes_process_signal",
+     "signal"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "process"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "monitoring"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "signal"
+         },
+         "key": "supervision_processed"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Lt",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "signal"
+           },
+           "key": "observed_units"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        "b": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "signal"
+           },
+           "key": "expected_lower_units"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        }
+       },
+       {
+        "type": "Gt",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "signal"
+           },
+           "key": "observed_units"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        "b": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "signal"
+           },
+           "key": "expected_upper_units"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "checkin",
+     "CognitiveCheckIn",
+     {
+      "status": "open",
+      "reason": "outside_expected_bounds",
+      "epoch": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "policy"
+          },
+          "key": "cognitive_epoch"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "goal_progress_units": {
+       "__term__": {
+        "type": "Sum",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "process"
+         },
+         "edge_type": "has_cognitive_goal_baseline"
+        },
+        "var_name": "goal_baseline",
+        "value": {
+         "type": "Minus",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "goal_baseline"
+            },
+            "key": "observed_progress_units"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         "b": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "goal_baseline"
+            },
+            "key": "baseline_progress_units"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         }
+        }
+       }
+      },
+      "causal_yield_units": {
+       "__term__": {
+        "type": "Sum",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "process"
+         },
+         "edge_type": "has_cognitive_goal_baseline"
+        },
+        "var_name": "goal_baseline",
+        "value": {
+         "type": "Minus",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "goal_baseline"
+            },
+            "key": "observed_progress_units"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         "b": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "goal_baseline"
+            },
+            "key": "baseline_progress_units"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         }
+        }
+       }
+      },
+      "information_gain_units": 0,
+      "failure_burden_units": 0,
+      "effort_units": {
+       "__term__": {
+        "type": "Minus",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "step"
+           },
+           "key": "evidence_spent_units"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        "b": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "process"
+           },
+           "key": "baseline_effort_units"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        }
+       }
+      },
+      "lease_generation": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "process"
+          },
+          "key": "lease_generation"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "integer_native": 1,
+      "output_authority": 0
+     }
+    ],
+    [
+     "add_node",
+     "window",
+     "CognitiveEfficiencyWindow",
+     {
+      "status": "under_review",
+      "causal_yield_units": {
+       "__term__": {
+        "type": "Sum",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "process"
+         },
+         "edge_type": "has_cognitive_goal_baseline"
+        },
+        "var_name": "goal_baseline",
+        "value": {
+         "type": "Minus",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "goal_baseline"
+            },
+            "key": "observed_progress_units"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         "b": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "goal_baseline"
+            },
+            "key": "baseline_progress_units"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         }
+        }
+       }
+      },
+      "information_gain_units": 0,
+      "failure_burden_units": 0,
+      "effort_units": {
+       "__term__": {
+        "type": "Max",
+        "items": [
+         {
+          "type": "Lit",
+          "value": 1
+         },
+         {
+          "type": "Minus",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "step"
+             },
+             "key": "evidence_spent_units"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          },
+          "b": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "process"
+             },
+             "key": "baseline_effort_units"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          }
+         }
+        ]
+       }
+      },
+      "integer_native": 1,
+      "output_authority": 0
+     }
+    ],
+    [
+     "add_node",
+     "profile",
+     "ParetoProfile",
+     {
+      "kind": "marginal_cognitive_process_efficiency_checkin",
+      "status": "comparing",
+      "dimension_count": {
+       "__term__": {
+        "type": "Count",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "process"
+         },
+         "edge_type": "supervises_goal"
+        }
+       }
+      },
+      "scalarized": 0,
+      "integer_native": 1,
+      "output_authority": 0
+     }
+    ],
+    [
+     "add_node",
+     "current",
+     "ParetoCandidate",
+     {
+      "kind": "continue_current_cognitive_process",
+      "dominated": 0,
+      "verified": 1,
+      "integer_native": 1,
+      "output_authority": 0
+     }
+    ],
+    [
+     "add_node",
+     "prior",
+     "ParetoCandidate",
+     {
+      "kind": "previous_cognitive_efficiency_window",
+      "dominated": 0,
+      "verified": 1,
+      "integer_native": 1,
+      "output_authority": 0
+     }
+    ],
+    [
+     "add_node",
+     "pause",
+     "ParetoCandidate",
+     {
+      "kind": "pause_and_replan",
+      "dominated": 0,
+      "verified": 1,
+      "integer_native": 1,
+      "output_authority": 0
+     }
+    ],
+    [
+     "add_node",
+     "escalation",
+     "SystemTwoEscalation",
+     {
+      "status": "requested",
+      "reason": "cognitive_process_checkin",
+      "input_epoch": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "policy"
+          },
+          "key": "cognitive_epoch"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "lease_generation": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "process"
+          },
+          "key": "lease_generation"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "parallel_contexts": 1,
+      "integer_native": 1,
+      "output_authority": 0
+     }
+    ],
+    [
+     "add_node",
+     "task_supervision",
+     "SystemTwoTaskSet",
+     {
+      "area": "cognitive_supervision",
+      "enabled": 1,
+      "integer_native": 1
+     }
+    ],
+    [
+     "add_node",
+     "task_pareto",
+     "SystemTwoTaskSet",
+     {
+      "area": "cognitive_pareto",
+      "enabled": 1,
+      "integer_native": 1
+     }
+    ],
+    [
+     "add_edge",
+     "process",
+     "has_cognitive_checkin",
+     "checkin"
+    ],
+    [
+     "add_edge",
+     "checkin",
+     "reviews_efficiency_window",
+     "window"
+    ],
+    [
+     "add_edge",
+     "checkin",
+     "compares_reference_efficiency_window",
+     "reference"
+    ],
+    [
+     "add_edge",
+     "checkin",
+     "has_efficiency_pareto_profile",
+     "profile"
+    ],
+    [
+     "add_edge",
+     "profile",
+     "audits_goal",
+     "goal"
+    ],
+    [
+     "add_edge",
+     "profile",
+     "has_pareto_candidate",
+     "current"
+    ],
+    [
+     "add_edge",
+     "profile",
+     "has_pareto_candidate",
+     "prior"
+    ],
+    [
+     "add_edge",
+     "profile",
+     "has_pareto_candidate",
+     "pause"
+    ],
+    [
+     "add_edge",
+     "profile",
+     "has_incumbent_pareto_candidate",
+     "current"
+    ],
+    [
+     "add_edge",
+     "current",
+     "represents_cognitive_process",
+     "process"
+    ],
+    [
+     "add_edge",
+     "current",
+     "represents_efficiency_window",
+     "window"
+    ],
+    [
+     "add_edge",
+     "prior",
+     "represents_efficiency_window",
+     "reference"
+    ],
+    [
+     "add_edge",
+     "pause",
+     "proposes_pausing_cognitive_process",
+     "process"
+    ],
+    [
+     "add_edge",
+     "escalation",
+     "about_context",
+     "checkin"
+    ],
+    [
+     "add_edge",
+     "escalation",
+     "checks_cognitive_process",
+     "process"
+    ],
+    [
+     "add_edge",
+     "escalation",
+     "recruits_task_set",
+     "task_supervision"
+    ],
+    [
+     "add_edge",
+     "escalation",
+     "recruits_task_set",
+     "task_pareto"
+    ],
+    [
+     "set_attr",
+     "process",
+     "status",
+     "checking_in"
+    ],
+    [
+     "set_attr",
+     "process",
+     "continuation_authority",
+     0
+    ],
+    [
+     "set_attr",
+     "episode",
+     "cognitive_continuation_authority",
+     0
+    ],
+    [
+     "add_edge",
+     "checkin",
+     "triggered_by_process_signal",
+     "signal"
+    ],
+    [
+     "set_attr",
+     "signal",
+     "supervision_processed",
+     1
+    ]
+   ]
+  },
+  {
+   "name": "cs_mark_checkin_escalation_parallel_contexts",
+   "area": "cognitive_supervision",
+   "latency_class": "hard_realtime",
+   "batch": true,
+   "match": [
+    [
+     "escalation",
+     "checks_cognitive_process",
+     "process"
+    ],
+    [
+     "escalation",
+     "about_context",
+     "checkin"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "escalation"
+       },
+       "key": "reason"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "cognitive_process_checkin"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "escalation"
+         },
+         "key": "parallel_contexts"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "escalation",
+     "parallel_contexts",
+     1
+    ]
+   ]
+  },
+  {
+   "name": "cs_mint_one_pareto_dimension_per_reachable_goal",
+   "area": "cognitive_supervision",
+   "latency_class": "soft_realtime",
+   "order": -10,
+   "batch": true,
+   "comment": "Every reachable Goal remains an independent Pareto dimension; effort changes its marginal rate but never weights or sums it with another goal.",
+   "match": [
+    [
+     "process",
+     "has_cognitive_checkin",
+     "checkin"
+    ],
+    [
+     "checkin",
+     "has_efficiency_pareto_profile",
+     "profile"
+    ],
+    [
+     "profile",
+     "has_incumbent_pareto_candidate",
+     "current"
+    ],
+    [
+     "profile",
+     "has_pareto_candidate",
+     "prior"
+    ],
+    [
+     "profile",
+     "has_pareto_candidate",
+     "pause"
+    ],
+    [
+     "process",
+     "has_cognitive_goal_baseline",
+     "baseline"
+    ],
+    [
+     "baseline",
+     "measures_goal",
+     "goal"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "checkin"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "open"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "prior"
+       },
+       "key": "kind"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "previous_cognitive_efficiency_window"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "pause"
+       },
+       "key": "kind"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "pause_and_replan"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "current"
+         },
+         "edge_type": "has_pareto_value"
+        },
+        "var_name": "known_value",
+        "predicate": {
+         "type": "Exists",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "known_value"
+          },
+          "edge_type": "measures_goal"
+         },
+         "var_name": "known_goal",
+         "predicate": {
+          "type": "Eq",
+          "a": {
+           "type": "Var",
+           "name": "known_goal"
+          },
+          "b": {
+           "type": "Var",
+           "name": "goal"
+          }
+         }
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "current_goal_value",
+     "ParetoValue",
+     {
+      "dimension_ordinal": 0,
+      "raw_value": {
+       "__term__": {
+        "type": "Times",
+        "items": [
+         {
+          "type": "Minus",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "baseline"
+             },
+             "key": "observed_progress_units"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          },
+          "b": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "baseline"
+             },
+             "key": "baseline_progress_units"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          }
+         },
+         {
+          "type": "Max",
+          "items": [
+           {
+            "type": "Lit",
+            "value": 1
+           },
+           {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "baseline"
+              },
+              "key": "previous_effort_units"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      },
+      "signed_value": {
+       "__term__": {
+        "type": "Times",
+        "items": [
+         {
+          "type": "Minus",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "baseline"
+             },
+             "key": "observed_progress_units"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          },
+          "b": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "baseline"
+             },
+             "key": "baseline_progress_units"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          }
+         },
+         {
+          "type": "Max",
+          "items": [
+           {
+            "type": "Lit",
+            "value": 1
+           },
+           {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "baseline"
+              },
+              "key": "previous_effort_units"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      },
+      "verified": 1,
+      "integer_native": 1
+     }
+    ],
+    [
+     "add_edge",
+     "current",
+     "has_pareto_value",
+     "current_goal_value"
+    ],
+    [
+     "add_edge",
+     "current_goal_value",
+     "measures_goal",
+     "goal"
+    ],
+    [
+     "add_node",
+     "prior_goal_value",
+     "ParetoValue",
+     {
+      "dimension_ordinal": 0,
+      "raw_value": {
+       "__term__": {
+        "type": "Times",
+        "items": [
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "baseline"
+            },
+            "key": "previous_progress_units"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         {
+          "type": "Max",
+          "items": [
+           {
+            "type": "Lit",
+            "value": 1
+           },
+           {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "checkin"
+              },
+              "key": "effort_units"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      },
+      "signed_value": {
+       "__term__": {
+        "type": "Times",
+        "items": [
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "baseline"
+            },
+            "key": "previous_progress_units"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         {
+          "type": "Max",
+          "items": [
+           {
+            "type": "Lit",
+            "value": 1
+           },
+           {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "checkin"
+              },
+              "key": "effort_units"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      },
+      "verified": 1,
+      "integer_native": 1
+     }
+    ],
+    [
+     "add_edge",
+     "prior",
+     "has_pareto_value",
+     "prior_goal_value"
+    ],
+    [
+     "add_edge",
+     "prior_goal_value",
+     "measures_goal",
+     "goal"
+    ],
+    [
+     "add_node",
+     "pause_goal_value",
+     "ParetoValue",
+     {
+      "dimension_ordinal": 0,
+      "raw_value": {
+       "__term__": {
+        "type": "Lit",
+        "value": 0
+       }
+      },
+      "signed_value": {
+       "__term__": {
+        "type": "Lit",
+        "value": 0
+       }
+      },
+      "verified": 1,
+      "integer_native": 1
+     }
+    ],
+    [
+     "add_edge",
+     "pause",
+     "has_pareto_value",
+     "pause_goal_value"
+    ],
+    [
+     "add_edge",
+     "pause_goal_value",
+     "measures_goal",
+     "goal"
+    ]
+   ]
+  },
+  {
+   "name": "cs_renew_lease_only_after_nondominated_productive_checkin",
+   "area": "cognitive_supervision",
+   "latency_class": "soft_realtime",
+   "order": 10,
+   "batch": false,
+   "match": [
+    [
+     "episode",
+     "has_cognitive_process",
+     "process"
+    ],
+    [
+     "process",
+     "governed_by_cognitive_supervision_policy",
+     "policy"
+    ],
+    [
+     "process",
+     "has_reference_efficiency_window",
+     "reference"
+    ],
+    [
+     "process",
+     "has_cognitive_checkin",
+     "checkin"
+    ],
+    [
+     "checkin",
+     "reviews_efficiency_window",
+     "window"
+    ],
+    [
+     "checkin",
+     "has_efficiency_pareto_profile",
+     "profile"
+    ],
+    [
+     "profile",
+     "has_incumbent_pareto_candidate",
+     "current"
+    ],
+    [
+     "process",
+     "supervises_learning_plan_step",
+     "step"
+    ],
+    [
+     "process",
+     "supervises_learning_capability",
+     "instance"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "checkin"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "open"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "current"
+         },
+         "key": "dominated"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "current"
+        },
+        "edge_type": "has_pareto_value"
+       }
+      },
+      "b": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "profile"
+         },
+         "key": "dimension_count"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "profile"
+        },
+        "edge_type": "has_pareto_candidate"
+       },
+       "var_name": "alternative",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Not",
+          "arg": {
+           "type": "Eq",
+           "a": {
+            "type": "Var",
+            "name": "alternative"
+           },
+           "b": {
+            "type": "Var",
+            "name": "current"
+           }
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Count",
+           "source": {
+            "type": "Filter",
+            "source": {
+             "type": "Neighbours",
+             "node": {
+              "type": "Var",
+              "name": "current"
+             },
+             "edge_type": "has_pareto_value"
+            },
+            "var_name": "current_value",
+            "predicate": {
+             "type": "Exists",
+             "source": {
+              "type": "Neighbours",
+              "node": {
+               "type": "Var",
+               "name": "alternative"
+              },
+              "edge_type": "has_pareto_value"
+             },
+             "var_name": "alternative_value",
+             "predicate": {
+              "type": "And",
+              "items": [
+               {
+                "type": "Exists",
+                "source": {
+                 "type": "Neighbours",
+                 "node": {
+                  "type": "Var",
+                  "name": "current_value"
+                 },
+                 "edge_type": "measures_goal"
+                },
+                "var_name": "dimension_goal",
+                "predicate": {
+                 "type": "Exists",
+                 "source": {
+                  "type": "Neighbours",
+                  "node": {
+                   "type": "Var",
+                   "name": "alternative_value"
+                  },
+                  "edge_type": "measures_goal"
+                 },
+                 "var_name": "alternative_goal",
+                 "predicate": {
+                  "type": "Eq",
+                  "a": {
+                   "type": "Var",
+                   "name": "dimension_goal"
+                  },
+                  "b": {
+                   "type": "Var",
+                   "name": "alternative_goal"
+                  }
+                 }
+                }
+               },
+               {
+                "type": "Not",
+                "arg": {
+                 "type": "Lt",
+                 "a": {
+                  "type": "Plus",
+                  "items": [
+                   {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "alternative_value"
+                    },
+                    "key": "signed_value"
+                   },
+                   {
+                    "type": "Lit",
+                    "value": 0
+                   }
+                  ]
+                 },
+                 "b": {
+                  "type": "Plus",
+                  "items": [
+                   {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "current_value"
+                    },
+                    "key": "signed_value"
+                   },
+                   {
+                    "type": "Lit",
+                    "value": 0
+                   }
+                  ]
+                 }
+                }
+               }
+              ]
+             }
+            }
+           }
+          },
+          "b": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "profile"
+             },
+             "key": "dimension_count"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          }
+         },
+         {
+          "type": "Gt",
+          "a": {
+           "type": "Count",
+           "source": {
+            "type": "Filter",
+            "source": {
+             "type": "Neighbours",
+             "node": {
+              "type": "Var",
+              "name": "current"
+             },
+             "edge_type": "has_pareto_value"
+            },
+            "var_name": "current_value",
+            "predicate": {
+             "type": "Exists",
+             "source": {
+              "type": "Neighbours",
+              "node": {
+               "type": "Var",
+               "name": "alternative"
+              },
+              "edge_type": "has_pareto_value"
+             },
+             "var_name": "alternative_value",
+             "predicate": {
+              "type": "And",
+              "items": [
+               {
+                "type": "Exists",
+                "source": {
+                 "type": "Neighbours",
+                 "node": {
+                  "type": "Var",
+                  "name": "current_value"
+                 },
+                 "edge_type": "measures_goal"
+                },
+                "var_name": "dimension_goal",
+                "predicate": {
+                 "type": "Exists",
+                 "source": {
+                  "type": "Neighbours",
+                  "node": {
+                   "type": "Var",
+                   "name": "alternative_value"
+                  },
+                  "edge_type": "measures_goal"
+                 },
+                 "var_name": "alternative_goal",
+                 "predicate": {
+                  "type": "Eq",
+                  "a": {
+                   "type": "Var",
+                   "name": "dimension_goal"
+                  },
+                  "b": {
+                   "type": "Var",
+                   "name": "alternative_goal"
+                  }
+                 }
+                }
+               },
+               {
+                "type": "Gt",
+                "a": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "alternative_value"
+                   },
+                   "key": "signed_value"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 ]
+                },
+                "b": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "current_value"
+                   },
+                   "key": "signed_value"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 ]
+                }
+               }
+              ]
+             }
+            }
+           }
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0
+          }
+         }
+        ]
+       }
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "checkin"
+         },
+         "key": "goal_progress_units"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "del_edge",
+     "process",
+     "has_reference_efficiency_window",
+     "reference"
+    ],
+    [
+     "add_edge",
+     "process",
+     "has_reference_efficiency_window",
+     "window"
+    ],
+    [
+     "set_attr",
+     "reference",
+     "status",
+     "superseded"
+    ],
+    [
+     "set_attr",
+     "window",
+     "status",
+     "reference"
+    ],
+    [
+     "set_attr",
+     "checkin",
+     "status",
+     "continued"
+    ],
+    [
+     "set_attr",
+     "process",
+     "status",
+     "monitoring"
+    ],
+    [
+     "set_attr",
+     "process",
+     "continuation_authority",
+     1
+    ],
+    [
+     "set_attr",
+     "process",
+     "lease_generation",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "process"
+           },
+           "key": "lease_generation"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        {
+         "type": "Lit",
+         "value": 1
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "process",
+     "last_checkin_epoch",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "policy"
+         },
+         "key": "cognitive_epoch"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "process",
+     "renew_before_epoch",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "policy"
+           },
+           "key": "cognitive_epoch"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        {
+         "type": "Max",
+         "items": [
+          {
+           "type": "Lit",
+           "value": 1
+          },
+          {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "episode"
+             },
+             "key": "development_evidence_window"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "process",
+     "next_checkin_epoch",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "policy"
+           },
+           "key": "cognitive_epoch"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        {
+         "type": "Max",
+         "items": [
+          {
+           "type": "Lit",
+           "value": 1
+          },
+          {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "episode"
+             },
+             "key": "development_evidence_window"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "process",
+     "checkin_span_units",
+     {
+      "__term__": {
+       "type": "Max",
+       "items": [
+        {
+         "type": "Lit",
+         "value": 1
+        },
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "episode"
+           },
+           "key": "development_evidence_window"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "process",
+     "baseline_effort_units",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "step"
+         },
+         "key": "evidence_spent_units"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "process",
+     "checkin_count",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "process"
+           },
+           "key": "checkin_count"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        {
+         "type": "Lit",
+         "value": 1
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "episode",
+     "cognitive_continuation_authority",
+     1
+    ],
+    [
+     "set_attr",
+     "episode",
+     "cognitive_checkin_terminal",
+     0
+    ],
+    [
+     "set_attr",
+     "profile",
+     "status",
+     "continued"
+    ]
+   ]
+  },
+  {
+   "name": "cs_advance_each_goal_baseline_after_lease_renewal",
+   "area": "cognitive_supervision",
+   "latency_class": "hard_realtime",
+   "batch": true,
+   "match": [
+    [
+     "process",
+     "has_cognitive_checkin",
+     "checkin"
+    ],
+    [
+     "process",
+     "has_cognitive_goal_baseline",
+     "baseline"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "checkin"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "continued"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "baseline"
+         },
+         "key": "baseline_generation"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "checkin"
+         },
+         "key": "lease_generation"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "baseline",
+     "previous_progress_units",
+     {
+      "__term__": {
+       "type": "Minus",
+       "a": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "baseline"
+          },
+          "key": "observed_progress_units"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       },
+       "b": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "baseline"
+          },
+          "key": "baseline_progress_units"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "baseline",
+     "previous_effort_units",
+     {
+      "__term__": {
+       "type": "Max",
+       "items": [
+        {
+         "type": "Lit",
+         "value": 1
+        },
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "checkin"
+           },
+           "key": "effort_units"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "baseline",
+     "baseline_progress_units",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "baseline"
+         },
+         "key": "observed_progress_units"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "baseline",
+     "baseline_generation",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "process"
+         },
+         "key": "lease_generation"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "cs_hold_marginally_dominated_process_for_replanning",
+   "area": "cognitive_supervision",
+   "latency_class": "soft_realtime",
+   "order": 10,
+   "batch": false,
+   "match": [
+    [
+     "episode",
+     "has_self_directed_learning_plan",
+     "plan"
+    ],
+    [
+     "episode",
+     "has_cognitive_process",
+     "process"
+    ],
+    [
+     "process",
+     "governed_by_cognitive_supervision_policy",
+     "policy"
+    ],
+    [
+     "process",
+     "has_cognitive_checkin",
+     "checkin"
+    ],
+    [
+     "checkin",
+     "has_efficiency_pareto_profile",
+     "profile"
+    ],
+    [
+     "profile",
+     "has_incumbent_pareto_candidate",
+     "current"
+    ],
+    [
+     "current",
+     "is_dominated_by_pareto_candidate",
+     "alternative"
+    ],
+    [
+     "process",
+     "supervises_learning_plan_step",
+     "step"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "checkin"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "open"
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "checkin"
+         },
+         "key": "goal_progress_units"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "residual",
+     "LearningPlanResidual",
+     {
+      "status": "open",
+      "kind": "inefficient_cognitive_process_window",
+      "order_n": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "process"
+            },
+            "key": "order_n"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         {
+          "type": "Lit",
+          "value": 1
+         }
+        ]
+       }
+      },
+      "evidence_spent_units": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "checkin"
+          },
+          "key": "effort_units"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "causal_yield_units": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "checkin"
+          },
+          "key": "causal_yield_units"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "integer_native": 1,
+      "output_authority": 0
+     }
+    ],
+    [
+     "add_edge",
+     "plan",
+     "has_learning_plan_residual",
+     "residual"
+    ],
+    [
+     "add_edge",
+     "step",
+     "has_learning_plan_residual",
+     "residual"
+    ],
+    [
+     "add_edge",
+     "residual",
+     "about_learning_plan_step",
+     "step"
+    ],
+    [
+     "add_edge",
+     "residual",
+     "raised_by_cognitive_checkin",
+     "checkin"
+    ],
+    [
+     "set_attr",
+     "checkin",
+     "status",
+     "replan_required"
+    ],
+    [
+     "set_attr",
+     "process",
+     "status",
+     "replan_required"
+    ],
+    [
+     "set_attr",
+     "process",
+     "continuation_authority",
+     0
+    ],
+    [
+     "set_attr",
+     "policy",
+     "enabled",
+     0
+    ],
+    [
+     "set_attr",
+     "episode",
+     "cognitive_checkin_terminal",
+     1
+    ],
+    [
+     "set_attr",
+     "episode",
+     "cognitive_continuation_authority",
+     0
+    ],
+    [
+     "set_attr",
+     "profile",
+     "status",
+     "replan_required"
+    ]
+   ]
+  },
+  {
+   "name": "cs_hold_zero_yield_process_for_replanning",
+   "area": "cognitive_supervision",
+   "latency_class": "soft_realtime",
+   "order": 10,
+   "batch": false,
+   "match": [
+    [
+     "episode",
+     "has_self_directed_learning_plan",
+     "plan"
+    ],
+    [
+     "episode",
+     "has_cognitive_process",
+     "process"
+    ],
+    [
+     "process",
+     "governed_by_cognitive_supervision_policy",
+     "policy"
+    ],
+    [
+     "process",
+     "has_cognitive_checkin",
+     "checkin"
+    ],
+    [
+     "checkin",
+     "has_efficiency_pareto_profile",
+     "profile"
+    ],
+    [
+     "profile",
+     "has_incumbent_pareto_candidate",
+     "current"
+    ],
+    [
+     "process",
+     "supervises_learning_plan_step",
+     "step"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "checkin"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "open"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "current"
+        },
+        "edge_type": "has_pareto_value"
+       }
+      },
+      "b": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "profile"
+         },
+         "key": "dimension_count"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Gt",
+       "a": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "checkin"
+          },
+          "key": "goal_progress_units"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       },
+       "b": {
+        "type": "Lit",
+        "value": 0
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "residual",
+     "LearningPlanResidual",
+     {
+      "status": "open",
+      "kind": "inefficient_cognitive_process_window",
+      "order_n": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "process"
+            },
+            "key": "order_n"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         {
+          "type": "Lit",
+          "value": 1
+         }
+        ]
+       }
+      },
+      "evidence_spent_units": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "checkin"
+          },
+          "key": "effort_units"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "causal_yield_units": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "checkin"
+          },
+          "key": "causal_yield_units"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "integer_native": 1,
+      "output_authority": 0
+     }
+    ],
+    [
+     "add_edge",
+     "plan",
+     "has_learning_plan_residual",
+     "residual"
+    ],
+    [
+     "add_edge",
+     "step",
+     "has_learning_plan_residual",
+     "residual"
+    ],
+    [
+     "add_edge",
+     "residual",
+     "about_learning_plan_step",
+     "step"
+    ],
+    [
+     "add_edge",
+     "residual",
+     "raised_by_cognitive_checkin",
+     "checkin"
+    ],
+    [
+     "set_attr",
+     "checkin",
+     "status",
+     "replan_required"
+    ],
+    [
+     "set_attr",
+     "process",
+     "status",
+     "replan_required"
+    ],
+    [
+     "set_attr",
+     "process",
+     "continuation_authority",
+     0
+    ],
+    [
+     "set_attr",
+     "policy",
+     "enabled",
+     0
+    ],
+    [
+     "set_attr",
+     "episode",
+     "cognitive_checkin_terminal",
+     1
+    ],
+    [
+     "set_attr",
+     "episode",
+     "cognitive_continuation_authority",
+     0
+    ],
+    [
+     "set_attr",
+     "profile",
+     "status",
+     "replan_required"
+    ]
+   ]
+  },
+  {
+   "name": "cs_adjust_async_daemon_cycle_quantum_from_supervisory_lease",
+   "area": "cognitive_supervision",
+   "latency_class": "hard_realtime",
+   "batch": false,
+   "comment": "The asynchronous host consumes a graph-authored rewrite quantum. A new supervisory lease publishes an immutable adjustment provenance node before changing the next quantum.",
+   "match": [
+    [
+     "anchor",
+     "has_async_daemon_cycle_budget",
+     "budget"
+    ],
+    [
+     "episode",
+     "has_cognitive_process",
+     "process"
+    ],
+    [
+     "process",
+     "governed_by_cognitive_supervision_policy",
+     "policy"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "policy"
+       },
+       "key": "enabled"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "process"
+         },
+         "key": "lease_generation"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "budget"
+       },
+       "key": "observed_lease_generation"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "adjustment",
+     "DaemonCycleBudgetAdjustment",
+     {
+      "reason": "supervisory_lease_renewal",
+      "from_lease_generation": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "budget"
+          },
+          "key": "observed_lease_generation"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "to_lease_generation": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "process"
+          },
+          "key": "lease_generation"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "quantum_units": {
+       "__term__": {
+        "type": "Max",
+        "items": [
+         {
+          "type": "Lit",
+          "value": 1
+         },
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "process"
+            },
+            "key": "checkin_span_units"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         }
+        ]
+       }
+      },
+      "integer_native": 1,
+      "output_authority": 0
+     }
+    ],
+    [
+     "add_edge",
+     "budget",
+     "has_daemon_cycle_budget_adjustment",
+     "adjustment"
+    ],
+    [
+     "add_edge",
+     "adjustment",
+     "adjusts_for_cognitive_process",
+     "process"
+    ],
+    [
+     "add_edge",
+     "adjustment",
+     "governed_by_cognitive_supervision_policy",
+     "policy"
+    ],
+    [
+     "set_attr",
+     "budget",
+     "quantum_units",
+     {
+      "__term__": {
+       "type": "Max",
+       "items": [
+        {
+         "type": "Lit",
+         "value": 1
+        },
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "process"
+           },
+           "key": "checkin_span_units"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "budget",
+     "observed_lease_generation",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "process"
+         },
+         "key": "lease_generation"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "budget",
+     "adjustment_count",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "budget"
+           },
+           "key": "adjustment_count"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        {
+         "type": "Lit",
+         "value": 1
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  }
+ ]
+}

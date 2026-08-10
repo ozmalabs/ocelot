@@ -1,0 +1,2650 @@
+{
+ "id": "goal_residuals",
+ "version": "1.0.0",
+ "depends_on": [],
+ "description": "MEASURED CEILINGS, GRAPH-RESIDENT.  Arc 6 measured five ceilings and killed three seams; every one of those results existed only in markdown the agent cannot read, so a goal-selection collapse would re-propose a refuted seam with no memory.  This seed holds each refutation as a GoalResidual{goal signature, honest AND cherry-picked ceiling, refutation mechanism, reachability class, evidence pointer + engine sha} together with the CONDITION under which it holds (ResidualCondition, holds_under) -- because a residual that cannot lapse is a lie with a long half-life.  A held residual contributes a strong NEGATIVE WEIGHT to the existing ps_move_select Argmax; it is never a veto.  Pursuing an unreachable goal is legitimate -- that is how residuals get made; being wrong where the residual is already held is not.  Every node below is emitted mechanically from results/arc6_*.json by tools/build_goal_residual_seed.py over domains/goal_residual_ingest.py -- no number is transcribed from prose.",
+ "microtheory": {
+  "name": "goal_residuals",
+  "description": "held refutations of goals, with their conditions, as a weight in the goal collapse."
+ },
+ "nodes": [
+  {
+   "local_id": 0,
+   "type": "SignatureVocab",
+   "attrs": {
+    "dim": "sig_seam",
+    "token": "import_oracle"
+   }
+  },
+  {
+   "local_id": 1,
+   "type": "SignatureVocab",
+   "attrs": {
+    "dim": "sig_seam",
+    "token": "ir_retarget"
+   }
+  },
+  {
+   "local_id": 2,
+   "type": "SignatureVocab",
+   "attrs": {
+    "dim": "sig_seam",
+    "token": "shape_codebook"
+   }
+  },
+  {
+   "local_id": 3,
+   "type": "SignatureVocab",
+   "attrs": {
+    "dim": "sig_seam",
+    "token": "property_atom"
+   }
+  },
+  {
+   "local_id": 4,
+   "type": "SignatureVocab",
+   "attrs": {
+    "dim": "sig_seam",
+    "token": "enum_op_table"
+   }
+  },
+  {
+   "local_id": 5,
+   "type": "SignatureVocab",
+   "attrs": {
+    "dim": "sig_seam",
+    "token": "row_verdict"
+   }
+  },
+  {
+   "local_id": 6,
+   "type": "SignatureVocab",
+   "attrs": {
+    "dim": "sig_lever",
+    "token": "proposal"
+   }
+  },
+  {
+   "local_id": 7,
+   "type": "SignatureVocab",
+   "attrs": {
+    "dim": "sig_lever",
+    "token": "execution"
+   }
+  },
+  {
+   "local_id": 8,
+   "type": "SignatureVocab",
+   "attrs": {
+    "dim": "sig_lever",
+    "token": "verdict"
+   }
+  },
+  {
+   "local_id": 9,
+   "type": "SignatureVocab",
+   "attrs": {
+    "dim": "sig_lever",
+    "token": "detection"
+   }
+  },
+  {
+   "local_id": 10,
+   "type": "SignatureVocab",
+   "attrs": {
+    "dim": "sig_lever",
+    "token": "representation"
+   }
+  },
+  {
+   "local_id": 11,
+   "type": "SignatureVocab",
+   "attrs": {
+    "dim": "sig_target",
+    "token": "mbpp_test_257"
+   }
+  },
+  {
+   "local_id": 12,
+   "type": "SignatureVocab",
+   "attrs": {
+    "dim": "sig_target",
+    "token": "mbpp_live_unreached_53"
+   }
+  },
+  {
+   "local_id": 13,
+   "type": "SignatureVocab",
+   "attrs": {
+    "dim": "sig_target",
+    "token": "mbpp_s4_residual_60"
+   }
+  },
+  {
+   "local_id": 14,
+   "type": "SignatureVocab",
+   "attrs": {
+    "dim": "sig_target",
+    "token": "mbpp_residual_36"
+   }
+  },
+  {
+   "local_id": 15,
+   "type": "SignatureVocab",
+   "attrs": {
+    "dim": "sig_target",
+    "token": "mbpp_arc4_104"
+   }
+  },
+  {
+   "local_id": 16,
+   "type": "ReachClass",
+   "attrs": {
+    "name": "budget",
+    "factor": 0.4
+   }
+  },
+  {
+   "local_id": 17,
+   "type": "ReachClass",
+   "attrs": {
+    "name": "missing_dimension",
+    "factor": 1.0
+   }
+  },
+  {
+   "local_id": 18,
+   "type": "ReachClass",
+   "attrs": {
+    "name": "operator_blocked",
+    "factor": 0.7
+   }
+  },
+  {
+   "local_id": 19,
+   "type": "ResidualPolicy",
+   "attrs": {
+    "name": "goal_residual",
+    "residual_scale": 100.0,
+    "weight_formula": "residual_scale * reach_class_factor * (1 - honest_n / denominator_n)",
+    "aggregation": "max",
+    "is_a_veto": 0.0
+   }
+  },
+  {
+   "local_id": 1000,
+   "type": "GoalResidual",
+   "attrs": {
+    "rid": "arc6.seam_a.import_oracle",
+    "sig_seam": "import_oracle",
+    "sig_lever": "execution",
+    "sig_target": "mbpp_live_unreached_53",
+    "reach_class": "operator_blocked",
+    "reach_class_factor": 0.7,
+    "ceiling_honest_n": 5.0,
+    "ceiling_honest_ids": [
+     80,
+     246,
+     248,
+     293,
+     422
+    ],
+    "ceiling_cherry_n": 27.0,
+    "ceiling_cherry_ids": [
+     59,
+     80,
+     82,
+     85,
+     98,
+     99,
+     137,
+     139,
+     162,
+     163,
+     232,
+     233,
+     246,
+     248,
+     252,
+     255,
+     260,
+     276,
+     283,
+     293,
+     312,
+     422,
+     435,
+     442,
+     448,
+     462,
+     479
+    ],
+    "denominator_n": 53.0,
+    "mechanism": "tasks unlockable by minting ONE BESPOKE KERNEL PER TASK, named after that task's own concept (octagonal(), perrin_sum(), newman_prime(), area_polygon(), ...). This is the number a per-task mapping would report, and it is FAKE: the oracle table would encode the test-split answers.",
+    "mechanism_source_path": "ceilings._definition.cherry_picked_concept",
+    "weight": 63.396226,
+    "weight_formula": "RESIDUAL_SCALE(100) * reach_class_factor(0.7) * (1 - honest_n/denominator_n)",
+    "evidence_artifact": "results/arc6_a_ceiling.json",
+    "evidence_artifact_sha256": "c65bfc0e2b68012bcc4b11bc90174e96da22c5332a14779f437498b1a32b2c84",
+    "stale": 0.0,
+    "evidence_engine_sha256": "5c1b472fe67403fa5bb6eb9919ef373edcefb8f656651cd910113824cd83554e",
+    "evidence_engine_line": "engine 5c1b472fe674 @ /home/matt/ozma/internal/research/experiments/gamma-substrate/.claude/worktrees/program-synthesis-plan/research/experiments/gamma-substrate/runners/dsl/python/substrate_rs/_native.abi3.so  [1 other tree build(s) shadowed]",
+    "ceiling_reductio_n": 60.0,
+    "ceiling_reductio_ids": [
+     11,
+     18,
+     59,
+     75,
+     80,
+     82,
+     85,
+     87,
+     88,
+     98,
+     99,
+     102,
+     106,
+     118,
+     137,
+     139,
+     141,
+     161,
+     162,
+     163,
+     170,
+     172,
+     226,
+     230,
+     232,
+     233,
+     246,
+     248,
+     252,
+     255,
+     257,
+     260,
+     262,
+     264,
+     265,
+     276,
+     283,
+     290,
+     293,
+     301,
+     310,
+     312,
+     390,
+     411,
+     419,
+     421,
+     422,
+     424,
+     435,
+     437,
+     439,
+     442,
+     448,
+     450,
+     456,
+     462,
+     473,
+     474,
+     475,
+     479
+    ],
+    "reach_class_counts": "{\"budget\": 7, \"missing_dimension\": 4, \"missing_structural_primitive\": 42}"
+   }
+  },
+  {
+   "local_id": 1001,
+   "type": "ResidualCondition",
+   "attrs": {
+    "rid": "arc6.seam_a.import_oracle",
+    "ckind": "fact_equals",
+    "filter_value": "arc6_a_ceiling_present",
+    "why": "the measurement artifact this residual quotes is still on disk with the content sha it was ingested at; a re-measurement replaces it and this residual must be re-read, not re-used.",
+    "expected_str": "1"
+   }
+  },
+  {
+   "local_id": 1002,
+   "type": "GoalResidual",
+   "attrs": {
+    "rid": "arc6.seam_b.ir_retarget",
+    "sig_seam": "ir_retarget",
+    "sig_lever": "proposal",
+    "sig_target": "mbpp_test_257",
+    "reach_class": "operator_blocked",
+    "reach_class_factor": 0.7,
+    "ceiling_honest_n": 0.0,
+    "ceiling_honest_ids": [],
+    "ceiling_cherry_n": 83.0,
+    "ceiling_cherry_ids": [
+     12,
+     19,
+     56,
+     58,
+     61,
+     66,
+     67,
+     79,
+     96,
+     98,
+     109,
+     116,
+     120,
+     123,
+     125,
+     126,
+     127,
+     133,
+     137,
+     138,
+     140,
+     143,
+     160,
+     163,
+     164,
+     165,
+     166,
+     168,
+     170,
+     172,
+     224,
+     226,
+     227,
+     235,
+     237,
+     238,
+     239,
+     242,
+     245,
+     248,
+     252,
+     253,
+     256,
+     257,
+     267,
+     270,
+     271,
+     274,
+     278,
+     283,
+     286,
+     287,
+     291,
+     292,
+     295,
+     300,
+     304,
+     306,
+     308,
+     309,
+     388,
+     397,
+     398,
+     400,
+     404,
+     406,
+     408,
+     412,
+     415,
+     419,
+     420,
+     422,
+     425,
+     426,
+     436,
+     437,
+     439,
+     442,
+     448,
+     453,
+     468,
+     472,
+     476
+    ],
+    "denominator_n": 257.0,
+    "mechanism": "a cue word in the prose says nothing about whether the grammar can MEAN the task; level 2 is the same population screened by execution.",
+    "mechanism_source_path": "ceiling_b_extract_function.ceilings_honest_vs_cherry_picked.level_3_cherry_picked_cue_word_present.why_this_is_not_a_ceiling",
+    "weight": 70.0,
+    "weight_formula": "RESIDUAL_SCALE(100) * reach_class_factor(0.7) * (1 - honest_n/denominator_n)",
+    "evidence_artifact": "results/arc6_bc_ceiling.json",
+    "evidence_artifact_sha256": "236489a64223469b12cc350d092022cb5cbe02d354c4cc26886815eda8f07ec8",
+    "stale": 0.0,
+    "evidence_engine_sha256": "5c1b472fe67403fa5bb6eb9919ef373edcefb8f656651cd910113824cd83554e",
+    "evidence_engine_line": "engine 5c1b472fe674 @ /home/matt/ozma/internal/research/experiments/gamma-substrate/.claude/worktrees/program-synthesis-plan/research/experiments/gamma-substrate/runners/dsl/python/substrate_rs/_native.abi3.so  [1 other tree build(s) shadowed]"
+   }
+  },
+  {
+   "local_id": 1003,
+   "type": "ResidualCondition",
+   "attrs": {
+    "rid": "arc6.seam_b.ir_retarget",
+    "ckind": "fact_equals",
+    "filter_value": "arc6_bc_ceiling_present",
+    "why": "as above -- the artifact is the evidence; if it changes the ceiling must be re-read.",
+    "expected_str": "1"
+   }
+  },
+  {
+   "local_id": 1004,
+   "type": "GoalResidual",
+   "attrs": {
+    "rid": "arc6.seam_c.shape_codebook",
+    "sig_seam": "shape_codebook",
+    "sig_lever": "detection",
+    "sig_target": "mbpp_test_257",
+    "reach_class": "operator_blocked",
+    "reach_class_factor": 0.7,
+    "ceiling_honest_n": 0.0,
+    "ceiling_honest_ids": [],
+    "ceiling_cherry_n": 1.0,
+    "ceiling_cherry_ids": [
+     100
+    ],
+    "denominator_n": 257.0,
+    "mechanism": "Even a genuine recognition supplies only a LABEL: the ShapeSignature nodes carry name/kind/concept/faculty/signature and nothing else. No constraint, no relaxation family, no IR template. A label with no payload cannot change what the enumerator does.",
+    "mechanism_source_path": "ceiling_c_math_shape_codebook.semantic_cherry_picked_ceiling.actionability_note",
+    "weight": 70.0,
+    "weight_formula": "RESIDUAL_SCALE(100) * reach_class_factor(0.7) * (1 - honest_n/denominator_n)",
+    "evidence_artifact": "results/arc6_bc_ceiling.json",
+    "evidence_artifact_sha256": "236489a64223469b12cc350d092022cb5cbe02d354c4cc26886815eda8f07ec8",
+    "stale": 0.0,
+    "evidence_engine_sha256": "5c1b472fe67403fa5bb6eb9919ef373edcefb8f656651cd910113824cd83554e",
+    "evidence_engine_line": "engine 5c1b472fe674 @ /home/matt/ozma/internal/research/experiments/gamma-substrate/.claude/worktrees/program-synthesis-plan/research/experiments/gamma-substrate/runners/dsl/python/substrate_rs/_native.abi3.so  [1 other tree build(s) shadowed]"
+   }
+  },
+  {
+   "local_id": 1005,
+   "type": "ResidualCondition",
+   "attrs": {
+    "rid": "arc6.seam_c.shape_codebook",
+    "ckind": "shape_count",
+    "filter_value": "math",
+    "why": "the codebook this ceiling was measured against holds exactly six `kind=math` ShapeSignature nodes (ceiling_c_math_shape_codebook.codebook.counts_by_kind). Add or remove one and the measurement no longer describes the codebook -- re-measure.",
+    "expected": 6.0
+   }
+  },
+  {
+   "local_id": 1006,
+   "type": "ResidualCondition",
+   "attrs": {
+    "rid": "arc6.seam_c.shape_codebook",
+    "ckind": "payload_count",
+    "filter_value": "math",
+    "why": "not one of those shapes carries a `keywords` payload (codebook_carries_a_synthesis_payload = false; a genuine recognition would supply only a LABEL). Give any math shape a keyword payload and the null's own mechanism is gone.",
+    "expected": 0.0
+   }
+  },
+  {
+   "local_id": 1007,
+   "type": "GoalResidual",
+   "attrs": {
+    "rid": "arc6.seam_d.property_atom",
+    "sig_seam": "property_atom",
+    "sig_lever": "verdict",
+    "sig_target": "mbpp_residual_36",
+    "reach_class": "operator_blocked",
+    "reach_class_factor": 0.7,
+    "ceiling_honest_n": 0.0,
+    "ceiling_honest_ids": [],
+    "ceiling_cherry_n": 36.0,
+    "ceiling_cherry_ids": [
+     17,
+     56,
+     67,
+     72,
+     77,
+     79,
+     91,
+     96,
+     105,
+     113,
+     143,
+     165,
+     167,
+     171,
+     224,
+     235,
+     238,
+     244,
+     250,
+     256,
+     268,
+     279,
+     291,
+     292,
+     295,
+     300,
+     311,
+     388,
+     389,
+     392,
+     405,
+     441,
+     444,
+     452,
+     453,
+     455
+    ],
+    "denominator_n": 36.0,
+    "mechanism": "Arc6 Seam D discriminating measurement. Seam D's 36/36 headline is authoring-bound (one PropertyAtom per residual task, scored on that same population). M1 LEAVE-ONE-OUT is the decisive number: it is what survives when a task's OWN atom is removed. Every figure here is a paired id list, never a bare count.",
+    "mechanism_source_path": "_README",
+    "weight": 70.0,
+    "weight_formula": "RESIDUAL_SCALE(100) * reach_class_factor(0.7) * (1 - honest_n/denominator_n)",
+    "evidence_artifact": "results/arc6_d_loo.json",
+    "evidence_artifact_sha256": "bb62b1e79e06da6c11951a6b02eee8478bfcff2a67226c22460521c00dfce123",
+    "stale": 0.0,
+    "evidence_engine_sha256": "5c1b472fe67403fa5bb6eb9919ef373edcefb8f656651cd910113824cd83554e"
+   }
+  },
+  {
+   "local_id": 1008,
+   "type": "ResidualCondition",
+   "attrs": {
+    "rid": "arc6.seam_d.property_atom",
+    "ckind": "fact_equals",
+    "filter_value": "arc6_d_loo_present",
+    "why": "the LOO measurement is the evidence; a re-authored atom set replaces it.",
+    "expected_str": "1"
+   }
+  },
+  {
+   "local_id": 1009,
+   "type": "GoalResidual",
+   "attrs": {
+    "rid": "arc6.structural.enum_op_table",
+    "sig_seam": "enum_op_table",
+    "sig_lever": "proposal",
+    "sig_target": "mbpp_s4_residual_60",
+    "reach_class": "operator_blocked",
+    "reach_class_factor": 0.7,
+    "ceiling_honest_n": 6.0,
+    "ceiling_honest_ids": [
+     75,
+     98,
+     106,
+     161,
+     257,
+     290
+    ],
+    "ceiling_cherry_n": 42.0,
+    "ceiling_cherry_ids": [
+     11,
+     18,
+     75,
+     87,
+     88,
+     98,
+     99,
+     102,
+     106,
+     118,
+     141,
+     161,
+     170,
+     172,
+     226,
+     230,
+     232,
+     255,
+     257,
+     260,
+     262,
+     264,
+     265,
+     283,
+     290,
+     301,
+     310,
+     390,
+     411,
+     419,
+     421,
+     424,
+     437,
+     439,
+     448,
+     450,
+     456,
+     462,
+     473,
+     474,
+     475,
+     479
+    ],
+    "denominator_n": 60.0,
+    "mechanism": "every bundle number above is an INVENTORY ceiling: it counts tasks whose required PRIMITIVES would all exist. It is NOT a claim that the enumerator would FIND the composition.",
+    "mechanism_source_path": "inventory_ceiling_is_not_reach.claim",
+    "weight": 63.0,
+    "weight_formula": "RESIDUAL_SCALE(100) * reach_class_factor(0.7) * (1 - honest_n/denominator_n)",
+    "evidence_artifact": "results/arc6_structural_ceiling.json",
+    "evidence_artifact_sha256": "5af750cd4dcc7572a2164f5f360ff75b22e2bff411f8f094fd944b023ebfa322",
+    "stale": 0.0,
+    "evidence_engine_sha256": "5c1b472fe67403fa5bb6eb9919ef373edcefb8f656651cd910113824cd83554e",
+    "evidence_engine_line": "engine 5c1b472fe674 @ /home/matt/ozma/internal/research/experiments/gamma-substrate/.claude/worktrees/program-synthesis-plan/research/experiments/gamma-substrate/runners/dsl/python/substrate_rs/_native.abi3.so  [1 other tree build(s) shadowed]"
+   }
+  },
+  {
+   "local_id": 1010,
+   "type": "ResidualCondition",
+   "attrs": {
+    "rid": "arc6.structural.enum_op_table",
+    "ckind": "fact_equals",
+    "filter_value": "arc6_structural_ceiling_present",
+    "why": "the op-table inventory is the evidence; widening the enumerator changes the inventory and this ceiling must be re-measured.",
+    "expected_str": "1"
+   }
+  },
+  {
+   "local_id": 1011,
+   "type": "GoalResidual",
+   "attrs": {
+    "rid": "arc6.verdict.row_verdict_seed_only",
+    "sig_seam": "row_verdict",
+    "sig_lever": "verdict",
+    "sig_target": "mbpp_test_257",
+    "reach_class": "operator_blocked",
+    "reach_class_factor": 0.7,
+    "ceiling_honest_n": 4.0,
+    "ceiling_honest_ids": [
+     106,
+     161,
+     257,
+     450
+    ],
+    "ceiling_cherry_n": 15.0,
+    "ceiling_cherry_ids": [
+     106,
+     161,
+     222,
+     249,
+     257,
+     272,
+     290,
+     393,
+     413,
+     418,
+     424,
+     436,
+     450,
+     457,
+     460
+    ],
+    "denominator_n": 15.0,
+    "mechanism": "Python list and Python tuple are BOTH Value::Tuple in this substrate, verified live: a node attr set to [1,2,3] reads back as (1,2,3).  Set and dict are NOT collapsed (Value::Set / Value::Dict are distinct).  So the ONLY values the collapse can equate are two sequences with IDENTICAL elements and different container types -- it can never equate two different element sequences.",
+    "mechanism_source_path": "type_collapse.mechanism",
+    "weight": 51.333333,
+    "weight_formula": "RESIDUAL_SCALE(100) * reach_class_factor(0.7) * (1 - honest_n/denominator_n)",
+    "evidence_artifact": "results/arc6_verdict_pricing.json",
+    "evidence_artifact_sha256": "1815d3817d459cf40f8f850111b889ce5696a715237bc152867f9294e325db5e",
+    "stale": 0.0,
+    "evidence_engine_sha256": "48da7257f35d3046e9bd18952b817a51d9f7ffbc19b08f52965bc07c5c429929",
+    "evidence_engine_line": "engine 48da7257f35d @ /home/matt/ozma/internal/research/experiments/gamma-substrate/.claude/worktrees/program-synthesis-plan/research/experiments/gamma-substrate/runners/dsl/python/substrate_rs/_native.abi3.so  [1 other tree build(s) shadowed]"
+   }
+  },
+  {
+   "local_id": 1012,
+   "type": "ResidualCondition",
+   "attrs": {
+    "rid": "arc6.verdict.row_verdict_seed_only",
+    "ckind": "fact_equals",
+    "filter_value": "value_layer_list_eq_tuple",
+    "why": "`type_collapse.mechanism`: a node attr set to [1,2,3] reads back as (1,2,3).  The 12 false accepts are a consequence of that and of nothing else.  Distinguish List from Tuple in the value layer and this refutation no longer applies -- which is exactly what arc C of results/arc6_valuelayer.json did on engine 8311d4356082 (NOT the engine in this tree).",
+    "expected_str": "1"
+   }
+  }
+ ],
+ "edges": [
+  {
+   "src": {
+    "local": 1000
+   },
+   "tgt": {
+    "local": 1001
+   },
+   "type": "holds_under",
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 1002
+   },
+   "tgt": {
+    "local": 1003
+   },
+   "type": "holds_under",
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 1004
+   },
+   "tgt": {
+    "local": 1005
+   },
+   "type": "holds_under",
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 1004
+   },
+   "tgt": {
+    "local": 1006
+   },
+   "type": "holds_under",
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 1007
+   },
+   "tgt": {
+    "local": 1008
+   },
+   "type": "holds_under",
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 1009
+   },
+   "tgt": {
+    "local": 1010
+   },
+   "type": "holds_under",
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 1011
+   },
+   "tgt": {
+    "local": 1012
+   },
+   "type": "holds_under",
+   "attrs": {}
+  }
+ ],
+ "productions": [
+  {
+   "provenance": "seed:goal_residuals:holds_under-0",
+   "src": {
+    "type": "GoalResidual",
+    "var": "s"
+   },
+   "edge_type": "holds_under",
+   "tgt": {
+    "type": "ResidualCondition",
+    "var": "t"
+   }
+  }
+ ],
+ "rules": [
+  {
+   "name": "gr_condition_lapse",
+   "comment": "A RESIDUAL WHOSE CONDITION NO LONGER HOLDS GOES STALE.  A residual without its condition is precisely the failure CLAUDE.md retracts -- a claim quoted without its condition, which stood false for ten days.  Every GoalResidual carries at least one ResidualCondition (holds_under); this rule reads the LIVE graph for each and marks the residual stale the moment any one of them mismatches.  Staleness is not falsity: it means the measurement no longer describes the world and must be re-made before it may be used again.  Idempotent (guarded on stale!=1) and reversible (gr_condition_hold is the other direction, so a condition that comes back restores the residual -- a latch would be a second un-lapsable claim).",
+   "batch": true,
+   "match": [
+    [
+     "r",
+     "holds_under",
+     "c"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "r"
+        },
+        "key": "stale"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      }
+     },
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "c"
+           },
+           "key": "ckind"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "shape_count"
+          }
+         },
+         {
+          "type": "Not",
+          "arg": {
+           "type": "Eq",
+           "a": {
+            "type": "Count",
+            "source": {
+             "type": "Filter",
+             "source": {
+              "type": "NodesOfType",
+              "node_type": "ShapeSignature"
+             },
+             "var_name": "grs",
+             "predicate": {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "grs"
+               },
+               "key": "kind"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "c"
+               },
+               "key": "filter_value"
+              }
+             }
+            }
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "c"
+            },
+            "key": "expected"
+           }
+          }
+         }
+        ]
+       },
+       {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "c"
+           },
+           "key": "ckind"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "payload_count"
+          }
+         },
+         {
+          "type": "Not",
+          "arg": {
+           "type": "Eq",
+           "a": {
+            "type": "Count",
+            "source": {
+             "type": "Filter",
+             "source": {
+              "type": "NodesOfType",
+              "node_type": "ShapeSignature"
+             },
+             "var_name": "grs",
+             "predicate": {
+              "type": "And",
+              "items": [
+               {
+                "type": "Eq",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "grs"
+                 },
+                 "key": "kind"
+                },
+                "b": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "c"
+                 },
+                 "key": "filter_value"
+                }
+               },
+               {
+                "type": "Not",
+                "arg": {
+                 "type": "Eq",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "grs"
+                  },
+                  "key": "keywords"
+                 },
+                 "b": {
+                  "type": "Lit",
+                  "value": null
+                 }
+                }
+               }
+              ]
+             }
+            }
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "c"
+            },
+            "key": "expected"
+           }
+          }
+         }
+        ]
+       },
+       {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "c"
+           },
+           "key": "ckind"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "fact_equals"
+          }
+         },
+         {
+          "type": "Not",
+          "arg": {
+           "type": "Eq",
+           "a": {
+            "type": "Count",
+            "source": {
+             "type": "Filter",
+             "source": {
+              "type": "NodesOfType",
+              "node_type": "ResidualFact"
+             },
+             "var_name": "grf",
+             "predicate": {
+              "type": "And",
+              "items": [
+               {
+                "type": "Eq",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "grf"
+                 },
+                 "key": "name"
+                },
+                "b": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "c"
+                 },
+                 "key": "filter_value"
+                }
+               },
+               {
+                "type": "Eq",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "grf"
+                 },
+                 "key": "value"
+                },
+                "b": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "c"
+                 },
+                 "key": "expected_str"
+                }
+               }
+              ]
+             }
+            }
+           },
+           "b": {
+            "type": "Lit",
+            "value": 1.0
+           }
+          }
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "r",
+     "stale",
+     1.0
+    ]
+   ]
+  },
+  {
+   "name": "gr_condition_hold",
+   "comment": "The reverse direction, and it is not decoration: a one-way lapse would itself be a claim that cannot be revised.  A stale residual whose conditions ALL hold again is restored to the pool.  Mutually exclusive with gr_condition_lapse by construction (Exists mismatch vs Not Exists mismatch), so the two never contend for the same node in one pass.",
+   "batch": true,
+   "match": [
+    [
+     "r",
+     "holds_under",
+     "c"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "stale"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "r"
+        },
+        "edge_type": "holds_under",
+        "any_type": false
+       },
+       "var_name": "c2",
+       "predicate": {
+        "type": "Or",
+        "items": [
+         {
+          "type": "And",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "c2"
+             },
+             "key": "ckind"
+            },
+            "b": {
+             "type": "Lit",
+             "value": "shape_count"
+            }
+           },
+           {
+            "type": "Not",
+            "arg": {
+             "type": "Eq",
+             "a": {
+              "type": "Count",
+              "source": {
+               "type": "Filter",
+               "source": {
+                "type": "NodesOfType",
+                "node_type": "ShapeSignature"
+               },
+               "var_name": "grs",
+               "predicate": {
+                "type": "Eq",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "grs"
+                 },
+                 "key": "kind"
+                },
+                "b": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "c2"
+                 },
+                 "key": "filter_value"
+                }
+               }
+              }
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "c2"
+              },
+              "key": "expected"
+             }
+            }
+           }
+          ]
+         },
+         {
+          "type": "And",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "c2"
+             },
+             "key": "ckind"
+            },
+            "b": {
+             "type": "Lit",
+             "value": "payload_count"
+            }
+           },
+           {
+            "type": "Not",
+            "arg": {
+             "type": "Eq",
+             "a": {
+              "type": "Count",
+              "source": {
+               "type": "Filter",
+               "source": {
+                "type": "NodesOfType",
+                "node_type": "ShapeSignature"
+               },
+               "var_name": "grs",
+               "predicate": {
+                "type": "And",
+                "items": [
+                 {
+                  "type": "Eq",
+                  "a": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "grs"
+                   },
+                   "key": "kind"
+                  },
+                  "b": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "c2"
+                   },
+                   "key": "filter_value"
+                  }
+                 },
+                 {
+                  "type": "Not",
+                  "arg": {
+                   "type": "Eq",
+                   "a": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "grs"
+                    },
+                    "key": "keywords"
+                   },
+                   "b": {
+                    "type": "Lit",
+                    "value": null
+                   }
+                  }
+                 }
+                ]
+               }
+              }
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "c2"
+              },
+              "key": "expected"
+             }
+            }
+           }
+          ]
+         },
+         {
+          "type": "And",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "c2"
+             },
+             "key": "ckind"
+            },
+            "b": {
+             "type": "Lit",
+             "value": "fact_equals"
+            }
+           },
+           {
+            "type": "Not",
+            "arg": {
+             "type": "Eq",
+             "a": {
+              "type": "Count",
+              "source": {
+               "type": "Filter",
+               "source": {
+                "type": "NodesOfType",
+                "node_type": "ResidualFact"
+               },
+               "var_name": "grf",
+               "predicate": {
+                "type": "And",
+                "items": [
+                 {
+                  "type": "Eq",
+                  "a": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "grf"
+                   },
+                   "key": "name"
+                  },
+                  "b": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "c2"
+                   },
+                   "key": "filter_value"
+                  }
+                 },
+                 {
+                  "type": "Eq",
+                  "a": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "grf"
+                   },
+                   "key": "value"
+                  },
+                  "b": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "c2"
+                   },
+                   "key": "expected_str"
+                  }
+                 }
+                ]
+               }
+              }
+             },
+             "b": {
+              "type": "Lit",
+              "value": 1.0
+             }
+            }
+           }
+          ]
+         }
+        ]
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "r",
+     "stale",
+     0.0
+    ]
+   ]
+  },
+  {
+   "name": "gr_move_penalty",
+   "comment": "AUDIT STAMP.  Writes onto the candidate the weight the strongest matching held residual contributes -- the same auditability ps_move_sel_kind/ps_move_sel_gap already provide for the other terms.  The COLLAPSE does not depend on this attr: ps_move_select computes the same penalty INLINE inside its Argmax, so the selection can never be wrong because a stamp had not been written yet in the fixpoint.  Self-extinguishing (it declines to rewrite a value already equal).",
+   "batch": true,
+   "match": [
+    [
+     "g",
+     "has_move_candidate",
+     "mc"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "mc"
+        },
+        "key": "sig_seam"
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       }
+      }
+     },
+     {
+      "type": "Exists",
+      "source": {
+       "type": "NodesOfType",
+       "node_type": "GoalResidual"
+      },
+      "var_name": "grr",
+      "predicate": {
+       "type": "And",
+       "items": [
+        {
+         "type": "Not",
+         "arg": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "grr"
+           },
+           "key": "stale"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 1.0
+          }
+         }
+        },
+        {
+         "type": "Not",
+         "arg": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "mc"
+           },
+           "key": "sig_seam"
+          },
+          "b": {
+           "type": "Lit",
+           "value": null
+          }
+         }
+        },
+        {
+         "type": "Or",
+         "items": [
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "grr"
+            },
+            "key": "sig_seam"
+           },
+           "b": {
+            "type": "Lit",
+            "value": null
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "grr"
+            },
+            "key": "sig_seam"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "mc"
+            },
+            "key": "sig_seam"
+           }
+          }
+         ]
+        },
+        {
+         "type": "Or",
+         "items": [
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "grr"
+            },
+            "key": "sig_lever"
+           },
+           "b": {
+            "type": "Lit",
+            "value": null
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "grr"
+            },
+            "key": "sig_lever"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "mc"
+            },
+            "key": "sig_lever"
+           }
+          }
+         ]
+        },
+        {
+         "type": "Or",
+         "items": [
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "grr"
+            },
+            "key": "sig_target"
+           },
+           "b": {
+            "type": "Lit",
+            "value": null
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "grr"
+            },
+            "key": "sig_target"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "mc"
+            },
+            "key": "sig_target"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "mc"
+        },
+        "key": "residual_penalty"
+       },
+       "b": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Exists",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "GoalResidual"
+         },
+         "var_name": "grr",
+         "predicate": {
+          "type": "And",
+          "items": [
+           {
+            "type": "Not",
+            "arg": {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "grr"
+              },
+              "key": "stale"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 1.0
+             }
+            }
+           },
+           {
+            "type": "Not",
+            "arg": {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "mc"
+              },
+              "key": "sig_seam"
+             },
+             "b": {
+              "type": "Lit",
+              "value": null
+             }
+            }
+           },
+           {
+            "type": "Or",
+            "items": [
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "grr"
+               },
+               "key": "sig_seam"
+              },
+              "b": {
+               "type": "Lit",
+               "value": null
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "grr"
+               },
+               "key": "sig_seam"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "mc"
+               },
+               "key": "sig_seam"
+              }
+             }
+            ]
+           },
+           {
+            "type": "Or",
+            "items": [
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "grr"
+               },
+               "key": "sig_lever"
+              },
+              "b": {
+               "type": "Lit",
+               "value": null
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "grr"
+               },
+               "key": "sig_lever"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "mc"
+               },
+               "key": "sig_lever"
+              }
+             }
+            ]
+           },
+           {
+            "type": "Or",
+            "items": [
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "grr"
+               },
+               "key": "sig_target"
+              },
+              "b": {
+               "type": "Lit",
+               "value": null
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "grr"
+               },
+               "key": "sig_target"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "mc"
+               },
+               "key": "sig_target"
+              }
+             }
+            ]
+           }
+          ]
+         }
+        },
+        "then": {
+         "type": "Attr",
+         "key": "weight",
+         "node": {
+          "type": "Argmax",
+          "source": {
+           "type": "Filter",
+           "source": {
+            "type": "NodesOfType",
+            "node_type": "GoalResidual"
+           },
+           "var_name": "grr",
+           "predicate": {
+            "type": "And",
+            "items": [
+             {
+              "type": "Not",
+              "arg": {
+               "type": "Eq",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "grr"
+                },
+                "key": "stale"
+               },
+               "b": {
+                "type": "Lit",
+                "value": 1.0
+               }
+              }
+             },
+             {
+              "type": "Not",
+              "arg": {
+               "type": "Eq",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "mc"
+                },
+                "key": "sig_seam"
+               },
+               "b": {
+                "type": "Lit",
+                "value": null
+               }
+              }
+             },
+             {
+              "type": "Or",
+              "items": [
+               {
+                "type": "Eq",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "grr"
+                 },
+                 "key": "sig_seam"
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": null
+                }
+               },
+               {
+                "type": "Eq",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "grr"
+                 },
+                 "key": "sig_seam"
+                },
+                "b": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "mc"
+                 },
+                 "key": "sig_seam"
+                }
+               }
+              ]
+             },
+             {
+              "type": "Or",
+              "items": [
+               {
+                "type": "Eq",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "grr"
+                 },
+                 "key": "sig_lever"
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": null
+                }
+               },
+               {
+                "type": "Eq",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "grr"
+                 },
+                 "key": "sig_lever"
+                },
+                "b": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "mc"
+                 },
+                 "key": "sig_lever"
+                }
+               }
+              ]
+             },
+             {
+              "type": "Or",
+              "items": [
+               {
+                "type": "Eq",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "grr"
+                 },
+                 "key": "sig_target"
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": null
+                }
+               },
+               {
+                "type": "Eq",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "grr"
+                 },
+                 "key": "sig_target"
+                },
+                "b": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "mc"
+                 },
+                 "key": "sig_target"
+                }
+               }
+              ]
+             }
+            ]
+           }
+          },
+          "var_name": "grw",
+          "value": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "grw"
+           },
+           "key": "weight"
+          },
+          "default": null
+         }
+        },
+        "other": {
+         "type": "Lit",
+         "value": 0.0
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "mc",
+     "residual_penalty",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Exists",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "GoalResidual"
+        },
+        "var_name": "grr",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Not",
+           "arg": {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "grr"
+             },
+             "key": "stale"
+            },
+            "b": {
+             "type": "Lit",
+             "value": 1.0
+            }
+           }
+          },
+          {
+           "type": "Not",
+           "arg": {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "mc"
+             },
+             "key": "sig_seam"
+            },
+            "b": {
+             "type": "Lit",
+             "value": null
+            }
+           }
+          },
+          {
+           "type": "Or",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "grr"
+              },
+              "key": "sig_seam"
+             },
+             "b": {
+              "type": "Lit",
+              "value": null
+             }
+            },
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "grr"
+              },
+              "key": "sig_seam"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "mc"
+              },
+              "key": "sig_seam"
+             }
+            }
+           ]
+          },
+          {
+           "type": "Or",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "grr"
+              },
+              "key": "sig_lever"
+             },
+             "b": {
+              "type": "Lit",
+              "value": null
+             }
+            },
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "grr"
+              },
+              "key": "sig_lever"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "mc"
+              },
+              "key": "sig_lever"
+             }
+            }
+           ]
+          },
+          {
+           "type": "Or",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "grr"
+              },
+              "key": "sig_target"
+             },
+             "b": {
+              "type": "Lit",
+              "value": null
+             }
+            },
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "grr"
+              },
+              "key": "sig_target"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "mc"
+              },
+              "key": "sig_target"
+             }
+            }
+           ]
+          }
+         ]
+        }
+       },
+       "then": {
+        "type": "Attr",
+        "key": "weight",
+        "node": {
+         "type": "Argmax",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "NodesOfType",
+           "node_type": "GoalResidual"
+          },
+          "var_name": "grr",
+          "predicate": {
+           "type": "And",
+           "items": [
+            {
+             "type": "Not",
+             "arg": {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "grr"
+               },
+               "key": "stale"
+              },
+              "b": {
+               "type": "Lit",
+               "value": 1.0
+              }
+             }
+            },
+            {
+             "type": "Not",
+             "arg": {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "mc"
+               },
+               "key": "sig_seam"
+              },
+              "b": {
+               "type": "Lit",
+               "value": null
+              }
+             }
+            },
+            {
+             "type": "Or",
+             "items": [
+              {
+               "type": "Eq",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "grr"
+                },
+                "key": "sig_seam"
+               },
+               "b": {
+                "type": "Lit",
+                "value": null
+               }
+              },
+              {
+               "type": "Eq",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "grr"
+                },
+                "key": "sig_seam"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "mc"
+                },
+                "key": "sig_seam"
+               }
+              }
+             ]
+            },
+            {
+             "type": "Or",
+             "items": [
+              {
+               "type": "Eq",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "grr"
+                },
+                "key": "sig_lever"
+               },
+               "b": {
+                "type": "Lit",
+                "value": null
+               }
+              },
+              {
+               "type": "Eq",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "grr"
+                },
+                "key": "sig_lever"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "mc"
+                },
+                "key": "sig_lever"
+               }
+              }
+             ]
+            },
+            {
+             "type": "Or",
+             "items": [
+              {
+               "type": "Eq",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "grr"
+                },
+                "key": "sig_target"
+               },
+               "b": {
+                "type": "Lit",
+                "value": null
+               }
+              },
+              {
+               "type": "Eq",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "grr"
+                },
+                "key": "sig_target"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "mc"
+                },
+                "key": "sig_target"
+               }
+              }
+             ]
+            }
+           ]
+          }
+         },
+         "var_name": "grw",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "grw"
+          },
+          "key": "weight"
+         },
+         "default": null
+        }
+       },
+       "other": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "gr_move_penalty_clear",
+   "comment": "The other direction of the same stamp: a candidate no held residual speaks to carries an explicit ZERO, so 'no penalty' is a written fact rather than an absent attr.  This is the both-directions discipline -- a stamp that only ever writes non-zero cannot be distinguished from a stamp that never fires.",
+   "batch": true,
+   "match": [
+    [
+     "g",
+     "has_move_candidate",
+     "mc"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "GoalResidual"
+       },
+       "var_name": "grr",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Not",
+          "arg": {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "grr"
+            },
+            "key": "stale"
+           },
+           "b": {
+            "type": "Lit",
+            "value": 1.0
+           }
+          }
+         },
+         {
+          "type": "Not",
+          "arg": {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "mc"
+            },
+            "key": "sig_seam"
+           },
+           "b": {
+            "type": "Lit",
+            "value": null
+           }
+          }
+         },
+         {
+          "type": "Or",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "grr"
+             },
+             "key": "sig_seam"
+            },
+            "b": {
+             "type": "Lit",
+             "value": null
+            }
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "grr"
+             },
+             "key": "sig_seam"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "mc"
+             },
+             "key": "sig_seam"
+            }
+           }
+          ]
+         },
+         {
+          "type": "Or",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "grr"
+             },
+             "key": "sig_lever"
+            },
+            "b": {
+             "type": "Lit",
+             "value": null
+            }
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "grr"
+             },
+             "key": "sig_lever"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "mc"
+             },
+             "key": "sig_lever"
+            }
+           }
+          ]
+         },
+         {
+          "type": "Or",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "grr"
+             },
+             "key": "sig_target"
+            },
+            "b": {
+             "type": "Lit",
+             "value": null
+            }
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "grr"
+             },
+             "key": "sig_target"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "mc"
+             },
+             "key": "sig_target"
+            }
+           }
+          ]
+         }
+        ]
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "mc"
+        },
+        "key": "residual_penalty"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "mc",
+     "residual_penalty",
+     0.0
+    ]
+   ]
+  },
+  {
+   "name": "gr_move_sel_audit",
+   "comment": "WHAT THE WINNER WAS CHARGED.  ps_move_select computes the residual penalty INLINE (so the collapse never depends on stamp ordering) and therefore does not write it down; this rule reads the selected candidate back by its own ps_move_sel_key and copies its residual_penalty onto the goal, giving the residual term the same audit trail ps_move_sel_gap / ps_move_sel_mdl already have.  A selection you cannot read is a selection you cannot check.",
+   "batch": true,
+   "match": [
+    [
+     "ag",
+     "has_goal",
+     "g"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "g"
+        },
+        "key": "ps_move_sel_key"
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "g"
+        },
+        "key": "ps_move_sel_residual_penalty"
+       },
+       "b": {
+        "type": "Attr",
+        "key": "residual_penalty",
+        "node": {
+         "type": "Pick",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "g"
+           },
+           "edge_type": "has_move_candidate",
+           "any_type": false
+          },
+          "var_name": "mcs",
+          "predicate": {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "mcs"
+            },
+            "key": "key"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "g"
+            },
+            "key": "ps_move_sel_key"
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "g",
+     "ps_move_sel_residual_penalty",
+     {
+      "__term__": {
+       "type": "Attr",
+       "key": "residual_penalty",
+       "node": {
+        "type": "Pick",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "g"
+          },
+          "edge_type": "has_move_candidate",
+          "any_type": false
+         },
+         "var_name": "mcs",
+         "predicate": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "mcs"
+           },
+           "key": "key"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "g"
+           },
+           "key": "ps_move_sel_key"
+          }
+         }
+        }
+       }
+      }
+     }
+    ]
+   ]
+  }
+ ]
+}

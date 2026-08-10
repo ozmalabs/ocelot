@@ -1,0 +1,28 @@
+{
+  "id": "signed_relations",
+  "version": "1.0.0",
+  "depends_on": ["relations"],
+  "description": "Fills the polarity hole in the relation lexicon. The agent already held every POSITIVE relation (causes/enables/requires/produces = sign +1) and a full comprehension stack, but lacked the NEGATIVE/monotone relations needed for sign-propagating composition. Adds them with explicit polarity so concept text can be parsed into signed premises the composition_engine chains. This was the single missing piece between 'has comprehension + 23 relations' and 'can extract sign-flipping premises'.",
+  "relations": [
+    { "name": "reduces", "polarity": -1,
+      "description": "X lowers / diminishes Y (monotone decreasing)",
+      "words": ["reduces", "reduce", "lowers", "lower", "decreases", "decrease",
+                "minimises", "minimise", "minimizes", "minimize", "diminishes",
+                "defuses", "dampens", "weakens", "mitigates"] },
+    { "name": "increases", "polarity": 1,
+      "description": "X raises / amplifies Y (monotone increasing)",
+      "words": ["increases", "increase", "raises", "raise", "amplifies", "amplify",
+                "heightens", "strengthens", "deepens"] },
+    { "name": "prevents", "polarity": -1,
+      "description": "X blocks / disables Y",
+      "words": ["prevents", "prevent", "blocks", "block", "disables", "disable",
+                "forbids", "precludes", "stops"] },
+    { "name": "dissolves", "polarity": -1,
+      "description": "X removes / erases Y",
+      "words": ["dissolves", "dissolve", "removes", "remove", "erases", "erase",
+                "eliminates"] },
+    { "name": "constitutes", "polarity": 1,
+      "description": "X is / instantiates Y (identity-direction, monotone +)",
+      "words": ["constitutes", "constitute", "is", "are", "instantiates"] }
+  ]
+}

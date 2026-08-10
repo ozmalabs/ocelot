@@ -1,0 +1,1238 @@
+{
+ "id": "doom_allocentric_surface",
+ "version": "1.0.0",
+ "self_load_only": true,
+ "depends_on": [],
+ "area": null,
+ "description": "ALLOCENTRIC HELD-SURFACE MAP RECONSTRUCTION (block 203000). The map IS the held surface (180000) in WORLD coordinates: a first-class AlloCell{pose,value,density,residual,half_life,freshness,last_refresh_epoch,tier,stored,geom} on the game node, grown as the moving eye's SEEN observations are pose-registered into world coordinates. as_new MINTS a cell for a newly-seen world pose (unknown=ABSENCE, 161000 M3); as_blend EMA-ACCUMULATES the held value (freshness-weighted Kalman gain -- dwelt cells DENOISE/super-resolve as density climbs, changed cells ADOPT), climbs density, sets the integer surprise residual, and PROMOTES (refreshes the innovation clock); as_gate sets half_life INVERSELY by surprise (196000); as_freshness applies the integer-half-life decay law freshness=Ashr(c0,IDiv(now-last_refresh,half_life)) on the game's map_epoch clock; as_tier thresholds FRESH/GIST/LATENT; as_demote COARSENS the stored representation by Ashr with tier and NEVER deletes (198000 -- value preserved, so a revisit promotes back and recovers detail). The occupancy geom stays SEEN (depth-from-motion, 158000; walk frees authoritatively, 161000 merge). OFF by default: every rule guards on game.map_mode=='doom' AND an opt-in AlloParams{enabled=1} node the adapter creates only on opt-in -- absent it the 161000 map + every existing path are byte-identical. NO Rust, NO new Term (Ashr/IDiv/Abs/Max/IfThenElse/Gte/Lt/Plus/Times/Minus/Div/IndexAt/Exists/Not/And/Or/Eq exist).",
+ "microtheory": {
+  "name": "doom_allocentric_surface",
+  "description": "The map is the held surface in allocentric coordinates: pose-registered EMA accumulation with surprise-set integer-half-life decay and demotion -- a persistent, super-resolving, DECAYING reconstruction of the level from what the eye SEES as it moves."
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [
+  {
+   "provenance": "seed:doom_allocentric_surface:game-allo-params",
+   "src": {
+    "type": "WorldInstance",
+    "var": "game"
+   },
+   "edge_type": "has_allo_params",
+   "tgt": {
+    "type": "AlloParams",
+    "var": "params"
+   }
+  },
+  {
+   "provenance": "seed:doom_allocentric_surface:game-allo-cell",
+   "src": {
+    "type": "WorldInstance",
+    "var": "game"
+   },
+   "edge_type": "has_allo_cell",
+   "tgt": {
+    "type": "AlloCell",
+    "var": "A"
+   }
+  }
+ ],
+ "rules": [
+  {
+   "name": "as_new",
+   "comment": "GROW: an observed world cell (pose registered by the marine's pose) with no AlloCell yet mints one \u2014 value/obs = the observed luminance, density 1, FRESH (tier 2, freshness c0), clock = obs epoch, geom from the SEEN src (walk/depth_free -> 0 free, depth_wall -> 1 wall). Absence stays unknown.",
+   "match": [
+    [
+     "game",
+     "observed",
+     "O"
+    ],
+    [
+     "game",
+     "has_allo_params",
+     "params"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "game"
+       },
+       "key": "map_mode"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "doom"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "params"
+       },
+       "key": "enabled"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "game"
+        },
+        "edge_type": "has_allo_cell",
+        "any_type": false
+       },
+       "var_name": "A2",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "A2"
+            },
+            "key": "pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 0.0
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "O"
+            },
+            "key": "pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 0.0
+           }
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "A2"
+            },
+            "key": "pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 1.0
+           }
+          },
+          "b": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "O"
+            },
+            "key": "pose"
+           },
+           "index": {
+            "type": "Lit",
+            "value": 1.0
+           }
+          }
+         }
+        ]
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "A",
+     "AlloCell",
+     {
+      "world_type": "AlloCell",
+      "pose": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "O"
+        },
+        "key": "pose"
+       }
+      },
+      "value": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "O"
+        },
+        "key": "lum"
+       }
+      },
+      "obs": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "O"
+        },
+        "key": "lum"
+       }
+      },
+      "stored": {
+       "__term__": {
+        "type": "IDiv",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "O"
+         },
+         "key": "lum"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       }
+      },
+      "dwell": 1.0,
+      "residual": 0.0,
+      "half_life": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "params"
+        },
+        "key": "hl0"
+       }
+      },
+      "freshness": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "params"
+        },
+        "key": "c0"
+       }
+      },
+      "last_refresh_epoch": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "O"
+        },
+        "key": "epoch"
+       }
+      },
+      "now_epoch": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "O"
+        },
+        "key": "epoch"
+       }
+      },
+      "tier": 2.0,
+      "present": 1.0,
+      "geom": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "O"
+        },
+        "key": "geom"
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "game",
+     "has_allo_cell",
+     "A",
+     {}
+    ]
+   ],
+   "area": null,
+   "order": 0.0,
+   "latency_class": "hard_realtime"
+  },
+  {
+   "name": "as_blend",
+   "comment": "ACCUMULATE + PROMOTE: EMA blend the held surface value toward the observed luminance with a freshness-weighted gain (fresh denoises, stale adopts), density++ (dwell super-resolves), residual = |obs-value| (integer surprise), refresh the clock (promote). Geom: walk frees, else first-sensed persists.",
+   "match": [
+    [
+     "game",
+     "observed",
+     "O"
+    ],
+    [
+     "game",
+     "has_allo_cell",
+     "A"
+    ],
+    [
+     "game",
+     "has_allo_params",
+     "params"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "game"
+       },
+       "key": "map_mode"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "doom"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "params"
+       },
+       "key": "enabled"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "IndexAt",
+         "seq": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "O"
+          },
+          "key": "pose"
+         },
+         "index": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        },
+        "b": {
+         "type": "IndexAt",
+         "seq": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "A"
+          },
+          "key": "pose"
+         },
+         "index": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "IndexAt",
+         "seq": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "O"
+          },
+          "key": "pose"
+         },
+         "index": {
+          "type": "Lit",
+          "value": 1.0
+         }
+        },
+        "b": {
+         "type": "IndexAt",
+         "seq": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "A"
+          },
+          "key": "pose"
+         },
+         "index": {
+          "type": "Lit",
+          "value": 1.0
+         }
+        }
+       }
+      ]
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "A"
+       },
+       "key": "last_refresh_epoch"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "O"
+       },
+       "key": "epoch"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "A",
+     "residual",
+     {
+      "__term__": {
+       "type": "Abs",
+       "arg": {
+        "type": "Minus",
+        "a": {
+         "type": "IDiv",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "O"
+          },
+          "key": "lum"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1.0
+         }
+        },
+        "b": {
+         "type": "IDiv",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "A"
+          },
+          "key": "value"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1.0
+         }
+        }
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "A",
+     "value",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "A"
+         },
+         "key": "value"
+        },
+        {
+         "type": "Times",
+         "items": [
+          {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "params"
+             },
+             "key": "lr_min"
+            },
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Minus",
+               "a": {
+                "type": "Lit",
+                "value": 1.0
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "params"
+                },
+                "key": "lr_min"
+               }
+              },
+              {
+               "type": "Div",
+               "a": {
+                "type": "Minus",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "params"
+                 },
+                 "key": "c0"
+                },
+                "b": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "A"
+                 },
+                 "key": "freshness"
+                }
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "params"
+                },
+                "key": "c0"
+               }
+              }
+             ]
+            }
+           ]
+          },
+          {
+           "type": "Minus",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "O"
+            },
+            "key": "lum"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "A"
+            },
+            "key": "value"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "A",
+     "dwell",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "A"
+         },
+         "key": "dwell"
+        },
+        {
+         "type": "Lit",
+         "value": 1.0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "A",
+     "obs",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "O"
+       },
+       "key": "lum"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "A",
+     "last_refresh_epoch",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "O"
+       },
+       "key": "epoch"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "A",
+     "geom",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "O"
+         },
+         "key": "src"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "walk"
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": 0.0
+       },
+       "other": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "A"
+          },
+          "key": "geom"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1.0
+         }
+        },
+        "then": {
+         "type": "Lit",
+         "value": 1.0
+        },
+        "other": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "A"
+         },
+         "key": "geom"
+        }
+       }
+      }
+     }
+    ]
+   ],
+   "area": null,
+   "order": 1.0,
+   "latency_class": "hard_realtime"
+  },
+  {
+   "name": "as_gate",
+   "comment": "half_life = Max(hl_min, IDiv(hl_scale, residual+1)) \u2014 decay proportional to surprise; uniform mode pins it (the fixed-rate control).",
+   "match": [
+    [
+     "game",
+     "has_allo_cell",
+     "A"
+    ],
+    [
+     "game",
+     "has_allo_params",
+     "params"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "game"
+       },
+       "key": "map_mode"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "doom"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "params"
+       },
+       "key": "enabled"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "A",
+     "half_life",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "params"
+         },
+         "key": "uniform"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       "then": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "params"
+        },
+        "key": "uniform_hl"
+       },
+       "other": {
+        "type": "Max",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "params"
+          },
+          "key": "hl_min"
+         },
+         {
+          "type": "IDiv",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "params"
+           },
+           "key": "hl_scale"
+          },
+          "b": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "A"
+             },
+             "key": "residual"
+            },
+            {
+             "type": "Lit",
+             "value": 1.0
+            }
+           ]
+          }
+         }
+        ]
+       }
+      }
+     }
+    ]
+   ],
+   "area": null,
+   "order": 2.0,
+   "latency_class": "hard_realtime"
+  },
+  {
+   "name": "as_freshness",
+   "comment": "freshness = Ashr(c0, IDiv(now_epoch - last_refresh_epoch, half_life)); now_epoch from game.map_epoch. Long-unseen cells lose freshness.",
+   "match": [
+    [
+     "game",
+     "has_allo_cell",
+     "A"
+    ],
+    [
+     "game",
+     "has_allo_params",
+     "params"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "game"
+       },
+       "key": "map_mode"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "doom"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "params"
+       },
+       "key": "enabled"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "A",
+     "now_epoch",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "game"
+       },
+       "key": "map_epoch"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "A",
+     "freshness",
+     {
+      "__term__": {
+       "type": "Ashr",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "params"
+        },
+        "key": "c0"
+       },
+       "b": {
+        "type": "IDiv",
+        "a": {
+         "type": "Minus",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "game"
+          },
+          "key": "map_epoch"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "A"
+          },
+          "key": "last_refresh_epoch"
+         }
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "A"
+         },
+         "key": "half_life"
+        }
+       }
+      }
+     }
+    ]
+   ],
+   "area": null,
+   "order": 3.0,
+   "latency_class": "hard_realtime"
+  },
+  {
+   "name": "as_tier",
+   "comment": "tier = FRESH(2)>=t_fresh / GIST(1)>=t_gist / LATENT(0). The decaying reconstruction's demotion ladder in world coordinates.",
+   "match": [
+    [
+     "game",
+     "has_allo_cell",
+     "A"
+    ],
+    [
+     "game",
+     "has_allo_params",
+     "params"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "game"
+       },
+       "key": "map_mode"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "doom"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "params"
+       },
+       "key": "enabled"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "A",
+     "tier",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gte",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "A"
+         },
+         "key": "freshness"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "params"
+         },
+         "key": "t_fresh"
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": 2.0
+       },
+       "other": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Gte",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "A"
+          },
+          "key": "freshness"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "params"
+          },
+          "key": "t_gist"
+         }
+        },
+        "then": {
+         "type": "Lit",
+         "value": 1.0
+        },
+        "other": {
+         "type": "Lit",
+         "value": 0.0
+        }
+       }
+      }
+     }
+    ]
+   ],
+   "area": null,
+   "order": 4.0,
+   "latency_class": "hard_realtime"
+  },
+  {
+   "name": "as_demote",
+   "comment": "stored coarsens by tier (FRESH=value / GIST=Ashr(value,k_gist) / LATENT=0), present=1 always. Value (the detail) is preserved -> promote recovers it. NEVER deletes.",
+   "match": [
+    [
+     "game",
+     "has_allo_cell",
+     "A"
+    ],
+    [
+     "game",
+     "has_allo_params",
+     "params"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "game"
+       },
+       "key": "map_mode"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "doom"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "params"
+       },
+       "key": "enabled"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "A",
+     "stored",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "A"
+         },
+         "key": "tier"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 2.0
+        }
+       },
+       "then": {
+        "type": "IDiv",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "A"
+         },
+         "key": "value"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       "other": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "A"
+          },
+          "key": "tier"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1.0
+         }
+        },
+        "then": {
+         "type": "Ashr",
+         "a": {
+          "type": "IDiv",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "A"
+           },
+           "key": "value"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 1.0
+          }
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "params"
+          },
+          "key": "k_gist"
+         }
+        },
+        "other": {
+         "type": "Lit",
+         "value": 0.0
+        }
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "A",
+     "present",
+     {
+      "__term__": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ]
+   ],
+   "area": null,
+   "order": 5.0,
+   "latency_class": "hard_realtime"
+  }
+ ]
+}

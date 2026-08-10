@@ -1,0 +1,86 @@
+{
+  "id": "speech_capability",
+  "version": "1.0.0",
+  "depends_on": ["enact", "autonomy"],
+  "description": "The agent's a-priori capability map for developing its EAR + SPEECH engine: the speech_world Microtheory it operates in, the per-faculty Operators (each applies_in speech_world, runner = the mechanical executor it dispatches to), and the CapabilityAxis nodes (the gaps the understand-drive's frontier ranks). investigated_by names which faculty addresses which axis (the selectional wiring, read by the bind_investigation_faculty JOIN). No agent decision here — this is the agent's self-model of what it should be able to do, the same kind of domain capability data a chess/doom seed carries.",
+  "microtheory": {
+    "name": "speech_capability",
+    "description": "the agent's ear+speech capability frontier: recognise words (analysis-by-synthesis vs piper, ground-truth whisper) and segment continuous speech (corpus -> utterances -> signs)."
+  },
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "Microtheory",
+      "attrs": {"name": "speech_world", "domain": "speech"}
+    },
+    {
+      "local_id": 1,
+      "type": "Operator",
+      "attrs": {
+        "name": "abs_recogniser",
+        "runner": "abs_self_test",
+        "metric": "abs_recognition_match",
+        "target": 0.6,
+        "comment": "analysis-by-synthesis word recognition: piper voices a word -> the agent's own ear -> WordHat recognise -> whisper ground-truth."
+      }
+    },
+    {
+      "local_id": 2,
+      "type": "Operator",
+      "attrs": {
+        "name": "continuous_segmenter",
+        "runner": "ingest_continuous",
+        "metric": "continuous_purity",
+        "target": 0.6,
+        "comment": "continuous-speech segmentation: corpus clip -> ingest_speech -> utterances/AcousticSigns -> purity vs whisper labels."
+      }
+    },
+    {
+      "local_id": 3,
+      "type": "CapabilityAxis",
+      "attrs": {
+        "is_axis": 1.0,
+        "capability_keys": ["recognise", "word", "speech"],
+        "saturation": 0.0,
+        "shortfall": 0.5,
+        "min_order": 1.0,
+        "investigated_count": 0,
+        "mf_stall": 0
+      }
+    },
+    {
+      "local_id": 4,
+      "type": "CapabilityAxis",
+      "attrs": {
+        "is_axis": 1.0,
+        "capability_keys": ["segment", "continuous", "speech"],
+        "saturation": 0.0,
+        "shortfall": 0.4,
+        "min_order": 1.0,
+        "investigated_count": 0,
+        "mf_stall": 0
+      }
+    }
+  ],
+  "edges": [
+    {"src": {"local": 3}, "type": "investigated_by", "tgt": {"local": 1}},
+    {"src": {"local": 4}, "type": "investigated_by", "tgt": {"local": 2}},
+    {"src": {"local": 1}, "type": "applies_in", "tgt": {"local": 0}},
+    {"src": {"local": 2}, "type": "applies_in", "tgt": {"local": 0}}
+  ],
+  "productions": [
+    {
+      "provenance": "seed:speech_capability:investigated_by",
+      "src": {"type": "CapabilityAxis", "var": "s"},
+      "edge_type": "investigated_by",
+      "tgt": {"type": "Operator", "var": "t"}
+    },
+    {
+      "provenance": "seed:speech_capability:applies_in",
+      "src": {"type": "Operator", "var": "s"},
+      "edge_type": "applies_in",
+      "tgt": {"type": "Microtheory", "var": "t"}
+    }
+  ],
+  "rules": []
+}

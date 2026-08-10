@@ -1,0 +1,957 @@
+{
+ "id": "neural_networks",
+ "version": "0.1.0",
+ "depends_on": [
+  "design_patterns",
+  "code_authoring",
+  "compiler_theory"
+ ],
+ "description": "The agent's vocabulary for AUTHORING neural-network code. Same shape as design_patterns: Concept nodes (the parts), DesignPattern nodes (the recipes), CodeTarget nodes (the workloads where an NN-shaped solution is appropriate). When the code-writing cortex picks a pattern for an NN-shaped target (fuzzy_classification, function_approximation, sequence_relation, embedding_lookup) it ranks these by tag match + expected_speedup just like any other pattern — no NN-specific selection logic. Adding NN building blocks = editing this file.",
+ "category_inheritance": "genlMt → compiler_theory (cost/equivalence vocabulary) and → code_authoring (target/draft/install workflow). NN authoring sits AT THE SAME LEVEL as compiler-style optimization: both are 'pick a recipe for a workload'.",
+ "concepts": [
+  {
+   "name": "tensor",
+   "definition": "Typed N-dimensional array of numeric values. The substrate of every NN computation; weights, activations, gradients are all tensors of various shapes."
+  },
+  {
+   "name": "weight",
+   "definition": "A learnable scalar parameter inside a layer. Updated each training step by the optimizer toward lower loss. Persistent across forward passes."
+  },
+  {
+   "name": "bias",
+   "definition": "A learnable additive scalar per output unit. Lets a layer represent functions that don't pass through the origin."
+  },
+  {
+   "name": "activation",
+   "definition": "The output tensor of a layer. Carries the information that the next layer will transform."
+  },
+  {
+   "name": "layer",
+   "definition": "A parametric tensor transformation: takes an input activation + uses its weights to produce an output activation. The atomic building block of an NN."
+  },
+  {
+   "name": "gradient",
+   "definition": "Partial derivative of the loss with respect to a parameter. Tells the optimizer how to adjust each weight to reduce loss."
+  },
+  {
+   "name": "loss",
+   "definition": "Scalar measure of how badly the network is doing on a batch. The training objective: pick weights that minimize loss across the training set."
+  },
+  {
+   "name": "optimizer",
+   "definition": "Strategy for applying gradients to weights — SGD, Adam, RMSprop, etc. Maps (weight, gradient) → updated_weight."
+  },
+  {
+   "name": "forward_pass",
+   "definition": "Compute output from input by walking layers in order. Pure function of inputs and current weights."
+  },
+  {
+   "name": "backward_pass",
+   "definition": "Compute gradients of loss with respect to every weight by reverse-mode autodiff. Output of one pass = input to the optimizer."
+  },
+  {
+   "name": "embedding",
+   "definition": "Learned dense vector representation of a discrete symbol (word, category, ID). The bridge between discrete graph data and continuous tensor space."
+  },
+  {
+   "name": "softmax",
+   "definition": "Map a vector of scores to a probability distribution by exponentiating then normalizing. The standard output transform for classification."
+  },
+  {
+   "name": "nonlinearity",
+   "definition": "A non-affine elementwise activation function (ReLU, GELU, sigmoid, tanh). Without one, stacked linear layers collapse to a single linear layer."
+  },
+  {
+   "name": "training_loop",
+   "definition": "Repeat: sample batch → forward_pass → loss → backward_pass → optimizer step. The procedure that turns random weights into trained weights."
+  },
+  {
+   "name": "regularization",
+   "definition": "Modifications to loss or architecture that restrict parameter complexity (L2, dropout, weight decay). Trades training fit for generalization."
+  },
+  {
+   "name": "batch",
+   "definition": "A set of inputs processed together in one forward+backward pass. Trades memory for gradient-noise reduction."
+  }
+ ],
+ "patterns": [
+  {
+   "name": "linear_layer",
+   "definition": "Affine transformation y = Wx + b with learnable weight matrix W and bias b. The fundamental parametric layer.",
+   "applies_when": [
+    "linear_projection",
+    "dimensionality_change",
+    "fuzzy_classification",
+    "function_approximation"
+   ],
+   "mechanism": "Allocate weight tensor [out_dim, in_dim] + bias [out_dim]; forward = matmul + add; gradients reach W and b via the chain rule.",
+   "tradeoff": "Pure linear has no representational depth — needs nonlinearities between stacked linears to be more than a single matrix.",
+   "expected_speedup": 1.0,
+   "category": "feature_extraction",
+   "dim_behavior": "transforms"
+  },
+  {
+   "name": "relu_activation",
+   "definition": "Elementwise max(0, x). The default nonlinearity — cheap, well-behaved gradients, scale-invariant on the positive side.",
+   "applies_when": [
+    "nonlinear_pattern",
+    "function_approximation",
+    "deep_stack"
+   ],
+   "mechanism": "Apply max(0, .) elementwise on forward; gradient is 1 where input>0, 0 elsewhere.",
+   "tradeoff": "Dead neurons: units stuck at negative input never recover. GELU/LeakyReLU mitigate.",
+   "expected_speedup": 1.0,
+   "category": "feature_extraction",
+   "dim_behavior": "preserves"
+  },
+  {
+   "name": "gelu_activation",
+   "definition": "Gaussian Error Linear Unit: x * Phi(x). Smoother than ReLU, the standard nonlinearity in Transformer-style networks.",
+   "applies_when": [
+    "nonlinear_pattern",
+    "sequence_modeling",
+    "smooth_gradients_needed"
+   ],
+   "mechanism": "Apply x * 0.5 * (1 + erf(x/sqrt(2))) elementwise; or the tanh approximation for speed.",
+   "tradeoff": "Slightly more expensive than ReLU; pays off when smooth gradients matter (deep attention stacks).",
+   "expected_speedup": 1.0,
+   "category": "feature_extraction"
+  },
+  {
+   "name": "embedding_table",
+   "definition": "Lookup table that maps each integer ID in [0, vocab_size) to a learned dense vector. The standard way to feed discrete symbols into an NN.",
+   "applies_when": [
+    "discrete_to_continuous",
+    "lookup_or_learned",
+    "small_input_domain",
+    "vocabulary_lookup"
+   ],
+   "mechanism": "Allocate matrix [vocab_size, embed_dim]; forward = gather rows by ID; gradients accumulate into rows that were used.",
+   "tradeoff": "Memory grows with vocab_size; cold-start: rows for unseen IDs are random until trained.",
+   "expected_speedup": 3.0,
+   "category": "feature_extraction"
+  },
+  {
+   "name": "softmax_classifier",
+   "definition": "Linear projection to n_classes followed by softmax to produce a probability over classes. The standard top of any classification network.",
+   "applies_when": [
+    "fuzzy_classification",
+    "n_classes_known",
+    "discrete_target",
+    "probabilistic_output"
+   ],
+   "mechanism": "linear_layer to [n_classes]; softmax produces P(class | input); pairs with cross_entropy_loss.",
+   "tradeoff": "Assumes mutually exclusive classes; for multi-label use n independent sigmoids instead.",
+   "expected_speedup": 5.0,
+   "category": "classification",
+   "dim_behavior": "preserves",
+   "composition": [
+    "mlp_block",
+    "cross_entropy_loss"
+   ],
+   "paired_loss_category": "classification"
+  },
+  {
+   "name": "mlp_block",
+   "definition": "Stacked linear layers with nonlinearities between them — linear, relu, linear. The general-purpose function approximator.",
+   "applies_when": [
+    "function_approximation",
+    "nonlinear_pattern",
+    "tabular_input",
+    "fixed_input_shape"
+   ],
+   "mechanism": "Compose 2-3 linear_layers separated by relu_activation; output dim matches the downstream task (softmax_classifier for classification, single scalar for regression).",
+   "tradeoff": "No structural prior — needs more data than architecturally informed alternatives (CNN for grids, Transformer for sequences).",
+   "expected_speedup": 4.0,
+   "category": "feature_extraction",
+   "dim_behavior": "transforms",
+   "composition": [
+    "linear_layer",
+    "relu_activation",
+    "linear_layer"
+   ]
+  },
+  {
+   "name": "gradient_descent",
+   "definition": "Update each weight by w := w - lr * grad. The simplest optimizer; the baseline against which Adam etc. are improvements.",
+   "applies_when": [
+    "any_parametric_model",
+    "training_step",
+    "small_model"
+   ],
+   "mechanism": "After backward_pass, walk the parameter list and apply the per-weight update.",
+   "tradeoff": "Slow convergence on ill-conditioned losses; sensitive to learning_rate choice.",
+   "expected_speedup": 1.0,
+   "category": "optimization"
+  },
+  {
+   "name": "adam_optimizer",
+   "definition": "Adaptive moment estimation — per-weight running mean + variance of gradients, scales the update by both. The default optimizer for most modern NNs.",
+   "applies_when": [
+    "any_parametric_model",
+    "training_step",
+    "ill_conditioned_loss",
+    "default_choice"
+   ],
+   "mechanism": "Per weight: m = beta1*m + (1-beta1)*g; v = beta2*v + (1-beta2)*g**2; w := w - lr * m_hat / (sqrt(v_hat) + eps).",
+   "tradeoff": "3x memory of pure SGD (stores m, v per weight); harder to reason about convergence formally.",
+   "expected_speedup": 3.0,
+   "category": "optimization"
+  },
+  {
+   "name": "cross_entropy_loss",
+   "definition": "-sum(target_i * log(predicted_i)) over classes. The standard classification loss; equivalent to negative log-likelihood under a categorical model.",
+   "applies_when": [
+    "fuzzy_classification",
+    "discrete_target",
+    "softmax_output"
+   ],
+   "mechanism": "Pair with softmax_classifier; gradient w.r.t. logits is just (predicted - target) — numerically clean.",
+   "tradeoff": "Requires probabilities; needs label smoothing for overconfident predictions.",
+   "expected_speedup": 1.0,
+   "category": "classification",
+   "dim_behavior": "loss"
+  },
+  {
+   "name": "mse_loss",
+   "definition": "Mean squared error: mean((predicted - target)**2). The standard regression loss; gradient is just (predicted - target).",
+   "applies_when": [
+    "continuous_target",
+    "regression_target"
+   ],
+   "mechanism": "Compute (predicted - target)**2 elementwise; mean reduces to a scalar.",
+   "tradeoff": "Sensitive to outliers; for heavy-tailed targets use mean absolute error or Huber.",
+   "expected_speedup": 1.0,
+   "category": "regression"
+  },
+  {
+   "name": "residual_connection",
+   "definition": "Add the layer's input to its output: y = f(x) + x. Lets gradient flow past the layer unchanged, enabling much deeper networks.",
+   "applies_when": [
+    "deep_stack",
+    "gradient_flow_concern",
+    "many_layers"
+   ],
+   "mechanism": "After computing f(x), add x (with matching shape) to produce final output.",
+   "tradeoff": "Requires shape match between input and output; needs a 1x1 projection if dims differ.",
+   "expected_speedup": 2.0,
+   "category": "feature_extraction"
+  },
+  {
+   "name": "layer_normalization",
+   "definition": "Normalize each sample's activations to zero mean unit variance over the feature dim. Stabilizes training in deep networks, especially Transformers.",
+   "applies_when": [
+    "deep_stack",
+    "training_instability",
+    "sequence_modeling"
+   ],
+   "mechanism": "Per sample: y = gamma * (x - mean) / sqrt(var + eps) + beta; learnable gamma, beta restore representational capacity.",
+   "tradeoff": "Adds compute and two learnable tensors per layer; rarely needed in shallow networks.",
+   "expected_speedup": 1.5,
+   "category": "regularization"
+  },
+  {
+   "name": "attention_block",
+   "definition": "Softmax(QK^T / sqrt(d_k)) V — every position attends to every other position weighted by content similarity. The kernel of Transformer architectures.",
+   "applies_when": [
+    "sequence_relation",
+    "set_to_set",
+    "variable_length_input",
+    "context_mixing"
+   ],
+   "mechanism": "Linear projections to Q, K, V from the same input; scaled dot-product attention; output is a weighted sum of V rows.",
+   "tradeoff": "O(n^2) in sequence length; multi-head and flash-attention mitigate.",
+   "expected_speedup": 5.0,
+   "category": "sequence_modeling"
+  },
+  {
+   "name": "convolutional_kernel",
+   "definition": "Apply a small weight tensor by sliding it across a spatial input — local connectivity + weight sharing.",
+   "applies_when": [
+    "spatial_grid",
+    "weight_sharing",
+    "translation_invariant",
+    "image_input"
+   ],
+   "mechanism": "Allocate kernel [out_ch, in_ch, kh, kw]; convolve with input; bias per output channel.",
+   "tradeoff": "Assumes locality + translation invariance; bad fit for non-spatial data.",
+   "expected_speedup": 4.0,
+   "category": "feature_extraction"
+  }
+ ],
+ "targets": [
+  {
+   "op_name": "classify_word_signature",
+   "path_parts": [
+    "domains",
+    "phonology_classifier.py"
+   ],
+   "requirements": [
+    "ml_framework_available",
+    "fuzzy_input"
+   ],
+   "design_tags": [
+    "fuzzy_classification",
+    "n_classes_known",
+    "function_approximation",
+    "nonlinear_pattern",
+    "small_input_domain"
+   ],
+   "bench": null,
+   "input_dim": 5,
+   "output_dim": 10,
+   "notes": "FSDD plateaued at 44.4% with the Bernoulli-KL recogniser. 5 acoustic features (voicing, sibilant, sonorant, formant_present, noise_burst) → 10 digit classes. An MLP head over the same band-mean signature is the natural next move; the cortex should pick softmax_classifier or mlp_block here."
+  },
+  {
+   "op_name": "score_substrate_match",
+   "path_parts": [
+    "domains",
+    "match_scorer.py"
+   ],
+   "requirements": [
+    "ml_framework_available",
+    "fuzzy_input"
+   ],
+   "design_tags": [
+    "sequence_relation",
+    "set_to_set",
+    "function_approximation"
+   ],
+   "bench": null,
+   "notes": "Given a query subgraph and a candidate, produce a similarity scalar. Pure recogniser-style soft scoring — fits attention_block over node embeddings."
+  },
+  {
+   "op_name": "embed_concept",
+   "path_parts": [
+    "domains",
+    "concept_embedder.py"
+   ],
+   "requirements": [
+    "ml_framework_available"
+   ],
+   "design_tags": [
+    "discrete_to_continuous",
+    "lookup_or_learned",
+    "vocabulary_lookup"
+   ],
+   "bench": null,
+   "notes": "Map a Concept node (by ID) to a fixed-dim dense vector. embedding_table is the textbook fit; an mlp_block over the Concept's attribute vector is the alternative when the table is too sparse."
+  },
+  {
+   "op_name": "compute_abs",
+   "path_parts": [
+    "domains",
+    "abs_compute.py"
+   ],
+   "requirements": [
+    "ml_framework_available"
+   ],
+   "design_tags": [
+    "cpwl_function",
+    "exact_construction",
+    "univariate",
+    "absolute_value"
+   ],
+   "bench": null,
+   "input_dim": 1,
+   "output_dim": 1,
+   "formula": "f(x) = |x|",
+   "notes": "Constructible target — |x| is exactly representable by a 2-hidden-unit ReLU net (§2.1 of net_construction_techniques.md). The cortex should pick `abs_gadget` and render the weights directly from the gadget's matrices; NO training."
+  },
+  {
+   "op_name": "compute_max",
+   "path_parts": [
+    "domains",
+    "max_compute.py"
+   ],
+   "requirements": [
+    "ml_framework_available"
+   ],
+   "design_tags": [
+    "cpwl_function",
+    "exact_construction",
+    "bivariate",
+    "max_op"
+   ],
+   "bench": null,
+   "input_dim": 2,
+   "output_dim": 1,
+   "formula": "f(x, y) = max(x, y)",
+   "notes": "Constructible target — max(x, y) = ReLU(x − y) + y. Cortex picks `max_gadget` and renders the weights directly."
+  },
+  {
+   "op_name": "compute_max_abs",
+   "path_parts": [
+    "domains",
+    "max_abs_compute.py"
+   ],
+   "requirements": [
+    "ml_framework_available"
+   ],
+   "design_tags": [
+    "cpwl_function",
+    "exact_construction",
+    "bivariate",
+    "max_abs"
+   ],
+   "bench": null,
+   "input_dim": 2,
+   "output_dim": 1,
+   "formula": "f([x, y]) = max(|x|, |y|)",
+   "notes": "Constructible compositional target — the cortex picks `max_abs_2d_gadget`, the assembler chains abs_2d_gadget then max_gadget, and construct_weights renders both sub-gadgets' matrices in order."
+  },
+  {
+   "op_name": "compute_square",
+   "path_parts": [
+    "domains",
+    "square_compute.py"
+   ],
+   "requirements": [
+    "ml_framework_available"
+   ],
+   "design_tags": [
+    "cpwl_approximation",
+    "polynomial",
+    "univariate",
+    "square_op"
+   ],
+   "bench": null,
+   "input_dim": 1,
+   "output_dim": 1,
+   "formula": "f(x) ≈ x², x ∈ [−1, 1]",
+   "notes": "First smooth (non-exact-CPWL) constructible target — the cortex picks `square_pwl_signed_gadget` which approximates x² via abs then a 10-segment PWL. Error ≤ 0.25%. Gateway to polarization multiplication (§2.4): x·y = ½·((x+y)² − x² − y²)."
+  },
+  {
+   "op_name": "compute_multiply",
+   "path_parts": [
+    "domains",
+    "multiply_compute.py"
+   ],
+   "requirements": [
+    "ml_framework_available"
+   ],
+   "design_tags": [
+    "multiplication",
+    "polynomial",
+    "bivariate",
+    "smooth_approximation",
+    "polarization_construction"
+   ],
+   "bench": null,
+   "input_dim": 2,
+   "output_dim": 1,
+   "formula": "f([x, y]) ≈ x·y for x, y ∈ [−0.5, 0.5]",
+   "notes": "First MULTIPLICATION target — constructed from §2.1 abs + §2.3 PWL square via §2.4 polarization. The cortex picks `polarization_multiply_gadget` which chains [polarization_inputs → abs_3d → square_pwl_10_3d → polarization_combine]. Restricted to [−0.5, 0.5]² so x+y stays in [−1, 1] where square_pwl is valid. Unlocks monomials and polynomials."
+  },
+  {
+   "op_name": "compute_cube",
+   "path_parts": [
+    "domains",
+    "cube_compute.py"
+   ],
+   "requirements": [
+    "ml_framework_available"
+   ],
+   "design_tags": [
+    "polynomial",
+    "univariate",
+    "monomial",
+    "cube_op",
+    "smooth_approximation"
+   ],
+   "bench": null,
+   "input_dim": 1,
+   "output_dim": 1,
+   "formula": "f(x) ≈ x³ for x ∈ [−0.5, 0.5]",
+   "notes": "First MONOMIAL target. Built on heterogeneous-parallel: lift [x] → [x, x²] using cpwl_broadcast then cpwl_heteroparallel, then multiply via the polarization gadget. cube_gadget chain is monomial_lift_x_x2_gadget → polarization_multiply_gadget. Six layers total. Unlocks x⁴ via x·x³, x⁵ via x²·x³, and polynomials by linear combinations."
+  }
+ ],
+ "exclusions": [
+  [
+   "softmax_classifier",
+   "regression_target"
+  ],
+  [
+   "mse_loss",
+   "discrete_target"
+  ],
+  [
+   "cross_entropy_loss",
+   "continuous_target"
+  ],
+  [
+   "convolutional_kernel",
+   "non_spatial_data"
+  ],
+  [
+   "attention_block",
+   "fixed_input_shape"
+  ]
+ ],
+ "parent_mt": "machine_learning",
+ "extra_nodes": [
+  {
+   "type": "DesignPattern",
+   "applies_when": [
+    "linear_projection",
+    "dimensionality_change",
+    "fuzzy_classification",
+    "function_approximation"
+   ],
+   "category": "feature_extraction",
+   "definition": "Affine transformation y = Wx + b with learnable weight matrix W and bias b. The fundamental parametric layer.",
+   "dim_behavior": "transforms",
+   "expected_speedup": 1.0,
+   "mechanism": "Allocate weight tensor [out_dim, in_dim] + bias [out_dim]; forward = matmul + add; gradients reach W and b via the chain rule.",
+   "name": "linear_layer",
+   "origin": "neural_networks",
+   "tradeoff": "Pure linear has no representational depth — needs nonlinearities between stacked linears to be more than a single matrix."
+  },
+  {
+   "type": "DesignPattern",
+   "applies_when": [
+    "nonlinear_pattern",
+    "function_approximation",
+    "deep_stack"
+   ],
+   "category": "feature_extraction",
+   "definition": "Elementwise max(0, x). The default nonlinearity — cheap, well-behaved gradients, scale-invariant on the positive side.",
+   "dim_behavior": "preserves",
+   "expected_speedup": 1.0,
+   "mechanism": "Apply max(0, .) elementwise on forward; gradient is 1 where input>0, 0 elsewhere.",
+   "name": "relu_activation",
+   "origin": "neural_networks",
+   "tradeoff": "Dead neurons: units stuck at negative input never recover. GELU/LeakyReLU mitigate."
+  },
+  {
+   "type": "DesignPattern",
+   "applies_when": [
+    "nonlinear_pattern",
+    "sequence_modeling",
+    "smooth_gradients_needed"
+   ],
+   "category": "feature_extraction",
+   "definition": "Gaussian Error Linear Unit: x * Phi(x). Smoother than ReLU, the standard nonlinearity in Transformer-style networks.",
+   "expected_speedup": 1.0,
+   "mechanism": "Apply x * 0.5 * (1 + erf(x/sqrt(2))) elementwise; or the tanh approximation for speed.",
+   "name": "gelu_activation",
+   "origin": "neural_networks",
+   "tradeoff": "Slightly more expensive than ReLU; pays off when smooth gradients matter (deep attention stacks)."
+  },
+  {
+   "type": "DesignPattern",
+   "applies_when": [
+    "discrete_to_continuous",
+    "lookup_or_learned",
+    "small_input_domain",
+    "vocabulary_lookup"
+   ],
+   "category": "feature_extraction",
+   "definition": "Lookup table that maps each integer ID in [0, vocab_size) to a learned dense vector. The standard way to feed discrete symbols into an NN.",
+   "expected_speedup": 3.0,
+   "mechanism": "Allocate matrix [vocab_size, embed_dim]; forward = gather rows by ID; gradients accumulate into rows that were used.",
+   "name": "embedding_table",
+   "origin": "neural_networks",
+   "tradeoff": "Memory grows with vocab_size; cold-start: rows for unseen IDs are random until trained."
+  },
+  {
+   "type": "DesignPattern",
+   "applies_when": [
+    "fuzzy_classification",
+    "n_classes_known",
+    "discrete_target",
+    "probabilistic_output"
+   ],
+   "category": "classification",
+   "composition": [
+    "mlp_block",
+    "cross_entropy_loss"
+   ],
+   "definition": "Linear projection to n_classes followed by softmax to produce a probability over classes. The standard top of any classification network.",
+   "dim_behavior": "preserves",
+   "expected_speedup": 5.0,
+   "mechanism": "linear_layer to [n_classes]; softmax produces P(class | input); pairs with cross_entropy_loss.",
+   "name": "softmax_classifier",
+   "origin": "neural_networks",
+   "paired_loss_category": "classification",
+   "tradeoff": "Assumes mutually exclusive classes; for multi-label use n independent sigmoids instead."
+  },
+  {
+   "type": "DesignPattern",
+   "applies_when": [
+    "function_approximation",
+    "nonlinear_pattern",
+    "tabular_input",
+    "fixed_input_shape"
+   ],
+   "category": "feature_extraction",
+   "composition": [
+    "linear_layer",
+    "relu_activation",
+    "linear_layer"
+   ],
+   "definition": "Stacked linear layers with nonlinearities between them — linear, relu, linear. The general-purpose function approximator.",
+   "dim_behavior": "transforms",
+   "expected_speedup": 4.0,
+   "mechanism": "Compose 2-3 linear_layers separated by relu_activation; output dim matches the downstream task (softmax_classifier for classification, single scalar for regression).",
+   "name": "mlp_block",
+   "origin": "neural_networks",
+   "tradeoff": "No structural prior — needs more data than architecturally informed alternatives (CNN for grids, Transformer for sequences)."
+  },
+  {
+   "type": "DesignPattern",
+   "applies_when": [
+    "any_parametric_model",
+    "training_step",
+    "small_model"
+   ],
+   "category": "optimization",
+   "definition": "Update each weight by w := w - lr * grad. The simplest optimizer; the baseline against which Adam etc. are improvements.",
+   "expected_speedup": 1.0,
+   "mechanism": "After backward_pass, walk the parameter list and apply the per-weight update.",
+   "name": "gradient_descent",
+   "origin": "neural_networks",
+   "tradeoff": "Slow convergence on ill-conditioned losses; sensitive to learning_rate choice."
+  },
+  {
+   "type": "DesignPattern",
+   "applies_when": [
+    "any_parametric_model",
+    "training_step",
+    "ill_conditioned_loss",
+    "default_choice"
+   ],
+   "category": "optimization",
+   "definition": "Adaptive moment estimation — per-weight running mean + variance of gradients, scales the update by both. The default optimizer for most modern NNs.",
+   "expected_speedup": 3.0,
+   "mechanism": "Per weight: m = beta1*m + (1-beta1)*g; v = beta2*v + (1-beta2)*g**2; w := w - lr * m_hat / (sqrt(v_hat) + eps).",
+   "name": "adam_optimizer",
+   "origin": "neural_networks",
+   "tradeoff": "3x memory of pure SGD (stores m, v per weight); harder to reason about convergence formally."
+  },
+  {
+   "type": "DesignPattern",
+   "applies_when": [
+    "fuzzy_classification",
+    "discrete_target",
+    "softmax_output"
+   ],
+   "category": "classification",
+   "definition": "-sum(target_i * log(predicted_i)) over classes. The standard classification loss; equivalent to negative log-likelihood under a categorical model.",
+   "dim_behavior": "loss",
+   "expected_speedup": 1.0,
+   "mechanism": "Pair with softmax_classifier; gradient w.r.t. logits is just (predicted - target) — numerically clean.",
+   "name": "cross_entropy_loss",
+   "origin": "neural_networks",
+   "tradeoff": "Requires probabilities; needs label smoothing for overconfident predictions."
+  },
+  {
+   "type": "DesignPattern",
+   "applies_when": [
+    "continuous_target",
+    "regression_target"
+   ],
+   "category": "regression",
+   "definition": "Mean squared error: mean((predicted - target)**2). The standard regression loss; gradient is just (predicted - target).",
+   "expected_speedup": 1.0,
+   "mechanism": "Compute (predicted - target)**2 elementwise; mean reduces to a scalar.",
+   "name": "mse_loss",
+   "origin": "neural_networks",
+   "tradeoff": "Sensitive to outliers; for heavy-tailed targets use mean absolute error or Huber."
+  },
+  {
+   "type": "DesignPattern",
+   "applies_when": [
+    "deep_stack",
+    "gradient_flow_concern",
+    "many_layers"
+   ],
+   "category": "feature_extraction",
+   "definition": "Add the layer's input to its output: y = f(x) + x. Lets gradient flow past the layer unchanged, enabling much deeper networks.",
+   "expected_speedup": 2.0,
+   "mechanism": "After computing f(x), add x (with matching shape) to produce final output.",
+   "name": "residual_connection",
+   "origin": "neural_networks",
+   "tradeoff": "Requires shape match between input and output; needs a 1x1 projection if dims differ."
+  },
+  {
+   "type": "DesignPattern",
+   "applies_when": [
+    "deep_stack",
+    "training_instability",
+    "sequence_modeling"
+   ],
+   "category": "regularization",
+   "definition": "Normalize each sample's activations to zero mean unit variance over the feature dim. Stabilizes training in deep networks, especially Transformers.",
+   "expected_speedup": 1.5,
+   "mechanism": "Per sample: y = gamma * (x - mean) / sqrt(var + eps) + beta; learnable gamma, beta restore representational capacity.",
+   "name": "layer_normalization",
+   "origin": "neural_networks",
+   "tradeoff": "Adds compute and two learnable tensors per layer; rarely needed in shallow networks."
+  },
+  {
+   "type": "DesignPattern",
+   "applies_when": [
+    "sequence_relation",
+    "set_to_set",
+    "variable_length_input",
+    "context_mixing"
+   ],
+   "category": "sequence_modeling",
+   "definition": "Softmax(QK^T / sqrt(d_k)) V — every position attends to every other position weighted by content similarity. The kernel of Transformer architectures.",
+   "expected_speedup": 5.0,
+   "mechanism": "Linear projections to Q, K, V from the same input; scaled dot-product attention; output is a weighted sum of V rows.",
+   "name": "attention_block",
+   "origin": "neural_networks",
+   "tradeoff": "O(n^2) in sequence length; multi-head and flash-attention mitigate."
+  },
+  {
+   "type": "DesignPattern",
+   "applies_when": [
+    "spatial_grid",
+    "weight_sharing",
+    "translation_invariant",
+    "image_input"
+   ],
+   "category": "feature_extraction",
+   "definition": "Apply a small weight tensor by sliding it across a spatial input — local connectivity + weight sharing.",
+   "expected_speedup": 4.0,
+   "mechanism": "Allocate kernel [out_ch, in_ch, kh, kw]; convolve with input; bias per output channel.",
+   "name": "convolutional_kernel",
+   "origin": "neural_networks",
+   "tradeoff": "Assumes locality + translation invariance; bad fit for non-spatial data."
+  },
+  {
+   "type": "CodeTarget",
+   "design_tags": [
+    "fuzzy_classification",
+    "n_classes_known",
+    "function_approximation",
+    "nonlinear_pattern",
+    "small_input_domain"
+   ],
+   "input_dim": 5,
+   "notes": "FSDD plateaued at 44.4% with the Bernoulli-KL recogniser. 5 acoustic features (voicing, sibilant, sonorant, formant_present, noise_burst) → 10 digit classes. An MLP head over the same band-mean signature is the natural next move; the cortex should pick softmax_classifier or mlp_block here.",
+   "op_name": "classify_word_signature",
+   "output_dim": 10,
+   "path_parts": [
+    "domains",
+    "phonology_classifier.py"
+   ],
+   "requirements": [
+    "ml_framework_available",
+    "fuzzy_input"
+   ]
+  },
+  {
+   "type": "CodeTarget",
+   "design_tags": [
+    "sequence_relation",
+    "set_to_set",
+    "function_approximation"
+   ],
+   "notes": "Given a query subgraph and a candidate, produce a similarity scalar. Pure recogniser-style soft scoring — fits attention_block over node embeddings.",
+   "op_name": "score_substrate_match",
+   "path_parts": [
+    "domains",
+    "match_scorer.py"
+   ],
+   "requirements": [
+    "ml_framework_available",
+    "fuzzy_input"
+   ]
+  },
+  {
+   "type": "CodeTarget",
+   "design_tags": [
+    "discrete_to_continuous",
+    "lookup_or_learned",
+    "vocabulary_lookup"
+   ],
+   "notes": "Map a Concept node (by ID) to a fixed-dim dense vector. embedding_table is the textbook fit; an mlp_block over the Concept's attribute vector is the alternative when the table is too sparse.",
+   "op_name": "embed_concept",
+   "path_parts": [
+    "domains",
+    "concept_embedder.py"
+   ],
+   "requirements": [
+    "ml_framework_available"
+   ]
+  },
+  {
+   "type": "CodeTarget",
+   "design_tags": [
+    "cpwl_function",
+    "exact_construction",
+    "univariate",
+    "absolute_value"
+   ],
+   "formula": "f(x) = |x|",
+   "input_dim": 1,
+   "notes": "Constructible target — |x| is exactly representable by a 2-hidden-unit ReLU net (§2.1 of net_construction_techniques.md). The cortex should pick `abs_gadget` and render the weights directly from the gadget's matrices; NO training.",
+   "op_name": "compute_abs",
+   "output_dim": 1,
+   "path_parts": [
+    "domains",
+    "abs_compute.py"
+   ],
+   "requirements": [
+    "ml_framework_available"
+   ]
+  },
+  {
+   "type": "CodeTarget",
+   "design_tags": [
+    "cpwl_function",
+    "exact_construction",
+    "bivariate",
+    "max_op"
+   ],
+   "formula": "f(x, y) = max(x, y)",
+   "input_dim": 2,
+   "notes": "Constructible target — max(x, y) = ReLU(x − y) + y. Cortex picks `max_gadget` and renders the weights directly.",
+   "op_name": "compute_max",
+   "output_dim": 1,
+   "path_parts": [
+    "domains",
+    "max_compute.py"
+   ],
+   "requirements": [
+    "ml_framework_available"
+   ]
+  },
+  {
+   "type": "CodeTarget",
+   "design_tags": [
+    "cpwl_function",
+    "exact_construction",
+    "bivariate",
+    "max_abs"
+   ],
+   "formula": "f([x, y]) = max(|x|, |y|)",
+   "input_dim": 2,
+   "notes": "Constructible compositional target — the cortex picks `max_abs_2d_gadget`, the assembler chains abs_2d_gadget then max_gadget, and construct_weights renders both sub-gadgets' matrices in order.",
+   "op_name": "compute_max_abs",
+   "output_dim": 1,
+   "path_parts": [
+    "domains",
+    "max_abs_compute.py"
+   ],
+   "requirements": [
+    "ml_framework_available"
+   ]
+  },
+  {
+   "type": "CodeTarget",
+   "design_tags": [
+    "cpwl_approximation",
+    "polynomial",
+    "univariate",
+    "square_op"
+   ],
+   "formula": "f(x) ≈ x², x ∈ [−1, 1]",
+   "input_dim": 1,
+   "notes": "First smooth (non-exact-CPWL) constructible target — the cortex picks `square_pwl_signed_gadget` which approximates x² via abs then a 10-segment PWL. Error ≤ 0.25%. Gateway to polarization multiplication (§2.4): x·y = ½·((x+y)² − x² − y²).",
+   "op_name": "compute_square",
+   "output_dim": 1,
+   "path_parts": [
+    "domains",
+    "square_compute.py"
+   ],
+   "requirements": [
+    "ml_framework_available"
+   ]
+  },
+  {
+   "type": "CodeTarget",
+   "design_tags": [
+    "multiplication",
+    "polynomial",
+    "bivariate",
+    "smooth_approximation",
+    "polarization_construction"
+   ],
+   "formula": "f([x, y]) ≈ x·y for x, y ∈ [−0.5, 0.5]",
+   "input_dim": 2,
+   "notes": "First MULTIPLICATION target — constructed from §2.1 abs + §2.3 PWL square via §2.4 polarization. The cortex picks `polarization_multiply_gadget` which chains [polarization_inputs → abs_3d → square_pwl_10_3d → polarization_combine]. Restricted to [−0.5, 0.5]² so x+y stays in [−1, 1] where square_pwl is valid. Unlocks monomials and polynomials.",
+   "op_name": "compute_multiply",
+   "output_dim": 1,
+   "path_parts": [
+    "domains",
+    "multiply_compute.py"
+   ],
+   "requirements": [
+    "ml_framework_available"
+   ]
+  },
+  {
+   "type": "CodeTarget",
+   "design_tags": [
+    "polynomial",
+    "univariate",
+    "monomial",
+    "cube_op",
+    "smooth_approximation"
+   ],
+   "formula": "f(x) ≈ x³ for x ∈ [−0.5, 0.5]",
+   "input_dim": 1,
+   "notes": "First MONOMIAL target. Built on heterogeneous-parallel: lift [x] → [x, x²] using cpwl_broadcast then cpwl_heteroparallel, then multiply via the polarization gadget. cube_gadget chain is monomial_lift_x_x2_gadget → polarization_multiply_gadget. Six layers total. Unlocks x⁴ via x·x³, x⁵ via x²·x³, and polynomials by linear combinations.",
+   "op_name": "compute_cube",
+   "output_dim": 1,
+   "path_parts": [
+    "domains",
+    "cube_compute.py"
+   ],
+   "requirements": [
+    "ml_framework_available"
+   ]
+  },
+  {
+   "type": "DesignExclusion",
+   "origin": "neural_networks",
+   "pattern_tag": "softmax_classifier",
+   "target_anti_tag": "regression_target"
+  },
+  {
+   "type": "DesignExclusion",
+   "origin": "neural_networks",
+   "pattern_tag": "mse_loss",
+   "target_anti_tag": "discrete_target"
+  },
+  {
+   "type": "DesignExclusion",
+   "origin": "neural_networks",
+   "pattern_tag": "cross_entropy_loss",
+   "target_anti_tag": "continuous_target"
+  },
+  {
+   "type": "DesignExclusion",
+   "origin": "neural_networks",
+   "pattern_tag": "convolutional_kernel",
+   "target_anti_tag": "non_spatial_data"
+  },
+  {
+   "type": "DesignExclusion",
+   "origin": "neural_networks",
+   "pattern_tag": "attention_block",
+   "target_anti_tag": "fixed_input_shape"
+  }
+ ],
+ "relations": [
+  {
+   "src": "neural_networks",
+   "edge": "genlMt",
+   "tgt": "compiler_theory"
+  },
+  {
+   "src": "neural_networks",
+   "edge": "genlMt",
+   "tgt": "code_authoring"
+  },
+  {
+   "src": "neural_networks",
+   "edge": "genlMt",
+   "tgt": "machine_learning"
+  }
+ ]
+}

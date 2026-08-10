@@ -1,0 +1,1782 @@
+{
+ "id": "understand_interaction",
+ "version": "1.0.0",
+ "depends_on": [
+  "feature_identity"
+ ],
+ "description": "Understand METERS + MOVERS by INTERACTING over frames (first slice). The agent's exploration IS the experiment: it moves each frame, so a meter's read-out falls (evidence for drain-per-move -> committed as a clock with a rate) and a mover's motion is observed relative to the avatar (toward=chase / away=flee / neither=drift -> committed behaviour). Evidence accrues on the durable Feature; commit when confident. Observation-over-time, not a one-shot reach.",
+ "nodes": [],
+ "edges": [],
+ "productions": [],
+ "concepts": [],
+ "rules": [
+  {
+   "name": "meter_understand",
+   "match": [
+    [
+     "game",
+     "has_feature",
+     "F"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "F"
+       },
+       "key": "kind"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "meter"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "F"
+          },
+          "key": "resolved"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "F"
+         },
+         "key": "realised_frame"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "game"
+         },
+         "key": "frame"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "AvatarMotion"
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "F"
+          },
+          "key": "mev_frame"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       },
+       "b": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "game"
+          },
+          "key": "frame"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "F",
+     "m_rate",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "F"
+             },
+             "key": "m_confirms"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0.0
+          }
+         },
+         {
+          "type": "Gt",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "F"
+             },
+             "key": "count_prev"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          },
+          "b": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "F"
+             },
+             "key": "count"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          }
+         }
+        ]
+       },
+       "then": {
+        "type": "Minus",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "F"
+           },
+           "key": "count_prev"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        "b": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "F"
+           },
+           "key": "count"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        }
+       },
+       "other": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "F"
+          },
+          "key": "m_rate"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "F",
+     "m_confirms",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "F"
+           },
+           "key": "m_confirms"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Gt",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "F"
+             },
+             "key": "count_prev"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          },
+          "b": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "F"
+             },
+             "key": "count"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          }
+         },
+         "then": {
+          "type": "Lit",
+          "value": 1.0
+         },
+         "other": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "F",
+     "m_refutes",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "F"
+           },
+           "key": "m_refutes"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Gt",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "F"
+             },
+             "key": "count_prev"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          },
+          "b": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "F"
+             },
+             "key": "count"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          }
+         },
+         "then": {
+          "type": "Lit",
+          "value": 0.0
+         },
+         "other": {
+          "type": "Lit",
+          "value": 1.0
+         }
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "F",
+     "mev_frame",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "game"
+         },
+         "key": "frame"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "meter_commit",
+   "match": [
+    [
+     "game",
+     "has_feature",
+     "F"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "F"
+       },
+       "key": "kind"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "meter"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "F"
+          },
+          "key": "resolved"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      }
+     },
+     {
+      "type": "Gte",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "F"
+         },
+         "key": "m_confirms"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 3.0
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "F"
+         },
+         "key": "m_confirms"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "F"
+         },
+         "key": "m_refutes"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "F",
+     "resolved",
+     1.0
+    ],
+    [
+     "set_attr",
+     "F",
+     "role",
+     "clock"
+    ],
+    [
+     "set_attr",
+     "F",
+     "law",
+     "drains_per_move"
+    ]
+   ]
+  },
+  {
+   "name": "mover_understand",
+   "match": [
+    [
+     "game",
+     "has_feature",
+     "M"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "M"
+       },
+       "key": "kind"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "mover"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "M"
+          },
+          "key": "resolved"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "M"
+         },
+         "key": "realised_frame"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "game"
+         },
+         "key": "frame"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "M"
+          },
+          "key": "bev_frame"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       },
+       "b": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "game"
+          },
+          "key": "frame"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Abs",
+         "arg": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "M"
+            },
+            "key": "vel_row"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         }
+        },
+        {
+         "type": "Abs",
+         "arg": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "M"
+            },
+            "key": "vel_col"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         }
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "AvatarCandidate"
+        },
+        "var_name": "a2",
+        "predicate": {
+         "type": "Eq",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "a2"
+            },
+            "key": "is_avatar"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1.0
+         }
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "M",
+     "chase_c",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "M"
+           },
+           "key": "chase_c"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Lt",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Abs",
+             "arg": {
+              "type": "Minus",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "M"
+                   },
+                   "key": "cy"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 ]
+                },
+                {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "M"
+                   },
+                   "key": "vel_row"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 ]
+                }
+               ]
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Pick",
+                "source": {
+                 "type": "Filter",
+                 "source": {
+                  "type": "NodesOfType",
+                  "node_type": "AvatarCandidate"
+                 },
+                 "var_name": "av",
+                 "predicate": {
+                  "type": "Eq",
+                  "a": {
+                   "type": "Plus",
+                   "items": [
+                    {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "av"
+                     },
+                     "key": "is_avatar"
+                    },
+                    {
+                     "type": "Lit",
+                     "value": 0
+                    }
+                   ]
+                  },
+                  "b": {
+                   "type": "Lit",
+                   "value": 1.0
+                  }
+                 }
+                }
+               },
+               "key": "cy"
+              }
+             }
+            },
+            {
+             "type": "Abs",
+             "arg": {
+              "type": "Minus",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "M"
+                   },
+                   "key": "cx"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 ]
+                },
+                {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "M"
+                   },
+                   "key": "vel_col"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 ]
+                }
+               ]
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Pick",
+                "source": {
+                 "type": "Filter",
+                 "source": {
+                  "type": "NodesOfType",
+                  "node_type": "AvatarCandidate"
+                 },
+                 "var_name": "av",
+                 "predicate": {
+                  "type": "Eq",
+                  "a": {
+                   "type": "Plus",
+                   "items": [
+                    {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "av"
+                     },
+                     "key": "is_avatar"
+                    },
+                    {
+                     "type": "Lit",
+                     "value": 0
+                    }
+                   ]
+                  },
+                  "b": {
+                   "type": "Lit",
+                   "value": 1.0
+                  }
+                 }
+                }
+               },
+               "key": "cx"
+              }
+             }
+            }
+           ]
+          },
+          "b": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Abs",
+             "arg": {
+              "type": "Minus",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "M"
+                 },
+                 "key": "cy"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Pick",
+                "source": {
+                 "type": "Filter",
+                 "source": {
+                  "type": "NodesOfType",
+                  "node_type": "AvatarCandidate"
+                 },
+                 "var_name": "av",
+                 "predicate": {
+                  "type": "Eq",
+                  "a": {
+                   "type": "Plus",
+                   "items": [
+                    {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "av"
+                     },
+                     "key": "is_avatar"
+                    },
+                    {
+                     "type": "Lit",
+                     "value": 0
+                    }
+                   ]
+                  },
+                  "b": {
+                   "type": "Lit",
+                   "value": 1.0
+                  }
+                 }
+                }
+               },
+               "key": "cy"
+              }
+             }
+            },
+            {
+             "type": "Abs",
+             "arg": {
+              "type": "Minus",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "M"
+                 },
+                 "key": "cx"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Pick",
+                "source": {
+                 "type": "Filter",
+                 "source": {
+                  "type": "NodesOfType",
+                  "node_type": "AvatarCandidate"
+                 },
+                 "var_name": "av",
+                 "predicate": {
+                  "type": "Eq",
+                  "a": {
+                   "type": "Plus",
+                   "items": [
+                    {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "av"
+                     },
+                     "key": "is_avatar"
+                    },
+                    {
+                     "type": "Lit",
+                     "value": 0
+                    }
+                   ]
+                  },
+                  "b": {
+                   "type": "Lit",
+                   "value": 1.0
+                  }
+                 }
+                }
+               },
+               "key": "cx"
+              }
+             }
+            }
+           ]
+          }
+         },
+         "then": {
+          "type": "Lit",
+          "value": 1.0
+         },
+         "other": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "M",
+     "flee_c",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "M"
+           },
+           "key": "flee_c"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Lt",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Abs",
+             "arg": {
+              "type": "Minus",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "M"
+                   },
+                   "key": "cy"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 ]
+                },
+                {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "M"
+                   },
+                   "key": "vel_row"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 ]
+                }
+               ]
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Pick",
+                "source": {
+                 "type": "Filter",
+                 "source": {
+                  "type": "NodesOfType",
+                  "node_type": "AvatarCandidate"
+                 },
+                 "var_name": "av",
+                 "predicate": {
+                  "type": "Eq",
+                  "a": {
+                   "type": "Plus",
+                   "items": [
+                    {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "av"
+                     },
+                     "key": "is_avatar"
+                    },
+                    {
+                     "type": "Lit",
+                     "value": 0
+                    }
+                   ]
+                  },
+                  "b": {
+                   "type": "Lit",
+                   "value": 1.0
+                  }
+                 }
+                }
+               },
+               "key": "cy"
+              }
+             }
+            },
+            {
+             "type": "Abs",
+             "arg": {
+              "type": "Minus",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "M"
+                   },
+                   "key": "cx"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 ]
+                },
+                {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "M"
+                   },
+                   "key": "vel_col"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 ]
+                }
+               ]
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Pick",
+                "source": {
+                 "type": "Filter",
+                 "source": {
+                  "type": "NodesOfType",
+                  "node_type": "AvatarCandidate"
+                 },
+                 "var_name": "av",
+                 "predicate": {
+                  "type": "Eq",
+                  "a": {
+                   "type": "Plus",
+                   "items": [
+                    {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "av"
+                     },
+                     "key": "is_avatar"
+                    },
+                    {
+                     "type": "Lit",
+                     "value": 0
+                    }
+                   ]
+                  },
+                  "b": {
+                   "type": "Lit",
+                   "value": 1.0
+                  }
+                 }
+                }
+               },
+               "key": "cx"
+              }
+             }
+            }
+           ]
+          },
+          "b": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Abs",
+             "arg": {
+              "type": "Minus",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "M"
+                 },
+                 "key": "cy"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Pick",
+                "source": {
+                 "type": "Filter",
+                 "source": {
+                  "type": "NodesOfType",
+                  "node_type": "AvatarCandidate"
+                 },
+                 "var_name": "av",
+                 "predicate": {
+                  "type": "Eq",
+                  "a": {
+                   "type": "Plus",
+                   "items": [
+                    {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "av"
+                     },
+                     "key": "is_avatar"
+                    },
+                    {
+                     "type": "Lit",
+                     "value": 0
+                    }
+                   ]
+                  },
+                  "b": {
+                   "type": "Lit",
+                   "value": 1.0
+                  }
+                 }
+                }
+               },
+               "key": "cy"
+              }
+             }
+            },
+            {
+             "type": "Abs",
+             "arg": {
+              "type": "Minus",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "M"
+                 },
+                 "key": "cx"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Pick",
+                "source": {
+                 "type": "Filter",
+                 "source": {
+                  "type": "NodesOfType",
+                  "node_type": "AvatarCandidate"
+                 },
+                 "var_name": "av",
+                 "predicate": {
+                  "type": "Eq",
+                  "a": {
+                   "type": "Plus",
+                   "items": [
+                    {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "av"
+                     },
+                     "key": "is_avatar"
+                    },
+                    {
+                     "type": "Lit",
+                     "value": 0
+                    }
+                   ]
+                  },
+                  "b": {
+                   "type": "Lit",
+                   "value": 1.0
+                  }
+                 }
+                }
+               },
+               "key": "cx"
+              }
+             }
+            }
+           ]
+          }
+         },
+         "then": {
+          "type": "Lit",
+          "value": 0.0
+         },
+         "other": {
+          "type": "Lit",
+          "value": 1.0
+         }
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "M",
+     "bev_frame",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "game"
+         },
+         "key": "frame"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "mover_commit",
+   "match": [
+    [
+     "game",
+     "has_feature",
+     "M"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "M"
+       },
+       "key": "kind"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "mover"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "M"
+          },
+          "key": "resolved"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      }
+     },
+     {
+      "type": "Gte",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "M"
+           },
+           "key": "chase_c"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "M"
+           },
+           "key": "flee_c"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 4.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "M",
+     "resolved",
+     1.0
+    ],
+    [
+     "set_attr",
+     "M",
+     "role",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gt",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "M"
+           },
+           "key": "chase_c"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        "b": {
+         "type": "Times",
+         "items": [
+          {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "M"
+             },
+             "key": "flee_c"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          },
+          {
+           "type": "Lit",
+           "value": 2.0
+          }
+         ]
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": "pursuer"
+       },
+       "other": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Gt",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "M"
+            },
+            "key": "flee_c"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         "b": {
+          "type": "Times",
+          "items": [
+           {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "M"
+              },
+              "key": "chase_c"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           },
+           {
+            "type": "Lit",
+            "value": 2.0
+           }
+          ]
+         }
+        },
+        "then": {
+         "type": "Lit",
+         "value": "quarry"
+        },
+        "other": {
+         "type": "Lit",
+         "value": "drifter"
+        }
+       }
+      }
+     }
+    ]
+   ]
+  }
+ ]
+}

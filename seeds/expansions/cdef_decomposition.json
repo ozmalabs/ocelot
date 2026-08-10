@@ -1,0 +1,99 @@
+{
+  "id": "cdef_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "CDEF",
+  "in_microtheory": "video_coding_theory",
+  "description": "AV1's Constrained Directional Enhancement Filter decomposed. CDEF is the first practical 'follow-the-edge' in-loop filter in a deployed codec. It identifies the dominant edge direction in each 8x8 block by template matching against eight pre-defined orientations, then applies a non-linear low-pass filter ALONG that direction (preserving the edge) while filtering MORE aggressively across it (removing ringing).",
+  "sub_mechanisms": [
+    {
+      "name": "direction_search",
+      "definition": "Per-8x8-block search across 8 pre-defined orientations (0°, 22.5°, 45°, 67.5°, 90°, 112.5°, 135°, 157.5°). For each, compute SSE between block samples and the orientation's template; the lowest-SSE orientation wins.",
+      "why": "Edges in natural images cluster around these orientations (and their reverses). Eight angles cover all 16 directions in 22.5° steps, fine enough for visual coherence at typical viewing distance. Cheaper than fitting an arbitrary angle while capturing most of the gain.",
+      "category": "cdef_mechanism"
+    },
+    {
+      "name": "directional_template",
+      "definition": "For each of the 8 orientations, a fixed weighting pattern over the block's 64 samples that estimates the SSE of treating the block as having that orientation.",
+      "why": "Pre-computed templates make the search O(8 * 64) = 512 ops per block instead of fitting an angle. The template's weights are tuned to suppress noise while preserving edge structure.",
+      "category": "cdef_mechanism"
+    },
+    {
+      "name": "primary_filter_taps",
+      "definition": "Two taps along the chosen direction (one each side of the centre sample), with weights derived from a fixed CDEF table indexed by primary strength.",
+      "why": "Filtering ALONG the edge preserves it (samples near the edge are similar). Two taps balance compute against smoothing depth. Strength comes from the signalled primary_strength parameter.",
+      "category": "cdef_mechanism"
+    },
+    {
+      "name": "secondary_filter_taps",
+      "definition": "Two taps perpendicular to the chosen direction (one each side), with weights from a separate table indexed by secondary strength.",
+      "why": "Filtering ACROSS the edge removes ringing artifacts that propagate perpendicular to the edge after quantisation. Stronger than the primary filter because cross-edge samples are less similar.",
+      "category": "cdef_mechanism"
+    },
+    {
+      "name": "constrained_difference",
+      "definition": "Each tap's contribution is clipped to ±damping_threshold of the centre sample value before being weighted. The 'constrained' part of the name.",
+      "why": "Without constraint, a strong filter on a real edge would smooth across it (bad). Constraining each tap to be near the centre value means real edges (where neighbours differ from centre by more than the threshold) are LEFT ALONE; smooth regions (small differences) get the full filter strength.",
+      "category": "cdef_mechanism"
+    },
+    {
+      "name": "damping_parameter",
+      "definition": "Frame-level integer (0-7 typically) controlling the constraint threshold. Higher damping → larger threshold → more aggressive filtering even on textured content.",
+      "why": "Lets the encoder tune filter aggressiveness per frame type (low-motion clean frames want less filtering; high-QP noisy frames want more). Avoids over-smoothing in any single content regime.",
+      "category": "cdef_mechanism"
+    },
+    {
+      "name": "primary_strength",
+      "definition": "Per-64x64-CTU integer in [0, 15] selecting the primary filter's weight table. Signalled in the frame header; encoders pick via R-D optimisation.",
+      "why": "Different regions need different filter strengths. Per-CTU granularity is fine enough to adapt to local content (a smooth sky vs a textured forest in the same frame) without excessive signalling overhead.",
+      "category": "cdef_mechanism"
+    },
+    {
+      "name": "secondary_strength",
+      "definition": "Per-CTU integer in [0, 3] for the secondary (cross-edge) filter. Independent of primary_strength.",
+      "why": "Cross-edge filtering needs different strength than along-edge: ringing is more localised and the filter must be more aggressive to remove it but less prone to misfire (constrained difference handles the misfire risk). Separate parameter lets these be tuned independently.",
+      "category": "cdef_mechanism"
+    },
+    {
+      "name": "luma_chroma_independent_signalling",
+      "definition": "Primary/secondary strengths are signalled separately for luma and chroma channels.",
+      "why": "Chroma needs different filter strength than luma (different quantisation, different perceptual sensitivity). Separate signalling at modest overhead lets each be tuned for HVS-correct strength.",
+      "category": "cdef_mechanism"
+    },
+    {
+      "name": "skip_when_low_signal",
+      "definition": "If the block's direction search returns very low variance (suggesting a flat block), CDEF can be skipped entirely for that block.",
+      "why": "Flat blocks have no ringing to remove; CDEF would only blur them slightly. Skipping saves compute with no quality cost. Encoder signals this implicitly via primary_strength = 0.",
+      "category": "cdef_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "direction_detection_enables_edge_preservation",
+      "if": ["a block's dominant edge direction is correctly identified"],
+      "then": ["filtering along that direction preserves the edge while removing noise"],
+      "why": "Samples along an edge are correlated (they belong to the same image feature). Filtering them together averages out compression noise without smearing the edge. This insight is what makes CDEF work — directional filtering is fundamentally edge-aware.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "constrained_difference_prevents_edge_blurring",
+      "if": ["the difference between a tap sample and the centre exceeds the damping threshold"],
+      "then": ["that tap's contribution is clipped to zero (or near-zero)"],
+      "why": "Real edges have neighbours that differ from the centre by more than typical compression noise. The constraint detects this and weakens the filter exactly where blurring would be visible. The 'constrained' part is what makes the filter edge-safe.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "per_ctu_signalling_amortises_overhead",
+      "if": ["filter strength is signalled per CTU"],
+      "then": ["the bit overhead is amortised across the CTU's samples"],
+      "why": "Per-sample signalling would cost more bits than the filter saves; per-frame signalling is too coarse for content variation. Per-64x64-CTU is the sweet spot for AV1's content statistics.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "patent_clean_design_motivated_cdef",
+      "if": ["a codec is required to be royalty-free"],
+      "then": ["filter designs avoid prior-art patents (e.g., HEVC SAO)"],
+      "why": "CDEF's directional + constrained-difference architecture is fundamentally different from HEVC's SAO (band offset + edge offset). AOMedia chose CDEF partly because it dodges the HEVC SAO patent pool while delivering equivalent (~3-5% bitrate) gains.",
+      "soundness_category": "extensional_equivalence"
+    }
+  ]
+}

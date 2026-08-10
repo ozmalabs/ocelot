@@ -1,0 +1,32 @@
+{
+  "id": "vision_compose",
+  "version": "1.0.0",
+  "depends_on": ["vision_waves", "vision_lateral", "vision_onoff"],
+  "description": "RUNG 8 — COMPOSE THE EYE (rung 7) WITH THE CORTEX (rung 6). Rung 6's signed simple layer FAILED to develop on its own channels: waves grew nothing (OSI 0.283 -> 0.329 against a 0.3168 floor), and its measured diagnosis was that its own split is DEGENERATE (x_OFF = 1 - x_ON forces C_ON,OFF(d) = -C_ON,ON(d) IDENTICALLY, so the channels carry no independent correlation structure, which is exactly what Miller 1994's mechanism consumes). Rung 7 then built a retina whose channels DO have different spatial dependence (SD 0.3601; sigma_ON,ON 1.627 vs sigma_ON,OFF 3.264, ratio 2.007) but claimed NO orientation selectivity -- 'a precondition is not a result' -- and the two seeds were deliberately NEVER COMPOSED. This seed composes them, and re-runs rung 6's OWN convergence gate and OSI measure UNCHANGED, to test whether the precondition was the blocker. THE COMPOSITION ADDS NO RULE, and that is a finding rather than a shortcut: rung 6's SUnit rules bind their presynaptic channel by an UNTYPED edge traversal ([\"b\", \"oo_pre\", \"sy\"]) and read only `bursting` + `bstep` off it -- the string 'Bipolar' occurs in oo_sunit_activate and oo_learn_sub ONLY in their comments -- while rung 7's LBipolar carries both attrs and lat_bipolar sets both. The cortex is GRAIN-AGNOSTIC about which retina feeds it, so composition is pure ANATOMY (which synapse touches which cell), the same class of mechanical fact as rung 6's RF geometry and rung 4's retinotopy. Verified before use, not assumed (scripts/rung8_compose_check.py). seeds/vision_lateral.json and seeds/vision_onoff.json are NOT edited: compose, don't modify. compose=0.0 default => this seed is inert and every result committed before rung 8 reproduces byte-identically; the ARM is the agent's own configuration (PROTOCOL 0) rather than a fork in the host.",
+  "microtheory": "vision",
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "ComposeParams",
+      "attrs": {
+        "compose": 0.0
+      }
+    }
+  ],
+  "edges": [],
+  "productions": [
+    {
+      "src": {
+        "type": "LBipolar",
+        "var": "a"
+      },
+      "edge_type": "oo_pre",
+      "tgt": {
+        "type": "OOSynapse",
+        "var": "b"
+      },
+      "provenance": "seed:vision_compose:oo_pre"
+    }
+  ],
+  "rules": []
+}

@@ -1,0 +1,568 @@
+{
+  "id": "transsaccadic_feature_memory",
+  "version": "1.0.0",
+  "depends_on": [
+    "saccade_motor_control",
+    "optic_flow_spatial_grounding"
+  ],
+  "description": "Default-off graph-native transsaccadic feature memory. A confirmed Fixation may update a world-relative VisualTile only from same-epoch OpticRangeEvidence at the same retinal coordinate and only within an uncertainty bound held as graph data. Missing, stale, or high-uncertainty registration remains an explicit TranssaccadicMemoryAssessment refusal. Re-observation updates the existing world tile's freshness, uncertainty, confidence, and observation count; unobserved tiles decay and become stale without deletion. Matching held-prediction photometry is retained as feature evidence. No raw-pixel panorama, host-side association, occupancy claim, or task/world-specific policy.",
+  "microtheory": {
+    "name": "transsaccadic_feature_memory",
+    "description": "confirmed fixation plus uncertain world registration updates persistent feature tiles"
+  },
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "TranssaccadicMemoryParams",
+      "attrs": {
+        "enabled": 0.0,
+        "max_registration_sigma_world": 32.0,
+        "max_tile_age_epochs": 16
+      }
+    }
+  ],
+  "edges": [
+    {
+      "src": {"role": "agent_root"},
+      "type": "has_transsaccadic_memory_params",
+      "tgt": {"local": 0},
+      "attrs": {}
+    }
+  ],
+  "productions": [
+    {
+      "provenance": "seed:transsaccadic_feature_memory:agent-params",
+      "src": {"type": "Agent", "var": "agent"},
+      "edge_type": "has_transsaccadic_memory_params",
+      "tgt": {"type": "TranssaccadicMemoryParams", "var": "params"}
+    },
+    {
+      "provenance": "seed:transsaccadic_feature_memory:agent-tile",
+      "src": {"type": "Agent", "var": "agent"},
+      "edge_type": "holds_visual_tile",
+      "tgt": {"type": "VisualTile", "var": "tile"}
+    },
+    {
+      "provenance": "seed:transsaccadic_feature_memory:agent-assessment",
+      "src": {"type": "Agent", "var": "agent"},
+      "edge_type": "assesses_transsaccadic_memory",
+      "tgt": {"type": "TranssaccadicMemoryAssessment", "var": "assessment"}
+    },
+    {
+      "provenance": "seed:transsaccadic_feature_memory:assessment-fixation",
+      "src": {"type": "TranssaccadicMemoryAssessment", "var": "assessment"},
+      "edge_type": "based_on_fixation",
+      "tgt": {"type": "Fixation", "var": "fixation"}
+    },
+    {
+      "provenance": "seed:transsaccadic_feature_memory:tile-evidence",
+      "src": {"type": "VisualTile", "var": "tile"},
+      "edge_type": "grounded_by",
+      "tgt": {"type": "OpticRangeEvidence", "var": "evidence"}
+    },
+    {
+      "provenance": "seed:transsaccadic_feature_memory:tile-fixation",
+      "src": {"type": "VisualTile", "var": "tile"},
+      "edge_type": "observed_at_fixation",
+      "tgt": {"type": "Fixation", "var": "fixation"}
+    },
+    {
+      "provenance": "seed:transsaccadic_feature_memory:evidence-photometry",
+      "src": {"type": "OpticRangeEvidence", "var": "evidence"},
+      "edge_type": "supported_by_photometry",
+      "tgt": {"type": "HeldPredictionResidual", "var": "held"}
+    }
+  ],
+  "rules": [
+    {
+      "name": "transsaccadic_begin_fixation_assessment",
+      "area": "memory",
+      "order": 30,
+      "latency_class": "soft_realtime",
+      "comment": "Every confirmed fixation begins refused. A later current, sufficiently certain world registration may support it; missing evidence never becomes an implicit panorama tile.",
+      "match": [
+        ["agent", "has_transsaccadic_memory_params", "params"],
+        ["agent", "has_fixation", "fixation"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "params"}, "key": "enabled"},
+            "b": {"type": "Lit", "value": 1.0}
+          },
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "fixation"}, "key": "confirmed"},
+            "b": {"type": "Lit", "value": 1.0}
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {"type": "Var", "name": "agent"},
+                "edge_type": "assesses_transsaccadic_memory"
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "Exists",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {"type": "Var", "name": "old"},
+                  "edge_type": "based_on_fixation"
+                },
+                "var_name": "basis",
+                "predicate": {
+                  "type": "Eq",
+                  "a": {"type": "Var", "name": "basis"},
+                  "b": {"type": "Var", "name": "fixation"}
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "assessment",
+          "TranssaccadicMemoryAssessment",
+          {
+            "fixation_epoch": {
+              "__term__": {"type": "Attr", "node": {"type": "Var", "name": "fixation"}, "key": "confirmed_epoch"}
+            },
+            "status": "refused",
+            "reason": "no_current_world_evidence",
+            "updated_tile_count": 0
+          }
+        ],
+        ["add_edge", "agent", "assesses_transsaccadic_memory", "assessment", {}],
+        ["add_edge", "assessment", "based_on_fixation", "fixation", {}]
+      ]
+    },
+    {
+      "name": "transsaccadic_refuse_stale_registration",
+      "area": "memory",
+      "order": 31,
+      "latency_class": "soft_realtime",
+      "match": [
+        ["agent", "has_transsaccadic_memory_params", "params"],
+        ["agent", "assesses_transsaccadic_memory", "assessment"],
+        ["assessment", "based_on_fixation", "fixation"],
+        ["agent", "holds_spatial_evidence", "evidence"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "column_index"},
+            "b": {"type": "Attr", "node": {"type": "Var", "name": "fixation"}, "key": "target_column"}
+          },
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "row_index"},
+            "b": {"type": "Attr", "node": {"type": "Var", "name": "fixation"}, "key": "target_row"}
+          },
+          {
+            "type": "Lt",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "sensor_epoch"},
+            "b": {"type": "Attr", "node": {"type": "Var", "name": "fixation"}, "key": "confirmed_epoch"}
+          }
+        ]
+      },
+      "effects": [
+        ["set_attr_if_different", "assessment", "status", "refused"],
+        ["set_attr_if_different", "assessment", "reason", "stale_world_evidence"]
+      ]
+    },
+    {
+      "name": "transsaccadic_refuse_uncertain_registration",
+      "area": "memory",
+      "order": 31,
+      "latency_class": "soft_realtime",
+      "match": [
+        ["agent", "has_transsaccadic_memory_params", "params"],
+        ["agent", "assesses_transsaccadic_memory", "assessment"],
+        ["assessment", "based_on_fixation", "fixation"],
+        ["agent", "holds_spatial_evidence", "evidence"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "sensor_epoch"},
+            "b": {"type": "Attr", "node": {"type": "Var", "name": "fixation"}, "key": "confirmed_epoch"}
+          },
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "column_index"},
+            "b": {"type": "Attr", "node": {"type": "Var", "name": "fixation"}, "key": "target_column"}
+          },
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "row_index"},
+            "b": {"type": "Attr", "node": {"type": "Var", "name": "fixation"}, "key": "target_row"}
+          },
+          {
+            "type": "Gt",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "range_sigma_world"},
+            "b": {"type": "Attr", "node": {"type": "Var", "name": "params"}, "key": "max_registration_sigma_world"}
+          }
+        ]
+      },
+      "effects": [
+        ["set_attr_if_different", "assessment", "status", "refused"],
+        ["set_attr_if_different", "assessment", "reason", "uncertain_world_registration"]
+      ]
+    },
+    {
+      "name": "transsaccadic_mint_world_tile",
+      "area": "memory",
+      "order": 32,
+      "latency_class": "soft_realtime",
+      "match": [
+        ["agent", "has_transsaccadic_memory_params", "params"],
+        ["agent", "assesses_transsaccadic_memory", "assessment"],
+        ["assessment", "based_on_fixation", "fixation"],
+        ["agent", "holds_spatial_evidence", "evidence"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "params"}, "key": "enabled"},
+            "b": {"type": "Lit", "value": 1.0}
+          },
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "sensor_epoch"},
+            "b": {"type": "Attr", "node": {"type": "Var", "name": "fixation"}, "key": "confirmed_epoch"}
+          },
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "column_index"},
+            "b": {"type": "Attr", "node": {"type": "Var", "name": "fixation"}, "key": "target_column"}
+          },
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "row_index"},
+            "b": {"type": "Attr", "node": {"type": "Var", "name": "fixation"}, "key": "target_row"}
+          },
+          {
+            "type": "Lte",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "range_sigma_world"},
+            "b": {"type": "Attr", "node": {"type": "Var", "name": "params"}, "key": "max_registration_sigma_world"}
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {"type": "Var", "name": "agent"},
+                "edge_type": "holds_visual_tile"
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {"type": "Attr", "node": {"type": "Var", "name": "old"}, "key": "world_x"},
+                    "b": {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "x_world"}
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {"type": "Attr", "node": {"type": "Var", "name": "old"}, "key": "world_y"},
+                    "b": {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "y_world"}
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "tile",
+          "VisualTile",
+          {
+            "world_x": {
+              "__term__": {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "x_world"}
+            },
+            "world_y": {
+              "__term__": {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "y_world"}
+            },
+            "last_observed_epoch": {
+              "__term__": {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "sensor_epoch"}
+            },
+            "observation_count": 1,
+            "registration_uncertainty_world": {
+              "__term__": {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "range_sigma_world"}
+            },
+            "confidence": {
+              "__term__": {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "confidence"}
+            },
+            "freshness": {
+              "__term__": {
+                "type": "Div",
+                "a": {"type": "Lit", "value": 1.0},
+                "b": {
+                  "type": "Plus",
+                  "items": [
+                    {"type": "Lit", "value": 1.0},
+                    {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "range_sigma_world"}
+                  ]
+                }
+              }
+            },
+            "status": "fresh",
+            "world_relative": 1.0,
+            "occupancy_commit": 0.0
+          }
+        ],
+        ["add_edge", "agent", "holds_visual_tile", "tile", {}],
+        ["add_edge", "tile", "grounded_by", "evidence", {}],
+        ["add_edge", "tile", "observed_at_fixation", "fixation", {}],
+        ["set_attr_if_different", "assessment", "status", "updated"],
+        ["set_attr_if_different", "assessment", "reason", ""],
+        ["set_attr_if_different", "assessment", "updated_tile_count", 1]
+      ]
+    },
+    {
+      "name": "transsaccadic_update_world_tile",
+      "area": "memory",
+      "order": 32,
+      "latency_class": "soft_realtime",
+      "match": [
+        ["agent", "has_transsaccadic_memory_params", "params"],
+        ["agent", "assesses_transsaccadic_memory", "assessment"],
+        ["assessment", "based_on_fixation", "fixation"],
+        ["agent", "holds_spatial_evidence", "evidence"],
+        ["agent", "holds_visual_tile", "tile"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "params"}, "key": "enabled"},
+            "b": {"type": "Lit", "value": 1.0}
+          },
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "sensor_epoch"},
+            "b": {"type": "Attr", "node": {"type": "Var", "name": "fixation"}, "key": "confirmed_epoch"}
+          },
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "tile"}, "key": "world_x"},
+            "b": {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "x_world"}
+          },
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "tile"}, "key": "world_y"},
+            "b": {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "y_world"}
+          },
+          {
+            "type": "Lt",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "tile"}, "key": "last_observed_epoch"},
+            "b": {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "sensor_epoch"}
+          },
+          {
+            "type": "Lte",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "range_sigma_world"},
+            "b": {"type": "Attr", "node": {"type": "Var", "name": "params"}, "key": "max_registration_sigma_world"}
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr_if_different",
+          "tile",
+          "last_observed_epoch",
+          {
+            "__term__": {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "sensor_epoch"}
+          }
+        ],
+        [
+          "set_attr_if_different",
+          "tile",
+          "observation_count",
+          {
+            "__term__": {
+              "type": "Plus",
+              "items": [
+                {"type": "Attr", "node": {"type": "Var", "name": "tile"}, "key": "observation_count"},
+                {"type": "Lit", "value": 1}
+              ]
+            }
+          }
+        ],
+        [
+          "set_attr_if_different",
+          "tile",
+          "registration_uncertainty_world",
+          {
+            "__term__": {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "range_sigma_world"}
+          }
+        ],
+        [
+          "set_attr_if_different",
+          "tile",
+          "confidence",
+          {
+            "__term__": {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "confidence"}
+          }
+        ],
+        [
+          "set_attr_if_different",
+          "tile",
+          "freshness",
+          {
+            "__term__": {
+              "type": "Div",
+              "a": {"type": "Lit", "value": 1.0},
+              "b": {
+                "type": "Plus",
+                "items": [
+                  {"type": "Lit", "value": 1.0},
+                  {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "range_sigma_world"}
+                ]
+              }
+            }
+          }
+        ],
+        ["set_attr_if_different", "tile", "status", "fresh"],
+        ["add_edge", "tile", "grounded_by", "evidence", {}],
+        ["add_edge", "tile", "observed_at_fixation", "fixation", {}],
+        ["set_attr_if_different", "assessment", "status", "updated"],
+        ["set_attr_if_different", "assessment", "reason", ""],
+        ["set_attr_if_different", "assessment", "updated_tile_count", 1]
+      ]
+    },
+    {
+      "name": "transsaccadic_attach_held_feature",
+      "area": "memory",
+      "order": 33,
+      "latency_class": "soft_realtime",
+      "match": [
+        ["tile", "grounded_by", "evidence"],
+        ["evidence", "supported_by_photometry", "held"]
+      ],
+      "where": {
+        "type": "Eq",
+        "a": {"type": "Attr", "node": {"type": "Var", "name": "held"}, "key": "sensor_epoch"},
+        "b": {"type": "Attr", "node": {"type": "Var", "name": "evidence"}, "key": "sensor_epoch"}
+      },
+      "effects": [
+        [
+          "set_attr_if_different",
+          "tile",
+          "prediction_residual_quanta",
+          {
+            "__term__": {"type": "Attr", "node": {"type": "Var", "name": "held"}, "key": "prediction_residual_quanta"}
+          }
+        ],
+        [
+          "set_attr_if_different",
+          "tile",
+          "observed_quanta",
+          {
+            "__term__": {"type": "Attr", "node": {"type": "Var", "name": "held"}, "key": "observed_quanta"}
+          }
+        ],
+        ["set_attr_if_different", "tile", "feature_unit", "photon_count_quanta"]
+      ]
+    },
+    {
+      "name": "transsaccadic_decay_tile_freshness",
+      "area": "memory",
+      "order": 34,
+      "latency_class": "soft_realtime",
+      "match": [
+        ["agent", "has_transsaccadic_memory_params", "params"],
+        ["agent", "holds_visual_tile", "tile"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "params"}, "key": "enabled"},
+            "b": {"type": "Lit", "value": 1.0}
+          },
+          {
+            "type": "Gt",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "vision_settled_epoch"},
+            "b": {"type": "Attr", "node": {"type": "Var", "name": "tile"}, "key": "last_observed_epoch"}
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr_if_different",
+          "tile",
+          "freshness",
+          {
+            "__term__": {
+              "type": "Div",
+              "a": {"type": "Lit", "value": 1.0},
+              "b": {
+                "type": "Plus",
+                "items": [
+                  {"type": "Lit", "value": 1.0},
+                  {"type": "Attr", "node": {"type": "Var", "name": "tile"}, "key": "registration_uncertainty_world"},
+                  {
+                    "type": "Minus",
+                    "a": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "vision_settled_epoch"},
+                    "b": {"type": "Attr", "node": {"type": "Var", "name": "tile"}, "key": "last_observed_epoch"}
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "transsaccadic_mark_old_tile_stale",
+      "area": "memory",
+      "order": 35,
+      "latency_class": "soft_realtime",
+      "match": [
+        ["agent", "has_transsaccadic_memory_params", "params"],
+        ["agent", "holds_visual_tile", "tile"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "params"}, "key": "enabled"},
+            "b": {"type": "Lit", "value": 1.0}
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Minus",
+              "a": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "vision_settled_epoch"},
+              "b": {"type": "Attr", "node": {"type": "Var", "name": "tile"}, "key": "last_observed_epoch"}
+            },
+            "b": {"type": "Attr", "node": {"type": "Var", "name": "params"}, "key": "max_tile_age_epochs"}
+          }
+        ]
+      },
+      "effects": [
+        ["set_attr_if_different", "tile", "status", "stale"]
+      ]
+    }
+  ]
+}

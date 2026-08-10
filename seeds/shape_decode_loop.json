@@ -1,0 +1,2865 @@
+{
+ "id": "shape_decode_loop",
+ "version": "1.8.0",
+ "depends_on": [
+  "math_capability_shapes",
+  "self_design_axis"
+ ],
+ "description": "The dequantize/dynamic-quantize LOOP as tick-driven graph data (design: 'shape matching is DEQUANTIZATION; order-N growth is DYNAMIC QUANTIZATION' \u2014 the SAME op both ways; boundaries EMERGE from the decode, not pre-cut). An Observation carries a signature (a relation-system) and is decoded against the held ShapeSignature codebook via the new ShapeDecode Term (Part A, Rust): full coverage -> sd_recognize (induce_concern's covered branch, no growth); a residual -> sd_transform_decode FIRST checks whether the residual is the SAME held shape stepping by a per-dimension quantum delta (design 'transform-as-quantum-delta', 2026-07-02: 'transformation ... is quantum change in a specific dimension') -> sd_recognize_transformed (recognition-under-transformation, no growth) if explained, else sd_mint_quantum mints a CapabilityAxis (dynamic quantization: ground_concern's frontier); codebook growth (grow_part_library bumping agent.codebook_epoch, Python builder) re-arms decoded/recognized-transformed observations via sd_redecode (exact match beats a transform reading). sd_decode/sd_transform_decode embed the ShapeDecode/TransformDecode Terms; both are landed and this rule set is exercised end-to-end. v1.2.0 (2026-07-02, creator directive 'transformation is quantum change in a specific dimension'): sd_decode's three ShapeDecode invocations flip from wild_objects=true to LITERAL (wild_objects false/omitted) \u2014 see sd_decode's own comment for the rationale. The pipeline is now literal decode (sd_decode) -> exact recognize (sd_recognize) -> consistent-per-dimension-delta recognize-under-transformation (sd_transform_decode/sd_recognize_transformed) -> novelty mint (sd_mint_quantum), with sd_transform_decode as the DISCRIMINATING replacement for the old wild-object coverage: it explains a CONSISTENT substitution/shift as identity+delta (no growth) while still letting an INCONSISTENT (incoherent) observation fall through to mint (codebook growth is preserved, now for the right reason \u2014 genuine novelty, not merely 'same predicate skeleton, whatever values'). v1.3.0 (2026-07-02, RUNG 2 \u2014 dimension inference, design 'transform-as-quantum-delta' scratchpad TRANSFORM_DESIGN.md): 'sometimes you need to infer a dimension before you transform' \u2014 a residual that rung 1 (sd_transform_decode) could NOT explain as a per-dimension delta on the observed coordinate slots may still be explained as a KNOWN GENERATOR (rotation90 / reflection_r / reflection_c \u2014 held DimensionGenerator codebook nodes, seed data below) applied to the held shape's own coordinate slots (dim-typed via the optional `dim_types` attr on ShapeSignature/Observation), composed with any residual per-dimension delta left over (so rotate+translate+recolour explains in ONE pass, the Rust `DimInfer` Term reusing rung 1's consistency-check internals per the design). New stage `sd_infer_dimension` sits BETWEEN sd_transform_decode and sd_mint_quantum (guard: transform_checked==1 AND transform_explained!=1 AND dim_checked!=1 \u2014 only a rung-1 FAILURE gets a rung-2 look, Occam order preserved: existing-basis transform < new dimension < new quantum); `sd_recognize_dim` on dim_explained==1 recognizes exactly like sd_recognize_transformed (reuses the SAME `transform_explained` attr \u2014 deliberate, no other guard changes \u2014 and the SAME `Transform`/`has_transform` node/edge shape, carrying the generator's `dim`/`delta` alongside any ordinary residual `dims`/`deltas`) and additionally mints a graph-resident `LatentDimension{name:'latent:<generator>', generator, k}` node (`has_latent_dimension` edge) \u2014 the missing dimension itself becomes graph data, not merely a recognized delta. `sd_mint_quantum` now additionally requires `dim_checked==1 AND dim_explained!=1` (mint only after BOTH rungs have had their look and BOTH failed); `sd_redecode` clears `dim_checked`/`dim_explained` alongside `transform_checked`/`transform_explained` on codebook-growth re-arm. `DimInfer` (Rust, `runners/dsl/src/shape_decode.rs` family) is being built in parallel \u2014 same situation `sd_transform_decode` was in for `TransformDecode` before Part A landed: `sd_infer_dimension`/`sd_recognize_dim` are authored and install-clean but cannot fire until it lands (see `tests/test_dimension_inference_migrated.py`'s live-Term probe). v1.4.0 (2026-07-08, 'a base IS a dimension'): adds a fourth DimensionGenerator, `scale2` (kind `scale2`, coord_dims [1,2], params [1,2,3]) \u2014 a MULTIPLICATIVE warp whose integer step k is a LOG2-SCALE quantum (k steps scale a shape by 2^k about its own origin, `runners/dsl/src/shape_decode.rs::scale_pow2_once`). This is the concrete realisation of the base-as-dimension result: a log-scale base is not hand-set per-frame config \u2014 it is a generator DimInfer selects and sd_recognize_dim mints as a `latent:scale2` LatentDimension exactly like rotation90, so a ratio (\u00d72) becomes the additive k-delta rung 1 already recognises for free and a whole scale FAMILY collapses to one held shape + one dimension instead of a fresh CapabilityAxis per size (grows capability AND improves efficiency). No new rule/rung: scale2 rides the EXISTING sd_infer_dimension/sd_recognize_dim pipeline (Occam order and the mint-termination guards unchanged \u2014 the `has_transform`-edge guard makes a recurring scaled observation mint its LatentDimension exactly ONCE, then re-recognise without re-minting under codebook growth). Backed by dim_infer_tests::scaled_shape_explained_via_scale2_generator/scaled_x4_shape_is_scale2_k2 (Rust) and tests/test_dimension_inference_migrated.py's scale-family + termination gates. v1.5.0 (2026-07-08, 'a phase IS a dimension'): adds a fifth DimensionGenerator, `cycle4` (kind `modular`, coord_dims [1], params [1,2,3], modulus 4) \u2014 a CYCLIC (Z_n) warp whose integer step k is a phase quantum (k steps map a coordinate slot v -> (v + k) mod n about a categorical ring, `runners/dsl/src/shape_decode.rs::modular_step_once`). Where scale2 collapses a scale FAMILY, cycle4 collapses a PHASE family (orientation / hue / clock-face): a value stepping around its ring is the SAME held shape at a different k along a minted `latent:cycle4` LatentDimension, so an orientation step no longer mints a fresh CapabilityAxis. The one thing that makes a modular step NOT a plain rung-1 numeric shift is the WRAP: with modulus 4 a slot at 3 steps to 0, not 4, so when some slots wrap and others don't the held->goal delta is non-uniform and rung 1 cannot explain it while cycle4 can (the wrap applied uniformly to the whole shape before rung 1's residual check) \u2014 the modulus is load-bearing, not decorative. Unlike scale/rotate/reflect the modular map does NOT origin-normalize (a ring has no bounding box to re-base against); it wraps in place. A `modular` generator declared with modulus <= 0 is skipped at load (no cycle = inapplicable, the same graceful skip as a missing coord_dims/params). No new rule/rung: cycle4 rides the EXISTING sd_infer_dimension/sd_recognize_dim pipeline (Occam order and the mint-termination guards unchanged \u2014 the has_transform-edge guard makes a recurring cyclic observation mint its LatentDimension exactly ONCE, then re-recognise without re-minting under codebook growth). Backed by dim_infer_tests::modular_wrap_shape_explained_via_modular_generator/modular_wrap_shape_is_modular_k2/modular_without_modulus_is_skipped (Rust) and tests/test_dimension_inference_migrated.py's cyclic + termination + wrap-discrimination gates. v1.6.0 (2026-07-08, COMPOSITION of generators, design runners/dsl/COMPOSITION_DESIGN.md): DimInfer now also infers a length-<=2 COMPOSITION of two DISTINCT generators (rotate THEN scale, reflect THEN scale, rotate THEN modular-cycle) where neither reduces to the other nor to a linear residual \u2014 the 'integer vector over generators' (prime-exponent) space, a short SEQUENCE of (generator, k) steps applied in order then absorbing the leftover linear residual. Composition LENGTH is the strict-primary Occam key (a length-2 composite NEVER beats a length-1 explanation \u2014 the analog of rung-1<rung-2 INSIDE rung 2), so a single-generator-explainable observation still reports length 1 (no spurious 2-step). No new rule/rung and NO seed rung-order change: composition lives entirely inside DimInfer's own search. The ONLY seed reads that changed are additive: sd_recognize_dim's `latent:` label sites now read the new `latent_name` field (which equals the single generator name for length 1, so `latent:rotation90` is byte-identical, and is `latent:<a>+<b>` for a composite), and the minted Transform + LatentDimension nodes additionally carry the step SEQUENCE as parallel `generators`/`ks` list attrs (the composite is minted ONCE, guarded by the same no-has_transform-edge idiom, and re-decode-terminates unchanged). The scalar `generator`/`k` attrs are kept (first step) so every length-1 read is unchanged. build_candidate is reused UNCHANGED (a composition of count-preserving remaps is still count-preserving). Backed by dim_infer_tests::composed_rotate_then_scale_is_length2/composed_reflect_then_scale_is_length2/single_generator_explainable_stays_length1 (Rust) and tests/test_dimension_inference_migrated.py's composition + alias-null + termination gates. v1.8.0 (VISION_AGNOSIA_PREREG.md, FRONTIER T9): adds the ABSENCE-TOLERANT `AgnosiaParams.associative` ablation guard to sd_recognize / sd_recognize_transformed / sd_recognize_dim -- the three sole writers of covered_by, i.e. the entire IDENTITY ASSIGNMENT -- as the ASSOCIATIVE-agnosia lesion. The guard is Count(Filter(NodesOfType(AgnosiaParams), ap, ap.associative > 0.5)) < 1, so a graph with NO AgnosiaParams node (any graph that does not load seeds/vision_agnosia.json) counts 0 and is INTACT -- byte-identical to v1.7.0. Deliberately NOT the PickUnique idiom, which returns None on an absent node and would silently kill recognition everywhere. sd_decode / TransformDecode / DimInfer / sd_mint_quantum are NOT guarded: the lesion suppresses identity ASSIGNMENT on RUNNING machinery.",
+ "microtheory": {
+  "name": "shape_decode_loop",
+  "description": "decode (dequantize) -> recognize | mint-quantum (dynamic-quantize) -> re-decode on codebook growth; tick-driven, no Python while-loop."
+ },
+ "nodes": [
+  {
+   "local_id": 1,
+   "type": "DimensionGenerator",
+   "attrs": {
+    "name": "rotation90",
+    "kind": "rotation90",
+    "coord_dims": [
+     1,
+     2
+    ],
+    "params": [
+     1,
+     2,
+     3
+    ]
+   }
+  },
+  {
+   "local_id": 2,
+   "type": "DimensionGenerator",
+   "attrs": {
+    "name": "reflection_r",
+    "kind": "reflection_r",
+    "coord_dims": [
+     1,
+     2
+    ],
+    "params": [
+     1,
+     2
+    ]
+   }
+  },
+  {
+   "local_id": 3,
+   "type": "DimensionGenerator",
+   "attrs": {
+    "name": "reflection_c",
+    "kind": "reflection_c",
+    "coord_dims": [
+     1,
+     2
+    ],
+    "params": [
+     1,
+     2
+    ]
+   }
+  },
+  {
+   "local_id": 4,
+   "type": "DimensionGenerator",
+   "attrs": {
+    "name": "scale2",
+    "kind": "scale2",
+    "coord_dims": [
+     1,
+     2
+    ],
+    "params": [
+     1,
+     2,
+     3
+    ]
+   }
+  },
+  {
+   "local_id": 5,
+   "type": "DimensionGenerator",
+   "attrs": {
+    "name": "cycle4",
+    "kind": "modular",
+    "coord_dims": [
+     1
+    ],
+    "params": [
+     1,
+     2,
+     3
+    ],
+    "modulus": 4
+   }
+  }
+ ],
+ "edges": [],
+ "productions": [
+  {
+   "provenance": "seed:shape_decode_loop:observed-0",
+   "src": {
+    "type": "Agent",
+    "var": "s"
+   },
+   "edge_type": "observed",
+   "tgt": {
+    "type": "Observation",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:shape_decode_loop:minted-1",
+   "src": {
+    "type": "Observation",
+    "var": "s"
+   },
+   "edge_type": "minted",
+   "tgt": {
+    "type": "CapabilityAxis",
+    "var": "t"
+   }
+  }
+ ],
+ "rules": [
+  {
+   "name": "sd_decode",
+   "comment": "DEQUANTIZE: an Observation ready to decode (status pending) against the held ShapeSignature codebook via the ShapeDecode Term. Stores the full Dict + two derived sub-fields (residual/covered_count) as separate attrs so sd_recognize/sd_mint_quantum/sd_redecode read them WITHOUT re-decoding. decoded_epoch stamps which codebook epoch this decode used (there being exactly one Agent node), so sd_redecode can detect codebook growth. v1.2.0 DELIBERATE SEMANTIC UPGRADE (2026-07-02, creator directive 'transformation is quantum change in a specific dimension'): wild_objects flips from true to LITERAL (false/omitted). Under wild_objects=true every non-predicate slot of a held part was wildcarded before scoring, so ANY observation sharing a held part's predicate skeleton (same predicates + arities) was treated as fully covered regardless of its argument values \u2014 this made an object-slot substitution, a numeric-slot shift, and an internally INCONSISTENT (incoherent) value assignment across relations all decode to an empty residual identically: the wild-object coverage conflated CONSISTENT substitution (a transform) with INCONSISTENT substitution (genuine novelty), so an incoherent observation could never mint (residual was always already zeroed before sd_mint_quantum ever saw it \u2014 the discriminative gate the design exists to protect never got exercised organically). Literal decode restores a real residual for both cases; sd_transform_decode is the new DISCRIMINATING replacement that does what wild_objects used to do BUT ONLY WHEN JUSTIFIED: it explains a residual as identity + a consistent per-dimension quantum delta (recognized_transformed, no growth) and, critically, REFUSES to explain an inconsistent/incoherent residual, which now correctly falls through to sd_mint_quantum (codebook growth on genuine novelty is preserved instead of silently suppressed).",
+   "match_type": "Observation",
+   "match": [
+    [
+     "ag",
+     "observed",
+     "obs"
+    ]
+   ],
+   "where": {
+    "type": "Eq",
+    "a": {
+     "type": "Attr",
+     "node": {
+      "type": "Var",
+      "name": "obs"
+     },
+     "key": "status"
+    },
+    "b": {
+     "type": "Lit",
+     "value": "pending"
+    }
+   },
+   "effects": [
+    [
+     "set_attr",
+     "obs",
+     "decode",
+     {
+      "__term__": {
+       "type": "ShapeDecode",
+       "goal": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "signature"
+       },
+       "beam": 3,
+       "max_steps": 8,
+       "cand_k": 3,
+       "wild_objects": false
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "residual",
+     {
+      "__term__": {
+       "type": "ShapeDecode",
+       "goal": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "signature"
+       },
+       "beam": 3,
+       "max_steps": 8,
+       "cand_k": 3,
+       "field": "residual",
+       "wild_objects": false
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "covered_count",
+     {
+      "__term__": {
+       "type": "ShapeDecode",
+       "goal": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "signature"
+       },
+       "beam": 3,
+       "max_steps": 8,
+       "cand_k": 3,
+       "field": "covered_count",
+       "wild_objects": false
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "decoded_epoch",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ag"
+       },
+       "key": "codebook_epoch"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "status",
+     "decoded"
+    ]
+   ]
+  },
+  {
+   "name": "sd_transform_decode",
+   "comment": "Design 'transform-as-quantum-delta' (2026-07-02 creator directive): before minting a new CapabilityAxis for a residual, check whether the residual is explained as the SAME held shape stepping by a per-dimension quantum delta (predicate-slot excluded -- a different predicate is a different shape, never a transform). Uses the Rust TransformDecode Term (NOT YET LANDED at authoring time, same situation sd_decode was in for ShapeDecode -- this rule is EXPECTED to fail to parse/install until Part A lands; the other rules in this seed use only existing Terms and install independently). Stores the full Dict (transform) + the derived explained flag as separate attrs, exactly like sd_decode splits decode/residual/covered_count, so sd_recognize_transformed/sd_mint_quantum read them without re-deciding. transform_checked guards against re-running the (potentially expensive) decode every fixpoint pass once it has been checked once for this residual.",
+   "match_type": "Observation",
+   "match": [
+    [
+     "ag",
+     "observed",
+     "obs"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "decoded"
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "residual"
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "transform_checked"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "obs",
+     "transform",
+     {
+      "__term__": {
+       "type": "TransformDecode",
+       "goal": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "signature"
+       },
+       "max_dims": 2
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "transform_explained",
+     {
+      "__term__": {
+       "type": "TransformDecode",
+       "goal": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "signature"
+       },
+       "max_dims": 2,
+       "field": "explained"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "transform_checked",
+     1
+    ]
+   ]
+  },
+  {
+   "name": "sd_infer_dimension",
+   "comment": "RUNG 2 (design 'transform-as-quantum-delta' scratchpad TRANSFORM_DESIGN.md, 'sometimes you need to infer a dimension before you transform'): a decoded Observation whose residual rung 1 (sd_transform_decode) could NOT explain (transform_checked==1 AND transform_explained!=1) gets ONE look at a MISSING DIMENSION before minting: is the residual explained by a KNOWN generator (rotation90 / reflection_r / reflection_c -- held DimensionGenerator codebook nodes, seed data) applied to the held shape's own dim-typed coordinate slots, composed with any leftover per-dimension delta (so rotate+translate+recolour explains in one pass)? Uses the Rust DimInfer Term (NOT YET LANDED at authoring time, same situation sd_transform_decode was in for TransformDecode before Part A landed -- this rule is EXPECTED to fail to parse/install until it lands; the other rules in this seed use only existing/already-landed Terms and install independently). Stores the full Dict (dim_infer) + the derived explained flag (dim_explained) as separate attrs, exactly like sd_transform_decode splits transform/transform_explained, so sd_recognize_dim/sd_mint_quantum read them without re-deciding. dim_checked guards against re-running the decode every fixpoint pass once it has been checked once for this residual. Occam order across rungs (existing-basis transform < new dimension < new quantum) is enforced purely by this guard: only a rung-1 FAILURE (transform_checked==1 AND transform_explained!=1) reaches this rule at all, so a plain rung-1-explainable observation NEVER sets dim_checked (transform_explained==1 blocks this guard outright, before DimInfer is ever evaluated -- verified independent of whether the Term is live, tests/test_dimension_inference_migrated.py's rung-order Occam gate).",
+   "match_type": "Observation",
+   "match": [
+    [
+     "ag",
+     "observed",
+     "obs"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "decoded"
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "residual"
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "transform_checked"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "transform_explained"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "dim_checked"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "obs",
+     "dim_infer",
+     {
+      "__term__": {
+       "type": "DimInfer",
+       "goal": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "signature"
+       },
+       "max_dims": 2
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "dim_explained",
+     {
+      "__term__": {
+       "type": "DimInfer",
+       "goal": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "signature"
+       },
+       "max_dims": 2,
+       "field": "explained"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "dim_checked",
+     1
+    ]
+   ]
+  },
+  {
+   "name": "sd_dim_check_mark",
+   "comment": "RESILIENCE MARKER, decoupled from the DimInfer Term itself (a SEPARATE, Term-FREE rule -- guard IDENTICAL to sd_infer_dimension's own, effect a plain Literal, no Computed/__term__ anywhere). WHY THIS EXISTS: the seed loader drops a rule WHOLESALE (not per-effect) the moment ANY of its effects references an unknown Term (see sd_infer_dimension's own comment) -- so while DimInfer (Part A, Rust, built in parallel) is not yet landed, sd_infer_dimension fails to install AT ALL, and dim_checked would NEVER be set. sd_mint_quantum's guard now requires dim_checked==1 (BOTH rungs must have had their look before minting) -- without this marker that requirement would be permanently unsatisfiable pre-landing, deadlocking sd_mint_quantum for EVERY residual-having observation and breaking the committed test_composer_driver_migrated.py mint-path tests (verified empirically while authoring this pass: 3/7 failures the moment the guard was tightened without this rule). This rule is exactly the seed-level expression of the design's own 'graceful skip' principle ('Absent -> no generator applies (rung 2 skipped, graceful)') generalised one notch further: DimInfer being UNAVAILABLE (not yet built) is treated the same as DimInfer being available-but-inapplicable (no dim_types) -- both leave dim_explained unset (falsy), so sd_mint_quantum proceeds exactly as it did before rung 2 existed. The moment DimInfer lands, sd_infer_dimension ALSO installs and shares this rule's EXACT guard, so both fire together in the SAME fixpoint pass the first time the trigger condition becomes true for a given observation (neither has run yet, so both match; effects apply together) -- dim_checked is set redundantly-but-harmlessly by both, and dim_infer/dim_explained are populated by the real Term in that same pass, so genuine dimension inference still gets a real look before sd_mint_quantum's next guard evaluation. Occam ordering is preserved: this rule's guard requires transform_explained!=1 (rung 1 must have FAILED first), so a rung-1-explained observation never has dim_checked touched by this rule either (tests/test_dimension_inference_migrated.py's rung-order Occam gate).",
+   "match_type": "Observation",
+   "match": [
+    [
+     "ag",
+     "observed",
+     "obs"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "decoded"
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "residual"
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "transform_checked"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "transform_explained"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "dim_checked"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "obs",
+     "dim_checked",
+     1
+    ]
+   ]
+  },
+  {
+   "name": "sd_gen_check_mark",
+   "comment": "RESILIENCE MARKER for the generator rung, flag OFF \u2014 the twin of sd_dim_check_mark one rung deeper. Gated on agent.gen_infer_enabled != 1 (the DEFAULT: the flag is absent), it sets gen_checked=1 at the gap so sd_mint_quantum's new guard stays satisfiable while gen_explained stays ABSENT (!=1) \u2014 so the quantum mints EXACTLY as before gen-mint existed (\u00a79). Mutually exclusive with sd_gen_check by the flag, so neither preempts the other.",
+   "match_type": "Observation",
+   "match": [
+    [
+     "ag",
+     "observed",
+     "obs"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "decoded"
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "residual"
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "transform_checked"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "transform_explained"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1
+       }
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "dim_checked"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "dim_explained"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "ag"
+        },
+        "key": "gen_infer_enabled"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "gen_checked"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "obs",
+     "gen_checked",
+     1
+    ]
+   ]
+  },
+  {
+   "name": "sd_gen_check",
+   "comment": "THE GENERATOR-INFERENCE LOOK, flag ON (agent.gen_infer_enabled==1). The DELTA on DimInfer: at the gap where the held DimensionGenerator codebook is exhausted WITHOUT a match, run the GenInfer Term \u2014 DimInfer-native generate-and-test over the PARAMETERIZED FAMILY of integer 2x2 linear maps within a DATA-DERIVED entry bound, applied via the SAME apply_linear_once a minted generator uses and verified via the SAME build_candidate check DimInfer runs. Sets gen_checked=1 AND gen_explained ATOMICALLY (one rule, one tier) so sd_mint_quantum never sees gen_checked==1 without the look having happened.",
+   "match_type": "Observation",
+   "match": [
+    [
+     "ag",
+     "observed",
+     "obs"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "decoded"
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "residual"
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "transform_checked"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "transform_explained"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1
+       }
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "dim_checked"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "dim_explained"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1
+       }
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ag"
+       },
+       "key": "gen_infer_enabled"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "gen_checked"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "ag"
+        },
+        "key": "gen_unimodular"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "ag"
+        },
+        "key": "gen_similarity"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "obs",
+     "gen_checked",
+     1
+    ],
+    [
+     "set_attr",
+     "obs",
+     "gen_explained",
+     {
+      "__term__": {
+       "type": "GenInfer",
+       "goal": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "signature"
+       },
+       "max_dims": 2,
+       "field": "explained"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "sd_gen_check_uni_yes",
+   "comment": "|det|=1 UNIMODULAR RESTRICTION on the generator-inference look (flag agent.gen_unimodular==1, itself gated under gen_infer_enabled==1; OFF by default — the flag is absent, so sd_gen_check runs unchanged and every committed gen-mint result is byte-identical, §9). This is the named-not-built fix from the objecthood WALL rung (VISION_IDENTITY_UNTANGLING_RESULTS.md Regime B): GenInfer enumerates ALL integer 2x2 maps including non-injective det=0 (collapses any shape onto a line — the universal-container leak) and |det|>1. Restricting discovery to |det|=1 (the unimodular group GL(2,Z)) admits only INVERTIBLE maps. Expressed as GRAPH DATA — the determinant m00*m11 - m01*m10 of GenInfer's inferred `matrix` (field='matrix') is computed by Nth/Times/Minus/Abs Terms and compared to 1 (|det|=1). This YES rule fires at the gap when the discovered matrix is unimodular: sets gen_checked=1 AND gen_explained=1 (so sd_mint_generator mints the SAME |det|=1 matrix). When GenInfer finds nothing the matrix is empty, Nth returns None, so the determinant is 0 (Abs of numeric-coerced None) and |det|!=1 — the guard is false, sd_gen_check_uni_no handles it. Note this is a POST-HOC veto on GenInfer's single best matrix, NOT a restriction of the argmin search range; they coincide iff the best matrix's determinant equals what an enumeration-filtered search would return (MEASURED per-view in scripts/det1_measure.py: for full-rank bases the exact recovering map is unique so the winner's det equals the applied transform's det — verified, no re-selection divergence). A Rust enumeration filter would be the faithful search restriction; the seed guard is preferred (no new Rust) and measured equivalent for these arms.",
+   "match_type": "Observation",
+   "match": [
+    [
+     "ag",
+     "observed",
+     "obs"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "status"}, "b": {"type": "Lit", "value": "decoded"}},
+     {"type": "Gt", "a": {"type": "Count", "source": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "residual"}}, "b": {"type": "Lit", "value": 0}},
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "transform_checked"}, "b": {"type": "Lit", "value": 1}},
+     {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "transform_explained"}, "b": {"type": "Lit", "value": 1}}},
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "dim_checked"}, "b": {"type": "Lit", "value": 1}},
+     {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "dim_explained"}, "b": {"type": "Lit", "value": 1}}},
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "ag"}, "key": "gen_infer_enabled"}, "b": {"type": "Lit", "value": 1}},
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "ag"}, "key": "gen_unimodular"}, "b": {"type": "Lit", "value": 1}},
+     {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "gen_checked"}, "b": {"type": "Lit", "value": 1}}},
+     {"type": "Eq",
+      "a": {"type": "Abs", "arg": {"type": "Minus",
+        "a": {"type": "Times", "items": [
+          {"type": "Nth", "index": 0, "items": {"type": "GenInfer", "goal": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "signature"}, "max_dims": 2, "field": "matrix"}},
+          {"type": "Nth", "index": 3, "items": {"type": "GenInfer", "goal": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "signature"}, "max_dims": 2, "field": "matrix"}}
+        ]},
+        "b": {"type": "Times", "items": [
+          {"type": "Nth", "index": 1, "items": {"type": "GenInfer", "goal": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "signature"}, "max_dims": 2, "field": "matrix"}},
+          {"type": "Nth", "index": 2, "items": {"type": "GenInfer", "goal": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "signature"}, "max_dims": 2, "field": "matrix"}}
+        ]}
+      }},
+      "b": {"type": "Lit", "value": 1}}
+    ]
+   },
+   "effects": [
+    ["set_attr", "obs", "gen_checked", 1],
+    ["set_attr", "obs", "gen_explained", 1]
+   ]
+  },
+  {
+   "name": "sd_gen_check_uni_no",
+   "comment": "The REFUSE branch of the |det|=1 unimodular restriction (flag gen_unimodular==1). Mutually exclusive with sd_gen_check_uni_yes by the determinant condition: fires when the discovered matrix is NOT unimodular (|det|!=1, incl. det=0 non-injective / |det|>1) OR GenInfer found nothing (empty matrix -> det 0). Sets gen_checked=1 ONLY, leaving gen_explained ABSENT so sd_mint_generator never fires and the observation falls through to sd_mint_quantum (novelty mint / honest refuse) EXACTLY as if no generator were found — the det=0 universal-container leak (collinear I -> full-rank object) is REFUSED here. And-short-circuit makes the Not(det==1) safe when the matrix is empty (Nth->None->det 0->|det|!=1->fires). This is the |det|=1 = 'invertible discovered generator' half of the WALL fix; the SHEAR half (det=1 shears are admitted here and remain identity-CHANGING) is the measured residual, reported not gated (VISION_DET1_RESULTS.md).",
+   "match_type": "Observation",
+   "match": [
+    [
+     "ag",
+     "observed",
+     "obs"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "status"}, "b": {"type": "Lit", "value": "decoded"}},
+     {"type": "Gt", "a": {"type": "Count", "source": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "residual"}}, "b": {"type": "Lit", "value": 0}},
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "transform_checked"}, "b": {"type": "Lit", "value": 1}},
+     {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "transform_explained"}, "b": {"type": "Lit", "value": 1}}},
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "dim_checked"}, "b": {"type": "Lit", "value": 1}},
+     {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "dim_explained"}, "b": {"type": "Lit", "value": 1}}},
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "ag"}, "key": "gen_infer_enabled"}, "b": {"type": "Lit", "value": 1}},
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "ag"}, "key": "gen_unimodular"}, "b": {"type": "Lit", "value": 1}},
+     {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "gen_checked"}, "b": {"type": "Lit", "value": 1}}},
+     {"type": "Not", "arg": {"type": "Eq",
+      "a": {"type": "Abs", "arg": {"type": "Minus",
+        "a": {"type": "Times", "items": [
+          {"type": "Nth", "index": 0, "items": {"type": "GenInfer", "goal": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "signature"}, "max_dims": 2, "field": "matrix"}},
+          {"type": "Nth", "index": 3, "items": {"type": "GenInfer", "goal": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "signature"}, "max_dims": 2, "field": "matrix"}}
+        ]},
+        "b": {"type": "Times", "items": [
+          {"type": "Nth", "index": 1, "items": {"type": "GenInfer", "goal": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "signature"}, "max_dims": 2, "field": "matrix"}},
+          {"type": "Nth", "index": 2, "items": {"type": "GenInfer", "goal": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "signature"}, "max_dims": 2, "field": "matrix"}}
+        ]}
+      }},
+      "b": {"type": "Lit", "value": 1}}}
+    ]
+   },
+   "effects": [
+    ["set_attr", "obs", "gen_checked", 1]
+   ]
+  },
+  {
+   "name": "sd_gen_check_sim_yes",
+   "comment": "SIMILARITY-SUBGROUP RESTRICTION on the generator-inference look (flag agent.gen_similarity==1, itself gated under gen_infer_enabled==1; OFF by default \u2014 the flag is absent, so sd_gen_check runs unchanged and every committed gen-mint / |det|=1 result is byte-identical, \u00a79). The named-not-built fix from the |det|=1 rung (VISION_DET1_RESULTS.md OUTCOME 2): |det|=1 (the unimodular group GL(2,Z)) fixed the det=0 collapse but ADMITTED the shears (det=1, invertible but identity-CHANGING) \u2014 shearY(F)->X, shearX(T)->X still over-merged. The identity-preserving nuisance group is the SIMILARITY subgroup (rotation/reflection/uniform scale \u2014 scaled-orthogonal maps M*M^T = lambda*I), a PROPER SUBGROUP of GL(2,Z). Expressed as GRAPH DATA over GenInfer's inferred matrix [m00,m01,m10,m11] (field='matrix'; columns [m00,m10] at idx 0,2 and [m01,m11] at idx 1,3), a similarity iff THREE conditions via Nth/Times/Plus/Minus/Eq Terms: ORTHOGONAL columns m00*m01+m10*m11==0; EQUAL squared length m00^2+m10^2==m01^2+m11^2; NON-DEGENERATE det=m00*m11-m01*m10 != 0. The third is REQUIRED because the first two are both satisfied by the zero matrix; GenInfer's empty result reads via Nth->None which the numeric Terms SKIP (empty product=1, empty sum=0), so an empty matrix gives ortho=1+1=2 (fails ortho=0) AND det=1-1=0 (fails det!=0) \u2014 doubly refused. This YES rule fires when the discovered matrix is a non-degenerate similarity: sets gen_checked=1 AND gen_explained=1 (so sd_mint_generator mints the SAME similarity matrix). Shears fail orthogonality (ortho=1) -> sd_gen_check_sim_no. POST-HOC veto on GenInfer's single best matrix, not a search restriction; MEASURED equivalent for full-rank bases (unique exact map; the aliasing shears mint the shear itself [1,0,1,1]/[1,1,0,1], non-similarities, refused) in scripts/similarity_measure.py.",
+   "match_type": "Observation",
+   "match": [
+    [
+     "ag",
+     "observed",
+     "obs"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "status"}, "b": {"type": "Lit", "value": "decoded"}},
+     {"type": "Gt", "a": {"type": "Count", "source": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "residual"}}, "b": {"type": "Lit", "value": 0}},
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "transform_checked"}, "b": {"type": "Lit", "value": 1}},
+     {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "transform_explained"}, "b": {"type": "Lit", "value": 1}}},
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "dim_checked"}, "b": {"type": "Lit", "value": 1}},
+     {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "dim_explained"}, "b": {"type": "Lit", "value": 1}}},
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "ag"}, "key": "gen_infer_enabled"}, "b": {"type": "Lit", "value": 1}},
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "ag"}, "key": "gen_similarity"}, "b": {"type": "Lit", "value": 1}},
+     {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "gen_checked"}, "b": {"type": "Lit", "value": 1}}},
+     {"type": "Eq", "a": {"type": "Plus", "items": [{"type": "Times", "items": [{"type": "Nth", "index": 0, "items": {"type": "GenInfer", "goal": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "signature"}, "max_dims": 2, "field": "matrix"}}, {"type": "Nth", "index": 1, "items": {"type": "GenInfer", "goal": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "signature"}, "max_dims": 2, "field": "matrix"}}]}, {"type": "Times", "items": [{"type": "Nth", "index": 2, "items": {"type": "GenInfer", "goal": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "signature"}, "max_dims": 2, "field": "matrix"}}, {"type": "Nth", "index": 3, "items": {"type": "GenInfer", "goal": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "signature"}, "max_dims": 2, "field": "matrix"}}]}]}, "b": {"type": "Lit", "value": 0}},
+     {"type": "Eq", "a": {"type": "Plus", "items": [{"type": "Times", "items": [{"type": "Nth", "index": 0, "items": {"type": "GenInfer", "goal": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "signature"}, "max_dims": 2, "field": "matrix"}}, {"type": "Nth", "index": 0, "items": {"type": "GenInfer", "goal": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "signature"}, "max_dims": 2, "field": "matrix"}}]}, {"type": "Times", "items": [{"type": "Nth", "index": 2, "items": {"type": "GenInfer", "goal": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "signature"}, "max_dims": 2, "field": "matrix"}}, {"type": "Nth", "index": 2, "items": {"type": "GenInfer", "goal": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "signature"}, "max_dims": 2, "field": "matrix"}}]}]}, "b": {"type": "Plus", "items": [{"type": "Times", "items": [{"type": "Nth", "index": 1, "items": {"type": "GenInfer", "goal": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "signature"}, "max_dims": 2, "field": "matrix"}}, {"type": "Nth", "index": 1, "items": {"type": "GenInfer", "goal": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "signature"}, "max_dims": 2, "field": "matrix"}}]}, {"type": "Times", "items": [{"type": "Nth", "index": 3, "items": {"type": "GenInfer", "goal": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "signature"}, "max_dims": 2, "field": "matrix"}}, {"type": "Nth", "index": 3, "items": {"type": "GenInfer", "goal": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "signature"}, "max_dims": 2, "field": "matrix"}}]}]}},
+     {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Minus", "a": {"type": "Times", "items": [{"type": "Nth", "index": 0, "items": {"type": "GenInfer", "goal": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "signature"}, "max_dims": 2, "field": "matrix"}}, {"type": "Nth", "index": 3, "items": {"type": "GenInfer", "goal": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "signature"}, "max_dims": 2, "field": "matrix"}}]}, "b": {"type": "Times", "items": [{"type": "Nth", "index": 1, "items": {"type": "GenInfer", "goal": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "signature"}, "max_dims": 2, "field": "matrix"}}, {"type": "Nth", "index": 2, "items": {"type": "GenInfer", "goal": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "signature"}, "max_dims": 2, "field": "matrix"}}]}}, "b": {"type": "Lit", "value": 0}}}
+    ]
+   },
+   "effects": [
+    ["set_attr", "obs", "gen_checked", 1],
+    ["set_attr", "obs", "gen_explained", 1]
+   ]
+  },
+  {
+   "name": "sd_gen_check_sim_no",
+   "comment": "The REFUSE branch of the SIMILARITY-SUBGROUP restriction (flag gen_similarity==1). Mutually exclusive with sd_gen_check_sim_yes by the similarity condition: fires when the discovered matrix is NOT a non-degenerate similarity \u2014 Not(And(ortho==0, equal-length, det!=0)) \u2014 i.e. a SHEAR (ortho!=0, the |det|=1 rung's admitted-but-identity-changing residual), a det=0 collapse (equal-length fails), a non-conformal map, OR GenInfer found nothing (empty matrix -> ortho=2 and det=0, both fail). Sets gen_checked=1 ONLY, leaving gen_explained ABSENT so sd_mint_generator never fires and the observation falls through to sd_mint_quantum (novelty mint / honest refuse) \u2014 the SHEAR leak that |det|=1 admitted is REFUSED here, so a sheared pentomino no longer aliases onto another identity and discrimination becomes exact-0. And-short-circuit makes the Nth->None case safe. EXCLUDES the shears (which |det|=1 wrongly kept) AND ADMITS uniform integer scale (which |det|=1 wrongly dropped: scale3=[3,0,0,3] is a similarity) \u2014 the RIGHT group (VISION_SIMILARITY_RESULTS.md).",
+   "match_type": "Observation",
+   "match": [
+    [
+     "ag",
+     "observed",
+     "obs"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "status"}, "b": {"type": "Lit", "value": "decoded"}},
+     {"type": "Gt", "a": {"type": "Count", "source": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "residual"}}, "b": {"type": "Lit", "value": 0}},
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "transform_checked"}, "b": {"type": "Lit", "value": 1}},
+     {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "transform_explained"}, "b": {"type": "Lit", "value": 1}}},
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "dim_checked"}, "b": {"type": "Lit", "value": 1}},
+     {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "dim_explained"}, "b": {"type": "Lit", "value": 1}}},
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "ag"}, "key": "gen_infer_enabled"}, "b": {"type": "Lit", "value": 1}},
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "ag"}, "key": "gen_similarity"}, "b": {"type": "Lit", "value": 1}},
+     {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "gen_checked"}, "b": {"type": "Lit", "value": 1}}},
+     {"type": "Not", "arg": {"type": "And", "items": [{"type": "Eq", "a": {"type": "Plus", "items": [{"type": "Times", "items": [{"type": "Nth", "index": 0, "items": {"type": "GenInfer", "goal": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "signature"}, "max_dims": 2, "field": "matrix"}}, {"type": "Nth", "index": 1, "items": {"type": "GenInfer", "goal": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "signature"}, "max_dims": 2, "field": "matrix"}}]}, {"type": "Times", "items": [{"type": "Nth", "index": 2, "items": {"type": "GenInfer", "goal": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "signature"}, "max_dims": 2, "field": "matrix"}}, {"type": "Nth", "index": 3, "items": {"type": "GenInfer", "goal": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "signature"}, "max_dims": 2, "field": "matrix"}}]}]}, "b": {"type": "Lit", "value": 0}}, {"type": "Eq", "a": {"type": "Plus", "items": [{"type": "Times", "items": [{"type": "Nth", "index": 0, "items": {"type": "GenInfer", "goal": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "signature"}, "max_dims": 2, "field": "matrix"}}, {"type": "Nth", "index": 0, "items": {"type": "GenInfer", "goal": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "signature"}, "max_dims": 2, "field": "matrix"}}]}, {"type": "Times", "items": [{"type": "Nth", "index": 2, "items": {"type": "GenInfer", "goal": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "signature"}, "max_dims": 2, "field": "matrix"}}, {"type": "Nth", "index": 2, "items": {"type": "GenInfer", "goal": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "signature"}, "max_dims": 2, "field": "matrix"}}]}]}, "b": {"type": "Plus", "items": [{"type": "Times", "items": [{"type": "Nth", "index": 1, "items": {"type": "GenInfer", "goal": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "signature"}, "max_dims": 2, "field": "matrix"}}, {"type": "Nth", "index": 1, "items": {"type": "GenInfer", "goal": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "signature"}, "max_dims": 2, "field": "matrix"}}]}, {"type": "Times", "items": [{"type": "Nth", "index": 3, "items": {"type": "GenInfer", "goal": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "signature"}, "max_dims": 2, "field": "matrix"}}, {"type": "Nth", "index": 3, "items": {"type": "GenInfer", "goal": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "signature"}, "max_dims": 2, "field": "matrix"}}]}]}}, {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Minus", "a": {"type": "Times", "items": [{"type": "Nth", "index": 0, "items": {"type": "GenInfer", "goal": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "signature"}, "max_dims": 2, "field": "matrix"}}, {"type": "Nth", "index": 3, "items": {"type": "GenInfer", "goal": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "signature"}, "max_dims": 2, "field": "matrix"}}]}, "b": {"type": "Times", "items": [{"type": "Nth", "index": 1, "items": {"type": "GenInfer", "goal": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "signature"}, "max_dims": 2, "field": "matrix"}}, {"type": "Nth", "index": 2, "items": {"type": "GenInfer", "goal": {"type": "Attr", "node": {"type": "Var", "name": "obs"}, "key": "signature"}, "max_dims": 2, "field": "matrix"}}]}}, "b": {"type": "Lit", "value": 0}}}]}}
+    ]
+   },
+   "effects": [
+    ["set_attr", "obs", "gen_checked", 1]
+   ]
+  },
+  {
+   "name": "sd_mint_generator",
+   "comment": "MINT A NEW GENERATOR FROM THE ORBIT (flag ON) \u2014 the operation the arc's negative said the sd loop lacks ('composes what it holds; does not discover what it lacks'). On gen_explained==1 (GenInfer found a NEW integer-linear map no held generator explains) and no linear generator minted yet, add DimensionGenerator{kind:'linear', matrix, coord_dims} carrying GenInfer's inferred matrix as GRAPH DATA (apply_linear_once reads it \u2014 no new Rust dispatch arm per discovered map) and bump codebook_epoch so sd_redecode re-arms the observation; it re-decodes THROUGH the minted generator (recognized_transformed, NOT a quantum) \u2014 the orbit collapses to one generator. Dedup: one linear generator per boot (a fuller matrix-keyed dedup for multiple coexisting discovered generators is a documented scope limit).",
+   "match_type": "Observation",
+   "match": [
+    [
+     "ag",
+     "observed",
+     "obs"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "decoded"
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "residual"
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "edge_type": "minted"
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "transform_checked"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "transform_explained"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1
+       }
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "dim_checked"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "dim_explained"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1
+       }
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ag"
+       },
+       "key": "gen_infer_enabled"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "gen_checked"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "gen_explained"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "DimensionGenerator"
+       },
+       "var_name": "g",
+       "predicate": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "kind"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "linear"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "g",
+     "DimensionGenerator",
+     {
+      "name": {
+       "__term__": {
+        "type": "StringConcat",
+        "parts": [
+         {
+          "type": "Lit",
+          "value": "genlin_"
+         },
+         {
+          "type": "GenInfer",
+          "goal": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "obs"
+           },
+           "key": "signature"
+          },
+          "max_dims": 2,
+          "field": "base"
+         }
+        ]
+       }
+      },
+      "kind": {
+       "__term__": {
+        "type": "Lit",
+        "value": "linear"
+       }
+      },
+      "coord_dims": {
+       "__term__": {
+        "type": "GenInfer",
+        "goal": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "signature"
+        },
+        "max_dims": 2,
+        "field": "coord_dims"
+       }
+      },
+      "matrix": {
+       "__term__": {
+        "type": "GenInfer",
+        "goal": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "signature"
+        },
+        "max_dims": 2,
+        "field": "matrix"
+       }
+      },
+      "params": {
+       "__term__": {
+        "type": "Lit",
+        "value": [
+         1,
+         2,
+         3,
+         4,
+         5,
+         6
+        ]
+       }
+      },
+      "minted_from_orbit": {
+       "__term__": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "obs",
+     "gen_minted",
+     "g"
+    ],
+    [
+     "set_attr",
+     "ag",
+     "codebook_epoch",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "ag"
+         },
+         "key": "codebook_epoch"
+        },
+        {
+         "type": "Lit",
+         "value": 1
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "status",
+     "minted"
+    ]
+   ]
+  },
+  {
+   "name": "sd_recognize",
+   "comment": "induce_concern's COVERED branch: a decoded Observation whose residual is EMPTY is fully explained by the held codebook -> recognized, no graph growth. covered_by is recovered by the SAME antiunify/fixed-count fit metric compose_design_for_goal uses (FixedCount(AntiUnify([obs.signature, sig.signature]))), picking the ShapeSignature with the smallest residual (0, since fully covered) -- valid for the len(plan)==1 case per the design's convenience-form note. Uses ONLY existing Terms (no ShapeDecode dependency) so this rule installs/fires today against a hand-set residual attr.",
+   "match_type": "Observation",
+   "match": [
+    [
+     "ag",
+     "observed",
+     "obs"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "AgnosiaParams"
+        },
+        "var_name": "ap",
+        "predicate": {
+         "type": "Gt",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "ap"
+          },
+          "key": "associative"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0.5
+         }
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "decoded"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "residual"
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "obs",
+     "status",
+     "recognized"
+    ],
+    [
+     "set_attr",
+     "obs",
+     "covered_by",
+     {
+      "__term__": {
+       "type": "Attr",
+       "key": "name",
+       "node": {
+        "type": "Argmax",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "ShapeSignature"
+        },
+        "var_name": "sig",
+        "value": {
+         "type": "FixedCount",
+         "pattern": {
+          "type": "AntiUnify",
+          "values": {
+           "type": "SetT",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "obs"
+             },
+             "key": "signature"
+            },
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "sig"
+             },
+             "key": "signature"
+            }
+           ]
+          }
+         }
+        },
+        "default": null
+       }
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "sd_recognize_transformed",
+   "comment": "Design 'transform-as-quantum-delta': a decoded Observation whose TransformDecode check EXPLAINED the residual (transform_explained==1) is recognized-under-transformation, NOT minted as novel -- the residual was identity + a per-dimension quantum delta on an ALREADY-held shape, which is recognition, not new structure. Sets covered_by to the winning base shape's name (Computed field 'base', same convenience-form the sd_recognize exact-match branch uses) and mints the graph-resident Transform node carrying the transformed dimension indices (field 'dims'), the parallel delta values (field 'deltas'), and the full per-dimension detail (field 'transforms': list of {dim, kind, delta}) plus the base shape's name (so a later name->node join rule can bind the ShapeSignature node itself, per the design note -- an edge can't bind a node by name inside one effect). Guarded against re-mint by 'no has_transform edge yet' (the same fixpoint-safety idiom sd_mint_quantum uses for its own 'minted' edge), since transform_explained stays 1 across passes until sd_redecode clears it. Depends on the same not-yet-landed TransformDecode Term as sd_transform_decode (expected to fail to parse/install until Part A lands); uses no other new Terms.",
+   "match_type": "Observation",
+   "match": [
+    [
+     "ag",
+     "observed",
+     "obs"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "AgnosiaParams"
+        },
+        "var_name": "ap",
+        "predicate": {
+         "type": "Gt",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "ap"
+          },
+          "key": "associative"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0.5
+         }
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "transform_explained"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "edge_type": "has_transform"
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "obs",
+     "status",
+     "recognized_transformed"
+    ],
+    [
+     "set_attr",
+     "obs",
+     "covered_by",
+     {
+      "__term__": {
+       "type": "TransformDecode",
+       "goal": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "signature"
+       },
+       "max_dims": 2,
+       "field": "base"
+      }
+     }
+    ],
+    [
+     "add_node",
+     "t",
+     "Transform",
+     {
+      "dims": {
+       "__term__": {
+        "type": "TransformDecode",
+        "goal": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "signature"
+        },
+        "max_dims": 2,
+        "field": "dims"
+       }
+      },
+      "transforms": {
+       "__term__": {
+        "type": "TransformDecode",
+        "goal": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "signature"
+        },
+        "max_dims": 2,
+        "field": "transforms"
+       }
+      },
+      "deltas": {
+       "__term__": {
+        "type": "TransformDecode",
+        "goal": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "signature"
+        },
+        "max_dims": 2,
+        "field": "deltas"
+       }
+      },
+      "base": {
+       "__term__": {
+        "type": "TransformDecode",
+        "goal": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "signature"
+        },
+        "max_dims": 2,
+        "field": "base"
+       }
+      },
+      "source": "transform_decode"
+     }
+    ],
+    [
+     "add_edge",
+     "obs",
+     "has_transform",
+     "t"
+    ]
+   ]
+  },
+  {
+   "name": "sd_recognize_dim",
+   "comment": "RUNG 2: a decoded Observation whose DimInfer check EXPLAINED the residual via a known generator (dim_explained==1) is recognized-under-transformation exactly like sd_recognize_transformed -- a MISSING DIMENSION (rotation/reflection) plus, composed, any leftover per-dimension delta explains the residual on an ALREADY-held shape, which is recognition, not new structure. DELIBERATE REUSE (design note, 'no other guard changes'): also SETS transform_explained=1 -- this does not cause sd_recognize_transformed to double-fire, because within the SAME fixpoint pass that sets it, sd_recognize_transformed's own guard (transform_explained==1 AND no has_transform edge yet) reads the PRE-effect value (still unset) and cannot match; on the NEXT pass the has_transform edge this rule's own effects just added (atomically, same rule firing) already blocks sd_recognize_transformed's re-mint guard. Sets covered_by to the winning base shape (Computed field 'base', same convenience-form sd_recognize_transformed uses) and mints a Transform node carrying the SAME shape sd_recognize_transformed's Transform node has (dims/deltas/transforms/base, the ordinary residual per-dimension detail left AFTER the generator is applied) PLUS the generator-specific singular dim/delta pair the design calls for ('Transform node with dim label latent:<generator>, delta k') -- dim is a STRING label (a generator step is not a numeric slot index), delta is k. Also mints a graph-resident LatentDimension{name, generator, k} node (has_latent_dimension edge) -- the missing dimension itself becomes graph data, per the design's 'MINT the dimension as graph data'. Guarded against re-mint by 'no has_transform edge yet', the same fixpoint-safety idiom sd_recognize_transformed uses. Depends on the same not-yet-landed DimInfer Term as sd_infer_dimension (expected to fail to parse/install until Part A lands); uses no other new Terms besides the existing StringConcat.",
+   "match_type": "Observation",
+   "match": [
+    [
+     "ag",
+     "observed",
+     "obs"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "AgnosiaParams"
+        },
+        "var_name": "ap",
+        "predicate": {
+         "type": "Gt",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "ap"
+          },
+          "key": "associative"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0.5
+         }
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "dim_explained"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "edge_type": "has_transform"
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "obs",
+     "status",
+     "recognized_transformed"
+    ],
+    [
+     "set_attr",
+     "obs",
+     "covered_by",
+     {
+      "__term__": {
+       "type": "DimInfer",
+       "goal": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "signature"
+       },
+       "max_dims": 2,
+       "field": "base"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "transform_explained",
+     1
+    ],
+    [
+     "add_node",
+     "t",
+     "Transform",
+     {
+      "dim": {
+       "__term__": {
+        "type": "StringConcat",
+        "parts": [
+         {
+          "type": "Lit",
+          "value": "latent:"
+         },
+         {
+          "type": "DimInfer",
+          "goal": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "obs"
+           },
+           "key": "signature"
+          },
+          "max_dims": 2,
+          "field": "latent_name"
+         }
+        ]
+       }
+      },
+      "delta": {
+       "__term__": {
+        "type": "DimInfer",
+        "goal": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "signature"
+        },
+        "max_dims": 2,
+        "field": "k"
+       }
+      },
+      "generator": {
+       "__term__": {
+        "type": "DimInfer",
+        "goal": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "signature"
+        },
+        "max_dims": 2,
+        "field": "generator"
+       }
+      },
+      "k": {
+       "__term__": {
+        "type": "DimInfer",
+        "goal": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "signature"
+        },
+        "max_dims": 2,
+        "field": "k"
+       }
+      },
+      "dims": {
+       "__term__": {
+        "type": "DimInfer",
+        "goal": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "signature"
+        },
+        "max_dims": 2,
+        "field": "dims"
+       }
+      },
+      "transforms": {
+       "__term__": {
+        "type": "DimInfer",
+        "goal": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "signature"
+        },
+        "max_dims": 2,
+        "field": "transforms"
+       }
+      },
+      "base": {
+       "__term__": {
+        "type": "DimInfer",
+        "goal": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "signature"
+        },
+        "max_dims": 2,
+        "field": "base"
+       }
+      },
+      "generators": {
+       "__term__": {
+        "type": "DimInfer",
+        "goal": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "signature"
+        },
+        "max_dims": 2,
+        "field": "generators"
+       }
+      },
+      "ks": {
+       "__term__": {
+        "type": "DimInfer",
+        "goal": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "signature"
+        },
+        "max_dims": 2,
+        "field": "ks"
+       }
+      },
+      "source": "dim_infer"
+     }
+    ],
+    [
+     "add_edge",
+     "obs",
+     "has_transform",
+     "t"
+    ],
+    [
+     "add_node",
+     "ld",
+     "LatentDimension",
+     {
+      "name": {
+       "__term__": {
+        "type": "StringConcat",
+        "parts": [
+         {
+          "type": "Lit",
+          "value": "latent:"
+         },
+         {
+          "type": "DimInfer",
+          "goal": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "obs"
+           },
+           "key": "signature"
+          },
+          "max_dims": 2,
+          "field": "latent_name"
+         }
+        ]
+       }
+      },
+      "generator": {
+       "__term__": {
+        "type": "DimInfer",
+        "goal": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "signature"
+        },
+        "max_dims": 2,
+        "field": "generator"
+       }
+      },
+      "k": {
+       "__term__": {
+        "type": "DimInfer",
+        "goal": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "signature"
+        },
+        "max_dims": 2,
+        "field": "k"
+       }
+      },
+      "generators": {
+       "__term__": {
+        "type": "DimInfer",
+        "goal": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "signature"
+        },
+        "max_dims": 2,
+        "field": "generators"
+       }
+      },
+      "ks": {
+       "__term__": {
+        "type": "DimInfer",
+        "goal": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "signature"
+        },
+        "max_dims": 2,
+        "field": "ks"
+       }
+      },
+      "source": "dim_infer"
+     }
+    ],
+    [
+     "add_edge",
+     "obs",
+     "has_latent_dimension",
+     "ld"
+    ]
+   ]
+  },
+  {
+   "name": "sd_mint_quantum",
+   "comment": "DYNAMIC QUANTIZATION: a decoded Observation with a NON-empty residual and no CapabilityAxis minted for it yet (guard = no 'minted' edge -- fixpoint safety) mints a new CapabilityAxis carrying the residual's predicates (first element of each residual relation) and the closest held shape (same fit metric as sd_recognize) so ground_concern can later compose from it. Uses ONLY existing Terms (Attr/Count/MapList/IndexAt/Argmin/FixedCount/AntiUnify) against obs.signature/obs.residual/obs.key -- no ShapeDecode dependency, so this rule installs/fires today against hand-set attrs. EXTENDED (design 'transform-as-quantum-delta'): now also gated on transform_checked==1 AND transform_explained!=1 -- mint only after the transform-decode has run AND failed to explain the residual as identity+delta on a held shape. Since rules run to fixpoint within one run_rules() call, sd_transform_decode always gets a chance to set these flags before this guard can pass -- a transformed observation therefore never mints, even transiently within one fixpoint (verified in tests/test_transform_decode_migrated.py). NOVELTY GUARD (2026-07-03, creator directive 'salience for axes' -- fix for the unbounded axis-growth bug: ~100 new CapabilityAxis/tick, monotonic, never converging, because every decoded Observation with a residual minted its OWN axis regardless of whether an existing axis already represents that exact residual): added a final And-item, Not(Exists(NodesOfType('CapabilityAxis'), induced==1 AND capability_keys==obs.key)) -- mint ONLY if no existing INDUCED axis already carries the SAME capability_keys as this observation's key. capability_keys is the precise, cheap identity to test: it is the SAME field 5 other call sites in reflective_faculty.py already use as an induced axis's identity (`at0.get('capability_keys') == keys`), and it is set on obs at induce_concern-time from the observation's own predicate structure (mechanical, stable across recurring identical-shape observations from world perception / the standing metascience concern) -- reusing it keeps ONE definition of 'same concern' instead of inventing a second (e.g. residual_predicates, which can vary subtly by decode/codebook epoch even for a genuinely-recurring observation). The mirror rule `sd_dedup_existing` handles the suppressed case (same guard, negated) so a duplicate residual still reaches a terminal status -- it does not error each tick and does not fabricate a fresh mint.",
+   "match_type": "Observation",
+   "match": [
+    [
+     "ag",
+     "observed",
+     "obs"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "decoded"
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "residual"
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "edge_type": "minted"
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "transform_checked"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "transform_explained"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1
+       }
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "dim_checked"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "dim_explained"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "CapabilityAxis"
+       },
+       "var_name": "existing_ax",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "existing_ax"
+           },
+           "key": "induced"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 1.0
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "existing_ax"
+           },
+           "key": "capability_keys"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "obs"
+           },
+           "key": "key"
+          }
+         }
+        ]
+       }
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "gen_checked"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "gen_explained"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "axis",
+     "CapabilityAxis",
+     {
+      "is_axis": {
+       "__term__": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      },
+      "induced": {
+       "__term__": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      },
+      "from_observation": {
+       "__term__": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      },
+      "capability_keys": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "key"
+       }
+      },
+      "residual_predicates": {
+       "__term__": {
+        "type": "MapList",
+        "source": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "residual"
+        },
+        "var_name": "rel",
+        "value": {
+         "type": "IndexAt",
+         "seq": {
+          "type": "Var",
+          "name": "rel"
+         },
+         "index": {
+          "type": "Lit",
+          "value": 0
+         }
+        }
+       }
+      },
+      "closest_held_shape": {
+       "__term__": {
+        "type": "Attr",
+        "key": "name",
+        "node": {
+         "type": "Argmax",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "ShapeSignature"
+         },
+         "var_name": "sig",
+         "value": {
+          "type": "FixedCount",
+          "pattern": {
+           "type": "AntiUnify",
+           "values": {
+            "type": "SetT",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "obs"
+              },
+              "key": "signature"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "sig"
+              },
+              "key": "signature"
+             }
+            ]
+           }
+          }
+         },
+         "default": null
+        }
+       }
+      },
+      "source": "concern_induction"
+     }
+    ],
+    [
+     "add_edge",
+     "obs",
+     "minted",
+     "axis"
+    ],
+    [
+     "set_attr",
+     "obs",
+     "status",
+     "minted"
+    ]
+   ]
+  },
+  {
+   "name": "sd_dedup_existing",
+   "comment": "NOVELTY-GUARD MIRROR of sd_mint_quantum (2026-07-03, creator directive 'salience for axes'): a decoded Observation that reaches the mint point (residual non-empty, no 'minted' edge, transform+dim rungs both checked-and-failed) but whose capability_keys ALREADY match an existing INDUCED CapabilityAxis is a DUPLICATE residual (recurring per-frame perception / the standing metascience concern re-observing the same uncoverable shape), not a genuinely new one -- sd_mint_quantum's own guard now refuses to mint it. This rule is the other half: it still has to reach a TERMINAL status so induce_concern's read-back does not fall through to the honest-but-unhelpful 'did not resolve' fallback each tick. Sets status to the distinct 'recognized_duplicate' (never 'recognized' -- that means zero residual / full codebook coverage, a different concept) so induce_concern can read it back precisely; carries no new edge to the existing axis (add_edge targets must be match-bound vars in this engine, and the existing axis was found via a Term search, not a match triple) -- induce_concern resolves the SAME existing axis by the SAME capability_keys equality Python already uses at 5 other call sites in reflective_faculty.py, a mechanical read-back, not a re-decision.",
+   "match_type": "Observation",
+   "match": [
+    [
+     "ag",
+     "observed",
+     "obs"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "decoded"
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "residual"
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "edge_type": "minted"
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "transform_checked"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "transform_explained"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1
+       }
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "dim_checked"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "dim_explained"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1
+       }
+      }
+     },
+     {
+      "type": "Exists",
+      "source": {
+       "type": "NodesOfType",
+       "node_type": "CapabilityAxis"
+      },
+      "var_name": "existing_ax",
+      "predicate": {
+       "type": "And",
+       "items": [
+        {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "existing_ax"
+          },
+          "key": "induced"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1.0
+         }
+        },
+        {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "existing_ax"
+          },
+          "key": "capability_keys"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "obs"
+          },
+          "key": "key"
+         }
+        }
+       ]
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "gen_checked"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "gen_explained"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "obs",
+     "status",
+     "recognized_duplicate"
+    ]
+   ]
+  },
+  {
+   "name": "sd_redecode",
+   "comment": "Codebook GROWTH closes the loop: grow_part_library mints a new ShapeSignature and bumps agent.codebook_epoch (Python builder, mechanical); any Observation last decoded under an OLDER epoch re-arms to 'pending' so sd_decode re-runs it against the grown codebook -- new quantum -> re-decode, tick-driven, no Python while-loop. EXTENDED (design 'transform-as-quantum-delta'): 'recognized_transformed' observations re-arm too (a transform-recognized observation must get a chance to become an EXACT match once the codebook grows -- the design's re-decode interplay case), and transform_checked/transform_explained are cleared back to 0 on re-arm (no unset_attr op in this engine; 0 is falsy for the Not(Eq(_,1)) guards sd_transform_decode/sd_mint_quantum read, distinct from the 1 those guards test for) so sd_transform_decode gets a fresh look at the NEW residual rather than reading stale flags from the prior epoch. EXTENDED again (2026-07-03, novelty-guard fix): 'recognized_duplicate' observations (sd_dedup_existing's terminal status for a residual that duplicated an already-induced axis) re-arm too -- codebook growth can turn a duplicate into either an exact match (recognized) or a genuinely new residual (no matching axis anymore, e.g. after grow_part_library changes what 'residual' even means), so it deserves the same fresh look, not a permanent dead end.",
+   "match_type": "Observation",
+   "match": [
+    [
+     "ag",
+     "observed",
+     "obs"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "status"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "minted"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "status"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "recognized"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "status"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "recognized_transformed"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "status"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "recognized_duplicate"
+        }
+       }
+      ]
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "decoded_epoch"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ag"
+       },
+       "key": "codebook_epoch"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "obs",
+     "status",
+     "pending"
+    ],
+    [
+     "set_attr",
+     "obs",
+     "decoded_epoch",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ag"
+       },
+       "key": "codebook_epoch"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "transform_checked",
+     0
+    ],
+    [
+     "set_attr",
+     "obs",
+     "transform_explained",
+     0
+    ],
+    [
+     "set_attr",
+     "obs",
+     "dim_checked",
+     0
+    ],
+    [
+     "set_attr",
+     "obs",
+     "dim_explained",
+     0
+    ]
+   ]
+  }
+ ]
+}

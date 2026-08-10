@@ -1,0 +1,751 @@
+{
+ "id": "operating_systems",
+ "version": "0.1.0",
+ "depends_on": [
+  "compiler_theory"
+ ],
+ "description": "The OS layer the agents actually run on. Processes, threads, kernel/user split, system calls, context switches. Synchronisation primitives (mutex, spinlock, RW lock, semaphore, condition variable, futex). Scheduling (CFS, real-time, work stealing, affinity, NUMA awareness). IPC (pipes, sockets, shared memory, signals). Virtual memory at the OS level (VMA, page cache, swap, OOM). VFS + inode + dentry + file descriptor. Containers (namespaces + cgroups). Hypervisors + microVMs. The mechanisms that determine how parallel agent execution actually behaves on real hardware.",
+ "category_inheritance": "genlMt → compiler_theory. OS correctness arguments map to compiler_theory's equivalence vocabulary: scheduling preserves program semantics (denotational); locks preserve invariants (referential transparency); fork's COW preserves observable behaviour (extensional); IPC ordering preserves causality (algebraic).",
+ "concepts": [
+  {
+   "name": "process",
+   "definition": "OS abstraction: an instance of a running program with its own virtual address space, file descriptors, signal handlers, credentials.",
+   "why": "Isolation unit. Processes can't directly read each other's memory (without explicit sharing). Crash containment: one process dies, others continue. The OS's fundamental abstraction.",
+   "category": "foundation"
+  },
+  {
+   "name": "thread",
+   "definition": "Execution context within a process. Shares address space + file descriptors with sibling threads; has its own stack + registers + signal mask.",
+   "why": "Lightweight parallelism. Thread creation/switching is cheaper than process. Shared memory is direct (no IPC needed). Cost: synchronisation responsibility moves to the programmer.",
+   "category": "foundation"
+  },
+  {
+   "name": "kernel_space",
+   "definition": "Memory + privileges accessible only to the kernel. CPU runs in 'kernel mode' (ring 0 on x86). Direct hardware access; trusted code path.",
+   "why": "Privileged operations (interrupt handling, memory allocation, device control) must be protected from user code. Kernel mode is the OS's enforcement boundary.",
+   "category": "foundation"
+  },
+  {
+   "name": "user_space",
+   "definition": "Memory + privileges of normal application code. CPU runs in 'user mode' (ring 3 on x86). Cannot access hardware directly; goes through kernel via syscalls.",
+   "why": "Isolation: application bugs can't corrupt kernel state or hardware. Memory protection enforced by MMU. The vast majority of code runs here.",
+   "category": "foundation"
+  },
+  {
+   "name": "system_call",
+   "definition": "Mechanism by which user space requests kernel services: file I/O, memory allocation, process creation, networking. Linux: ~400 syscalls.",
+   "why": "The user-kernel boundary. Syscall transitions are expensive (~hundreds of ns) — context switch + privilege level change. Performance-critical code minimises them.",
+   "category": "foundation"
+  },
+  {
+   "name": "context_switch",
+   "definition": "Saving the current process/thread's CPU state (registers, PC, stack pointer) + loading another's. The OS scheduler's basic operation.",
+   "why": "Each switch costs microseconds: CPU state save/restore + cache pollution + TLB flush (if address space changes). Frequent switching kills throughput; coarse-grained scheduling preserves cache state.",
+   "category": "foundation"
+  },
+  {
+   "name": "interrupt",
+   "definition": "Hardware-triggered signal to the CPU requesting attention. Source: timer, NIC, disk, keyboard, etc. CPU saves state + jumps to handler.",
+   "why": "Asynchronous I/O notification. Without interrupts, CPU would poll devices (waste cycles) or miss events. Interrupt latency is critical for real-time + networking.",
+   "category": "foundation"
+  },
+  {
+   "name": "exception",
+   "definition": "CPU-triggered signal: page fault, division by zero, illegal instruction. Synchronous with the instruction that caused it.",
+   "why": "Recoverable errors (page fault → kernel pages in the data) and unrecoverable (segfault → kill process). Exception handling is the kernel's response to anomalous user code.",
+   "category": "foundation"
+  },
+  {
+   "name": "PID_process_identifier",
+   "definition": "Unique integer assigned to each process. Reused after process exits. Linux PIDs are 32-bit but capped (kernel.pid_max).",
+   "why": "Process identification for management (kill, ps, waitpid). PID 1 is init/systemd; PID 0 is the kernel scheduler. Namespace-scoped: container PID 1 inside the namespace, real PID outside.",
+   "category": "process_mgmt"
+  },
+  {
+   "name": "process_group",
+   "definition": "Set of related processes sharing a PGID. Job control mechanism: Ctrl+C sends SIGINT to the foreground process group.",
+   "why": "Terminal session management. Processes spawned by the shell join a group; the shell can signal them collectively. Critical for sane shell behaviour.",
+   "category": "process_mgmt"
+  },
+  {
+   "name": "session",
+   "definition": "Collection of process groups associated with a terminal (or none). setsid() creates new session. Daemons typically run in their own session.",
+   "why": "Daemon detachment + terminal disconnection. Logging out doesn't kill the daemon because it's in its own session.",
+   "category": "process_mgmt"
+  },
+  {
+   "name": "fork",
+   "definition": "syscall creating a new process: copy of the calling process. Parent + child differ only in PID + return value of fork(). Linux uses copy-on-write for memory.",
+   "why": "Process creation primitive. The 'duplicate then specialise' model: child often immediately execs into a different program. Heavyweight without COW; modern fork is fast via COW.",
+   "category": "process_mgmt"
+  },
+  {
+   "name": "exec",
+   "definition": "syscall family (execve, execvp, etc.): replace the calling process's image with a new program. Inherits PID + file descriptors.",
+   "why": "fork+exec is the Unix idiom for spawning a different program. exec doesn't return on success — the new program takes over. Modern alternatives: posix_spawn, vfork.",
+   "category": "process_mgmt"
+  },
+  {
+   "name": "wait_waitpid",
+   "definition": "syscalls that block until a child process terminates. Reaps the child's exit status; deallocates the zombie entry.",
+   "why": "Parent must wait or zombies accumulate. wait() gets any child; waitpid() targets specific. Modern OSes also have waitid() with finer-grained options.",
+   "category": "process_mgmt"
+  },
+  {
+   "name": "zombie_process",
+   "definition": "Process that has exited but its parent hasn't called wait. Holds only the PID + exit status — minimal resources.",
+   "why": "Lets parent retrieve the exit status. Persists until reaped. Long-lived zombies indicate a buggy parent. Init (PID 1) reaps orphans inherited from dead parents.",
+   "category": "process_mgmt"
+  },
+  {
+   "name": "daemon",
+   "definition": "Background process not attached to a terminal. Typically: fork twice, setsid, redirect stdio, chdir /, close inherited fds.",
+   "why": "Long-running services (sshd, postgres, nginx) need to survive logout + run independently. Standard daemonisation pattern; systemd replaces some of this with service files.",
+   "category": "process_mgmt"
+  },
+  {
+   "name": "nice_priority",
+   "definition": "Process priority hint to the scheduler. Range -20 (highest) to +19 (lowest). Default 0. Only root can decrease nice (raise priority).",
+   "why": "Tells the scheduler what to favour. CPU-bound background tasks at nice 19; interactive at 0; latency-sensitive at -5 (with care). Linux's CFS interprets nice as proportional weight.",
+   "category": "process_mgmt"
+  },
+  {
+   "name": "POSIX_threads",
+   "definition": "Standard threading API. pthread_create, pthread_join, pthread_mutex_t, etc. Implemented in Linux via NPTL.",
+   "why": "Cross-platform threading API. Each POSIX thread maps to a kernel thread on Linux (1:1 model). Lower-level than language threading runtimes (Go goroutines, async/await).",
+   "category": "threading"
+  },
+  {
+   "name": "kernel_thread",
+   "definition": "Thread scheduled by the OS kernel. On Linux, each pthread is a kernel thread (visible in /proc, schedulable independently).",
+   "why": "The OS sees + schedules each kernel thread. Blocking syscall blocks only that thread; siblings continue. Context switch cost is significant (~µs).",
+   "category": "threading"
+  },
+  {
+   "name": "user_thread",
+   "definition": "Thread managed in user space, not visible to the kernel. Multiple user threads multiplex onto one kernel thread.",
+   "why": "Much cheaper than kernel thread: switching is just register save/restore in user space. Cost: blocking syscall blocks all user threads on that kernel thread. Modern: Go goroutines, async runtimes.",
+   "category": "threading"
+  },
+  {
+   "name": "M_N_threading",
+   "definition": "M user threads mapped onto N kernel threads (M >> N). Combines cheap user-space scheduling with kernel parallelism.",
+   "why": "Go's runtime, Erlang's BEAM, Java virtual threads (Project Loom). Lets programs have millions of logical threads on hardware with dozens of cores. The scheduling logic lives in the runtime.",
+   "category": "threading"
+  },
+  {
+   "name": "thread_local_storage",
+   "definition": "TLS: per-thread global variables. Each thread sees a separate copy. Linux: __thread keyword + GS register on x86_64.",
+   "why": "Per-thread caches (jemalloc's thread caches, errno) without explicit lookup. Faster than locking shared globals. The GS-register-based implementation is essentially free.",
+   "category": "threading"
+  },
+  {
+   "name": "thread_pool",
+   "definition": "Fixed (or bounded) set of pre-created worker threads + a task queue. Tasks are dispatched to idle workers.",
+   "why": "Amortises thread creation cost. Bounds concurrent execution. Standard pattern: HTTP servers, parallel computation, async runtimes. Tuning pool size to CPU count + workload type is key.",
+   "category": "threading"
+  },
+  {
+   "name": "work_stealing",
+   "definition": "Each worker thread has a private deque of tasks. When idle, steals from another worker's deque. Lock-free per-deque + cross-worker steal.",
+   "why": "Self-balancing parallel work. Used in: Go runtime, Rust Rayon, Cilk, ForkJoinPool. Locality (private deque) + load balance (steal) — usually outperforms central queues.",
+   "category": "threading"
+  },
+  {
+   "name": "mutex",
+   "definition": "Mutual exclusion lock. lock() blocks until acquired; unlock() releases. Standard primitive for protecting shared data.",
+   "why": "Easy to reason about; well-supported. Cost: contention causes blocking + context switches. Linux's pthread_mutex uses futex for fast path (no syscall when uncontended).",
+   "category": "synchronization"
+  },
+  {
+   "name": "spinlock",
+   "definition": "Lock that busy-waits instead of blocking. lock() loops on CAS until acquired.",
+   "why": "No kernel transition; fastest when critical section is short + lock rarely held. Used in kernel + low-level code. Wastes CPU when critical section is long; backoff helps.",
+   "category": "synchronization"
+  },
+  {
+   "name": "reader_writer_lock",
+   "definition": "RW lock: multiple readers OR one writer. Better concurrency than mutex when reads dominate.",
+   "why": "Read-heavy workloads (route tables, config caches) benefit from concurrent readers. Writers exclude all readers + other writers. More complex; can suffer writer starvation.",
+   "category": "synchronization"
+  },
+  {
+   "name": "semaphore",
+   "definition": "Counter with atomic decrement (wait) + increment (post). Blocks when count is 0. Generalises mutex (binary semaphore).",
+   "why": "Resource counting: 'at most N concurrent users of this resource'. Producer-consumer queues. POSIX sem_t + Linux's futex-backed implementation.",
+   "category": "synchronization"
+  },
+  {
+   "name": "condition_variable",
+   "definition": "Signalling primitive: threads wait on a condition; another thread signals when condition becomes true. Used with a mutex.",
+   "why": "Implements 'wait for state to become X'. Producer-consumer, work queues. Always loop on the condition (spurious wakeups). pthread_cond_wait atomically releases mutex + waits.",
+   "category": "synchronization"
+  },
+  {
+   "name": "barrier",
+   "definition": "Synchronisation point: N threads call wait(); all block until all N have arrived; all proceed together.",
+   "why": "Parallel computation phases: compute → exchange → compute. Each phase ends at a barrier. pthread_barrier_t; also common in MPI for cross-process synchronisation.",
+   "category": "synchronization"
+  },
+  {
+   "name": "futex",
+   "definition": "Fast Userspace muTEX. Linux primitive: atomic op in user space; kernel involvement only on contention. pthread_mutex, sem_t etc. built on futex.",
+   "why": "Uncontended lock costs are user-space-only (~10 ns). Contention triggers syscall (~µs). Dramatic improvement over kernel-only locks. The reason modern Linux mutex performance is competitive.",
+   "category": "synchronization"
+  },
+  {
+   "name": "atomic_operations_OS",
+   "definition": "Hardware-supported indivisible operations: CAS, atomic_fetch_add, atomic_xchg. Foundation of lock-free programming.",
+   "why": "Build mutex, semaphore, etc. on these primitives. Lock-free data structures avoid the cost of blocking. Performance scales better under contention; complexity scales worse.",
+   "category": "synchronization"
+  },
+  {
+   "name": "lock_free",
+   "definition": "Algorithm guaranteeing system-wide progress: at least one thread makes progress in any finite time. No locks; only atomic operations.",
+   "why": "Avoids priority inversion + deadlock. Used in high-perf concurrent containers (lock-free queues, hash tables). Complex to design correctly; the ABA problem is a common pitfall.",
+   "category": "synchronization"
+  },
+  {
+   "name": "wait_free",
+   "definition": "Stronger than lock-free: every thread makes progress in bounded steps. No thread can be starved.",
+   "why": "Required for real-time + safety-critical systems. Even stronger guarantee than lock-free. More expensive to achieve; many problems have no known wait-free solution.",
+   "category": "synchronization"
+  },
+  {
+   "name": "ABA_problem",
+   "definition": "CAS sees value A, then A again; assumes no change. But value was A → B → A in between. CAS succeeds despite actual change.",
+   "why": "Classic lock-free pitfall. Solutions: versioned pointers (tag bits), hazard pointers, epoch-based reclamation. Java's AtomicStampedReference exposes the solution directly.",
+   "category": "synchronization"
+  },
+  {
+   "name": "deadlock",
+   "definition": "Two or more threads each waiting for a lock held by another. None can proceed.",
+   "why": "Coffman's four conditions: mutual exclusion, hold and wait, no preemption, circular wait. Prevention: lock ordering, timeout, deadlock detection. The classic concurrency bug.",
+   "category": "synchronization"
+  },
+  {
+   "name": "livelock",
+   "definition": "Threads change state continuously but make no progress. Often from naive deadlock-avoidance (back off + retry indefinitely).",
+   "why": "More subtle than deadlock — CPU is busy. Two threads alternately releasing + reacquiring locks on collision. Randomised backoff + bounded retry mitigate.",
+   "category": "synchronization"
+  },
+  {
+   "name": "starvation",
+   "definition": "Thread is perpetually denied required resources. Other threads keep taking what it needs.",
+   "why": "Common in priority systems: low-priority threads never run. Fair locks + aging (boost priority of waiting threads) prevent. RW lock with reader-preference starves writers.",
+   "category": "synchronization"
+  },
+  {
+   "name": "priority_inversion",
+   "definition": "High-priority thread blocks waiting for a lock held by a low-priority thread, which is preempted by medium-priority threads.",
+   "why": "Famous: Mars Pathfinder. Solutions: priority inheritance (low-priority temporarily inherits high's priority), priority ceiling. Real-time OSes require these mechanisms.",
+   "category": "synchronization"
+  },
+  {
+   "name": "preemptive_scheduling",
+   "definition": "Kernel can suspend a running thread at any time. Time slices + interrupt-driven scheduling. The default in modern OSes.",
+   "why": "Guarantees fairness + responsiveness. Misbehaving threads can't monopolise the CPU. Cost: context switch overhead + cache pollution. Tunable: shorter slices = more responsive; longer = more efficient.",
+   "category": "scheduling"
+  },
+  {
+   "name": "cooperative_scheduling",
+   "definition": "Threads voluntarily yield via explicit yield() call. The scheduler only runs at yield points.",
+   "why": "No preemption overhead. Used in: async runtimes (no kernel involvement), some embedded RTOSes. Risk: one non-yielding task blocks the system. Go's goroutines are cooperative + use compiler-inserted yield points.",
+   "category": "scheduling"
+  },
+  {
+   "name": "CFS_completely_fair_scheduler",
+   "definition": "Linux's default scheduler since 2.6.23. Each task's 'virtual runtime' tracks CPU consumption weighted by nice; scheduler picks task with lowest vruntime.",
+   "why": "Fair: each task gets CPU proportional to its weight. No fixed time slices — vruntime drives the decision. Red-black tree keyed on vruntime gives O(log n) selection.",
+   "category": "scheduling"
+  },
+  {
+   "name": "real_time_scheduling",
+   "definition": "Linux SCHED_FIFO + SCHED_RR + SCHED_DEADLINE. Priority-based, preempts SCHED_OTHER (CFS) tasks unconditionally.",
+   "why": "Latency-sensitive workloads (audio, robotics, trading). SCHED_FIFO: run-to-block; SCHED_RR: round-robin within priority; SCHED_DEADLINE: EDF-based. Misuse can starve normal processes.",
+   "category": "scheduling"
+  },
+  {
+   "name": "CPU_affinity",
+   "definition": "Pin a thread to specific CPU(s). sched_setaffinity, taskset. Thread won't migrate to other CPUs.",
+   "why": "Cache locality: thread + its data stay together. Critical for high-perf code, NUMA-aware allocation. Cost: less load-balance flexibility. Sometimes essential, sometimes harmful.",
+   "category": "scheduling"
+  },
+  {
+   "name": "load_balancing",
+   "definition": "Scheduler periodically migrates tasks between CPUs to balance load. Linux: periodic + idle-pull.",
+   "why": "Idle CPU while another's busy = throughput loss. Migration costs cache; load balancer respects cache topology. Sometimes overrides affinity hints for global throughput.",
+   "category": "scheduling"
+  },
+  {
+   "name": "NUMA_aware_scheduling",
+   "definition": "Scheduler prefers placing threads on CPUs near their memory. Avoids cross-socket access penalty.",
+   "why": "Remote memory access is 2x slower than local on multi-socket systems. NUMA-aware scheduling + NUMA-aware allocation together preserve local-memory advantages. Critical for large-server workloads.",
+   "category": "scheduling"
+  },
+  {
+   "name": "pipe",
+   "definition": "Unidirectional byte stream. Created by pipe() syscall: returns two fds (read end, write end).",
+   "why": "Simplest IPC. Used heavily in shell pipelines (ls | grep | wc). Kernel buffers ~64 KB. Blocks when buffer is full (writer) or empty (reader). One-direction limitation: needs two pipes for bidirectional.",
+   "category": "ipc"
+  },
+  {
+   "name": "named_pipe_FIFO",
+   "definition": "Pipe with a file system name. mkfifo() creates. Unrelated processes can connect by opening the same path.",
+   "why": "Pipe semantics + file system addressability. Less common than sockets but useful for simple unidirectional inter-process streams.",
+   "category": "ipc"
+  },
+  {
+   "name": "unix_domain_socket",
+   "definition": "Socket within a single host. AF_UNIX. Bidirectional, supports SOCK_STREAM + SOCK_DGRAM + ancillary data (fd passing).",
+   "why": "Fast: no network stack overhead (no checksums, no fragmentation). Supports fd passing (pass a file descriptor between processes). Used by X11, Docker, systemd's communication.",
+   "category": "ipc"
+  },
+  {
+   "name": "shared_memory",
+   "definition": "Memory region mapped into multiple processes' address spaces. shmget/shmat or mmap(SHARED, fd). Read/write directly.",
+   "why": "Fastest IPC: no copy. Cost: synchronisation responsibility. Used in databases (Postgres shared buffers), high-perf RPC. The mmap approach is more modern; SysV shm is legacy.",
+   "category": "ipc"
+  },
+  {
+   "name": "signal",
+   "definition": "Asynchronous notification to a process. ~30 signals: SIGINT, SIGTERM, SIGKILL, SIGSEGV, etc. Handler runs at the next safe point.",
+   "why": "Process control + error notification. SIGKILL + SIGSTOP can't be caught (forced behavior). Handlers must be async-safe (limited set of safe syscalls). signalfd lets handlers run synchronously.",
+   "category": "ipc"
+  },
+  {
+   "name": "signal_handler",
+   "definition": "Function registered to run when a specific signal arrives. Limited to async-signal-safe operations (~50 functions).",
+   "why": "Async-safety constraint: handler can interrupt at any point, including locked critical sections. Calling malloc inside a handler can deadlock. Real applications use signalfd or self-pipe trick.",
+   "category": "ipc"
+  },
+  {
+   "name": "message_queue",
+   "definition": "POSIX or System V API for sending message-oriented IPC between processes. Boundary-preserved (vs pipe's stream).",
+   "why": "Structured IPC: senders post messages, receivers extract. Less common than sockets/shm in modern code. Used in some embedded + RTOS environments.",
+   "category": "ipc"
+  },
+  {
+   "name": "virtual_memory_area",
+   "definition": "VMA: kernel structure tracking a virtual address range with consistent properties (permissions, mapping source). /proc/PID/maps lists them.",
+   "why": "The kernel's view of process memory layout. Stack, heap, mapped libraries, mmap regions are each VMAs. Page faults consult VMAs to decide what to do (allocate, load from file, segfault).",
+   "category": "memory_mgmt"
+  },
+  {
+   "name": "page_cache",
+   "definition": "Kernel's cache of file system blocks in memory. Reads serve from cache when present; writes update cache + later flush.",
+   "why": "Filesystem performance. Read 'free' RAM is mostly page cache. Repeated reads of the same file are at memory speed. Linux's free shows 'buff/cache' as page cache.",
+   "category": "memory_mgmt"
+  },
+  {
+   "name": "swap",
+   "definition": "Disk space used to back virtual memory that exceeds RAM. Inactive pages written to swap; freed RAM goes to active processes.",
+   "why": "Lets virtual memory exceed physical. Performance: swap is much slower than RAM. Modern advice: enable a small swap (kernel still benefits) but not as a primary capacity expander.",
+   "category": "memory_mgmt"
+  },
+  {
+   "name": "OOM_killer",
+   "definition": "Out-Of-Memory killer: when memory pressure becomes critical, kernel kills processes (by 'badness' score) to free RAM.",
+   "why": "Last-resort survival mechanism. Choosing which to kill: oom_score (RSS-based + adjusted). systemd-oomd, earlyoom give finer-grained pre-OOM intervention.",
+   "category": "memory_mgmt"
+  },
+  {
+   "name": "VFS_virtual_filesystem",
+   "definition": "Kernel's abstraction layer over different filesystems (ext4, XFS, btrfs, NFS, ...). open/read/write/close work uniformly.",
+   "why": "User code doesn't know which FS backs each file. VFS dispatches to the specific FS driver based on mount point. Same API across local + network + special (procfs) filesystems.",
+   "category": "fs"
+  },
+  {
+   "name": "inode",
+   "definition": "Index node: per-file metadata (size, permissions, owner, timestamps, block pointers). Identified by inode number within a filesystem.",
+   "why": "File ≠ filename. Multiple hard links share an inode. inode is the file's identity; filename is just a directory entry pointing at it.",
+   "category": "fs"
+  },
+  {
+   "name": "dentry",
+   "definition": "Directory entry: maps a name to an inode within a directory. Kernel's dcache speeds up path lookups.",
+   "why": "Path resolution: each component is a dentry. Cached aggressively (frequently-accessed paths stay in memory). Cache invalidation on file changes; subtle bugs around stale dentries.",
+   "category": "fs"
+  },
+  {
+   "name": "file_descriptor",
+   "definition": "Per-process integer index into the kernel's file table. fd 0/1/2 are stdin/stdout/stderr. Returned by open(), socket(), etc.",
+   "why": "Uniform handle for files, sockets, pipes, devices. Operations (read, write, close) work the same regardless of underlying type. Per-process limit (ulimit -n).",
+   "category": "fs"
+  },
+  {
+   "name": "mount",
+   "definition": "Attach a filesystem at a directory. mount /dev/sda1 /mnt — now accessing /mnt traverses into the FS on sda1.",
+   "why": "Unified directory tree across many devices/filesystems. Bind mounts (mount --bind src dst) expose one directory at multiple points. Namespaces let each container have its own mount tree.",
+   "category": "fs"
+  },
+  {
+   "name": "block_device",
+   "definition": "Storage device addressed in blocks (typically 512 B or 4 KB). HDD, SSD, RAM disk. /dev/sda etc.",
+   "why": "Most filesystems live on block devices. The I/O scheduler manages requests; modern NVMe uses multiple queues (mq-deadline, kyber, none).",
+   "category": "fs"
+  },
+  {
+   "name": "journaling_filesystem",
+   "definition": "FS that logs (journals) changes before applying them. On crash, replay journal to restore consistency. ext4, XFS, NTFS.",
+   "why": "Crash safety: no fsck of the entire FS after crash. Journal is small + writes are sequential (fast). Metadata journaling (default) vs full data journaling (slower, safer).",
+   "category": "fs"
+  },
+  {
+   "name": "copy_on_write_filesystem",
+   "definition": "FS where modifications go to new blocks; old blocks remain until released. btrfs, ZFS, APFS, OpenZFS.",
+   "why": "Cheap snapshots (just retain old block pointers). Crash safety (old state intact until commit). Cost: write amplification (rewriting blocks rather than updating in place). Common for backup-heavy + snapshot-heavy use.",
+   "category": "fs"
+  },
+  {
+   "name": "linux_namespace",
+   "definition": "Kernel mechanism isolating one or more global resources from other processes. Types: mnt, pid, net, user, uts, ipc, cgroup, time.",
+   "why": "Foundation of containers. Each namespace gives the contained processes an isolated view: own PIDs (PID 1 inside), own mount tree, own network stack, etc. Lightweight: no VM overhead.",
+   "category": "virtualization"
+  },
+  {
+   "name": "cgroups",
+   "definition": "Control groups: limit + account + isolate resource use (CPU, memory, I/O, network) for groups of processes. cgroup v1 (legacy) and v2.",
+   "why": "Resource limits + accounting. Docker uses cgroups to cap container CPU + memory. systemd uses cgroups for service tracking. The 'how much' to namespaces' 'isolated view'.",
+   "category": "virtualization"
+  },
+  {
+   "name": "container",
+   "definition": "Process or set of processes running in isolated namespaces with cgroup-enforced resource limits.",
+   "why": "Lightweight isolation. Shares host kernel (vs VM). Per-process overhead negligible (~milliseconds startup). Used everywhere: Docker, Kubernetes pods, systemd-nspawn, LXC.",
+   "category": "virtualization"
+  },
+  {
+   "name": "docker",
+   "definition": "Container runtime + image format + tooling. dockerfile builds layered images; container = mounted overlay + namespaces + cgroups.",
+   "why": "Standardised container deployment. Image layers reuse common base; container startup is mounting + spawning. Replaced by containerd + cri-o in Kubernetes for production, but Docker dominates developer tooling.",
+   "category": "virtualization"
+  },
+  {
+   "name": "kubernetes",
+   "definition": "Container orchestrator: declarative API for deploying + scaling container workloads. Pods (process groups), Services (load balancing), Deployments (replication).",
+   "why": "The control plane for container infrastructure. Scheduling, scaling, health checks, networking, secrets all declared as YAML; the controller reconciles. Standard for cloud-native workloads.",
+   "category": "virtualization"
+  },
+  {
+   "name": "hypervisor_type_1",
+   "definition": "Bare-metal hypervisor: runs directly on hardware. KVM (Linux kernel module), Xen, ESXi.",
+   "why": "Strong isolation, near-native performance. Used in cloud (AWS Nitro, Azure Hyper-V). Each VM has its own kernel; KVM uses Linux as the host kernel + QEMU for device emulation.",
+   "category": "virtualization"
+  },
+  {
+   "name": "hypervisor_type_2",
+   "definition": "Hosted hypervisor: runs on top of a host OS. VirtualBox, Parallels.",
+   "why": "Easier user-facing setup; lower performance than type 1. Used for desktop VM workflows. Less common in production deployments.",
+   "category": "virtualization"
+  },
+  {
+   "name": "KVM_kernel_virtual_machine",
+   "definition": "Linux kernel module turning the kernel into a type-1 hypervisor. Combined with QEMU (or alternatives like Firecracker, Cloud Hypervisor) for device emulation.",
+   "why": "Standard Linux virtualisation. Cloud providers (AWS, GCP, OCI) all use KVM under the hood. Hardware virt support (Intel VT-x, AMD-V) makes guest execution near-native.",
+   "category": "virtualization"
+  },
+  {
+   "name": "microVM_Firecracker",
+   "definition": "AWS-developed minimal hypervisor based on KVM. Starts VMs in <125ms, minimal device emulation, designed for serverless workloads.",
+   "why": "Lambda + Fargate underlying execution environment. Stronger isolation than containers (full guest kernel) + near-container speed. Influences the broader microVM trend (Kata Containers).",
+   "category": "virtualization"
+  },
+  {
+   "name": "VirtIO",
+   "definition": "Paravirtualised device interface: guest knows it's virtualised; uses optimised device drivers instead of emulating real hardware.",
+   "why": "Much faster than emulating physical devices. Network, block, balloon, console all have VirtIO drivers. Standard in modern VMs (KVM, Xen, even Hyper-V Linux guest).",
+   "category": "virtualization"
+  },
+  {
+   "name": "init_system",
+   "definition": "PID 1 process started by the kernel. Responsible for spawning + supervising all other processes. systemd, SysV init, runit, OpenRC.",
+   "why": "Boot orchestration + service supervision. systemd's parallelisation + dependency tracking + cgroup-based service tracking made it standard on most Linux distros. Controversial; technical merits drove adoption.",
+   "category": "linux_specific"
+  },
+  {
+   "name": "systemd",
+   "definition": "Linux init system + service manager + journal logger + many other components. Heavyweight; replaces dozens of independent tools.",
+   "why": "Default on most distros. Parallel boot via dependency graph. Cgroup-based service tracking gives clean accounting + signal delivery. Critics object to scope creep; proponents value uniformity.",
+   "category": "linux_specific"
+  },
+  {
+   "name": "proc_filesystem",
+   "definition": "Virtual filesystem at /proc: per-process info (cmdline, status, fd, maps), kernel info (cpuinfo, meminfo), tunables.",
+   "why": "Kernel introspection via file API. cat /proc/PID/maps shows VMAs. /proc/cpuinfo shows CPUs. Most Linux monitoring tools read here. Some entries are writable (sysctl).",
+   "category": "linux_specific"
+  },
+  {
+   "name": "sysfs",
+   "definition": "Virtual filesystem at /sys: kernel object hierarchy — devices, bus, modules, classes. Reflects kernel data structures.",
+   "why": "Device + driver attributes. /sys/block/sda/queue/scheduler shows current I/O scheduler; writing changes it. udev relies heavily on sysfs for device discovery.",
+   "category": "linux_specific"
+  },
+  {
+   "name": "ptrace",
+   "definition": "syscall enabling one process to control another: read/write memory, registers, single-step. Foundation of debuggers + strace.",
+   "why": "Debugger mechanism. gdb attaches via ptrace; strace traces syscalls via ptrace. Costs: very slow (context switches per traced event). Modern alternatives: BPF-based tracing (much cheaper).",
+   "category": "linux_specific"
+  },
+  {
+   "name": "seccomp",
+   "definition": "syscall filtering: restrict which syscalls a process can make. Filters expressed as BPF programs.",
+   "why": "Sandboxing primitive: untrusted code limited to safe syscall subset. Used by browser sandboxes (Chrome's renderer), Docker, Firecracker. Defence-in-depth.",
+   "category": "linux_specific"
+  },
+  {
+   "name": "linux_capabilities",
+   "definition": "Decomposition of root's privileges into ~40 distinct capabilities (NET_ADMIN, SYS_PTRACE, etc.). Process can have subset of root's powers.",
+   "why": "Least-privilege: grant only needed capabilities. Containers drop dangerous caps (NET_ADMIN, SYS_MODULE). Replaces 'set-root' SUID binaries with finer-grained permission.",
+   "category": "linux_specific"
+  },
+  {
+   "name": "VDSO_virtual_dynamic_shared_object",
+   "definition": "Small library mapped into every process by the kernel. Provides fast versions of cheap syscalls (gettimeofday, clock_gettime).",
+   "why": "Avoid syscall transition for common reads. gettimeofday via VDSO is ~10ns; via syscall ~300ns. Critical for high-rate timestamping (databases, tracing).",
+   "category": "linux_specific"
+  },
+  {
+   "name": "microkernel",
+   "definition": "Minimal kernel: only essential services (scheduling, IPC). Drivers, filesystems run in user space.",
+   "why": "Fault isolation: a driver crash doesn't take down the kernel. Cost: more IPC overhead. Used in: seL4, QNX (RTOS), Mach (macOS partial), GNU Hurd.",
+   "category": "kernel_design"
+  },
+  {
+   "name": "monolithic_kernel",
+   "definition": "All OS services run in kernel space. Linux, BSD, Windows. Modules loaded dynamically but still in kernel.",
+   "why": "Performance: function calls instead of IPC. Cost: bug in any kernel code can crash the whole system. Modular monolithic (Linux's LKM) is the practical compromise.",
+   "category": "kernel_design"
+  }
+ ],
+ "rules": [
+  {
+   "name": "process_isolation_via_virtual_memory",
+   "if": [
+    "each process has its own virtual address space"
+   ],
+   "then": [
+    "processes cannot directly access each other's memory"
+   ],
+   "why": "MMU enforces the per-process page table mapping. Different processes' virtual addresses translate to different physical frames (or none). Hardware-enforced isolation; OS can't be bypassed by buggy user code.",
+   "soundness_category": "referential_transparency"
+  },
+  {
+   "name": "thread_share_address_space",
+   "if": [
+    "threads belong to the same process"
+   ],
+   "then": [
+    "they share the same virtual address space"
+   ],
+   "why": "Same page table = same memory view. Lets threads communicate via shared variables directly (no IPC). Cost: synchronisation is the programmer's responsibility; data races are easy bugs.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "futex_eliminates_uncontended_syscall",
+   "if": [
+    "a lock is uncontended"
+   ],
+   "then": [
+    "futex-based mutex acquires it without entering the kernel"
+   ],
+   "why": "Atomic CAS in user space succeeds; no syscall needed. Only contention triggers FUTEX_WAIT (kernel). Uncontended mutex ~10ns vs kernel-only mutex ~µs. The mechanism behind fast modern locks.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "CFS_proportional_share_via_vruntime",
+   "if": [
+    "task A's nice level translates to weight w_A"
+   ],
+   "then": [
+    "A's CPU share is proportional to w_A / sum(weights)"
+   ],
+   "why": "CFS tracks vruntime = real time / weight. Picking lowest-vruntime gives each task proportional CPU. Mathematical fairness from a simple data structure (red-black tree on vruntime).",
+   "soundness_category": "algebraic_law"
+  },
+  {
+   "name": "M_N_threading_amortises_kernel_thread_cost",
+   "if": [
+    "many user-space threads multiplex onto few kernel threads"
+   ],
+   "then": [
+    "thread switching cost is amortised across user-space threads"
+   ],
+   "why": "Kernel thread switch ~µs; user-space thread switch ~50 ns. Go can support millions of goroutines on few kernel threads. Cost: blocking syscalls block the underlying kernel thread; runtime must handle this (Go's netpoller).",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "deadlock_requires_all_four_Coffman_conditions",
+   "if": [
+    "any of mutual exclusion, hold-and-wait, no-preemption, circular-wait fails"
+   ],
+   "then": [
+    "deadlock cannot occur"
+   ],
+   "why": "Coffman's theorem (1971). Breaking any condition prevents deadlock: lock-free (no mutual exclusion), acquire-all-or-none (no hold-and-wait), revoke locks (preemption), lock ordering (no circular wait). Each prevention strategy targets one condition.",
+   "soundness_category": "algebraic_law"
+  },
+  {
+   "name": "priority_inheritance_prevents_priority_inversion",
+   "if": [
+    "low-priority thread holds a lock high-priority thread needs"
+   ],
+   "then": [
+    "priority inheritance temporarily boosts low-priority thread to high's priority"
+   ],
+   "why": "Without it, medium-priority threads preempt the low-priority thread holding the lock — high-priority is indefinitely blocked. Inheritance lets low-priority finish quickly. Mars Pathfinder's famous problem; modern RT mutexes implement this.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "namespaces_provide_isolated_view",
+   "if": [
+    "a process is in its own namespace"
+   ],
+   "then": [
+    "it sees an isolated view of the namespaced resource"
+   ],
+   "why": "PID namespace: container's processes see only their own (PID 1 inside). Net namespace: own network stack. Mount namespace: own filesystem tree. Foundation of containers' efficiency vs VMs.",
+   "soundness_category": "referential_transparency"
+  },
+  {
+   "name": "cgroups_enforce_resource_limits",
+   "if": [
+    "a cgroup has a CPU/memory limit"
+   ],
+   "then": [
+    "processes in the cgroup cannot exceed the limit"
+   ],
+   "why": "Kernel enforces at scheduling/allocation time. CPU cgroup throttles; memory cgroup denies allocation (or OOM-kills). The 'how much' to namespaces' 'isolated view'. Containers combine both for full isolation.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "containers_lighter_than_VMs",
+   "if": [
+    "a workload doesn't need kernel isolation"
+   ],
+   "then": [
+    "containers (namespaces + cgroups) are dramatically lighter than VMs"
+   ],
+   "why": "Container shares host kernel; VM has its own. Container startup ~10ms; VM ~seconds. Memory footprint: container ~tens of MB; VM ~hundreds. Containers won for stateless workloads.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "context_switch_dominates_short_critical_sections",
+   "if": [
+    "a critical section is very short (< ~1µs)"
+   ],
+   "then": [
+    "spinlocks outperform mutexes"
+   ],
+   "why": "Mutex contention triggers syscall + context switch (~µs). Short section doesn't justify the cost. Spinlock busy-waits in user space ~ns. For longer sections, the spin wastes CPU and mutex wins.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "page_cache_makes_repeated_reads_fast",
+   "if": [
+    "a file is read repeatedly"
+   ],
+   "then": [
+    "subsequent reads hit the page cache at memory speed"
+   ],
+   "why": "First read populates the cache from disk (slow). Subsequent reads serve from cached pages. The kernel manages cache eviction (LRU-like). Database + web server perf often dominated by cache hit ratio.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "VFS_unifies_filesystem_API",
+   "if": [
+    "multiple filesystems are mounted"
+   ],
+   "then": [
+    "the same syscalls (open, read, write) work uniformly"
+   ],
+   "why": "VFS dispatches based on mount point's filesystem type. ext4, NFS, procfs all expose the same API. Lets application code be filesystem-agnostic. Standard Unix design pattern.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "signal_handlers_must_be_async_safe",
+   "if": [
+    "a signal handler calls non-async-safe functions"
+   ],
+   "then": [
+    "undefined behaviour (deadlock, corruption) can result"
+   ],
+   "why": "Handler can interrupt at any point — including inside malloc's locks. Calling malloc from handler can deadlock. Only ~50 syscalls are async-safe (write, _exit). Modern code uses signalfd to handle signals synchronously.",
+   "soundness_category": "referential_transparency"
+  },
+  {
+   "name": "CPU_affinity_preserves_cache_locality",
+   "if": [
+    "a thread is pinned to one CPU"
+   ],
+   "then": [
+    "its data stays in that CPU's L1/L2 cache"
+   ],
+   "why": "Without affinity, thread migration loads cold caches at the new CPU. Affinity preserves the hot cache state. Critical for performance on cache-sensitive code; less critical for memory-bound workloads.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "OOM_killer_last_resort_only",
+   "if": [
+    "memory pressure becomes critical"
+   ],
+   "then": [
+    "OOM killer kills processes to free RAM"
+   ],
+   "why": "Without it, kernel allocations would fail catastrophically. OOM kills based on oom_score (size + nice + adjustments). User can pre-empt via earlyoom / systemd-oomd which kill earlier with finer policy.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "work_stealing_balances_load_with_locality",
+   "if": [
+    "each worker has a private deque and steals from others when idle"
+   ],
+   "then": [
+    "load balances + local-work is cache-friendly"
+   ],
+   "why": "Private deque: producer + consumer are the same thread (cache-friendly). Stealing from another worker's deque tail balances load when the steal rarely happens. Used in Go, Rust Rayon, ForkJoinPool — standard for parallel runtimes.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "VDSO_avoids_syscall_for_cheap_kernel_reads",
+   "if": [
+    "a value the kernel exposes is fast to compute (e.g., time)"
+   ],
+   "then": [
+    "VDSO provides user-space access without syscall overhead"
+   ],
+   "why": "gettimeofday + clock_gettime + getcpu via VDSO are ~10ns. Via syscall they're ~300ns. For high-rate timestamps (database, tracing, profiling), the difference matters substantially.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "preemptive_scheduling_guarantees_fairness",
+   "if": [
+    "the scheduler is preemptive"
+   ],
+   "then": [
+    "no thread can monopolise the CPU"
+   ],
+   "why": "Timer interrupt triggers scheduler at each time slice. Misbehaving thread is preempted regardless of its cooperation. Cost: context switch overhead. The bedrock of modern responsive OSes.",
+   "soundness_category": "referential_transparency"
+  },
+  {
+   "name": "shared_memory_fastest_IPC_at_synchronisation_cost",
+   "if": [
+    "processes need high-bandwidth shared data"
+   ],
+   "then": [
+    "shared memory + synchronisation primitives beat pipes/sockets"
+   ],
+   "why": "Shared memory: zero copy. Pipes/sockets: kernel buffer + copy. For large + frequent data exchange, shared memory wins. Cost: programmer manages synchronisation (mutex, semaphore, lock-free) vs OS-managed pipe semantics.",
+   "soundness_category": "cost_equivalence"
+  }
+ ],
+ "exclusions": [],
+ "relations": [
+  {
+   "src": "operating_systems",
+   "edge": "genlMt",
+   "tgt": "compiler_theory"
+  }
+ ]
+}

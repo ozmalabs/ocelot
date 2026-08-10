@@ -1,0 +1,283 @@
+{
+  "id": "breadth",
+  "version": "1.0.0",
+  "depends_on": [],
+  "description": "The agent cross-domain conceptual reservoir: structural FORMS it learned in other worlds (vision/physics/chess/math/topology), as graph data. analogy.abstract_patterns hollows these to skeletons and generate_by_transfer re-instantiates them in a new domain. Breadth = creative capacity; this is the in-seed source for analogical transfer. Each form is a Concept with a Term-tree predicate (the shape) stored as graph data, not Python.",
+  "forms": [
+    {
+      "name": "center_surround",
+      "origin": "vision",
+      "from_world": "vision",
+      "feature_kind": "cross_domain_form",
+      "predicate": {
+        "type": "Gt",
+        "a": {
+          "type": "Minus",
+          "a": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "s"
+            },
+            "key": "c"
+          },
+          "b": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "s"
+            },
+            "key": "s"
+          }
+        },
+        "b": {
+          "type": "Lit",
+          "value": 0.1
+        }
+      }
+    },
+    {
+      "name": "normalised_gradient",
+      "origin": "vision",
+      "from_world": "vision",
+      "feature_kind": "cross_domain_form",
+      "predicate": {
+        "type": "Gt",
+        "a": {
+          "type": "Div",
+          "a": {
+            "type": "Minus",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "s"
+              },
+              "key": "a"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "s"
+              },
+              "key": "b"
+            }
+          },
+          "b": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "s"
+            },
+            "key": "c"
+          }
+        },
+        "b": {
+          "type": "Lit",
+          "value": 0.1
+        }
+      }
+    },
+    {
+      "name": "scale_invariant_ratio",
+      "origin": "physics",
+      "from_world": "physics",
+      "feature_kind": "cross_domain_form",
+      "predicate": {
+        "type": "Gt",
+        "a": {
+          "type": "Div",
+          "a": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "s"
+            },
+            "key": "a"
+          },
+          "b": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "s"
+            },
+            "key": "b"
+          }
+        },
+        "b": {
+          "type": "Lit",
+          "value": 1.0
+        }
+      }
+    },
+    {
+      "name": "near_balance",
+      "origin": "physics",
+      "from_world": "physics",
+      "feature_kind": "cross_domain_form",
+      "predicate": {
+        "type": "Lt",
+        "a": {
+          "type": "Minus",
+          "a": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "s"
+            },
+            "key": "a"
+          },
+          "b": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "s"
+            },
+            "key": "b"
+          }
+        },
+        "b": {
+          "type": "Lit",
+          "value": 0.1
+        }
+      }
+    },
+    {
+      "name": "dominates_neighbours",
+      "origin": "chess",
+      "from_world": "chess",
+      "feature_kind": "cross_domain_form",
+      "predicate": {
+        "type": "Gt",
+        "a": {
+          "type": "Attr",
+          "node": {
+            "type": "Var",
+            "name": "s"
+          },
+          "key": "x"
+        },
+        "b": {
+          "type": "Max",
+          "items": [
+            {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "s"
+              },
+              "key": "y"
+            },
+            {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "s"
+              },
+              "key": "z"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "between",
+      "origin": "math",
+      "from_world": "math",
+      "feature_kind": "cross_domain_form",
+      "predicate": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "s"
+              },
+              "key": "x"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "s"
+              },
+              "key": "lo"
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "s"
+              },
+              "key": "x"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "s"
+              },
+              "key": "hi"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "local_trough",
+      "origin": "topology",
+      "from_world": "topology",
+      "feature_kind": "cross_domain_form",
+      "predicate": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "s"
+              },
+              "key": "b"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "s"
+              },
+              "key": "l"
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "s"
+              },
+              "key": "b"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "s"
+              },
+              "key": "r"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

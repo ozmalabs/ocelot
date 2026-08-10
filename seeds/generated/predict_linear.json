@@ -1,0 +1,149 @@
+{
+  "id": "predict_linear",
+  "version": "1.0.0",
+  "rules": [
+    {
+      "id": "predict_linear",
+      "match": [
+        [
+          "h",
+          "observes",
+          "o"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "o"
+              },
+              "key": "mframe"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "o"
+              },
+              "key": "frame"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "o"
+                },
+                "key": "pframe"
+              },
+              "b": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "o"
+                },
+                "key": "frame"
+              }
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "o"
+              },
+              "key": "upgraded"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          }
+        ]
+      },
+      "name": "predict_linear",
+      "effects": [
+        [
+          "set_attr",
+          "o",
+          "pred",
+          {
+            "__term__": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "o"
+                  },
+                  "key": "value"
+                },
+                {
+                  "type": "Minus",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "o"
+                    },
+                    "key": "value"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "o"
+                    },
+                    "key": "prev"
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "o",
+          "prev",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "o"
+              },
+              "key": "value"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "o",
+          "pframe",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "o"
+              },
+              "key": "frame"
+            }
+          }
+        ]
+      ]
+    }
+  ]
+}

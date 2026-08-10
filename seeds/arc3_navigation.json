@@ -1,0 +1,305 @@
+{
+ "id": "arc3_navigation",
+ "version": "1.0.0",
+ "depends_on": [
+  "spatial_map",
+  "enact",
+  "autonomy",
+  "figure_ground"
+ ],
+ "description": "The jabberwock's graph-native chain (designed by it, no new Rust primitive): recognise the nav game from the world's framework/affordances -> build the SpatialLocation map from the cells + the world's `neighbour` lattice (floor by figure/ground, NOT a Python heuristic) -> engage routing via one `operates_in` edge that cascades through the standing autonomy + enact + routing machinery -> learn walls by bumping (Boundary blocks + Impasse surprised_by). The world only provides cells, the lattice, and the affordances; every decision here is graph data on the agent's own tick.",
+ "microtheory": {
+  "name": "arc3_navigation",
+  "description": "perceive cells -> recognise navigation game -> build map -> route avatar to goal_cell -> learn walls -> understand. All rules on tick."
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [
+  {
+   "provenance": "seed:arc3_navigation:controls-1",
+   "src": {
+    "type": "Agent",
+    "var": "s"
+   },
+   "edge_type": "controls",
+   "tgt": {
+    "type": "CellC9",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:arc3_navigation:bounded_by-2",
+   "src": {
+    "type": "CellC4",
+    "var": "s"
+   },
+   "edge_type": "bounded_by",
+   "tgt": {
+    "type": "Boundary",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:arc3_navigation:blocks-3",
+   "src": {
+    "type": "Boundary",
+    "var": "s"
+   },
+   "edge_type": "blocks",
+   "tgt": {
+    "type": "CellC4",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:arc3_navigation:has_cell-4",
+   "src": {
+    "type": "Game",
+    "var": "s"
+   },
+   "edge_type": "has_cell",
+   "tgt": {
+    "type": "CellC4",
+    "var": "t"
+   }
+  }
+ ],
+ "concepts": [
+  {
+   "name": "is_floor",
+   "domain": "arc3_navigation",
+   "definition": {
+    "type": "Eq",
+    "a": {
+     "type": "Attr",
+     "node": {
+      "type": "Var",
+      "name": "c"
+     },
+     "key": "floor"
+    },
+    "b": {
+     "type": "Lit",
+     "value": 1.0
+    }
+   },
+   "comment": "a cell is floor iff figure/ground marked it ground (background_region) \u2014 the agent's perception, not a population count. (Placeholder attr form until region-grouping is graph-native; the design uses Holds(background_region).)"
+  }
+ ],
+ "rules": [
+  {
+   "name": "max_region_count",
+   "comment": "the floor is the LARGEST region; stash its count on the Game so mark_floor is O(cells) not O(cells*regions). [where reads count so precise-dirty re-wakes it after bounds]",
+   "match": [
+    [
+     "game",
+     "has_region",
+     "any"
+    ]
+   ],
+   "where": {
+    "type": "Gte",
+    "a": {
+     "type": "Attr",
+     "node": {
+      "type": "Var",
+      "name": "any"
+     },
+     "key": "count"
+    },
+    "b": {
+     "type": "Lit",
+     "value": 0
+    }
+   },
+   "effects": [
+    [
+     "set_attr",
+     "game",
+     "max_region_count",
+     {
+      "__term__": {
+       "type": "MaxOver",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "Region"
+       },
+       "var_name": "r",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "r"
+        },
+        "key": "count"
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0
+       }
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "mark_floor_as_location",
+   "comment": "a cell in the largest (floor) region becomes a SpatialLocation \u2014 is_floor via figure/ground size, no xmax/ymax needed. [persistent regions: floor = largest by count, no frame gate]",
+   "match": [
+    [
+     "game",
+     "has_cell",
+     "cell"
+    ],
+    [
+     "cell",
+     "within",
+     "region"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "region"
+       },
+       "key": "count"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "game"
+       },
+       "key": "max_region_count"
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "game"
+       },
+       "key": "max_region_count"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "cell",
+     "world_type",
+     {
+      "__term__": {
+       "type": "Lit",
+       "value": "SpatialLocation"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "unmark_non_floor",
+   "comment": "a changed cell that was marked SpatialLocation but is no longer in the floor (largest) region reverts to a plain Cell \u2014 corrects mark_floor's transient over-marking when a cell leaves the floor mid-tick. has_change-driven (O(changed)); self-terminating.",
+   "match": [
+    [
+     "game",
+     "has_change",
+     "ce"
+    ],
+    [
+     "ce",
+     "at_cell",
+     "cell"
+    ],
+    [
+     "cell",
+     "within",
+     "region"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ce"
+       },
+       "key": "frame"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "game"
+       },
+       "key": "frame"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "cell"
+       },
+       "key": "world_type"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "SpatialLocation"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "region"
+        },
+        "key": "count"
+       },
+       "b": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "game"
+        },
+        "key": "max_region_count"
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "cell",
+     "world_type",
+     "Cell"
+    ]
+   ]
+  }
+ ],
+ "goals": []
+}

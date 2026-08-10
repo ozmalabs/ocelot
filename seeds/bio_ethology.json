@@ -1,0 +1,54 @@
+{
+  "microtheory": {
+    "name": "ethology_behavior",
+    "definition": "Animal behavior in natural contexts. Lorenz, Tinbergen, von Frisch. Fixed action patterns, releasers, imprinting, four whys, behavioral ecology. The biology of behavior. Substrate analogue: the substrate's outputs viewed as behavior of a biological-class system.",
+    "category": "biology_domain",
+    "parent": "biology_foundation"
+  },
+  "concepts": [
+    {"name": "tinbergens_four_questions", "definition": "Tinbergen 1963. Four levels of explaining behavior: mechanism (proximate cause), ontogeny (development), function (adaptive value), phylogeny (evolutionary history). Substrate analogue: substrate's four-level explanation framework.", "category": "framework"},
+    {"name": "proximate_causation", "definition": "Mechanism + ontogeny questions. How does the behavior work + develop? Substrate analogue: substrate's mechanism-level explanation.", "category": "framework"},
+    {"name": "ultimate_causation", "definition": "Function + phylogeny questions. Why does the behavior exist? Substrate analogue: substrate's purpose-level explanation.", "category": "framework"},
+
+    {"name": "fixed_action_pattern", "definition": "Lorenz + Tinbergen. Stereotyped behavior sequence triggered by specific stimulus, completing autonomously. Substrate analogue: substrate's reflex chain.", "category": "innate"},
+    {"name": "releaser_sign_stimulus", "definition": "Specific feature triggering FAP. Red belly → stickleback attack. Substrate analogue: substrate's FilterSpec trigger pattern.", "category": "innate"},
+    {"name": "supernormal_stimulus", "definition": "Stronger-than-natural releaser eliciting exaggerated response. Tinbergen's eggs. Substrate analogue: substrate's exaggerated activation under intense stimulus.", "category": "innate"},
+    {"name": "innate_releasing_mechanism", "definition": "Internal filter recognizing releasers. Substrate analogue: substrate's pattern-detection FilterSpec.", "category": "innate"},
+
+    {"name": "imprinting", "definition": "Lorenz. Rapid critical-period learning of social attachment. Geese follow first moving object. Substrate analogue: substrate's critical-period attachment learning.", "category": "learning"},
+    {"name": "habituation_ethology", "definition": "Decreased response to repeated harmless stimulus. Substrate analogue: substrate's σ damping for repeated input.", "category": "learning"},
+    {"name": "sensitization_ethology", "definition": "Increased response after intense stimulus. Often defensive. Substrate analogue: substrate's amplified drive after negative event.", "category": "learning"},
+    {"name": "associative_learning_ethology", "definition": "Classical + operant conditioning in natural contexts. Substrate analogue: substrate's covers_correction learning.", "category": "learning"},
+
+    {"name": "behavioral_ecology", "definition": "How behavior contributes to fitness in environment. Foraging, mating, territory. Substrate analogue: substrate's behavior-fitness mapping.", "category": "ecology_behavior"},
+    {"name": "optimal_foraging_theory", "definition": "Behavior maximizes net energy gain per time. Cost-benefit calculations. Substrate analogue: substrate's exploration-exploitation optimization.", "category": "ecology_behavior"},
+    {"name": "marginal_value_theorem", "definition": "Leave patch when local intake rate drops to overall average. Charnov 1976. Substrate analogue: substrate's Mt-switching criterion.", "category": "ecology_behavior"},
+
+    {"name": "courtship_display", "definition": "Mate-attraction behavior. Often costly, honest signal of fitness. Peacock tail. Substrate analogue: substrate's signal-displaying capability.", "category": "social"},
+    {"name": "territorial_behavior", "definition": "Defense of area for exclusive use. Substrate analogue: substrate's resource-claiming.", "category": "social"},
+    {"name": "dominance_hierarchy", "definition": "Pecking order. Establishes priority for resources. Substrate analogue: in multi-substrate contexts, priority structure.", "category": "social"},
+    {"name": "altruism_animal", "definition": "Behavior costly to actor, beneficial to others. Kin selection or reciprocity. Substrate analogue: substrate-substrate help patterns.", "category": "social"},
+    {"name": "cooperation_animal", "definition": "Mutual benefit. Hunting in groups, mobbing. Substrate analogue: substrate-substrate collaboration.", "category": "social"},
+
+    {"name": "communication_animal", "definition": "Signal transmission between organisms. Visual, acoustic, chemical, tactile. Substrate analogue: substrate's Message exchange.", "category": "communication"},
+    {"name": "honest_signal", "definition": "Reliable indicator of quality. Costly-to-fake. Substrate analogue: substrate's verifiable capability display.", "category": "communication"},
+    {"name": "deceptive_signal", "definition": "False signal favoring sender at receiver's expense. Mimicry. Substrate analogue: substrate's false-pattern generation.", "category": "communication"},
+    {"name": "alarm_call", "definition": "Warns conspecifics of danger. Often referential. Vervet monkey snake vs eagle vs leopard calls. Substrate analogue: substrate's threat-broadcast.", "category": "communication"},
+
+    {"name": "von_frisch_dance", "definition": "Honey bee waggle dance encoding food location + distance. Symbolic communication outside humans. Substrate analogue: substrate's encoded-location communication.", "category": "communication"},
+    {"name": "pheromone", "definition": "Chemical communication. Trail, alarm, sex pheromones. Substrate analogue: substrate's chemical-signaling analogue.", "category": "communication"},
+
+    {"name": "instinct_versus_learning", "definition": "False dichotomy. All behavior has both innate + learned components. Nature × nurture interact. Substrate analogue: substrate's seed-learned interaction.", "category": "development"},
+    {"name": "behavioral_development", "definition": "How behavior emerges through ontogeny. Critical periods + experience. Substrate analogue: substrate's developmental loop.", "category": "development"},
+
+    {"name": "cognitive_ethology", "definition": "Mental processes in animals. Tool use, deception, theory of mind. Substrate analogue: substrate's cognitive layers.", "category": "cognition"},
+    {"name": "tool_use", "definition": "Using object to achieve goal. Chimps fishing termites, crows bending wire. Substrate analogue: substrate's external-resource use.", "category": "cognition"}
+  ],
+  "rules": [
+    {"name": "tinbergens_four_questions_required_for_full_explanation", "head": "the substrate explains a behavior", "body": "explanation requires all four levels: mechanism, ontogeny, function, phylogeny. Substrate's complete behavior account."},
+    {"name": "fixed_action_patterns_run_to_completion", "head": "the substrate's reflex triggers", "body": "the behavioral sequence runs to completion even if stimulus removed. Substrate's reflex commitment."},
+    {"name": "imprinting_has_critical_period", "head": "the substrate learns identity of attachment target", "body": "the window is narrow + cannot be repeated later. Lorenz. Substrate's critical-period attachment."},
+    {"name": "honest_signals_resist_cheating", "head": "the substrate broadcasts a signal of capability", "body": "honest signals are costly to fake — only high-quality senders can afford them. Substrate's verifiable display."},
+    {"name": "optimal_foraging_balances_intake_and_cost", "head": "the substrate exploits a patch of resources", "body": "switches patches when local rate drops below average. Charnov. Substrate's exploration-exploitation switching."}
+  ]
+}

@@ -1,0 +1,69 @@
+{
+  "id": "fovea_salience_bridge",
+  "version": "1.0.0",
+  "depends_on": [],
+  "productions": [
+    {
+      "provenance": "seed:fovea_salience_bridge:has_candidate-0",
+      "comment": "Gamma vocabulary + admissibility for the fovea resolution: a FoveaResolver may hold FoveaCandidate options via `has_candidate`. This is the STRUCTURAL admissibility (Type-2 vocabulary) the checker C enforces -- without it, add_edge is rejected `Gamma rejects: type FoveaResolver not in vocabulary` (observed live: Gamma genuinely gates, it is not decorative). The PER-CANDIDATE consistency constraint (a fovea target must lie on an observed cell) is the on_valid==1 where-clause the fovea_resolve rule's Filter applies BEFORE weighting. weight defaults to Lit(1.0); grammar.rs's `selection proportional to exp(w)` is realised by the rule's ArgminUnique over Neg(w) (the MAP reading), w = Log(salience)+goal_logweight.",
+      "src": {"type": "FoveaResolver", "var": "res"},
+      "edge_type": "has_candidate",
+      "tgt": {"type": "FoveaCandidate", "var": "c"}
+    }
+  ],
+  "description": "160000 — THE FOVEA DECISION, MIGRATED Python->graph, resolved by the LOG-WEIGHTED ADMISSIBILITY GRAPH. 159000 proved salience-driven foveation but SELECTED the fovea with a numpy argmax/top-K in Python (scripts/salience_foveation_probe.py::select_fovea's `scored.sort(key=-peak)[:top_k]`) -- an agent DECISION in Python, forbidden by CLAUDE.md. This seed moves the SELECTION into the graph. grammar.rs: Gamma is the WEIGHTED ADMISSIBILITY grammar -- 'selection over admitted candidates is proportional to exp(w)', where the weight w is a Term. The deterministic (MAP) reading of `proportional to exp(w)` is argmax_w over ADMISSIBLE candidates = ArgminUnique(admissible-candidates, value=Neg(w)) -- the highest-log-weight admissible candidate, tie-refusing (a comparison can be false, a selection cannot: VISION_REFUSAL_CAPACITY / ArgminUnique). Ingest (mechanical world-adapter I/O, domains/fovea_bridge.py): the residual-salience field -> flag_movers -> connected components -> per-component peak/box (the SAME extraction select_fovea does BEFORE its sort) -> FoveaCandidate nodes edged `res -has_candidate-> c`, each carrying `salience` (bottom-up log-evidence source), `on_valid` (the Gamma admissibility datum), `goal_logweight` (top-down bias, default 0). NO Rust added -- composition of existing Terms (ArgminUnique/Filter/Neighbours/Log/Plus/Neg/Attr/Eq); engine stays `shared`, coarse path byte-identical, oracle 222/0.",
+  "rules": [
+    {
+      "name": "fovea_resolve",
+      "comment": "THE MIGRATED DECISION. For each candidate c of a resolver res, mark c as the fovea (is_fovea=1) IFF c is Gamma-admissible AND c IS the log-weighted admissible winner. The winner = ArgminUnique over the Gamma-ADMISSIBLE candidates (Filter on the admissibility where-clause GATES BEFORE weighting -- an inadmissible candidate never enters the fold, whatever its weight) keyed by Neg(w), w = Log(salience) + goal_logweight. w is the LOG-WEIGHT: Log(salience) is the bottom-up log-evidence (exp(w)=salience so selection is proportional to salience -- more salient => more likely the fovea, grammar.rs's exp(w)); goal_logweight is a CO-PRESENT top-down log-weight ADDED (log of a product of evidences) -- the override is a weight-SHIFT, continuous and monotone, NOT a switch. ArgminUnique REFUSES a tie (returns null) so two exactly-equal candidates yield NO fovea (fall back to coarse), never an arbitrary pick. Eq(Var c, winner) compares Value::Node by id, so exactly the one winning node is flagged. Idempotent (set_attr is_fovea=1; re-fire is a no-op at fixpoint) => self-terminating. admissible(x) := on_valid==1 is the DECLARED consistency constraint (Gamma where-clause: an `eye -foveates-> cell` edge is inconsistent if the cell carries no valid observation); no threshold, nothing tuned.",
+      "match": [
+        ["res", "has_candidate", "c"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "on_valid"},
+            "b": {"type": "Lit", "value": 1.0}
+          },
+          {
+            "type": "Eq",
+            "a": {"type": "Var", "name": "c"},
+            "b": {
+              "type": "ArgminUnique",
+              "source": {
+                "type": "Filter",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {"type": "Var", "name": "res"},
+                  "edge_type": "has_candidate"
+                },
+                "var_name": "k",
+                "predicate": {
+                  "type": "Eq",
+                  "a": {"type": "Attr", "node": {"type": "Var", "name": "k"}, "key": "on_valid"},
+                  "b": {"type": "Lit", "value": 1.0}
+                }
+              },
+              "var_name": "k",
+              "value": {
+                "type": "Neg",
+                "arg": {
+                  "type": "Plus",
+                  "items": [
+                    {"type": "Log", "arg": {"type": "Attr", "node": {"type": "Var", "name": "k"}, "key": "salience"}},
+                    {"type": "Attr", "node": {"type": "Var", "name": "k"}, "key": "goal_logweight"}
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        ["set_attr", "c", "is_fovea", {"__term__": {"type": "Lit", "value": 1.0}}]
+      ]
+    }
+  ]
+}

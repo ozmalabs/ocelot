@@ -1,0 +1,1213 @@
+{
+ "id": "vision_crowding",
+ "version": "1.0.0",
+ "depends_on": [],
+ "description": "CROWDING (T8) \u2014 eccentricity-scaled statistical pooling, validating the eye's foveation / eccentricity-decay prior (Bouma 1970). Recognition READS a pooled summary over a region whose radius R=bouma\u00b7ecc grows with eccentricity from the fixation (the ungrounded gaze origin): an isolated peripheral target survives (pool={target}), a flanked one is JUMBLED (pool=target+flankers, the mean ident mixes). A FOVEAL target is SPARED \u2014 R~0 at the fovea \u2014 even by the SAME flankers (the risked dissociation). Critical spacing grows with ecc (Bouma; ENTAILED by R=bouma\u00b7ecc, reported not banked \u2014 \u00a713.1). Pure seed rules (cr_ecc / cr_pool) over the LOCAL co_item fold; NO new Rust. bouma is agent-revisable graph data, NOT a biological constant. Flag CrowdParams.crowd OFF by default (\u00a79). See VISION_CROWDING_PREREG.md.",
+ "microtheory": {
+  "name": "eccentricity_scaled_pooling",
+  "description": "The periphery reports a summary statistic over an eccentricity-scaled pooling region; identity survives only where the pool contains the target alone. Crowding, foveal sparing and Bouma's critical-spacing law are the one mechanism read at different eccentricities and clutter."
+ },
+ "nodes": [
+  {
+   "local_id": 0,
+   "type": "CrowdParams",
+   "attrs": {
+    "crowd": 0.0,
+    "bouma": 0.6
+   }
+  }
+ ],
+ "edges": [],
+ "productions": [],
+ "rules": [
+  {
+   "name": "cr_ecc",
+   "comment": "Per item: ecc\u00b2 from the fixation and the eccentricity-scaled pooling radius\u00b2 = bouma\u00b2\u00b7ecc\u00b2. Pure geometry \u2014 the item's eccentricity from the ungrounded gaze origin (the foveation prior's eccentricity-decay, made a pooling radius). Fires once (ecc_done guard). Gated on CrowdParams.crowd (OFF by default). No magic number: bouma is agent-revisable graph data; coordinates are in-frame integers, the radius a cross-frame read.",
+   "match": [
+    [
+     "field",
+     "has_item",
+     "t"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "CrowdParams"
+        }
+       },
+       "key": "crowd"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "t"
+       },
+       "key": "ecc_done"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "t",
+     "ecc2",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Times",
+         "items": [
+          {
+           "type": "Minus",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "t"
+            },
+            "key": "irow"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "field"
+            },
+            "key": "gaze_row"
+           }
+          },
+          {
+           "type": "Minus",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "t"
+            },
+            "key": "irow"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "field"
+            },
+            "key": "gaze_row"
+           }
+          }
+         ]
+        },
+        {
+         "type": "Times",
+         "items": [
+          {
+           "type": "Minus",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "t"
+            },
+            "key": "icol"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "field"
+            },
+            "key": "gaze_col"
+           }
+          },
+          {
+           "type": "Minus",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "t"
+            },
+            "key": "icol"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "field"
+            },
+            "key": "gaze_col"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "t",
+     "pool_radius2",
+     {
+      "__term__": {
+       "type": "Times",
+       "items": [
+        {
+         "type": "Times",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "PickUnique",
+            "source": {
+             "type": "NodesOfType",
+             "node_type": "CrowdParams"
+            }
+           },
+           "key": "bouma"
+          },
+          {
+           "type": "Attr",
+           "node": {
+            "type": "PickUnique",
+            "source": {
+             "type": "NodesOfType",
+             "node_type": "CrowdParams"
+            }
+           },
+           "key": "bouma"
+          }
+         ]
+        },
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Minus",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "t"
+              },
+              "key": "irow"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "field"
+              },
+              "key": "gaze_row"
+             }
+            },
+            {
+             "type": "Minus",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "t"
+              },
+              "key": "irow"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "field"
+              },
+              "key": "gaze_row"
+             }
+            }
+           ]
+          },
+          {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Minus",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "t"
+              },
+              "key": "icol"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "field"
+              },
+              "key": "gaze_col"
+             }
+            },
+            {
+             "type": "Minus",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "t"
+              },
+              "key": "icol"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "field"
+              },
+              "key": "gaze_col"
+             }
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "t",
+     "ecc_done",
+     {
+      "__term__": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "cr_pool",
+   "comment": "Per item, once its radius is known (ecc_done): pool = the item \u222a its co_item neighbours within pool_radius\u00b2. pool_n = 1 + flankers-in-pool; pooled_ident = mean ident over the pool (the SUMMARY STATISTIC \u2014 mixes when a flanker is pooled); crowded = a flanker is in the pool; recognized = the pool holds ONLY the target (identity survives). Recognition READS the pooled summary \u2014 isolated peripheral target survives (pool={target}), flanked it does not. Fires once (pool_done). The pool is LOCAL over the co_item 2-clique (NOT a global NodesOfType grab). Every decision is here, in the graph; the adapter only ingests items and reads attrs back.",
+   "match": [
+    [
+     "field",
+     "has_item",
+     "t"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "CrowdParams"
+        }
+       },
+       "key": "crowd"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "t"
+       },
+       "key": "ecc_done"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "t"
+       },
+       "key": "pool_done"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "t",
+     "pool_n",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Lit",
+         "value": 1.0
+        },
+        {
+         "type": "Count",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "t"
+           },
+           "edge_type": "co_item",
+           "any_type": false
+          },
+          "var_name": "n",
+          "predicate": {
+           "type": "Lte",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Times",
+              "items": [
+               {
+                "type": "Minus",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "n"
+                 },
+                 "key": "irow"
+                },
+                "b": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "t"
+                 },
+                 "key": "irow"
+                }
+               },
+               {
+                "type": "Minus",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "n"
+                 },
+                 "key": "irow"
+                },
+                "b": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "t"
+                 },
+                 "key": "irow"
+                }
+               }
+              ]
+             },
+             {
+              "type": "Times",
+              "items": [
+               {
+                "type": "Minus",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "n"
+                 },
+                 "key": "icol"
+                },
+                "b": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "t"
+                 },
+                 "key": "icol"
+                }
+               },
+               {
+                "type": "Minus",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "n"
+                 },
+                 "key": "icol"
+                },
+                "b": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "t"
+                 },
+                 "key": "icol"
+                }
+               }
+              ]
+             }
+            ]
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "t"
+            },
+            "key": "pool_radius2"
+           }
+          }
+         }
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "t",
+     "n_flank_in_pool",
+     {
+      "__term__": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "t"
+         },
+         "edge_type": "co_item",
+         "any_type": false
+        },
+        "var_name": "n",
+        "predicate": {
+         "type": "Lte",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Minus",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "n"
+               },
+               "key": "irow"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "t"
+               },
+               "key": "irow"
+              }
+             },
+             {
+              "type": "Minus",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "n"
+               },
+               "key": "irow"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "t"
+               },
+               "key": "irow"
+              }
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Minus",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "n"
+               },
+               "key": "icol"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "t"
+               },
+               "key": "icol"
+              }
+             },
+             {
+              "type": "Minus",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "n"
+               },
+               "key": "icol"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "t"
+               },
+               "key": "icol"
+              }
+             }
+            ]
+           }
+          ]
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "t"
+          },
+          "key": "pool_radius2"
+         }
+        }
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "t",
+     "pooled_ident",
+     {
+      "__term__": {
+       "type": "Div",
+       "a": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "t"
+          },
+          "key": "ident"
+         },
+         {
+          "type": "Sum",
+          "source": {
+           "type": "Filter",
+           "source": {
+            "type": "Neighbours",
+            "node": {
+             "type": "Var",
+             "name": "t"
+            },
+            "edge_type": "co_item",
+            "any_type": false
+           },
+           "var_name": "n",
+           "predicate": {
+            "type": "Lte",
+            "a": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Times",
+               "items": [
+                {
+                 "type": "Minus",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "n"
+                  },
+                  "key": "irow"
+                 },
+                 "b": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "t"
+                  },
+                  "key": "irow"
+                 }
+                },
+                {
+                 "type": "Minus",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "n"
+                  },
+                  "key": "irow"
+                 },
+                 "b": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "t"
+                  },
+                  "key": "irow"
+                 }
+                }
+               ]
+              },
+              {
+               "type": "Times",
+               "items": [
+                {
+                 "type": "Minus",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "n"
+                  },
+                  "key": "icol"
+                 },
+                 "b": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "t"
+                  },
+                  "key": "icol"
+                 }
+                },
+                {
+                 "type": "Minus",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "n"
+                  },
+                  "key": "icol"
+                 },
+                 "b": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "t"
+                  },
+                  "key": "icol"
+                 }
+                }
+               ]
+              }
+             ]
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "t"
+             },
+             "key": "pool_radius2"
+            }
+           }
+          },
+          "var_name": "n",
+          "value": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "n"
+           },
+           "key": "ident"
+          }
+         }
+        ]
+       },
+       "b": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Lit",
+          "value": 1.0
+         },
+         {
+          "type": "Count",
+          "source": {
+           "type": "Filter",
+           "source": {
+            "type": "Neighbours",
+            "node": {
+             "type": "Var",
+             "name": "t"
+            },
+            "edge_type": "co_item",
+            "any_type": false
+           },
+           "var_name": "n",
+           "predicate": {
+            "type": "Lte",
+            "a": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Times",
+               "items": [
+                {
+                 "type": "Minus",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "n"
+                  },
+                  "key": "irow"
+                 },
+                 "b": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "t"
+                  },
+                  "key": "irow"
+                 }
+                },
+                {
+                 "type": "Minus",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "n"
+                  },
+                  "key": "irow"
+                 },
+                 "b": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "t"
+                  },
+                  "key": "irow"
+                 }
+                }
+               ]
+              },
+              {
+               "type": "Times",
+               "items": [
+                {
+                 "type": "Minus",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "n"
+                  },
+                  "key": "icol"
+                 },
+                 "b": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "t"
+                  },
+                  "key": "icol"
+                 }
+                },
+                {
+                 "type": "Minus",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "n"
+                  },
+                  "key": "icol"
+                 },
+                 "b": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "t"
+                  },
+                  "key": "icol"
+                 }
+                }
+               ]
+              }
+             ]
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "t"
+             },
+             "key": "pool_radius2"
+            }
+           }
+          }
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "t",
+     "crowded",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gte",
+        "a": {
+         "type": "Count",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "t"
+           },
+           "edge_type": "co_item",
+           "any_type": false
+          },
+          "var_name": "n",
+          "predicate": {
+           "type": "Lte",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Times",
+              "items": [
+               {
+                "type": "Minus",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "n"
+                 },
+                 "key": "irow"
+                },
+                "b": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "t"
+                 },
+                 "key": "irow"
+                }
+               },
+               {
+                "type": "Minus",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "n"
+                 },
+                 "key": "irow"
+                },
+                "b": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "t"
+                 },
+                 "key": "irow"
+                }
+               }
+              ]
+             },
+             {
+              "type": "Times",
+              "items": [
+               {
+                "type": "Minus",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "n"
+                 },
+                 "key": "icol"
+                },
+                "b": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "t"
+                 },
+                 "key": "icol"
+                }
+               },
+               {
+                "type": "Minus",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "n"
+                 },
+                 "key": "icol"
+                },
+                "b": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "t"
+                 },
+                 "key": "icol"
+                }
+               }
+              ]
+             }
+            ]
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "t"
+            },
+            "key": "pool_radius2"
+           }
+          }
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": 1.0
+       },
+       "other": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "t",
+     "recognized",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gte",
+        "a": {
+         "type": "Count",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "t"
+           },
+           "edge_type": "co_item",
+           "any_type": false
+          },
+          "var_name": "n",
+          "predicate": {
+           "type": "Lte",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Times",
+              "items": [
+               {
+                "type": "Minus",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "n"
+                 },
+                 "key": "irow"
+                },
+                "b": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "t"
+                 },
+                 "key": "irow"
+                }
+               },
+               {
+                "type": "Minus",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "n"
+                 },
+                 "key": "irow"
+                },
+                "b": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "t"
+                 },
+                 "key": "irow"
+                }
+               }
+              ]
+             },
+             {
+              "type": "Times",
+              "items": [
+               {
+                "type": "Minus",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "n"
+                 },
+                 "key": "icol"
+                },
+                "b": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "t"
+                 },
+                 "key": "icol"
+                }
+               },
+               {
+                "type": "Minus",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "n"
+                 },
+                 "key": "icol"
+                },
+                "b": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "t"
+                 },
+                 "key": "icol"
+                }
+               }
+              ]
+             }
+            ]
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "t"
+            },
+            "key": "pool_radius2"
+           }
+          }
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": 0.0
+       },
+       "other": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "t",
+     "pool_done",
+     {
+      "__term__": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ]
+   ]
+  }
+ ]
+}

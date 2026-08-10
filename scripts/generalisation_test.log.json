@@ -1,0 +1,1758 @@
+{
+  "training": [
+    {
+      "text": "{\"x\": 1}",
+      "expected_repr": "{'x': 1}",
+      "parsed_repr": "{'x': 1}",
+      "format_id": "json",
+      "corruption": "clean",
+      "matched": true,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "format=json: no ParsingStrategy for this shape (shape=mapping_kv1_seq0_balanced)"
+      ],
+      "category": "training",
+      "shape": "clean_json"
+    },
+    {
+      "text": "{\"name\": \"alice\", \"age\": 30}",
+      "expected_repr": "{'name': 'alice', 'age': 30}",
+      "parsed_repr": "{'name': 'alice', 'age': 30}",
+      "format_id": "json",
+      "corruption": "clean",
+      "matched": true,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "format=json: no ParsingStrategy for this shape (shape=nested_kv2to3_seq1_balanced)"
+      ],
+      "category": "training",
+      "shape": "clean_json"
+    },
+    {
+      "text": "[1, 2, 3, 4]",
+      "expected_repr": "[1, 2, 3, 4]",
+      "parsed_repr": "[1, 2, 3, 4]",
+      "format_id": "json",
+      "corruption": "clean",
+      "matched": true,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "format=json: no ParsingStrategy for this shape (shape=sequence_kv0_seq2to3_balanced)"
+      ],
+      "category": "training",
+      "shape": "clean_json"
+    },
+    {
+      "text": "{\"users\": [{\"id\": 1}, {\"id\": 2}]}",
+      "expected_repr": "{'users': [{'id': 1}, {'id': 2}]}",
+      "parsed_repr": "{'users': [{'id': 1}, {'id': 2}]}",
+      "format_id": "json",
+      "corruption": "clean",
+      "matched": true,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "training",
+      "shape": "clean_json"
+    },
+    {
+      "text": "{\"nested\": {\"deep\": {\"k\": 7}}}",
+      "expected_repr": "{'nested': {'deep': {'k': 7}}}",
+      "parsed_repr": "{'nested': {'deep': {'k': 7}}}",
+      "format_id": "json",
+      "corruption": "clean",
+      "matched": true,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "training",
+      "shape": "clean_json"
+    },
+    {
+      "text": "k: 1\n",
+      "expected_repr": "{'k': 1}",
+      "parsed_repr": "{'k': 1}",
+      "format_id": "yaml",
+      "corruption": "clean",
+      "matched": true,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "format=yaml: no ParsingStrategy for this shape (shape=mapping_kv1_seq0_balanced)"
+      ],
+      "category": "training",
+      "shape": "clean_yaml"
+    },
+    {
+      "text": "name: bob\nage: 25\n",
+      "expected_repr": "{'name': 'bob', 'age': 25}",
+      "parsed_repr": "{'name': 'bob', 'age': 25}",
+      "format_id": "yaml",
+      "corruption": "clean",
+      "matched": true,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "format=yaml: no ParsingStrategy for this shape (shape=mapping_kv2to3_seq0_balanced)"
+      ],
+      "category": "training",
+      "shape": "clean_yaml"
+    },
+    {
+      "text": "colours:\n  - red\n  - blue\n",
+      "expected_repr": "{'colours': ['red', 'blue']}",
+      "parsed_repr": "{'colours': ['red', 'blue']}",
+      "format_id": "yaml",
+      "corruption": "clean",
+      "matched": true,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "format=yaml: no ParsingStrategy for this shape (shape=nested_kv1_seq2to3_balanced)"
+      ],
+      "category": "training",
+      "shape": "clean_yaml"
+    },
+    {
+      "text": "server:\n  host: localhost\n  port: 8080\n",
+      "expected_repr": "{'server': {'host': 'localhost', 'port': 8080}}",
+      "parsed_repr": "{'server': {'host': 'localhost', 'port': 8080}}",
+      "format_id": "yaml",
+      "corruption": "clean",
+      "matched": true,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "training",
+      "shape": "clean_yaml"
+    },
+    {
+      "text": "items:\n  - id: 1\n    name: a\n  - id: 2\n    name: b\n",
+      "expected_repr": "{'items': [{'id': 1, 'name': 'a'}, {'id': 2, 'name': 'b'}]}",
+      "parsed_repr": "{'items': [{'id': 1, 'name': 'a'}, {'id': 2, 'name': 'b'}]}",
+      "format_id": "yaml",
+      "corruption": "clean",
+      "matched": true,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "format=yaml: no ParsingStrategy for this shape (shape=nested_kv4plus_seq2to3_balanced)"
+      ],
+      "category": "training",
+      "shape": "clean_yaml"
+    },
+    {
+      "text": "k = 1\n",
+      "expected_repr": "{'k': 1}",
+      "parsed_repr": "'k = 1'",
+      "format_id": "yaml",
+      "corruption": "clean",
+      "matched": false,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "training",
+      "shape": "clean_toml"
+    },
+    {
+      "text": "name = \"carol\"\nage = 28\n",
+      "expected_repr": "{'name': 'carol', 'age': 28}",
+      "parsed_repr": "'name = \"carol\" age = 28'",
+      "format_id": "yaml",
+      "corruption": "clean",
+      "matched": false,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "training",
+      "shape": "clean_toml"
+    },
+    {
+      "text": "nums = [10, 20, 30]\n",
+      "expected_repr": "{'nums': [10, 20, 30]}",
+      "parsed_repr": "'nums = [10, 20, 30]'",
+      "format_id": "yaml",
+      "corruption": "clean",
+      "matched": false,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "training",
+      "shape": "clean_toml"
+    },
+    {
+      "text": "[server]\nhost = \"localhost\"\nport = 9000\n",
+      "expected_repr": "{'server': {'host': 'localhost', 'port': 9000}}",
+      "parsed_repr": "None",
+      "format_id": "json",
+      "corruption": "unknown_json_error",
+      "matched": false,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "format=json corruption=unknown_json_error: no ParsingStrategy for this shape (shape=mapping_kv2to3_seq0_balanced)"
+      ],
+      "category": "training",
+      "shape": "clean_toml"
+    },
+    {
+      "text": "title = \"doc\"\n[meta]\nversion = \"1.0\"\n",
+      "expected_repr": "{'title': 'doc', 'meta': {'version': '1.0'}}",
+      "parsed_repr": "'title = \"doc\" [meta] version = \"1.0\"'",
+      "format_id": "yaml",
+      "corruption": "clean",
+      "matched": false,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "training",
+      "shape": "clean_toml"
+    },
+    {
+      "text": "<r><a>1</a></r>",
+      "expected_repr": "{'a': 1}",
+      "parsed_repr": "{'a': 1}",
+      "format_id": "xml",
+      "corruption": "clean",
+      "matched": true,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "format=xml: no ParsingStrategy for this shape (shape=atomic_kv0_seq0_balanced_unquoted_d1_angles)"
+      ],
+      "category": "training",
+      "shape": "clean_xml"
+    },
+    {
+      "text": "<person><name>dan</name><age>40</age></person>",
+      "expected_repr": "{'name': 'dan', 'age': 40}",
+      "parsed_repr": "{'name': 'dan', 'age': 40}",
+      "format_id": "xml",
+      "corruption": "clean",
+      "matched": true,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "training",
+      "shape": "clean_xml"
+    },
+    {
+      "text": "<nums><n>1</n><n>2</n><n>3</n></nums>",
+      "expected_repr": "[1, 2, 3]",
+      "parsed_repr": "[1, 2, 3]",
+      "format_id": "xml",
+      "corruption": "clean",
+      "matched": true,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "training",
+      "shape": "clean_xml"
+    },
+    {
+      "text": "<cfg><host>a</host><port>80</port></cfg>",
+      "expected_repr": "{'host': 'a', 'port': 80}",
+      "parsed_repr": "{'host': 'a', 'port': 80}",
+      "format_id": "xml",
+      "corruption": "clean",
+      "matched": true,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "training",
+      "shape": "clean_xml"
+    },
+    {
+      "text": "<lst><item><k>1</k></item><item><k>2</k></item></lst>",
+      "expected_repr": "[{'k': 1}, {'k': 2}]",
+      "parsed_repr": "[{'k': 1}, {'k': 2}]",
+      "format_id": "xml",
+      "corruption": "clean",
+      "matched": true,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "training",
+      "shape": "clean_xml"
+    },
+    {
+      "text": "a,b\n1,2\n",
+      "expected_repr": "[['a', 'b'], ['1', '2']]",
+      "parsed_repr": "None",
+      "format_id": "unknown",
+      "corruption": "unknown",
+      "matched": false,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "unknown format \u2014 cannot classify text (shape=sequence_kv0_seq2to3_balanced)"
+      ],
+      "category": "training",
+      "shape": "clean_csv"
+    },
+    {
+      "text": "name,age\nalice,30\nbob,25\n",
+      "expected_repr": "[['name', 'age'], ['alice', '30'], ['bob', '25']]",
+      "parsed_repr": "None",
+      "format_id": "unknown",
+      "corruption": "unknown",
+      "matched": false,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "unknown format \u2014 cannot classify text (shape=sequence_kv0_seq2to3_balanced)"
+      ],
+      "category": "training",
+      "shape": "clean_csv"
+    },
+    {
+      "text": "x,y,z\n1,2,3\n4,5,6\n",
+      "expected_repr": "[['x', 'y', 'z'], ['1', '2', '3'], ['4', '5', '6']]",
+      "parsed_repr": "None",
+      "format_id": "unknown",
+      "corruption": "unknown",
+      "matched": false,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "unknown format \u2014 cannot classify text (shape=sequence_kv0_seq4plus_balanced)"
+      ],
+      "category": "training",
+      "shape": "clean_csv"
+    },
+    {
+      "text": "id\n1\n2\n3\n",
+      "expected_repr": "[['id'], ['1'], ['2'], ['3']]",
+      "parsed_repr": "None",
+      "format_id": "unknown",
+      "corruption": "unknown",
+      "matched": false,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "unknown format \u2014 cannot classify text (shape=atomic_kv0_seq0_balanced_unquoted_d0_flat)"
+      ],
+      "category": "training",
+      "shape": "clean_csv"
+    },
+    {
+      "text": "k,v\nfoo,bar\n",
+      "expected_repr": "[['k', 'v'], ['foo', 'bar']]",
+      "parsed_repr": "None",
+      "format_id": "unknown",
+      "corruption": "unknown",
+      "matched": false,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "unknown format \u2014 cannot classify text (shape=sequence_kv0_seq2to3_balanced)"
+      ],
+      "category": "training",
+      "shape": "clean_csv"
+    },
+    {
+      "text": "[s]\nk = 1\n",
+      "expected_repr": "{'s': {'k': '1'}}",
+      "parsed_repr": "None",
+      "format_id": "json",
+      "corruption": "unknown_json_error",
+      "matched": false,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "format=json corruption=unknown_json_error: no ParsingStrategy for this shape (shape=mapping_kv1_seq0_balanced)"
+      ],
+      "category": "training",
+      "shape": "clean_ini"
+    },
+    {
+      "text": "[server]\nhost = localhost\nport = 80\n",
+      "expected_repr": "{'server': {'host': 'localhost', 'port': '80'}}",
+      "parsed_repr": "None",
+      "format_id": "json",
+      "corruption": "unknown_json_error",
+      "matched": false,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "format=json corruption=unknown_json_error: no ParsingStrategy for this shape (shape=mapping_kv2to3_seq0_balanced)"
+      ],
+      "category": "training",
+      "shape": "clean_ini"
+    },
+    {
+      "text": "[app]\nname = demo\n[debug]\nlevel = info\n",
+      "expected_repr": "{'app': {'name': 'demo'}, 'debug': {'level': 'info'}}",
+      "parsed_repr": "None",
+      "format_id": "json",
+      "corruption": "unknown_json_error",
+      "matched": false,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "format=json corruption=unknown_json_error: no ParsingStrategy for this shape (shape=mapping_kv2to3_seq0_balanced)"
+      ],
+      "category": "training",
+      "shape": "clean_ini"
+    },
+    {
+      "text": "[a]\nk1 = v1\nk2 = v2\n",
+      "expected_repr": "{'a': {'k1': 'v1', 'k2': 'v2'}}",
+      "parsed_repr": "None",
+      "format_id": "json",
+      "corruption": "unknown_json_error",
+      "matched": false,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "format=json corruption=unknown_json_error: no ParsingStrategy for this shape (shape=mapping_kv2to3_seq0_balanced)"
+      ],
+      "category": "training",
+      "shape": "clean_ini"
+    },
+    {
+      "text": "[main]\nthreads = 4\n",
+      "expected_repr": "{'main': {'threads': '4'}}",
+      "parsed_repr": "None",
+      "format_id": "json",
+      "corruption": "unknown_json_error",
+      "matched": false,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "format=json corruption=unknown_json_error: no ParsingStrategy for this shape (shape=mapping_kv1_seq0_balanced)"
+      ],
+      "category": "training",
+      "shape": "clean_ini"
+    },
+    {
+      "text": "{\"a\": 1, \"b\": 2,}",
+      "expected_repr": "{'a': 1, 'b': 2}",
+      "parsed_repr": "{'a': 1, 'b': 2}",
+      "format_id": "json",
+      "corruption": "trailing_comma",
+      "matched": true,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "format=json corruption=trailing_comma: no ParsingStrategy for this shape (shape=nested_kv2to3_seq2to3_balanced)"
+      ],
+      "category": "training",
+      "shape": "json_trailing"
+    },
+    {
+      "text": "[1, 2, 3,]",
+      "expected_repr": "[1, 2, 3]",
+      "parsed_repr": "[1, 2, 3]",
+      "format_id": "json",
+      "corruption": "trailing_comma",
+      "matched": true,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "format=json corruption=trailing_comma: no ParsingStrategy for this shape (shape=sequence_kv0_seq2to3_balanced)"
+      ],
+      "category": "training",
+      "shape": "json_trailing"
+    },
+    {
+      "text": "{\"x\": 5,}",
+      "expected_repr": "{'x': 5}",
+      "parsed_repr": "{'x': 5}",
+      "format_id": "json",
+      "corruption": "trailing_comma",
+      "matched": true,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "format=json corruption=trailing_comma: no ParsingStrategy for this shape (shape=nested_kv1_seq1_balanced)"
+      ],
+      "category": "training",
+      "shape": "json_trailing"
+    },
+    {
+      "text": "{\"a\": 1, \"b\": [2, 3,],}",
+      "expected_repr": "{'a': 1, 'b': [2, 3]}",
+      "parsed_repr": "{'a': 1, 'b': [2, 3]}",
+      "format_id": "json",
+      "corruption": "trailing_comma",
+      "matched": true,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "training",
+      "shape": "json_trailing"
+    },
+    {
+      "text": "{\"k\": \"v\",}",
+      "expected_repr": "{'k': 'v'}",
+      "parsed_repr": "{'k': 'v'}",
+      "format_id": "json",
+      "corruption": "trailing_comma",
+      "matched": true,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "training",
+      "shape": "json_trailing"
+    },
+    {
+      "text": "[true, false, null,]",
+      "expected_repr": "[True, False, None]",
+      "parsed_repr": "[True, False, None]",
+      "format_id": "json",
+      "corruption": "trailing_comma",
+      "matched": true,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "training",
+      "shape": "json_trailing"
+    },
+    {
+      "text": "{\"nums\": [1, 2,], \"ok\": true,}",
+      "expected_repr": "{'nums': [1, 2], 'ok': True}",
+      "parsed_repr": "{'nums': [1, 2], 'ok': True}",
+      "format_id": "json",
+      "corruption": "trailing_comma",
+      "matched": true,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "training",
+      "shape": "json_trailing"
+    },
+    {
+      "text": "{\"a\": 1,}",
+      "expected_repr": "{'a': 1}",
+      "parsed_repr": "{'a': 1}",
+      "format_id": "json",
+      "corruption": "trailing_comma",
+      "matched": true,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "training",
+      "shape": "json_trailing"
+    },
+    {
+      "text": "[[1, 2,], [3, 4,],]",
+      "expected_repr": "[[1, 2], [3, 4]]",
+      "parsed_repr": "[[1, 2], [3, 4]]",
+      "format_id": "json",
+      "corruption": "trailing_comma",
+      "matched": true,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "training",
+      "shape": "json_trailing"
+    },
+    {
+      "text": "{\"users\": [{\"id\": 1,}, {\"id\": 2,},],}",
+      "expected_repr": "{'users': [{'id': 1}, {'id': 2}]}",
+      "parsed_repr": "{'users': [{'id': 1}, {'id': 2}]}",
+      "format_id": "json",
+      "corruption": "trailing_comma",
+      "matched": true,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "training",
+      "shape": "json_trailing"
+    },
+    {
+      "text": "{\"a\": \"b\",}",
+      "expected_repr": "{'a': 'b'}",
+      "parsed_repr": "{'a': 'b'}",
+      "format_id": "json",
+      "corruption": "trailing_comma",
+      "matched": true,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "training",
+      "shape": "json_trailing"
+    },
+    {
+      "text": "[10,]",
+      "expected_repr": "[10]",
+      "parsed_repr": "[10]",
+      "format_id": "json",
+      "corruption": "trailing_comma",
+      "matched": true,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "format=json corruption=trailing_comma: no ParsingStrategy for this shape (shape=sequence_kv0_seq1_balanced)"
+      ],
+      "category": "training",
+      "shape": "json_trailing"
+    },
+    {
+      "text": "{\"only\": 1,}",
+      "expected_repr": "{'only': 1}",
+      "parsed_repr": "{'only': 1}",
+      "format_id": "json",
+      "corruption": "trailing_comma",
+      "matched": true,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "training",
+      "shape": "json_trailing"
+    },
+    {
+      "text": "{\"q\": [1, 2, 3,]}",
+      "expected_repr": "{'q': [1, 2, 3]}",
+      "parsed_repr": "{'q': [1, 2, 3]}",
+      "format_id": "yaml",
+      "corruption": "clean",
+      "matched": true,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "training",
+      "shape": "json_trailing"
+    },
+    {
+      "text": "{\"d\": {\"e\": 1,},}",
+      "expected_repr": "{'d': {'e': 1}}",
+      "parsed_repr": "{'d': {'e': 1}}",
+      "format_id": "json",
+      "corruption": "trailing_comma",
+      "matched": true,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "training",
+      "shape": "json_trailing"
+    },
+    {
+      "text": "{a: 1, b: 2,}",
+      "expected_repr": "{'a': 1, 'b': 2}",
+      "parsed_repr": "None",
+      "format_id": "json",
+      "corruption": "trailing_comma",
+      "matched": false,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "format=json corruption=trailing_comma: no ParsingStrategy for this shape (shape=nested_kv2to3_seq2to3_balanced)"
+      ],
+      "category": "training",
+      "shape": "json_trailing"
+    },
+    {
+      "text": "[1, 2, 3, 4,]",
+      "expected_repr": "[1, 2, 3, 4]",
+      "parsed_repr": "[1, 2, 3, 4]",
+      "format_id": "json",
+      "corruption": "trailing_comma",
+      "matched": true,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "format=json corruption=trailing_comma: no ParsingStrategy for this shape (shape=sequence_kv0_seq4plus_balanced)"
+      ],
+      "category": "training",
+      "shape": "json_trailing"
+    },
+    {
+      "text": "{\"k1\": 1, \"k2\": 2, \"k3\": 3,}",
+      "expected_repr": "{'k1': 1, 'k2': 2, 'k3': 3}",
+      "parsed_repr": "{'k1': 1, 'k2': 2, 'k3': 3}",
+      "format_id": "json",
+      "corruption": "trailing_comma",
+      "matched": true,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "training",
+      "shape": "json_trailing"
+    },
+    {
+      "text": "{\"arr\": [1,], \"v\": 2,}",
+      "expected_repr": "{'arr': [1], 'v': 2}",
+      "parsed_repr": "{'arr': [1], 'v': 2}",
+      "format_id": "json",
+      "corruption": "trailing_comma",
+      "matched": true,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "training",
+      "shape": "json_trailing"
+    },
+    {
+      "text": "{\"pair\": [\"a\", \"b\",],}",
+      "expected_repr": "{'pair': ['a', 'b']}",
+      "parsed_repr": "{'pair': ['a', 'b']}",
+      "format_id": "json",
+      "corruption": "trailing_comma",
+      "matched": true,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "training",
+      "shape": "json_trailing"
+    },
+    {
+      "text": "{a: 1}",
+      "expected_repr": "{'a': 1}",
+      "parsed_repr": "{'a': 1}",
+      "format_id": "yaml",
+      "corruption": "clean",
+      "matched": true,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "training",
+      "shape": "json_unquoted"
+    },
+    {
+      "text": "{name: \"alice\"}",
+      "expected_repr": "{'name': 'alice'}",
+      "parsed_repr": "{'name': 'alice'}",
+      "format_id": "yaml",
+      "corruption": "clean",
+      "matched": true,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "training",
+      "shape": "json_unquoted"
+    },
+    {
+      "text": "{x: 1, y: 2}",
+      "expected_repr": "{'x': 1, 'y': 2}",
+      "parsed_repr": "{'x': 1, 'y': 2}",
+      "format_id": "json",
+      "corruption": "unquoted_key",
+      "matched": true,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "format=json corruption=unquoted_key: no ParsingStrategy for this shape (shape=nested_kv2to3_seq1_balanced)"
+      ],
+      "category": "training",
+      "shape": "json_unquoted"
+    },
+    {
+      "text": "{a: 1, b: 2, c: 3}",
+      "expected_repr": "{'a': 1, 'b': 2, 'c': 3}",
+      "parsed_repr": "{'a': 1, 'b': 2, 'c': 3}",
+      "format_id": "json",
+      "corruption": "unquoted_key",
+      "matched": true,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "format=json corruption=unquoted_key: no ParsingStrategy for this shape (shape=nested_kv2to3_seq2to3_balanced)"
+      ],
+      "category": "training",
+      "shape": "json_unquoted"
+    },
+    {
+      "text": "{nums: [1, 2, 3]}",
+      "expected_repr": "{'nums': [1, 2, 3]}",
+      "parsed_repr": "{'nums': [1, 2, 3]}",
+      "format_id": "yaml",
+      "corruption": "clean",
+      "matched": true,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "training",
+      "shape": "json_unquoted"
+    },
+    {
+      "text": "{server: {host: \"a\", port: 80}}",
+      "expected_repr": "{'server': {'host': 'a', 'port': 80}}",
+      "parsed_repr": "{'server': {'host': 'a', 'port': 80}}",
+      "format_id": "yaml",
+      "corruption": "clean",
+      "matched": true,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "training",
+      "shape": "json_unquoted"
+    },
+    {
+      "text": "{ok: true}",
+      "expected_repr": "{'ok': True}",
+      "parsed_repr": "{'ok': True}",
+      "format_id": "yaml",
+      "corruption": "clean",
+      "matched": true,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "training",
+      "shape": "json_unquoted"
+    },
+    {
+      "text": "{empty: null}",
+      "expected_repr": "{'empty': None}",
+      "parsed_repr": "{'empty': None}",
+      "format_id": "yaml",
+      "corruption": "clean",
+      "matched": true,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "training",
+      "shape": "json_unquoted"
+    },
+    {
+      "text": "{count: 42}",
+      "expected_repr": "{'count': 42}",
+      "parsed_repr": "{'count': 42}",
+      "format_id": "yaml",
+      "corruption": "clean",
+      "matched": true,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "training",
+      "shape": "json_unquoted"
+    },
+    {
+      "text": "{a: 1, b: \"two\"}",
+      "expected_repr": "{'a': 1, 'b': 'two'}",
+      "parsed_repr": "{'a': 1, 'b': 'two'}",
+      "format_id": "json",
+      "corruption": "unquoted_key",
+      "matched": true,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "training",
+      "shape": "json_unquoted"
+    },
+    {
+      "text": "{user: {id: 1}}",
+      "expected_repr": "{'user': {'id': 1}}",
+      "parsed_repr": "{'user': {'id': 1}}",
+      "format_id": "yaml",
+      "corruption": "clean",
+      "matched": true,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "training",
+      "shape": "json_unquoted"
+    },
+    {
+      "text": "{ts: 1700000000}",
+      "expected_repr": "{'ts': 1700000000}",
+      "parsed_repr": "{'ts': 1700000000}",
+      "format_id": "yaml",
+      "corruption": "clean",
+      "matched": true,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "training",
+      "shape": "json_unquoted"
+    },
+    {
+      "text": "{k: [1, 2]}",
+      "expected_repr": "{'k': [1, 2]}",
+      "parsed_repr": "{'k': [1, 2]}",
+      "format_id": "yaml",
+      "corruption": "clean",
+      "matched": true,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "training",
+      "shape": "json_unquoted"
+    },
+    {
+      "text": "{outer: {inner: 9}}",
+      "expected_repr": "{'outer': {'inner': 9}}",
+      "parsed_repr": "{'outer': {'inner': 9}}",
+      "format_id": "yaml",
+      "corruption": "clean",
+      "matched": true,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "training",
+      "shape": "json_unquoted"
+    },
+    {
+      "text": "{a: 1.5}",
+      "expected_repr": "{'a': 1.5}",
+      "parsed_repr": "{'a': 1.5}",
+      "format_id": "yaml",
+      "corruption": "clean",
+      "matched": true,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "training",
+      "shape": "json_unquoted"
+    },
+    {
+      "text": "{\"a\": 1",
+      "expected_repr": "{'a': 1}",
+      "parsed_repr": "{'a': 1}",
+      "format_id": "json",
+      "corruption": "missing_brace",
+      "matched": true,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "format=json corruption=missing_brace: no ParsingStrategy for this shape (shape=mapping_kv1_seq0_unbalanced)"
+      ],
+      "category": "training",
+      "shape": "json_missing"
+    },
+    {
+      "text": "{\"a\": {\"b\": 1}",
+      "expected_repr": "{'a': {'b': 1}}",
+      "parsed_repr": "{'a': {'b': 1}}",
+      "format_id": "json",
+      "corruption": "missing_brace",
+      "matched": true,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "training",
+      "shape": "json_missing"
+    },
+    {
+      "text": "[1, 2, 3",
+      "expected_repr": "[1, 2, 3]",
+      "parsed_repr": "[1, 2, 3]",
+      "format_id": "json",
+      "corruption": "missing_brace",
+      "matched": true,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "format=json corruption=missing_brace: no ParsingStrategy for this shape (shape=sequence_kv0_seq2to3_unbalanced)"
+      ],
+      "category": "training",
+      "shape": "json_missing"
+    },
+    {
+      "text": "{\"x\": [1, 2",
+      "expected_repr": "{'x': [1, 2]}",
+      "parsed_repr": "None",
+      "format_id": "json",
+      "corruption": "missing_brace",
+      "matched": false,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "format=json corruption=missing_brace: no ParsingStrategy for this shape (shape=mapping_kv1_seq0_unbalanced)"
+      ],
+      "category": "training",
+      "shape": "json_missing"
+    },
+    {
+      "text": "{\"a\": 1, \"b\": 2",
+      "expected_repr": "{'a': 1, 'b': 2}",
+      "parsed_repr": "{'a': 1, 'b': 2}",
+      "format_id": "json",
+      "corruption": "missing_brace",
+      "matched": true,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "format=json corruption=missing_brace: no ParsingStrategy for this shape (shape=nested_kv2to3_seq1_unbalanced)"
+      ],
+      "category": "training",
+      "shape": "json_missing"
+    },
+    {
+      "text": "{\"k\": \"v\"",
+      "expected_repr": "{'k': 'v'}",
+      "parsed_repr": "{'k': 'v'}",
+      "format_id": "json",
+      "corruption": "missing_brace",
+      "matched": true,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "training",
+      "shape": "json_missing"
+    },
+    {
+      "text": "[[1, 2], [3, 4",
+      "expected_repr": "[[1, 2], [3, 4]]",
+      "parsed_repr": "[[1, 2], [3, 4]]",
+      "format_id": "json",
+      "corruption": "missing_brace",
+      "matched": true,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "format=json corruption=missing_brace: no ParsingStrategy for this shape (shape=sequence_kv0_seq1_unbalanced)"
+      ],
+      "category": "training",
+      "shape": "json_missing"
+    },
+    {
+      "text": "{\"users\": [{\"id\": 1}, {\"id\": 2}",
+      "expected_repr": "{'users': [{'id': 1}, {'id': 2}]}",
+      "parsed_repr": "None",
+      "format_id": "json",
+      "corruption": "missing_brace",
+      "matched": false,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "format=json corruption=missing_brace: no ParsingStrategy for this shape (shape=mapping_kv1_seq0_unbalanced)"
+      ],
+      "category": "training",
+      "shape": "json_missing"
+    },
+    {
+      "text": "{\"nested\": {\"a\": {\"b\": 5}",
+      "expected_repr": "{'nested': {'a': {'b': 5}}}",
+      "parsed_repr": "{'nested': {'a': {'b': 5}}}",
+      "format_id": "json",
+      "corruption": "missing_brace",
+      "matched": true,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "training",
+      "shape": "json_missing"
+    },
+    {
+      "text": "[true, false",
+      "expected_repr": "[True, False]",
+      "parsed_repr": "[True, False]",
+      "format_id": "json",
+      "corruption": "missing_brace",
+      "matched": true,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "training",
+      "shape": "json_missing"
+    },
+    {
+      "text": "{\"q\": [1, 2, 3",
+      "expected_repr": "{'q': [1, 2, 3]}",
+      "parsed_repr": "None",
+      "format_id": "json",
+      "corruption": "missing_brace",
+      "matched": false,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "format=json corruption=missing_brace: no ParsingStrategy for this shape (shape=mapping_kv1_seq0_unbalanced)"
+      ],
+      "category": "training",
+      "shape": "json_missing"
+    },
+    {
+      "text": "{\"obj\": {\"x\": 1}, \"n\": 5",
+      "expected_repr": "{'obj': {'x': 1}, 'n': 5}",
+      "parsed_repr": "{'obj': {'x': 1}, 'n': 5}",
+      "format_id": "json",
+      "corruption": "missing_brace",
+      "matched": true,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "training",
+      "shape": "json_missing"
+    },
+    {
+      "text": "{\"a\": \"b\", \"c\": \"d\"",
+      "expected_repr": "{'a': 'b', 'c': 'd'}",
+      "parsed_repr": "{'a': 'b', 'c': 'd'}",
+      "format_id": "json",
+      "corruption": "missing_brace",
+      "matched": true,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "training",
+      "shape": "json_missing"
+    },
+    {
+      "text": "{\"deep\": [[1",
+      "expected_repr": "{'deep': [[1]]}",
+      "parsed_repr": "None",
+      "format_id": "json",
+      "corruption": "missing_brace",
+      "matched": false,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "format=json corruption=missing_brace: no ParsingStrategy for this shape (shape=mapping_kv1_seq0_unbalanced)"
+      ],
+      "category": "training",
+      "shape": "json_missing"
+    },
+    {
+      "text": "{\"a\": 1, \"b\": [2, 3]",
+      "expected_repr": "{'a': 1, 'b': [2, 3]}",
+      "parsed_repr": "{'a': 1, 'b': [2, 3]}",
+      "format_id": "json",
+      "corruption": "missing_brace",
+      "matched": true,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "training",
+      "shape": "json_missing"
+    },
+    {
+      "text": "{a: 1, b: 2,}",
+      "expected_repr": "{'a': 1, 'b': 2}",
+      "parsed_repr": "None",
+      "format_id": "json",
+      "corruption": "trailing_comma",
+      "matched": false,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "format=json corruption=trailing_comma: no ParsingStrategy for this shape (shape=nested_kv2to3_seq2to3_balanced)"
+      ],
+      "category": "training",
+      "shape": "mixed_corr"
+    },
+    {
+      "text": "{x: 5,}",
+      "expected_repr": "{'x': 5}",
+      "parsed_repr": "None",
+      "format_id": "json",
+      "corruption": "trailing_comma",
+      "matched": false,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "format=json corruption=trailing_comma: no ParsingStrategy for this shape (shape=nested_kv1_seq1_balanced)"
+      ],
+      "category": "training",
+      "shape": "mixed_corr"
+    },
+    {
+      "text": "{name: \"z\", age: 1,}",
+      "expected_repr": "{'name': 'z', 'age': 1}",
+      "parsed_repr": "None",
+      "format_id": "json",
+      "corruption": "trailing_comma",
+      "matched": false,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "format=json corruption=trailing_comma: no ParsingStrategy for this shape (shape=nested_kv2to3_seq2to3_balanced)"
+      ],
+      "category": "training",
+      "shape": "mixed_corr"
+    },
+    {
+      "text": "{a: 1, b: 2",
+      "expected_repr": "{'a': 1, 'b': 2}",
+      "parsed_repr": "None",
+      "format_id": "json",
+      "corruption": "unquoted_key",
+      "matched": false,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "format=json corruption=unquoted_key: no ParsingStrategy for this shape (shape=nested_kv2to3_seq1_unbalanced)"
+      ],
+      "category": "training",
+      "shape": "mixed_corr"
+    },
+    {
+      "text": "{k: \"v\"",
+      "expected_repr": "{'k': 'v'}",
+      "parsed_repr": "None",
+      "format_id": "json",
+      "corruption": "unquoted_key",
+      "matched": false,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "format=json corruption=unquoted_key: no ParsingStrategy for this shape (shape=mapping_kv1_seq0_unbalanced)"
+      ],
+      "category": "training",
+      "shape": "mixed_corr"
+    },
+    {
+      "text": "{\"a\": 1, \"b\": 2,",
+      "expected_repr": "{'a': 1, 'b': 2}",
+      "parsed_repr": "None",
+      "format_id": "json",
+      "corruption": "missing_brace",
+      "matched": false,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "format=json corruption=missing_brace: no ParsingStrategy for this shape (shape=nested_kv2to3_seq2to3_unbalanced)"
+      ],
+      "category": "training",
+      "shape": "mixed_corr"
+    },
+    {
+      "text": "[1, 2, 3,",
+      "expected_repr": "[1, 2, 3]",
+      "parsed_repr": "None",
+      "format_id": "json",
+      "corruption": "missing_brace",
+      "matched": false,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "format=json corruption=missing_brace: no ParsingStrategy for this shape (shape=sequence_kv0_seq2to3_unbalanced)"
+      ],
+      "category": "training",
+      "shape": "mixed_corr"
+    },
+    {
+      "text": "{a: 1,",
+      "expected_repr": "{'a': 1}",
+      "parsed_repr": "None",
+      "format_id": "json",
+      "corruption": "unquoted_key",
+      "matched": false,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "format=json corruption=unquoted_key: no ParsingStrategy for this shape (shape=nested_kv1_seq1_unbalanced)"
+      ],
+      "category": "training",
+      "shape": "mixed_corr"
+    },
+    {
+      "text": "{a: 1, b: [2, 3,",
+      "expected_repr": "{'a': 1, 'b': [2, 3]}",
+      "parsed_repr": "None",
+      "format_id": "json",
+      "corruption": "unquoted_key",
+      "matched": false,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "format=json corruption=unquoted_key: no ParsingStrategy for this shape (shape=nested_kv2to3_seq1_unbalanced)"
+      ],
+      "category": "training",
+      "shape": "mixed_corr"
+    },
+    {
+      "text": "{x: [1, 2,",
+      "expected_repr": "{'x': [1, 2]}",
+      "parsed_repr": "None",
+      "format_id": "json",
+      "corruption": "unquoted_key",
+      "matched": false,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "format=json corruption=unquoted_key: no ParsingStrategy for this shape (shape=mapping_kv1_seq0_unbalanced)"
+      ],
+      "category": "training",
+      "shape": "mixed_corr"
+    },
+    {
+      "text": "<a>1</b>",
+      "expected_repr": "None",
+      "parsed_repr": "None",
+      "format_id": "xml",
+      "corruption": "mismatched_tag",
+      "matched": true,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "format=xml corruption=mismatched_tag: no ParsingStrategy for this shape (shape=atomic_kv0_seq0_balanced_unquoted_d1_angles)"
+      ],
+      "category": "training",
+      "shape": "misnested"
+    },
+    {
+      "text": "<root><a>1</b></root>",
+      "expected_repr": "None",
+      "parsed_repr": "None",
+      "format_id": "xml",
+      "corruption": "mismatched_tag",
+      "matched": true,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "training",
+      "shape": "misnested"
+    },
+    {
+      "text": "<x><y>2</z></x>",
+      "expected_repr": "None",
+      "parsed_repr": "None",
+      "format_id": "xml",
+      "corruption": "mismatched_tag",
+      "matched": true,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "training",
+      "shape": "misnested"
+    },
+    {
+      "text": "<a><b>1</a></b>",
+      "expected_repr": "None",
+      "parsed_repr": "None",
+      "format_id": "xml",
+      "corruption": "mismatched_tag",
+      "matched": true,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "training",
+      "shape": "misnested"
+    },
+    {
+      "text": "<r><a>1</a><b>2</c></r>",
+      "expected_repr": "None",
+      "parsed_repr": "None",
+      "format_id": "xml",
+      "corruption": "mismatched_tag",
+      "matched": true,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "training",
+      "shape": "misnested"
+    },
+    {
+      "text": "{\"a\": [1, 2}",
+      "expected_repr": "None",
+      "parsed_repr": "None",
+      "format_id": "json",
+      "corruption": "missing_brace",
+      "matched": true,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "format=json corruption=missing_brace: no ParsingStrategy for this shape (shape=mapping_kv1_seq0_unbalanced)"
+      ],
+      "category": "training",
+      "shape": "misnested"
+    },
+    {
+      "text": "[1, 2}",
+      "expected_repr": "None",
+      "parsed_repr": "None",
+      "format_id": "json",
+      "corruption": "missing_brace",
+      "matched": true,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "format=json corruption=missing_brace: no ParsingStrategy for this shape (shape=sequence_kv0_seq1_unbalanced)"
+      ],
+      "category": "training",
+      "shape": "misnested"
+    },
+    {
+      "text": "{\"a\": 1]",
+      "expected_repr": "None",
+      "parsed_repr": "None",
+      "format_id": "json",
+      "corruption": "missing_brace",
+      "matched": true,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "format=json corruption=missing_brace: no ParsingStrategy for this shape (shape=mapping_kv1_seq0_unbalanced)"
+      ],
+      "category": "training",
+      "shape": "misnested"
+    },
+    {
+      "text": "<x>1</X>",
+      "expected_repr": "None",
+      "parsed_repr": "None",
+      "format_id": "xml",
+      "corruption": "mismatched_tag",
+      "matched": true,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "training",
+      "shape": "misnested"
+    },
+    {
+      "text": "<a><b/></c>",
+      "expected_repr": "None",
+      "parsed_repr": "None",
+      "format_id": "xml",
+      "corruption": "mismatched_tag",
+      "matched": true,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "training",
+      "shape": "misnested"
+    },
+    {
+      "text": "",
+      "expected_repr": "None",
+      "parsed_repr": "None",
+      "format_id": "empty",
+      "corruption": "empty",
+      "matched": true,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "format=empty corruption=empty: no ParsingStrategy for this shape (shape=atomic_kv0_seq0_balanced_unquoted_d0_flat)"
+      ],
+      "category": "training",
+      "shape": "empty"
+    },
+    {
+      "text": "   ",
+      "expected_repr": "None",
+      "parsed_repr": "None",
+      "format_id": "empty",
+      "corruption": "empty",
+      "matched": true,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "training",
+      "shape": "empty"
+    },
+    {
+      "text": "\n\n",
+      "expected_repr": "None",
+      "parsed_repr": "None",
+      "format_id": "empty",
+      "corruption": "empty",
+      "matched": true,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "training",
+      "shape": "empty"
+    },
+    {
+      "text": "\t",
+      "expected_repr": "None",
+      "parsed_repr": "None",
+      "format_id": "empty",
+      "corruption": "empty",
+      "matched": true,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "training",
+      "shape": "empty"
+    },
+    {
+      "text": "  \n  \t\n",
+      "expected_repr": "None",
+      "parsed_repr": "None",
+      "format_id": "empty",
+      "corruption": "empty",
+      "matched": true,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "format=empty corruption=empty: no ParsingStrategy for this shape (shape=atomic_kv0_seq0_balanced_unquoted_d0_indent)"
+      ],
+      "category": "training",
+      "shape": "empty"
+    }
+  ],
+  "heldout": [
+    {
+      "text": "{\"new_key\": 99}",
+      "expected_repr": "{'new_key': 99}",
+      "parsed_repr": "{'new_key': 99}",
+      "format_id": "json",
+      "corruption": "clean",
+      "matched": true,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "same_shape",
+      "shape": "clean_json"
+    },
+    {
+      "text": "[100, 200, 300]",
+      "expected_repr": "[100, 200, 300]",
+      "parsed_repr": "[100, 200, 300]",
+      "format_id": "json",
+      "corruption": "clean",
+      "matched": true,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "same_shape",
+      "shape": "clean_json"
+    },
+    {
+      "text": "flag: yes\ncount: 7\n",
+      "expected_repr": "{'flag': True, 'count': 7}",
+      "parsed_repr": "{'flag': True, 'count': 7}",
+      "format_id": "yaml",
+      "corruption": "clean",
+      "matched": true,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "same_shape",
+      "shape": "clean_yaml"
+    },
+    {
+      "text": "greeting = \"hello\"\n",
+      "expected_repr": "{'greeting': 'hello'}",
+      "parsed_repr": "'greeting = \"hello\"'",
+      "format_id": "yaml",
+      "corruption": "clean",
+      "matched": false,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "same_shape",
+      "shape": "clean_toml"
+    },
+    {
+      "text": "<doc><title>x</title></doc>",
+      "expected_repr": "{'title': 'x'}",
+      "parsed_repr": "{'title': 'x'}",
+      "format_id": "xml",
+      "corruption": "clean",
+      "matched": true,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "same_shape",
+      "shape": "clean_xml"
+    },
+    {
+      "text": "{\"a\": 99, \"b\": \"novel\",}",
+      "expected_repr": "{'a': 99, 'b': 'novel'}",
+      "parsed_repr": "{'a': 99, 'b': 'novel'}",
+      "format_id": "json",
+      "corruption": "trailing_comma",
+      "matched": true,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "same_shape",
+      "shape": "json_trailing"
+    },
+    {
+      "text": "{novel_key: \"novel_val\"}",
+      "expected_repr": "{'novel_key': 'novel_val'}",
+      "parsed_repr": "{'novel_key': 'novel_val'}",
+      "format_id": "yaml",
+      "corruption": "clean",
+      "matched": true,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "same_shape",
+      "shape": "json_unquoted"
+    },
+    {
+      "text": "{\"completely\": \"different\"",
+      "expected_repr": "{'completely': 'different'}",
+      "parsed_repr": "{'completely': 'different'}",
+      "format_id": "json",
+      "corruption": "missing_brace",
+      "matched": true,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "same_shape",
+      "shape": "json_missing"
+    },
+    {
+      "text": "<a>5</b>",
+      "expected_repr": "None",
+      "parsed_repr": "None",
+      "format_id": "xml",
+      "corruption": "mismatched_tag",
+      "matched": true,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "same_shape",
+      "shape": "misnested"
+    },
+    {
+      "text": "",
+      "expected_repr": "None",
+      "parsed_repr": "None",
+      "format_id": "empty",
+      "corruption": "empty",
+      "matched": true,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "same_shape",
+      "shape": "empty"
+    },
+    {
+      "text": "{\"deep\": {\"deeper\": [1, 2, 3]}}",
+      "expected_repr": "{'deep': {'deeper': [1, 2, 3]}}",
+      "parsed_repr": "{'deep': {'deeper': [1, 2, 3]}}",
+      "format_id": "yaml",
+      "corruption": "clean",
+      "matched": true,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "same_shape",
+      "shape": "clean_json"
+    },
+    {
+      "text": "{a: 1, b: 2, c: 3,}",
+      "expected_repr": "{'a': 1, 'b': 2, 'c': 3}",
+      "parsed_repr": "None",
+      "format_id": "unknown",
+      "corruption": "unhandled",
+      "matched": false,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "format=json corruption=trailing_comma: no ParsingStrategy for this shape (shape=nested_kv2to3_seq2to3_balanced)"
+      ],
+      "category": "same_shape",
+      "shape": "mixed_corr"
+    },
+    {
+      "text": "garbage text {\"a\": 1}",
+      "expected_repr": "{'a': 1}",
+      "parsed_repr": "{'garbage text {\"a\"': '1}'}",
+      "format_id": "yaml",
+      "corruption": "clean",
+      "matched": false,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "novel_corruption",
+      "shape": "json_leading_text"
+    },
+    {
+      "text": "{\"a\": 1} trailing junk",
+      "expected_repr": "{'a': 1}",
+      "parsed_repr": "None",
+      "format_id": "unknown",
+      "corruption": "unhandled",
+      "matched": false,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "format=json corruption=unknown_json_error: no ParsingStrategy for this shape (shape=mapping_kv1_seq0_balanced)"
+      ],
+      "category": "novel_corruption",
+      "shape": "json_trailing_text"
+    },
+    {
+      "text": "{'a': 1}",
+      "expected_repr": "{'a': 1}",
+      "parsed_repr": "{'a': 1}",
+      "format_id": "yaml",
+      "corruption": "clean",
+      "matched": true,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "novel_corruption",
+      "shape": "json_single_quotes"
+    },
+    {
+      "text": "k:\n\t  v: 1\n",
+      "expected_repr": "{'k': {'v': 1}}",
+      "parsed_repr": "None",
+      "format_id": "unknown",
+      "corruption": "unhandled",
+      "matched": false,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "format=yaml corruption=tab_indent: no ParsingStrategy for this shape (shape=mapping_kv2to3_seq0_balanced)"
+      ],
+      "category": "novel_corruption",
+      "shape": "yaml_mixed_indent"
+    },
+    {
+      "text": "{\"a\": 1 /* note */}",
+      "expected_repr": "{'a': 1}",
+      "parsed_repr": "{'a': '1 /* note */'}",
+      "format_id": "yaml",
+      "corruption": "clean",
+      "matched": false,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "novel_corruption",
+      "shape": "json_comment"
+    },
+    {
+      "text": "{\"a\": 0x1A}",
+      "expected_repr": "{'a': 26}",
+      "parsed_repr": "{'a': 26}",
+      "format_id": "yaml",
+      "corruption": "clean",
+      "matched": true,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "novel_corruption",
+      "shape": "json_hex"
+    },
+    {
+      "text": "k: \u201cv\u201d\n",
+      "expected_repr": "{'k': 'v'}",
+      "parsed_repr": "{'k': '\u201cv\u201d'}",
+      "format_id": "yaml",
+      "corruption": "clean",
+      "matched": false,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "novel_corruption",
+      "shape": "yaml_smart_quotes"
+    },
+    {
+      "text": "{\"a\": True, \"b\": None}",
+      "expected_repr": "{'a': True, 'b': None}",
+      "parsed_repr": "None",
+      "format_id": "unknown",
+      "corruption": "unhandled",
+      "matched": false,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "format=json corruption=unknown_json_error: no ParsingStrategy for this shape (shape=nested_kv2to3_seq1_balanced)"
+      ],
+      "category": "novel_corruption",
+      "shape": "json_python_literals"
+    },
+    {
+      "text": "user = {\"name\": \"x\"}\n",
+      "expected_repr": "{'user': {'name': 'x'}}",
+      "parsed_repr": "None",
+      "format_id": "unknown",
+      "corruption": "unhandled",
+      "matched": false,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "format=toml corruption=unknown_toml_error: no ParsingStrategy for this shape (shape=mapping_kv2to3_seq0_balanced)"
+      ],
+      "category": "novel_corruption",
+      "shape": "toml_json_inline"
+    },
+    {
+      "text": "<r><a/></r>",
+      "expected_repr": "{'a': None}",
+      "parsed_repr": "None",
+      "format_id": "xml",
+      "corruption": "mismatched_tag",
+      "matched": false,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "novel_corruption",
+      "shape": "xml_self_closing"
+    },
+    {
+      "text": "{\"a\": \"line1\nline2\"}",
+      "expected_repr": "{'a': 'line1\\nline2'}",
+      "parsed_repr": "{'a': 'line1 line2'}",
+      "format_id": "yaml",
+      "corruption": "clean",
+      "matched": false,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "novel_corruption",
+      "shape": "json_unescaped_newline"
+    },
+    {
+      "text": "{\"a\": NaN}",
+      "expected_repr": "None",
+      "parsed_repr": "{'a': 'NaN'}",
+      "format_id": "yaml",
+      "corruption": "clean",
+      "matched": false,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "novel_corruption",
+      "shape": "json_nan"
+    },
+    {
+      "text": "foo: 1\n",
+      "expected_repr": "{'foo': 1}",
+      "parsed_repr": "{'foo': 1}",
+      "format_id": "yaml",
+      "corruption": "clean",
+      "matched": true,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "ambiguous",
+      "shape": "yaml_or_text"
+    },
+    {
+      "text": "[1, 2, 3]",
+      "expected_repr": "[1, 2, 3]",
+      "parsed_repr": "[1, 2, 3]",
+      "format_id": "json",
+      "corruption": "clean",
+      "matched": true,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "ambiguous",
+      "shape": "json_or_yaml_flow"
+    },
+    {
+      "text": "42",
+      "expected_repr": "42",
+      "parsed_repr": "None",
+      "format_id": "unknown",
+      "corruption": "unhandled",
+      "matched": false,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "format=json: no ParsingStrategy for this shape (shape=atomic_kv0_seq0_balanced_unquoted_d0_flat)"
+      ],
+      "category": "ambiguous",
+      "shape": "naked_number"
+    },
+    {
+      "text": "true",
+      "expected_repr": "True",
+      "parsed_repr": "None",
+      "format_id": "unknown",
+      "corruption": "unhandled",
+      "matched": false,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "format=json: no ParsingStrategy for this shape (shape=atomic_kv0_seq0_balanced_unquoted_d0_flat)"
+      ],
+      "category": "ambiguous",
+      "shape": "naked_bool"
+    },
+    {
+      "text": "a = 1\nb = 2\n",
+      "expected_repr": "{'a': 1, 'b': 2}",
+      "parsed_repr": "'a = 1 b = 2'",
+      "format_id": "yaml",
+      "corruption": "clean",
+      "matched": false,
+      "teacher_calls": 0,
+      "gaps_asked": [],
+      "category": "ambiguous",
+      "shape": "toml_or_ini"
+    },
+    {
+      "text": "[]",
+      "expected_repr": "[]",
+      "parsed_repr": "None",
+      "format_id": "unknown",
+      "corruption": "unhandled",
+      "matched": false,
+      "teacher_calls": 1,
+      "gaps_asked": [
+        "format=json: no ParsingStrategy for this shape (shape=atomic_kv0_seq0_balanced_unquoted_d1_brackets)"
+      ],
+      "category": "ambiguous",
+      "shape": "empty_collection"
+    }
+  ],
+  "summary": {
+    "n_train": 105,
+    "n_held": 30,
+    "train_teacher_calls": 51,
+    "train_matched": 75,
+    "held_matched": 14,
+    "held_would_call_teacher": 8,
+    "grounded": {
+      "format_ids": 5,
+      "corruption_patterns": 9,
+      "parsing_strategies": 59,
+      "observations": 135
+    }
+  }
+}

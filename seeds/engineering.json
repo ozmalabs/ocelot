@@ -1,0 +1,1681 @@
+{
+ "id": "engineering",
+ "version": "0.1.0",
+ "depends_on": [
+  "compiler_theory",
+  "embedded_iot_realtime"
+ ],
+ "description": "Engineering as graph-resident theory. The physical-world disciplines: mechanical (statics, dynamics, materials, strength, machine design), electrical (circuits, EM, power, signals, control), civil/structural (structures, soil, hydraulics), chemical (mass/energy balance, reactors, separations), aerospace (aerodynamics, propulsion, orbital), thermodynamics + heat transfer + fluid mechanics, manufacturing (machining, additive, GD&T, quality), reliability + systems engineering + engineering economics + standards. Beyond what computer_architecture + embedded covered (microelectronics + RT systems): the physical-world disciplines that determine what a machine can actually do.",
+ "category_inheritance": "genlMt → compiler_theory + embedded_iot_realtime. Engineering correctness arguments map to compiler_theory equivalence vocabulary: stress < yield is referential transparency (always-safe condition); FOS calculations are cost equivalence with safety margin; reliability MTBF is denotational equivalence in the limit; failure mode analysis is algebraic law over failure tree.",
+ "concepts": [
+  {
+   "name": "engineering_method",
+   "definition": "Define problem → research → design → analyse → prototype → test → iterate → deploy. Iterative + bounded by constraints.",
+   "why": "Distinguishes engineering from science. Engineering: solve a problem within constraints. Science: understand phenomenon. Different objective; different methods.",
+   "category": "foundation"
+  },
+  {
+   "name": "factor_of_safety",
+   "definition": "FOS = capacity / demand. Margin built into design above expected loads.",
+   "term": {
+    "type": "Eq",
+    "a": {
+     "type": "Lit",
+     "value": "FOS"
+    },
+    "b": {
+     "type": "Lit",
+     "value": "capacity / demand"
+    }
+   },
+   "why": "Loads + properties have uncertainty. FOS accommodates. Typical: 2-3 for ductile static, 6+ for dynamic + brittle, 8+ for human safety. Standards specify.",
+   "category": "foundation"
+  },
+  {
+   "name": "design_constraints",
+   "definition": "Bounds on solution: cost, weight, performance, safety, regulation, manufacturing, time.",
+   "why": "Engineering = optimisation within constraints. Constraints define feasible space. Trade-offs between conflicting constraints drive design decisions.",
+   "category": "foundation"
+  },
+  {
+   "name": "tradeoff_analysis",
+   "definition": "Compare options across multiple criteria. Decision matrix, Pareto front, sensitivity analysis.",
+   "why": "Multi-objective. Light + strong + cheap rarely all three. Engineer picks tradeoff. Trade studies formalise.",
+   "category": "foundation"
+  },
+  {
+   "name": "iterative_design",
+   "definition": "Initial concept → analysis reveals issues → refined design → repeat. Convergent.",
+   "why": "First design rarely optimal. Each iteration learns. Cost of iteration vs cost of failure determines depth. Modern: rapid prototyping accelerates.",
+   "category": "foundation"
+  },
+  {
+   "name": "statics_equilibrium",
+   "definition": "Σ F = 0, Σ M = 0. Object in equilibrium has zero net force + moment.",
+   "term": {
+    "type": "Eq",
+    "a": {
+     "type": "Times",
+     "items": [
+      {
+       "type": "Lit",
+       "value": "Σ"
+      },
+      {
+       "type": "Holds",
+       "concept": "force",
+       "node": {
+        "type": "Var",
+        "name": "x"
+       },
+       "node2": null
+      }
+     ]
+    },
+    "b": {
+     "type": "Lit",
+     "value": 0
+    }
+   },
+   "why": "Foundation of structural analysis. Solve for unknown forces/reactions. Truss + beam + frame analysis. First-year engineering content.",
+   "category": "mechanics"
+  },
+  {
+   "name": "free_body_diagram",
+   "definition": "Isolated body with all forces (applied, reactions, weights) shown. Foundation of statics.",
+   "why": "Visualise + organise force equilibrium. Critical skill. Mistakes here propagate through whole analysis. Standard engineering practice.",
+   "category": "mechanics"
+  },
+  {
+   "name": "moment_force_about_point",
+   "definition": "M = r × F. Tendency of force to rotate body about point.",
+   "term": {
+    "type": "Eq",
+    "a": {
+     "type": "Holds",
+     "concept": "mass",
+     "node": {
+      "type": "Var",
+      "name": "x"
+     },
+     "node2": null
+    },
+    "b": {
+     "type": "Times",
+     "items": [
+      {
+       "type": "Holds",
+       "concept": "schwarzschild_radius",
+       "node": {
+        "type": "Var",
+        "name": "x"
+       },
+       "node2": null
+      },
+      {
+       "type": "Holds",
+       "concept": "force",
+       "node": {
+        "type": "Var",
+        "name": "x"
+       },
+       "node2": null
+      }
+     ]
+    }
+   },
+   "why": "Equilibrium of moments. Beam bending. Torque. Cross product gives axis + magnitude. Universal in engineering.",
+   "category": "mechanics"
+  },
+  {
+   "name": "centroid_centre_of_mass",
+   "definition": "Geometric centre (centroid) + weighted geometric centre (centre of mass). For uniform density: same.",
+   "why": "Beam moments + dynamics. Bending stress = M*c/I where c distance from centroid. Stability analyses.",
+   "category": "mechanics"
+  },
+  {
+   "name": "moment_of_inertia_area",
+   "definition": "I = ∫y² dA. Measure of cross-section's resistance to bending.",
+   "term": {
+    "type": "Eq",
+    "a": {
+     "type": "Lit",
+     "value": "I"
+    },
+    "b": {
+     "type": "Lit",
+     "value": "∫y² dA"
+    }
+   },
+   "why": "Bending stress σ = My/I. Higher I → less stress for same moment. I-beams + tubes have high I for their weight. Foundation of beam design.",
+   "category": "mechanics"
+  },
+  {
+   "name": "moment_of_inertia_mass",
+   "definition": "I_mass = ∫r² dm. Rotational inertia.",
+   "term": {
+    "type": "Eq",
+    "a": {
+     "type": "Lit",
+     "value": "I_mass"
+    },
+    "b": {
+     "type": "Lit",
+     "value": "∫r² dm"
+    }
+   },
+   "why": "Newton's law for rotation: τ = Iα. Flywheels, gyroscopes, vehicle dynamics. Distinct from area moment of inertia.",
+   "category": "mechanics"
+  },
+  {
+   "name": "kinematics_translation",
+   "definition": "v = dx/dt, a = dv/dt. Position, velocity, acceleration relations.",
+   "term": {
+    "type": "Eq",
+    "a": {
+     "type": "Holds",
+     "concept": "velocity",
+     "node": {
+      "type": "Var",
+      "name": "x"
+     },
+     "node2": null
+    },
+    "b": {
+     "type": "Div",
+     "a": {
+      "type": "Times",
+      "items": [
+       {
+        "type": "Lit",
+        "value": "d"
+       },
+       {
+        "type": "Lit",
+        "value": "x"
+       }
+      ]
+     },
+     "b": {
+      "type": "Lit",
+      "value": "dt"
+     }
+    }
+   },
+   "why": "Motion description without forces. Foundation. Integration relations: x = ∫v dt, v = ∫a dt.",
+   "category": "mechanics"
+  },
+  {
+   "name": "kinematics_rotation",
+   "definition": "ω = dθ/dt, α = dω/dt. Angular position, velocity, acceleration.",
+   "term": {
+    "type": "Eq",
+    "a": {
+     "type": "Holds",
+     "concept": "frequency",
+     "node": {
+      "type": "Var",
+      "name": "x"
+     },
+     "node2": null
+    },
+    "b": {
+     "type": "Div",
+     "a": {
+      "type": "Lit",
+      "value": "dθ"
+     },
+     "b": {
+      "type": "Lit",
+      "value": "dt"
+     }
+    }
+   },
+   "why": "Rotating machinery, robotics, motor analysis. Linear-rotational analogy: x↔θ, v↔ω, a↔α, F↔τ, m↔I.",
+   "category": "mechanics"
+  },
+  {
+   "name": "Newton_second_law",
+   "definition": "F = ma. Force equals mass times acceleration.",
+   "term": {
+    "type": "Eq",
+    "a": {
+     "type": "Holds",
+     "concept": "force",
+     "node": {
+      "type": "Var",
+      "name": "x"
+     },
+     "node2": null
+    },
+    "b": {
+     "type": "Times",
+     "items": [
+      {
+       "type": "Holds",
+       "concept": "mass",
+       "node": {
+        "type": "Var",
+        "name": "x"
+       },
+       "node2": null
+      },
+      {
+       "type": "Holds",
+       "concept": "acceleration",
+       "node": {
+        "type": "Var",
+        "name": "x"
+       },
+       "node2": null
+      }
+     ]
+    }
+   },
+   "why": "Foundation of dynamics. Vector equation: per-axis. Free body diagram + Newton = solve dynamics. Modern: F = dp/dt for variable mass.",
+   "category": "mechanics"
+  },
+  {
+   "name": "energy_conservation",
+   "definition": "KE + PE + heat dissipated = constant. Energy not lost, only converted.",
+   "why": "Alternative to F=ma. Often easier: scalar, no vector decomposition. PE = mgh, KE = ½mv², rotational KE = ½Iω².",
+   "category": "mechanics"
+  },
+  {
+   "name": "work_energy_theorem",
+   "definition": "Work done on object = ΔKE. W = ∫F·dx.",
+   "term": {
+    "type": "Eq",
+    "a": {
+     "type": "Times",
+     "items": [
+      {
+       "type": "Lit",
+       "value": "Work"
+      },
+      {
+       "type": "Lit",
+       "value": "done"
+      },
+      {
+       "type": "Lit",
+       "value": "on"
+      },
+      {
+       "type": "Lit",
+       "value": "object"
+      }
+     ]
+    },
+    "b": {
+     "type": "Holds",
+     "concept": "energy_kinetic",
+     "node": {
+      "type": "Var",
+      "name": "x"
+     },
+     "node2": null
+    }
+   },
+   "why": "Forces along path. Conservative vs non-conservative. Foundation of energy methods.",
+   "category": "mechanics"
+  },
+  {
+   "name": "impulse_momentum",
+   "definition": "Impulse J = ∫F dt = Δp. Momentum p = mv.",
+   "term": {
+    "type": "Eq",
+    "a": {
+     "type": "Lit",
+     "value": "Impulse J"
+    },
+    "b": {
+     "type": "Lit",
+     "value": "∫F dt = Δp"
+    }
+   },
+   "why": "Collisions, impacts, jet propulsion. Short-duration high forces analysed via impulse. Conservation: total momentum constant if no external forces.",
+   "category": "mechanics"
+  },
+  {
+   "name": "stress_strain",
+   "definition": "Stress σ = F/A (force per area). Strain ε = ΔL/L (deformation per length).",
+   "term": {
+    "type": "Eq",
+    "a": {
+     "type": "Times",
+     "items": [
+      {
+       "type": "Lit",
+       "value": "Stress"
+      },
+      {
+       "type": "Holds",
+       "concept": "node_state_sigma",
+       "node": {
+        "type": "Var",
+        "name": "x"
+       },
+       "node2": null
+      }
+     ]
+    },
+    "b": {
+     "type": "Times",
+     "items": [
+      {
+       "type": "Div",
+       "a": {
+        "type": "Holds",
+        "concept": "force",
+        "node": {
+         "type": "Var",
+         "name": "x"
+        },
+        "node2": null
+       },
+       "b": {
+        "type": "Holds",
+        "concept": "amplitude",
+        "node": {
+         "type": "Var",
+         "name": "x"
+        },
+        "node2": null
+       }
+      },
+      {
+       "type": "Lit",
+       "value": "force"
+      },
+      {
+       "type": "Lit",
+       "value": "per"
+      },
+      {
+       "type": "Lit",
+       "value": "area"
+      }
+     ]
+    }
+   },
+   "why": "Material response. Stress causes strain. Hooke's law σ = Eε for elastic regime. Foundation of strength of materials.",
+   "category": "strength_of_materials"
+  },
+  {
+   "name": "Youngs_modulus",
+   "definition": "E = σ/ε in elastic range. Material stiffness.",
+   "term": {
+    "type": "Eq",
+    "a": {
+     "type": "Holds",
+     "concept": "energy_kinetic",
+     "node": {
+      "type": "Var",
+      "name": "x"
+     },
+     "node2": null
+    },
+    "b": {
+     "type": "Times",
+     "items": [
+      {
+       "type": "Div",
+       "a": {
+        "type": "Holds",
+        "concept": "node_state_sigma",
+        "node": {
+         "type": "Var",
+         "name": "x"
+        },
+        "node2": null
+       },
+       "b": {
+        "type": "Lit",
+        "value": "ε"
+       }
+      },
+      {
+       "type": "Lit",
+       "value": "in"
+      },
+      {
+       "type": "Lit",
+       "value": "elastic"
+      },
+      {
+       "type": "Lit",
+       "value": "range"
+      }
+     ]
+    }
+   },
+   "why": "Steel: 200 GPa. Aluminum: 70 GPa. Wood: 10 GPa. Higher E = stiffer = less deflection under load. Material property.",
+   "category": "strength_of_materials"
+  },
+  {
+   "name": "yield_strength",
+   "definition": "Stress at which permanent (plastic) deformation begins.",
+   "why": "Design boundary: stay below yield. FOS applied. Steels: 250-2000 MPa. Aluminum: 100-500 MPa. Critical material property.",
+   "category": "strength_of_materials"
+  },
+  {
+   "name": "ultimate_tensile_strength",
+   "definition": "Maximum stress before fracture. Higher than yield for ductile materials.",
+   "why": "Maximum load capacity. Beyond yield: plastic deformation; beyond UTS: necking → fracture. Standard material spec.",
+   "category": "strength_of_materials"
+  },
+  {
+   "name": "ductile_vs_brittle",
+   "definition": "Ductile: large plastic deformation before fracture. Brittle: little to no plastic deformation.",
+   "why": "Failure mode matters. Ductile (steel, copper) warns by deforming. Brittle (cast iron, ceramics, concrete) catastrophic failure. Design philosophy differs.",
+   "category": "strength_of_materials"
+  },
+  {
+   "name": "fatigue_SN_curve",
+   "definition": "Stress vs cycles-to-failure. Materials fail at lower stress under cyclic loading.",
+   "why": "Most service failures are fatigue. Steel: endurance limit (~half UTS) — infinite life if below. Aluminum: no endurance limit. Critical design consideration.",
+   "category": "strength_of_materials"
+  },
+  {
+   "name": "fracture_mechanics",
+   "definition": "Crack propagation under stress. Stress intensity factor K. Critical: K_IC.",
+   "why": "Cracks reduce capacity beyond what cross-section suggests. Aerospace, pressure vessels, fracture-critical analysis. Damage tolerance philosophy.",
+   "category": "strength_of_materials"
+  },
+  {
+   "name": "creep",
+   "definition": "Slow plastic deformation under sustained load + elevated temperature.",
+   "why": "Pressure vessels, turbines, nuclear. Material gradually deforms over years. Limits service life. Tested via creep curves.",
+   "category": "strength_of_materials"
+  },
+  {
+   "name": "bending_stress_formula",
+   "definition": "σ = My/I. M moment, y distance from neutral axis, I area moment of inertia.",
+   "term": {
+    "type": "Eq",
+    "a": {
+     "type": "Holds",
+     "concept": "node_state_sigma",
+     "node": {
+      "type": "Var",
+      "name": "x"
+     },
+     "node2": null
+    },
+    "b": {
+     "type": "Div",
+     "a": {
+      "type": "Times",
+      "items": [
+       {
+        "type": "Holds",
+        "concept": "mass",
+        "node": {
+         "type": "Var",
+         "name": "x"
+        },
+        "node2": null
+       },
+       {
+        "type": "Lit",
+        "value": "y"
+       }
+      ]
+     },
+     "b": {
+      "type": "Holds",
+      "concept": "moment_of_inertia_mass",
+      "node": {
+       "type": "Var",
+       "name": "x"
+      },
+      "node2": null
+     }
+    }
+   },
+   "why": "Beam design fundamental. Maximum stress at extreme fibres (y_max). Drives beam shape selection.",
+   "category": "strength_of_materials"
+  },
+  {
+   "name": "shear_stress",
+   "definition": "τ = V/A for direct shear. Beam shear: τ = VQ/Ib.",
+   "why": "Bolts, welds, fasteners loaded in shear. Beam transverse loading creates both bending + shear. Different failure modes.",
+   "category": "strength_of_materials"
+  },
+  {
+   "name": "torsion",
+   "definition": "Torque on shaft. Shear stress τ = Tr/J. J polar moment of inertia.",
+   "why": "Drive shafts, axles. Hollow shaft most efficient: outer fibres do most work. Combined bending + torsion in real shafts.",
+   "category": "strength_of_materials"
+  },
+  {
+   "name": "carbon_steel",
+   "definition": "Iron + 0.05-2% carbon. Higher carbon = harder + stronger + more brittle.",
+   "why": "Workhorse structural material. Mild steel (A36) for structures; high carbon for tools. Cheap, recyclable, weldable.",
+   "category": "materials"
+  },
+  {
+   "name": "alloy_steel",
+   "definition": "Steel + alloying elements (Cr, Ni, Mo, V). Improved properties.",
+   "why": "Stainless (Cr): corrosion resistance. Tool steel (Mo, V): hardness retention. High-strength low-alloy (HSLA): strength + weldability.",
+   "category": "materials"
+  },
+  {
+   "name": "aluminum_alloys",
+   "definition": "Series-designated: 1xxx pure, 2xxx Cu, 6xxx Mg+Si (architectural), 7xxx Zn (aerospace).",
+   "why": "Strength-to-weight. Corrosion resistance via oxide layer. 7075 + 2024 aerospace. 6061 general structural. Lower stiffness than steel.",
+   "category": "materials"
+  },
+  {
+   "name": "polymers_thermoplastics",
+   "definition": "PE, PP, PVC, PET, nylon. Melt + reform. Recyclable.",
+   "why": "Cheap, light, electrical insulator, corrosion-immune. Cost: low strength, creep, low temperature limit. Mass-production friendly.",
+   "category": "materials"
+  },
+  {
+   "name": "polymers_thermosets",
+   "definition": "Epoxy, polyester, polyurethane, phenolic. Irreversibly cured. Crosslinked.",
+   "why": "Better thermal + chemical resistance than thermoplastics. Used as matrix in composites. Cannot be remelted.",
+   "category": "materials"
+  },
+  {
+   "name": "composites_fiber_reinforced",
+   "definition": "Fibers (glass, carbon, aramid) in matrix (polymer). Combine fiber strength + matrix load transfer.",
+   "why": "Aerospace, sporting goods, automotive. CFRP: 60-70% of titanium strength at 1/4 density. Cost: expensive, anisotropic, harder to recycle.",
+   "category": "materials"
+  },
+  {
+   "name": "ceramics_engineering",
+   "definition": "Inorganic + non-metallic. Alumina, silicon carbide, zirconia.",
+   "why": "Extreme temperature, hardness, wear. Engine components, cutting tools, body armor. Cost: brittle, hard to machine, expensive.",
+   "category": "materials"
+  },
+  {
+   "name": "phase_diagram",
+   "definition": "Plot of phases vs composition + temperature. Fe-C diagram famous for steel.",
+   "why": "Predicts microstructure. Heat treatment uses phase changes to control properties. Foundation of metallurgy.",
+   "category": "materials"
+  },
+  {
+   "name": "heat_treatment",
+   "definition": "Controlled heating + cooling changes microstructure. Annealing, quenching, tempering, normalising.",
+   "why": "Same alloy, different properties via heat treatment. Hardened tool steel vs annealed = vastly different. Critical for metal components.",
+   "category": "materials"
+  },
+  {
+   "name": "corrosion",
+   "definition": "Material degradation by chemical reaction with environment. Rust, galvanic, crevice, pitting.",
+   "why": "Major service-life limiter. Mitigations: paint, plating, cathodic protection, stainless steel. Engineering economic factor.",
+   "category": "materials"
+  },
+  {
+   "name": "gear_train",
+   "definition": "Mesh gears transmit power. Ratio = N_driven / N_driving = ω_driving / ω_driven.",
+   "why": "Speed/torque conversion. Multiple stages for large ratios. Spur, helical, bevel, worm. Foundation of mechanical drives.",
+   "category": "machine_design"
+  },
+  {
+   "name": "bearing_selection",
+   "definition": "Ball, roller, plain (sleeve), magnetic. Load capacity + speed rating.",
+   "why": "Rotational support. Standard catalog parts. Life calculated via L10 (life 90% reach).",
+   "category": "machine_design"
+  },
+  {
+   "name": "fasteners_threaded",
+   "definition": "Bolts, screws, studs. Standard sizes (metric M-series, imperial UNC/UNF).",
+   "why": "Reusable joints. Preload critical. Torque-tension relationship. ISO 898 strength grades.",
+   "category": "machine_design"
+  },
+  {
+   "name": "shaft_design",
+   "definition": "Combined bending + torsion + axial. Design for static + fatigue.",
+   "why": "Critical machine element. Soderberg / Goodman criteria for fatigue. Keyways concentrate stress.",
+   "category": "machine_design"
+  },
+  {
+   "name": "spring_design",
+   "definition": "Coil springs: F = kx. Constant k = Gd⁴/(8D³N). Other types: leaf, disc, torsion.",
+   "why": "Force storage, vibration isolation. Material: spring steel, music wire. Fatigue analysis critical.",
+   "category": "machine_design"
+  },
+  {
+   "name": "belt_chain_drive",
+   "definition": "Flexible power transmission. Belts (V, flat, timing), chains (roller).",
+   "why": "Distance flexibility, vibration absorption. Belts allow slip (cheap clutch); chains no slip but heavier. Timing belts: no slip.",
+   "category": "machine_design"
+  },
+  {
+   "name": "first_law_thermodynamics",
+   "definition": "Energy conserved. ΔU = Q - W.",
+   "term": {
+    "type": "Eq",
+    "a": {
+     "type": "Holds",
+     "concept": "energy_potential",
+     "node": {
+      "type": "Var",
+      "name": "x"
+     },
+     "node2": null
+    },
+    "b": {
+     "type": "Minus",
+     "a": {
+      "type": "Holds",
+      "concept": "partition_function",
+      "node": {
+       "type": "Var",
+       "name": "x"
+      },
+      "node2": null
+     },
+     "b": {
+      "type": "Holds",
+      "concept": "work",
+      "node": {
+       "type": "Var",
+       "name": "x"
+      },
+      "node2": null
+     }
+    }
+   },
+   "why": "Foundation. Energy in - energy out = stored. Applied to engines, refrigerators, processes. Universal.",
+   "category": "thermodynamics"
+  },
+  {
+   "name": "second_law_thermodynamics",
+   "definition": "Entropy of isolated system never decreases. Heat flows from hot to cold spontaneously.",
+   "why": "Direction of processes. Limits efficiency: η ≤ 1 - T_cold/T_hot (Carnot). Cannot convert heat fully to work.",
+   "category": "thermodynamics"
+  },
+  {
+   "name": "Carnot_cycle",
+   "definition": "Idealized: 2 isothermal + 2 adiabatic. Maximum efficiency between two reservoirs.",
+   "why": "Upper bound on efficiency. Real engines approach but never reach. η_C = 1 - T_C/T_H. Higher hot temp = higher efficiency.",
+   "category": "thermodynamics"
+  },
+  {
+   "name": "Rankine_cycle",
+   "definition": "Steam power: pump → boiler → turbine → condenser. Most electrical generation worldwide.",
+   "why": "Practical implementation. Working fluid undergoes phase change. Modern supercritical Rankine: 45%+ efficiency.",
+   "category": "thermodynamics"
+  },
+  {
+   "name": "Brayton_cycle",
+   "definition": "Gas turbine: compressor → combustor → turbine. Jet engines + power plants.",
+   "why": "Aircraft propulsion + peaker plants. Open cycle (jet) vs closed. ~40% efficiency for modern combined cycle.",
+   "category": "thermodynamics"
+  },
+  {
+   "name": "Otto_cycle",
+   "definition": "Idealized spark-ignition engine: intake, compress, ignite, expand, exhaust.",
+   "why": "Petrol engines. Efficiency = 1 - 1/r^(γ-1) where r compression ratio. Higher r = higher efficiency (knock limits).",
+   "category": "thermodynamics"
+  },
+  {
+   "name": "Diesel_cycle",
+   "definition": "Idealized compression-ignition. Higher compression ratio than Otto.",
+   "why": "Diesel engines. Higher efficiency than Otto (~40% vs ~30%). Cost: higher peak pressures, NOx emissions.",
+   "category": "thermodynamics"
+  },
+  {
+   "name": "refrigeration_cycle",
+   "definition": "Vapor-compression: evaporator → compressor → condenser → expansion valve.",
+   "why": "Refrigeration + air conditioning + heat pumps. COP = Q/W > 1 possible (moving heat, not creating). Reversed Rankine.",
+   "category": "thermodynamics"
+  },
+  {
+   "name": "conduction_Fourier",
+   "definition": "q = -k∇T. Heat flows from hot to cold proportional to temperature gradient.",
+   "term": {
+    "type": "Eq",
+    "a": {
+     "type": "Holds",
+     "concept": "force",
+     "node": {
+      "type": "Var",
+      "name": "x"
+     },
+     "node2": null
+    },
+    "b": {
+     "type": "Neg",
+     "arg": {
+      "type": "Holds",
+      "concept": "rate_law",
+      "node": {
+       "type": "Var",
+       "name": "x"
+      },
+      "node2": null
+     }
+    }
+   },
+   "why": "Solid heat transfer. k thermal conductivity: Cu 400 W/mK, steel 50, wood 0.1. Insulation low k.",
+   "category": "heat_transfer"
+  },
+  {
+   "name": "convection_Newton_cooling",
+   "definition": "q = h(T_s - T_∞). Heat transfer between surface + fluid.",
+   "term": {
+    "type": "Eq",
+    "a": {
+     "type": "Lit",
+     "value": "q"
+    },
+    "b": {
+     "type": "Lit",
+     "value": "h(T_s - T_∞)"
+    }
+   },
+   "why": "Forced (fan-cooled) vs natural (buoyancy) convection. h depends on flow + geometry. Heat exchanger design.",
+   "category": "heat_transfer"
+  },
+  {
+   "name": "radiation_Stefan_Boltzmann",
+   "definition": "q = εσT⁴. Radiative heat transfer.",
+   "term": {
+    "type": "Eq",
+    "a": {
+     "type": "Holds",
+     "concept": "force",
+     "node": {
+      "type": "Var",
+      "name": "x"
+     },
+     "node2": null
+    },
+    "b": {
+     "type": "Pow",
+     "a": {
+      "type": "Lit",
+      "value": "εσT"
+     },
+     "b": {
+      "type": "Lit",
+      "value": 4
+     }
+    }
+   },
+   "why": "T⁴ dominates at high T. Solar, furnaces, vacuum. Emissivity ε for surface property. Black body ε=1.",
+   "category": "heat_transfer"
+  },
+  {
+   "name": "heat_exchanger_LMTD",
+   "definition": "Log Mean Temperature Difference. q = UA·LMTD.",
+   "why": "Standard heat exchanger sizing. U overall heat transfer coefficient. Parallel vs counter-flow.",
+   "category": "heat_transfer"
+  },
+  {
+   "name": "Bernoulli_equation",
+   "definition": "p + ½ρv² + ρgh = constant along streamline. Incompressible, inviscid, steady.",
+   "why": "Foundation of fluid mechanics. Pressure + kinetic + potential energy. Lift, Venturi, pitot tube.",
+   "category": "fluid_mechanics"
+  },
+  {
+   "name": "Reynolds_number",
+   "definition": "Re = ρvD/μ. Ratio of inertial to viscous forces. Dimensionless.",
+   "term": {
+    "type": "Eq",
+    "a": {
+     "type": "Holds",
+     "concept": "Reynolds_number",
+     "node": {
+      "type": "Var",
+      "name": "x"
+     },
+     "node2": null
+    },
+    "b": {
+     "type": "Div",
+     "a": {
+      "type": "Lit",
+      "value": "ρvD"
+     },
+     "b": {
+      "type": "Lit",
+      "value": "μ"
+     }
+    }
+   },
+   "why": "Determines flow regime. Re < 2300 (pipe): laminar. Re > 4000: turbulent. Critical for fluid behaviour.",
+   "category": "fluid_mechanics"
+  },
+  {
+   "name": "Navier_Stokes_equations",
+   "definition": "ρ(∂v/∂t + v·∇v) = -∇p + μ∇²v + ρg. Momentum balance for fluid.",
+   "why": "Governing equations of fluid flow. Analytical solutions rare; CFD solves numerically. Millennium Prize problem (smoothness).",
+   "category": "fluid_mechanics"
+  },
+  {
+   "name": "pipe_flow_friction",
+   "definition": "Darcy-Weisbach: Δp = f·(L/D)·ρv²/2. f friction factor from Moody chart.",
+   "why": "Pump sizing. Friction loss + minor losses (fittings) → required pump head. Standard pipe design.",
+   "category": "fluid_mechanics"
+  },
+  {
+   "name": "pump_centrifugal",
+   "definition": "Impeller adds energy to fluid. Pressure rise from kinetic energy conversion.",
+   "why": "Most common pump type. Pump curve: head vs flow. Operating point at intersection with system curve. Standard.",
+   "category": "fluid_mechanics"
+  },
+  {
+   "name": "cavitation",
+   "definition": "Vapor bubbles form when local pressure < vapor pressure. Collapse damages surfaces.",
+   "why": "Pump damage, propeller erosion. NPSH (Net Positive Suction Head) prevents. Critical design consideration.",
+   "category": "fluid_mechanics"
+  },
+  {
+   "name": "ohms_law",
+   "definition": "V = IR. Voltage = current × resistance.",
+   "term": {
+    "type": "Eq",
+    "a": {
+     "type": "Holds",
+     "concept": "membrane_potential",
+     "node": {
+      "type": "Var",
+      "name": "x"
+     },
+     "node2": null
+    },
+    "b": {
+     "type": "Times",
+     "items": [
+      {
+       "type": "Holds",
+       "concept": "moment_of_inertia_mass",
+       "node": {
+        "type": "Var",
+        "name": "x"
+       },
+       "node2": null
+      },
+      {
+       "type": "Holds",
+       "concept": "Reynolds_number",
+       "node": {
+        "type": "Var",
+        "name": "x"
+       },
+       "node2": null
+      }
+     ]
+    }
+   },
+   "why": "Foundation of circuits. Linear elements obey. Power P = VI = I²R = V²/R.",
+   "category": "electrical"
+  },
+  {
+   "name": "Kirchhoff_laws",
+   "definition": "KCL: Σ I at node = 0. KVL: Σ V around loop = 0.",
+   "why": "Circuit analysis. Combined with element equations (V=IR, V=L dI/dt, I=C dV/dt) solve any circuit.",
+   "category": "electrical"
+  },
+  {
+   "name": "Thevenin_equivalent",
+   "definition": "Any linear two-terminal network = V_TH in series with R_TH.",
+   "why": "Simplification. Replace complex network with V + R. Maximum power transfer when R_load = R_TH.",
+   "category": "electrical"
+  },
+  {
+   "name": "RC_RL_RLC_circuits",
+   "definition": "Resistor + capacitor (RC), inductor (RL), or both (RLC). Time constants + resonance.",
+   "why": "Filtering, transient response, oscillators. τ = RC or L/R. RLC: f₀ = 1/(2π√LC).",
+   "category": "electrical"
+  },
+  {
+   "name": "op_amp_ideal",
+   "definition": "Infinite gain, infinite input impedance, zero output impedance. Inverting + non-inverting inputs.",
+   "why": "Building block of analog. Negative feedback determines behavior. Buffer, amplifier, filter, integrator, summer.",
+   "category": "electrical"
+  },
+  {
+   "name": "AC_phasor_analysis",
+   "definition": "Sinusoids represented as complex phasors. Impedance Z = R + jX.",
+   "why": "AC circuit analysis. Frequency-domain approach. Inductor jωL, capacitor 1/(jωC). Power: real + reactive.",
+   "category": "electrical"
+  },
+  {
+   "name": "three_phase_power",
+   "definition": "Three sinusoids 120° apart. Common for utility + industrial.",
+   "why": "Constant power (vs single-phase pulsing), efficient transmission, simple motors. Delta + Wye configurations.",
+   "category": "electrical"
+  },
+  {
+   "name": "transformer",
+   "definition": "Magnetically coupled coils. Voltage ratio = turns ratio. Power conserved (ideal).",
+   "why": "Step up for transmission, down for distribution. Critical for power grid. Saturation + losses real.",
+   "category": "electrical"
+  },
+  {
+   "name": "induction_motor",
+   "definition": "AC motor. Stator creates rotating field; rotor follows by induction.",
+   "why": "~80% of industrial motors. Simple, robust, no brushes. Speed ≈ synchronous speed (frequency/poles). VFDs vary speed.",
+   "category": "electrical"
+  },
+  {
+   "name": "Maxwell_equations",
+   "definition": "Gauss law (∇·E = ρ/ε), no monopoles (∇·B = 0), Faraday (∇×E = -∂B/∂t), Ampere-Maxwell (∇×B = μJ + με∂E/∂t).",
+   "why": "Foundation of electromagnetism. Light = EM wave. Antennas, transmission lines, RF derive from these.",
+   "category": "electromagnetics"
+  },
+  {
+   "name": "impedance_matching",
+   "definition": "Load impedance matched to source for maximum power transfer or minimum reflection.",
+   "why": "RF + audio + transmission lines. Mismatch = standing waves, lost power. Smith chart for tuning. Critical for RF systems.",
+   "category": "electromagnetics"
+  },
+  {
+   "name": "antenna_dipole",
+   "definition": "Half-wave dipole: most common antenna. Length = λ/2.",
+   "why": "Foundation antenna. Other types built on. Gain, radiation pattern, impedance characterised.",
+   "category": "electromagnetics"
+  },
+  {
+   "name": "PID_controller",
+   "definition": "u = Kp·e + Ki·∫e dt + Kd·de/dt. Combined error, history, prediction.",
+   "term": {
+    "type": "Eq",
+    "a": {
+     "type": "Lit",
+     "value": "u"
+    },
+    "b": {
+     "type": "Lit",
+     "value": "Kp·e + Ki·∫e dt + Kd·de/dt"
+    }
+   },
+   "why": "Most-used controller. Ziegler-Nichols + many tuning methods. Each term: present (P), past (I), future (D).",
+   "category": "control_systems"
+  },
+  {
+   "name": "transfer_function",
+   "definition": "G(s) = Y(s)/U(s). Output Laplace / input Laplace.",
+   "why": "Linear time-invariant system representation. Poles + zeros characterise behavior. Foundation of classical control.",
+   "category": "control_systems"
+  },
+  {
+   "name": "stability_root_locus",
+   "definition": "Plot of closed-loop poles as gain varies. Crosses imaginary axis → unstable.",
+   "why": "Graphical stability + design. Root locus rules. Standard control technique. Pre-MATLAB hand-sketched.",
+   "category": "control_systems"
+  },
+  {
+   "name": "Bode_plot",
+   "definition": "Magnitude + phase vs frequency. log scale. Asymptotic approximations.",
+   "why": "Frequency response. Gain + phase margins for stability. Standard control + signal-processing tool.",
+   "category": "control_systems"
+  },
+  {
+   "name": "state_space_representation",
+   "definition": "ẋ = Ax + Bu, y = Cx + Du. First-order vector ODE.",
+   "why": "Modern control. MIMO + nonlinear systems. Eigenvalues of A = pole locations. Controllability + observability tests.",
+   "category": "control_systems"
+  },
+  {
+   "name": "model_predictive_control",
+   "definition": "MPC: optimise control over receding horizon. Predict future + apply first move.",
+   "why": "Constrained MIMO control. Industrial process control. Automotive, drones. Computationally expensive but powerful.",
+   "category": "control_systems"
+  },
+  {
+   "name": "Fourier_transform",
+   "definition": "Decompose signal into sinusoids. X(f) = ∫x(t)e^(-j2πft) dt.",
+   "why": "Time ↔ frequency. Foundation of signal analysis. Filtering, spectrum analysis, communications. FFT for sampled signals.",
+   "category": "signals"
+  },
+  {
+   "name": "Laplace_transform",
+   "definition": "F(s) = ∫f(t)e^(-st) dt. Generalisation of Fourier including transients.",
+   "why": "Solving linear ODEs. Transfer functions. Control system analysis. Standard tool.",
+   "category": "signals"
+  },
+  {
+   "name": "z_transform",
+   "definition": "X(z) = Σx[n]z^(-n). Discrete-time equivalent of Laplace.",
+   "why": "Digital filter design + analysis. Foundation of DSP. Stability: poles inside unit circle.",
+   "category": "signals"
+  },
+  {
+   "name": "sampling_Nyquist",
+   "definition": "Sample at > 2× highest frequency to avoid aliasing.",
+   "why": "Foundation of digital signal processing. Below Nyquist: aliasing distorts. Audio CD 44.1 kHz for 20 kHz signal.",
+   "category": "signals"
+  },
+  {
+   "name": "filter_design",
+   "definition": "Low-pass, high-pass, band-pass, band-stop. FIR + IIR digital.",
+   "why": "Foundation of signal processing. Butterworth, Chebyshev, elliptic responses. Order vs sharpness trade.",
+   "category": "signals"
+  },
+  {
+   "name": "truss_analysis",
+   "definition": "Pin-connected members. Each in pure tension or compression. Method of joints + sections.",
+   "why": "Bridges, towers, roofs. Simplifying assumption: pin joints + axial loads. Foundation of structural analysis.",
+   "category": "structural"
+  },
+  {
+   "name": "beam_bending",
+   "definition": "Distributed/point loads cause bending moment M(x). Solve via integration.",
+   "why": "Building floors, vehicle frames. Beam tables for standard cases. Deflection: δ = ∫∫M/EI.",
+   "category": "structural"
+  },
+  {
+   "name": "column_buckling",
+   "definition": "Euler formula: P_cr = π²EI/(KL)². Failure mode for slender columns.",
+   "why": "Long columns fail by buckling before yield. Effective length factor K depends on end conditions. Steel columns + slender struts.",
+   "category": "structural"
+  },
+  {
+   "name": "reinforced_concrete",
+   "definition": "Concrete in compression + steel in tension. Combined to handle bending.",
+   "why": "Most-used structural material globally. Cheap, fire-resistant, durable. Design via ACI 318, Eurocode 2.",
+   "category": "structural"
+  },
+  {
+   "name": "steel_structure_design",
+   "definition": "AISC 360 in US. Sections from I-beam, HSS, plate, angle. LRFD + ASD methods.",
+   "why": "Industrial buildings, bridges. Connections critical (bolted, welded). Higher strength than concrete; cost: corrosion + fire protection.",
+   "category": "structural"
+  },
+  {
+   "name": "seismic_design",
+   "definition": "Buildings designed for earthquake forces. Response spectrum + capacity design.",
+   "why": "Life safety. Ductile detailing absorbs energy. Modern codes prescribe based on site + occupancy. ATC + Eurocode 8.",
+   "category": "structural"
+  },
+  {
+   "name": "finite_element_method",
+   "definition": "FEM: discretise domain into elements; solve PDE numerically. Foundation of CAE.",
+   "why": "Complex geometries + loads. Stress, vibration, heat, fluid all FEM. ANSYS, Abaqus, COMSOL, OpenFOAM, etc.",
+   "category": "structural"
+  },
+  {
+   "name": "machining_turning",
+   "definition": "Workpiece rotates; cutting tool removes material. Lathe.",
+   "why": "Cylindrical parts. Shafts, pins, bushings. Standard manufacturing process. CNC turning ubiquitous.",
+   "category": "manufacturing"
+  },
+  {
+   "name": "machining_milling",
+   "definition": "Cutting tool rotates; workpiece on fixed table or 3-5 axis. Mill.",
+   "why": "3D parts. Pockets, slots, contours. CNC mills + machining centers. Most flexible removal process.",
+   "category": "manufacturing"
+  },
+  {
+   "name": "additive_manufacturing",
+   "definition": "Build up layer by layer. FDM, SLA, SLS, DMLS, binder jetting.",
+   "why": "Complex internal geometries impossible to machine. Topology-optimised parts. Cost: surface finish, slow, anisotropy.",
+   "category": "manufacturing"
+  },
+  {
+   "name": "injection_molding",
+   "definition": "Polymer melted + injected into mold. Mass production.",
+   "why": "Plastic parts at scale. Cheap per part; expensive tooling. Design for manufacturing: draft, uniform wall.",
+   "category": "manufacturing"
+  },
+  {
+   "name": "casting",
+   "definition": "Molten metal poured into mold. Sand casting, die casting, investment casting.",
+   "why": "Complex shapes. Foundation of metal parts before machining. Engine blocks, valve bodies, jewelry.",
+   "category": "manufacturing"
+  },
+  {
+   "name": "forging",
+   "definition": "Hot or cold deformation of metal. Improved grain structure → strength.",
+   "why": "Critical-strength parts: connecting rods, crankshafts, aerospace components. Stronger than equivalent cast.",
+   "category": "manufacturing"
+  },
+  {
+   "name": "welding",
+   "definition": "Fusion (arc, MIG, TIG, laser) or solid-state (friction, ultrasonic).",
+   "why": "Permanent joining. Stress concentrations at welds; HAZ properties changed. NDT inspection (UT, RT).",
+   "category": "manufacturing"
+  },
+  {
+   "name": "GD_T",
+   "definition": "Geometric Dimensioning + Tolerancing. ASME Y14.5. Form, orientation, position, runout tolerances.",
+   "why": "Communicate functional requirements + manufacturing variation. Bonus tolerance, MMC/LMC. Modern engineering standard.",
+   "category": "manufacturing"
+  },
+  {
+   "name": "six_sigma",
+   "definition": "Quality methodology. 6 standard deviations between mean and spec limits = 3.4 defects per million.",
+   "why": "Variation reduction. DMAIC: Define, Measure, Analyze, Improve, Control. Adopted broadly beyond manufacturing.",
+   "category": "manufacturing"
+  },
+  {
+   "name": "statistical_process_control",
+   "definition": "SPC: control charts monitor process. Detect special-cause variation.",
+   "why": "Real-time quality. Stay within control limits = process under control. Standard in mass production.",
+   "category": "manufacturing"
+  },
+  {
+   "name": "Reynolds_transport_theorem",
+   "definition": "System ↔ control volume conservation. Foundation of fluid mechanics + thermodynamics.",
+   "why": "Mass, momentum, energy balances on flowing systems. Bridge from solid mechanics to fluid mechanics formulation.",
+   "category": "chemical_process"
+  },
+  {
+   "name": "mass_energy_balance",
+   "definition": "Σ in - Σ out = Σ accumulated. Per species or total.",
+   "why": "Foundation of process engineering. Reactor design, distillation, heat exchangers. Steady vs transient.",
+   "category": "chemical_process"
+  },
+  {
+   "name": "reactor_CSTR_PFR",
+   "definition": "CSTR: continuous stirred tank, perfect mixing. PFR: plug flow, no mixing axially.",
+   "why": "Two limiting cases for chemical reactors. Real reactors between. Different conversion + selectivity characteristics.",
+   "category": "chemical_process"
+  },
+  {
+   "name": "distillation",
+   "definition": "Separate liquids by boiling point difference. Trays + reflux.",
+   "why": "Workhorse separation. Oil refining, chemicals, alcohol. Energy-intensive — heat for vaporisation.",
+   "category": "chemical_process"
+  },
+  {
+   "name": "aerodynamics_lift_drag",
+   "definition": "L = ½ρv²SCL, D = ½ρv²SCD. CL + CD depend on shape + angle of attack.",
+   "term": {
+    "type": "Eq",
+    "a": {
+     "type": "Holds",
+     "concept": "angular_momentum",
+     "node": {
+      "type": "Var",
+      "name": "x"
+     },
+     "node2": null
+    },
+    "b": {
+     "type": "Times",
+     "items": [
+      {
+       "type": "Div",
+       "a": {
+        "type": "Lit",
+        "value": 1
+       },
+       "b": {
+        "type": "Lit",
+        "value": 2
+       }
+      },
+      {
+       "type": "Pow",
+       "a": {
+        "type": "Lit",
+        "value": "ρv"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 2
+       }
+      },
+      {
+       "type": "Holds",
+       "concept": "entropy_thermodynamic",
+       "node": {
+        "type": "Var",
+        "name": "x"
+       },
+       "node2": null
+      },
+      {
+       "type": "Holds",
+       "concept": "channel_capacity",
+       "node": {
+        "type": "Var",
+        "name": "x"
+       },
+       "node2": null
+      },
+      {
+       "type": "Holds",
+       "concept": "angular_momentum",
+       "node": {
+        "type": "Var",
+        "name": "x"
+       },
+       "node2": null
+      }
+     ]
+    }
+   },
+   "why": "Aircraft, wind turbines, sails. Foundation of flight. Lift-to-drag ratio key efficiency measure.",
+   "category": "aerospace"
+  },
+  {
+   "name": "Mach_number",
+   "definition": "M = v/a. Ratio of speed to speed of sound.",
+   "term": {
+    "type": "Eq",
+    "a": {
+     "type": "Holds",
+     "concept": "mass",
+     "node": {
+      "type": "Var",
+      "name": "x"
+     },
+     "node2": null
+    },
+    "b": {
+     "type": "Div",
+     "a": {
+      "type": "Holds",
+      "concept": "velocity",
+      "node": {
+       "type": "Var",
+       "name": "x"
+      },
+      "node2": null
+     },
+     "b": {
+      "type": "Holds",
+      "concept": "acceleration",
+      "node": {
+       "type": "Var",
+       "name": "x"
+      },
+      "node2": null
+     }
+    }
+   },
+   "why": "Subsonic (M<1), transonic, supersonic (M>1), hypersonic (M>5). Shock waves form at M=1. Different aerodynamic regimes.",
+   "category": "aerospace"
+  },
+  {
+   "name": "rocket_equation",
+   "definition": "Tsiolkovsky: Δv = v_e × ln(m_0/m_f). Velocity change = exhaust velocity × log of mass ratio.",
+   "why": "Foundation of rocketry. Exponential cost of high Δv = staging needed for orbit. Limits human spaceflight.",
+   "category": "aerospace"
+  },
+  {
+   "name": "orbital_mechanics_Kepler",
+   "definition": "Kepler's laws: elliptical orbits, equal areas, T² ∝ a³.",
+   "why": "Satellite + interplanetary trajectory design. Foundation of astrodynamics. Hohmann transfer, gravity assist.",
+   "category": "aerospace"
+  },
+  {
+   "name": "MTBF_reliability",
+   "definition": "Mean Time Between Failures. Statistical measure of reliability.",
+   "why": "Component selection, spare part planning. Series vs parallel reliability rules. Bathtub curve characterizes life.",
+   "category": "reliability"
+  },
+  {
+   "name": "Weibull_distribution",
+   "definition": "Flexible distribution for time-to-failure. Shape + scale parameters.",
+   "why": "Different shape parameters model wear-out, random, infant mortality. Standard for reliability analysis.",
+   "category": "reliability"
+  },
+  {
+   "name": "redundancy_design",
+   "definition": "Parallel critical components. Reliability R_parallel = 1-(1-R)^n.",
+   "why": "Increased reliability at cost of weight + cost. Critical aerospace systems. Fault tree analysis quantifies.",
+   "category": "reliability"
+  },
+  {
+   "name": "FMEA_engineering",
+   "definition": "Failure Mode + Effects Analysis. Already in embedded; here as engineering-wide practice.",
+   "why": "Systematic. Every component, every failure mode, every effect. RPN = Severity × Occurrence × Detection.",
+   "category": "reliability"
+  },
+  {
+   "name": "systems_engineering_V_model",
+   "definition": "Requirements → architecture → design → implementation (left). Test → integration → verification → validation (right).",
+   "why": "Standard for complex systems. INCOSE handbook. Drives V&V planning. Used in aerospace, defense, medical.",
+   "category": "systems_engineering"
+  },
+  {
+   "name": "requirements_engineering",
+   "definition": "Elicit + analyse + specify + validate requirements. Functional + non-functional + constraints.",
+   "why": "Wrong requirements = wrong product. Foundation of systems engineering. Traceability through development.",
+   "category": "systems_engineering"
+  },
+  {
+   "name": "trade_study",
+   "definition": "Compare alternative architectures. Weighted criteria, Pareto analysis.",
+   "why": "Design decisions documented. Multi-criteria. Standard at major decision points.",
+   "category": "systems_engineering"
+  },
+  {
+   "name": "lifecycle_cost",
+   "definition": "Acquisition + operations + maintenance + disposal. Often dominated by ops + maintenance.",
+   "why": "Total ownership cost vs purchase price. Influences design decisions: durability, energy efficiency, repairability.",
+   "category": "systems_engineering"
+  },
+  {
+   "name": "engineering_economics_NPV",
+   "definition": "Net Present Value. Σ CF_t / (1+r)^t. Discount future cash flows to present.",
+   "why": "Investment decisions. Positive NPV → accept. Foundation of project finance. Hurdle rate r.",
+   "category": "engineering_economics"
+  },
+  {
+   "name": "engineering_economics_IRR",
+   "definition": "Internal Rate of Return. Discount rate making NPV = 0.",
+   "why": "Project return metric. Compare with cost of capital. Multiple IRR pitfall for non-conventional cash flows.",
+   "category": "engineering_economics"
+  },
+  {
+   "name": "payback_period",
+   "definition": "Time to recover initial investment from cash flows.",
+   "why": "Simple metric. Ignores time value + post-payback. Good for short-term risk decisions; NPV better for long.",
+   "category": "engineering_economics"
+  },
+  {
+   "name": "ASME_codes",
+   "definition": "American Society of Mechanical Engineers. Pressure vessels (Section VIII), piping (B31), boilers.",
+   "why": "Legal codes for pressure systems in US + many countries. Calculations + welding + NDT specified.",
+   "category": "standards"
+  },
+  {
+   "name": "ISO_standards",
+   "definition": "International Organization for Standardization. ISO 9001 (quality), 14001 (environmental), GD&T (1101).",
+   "why": "Global standards. Trade + interoperability. Many countries adopt directly.",
+   "category": "standards"
+  },
+  {
+   "name": "IEEE_standards",
+   "definition": "Institute of Electrical + Electronics Engineers. IEEE 802 (networking), 1149 (JTAG), 1588 (PTP).",
+   "why": "Electronics, computing, communications standards. Industry-driven, broadly adopted.",
+   "category": "standards"
+  },
+  {
+   "name": "ASTM_materials",
+   "definition": "ASTM International. Material specs (A36 steel, A572, B221 aluminum), test methods (E8 tensile).",
+   "why": "Material specifications. Test methods for properties. Foundation of mechanical engineering material selection.",
+   "category": "standards"
+  },
+  {
+   "name": "CAD_parametric",
+   "definition": "Computer-Aided Design. Parametric: features + constraints; relations preserved on edit.",
+   "why": "SolidWorks, Inventor, NX, Catia. Industry standard for mechanical design. 3D models drive everything.",
+   "category": "CAD_CAE"
+  },
+  {
+   "name": "FEA_workflow",
+   "definition": "Geometry → mesh → boundary conditions → solver → post-process.",
+   "why": "Standard CAE process. Mesh quality drives accuracy. ANSYS, Abaqus, COMSOL. Hand calculation validates.",
+   "category": "CAD_CAE"
+  },
+  {
+   "name": "CFD_workflow",
+   "definition": "Geometry → mesh → BCs → turbulence model → solver. Iterative convergence.",
+   "why": "Aerodynamics, HVAC, internal flow. OpenFOAM, ANSYS Fluent, STAR-CCM+. Standard for fluid analysis.",
+   "category": "CAD_CAE"
+  },
+  {
+   "name": "CAM_toolpaths",
+   "definition": "Computer-Aided Manufacturing. CAD geometry → G-code for CNC.",
+   "why": "Bridges design to manufacturing. Mastercam, Fusion 360, NX CAM. Drives modern manufacturing.",
+   "category": "CAD_CAE"
+  }
+ ],
+ "rules": [
+  {
+   "name": "factor_of_safety_accommodates_uncertainty",
+   "if": [
+    "loads + properties have uncertainty"
+   ],
+   "then": [
+    "FOS provides margin above expected"
+   ],
+   "why": "Real materials vary; real loads vary. FOS multiplies for safe design. Standard codes specify minimum FOS per application type.",
+   "soundness_category": "referential_transparency"
+  },
+  {
+   "name": "design_constrained_by_multiple_criteria",
+   "if": [
+    "design must satisfy cost + weight + performance + safety + manufacturability"
+   ],
+   "then": [
+    "optimisation is multi-objective with Pareto trade-offs"
+   ],
+   "why": "Single-objective: solvable. Multi: no unique optimum. Pareto front: improving one criterion degrades another. Standard engineering reality.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "Carnot_efficiency_ceiling",
+   "if": [
+    "heat engine operates between T_hot and T_cold"
+   ],
+   "then": [
+    "efficiency ≤ 1 - T_cold/T_hot"
+   ],
+   "why": "Second law of thermodynamics. Higher hot temp + lower cold temp = higher max efficiency. Real engines well below Carnot. Drives turbine inlet temps higher each generation.",
+   "soundness_category": "algebraic_law"
+  },
+  {
+   "name": "stress_must_stay_below_yield",
+   "if": [
+    "component is under static load"
+   ],
+   "then": [
+    "stress / FOS < yield strength"
+   ],
+   "why": "Yield = permanent deformation. Below yield: elastic, recovers. Above: plastic + likely failure. FOS handles uncertainty. Foundation of strength design.",
+   "soundness_category": "referential_transparency"
+  },
+  {
+   "name": "fatigue_dominates_cyclic_loading",
+   "if": [
+    "component is cyclically loaded"
+   ],
+   "then": [
+    "fatigue strength (lower than static yield) governs"
+   ],
+   "why": "Cyclic loads cause crack initiation + propagation. Steel endurance limit ~half UTS. Most service failures fatigue. Critical for rotating + vibrating parts.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "buckling_governs_slender_columns",
+   "if": [
+    "column has high slenderness ratio (KL/r > ~100 for steel)"
+   ],
+   "then": [
+    "buckling occurs before yield"
+   ],
+   "why": "Euler buckling: P_cr = π²EI/(KL)². At high KL: very low P_cr. Compression members must be designed for buckling, not yield.",
+   "soundness_category": "algebraic_law"
+  },
+  {
+   "name": "Reynolds_number_determines_flow_regime",
+   "if": [
+    "pipe flow Reynolds number Re"
+   ],
+   "then": [
+    "Re < 2300 laminar, Re > 4000 turbulent"
+   ],
+   "why": "Different physics: laminar smooth + low friction; turbulent chaotic + higher friction. Transition complex. Most engineering pipe flow turbulent.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "Bernoulli_neglects_viscosity_unsteady",
+   "if": [
+    "Bernoulli equation applied"
+   ],
+   "then": [
+    "valid only for inviscid + incompressible + steady flow"
+   ],
+   "why": "Real flows have viscosity + may compress + be unsteady. Bernoulli is starting approximation. Modified forms add corrections.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "Kirchhoff_laws_complete_for_lumped_circuits",
+   "if": [
+    "circuit has lumped elements + frequencies are low"
+   ],
+   "then": [
+    "KVL + KCL fully describe behavior"
+   ],
+   "why": "Lumped: dimensions << wavelength. At RF: distributed parameter effects (transmission lines). KVL + KCL fundamental for DC + low-frequency AC.",
+   "soundness_category": "algebraic_law"
+  },
+  {
+   "name": "impedance_matching_max_power",
+   "if": [
+    "source impedance Z_s drives load Z_L"
+   ],
+   "then": [
+    "maximum power transfer when Z_L = Z_s* (conjugate)"
+   ],
+   "why": "Matched: half power dissipated in source, half in load. Critical for RF amplifiers, audio. Mismatch: reflected power, standing waves.",
+   "soundness_category": "algebraic_law"
+  },
+  {
+   "name": "PID_tuning_balances_response",
+   "if": [
+    "PID controller is tuned"
+   ],
+   "then": [
+    "fast response (high Kp), low steady-state error (high Ki), low overshoot (high Kd) tradeoff"
+   ],
+   "why": "Ziegler-Nichols, Cohen-Coon methods. Increase Kp until oscillation; back off. Ki removes steady-state error; too much = oscillation. Kd anticipates; noise amplifier.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "Nyquist_sampling_required",
+   "if": [
+    "analog signal sampled to digital"
+   ],
+   "then": [
+    "sample rate must exceed 2× highest frequency"
+   ],
+   "why": "Below: aliasing folds high-freq components into low. Above: signal perfectly recoverable. Foundation of digital signal processing.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "Maxwell_equations_universal_for_EM",
+   "if": [
+    "electromagnetic phenomenon"
+   ],
+   "then": [
+    "Maxwell's equations apply (with material constitutive relations)"
+   ],
+   "why": "Foundation. Static, quasi-static, full-wave all subsets. From circuits to antennas to optics. Quantum corrections at small scale.",
+   "soundness_category": "algebraic_law"
+  },
+  {
+   "name": "second_law_directionality",
+   "if": [
+    "isolated system undergoes process"
+   ],
+   "then": [
+    "entropy never decreases"
+   ],
+   "why": "Direction of spontaneous processes. Heat hot → cold. Limits efficiency. Foundation of thermodynamics. Statistical interpretation in stat mech.",
+   "soundness_category": "algebraic_law"
+  },
+  {
+   "name": "additive_manufacturing_enables_topology_optimisation",
+   "if": [
+    "part complexity drives weight or cost"
+   ],
+   "then": [
+    "additive manufacturing enables shapes impossible to machine"
+   ],
+   "why": "Internal lattices, organic shapes from topology optimisation. SpaceX Merlin engine parts, GE LEAP nozzle. Trade: cost, surface finish, slow.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "FEM_accuracy_depends_on_mesh",
+   "if": [
+    "FEM analysis is performed"
+   ],
+   "then": [
+    "mesh quality + density determine accuracy"
+   ],
+   "why": "Coarse mesh: missed stress concentrations, wrong modes. Fine mesh: accurate but expensive. Mesh refinement studies confirm convergence.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "GD_T_communicates_function_to_manufacturing",
+   "if": [
+    "part has functional requirements"
+   ],
+   "then": [
+    "GD&T expresses tolerances tied to function"
+   ],
+   "why": "± tolerances don't capture functional needs. GD&T: position relative to datum, profile, runout. Standard since 1994 (ASME Y14.5). Drives modern manufacturing.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "MTBF_assumes_random_failures",
+   "if": [
+    "component is past infant mortality + before wear-out"
+   ],
+   "then": [
+    "constant failure rate λ applies; MTBF = 1/λ"
+   ],
+   "why": "Bathtub curve middle: random failures from rare events. Beginning + end have different statistics. Weibull captures all phases.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "redundancy_increases_reliability",
+   "if": [
+    "n redundant components each with reliability R"
+   ],
+   "then": [
+    "system reliability = 1-(1-R)^n"
+   ],
+   "why": "Parallel: failure requires all to fail. R=0.9, n=3: 0.999 system. Cost: weight + cost. Aerospace: triple redundancy standard.",
+   "soundness_category": "algebraic_law"
+  },
+  {
+   "name": "lifecycle_cost_dominates_purchase",
+   "if": [
+    "asset has long service life"
+   ],
+   "then": [
+    "operations + maintenance dominate total cost"
+   ],
+   "why": "Power plant: 30+ years. Aircraft: decades. Fuel + maintenance >> purchase. Drives efficiency design, repairability. Standard procurement analysis.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "NPV_for_investment_decision",
+   "if": [
+    "project has cash flows over time"
+   ],
+   "then": [
+    "NPV at hurdle rate determines accept/reject"
+   ],
+   "why": "Time value of money. Money now > same money future. NPV > 0: accept; NPV < 0: reject. Foundation of capital budgeting.",
+   "soundness_category": "algebraic_law"
+  },
+  {
+   "name": "codes_govern_engineering_practice",
+   "if": [
+    "design is for regulated sector (pressure vessels, buildings, etc.)"
+   ],
+   "then": [
+    "applicable codes determine acceptable practice"
+   ],
+   "why": "ASME, ACI, AISC, NFPA, etc. Legal requirements. Engineer's licence depends on following. Codes evolve with experience + research.",
+   "soundness_category": "referential_transparency"
+  },
+  {
+   "name": "engineering_iterates_to_convergence",
+   "if": [
+    "initial design is conceptual"
+   ],
+   "then": [
+    "iteration with analysis converges to working design"
+   ],
+   "why": "First design rarely optimal. Each iteration: analyse, identify weak point, modify, re-analyse. Modern CAE accelerates. Cost of iteration vs failure determines depth.",
+   "soundness_category": "extensional_equivalence"
+  }
+ ],
+ "exclusions": [],
+ "relations": [
+  {
+   "src": "engineering",
+   "edge": "genlMt",
+   "tgt": "compiler_theory"
+  }
+ ]
+}

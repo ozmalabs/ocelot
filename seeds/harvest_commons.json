@@ -1,0 +1,130 @@
+{
+ "id": "harvest_commons",
+ "version": "1.0.0",
+ "self_load_only": true,
+ "depends_on": [],
+ "area": "retina",
+ "description": "BLOCK 212000 -- HARVEST: a commons social-dilemma decided ENTIRELY over the LANDED 204000 core_emotions value economy. An agent's harvest is NOT a hardcoded restraint formula; it is the graph's OWN Argmax over candidate Appraisals by total_value (= happiness + fulfilment_value). Because fulfilment_value gates supergraph_contribution on w_supergraph>0, a prosocial agent (w>0) VALUES the collective yield of each harvest level and its Argmax lands on the socially-optimal restrained harvest; a selfish agent (w=0) values only individual_benefit and its Argmax grabs the max. Restraint FALLS OUT of the value system -- no new decision logic. The world adapter publishes the commons mechanics (future collective yield per level = supergraph_contribution; sanction cost per over-norm level = individual_cost) as FULL INFORMATION observations, run_rules(), and reads chosen_harvest off HarvestDecision. Communication (Phase 2) establishes a restraint norm and a costly-punishment decision (hv_punish) whose anticipated sanction enters over-norm candidates' individual_cost, shifting even a selfish agent's Argmax toward the norm (Hardin->Ostrom). Integer-native (Argmax/Attr/Eq/Gt/And only; no Rust, no new Term). OFF by default: self_load_only, nothing depends_on it, every rule guards on HeldEmotionParams.enabled -- absent it every existing path is byte-identical. A synthetic MODEL of Ostrom/Fehr-Gachter/Axelrod; the contribution is the glass-box attribution to a named knob, not new social science.",
+ "microtheory": {
+  "name": "harvest_commons",
+  "description": "A commons is sustained or destroyed by the DISTRIBUTION of collective-value (w_supergraph) in its population. Restraint is the Argmax of a value function that includes the collective's future yield; communication adds a norm + costly sanction that makes over-harvest individually costly, flipping the tragedy."
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [
+  {"provenance": "seed:harvest_commons:candidate",
+   "src": {"type": "EmotionHub", "var": "hub"},
+   "edge_type": "has_candidate",
+   "tgt": {"type": "Appraisal", "var": "c"}},
+  {"provenance": "seed:harvest_commons:decision",
+   "src": {"type": "EmotionHub", "var": "hub"},
+   "edge_type": "has_decision",
+   "tgt": {"type": "HarvestDecision", "var": "dec"}},
+  {"provenance": "seed:harvest_commons:peer",
+   "src": {"type": "EmotionHub", "var": "hub"},
+   "edge_type": "monitors",
+   "tgt": {"type": "HarvestDecision", "var": "dec"}}
+ ],
+ "rules": [
+  {"name": "hv_choose_harvest",
+   "area": "retina",
+   "order": 20,
+   "latency_class": "hard_realtime",
+   "match": [
+    ["hub", "has_emotion_params", "ep"],
+    ["hub", "has_decision", "dec"]
+   ],
+   "where": {"type": "Eq",
+    "a": {"type": "Attr", "node": {"type": "Var", "name": "ep"}, "key": "enabled"},
+    "b": {"type": "Lit", "value": 1.0}},
+   "effects": [
+    ["set_attr", "dec", "chosen_harvest",
+     {"__term__": {"type": "Attr",
+       "node": {"type": "Argmax",
+         "source": {"type": "Neighbours",
+           "node": {"type": "Var", "name": "hub"},
+           "edge_type": "has_candidate",
+           "any_type": false},
+         "var_name": "c",
+         "value": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "total_value"}},
+       "key": "harvest_level"}}]
+   ]},
+
+  {"name": "hv_mark_enforcer",
+   "area": "retina",
+   "order": 18,
+   "latency_class": "hard_realtime",
+   "comment": "Phase 2: the graph DECIDES who enforces the commons norm -- an agent enforces iff it values the collective (w_supergraph>0) AND communication is on. Enforcement is itself a pro-social act (Fehr-Gachter second-order cooperation), so a pure-defector population marks ZERO enforcers.",
+   "match": [
+    ["hub", "has_emotion_params", "ep"]
+   ],
+   "where": {"type": "Eq",
+    "a": {"type": "Attr", "node": {"type": "Var", "name": "ep"}, "key": "enabled"},
+    "b": {"type": "Lit", "value": 1.0}},
+   "effects": [
+    ["set_attr", "hub", "enforces",
+     {"__term__": {"type": "IfThenElse",
+       "cond": {"type": "And", "items": [
+         {"type": "Gt", "a": {"type": "Attr", "node": {"type": "Var", "name": "ep"}, "key": "w_supergraph"}, "b": {"type": "Lit", "value": 0.0}},
+         {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "ep"}, "key": "comms_on"}, "b": {"type": "Lit", "value": 1.0}}
+       ]},
+       "then": {"type": "Lit", "value": 1.0},
+       "other": {"type": "Lit", "value": 0.0}}}]
+   ]},
+
+  {"name": "hv_count_enforcers",
+   "area": "retina",
+   "order": 19,
+   "latency_class": "hard_realtime",
+   "comment": "Phase 2: the graph COUNTS the standing enforcers over the shared Supergraph (member_of in-neighbours marked enforces==1). The adapter reads this count to size the anticipated sanction -- it does not decide it. Monitoring is public (full information).",
+   "match": [
+    ["hub", "member_of", "sg"]
+   ],
+   "where": {"type": "Lit", "value": 1.0},
+   "effects": [
+    ["set_attr", "sg", "n_enforcers",
+     {"__term__": {"type": "Count",
+       "source": {"type": "Filter",
+         "source": {"type": "InNeighbours", "node": {"type": "Var", "name": "sg"}, "edge_type": "member_of", "any_type": false},
+         "var_name": "m",
+         "predicate": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "enforces"}, "b": {"type": "Lit", "value": 1.0}}}}}]
+   ]},
+
+  {"name": "hv_state_intent",
+   "area": "retina",
+   "order": 21,
+   "latency_class": "hard_realtime",
+   "comment": "Phase 3 glass-box: under communication every agent PROFESSES compliance with the norm -- it STATES it will harvest at the norm. This stated intent is public speech; the HELD intent is HarvestDecision.chosen_harvest (the Argmax). Their gap is the deception instrument: an agent whose Argmax still grabs while it states the norm is measurably deceptive. Stating is cheap; only holding is decided by value.",
+   "match": [
+    ["hub", "has_emotion_params", "ep"],
+    ["hub", "has_decision", "dec"]
+   ],
+   "where": {"type": "And", "items": [
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "ep"}, "key": "enabled"}, "b": {"type": "Lit", "value": 1.0}},
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "ep"}, "key": "comms_on"}, "b": {"type": "Lit", "value": 1.0}}
+   ]},
+   "effects": [
+    ["set_attr", "dec", "stated_harvest",
+     {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "dec"}, "key": "norm"}}]
+   ]},
+
+  {"name": "hv_punish",
+   "area": "retina",
+   "order": 22,
+   "latency_class": "hard_realtime",
+   "comment": "Phase 2 costly peer punishment: a norm-valuing agent (w_supergraph>0 AND comms_on==1) reproaches each monitored decision whose LAST actual harvest exceeded the agreed norm s. Sets want_punish=1 on the violator's HarvestDecision (the adapter counts reproaches mechanically -> sanction cost). A w=0 agent never punishes (fulfilment is unvalued) -- punishment is itself a pro-social act.",
+   "match": [
+    ["hub", "has_emotion_params", "ep"],
+    ["hub", "monitors", "dec"]
+   ],
+   "where": {"type": "And", "items": [
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "ep"}, "key": "enabled"}, "b": {"type": "Lit", "value": 1.0}},
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "ep"}, "key": "comms_on"}, "b": {"type": "Lit", "value": 1.0}},
+     {"type": "Gt", "a": {"type": "Attr", "node": {"type": "Var", "name": "ep"}, "key": "w_supergraph"}, "b": {"type": "Lit", "value": 0.0}},
+     {"type": "Gt", "a": {"type": "Attr", "node": {"type": "Var", "name": "dec"}, "key": "last_harvest"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "dec"}, "key": "norm"}}
+   ]},
+   "effects": [
+    ["set_attr", "dec", "want_punish", {"__term__": {"type": "Lit", "value": 1.0}}]
+   ]}
+ ]
+}

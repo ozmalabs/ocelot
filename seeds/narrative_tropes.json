@@ -1,0 +1,49 @@
+{
+  "id": "narrative_tropes",
+  "version": "1.0.0",
+  "depends_on": ["narrative_structure"],
+  "description": "TROPES ARE THE ADMISSIBILITY GRAMMAR OF NARRATIVE, one level up from narrative_structure's story-grammar arc (which is itself one level up from discourse_coherence's span-pair relations, itself one level up from reading_collapse's clause constructions). Where narrative_structure decodes WHICH ROLE one event plays in a goal-pursuit chain, this codebook decodes WHICH RECURRING NARRATIVE PATTERN the WHOLE ARC instantiates -- a trope. Every arc narrative_structure.recognize_narrative_structure already built is turned into a SMALL SET of mechanical, already-committed-fact tokens (does the arc carry a 'problem' role? a 'resolution' role? does its 'solution' role's own outgoing causal edge trace to a PHYSICAL-EFFECT displacement schema -- inference_generation.resolve_causal_gap's own decode, evidence of an INDIRECT mechanism rather than direct force? does the solution sentence's own situation-model ingest record carry a PLURAL affected entity -- evidence of an INCREMENTAL, repeated small action rather than one blow? did a PRECONDITION/BLOCKING gap have to be resolved for this entity before its chain could complete -- inference_generation.resolve_precondition_gap's own decode, evidence the direct path was BLOCKED?) and that token SET is decoded against this codebook by the SAME ShapeDecode set-cover search reading_collapse/discourse_coherence/narrative_structure already use -- the TROPE NAME is always the winning ShapeSignatureTrope's own `name` attr (read off the decode's own `plan`, one entry per recognised trope -- MULTIPLE tropes can be recognised for one arc when the decode's own set-cover finds a multi-step plan), never a Python if/else naming a trope. `label_candidates` supplies a short list of TV Tropes search phrases (domains/tropes_teacher.py's own corpus lookup, used ONLY to attach a citable name/definition to an already-decided trope -- never to decide which trope fired); `theme` is this module's own held one-line moral, read off verbatim by the caller, never re-derived from free text.",
+  "microtheory": {
+    "name": "narrative_tropes",
+    "description": "The recurring narrative-construction pattern ('tropes are the admissibility grammar of narrative') a story's already-recognised arc instantiates, decoded by ShapeDecode set-cover against a dedicated ShapeSignatureTrope codebook -- one level up from the story-grammar arc."
+  },
+  "nodes": [
+    {
+      "local_id": 1,
+      "type": "ShapeSignatureTrope",
+      "attrs": {
+        "name": "INGENUITY_OVER_STRENGTH",
+        "kind": "trope",
+        "signature": "[[\"TROPE_PROBLEM\"], [\"TROPE_INDIRECT\"]]",
+        "theme": "Ingenuity overcomes an obstacle that force could not -- cleverness over strength.",
+        "label_candidates": "[\"MacGyvering\", \"BattleOfWits\", \"CrazyPrepared\"]",
+        "note": "The arc carries a 'problem' role (an obstacle, discourse_coherence's own decoded 'contrast' into the goal-pursuit chain) AND its 'solution' role's own outgoing causal edge was minted via a PHYSICAL-EFFECT displacement schema (inference_generation.resolve_causal_gap's own decode, e.g. drop-a-solid -> a-level-rises) rather than any direct force applied to the obstacle itself -- the goal-holder solved the problem INDIRECTLY, through a physical mechanism, not brute strength."
+      }
+    },
+    {
+      "local_id": 2,
+      "type": "ShapeSignatureTrope",
+      "attrs": {
+        "name": "PERSISTENCE_PAYS",
+        "kind": "trope",
+        "signature": "[[\"TROPE_INCREMENTAL\"], [\"TROPE_RESOLUTION\"]]",
+        "theme": "Small repeated efforts accumulate into success -- little by little, persistence pays.",
+        "label_candidates": "[\"Determinator\"]",
+        "note": "The arc's 'solution' role's own situation-model ingest record (situation_model_reader/coref_entities' own already-committed predication) carries a PLURAL affected entity (coref_number=='plural' -- many small units acted on one at a time, not one single blow) AND the arc reaches a 'resolution' role (a causal-chain effect sentence whose own recognised words include the goal's remedy token) -- the goal was met by REPEATED small increments, not one decisive act."
+      }
+    },
+    {
+      "local_id": 3,
+      "type": "ShapeSignatureTrope",
+      "attrs": {
+        "name": "NECESSITY_INVENTION",
+        "kind": "trope",
+        "signature": "[[\"TROPE_BLOCKED\"], [\"TROPE_INDIRECT\"]]",
+        "theme": "Necessity is the mother of invention -- a blocked direct path forces a novel workaround.",
+        "label_candidates": "[\"CrazyPrepared\", \"MacGyvering\"]",
+        "note": "A PRECONDITION/BLOCKING gap (inference_generation.detect_precondition_gaps/resolve_precondition_gap's own decode -- a stalled world-knowledge rule one conjunct away from firing) was resolved for this entity, AND the solution's own causal edge traces to a physical-effect schema (the same TROPE_INDIRECT signal INGENUITY_OVER_STRENGTH reads) -- the direct route was genuinely BLOCKED, forcing the indirect one, distinct from a story that simply preferred cleverness with no blocked precondition on record."
+      }
+    }
+  ],
+  "edges": []
+}

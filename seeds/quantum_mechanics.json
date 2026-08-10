@@ -1,0 +1,202 @@
+{
+  "microtheory": {
+    "name": "quantum_mechanics",
+    "definition": "Quantum mechanics. Schrödinger equation, wave function, superposition, entanglement, measurement, uncertainty principle, quantum field theory. The framework for physics at atomic + subatomic scales. Foundation of chemistry, semiconductors, lasers, quantum computing. Substrate analogue: substrate's probabilistic state superposition prior to measurement-as-observation.",
+    "category": "foundation"
+  },
+  "concepts": [
+    {
+      "name": "wave_function",
+      "definition": "ψ(x, t). Complex-valued amplitude. |ψ|² is probability density (Born rule). Schrödinger 1926. Substrate analogue: substrate's belief amplitude.",
+      "category": "states"
+    },
+    {
+      "name": "schrodinger_equation",
+      "definition": "iℏ ∂ψ/∂t = Ĥψ. Time evolution of quantum state under Hamiltonian. Substrate analogue: substrate's state-evolution operator.",
+      "category": "states"
+    },
+    {
+      "name": "hilbert_space_quantum",
+      "definition": "Complex inner-product space of quantum states. State = unit vector. Operators are linear. Substrate analogue: substrate's state-vector space.",
+      "category": "states"
+    },
+    {
+      "name": "ket_bra_dirac",
+      "definition": "Dirac notation: |ψ⟩ = ket, ⟨ψ| = bra. Inner product ⟨φ|ψ⟩ = amplitude. Substrate analogue: substrate's state notation.",
+      "category": "states"
+    },
+    {
+      "name": "superposition_quantum",
+      "definition": "ψ = αψ₁ + βψ₂. State is linear combination of basis states. Measurement collapses to one. Substrate analogue: substrate's pre-decision distribution.",
+      "term": {
+        "type": "Eq",
+        "a": {
+          "type": "Holds",
+          "concept": "superposition_quantum",
+          "node": {
+            "type": "Var",
+            "name": "x"
+          },
+          "node2": null
+        },
+        "b": {
+          "type": "Plus",
+          "items": [
+            {
+              "type": "Holds",
+              "concept": "superposition_quantum",
+              "node": {
+                "type": "Var",
+                "name": "x"
+              },
+              "node2": null
+            },
+            {
+              "type": "Holds",
+              "concept": "superposition_quantum",
+              "node": {
+                "type": "Var",
+                "name": "x"
+              },
+              "node2": null
+            }
+          ]
+        }
+      },
+      "category": "states"
+    },
+    {
+      "name": "observable",
+      "definition": "Measurable property — position, momentum, energy, spin. Hermitian operator. Eigenvalues are possible measurement outcomes. Substrate analogue: substrate's measurement variable.",
+      "category": "measurement"
+    },
+    {
+      "name": "eigenvalue_eigenstate",
+      "definition": "Operator equation Â|a⟩ = a|a⟩. Eigenvalues are measurable values; eigenstates are post-measurement states. Substrate analogue: substrate's basin-state values.",
+      "category": "measurement"
+    },
+    {
+      "name": "born_rule",
+      "definition": "P(outcome a) = |⟨a|ψ⟩|². Probability of measurement outcome. Substrate analogue: substrate's amplitude-squared probability.",
+      "category": "measurement"
+    },
+    {
+      "name": "wave_function_collapse",
+      "definition": "Upon measurement, ψ collapses to eigenstate of measured observable. Interpretational. Substrate analogue: substrate's basin selection on observation.",
+      "category": "measurement"
+    },
+    {
+      "name": "measurement_problem",
+      "definition": "Why does observation collapse superposition? Interpretations: Copenhagen, Many-Worlds (Everett), de Broglie-Bohm, GRW, QBism, Relational.",
+      "category": "measurement"
+    },
+    {
+      "name": "uncertainty_principle",
+      "definition": "Heisenberg 1927. ΔxΔp ≥ ℏ/2. Non-commuting observables have fundamental joint uncertainty. Not measurement limitation — structural. Substrate analogue: substrate's complementary-information bound.",
+      "category": "principles"
+    },
+    {
+      "name": "commutator",
+      "definition": "[Â, B̂] = ÂB̂ - B̂Â. Zero ↔ simultaneously measurable. Non-zero ↔ uncertainty relation. Substrate analogue: substrate's incompatible-operations check.",
+      "category": "principles"
+    },
+    {
+      "name": "complementarity_bohr",
+      "definition": "Bohr. Wave + particle aspects mutually exclusive but jointly required for description. Substrate analogue: substrate's incompatible-frame requirement.",
+      "category": "principles"
+    },
+    {
+      "name": "entanglement_quantum",
+      "definition": "ψ_AB ≠ ψ_A ⊗ ψ_B for two-particle state. Measurement on one affects probabilities for the other instantly. EPR 1935 + Bell tests confirm. Substrate analogue: substrate's non-factorisable joint state.",
+      "category": "phenomena"
+    },
+    {
+      "name": "bell_inequality",
+      "definition": "Bell 1964. Classical local-realist theories satisfy inequalities QM violates. Experiments (Aspect 1982, Hensen 2015) violate Bell → local realism false. Substrate analogue: substrate's non-classical correlation.",
+      "category": "phenomena"
+    },
+    {
+      "name": "no_cloning_theorem",
+      "definition": "Wootters + Zurek 1982. Unknown quantum state cannot be perfectly copied. Foundation of quantum cryptography security.",
+      "category": "phenomena"
+    },
+    {
+      "name": "quantum_tunneling",
+      "definition": "Particle passes through energy barrier classically forbidden. Wave function nonzero on far side. Explains alpha decay, scanning tunneling microscopy.",
+      "category": "phenomena"
+    },
+    {
+      "name": "spin_quantum",
+      "definition": "Intrinsic angular momentum. Quantised in units of ℏ/2. Stern-Gerlach. Pauli matrices for spin-1/2. Substrate analogue: substrate's intrinsic discrete property.",
+      "category": "particles"
+    },
+    {
+      "name": "pauli_exclusion",
+      "definition": "Two identical fermions cannot share quantum state. Foundation of chemistry — electron orbitals, periodic table.",
+      "category": "particles"
+    },
+    {
+      "name": "fermion_boson",
+      "definition": "Half-integer spin (fermions, Pauli-exclusive) vs integer spin (bosons, condensable). Spin-statistics theorem.",
+      "category": "particles"
+    },
+    {
+      "name": "quantum_field_theory",
+      "definition": "QFT. Particles are excitations of underlying fields. Combines QM + special relativity. Foundation of Standard Model.",
+      "category": "qft"
+    },
+    {
+      "name": "feynman_diagram",
+      "definition": "Pictorial scheme for perturbative QFT calculations. Vertices + propagators encode amplitudes.",
+      "category": "qft"
+    },
+    {
+      "name": "standard_model",
+      "definition": "Current theory of fundamental particles + forces (electromagnetic + weak + strong). Excludes gravity. Higgs confirmed 2012.",
+      "category": "qft"
+    },
+    {
+      "name": "quantum_computing",
+      "definition": "Computation with qubits exploiting superposition + entanglement. Shor's factoring, Grover's search. Substrate analogue: substrate's parallel-superposition processing.",
+      "category": "applications"
+    },
+    {
+      "name": "qubit",
+      "definition": "Quantum bit. α|0⟩ + β|1⟩. Superposition + measurement collapse. Substrate analogue: substrate's quantum-state primitive.",
+      "category": "applications"
+    },
+    {
+      "name": "decoherence",
+      "definition": "Loss of quantum superposition through interaction with environment. Apparent collapse to classical. Substrate analogue: substrate's basin-collapse via observation.",
+      "category": "applications"
+    }
+  ],
+  "rules": [
+    {
+      "name": "born_rule_gives_measurement_probabilities",
+      "head": "Jabberwock measures a quantum observable",
+      "body": "the probability of outcome a is |⟨a|ψ⟩|². Born rule. Substrate's amplitude-squared probability rule."
+    },
+    {
+      "name": "uncertainty_is_structural_not_practical",
+      "head": "Jabberwock measures complementary observables",
+      "body": "the joint uncertainty ΔxΔp ≥ ℏ/2 is fundamental, not a limit of apparatus. Heisenberg 1927. Substrate's complementary-info bound."
+    },
+    {
+      "name": "bell_violations_rule_out_local_realism",
+      "head": "Jabberwock considers EPR + Bell experiments",
+      "body": "experimental Bell violations preclude local hidden-variable theories. Reality is either nonlocal or non-realist or both."
+    },
+    {
+      "name": "no_cloning_protects_quantum_information",
+      "head": "Jabberwock wants to copy an unknown quantum state",
+      "body": "no-cloning theorem forbids it. Foundation of quantum cryptography. Substrate's unknown-state-uncopyable principle."
+    },
+    {
+      "name": "decoherence_explains_classical_emergence",
+      "head": "Jabberwock considers why we don't see superpositions macroscopically",
+      "body": "environmental coupling causes rapid decoherence; off-diagonal density matrix elements vanish. Substrate's macroscale classicality."
+    }
+  ],
+  "parent_mt": "physics_foundation"
+}

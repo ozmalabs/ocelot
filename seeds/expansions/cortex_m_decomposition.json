@@ -1,0 +1,118 @@
+{
+  "id": "cortex_m_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "ARM_Cortex_M",
+  "in_microtheory": "embedded_iot_realtime",
+  "description": "ARM Cortex-M architecture decomposed. Register set, modes (Thread/Handler, Privileged/Unprivileged), exception model + NVIC, MPU, FPU (M4F/M7), SysTick, DSP extensions, TrustZone-M, BusFault/UsageFault/MemManage faults.",
+  "sub_mechanisms": [
+    {
+      "name": "cortex_m_register_set",
+      "definition": "R0-R12 general, R13 (SP), R14 (LR), R15 (PC), xPSR (status). Two stacks: MSP (main) + PSP (process).",
+      "why": "Standard ARM Thumb-2. PSP enables RTOS isolation (kernel uses MSP). EXC_RETURN encodes which stack to use after exception.",
+      "category": "cortex_m_mechanism"
+    },
+    {
+      "name": "thumb_2_instruction_set",
+      "definition": "Mix of 16-bit + 32-bit instructions. High code density.",
+      "why": "Cortex-M only executes Thumb-2 (no ARM mode). Dense code = less Flash. Good for tiny MCUs.",
+      "category": "cortex_m_mechanism"
+    },
+    {
+      "name": "NVIC_priorities",
+      "definition": "Nested Vectored Interrupt Controller. Per-interrupt priority. Preemption + sub-priority.",
+      "why": "Hardware-prioritised. Higher-priority interrupts preempt lower. Sub-priority orders same-priority pending. Standard for Cortex-M.",
+      "category": "cortex_m_mechanism"
+    },
+    {
+      "name": "exception_entry_stacking",
+      "definition": "Hardware stacks R0-R3, R12, LR, PC, xPSR. Other registers saved by handler if used.",
+      "why": "Deterministic interrupt entry (~12 cycles M3). Hardware saves caller-saved regs; ISR saves rest. Foundation of RT.",
+      "category": "cortex_m_mechanism"
+    },
+    {
+      "name": "tail_chaining",
+      "definition": "Back-to-back pending interrupts: skip stack restore + re-save. Direct handler-to-handler transition.",
+      "why": "~6 cycles tail-chain vs ~30 cycles full exit+entry. Major RT benefit. Cortex-M specific.",
+      "category": "cortex_m_mechanism"
+    },
+    {
+      "name": "MPU_regions",
+      "definition": "Memory Protection Unit. 8 (M3/M4) or 16 (M33) regions. Each: address + size + permissions + cacheability.",
+      "why": "Memory isolation without virtual memory. RTOS uses to isolate tasks. Catches NULL pointer dereferences, stack overflow. Standard.",
+      "category": "cortex_m_mechanism"
+    },
+    {
+      "name": "FPU_M4F_M7",
+      "definition": "Single-precision (M4F) or double-precision (M7) hardware floating point. ARMv7-M FPU extension.",
+      "why": "10-100x faster than software float. M4F adds ~50 LE to die; standard now. Many DSP applications need.",
+      "category": "cortex_m_mechanism"
+    },
+    {
+      "name": "SysTick_timer",
+      "definition": "24-bit countdown timer. Standard across all Cortex-M. Configurable interrupt at zero.",
+      "why": "Universal RTOS tick source. Each MCU has one. Often used for FreeRTOS tick. Predictable, low overhead.",
+      "category": "cortex_m_mechanism"
+    },
+    {
+      "name": "DSP_extensions_M4F",
+      "definition": "Single-cycle MAC, saturating arithmetic, SIMD (limited). CMSIS-DSP library.",
+      "why": "Audio, motor control, sensor processing. Enables real-time DSP without dedicated DSP chip. M4F + DSP = workhorse.",
+      "category": "cortex_m_mechanism"
+    },
+    {
+      "name": "TrustZone_M",
+      "definition": "Cortex-M33+: secure + non-secure worlds. Hardware-enforced isolation.",
+      "why": "Security extension for IoT. Sensitive code (crypto, keys) in secure world. Non-secure can't read. Foundation of secure IoT.",
+      "category": "cortex_m_mechanism"
+    },
+    {
+      "name": "fault_exceptions",
+      "definition": "HardFault, MemManage, BusFault, UsageFault. Each indicates specific error class.",
+      "why": "Diagnostic information for crashes. UsageFault: division by zero, unaligned access. MemManage: MPU violation. Critical for debugging.",
+      "category": "cortex_m_mechanism"
+    },
+    {
+      "name": "wait_for_interrupt_WFI",
+      "definition": "WFI instruction: enter sleep until interrupt. WFE: until event.",
+      "why": "Power saving. CPU off, peripheral interrupts wake. Foundation of tickless idle. ~μA power vs mA running.",
+      "category": "cortex_m_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "deterministic_interrupt_entry_critical_for_RT",
+      "if": ["RT system uses Cortex-M"],
+      "then": ["interrupt entry latency is predictable (~12 cycles)"],
+      "why": "Hardware register stacking. Tail-chaining for back-to-back interrupts. Predictable enables WCET analysis. RT-friendly hardware design.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "MPU_enables_RTOS_task_isolation",
+      "if": ["RTOS uses MPU for per-task regions"],
+      "then": ["task crashes don't corrupt other tasks"],
+      "why": "Without: rogue pointer in task A corrupts task B. With: MPU faults invalid access. Important for safety-critical + multi-tenant embedded.",
+      "soundness_category": "referential_transparency"
+    },
+    {
+      "name": "FPU_essential_for_signal_processing_at_runtime",
+      "if": ["application does float math at signal rate"],
+      "then": ["FPU (M4F/M7) is required"],
+      "why": "Software float: 100s of cycles per operation. FPU: single cycle. Audio at 48 kHz × 32 ops = 1.5M ops/sec. Without FPU: not viable.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "TrustZone_M_for_secure_storage",
+      "if": ["device stores cryptographic keys + sensitive code"],
+      "then": ["TrustZone-M provides hardware isolation"],
+      "why": "Without: app code can read keys, modify crypto. With: secure world isolates. Required for many IoT security standards. M33+ feature.",
+      "soundness_category": "referential_transparency"
+    },
+    {
+      "name": "WFI_enables_battery_years_operation",
+      "if": ["device sleeps between events"],
+      "then": ["WFI brings down average current dramatically"],
+      "why": "Running: 5-20 mA. Sleep (WFI): 1-30 μA depending on retention. Average = active% × running + sleep% × sleep. Battery years possible.",
+      "soundness_category": "cost_equivalence"
+    }
+  ]
+}

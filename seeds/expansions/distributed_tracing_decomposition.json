@@ -1,0 +1,118 @@
+{
+  "id": "distributed_tracing_decomposition",
+  "version": "1.0.0",
+  "expands_concept": "distributed_tracing",
+  "in_microtheory": "distributed_systems",
+  "description": "Distributed tracing decomposed. OpenTelemetry standard. Trace, span, span context, baggage. W3C Trace Context. Sampling strategies (head, tail, adaptive). Backends: Jaeger, Tempo, Zipkin. Correlation with logs + metrics.",
+  "sub_mechanisms": [
+    {
+      "name": "trace_definition",
+      "definition": "A complete request flow through services. Identified by trace ID. Composed of spans.",
+      "why": "Unit of observability for distributed request. Single trace = one user action, all services it touched. Foundation of microservice debugging.",
+      "category": "tracing_mechanism"
+    },
+    {
+      "name": "span_unit_of_work",
+      "definition": "A single operation within a trace. Has name, start, end, attributes, status, events. Identified by span ID.",
+      "why": "Building block. Service A handling request creates span; calls service B which creates child span; etc. Hierarchical structure.",
+      "category": "tracing_mechanism"
+    },
+    {
+      "name": "span_context",
+      "definition": "Trace ID + span ID + flags + tracestate. Propagated across service boundaries.",
+      "why": "Without context propagation, child spans can't link to parent. W3C Trace Context standardised the propagation format. Headers: traceparent, tracestate.",
+      "category": "tracing_mechanism"
+    },
+    {
+      "name": "baggage_propagation",
+      "definition": "Key-value pairs propagated with trace. Application-specific data flowing with request.",
+      "why": "Distinct from trace metadata: passes app data (user ID, tenant) across services. Used for routing, filtering, custom telemetry.",
+      "category": "tracing_mechanism"
+    },
+    {
+      "name": "OpenTelemetry_standard",
+      "definition": "CNCF standard for telemetry: API + SDK + protocol (OTLP) + auto-instrumentation. Merged OpenTracing + OpenCensus.",
+      "why": "Universal API independent of backend. Code uses OTel; export to Jaeger, Tempo, Datadog, etc. Eliminates vendor lock-in. Industry consolidation.",
+      "category": "tracing_mechanism"
+    },
+    {
+      "name": "auto_instrumentation",
+      "definition": "Agent attaches at runtime; instruments common libraries (HTTP, DB, gRPC) automatically.",
+      "why": "Java agent, Python opentelemetry-instrument, .NET profiler. No code changes for common instrumentation. Manual for custom spans.",
+      "category": "tracing_mechanism"
+    },
+    {
+      "name": "head_based_sampling",
+      "definition": "Sampling decision at trace start. Random N% or rate-limited. Simple, no buffering.",
+      "why": "Most common. Cost: lose data for important-but-unsampled traces. Variants: parent-based (child follows parent decision).",
+      "category": "tracing_mechanism"
+    },
+    {
+      "name": "tail_based_sampling",
+      "definition": "Buffer all spans; sample based on trace properties (errors, slow). Decide after seeing complete trace.",
+      "why": "Captures all errors + slow traces. Cost: memory for buffer, dedicated tail-sampling collector. Modern observability stack.",
+      "category": "tracing_mechanism"
+    },
+    {
+      "name": "Jaeger_backend",
+      "definition": "CNCF tracing backend. Created by Uber. Cassandra/Elasticsearch/Badger storage. Web UI for trace visualization.",
+      "why": "Open source standard. UI shows trace as Gantt chart. Query by service + operation + tags. Widely deployed.",
+      "category": "tracing_mechanism"
+    },
+    {
+      "name": "Grafana_Tempo",
+      "definition": "Object-storage-backed traces. Optimised for cost: only store, no index. Query via trace ID.",
+      "why": "Massive scale at low cost. Trade: can't search 'all traces with error' — only retrieve by ID. Pair with logs/metrics that have IDs.",
+      "category": "tracing_mechanism"
+    },
+    {
+      "name": "exemplars_metrics_to_traces",
+      "definition": "Histogram metrics linked to representative traces. Click latency bucket → see traces in that bucket.",
+      "why": "Bridges metrics + traces. Saw p99 spike at 14:00 → click to see actual slow traces. Critical for root cause analysis.",
+      "category": "tracing_mechanism"
+    },
+    {
+      "name": "logs_to_traces_correlation",
+      "definition": "Logs include trace_id + span_id. Click log entry → view trace.",
+      "why": "Unifies observability pillars. See error log → jump to trace. See slow trace → jump to logs from that request. Foundation of modern observability UX.",
+      "category": "tracing_mechanism"
+    }
+  ],
+  "derivation_rules": [
+    {
+      "name": "trace_context_essential_for_microservice_observability",
+      "if": ["request crosses N services"],
+      "then": ["without trace context, observability is N independent views"],
+      "why": "Each service's logs/metrics describe its own work. Trace context links them: 'these all came from same request'. Without it: piecing together flow is manual + error-prone.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "tail_sampling_captures_outliers_head_sampling_loses_them",
+      "if": ["only 1% of traces are sampled at head"],
+      "then": ["1% of error traces are captured (miss most)"],
+      "why": "Head sampling random: errors as likely as success to be sampled. Tail sampling sees complete trace, prioritises errors / slow. Modern stacks use tail for outliers, head for baseline.",
+      "soundness_category": "denotational_equivalence"
+    },
+    {
+      "name": "OpenTelemetry_eliminates_vendor_lock_in",
+      "if": ["telemetry is generated via OTel SDK"],
+      "then": ["backend can be swapped without code changes"],
+      "why": "Universal API + OTLP protocol. Today export to Jaeger; tomorrow Tempo or Datadog; no code change. Industry consolidation after years of fragmentation.",
+      "soundness_category": "extensional_equivalence"
+    },
+    {
+      "name": "auto_instrumentation_minimal_friction",
+      "if": ["agent-based auto-instrumentation is used"],
+      "then": ["existing services gain tracing without code changes"],
+      "why": "Java agent attaches at JVM start; instruments HTTP, DB, gRPC. Manual instrumentation needed only for custom spans. Practical adoption path.",
+      "soundness_category": "cost_equivalence"
+    },
+    {
+      "name": "exemplars_bridge_metrics_to_traces",
+      "if": ["histogram metrics include exemplars"],
+      "then": ["high-percentile latency is debuggable"],
+      "why": "See p99 spike at 14:00 → click bucket → see actual slow trace → diagnose. Without exemplars: 'p99 is bad' but no path to specific request. Major UX improvement.",
+      "soundness_category": "extensional_equivalence"
+    }
+  ]
+}

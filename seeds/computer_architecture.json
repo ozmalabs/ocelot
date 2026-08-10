@@ -1,0 +1,1280 @@
+{
+ "id": "computer_architecture",
+ "version": "0.4.0",
+ "depends_on": [
+  "compiler_theory"
+ ],
+ "description": "The agent's conceptual understanding of how modern CPUs and memory systems actually work. Covers the gap between 'an instruction is executed' (textbook) and 'what really happens' (μarchitecture). Pipelining, superscalar issue, out-of-order execution, branch prediction, speculation, register renaming. ISA families (x86, ARM, RISC-V) and their trade-offs. The full memory hierarchy from registers down through DRAM to disk: cache associativity, replacement, coherence, TLB structures. Virtual memory with multi-level page tables, huge pages, page-fault handling. DRAM as it physically is — rows, banks, channels, refresh, row hammer. Memory consistency models from sequential to weak. Memory management: stack/heap, allocators (jemalloc/tcmalloc), garbage collection families. NUMA, heterogeneous cores, GPU SIMT. The substrate's other Mts (video, audio coding theory) compete for CPU + cache + bandwidth resources whose behaviour this Mt captures.",
+ "category_inheritance": "genlMt → compiler_theory. Compiler theory's cost_equivalence rule grounds optimisation choices that depend on μarchitecture (instruction selection, scheduling, vectorisation); compiler_theory's referential_transparency grounds memory consistency reasoning (when can the compiler reorder loads/stores?). The substrate's compiler-theory soundness vocabulary applies directly to CPU and memory behaviour.",
+ "concepts": [
+  {
+   "name": "instruction",
+   "definition": "A single operation the CPU can execute, encoded as bits matching its ISA. Includes operation type (opcode), operands (registers, immediates), addressing mode.",
+   "why": "The atomic unit of CPU work. All higher-level code (C, Rust, Python bytecode) decomposes into instructions. The ISA defines which instructions exist; the μarchitecture defines how they're executed.",
+   "category": "foundation"
+  },
+  {
+   "name": "instruction_set_architecture",
+   "definition": "ISA: the abstract specification of what instructions a CPU can execute, how they're encoded, what state they affect (registers, memory). Examples: x86_64, AArch64 (ARM64), RISC-V RV64GC.",
+   "why": "ISA is the contract between software and hardware. Software is portable across implementations of the same ISA; different ISAs require recompilation or emulation. The ISA's design constrains decades of microarchitecture innovation.",
+   "category": "foundation"
+  },
+  {
+   "name": "microarchitecture",
+   "definition": "The specific implementation of an ISA in silicon: which functional units exist, how the pipeline is organised, what caches are present, branch prediction strategy. Multiple μarchitectures can implement the same ISA.",
+   "why": "Where performance lives. Same ISA, different μarchitectures (Skylake vs Sunny Cove vs Zen 4) can differ in performance by 2x+ on the same code. The 'art' of CPU design is in the μarchitecture decisions, not the ISA.",
+   "category": "foundation"
+  },
+  {
+   "name": "clock_frequency",
+   "definition": "How many cycles per second the CPU runs at. Modern CPUs: 3-5 GHz typical, with boost frequencies higher for short bursts.",
+   "why": "Originally the dominant performance metric (1990s). Modern CPUs gain little from higher clocks (power scales superlinearly); IPC and core count dominate now. Frequency is a knob in the power-performance trade-off, not an objective.",
+   "category": "foundation"
+  },
+  {
+   "name": "IPC_instructions_per_cycle",
+   "definition": "How many instructions the CPU retires per clock cycle. Modern wide CPUs achieve IPC 3-8 on well-optimised code; bottlenecks (cache miss, branch mispredict) drop IPC dramatically.",
+   "why": "The main performance metric in modern CPU design. Doubling IPC at the same clock is twice the work per second. Most μarchitecture innovation (wider issue, better speculation, more reservation stations) targets IPC.",
+   "category": "foundation"
+  },
+  {
+   "name": "ILP_instruction_level_parallelism",
+   "definition": "The amount of independent work the CPU can extract from a sequential instruction stream. Limited by dependencies, branches, and memory accesses.",
+   "why": "Modern CPUs are wide (4-8 issue) — they need ILP to fill that width. ILP is what makes out-of-order execution worth the silicon. The 'ILP wall' (diminishing returns from wider issue) limits how wide future CPUs can go.",
+   "category": "foundation"
+  },
+  {
+   "name": "pipelined_execution",
+   "definition": "Multiple instructions in different pipeline stages simultaneously. Stage 1 fetches instruction N+4, stage 2 decodes N+3, stage 3 executes N+2, etc.",
+   "why": "Without pipelining, CPU would execute one instruction per N cycles (for N stages). With it, one per cycle in steady state. The throughput gain from pipelining is the foundation of all modern CPU performance.",
+   "category": "pipeline_mechanism"
+  },
+  {
+   "name": "pipeline_depth",
+   "definition": "Number of stages in the pipeline. Modern CPUs: 15-25 stages typical. Deeper pipeline allows higher clock frequency but increases penalty of branch mispredict and pipeline flush.",
+   "why": "The trade: deeper pipeline = higher clock = more potential instructions/sec, but each mispredict throws away more cycles. Pentium 4's 31-stage pipeline (3+ GHz) was too deep; modern designs trend toward 15-18 stages.",
+   "category": "pipeline_mechanism"
+  },
+  {
+   "name": "fetch_stage",
+   "definition": "Pipeline stage that reads instructions from instruction cache (I-cache) and feeds them to decode. Typically 1-3 cycles. Coupled with branch prediction to fetch the right instructions.",
+   "why": "Front-end performance dictates whether the back-end has work. A starving fetch (I-cache miss, mispredict) leaves execution units idle. Branch prediction is fundamentally a fetch-stage optimisation.",
+   "category": "pipeline_stage"
+  },
+  {
+   "name": "decode_stage",
+   "definition": "Pipeline stage that translates raw instruction bits into μops (micro-operations) the back-end can execute. Modern x86 decoders are complex; ARM/RISC-V decoders are simpler.",
+   "why": "x86 instructions decompose into 1-7+ μops; ARM is mostly 1 μop per instruction. Decode complexity is a fundamental CISC vs RISC trade. ARM's simpler decode lets the front-end be wider per chip area.",
+   "category": "pipeline_stage"
+  },
+  {
+   "name": "execute_stage",
+   "definition": "Pipeline stage(s) where the actual computation happens — adds, multiplies, branches resolve. Multiple execute units in parallel (integer, FP, vector, branch, load/store).",
+   "why": "Width of execute = how many ops/cycle the back-end can sustain. Modern CPUs have 4-10 execute ports, each specialised for different op types. Port pressure (multiple ops competing for the same port) is a common bottleneck.",
+   "category": "pipeline_stage"
+  },
+  {
+   "name": "memory_stage",
+   "definition": "Pipeline stage for loads/stores. Address computation, cache access, possible TLB walk. Often the longest-latency stage in the pipeline.",
+   "why": "Memory access is the slow part. L1 cache hit is ~4-5 cycles; L2 ~12; L3 ~40; DRAM ~200+. The pipeline must hide this latency via out-of-order execution and prefetching.",
+   "category": "pipeline_stage"
+  },
+  {
+   "name": "writeback_stage",
+   "definition": "Final pipeline stage that writes results to the register file. Where the instruction officially 'completes' from architectural state's perspective.",
+   "why": "In modern OoO CPUs, this is decoupled from execute via the reorder buffer. Instructions execute out of order but writeback in program order — preserving the illusion of sequential execution to software.",
+   "category": "pipeline_stage"
+  },
+  {
+   "name": "superscalar",
+   "definition": "Issuing multiple instructions per cycle. Modern CPUs are 4-8 wide (issue up to 8 instructions per cycle simultaneously).",
+   "why": "If pipelining gives 1 instruction/cycle peak, superscalar multiplies that by issue width. Modern IPC of 3-5 sustained requires wide superscalar. The combination of pipelining + superscalar is what modern μarchitecture IS.",
+   "category": "pipeline_mechanism"
+  },
+  {
+   "name": "out_of_order_execution",
+   "definition": "OoO: instructions execute as soon as their inputs are ready, not in program order. Earlier instructions waiting for memory don't block later independent instructions.",
+   "why": "ILP extraction. Without OoO, a single cache miss stalls the entire pipeline. With OoO, independent later instructions execute during the miss. The single biggest IPC contributor in modern CPUs.",
+   "category": "pipeline_mechanism"
+  },
+  {
+   "name": "speculative_execution",
+   "definition": "Execute instructions PAST a not-yet-resolved branch, betting on the branch prediction. If wrong, throw away the speculative results (flush the pipeline).",
+   "why": "Branches are frequent (every 5-7 instructions). Waiting for branch resolution before fetching past them would limit IPC severely. Speculation lets the front-end run ahead of branch resolution. Spectre/Meltdown showed the security implications.",
+   "category": "pipeline_mechanism"
+  },
+  {
+   "name": "branch_prediction",
+   "definition": "Hardware predictor that guesses which way a branch will go before the branch instruction has executed. Modern predictors achieve >95% accuracy on typical code.",
+   "why": "Speculation requires accurate prediction; mispredicts waste ~15-25 cycles. Modern predictors use neural-network-style structures (TAGE, perceptron) on top of pattern-based history.",
+   "category": "pipeline_mechanism"
+  },
+  {
+   "name": "register_renaming",
+   "definition": "Map architectural registers (e.g., %rax, x0) to a larger pool of physical registers. Removes false dependencies (WAW, WAR) caused by limited register names.",
+   "why": "ISA has ~16-32 named registers; physical register file has 200+. Renaming lets OoO execute instructions that share register names but no real dependency. Without it, OoO would stall on register reuse.",
+   "category": "pipeline_mechanism"
+  },
+  {
+   "name": "reorder_buffer",
+   "definition": "ROB: tracks in-flight instructions, their results, and their program order. Allows OoO execution but in-order writeback. Modern CPUs have 200-500 ROB entries.",
+   "why": "The ROB IS the OoO window. Larger ROB = more instructions in flight = more ILP potential. Apple M3 has 670-entry ROB; Intel Golden Cove ~512. Bigger ROBs are how recent CPUs improve IPC.",
+   "category": "pipeline_mechanism"
+  },
+  {
+   "name": "reservation_station",
+   "definition": "Queues instructions waiting for inputs. When all inputs available, instruction issues to an execute unit. Modern CPUs have ~100-200 RS entries across execution clusters.",
+   "why": "Decouples instruction dispatch from execution. Instructions sit in RS until ready; OoO execution is just 'which RS entry gets to issue first'. Tomasulo's algorithm formalises this.",
+   "category": "pipeline_mechanism"
+  },
+  {
+   "name": "microop",
+   "definition": "μop: the internal RISC-like operation the back-end actually executes. x86 instructions decompose into multiple μops; ARM/RISC-V mostly 1:1.",
+   "why": "Lets the back-end be the same RISC-like design regardless of the ISA's complexity. x86's CISC instructions (e.g., addressing-mode-rich operands) become simpler μops the back-end executes uniformly.",
+   "category": "pipeline_mechanism"
+  },
+  {
+   "name": "macro_op_fusion",
+   "definition": "Combining two adjacent instructions (e.g., compare + branch) into a single μop. Improves effective IPC by reducing μop count.",
+   "why": "Common patterns deserve special handling. Cmp+jmp is the standard branch idiom; fusing it doubles the effective width on branchy code. Most modern CPUs do this.",
+   "category": "pipeline_mechanism"
+  },
+  {
+   "name": "data_hazard",
+   "definition": "Pipeline hazard when one instruction depends on another's result that hasn't been computed yet. Three kinds: RAW (read-after-write), WAW (write-after-write), WAR (write-after-read).",
+   "why": "Limits ILP. RAW is a true dependency; WAW and WAR are false dependencies removed by register renaming. Forwarding networks help with RAW by passing results between pipeline stages.",
+   "category": "hazard"
+  },
+  {
+   "name": "control_hazard",
+   "definition": "Pipeline hazard from conditional branches: the fetch unit doesn't know what to fetch next until the branch resolves.",
+   "why": "Branch prediction is the response. Wrong prediction = pipeline flush = wasted cycles. The pipeline depth determines how many cycles are wasted per mispredict.",
+   "category": "hazard"
+  },
+  {
+   "name": "structural_hazard",
+   "definition": "Pipeline hazard from contention for a hardware resource (e.g., two instructions both need the same multiplier). Rare in modern CPUs because resources are duplicated.",
+   "why": "Modern CPUs have multiple ALUs, multiple load/store units to avoid this. Used to be common; now mostly comes up with shared resources like cache port bandwidth or specific execution units (e.g., AVX-512 throughput).",
+   "category": "hazard"
+  },
+  {
+   "name": "forwarding",
+   "definition": "Bypass network that passes results from one pipeline stage to a dependent instruction in an earlier stage, without going through the register file.",
+   "why": "Reduces effective latency of RAW dependencies. Without forwarding, dependent instructions wait for writeback (3-5 cycles); with forwarding, ~1 cycle. Critical for IPC on dependency chains.",
+   "category": "pipeline_mechanism"
+  },
+  {
+   "name": "pipeline_stall",
+   "definition": "Inserting bubbles (NOPs) into the pipeline to delay later instructions until a hazard resolves.",
+   "why": "When dependencies can't be resolved by forwarding (e.g., load-use hazard with no L1 hit), the pipeline stalls. Visible as IPC < 1 in performance counters.",
+   "category": "hazard"
+  },
+  {
+   "name": "SIMD",
+   "definition": "Single Instruction Multiple Data: one instruction operating on multiple data lanes in parallel. SSE (128-bit), AVX (256-bit), AVX-512 (512-bit), ARM NEON (128-bit), SVE (variable up to 2048-bit).",
+   "why": "Data-level parallelism for the price of one instruction. Vector operations on N lanes give Nx throughput. Critical for media codecs (video/audio decode), scientific compute, ML inference.",
+   "category": "parallelism"
+  },
+  {
+   "name": "AVX_512",
+   "definition": "Intel's 512-bit SIMD extension. 32 architectural ZMM registers, full FP + integer + mask operations. Power-hungry; can downclock the CPU.",
+   "why": "8x float32 ops per instruction. Great for HPC and ML; mixed reputation in general workloads due to thermal/power impact. Intel server-only for years; consumer chips dropped/re-added it.",
+   "category": "parallelism"
+  },
+  {
+   "name": "SVE_scalable_vector_extension",
+   "definition": "ARM's SIMD: vector length is implementation-defined (128 to 2048 bits in 128-bit increments). Same code runs on any SVE width.",
+   "why": "Vector-length-agnostic code avoids x86's per-width recompilation. The same binary works on 128-bit and 512-bit hardware. The architectural answer to AVX-512's vendor lock-in.",
+   "category": "parallelism"
+  },
+  {
+   "name": "SIMT_GPU_execution",
+   "definition": "Single Instruction Multiple Threads: GPU execution model. 32-64 threads (warp/wavefront) execute the same instruction in lockstep, on different data.",
+   "why": "Like SIMD but with branch divergence handling. Each thread can take different branches; the GPU executes both paths for divergent threads (masking out the inactive ones). Foundation of GPU compute (CUDA, ROCm, Metal).",
+   "category": "parallelism"
+  },
+  {
+   "name": "SMT_simultaneous_multithreading",
+   "definition": "One physical core runs multiple instruction streams (threads). Each thread has its own architectural state; execute units are shared. Intel Hyperthreading: 2 threads/core; some POWER chips: 8 threads/core.",
+   "why": "Improves utilisation when threads have different bottlenecks. One thread waiting for memory, the other can use execute units. Typical gain: 10-30% throughput, not 2x. Disabled in security-sensitive contexts (Spectre).",
+   "category": "parallelism"
+  },
+  {
+   "name": "RISC",
+   "definition": "Reduced Instruction Set Computer. Fixed-length instructions, load/store architecture (memory ops separate from compute), few addressing modes. ARM, RISC-V, POWER.",
+   "why": "Simpler decode → wider front-end at same area. Cleaner pipeline. Historical advantage; modern CPUs use μops internally so RISC vs CISC at the ISA level matters less.",
+   "category": "ISA_family"
+  },
+  {
+   "name": "CISC",
+   "definition": "Complex Instruction Set Computer. Variable-length instructions, complex addressing modes, instructions that combine compute + memory access. x86, x86_64.",
+   "why": "Originally for code density and high-level operations directly in hardware. Modern x86 internally translates to μops (RISC-like back-end). The 'CISC tax' is in decode complexity.",
+   "category": "ISA_family"
+  },
+  {
+   "name": "x86_64",
+   "definition": "Intel/AMD's 64-bit ISA. CISC heritage with extensive SIMD (SSE, AVX, AVX-512). Backward compatible with 32-bit x86.",
+   "why": "Dominant in PCs, servers, gaming consoles (until recent ARM moves). The compatibility tax limits how aggressively the ISA can be modernised; the encoding has variable-length instructions inherited from the 1970s.",
+   "category": "ISA_family"
+  },
+  {
+   "name": "AArch64",
+   "definition": "ARM's 64-bit ISA (ARMv8-A). Fixed 32-bit instructions, 31 general-purpose registers, NEON SIMD, optional SVE2.",
+   "why": "Designed for energy efficiency. Used in nearly all mobile devices, Apple Silicon, many AWS Graviton servers, supercomputers (Fugaku). The fixed-length encoding makes wide decode tractable.",
+   "category": "ISA_family"
+  },
+  {
+   "name": "RISC_V",
+   "definition": "Open ISA originating at UC Berkeley. Modular design: base RV32I/RV64I + standard extensions (M for multiply, A for atomic, F/D for FP, V for vector, etc.).",
+   "why": "Royalty-free, vendor-neutral. Rapidly growing in microcontrollers, accelerators, and academic research. China is heavily invested as a domestic alternative to ARM. The first truly open ISA at scale.",
+   "category": "ISA_family"
+  },
+  {
+   "name": "POWER",
+   "definition": "IBM's RISC ISA. POWER10 (latest mainstream) targets high-throughput multicore for enterprise servers.",
+   "why": "Wide SMT (8 threads/core typical), high memory bandwidth, used in IBM mainframes/AIX systems. Niche relative to x86 and ARM but persistent in enterprise.",
+   "category": "ISA_family"
+  },
+  {
+   "name": "VLIW",
+   "definition": "Very Long Instruction Word: instruction explicitly encodes multiple operations to execute in parallel. Compiler responsible for scheduling.",
+   "why": "Shifts complexity from hardware (OoO) to compiler (static scheduling). Used in DSPs (TI C6000) and some GPU shader cores. General-purpose VLIW (Itanium) failed because compilers couldn't extract enough ILP statically.",
+   "category": "ISA_family"
+  },
+  {
+   "name": "multicore_cpu",
+   "definition": "Multiple independent CPU cores on one die, sharing caches (typically L3) and memory controllers.",
+   "why": "Frequency stopped scaling (power wall) around 2005; multicore lets transistor budgets continue improving throughput. Modern desktops: 8-16 cores; servers: 64-128+. Requires parallel software to use.",
+   "category": "parallelism"
+  },
+  {
+   "name": "heterogeneous_multicore",
+   "definition": "Multicore with cores of different types: high-performance cores + efficiency cores. Apple M1+ (P+E), Intel Alder Lake+ (P+E), ARM big.LITTLE.",
+   "why": "P-cores for bursty perf-critical work; E-cores for background tasks at lower power. Smart scheduling lets typical workloads have both peak throughput AND good battery life. Mobile-first design pattern now in laptops.",
+   "category": "parallelism"
+  },
+  {
+   "name": "register_file",
+   "definition": "Bank of fast storage for the CPU's architectural and renamed registers. Modern x86: ~200 physical integer + ~200 FP/vector registers. ARM: similar scale.",
+   "why": "Registers are 1-cycle access, vs ~4 for L1 cache. Larger physical register file = more in-flight OoO instructions. Power consumption scales with file size.",
+   "category": "memory_hierarchy"
+  },
+  {
+   "name": "L1_cache",
+   "definition": "First-level cache, closest to the CPU core. Split between L1I (instructions) and L1D (data). 32-64 KB typical, 4-5 cycle latency.",
+   "why": "L1 hit rate of >95% on typical code. The gap between L1 hit (~4 cycles) and DRAM (~200 cycles) is the memory wall. L1 size is constrained by latency — bigger L1 would be slower.",
+   "category": "memory_hierarchy"
+  },
+  {
+   "name": "L2_cache",
+   "definition": "Second-level cache, larger and slower than L1. 256 KB-2 MB typical, 12-15 cycle latency. Usually per-core.",
+   "why": "Catches L1 misses. Trade-off: bigger L2 means fewer accesses to L3/DRAM but adds latency to L2 hits. Apple Silicon has unusually large L2 (16 MB per cluster) for this reason.",
+   "category": "memory_hierarchy"
+  },
+  {
+   "name": "L3_cache",
+   "definition": "Last-level cache (LLC), shared across cores on the same die. 4-128 MB typical, 30-50 cycle latency.",
+   "why": "Shared memory between cores. Cross-core data sharing happens here without going to DRAM. L3 size has been growing rapidly (AMD's 3D V-Cache adds 64 MB per CCX).",
+   "category": "memory_hierarchy"
+  },
+  {
+   "name": "DRAM",
+   "definition": "Main memory. Dynamic Random Access Memory, requires periodic refresh. Modern DDR5: 4800-7200 MT/s, ~50-100 ns latency, ~50-100 GB/s bandwidth per channel.",
+   "why": "Capacity (16-256 GB typical) but slow vs cache. Latency hasn't improved much in 20 years; bandwidth grows steadily via faster signaling + more channels. The memory wall.",
+   "category": "memory_hierarchy"
+  },
+  {
+   "name": "HBM",
+   "definition": "High Bandwidth Memory. Stacked DRAM dies with through-silicon vias, very wide interface (1024+ bits), placed on package next to compute.",
+   "why": "Much higher bandwidth (~1 TB/s) than DDR; lower latency due to physical proximity. Used in GPUs (NVIDIA H100, AMD MI300), HPC (Fujitsu A64FX), some networking chips. Expensive vs DDR.",
+   "category": "memory_hierarchy"
+  },
+  {
+   "name": "NVMe_SSD",
+   "definition": "Solid-state storage over PCIe. PCIe 4.0: ~7 GB/s; PCIe 5.0: ~14 GB/s. Latency: ~10-100 μs.",
+   "why": "1000x slower than DRAM but 100,000x faster than HDD. Random read/write tractable. Modern OS treats SSD as fast block storage; some workloads (databases) use it as 'cold tier' of memory hierarchy.",
+   "category": "memory_hierarchy"
+  },
+  {
+   "name": "cache_line",
+   "definition": "Unit of transfer between cache levels. Typically 64 bytes (x86, ARM); 128 bytes (POWER). All cache operations work on whole lines.",
+   "why": "Spatial locality: programs access nearby data together; 64 bytes captures typical access patterns. Smaller lines waste tag overhead; larger lines waste bandwidth on unused data.",
+   "category": "cache_mechanism"
+  },
+  {
+   "name": "cache_associativity",
+   "definition": "How many cache lines can be stored in each 'set'. Direct-mapped: 1 way; set-associative: N ways (8-16 typical for L1); fully associative: all lines map to all sets.",
+   "why": "Higher associativity = fewer conflict misses but more comparator hardware + higher latency. L1: 8-way typical; L3: 16-32 way. Beyond that, diminishing returns.",
+   "category": "cache_mechanism"
+  },
+  {
+   "name": "cache_replacement_policy",
+   "definition": "Algorithm for choosing which line to evict on cache miss. LRU (least recently used), pseudo-LRU, random, or more advanced (RRIP, hawkeye).",
+   "why": "Wrong choice keeps useless lines, evicts needed ones. True LRU is expensive at high associativity; pseudo-LRU approximates it cheaply. Modern L3s use advanced policies that learn access patterns.",
+   "category": "cache_mechanism"
+  },
+  {
+   "name": "write_back_cache",
+   "definition": "Stores writes only to the cache; main memory updated when line is evicted (and dirty bit set).",
+   "why": "Reduces write bandwidth to main memory. Standard for L1D and beyond. Adds complexity for cache coherence (other cores need to see the latest version).",
+   "category": "cache_mechanism"
+  },
+  {
+   "name": "write_through_cache",
+   "definition": "Every write to cache also writes to main memory immediately. Simpler coherence; higher write bandwidth.",
+   "why": "Used in some embedded systems and L1 instruction caches. Most modern data caches are write-back for bandwidth reasons.",
+   "category": "cache_mechanism"
+  },
+  {
+   "name": "cache_coherence",
+   "definition": "Protocol ensuring all cores see a consistent view of shared memory. Modern protocols: MESI, MOESI, MESIF. Maintained by hardware snooping or directory.",
+   "why": "Without coherence, multicore programming would be intractable (which core's cache has the right value?). Coherence is the silicon's contract that shared memory looks 'as if' there was one memory all cores share.",
+   "category": "cache_mechanism"
+  },
+  {
+   "name": "MESI",
+   "definition": "Cache coherence protocol with 4 states per line: Modified (only this cache has it, dirty), Exclusive (only this cache, clean), Shared (multiple caches, clean), Invalid.",
+   "why": "Tracks ownership so writes don't require broadcast unless transitioning to M from S. Foundation of cache coherence in modern multicore.",
+   "category": "cache_mechanism"
+  },
+  {
+   "name": "false_sharing",
+   "definition": "Two cores writing different variables that happen to share a cache line. Coherence protocol invalidates the line repeatedly — performance collapses.",
+   "why": "Subtle performance bug. Common cause of multicore code that 'scales poorly'. Fixed by padding hot variables to separate cache lines.",
+   "category": "cache_mechanism"
+  },
+  {
+   "name": "prefetching",
+   "definition": "Hardware or software bringing data into cache before it's needed. Hardware prefetchers detect stride patterns; software uses explicit prefetch instructions.",
+   "why": "Hides DRAM latency. If prefetcher correctly predicts the next cache line, the load hits L1 instead of stalling for ~200 cycles. Sophisticated hardware prefetchers track multiple streams + history patterns.",
+   "category": "cache_mechanism"
+  },
+  {
+   "name": "TLB",
+   "definition": "Translation Lookaside Buffer: cache of virtual-to-physical address translations. Critical because every memory access goes through this.",
+   "why": "Without TLB, every memory access would need a multi-level page-table walk (4 DRAM accesses on x86). TLB hit makes translation 1-cycle. Modern CPUs have multi-level TLBs (L1 ITLB/DTLB + larger L2 TLB).",
+   "category": "memory_addressing"
+  },
+  {
+   "name": "page",
+   "definition": "Unit of virtual memory. 4 KB is standard on x86/ARM; huge pages of 2 MB and 1 GB also supported.",
+   "why": "Page granularity is the granularity of memory mapping, permission, and TLB tracking. 4 KB chosen historically; modern workloads with large working sets often benefit from huge pages (fewer TLB misses).",
+   "category": "memory_addressing"
+  },
+  {
+   "name": "page_table",
+   "definition": "Data structure mapping virtual page numbers to physical frame numbers, with permission bits. Multi-level (4-5 levels on x86_64) to handle large virtual address spaces sparsely.",
+   "why": "Virtual memory's mapping mechanism. The hardware (page table walker) traverses these tables on TLB miss to find the translation. Each level is one DRAM access — 4-level page walk is 4 DRAM accesses, hundreds of cycles.",
+   "category": "memory_addressing"
+  },
+  {
+   "name": "virtual_address",
+   "definition": "Address used by software. The CPU translates these to physical addresses via the TLB / page tables before accessing memory.",
+   "why": "Process isolation: each process has its own virtual address space; physical memory is shared but per-process mappings differ. Lets OS swap pages to disk, share libraries across processes, randomise layouts (ASLR).",
+   "category": "memory_addressing"
+  },
+  {
+   "name": "physical_address",
+   "definition": "Address that actually goes to the DRAM controller. The hardware's view of memory.",
+   "why": "Hardware deals only in physical addresses. The translation from virtual to physical is the OS's contract: 'this physical frame is yours'. Physical address space is bounded by installed RAM.",
+   "category": "memory_addressing"
+  },
+  {
+   "name": "huge_page",
+   "definition": "Larger-than-default page size: 2 MB or 1 GB on x86_64 (vs the standard 4 KB).",
+   "why": "Reduces TLB pressure for large working sets. One 2 MB huge page entry covers what 512 normal page entries would. Critical for databases, JVMs, large ML models. Trade-off: less granular memory management.",
+   "category": "memory_addressing"
+  },
+  {
+   "name": "MMU",
+   "definition": "Memory Management Unit: hardware that performs virtual-to-physical translation, checks permissions, raises faults. Contains the TLB and page table walker.",
+   "why": "Every memory access goes through MMU. Its design determines virtual memory performance. Modern MMUs are sophisticated: split L1/L2 TLBs, parallel page table walkers, large-page support.",
+   "category": "memory_addressing"
+  },
+  {
+   "name": "IOMMU",
+   "definition": "I/O MMU: provides virtual memory for DMA from devices. Maps device DMA addresses to physical addresses, enforcing isolation.",
+   "why": "Without IOMMU, a malicious or buggy device can DMA anywhere in memory. IOMMU lets devices be untrusted (or virtualised); used for VM passthrough, DPDK, GPU sharing.",
+   "category": "memory_addressing"
+  },
+  {
+   "name": "page_fault",
+   "definition": "Hardware exception when CPU accesses a virtual address whose page is not currently mapped. OS handles by allocating a page, loading from disk, or signaling SIGSEGV.",
+   "why": "Demand paging: pages are loaded only when accessed. Lets programs use more virtual memory than physical RAM (swap to disk). Page-fault handler is performance-critical for some workloads.",
+   "category": "memory_addressing"
+  },
+  {
+   "name": "copy_on_write",
+   "definition": "Multiple processes share the same physical page (read-only). When one writes, the OS makes a private copy. fork() uses this extensively.",
+   "why": "Lets fork() be cheap — no need to copy 8 GB of memory; share until one process writes. Same mechanism powers many fast snapshot operations, container layered FS, virtual machine memory ballooning.",
+   "category": "memory_addressing"
+  },
+  {
+   "name": "mmap",
+   "definition": "Memory-mapped I/O: map a file (or anonymous region) into the process's virtual address space. Reads/writes hit the file via page cache.",
+   "why": "Avoids explicit read/write syscalls; lets the kernel page-cache the data. Used by databases (mmap-based indexes), shared libraries (.so via mmap), shared memory IPC.",
+   "category": "memory_addressing"
+  },
+  {
+   "name": "NUMA",
+   "definition": "Non-Uniform Memory Access: multi-socket systems where each socket has its own local memory; remote memory access is slower (~2x latency).",
+   "why": "Beyond 1-2 sockets, single memory controllers can't keep up. Per-socket memory + interconnect (Intel UPI, AMD Infinity Fabric) scales bandwidth. Software must be NUMA-aware (allocate locally) to use it efficiently.",
+   "category": "memory_hierarchy"
+  },
+  {
+   "name": "sequential_consistency",
+   "definition": "Memory model: all loads and stores appear in some global order consistent with program order. Strongest practical model.",
+   "why": "Easiest to reason about for programmers. But hardware can't deliver this efficiently — modern CPUs reorder accesses for performance. Most ISAs (x86, ARM, RISC-V) have weaker models.",
+   "category": "memory_consistency"
+  },
+  {
+   "name": "total_store_order",
+   "definition": "TSO: x86's memory model. Loads can be reordered before earlier stores; otherwise sequential consistency.",
+   "why": "x86 keeps a store buffer that can reorder a load past an earlier store to a different address. Strong enough to make most multicore code correct without explicit barriers. Weaker than SC but stronger than ARM/RISC-V.",
+   "category": "memory_consistency"
+  },
+  {
+   "name": "weak_memory_model",
+   "definition": "ARM, RISC-V, POWER memory models. Almost any load/store reordering allowed unless explicitly prevented by memory barriers.",
+   "why": "Maximum hardware freedom = highest performance. But software must use barriers correctly for shared-memory correctness. Bugs from missing barriers are common when porting from x86 to ARM.",
+   "category": "memory_consistency"
+  },
+  {
+   "name": "memory_barrier",
+   "definition": "Instruction that enforces ordering between memory operations. x86: MFENCE / LFENCE / SFENCE. ARM: DMB / DSB / ISB.",
+   "why": "Programmer's tool to express ordering requirements the weak model doesn't provide. C++ std::atomic, Rust's Ordering, Java's volatile all map to specific barrier configurations.",
+   "category": "memory_consistency"
+  },
+  {
+   "name": "atomic_operation",
+   "definition": "Operation that appears indivisible to other cores. CAS (compare-and-swap), atomic add, atomic exchange. Hardware-supported via LOCK prefix (x86) or LL/SC (ARM, RISC-V).",
+   "why": "Foundation of lock-free programming. Atomic CAS lets multiple cores coordinate without OS locks. Performance depends on contention — uncontended atomic is fast; contended atomic causes coherence storms.",
+   "category": "memory_consistency"
+  },
+  {
+   "name": "compare_and_swap",
+   "definition": "CAS: atomically update memory if its current value matches expected. The universal primitive for lock-free data structures.",
+   "why": "CAS lets multiple cores update shared state without a lock. Lock-free queues, stacks, hash tables built on CAS. Theoretically equivalent in expressiveness to a lock (Herlihy's hierarchy).",
+   "category": "memory_consistency"
+  },
+  {
+   "name": "DRAM_row",
+   "definition": "Row of DRAM cells. Activated as a whole to a row buffer; individual columns then read from the buffer. Rows are ~1 KB typical.",
+   "why": "Row activation is slow (~50 ns); subsequent column reads from the same row are fast (~10 ns). Programs that access the same row repeatedly are faster than those that hop between rows.",
+   "category": "dram_mechanism"
+  },
+  {
+   "name": "DRAM_bank",
+   "definition": "DRAM is organised into banks (8-32 per chip). Each bank can be accessed independently and has its own row buffer.",
+   "why": "Parallelism within one DRAM chip. Multiple in-flight requests to different banks proceed in parallel; same bank serialises. Memory controller schedules to maximise bank-level parallelism.",
+   "category": "dram_mechanism"
+  },
+  {
+   "name": "DRAM_refresh",
+   "definition": "DRAM cells lose charge over ~64 ms. Refresh periodically rewrites each row to maintain data. Costs ~5% of bandwidth.",
+   "why": "Fundamental DRAM physics: storing charge in a capacitor that leaks. Refresh is mandatory; the alternative (SRAM) is 6x larger area for the same capacity.",
+   "category": "dram_mechanism"
+  },
+  {
+   "name": "row_hammer",
+   "definition": "Hardware fault: repeatedly accessing a DRAM row causes adjacent rows' bits to flip. Security vulnerability — can corrupt page tables, privileges, encryption keys.",
+   "why": "DRAM cells in adjacent rows electrically interfere; high-frequency accesses tip the charge. Modern DRAM has mitigations (TRR — Target Row Refresh), but variants of the attack keep emerging.",
+   "category": "dram_mechanism"
+  },
+  {
+   "name": "ECC_memory",
+   "definition": "Error-Correcting Code memory: extra bits per DRAM row let single-bit errors be corrected and double-bit errors detected.",
+   "why": "DRAM has natural bit error rates from cosmic rays + electrical noise. ECC catches errors before they corrupt data. Standard in servers, optional in desktops. Apple Silicon's unified memory uses ECC across the package.",
+   "category": "dram_mechanism"
+  },
+  {
+   "name": "stack",
+   "definition": "Region of memory for function-local data: arguments, return addresses, locals. Grows downward (toward lower addresses) on x86 / ARM. Managed by SP register.",
+   "why": "Function call frames are LIFO; stack matches that perfectly. Allocation/free is just SP adjustment — O(1), no fragmentation. Limited size (~8 MB default on Linux); deep recursion overflows.",
+   "category": "memory_management"
+  },
+  {
+   "name": "heap",
+   "definition": "Region of memory for dynamic allocation: malloc/free, new/delete. Managed by an allocator (jemalloc, tcmalloc, glibc malloc).",
+   "why": "Long-lived dynamically-sized data. Slower than stack; subject to fragmentation. The allocator's quality dramatically affects performance for malloc-heavy code.",
+   "category": "memory_management"
+  },
+  {
+   "name": "malloc",
+   "definition": "C's standard allocator. Returns a pointer to N bytes of uninitialised memory. Different implementations (glibc ptmalloc, jemalloc, tcmalloc) differ in performance and fragmentation.",
+   "why": "Lingua franca of memory allocation. Most languages' runtime ultimately calls malloc (or its own equivalent). Allocator choice can change application performance by 2-5x.",
+   "category": "memory_management"
+  },
+  {
+   "name": "jemalloc",
+   "definition": "Allocator developed at Facebook/Meta. Per-thread arenas, size-class binning, defragmentation. Default in Rust + many production Linux applications.",
+   "why": "Optimised for high-concurrency multicore workloads. Per-thread arenas avoid the global lock that glibc malloc has. Lower fragmentation than glibc. Widely deployed.",
+   "category": "memory_management"
+  },
+  {
+   "name": "tcmalloc",
+   "definition": "Google's Thread-Caching malloc. Per-thread caches for small allocations; central heap for larger. Used heavily inside Google.",
+   "why": "Similar goals to jemalloc; different design. Excellent for Google-style workloads with high concurrency + many small allocations. The 'modern' contender to glibc malloc.",
+   "category": "memory_management"
+  },
+  {
+   "name": "garbage_collection",
+   "definition": "Automatic memory reclamation. Common algorithms: mark-sweep, copying, generational, concurrent, reference counting.",
+   "why": "Removes manual memory management bugs (use-after-free, double-free, leaks). Costs throughput overhead + GC pauses. Most modern non-systems languages (Java, Go, Python, JavaScript) use GC.",
+   "category": "memory_management"
+  },
+  {
+   "name": "generational_gc",
+   "definition": "GC strategy: most objects die young, so collect young objects frequently + old objects infrequently. Java, .NET, V8 all use this.",
+   "why": "Empirical observation: 'infant mortality' — most allocations are short-lived. Frequent young-gen collection is cheap (small heap); rare old-gen collection amortised. Dramatically lower GC overhead than non-generational.",
+   "category": "memory_management"
+  },
+  {
+   "name": "concurrent_gc",
+   "definition": "GC that runs concurrently with the application instead of pausing it. Modern Java GCs (ZGC, Shenandoah, G1) are largely concurrent.",
+   "why": "Eliminates 'stop-the-world' pauses. Critical for latency-sensitive applications (trading, real-time, low-latency services). Trade-off: more total CPU spent on GC, but evenly distributed.",
+   "category": "memory_management"
+  },
+  {
+   "name": "reference_counting",
+   "definition": "Each object tracks how many references point to it; deallocated when count reaches zero. Used by Swift, CPython (refs + cycle collector), Rust (Rc/Arc).",
+   "why": "Predictable timing (deallocated at last ref drop); no GC pauses. Costs every ref change a counter update; can't collect reference cycles without extra logic. Common in systems languages.",
+   "category": "memory_management"
+  },
+  {
+   "name": "Apple_M_series",
+   "definition": "Apple Silicon: M1, M2, M3, M4. AArch64-based, with on-package unified memory (LPDDR5X), wide front-end (8 decode), large reorder buffer (~670 entries).",
+   "why": "Demonstrated that ARM can win at peak desktop performance. Wide decode + large OoO window + unified memory architecture. Has reshaped the laptop CPU market.",
+   "category": "modern_microarch"
+  },
+  {
+   "name": "Intel_Golden_Cove",
+   "definition": "Intel's high-performance core in Alder Lake / Raptor Lake (2021-2023). 6-wide decode, ~512-entry ROB, AVX-512 (consumer hot-and-cold).",
+   "why": "Intel's response to Apple Silicon. Big core for performance; paired with Gracemont E-cores in the same die. Heterogeneous architecture comes to x86.",
+   "category": "modern_microarch"
+  },
+  {
+   "name": "AMD_Zen_4",
+   "definition": "AMD's 2022 architecture. 6-wide decode, ~320-entry ROB, AVX-512 support (smarter implementation than Intel — half-rate but no thermal throttle).",
+   "why": "Competitive with Intel + Apple. AMD's chiplet design (CCDs + IOD) gives it advantages in server scaling. EPYC 9004 (Zen 4 server) has up to 96 cores.",
+   "category": "modern_microarch"
+  },
+  {
+   "name": "AMD_Zen_5",
+   "definition": "AMD's 2024 architecture. 8-wide decode (dual decode clusters), ~448-entry ROB, faster AVX-512, branch predictor improvements.",
+   "why": "Significant IPC jump (~15-20%) over Zen 4. Demonstrates the continued utility of wider front-end + larger window strategy that Apple pioneered.",
+   "category": "modern_microarch"
+  },
+  {
+   "name": "ARM_Neoverse",
+   "definition": "ARM's server CPU IP line. Neoverse V (high perf), N (balanced), E (efficient). AWS Graviton, Ampere Altra all based on Neoverse.",
+   "why": "ARM's push into servers. Strong perf/watt; Graviton 3 has reshaped AWS pricing for many workloads. The architecture that's eating x86's server share.",
+   "category": "modern_microarch"
+  },
+  {
+   "name": "Tensor_Processing_Unit",
+   "definition": "Google's matrix-multiplication accelerator. Systolic array of multiply-accumulate units. TPU v5 + v6 deployed at scale.",
+   "why": "ML training and inference dominated by matmul. Custom hardware does it 10-100x more efficiently than GPUs in narrow workloads. Tied to Google's ML stack (TF, JAX).",
+   "category": "accelerator"
+  },
+  {
+   "name": "NPU_neural_processing_unit",
+   "definition": "On-package ML accelerator. Now standard in mobile (Apple Neural Engine, Snapdragon, Tensor G3+) and increasingly in PCs (Intel AI Boost, AMD Ryzen AI).",
+   "why": "ML inference at the edge needs power efficiency that CPUs+GPUs can't deliver. NPUs target specific ML workloads (transformers, CNNs) at fixed precision. Local AI features (transcription, image processing) run here.",
+   "category": "accelerator"
+  },
+  {
+   "name": "GPU_streaming_multiprocessor",
+   "definition": "GPU's basic execution unit. Each SM has many ALUs (~128 in modern NVIDIA), shared memory, warp schedulers. A GPU has dozens to hundreds of SMs.",
+   "why": "The 'core' of GPU compute. Code is mapped to many threads; threads grouped into warps; warps scheduled on SMs. Achieves massive parallelism via thread count + SIMD execution.",
+   "category": "accelerator"
+  },
+  {
+   "name": "memory_wall",
+   "definition": "Phenomenon: memory bandwidth + latency haven't kept pace with CPU throughput. Modern workloads spend most time waiting for memory, not computing.",
+   "why": "DRAM latency ~200 cycles vs L1 ~4 cycles. CPUs have grown wider + more aggressive at hiding this (OoO, prefetch, speculation) but the underlying physics hasn't changed. Drives architecture choices like HBM, 3D cache, larger LLC.",
+   "category": "performance"
+  },
+  {
+   "name": "ILP_wall",
+   "definition": "Diminishing returns from extracting more ILP. Wider issue, larger ROBs cost more silicon for less IPC gain. Around 6-8 wide is practical limit.",
+   "why": "Software has finite ILP — typical code can sustain ~3-5 IPC at most. Beyond that, the CPU finds no work. Encourages investment in TLP (multicore) and DLP (SIMD) instead.",
+   "category": "performance"
+  },
+  {
+   "name": "power_wall",
+   "definition": "Phenomenon: power consumption scales super-linearly with frequency. Couldn't keep increasing GHz beyond ~4 GHz without thermal collapse.",
+   "why": "Killed the 'frequency race' around 2005. Forced industry to multicore (better perf/watt). Modern CPUs use boost clocks for short bursts; sustained frequency is power-limited.",
+   "category": "performance"
+  },
+  {
+   "name": "Spectre",
+   "definition": "Class of side-channel attacks exploiting speculative execution. Speculative loads leak data via cache timing even when the speculation is rolled back.",
+   "why": "Fundamentally tied to speculation — the IPC win comes from running ahead, but rollback isn't perfect (cache state persists). Patches mitigate specific variants; the underlying issue is architectural.",
+   "category": "security"
+  },
+  {
+   "name": "Meltdown",
+   "definition": "Side-channel exploit on Intel CPUs where speculation across privilege boundaries leaked kernel data to user-mode code.",
+   "why": "Intel implementation specific: speculation crossed the user/kernel boundary before permission checks completed. Patched via KPTI (Kernel Page-Table Isolation), costing ~5-30% on syscall-heavy workloads.",
+   "category": "security"
+  },
+  {
+   "name": "stride_sequential_pixel_access",
+   "definition": "Compute pattern in which each iteration reads or writes a small fixed stride of pixels (typically 8 or 16 bytes) along a plane, advancing row by row. Examples: in-loop deblocking filter, SAO, motion-compensation interpolation.",
+   "why": "Hardware prefetchers detect sequential strides immediately; cache lines flow at sustained DRAM bandwidth; SIMD lane-wide ops vectorise the per-pixel computation directly. This is the prime SIMD case.",
+   "category": "compute_pattern"
+  },
+  {
+   "name": "block_local_matmul",
+   "definition": "Compute pattern in which a small dense matrix (typically 4x4 to 32x32) multiplies another small dense matrix. Examples: integer DCT, intra-prediction angle remap, transform basis.",
+   "why": "Inner-product accumulation maps to FMA; row-major data fits L1d for blocks ≤ 64x64; BF16 / FP16 acceptable when downstream tolerates ~1% relative error.",
+   "category": "compute_pattern"
+  },
+  {
+   "name": "serial_bit_stream_coding",
+   "definition": "Compute pattern in which each output bit depends on the running state of an arithmetic coder. Examples: CABAC, CAVLC, RANS. Cannot SIMD-parallelise within a stream because state is sequential.",
+   "why": "Each bin's context update depends on the prior bin's MPS outcome. SIMD lanes have no available work without speculation across binary outcomes (which destroys the bitrate win). Only inter-stream parallelism scales.",
+   "category": "compute_pattern"
+  },
+  {
+   "name": "tree_walk_with_merge_decisions",
+   "definition": "Compute pattern that traverses a small tree (depth ≤ 4) deciding at each node whether to split or merge. Examples: H.265 CTU quadtree, VVC multi-type tree, H.264 macroblock partition.",
+   "why": "Per-node work is small but branch direction matters. Modern branch predictors achieve >95% accuracy on these patterns once warmed; pdep/pext extract bit-packed split flags efficiently.",
+   "category": "compute_pattern"
+  },
+  {
+   "name": "set_intersection_for_lookup",
+   "definition": "Compute pattern in which a small set is intersected with another to find matching elements. Example: mode-set remap (H.264's 9 intra modes → H.265's nearest of 35).",
+   "why": "AVX-512 VP2INTERSECT does this in a single instruction for two 16-lane vectors; otherwise a sort-merge or hashed lookup of comparable cost.",
+   "category": "compute_pattern"
+  },
+  {
+   "name": "bit_packed_syntax_emission",
+   "definition": "Compute pattern that emits variable-length codewords into a tightly-packed bit stream. Examples: slice header emission, exp-Golomb codes, sequence parameter sets.",
+   "why": "PDEP / PEXT (BMI2) pack/extract arbitrary bit fields in one instruction. VBMI vpermb for variable-shift writes. The serialisation cost dominates only if syntax dwarfs payload; not the case for video.",
+   "category": "compute_pattern"
+  },
+  {
+   "name": "data_parallel_sharding",
+   "category": "composition_topology",
+   "definition": "Composition strategy in which independent work units are distributed across cores; each core processes its shard with no inter-core communication during the work phase.",
+   "why": "Throughput scales linearly with core count when work units are truly independent. The only sync cost is the gather at the end. Hardware: each core uses its own L1/L2; L3 contention only if working sets overlap."
+  },
+  {
+   "name": "pipeline_parallel_staging",
+   "category": "composition_topology",
+   "definition": "Composition strategy in which different stages of a transformation run concurrently, each on a different core. Output of stage N is input to stage N+1.",
+   "why": "Throughput limited by the slowest stage's rate (Little's law); latency is sum of stages but throughput is max-rate. Use when stages have similar costs + sequential dependency. Inter-stage handoff via shared queue or L3-resident buffer."
+  },
+  {
+   "name": "embarrassingly_parallel_distribution",
+   "category": "composition_topology",
+   "definition": "Composition strategy in which work units have NO inter-unit dependencies; can be distributed at any granularity with linear speedup.",
+   "why": "The ideal case. Per-block transforms after macroblock partition decisions are independent; per-pixel filters are independent; each is embarrassingly parallel. Core-count scaling is bounded only by Amdahl's law on residual serial work."
+  },
+  {
+   "name": "amdahl_serial_bottleneck",
+   "category": "composition_topology",
+   "definition": "Stage whose sequential nature limits the speedup of the whole pipeline. Amdahl's law: 1 / (s + (1-s)/n) where s is the serial fraction and n is core count.",
+   "why": "Even with 6 cores, a 20% serial stage caps speedup at 3.6×. The bottleneck must be either parallelised within (often impossible for arithmetic coders) or sharded across input partitions (slices, tiles)."
+  },
+  {
+   "name": "inter_stage_handoff",
+   "category": "composition_topology",
+   "definition": "Mechanism by which one stage's output reaches the next stage's input. Forms: shared queue (FIFO), double-buffered region, in-place mutation of a shared structure, L3-resident plane.",
+   "why": "Handoff cost determines whether pipeline_parallel_staging is worth it. L3 handoff is fastest (~10 ns) when output fits L3; DRAM handoff costs hundreds of ns + bandwidth. The substrate's WorkStealingScheduler provides the queue surface."
+  },
+  {
+   "name": "cache_resident_working_set",
+   "category": "composition_topology",
+   "definition": "Working set sized to fit in a specific cache tier so accesses hit cache instead of DRAM. L1d (~48 KiB), L2 (1 MiB), L3 (32 MiB shared), or DRAM.",
+   "why": "Choosing the right tier per-stage data is the single biggest performance lever after vectorisation. The substrate's Zen 5 spec gives concrete tier sizes; choosing wrong wastes the cache hierarchy."
+  },
+  {
+   "name": "pre_computed_lookup_table",
+   "category": "composition_topology",
+   "definition": "Small constants computed once at startup, replicated in each core's L1d. Examples: CABAC context init tables, intra-mode remap LUT, transform basis matrices.",
+   "why": "Read-only data with high reuse. Replicated to avoid coherence traffic. Per-core copy fits L1d easily. The substrate's lookup-table-as-graph-data pattern makes these graph-resident and serialisable."
+  },
+  {
+   "name": "stage_dependency_graph",
+   "category": "composition_topology",
+   "definition": "Directed graph of stages with edges from producer to consumer. Stages with no path between them can run concurrently; stages in a chain must serialise.",
+   "why": "The topology of a multi-stage pipeline is captured exactly by this DAG. The substrate's graph-resident representation makes this trivially queryable. Each stage's scheduling is determined by its predecessors completing."
+  },
+  {
+   "name": "throughput_ceiling",
+   "category": "performance_model",
+   "definition": "The maximum sustained rate at which a stage can produce output, limited by the dominant resource (compute, memory bandwidth, or sequential latency).",
+   "why": "A pipeline's overall throughput equals the slowest stage's ceiling (Little's law). Identifying each stage's ceiling tells you which stage to optimise + when further optimisation is wasted (you've moved the ceiling elsewhere)."
+  },
+  {
+   "name": "compute_bound",
+   "category": "performance_model",
+   "definition": "Stage whose throughput is limited by arithmetic + logic instruction throughput, not memory access.",
+   "why": "When data fits in L1d and the operation does N FLOPs per byte loaded, the FLOP rate (GFLOPS) is the ceiling. AVX-512 doubles per-cycle FLOP throughput vs SSE; FMA halves instruction count for multiply-accumulate; BF16 doubles again over FP32."
+  },
+  {
+   "name": "memory_bandwidth_bound",
+   "category": "performance_model",
+   "definition": "Stage whose throughput is limited by the rate at which data flows from a memory tier (L2/L3/DRAM) to the core.",
+   "why": "When arithmetic intensity is low (few FLOPs per byte), memory bandwidth caps throughput regardless of compute speed. Zen 5: ~50 GB/s/core L2, ~200 GB/s shared L3, ~50 GB/s DRAM. Cache-line-aligned + sequential = best case."
+  },
+  {
+   "name": "latency_bound",
+   "category": "performance_model",
+   "definition": "Stage whose throughput is limited by sequential dependency chains (each operation waits for the previous). No instruction-level parallelism to extract.",
+   "why": "Critical path through a dependency chain. CABAC's per-bin state update is the canonical example: each bin's MPS/LPS decision needs the prior context state. ILP zero within stream; only inter-stream parallelism scales."
+  },
+  {
+   "name": "amortised_cost_per_unit",
+   "category": "performance_model",
+   "definition": "The average cost per output unit when overhead is shared across many units. For a stage with fixed setup S and per-unit cost u, processing N units costs S + u·N; per-unit amortised cost approaches u as N grows.",
+   "why": "Setup cost (load LUT into L1, populate registers) is paid once per slice; per-CTU cost is what matters for sustained throughput. Per-block cost is what matters for per-CU pipeline rate. Naming the granularity is naming the cost model."
+  },
+  {
+   "name": "roofline_model",
+   "category": "performance_model",
+   "definition": "Performance ceiling defined by min(peak_FLOPS, bandwidth × arithmetic_intensity). A stage's measured GFLOPS sits under this roofline; gap reveals bottleneck.",
+   "why": "Williams/Patterson/Lokhmotov diagonal-roof plot. Stage in the compute-bound region: optimise the arithmetic. Stage in the bandwidth region: reduce traffic (tiling, fusion, lower precision). Tells you WHERE to optimise without measurement first."
+  }
+ ],
+ "rules": [
+  {
+   "name": "pipelining_amortises_per_instruction_latency",
+   "if": [
+    "instructions are decomposed into independent stages"
+   ],
+   "then": [
+    "throughput approaches 1 instruction per cycle in steady state"
+   ],
+   "why": "Without pipelining, each instruction takes its full latency. With pipelining, the per-instruction stage time becomes the per-instruction throughput time. This is the foundation of all modern CPU performance.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "ooo_hides_memory_latency",
+   "if": [
+    "the CPU can execute later instructions while waiting for memory"
+   ],
+   "then": [
+    "effective memory latency is amortised across independent work"
+   ],
+   "why": "Memory latency is fixed; ILP determines how much can be hidden. Wider window = more potential overlap = less effective stall. The OoO window's size limits this.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "branch_prediction_enables_deep_pipelining",
+   "if": [
+    "the predictor is accurate enough that mispredict cost is amortised"
+   ],
+   "then": [
+    "deep pipelines with high IPC are achievable"
+   ],
+   "why": "Without prediction, every branch stalls the fetch unit for the branch's latency. With high prediction accuracy, the pipeline mostly runs ahead correctly; rare mispredicts pay a penalty but don't dominate.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "register_renaming_removes_false_dependencies",
+   "if": [
+    "instructions reuse architectural register names without true dependency"
+   ],
+   "then": [
+    "renaming to physical registers exposes the underlying parallelism"
+   ],
+   "why": "WAW and WAR dependencies are artifacts of limited register names. Physical register pool is larger; renaming maps each write to a fresh physical register, breaking the false dependency. Pure ILP gain at no cost.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "cache_associativity_balances_hit_rate_vs_latency",
+   "if": [
+    "associativity increases"
+   ],
+   "then": [
+    "hit rate improves but access latency increases"
+   ],
+   "why": "Higher associativity reduces conflict misses but requires more parallel comparators + selection logic. Eventually the latency cost exceeds the miss-rate benefit. L1 typically 8-way (latency-critical); L3 16-32-way (throughput-critical).",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "spatial_locality_implies_cache_line_size",
+   "if": [
+    "programs access nearby data together"
+   ],
+   "then": [
+    "transferring whole cache lines (64 bytes) amortises bus + tag overhead"
+   ],
+   "why": "Per-byte transfer would waste bandwidth on tag bits and bus turnaround. 64-byte lines match typical access patterns. Larger would waste on unused data; smaller would waste on overhead.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "tlb_hides_page_table_walk_cost",
+   "if": [
+    "the TLB caches translations"
+   ],
+   "then": [
+    "typical accesses avoid the multi-cycle page walk"
+   ],
+   "why": "Page walk is ~4 DRAM accesses on x86 — hundreds of cycles. TLB hit is 1 cycle. With TLB hit rates >99% on normal code, page walk cost is amortised to invisibility. Misses are the bottleneck.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "virtual_memory_enables_process_isolation",
+   "if": [
+    "each process has its own virtual address space"
+   ],
+   "then": [
+    "processes cannot accidentally read/write each other's memory"
+   ],
+   "why": "Physical RAM is shared but mappings are per-process. The OS enforces isolation by giving each process its own page table. The MMU implements this in hardware; software boundaries become hardware-enforced.",
+   "soundness_category": "referential_transparency"
+  },
+  {
+   "name": "weak_memory_models_require_explicit_barriers",
+   "if": [
+    "the ISA permits load/store reordering"
+   ],
+   "then": [
+    "correct shared-memory code requires explicit memory barriers"
+   ],
+   "why": "Hardware speed comes from reordering accesses. Programmer's expected order may not match what executes. Barriers are the contract: 'reorderings not allowed past this point'. x86's TSO is forgiving; ARM/RISC-V/POWER require careful barrier placement.",
+   "soundness_category": "referential_transparency"
+  },
+  {
+   "name": "numa_local_access_outperforms_remote",
+   "if": [
+    "data is allocated on a different NUMA node than the accessing thread"
+   ],
+   "then": [
+    "access latency is 2x and bandwidth shares the interconnect"
+   ],
+   "why": "Remote memory must traverse the inter-socket interconnect, adding latency and contending for finite bandwidth. NUMA-aware allocation (per-thread arenas, numa_alloc_onnode) keeps data local to the accessing core.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "row_buffer_hit_amortises_row_activation",
+   "if": [
+    "successive accesses are to the same DRAM row"
+   ],
+   "then": [
+    "they hit the row buffer at ~10 ns instead of activating a new row at ~50 ns"
+   ],
+   "why": "DRAM row activation is expensive; reading from an active row is cheap. Memory controller schedules to maximise row-buffer hits. Sequential access patterns benefit dramatically.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "stack_allocation_is_free",
+   "if": [
+    "data fits on the stack"
+   ],
+   "then": [
+    "allocation/deallocation is O(1) — just SP adjustment"
+   ],
+   "why": "Stack pointer increment/decrement is one instruction. No fragmentation, no allocator data structures, no GC. Heap allocation has 10-100x more overhead. Locals on the stack are essentially free; the heap is for what won't fit on the stack.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "generational_gc_exploits_infant_mortality",
+   "if": [
+    "most objects die young"
+   ],
+   "then": [
+    "frequent young-gen collection is cheap; old-gen collection rare"
+   ],
+   "why": "Empirical fact: 80-95% of allocations are short-lived. Generational GC focuses effort on the young generation (small, fast to collect); promotes survivors to old gen (large, rarely collected). Dramatically lower amortised GC overhead.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "memory_wall_drives_locality_optimisation",
+   "if": [
+    "memory latency is much higher than compute latency"
+   ],
+   "then": [
+    "data locality (cache-friendly layout, prefetching) determines performance"
+   ],
+   "why": "Algorithm Big-O matters less when memory is 50x slower than compute. Cache-line-aware data structures (struct-of-arrays vs array-of-structs, packed enums, blocking) often beat asymptotically-better cache-hostile ones.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "false_sharing_destroys_multicore_scaling",
+   "if": [
+    "two cores write different variables on the same cache line"
+   ],
+   "then": [
+    "the line bounces between caches via coherence, killing performance"
+   ],
+   "why": "Coherence protocol invalidates the line on each write. The line ping-pongs at ~30+ cycles per transition. Often the cause of code that 'scales linearly with 1 core, falls off a cliff with 2+'. Fixed by cache-line padding.",
+   "soundness_category": "extensional_equivalence"
+  },
+  {
+   "name": "heterogeneous_cores_match_workload_diversity",
+   "if": [
+    "workloads have a mix of latency-sensitive + throughput-sensitive tasks"
+   ],
+   "then": [
+    "heterogeneous cores (P + E) achieve better perf/watt than uniform"
+   ],
+   "why": "Foreground apps need peak speed; background tasks need efficiency. P-cores deliver speed; E-cores save power on the rest. Uniform high-perf cores would waste power on E-core-suitable work; uniform E-cores would fail at peak workloads.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "speculation_creates_side_channels",
+   "if": [
+    "speculative execution affects shared state (caches, TLB, branch predictor)"
+   ],
+   "then": [
+    "timing side channels can leak the speculated-but-not-committed values"
+   ],
+   "why": "Spectre/Meltdown's fundamental issue. Speculation's IPC win comes from running ahead; rolling back the architectural state doesn't roll back the microarchitectural state. Mitigations cost performance (KPTI, retpoline, IBPB) but the underlying issue is structural.",
+   "soundness_category": "referential_transparency"
+  },
+  {
+   "name": "ipc_growth_via_window_size",
+   "if": [
+    "the OoO window can hold more in-flight instructions"
+   ],
+   "then": [
+    "more ILP is exposed and IPC grows"
+   ],
+   "why": "Larger ROB + larger physical register file + more reservation stations = more instructions visible to the scheduler. Apple's ROB > 600 vs Intel's ~500 vs ARM Cortex's ~300 correlates directly with their IPC. This is the modern μarchitecture race.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "vectorisation_extracts_dlp",
+   "if": [
+    "data-parallel loops use SIMD instructions"
+   ],
+   "then": [
+    "throughput scales with vector width"
+   ],
+   "why": "Data-level parallelism: one instruction operating on N lanes. 8-lane FP32 SIMD = 8x scalar throughput. Critical for media decode, ML, HPC. Auto-vectorisation by compilers exploits this on cleaner loops; harder cases need explicit intrinsics.",
+   "soundness_category": "cost_equivalence"
+  },
+  {
+   "name": "instruction_dependency_chain_limits_ipc",
+   "if": [
+    "code is a long sequential dependency chain"
+   ],
+   "then": [
+    "IPC drops to the inverse of the chain's per-instruction latency"
+   ],
+   "why": "Each instruction waits for the previous. No parallelism to extract. The CPU's wide front-end can't help. Chains of dependent adds at ~1-cycle latency give ~1 IPC; chains of dependent loads at ~5-cycle latency give ~0.2 IPC.",
+   "soundness_category": "denotational_equivalence"
+  },
+  {
+   "name": "stride_sequential_serves_simd_byte_ops",
+   "if": [
+    "compute pattern is stride_sequential_pixel_access"
+   ],
+   "then": [
+    "AVX512BW byte-wide SIMD applies; one instruction per 64 pixels"
+   ],
+   "why": "Per-pixel work is identical across the stride; SIMD lanes match the row width. Cache prefetcher streams the rows automatically. Instantiation of vectorisation_extracts_dlp at the byte level — best-case 64x scalar.",
+   "soundness_category": "performance",
+   "serves_pattern": "stride_sequential_pixel_access"
+  },
+  {
+   "name": "block_local_matmul_serves_simd_fma_or_bf16",
+   "if": [
+    "compute pattern is block_local_matmul",
+    "matrix dimensions ≤ ~64"
+   ],
+   "then": [
+    "AVX-512 FMA (8 lanes FP64 / 16 lanes FP32) or AVX-512_BF16 dot-product applies"
+   ],
+   "why": "FMA pairs multiply-add into one instruction. For DCT/IDCT bases, BF16 precision is sufficient (the inverse-transform error is dominated by quantisation, not matmul precision). substrate_rs Mat::mul_bf16 (commit 02b38ae) is the existing primitive.",
+   "soundness_category": "performance",
+   "serves_pattern": "block_local_matmul"
+  },
+  {
+   "name": "serial_bit_stream_blocks_intra_stream_simd",
+   "if": [
+    "compute pattern is serial_bit_stream_coding"
+   ],
+   "then": [
+    "cannot parallelise WITHIN a stream",
+    "must parallelise ACROSS streams (slices, tiles) for throughput"
+   ],
+   "why": "Each bin's state depends on the prior; lanes have no work without losing the bitrate efficiency that justifies the coder. Multi-core scales by sharding the input into independent slices, one CABAC engine per core.",
+   "soundness_category": "performance",
+   "serves_pattern": "serial_bit_stream_coding"
+  },
+  {
+   "name": "tree_walk_serves_branch_predictor_and_bmi",
+   "if": [
+    "compute pattern is tree_walk_with_merge_decisions",
+    "tree depth bounded (≤ 4)"
+   ],
+   "then": [
+    "branch_prediction + BMI2 pdep/pext apply",
+    "ILP from speculative_execution covers walk depth"
+   ],
+   "why": "Bounded depth means the walk fits in the speculation window; branch predictor's >95% hit rate on quadtree splits keeps the front-end fed. Split flags pack into bits that pdep emits in one instruction.",
+   "soundness_category": "performance",
+   "serves_pattern": "tree_walk_with_merge_decisions"
+  },
+  {
+   "name": "set_intersection_serves_vp2intersect",
+   "if": [
+    "compute pattern is set_intersection_for_lookup",
+    "set cardinality ≤ 16"
+   ],
+   "then": [
+    "AVX-512 VP2INTERSECT applies"
+   ],
+   "why": "VP2INTERSECT produces a pair of masks identifying matching lanes between two 16-element vectors in a single instruction. Cardinality ≤ 16 fits one vector; the H.264 9-mode set fits trivially.",
+   "soundness_category": "performance",
+   "serves_pattern": "set_intersection_for_lookup"
+  },
+  {
+   "name": "bit_packed_emission_serves_bmi2",
+   "if": [
+    "compute pattern is bit_packed_syntax_emission"
+   ],
+   "then": [
+    "BMI2 pdep + AVX512_VBMI vpermb apply"
+   ],
+   "why": "Variable-length codeword emission is dominated by bit-field placement; pdep places N bits into the masked positions of a destination word in one instruction. Slice-header costs are dwarfed by per-CTU costs even with naive emission, but pdep removes the per-syntax-element shifts.",
+   "soundness_category": "performance",
+   "serves_pattern": "bit_packed_syntax_emission"
+  },
+  {
+   "name": "serial_bit_stream_drives_per_stream_data_parallel",
+   "if": [
+    "compute pattern is serial_bit_stream_coding",
+    "input partitioned into N independent streams"
+   ],
+   "then": [
+    "composition strategy is data_parallel_sharding",
+    "one stream per core; N ≤ cores"
+   ],
+   "why": "Sequential per stream blocks intra-stream parallelism; the only scaling path is sharding. H.264/H.265 slices are precisely this independent-stream partition. With 6 cores, 6 slices saturate.",
+   "soundness_category": "performance",
+   "serves_pattern": "serial_bit_stream_coding",
+   "produces_topology": "data_parallel_sharding"
+  },
+  {
+   "name": "stride_sequential_drives_strip_sharding",
+   "if": [
+    "compute pattern is stride_sequential_pixel_access",
+    "frame divisible into horizontal strips"
+   ],
+   "then": [
+    "composition strategy is data_parallel_sharding",
+    "each core processes a horizontal strip"
+   ],
+   "why": "Each strip has independent pixel sequence; no cross-strip dependencies during the filter pass (deblock crossings handled with overlap or post-pass). Strip granularity matches L2 strip-residency.",
+   "soundness_category": "performance",
+   "serves_pattern": "stride_sequential_pixel_access",
+   "produces_topology": "data_parallel_sharding"
+  },
+  {
+   "name": "block_local_matmul_is_embarrassingly_parallel",
+   "if": [
+    "compute pattern is block_local_matmul",
+    "operates per-block of input"
+   ],
+   "then": [
+    "composition strategy is embarrassingly_parallel_distribution",
+    "distribute by CTU or block to any free core"
+   ],
+   "why": "No cross-block residual dependency in DCT or intra-remap stages. Distribution granularity choice between block and CTU is a tuning knob.",
+   "soundness_category": "performance",
+   "serves_pattern": "block_local_matmul",
+   "produces_topology": "embarrassingly_parallel_distribution"
+  },
+  {
+   "name": "tree_walk_resides_in_l1d",
+   "if": [
+    "compute pattern is tree_walk_with_merge_decisions",
+    "tree depth bounded (≤ 4)"
+   ],
+   "then": [
+    "data placement is cache_resident_working_set in L1d",
+    "no inter-core sync needed during walk"
+   ],
+   "why": "Per-CTU tree state is ~1-2 KiB. Bounded depth keeps the walk in the speculation window. Each core walks its own CTU independently; L1d resident throughout.",
+   "soundness_category": "performance",
+   "serves_pattern": "tree_walk_with_merge_decisions",
+   "produces_topology": "cache_resident_working_set"
+  },
+  {
+   "name": "set_intersection_uses_lookup_table",
+   "if": [
+    "compute pattern is set_intersection_for_lookup",
+    "set values known at design time"
+   ],
+   "then": [
+    "data placement is pre_computed_lookup_table",
+    "replicated per-core in L1d"
+   ],
+   "why": "Intra-mode remap is a constant 9-entry table. Compute once; replicate so each core's L1d holds a copy. Coherence traffic zero because read-only.",
+   "soundness_category": "performance",
+   "serves_pattern": "set_intersection_for_lookup",
+   "produces_topology": "pre_computed_lookup_table"
+  },
+  {
+   "name": "bit_packed_emission_runs_in_amdahl_slack",
+   "if": [
+    "compute pattern is bit_packed_syntax_emission",
+    "per-emission cost dwarfed by per-block cost"
+   ],
+   "then": [
+    "composition strategy is not a topology concern",
+    "runs in any core's spare time after its CTU work"
+   ],
+   "why": "Slice header is ~50-200 bytes per slice. At 6 slices × 60 fps = 360 headers/sec = sub-µs total work. Treats as Amdahl-tail noise.",
+   "soundness_category": "performance",
+   "serves_pattern": "bit_packed_syntax_emission",
+   "produces_topology": "amdahl_serial_bottleneck"
+  },
+  {
+   "name": "per_ctu_stages_form_pipeline",
+   "if": [
+    "multiple stages operate at per-CTU granularity",
+    "stage outputs are stage-inputs of the next"
+   ],
+   "then": [
+    "composition strategy is pipeline_parallel_staging",
+    "stage_dependency_graph chains CTU through stages"
+   ],
+   "why": "Block-structure (CTU partition), intra-prediction-mode remap, transform-kind selection all operate per CTU and feed each other. A CTU flowing through these three stages is one pipeline lane; multiple lanes run concurrently.",
+   "soundness_category": "performance",
+   "produces_topology": "pipeline_parallel_staging"
+  },
+  {
+   "name": "reconstructed_plane_handoff_uses_l3",
+   "if": [
+    "one stage writes the whole reconstructed plane",
+    "later stage reads the whole reconstructed plane",
+    "plane size fits cache_resident_working_set in L3"
+   ],
+   "then": [
+    "data placement is inter_stage_handoff via L3-resident plane",
+    "no DRAM round-trip required"
+   ],
+   "why": "1080p YUV 4:2:0 8-bit is ~3 MiB; fits in 32 MiB L3 with room for 4-8 reference frames. In-loop filter reads the plane the transform stage wrote; both in L3 ⇒ ~10 ns vs ~100 ns DRAM.",
+   "soundness_category": "performance",
+   "produces_topology": "inter_stage_handoff"
+  },
+  {
+   "name": "compute_pattern_implies_resource_bottleneck",
+   "if": [
+    "compute pattern is named"
+   ],
+   "then": [
+    "a specific resource is the throughput ceiling for that pattern"
+   ],
+   "why": "Pattern shape determines the cost dominant: block_local_matmul → compute_bound (FMA throughput); stride_sequential_pixel_access → memory_bandwidth_bound (typically); serial_bit_stream_coding → latency_bound; tree_walk_with_merge_decisions → branch prediction + L1d latency. Once pattern is named, the bottleneck class is named.",
+   "soundness_category": "performance"
+  },
+  {
+   "name": "block_local_matmul_is_compute_bound",
+   "if": [
+    "compute pattern is block_local_matmul",
+    "block size ≥ 8"
+   ],
+   "then": [
+    "throughput ceiling is compute_bound",
+    "AVX-512 FMA / BF16 throughput determines GFLOPS"
+   ],
+   "why": "Arithmetic intensity (FLOPs per byte) is high for inner-product accumulation: n³ FLOPs over 3n² bytes for n×n matmul. For n=8, that's 2.67 FLOPs/byte; beats Zen 5 DRAM bandwidth × compute ratio (~10 GB/s vs 200 GFLOPS). Ceiling is the FMA throughput.",
+   "soundness_category": "performance",
+   "serves_pattern": "block_local_matmul",
+   "produces_bottleneck": "compute_bound"
+  },
+  {
+   "name": "stride_sequential_is_bandwidth_bound",
+   "if": [
+    "compute pattern is stride_sequential_pixel_access",
+    "few ops per pixel"
+   ],
+   "then": [
+    "throughput ceiling is memory_bandwidth_bound",
+    "L2 bandwidth determines pixels/sec"
+   ],
+   "why": "Per-pixel work is 1-5 ALU ops (deblock filter taps, SAO add). Arithmetic intensity ~0.5 FLOPs/byte. Sits in the bandwidth-bound region of the roofline. L2 bandwidth × strip-residency determines stage throughput.",
+   "soundness_category": "performance",
+   "serves_pattern": "stride_sequential_pixel_access",
+   "produces_bottleneck": "memory_bandwidth_bound"
+  },
+  {
+   "name": "serial_bit_stream_is_latency_bound_per_stream",
+   "if": [
+    "compute pattern is serial_bit_stream_coding"
+   ],
+   "then": [
+    "throughput ceiling per stream is latency_bound",
+    "per-bin work + memory of context state determines rate"
+   ],
+   "why": "Each bin: read context, decide MPS/LPS, update context, write bit. Critical path of dependent ops. No SIMD lanes have work without losing the bitrate. Single-stream ceiling: ~80 Mbins/sec on Zen 5 for typical CABAC engines. Per-stream serial cap; multi-stream scales by core count.",
+   "soundness_category": "performance",
+   "serves_pattern": "serial_bit_stream_coding",
+   "produces_bottleneck": "latency_bound"
+  },
+  {
+   "name": "tree_walk_throughput_set_by_branch_predictor",
+   "if": [
+    "compute pattern is tree_walk_with_merge_decisions"
+   ],
+   "then": [
+    "throughput ceiling is latency_bound by branch mispredict cost",
+    "ideal-case ~1 node/cycle when predictor warm"
+   ],
+   "why": "Each tree node is a branch + comparison + state load. Cycle cost: 1 cycle if branch predicted correctly (>95% typical), 12-20 cycles per mispredict. Bounded depth (≤4) keeps walk fast; branch predictor is the throughput cap.",
+   "soundness_category": "performance",
+   "serves_pattern": "tree_walk_with_merge_decisions",
+   "produces_bottleneck": "latency_bound"
+  },
+  {
+   "name": "set_intersection_throughput_set_by_lookup_latency",
+   "if": [
+    "compute pattern is set_intersection_for_lookup",
+    "table resides in L1d"
+   ],
+   "then": [
+    "throughput ceiling is L1d latency",
+    "~4 cycles per lookup, easily pipelined"
+   ],
+   "why": "VP2INTERSECT one cycle; table read 4 cycles; result one cycle. With OoO execution, multiple lookups overlap. Pipelined throughput approaches 1 lookup/cycle. Effectively unbounded for transcoder workloads.",
+   "soundness_category": "performance",
+   "serves_pattern": "set_intersection_for_lookup",
+   "produces_bottleneck": "negligible"
+  },
+  {
+   "name": "bit_packed_emission_is_negligible_per_slice",
+   "if": [
+    "compute pattern is bit_packed_syntax_emission",
+    "per-slice cost"
+   ],
+   "then": [
+    "throughput ceiling is not a real concern",
+    "amortises to noise"
+   ],
+   "why": "Headers ~100 bytes per slice; 6 slices/frame × 60 fps = 36 KB/sec emission. Sub-microsecond per slice header. Hides in stage gaps.",
+   "soundness_category": "performance",
+   "serves_pattern": "bit_packed_syntax_emission",
+   "produces_bottleneck": "negligible"
+  },
+  {
+   "name": "stage_with_slowest_ceiling_caps_pipeline",
+   "if": [
+    "pipeline composed of multiple stages each with own ceiling"
+   ],
+   "then": [
+    "pipeline throughput = min(stage ceilings)",
+    "optimisation effort goes to slowest stage first"
+   ],
+   "why": "Little's law applied to a pipeline. Throughput is limited by the bottleneck stage; speeding up any other stage gives zero pipeline gain until the bottleneck moves. The substrate's L6 essential variable monitor (commit b931ce6) can sample per-stage rates to identify the live bottleneck.",
+   "soundness_category": "performance"
+  }
+ ],
+ "exclusions": [],
+ "relations": [
+  {
+   "src": "computer_architecture",
+   "edge": "genlMt",
+   "tgt": "compiler_theory"
+  }
+ ]
+}

@@ -1,0 +1,49 @@
+{
+  "protocol": "humanoid_walking_v1",
+  "status": "development_demonstration",
+  "claim": "A fresh graph can derive motor cadence from body and environment dynamics, compose compatible opaque movements, learn support and energetic consequences from receipts, form cycle-bounded gait chunks, and remain upright through an unexpected mid-stride impulse.",
+  "simulator": "pybullet",
+  "asset": "mjcf/humanoid.xml",
+  "seed": 0,
+  "body": {
+    "time_step_seconds": 0.004166666666666667,
+    "gravity_acceleration": 9.81,
+    "initial_settling_frames": 480,
+    "joint_twitch_radians": 0.085,
+    "maximum_joint_force": 50.0,
+    "position_gain": 0.3,
+    "velocity_gain": 1.0
+  },
+  "calibration": {
+    "samples_per_non_tonic_actuator": 1,
+    "reset_body_before_each_sample": true
+  },
+  "locomotion": {
+    "actions": 600,
+    "heading_x": -1.0,
+    "target_froude_speed": 0.05,
+    "support_geometry_preview_authority": 1.0,
+    "perturbation": {
+      "onset_fraction": 0.5,
+      "world_frame_force_body_weights": [
+        2.0,
+        0.0,
+        0.0
+      ],
+      "frames": 1
+    },
+    "modes": [
+      "directed_walk",
+      "tonic_posture_control"
+    ]
+  },
+  "evaluation": {
+    "minimum_upright_height_fraction": 0.75,
+    "minimum_directed_progress_metres": 0.3,
+    "maximum_final_lateral_drift_metres": 0.2,
+    "minimum_support_alternations": 20,
+    "maximum_aerial_samples_per_locomotor_cycle": 1.0,
+    "adaptive_must_remain_upright": true,
+    "tonic_control_must_not_match_progress": true
+  }
+}

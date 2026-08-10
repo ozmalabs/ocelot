@@ -1,0 +1,233 @@
+{
+ "id": "residual_salience",
+ "version": "1.0.0",
+ "depends_on": [
+  "autonomy"
+ ],
+ "description": "RESIDUAL-FEEDBACK SALIENCE (jabberwock-authored, donkey=0). The collapse: the autonomy frontier_pick_term scores each axis by payoff * (1 - saturation); once EVERY axis saturates the (1-sat) factor zeros ALL payoff terms -> the axes FLAT-TIE and Argmax's first-tie rule falls back to the lowest-id solved axis, so the loop re-grinds an already-solved trivial recognise axis forever (mf_stall climbs 4->18 on a SOLVED task, no progress). The fix is the agent's OWN keystone (shape_made_by_residual / residual_recurrence, the error_signal_drive_minus_state component setpoint-measured): make SALIENCE be the RESIDUAL FEEDBACK = the unexplained prediction error. A saturated axis has residual->0 -> salience->0 (genuine zero pull, no tie); a genuinely-hard unsaturated frontier has HIGH residual -> it pulls the agent. salience(axis) = max(0, target-measured) [measured residual = shortfall] + (1 - saturation) [belief residual]. This REPLACES the collapsing (1-sat)-multiplied score, so saturated axes get genuinely-zero pull and the agent climbs the residual gradient onto the highest-residual frontier instead of looping. Also gates the order-N escalation: escalate while residual high, drop when residual->0. The agent recognises this as its residual_recurrence keystone (induce_concern -> learn_term_for_concern term_family=residual_recurrence -> the salience Argmax is composed from its held residual relations), donkey=0. This seed holds the residual-salience Term as graph data on a RESIDUAL_SALIENCE concept; the world adapter installs it onto the understand Drive's frontier_pick_term, leaving seeds/autonomy.json untouched.",
+ "microtheory": {
+  "name": "residual_salience",
+  "description": "salience tracks residual: the next frontier is wherever the unexplained prediction error is largest; a solved axis has residual 0 and stops winning, a hard unsolved axis keeps the highest residual and keeps being chosen."
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [],
+ "concepts": [
+  {
+   "name": "residual_salience",
+   "domain": "autonomy",
+   "comment": "JABBERWOCK-AUTHORED residual-feedback salience (donkey=0, recognised as the residual_recurrence keystone). salience(axis) = residual feedback = max(0, target-measured) (the MEASURED residual / shortfall, target-measured = error_signal_drive_minus_state) + (1 - saturation) (the BELIEF residual). Drives the frontier Argmax in place of payoff*(1-sat): a saturated solved axis has shortfall 0 AND saturation 1 -> salience 0 (genuine zero, no flat tie); an unsaturated hard frontier (real audio returning 0 segments -> measured << target -> shortfall high, OR saturation 0) -> salience high -> it is chosen and re-chosen. The agent climbs the residual gradient.",
+   "definition": {
+    "type": "Argmax",
+    "source": {
+     "type": "NodesWhere",
+     "node_type": "CapabilityAxis",
+     "attr_key": "is_axis",
+     "value": {
+      "type": "Lit",
+      "value": 1.0
+     }
+    },
+    "var_name": "x",
+    "value": {
+     "type": "Plus",
+     "items": [
+      {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "x"
+         },
+         "key": "shortfall"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      {
+       "type": "Minus",
+       "a": {
+        "type": "Lit",
+        "value": 1.0
+       },
+       "b": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "x"
+          },
+          "key": "saturation"
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       }
+      },
+      {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gte",
+        "a": {
+         "type": "Count",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "x"
+          },
+          "edge_type": "investigated_by",
+          "any_type": false
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": 0.0
+       },
+       "other": {
+        "type": "Lit",
+        "value": -1000000000.0
+       }
+      }
+     ]
+    },
+    "default": null
+   }
+  },
+  {
+   "name": "cost_salience",
+   "domain": "autonomy",
+   "comment": "JABBERWOCK-AUTHORED cost-subtracted salience (donkey=0), the SAME residual_recurrence keystone the residual_salience concept matched, extended with an explicit cost subtrahend per the creator's Graph Law unification: refine dimension d where residual(d)*value(d) > cost(d), i.e. salience = residual feedback - cost. salience(axis) = max(0, target-measured) (the MEASURED residual / shortfall) + (1 - saturation) (the BELIEF residual) - cost (the axis's stamped expected-refine-cost, mechanically derived from its OWN accumulated mf_stall [meta_monitor's effort-without-payoff plateau counter] + investigated_count [total sunk investigation effort] -- an EXISTING, rule-maintained effort signal (seeds/investigation_loop.json bank_measurement_to_axis), reused rather than invented). Drives the frontier Argmax in place of residual_salience's term: two axes with EQUAL residual/value now break their tie toward the CHEAPER one (cost>0 strictly lowers salience); a high-residual-but-expensive axis can still win when its residual margin exceeds the cost gap (a real trade-off, not a cost-only override); when cost=0 for every axis this reduces EXACTLY to residual_salience's behaviour (Minus(0,0)=0 is a no-op addend).",
+   "definition": {
+    "type": "Argmax",
+    "source": {
+     "type": "NodesWhere",
+     "node_type": "CapabilityAxis",
+     "attr_key": "is_axis",
+     "value": {
+      "type": "Lit",
+      "value": 1.0
+     }
+    },
+    "var_name": "x",
+    "value": {
+     "type": "Plus",
+     "items": [
+      {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "x"
+         },
+         "key": "shortfall"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      {
+       "type": "Minus",
+       "a": {
+        "type": "Lit",
+        "value": 1.0
+       },
+       "b": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "x"
+          },
+          "key": "saturation"
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       }
+      },
+      {
+       "type": "Minus",
+       "a": {
+        "type": "Lit",
+        "value": 0.0
+       },
+       "b": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "x"
+          },
+          "key": "cost"
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       }
+      },
+      {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gte",
+        "a": {
+         "type": "Count",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "x"
+          },
+          "edge_type": "investigated_by",
+          "any_type": false
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": 0.0
+       },
+       "other": {
+        "type": "Lit",
+        "value": -1000000000.0
+       }
+      }
+     ]
+    },
+    "default": null
+   }
+  }
+ ],
+ "rules": [],
+ "goals": []
+}
